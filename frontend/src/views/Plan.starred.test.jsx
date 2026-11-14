@@ -19,7 +19,6 @@ const KEY = 'og_plan_starred'
 let host, root
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
-  vi.useFakeTimers()
   localStorage.clear()
   localStorage.setItem('gym_plan_view', 'routines')
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
@@ -40,7 +39,6 @@ describe('Starred filter', () => {
     mount()
     click(star())
     expect(names()).toEqual(['Push A', 'Old legs', 'Loose fav'])
-    act(() => { vi.advanceTimersByTime(320) })   // the folder names join the subtitles once the rows have landed
     const subs = [...host.querySelectorAll('.plan-routine .ss')].map(e => e.textContent)
     expect(subs[0]).toContain('Current plan')
     expect(subs[1]).toContain('Hyper')
@@ -72,24 +70,27 @@ describe('Starred filter', () => {
   const subsOf = () => [...host.querySelectorAll('.plan-routine .ss')].map(e => e.textContent)
   const showAll = () => click([...host.querySelectorAll('.plan-starred-bar button')].find(b => b.textContent === 'Show all'))
 
-  it('on: the subtitles keep their text until the rows have landed, then say where each lives', () => {
+  it('on: the subtitles carry the new text at once, hidden by a class for 320 ms (CSS only)', () => {
+    vi.useFakeTimers()
     mount()
     click(star())
-    expect(subsOf().some(x => x.includes('Current plan') || x.includes('Hyper'))).toBe(false)
-    act(() => { vi.advanceTimersByTime(319) }); expect(subsOf().some(x => x.includes('Hyper'))).toBe(false)
-    act(() => { vi.advanceTimersByTime(2) }); expect(subsOf().some(x => x.includes('Hyper'))).toBe(true)
+    const cls = () => host.querySelector('.plan-routes').classList.contains('is-fav-on')
+    expect(subsOf().some(x => x.includes('Hyper'))).toBe(true)
+    expect(cls()).toBe(true)
+    act(() => { vi.advanceTimersByTime(321) }); expect(cls()).toBe(false)
   })
 
   it('off: the cards fade in with their rows for 320 ms; the count bar leaves as an inert copy', () => {
+    vi.useFakeTimers()
     Element.prototype.animate = function () { return {} }
     mount()
     click(star())
     act(() => { vi.advanceTimersByTime(320) })
     showAll()
-    expect(host.querySelector('.plan-routes').classList.contains('is-unstar')).toBe(true)
+    expect(host.querySelector('.plan-routes').classList.contains('is-fav-off')).toBe(true)
     expect([...document.querySelectorAll('body > [inert]')].some(n => n.querySelector('.plan-starred-bar') || n.classList.contains('plan-starred-bar'))).toBe(true)
     act(() => { vi.advanceTimersByTime(320) })
-    expect(host.querySelector('.plan-routes').classList.contains('is-unstar')).toBe(false)
+    expect(host.querySelector('.plan-routes').classList.contains('is-fav-off')).toBe(false)
     delete Element.prototype.animate
   })
 
@@ -99,6 +100,6 @@ describe('Starred filter', () => {
     click(star())
     expect(subsOf().some(x => x.includes('Hyper'))).toBe(true)
     showAll()
-    expect(host.querySelector('.plan-routes').classList.contains('is-unstar')).toBe(false)
+    expect(host.querySelector('.plan-routes').classList.contains('is-fav-off')).toBe(false)
   })
 })

@@ -39,7 +39,7 @@ import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
 import { listMove } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
-import ExitFade from '../components/ExitFade.jsx'
+import ExitFade, { routeLeaving } from '../components/ExitFade.jsx'
 import { routineMenu, folderMenu, duplicateRoutine, moveSheet, moveIds, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
@@ -196,6 +196,8 @@ export default function Plan() {
   const progChip = programmeChip(S)
 
   const picking = view === 'routines' && editing
+  // Leaving Plan for another route unmounts every ExitFade below: none of them may leave a copy over the new screen.
+  useLayoutEffect(() => { routeLeaving(false); return () => routeLeaving(true) }, [])
   // Edit swaps the header for its bar: the header leaves as a copy (ExitFade, 100 ms) and, coming back on
   // Done, fades in 180 ms. Nothing here waits on it; Reduce Motion sets no class and makes no copy.
   const [swap, setSwap] = useState(false)
@@ -519,8 +521,8 @@ function Routines({ S, update, nav, edit, setEdit }) {
   })
   // The Favourites filter: rows that leave fade, the rest move or fade in (lib/list-motion.js); a row that
   // would travel more than 160 px fades in at its new place.
-  // `favPhase` (320 ms): 'on' keeps the subtitles as they were until the rows have landed; 'off' fades the group cards
-  // in with their rows, so no card shows empty. Reduce Motion: no phase.
+  // `favPhase` (320 ms) is a class only: 'on' keeps the subtitles hidden until the rows have landed, 'off' fades the
+  // group cards in with their rows, so no card shows empty. Reduce Motion: no phase.
   const [favPhase, setFavPhase] = useState('')
   const favTm = useRef()
   useEffect(() => () => clearTimeout(favTm.current), [])
@@ -624,7 +626,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
       </div>
       <h2 className="plan-selcount" role="status">{ids.length ? t('{0} selected', ids.length) : t('Select items')}</h2>
     </ExitFade>}
-    {routines.length || folders.length || archived ? <div ref={routesEl} className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (favPhase === 'off' ? ' is-unstar' : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
+    {routines.length || folders.length || archived ? <div ref={routesEl} className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (favPhase ? ' is-fav-' + favPhase : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
       {!edit && starred
           ? (starredRoutines.length
             ? <>
@@ -632,7 +634,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
                 <span key={starredRoutines.length} className="ss">{t('{0} of {1} routines', starredRoutines.length, routines.length)}</span>
                 <button className="plan-textbtn" onClick={() => showStarred(false)}>{t('Show all')}</button>
               </ExitFade>
-              {group('starred', starredRoutines.map(r => rowOf(r, favPhase === 'on' ? undefined : cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
+              {group('starred', starredRoutines.map(r => rowOf(r, cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
             </>
             : <div className="plan-fav-empty">
               <span className="plan-fav-i"><Icon name="star" /></span>

@@ -33,6 +33,15 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); document.querySelectorAll('body > [inert]').forEach(n => n.remove()); vi.useRealTimers(); document.documentElement.className = ''; delete Element.prototype.animate; delete Element.prototype.getBoundingClientRect })
 
 describe('Plan header swap', () => {
+  it('leaving Plan (a route change) leaves no copy over the new screen', () => {
+    act(() => root.render(<Plan />))
+    act(() => { root.render(null) })
+    expect(document.querySelectorAll('body > [inert]').length).toBe(0)
+    act(() => root.render(<Plan />))
+    act(() => { host.querySelector('.plan-edit').click() })
+    expect(document.querySelectorAll('body > [inert]').length).toBeGreaterThan(0)
+  })
+
   it('the header leaves as an inert copy, the bar fades in, the list slides from its old place', () => {
     act(() => root.render(<Plan />))
     act(() => { host.querySelector('.plan-edit').click() })
