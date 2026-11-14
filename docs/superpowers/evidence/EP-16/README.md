@@ -1,8 +1,11 @@
 # MVP combined acceptance record
 
-Status: **combined automated/browser checks passed; final review pending, not release approval**. Parent working branch:
+Status: **final review requires UUID correction; earlier combined checks passed, not release approval**. Parent working branch:
 `room/autonomous-project-resumption-orchestrat-djus`. The full acceptance commands below
-ran after the final EP-05b source review. Final whole-branch review remains pending.
+ran after the final EP-05b source review. The [whole-branch review](independent-review-round1.md)
+found a missing UUID fallback on supported plain-HTTP LAN origins plus a stale Modules-guide
+statement. One bounded correction wave is in progress. The original passes below do not cover
+that missing browser capability. Corrected frontend acceptance will be recorded separately.
 The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-16-mvp-gates.md).
 
 ## Source lineage and reviews
@@ -35,7 +38,7 @@ passing. Later evidence-only commits do not change this tested runtime.
 | Locale and strict source-string checks | PASS; both exit0 | [19 packs ×3,684 keys](locales.log), [3,030 strings](source-strings.log) |
 | Catalogue, coach-assets and API-docs generators | PASS; all exit0 | [Catalogue](catalogue.log), [coach](coach-assets.log), [API docs](api-docs.log):93 endpoints/34 schemas |
 | Combined browser paths | PASS for bounded smoke below | [Observed results](browser-results.json); synthetic account, media blocked, no live provider calls |
-| Final whole-branch independent review | PENDING | After task reviews and combined checks |
+| Final whole-branch independent review | CHANGES REQUIRED:I1 UUID fallback /M1 guide drift | [Full verdict](independent-review-round1.md); correction and scoped review pending |
 
 The UI author ran focused tests/browser/build during implementation. Parent ran the full
 combined gate once; no duplicate task full run is requested. If a real failure requires a code

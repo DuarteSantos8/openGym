@@ -10,7 +10,11 @@ out = root / 'docs/superpowers/evidence/EP-16'
 env = dict(os.environ)
 env['PATH'] = '/home/cloudroom-agent/tools/node-v22.23.5-linux-x64/bin:' + env['PATH']
 env['NO_COLOR'] = '1'
+env['RAYON_NUM_THREADS'] = '2'
 env.pop('FORCE_COLOR', None)
+prefix = os.environ.get('VERIFY_PREFIX', '')
+if prefix and (not prefix.replace('-', '').isalnum() or len(prefix) > 40):
+    raise SystemExit('Invalid evidence prefix')
 stages = [
     ('frontend-full', 'frontend', ['npm', 'test', '--', '--maxWorkers=1']),
     ('api-full', 'api', ['node', '--test', '--test-concurrency=2', *sorted(str(p.relative_to(root / 'api')) for p in (root / 'api/test').glob('*.test.js'))]),
@@ -31,8 +35,8 @@ def now():
 for name, subdir, command in stages:
     if chosen and name not in chosen:
         continue
-    manifest = out / (name + '.json')
-    logfile = out / (name + '.log')
+    manifest = out / (prefix + name + '.json')
+    logfile = out / (prefix + name + '.log')
     if manifest.exists() or logfile.exists():
         raise SystemExit('Refusing to overwrite existing evidence: ' + name)
     dirty = subprocess.check_output(['git', 'diff', '--name-only', 'HEAD', '--', 'frontend', 'api', 'mcp', 'scripts', '*lock*'], cwd=root, text=True).strip()
