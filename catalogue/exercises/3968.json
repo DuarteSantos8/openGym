@@ -10,6 +10,9 @@
     "lats"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Sweep dumbbells from your hips to overhead in a wide arc on a flat bench. It works the shoulders and chest through a long range.",
   "instructions": [
     "Lie on a flat bench with dumbbells over your chest.",

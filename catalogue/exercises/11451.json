@@ -10,6 +10,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A wall-supported half squat held in place to build quad endurance with low joint stress.",
   "instructions": [
     "Stand with your back against a wall and feet about a step in front of you.",

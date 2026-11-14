@@ -156,3 +156,31 @@ describe('byCategory', () => {
     expect(byCategory(list, 'yoga')).toEqual({ opts: ['strength', 'stretching'], on: '', list })
   })
 })
+
+// European Portuguese and Swedish names (v1.4.4): what a lifter in Lisbon or Gothenburg types
+// finds the exercise on screen, with or without the accents, and the English still works.
+describe('search with the pt and sv exercise-name packs', async () => {
+  const { EXDB } = await import('./exercises-data.js')
+  const { searchExercises } = await import('./exercises.js')
+  const pt = (await import('../exercise-names/pt.js')).default
+  const sv = (await import('../exercise-names/sv.js')).default
+  const ids = (q) => searchExercises(EXDB, q).map(e => e.id)
+
+  it.each([
+    ['pt', 'supino com barra', '0025'],
+    ['pt', 'peso morto barra', '0032'],
+    ['pt', 'gemeos sentado', '0088'],
+    ['sv', 'bänkpress skivstång', '0025'],
+    ['sv', 'marklyft', '0032'],
+    ['sv', 'bankpress', '0025'],
+    ['sv', 'sittande vadpress', '0088'],
+  ])('%s: "%s" finds the exercise', (lang, query, id) => {
+    _setLangState(lang, {}, null, { pt, sv }[lang])
+    try {
+      expect(ids(query)).toContain(id)
+      expect(ids('bench press')).toContain('0025')
+    } finally {
+      _setLangState('en', null, null, null)
+    }
+  })
+})

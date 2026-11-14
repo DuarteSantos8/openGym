@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "ที่อยู่เซิร์ฟเวอร์"
+
+msgid "code"
+msgstr "รหัสจับคู่"
+
+msgid "how"
+msgstr "ใน openGym เปิดการตั้งค่า, นาฬิกา Zepp OS, จับคู่นาฬิกา แล้วพิมพ์ที่อยู่และรหัสที่แสดงที่นี่"
+
+msgid "pair"
+msgstr "จับคู่"
+
+msgid "pairing"
+msgstr "กำลังจับคู่…"
+
+msgid "paired"
+msgstr "จับคู่กับ {0} แล้ว เปิด openGym บนนาฬิกาได้เลย"
+
+msgid "failed"
+msgstr "ไม่สำเร็จ ตรวจที่อยู่และรหัสอีกครั้ง รหัสใช้ได้สิบนาที"
+
+msgid "unpair"
+msgstr "เลิกจับคู่"
+
+msgid "not_paired_yet"
+msgstr "ยังไม่ได้จับคู่"

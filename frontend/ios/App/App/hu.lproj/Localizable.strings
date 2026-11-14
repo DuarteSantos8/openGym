@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Edzés indítása";
+"Starts today’s planned workout, or opens the one already running." = "Elindítja a mai tervezett edzést, vagy megnyitja a már futót.";
+"Log weight" = "Súly rögzítése";
+"Logs your body weight without opening openGym." = "Rögzíti a testsúlyod az openGym megnyitása nélkül.";
+"Weight" = "Súly";
+"What’s your weight?" = "Mennyi a súlyod?";
+"Today’s workout" = "Mai edzés";
+"Tells you what’s planned for today." = "Megmondja, mi van ma tervben.";
+"Week streak" = "Heti sorozat";
+"Tells you how many weeks in a row you trained." = "Megmondja, hány egymást követő héten edzettél.";
+"Open openGym once, then ask me again." = "Nyisd meg egyszer az openGymet, aztán kérdezz újra.";
+"You’re in the middle of %@." = "Épp ezt csinálod: %@.";
+"You’re in the middle of a workout." = "Épp edzel.";
+"Your workout" = "Az edzésed";
+"%@ is done for today. Nice work." = "%@ mára kész. Szép munka.";
+"Today: %@." = "Ma: %@.";
+"Rest day today. Next up: %@ on %@." = "Ma pihenőnap. A következő: %@, %@.";
+"Nothing planned today." = "Mára nincs semmi tervezve.";
+"No streak yet. One workout this week starts one." = "Még nincs sorozatod. Egy edzés ezen a héten elindítja.";
+"Week streak: %d. This week already counts." = "Heti sorozat: %d. Ez a hét már megvan.";
+"Week streak: %d. One workout this week keeps it going." = "Heti sorozat: %d. Egy edzés ezen a héten életben tartja.";
+"That doesn’t sound like a weight. Try again?" = "Ez nem hangzik súlynak. Újra?";
+"Logged %@." = "%@ rögzítve.";

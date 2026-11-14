@@ -113,6 +113,16 @@ describe('cleanUrl', () => {
     expect(cleanUrl('https://example.com/' + 'a'.repeat(2020))).toBe('https://example.com/' + 'a'.repeat(2020))
     expect(cleanUrl('https://example.com/' + 'a'.repeat(2100))).toBeNull()
   })
+  // The host check once used a regex lookbehind, which Safari before 16.4 cannot parse: same
+  // rules without it, a label up to 63 characters that neither starts nor ends with a hyphen.
+  it('checks each part of the host name for hyphens at either end and its length', () => {
+    for (const u of ['https://my-gym.com', 'https://a-b-c.example.org', 'https://x.co', 'https://xn--bcher-kva.ch', `https://${'a'.repeat(63)}.com`]) {
+      expect(cleanUrl(u), u).not.toBeNull()
+    }
+    for (const u of ['https://x-.com', 'https://-.com', 'https://my-gym-.com', 'https://a.b-', `https://${'a'.repeat(64)}.com`]) {
+      expect(cleanUrl(u), u).toBeNull()
+    }
+  })
   it('refuses what does not parse', () => {
     expect(cleanUrl('https://exa mple.com')).toBeNull()
     expect(cleanUrl('https://')).toBeNull()

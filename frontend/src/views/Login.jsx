@@ -11,6 +11,7 @@ import { Button, Segmented } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { passwordOn, PasswordRegisterForm, openPasswordSignIn } from '../components/PasswordAuth.jsx'
 import { openDeviceLinkRedeem } from '../components/Passkeys.jsx'
+import { openLostAccess } from '../components/LostAccess.jsx'
 
 function RegisterSheet({ close }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
@@ -76,8 +77,8 @@ export default function Login() {
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(passkeyError(e, t('Sign-in failed'))) }
   }
   const head = <>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="dumbbell" /></div>
-    <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-.028em', margin: '10px 0 4px' }}>openGym</h1>
+    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="dumbbell" /></div>
+    <h1 className="t-large" style={{ fontWeight: 700, margin: '10px 0 4px' }}>openGym</h1>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
 
@@ -109,6 +110,8 @@ export default function Login() {
             its own (#95), instead of a new, empty profile. */}
         <div style={{ height: 10 }} />
         <Button variant="ghost" className="dim" icon="qr" onClick={openDeviceLinkRedeem}>{t('Use a code from your other device')}</Button>
+        {/* No device signs you in any more (#584): what to try, and where a recovery code goes. */}
+        <Button variant="ghost" className="dim" onClick={openLostAccess}>{t('Lost access?')}</Button>
         {canGuest && <div style={{ height: 4 }} />}
       </> : pwOn ? <>
         {/* Plain http on a LAN address, or a browser without passkey support: the password is
@@ -117,6 +120,7 @@ export default function Login() {
         <Button variant="primary" icon="key" onClick={() => openPasswordSignIn()}>{t('Sign in with password')}</Button>
         <div style={{ height: 10 }} />
         <Button icon="plusCircle" onClick={register}>{t('Create new profile')}</Button>
+        <Button variant="ghost" className="dim" onClick={openLostAccess}>{t('Lost access?')}</Button>
         {canGuest && <div style={{ height: 10 }} />}
       </> : <div className="card small muted" style={{ textAlign: 'start' }}>{canGuest
         ? t("This browser doesn't do passkeys, but you can still use openGym locally on this device.")

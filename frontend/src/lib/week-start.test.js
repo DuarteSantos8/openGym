@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { MONDAY, SUNDAY, weekStartOf, weekOrder, weekDayOffset, startOfWeek, weekKey, isoOf } from './format.js'
 import { streakWeeks } from './history.js'
 import { muscleBalanceWindow } from './muscles.js'
@@ -70,6 +70,25 @@ describe('weekKey', () => {
 
   it('does not collide across years', () => {
     expect(weekKey('2025-08-19', MONDAY)).not.toBe(weekKey('2026-08-19', MONDAY))
+  })
+
+  // Home and Stats ask for every workout's week on each render; a date seen once is not parsed again.
+  it('remembers a date it has already keyed, and still answers like startOfWeek', () => {
+    const spy = vi.spyOn(Date.prototype, 'getDay')
+    try {
+      const first = weekKey('2031-02-12', SUNDAY)
+      const parsed = spy.mock.calls.length
+      expect(parsed).toBeGreaterThan(0)
+      expect(weekKey('2031-02-12', SUNDAY)).toBe(first)
+      expect(spy.mock.calls.length).toBe(parsed)
+    } finally { spy.mockRestore() }
+    for (let i = 0; i < 800; i += 1) {
+      const iso = isoOf(new Date(2024, 0, 1 + i, 12))
+      for (const ws of [MONDAY, SUNDAY]) {
+        expect(weekKey(iso, ws)).toBe(isoOf(startOfWeek(iso, ws)))
+        expect(weekKey(iso, ws)).toBe(isoOf(startOfWeek(iso, ws)))
+      }
+    }
   })
 })
 

@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lying press with the palms facing each other. It works the chest and arms with a shoulder-friendly grip.",
   "instructions": [
     "Lie flat on a bench with a dumbbell in each hand, palms facing each other and arms extended straight up.",

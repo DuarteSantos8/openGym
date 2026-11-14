@@ -14,9 +14,11 @@ describe('normalizeServerUrl', () => {
     expect(normalizeServerUrl('https://gym.example.com')).toBe('https://gym.example.com')
   })
 
-  it('trims whitespace and a trailing path/slash down to the origin', () => {
+  it('trims whitespace and trailing slashes but keeps a sub-path', () => {
     expect(normalizeServerUrl('  gym.example.com/  ')).toBe('https://gym.example.com')
-    expect(normalizeServerUrl('https://gym.example.com/some/path')).toBe('https://gym.example.com')
+    expect(normalizeServerUrl('https://gym.example.com/some/path')).toBe('https://gym.example.com/some/path')
+    expect(normalizeServerUrl('https://host/opengym/')).toBe('https://host/opengym')
+    expect(normalizeServerUrl('https://host/opengym///')).toBe('https://host/opengym')
   })
 
   it('rejects empty or unusable input', () => {

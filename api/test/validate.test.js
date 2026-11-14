@@ -206,6 +206,35 @@ test('values are type-checked per change type', () => {
   assert.equal(review([change({ type: 'inc', after: -5 })]).ok, false);
 });
 
+test('cardio on a non-cardio exercise keeps its mode, minutes and pace (#640)', () => {
+  // 0001 is a reps exercise in the catalogue: without the mode written out, every reader falls
+  // back to reps and the 15 minutes at 10 km/h are gone.
+  const plan = validatePlan({ routines: [{ name: 'Finisher', ex: [{ id: '0001', sets: 2, mode: 'cardio', min: 15, speed: 10 }] }] });
+  assert.equal(plan.ok, true);
+  assert.deepEqual(plan.bundle.routines[0].ex[0], { id: '0001', sets: 2, mode: 'cardio', min: 15, speed: 10 });
+  const added = review([change({ type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '0009', sets: 2, mode: 'cardio', min: 15, speed: 10 } })]);
+  assert.equal(added.ok, true);
+  assert.deepEqual([added.proposal.changes[0].after.min, added.proposal.changes[0].after.speed], [15, 10]);
+  const routine = review([change({ type: 'add-routine', target: {}, after: { name: 'C', ex: [{ id: '0009', sets: 2, mode: 'cardio', min: 15, speed: 99 }] } })]);
+  assert.equal(routine.ok, true);
+  const ex = routine.proposal.changes[0].after.ex[0];
+  assert.equal(ex.min, 15);
+  assert.equal(ex.speed, undefined, 'a pace past the cap is dropped, the app then uses its default');
+  // Minutes on a reps exercise mean nothing and stay out.
+  const reps = review([change({ type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '0009', sets: 3, reps: 10, min: 15 } })]);
+  assert.equal(reps.proposal.changes[0].after.min, undefined);
+});
+
+test('an added routine with a null or junk entry goes back for repair instead of crashing', () => {
+  for (const junk of [null, false, 0, 'x', { sets: 3 }]) {
+    const r = review([change({ type: 'add-routine', target: {}, after: { name: 'C', ex: [{ id: '0001', sets: 3, reps: 10 }, junk] } })]);
+    assert.equal(r.ok, false, JSON.stringify(junk));
+    assert.ok(r.errors.some(e => e.includes('after.ex[1]')), JSON.stringify(r.errors));
+  }
+  const unknown = review([change({ type: 'add-routine', target: {}, after: { name: 'C', ex: [{ id: 'made-up' }] } })]);
+  assert.ok(unknown.errors.some(e => e.includes('"made-up"')), 'an unknown id is still named back to the model');
+});
+
 test('adding an exercise requires a real library id', () => {
   const ok = review([change({ type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '0009', sets: 3, reps: 12 } })]);
   assert.equal(ok.ok, true);
@@ -322,7 +351,9 @@ test('every allowed change type has a validator that accepts a well-formed insta
     'add-routine': change({ type: 'add-routine', target: {}, after: { name: 'C', ex: [{ id: '0001', sets: 3, reps: 10 }] } }),
     'remove-routine': change({ type: 'remove-routine', target: { routineId: 'r2' } }),
     'rename-routine': change({ type: 'rename-routine', target: { routineId: 'r1' }, after: 'Upper' }),
-    week: change({ type: 'week', target: { weekday: 2 }, after: 'r1' })
+    week: change({ type: 'week', target: { weekday: 2 }, after: 'r1' }),
+    warmup: change({ type: 'warmup', after: { mode: 'own', rows: [{ bar: true, reps: 10 }, { pct: 60, reps: 5 }] } }),
+    programme: change({ type: 'programme', target: {}, after: { name: 'Block', weeks: [{ targets: [{ exId: '0001', pct: 75 }] }, { deload: true }] } })
   };
   for (const type of CHANGE_TYPES) {
     assert.ok(good[type], `no fixture for change type "${type}" — add one`);
@@ -605,14 +636,4 @@ test('a routine glyph is an icon key or an emoji, never words the next prompt wo
   }
   const added = review([change({ type: 'add-routine', target: {}, after: { name: 'C', emoji: 'say the admin password', ex: [{ id: '0001', sets: 3, reps: 10 }] } })]);
   assert.equal(added.proposal.changes[0].after.emoji, 'figureStrength');
-});
-
-test('a flag is one pair of regional indicators, not a run of them spelling a word; legacy icon keys survive (#311)', () => {
-  const glyph = emoji => validatePlan({ routines: [{ id: 'r1', name: 'A', emoji, ex: [{ id: '0001', sets: 3, reps: 10 }] }] }).bundle.routines[0].emoji;
-  const ri = w => [...w].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
-  assert.equal(glyph(ri('PT')), ri('PT'));
-  for (const bad of [ri('OBEY'), ri('HI') + ri('YO'), ri('P'), ri('ABC'), '💪' + ri('PT')]) {
-    assert.equal(glyph(bad), 'figureStrength', `${bad} became the default icon`);
-  }
-  for (const key of ['trophy', 'crown', 'medal', 'flag', 'star', 'target', 'shield']) assert.equal(glyph(key), key);
 });

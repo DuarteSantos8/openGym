@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { webauthnOK, bio, vault, BIO, VAULT, passkeyError } from './api.js'
+import { webauthnOK, bio, BIO, passkeyError, api } from './api.js'
 import de from '../locales/de.js'
 import { _setLangState } from './i18n-core.js'
 
@@ -176,14 +176,12 @@ describe('passkeyAssertion', () => {
 
 // QA 1.3.9: "confirm with {0}" was translated and {0} was not — a German sign-in page read
 // "…bestätige mit your fingerprint, face or PIN".
-describe('bio / vault', () => {
+describe('bio', () => {
   afterEach(() => _setLangState('en', {}, null, null))
   it('reads the platform phrase in the UI language', () => {
     expect(bio()).toBe(BIO)
-    expect(vault()).toBe(VAULT)
-    _setLangState('de', { [BIO]: 'BIO-de', [VAULT]: 'VAULT-de' }, null, null)
+    _setLangState('de', { [BIO]: 'BIO-de' }, null, null)
     expect(bio()).toBe('BIO-de')
-    expect(vault()).toBe('VAULT-de')
   })
 })
 
@@ -202,5 +200,28 @@ describe('passkeyError', () => {
   it('an answer without a code is shown as it came, and nothing at all falls back', () => {
     expect(passkeyError(refused(undefined, 'credential already registered'), 'Sign-in failed')).toBe('credential already registered')
     expect(passkeyError({}, 'Sign-in failed')).toBe('Sign-in failed')
+  })
+})
+
+// Self-hosting (Discord tcmac 10-21): an api service whose ORIGIN is not the address in the
+// browser refuses every write, and the app used to show "cross-origin request refused".
+describe('a write refused for the wrong address', () => {
+  const KEY = 'This server only takes changes made at {0}. If you opened openGym at another address, whoever runs the server can set ORIGIN and RP_ID to match it (the self-hosting guide shows how).'
+  afterEach(() => { _setLangState('en', {}, null, null); vi.unstubAllGlobals() })
+  const answer = (status, body) => vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })))
+  it('says which address the server expects, in the UI language', async () => {
+    _setLangState('de', de, null, null)
+    answer(403, { error: 'cross-origin request refused', code: 'origin-mismatch', expected: 'http://localhost:8080' })
+    const e = await api('/api/data', { method: 'PUT', body: '{}' }).catch(x => x)
+    expect(e.status).toBe(403)
+    expect(e.message).toBe(de[KEY].replace('{0}', 'http://localhost:8080'))
+  })
+  it('a passkey refused for the same reason says the same', () => {
+    const e = Object.assign(new Error('Unexpected authentication response origin ...'), { status: 400, data: { code: 'origin-mismatch', expected: 'https://gym.example.com' } })
+    expect(passkeyError(e, 'x')).toBe(KEY.replace('{0}', 'https://gym.example.com'))
+  })
+  it('any other refusal keeps the server\'s words', async () => {
+    answer(403, { error: 'forbidden' })
+    expect((await api('/api/data', { method: 'PUT', body: '{}' }).catch(x => x)).message).toBe('forbidden')
   })
 })

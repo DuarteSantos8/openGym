@@ -23,7 +23,7 @@ body:
     attributes:
       label: Dependencies
       description: >
-        openGym is intentionally dependency-light — new packages (front or back) are a hard
+        openGym is intentionally dependency-light: new packages (front or back) are a hard
         sell. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
       options:
         - label: This doesn't require adding a new dependency

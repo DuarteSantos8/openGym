@@ -1,4 +1,4 @@
-import { healthDeletionOwner } from './apple-health-deletions.js'
+import { healthOwner } from './health-owner.js'
 
 // Phone/account-local consent and weather values. Coordinates never cross the bridge.
 const ENABLED = 'opengym_workout_weather_owner'
@@ -7,14 +7,14 @@ let pending = null
 let attempted = ''
 let generation = 0
 
-const ownerOf = store => healthDeletionOwner(store)
+const ownerOf = store => healthOwner(store)
 export const workoutWeatherEnabled = store => {
   try { return localStorage.getItem(ENABLED) === ownerOf(store) } catch { return false }
 }
 async function plugin() {
   const { Capacitor, registerPlugin } = await import('@capacitor/core')
   if (Capacitor.getPlatform() !== 'ios') throw new Error('Apple Health is unavailable')
-  return { native: registerPlugin('HealthSync') }
+  return { native: registerPlugin('AppleHealth') }
 }
 export async function enableWorkoutWeather(store) {
   const owner = ownerOf(store), token = ++generation
@@ -24,10 +24,14 @@ export async function enableWorkoutWeather(store) {
   attempted = ''
   captureWorkoutWeather(store)
 }
-export function disableWorkoutWeather() {
+export function invalidateWorkoutWeather() {
+  const cancel = !!pending
   generation++; attempted = ''; pending = null
+  if (cancel) plugin().then(({ native }) => native.cancelWeather()).catch(() => {})
+}
+export function disableWorkoutWeather() {
+  invalidateWorkoutWeather()
   try { localStorage.removeItem(ENABLED); localStorage.removeItem(RESULT) } catch { /* unavailable storage */ }
-  plugin().then(({ native }) => native.cancelWeather()).catch(() => {})
 }
 export function captureWorkoutWeather(store, healthEnabled = true, retry = false) {
   const owner = ownerOf(store)
@@ -90,4 +94,16 @@ export function weatherForWorkout(store, workout) {
         value.observedAt < workout.start || value.observedAt > workout.end) return null
     return { celsius: value.celsius, humidity: value.humidity, observedAt: value.observedAt }
   } catch { return null }
+}
+
+// Capture follows the active workout, independently of the health read/write scheduler.
+export function startWorkoutWeather(store, enabled, onHealthChange) {
+  const capture = (retry = false) => captureWorkoutWeather(store, enabled() && store.getState().ready !== false, retry)
+  store.subscribe(() => capture())
+  onHealthChange(() => capture())
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) capture(true) })
+  import('@capacitor/app').then(({ App }) => App.addListener('appStateChange', ({ isActive }) => {
+    if (isActive) capture(true)
+  })).catch(() => {})
+  capture()
 }

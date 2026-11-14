@@ -2,7 +2,7 @@
 // stamp), what the sync merge keeps of it, what the history editor does with it, and the places
 // that must never carry it (copy as text, a routine saved from the workout, a plan file).
 import { describe, expect, it } from 'vitest'
-import { addWorkoutMedia, removeWorkoutMedia } from './workout-media.js'
+import { addWorkoutMedia, removeWorkoutMedia, restoreWorkoutMedia } from './workout-media.js'
 import { WORKOUT_MEDIA_MAX, workoutMediaOf, referencedHashes, referencedFiles, stateMediaRefs } from './media-refs.js'
 import { mergeStates } from './sync-merge.js'
 import { editCompletedSession, saveWorkoutEdit } from './session-edit.js'
@@ -80,6 +80,29 @@ describe('addWorkoutMedia / removeWorkoutMedia', () => {
     expect(addWorkoutMedia(S, { id: 'w1' }, photo(H(9)), 12)).toBe('added')
     expect(S.workouts[0].media.at(-1)).toEqual(photo(H(9)))
     expect(S.workouts[0].media[1]).toEqual(future)
+  })
+})
+
+describe('restoreWorkoutMedia (the Undo of a removal, #558)', () => {
+  it('puts the ref back where it was and stamps; a file already back, a missing workout or no ref change nothing', () => {
+    const S = state(workout({ media: [photo(H(1)), photo(H(3))], _ts: 1 }))
+    expect(restoreWorkoutMedia(S, { id: 'w1' }, photo(H(2)), 1, 50)).toBe(true)
+    expect(S.workouts[0].media.map(m => m.hash)).toEqual([H(1), H(2), H(3)])
+    expect(S.workouts[0]._ts).toBe(50)
+    expect(restoreWorkoutMedia(S, { id: 'w1' }, photo(H(2)), 0, 60)).toBe(false)
+    expect(restoreWorkoutMedia(S, { id: 'gone' }, photo(H(4)), 0, 60)).toBe(false)
+    expect(restoreWorkoutMedia(S, { id: 'w1' }, null, 0, 60)).toBe(false)
+    expect(S.workouts[0]._ts).toBe(50)
+  })
+  it('an index past the end, or none, appends; a removal and its undo round-trip the record', () => {
+    const before = workout({ media: [photo(H(1)), photo(H(2))] })
+    const S = state(structuredClone(before))
+    removeWorkoutMedia(S, { id: 'w1' }, H(1), 70)
+    restoreWorkoutMedia(S, { id: 'w1' }, photo(H(1)), 0, 71)
+    const { _ts, ...after } = S.workouts[0]
+    expect(after).toEqual(before)
+    restoreWorkoutMedia(S, { id: 'w1' }, photo(H(5)), 99, 72)
+    expect(S.workouts[0].media.at(-1).hash).toBe(H(5))
   })
 })
 

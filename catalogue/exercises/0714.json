@@ -3,14 +3,14 @@
   "name": "side plank v. 2",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "glutes",
     "shoulders"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A side plank variation held on one forearm. It builds the obliques and shoulder stability.",
   "instructions": [
     "Lie on your side and prop up on your forearm.",

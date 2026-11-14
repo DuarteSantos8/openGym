@@ -40,6 +40,7 @@ function install(sets) {
 const holdInto = set => vi.fn(elapsed => useStore.getState().update(s => { s.active.entries[0].sets[set].sec = elapsed }))
 
 beforeEach(() => {
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true
   vi.useFakeTimers()
   localStorage.clear()
   useUI.getState().stopRest()

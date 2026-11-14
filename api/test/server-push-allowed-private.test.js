@@ -37,7 +37,7 @@ async function startServer(t, allowedPrivateIps) {
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
   h.api = `http://127.0.0.1:${await boundPort(child, () => h.log)}`;
   h.subscribe = async endpoint => (await fetch(`${h.api}/api/push/subscribe`, {
-    method: 'POST', headers: cookie, body: JSON.stringify({ subscription: { endpoint, keys } })
+    method: 'POST', headers: { ...cookie, 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: { endpoint, keys } })
   })).status;
   return h;
 }

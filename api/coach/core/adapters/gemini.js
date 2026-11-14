@@ -3,6 +3,8 @@
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
 
+const versionOf = m => { const v = /^gemini-(\d+)(?:\.(\d+))?/.exec(m); return v ? Number(v[1]) * 100 + Number(v[2] || 0) : 0; };
+
 export const geminiSpec = {
   id: 'gemini',
   path: model => `/v1beta/models/${encodeURIComponent(model)}:generateContent`,
@@ -26,6 +28,14 @@ export const geminiSpec = {
     if (cand.finishReason && cand.finishReason !== 'STOP') return { error: `the model stopped early: ${cand.finishReason}` };
     const text = ((cand.content && cand.content.parts) || []).map(p => p.text || '').join('');
     return { text, truncated: false };
+  },
+  // After a refused model (#758): the newest plain Flash the key lists, since that is the one a
+  // free key can call; then the newest non-preview Gemini; then whatever text model is there.
+  preferModel: models => {
+    const newest = list => list.slice().sort((a, b) => versionOf(b) - versionOf(a))[0];
+    return newest(models.filter(m => /^gemini-[\d.]+-flash$/.test(m)))
+      || newest(models.filter(m => /^gemini-/.test(m) && !/preview|exp/.test(m)))
+      || models[0];
   },
   readModels: data => (data.models || [])
     .filter(m => !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent'))

@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A gymnastics-style hollow position on your back with arms and legs reaching away. It builds strong, braced abs.",
   "instructions": [
     "Lie on your back with arms overhead and legs straight.",

@@ -49,7 +49,7 @@ const beltOnLifter = id => {
 // body when the entry is flagged bodyweight — would score more help as a stronger lift. A 0
 // there is a row with no help entered, not a set done without any (history.js), and help at or
 // above body mass moved nothing: both are left unscored.
-const onLifter = entry => {
+export const onLifter = entry => {
   const bodyweight = entry.target?.bodyweight ?? entry.bodyweight
   return bodyweight == null ? isBw({ id: entry.id }) || beltOnLifter(entry.id) : !!bodyweight
 }

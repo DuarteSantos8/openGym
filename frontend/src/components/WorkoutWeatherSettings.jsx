@@ -5,7 +5,7 @@ import { t } from '../lib/i18n-core.js'
 import { workoutWeatherEnabled, enableWorkoutWeather, disableWorkoutWeather } from '../lib/workout-weather.js'
 
 export default function WorkoutWeatherSettings() {
-  const owner = useStore(s => JSON.stringify([s.sync?.server || 'local', s.user?.id || 'local']))
+  const owner = useStore(s => JSON.stringify([s.sync?.server || 'local', s.user?.id || 'local', !!s.isGuest?.()]))
   return <WeatherRow key={owner} />
 }
 function WeatherRow() {

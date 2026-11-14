@@ -9,6 +9,9 @@
     "hip flexors"
   ],
   "category": "stretching",
+  "needs": [
+    "bench"
+  ],
   "description": "Lie on a bench and let one leg hang across for a gravity-assisted hip stretch.",
   "instructions": [
     "Lie on your back on a bench.",

@@ -9,6 +9,9 @@
     "triceps"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying across or along a bench, you lower one dumbbell behind your head and pull it back over your chest. It works the chest and lats with a deep stretch.",
   "instructions": [
     "Lie flat on a bench with your head at one end and your feet on the floor.",

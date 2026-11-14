@@ -70,11 +70,13 @@ function renderTopSheet() {
   act(() => sheetRoot.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
   return sheetContainer
 }
+// The rarely used rows sit folded under More (MenuSheet's `more`, v1.4.4): open it like a user would.
+const unfold = c => { const m = c.querySelector('.menu-more'); if (m) act(() => m.click()); return c }
 const openHeaderMenu = () => {
   const more = container.querySelector('button[aria-label="Workout options"]')
   expect(more).toBeTruthy()
   act(() => more.click())
-  return renderTopSheet()
+  return unfold(renderTopSheet())
 }
 const headerItem = () => [...openHeaderMenu().querySelectorAll('.menu-item')]
   .find(it => it.querySelector('.tt')?.textContent === 'Don’t count for progression' && it.querySelector('.ss')?.textContent === HEADER_SUB)
@@ -159,6 +161,16 @@ describe('don’t count the whole workout for progression', () => {
     const picker = useUI.getState().sheets.at(-1)
     act(() => picker.render(picker.close).props.onPick(EXDB.find(e => e.id === SQUAT), true))
     expect(active().entries.map(e => [e.id, e.noProg])).toEqual([[BENCH, true], [SQUAT, true]])
+  })
+
+  // #592: the finish summary offers it to the routine, so the add marks it; the planned one is not.
+  it('an exercise added to a routine session is marked as added there', () => {
+    renderWorkout([entry(BENCH, 'main', 100)])
+    const add = [...container.querySelectorAll('button')].find(b => b.textContent.trim() === 'Add exercise')
+    act(() => add.click())
+    const picker = useUI.getState().sheets.at(-1)
+    act(() => picker.render(picker.close).props.onPick(EXDB.find(e => e.id === SQUAT), true))
+    expect(active().entries.map(e => [e.id, e.rid, e.addedInSession])).toEqual([[BENCH, 'main', undefined], [SQUAT, 'main', true]])
   })
 
   it('a routine added afterwards joins it, with its own prescription kept', () => {

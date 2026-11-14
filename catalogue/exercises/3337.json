@@ -3,14 +3,14 @@
   "name": "dumbbell side bridge",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "glutes",
     "shoulders"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A side plank with a dumbbell held on your hip or raised overhead. It trains the obliques and lateral stability.",
   "instructions": [
     "Lie on one side with your elbow under your shoulder and legs stacked.",

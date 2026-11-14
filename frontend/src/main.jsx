@@ -2,14 +2,28 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import { MOBILE } from './lib/mobile.js'
+import { startWorkoutWeather } from './lib/workout-weather.js'
+import { healthWritingEnabled, onHealthChange, startHealthScope } from './lib/health-sync.js'
 import { useStore } from './store/useStore.js'
-import { startAppleHealthSync } from './lib/apple-health.js'
 import { startMediaSync } from './lib/media-sync.js'
 import { startNativeKeyboard } from './lib/native-keyboard.js'
+// The Coach's and the admin dashboard's styles stay in the main stylesheet, in the place they
+// always had (before index.css), although their screens are now loaded on demand (App.jsx).
+import './admin.css'
+import './coach.css'
 import './index.css'
+import { hideBoot, handOverFromLaunchScreen } from './lib/boot.js'
+import { guardFocusZoom } from './lib/viewport-zoom.js'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.
+// A script that dies before the app draws would otherwise leave the boot logo lifting forever.
+window.addEventListener('error', hideBoot, { once: true })
+handOverFromLaunchScreen()
+
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+
+// The web build lets people pinch to zoom; on iOS a focused small field must not zoom the page.
+if (!MOBILE) guardFocusZoom()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode><App /></StrictMode>
@@ -18,7 +32,7 @@ createRoot(document.getElementById('root')).render(
 // The photos and videos of custom exercises, in every build (the phone and the demo included):
 // uploads of what the server lacks, the local clean-up, and the plan's files kept offline.
 startMediaSync(useStore)
-startAppleHealthSync(useStore)
+if (MOBILE) startWorkoutWeather(useStore, healthWritingEnabled, onHealthChange, startHealthScope)
 
 // Android 15 does not resize the page for the soft keyboard; the app says how much it covers and
 // this keeps the focused field above it. Idle everywhere else.

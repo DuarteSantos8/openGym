@@ -9,7 +9,7 @@
  * Rules, by field:
  *   - scalars and settings, `week`, `dayPlan`, `wc`, `reminder`, `queue`, `rotation`, …: each from
  *     the copy that changed it last by its own stamp in `edited` (stampEdits; `week`, `dayPlan`,
- *     exNotes and barWeights per day or per exercise), from the copy with the newer `_ts` when
+ *     exNotes and barWeights per day or per exercise, `programmes` per programme, `modules` per module), from the copy with the newer `_ts` when
  *     neither side stamped it or on a tie
  *   - equipProfiles, gymCards: union by id; of an id that both have, field by field as below
  *   - workouts, routines, customEx, equipProfiles, gymCards: of an id that both have, each field
@@ -36,10 +36,12 @@
  *     is the exception: the edit may have taken away the set the kept weight came from, so it
  *     is the best of the merged history and of the editing copy's own, and the other copy's
  *     can no longer bring a corrected typo back. exNotes, barWeights: key union
- *   - balanceOverrides, loadKind, plates, dbLoad, dumbbells, dayNotes: key union; of a key both
+ *   - balanceOverrides, loadKind, plates, dbLoad, dumbbells, stackWeights, exUnit, dayNotes, dayPhotos: key union; of a key both
  *     have, the entry set last by its own `_ts`, a clear included (mergeStampedMap), the newer
  *     copy's on a tie. For plates and dumbbells the key is the unit, so the inventory of one unit
  *     is kept whole, as last edited; for dayNotes the key is the date, so each day's note is its own
+ *   - advent: of the same year, the union of the doors opened and the challenges done (mergeAdvent)
+ *   - challenges: per month, the picks made first and the union of the ones done (mergeChallenges)
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
  * Two rules come before all of these:
@@ -78,12 +80,17 @@ import { bestWeightForEntry } from './history.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
+import { mergeAdvent } from './advent.js'
+import { mergeChallenges } from './challenges.js'
+import { mergeDay, dailyModeOf, settleAll } from './weigh-ins.js'
+import { applyExerciseMerges } from './exercise-merge.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
 // The maps whose every entry carries its own edit time (mergeStampedMap). dayNotes is a day's
 // note on a day off (lib/day-notes.js), one entry per date.
-export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes']
+// dayPhotos is a progress photo filed under a day (lib/day-photos.js), one entry per photo.
+export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged']
 
 /** The copy with the later `_ts`; on a tie the first argument (callers pass local first). */
 export const newerOf = (a, b) => ((b?._ts || 0) > (a?._ts || 0) ? b : a)
@@ -162,27 +169,24 @@ export function mergeWorkoutMedia(kept, other) {
 }
 const byDayStart = (a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1)
 
-// A recent import is not a recent measurement. A manual correction made after that
-// measurement wins even if the other device imported the sample later. Consumed measurement
-// metadata follows the correction so re-reading does not turn it back into an import.
-function preferredDailyWeight(a, b) {
-  const measured = e => e.src === 'apple-health' && Number.isFinite(e.m) && e.m > 0
-  let winner
-  if (measured(a) && measured(b) && a.m !== b.m) winner = a.m > b.m ? a : b
-  else if (measured(a) && !b.src && Number(b.t) >= a.m) winner = b
-  else if (measured(b) && !a.src && Number(a.t) >= b.m) winner = a
-  else winner = (Number(b.t) || 0) > (Number(a.t) || 0) ? b : a
-  const consumed = Math.max(Number(a.m) || 0, Number(b.m) || 0)
-  return !winner.src && consumed > 0 ? { ...winner, m: consumed } : winner
-}
-
-/** One entry per day; later edits win, with manual corrections protected from delayed Health imports. */
-export function mergeBodyweight(a = [], b = []) {
+/**
+ * One entry per day; where both have a day, the one edited later (`t`); sorted by day. A day with
+ * several weigh-ins (`ins`, lib/weigh-ins.js) joins both copies' readings instead, each reading
+ * as edited last, and leaves out the ones either copy removed; `mode` (S.bwDaily) picks the day's
+ * value from them.
+ */
+export function mergeBodyweight(a = [], b = [], mode = 'first') {
   const byDay = new Map()
   for (const e of [...list(a), ...list(b)]) {
     if (!e || e.d == null) continue
     const cur = byDay.get(e.d)
-    byDay.set(e.d, cur ? preferredDailyWeight(cur, e) : e)
+    // A weigh-in typed into openGym beats one read from the phone's health hub (`src`, lib/health-read.js)
+    // whichever is newer: the scale's reading is the fallback, never a correction of the user's own.
+    if (!cur) byDay.set(e.d, e)
+    else {
+      const m = mergeDay(cur, e, mode)
+      if (m) byDay.set(e.d, m); else byDay.delete(e.d)
+    }
   }
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }
@@ -229,6 +233,82 @@ export function stampWorkout(w, now = Date.now()) {
 
 const stampOf = v => (v && typeof v === 'object' ? Number(v._ts) || 0 : 0)
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
+
+// ---- The Coach's history (`coach.chat`, `coach.log`, `coach.snapshots`) -----------------------
+//
+// `coach` is one setting to the stamps (`edited.coach`), so the copy that changed it last used to
+// win it whole: a device that had sat on the Coach screen wrote one line into its older copy, and
+// the other device's messages, log entries and Undo snapshots were gone (#779). These three lists
+// only ever grow at the end, so they are joined instead: every entry of either copy once (by `id`,
+// a snapshot by when it was taken and for which proposal), in the order they were written (`at`),
+// and the newest few kept as lib/coach.js keeps them. The rest of `coach` (consent, profile,
+// cadence) still comes from the copy that changed it last.
+//
+// An Undo takes a snapshot off the ring. Its log entry names the snapshot it used (`snap`, or for
+// an older app the proposal it put back), and a snapshot so named never comes back from the copy
+// that still holds it: that would offer the same Undo twice.
+// The bounds of lib/coach.js (SNAPSHOT_MAX, LOG_MAX, CHAT_MAX, NAMESPACE_MAX), copied rather than
+// imported: coach.js pulls in the plan code, the merge must not. sync-merge.test.js checks them.
+export const COACH_CAPS = { chat: 40, log: 50, snapshots: 3 }
+const COACH_NAMESPACE_MAX = 256 * 1024
+export const snapshotKey = x => (isMap(x) ? (x.id != null ? String(x.id) : `${Number(x.at) || 0}|${x.proposalId ?? ''}`) : null)
+const coachKey = { chat: x => (isMap(x) && x.id != null ? String(x.id) : null), log: x => (isMap(x) && x.id != null ? String(x.id) : null), snapshots: snapshotKey }
+
+// `xs` then `ys`, each key once (first wins), in the order written: by `at`, and an entry without
+// one where it stood after its predecessor. Keyless entries stay, from `xs` only.
+function unionInTime(xs, ys, key) {
+  const seen = new Set(), out = []
+  let i = 0
+  for (const [from, l] of [[0, list(xs)], [1, list(ys)]]) {
+    let at = 0
+    for (const x of l) {
+      if (x == null) continue
+      const k = key(x)
+      if (Number(x?.at) > 0) at = Number(x.at)
+      if (k == null) { if (!from) out.push({ x, at, from, i: i++ }); continue }
+      if (seen.has(k)) continue
+      seen.add(k)
+      out.push({ x, at, from, i: i++ })
+    }
+  }
+  out.sort((a, b) => a.at - b.at || a.from - b.from || a.i - b.i)
+  return out.map(e => e.x)
+}
+
+/**
+ * The Coach namespace of two copies: `win`'s (the copy that changed it last), with its chat, log
+ * and Undo snapshots joined with `other`'s (see above). Returns a new object, or `win` as it is
+ * when either side has no namespace to join.
+ */
+export function mergeCoach(win, other) {
+  if (!isMap(win) || !isMap(other)) return win === undefined ? win : clone(win)
+  const out = clone(win)
+  for (const f of ['chat', 'log', 'snapshots']) {
+    if (!Array.isArray(win[f]) && !Array.isArray(other[f])) continue
+    out[f] = clone(unionInTime(win[f], other[f], coachKey[f]))
+  }
+  // Snapshots an Undo on either side already used.
+  const used = new Set(), byProposal = []
+  for (const e of list(out.log)) {
+    if (!isMap(e) || e.kind !== 'revert') continue
+    if (e.snap != null) used.add(String(e.snap))
+    else if (e.proposalId != null) byProposal.push(e)
+  }
+  if (out.snapshots) {
+    out.snapshots = out.snapshots.filter(x => !used.has(snapshotKey(x)) &&
+      !byProposal.some(e => x?.proposalId === e.proposalId && (Number(x?.at) || 0) <= (Number(e.at) || 0)))
+  }
+  for (const [f, max] of Object.entries(COACH_CAPS)) if (Array.isArray(out[f]) && out[f].length > max) out[f] = out[f].slice(-max)
+  // The namespace's own size guard (lib/coach.js trim), the same oldest-first order.
+  let guard = 0
+  while (JSON.stringify(out).length > COACH_NAMESPACE_MAX && guard++ < 60) {
+    if (list(out.chat).length > 8) out.chat.shift()
+    else if (list(out.snapshots).length > 1) out.snapshots.shift()
+    else if (list(out.log).length > 1) out.log.shift()
+    else break
+  }
+  return out
+}
 
 // ---- Entries merged field by field ----------------------------------------------------------
 //
@@ -416,7 +496,7 @@ const RESET_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: bodyweightKey,
   measurements: bodyweightKey, gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
 }
-const RESET_MAPS = ['exNotes', 'barWeights', ...STAMPED_MAPS]
+const RESET_MAPS = ['exNotes', 'barWeights', 'exAliases', 'programmes', ...STAMPED_MAPS]
 /** An entry's name in resetIds: a workout's id (or day and start), a weigh-in's day and time, … */
 export const entryKey = (field, x) => String(RESET_LISTS[field](x))
 // Per field, the most names a reset keeps — far more workouts than anyone logs, and a bound on
@@ -475,6 +555,8 @@ export function sinceReset(S, at, ids) {
     out.gymCards = []
     out.favEx = []
     out.exNotes = {}
+    out.exAliases = {}
+    out.programmes = {}
     out.barWeights = {}
     for (const f of STAMPED_MAPS) {
       out[f] = Object.fromEntries(Object.entries(isMap(S[f]) ? S[f] : {}).filter(([, v]) => after(stampOf(v))))
@@ -489,6 +571,13 @@ export function sinceReset(S, at, ids) {
     }
   }
   out.exWeights = ex
+  // The Coach's history is joined, not replaced (mergeCoach), so what this copy said to the Coach
+  // before the reset goes here: only lines, log entries and snapshots from after it stay.
+  if (isMap(out.coach)) {
+    for (const f of ['chat', 'log', 'snapshots']) {
+      if (Array.isArray(out.coach[f])) out.coach[f] = out.coach[f].filter(x => (Number(x?.at) || 0) > at)
+    }
+  }
   // The reset copy's settings, plan and unit win whatever this copy's own stamps say (the file's
   // header): stamps from before the reset would otherwise outrank the fresh profile's defaults,
   // a unit switch made long ago would bring the old unit back over the reset's.
@@ -626,10 +715,13 @@ function applyDeletions(S, deleted) {
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
-  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes',
+  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged',
 ])
-// Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
-const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights'])
+// Stamped per key instead of whole: one day of the plan, one exercise's note or bar, one programme
+// (lib/programmes.js; the running one, `programme`, is a plain setting).
+// `modules` (lib/modules.js): one switch per feature area, so Body off on the phone and Seasonal off
+// on the laptop both hold.
+const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'programmes', 'modules'])
 // The order of the routines, as the list shows them, is a choice of its own (`edited.routineOrder`):
 // a reorder on one device was lost to the other's whole copy whenever that one was newer.
 export const ORDER_KEY = 'routineOrder'
@@ -831,7 +923,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       })
     }
   }
-  out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
+  out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight, dailyModeOf(out)).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
@@ -857,7 +949,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     if (kept) out.exWeights[id] = clone(kept)
     else delete out.exWeights[id]
   }
-  for (const f of ['exNotes', 'barWeights']) {
+  for (const f of ['exNotes', 'barWeights', 'exAliases', 'programmes', 'modules']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
   // The plate-loading choices (lib/plates.js) are stamped the same way: an exercise's loading and
@@ -880,7 +972,20 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       if (m && !(k in bumps)) undone[k] = clone(m)
     }
     if (Object.keys(undone).length) out.undone = undone; else delete out.undone
+    // The Coach's conversation, log and Undo snapshots from both copies (mergeCoach), whichever
+    // changed `coach` last.
+    if (isMap(out.coach)) {
+      const other = sameJSON(out.coach, n.coach) ? o.coach : n.coach
+      if (isMap(other)) out.coach = mergeCoach(out.coach, other)
+    }
   }
+  // The advent calendar (lib/advent.js): a door opened on either device stays open, and so does a
+  // ticked challenge, whichever copy changed the field last. A calendar of a later year wins.
+  const advent = mergeAdvent(n.advent, o.advent)
+  if (advent) out.advent = advent
+  // The monthly challenges (lib/challenges.js): a badge earned on either device stays earned.
+  const challenges = mergeChallenges(n.challenges, o.challenges)
+  if (challenges) out.challenges = challenges
   if (deleted) out.deleted = deleted; else delete out.deleted
   out._ts = Math.max(a._ts || 0, b._ts || 0)
   if (resetAt) out.resetAt = resetAt
@@ -893,6 +998,11 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   delete out._prior
   // The accent fields end up in CSS: whatever either copy brought, only a clean value goes on.
   sanitizeAccent(out)
+  // The day's value of a day with several weigh-ins follows the daily-value setting as merged.
+  settleAll(out)
+  // An exercise merged into another on either copy (#656, lib/exercise-merge.js exMerged): what
+  // the other copy still logged against it moves over too.
+  applyExerciseMerges(out)
   return out
 }
 
@@ -1040,7 +1150,13 @@ export function stampChange(prev, next, wall = Date.now()) {
   for (const w of list(next.workouts)) {
     if (!w || typeof w !== 'object' || w.id == null || w._ts == null) continue
     const old = before.get(w.id)
-    if (old && w._ts !== old._ts) stampEntry(old, w, now)
+    if (!old || w._ts === old._ts) continue
+    // A save that changed nothing is not an edit: it keeps the stamp it had. Re-stamped, the
+    // untouched copy outlived a removal made in between on another device and came back with
+    // whatever field another copy had changed before that removal, but only when those two met
+    // first (sync-merge.property.test.js: three copies, one deleting).
+    if (sameEntry(old, w)) { if (old._ts == null) delete w._ts; else w._ts = old._ts; continue }
+    stampEntry(old, w, now)
   }
   // Settings maps whose entries carry their own stamp (mergeStampedMap): an entry the change
   // re-stamped takes the change's time.
@@ -1057,7 +1173,19 @@ export function stampChange(prev, next, wall = Date.now()) {
     for (const e of list(next[f])) {
       if (!e || typeof e !== 'object' || e.d == null || e.t == null) continue
       const old = before.get(e.d)
-      if (!old || old.t !== e.t) e.t = Math.max(Number(e.t) || 0, now)
+      if (old && old.t === e.t) continue
+      const was = Number(e.t) || 0
+      e.t = Math.max(was, now)
+      // A day with several weigh-ins (lib/weigh-ins.js): the readings and removals this change
+      // made take the same time, so the day's `t` stays the one its readings explain (an older
+      // app's edit is told apart by exactly that, absorbLegacyEdit).
+      if (f !== 'bodyweight' || !Array.isArray(e.ins) || e.t === was) continue
+      const prior = new Map(list(old?.ins).filter(r => r && r.id != null).map(r => [String(r.id), r]))
+      for (const r of e.ins) {
+        const p = r && prior.get(String(r.id))
+        if (r && (!p || p.t !== r.t || p.w !== r.w || p.at !== r.at)) r.t = e.t
+      }
+      if (isMap(e.gone)) for (const k of Object.keys(e.gone)) if (Number(e.gone[k]) !== Number(old?.gone?.[k])) e.gone[k] = e.t
     }
   }
   // A routine put back by an Undo keeps the edit time it had: what puts it back is the add-back
@@ -1141,7 +1269,7 @@ export function localExtras(local, server) {
   const setup = ['gymCards', 'equipProfiles'].reduce((n, f) => n + list(local?.[f]).filter(x => x && x.id != null && !ids(f).has(x.id)).length, 0) +
     list(local?.measurements).filter(e => e && e.d != null && !measured.has(e.d)).length +
     Object.entries(isMap(local?.dayNotes) ? local.dayNotes : {}).filter(([k, v]) => readNote(v) && !readNote(server?.dayNotes?.[k])).length +
-    keysNew('week') + keysNew('dayPlan') + keysNew('exNotes')
+    keysNew('week') + keysNew('dayPlan') + keysNew('exNotes') + keysNew('exAliases') + keysNew('programmes')
   return {
     workouts: list(local?.workouts).filter(w => !have.has(workoutKey(w))).length,
     bodyweight: list(local?.bodyweight).filter(e => e && e.d != null && (!days.has(e.d) || differs(e, days.get(e.d)))).length,

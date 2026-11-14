@@ -3,9 +3,8 @@
   "name": "wipers (straight leg)",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "lower abs",
     "hip flexors"
   ],

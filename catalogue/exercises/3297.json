@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A gymnastics hold hanging from a bar with the body horizontal and facing down. It trains the upper back, shoulders and core.",
   "instructions": [
     "Start by hanging from a pull-up bar with an overhand grip, hands slightly wider than shoulder-width apart.",

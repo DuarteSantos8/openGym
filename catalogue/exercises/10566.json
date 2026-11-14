@@ -3,9 +3,9 @@
   "name": "half kneeling torso twist",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "hip flexors",
     "glutes",
     "upper back"

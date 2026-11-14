@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A bench press with dumbbells held in a neutral grip that is easier on the shoulders.",
   "instructions": [
     "Lie on a bench holding dumbbells with palms facing each other.",

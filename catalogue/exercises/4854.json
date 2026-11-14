@@ -3,9 +3,8 @@
   "name": "barbell sitting on floor oblique twist",
   "bodyPart": "waist",
   "equipment": "barbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "hip flexors"
   ],

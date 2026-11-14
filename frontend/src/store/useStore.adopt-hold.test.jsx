@@ -11,7 +11,7 @@
 
    Real modules: store/useStore.js, lib/api.js, lib/remote.js, lib/mobile.js. Mocked: the Capacitor
    plugins (an in-memory Directory.Data), the question sheet, and fetch, which plays the server. */
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => {
   vi.stubEnv('VITE_MOBILE', '1')
@@ -50,7 +50,10 @@ const res = (status, body) => ({
   text: async () => body,
 })
 const json = (status, body) => res(status, JSON.stringify(body))
-const sleep = ms => new Promise(r => setTimeout(r, ms))
+// The store's timers (the 800 ms file mirror, the 1.5 s push debounce) run on a fake clock, so
+// "wait for the debounce" is a clock moved past it rather than seconds of real sleep, and
+// a busy machine cannot make it late. Promises still settle for real between the steps.
+const sleep = ms => vi.advanceTimersByTimeAsync(ms)
 const ids = xs => (xs || []).map(x => x.id)
 const deferred = () => { let resolve; const p = new Promise(r => { resolve = r }); return { p, resolve } }
 
@@ -87,8 +90,9 @@ function serverWith(doc) {
 // The account: twelve workouts at rev 5. The phone: local mode, one workout of its own, newer.
 const TWELVE = Array.from({ length: 12 }, (_, i) => workout('s' + i, `2026-09-${String(i + 1).padStart(2, '0')}`))
 const SERVER = { _ts: 1000, _rev: 5, unit: 'kg', workouts: TWELVE, routines: [], bodyweight: [] }
-let DEF
-beforeAll(async () => { DEF = (await import('./useStore.js')).DEF })
+// At collection, not in a hook: the cold transform of the store's imports (the 1 MB exercise
+// table among them) takes seconds, and under a parallel run it went past the hook's timeout.
+const { DEF } = await import('./useStore.js')
 function localPhone() {
   h.files.clear()
   localStorage.clear()
@@ -116,13 +120,14 @@ async function everySyncTrigger(useStore) {
   await sleep(1700)
 }
 
-beforeEach(() => { installFetch(); h.ask = null })
+beforeEach(() => { vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }); installFetch(); h.ask = null })
 afterEach(async () => {
   window.dispatchEvent(new Event('pagehide'))
   await sleep(20)
   for (const s of stores) s.setState({ user: null, ready: false })
   stores = []
   localStorage.clear()
+  vi.useRealTimers()
 })
 
 describe('pairing a phone: nothing syncs while the question is open', () => {

@@ -28,15 +28,17 @@ function harness() {
   const calls = { closed: [], toasts: [], back: 0, exit: 0 }
   let sheets = []
   let now = 1000
+  let location = { pathname: '/settings', key: 'initial' }
   const handler = makeBackHandler({
     getSheets: () => sheets,
+    getLocation: () => location,
     closeSheet: id => { calls.closed.push(id); sheets = sheets.filter(s => s.id !== id) },
     toast: m => calls.toasts.push(m),
     goBack: () => { calls.back++ },
     exit: () => { calls.exit++ },
     now: () => now,
   })
-  return { calls, handler, setSheets: s => { sheets = s }, tick: ms => { now += ms } }
+  return { calls, handler, setSheets: s => { sheets = s }, setLocation: l => { location = l }, tick: ms => { now += ms } }
 }
 
 describe('makeBackHandler', () => {
@@ -99,5 +101,48 @@ describe('makeBackHandler', () => {
   it('treats a missing event payload as no history', () => {
     const h = harness()
     expect(h.handler()).toBe('arm-exit')
+  })
+})
+
+// Tab history is not a parent page: Android must be able to leave from any root tab,
+// even after earlier navigation has left entries below it in the WebView.
+describe('back from a root tab', () => {
+  it.each(['/home', '/plan', '/stats', '/library', '/stats/', '/PLAN', '/'])(
+    'arms exit on %s even when the WebView can go back', pathname => {
+      expect(decideBack({ pathname, canGoBack: true, exitArmed: false })).toBe('arm-exit')
+      expect(decideBack({ pathname, canGoBack: true, exitArmed: true })).toBe('exit')
+    })
+
+  it.each(['/plan/r/one', '/settings', '/settings/workout', '/history', '/workout', '/coach'])(
+    'still goes back from the child or workout page %s', pathname => {
+      expect(decideBack({ pathname, canGoBack: true, exitArmed: false })).toBe('history')
+    })
+
+  it('closes a sheet on a root tab before offering to exit', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/home', key: 'home' })
+    h.setSheets([{ id: 'sheet' }])
+    expect(h.handler({ canGoBack: true })).toBe('sheet')
+    expect(h.calls.back).toBe(0)
+    expect(h.calls.toasts).toHaveLength(0)
+    expect(h.handler({ canGoBack: true })).toBe('arm-exit')
+    h.tick(100)
+    expect(h.handler({ canGoBack: true })).toBe('exit')
+    expect(h.calls.exit).toBe(1)
+    expect(h.calls.back).toBe(0)
+  })
+
+  it('requires a fresh exit warning after switching tabs, including a round trip', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/home', key: 'home-1' })
+    expect(h.handler({ canGoBack: true })).toBe('arm-exit')
+    h.tick(100)
+    h.setLocation({ pathname: '/plan', key: 'plan' })
+    h.setLocation({ pathname: '/home', key: 'home-2' })
+    expect(h.handler({ canGoBack: true })).toBe('arm-exit')
+    expect(h.calls.exit).toBe(0)
+    expect(h.calls.toasts).toHaveLength(2)
+    h.tick(100)
+    expect(h.handler({ canGoBack: true })).toBe('exit')
   })
 })

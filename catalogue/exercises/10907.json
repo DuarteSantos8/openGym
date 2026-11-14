@@ -3,13 +3,14 @@
   "name": "bodyweight half split squat hold",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "hamstrings",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "hamstrings",
     "glutes",
     "calves"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "A half split position that stretches the back of the front leg while you sit back on the rear leg.",
   "instructions": [
     "Kneel on one knee with the other leg extended in front, heel on the floor.",

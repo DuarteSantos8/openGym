@@ -10,6 +10,7 @@ import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exercisePicker } from './sheets.jsx'
 import Library from './views/Library.jsx'
+import { registerExerciseAliases } from './lib/exercise-aliases.js'
 import { EXDB, searchExercises } from './lib/exercises.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -31,11 +32,15 @@ function type(el, value) {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 const chip = (host, text) => [...host.querySelectorAll('.chips .chip')].find(b => b.textContent.trim() === text)
+// Every body part again: the picker's "All" chip, or in the Library (one filter row since 1.4.5,
+// P7) a second tap on the chosen body part.
+const allParts = host => chip(host, 'All') || host.querySelector('.lib-filters .chip.on[aria-pressed="true"]')
 const count = host => host.querySelector('.search .search-count')
 
 beforeEach(() => {
   useUI.setState({ sheets: [], toastMsg: '' })
   useStore.setState({ S: structuredClone(DEF), user: null })
+  registerExerciseAliases({})
   document.body.innerHTML = ''
 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
@@ -48,6 +53,37 @@ describe('exercise search result count', () => {
     ['Library', () => mount(<MemoryRouter><Library /></MemoryRouter>)],
     ['exercise picker', () => { exercisePicker(vi.fn()); return renderTopSheet() }],
   ]) {
+    it(`${where}: finds aliases, follows edits and clears, and keeps filters`, () => {
+      const host = open()
+      const input = host.querySelector('.search input')
+      const update = fn => act(() => useStore.getState().update(fn))
+      update(s => {
+        s.exAliases = { '1162': ['Zentara lift'] }
+        s.customEx = [{ id: 'calias', n: 'Custom shoulder press', bp: 'shoulders', eq: 'barbell', custom: true, aliases: ['Harbour lift'] }]
+      })
+      for (const query of ['Zentara lift', 'ZENTARA LIFT', 'zentara', 'lift zentara', 'zentara barbell']) {
+        act(() => type(input, query))
+        expect(count(host).textContent).toBe('1')
+        expect(host.textContent.toLowerCase()).toContain('barbell standing military press')
+      }
+      act(() => type(input, 'Harbour lift'))
+      expect(count(host).textContent).toBe('1')
+      expect(host.textContent).toContain('Custom shoulder press')
+      act(() => type(input, 'Zentara lift'))
+      act(() => chip(host, 'neck').click())
+      expect(count(host).textContent).toBe('0')
+      act(() => allParts(host).click())
+      expect(count(host).textContent).toBe('1')
+      update(s => { s.exAliases['1162'] = ['Summit lift'] })
+      expect(count(host).textContent).toBe('0')
+      act(() => type(input, 'Summit lift'))
+      expect(count(host).textContent).toBe('1')
+      update(s => { s.exAliases['1162'] = [] })
+      expect(count(host).textContent).toBe('0')
+      act(() => type(input, 'barbell standing military press'))
+      expect(Number(count(host).textContent)).toBeGreaterThan(0)
+    })
+
     it(`${where}: appears with a search, follows it, and goes when the search is cleared`, () => {
       const host = open()
       const input = host.querySelector('.search input')
@@ -74,7 +110,7 @@ describe('exercise search result count', () => {
       const neck = EXDB.filter(e => e.bp === 'neck').length
       expect(Number(count(host).textContent)).toBe(neck)
       const one = EXDB.find(e => searchExercises(EXDB, e.n).length === 1)
-      act(() => chip(host, 'All').click())
+      act(() => allParts(host).click())
       act(() => type(host.querySelector('.search input'), one.n))
       expect(count(host).textContent).toBe('1')
       expect(count(host).getAttribute('aria-label')).toBe('1 exercise')

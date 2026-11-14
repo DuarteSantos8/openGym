@@ -3,8 +3,11 @@
    tool call without a restart. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { applyExerciseMerges } from '../../frontend/src/lib/exercise-merge.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+// Whether a data directory was asked for, as opposed to the ./data guess.
+const DATA_SET = !!process.env.OPENGYM_DATA
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined
@@ -12,6 +15,7 @@ let _db = undefined
 let _uid = null
 let _watcher = null
 let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
+let _seeded = false     // a test's in-memory state, never compared with the disk
 
 // null means one thing only: the file is not there (an account that never synced from a device).
 // Every other failure — no permission on the mount, a truncated or corrupt file — is a real fault,
@@ -90,7 +94,7 @@ export function init() {
   const file = stateFile(_uid)
   if (fs.existsSync(file)) {
     _state = readJsonOrNull(file)
-    if (_state) _state = Object.assign({}, defaultsShape(), _state)
+    if (_state) _state = shaped(_state)
     try { _loadedMtime = fs.statSync(file).mtimeMs } catch {}
   }
   if (_watcher) _watcher.close()
@@ -119,18 +123,24 @@ export function getState() {
   // Re-read if the file's mtime changed since our last load — covers watcher omissions and
   // platforms with no fs.watch.
   let mtime
-  try { mtime = fs.statSync(file).mtimeMs } catch {
-    return _state === undefined ? null : _state
+  try { mtime = fs.statSync(file).mtimeMs } catch (e) {
+    if (_seeded) return _state
+    // Gone (the account was deleted, say): without a watcher the cached profile used to be
+    // served on and on. Anything else gets the read below, which reports it as the fault it is.
+    if (e.code === 'ENOENT') { _state = null; _loadedMtime = 0; return null }
+    mtime = NaN
   }
   if (_state === undefined || mtime !== _loadedMtime) {
     const fresh = readJsonOrNull(file)
     if (fresh) {
       // Same shape the frontend builds on pullState — defaults merged with stored state so any
       // field the app added since the snapshot was last saved shows up undefined-safe.
-      _state = Object.assign({}, defaultsShape(), fresh)
+      _state = shaped(fresh)
       _loadedMtime = mtime
-    } else if (_state === undefined) {
-      _state = null  // no state file at all — never signed in on a device
+    } else {
+      // No state file at all (never signed in on a device), or it went between stat and read.
+      _state = null
+      _loadedMtime = 0
     }
   }
   return _state
@@ -145,13 +155,44 @@ export function getUser() {
 
 export const dataDir = () => DATA_DIR
 
+// The profile this server is set up for, which log_workout holds a token against: OPENGYM_UID
+// when it is given, whether or not its data is readable here, else the one the data directory
+// names. null only when nothing names one: no OPENGYM_UID, no OPENGYM_DATA and no ./data, the
+// remote-server setup. A data directory that was asked for and cannot be read, or that holds
+// several profiles, throws: a broken mount is no licence to write to whichever profile the token is.
+export function localUid() {
+  if (_uid !== null) return _uid
+  const envUid = (process.env.OPENGYM_UID || '').trim()
+  if (envUid) return envUid
+  if (!DATA_SET && !fs.existsSync(DATA_DIR)) return null
+  init()
+  return _uid
+}
+
+// Drop the cached state, so the next read sees a write log_workout just made without waiting for
+// the watcher. Only meaningful when this data directory is the one the server writes.
+export function invalidate() {
+  _state = undefined
+  _loadedMtime = 0
+}
+
 // Test-only: work against a passed-in state, not the disk.
 export function _seedStateForTests(state) {
   _uid = 'test-uid'
   _db = { users: [{ id: _uid, name: 'Test', created: '2026-07-26T00:00:00.000Z' }], creds: [], subs: [], invites: [] }
   _state = state
   _loadedMtime = Number.MAX_SAFE_INTEGER   // never re-read from disk in a test
+  _seeded = true
   if (_watcher) { _watcher.close(); _watcher = null }
+}
+
+// A stored profile as the tools read it: the app's defaults under it, and an exercise merged into
+// another in the app (#656, lib/exercise-merge.js) read as the one it went into wherever a copy
+// still names it, the way the app's own copies are brought in line when they meet.
+function shaped(stored) {
+  const st = Object.assign({}, defaultsShape(), stored)
+  try { applyExerciseMerges(st) } catch { /* the copy as stored, then */ }
+  return st
 }
 
 function defaultsShape() {

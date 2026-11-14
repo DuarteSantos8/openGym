@@ -32,10 +32,61 @@ function routineIdsOf(w) {
 function nameParts(w) {
   return String(w.name || '').split(' + ');
 }
-function queueDone(S, id, startsOn) {
-  const currentName = (S.routines || []).find(r => r?.id === id)?.name;
-  return (S.workouts || []).some(w => routineIdsOf(w).includes(id)
-    && ((w.start ?? 0) >= S.queue.since || (S.queue.strict !== true && String(w.d || '') >= startsOn && nameParts(w).includes(currentName))));
+// The reminder tick runs everything below every ten seconds for each profile with a reminder on,
+// over whatever its state file holds: a queue, routines and workouts of any length a 5 MB PUT
+// allows. So each function reads each list once and looks things up in Sets, never walking one
+// list inside a walk of another. The nested walks (indexOf inside filter, the workouts once per
+// session, the routines once per weekday entry) held the event loop for minutes on a crafted
+// file, and every other user's requests and reminders waited behind it.
+//
+// The nudge (nudge.js) then asks these functions about up to fifteen days of one state, and each
+// answer worked the queue out again: a dedupe over every id in `S.queue.ids`, a Set of every
+// routine id, and doneIds' Sets of the same. Near the 5 MB limit that was seconds per nudge, and
+// GET /api/nudge-check runs one whenever a signed-in client asks. What they work out depends only
+// on the queue, the routines and the zone, so stateQueue does it once per state and keeps it while
+// those are the same objects. A state read from disk is never edited in place; the list lengths,
+// the week's dates and the zone are compared too, so a caller that adds to a list or moves the
+// week between questions gets fresh answers.
+const derived = new WeakMap();
+function stateQueue(S) {
+  const q = S.queue;
+  if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
+  const routines = S.routines, tz = S.reminder?.tz;
+  const hit = derived.get(q);
+  if (hit && hit.routines === routines && hit.routineCount === (routines?.length ?? 0) && hit.ids === q.ids
+    && hit.idCount === q.ids.length && hit.rawStartsOn === q.startsOn && hit.since === q.since && hit.tz === tz) return hit;
+  const known = new Set((routines || []).map(r => r?.id));
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, tz);
+  // First valid occurrence of each id — the same normalization as the frontend's queueOf.
+  const ids = [...new Set(q.ids)].filter(id => known.has(id));
+  const want = new Set(ids), names = new Map();
+  for (const r of routines || []) if (want.has(r?.id) && !names.has(r.id)) names.set(r.id, r.name);
+  const entry = {
+    routines, routineCount: routines?.length ?? 0, ids: q.ids, idCount: q.ids.length,
+    rawStartsOn: q.startsOn, since: q.since, tz, known,
+    queue: ids.length ? { ids, startsOn, want, names } : null,
+  };
+  derived.set(q, entry);
+  return entry;
+}
+// The sessions of `q` that count as done under the DONE RULE, in one pass over the workouts. A
+// session's name is that of the first routine with its id, as the rule reads it. The pass stops
+// once every session is done.
+function doneIds(S, q) {
+  const { want, names } = q, done = new Set();
+  for (const w of S.workouts || []) {
+    if (done.size === want.size) break;
+    const ids = routineIdsOf(w);
+    const byClock = (w.start ?? 0) >= S.queue.since;
+    const byName = S.queue.strict !== true && String(w.d || '') >= q.startsOn;
+    if (!byClock && !byName) continue;
+    let parts;
+    for (const id of ids) {
+      if (!want.has(id) || done.has(id)) continue;
+      if (byClock || (parts ??= nameParts(w)).includes(names.get(id))) done.add(id);
+    }
+  }
+  return done;
 }
 // The calendar date of an instant where the USER is. The frontend's fallback for a missing
 // startsOn is the device's local date of the apply; the closest thing here is the zone the
@@ -53,13 +104,7 @@ function dayIn(ms, tz) {
 // deleted is dropped from the week (the frontend's queue.js does the same — it could never be
 // started or logged).
 function queueOf(S) {
-  const q = S.queue;
-  if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
-  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
-  // First valid occurrence of each id — the same normalization as the frontend's queueOf.
-  const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && (S.routines || []).some(r => r?.id === id));
-  if (!ids.length) return null;
-  return { ids, startsOn };
+  return stateQueue(S)?.queue ?? null;
 }
 // The reminder tick only ever asks "what's next right now" — there is no separate "today" to
 // preview a different date against, so `today` in the spec's `next(iso, today)` is just `iso`.
@@ -68,11 +113,14 @@ function queueOf(S) {
 function queueNext(S, iso) {
   const q = queueOf(S);
   if (!q || iso < q.startsOn) return null;
-  const remaining = q.ids.filter(id => !queueDone(S, id, q.startsOn));
-  const pins = Object.entries(S.dayPlan || {}).filter(([d, id]) => d >= iso && remaining.includes(id));
+  const done = doneIds(S, q);
+  const remaining = q.ids.filter(id => !done.has(id));
+  const open = new Set(remaining);
+  const pins = Object.entries(S.dayPlan || {}).filter(([d, id]) => d >= iso && open.has(id));
   const here = pins.find(([d]) => d === iso);
   if (here) return here[1];
-  return remaining.find(id => !pins.some(([, id2]) => id2 === id)) ?? null;
+  const pinned = new Set(pins.map(([, id]) => id));
+  return remaining.find(id => !pinned.has(id)) ?? null;
 }
 
 // What a per-date override pointing at `id` means for the queue: 'open' — a pin on a session
@@ -82,7 +130,7 @@ function queueNext(S, iso) {
 export function pinState(S, id) {
   const q = queueOf(S);
   if (!q || !id || !q.ids.includes(id)) return null;
-  return queueDone(S, id, q.startsOn) ? 'done' : 'open';
+  return doneIds(S, q).has(id) ? 'done' : 'open';
 }
 
 // A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
@@ -104,12 +152,20 @@ export function effectiveRoutineId(S, iso) {
   // The planner's weekday pointers stay hidden on a live queue day even when it has no session for
   // it (every remaining one pinned to another day): those sessions have their days.
   const live = queueLiveOn(S, iso);
-  return [].concat(S.week?.[wd] || []).find(id => S.routines?.some(r => r?.id === id) && !(live && S.queue.ids.includes(id))) || null;
+  const list = [].concat(S.week?.[wd] || []);
+  if (!list.length) return null;
+  const sq = stateQueue(S);
+  const known = sq ? sq.known : new Set((S.routines || []).map(r => r?.id));
+  // A live queue has its known ids in `want`, and only known ids are looked up in it.
+  const queued = live ? sq.queue.want : null;
+  return list.find(id => known.has(id) && !(live && queued.has(id))) || null;
 }
 
 // Is `iso` a day the queue speaks for, with sessions still to do? (`today === iso` here, so
 // "the queue's day" is any day from startsOn on.)
 export function queueLiveOn(S, iso) {
   const q = queueOf(S);
-  return !!q && iso >= q.startsOn && q.ids.some(id => !queueDone(S, id, q.startsOn));
+  if (!q || iso < q.startsOn) return false;
+  const done = doneIds(S, q);
+  return q.ids.some(id => !done.has(id));
 }

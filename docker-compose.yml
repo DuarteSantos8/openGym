@@ -55,7 +55,8 @@ services:
       # Docker's embedded DNS. Only ever needs changing on a runtime that is not Docker.
       - RESOLVER=${RESOLVER:-127.0.0.11}
       # Empty drops the CF-Connecting-IP header, so a direct client cannot forge the address
-      # the activity log records. Cloudflare users set CF_CONNECTING_IP=$$http_cf_connecting_ip.
+      # the activity log records. Cloudflare users set CF_CONNECTING_IP='$http_cf_connecting_ip'
+      # in .env, single quotes included, or Compose expands it to an empty string.
       - CF_CONNECTING_IP=${CF_CONNECTING_IP:-}
       # Subpath deployments behind a proxy that passes its prefix through ("/gym", no trailing
       # slash). Empty serves the app at the site root, which is what it has always done; a proxy

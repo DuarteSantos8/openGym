@@ -39,7 +39,7 @@ function mount(workouts = [], routines = []) {
 const slots = () => useStore.getState().S.routines[0].ex
 // Tap the first row, then Replace on its settings sheet: the picker it opens is returned.
 function openReplace() {
-  act(() => host.querySelector('[data-routine-row] .item').click())
+  act(() => host.querySelector('[data-routine-row] .item .tap-main').click())
   const onReplace = sheets.exConfigSheet.mock.calls[0][6]
   expect(onReplace).toBeTypeOf('function')
   act(() => onReplace())

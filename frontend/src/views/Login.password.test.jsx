@@ -79,7 +79,7 @@ describe('Login with password sign-in', () => {
     const page = mount(<Login />)
     expect(page.textContent).toContain("This browser doesn't support passkeys. Sign in with your name and password instead.")
     expect(page.textContent).not.toContain('Try a browser or device with passkey support.')
-    expect(buttons(page)).toEqual(['Sign in with password', 'Create new profile'])
+    expect(buttons(page)).toEqual(['Sign in with password', 'Create new profile', 'Lost access?'])
     // Creating a profile here can only mean a password: no passkey/password choice to make.
     act(() => button(page, 'Create new profile').click())
     const sheet = mount(mocks.sheets[0](() => {}))

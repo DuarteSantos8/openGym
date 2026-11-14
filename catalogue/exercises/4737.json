@@ -3,9 +3,9 @@
   "name": "dumbbell floor wiper",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "hip flexors"
   ],

@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A push-up held in place at the top or bottom. It builds chest, arm and core strength.",
   "instructions": [
     "Start in a straight-arm plank with hands under your shoulders.",

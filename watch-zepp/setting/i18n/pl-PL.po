@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Adres serwera"
+
+msgid "code"
+msgstr "Kod parowania"
+
+msgid "how"
+msgstr "W openGym otwórz Ustawienia, Zegarek Zepp OS, Sparuj zegarek, i wpisz tutaj adres i kod."
+
+msgid "pair"
+msgstr "Sparuj"
+
+msgid "pairing"
+msgstr "Paruję…"
+
+msgid "paired"
+msgstr "Sparowano z {0}. Otwórz openGym na zegarku."
+
+msgid "failed"
+msgstr "Nie wyszło. Sprawdź adres i kod, kod działa dziesięć minut."
+
+msgid "unpair"
+msgstr "Rozłącz"
+
+msgid "not_paired_yet"
+msgstr "Jeszcze nie sparowano."

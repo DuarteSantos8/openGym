@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The barbell as an alpha mask (notification, ongoing activity, complication, tile). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M2.00,8.82h2.05v6.36h-2.05zM4.05,11.20h0.91v1.59h-0.91zM4.95,7.11h2.61v9.77h-2.61zM7.57,11.20h8.86v1.59h-8.86zM16.43,7.11h2.61v9.77h-2.61zM19.05,11.20h0.91v1.59h-0.91zM19.95,8.82h2.05v6.36h-2.05z" />
+</vector>

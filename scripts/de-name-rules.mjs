@@ -1,49 +1,23 @@
-// The German exercise-name rules, in one place. Imported by translate-de-exercise-names.mjs,
-// which checks every batch during translation and sends violations back to the model as a
-// correction, and by frontend/src/lib/exercise-names.test.js, which fails the build. The two
-// callers share this definition deliberately: inline copies are how a rule drifts unseen.
+// The German exercise-name rules, in one place. frontend/src/lib/exercise-names.test.js imports
+// them and fails the build on a name that breaks one. (The translation script that also checked
+// every batch against them went with v1.4.0; the rules stay here so any future tool shares this
+// one definition instead of an inline copy that drifts unseen.)
 //
 // Every `fix` quotes the offending word. A generic instruction ("use the German term") is
 // ignored by a small model often enough to stall a stage; naming the text is what lands.
 
-// German ships as a stage: the catalogue entries done with equipment, and not the body-weight
-// ones, which keep their English title through the per-exercise fallback in exerciseNameFor.
-// The builder, the translator and the test all read the staged set from here, so "which
-// exercises does German cover" has exactly one answer.
+// The rules hold the catalogue entries done with equipment. Body-weight names are in the pack
+// too, but calisthenics keeps many English names in German gyms (Front Lever, Planche, Mountain
+// Climber), which the English-word rule would reject, so they are not part of the checked set.
+// The builder, the translator and the test all read that set from here.
 export const BODY_WEIGHT = 'body weight'
 
-// Equipment exercises whose German name is written but not yet signed off by a native speaker:
-// either the reviewer marked the name itself unsure, or it carries terminology the review left
-// open (the half-declined "Reverses …", and the English "Clean"). They are deliberately NOT in
-// the pack — the per-exercise fallback in exerciseNameFor keeps their English title — so that
-// what ships is only what a German speaker has actually read. Reviewing one means deleting its
-// id here and adding its name to de.json; the test enforces that the two stay in step.
-export const AWAITING_REVIEW = new Set([
-  '0009', '0014', '0023', '0024', '0028', '0029', '0031', '0034', '0035', '0036',
-  '0037', '0038', '0046', '0048', '0051', '0052', '0059', '0060', '0070', '0072',
-  '0074', '0079', '0080', '0081', '0082', '0085', '0087', '0089', '0095', '0097',
-  '0098', '0099', '0103', '0104', '0105', '0106', '0107', '0110', '0111', '0112',
-  '0113', '0114', '0125', '0126', '0127', '0128', '0162', '0164', '0172', '0174',
-  '0188', '0195', '0197', '0198', '0200', '0205', '0209', '0211', '0221', '0223',
-  '0224', '0225', '0237', '0238', '0241', '0242', '0247', '0287', '0288', '0299',
-  '0309', '0310', '0311', '0321', '0324', '0335', '0344', '0346', '0347', '0349',
-  '0358', '0359', '0371', '0373', '0377', '0381', '0410', '0431', '0436', '0438',
-  '0445', '0450', '0455', '0525', '0562', '0609', '0640', '0641', '0741', '0742',
-  '0743', '0749', '0750', '0755', '0757', '0759', '0762', '0763', '0764', '0768',
-  '0772', '0774', '0777', '0811', '0818', '0830', '0833', '0844', '0851', '0856',
-  '0859', '0968', '0969', '0971', '0976', '0978', '0979', '0981', '0986', '0991',
-  '0992', '0994', '1001', '1008', '1013', '1015', '1016', '1017', '1022', '1201',
-  '1256', '1257', '1282', '1283', '1291', '1296', '1312', '1316', '1317', '1339',
-  '1341', '1342', '1354', '1361', '1380', '1383', '1384', '1388', '1389', '1394',
-  '1411', '1412', '1414', '1417', '1433', '1435', '1436', '1456', '1457', '1459',
-  '1461', '1462', '1496', '1545', '1582', '1618', '1619', '1620', '1621', '1629',
-  '1635', '1639', '1640', '1645', '1660', '1667', '1700', '1707', '1710', '1714',
-  '1728', '1733', '1738', '1743', '1744', '1751', '1752', '1754', '1755', '1760',
-  '1767', '2133', '2136', '2137', '2138', '2139', '2142', '2143', '2187', '2203',
-  '2204', '2209', '2397', '2401', '2402', '2405', '2407', '2414', '2459', '2464',
-  '2705', '2706', '2796', '2805', '2808', '2812', '2987', '3017', '3142', '3194',
-  '3235', '3237', '3305', '3313', '3541', '3542', '3635', '3643', '3888',
-])
+// Equipment exercises whose German name is written but not yet signed off by a native speaker,
+// because the English title leaves open what the exercise is. They are not in the pack (the
+// per-exercise fallback in exerciseNameFor keeps their English title), so that what ships is
+// only what a German speaker has actually read. Reviewing one means deleting its id here and
+// adding its name to de.json; the test enforces that the two stay in step.
+export const AWAITING_REVIEW = new Set(['0844', '2203', '2209'])
 
 export const stagedExercises = EXDB =>
   EXDB.filter(exercise => exercise.eq && exercise.eq !== BODY_WEIGHT && !AWAITING_REVIEW.has(exercise.id))
@@ -245,6 +219,21 @@ export function checkName(exercise, german) {
   for (const [pattern, required, term] of QUALIFIER_TERMS) {
     if (!new RegExp(`(^|[^a-z])(${pattern})([^a-z]|$)`, 'iu').test(english)) continue
     if (!required.test(name)) add('qualifier', `"${english}" is ${pattern.split('|')[0]}: the German name must say "${term}". "${name}" does not.`)
+  }
+
+  // A leg curl is knee flexion: Beinbeugen. The batch that translated the lever curls wrote
+  // "Beinstrecken" for them (issue #631), which is the leg extension — 0585 is "Beinstrecken an
+  // der Hebelmaschine" — so a German list read like two spellings of the same exercise, and the
+  // hamstring work was filed with the quad work. "Strecken" stays the right word where the
+  // English really is an extension; this rule only stops it standing in for the curl.
+  if (/leg curl/iu.test(english) && /beinstrecken/iu.test(name)) {
+    add('movement', `Write "Beinbeugen" in "${name}": a leg curl bends the knee, and "Beinstrecken" is the leg extension.`)
+  }
+
+  // The mirror of the rule above, so a future batch cannot slip the other way either: an
+  // extension is the one movement "Beinbeugen" must never name, for the same reason in reverse.
+  if (/leg extension/iu.test(english) && /beinbeugen/iu.test(name)) {
+    add('movement', `Write "Beinstrecken" in "${name}": a leg extension straightens the knee, and "Beinbeugen" is the leg curl.`)
   }
 
   // Inverted English-leak check: anything the German name shares with the English one is a leak

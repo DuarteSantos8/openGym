@@ -3,9 +3,8 @@
   "name": "resistance band weighted standing pronation twist curl (arm wrestler)",
   "bodyPart": "upper arms",
   "equipment": "resistance band",
-  "target": "biceps",
+  "target": "forearms",
   "secondaryMuscles": [
-    "forearms",
     "brachialis",
     "wrist flexors"
   ],

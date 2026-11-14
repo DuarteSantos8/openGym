@@ -33,18 +33,37 @@ body:
     id: setup
     attributes:
       label: How are you running openGym?
+      description: Pick all that apply, e.g. the iPhone app connected to your own server.
+      multiple: true
       options:
-        - Self-hosted (docker compose)
+        - iPhone app (App Store or TestFlight)
+        - Apple Watch app
+        - Android app (APK from GitHub or opengym.ch)
+        - Android app (Google Play)
+        - Phone app on its own, no server ("Use on this device")
+        - Phone app connected to my server
+        - Web app in the browser, self-hosted (docker compose)
+        - Web app on someone else's instance
+        - Demo (opengym.ch/demo)
         - Frontend dev server (npm run dev)
         - Other / not sure
     validations:
       required: true
 
   - type: input
+    id: version
+    attributes:
+      label: openGym version
+      description: In the app under Settings → About. For the server, the image tag you run.
+      placeholder: e.g. 1.4.2 (App Store), server 1.4.2
+    validations:
+      required: false
+
+  - type: input
     id: environment
     attributes:
-      label: Browser & OS
-      placeholder: e.g. Safari 17 on iOS 18, Chrome 126 on Android
+      label: Device, OS & browser
+      placeholder: e.g. iPhone 15 on iOS 26.1, Pixel 8 on Android 16, Chrome 141 on Windows
     validations:
       required: true
 

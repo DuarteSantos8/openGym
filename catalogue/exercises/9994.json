@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A lying hip adduction hold squeezing a ball between the knees. It trains the inner thighs.",
   "instructions": [
     "Lie on your back with your knees bent.",

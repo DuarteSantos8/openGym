@@ -3,9 +3,8 @@
   "name": "weighted twisting crunch (on bench)",
   "bodyPart": "waist",
   "equipment": "weighted",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "hip flexors",
     "core"
   ],

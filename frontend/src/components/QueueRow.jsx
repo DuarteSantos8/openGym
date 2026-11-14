@@ -2,6 +2,7 @@ import { queueView } from '../lib/queue.js'
 import { effectiveRoutineIds } from '../lib/history.js'
 import { fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { sequenceOf, isSimpleSequence } from '../lib/rotation.js'
 import Icon from './Icon.jsx'
 
 // Home's progress row for a coach week (S.queue) — it stands in for the seven weekday dots
@@ -26,7 +27,8 @@ export default function QueueRow({ S, today, onStart, managed }) {
   // A pass this app manages refills itself (lib/rotation.js) — "ask the coach" and naming a
   // whole week are a planner's copy, wrong for a pass with no coach and no week shape at all.
   const status = v.complete ? (managed ? t('Round complete') : t('Week complete, ask the coach'))
-    : v.waiting ? (managed ? t('Next round starts {0}.', fmtDate(v.startsOn, true)) : t('Next week starts {0}', fmtDate(v.startsOn, true)))
+    // A loop with rest days (#536) waits out a rest the same way a new round waits for its day.
+    : v.waiting ? (managed ? (isSimpleSequence(sequenceOf(S)) ? t('Next round starts {0}.', fmtDate(v.startsOn, true)) : t('Rest day. The loop goes on {0}.', fmtDate(v.startsOn, true))) : t('Next week starts {0}', fmtDate(v.startsOn, true)))
     : shownToday ? t('Next: {0}, today', next.name)
     : next ? t('Next: {0}', next.name)
     : t('Next: {0}', pinned.name + ' · ' + fmtDate(pinned.on, true))

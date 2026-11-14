@@ -1,6 +1,6 @@
-import { workoutEnergy } from './workout-energy.js'
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
+import { workoutEnergy } from './workout-energy.js'
 import { bestWeightForEntry, cleanupSg } from './history.js'
 import { hasCompletedWork, isSideSet } from './workout-model.js'
 
@@ -20,8 +20,9 @@ import { hasCompletedWork, isSideSet } from './workout-model.js'
 function finishedRow(set) {
   if (!set) return set
   const sideMarked = isSideSet(set) && (set.sides.L.weightOrigin != null || set.sides.R.weightOrigin != null)
-  if (set.planSec == null && set.weightOrigin == null && !sideMarked) return set
-  const { planSec, weightOrigin, ...rest } = set
+  // A set's own rest (#609) was for this session only, so it isn't kept with the workout.
+  if (set.planSec == null && set.weightOrigin == null && set.restSec === undefined && !sideMarked) return set
+  const { planSec, weightOrigin, restSec: _ownRest, ...rest } = set
   if (sideMarked) {
     const side = ({ weightOrigin: _, ...kept }) => kept
     rest.sides = { ...rest.sides, L: side(rest.sides.L), R: side(rest.sides.R) }
@@ -122,10 +123,13 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     routineId: routineIds[0] ?? null,
     name: active.name,
     bw: active.bw,
+    ...(workoutEnergy(active.healthMetrics) ? { healthMetrics: workoutEnergy(active.healthMetrics) } : {}),
     entries,
     prs,
-    ...(workoutEnergy(active.healthMetrics) ? { healthMetrics: workoutEnergy(active.healthMetrics) } : {}),
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
+    // The gym it was done at (#808, lib/gym-inventory.js): { id, name }, so editing it later loads
+    // that gym's plates and the history can say where. Only when there are gyms.
+    ...(active.gym && typeof active.gym === 'object' && active.gym.id != null ? { gym: { id: active.gym.id, name: String(active.gym.name || '') } } : {}),
   }
 }

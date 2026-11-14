@@ -20,16 +20,17 @@ No, there are three ways to use it:
 
 ### Is there an iPhone app?
 
-Not in the App Store, and Apple doesn't allow installing apps from anywhere else. On an iPhone you can
-self-host and add openGym to your home screen from Safari (it's a full PWA that works offline), or
-build the native app onto your own phone with Xcode. Both are described in [MOBILE.md](MOBILE.md).
-An App Store build is on the [roadmap](../ROADMAP.md).
+Yes: [openGym is in the App Store](https://apps.apple.com/app/id6822275400), for iPhone and Apple
+Watch, in every App Store country. It works on the phone alone or connected to your own server.
+You can also add a self-hosted openGym to your home screen from Safari (a full PWA that works
+offline), or build the app onto your own phone with Xcode; both are in [MOBILE.md](MOBILE.md).
 
-### Why isn't it on the Play Store?
+### Is it on Google Play?
 
-That's deliberate. The APK is signed, published with a `.sha256` next to every release, and the app
-checks for updates itself. Get it from the
-[latest release](https://github.com/DuarteSantos8/openGym/releases/latest).
+Not yet, it's next: Google wants a round of closed testing first. Until then the signed APK is the
+way to go. It's published with a `.sha256` next to every release, comes in three sizes (Standard,
+Plus, HD) and updates itself. Get it from the
+[latest release](https://github.com/DuarteSantos8/openGym/releases/latest) or [opengym.ch](https://opengym.ch).
 
 ### Where is my data?
 

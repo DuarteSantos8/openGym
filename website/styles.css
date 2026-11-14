@@ -565,6 +565,17 @@ section { padding: var(--sec) 0 0; }
 .card .meta a { color: var(--fg-2); text-decoration: underline; text-underline-offset: 2px; }
 .card .meta + .meta { margin-top: 8px; }
 .card .push { margin-top: auto; }
+/* Two APKs side by side (Standard, HD); they stack on a narrow card. */
+.card .dl-row { display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); }
+.card .dl-row .btn { padding-left: 8px; padding-right: 8px; }
+.card ul.dl-sizes { margin: 14px 0 0; }
+.card ul.dl-sizes li { font-size: 13px; color: var(--fg-3); padding: 3px 0 3px 0; }
+.card ul.dl-sizes li::before { display: none; }
+.card ul.dl-sizes li b { color: var(--fg-2); }
+/* App Store toggle: data-appstore="soon" shows the waiting line, "live" shows the badge. */
+.ios[data-appstore="soon"] .ios-live, .ios[data-appstore="live"] .ios-soon { display: none; }
+.card .store-badge { display: inline-block; margin-top: 14px; line-height: 0; }
+.card .store-badge img { height: 50px; width: auto; }
 
 /* ---------------------------------------------------------------- the story */
 
@@ -973,3 +984,14 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
   /* Where the drawer is the only way in, keep the chip row that points into the page. */
   .toc { display: flex; }
 }
+
+/* App Store launch bar above the nav, and the badge under the hero buttons. */
+.announce { background: var(--acc-soft); border-bottom: 1px solid var(--hair-soft); text-align: center; }
+.announce a { display: block; padding: 9px var(--pad); color: var(--fg); font-size: 14px; line-height: 1.4; text-wrap: balance; }
+.announce a:hover { text-decoration: none; }
+.announce b { color: var(--acc); font-weight: 600; }
+.announce-go { color: var(--acc); font-weight: 600; white-space: nowrap; }
+.announce a:hover .announce-go { text-decoration: underline; }
+.hero-badge { display: inline-block; margin-top: 22px; }
+.hero-badge img { display: block; width: 150px; height: auto; }
+@media (max-width: 560px) { .announce-more { display: none; } }

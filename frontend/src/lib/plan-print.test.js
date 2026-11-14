@@ -1,6 +1,11 @@
 // The printable plan (#149) and one routine on its own page (#282).
-import { afterEach, describe, it, expect } from 'vitest'
-import { planPrintHTML } from './plan-share.js'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { planPrintHTML, printPlan } from './plan-share.js'
+import { PLACEHOLDER_PICTURE, MEDIA_CREDIT } from './print-pictures.js'
+import { EXIDX, registerCustom } from './exercises.js'
+import { printDocument } from './print-doc.js'
+
+vi.mock('./print-doc.js', async orig => ({ ...await orig(), printDocument: vi.fn(() => Promise.resolve()) }))
 import { CASED_NAME_LANGS, EXERCISE_NAME_LANGS, _setLangState } from './i18n-core.js'
 
 const S = {
@@ -35,7 +40,10 @@ describe('planPrintHTML', () => {
     expect(body).not.toContain('Week schedule')
     expect(body).not.toContain('Weekly Training Plan')
     expect(body).not.toContain('Pull day')
-    expect(body).toContain('3 exercises · Ana ·')
+    // The masthead: the openGym logo, who it is for, the count under the title.
+    expect(html).toContain('class="logo-mark"')
+    expect(html).toMatch(/<div class="mast-meta"><b>Ana<\/b><br>/)
+    expect(html).toMatch(/<div class="facts">3 exercises<\/div>/)
     expect(body).toContain('barbell bench press')
     expect(body).toContain('3 × 5 · 80 kg')
     expect(body).toContain('pause on the chest')
@@ -93,5 +101,176 @@ describe('planPrintHTML prints the exercise as it is prescribed', () => {
     const html = planPrintHTML(S2, '', { routineId: 'r' })
     expect(html).toContain(' <span class="part">Brust</span>')
     expect(text(html)).toContain('Dropsatz 2×')
+  })
+})
+
+// The redesign (v1.4.3): what keeps a printout readable across pages.
+describe('planPrintHTML page breaks', () => {
+  const many = { unit: 'kg', week: { 1: ['r'] }, routines: [{ id: 'r', name: 'Long day', ex: Array.from({ length: 6 }, (_, i) => ({ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 60 + i, ...(i === 2 || i === 3 ? { sg: 's' } : {}) })) }] }
+
+  it('keeps every exercise and superset in a block of its own, and the routine heading with the first one', () => {
+    const html = planPrintHTML(many, '')
+    // 6 exercises, two of them a superset: 5 blocks, plus the week table.
+    expect(html.match(/<div class="keep">/g)).toHaveLength(6)
+    // The routine heading is inside the first exercise block, never on its own.
+    expect(html).toMatch(/<div class="keep"><h3 class="sec-h">Routines<\/h3><div class="r-head"><h2>Long day<\/h2>[^]*?<div class="ex">/)
+    // The whole routine is not one unbreakable block any more (it left pages blank).
+    expect(html).not.toMatch(/\.routine \{[^}]*break-inside: avoid/)
+  })
+
+  it('numbers the exercises and gives the single-routine sheet a box per set', () => {
+    const html = planPrintHTML(many, '', { routineId: 'r' })
+    expect(html.match(/<div class="ex-num">/g)).toHaveLength(6)
+    expect(html.match(/<div class="ticks">(<i><\/i>){3}<\/div>/g)).toHaveLength(6)
+    expect(planPrintHTML(many, '')).not.toContain('class="ticks"')
+  })
+
+  it('puts the English title of a translated name on its own line instead of in parentheses', () => {
+    _setLangState('de', {}, null, { '0025': 'Bankdrücken mit Langhantel' })
+    try {
+      const html = planPrintHTML(many, '', { routineId: 'r' })
+      expect(html).toContain('>Bankdrücken mit Langhantel <span class="part">')
+      expect(html).toContain('<div class="ex-en">barbell bench press</div>')
+    } finally { _setLangState('en', {}, null, null) }
+  })
+
+  it('carries page numbers in the reader’s language and no probe marks unless asked', () => {
+    _setLangState('de', { 'Page {0} of {1}': 'Seite {0} von {1}' }, null, null)
+    try {
+      const html = planPrintHTML(many, '')
+      expect(html).toContain('@bottom-right { content: "Seite " counter(page) " von " counter(pages); }')
+      expect(html).not.toContain('class="probe"')
+      expect(planPrintHTML(many, '', { probe: true })).toContain('<i class="probe">~s:')
+    } finally { _setLangState('en', {}, null, null) }
+  })
+})
+
+// #817: the plan as a grid of cells with a picture each, like a paper plan from the gym.
+describe('planPrintHTML with pictures', () => {
+  const P = PLACEHOLDER_PICTURE
+  const S3 = {
+    unit: 'kg', week: { 1: ['r'] },
+    routines: [{ id: 'r', name: 'Mixed', ex: [
+      { id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80, restSec: 90, note: 'pause on the chest' },
+      { id: '0289', sets: 3, mode: 'reps', reps: 10, weight: 24, sg: 'g' },
+      { id: '0662', sets: 3, mode: 'reps', reps: 12, weight: 0, sg: 'g' },
+      { id: '0027', sets: 4, mode: 'reps', reps: 8, weight: 60, side: true },
+      { id: '0027', sets: 1, mode: 'reps', reps: 8, weight: 60 },
+    ] }],
+  }
+  const cardioId = Object.keys(EXIDX).find(k => EXIDX[k].bp === 'cardio')
+  const cells = html => html.match(/<div class="gc">/g) || []
+
+  it('without pictures is the plain list, with no credit line', () => {
+    for (const pictures of [undefined, null, {}, { '0025': 'exercise-media/still/x.webp' }]) {
+      const html = planPrintHTML(S3, '', { routineId: 'r', pictures })
+      expect(html).toContain('<div class="ex">')
+      expect(html).not.toContain('class="g-row"')
+      expect(html).not.toContain('<img')
+      expect(html).not.toContain('Makatserchyk')
+    }
+  })
+
+  it('lays the exercises out two to a row, each row a block that stays whole, the heading in the first', () => {
+    const pictures = { '0025': P, '0289': P, '0662': P, '0027': P }
+    const html = planPrintHTML(S3, '', { pictures })
+    expect(cells(html)).toHaveLength(5)
+    expect(html.match(/<img src="data:image\/svg\+xml;base64,[^"]+" alt="" width="180" height="180">/g)).toHaveLength(5)
+    // A row of one (the first exercise; the superset closes it), the superset, then the last two.
+    expect(html.match(/<div class="g-row">/g)).toHaveLength(3)
+    expect(html).toContain('<div class="gc gc-empty"></div>')
+    expect(html).toMatch(/<div class="keep"><h3 class="sec-h">Routines<\/h3><div class="r-head"><h2>Mixed<\/h2>[^]*?<div class="g-row"><div class="gc">/)
+    const ss = html.match(/<div class="keep"><div class="ss"><div class="ss-tag">Superset<\/div>([^]*?)<\/section>/)[1]
+    expect(cells(ss.split('<div class="keep">')[0])).toHaveLength(2)
+    expect(html).toContain('.g-row { display: table;')
+  })
+
+  it('keeps the sets, the rest, the note, the per-side split and the tick boxes in each cell', () => {
+    const html = planPrintHTML(S3, '', { routineId: 'r', pictures: { '0025': P } })
+    const body = text(html)
+    expect(body).toContain('3 × 5 · 80 kg')
+    expect(body).toContain('Rest 1:30')
+    expect(body).toContain('pause on the chest')
+    expect(body).toContain('4 × 8 · 60 kg · 4/side')
+    expect(html.match(/<div class="ticks">/g)).toHaveLength(5)
+  })
+
+  it('a missing picture is a text-only cell', () => {
+    const html = planPrintHTML(S3, '', { routineId: 'r', pictures: { '0025': P } })
+    expect(cells(html)).toHaveLength(5)
+    expect(html.match(/<img /g)).toHaveLength(1)
+    expect(html.match(/<div class="gc-in no-pic">/g)).toHaveLength(4)
+  })
+
+  it('a cardio entry still reads as time and speed', () => {
+    const S4 = { unit: 'kg', week: {}, routines: [{ id: 'c', name: 'Run', ex: [{ id: cardioId, sets: 1, mode: 'cardio', min: 25, speed: 10 }] }] }
+    const body = text(planPrintHTML(S4, '', { routineId: 'c', pictures: { [cardioId]: P } }))
+    expect(body).toContain('25 min @ 10 km/h')
+    expect(body).not.toContain('Rest ')
+  })
+
+  it('prints the media credit only when a catalogue picture is on the page', () => {
+    const html = planPrintHTML(S3, '', { pictures: { '0025': P } })
+    expect(text(html)).toContain(MEDIA_CREDIT)
+    expect(MEDIA_CREDIT).toContain('© Aliaksandr Makatserchyk, Gym visual, gymvisual.com')
+    // A picture for an exercise that is not on the page does not count.
+    expect(planPrintHTML(S3, '', { pictures: { '0001': P } })).not.toContain('Makatserchyk')
+  })
+
+  it('a custom exercise\'s own photo prints without the catalogue credit', () => {
+    registerCustom([{ id: 'c_mine', n: 'my move', custom: true, bp: 'chest' }])
+    try {
+      const S5 = { unit: 'kg', week: {}, routines: [{ id: 'm', name: 'Mine', ex: [{ id: 'c_mine', sets: 3, reps: 8 }, { id: '0025', sets: 3, reps: 5 }] }] }
+      const html = planPrintHTML(S5, '', { routineId: 'm', pictures: { c_mine: 'data:image/jpeg;base64,AAAA' } })
+      expect(html).toContain('<img src="data:image/jpeg;base64,AAAA"')
+      expect(html).not.toContain('Makatserchyk')
+      expect(planPrintHTML(S5, '', { routineId: 'm', pictures: { c_mine: P, '0025': P } })).toContain('Makatserchyk')
+    } finally { registerCustom([]) }
+  })
+
+  it('reads right to left in Arabic, and never inverts a picture on paper', () => {
+    _setLangState('ar', {}, null, null)
+    try {
+      const html = planPrintHTML(S3, '', { pictures: { '0025': P } })
+      expect(html).toContain('dir="rtl"')
+      expect(html).toContain('padding-inline-start')
+      expect(html).toContain('filter: none !important')
+      expect(html).toContain('color-scheme: light')
+    } finally { _setLangState('en', {}, null, null) }
+  })
+
+  it('carries probe marks on every row for the layout check', () => {
+    const html = planPrintHTML(S3, '', { pictures: { '0025': P }, probe: true })
+    expect(html.match(/~s:r0-\d~/g)).toHaveLength(3)
+    expect(html.match(/~e:r0-\d~/g)).toHaveLength(3)
+    expect(html).toContain('~h:r0-0~')
+  })
+})
+
+describe('printPlan', () => {
+  it('loads the pictures for the routine only when asked, then prints', async () => {
+    const loadPictures = vi.fn(async () => ({ '0025': PLACEHOLDER_PICTURE }))
+    const beforePrint = vi.fn(() => true)
+    printDocument.mockClear()
+    await printPlan(S, 'Ana', { routineId: 'push', withPictures: true, loadPictures, beforePrint })
+    expect(loadPictures).toHaveBeenCalledWith(S, { routineId: 'push' })
+    expect(beforePrint).toHaveBeenCalledOnce()
+    const [html, name] = printDocument.mock.calls[0]
+    expect(name).toBe('Push day')
+    expect(html).toContain('class="g-row"')
+    expect(html).toContain('Makatserchyk')
+    await printPlan(S, 'Ana', { loadPictures })
+    expect(loadPictures).toHaveBeenCalledOnce()
+    expect(printDocument.mock.calls[1][1]).toBe('Weekly Training Plan')
+    expect(printDocument.mock.calls[1][0]).not.toContain('<img')
+  })
+
+  it('prints without pictures when loading them fails, and nothing when the sheet went away', async () => {
+    printDocument.mockClear()
+    await printPlan(S, '', { withPictures: true, loadPictures: async () => { throw new Error('x') } })
+    expect(printDocument).toHaveBeenCalledOnce()
+    expect(printDocument.mock.calls[0][0]).toContain('<div class="ex">')
+    await printPlan(S, '', { beforePrint: () => false })
+    expect(printDocument).toHaveBeenCalledOnce()
   })
 })

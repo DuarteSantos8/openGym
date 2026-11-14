@@ -9,6 +9,9 @@
     "trapezius"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on your back with a weighted head harness, you lift your chin toward your chest to train the neck flexors.",
   "instructions": [
     "Lie on your back on a bench with your head past the edge and the harness fitted.",

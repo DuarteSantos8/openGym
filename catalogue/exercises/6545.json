@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A wall-supported handstand held in place, building shoulder strength, balance and body control.",
   "instructions": [
     "Place your hands on the floor a short distance from a wall.",

@@ -17,18 +17,184 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme">
         <activity
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:exported="true">
+            <!-- openGym's own NFC stickers (NfcTagsPlugin, lib/nfc-tags.js): a tap opens the app,
+                 closed or not. Only links on our own stickers, nothing else NFC. -->
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="https" android:host="opengym.ch" android:pathPrefix="/nfc" />
+            </intent-filter>
+            <!-- A friend's routine link, https://opengym.ch/r#<routine> (components/RoutineShare.jsx):
+                 straight into the app instead of the page. Verified once opengym.ch serves
+                 /.well-known/assetlinks.json for this app; until then Android may ask which app. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="opengym.ch" android:path="/r" />
+                <data android:scheme="https" android:host="opengym.ch" android:path="/r/" />
+            </intent-filter>
+            <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser, and
+                 opengym://r#<routine> from opengym.ch/r. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="opengym" />
+            </intent-filter>
+        </activity>
+
+        <!-- The home-screen icon (Settings → Look & Home → App icon, AppIconPlugin): the launcher
+             entry is one of these aliases of MainActivity, each with its own icon, and exactly one
+             is enabled. IconDefault, the original, is the one a new install starts with. Each one
+             carries the long-press shortcuts (res/xml/shortcuts.xml): a new alias needs them too. -->
+        <activity-alias
+            android:name=".IconDefault"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconLight"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_light"
+            android:roundIcon="@mipmap/ic_launcher_light_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconMono"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_mono"
+            android:roundIcon="@mipmap/ic_launcher_mono_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconNeon"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_neon"
+            android:roundIcon="@mipmap/ic_launcher_neon_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconSky"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_sky"
+            android:roundIcon="@mipmap/ic_launcher_sky_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconOrange"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_orange"
+            android:roundIcon="@mipmap/ic_launcher_orange_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconPink"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_pink"
+            android:roundIcon="@mipmap/ic_launcher_pink_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconViolet"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_violet"
+            android:roundIcon="@mipmap/ic_launcher_violet_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconHalloween"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_halloween"
+            android:roundIcon="@mipmap/ic_launcher_halloween_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconChristmas"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_christmas"
+            android:roundIcon="@mipmap/ic_launcher_christmas_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
 
         <!-- Health Connect (#200) opens the app from its permission screen to say why the
              permissions are asked for: Android 14 and up through VIEW_PERMISSION_USAGE, 13 and
@@ -69,6 +235,16 @@
              clock and a shrinking bar after the WebView is frozen. The lock screen shows
              it only when the user allows notifications there. specialUse: this is a timer,
              not media playback. -->
+        <!-- The Wear OS watch app's events (WatchBridgePlugin): each one stored even with the app
+             closed, then let go of in the Data Layer. Only our own watch app's paths. -->
+        <service
+            android:name=".WatchListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/event/" />
+            </intent-filter>
+        </service>
         <service
             android:name=".RestTimerService"
             android:exported="false"
@@ -78,6 +254,62 @@
                 android:value="Shows how long is left in the rest between sets." />
         </service>
 
+        <!-- The background check before a nudge or a reminder (NudgeCheckJob): asks the paired
+             server whether the day was trained elsewhere. Run by JobScheduler only; persisted
+             jobs survive a reboot through RECEIVE_BOOT_COMPLETED (declared below). -->
+        <service
+            android:name=".NudgeCheckJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+
+        <!-- Gym reminder (#614): the platform's proximity alert for a gym fires this (GymReminder).
+             Explicit, not exported: nothing but that alert's own PendingIntent reaches it. -->
+        <receiver
+            android:name=".GymReminderReceiver"
+            android:exported="false" />
+        <!-- Gym reminder: the short check with live location after the phone entered a gym's wide
+             approach zone (GymScanService). At most 15 minutes, at most 3 a day; its notification
+             is a silent one. Started by the approach alert's broadcast (Android 12+: only with
+             unrestricted battery or exact alarms allowed, see GymReminder.launchCheck), never exported. -->
+        <service
+            android:name=".GymScanService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+        <!-- Proximity alerts are gone after a restart or an app update: registered again here.
+             Only the system sends these two broadcasts. -->
+        <receiver
+            android:name=".GymReminderBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- The Home Screen widget (v1.4.4): what it shows comes from the app (WidgetBridgePlugin),
+             a tap opens the app at that screen. The configure screen picks what it shows; it
+             only ever writes this app's own widget settings. -->
+        <receiver
+            android:name=".OpenGymWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opengym_widget_info" />
+        </receiver>
+        <activity
+            android:name=".OpenGymWidgetConfigure"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/WidgetConfigTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
         <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
@@ -86,7 +318,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Workout-day reminder: lets the local-notifications plugin fire at the exact minute
          on Android 12+. Where it isn't granted, scheduling silently falls back to inexact
          alarms — the reminder still arrives, just not to the minute. -->
@@ -105,15 +336,62 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Delete my account on a paired phone: the phone's own face, fingerprint or screen lock
+         confirms it is the owner first (DeviceAuthPlugin). A normal permission, no prompt. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- The background check before a nudge (NudgeCheckJob) is a persisted job: it is still
+         there after a restart. Local notifications declare the same for their own alarms. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Health Connect (#200): write-only, asked for only when the user turns it on in Settings.
-         openGym writes finished workouts and weigh-ins and reads nothing back. -->
+    <!-- Health Connect (#200): each asked for only when the user turns its switch on in Settings.
+         openGym writes finished workouts and weigh-ins, and since v1.4.3 can read back the heart
+         rate during a workout and weigh-ins from other apps (#544). Foreground only: no
+         background read permission. The history one (v1.4.4, idea from #801) is asked for
+         together with reading weigh-ins, where Health Connect has it, so the first read can go
+         further back than the 30 days before the grant; the read works without it too. -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+
+    <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
+         the gym right now" and to watch the gyms the user added with the platform's proximity
+         alerts (no Google Play Services). Background location ("Allow all the time") is asked for
+         separately, after an explanation in the app, because the alert has to fire with openGym
+         closed. The places never leave the phone. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- The approach check above runs as a location foreground service (Android 14+ names the
+         type), and asks the paired server about today only when there is a network. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Location is optional: a phone without GPS still installs the app (the permissions above
+         would otherwise make Google Play require the hardware). -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.location.network" android:required="false" />
+    <!-- NFC stickers (Settings → NFC sticker): writing one, and the tap that opens the app. A
+         normal permission, no prompt; a phone without NFC still installs the app. -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <!-- Whether the Health Connect app is there, on Android 13 and lower. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- "Film this set" (components/SetVideo.jsx): a file input with capture="environment"
+             opens the camera app straight into video. Capacitor's file chooser asks the package
+             manager for one first, and since Android 11 that answer is empty without this, so
+             the button fell back to the plain file picker. -->
+        <intent>
+            <action android:name="android.media.action.VIDEO_CAPTURE" />
+        </intent>
+        <!-- Spoken cues (SpeechCue.java): the phone's text-to-speech engine is another app, and
+             since Android 11 the app cannot bind to it without saying so here. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 </manifest>

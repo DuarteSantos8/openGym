@@ -101,4 +101,60 @@ describe('Settings — planned sessions start from', () => {
     choose('Your plan')
     expect(mocks.S.startFrom).toBe('plan')
   })
+
+  it('shows the warm-up carry-over subtitle', () => {
+    mount()
+    act(() => { row().click() })
+    const box = document.createElement('div')
+    document.body.appendChild(box)
+    const sheetRoot = createRoot(box)
+    act(() => sheetRoot.render(sheet(() => {})))
+    const option = [...box.querySelectorAll('button.lrow')].find(button => button.querySelector('.lrow-t')?.textContent === 'Your last session')
+    expect(option?.querySelector('.lrow-s')?.textContent).toBe('The reps you logged last time in that routine, carried over, and any warm-ups you set up yourself. With progression off, the weight too.')
+    act(() => sheetRoot.unmount())
+    box.remove()
+  })
+
+  it('adds the new subtitle to every locale and removes the old key', () => {
+    const locales = import.meta.glob('../locales/*.js', { eager: true })
+    const oldKey = 'The reps you logged last time in that routine, carried over. With progression off, the weight too.'
+    const newKey = 'The reps you logged last time in that routine, carried over, and any warm-ups you set up yourself. With progression off, the weight too.'
+    for (const module of Object.values(locales)) {
+      expect(module.default[newKey]).toBeTypeOf('string')
+      expect(module.default[newKey].trim()).not.toBe('')
+      expect(module.default[oldKey]).toBeUndefined()
+    }
+    expect(locales['../locales/tr.js'].default[newKey]).toBe('O rutinde geçen sefer kaydettiğin tekrarlar ve kendin ayarladığın ısınma setleri aktarılır. İlerleme kapalıysa ağırlık da.')
+  })
+})
+
+describe('Settings: last time means (#770)', () => {
+  const lastRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Last time means'))
+  const pick = label => {
+    act(() => { lastRow().click() })
+    const box = document.createElement('div')
+    document.body.appendChild(box)
+    const sheetRoot = createRoot(box)
+    act(() => sheetRoot.render(sheet(() => {})))
+    const option = [...box.querySelectorAll('button.lrow')].find(b => b.querySelector('.lrow-t')?.textContent === label)
+    expect(option).toBeTruthy()
+    act(() => { option.click() })
+    act(() => sheetRoot.unmount())
+    box.remove()
+  }
+
+  it('reads an older profile without the setting as this routine', () => {
+    mount()
+    expect(lastRow().textContent).toContain('This routine')
+  })
+
+  it('switches to any workout and back, writing lastFrom to the store', () => {
+    mount()
+    pick('Any workout')
+    expect(mocks.S.lastFrom).toBe('any')
+    mount()
+    expect(lastRow().textContent).toContain('Any workout')
+    pick('This routine')
+    expect(mocks.S.lastFrom).toBe('routine')
+  })
 })

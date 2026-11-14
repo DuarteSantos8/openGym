@@ -17,23 +17,28 @@ import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
 import { CATEGORY_TEXT } from '../lib/coach.js'
 import { getApiKey, setApiKey, clearApiKey } from '../lib/coach-secrets.js'
-import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl } from '../../../api/coach/core/providers.js'
+import { coachLimits, clampCoachLimit, COACH_LIMITS } from '../lib/coach-device.js'
+import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl, phoneMayCall } from '../../../api/coach/core/providers.js'
 import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
+import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, Button, TextField } from '../components/ui.jsx'
 
 // Literal t() calls, so check-source-strings sees the three lines; t(s) over a list of keys hid them.
 const STEPS = () => [t('Loading the exercise catalogue…'), t('Checking the endpoint…'), t('Ready')]
 
-// The phone calls the provider through CapacitorHttp, native networking that obeys the
-// platform's cleartext rule, and Android refuses unencrypted http:// from apps
-// (network_security_config.xml leaves it at the default, off). An http:// endpoint on the LAN
-// therefore failed as a bare "could not reach the provider", with nothing to say why. It is
-// refused up front with the two ways that work: HTTPS in front of the model, or the server's
-// Coach, which has no such rule and reaches http:// on its own network.
+// The phone calls the provider through CapacitorHttp, native networking. A model on the home
+// network (llama.cpp, Ollama, LM Studio on 192.168.x.x) has no certificate a phone trusts, so
+// plain http:// is allowed there (#913), and only there: providers.js phoneMayCall says what
+// counts as the home network. Android lets the app speak cleartext to any host
+// (network_security_config.xml, #428: it cannot scope that to address ranges) and iOS to local
+// addresses (Info.plist NSAllowsLocalNetworking), so this check is what keeps a key and training
+// data from ever going over the internet unencrypted. It runs again before every call
+// (coach-local.js). The web app has no such screen: in a browser the Coach always runs on the
+// server, which reaches http:// on its own network (an https page could not call http:// itself).
 const isCleartext = url => /^http:\/\//i.test(String(url || '').trim())
-const cleartextRefused = () => t('Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.')
+const cleartextRefused = () => t('Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.')
 
 export default function CoachSetup() {
   const nav = useNavigate()
@@ -54,12 +59,24 @@ export default function CoachSetup() {
   const [models, setModels] = useState(null)
   const [step, setStep] = useState(-1)                     // -1 idle, 0..2 running, 3 done
   const [busy, setBusy] = useState(false)
+  // The three dials the server's admin card has and the phone never did (issue #527). Read from
+  // the device file as clamped, effective values; kept in local state so a number can be typed
+  // freely and is only clamped and saved when the field is left.
+  const [limits, setLimits] = useState(() => coachLimits(coachLocal))
 
   useEffect(() => { if (!MOBILE) nav('/settings', { replace: true }) }, [])
   useEffect(() => { getApiKey().then(k => setHasKey(!!k)) }, [])
   // Ask the paired server afresh: the admin may have switched the Coach on since this phone booted.
   useEffect(() => { if (user) refreshConfig() }, [user])
   useEffect(() => { setModels(null); setModel(coachLocal?.provider === provider ? (coachLocal?.model || '') : '') }, [provider])
+  useEffect(() => { setLimits(coachLimits(coachLocal)) }, [coachLocal])
+
+  const editLimit = (k, raw) => setLimits(l => ({ ...l, [k]: raw }))
+  const commitLimit = k => {
+    const clamped = clampCoachLimit(k, limits[k])
+    setLimits(l => ({ ...l, [k]: clamped }))
+    setCoachLocal({ limits: { ...limits, [k]: clamped } })
+  }
 
   const meta = HTTP_PROVIDERS[provider] || {}
   const host = hostOf(baseUrlFor(provider, { providerOptions: { [provider]: { baseUrl } } }))
@@ -79,7 +96,7 @@ export default function CoachSetup() {
     // An empty field passes the validator on purpose: for a provider with a fixed endpoint,
     // empty means the default. This one has no default, so empty is nowhere to call.
     if (meta.baseUrl && !meta.defaultBase && !v.value) return toast(t('Enter the endpoint URL'))
-    if (isCleartext(v.value)) return toast(cleartextRefused())
+    if (v.value && !phoneMayCall(v.value)) return toast(cleartextRefused())
     if (!meta.keyOptional && !key.trim() && !hasKey) return toast(t('Enter your API key'))
     setBusy(true); setStep(0)
     try {
@@ -106,7 +123,7 @@ export default function CoachSetup() {
     const chosen = model || meta.defaultModel
     if (!chosen) return toast(t('Pick a model'))
     // The endpoint can still be edited after the models were listed.
-    if (isCleartext(v.value)) return toast(cleartextRefused())
+    if (v.value && !phoneMayCall(v.value)) return toast(cleartextRefused())
     setBusy(true)
     try {
       // The mode first, the key second: the settings file is the cheap, reliable write, the
@@ -136,8 +153,8 @@ export default function CoachSetup() {
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 10 }}><h1>{t('AI Coach')}</h1></div>
+      <button className="iconbtn" data-back="/settings" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('AI Coach')}</h1></div>
     </div>
 
     <Section title={t('How should the Coach run?')} footer={current}>
@@ -162,7 +179,7 @@ export default function CoachSetup() {
       </Section>
 
       {meta.baseUrl && <Section title={t('Endpoint')}
-        footer={isCleartext(baseUrl) ? <span style={{ color: 'var(--red)' }}>{cleartextRefused()}</span> : null}>
+        footer={isCleartext(baseUrl) && !phoneMayCall(baseUrl) ? <span style={{ color: 'var(--red)' }}>{cleartextRefused()}</span> : t('Plain http only on your home network')}>
         <div style={{ padding: '8px 12px' }}>
           <TextField value={baseUrl} placeholder="https://ollama.example.com" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onChange={e => setBaseUrl(e.target.value)} />
@@ -202,6 +219,20 @@ export default function CoachSetup() {
         </div>
       </Section>}
 
+      {/* The server's admin card, for the person who owns this phone: in BYOK mode there is no
+          other profile, so the limits protect nobody but the account already holding the key. */}
+      <Section title={t('Advanced')}>
+        <LimitRow label={t('Max output tokens')} hint={t('The ceiling on one answer. Reasoning models count its hidden thinking against it, so raise it if a plan is cut off.')}
+          value={limits.maxOutputTokens} min={COACH_LIMITS.maxOutputTokens.min} max={COACH_LIMITS.maxOutputTokens.max}
+          onChange={v => editLimit('maxOutputTokens', v)} onCommit={() => commitLimit('maxOutputTokens')} />
+        <LimitRow label={t('Daily runs')} hint={t('Every Coach run is one request on your provider account. 0 means no limit.')}
+          value={limits.daily} min={COACH_LIMITS.daily.min} max={COACH_LIMITS.daily.max}
+          onChange={v => editLimit('daily', v)} onCommit={() => commitLimit('daily')} />
+        <LimitRow label={t('Max message length')} hint={t('How long a message, refinement or review note can be.')}
+          value={limits.maxMessageLen} min={COACH_LIMITS.maxMessageLen.min} max={COACH_LIMITS.maxMessageLen.max}
+          onChange={v => editLimit('maxMessageLen', v)} onCommit={() => commitLimit('maxMessageLen')} />
+      </Section>
+
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
         {!models
           ? <Button variant="primary" icon="sparkles" disabled={busy} onClick={prepare}>{t('List models')}</Button>
@@ -210,6 +241,8 @@ export default function CoachSetup() {
       </div>
     </>}
 
+    {coachLocal?.mode && coachLocal.mode !== 'off' && <AiConsentSection />}
+
     {coachLocal?.mode && coachLocal.mode !== 'off' && <Section title={t('Controls')}>
       <Row icon="signOut" iconTint="var(--red)" title={t('Turn the Coach off on this phone')} danger onClick={turnOff} />
     </Section>}
@@ -217,3 +250,19 @@ export default function CoachSetup() {
 }
 
 const hostOf = url => { try { return new URL(url).host } catch { return '' } }
+
+// One numeric dial of the Advanced section: a label and its hint on the left, a plain number
+// field on the right, clamped and saved when it is left rather than on every keystroke — a
+// floor applied mid-typing turns a just-typed "1" into "1024".
+function LimitRow({ label, hint, value, min, max, onChange, onCommit }) {
+  return <div className="row between" style={{ gap: 12, padding: '10px 12px', alignItems: 'flex-start' }}>
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontWeight: 500 }}>{label}</div>
+      <div className="muted small">{hint}</div>
+    </div>
+    <div style={{ width: 118, flex: 'none' }}>
+      <TextField type="number" inputMode="numeric" min={min} max={max} value={value}
+        onChange={e => onChange(e.target.value)} onBlur={onCommit} />
+    </div>
+  </div>
+}

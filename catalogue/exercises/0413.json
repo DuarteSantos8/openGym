@@ -3,9 +3,9 @@
   "name": "dumbbell squat",
   "bodyPart": "upper legs",
   "equipment": "dumbbell",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "hamstrings",
     "calves"
   ],

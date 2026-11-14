@@ -1,0 +1,17 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "Тренировка на сегодня";
+"Your plan for today, the week ahead and your streak." = "Ваш план на сегодня, неделю вперёд и ваша серия.";
+"Streak" = "Серия";
+"Weeks in a row with a workout." = "Недели подряд с тренировкой.";
+"Open openGym once to see your plan here." = "Откройте openGym один раз, и здесь появится ваш план.";
+"What to show" = "Что показывать";
+"And beside it" = "И рядом";
+"Week streak" = "Серия недель";
+"Weight goal" = "Цель по весу";
+"This week" = "Эта неделя";
+"Next workout" = "Следующая тренировка";
+"Records" = "Рекорды";
+"Volume" = "Объём";
+"Your streak, weight goal, week, next workout, records or volume. You pick." = "Серия, цель по весу, неделя, следующая тренировка, рекорды или объём. Выбирайте сами.";
+"Pick what the widget shows." = "Выберите, что показывает виджет.";
+"Challenges" = "Челленджи";

@@ -9,6 +9,9 @@
     "forearms"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lying triceps extension on a bench using a cable rope. It keeps constant tension on the triceps.",
   "instructions": [
     "Lie on a bench with your head toward a low pulley and hold the rope above your chest.",

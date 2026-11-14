@@ -1,0 +1,142 @@
+# Weekly health check that no single push pays for:
+#
+# - dependencies: known vulnerabilities in what the app and server actually ship (fails on
+#   high/critical in runtime dependencies), dev tooling and outdated packages as a report;
+# - robustness: the frontend and api suites under conditions CI never has on a normal run.
+#   Other time zones (a gym log is full of "today": a test that only passes in UTC broke on a
+#   developer's machine in Zurich), a clock six weeks ahead (fixture dates aged out of the
+#   Coach's review window on 2026-10-13 and turned every pull request red overnight), and a
+#   shuffled test order (a test that only passes after another one has run).
+#
+# A red run here is a list of real problems, not a broken build: nothing waits on it.
+name: Weekly audit
+
+on:
+  schedule:
+    - cron: '23 4 * * 1'   # Mondays 04:23 UTC
+  workflow_dispatch:
+  # A change to the audit itself is tried out before it waits a week for its first run.
+  pull_request:
+    paths: ['.github/workflows/audit.yml', 'scripts/ci/deps-audit.mjs']
+  push:
+    branches: ['ci-*']
+    paths: ['.github/workflows/audit.yml', 'scripts/ci/deps-audit.mjs']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm audit (runtime fails on high, dev tooling reported)
+        run: node scripts/ci/deps-audit.mjs frontend api mcp
+      - name: Outdated packages (report only)
+        if: always()
+        run: |
+          {
+            echo "### Outdated packages"
+            for d in frontend api mcp; do
+              echo "#### $d"
+              echo '```'
+              (cd "$d" && npm outdated --long 2>/dev/null || true) | head -60
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  robustness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      # One condition per run, so a failure says which one it is about.
+      matrix:
+        include:
+          - name: shuffled order
+            tz: UTC
+            shift: ''
+            shuffle: true
+          # Fourteen hours ahead of UTC: the evening in UTC is already tomorrow here.
+          - name: UTC+14
+            tz: Pacific/Kiritimati
+            shift: ''
+            shuffle: false
+          # Behind UTC, with a daylight-saving change in the range most fixtures use.
+          - name: Los Angeles
+            tz: America/Los_Angeles
+            shift: ''
+            shuffle: false
+          # The calendar six weeks on: fixed fixture dates that age out of a window.
+          - name: six weeks ahead
+            tz: UTC
+            shift: '+42d'
+            shuffle: false
+    name: robustness (${{ matrix.name }})
+    # Shuffled order is a report for now: 12 tests in 7 files (2026-10-15) lean on what an
+    # earlier test in their file left behind, mostly state inside the store module that
+    # useStore.setState cannot reset. Listed in the summary; the other conditions must pass.
+    continue-on-error: ${{ matrix.shuffle }}
+    env:
+      TZ: ${{ matrix.tz }}
+      # Property tests (fast-check) try more cases than on a push, and the sync fuzz new seeds.
+      PROPERTY_RUNS: 1000
+      SYNC_FUZZ_SEED_BASE: ${{ github.run_number }}000
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            api/package-lock.json
+      - name: Clock
+        run: |
+          sudo apt-get install -y -qq faketime >/dev/null
+          # libfaketime moves the wall clock only (DONT_FAKE_MONOTONIC): timers keep their pace.
+          if [ -n "${{ matrix.shift }}" ]; then
+            echo "FAKETIME=${{ matrix.shift }}" >> "$GITHUB_ENV"
+            echo "DONT_FAKE_MONOTONIC=1" >> "$GITHUB_ENV"
+            echo "FAKE_PRELOAD=$(ls /usr/lib/x86_64-linux-gnu/faketime/libfaketimeMT.so.1)" >> "$GITHUB_ENV"
+          fi
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - run: npm ci --omit=optional --no-audit --no-fund
+        working-directory: api
+      - name: Frontend suite
+        id: fe
+        continue-on-error: true
+        working-directory: frontend
+        run: |
+          LD_PRELOAD="${FAKE_PRELOAD:-}" node -e 'console.log("clock:", new Date().toString())'
+          LD_PRELOAD="${FAKE_PRELOAD:-}" npx vitest run ${{ matrix.shuffle && '--sequence.shuffle' || '' }} --reporter=default --reporter=json --outputFile.json=test-results.json
+      - name: API suite
+        id: api
+        continue-on-error: true
+        working-directory: api
+        run: >
+          LD_PRELOAD="${FAKE_PRELOAD:-}" node --test --test-reporter=spec --test-reporter-destination=stdout
+          --test-reporter=../scripts/ci/node-test-reporter.mjs --test-reporter-destination=test-results.jsonl test/*.test.js
+      - name: Report
+        if: always()
+        run: |
+          echo "## Robustness: ${{ matrix.name }}" >> "$GITHUB_STEP_SUMMARY"
+          node scripts/ci/test-report.mjs --label "Frontend (${{ matrix.name }})" --root frontend --vitest frontend/test-results.json --out stats/frontend.json > /dev/null
+          node scripts/ci/test-report.mjs --label "API (${{ matrix.name }})" --root api --node api/test-results.jsonl --out stats/api.json > /dev/null
+          test "${{ steps.fe.outcome }}" = success && test "${{ steps.api.outcome }}" = success

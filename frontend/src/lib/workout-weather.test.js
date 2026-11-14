@@ -2,8 +2,12 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 
 const native = vi.hoisted(() => ({ authorizeWeather: vi.fn(), captureWeather: vi.fn(), cancelWeather: vi.fn(),
-  available: vi.fn(), authorize: vi.fn(), readWeights: vi.fn(), writeWorkouts: vi.fn() }))
-vi.mock('./mobile.js', () => ({ MOBILE: true }))
+  status: vi.fn(), requestPermissions: vi.fn(), readWeights: vi.fn(), write: vi.fn(), setEnabled: vi.fn() }))
+const files = new Map()
+vi.mock('./mobile.js', () => ({ MOBILE: true, nativePlatform: async () => 'ios',
+  readJsonFile: async path => files.get(path) || null,
+  writeJsonFile: async (path, value) => { files.set(path, structuredClone(value)) },
+}))
 vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'ios' }, registerPlugin: () => native }))
 let weather, health, store, now
 const sample = () => ({ celsius: 22, humidity: 61, observedAt: now })
@@ -14,7 +18,7 @@ const finish = () => {
   return workout
 }
 beforeEach(async () => {
-  vi.resetModules(); vi.clearAllMocks(); localStorage.clear()
+  vi.resetModules(); vi.clearAllMocks(); localStorage.clear(); files.clear()
   now = Date.now()
   const state = { user: { id: 'a' }, sync: { server: 'https://one.example' },
     S: { active: { id: 'current', start: now - 10000 }, workouts: [], bodyweight: [], unit: 'kg' } }
@@ -22,11 +26,14 @@ beforeEach(async () => {
   native.authorizeWeather.mockResolvedValue({})
   native.captureWeather.mockResolvedValue(sample())
   native.cancelWeather.mockResolvedValue({})
-  native.available.mockResolvedValue({ available: true }); native.authorize.mockResolvedValue({})
+  native.status.mockResolvedValue({ status: 'available', granted: true }); native.requestPermissions.mockResolvedValue({ granted: true })
+  native.setEnabled.mockResolvedValue({})
   native.readWeights.mockResolvedValue({ weights: [] })
-  native.writeWorkouts.mockImplementation(async ({ workouts }) => ({ written: workouts.length }))
+  native.write.mockResolvedValue({})
   weather = await import('./workout-weather.js')
-  health = await import('./apple-health.js')
+  const hs = await import('./health-sync.js')
+  hs.bindHealthOwner(store.getState)
+  health = { enableAppleHealth: () => hs.enableHealth(state.S), syncAppleHealth: () => hs.syncHealth(state.S) }
 })
 it('does not request location until consent, and captures once across repeated workout updates', async () => {
   weather.captureWorkoutWeather(store)
@@ -46,10 +53,10 @@ it('exports weather at the first save even if the session finishes during the re
   await vi.waitFor(() => expect(complete).toBeTypeOf('function'))
   finish(); const syncing = health.syncAppleHealth(store)
   await new Promise(resolve => setTimeout(resolve, 0))
-  expect(native.writeWorkouts).not.toHaveBeenCalled()
+  expect(native.write).not.toHaveBeenCalled()
   complete({ ...sample(), latitude: 999, longitude: 999 })
   await syncing
-  expect(native.writeWorkouts.mock.calls[0][0].workouts[0].weather).toEqual(sample())
+  expect(native.write.mock.calls[0][0].sessions[0].weather).toEqual(sample())
   expect(JSON.stringify(store.getState().S)).not.toContain('celsius')
   expect(localStorage.getItem('opengym_workout_weather_result')).not.toContain('latitude')
 })
@@ -92,11 +99,11 @@ it('ignores a late callback after disabling weather and preserves workout export
   await health.syncAppleHealth(store)
   expect(weather.weatherForWorkout(store, workout)).toBeNull()
   expect(localStorage.getItem('opengym_workout_weather_result')).toBeNull()
-  expect(native.writeWorkouts.mock.calls[0][0].workouts[0]).not.toHaveProperty('weather')
+  expect(native.write.mock.calls[0][0].sessions[0]).not.toHaveProperty('weather')
   store.getState().S.active = { id: 'offline', start: now - 5000 }
   native.captureWeather.mockRejectedValueOnce(new Error('offline'))
   await weather.enableWorkoutWeather(store); finish(); await health.syncAppleHealth(store)
-  expect(native.writeWorkouts.mock.calls.at(-1)[0].workouts[0]).not.toHaveProperty('weather')
+  expect(native.write.mock.calls.at(-1)[0].sessions[0]).not.toHaveProperty('weather')
 })
 it.each([{ backfill: true }, { editingWorkoutId: 'old' }, { start: Date.now() - 21600001 }])('does not look up weather for backfills, edits or stale sessions: %j', async extra => {
   Object.assign(store.getState().S.active, extra)
@@ -118,4 +125,12 @@ it('does not restore consent after it was disabled during the authorization prom
   weather.disableWorkoutWeather(); finishPermission({}); await enabling
   expect(weather.workoutWeatherEnabled(store)).toBe(false)
   expect(native.captureWeather).not.toHaveBeenCalled()
+})
+
+it('does not rewrite an exported workout when weather is switched off and its cache is cleared', async () => {
+  await health.enableAppleHealth(store); await weather.enableWorkoutWeather(store)
+  finish(); await health.syncAppleHealth(store)
+  expect(native.write).toHaveBeenCalledOnce()
+  weather.disableWorkoutWeather(); await health.syncAppleHealth(store)
+  expect(native.write).toHaveBeenCalledOnce()
 })

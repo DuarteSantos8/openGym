@@ -28,7 +28,7 @@ export const passkeyName = v => (typeof v === 'string' ? v : '')
 
 // `transports` comes from the browser that made the passkey, which is to say from the request. It
 // is handed back to browsers as a hint, so only a short list of short words is kept.
-const transportsOf = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.length <= 16).slice(0, 8) : []);
+export const transportsOf = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.length <= 16).slice(0, 8) : []);
 
 // What the owner sees of their passkeys: never the public key, which nothing on screen needs.
 export function listPasskeys(db, userId) {

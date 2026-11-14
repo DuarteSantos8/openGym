@@ -111,3 +111,39 @@ describe('LineChart y axis', () => {
     expect(labels.some(l => /^[-\u2212]0$/.test(l))).toBe(false)
   })
 })
+
+describe('LineChart x axis', () => {
+  // The date labels under the plot, left to right (the y labels sit at the left edge, end-anchored).
+  const xLabels = (points, h = 150) => {
+    act(() => root.render(<LineChart points={points} h={h} axes unit="kg" />))
+    return [...container.querySelectorAll('text')].filter(n => n.getAttribute('y') === String(h - 7)).map(n => n.textContent)
+  }
+  const at = (year, month, day, hour, y) => ({ t: new Date(year, month - 1, day, hour).getTime(), y })
+
+  it('writes each date once over a span of two days', () => {
+    expect(xLabels([at(2026, 10, 16, 10, 50), at(2026, 10, 17, 18, 60)])).toEqual(['16 Oct', '17 Oct'])
+  })
+
+  it('writes one date for a span inside one day', () => {
+    expect(xLabels([at(2026, 10, 16, 9, 50), at(2026, 10, 16, 19, 60)])).toEqual(['16 Oct'])
+  })
+
+  it('keeps three dates when they differ', () => {
+    expect(xLabels([at(2026, 10, 1, 12, 50), at(2026, 10, 15, 12, 60)])).toEqual(['1 Oct', '8 Oct', '15 Oct'])
+  })
+
+  it('gives the months their year over more than a year, and not within one', () => {
+    const long = xLabels([at(2025, 3, 18, 12, 50), at(2026, 10, 17, 12, 60)])
+    expect(long[0]).toBe("Apr '25")
+    expect(long.at(-1)).toBe("Oct '26")
+    expect(new Set(long).size).toBe(long.length)
+    expect(xLabels([at(2025, 10, 20, 12, 50), at(2026, 9, 30, 12, 60)]).every(l => !l.includes("'"))).toBe(true)
+  })
+
+  it('gives the months their year at exactly 366 days, where Apr comes round again', () => {
+    const edge = xLabels([at(2025, 3, 31, 0, 50), at(2026, 4, 1, 0, 60)])
+    expect(edge[0]).toBe("Apr '25")
+    expect(edge.at(-1)).toBe("Apr '26")
+    expect(new Set(edge).size).toBe(edge.length)
+  })
+})

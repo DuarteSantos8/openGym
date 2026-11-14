@@ -40,6 +40,29 @@ describe('the rest timer across a reload', () => {
     expect(saved()).toBeNull()
   })
 
+  // Battery round 2: the bar's tick used to rewrite the key every second of every rest.
+  it('writes the rest when it changes, not on every second of the countdown', () => {
+    const setItem = vi.spyOn(localStorage, 'setItem')
+    const restWrites = () => setItem.mock.calls.filter(([k]) => k === REST_KEY).length
+    useUI.getState().startRest(90, 2)
+    expect(restWrites()).toBe(1)
+    vi.advanceTimersByTime(10_000)
+    expect(useUI.getState().timer.left).toBeLessThan(90)
+    expect(restWrites()).toBe(1)
+    // +15 s moves the end: written; pause holds `left`: written, and a reload restores it
+    useUI.getState().addRest(15)
+    const afterAdd = restWrites()
+    useUI.getState().pauseRest()
+    expect(restWrites()).toBe(afterAdd + 1)
+    expect(saved()).toMatchObject({ paused: true, left: useUI.getState().timer.left })
+    // the key taken away under it (cleared storage): the next change writes it again
+    useUI.getState().resumeRest()
+    localStorage.removeItem(REST_KEY)
+    vi.advanceTimersByTime(1000)
+    expect(saved()).toMatchObject({ paused: false, endsAt: useUI.getState().timer.endsAt })
+    setItem.mockRestore()
+  })
+
   it('comes back at boot with the time left, books nothing new, and chimes once at the end', () => {
     const endsAt = Date.now() + 40_000
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt, total: 90, forIdx: 1, kind: null, paused: false, left: 50 }))

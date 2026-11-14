@@ -9,6 +9,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A wall-supported quarter squat that you hold. It gently loads the thighs.",
   "instructions": [
     "Stand with your back against a wall and feet slightly forward.",

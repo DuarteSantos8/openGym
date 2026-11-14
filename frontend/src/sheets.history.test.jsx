@@ -72,6 +72,62 @@ describe('exercise history sheet', () => {
     expect(host.textContent).toContain('70 kg')
   })
 
+  it('offers a Bodyweight curve only with two sessions that have a body weight, and Best becomes a percentage', () => {
+    const rel = (i, w, bw) => ({ ...session(i, [{ w, r: 5, done: true }]), bw })
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [session(0, [{ w: 60, r: 5, done: true }]), session(2, [{ w: 70, r: 5, done: true }])] } }))
+    exerciseHistorySheet(EX)
+    const none = renderTop()
+    expect([...none.querySelectorAll('.seg button')].map(b => b.textContent)).not.toContain('Bodyweight')
+
+    useUI.setState({ sheets: [] })
+    useStore.setState(s => ({ S: { ...s.S, workouts: [rel(0, 60, 80), rel(2, 80, 80)] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    const btn = [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Bodyweight')
+    expect(btn).toBeTruthy()
+    act(() => { btn.click() })
+    expect(host.textContent).toMatch(/Best:\s*\d+(\.\d+)? % BW/)
+    expect(host.textContent).toContain('Estimated 1RM as a share of body weight, per workout')
+  })
+
+  it('gives a bare bodyweight exercise a Max reps / Bodyweight toggle, counting body weight as the load', () => {
+    const bare = (i, r) => ({ ...session(i, [{ w: 0, r, done: true }]), bw: 80,
+      entries: [{ id: EX, target: { mode: 'reps', bodyweight: true }, sets: [{ w: 0, r, done: true }] }] })
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [bare(0, 5), bare(2, 10)] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    expect([...host.querySelectorAll('.seg button')].map(b => b.textContent)).toEqual(['Max reps', 'Bodyweight'])
+    act(() => { [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Bodyweight').click() })
+    // 80 kg moved for 10 reps estimates above body weight, so the best is over 100 % BW.
+    const best = Number(host.textContent.match(/Best:\s*([\d.]+) % BW/)?.[1])
+    expect(best).toBeGreaterThan(100)
+  })
+
+  it('on an assisted machine, less help reads as a higher percentage of body weight', () => {
+    const AS = '1431'
+    const at = (i, help) => ({ ...session(i, []), bw: 80, entries: [{ id: AS, target: { mode: 'reps' }, sets: [{ w: help, r: 5, done: true }] }] })
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [at(0, 30), at(2, 10)] } }))
+    exerciseHistorySheet(AS)
+    const host = renderTop()
+    act(() => { [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Bodyweight').click() })
+    const best = Number(host.textContent.match(/Best:\s*([\d.]+) % BW/)?.[1])
+    // The heaviest set, not an extrapolated 1RM: 70 of 80 kg is 87.5 %, so it can never pass 100.
+    expect(best).toBeCloseTo(87.5, 1)
+    expect(host.textContent).toContain('Heaviest set as a share of body weight, per workout')
+  })
+
+  it('keeps a Bodyweight curve for high-rep work the 1RM estimate refuses, following the heaviest set', () => {
+    // 20 reps is above the estimate's cap, so there is no Est. 1RM; leg press and calf raises live here.
+    const high = (i, w) => ({ ...session(i, [{ w, r: 20, done: true }]), bw: 80 })
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [high(0, 100), high(2, 120)] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    expect([...host.querySelectorAll('.seg button')].map(b => b.textContent)).toEqual(['Top set', 'Bodyweight'])
+    act(() => { [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Bodyweight').click() })
+    expect(Number(host.textContent.match(/Best:\s*([\d.]+) % BW/)?.[1])).toBeCloseTo(150, 1)
+    expect(host.textContent).toContain('Heaviest set as a share of body weight, per workout')
+  })
+
   it('is reachable from the exercise detail sheet once there is history', () => {
     exerciseDetailSheet(EXIDX[EX])
     const before = renderTop()

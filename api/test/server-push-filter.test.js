@@ -55,7 +55,7 @@ async function startServer(t, subs = []) {
 test('subscribe refuses every spelling of a private IP literal and accepts public ones', async t => {
   const h = await startServer(t);
   const subscribe = endpoint => fetch(`${h.api}/api/push/subscribe`, {
-    method: 'POST', headers: cookie, body: JSON.stringify({ subscription: { endpoint, keys } })
+    method: 'POST', headers: { ...cookie, 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: { endpoint, keys } })
   });
   const privateForms = [
     'https://[::ffff:127.0.0.1]/x',          // mapped loopback, dotted
@@ -68,14 +68,21 @@ test('subscribe refuses every spelling of a private IP literal and accepts publi
     'https://[::1]/x',                       // loopback, compressed
     'https://[fe80::1]/x',                   // link-local
     'https://[fd00::1]/x',                   // unique local
-    'https://127.0.0.1/x'                    // plain IPv4 (the case that always worked)
+    'https://127.0.0.1/x',                   // plain IPv4 (the case that always worked)
+    'https://[::127.0.0.1]/x',               // IPv4-compatible loopback
+    'https://[64:ff9b::a9fe:a9fe]/x',        // NAT64 of 169.254.169.254
+    'https://[64:ff9b:1::1]/x',              // local-use NAT64
+    'https://[2002:a00:1::1]/x',             // 6to4 of 10.0.0.1
+    'https://[fec0::1]/x',                   // site-local
+    'https://[ff02::1]/x',                   // multicast
+    'https://198.18.0.1/x'                   // benchmarking range
   ];
   for (const ep of privateForms) {
     const r = await subscribe(ep);
     assert.equal(r.status, 400, ep);
     assert.deepEqual(await r.json(), { error: 'endpoint must not point at a private address' }, ep);
   }
-  for (const ep of ['https://[::ffff:8.8.8.8]/x', 'https://[::ffff:808:808]/x', 'https://[2606:4700::1111]/x', 'https://8.8.8.8/x', 'https://push.example/x']) {
+  for (const ep of ['https://[64:ff9b::808:808]/x', 'https://[2002:808:808::1]/x', 'https://[::ffff:8.8.8.8]/x', 'https://[::ffff:808:808]/x', 'https://[2606:4700::1111]/x', 'https://8.8.8.8/x', 'https://push.example/x']) {
     assert.equal((await subscribe(ep)).status, 200, ep);
   }
 });

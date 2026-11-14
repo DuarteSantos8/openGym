@@ -3,12 +3,13 @@
   "name": "bodyweight incline side plank",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A side plank held on an incline, resting on the forearm with the body in a straight line. It trains the obliques and core.",
   "instructions": [
     "Start by lying on your side with your legs extended and stacked on top of each other.",

@@ -3,9 +3,9 @@
   "name": "dumbbell reverse grip incline row",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids"
   ],

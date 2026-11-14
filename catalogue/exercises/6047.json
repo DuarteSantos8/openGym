@@ -3,9 +3,9 @@
   "name": "bottle weighted forward lunge",
   "bodyPart": "upper legs",
   "equipment": "weighted",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "calves",
     "core"

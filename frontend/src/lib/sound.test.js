@@ -203,6 +203,18 @@ describe('play on silent (Settings switch, WebKit only)', () => {
     expect(session.type).toBe('auto')
   })
 
+  // Discord (baodor): the app paused the music on the rest sound. In the iPhone app the page's
+  // session is 'ambient' whatever the switch says: it mixes, and the native tone rings on silent.
+  it("in the iPhone app: always 'ambient', never the exclusive 'playback'", async () => {
+    vi.stubEnv('VITE_MOBILE', '1')
+    try {
+      sound.setPlayOnSilent(true)
+      expect(session.type).toBe('ambient')
+      sound.setPlayOnSilent(false)
+      expect(session.type).toBe('ambient')
+    } finally { vi.unstubAllEnvs() }
+  })
+
   it('is a no-op in a browser without navigator.audioSession', () => {
     Object.defineProperty(navigator, 'audioSession', { value: undefined, configurable: true, writable: true })
     expect(() => sound.setPlayOnSilent(true)).not.toThrow()
@@ -435,6 +447,22 @@ describe('vibrate switch', () => {
     Object.defineProperty(navigator, 'vibrate', { value: undefined, configurable: true, writable: true })
     expect(sound.vibrateSupported()).toBe(false)
     expect(() => sound.vibrate(30)).not.toThrow()
+  })
+
+  it('the iPhone app, without navigator.vibrate, buzzes through its native side', () => {
+    Object.defineProperty(navigator, 'vibrate', { value: undefined, configurable: true, writable: true })
+    const native = []
+    sound.setNativeBuzzer(p => { native.push(p); return Promise.resolve(true) })
+    try {
+      expect(sound.vibrateSupported()).toBe(true)
+      sound.vibrate([200, 100, 200])
+      sound.setVibrate(false)
+      sound.vibrate(30)
+      expect(native).toEqual([[200, 100, 200]])
+    } finally {
+      sound.setNativeBuzzer(null)
+      sound.setVibrate(true)
+    }
   })
 })
 

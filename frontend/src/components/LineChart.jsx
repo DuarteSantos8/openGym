@@ -12,10 +12,13 @@ const W = 340   // viewBox width; the svg stretches to its container, height com
 // opts: { h, unit, color, axes, goal, invert, series }
 //   invert flips the y axis, for a scale that counts down as it gets harder (RIR). Without it
 //   a curve of reps-in-reserve reads upside down, with the hardest sets at the floor.
+//   yHint names the direction of the y axis in words ({ hi: 'Harder' }), drawn over the axis, for a
+//   scale whose numbers alone read the wrong way round (RIR, where 0 is the hardest set).
+//   tickPrefix goes in front of every y tick ("RIR 0"), so the axis says which scale it counts.
 //   series draws several lines instead of one: [{ points, color }] (issue #145, one per set
 //   number). `points` then only anchors the hover — one per date, its `note` the tooltip — and
 //   the y axis spans every series.
-export default function LineChart({ points, h = 150, unit = '', color = 'var(--acc)', axes = true, goal = null, invert = false, series = null }) {
+export default function LineChart({ points, h = 150, unit = '', color = 'var(--acc)', axes = true, goal = null, invert = false, series = null, yHint = null, tickPrefix = '' }) {
   const svgRef = useRef(null)
   const wrapRef = useRef(null)
   const tipRef = useRef(null)
@@ -48,7 +51,7 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
 
   if (!points || points.length === 0) return <div className="empty small">{t('No data yet')}</div>
   const H = h
-  const P = { l: axes ? 34 : 8, r: 12, t: 10, b: axes ? 22 : 8 }
+  const P = { l: axes ? (tickPrefix ? 44 : 34) : 8, r: 12, t: yHint?.hi ? 24 : 10, b: axes ? 22 : 8 }
   const single = points.length === 1
   const pts = single ? [points[0], points[0]] : points
   const multi = Array.isArray(series) && series.length > 0
@@ -76,8 +79,8 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
       const v = Math.round(v0 / step) * step || 0
       const y = Y(v)
       gridlines.push(<g key={'y' + v}>
-        <line x1={P.l} y1={y} x2={W - P.r} y2={y} stroke="var(--sep-op)" strokeWidth="1" strokeDasharray="2 4" />
-        <text x={P.l - 5} y={y + 3.5} textAnchor="end" fontSize="9.5" fill="var(--label-2)">{fmtNum(v)}</text>
+        <line x1={P.l} y1={y} x2={W - P.r} y2={y} stroke="var(--sep-op)" strokeWidth="1" />
+        <text x={P.l - 5} y={y + 3.5} textAnchor="end" fontSize="9.5" fill="var(--label-2)">{tickPrefix}{fmtNum(v)}</text>
       </g>)
     }
     const d0 = new Date(t0), d1 = new Date(t1)
@@ -85,17 +88,28 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
     let m = new Date(d0.getFullYear(), d0.getMonth() + 1, 1)
     while (m <= d1) { ticks.push({ t: +m, txt: t(MONTHS[m.getMonth()]) }); m = new Date(m.getFullYear(), m.getMonth() + 1, 1) }
     if (ticks.length === 0 && !single) {
+      // Start, middle and end. A span of a day or two gives the same date twice ("16 Oct | 17 Oct |
+      // 17 Oct"), so each date is written once: the end kept over a middle that reads the same,
+      // and a span inside one day gets one date, in the middle.
       for (let i = 0; i <= 2; i++) {
         const tv = t0 + (t1 - t0) * i / 2, dd = new Date(tv)
-        ticks.push({ t: tv, txt: dd.getDate() + ' ' + t(MONTHS[dd.getMonth()]), anchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle' })
+        const tk = { t: tv, txt: dd.getDate() + ' ' + t(MONTHS[dd.getMonth()]), anchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle' }
+        if (ticks.length && ticks[ticks.length - 1].txt === tk.txt) { if (i === 2) ticks[ticks.length - 1] = tk; continue }
+        ticks.push(tk)
       }
+      if (ticks.length === 1) ticks[0] = { ...ticks[0], t: (t0 + t1) / 2, anchor: 'middle' }
+    } else if (ticks.length >= 13) {
+      // Twelve month names come round again from the thirteenth month on ("Apr | … | Mar | Apr"),
+      // so each month then says its year: "Apr '25". Counted in months, not milliseconds, so a span
+      // of exactly a year and a day, or one across a clock change, is caught as well.
+      for (const tk of ticks) tk.txt += " '" + String(new Date(tk.t).getFullYear()).slice(2)
     }
     const every = Math.max(1, Math.ceil(ticks.length / 7))
     ticks.forEach((tk, i) => {
       if (i % every) return
       const x = X(tk.t)
       gridlines.push(<g key={'x' + i}>
-        <line x1={x} y1={P.t} x2={x} y2={H - P.b} stroke="var(--sep-op)" strokeWidth="1" strokeDasharray="2 4" />
+        <line x1={x} y1={P.t} x2={x} y2={H - P.b} stroke="var(--sep-op)" strokeWidth="1" />
         <text x={x} y={H - 7} textAnchor={tk.anchor || 'middle'} fontSize="9.5" fill="var(--label-2)">{tk.txt}</text>
       </g>)
     })
@@ -128,13 +142,14 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
       onTouchStart={onMove} onTouchMove={onMove}>
       <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ aspectRatio: `${W}/${H}` }}>
         <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity=".28" />
+          <stop offset="0" stopColor={color} stopOpacity=".18" />
           <stop offset="1" stopColor={color} stopOpacity="0" />
         </linearGradient></defs>
         {gridlines}
+        {yHint?.hi && <text x="2" y="11" fontSize="9.5" fill="var(--label-2)">↑ {yHint.hi}</text>}
         {goal != null && isFinite(goal) && <>
-          <line x1={P.l} y1={Y(goal)} x2={W - P.r} y2={Y(goal)} stroke="var(--yellow)" strokeWidth="1.6" strokeDasharray="7 4" />
-          <text x={W - P.r - 2} y={Y(goal) - 5} textAnchor="end" fontSize="9.5" fontWeight="700" fill="var(--yellow)">{fmtNum(goal)}</text>
+          <line x1={P.l} y1={Y(goal)} x2={W - P.r} y2={Y(goal)} stroke="var(--gold-ink)" strokeWidth="1.6" strokeDasharray="7 4" />
+          <text x={W - P.r - 2} y={Y(goal) - 5} textAnchor="end" fontSize="9.5" fontWeight="700" fill="var(--gold-ink)">{fmtNum(goal)}</text>
         </>}
         {/* The first series is drawn widest and underneath, each next one thinner on top, so
             lines that share their values show as nested stripes instead of hiding each other. */}

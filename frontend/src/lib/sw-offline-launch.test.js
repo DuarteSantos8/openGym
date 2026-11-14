@@ -136,9 +136,10 @@ describe('service worker offline cold-launch (issue #274)', () => {
   it('a script whose body is still arriving after 3 s reaches the page whole, and is cached', async () => {
     const net = slowBody('export const pack = {', ' hello: "Hallo" }')
     const { listeners, cache, clock } = loadServiceWorker({ fetchImpl: net.fetch })
-    await cache.put('https://gym.example/assets/de-abc.js', new Response('the copy from the last build'))
+    // Not a hashed build chunk (those are served from the cache once they are in it, below).
+    await cache.put('https://gym.example/locale/de.js', new Response('the copy from the last build'))
 
-    const e = makeFetchEvent('https://gym.example/assets/de-abc.js', 'cors')
+    const e = makeFetchEvent('https://gym.example/locale/de.js', 'cors')
     listeners.fetch(e)
     const res = await e.response
     await clock.advance(3000)
@@ -146,7 +147,7 @@ describe('service worker offline cold-launch (issue #274)', () => {
 
     expect(await res.text()).toBe('export const pack = { hello: "Hallo" }')
     await settle()
-    expect(await (await cache.match('https://gym.example/assets/de-abc.js')).text()).toBe('export const pack = { hello: "Hallo" }')
+    expect(await (await cache.match('https://gym.example/locale/de.js')).text()).toBe('export const pack = { hello: "Hallo" }')
   })
 
   it('a request the cache cannot answer waits for a slow network past 3 s instead of failing', async () => {
@@ -181,5 +182,32 @@ describe('service worker offline cold-launch (issue #274)', () => {
     expect(e.response).toBeTruthy()
     await clock.advance(3000)
     expect(await (await e.response).text()).toBe('cached-shell')
+  })
+
+  // A hashed chunk never changes under its name, so a start does not ask the network about it.
+  it('a hashed build chunk in the cache is answered from it without the network', async () => {
+    let asked = 0
+    const { listeners, cache } = loadServiceWorker({ fetchImpl: () => { asked++; return Promise.resolve(new Response('net')) } })
+    await cache.put('https://gym.example/assets/Stats-Be9GntYl.js', new Response('cached chunk'))
+    const e = makeFetchEvent('https://gym.example/assets/Stats-Be9GntYl.js', 'cors')
+    listeners.fetch(e)
+    expect(await (await e.response).text()).toBe('cached chunk')
+    expect(asked).toBe(0)
+  })
+
+  it('a hashed chunk not cached yet comes from the network and is kept, a redirected answer is not', async () => {
+    const answers = [new Response('export default 1'), Object.assign(new Response('<html>login</html>'), {})]
+    Object.defineProperty(answers[1], 'redirected', { value: true })
+    const { listeners, cache } = loadServiceWorker({ fetchImpl: () => Promise.resolve(answers.shift()) })
+    const e = makeFetchEvent('https://gym.example/gym/assets/index-DdAX9ec6.js', 'cors')
+    listeners.fetch(e)
+    expect(await (await e.response).text()).toBe('export default 1')
+    await settle()
+    expect(await (await cache.match('https://gym.example/gym/assets/index-DdAX9ec6.js')).text()).toBe('export default 1')
+    const e2 = makeFetchEvent('https://gym.example/assets/sheets-ficOiT8i.js', 'cors')
+    listeners.fetch(e2)
+    await e2.response
+    await settle()
+    expect(await cache.match('https://gym.example/assets/sheets-ficOiT8i.js')).toBeUndefined()
   })
 })

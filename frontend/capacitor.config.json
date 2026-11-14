@@ -3,10 +3,19 @@
   "appName": "openGym",
   "webDir": "dist",
   "backgroundColor": "#0c0e12",
-  "ios": {
-    "loggingBehavior": "none"
-  },
   "android": {
     "allowMixedContent": true
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "disable"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 8000,
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 180,
+      "backgroundColor": "#0c0e12",
+      "showSpinner": false
+    }
   }
 }

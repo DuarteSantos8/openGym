@@ -3,13 +3,14 @@
   "name": "side plank (beginner)",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "glutes"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A bent-knee side plank that builds oblique and hip strength for beginners.",
   "instructions": [
     "Lie on your side with knees bent and your elbow under your shoulder.",

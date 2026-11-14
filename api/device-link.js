@@ -11,12 +11,19 @@
  *   - one per profile — a new one replaces the one before — good for DEVICE_LINK_TTL_MS, and gone
  *     with the first passkey made with it. An expired one is dropped the next time links are read.
  *
+ * A recovery code (#584) is the same kind of link, made by someone else for a person who has lost
+ * every way in: an admin from the dashboard, or the server's own command (recover.js, through the
+ * local admin socket). It carries `kind: 'recovery'` and who made it, and lives a day like an
+ * admin's password reset code, because it has to reach the person first.
+ *
  * Pure bookkeeping on `db.deviceLinks`; the routes, the throttle and the audit are server.js's. */
 import crypto from 'node:crypto';
 
 // Long enough to walk to the other device, find the camera and sign in; short enough that a code
 // photographed off a screen is dead by the time anyone could use it.
 export const DEVICE_LINK_TTL_MS = 10 * 60 * 1000;
+// A recovery code is handed over by an admin, by message or in person: a day, like a reset code.
+export const RECOVERY_TTL_MS = 24 * 3600 * 1000;
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LENGTH = 12;
 
@@ -33,12 +40,13 @@ function prune(db, now) {
   db.deviceLinks = (db.deviceLinks || []).filter(l => l && typeof l.h === 'string' && l.exp > now);
 }
 
-// → { code, link }. The code is returned once and never stored.
-export function createDeviceLink(db, userId, now = Date.now(), ttlMs = DEVICE_LINK_TTL_MS) {
+// → { code, link }. The code is returned once and never stored. `extra` marks a recovery code:
+// { kind: 'recovery', by } (who made it: an admin's id, or 'server').
+export function createDeviceLink(db, userId, now = Date.now(), ttlMs = DEVICE_LINK_TTL_MS, extra = {}) {
   prune(db, now);
   db.deviceLinks = db.deviceLinks.filter(l => l.userId !== userId);
   const code = makeLinkCode();
-  const link = { h: hashLinkCode(code), userId, exp: now + ttlMs, created: now };
+  const link = { h: hashLinkCode(code), userId, exp: now + ttlMs, created: now, ...(extra.kind === 'recovery' ? { kind: 'recovery', by: String(extra.by || 'server') } : {}) };
   db.deviceLinks.push(link);
   return { code, link };
 }
@@ -65,4 +73,9 @@ export function dropDeviceLinks(db, userId) {
   const before = (db.deviceLinks || []).length;
   db.deviceLinks = (db.deviceLinks || []).filter(l => l.userId !== userId);
   return db.deviceLinks.length !== before;
+}
+
+// The live recovery code of a profile, if any (for the admin dashboard: "recovery code until").
+export function recoveryLinkOf(db, userId, now = Date.now()) {
+  return (db.deviceLinks || []).find(l => l && l.userId === userId && l.kind === 'recovery' && l.exp > now) || null;
 }

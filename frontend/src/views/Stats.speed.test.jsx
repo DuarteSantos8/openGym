@@ -33,7 +33,8 @@ function mount(settings) {
   document.body.appendChild(host)
   root = createRoot(host)
   act(() => root.render(<Stats />))
-  return mocks.charts.find(c => c.color === 'var(--blue)')
+  // the exercise chart: the one not in the profile's weight unit (that is Body weight's)
+  return mocks.charts.filter(c => c.unit !== mocks.S.unit).at(-1)
 }
 
 describe('Stats — cardio speed', () => {

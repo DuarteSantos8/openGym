@@ -42,6 +42,19 @@ afterEach(() => { vi.unstubAllEnvs() })
 afterAll(() => { dirs.forEach(d => fs.rmSync(d, { recursive: true, force: true })) })
 
 describe('a read failure is not "you never signed in"', () => {
+  test('without a watcher, a state file that goes away stops being served from the cache (#653)', async () => {
+    const dir = mk({ 'db.json': DB, 'state-alex.json': JSON.stringify({ unit: 'lb' }) })
+    const watch = vi.spyOn(fs, 'watch').mockImplementation(() => { throw new Error('no fs.watch here') })
+    try {
+      const { getState } = await load(dir)
+      expect(getState().unit).toBe('lb')
+      fs.rmSync(path.join(dir, 'state-alex.json'))
+      expect(getState()).toBeNull()
+      fs.writeFileSync(path.join(dir, 'state-alex.json'), JSON.stringify({ unit: 'kg' }))
+      expect(getState().unit).toBe('kg')
+    } finally { watch.mockRestore() }
+  })
+
   test('no state file at all is still null — that account really has never synced', async () => {
     const { getState } = await load(mk({ 'db.json': DB }))
     expect(getState()).toBeNull()
@@ -119,4 +132,21 @@ describe('the "which profile?" error is a config message, not a roster', () => {
       for (const u of uids) expect(logs.join('\n')).toContain(u)
     })
   }
+})
+
+// #656: an exercise merged into another in the app. A workout still logged against the source (a
+// device that synced it before it heard of the merge) reads as the exercise it went into.
+describe('merged exercises', () => {
+  test('anything still named by a merged-away exercise reads as its target', async () => {
+    const state = {
+      workouts: [{ id: 'w1', d: '2026-10-01', entries: [{ id: 'cfn', sets: [{ w: 70, r: 8, done: true }] }] }],
+      routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'cfn', sets: 3 }] }],
+      customEx: [],
+      exMerged: { cfn: { into: '0025', _ts: 5 }, gone: { into: null, _ts: 6 } },
+    }
+    const s = await load(mk({ 'db.json': DB, 'state-alex.json': JSON.stringify(state) }))
+    const st = s.getState()
+    expect(st.workouts[0].entries[0].id).toBe('0025')
+    expect(st.routines[0].ex[0].id).toBe('0025')
+  })
 })

@@ -1,17 +1,30 @@
 import UIKit
 import Capacitor
+// UIScene.ConnectionOptions.shouldHandleActiveWorkoutRecovery (iOS 26) lives here.
+import HealthKitUI
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // The background check before a nudge (NudgeCheckPlugin): iOS hands the task only to a
+        // handler registered before launching ends.
+        NudgeCheckPlugin.registerTask()
+        // The gym reminder (GymReminderPlugin): iOS relaunches the app in the background for a
+        // region it watches and delivers the event to the location delegate that exists then.
+        GymReminderCenter.shared.start()
         return true
     }
 
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        // The app was killed with the iPhone's own workout session running (AirPods heart rate,
+        // #818): iOS kept the session and hands it back now, as in Apple's iPhone workout sample.
+        // The page adopts it for its running workout (lib/phone-workout.js).
+        if #available(iOS 26.0, *), options.shouldHandleActiveWorkoutRecovery {
+            PhoneWorkoutSession.shared.recover()
+        }
         let sceneConfiguration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
         sceneConfiguration.delegateClass = SceneDelegate.self
         return sceneConfiguration

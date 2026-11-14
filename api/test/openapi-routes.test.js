@@ -39,7 +39,8 @@ function specOperations(yaml) {
 test('every route the server registers is in openapi.yaml, and nothing else is', () => {
   const routes = new Set([
     ...routeKeys(read(path.join(API, 'server.js'))),
-    ...routeKeys(read(path.join(API, 'coach', 'routes.js')))
+    ...routeKeys(read(path.join(API, 'coach', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'integrations', 'routes.js')))
   ]);
   const ops = new Set(specOperations(spec));
   assert.ok(routes.size > 40, `only found ${routes.size} routes — the route table moved`);
@@ -47,7 +48,7 @@ test('every route the server registers is in openapi.yaml, and nothing else is',
   assert.deepEqual([...routes].filter(r => !ops.has(r)).sort(), [], 'undocumented routes — add them to api/openapi.yaml');
   assert.deepEqual([...ops].filter(o => !routes.has(o)).sort(), [], 'documented routes the server does not serve');
   // The Coach surface in particular: this test exists because all sixteen were missing.
-  for (const r of ['GET /api/coach/status', 'POST /api/coach/review', 'GET /api/admin/coach', 'POST /api/admin/coach/connect']) {
+  for (const r of ['GET /api/integrations', 'POST /api/integrations/connect', 'GET /api/coach/status', 'POST /api/coach/review', 'GET /api/admin/coach', 'POST /api/admin/coach/connect']) {
     assert.ok(ops.has(r), `${r} is missing from the spec`);
   }
 });
@@ -104,5 +105,19 @@ test('every error code the e-mail and password signup routes return is in their 
     assert.ok(codes.size > 1, key);
     const doc = operation(p, method);
     for (const c of codes) assert.ok(doc.includes(c), `${key} returns "${c}" but its openapi entry never mentions it`);
+  }
+});
+
+/* #795: the generator kept its own copy of the website's ?v= and fell behind index.html, so
+   --check went red on main. It reads index.html now; this keeps it from growing a copy again. */
+test('the docs generator takes the website ?v= from index.html, and every page agrees', () => {
+  const docs = read(path.join(ROOT, 'scripts', 'build-api-docs.mjs'));
+  assert.doesNotMatch(docs, /\?v=\d/, 'build-api-docs.mjs hard-codes a ?v= number, read it from website/index.html');
+  const web = path.join(ROOT, 'website');
+  const v = /styles\.css\?v=(\d+)/.exec(read(path.join(web, 'index.html')))[1];
+  for (const f of fs.readdirSync(web).filter(f => f.endsWith('.html'))) {
+    for (const m of read(path.join(web, f)).matchAll(/(?:styles\.css|site\.js)\?v=(\d+)/g)) {
+      assert.equal(m[1], v, `website/${f} links ${m[0]}, index.html is on ?v=${v}`);
+    }
   }
 });

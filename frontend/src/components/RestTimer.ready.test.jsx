@@ -58,7 +58,7 @@ describe('RestTimer Ready and overtime display', () => {
     act(() => vi.advanceTimersByTime(5000))
 
     expect(host.querySelector('#timer .t').textContent).toBe('+0:03')
-    expect(host.querySelector('#timer .bar i').style.width).toBe('0%')
+    expect(host.querySelector('#timer .bar i').style.transform).toBe('scaleX(0)')
   })
 })
 

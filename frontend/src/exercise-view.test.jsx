@@ -14,7 +14,7 @@ import { exercisePicker } from './sheets.jsx'
 import Library from './views/Library.jsx'
 import Muscles from './views/Muscles.jsx'
 
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ pathname: '/muscles', state: null }), useSearchParams: () => [new URLSearchParams()] }))
 
 const mounted = []
 const view = () => useStore.getState().S.exerciseView

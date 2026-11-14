@@ -124,3 +124,26 @@ describe('updateRoutineFromEntry', () => {
     expect(routine.ex[0]).toEqual({ id: BENCH, sets: 3 })
   })
 })
+
+// Discord (lajawi): "No timer" for an exercise is `restOff`, never a 0 or a negative rest.
+describe('updateRoutineFromEntry with an exercise on "No timer"', () => {
+  it('offers it as a rest change and stores it as restOff', () => {
+    const routine = { id: 'A', ex: [{ id: BENCH, sets: 3, restSec: 90 }] }
+    const entries = [entry(BENCH, work(3), { restOff: true })]
+    expect(routineChangesFromEntry(routine, entries, 0).changes).toEqual([{ key: 'restSec', from: 90, to: -1 }])
+    updateRoutineFromEntry(routine, entries, 0)
+    expect(routine.ex[0]).toEqual({ id: BENCH, sets: 3, restOff: true })
+  })
+  it('and back to the default or a time takes restOff away again', () => {
+    const routine = { id: 'A', ex: [{ id: BENCH, sets: 3, restOff: true }] }
+    updateRoutineFromEntry(routine, [entry(BENCH, work(3), { restSec: 0 })], 0)
+    expect(routine.ex[0]).toEqual({ id: BENCH, sets: 3 })
+    routine.ex[0].restOff = true
+    updateRoutineFromEntry(routine, [entry(BENCH, work(3), { restSec: 75 })], 0)
+    expect(routine.ex[0]).toEqual({ id: BENCH, sets: 3, restSec: 75 })
+  })
+  it('a session that kept the routine’s "No timer" has nothing to update', () => {
+    const routine = { id: 'A', ex: [{ id: BENCH, sets: 3, restOff: true }] }
+    expect(routineChangesFromEntry(routine, [entry(BENCH, work(3), { restOff: true })], 0)).toBeNull()
+  })
+})

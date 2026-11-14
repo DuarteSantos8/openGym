@@ -30,13 +30,39 @@ child process to drop privileges on, no runtime to carry in the image, and nothi
 
 A model on your own LAN is the compatible endpoint with no key: point it at
 `http://ollama.lan:11434` and pick a model from the list it serves. That is the whole
-configuration. (On the server, that is. The phone app's own-key Coach needs `https://`; see
-[On the phone](#on-the-phone).)
+configuration. (On the server, that is. The phone app's own-key Coach takes `http://` only for
+an address on the home network; see [On the phone](#on-the-phone).)
+
+Azure OpenAI is the compatible endpoint too: the base URL is
+`https://<resource>.openai.azure.com/openai/v1` (not the Responses URL with `?api-version=` the
+portal shows), the key is the resource's API key, and the model is your deployment's name.
+OpenAI's reasoning models (o1, o3, o4, gpt-5) and Azure get `max_completion_tokens` instead of
+`max_tokens`; an endpoint that wants the other one says so, and the Coach switches once and
+remembers it (#869).
 
 ## Turning it on
 
 Nothing here is an environment variable or a restart — the whole point of the admin card is that
 enabling the Coach is a decision you make in the app.
+
+### From zero to a working Coach (self-hosted)
+
+The one thing that does need `.env` is being an admin, because the switch lives in the admin
+dashboard. If **Settings → Account → Admin dashboard** isn't there for you, that's why the Coach
+"isn't showing up".
+
+1. **Be an admin.** Either `FIRST_USER_ADMIN=1` in `.env` *before* you create the very first
+   profile, or, if you already have one, copy **Settings → Account → Account ID** into
+   `ADMIN_UIDS=<that id>`. Then `docker compose up -d` (not `restart`, which keeps the old
+   environment) and reload the app. Details: [SELF_HOSTING.md §4](SELF_HOSTING.md#4-multiple-users).
+2. **Connect a provider.** **Settings → Account → Admin dashboard**, the **AI Coach** card:
+   **Set up the Coach**, pick a provider, paste its API key (or the endpoint, for a local
+   model), **Test the Coach**. Anthropic, OpenAI, Gemini and OpenAI-compatible endpoints work on
+   the default image; leave `API_TARGET` alone unless you want the Claude Agent SDK or Codex
+   (see [below](#with-a-runtime-in-the-container-claude-agent-sdk-codex-cli)).
+3. **Check the switch at the top of the card is on**, and that `COACH_DISABLED` isn't set.
+4. **Open it:** the menu at the top right of **Plan**, last entry, **Coach**. Everyone else on
+   the instance sees it after they reload.
 
 ### Where people find it
 
@@ -49,7 +75,8 @@ own (see [On the phone](#on-the-phone)).
 The entry appears only when all of these hold:
 
 - **The master switch is on.** That is **Set up the Coach** on the admin card
-  (**Settings → Account → Admin dashboard**, the **AI Coach** card), and afterwards the toggle at the top
+  (**Settings → Account → Admin dashboard**, the **AI Coach** card; an admin also finds it as
+  **Settings → AI Coach**), and afterwards the toggle at the top
   of the same card. A provider that is connected and passes **Test the Coach** is not enough
   on its own: with the switch off, the server tells every app there is no Coach, and the card
   reads *Off right now — nobody sees it anywhere in the app*.
@@ -161,6 +188,10 @@ API_TARGET=coach docker compose up -d --build api
 claude setup-token
 ```
 
+On Windows, if Claude Code was installed with npm, PowerShell may refuse to run it ("running
+scripts is disabled on this system"). Run `claude.cmd setup-token` instead, or use Command Prompt;
+there's no need to change the execution policy.
+
 Complete its normal browser sign-in and copy the token it prints. openGym never opens or handles
 that flow — it only ever receives the finished token. (Claude also accepts an Anthropic API key
 here, under the same chip; the setup token is the route for a Claude subscription.)
@@ -192,6 +223,68 @@ picture for its exercises and four weeks of weigh-ins — and gets back a readin
 score out of ten, what went well, what to watch, and what to do next time, each item citing the
 session's own numbers. A debrief cannot carry a change; an answer that tries is refused by the
 validator rather than trimmed. The card is kept in the Coach's history like everything else.
+
+### During a workout
+
+**Ask the Coach** sits in every exercise's ⋯ menu while a workout runs (once the Coach is set up
+and agreed to). Pick what is going on (*It hurts*, *Machine's taken*, *Short on time*, *Feeling
+great*, *Running on empty*, *Something else*), add a word if you like, and the Coach answers with
+up to six changes to the **unfinished part of that session**, as cards you tick:
+
+| Change | What it does |
+| --- | --- |
+| `swap` | the sets left of the exercise go to another one (like for like: the same muscle first) |
+| `sets` | how many sets are left of it: fewer drops the trailing open sets, more copies the last |
+| `reps` | the target reps of its open sets |
+| `weight` | its open sets −50 % to +10 %, rounded down to the active gym's plates or dumbbells, warm-ups re-aimed |
+| `add` | another exercise, built the way an exercise added by hand is built |
+| `skip` | drops what is left of it |
+| `move` | do it next, or last (only one not started) |
+| `rest` | its rest between sets, today |
+
+It is a job kind of its own (`adapt`, `POST /api/coach/adapt`, `api/coach/prompts/adapt.md`) with
+its own closed list, checked by `validateAdapt` against the session it was asked about: a change
+that names a logged set, an exercise whose sets are all done, an id outside the library slice or
+already in the session is refused and goes back for the one repair round. Nothing changes until
+you apply; applying (`frontend/src/lib/coach-adapt.js`) touches only rows not yet done, never the
+routine, and finds each exercise again first, so a change for an exercise the session has moved
+past is greyed out instead of landing on whatever now sits at its index. The proposal names the
+session it belongs to; once that workout is finished it can only be dismissed. Every answer keeps
+a line in the Coach's history. Changes are flat scalar fields rather than one `after` of many
+shapes, so a provider that closes every object for a strict schema (#804) can still write them.
+
+The running session is sent the way a question sends it (`today`): exercise ids, targets and the
+sets' numbers, no notes, no media, and never the form videos of a set.
+
+### Warm-ups and programmes
+
+A review can now also:
+
+- set how an exercise warms up (`warmup`: Auto, the app ramping from the work weight by load; a
+  block of its own as shares of the work weight; or none), which the app rounds to the gym's
+  plates itself;
+- write a multi-week **programme** over the plan's routines, or revise the one you have
+  (`programme`: per week a deload, a week-wide RPE, or %1RM and RPE targets per exercise). A new
+  programme is saved under Plan → Programmes and starts when you start it.
+
+Both are undone by **Undo the Coach's changes** like everything else.
+
+Every `why` on a change to progression or volume is asked for in plain words ("you will add a
+rep each session until 12, then the weight goes up"), and the card shows the app's own line for a
+progression rule under it, so "double progression" is never the whole explanation.
+
+### What the Coach reads, besides the plan and the log
+
+All built in `api/coach/core/context.js` and `payload.js`, by name, bounded, and small:
+
+- `muscles`: work sets per target muscle over the last 7 days, the 4-week weekly average, the
+  last 72 hours and days since it was trained (weekly volume and recovery);
+- `gym`: the active gym's equipment, plate sizes and dumbbells (sizes, never the gym's name);
+- `challenges`: this month's three goals and which are done;
+- the warm-up choice of every exercise and the warm-up setting (`meta.warmups`);
+- `plan.programmes`: the six most recent programmes and which one runs, in which week;
+- body weight as one value per day, as Settings → Daily weigh-in value picks it, with how many
+  weigh-ins the day had.
 
 ### Comparing with others on the instance
 
@@ -254,11 +347,26 @@ renders from, so the screen cannot drift from the payload — are:
 | Category | What it covers |
 | --- | --- |
 | `plan` | routines, exercises, sets/reps, schedule, progression settings |
-| `training` | logged sets, targets, effort ratings, durations, PRs and session notes in the review window |
+| `training` | logged sets, targets, effort ratings, durations, PRs, session notes and the notes on single sets in the review window |
 | `bodyweight` | weigh-ins in the window and your goal weight |
 | `profile` | the intake answers you gave the Coach, including any limitations |
 | `cohort` (optional) | only with comparison on and your own opt-in: anonymous medians from the other people sharing — never their data, and never yours to them beyond the same medians |
 | `prefs` | unit, language, effort scale |
+
+### Asking before it goes
+
+Before the first request that would send anything to an AI provider, the app asks once: a sheet
+that names the provider (OpenAI, Anthropic, Google Gemini, or the host of a compatible endpoint),
+lists what goes there (the categories above plus whatever you type to the Coach) and says whether
+it goes straight from the phone with your key or through your openGym server to the provider its
+admin picked. "Not now" sends nothing. The intake's own consent screen names the same provider
+and list, so agreeing there counts as this yes and a first-timer is asked once. The answer is kept on that device, per provider and host
+(`frontend/src/lib/coach-consent.js`), so pointing the Coach somewhere else asks again; the Coach
+menu's **AI data sharing** (and Settings → AI Coach on the phone) lists what was allowed and takes
+it back. Switching on automatic reviews asks too, and withdrawing the server's provider switches
+them off. The demo, and a model on your own machine or network (localhost, private and Tailscale
+addresses, `*.local`/`*.lan`), never ask: nothing goes to a third party. `GET /api/coach/disclosure`
+names the host for this, never the rest of the URL.
 
 A review reads a training block, not a training career: the window is capped at **12 weeks or 60
 sessions**. Your profile is identified by a stable pseudonym that is never the user id and never
@@ -290,7 +398,7 @@ The prompt asks for a shape and the model usually obliges. `api/coach/validate.j
 "usually" stops mattering, and it — not the prompt — is the security boundary. Nothing reaches
 you that has not:
 
-- **matched the closed list of change types.** Eighteen of them, each with an apply
+- **matched the closed list of change types.** Twenty of them, each with an apply
   implementation on the client to match. A hostile note in your own free text can talk a model
   into saying anything at all; it cannot invent a change type, and a change type that is not on
   the list does nothing. There is no default case anywhere.
@@ -315,7 +423,8 @@ HTTP client waits as long as the job, and the chat says "this can take a while" 
 promising minutes when the endpoint is a local one. The phone's BYOK mode does the same on
 its own: a local endpoint gets 25 minutes there.
 
-The Coach may only touch **routines and the week**. Your training log, your weigh-ins and your
+The Coach may only touch **routines, the week and programmes** (and, during a workout, the
+unfinished part of that one session, when you apply it). Your training log, your weigh-ins and your
 settings are not reachable from any change type that exists.
 
 Applying happens **on the client**, not the server — ordinary local editing, so it works
@@ -448,21 +557,38 @@ The App-Store build has no server of its own, so the Coach there is a choice mad
 - **Use my self-hosted openGym.** Pair the phone with your instance (the same pairing flow as
   syncing — **Settings → Account → Pair the mobile app** on the site, then the address and code on the
   phone). A paired phone is an ordinary profile: the Coach runs on your server with whatever
-  provider the admin configured, under the rules above, and nothing on the phone changes.
+  provider the admin configured, under the rules above, and nothing on the phone changes. The
+  one thing the server cannot do is push to the app, so a suggestion its automatic review left
+  is announced by the app itself, once, when it next comes to the foreground.
 - **Bring my own API key.** The phone calls Anthropic, OpenAI, Gemini or a compatible endpoint
   directly, with a key you paste. It runs the same payload allowlist, the same validator and
   the same single repair round as the server, in the app. The key is kept in the platform's
   secure storage — Keychain on iOS, the Keystore-backed store on Android — and never in the
   app's state, so it cannot ride along in a backup, an export or a sync. You pay: the screen
-  says which host each request goes to and what leaves the device before you choose, and a
-  local daily cap stands in for the one an admin would have set.
+  says which host each request goes to and what leaves the device before you choose. An
+  **Advanced** section on the same screen is the phone's admin card — since there is no
+  instance, you are the admin: the daily cap (0 for no limit), the output-token ceiling a
+  reasoning model needs raised, and the maximum message length, with the same ranges the
+  server clamps to.
 
-  A compatible endpoint has to be **`https://`** here. Android does not let apps send
-  unencrypted `http://` traffic, so a model on your LAN at `http://ollama.lan:11434` cannot be
-  reached from the phone, and the setup screen says so as soon as such an address is typed.
-  Either put HTTPS in front of the model (Tailscale's HTTPS certificates, or a reverse proxy
-  with a certificate), or use the first option: the server has no such rule, and its Coach
-  reaches an `http://` model on its own network.
+  Automatic reviews (weekly, or after every few workouts) run on the phone too, by the server's
+  rule (`api/coach/core/due.js`), but only while the app is open: there is no server to run them
+  and an app does not run JavaScript while it is closed. So a review that is due runs right after
+  the workout that completes the count, or on the first open after the weekly slot, and says
+  something only when it has a suggestion. Up to v1.4.2 nothing ran them on a phone at all.
+
+  A compatible endpoint on the **home network** can be plain `http://` here (#913): a private
+  IPv4 address (`192.168.x.x`, `10.x.x.x`, `172.16.x.x` to `172.31.x.x`), Tailscale's `100.x`
+  addresses, `localhost`, a `.local` name, a single-word host name, and private or link-local
+  IPv6 (`fd…`, `fe80…`). Anything else, any address on the internet, has to be `https://`: the
+  key and your training data ride in the request. The check is in
+  `api/coach/core/providers.js` (`phoneMayCall`) and runs on every request, not only in the
+  setup screen, because Android can only allow unencrypted traffic for the whole app
+  (`network_security_config.xml`), while iOS allows it for local addresses only
+  (`NSAllowsLocalNetworking`). A name like `ollama.lan` is not one of those: use the model's IP
+  address or `.local` name, put HTTPS in front of it, or use the first option, whose server
+  Coach reaches any `http://` model on its own network. In a browser there is no own-key Coach:
+  an `https://` page may not call `http://` addresses, so the web app always uses the server's.
 
 ## Off is really off
 

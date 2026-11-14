@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Hold a V-shaped position with legs and torso lifted. Builds strong abs and balance.",
   "instructions": [
     "Sit on the floor with knees bent and lean back slightly.",

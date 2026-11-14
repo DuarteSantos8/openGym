@@ -180,7 +180,8 @@ export function queueView(S, today) {
  */
 export function weekTally(S, today) {
   const ws = weekStartOf(S)
-  const thisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(today, ws))
+  const week = weekKey(today, ws)
+  const thisWeek = S.workouts.filter(w => weekKey(w.d, ws) === week)
   const q0 = queueOf(S)
   const q = q0 && today >= q0.startsOn ? q0 : null
   // A weekday counts as planned only for routines that still exist (a pointer left behind by a

@@ -5,19 +5,24 @@
 // Write-only, and only on request: the user turns it on in Settings, on each phone. Every record
 // carries a client id of its own (a workout's id, a weigh-in's day), so writing it again replaces
 // it instead of adding a second one, and anything openGym wrote can be found and removed again.
+import { workoutEnergy } from './workout-energy.js'
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
+import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
+import { EXIDX } from './exercises.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
 export const TEXT_MAX = 1000
 
-// The session type Health Connect files a workout under. A workout with any strength work in it is
-// strength training: ten minutes on the treadmill before the squats do not make it a walk. One that
-// is all cardio takes the machine's type when the catalogue says which machine it is, and "other"
-// when it does not (a custom exercise, burpees, cardio on two different machines).
-// The native side maps each name to its ExerciseSessionRecord.EXERCISE_TYPE_* constant.
+// The session type Health Connect (and Apple Health) files a workout under. A workout with any
+// strength work in it is strength training: ten minutes on the treadmill before the squats do not
+// make it a walk. One that is all cardio takes the type of what was done when the catalogue says
+// (the machine, else the move's name: a run, a row, burpees and jacks as HIIT), stretching at the
+// end of a run leaves it a run, and cardio of two kinds is mixed cardio (#799).
+// The native side maps each name to its ExerciseSessionRecord.EXERCISE_TYPE_* constant, and to an
+// HKWorkoutActivityType on the iPhone and the watch (AppleHealthPlugin, WorkoutManager).
 const CARDIO_TYPES = {
   '3666': 'walking',                // walking on incline treadmill
   '0685': 'running', '0684': 'running', '3656': 'running',
@@ -25,14 +30,66 @@ const CARDIO_TYPES = {
   '2141': 'elliptical', '2331': 'elliptical',
   '2311': 'stair_climbing_machine',
 }
-export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'biking_stationary', 'elliptical', 'stair_climbing_machine', 'other_workout']
+export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'biking_stationary', 'biking', 'elliptical', 'stair_climbing_machine',
+  'rowing', 'jump_rope', 'hiit', 'mixed_cardio', 'yoga', 'flexibility', 'other_workout']
 
+// Catalogue cardio by its name, first match wins: the treadmill before the bike ("run on treadmill"
+// is filed with the stationary bike), the bike before the run ("assault bike run").
+const BY_NAME = [
+  [/treadmill/, n => (/walk/.test(n) ? 'walking' : 'running')],
+  [/\b(bike|bicycle|cycl\w*|aquabike)\b/, (n, ex) => (ex.eq === 'stationary bike' ? 'biking_stationary' : 'biking')],
+  [/jump rope|skip rope|\bskipping\b/, () => 'jump_rope'],
+  [/\brow(ing)?\b/, () => 'rowing'],
+  [/\b(walk\w*|marching)\b/, () => 'walking'],
+  [/\b(run|running|jog|sprints?|trot)\b/, () => 'running'],
+  [/burpee|jacks?\b|mountain climber|squat thrust|battling rope|tuck jump|star jump|hiit|circuit|tabata/, () => 'hiit'],
+]
+const CARDIO_EQ = { 'elliptical machine': 'elliptical', 'stepmill machine': 'stair_climbing_machine' }
+
+/** What one exercise counts as for the session type: one of SESSION_TYPES. */
+export function exerciseType(entry) {
+  const id = String(entry?.id ?? '')
+  if (CARDIO_TYPES[id]) return CARDIO_TYPES[id]
+  const ex = EXIDX[id]
+  if (ex?.cat === 'yoga') return 'yoga'
+  if (ex?.cat === 'stretching' || ex?.cat === 'mobility') return 'flexibility'
+  // Cardio by the catalogue, whether it is logged as minutes or as reps (burpees count reps, #717).
+  if (ex && (ex.cat === 'cardio' || ex.cat === 'plyometrics' || ex.bp === 'cardio')) {
+    if (CARDIO_EQ[ex.eq]) return CARDIO_EQ[ex.eq]
+    const n = String(ex.n || '').toLowerCase()
+    const hit = BY_NAME.find(([re]) => re.test(n))
+    return hit ? hit[1](n, ex) : 'mixed_cardio'
+  }
+  // A custom exercise logged as cardio: nothing says which.
+  return modeForEntry(entry) === 'cardio' ? 'other_workout' : 'strength_training'
+}
+
+const CALM = new Set(['yoga', 'flexibility'])
+
+function typeOf(entries) {
+  if (!entries.length) return 'other_workout'
+  const types = new Set(entries.map(exerciseType))
+  if (types.has('strength_training')) return 'strength_training'
+  // The stretches after a run or a row: still that run. Only stretching: yoga if any yoga.
+  const moving = [...types].filter(x => !CALM.has(x))
+  if (!moving.length) return types.has('yoga') ? 'yoga' : 'flexibility'
+  if (moving.length === 1) return moving[0]
+  // Two kinds of cardio, or cardio the catalogue does not place next to one it does.
+  return moving.includes('other_workout') ? 'other_workout' : 'mixed_cardio'
+}
+
+/** The type of a finished workout, from the exercises with something done in them. */
 export function sessionType(w) {
-  const done = (w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork))
-  if (!done.length) return 'other_workout'
-  if (done.some(e => modeForEntry(e) !== 'cardio')) return 'strength_training'
-  const types = new Set(done.map(e => CARDIO_TYPES[e.id] || 'other_workout'))
-  return types.size === 1 ? [...types][0] : 'other_workout'
+  return typeOf((w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork)))
+}
+
+/**
+ * The type a workout is set to be, before anything is done (the watch's workout session, #799).
+ * Null for one with nothing in it yet: the watch keeps its strength training then.
+ */
+export function plannedType(entries) {
+  const planned = (entries || []).filter(e => e && e.id != null)
+  return planned.length ? typeOf(planned) : null
 }
 
 const clip = s => (s.length > TEXT_MAX ? s.slice(0, TEXT_MAX - 1) + '…' : s)
@@ -48,11 +105,12 @@ function sessionNotes(w, opts) {
  * One exercise session per finished workout. A workout with no start or end (or an end not after
  * its start) is left out rather than given made-up times: Health Connect needs both.
  */
-export function sessionRecord(w, { unit, nameOf, speedUnit }) {
+export function sessionRecord(w, { unit, nameOf, speedUnit, includeEnergy = false }) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!w?.id || !(start > 0) || !(end > start)) return null
   return {
     id: 'opengym-w-' + w.id,
+    ...(includeEnergy && workoutEnergy(w.healthMetrics)?.final ? { healthMetrics: workoutEnergy(w.healthMetrics) } : {}),
     start, end,
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
@@ -61,18 +119,25 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
 }
 
 /**
- * One weight record per weigh-in day. `t` is when it was typed, which for a weigh-in added to an
- * earlier day is not on that day; then it is put at 08:00 local time on the day it belongs to.
+ * One weight record per weigh-in. A day from before has one, without a time: `t` is when it was
+ * typed, which for a weigh-in added to an earlier day is not on that day; then it is put at 08:00
+ * local time on the day it belongs to. A weigh-in with a time (#859, lib/weigh-ins.js) goes in at
+ * that time. The record of a day's reading '0' (every day from before) keeps the day's old id, so
+ * nothing written earlier is written twice; the others are named by day and reading.
  */
-export function weightRecord(b, unit) {
-  const w = Number(b?.w)
+export function weightRecord(b, unit, r = null) {
+  const w = Number(r ? r.w : b?.w)
   if (!b?.d || !(w > 0)) return null
-  const typed = Number(b.t)
-  const time = typed > 0 && isoOf(new Date(typed)) === b.d ? typed : localMorning(b.d)
+  const typed = Number(r ? r.t : b.t)
+  const at = r && cleanTime(r.at)
+  const time = at ? readingAt(b.d, at) : typed > 0 && isoOf(new Date(typed)) === b.d ? typed : localMorning(b.d)
   if (!(time > 0)) return null
   const kg = unit === 'lb' ? w / LB_PER_KG : w
-  return { id: 'opengym-bw-' + b.d, time, kg: Math.round(kg * 1000) / 1000 }
+  return { id: weightRecordId(b.d, r?.id), time, kg: Math.round(kg * 1000) / 1000 }
 }
+
+/** The hub's id of one weigh-in openGym wrote: its day, and its reading unless that is '0'. */
+export const weightRecordId = (d, rid) => 'opengym-bw-' + d + (rid != null && String(rid) !== '0' ? '-' + rid : '')
 
 function localMorning(iso) {
   const [y, m, d] = String(iso).split('-').map(Number)
@@ -81,11 +146,15 @@ function localMorning(iso) {
 }
 
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit }) {
+export function healthRecords(S, { nameOf, speedUnit, includeEnergy = false }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
-    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
-    weights: (S?.bodyweight || []).map(b => weightRecord(b, unit)).filter(Boolean),
+    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit, includeEnergy })).filter(Boolean),
+    // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
+    // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
+    weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
+      ? readingsOf(b).filter(r => !r.src).map(r => weightRecord(b, unit, r))
+      : b?.src ? [] : [weightRecord(b, unit)])).filter(Boolean),
   }
 }
 
@@ -94,7 +163,10 @@ export function healthRecords(S, { nameOf, speedUnit }) {
 // cyrb53: 53 bits are plenty to tell two versions of one record apart, and the file that keeps a
 // fingerprint per record stays small next to a history of hundreds of workouts with their notes.
 export function recordKey(rec) {
-  const str = JSON.stringify(rec)
+  // Weather is a one-time annotation of a newly exported workout. Clearing its local cache
+  // or opting out must not replace an existing Health workout just to remove that metadata.
+  const { weather: _weather, ...stable } = rec
+  const str = JSON.stringify(stable)
   let h1 = 0xdeadbeef, h2 = 0x41c6ce57
   for (let i = 0; i < str.length; i++) {
     const ch = str.charCodeAt(i)
@@ -107,13 +179,40 @@ export function recordKey(rec) {
 }
 
 /**
+ * The record ids openGym has on record as deleted: a workout or a weigh-in day removed on this
+ * device or on another one whose removal synced in (S.deleted, lib/sync-merge.js stampDeletions;
+ * a negative stamp is an add-back), and everything a "Reset everything" wiped (S.resetIds).
+ * Only these are taken out of Health: a copy that merely lacks a workout (signed out, a guest
+ * copy, a state not loaded yet) never empties Apple Health or Health Connect.
+ */
+export function goneIds(S) {
+  const out = new Set()
+  const del = S?.deleted && typeof S.deleted === 'object' ? S.deleted : {}
+  for (const [k, at] of Object.entries(del.workouts || {})) if (Number(at) > 0) out.add('opengym-w-' + k)
+  // A removed day takes all its weigh-ins with it (planSync matches the `*`); one weigh-in
+  // removed from a day that keeps others is on record in that day's `gone`.
+  for (const [k, at] of Object.entries(del.bodyweight || {})) if (Number(at) > 0) { out.add('opengym-bw-' + k); out.add('opengym-bw-' + k + '-*') }
+  for (const b of S?.bodyweight || []) {
+    if (!b?.d || !b.gone || typeof b.gone !== 'object') continue
+    for (const [rid, at] of Object.entries(b.gone)) if (Number(at) > 0) out.add(weightRecordId(b.d, rid))
+  }
+  const reset = S?.resetIds && typeof S.resetIds === 'object' ? S.resetIds : {}
+  for (const k of Array.isArray(reset.workouts) ? reset.workouts : []) out.add('opengym-w-' + k)
+  // A weigh-in is named by its day and time there ("2026-09-17|1758…"); Health knows it by day.
+  for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) { const d = String(k).split('|')[0]; out.add('opengym-bw-' + d); out.add('opengym-bw-' + d + '-*') }
+  return out
+}
+
+/**
  * What a sync has to do, given the records now and `written`, what this phone wrote before
  * ({ [id]: { k: 'session' | 'weight', h: recordKey } }). New and changed records are written,
  * records that are gone from openGym (a deleted workout, a removed weigh-in) are removed.
- * Returns { sessions, weights, remove: { sessions: [id], weights: [id] }, written } — `written`
- * being what the phone has written once the sync went through.
+ * With `gone` (goneIds), only a record on record as deleted is removed; one that is merely
+ * missing stays written, and goes once its deletion arrives. Returns { sessions, weights,
+ * remove: { sessions: [id], weights: [id] }, written } — `written` being what the phone has
+ * written once the sync went through.
  */
-export function planSync({ sessions, weights }, written = {}) {
+export function planSync({ sessions, weights }, written = {}, gone = null) {
   const next = {}
   const out = { sessions: [], weights: [], remove: { sessions: [], weights: [] } }
   const take = (list, k, into) => {
@@ -128,12 +227,17 @@ export function planSync({ sessions, weights }, written = {}) {
   take(weights, 'weight', out.weights)
   for (const [id, was] of Object.entries(written || {})) {
     if (next[id]) continue
+    if (gone && !isGone(gone, id)) { next[id] = was; continue }
     if (was?.k === 'session') out.remove.sessions.push(id)
     else if (was?.k === 'weight') out.remove.weights.push(id)
   }
   out.written = next
   return out
 }
+
+// Whether a written record is on record as deleted: by its own id, or as a weigh-in of a removed
+// day ('opengym-bw-<day>-<reading>' under that day's 'opengym-bw-<day>-*').
+const isGone = (gone, id) => gone.has(id) || (/^opengym-bw-\d{4}-\d{2}-\d{2}-/.test(id) && gone.has(id.slice(0, 21) + '-*'))
 
 /** Every record this phone wrote, by type — what "remove what openGym wrote" takes away. */
 export function writtenIds(written = {}) {

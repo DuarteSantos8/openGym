@@ -44,8 +44,10 @@ claim is disputed (https://www.globalperformanceinsights.com/post/has-the-acute-
   muscle, the per-session growth plateau per Weightology/RP Strength) = 1.0 raw
   unit. Secondary movers count 0.4 (existing `musclesOf` weights). Warm-ups
   still count (mechanical work), rest-pause clusters don't (already covered by
-  the row total), drop-set drops count as extra sets. Cardio/timed rows count
-  as sets (duration proxy), not tonnage.
+  the row total), drop-set drops count as extra sets. Cardio rows scale by duration
+  (30 minutes retains the former one-row stimulus as a continuity anchor) and imported
+  RPE adjusts intensity; timed holds remain one set. This is a coarse fatigue-map
+  proxy, not a validated conversion between cardio minutes and lifting sets.
 - **Session-local relative intensity per set**: `(load/entryBest)^1.5`, unit-free
   (kg/lb histories score identically), zero-load sets count full (assume hard when
   unknown). Ramp-up rows therefore cost a fraction of a set instead of a full one.
@@ -92,7 +94,10 @@ Two orthogonal multipliers on top of the phase-1 sets, both causal and bounded:
   (via `effort.js`, `HARD_RIR = 3`) always wins; otherwise RIR is estimated by
   Epley inverse against the exercise's 90-day rolling best anchor
   (`30*(anchor/w-1)-r`, clamped 0..10, null above `REP_CAP = 12`, for
-  load-less rows, or assisted work). Weight is 1.0 at RIR <= 3, linear down to
+  load-less rows, or assisted work). The anchor itself is RIR-calibrated: each
+  session's best runs on effective reps (done plus logged RIR, a set taken to
+  failure adding nothing), so a rated set reads its own rating back and an
+  unrated twin of it reads the same. Weight is 1.0 at RIR <= 3, linear down to
   the 0.3 floor at RIR >= 6. Loads canonicalise to kg through the
   set -> target -> entry -> workout -> opts chain, so mixed-unit imports anchor
   correctly (176 lb anchors like 80 kg). A ramp-up row therefore costs a

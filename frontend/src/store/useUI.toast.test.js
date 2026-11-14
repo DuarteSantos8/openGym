@@ -28,6 +28,21 @@ describe('toast with an action', () => {
     expect(useUI.getState().toastMsg).toBe('')
   })
 
+  it('the × sends it away at once, without running the action', () => {
+    const onAction = vi.fn()
+    useUI.getState().toast('Set 2 gone.', { action: 'Undo', onAction })
+    useUI.getState().pauseToast()
+    useUI.getState().dismissToast()
+    expect(useUI.getState().toastMsg).toBe('')
+    expect(useUI.getState().toastAction).toBeNull()
+    useUI.getState().resumeToast()
+    useUI.getState().runToastAction()
+    expect(onAction).not.toHaveBeenCalled()
+    useUI.getState().toast('Saved')
+    vi.advanceTimersByTime(2201)
+    expect(useUI.getState().toastMsg).toBe('')
+  })
+
   it('times out after 5 s without running the action', () => {
     const onAction = vi.fn()
     useUI.getState().toast('Set 2 gone.', { action: 'Undo', onAction })

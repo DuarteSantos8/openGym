@@ -2,10 +2,10 @@
   "id": "4464",
   "name": "roll ball tibialis anterior",
   "bodyPart": "lower legs",
-  "equipment": "roller",
-  "target": "calves",
+  "equipment": "massage ball",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles"
   ],
   "category": "mobility",

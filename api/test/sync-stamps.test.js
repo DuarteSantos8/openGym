@@ -411,3 +411,24 @@ test('PUT /api/data: an older app\'s two changes of one setting in a row both la
   assert.ok(onDisk._unstamped?.ed?.restSec > 0);
   assert.equal(onDisk._prior?.restSec?.length, 2);   // 100, then 120
 });
+
+// #779: an older app keeps `coach` as one value read earlier, so its push dropped every Coach line,
+// log entry and Undo snapshot another device had added since. They are joined with the stored ones.
+test('an unstamped push keeps the Coach lines another device added, and an Undo stays used', () => {
+  const cur = { ...stored(), coach: {
+    cadence: 'off',
+    chat: [{ id: 'c1', at: NOW - 900 }, { id: 'c2', at: NOW - 800 }],
+    log: [{ id: 'l1', at: NOW - 800, kind: 'review' }],
+    snapshots: [{ at: NOW - 850, proposalId: 'p1', routines: [] }, { at: NOW - 700, proposalId: 'p2', routines: [] }],
+  } };
+  const next = clone({ ...stored(), coach: {
+    cadence: 'off',
+    chat: [{ id: 'c1', at: NOW - 900 }, { id: 'a1', at: NOW - 100 }],
+    log: [{ id: 'r1', at: NOW - 100, kind: 'revert', proposalId: 'p2' }],
+    snapshots: [{ at: NOW - 850, proposalId: 'p1', routines: [] }],
+  } });
+  stampPut(cur, next, { overRead: true, stamped: false, now: NOW });
+  assert.deepEqual(next.coach.chat.map(m => m.id), ['c1', 'c2', 'a1']);
+  assert.deepEqual(next.coach.log.map(e => e.id), ['l1', 'r1']);
+  assert.deepEqual(next.coach.snapshots.map(x => x.proposalId), ['p1']);   // p2 was undone
+});

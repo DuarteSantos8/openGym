@@ -10,6 +10,10 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
+  "needs": [
+    "bench"
+  ],
   "description": "Hold a barbell overhead behind you while lying on a bench. It builds lat and chest control in the stretched position.",
   "instructions": [
     "Lie on a bench holding a light barbell above your chest with arms nearly straight.",

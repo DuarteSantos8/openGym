@@ -10,6 +10,7 @@
     "quadriceps"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A plank on hands and toes with knees hovering just off the floor. It challenges the core and shoulders.",
   "instructions": [
     "Start on hands and knees with wrists under shoulders.",

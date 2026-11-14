@@ -74,7 +74,6 @@ export function nudgeMinute(reminderTime) {
   const at = Math.max(EVENING, Number.isNaN(r) ? 0 : r + AFTER_REMINDER)
   return at > LATEST ? null : at
 }
-export const NUDGE_LATEST_MINUTE = LATEST
 
 const dayBefore = iso => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() - 1); return isoOf(d) }
 const logged = (S, iso) => (S.workouts || []).some(w => w?.d === iso)

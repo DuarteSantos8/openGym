@@ -156,9 +156,14 @@ export const appleTouchDevice = () => {
   const ua = navigator.userAgent || ''
   return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
 }
+// In the iPhone app the page never takes 'playback' (Discord, baodor: "the app pauses my music").
+// The end of a rest rings natively there (RestAlertPlugin.swift tone), which can play through the
+// switch and only turns the music down for a moment, so the page stays 'ambient': it mixes with
+// whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch.
+const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
   if (!playOnSilentSupported()) return
-  try { navigator.audioSession.type = on ? 'playback' : 'auto' } catch (e) { /* */ }
+  try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
 }
 
 // Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set
@@ -167,10 +172,18 @@ export function setPlayOnSilent(on) {
 let buzz = true
 export function setVibrate(on) { buzz = on !== false }
 // Offered where the browser can buzz at all: iOS has no navigator.vibrate. The Android app needs
-// android.permission.VIBRATE in its manifest, without which the WebView drops every call.
-export const vibrateSupported = () => typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'
+// android.permission.VIBRATE in its manifest, without which the WebView drops every call. The
+// iPhone app buzzes through its native side instead (RestAlertPlugin.swift buzz), which App.jsx
+// hands in here as the native buzzer.
+let nativeBuzzer = null
+export function setNativeBuzzer(fn) { nativeBuzzer = typeof fn === 'function' ? fn : null }
+export const vibrateSupported = () => !!nativeBuzzer || (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function')
 export function vibrate(p) {
   if (!buzz) return
+  if (nativeBuzzer) {
+    try { Promise.resolve(nativeBuzzer(p)).catch(() => {}) } catch (e) { /* */ }
+    return
+  }
   try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ }
 }
 

@@ -149,6 +149,34 @@ test('an overloaded provider is retried and the job still succeeds', async () =>
   assert.equal(rec.history.at(-1).outcome, 'nochange');
 });
 
+test('a question asked in the chat comes back as an answer, not a plan (#660)', async () => {
+  answerWith = REVIEW_CHANGE;
+  await runReview('openai', 'sk-oa-ask', 'u-ask');
+  assert.equal(jobs.readUser('u-ask').pending.kind, 'review');
+  answerWith = { coach_contract: 1, answer: 'Four sets of dips: three working sets and one warm-up.' };
+  seen.length = 0;
+  jobs.enqueue('u-ask', { kind: 'ask', note: 'how many sets of dips is that?' });
+  await settle('u-ask');
+  const job = seen.find(s => s.url === '/v1/chat/completions');
+  assert.match(job.body.messages[0].content, /# Task: answer a question/);
+  assert.match(JSON.stringify(job.body.messages), /how many sets of dips is that\?/);
+  let rec = jobs.readUser('u-ask');
+  assert.equal(rec.history.at(-1).outcome, 'ready');
+  assert.equal(rec.pending.kind, 'ask');
+  assert.equal(rec.pending.answer, 'Four sets of dips: three working sets and one warm-up.');
+  assert.equal(rec.pending.changes, undefined, 'an answer carries no change-set');
+  // The review that was waiting for a decision is still there once the answer has been read:
+  // a question about a suggestion must not throw the suggestion away.
+  jobs.resolvePending('u-ask', { accepted: ['ask'] });
+  rec = jobs.readUser('u-ask');
+  assert.equal(rec.pending?.kind, 'review');
+  assert.equal(rec.pending.changes.length, 1);
+  assert.equal(rec.history.at(-1).kind, 'ask');
+  // Deciding on the review then clears it as before.
+  jobs.resolvePending('u-ask', { accepted: ['c1'] });
+  assert.equal(jobs.readUser('u-ask').pending, null);
+});
+
 test('a wrong key is reported as an auth failure, with the provider\'s reason kept for the admin card', async () => {
   cfg.reset();
   cfg.save({ enabled: true, provider: 'anthropic', authMode: 'instance', auth: {}, models: {}, boundUid: {}, log: [],

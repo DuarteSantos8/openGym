@@ -3,9 +3,9 @@
   "name": "kettlebell goblet squat",
   "bodyPart": "upper legs",
   "equipment": "kettlebell",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "hamstrings",
     "calves"
   ],

@@ -3,9 +3,9 @@
   "name": "roll tibialis anterior (single leg) lying on floor",
   "bodyPart": "lower legs",
   "equipment": "roller",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles"
   ],
   "category": "mobility",

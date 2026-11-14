@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { FATIGUE_STATES, fatigueOf, strengthOf } from './recovery.js'
-import { fatigueStateOf } from './recovery-view.js'
+import { FATIGUE_STATES, fatigueHalfLifeOf, fatigueOf, strengthOf } from './recovery.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn } from './recovery-view.js'
 import { MUSCLES, levelsOf } from './muscles.js'
 
 const FATIGUE_BANDS = [
@@ -54,5 +54,40 @@ describe('production recovery view selectors', () => {
     expect(strengthOf([workout], now).chest).toBe(0.5)
     expect(fatigueOf([workout], now).chest).toBe(0)
     expect(strengthOf([workout], now + 7 * 86400000).chest).toBe(0.5)
+  })
+})
+
+describe('fatigue recovery forecast', () => {
+  it('returns nulls for a ready muscle and only toReady for a recovering one', () => {
+    expect(fatigueRecoveryMs(0, 'chest')).toEqual({ toRecoveringMs: null, toReadyMs: null })
+    expect(fatigueRecoveryMs(0.24, 'chest')).toEqual({ toRecoveringMs: null, toReadyMs: null })
+    const mid = fatigueRecoveryMs(0.4, 'chest')
+    expect(mid.toRecoveringMs).toBe(null)
+    expect(mid.toReadyMs).toBeGreaterThan(0)
+  })
+
+  it('returns both crossings for a fatigued muscle, recovering first', () => {
+    const { toRecoveringMs, toReadyMs } = fatigueRecoveryMs(0.6, 'chest')
+    expect(toRecoveringMs).toBeGreaterThan(0)
+    expect(toReadyMs).toBeGreaterThan(toRecoveringMs)
+  })
+
+  it('matches the closed-form crossing: HL * log2(v0 / targetV)', () => {
+    const v = 0.6
+    const hl = fatigueHalfLifeOf('chest')
+    const v0 = -Math.log(1 - v)
+    const expected = hl * Math.log2(v0 / -Math.log(1 - 0.5))
+    expect(fatigueRecoveryMs(v, 'chest').toRecoveringMs).toBeCloseTo(expected, 6)
+  })
+
+  it('gives longer recoveries to 48h legs than to 24h arms at the same value', () => {
+    expect(fatigueRecoveryMs(0.6, 'quadriceps').toReadyMs)
+      .toBeGreaterThan(fatigueRecoveryMs(0.6, 'biceps').toReadyMs)
+  })
+
+  it('formats durations without locale-pack words', () => {
+    expect(fmtRecoveryIn(null)).toBe(null)
+    expect(fmtRecoveryIn(30 * 60000)).toMatch(/30/)
+    expect(fmtRecoveryIn(30 * 3600000)).toMatch(/6|hour/)
   })
 })

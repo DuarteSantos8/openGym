@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
@@ -38,13 +38,27 @@ function ResetCodeSheet({ name, email, code, expires, close }) {
   return <>
     <h3>Reset code for {name}</h3>
     <div className="adm-lead">Give them this code. They choose “Sign in with password” → “Have a reset code from your admin?”, enter their name <b>{name}</b>{email && <> (or their sign-in e-mail <b>{email}</b>)</>}, the code and a new password. It works once, until {new Date(expires).toLocaleString()}, and will not be shown again.</div>
-    <button className="adm-code" style={{ fontSize: 22, width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
+    <button className="adm-code" style={{ fontSize: 'var(--fs-title2)', width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={close}>Done</Button>
   </>
 }
 
-function UserDetail({ id, onChanged, close }) {
+// The one time a recovery code (#584) is visible. Locked like the reset code's sheet.
+function RecoveryCodeSheet({ name, code, expires, close }) {
+  const toast = useUI(s => s.toast)
+  const copy = () => { navigator.clipboard?.writeText(code).catch(() => {}); toast('Copied') }
+  return <>
+    <h3>Recovery code for {name}</h3>
+    <div className="adm-lead">Give them this code. On the sign-in screen they tap “Lost access?” → “I have a code” (or “Use a code from your other device”) and enter it; the device they use gets a new passkey for <b>{name}</b> and is signed in. In the phone app they do this in a browser first, then pair the app again. It works once, until {new Date(expires).toLocaleString()}, and will not be shown again.</div>
+    <button className="adm-code" style={{ fontSize: 'var(--fs-title2)', width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
+    <div style={{ height: 12 }} />
+    <Button variant="primary" onClick={close}>Done</Button>
+  </>
+}
+
+function UserDetail({ id, viewerOwner, onChanged, close }) {
+  const me = useStore(s => s.user)
   const [d, setD] = useState(null)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
@@ -76,6 +90,18 @@ function UserDetail({ id, onChanged, close }) {
       .then(() => { toast(disabled ? 'User disabled' : 'User enabled'); onChanged(); close() })
       .catch(e => toast(e.message))
   }
+  // One owner, any number of admins: only the owner appoints, removes or hands the role on.
+  const setRole = admin => api('/api/admin/user/role', { method: 'POST', body: JSON.stringify({ id: u.id, admin }) })
+    .then(() => { toast(admin ? u.name + ' is an admin now' : u.name + ' is no longer an admin'); onChanged(); close() })
+    .catch(e => toast(e.message))
+  const makeOwner = () => confirmSheet({
+    title: 'Make ' + u.name + ' the owner?',
+    message: 'They get everything you can do here, including removing admins and clearing the activity log. You stay an admin, but only they can change that.',
+    confirmText: 'Hand it over', danger: true,
+    onConfirm: () => api('/api/admin/owner', { method: 'POST', body: JSON.stringify({ id: u.id }) })
+      .then(() => { toast(u.name + ' owns this instance now'); onChanged(); close() })
+      .catch(e => toast(e.message)),
+  })
   // Password sign-in (#118): the server only sends `password` when the instance offers it. The
   // code comes back once, is shown once, and is never stored anywhere but as a hash.
   const pwInstance = typeof u.password === 'boolean'
@@ -88,25 +114,50 @@ function UserDetail({ id, onChanged, close }) {
       .then(r => { onChanged(); close(); openSheet(done => <ResetCodeSheet name={r.name} email={u.email} code={r.code} expires={r.expires} close={done} />, { locked: true }) })
       .catch(e => toast(e.message)),
   })
+  // A recovery code (#584): any admin for a profile that is not an admin, the owner for an admin;
+  // the owner's own comes from the server command (recover.js). Not for oneself.
+  const canRecover = !u.owner && !u.disabled && u.id !== me?.id && (!u.admin || viewerOwner)
+  const makeRecovery = () => confirmSheet({
+    title: 'Recovery code for ' + u.name + '?',
+    message: 'For someone who lost every way in: their devices and passkey are gone, and they have no password. You get a one-time code to hand them; the device they enter it on gets a new passkey. They are signed out everywhere now. Their passkeys and password stay. It is shown once and is valid for 24 hours.',
+    confirmText: 'Create recovery code',
+    danger: true,
+    onConfirm: () => api('/api/admin/user/recovery', { method: 'POST', body: JSON.stringify({ id: u.id }) })
+      .then(r => { onChanged(); close(); openSheet(done => <RecoveryCodeSheet name={r.name} code={r.code} expires={r.expires} close={done} />, { locked: true }) })
+      .catch(e => toast(e.message)),
+  })
   return <>
     <h3 className="capitalize">{u.name}</h3>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
-      {u.admin && <span className="adm-pill acc">admin</span>}
+      {u.owner ? <span className="adm-pill acc">owner</span> : u.admin && <span className="adm-pill acc">admin</span>}
       {u.disabled && <span className="adm-pill bad">disabled</span>}
       {u.invitedBy && <span className="adm-pill">invite {u.invitedBy}</span>}
       {u.password && <span className="adm-pill">password</span>}
       {/* The sign-in e-mail (password instances only): shown to admins and nobody else. */}
       {u.email && <span className="adm-pill" title="sign-in e-mail">{u.email}</span>}
       {u.resetUntil && <span className="adm-pill acc">reset code until {new Date(u.resetUntil).toLocaleString()}</span>}
+      {u.recoveryUntil && <span className="adm-pill acc">recovery code until {new Date(u.recoveryUntil).toLocaleString()}</span>}
       <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '–'}</span>
     </div>
     <div className="tiles" style={{ textAlign: 'start' }}>
-      <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{workouts.length}</div></div>
-      <div className="tile"><div className="l">Weigh-ins</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.bodyweight.length}</div></div>
-      <div className="tile"><div className="l">Measurements</div><div className="v" style={{ fontSize: '1.1rem' }}>{(d.measurements || []).length}</div></div>
-      <div className="tile"><div className="l">Routines</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.routines.length}</div></div>
-      <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: '.95rem' }}>{rel(d.lastSync)}</div></div>
+      <div className="tile"><div className="l">Workouts</div><div className="v v-sm">{workouts.length}</div></div>
+      <div className="tile"><div className="l">Weigh-ins</div><div className="v v-sm">{d.bodyweight.length}</div></div>
+      <div className="tile"><div className="l">Measurements</div><div className="v v-sm">{(d.measurements || []).length}</div></div>
+      <div className="tile"><div className="l">Routines</div><div className="v v-sm">{d.routines.length}</div></div>
+      <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{rel(d.lastSync)}</div></div>
     </div>
+    {viewerOwner && !u.owner && !u.disabled && <>
+      <button className="btn" style={{ margin: '12px 0 4px' }}
+        onClick={() => u.admin
+          ? confirmSheet({ title: 'Remove ' + u.name + ' as admin?', message: 'They keep their account and data, but lose this page.', confirmText: 'Remove admin', danger: true, onConfirm: () => setRole(false) })
+          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They can see everyone on this instance, disable accounts, hand out invites and set up the Coach. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
+        {u.admin ? 'Remove admin' : 'Make admin'}</button>
+      <div className="adm-hint">{u.admin ? 'Admins run the instance with you. Remove the role to delete or disable their account.' : 'Admins help run the instance. You stay the owner.'}</div>
+      {u.admin && <>
+        <button className="btn" style={{ margin: '14px 0 4px' }} onClick={makeOwner}>Make owner</button>
+        <div className="adm-hint">There is one owner. Handing it over makes you a regular admin.</div>
+      </>}
+    </>}
     {!u.admin && <>
       <button className={'btn ' + (u.disabled ? 'primary' : 'danger')} style={{ margin: '12px 0 4px' }}
         onClick={() => u.disabled ? setDisabled(false)
@@ -139,11 +190,16 @@ function UserDetail({ id, onChanged, close }) {
           : 'No password yet. A one-time code lets them set one. That’s the way back in after losing their only passkey.'}</div>
       </>}
     </>}
+    {canRecover && <>
+      <button className="btn" style={{ margin: '14px 0 4px' }} onClick={makeRecovery}>Recovery code</button>
+      <div className="adm-hint">Lost every device and passkey? A one-time code gives a new device a passkey for this profile. Works with or without password sign-in.</div>
+    </>}
+    {u.owner && u.id !== me?.id && <div className="adm-hint" style={{ marginTop: 14 }}>A locked-out owner gets a recovery code from the server itself: <code>docker compose exec api node recover.js "{u.name}"</code></div>}
     <h4 className="sec">Workout history</h4>
     {workouts.length ? <div className="list" style={{ gap: 0 }}>
       {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
         <div><div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
-          <div className="dim" style={{ fontSize: '.72rem' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
+          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
         <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
       </div>)}
     </div> : <div className="adm-empty">No workouts logged.</div>}
@@ -184,7 +240,7 @@ function InvitesCard({ invites, reload, inviteOnly }) {
     </> : null}
     {used.length ? <>
       <div className="adm-group-t" style={{ marginTop: open.length ? 12 : 0 }}>Already used</div>
-      {used.map(i => <div key={i.code} className="row between dim" style={{ padding: '6px 0', fontSize: '.82rem' }}>
+      {used.map(i => <div key={i.code} className="row between dim" style={{ padding: '6px 0', fontSize: 'var(--fs-footnote)' }}>
         <span style={{ fontFamily: 'ui-monospace,SFMono-Regular,Menlo,monospace', letterSpacing: '.06em' }}>{i.code}</span><span>→ {i.usedByName || 'used'}</span>
       </div>)}
     </> : null}
@@ -195,7 +251,7 @@ function InvitesCard({ invites, reload, inviteOnly }) {
 // Who signed in, who tried and failed, what an admin changed. A card rather than its own route:
 // the dashboard is deliberately one page of cards, and the 95 % use of this is a glance at the
 // last twenty events. Paging follows Library.jsx's house style — "Show more", not page numbers.
-function AuditCard({ tick }) {
+function AuditCard({ tick, owner }) {
   const toast = useUI(s => s.toast)
   const [meta, setMeta] = useState(null)      // last response minus the rows: total, retention, …
   const [rows, setRows] = useState([])
@@ -221,7 +277,8 @@ function AuditCard({ tick }) {
 
   return <div className="card">
     <div className="row between"><h2 style={{ margin: 0 }}>Activity log</h2>
-      <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red)' }} onClick={clear} aria-label="clear log"><Icon name="trash" /></button></div>
+      {/* Clearing is the owner's alone: an admin could otherwise erase what they did. */}
+      {owner && <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red)' }} onClick={clear} aria-label="clear log"><Icon name="trash" /></button>}</div>
     <div className="adm-lead">
       Who signed in, what failed, and what an admin changed.
       {meta ? ' ' + fmtNum(meta.total) + ' events'
@@ -240,7 +297,7 @@ function AuditCard({ tick }) {
             {/* a red pill, not a red row: twenty fumbled Face IDs in a row shouldn't read as an incident */}
             {!e.ok && <span className="adm-pill bad" style={{ marginInlineStart: 6 }}>failed</span>}
             {auditCat(e.ev) === 'admin' && <span className="adm-pill acc" style={{ marginInlineStart: 6 }}>admin</span>}</div>
-          {line.sub && <div className="dim" style={{ fontSize: '.72rem' }}>{line.sub}</div>}
+          {line.sub && <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{line.sub}</div>}
         </div>
         <span className="small muted" style={{ flex: 'none', marginInlineStart: 8 }}>{fmtWhen(e.ts, meta?.now)}</span>
       </div>
@@ -253,6 +310,15 @@ function AuditCard({ tick }) {
 
 export default function Admin() {
   const nav = useNavigate()
+  // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
+  // straight to the Coach card rather than the top of the page.
+  const toCoach = useLocation().state?.section === 'coach'
+  const coachRef = useRef(null)
+  useEffect(() => {
+    if (!toCoach) return
+    const tm = setTimeout(() => coachRef.current?.scrollIntoView({ block: 'start' }), 50)
+    return () => clearTimeout(tm)
+  }, [toCoach])
   const user = useStore(s => s.user)
   const openSheet = useUI(s => s.openSheet)
   const [users, setUsers] = useState(null)
@@ -276,15 +342,17 @@ export default function Admin() {
   useEffect(() => { if (!user?.admin) return; loadUsers(); loadInvites(); const iv = setInterval(loadUsers, 15000); return () => clearInterval(iv) }, [])
   if (!user?.admin) return null
 
-  const openUser = id => openSheet(close => <UserDetail id={id} onChanged={loadUsers} close={close} />)
+  // From the list rather than the stored session, which may predate a handover.
+  const viewerOwner = !!(users || []).find(u => u.id === user.id)?.owner
+  const openUser = id => openSheet(close => <UserDetail id={id} viewerOwner={viewerOwner} onChanged={loadUsers} close={close} />)
   const liveUsers = (users || []).filter(u => u.live)
   const activeCount = (users || []).filter(u => u.lastSync && Date.now() - u.lastSync < 7 * 86400000).length
   const disabledCount = (users || []).filter(u => u.disabled).length
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/settings/account')} aria-label="Back"><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 8 }}><h1 style={{ margin: 0 }}>Admin</h1>
+      <button className="iconbtn" data-back="/settings/account" onClick={() => nav('/settings/account')} aria-label="Back"><Icon name="chevronLeft" /></button>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1 style={{ margin: 0 }}>Admin</h1>
         <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}</div></div>
       <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
     </div>
@@ -312,14 +380,14 @@ export default function Admin() {
       <div className="adm-lead">Sessions running at this moment. Tap a name for details.</div>
       {liveUsers.map(u => <div key={u.id} className="row between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }} onClick={() => openUser(u.id)}>
         <div><div className="small" style={{ fontWeight: 600 }}>{u.name}</div>
-          <div className="dim" style={{ fontSize: '.72rem' }}>{u.live.name} · exercise {u.live.exIdx} of {u.live.exTotal} · {u.live.setsDone}/{u.live.setsTotal} sets</div></div>
+          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{u.live.name} · exercise {u.live.exIdx} of {u.live.exTotal} · {u.live.setsDone}/{u.live.setsTotal} sets</div></div>
         <span className="adm-pill acc">{dur(Date.now() - u.live.startedAt)}</span>
       </div>)}
     </div>}
 
     {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
         page on a box that never enabled it is byte-for-byte the page it was before. */}
-    <AdminCoach />
+    <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
@@ -328,15 +396,15 @@ export default function Admin() {
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity, to disable the account (nothing is deleted) or to delete it with all their data for good.</div>
       <div className="list">
         {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
-          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>admin</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
+          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
             <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
             {u.email && <div className="ss" title="sign-in e-mail">{u.email}</div>}</div>
-          {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 15, color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
+          {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}
       </div>
     </div>
 
-    <div style={{ marginTop: 14 }}><AuditCard tick={tick} /></div>
+    <div style={{ marginTop: 14 }}><AuditCard tick={tick} owner={viewerOwner} /></div>
   </div>
 }

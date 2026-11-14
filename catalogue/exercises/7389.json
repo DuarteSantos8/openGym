@@ -10,6 +10,7 @@
     "obliques"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A standing plank against a wall, an easy way to learn core bracing.",
   "instructions": [
     "Stand facing a wall and place your forearms or hands on it.",

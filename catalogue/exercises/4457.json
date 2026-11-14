@@ -3,14 +3,14 @@
   "name": "dumbbell side bridge with bent leg",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "glutes",
     "shoulders",
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A side plank on a bent knee holding a dumbbell. Strengthens the obliques and trunk while teaching stability.",
   "instructions": [
     "Lie on your side with your knees bent and your forearm under your shoulder.",

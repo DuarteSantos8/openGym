@@ -3,9 +3,9 @@
   "name": "kettlebell bent over row",
   "bodyPart": "back",
   "equipment": "kettlebell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids"
   ],

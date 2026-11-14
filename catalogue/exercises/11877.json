@@ -10,6 +10,7 @@
     "forearms"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A hanging hold with legs straight out in front that challenges the abs and grip.",
   "instructions": [
     "Hang from a bar with straight arms.",

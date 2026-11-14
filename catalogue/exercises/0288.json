@@ -9,6 +9,9 @@
     "latissimus dorsi"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A dumbbell pullover done in a wide arc lying on a bench. It stretches and trains the chest and lats.",
   "instructions": [
     "Lie flat on a bench with your head at one end and your feet firmly on the ground.",

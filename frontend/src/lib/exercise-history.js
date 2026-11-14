@@ -1,5 +1,5 @@
-import { metricEntriesForExercise, metricRowsForEntry, bestWeightForEntry, completedRepsOf, modeOf, workoutAt } from './history.js'
-import { completedVolumeOf } from './workout-model.js'
+import { metricEntriesForExercise, metricRowsForEntry, bestWeightForEntry, completedRepsOf, modeOf, workoutAt, countsWarmups } from './history.js'
+import { completedVolumeOf, isWarmupRow } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 import { beatsWeight } from './exercises.js'
 import { currentDbLoad, historyAs, volumeFactor, workoutAs } from './dumbbells.js'
@@ -18,7 +18,8 @@ import { currentDbLoad, historyAs, volumeFactor, workoutAs } from './dumbbells.j
 // mode still appears in the list (its sets are labelled by their own target) but gets no point
 // and no value, so the curve never mixes seconds with kilos.
 //
-// Warm-up rows are excluded from every number here, as everywhere else.
+// Warm-up rows are excluded from every number here, as everywhere else, except a session's
+// volume when the profile counts warm-ups in it (#719).
 
 export const HISTORY_SESSIONS = 10
 
@@ -43,7 +44,10 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const sameMode = entries.filter(item => item.mode === mode)
     const rows = sameMode.flatMap(item => item.rows)
     const en = { ...sameMode.at(-1).entry, sets: rows }
-    if (rows.length) logged.push({ w, en, mode, rows })
+    // Its done warm-ups, only ever added to the session's volume and only when the profile
+    // counts them (#719): the sets, the best and the curve stay work sets.
+    const warm = countsWarmups(S) ? sameMode.flatMap(item => (item.entry.sets || []).filter(isWarmupRow)) : []
+    if (rows.length) logged.push({ w, en, mode, rows, warm })
   })
   logged.sort((a, b) => workoutAt(a.w) - workoutAt(b.w))
 
@@ -62,7 +66,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
 
   let best = 0, prId = null
   const sessions = [], points = [], e1rmPoints = []
-  logged.forEach(({ w, en, mode: m, rows }) => {
+  logged.forEach(({ w, en, mode: m, rows, warm }) => {
     const same = m === mode
     const value = same ? valueOf({ en, rows }) : null
     const e1rm = m === 'reps' ? (bestSetOf(en)?.est ?? null) : null
@@ -74,7 +78,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
     sessions.push({
       id: w.id, d: w.d, t, mode: m, target: en.target || null, sets: rows, value, e1rm,
-      volume: m === 'reps' ? entryVolume(rows, en) : null,
+      volume: m === 'reps' ? entryVolume(warm.length ? [...warm, ...rows] : rows, en) : null,
     })
   })
   // The "first reached" rule only holds for records above zero: a bodyweight session with

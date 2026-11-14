@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app's own icon (frontend/src/components/Icon.jsx), for the widgets; tinted in code. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M7.6,4h8.8v4.6a4.4,4.4 0,0 1,-8.8 0ZM7.6,5.6H4.9v1.5a3,3 0,0 0,2.9 3M16.4,5.6h2.7v1.5a3,3 0,0 1,-2.9 3M12,13v3.4M8.6,20.4h6.8l-0.7,-4H9.3Z" />
+</vector>

@@ -31,7 +31,7 @@ export const REVIEW_SCHEMA = {
           type: STR,
           target: {
             type: 'object',
-            properties: { routineId: STR, exId: STR, weekday: { type: 'integer' } }
+            properties: { routineId: STR, exId: STR, weekday: { type: 'integer' }, programmeId: STR }
           },
           before: ANY,
           after: ANY,
@@ -111,4 +111,38 @@ export const DEBRIEF_SCHEMA = {
   required: ['coach_contract', 'summary', 'score']
 };
 
-export const SCHEMAS = { review: REVIEW_SCHEMA, create: CREATE_SCHEMA, refine: CREATE_SCHEMA, debrief: DEBRIEF_SCHEMA };
+// A question in the chat: one plain-text answer, nothing to apply.
+export const ASK_SCHEMA = {
+  type: 'object',
+  properties: { coach_contract: { type: 'integer' }, answer: STR },
+  required: ['coach_contract', 'answer']
+};
+
+// A change to the workout running now (the `adapt` job). Every field flat and scalar, so a
+// provider that closes every object for a strict schema (#804) can still write all of them.
+const INT = { type: 'integer' };
+export const ADAPT_SCHEMA = {
+  type: 'object',
+  properties: {
+    coach_contract: INT,
+    nochange: { type: 'boolean' },
+    reading: STR,
+    summary: STR,
+    changes: {
+      type: 'array',
+      maxItems: 6,
+      items: {
+        type: 'object',
+        properties: {
+          type: STR, entry: INT, exId: STR, to: STR,
+          sets: INT, reps: INT, sec: INT, weight: { type: 'number' }, pct: INT, rest: INT, place: STR,
+          why: STR
+        },
+        required: ['type', 'why']
+      }
+    }
+  },
+  required: ['coach_contract']
+};
+
+export const SCHEMAS = { review: REVIEW_SCHEMA, create: CREATE_SCHEMA, refine: CREATE_SCHEMA, debrief: DEBRIEF_SCHEMA, ask: ASK_SCHEMA, adapt: ADAPT_SCHEMA };

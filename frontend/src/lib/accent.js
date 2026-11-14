@@ -132,12 +132,13 @@ export const isGrey = hex => toHsl(hex)[1] < GREY_SAT
  * (dark theme) or darker (light theme) in small steps of HSL lightness until it does, hue and
  * saturation kept. A grey has to clear the stricter grey bar (THEMES above).
  */
-export function readableIn(hex, theme) {
+export function readableIn(hex, theme, min) {
   const th = THEMES[theme] || THEMES.dark
   const grey = isGrey(hex)
+  const bar = min || th.min
   const ok = c => grey
-    ? worst(c, th.bgs) >= GREY_TEXT && worst(c, th.label2) >= GREY_GAP
-    : worst(c, th.bgs) >= th.min
+    ? worst(c, th.bgs) >= Math.max(GREY_TEXT, bar) && worst(c, th.label2) >= GREY_GAP
+    : worst(c, th.bgs) >= bar
   if (ok(hex)) return hex
   const [h, s, l] = toHsl(hex)
   const up = th.toward === '#ffffff'
@@ -151,6 +152,14 @@ export function readableIn(hex, theme) {
   }
   return th.toward
 }
+
+// The accent as words (links, Add set, the progression line, a focus ring) is 13-17 px text, so it
+// needs the text bar, 4.5:1, where a fill or an icon gets by on 3:1. The presets carry a hand-picked
+// --acc-ink per theme (index.css); the user's own colour gets the same: its readable shade, taken
+// on in the same direction until it reaches 4.5:1 on both the page and a card (redesign 1.4.5, P12).
+export const INK_TEXT = 4.5
+/** The text shade of the user's colour in `theme`: 4.5:1 or better on that theme's page and card. */
+export const inkIn = (hex, theme) => readableIn(readableIn(hex, theme), theme, INK_TEXT)
 
 /** Whether `hex` is drawn differently from itself in `theme` (Settings says so). */
 export const adjustedIn = (hex, theme) => readableIn(hex, theme) !== hex
@@ -175,7 +184,8 @@ const KNOB_RING = 'rgba(0,0,0,.28)'
 
 /**
  * The CSS custom properties for the user's colour in `theme`, the same set a preset defines in
- * index.css: the accent, its pressed shade, the text on it, and the switch knob's ring. The soft
+ * index.css: the accent, its pressed shade, the text on it, the accent as text (4.5:1, inkIn) and
+ * the switch knob's ring. The soft
  * and line tints are mixed from --acc in index.css and follow on their own. null for anything
  * but a valid hex.
  */
@@ -185,7 +195,7 @@ export function customAccentVars(hex, theme) {
   const acc = readableIn(c, theme)
   const acc2 = mix(acc, '#000000', 0.25)
   return {
-    '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2),
+    '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2), '--acc-ink': inkIn(acc, theme),
     '--knob-ring': contrast('#ffffff', acc) < 1.5 ? KNOB_RING : 'transparent',
   }
 }
@@ -198,7 +208,7 @@ export function accentPair(v) {
   return { accent: ACCENTS[k], ink: ACCENT_INK[k] }
 }
 
-const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--knob-ring']
+const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--acc-ink', '--knob-ring']
 
 /**
  * Puts the accent on the page root: a preset by `data-accent` (index.css does the rest), the
@@ -209,8 +219,28 @@ export function applyAccent(el, value, theme) {
   if (vars) {
     el.dataset.accent = CUSTOM
     for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v)
-    return
+  } else {
+    el.dataset.accent = typeof value === 'string' && Object.hasOwn(ACCENTS, value) ? value : DEFAULT_ACCENT
+    for (const k of CUSTOM_VARS) el.style.removeProperty(k)
   }
-  el.dataset.accent = typeof value === 'string' && Object.hasOwn(ACCENTS, value) ? value : DEFAULT_ACCENT
-  for (const k of CUSTOM_VARS) el.style.removeProperty(k)
+  applyTintFallback(el, vars?.['--acc'])
+}
+
+// Safari before 16.2 (the iOS app goes back to 15.5) has no color-mix(), so index.css's two accent
+// tints, --acc-soft and --acc-line, fall back to grey there (its @supports block). Here they get
+// the accent itself at the same strengths, as plain rgba. Everywhere else nothing is set.
+const TINTS = [['--acc-soft', 0.16], ['--acc-line', 0.38]]
+export function lacksColorMix() {
+  try {
+    return typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && !CSS.supports('color', 'color-mix(in srgb, red 50%, blue)')
+  } catch { return false }
+}
+export function applyTintFallback(el, acc, lacks = lacksColorMix()) {
+  for (const [k] of TINTS) el.style.removeProperty(k)
+  if (!lacks) return
+  // A preset's accent is a token that depends on the theme: read what it came to.
+  const hex = cleanHex(acc ?? (typeof getComputedStyle === 'function' ? getComputedStyle(el).getPropertyValue('--acc') : ''))
+  if (!hex) return
+  const n = parseInt(hex.slice(1), 16)
+  for (const [k, a] of TINTS) el.style.setProperty(k, `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`)
 }

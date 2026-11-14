@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { weeklyWeights } from './bodyweight.js'
+import { weeklyWeights, weighInAt, logWeighIn } from './bodyweight.js'
 
 // Discord 'Weight': every weigh-in, week by week, with the week's mean.
 describe('weeklyWeights', () => {
@@ -37,5 +37,65 @@ describe('weeklyWeights', () => {
     expect(weeks[0]).toMatchObject({ n: 2, avg: 80 })
     expect(weeks[0].entries.map(b => b.d)).toEqual(['2026-09-09', '2026-09-07'])
     expect(weeklyWeights(undefined, 1)).toEqual([])
+  })
+})
+
+// A weigh-in logged for an earlier day is typed today, so its `t` is not on its day.
+describe('weighInAt', () => {
+  const at = iso => new Date(iso).getTime()
+
+  it('keeps the time a weigh-in was typed on its own day', () => {
+    expect(weighInAt({ d: '2026-09-09', w: 80, t: at('2026-09-09T07:30:00') })).toBe(at('2026-09-09T07:30:00'))
+  })
+
+  it('puts a weigh-in typed on a later day at noon of the day it is for', () => {
+    expect(weighInAt({ d: '2026-03-02', w: 84, t: at('2026-09-09T07:30:00') })).toBe(at('2026-03-02T12:00:00'))
+  })
+
+  it('puts one with no time at noon of its day', () => {
+    expect(weighInAt({ d: '2026-03-02', w: 84 })).toBe(at('2026-03-02T12:00:00'))
+  })
+})
+
+// The Apple Watch's weigh-in goes through here: one per day, the later one a correction.
+describe('logWeighIn', () => {
+  const at = iso => new Date(iso).getTime()
+
+  it('adds a weigh-in on the day it was made, rounded to 0.1, and keeps the list in date order', () => {
+    const S = { bodyweight: [{ d: '2026-10-20', w: 80 }, { d: '2026-10-10', w: 82 }] }
+    expect(logWeighIn(S, '81.26', at('2026-10-15T07:00:00'))).toBe(true)
+    expect(S.bodyweight.map(b => [b.d, b.w])).toEqual([['2026-10-10', 82], ['2026-10-15', 81.3], ['2026-10-20', 80]])
+    expect(S.bodyweight[1].t).toBe(at('2026-10-15T07:00:00'))
+  })
+
+  // #859: a second weigh-in the same day joins the first, at its time; the morning one stays the day's.
+  it('adds a second weigh-in to that day at its time, the first staying the day\'s value', () => {
+    const S = { bodyweight: [{ d: '2026-10-15', w: 82, t: 1, src: 'health' }] }
+    logWeighIn(S, 81, at('2026-10-15T21:00:00'))
+    expect(S.bodyweight).toHaveLength(1)
+    expect(S.bodyweight[0].ins.map(r => [r.id, r.at, r.w, r.src || null])).toEqual([['0', null, 82, 'health'], [S.bodyweight[0].ins[1].id, '21:00', 81, null]])
+    expect(S.bodyweight[0]).toMatchObject({ d: '2026-10-15', w: 82, t: at('2026-10-15T21:00:00') })
+    expect(S.bodyweight[0].src).toBeUndefined()
+  })
+
+  it('corrects the weigh-in of the same minute instead of adding one', () => {
+    const S = {}
+    logWeighIn(S, 81, at('2026-10-15T07:00:00'))
+    logWeighIn(S, 80.6, at('2026-10-15T07:00:30'))
+    expect(S.bodyweight[0].ins.map(r => [r.at, r.w])).toEqual([['07:00', 80.6]])
+  })
+
+  it('starts the list on a profile that has none', () => {
+    const S = {}
+    expect(logWeighIn(S, 70, at('2026-10-15T07:00:00'))).toBe(true)
+    expect(S.bodyweight).toHaveLength(1)
+  })
+
+  it('refuses a weight that is not a positive number, and changes nothing', () => {
+    for (const w of [0, -5, 'abc', null, undefined, NaN, 0.04]) {
+      const S = { bodyweight: [{ d: '2026-10-15', w: 82 }] }
+      expect(logWeighIn(S, w, at('2026-10-15T07:00:00')), String(w)).toBe(false)
+      expect(S.bodyweight).toEqual([{ d: '2026-10-15', w: 82 }])
+    }
   })
 })

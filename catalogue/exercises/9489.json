@@ -3,9 +3,9 @@
   "name": "hanging side lean",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lats",
     "grip muscles"
   ],

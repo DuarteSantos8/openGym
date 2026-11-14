@@ -5,6 +5,7 @@ import { SCHEMAS } from '../coach/core/schemas.js';
 import { build, FULL_DETAIL_SESSIONS } from '../coach/core/payload.js';
 import { chatCompletionsSpec } from '../coach/core/adapters/openai.js';
 import { validatePlan } from '../coach/core/validate.js';
+import { D as fixtureDay } from './helpers.mjs';
 
 const S = (workouts = []) => ({
   lang: 'en', unit: 'kg', routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 8 }] }],
@@ -76,7 +77,7 @@ test('the create schema caps the two arrays the validator caps, so a repeating m
 });
 
 test('older sessions in a review window are compacted, the recent ones keep full sets', () => {
-  const many = Array.from({ length: FULL_DETAIL_SESSIONS + 4 }, (_, i) => workout('2026-08-' + String(i + 1).padStart(2, '0')));
+  const many = Array.from({ length: FULL_DETAIL_SESSIONS + 4 }, (_, i) => workout(fixtureDay('2026-07-' + String(i + 1).padStart(2, '0'))));
   const p = build(S(many), { handle: 'h1', kind: 'review' });
   const w = p.window.workouts;
   assert.equal(w.length, many.length);

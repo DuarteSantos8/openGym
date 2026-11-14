@@ -18,18 +18,23 @@ import { closeThenNav } from '../lib/nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
-import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
+import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf, isoOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
+import { scheduleModeOf } from '../lib/rotation.js'
+import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
   markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
-  changeTitle, changeValues, exName, canRevert, revertLast
+  changeTitle, changeValues, changeMeaning, exName, canRevert, revertLast
 } from '../lib/coach.js'
+import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS } from '../lib/coach-api.js'
+import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
+import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
+import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
@@ -49,20 +54,24 @@ export default function CoachChat() {
   const openSheet = useUI(s => s.openSheet)
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
   const [text, setText] = useState('')
+  // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
+  const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
   const endRef = useRef(null)
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
 
-  const ok = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
+  const gate = useCoachGate()
+  const ok = gate.ok
   const ready = ok && hasConsent(S) && !!S.coach?.profile
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
-  // empty state, decide there is no consent, and bounce a consenting user into the intake.
+  // empty state, decide there is no consent, and bounce a consenting user into the intake. Nor
+  // before the server said for this session whether it has a Coach (lib/use-coach-gate.js).
   useEffect(() => {
-    if (!storeReady) return
+    if (!storeReady || !gate.known) return
     if (!ok) nav('/home', { replace: true })
     else if (!ready) nav('/coach/intake', { replace: true })
-  }, [storeReady, ok, ready])
+  }, [storeReady, gate.known, ok, ready])
 
   // A job that ends is either a proposal, "nothing to change", or a failure. The server tells
   // the client none of that directly — the job simply stops appearing — so the transition is
@@ -83,7 +92,10 @@ export default function CoachChat() {
     update(s => {
       // A run that ended unseen has no duration worth learning from.
       if (was) recordTiming(s, ms)
-      if (!pending) {
+      // A proposal already applied or discarded was settled on another device (#779): its reply is
+      // in that device's thread, which syncs here. "Nothing I would change" would be wrong.
+      const settled = last?.outcome === 'applied' || last?.outcome === 'dismissed' || last?.outcome === 'ready'
+      if (!pending && !settled) {
         const cls = lastError?.errorClass || (last?.outcome === 'failed' ? (last.errorClass || 'internal') : null)
         appendChat(s, cls
           ? { role: 'coach', kind: 'error', text: jobErrorText(cls, lastError?.detail) }
@@ -93,6 +105,18 @@ export default function CoachChat() {
       }
     })
   }, [job, pending, loading, last?.id])
+
+  // An answer to a question (an `ask` job) has nothing to decide: it goes into the thread as the
+  // Coach's reply, once — `pid` names the job it answers, so a second render or a poll that still
+  // shows it pending cannot write it twice — and the server is told it was read.
+  useEffect(() => {
+    if (!pending || pending.kind !== 'ask' || job) return
+    update(s => {
+      if ((s.coach?.chat || []).some(m => m.pid === pending.id)) return
+      appendChat(s, { role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id })
+    })
+    resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
+  }, [pending?.id, !!job])
 
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
@@ -107,16 +131,20 @@ export default function CoachChat() {
     try {
       // A message about a proposed plan refines it. With no plan at all — the first attempt
       // failed, or nothing was ever built — the message asks for one; a review would only
-      // answer that there is no workout to look at, which is how people got stuck.
+      // answer that there is no workout to look at, which is how people got stuck. Anything else
+      // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
+      // review the whole plan. A review is the chip and the menu's, as it always was.
       if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
-      else await requestReview(msg)
+      else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
+      setExpanded(false)
       refresh()
     } catch (e) {
       // A server that refuses the job says so in English, with its class beside it: the class
       // picks the translated line. One with no line here ('shared') keeps the server's words.
-      toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
+      // "Not now" on the data-sharing question is an answer, not a failure: the text stays put.
+      if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
     }
     setBusy(false)
   }
@@ -127,7 +155,7 @@ export default function CoachChat() {
       await fn()
       update(s => appendChat(s, { role: 'user', kind: 'text', text: line }))
       refresh()
-    } catch (e) { toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')) }
+    } catch (e) { if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')) }
     setBusy(false)
   }
   const askReview = () => ask(() => requestReview(''), t('Have a look at my training and tell me what you would change.'))
@@ -164,6 +192,7 @@ export default function CoachChat() {
       {idle && <Row icon="clipboard" iconTint="var(--indigo)" title={t('Start a new plan')} subtitle={t('A fresh plan from your answers; your workouts stay')} accessory="chevron" onClick={() => { close(); askNewPlan() }} />}
       <Row icon="pencil" iconTint="var(--indigo)" title={t('Edit my answers')} subtitle={t('Goal, days, equipment, limits')} accessory="chevron" onClick={() => closeThenNav(close, '/coach/intake?edit=1')} />
       <Row icon="clock" iconTint="var(--purple)" title={t('Automatic reviews')} subtitle={cadenceLabel(coach)} accessory="chevron" onClick={() => { close(); cadenceSheet(openSheet, update) }} />
+      {!DEMO && <Row icon="shield" iconTint="var(--green)" title={t('AI data sharing')} subtitle={t('Who may see your training')} accessory="chevron" onClick={() => { close(); openSheet(() => <div className="chat-menu"><AiConsentSection /></div>) }} />}
       {canRevert(S) && <Row icon="reset" iconTint="var(--blue)" title={t('Undo the last Coach changes')} accessory="chevron" onClick={() => { close(); doRevert() }} />}
     </div>
     <div style={{ height: 10 }} />
@@ -180,14 +209,14 @@ export default function CoachChat() {
     }
   })
 
-  const status = job ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
+  const status = job || pending?.kind === 'ask' ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
   const placeholder = pending?.kind === 'create'
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
 
   return <div className="narrow chat">
     <div className="chat-hdr">
-      <button className="iconbtn" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       <div className="chat-av"><Icon name="sparkles" /></div>
       <div className="grow">
         <h1>{t('Coach')}</h1>
@@ -203,7 +232,10 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && (pending.kind === 'create'
+      {pending && !job && pending.kind === 'adapt' && <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
+        <AdaptProposal p={pending} onDone={refresh} />
+      </div>}
+      {pending && !job && pending.kind !== 'ask' && pending.kind !== 'adapt' && (pending.kind === 'create'
         ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
         : pending.kind === 'debrief'
           ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
@@ -219,10 +251,9 @@ export default function CoachChat() {
         {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
         {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
       </div>}
-      <div className="composer-in">
-        <textarea rows={1} value={text} maxLength={maxMessageLen || 1000} placeholder={placeholder} disabled={!!job}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} />
+      <div className={'composer-in' + (expanded ? ' tall' : '')}>
+        <ChatInput value={text} onChange={setText} onSend={send} placeholder={placeholder} disabled={!!job}
+          maxLength={maxMessageLen || 1000} expanded={expanded} setExpanded={setExpanded} />
         <button className="send" onClick={send} disabled={!text.trim() || busy || !!job} aria-label={t('Send')}><Icon name="arrowUp" /></button>
       </div>
       {cap?.limit > 0 && <div className="composer-cap">{t('{0} of {1} Coach runs used today', cap.used, cap.limit)}</div>}
@@ -266,7 +297,7 @@ const stamp = at => {
   const d = new Date(at)
   const today = new Date()
   const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  return d.toDateString() === today.toDateString() ? time : fmtDate(d.toISOString().slice(0, 10)) + ' · ' + time
+  return d.toDateString() === today.toDateString() ? time : fmtDate(isoOf(d)) + ' · ' + time
 }
 
 function Typing({ S, kind, coachLocal, config }) {
@@ -283,7 +314,7 @@ function Typing({ S, kind, coachLocal, config }) {
     // local model rather than something wrong; the next line already warns it takes longer.
     eta = local ? '' : t('This usually takes a minute or two.')
   }
-  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : t('Reading your training…')
+  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : kind === 'ask' ? t('Thinking about your question…') : kind === 'adapt' ? t('Looking at your workout…') : t('Reading your training…')
   return <div className="msg coach">
     <div className="bub typing"><i /><i /><i /></div>
     <div className="typing-eta">
@@ -309,7 +340,9 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
       update(s => {
         const res = applyCreatedPlan(s, p, { schedule })
         n = res?.routines?.length || b.routines.length
-        appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: schedule
+        appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: res.rotation
+          ? t('Imported! {0} routines are in your plan and your rotation starts over with them. See you at the next session.', n)
+          : schedule
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
@@ -334,7 +367,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
         <div className="pcard-eyebrow">{p.iteration > 1 ? t('Revision {0}', p.iteration) : t('Your plan')}</div>
         <h2 className="pcard-h">{b.name || t('Coach plan')}</h2>
         {!!b.summary && <p className="pcard-sum">{b.summary}</p>}
-        {!!b.basedOn && <p className="pcard-sum" style={{ fontSize: 13 }}>{b.basedOn}</p>}
+        {!!b.basedOn && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>{b.basedOn}</p>}
       </div>
 
       <WeekStrip days={weekDays} ws={weekStartOf(S)} />
@@ -346,7 +379,10 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
 
       <div className="pcard-row">
-        <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>
+        {/* In rotation mode the plan goes into the loop, which is what Home reads (#778). */}
+        {scheduleModeOf(S) === 'rotation'
+          ? <span className="lrow-m"><span className="lrow-t">{t('Use this plan in your rotation')}</span><span className="lrow-s">{t('Replaces the sessions in your rotation and starts it over with the first one.')}</span></span>
+          : <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>}
         <Switch checked={schedule} onChange={setSchedule} />
       </div>
       <div className="pcard-note">{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
@@ -410,10 +446,10 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         <div className="pcard-eyebrow">{t('Suggestions')}</div>
         <h2 className="pcard-h">{tn('{0} suggestion', '{0} suggestions', marked.changes.length)}</h2>
         {!!marked.summary && <p className="pcard-sum">{marked.summary}</p>}
-        {!!marked.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
+        {!!marked.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>
           {t('Based on your last {0} sessions', marked.evidence.sessions)}{marked.evidence.from ? ` · ${fmtDate(marked.evidence.from)} – ${fmtDate(marked.evidence.to)}` : ''}
         </p>}
-        {marked.planMoved && <p className="pcard-sum" style={{ fontSize: 13, color: 'var(--yellow)' }}>
+        {marked.planMoved && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)', color: 'var(--yellow)' }}>
           {t('Your plan changed since the Coach looked at it. Suggestions that no longer match are greyed out. Ask for a fresh review to see them again.')}
         </p>}
       </div>
@@ -445,8 +481,10 @@ function ChangeRow({ c, S, stale, badge, children }) {
   return <div className={'pcard-chg' + (stale ? ' stale' : '') + (c.status === 'rejected' ? ' declined' : '')}>
     <div className="grow">
       <div className="pcard-chg-t">{changeTitle(c, S)}{c.routineName ? <span className="dim" style={{ fontWeight: 400 }}> · {c.routineName}</span> : null}</div>
-      {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 12, color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
+      {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 'var(--fs-caption)', color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
       <div className="pcard-chg-w">{c.why}</div>
+      {/* What the change means at the gym, in the app's own words (lib/coach.js changeMeaning). */}
+      {changeMeaning(c) && <div className="pcard-chg-m small dim">{changeMeaning(c)}</div>}
       {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
     </div>
     {badge}
@@ -589,7 +627,7 @@ function Recap({ entry, S, openSheet }) {
   const acc = decisions.filter(d => d.status === 'accepted').length
   const rej = decisions.length - acc
   const kind = entry.kind
-  const eyebrow = kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')
+  const eyebrow = kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : kind === 'adapt' ? t('For this workout') : t('Suggestions')
   const state = kind === 'debrief' ? null
     : entry.dismissed ? { cls: 'no', text: t('Declined') }
       : kind === 'create' ? { cls: 'yes', text: t('Imported') }
@@ -621,11 +659,11 @@ function ProposalDetail({ entry, S }) {
   const weekDays = useMemo(() => new Set(Object.keys(b?.week || {}).map(Number)), [b])
   return <div className="pdetail">
     <div className="pcard-hd" style={{ paddingInline: 0 }}>
-      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(new Date(entry.at).toISOString().slice(0, 10))}</div>
+      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : kind === 'adapt' ? t('For this workout') : t('Suggestions')} · {fmtDate(isoOf(new Date(entry.at)))}</div>
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
       {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red)' }}>{t('You declined this.')}</p>}
-      {!!entry.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
+      {!!entry.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>
         {t('Based on your last {0} sessions', entry.evidence.sessions)}{entry.evidence.from ? ` · ${fmtDate(entry.evidence.from)} – ${fmtDate(entry.evidence.to)}` : ''}
       </p>}
     </div>
@@ -643,10 +681,17 @@ function ProposalDetail({ entry, S }) {
         {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
-      <p className="pcard-sum" style={{ fontSize: 13 }}>{entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
+      <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>{entry.rotation ? t('Your rotation was set to this plan.') : entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}
 
+    {kind === 'adapt' && (entry.decisions || []).map(d => <div key={d.id} className="pcard-chg">
+      <div className="grow">
+        <div className="pcard-chg-t">{adaptTitle(d)}</div>
+        <div className="pcard-chg-w">{d.why}</div>
+      </div>
+      <span className={'recap-state ' + (d.status === 'accepted' ? 'yes' : 'no')}>{d.status === 'accepted' ? t('Accepted') : t('Declined')}</span>
+    </div>)}
     {kind === 'debrief' && <DebriefBody p={entry} S={S} />}
     {kind === 'revert' && <p className="pcard-sum">{t('Reverted the last Coach changes.')}</p>}
     <div style={{ height: 10 }} />
@@ -656,7 +701,7 @@ function ProposalDetail({ entry, S }) {
 /** Every proposal ever made, newest first. Nothing the Coach said is gone after a decision. */
 function HistorySheet({ S, close, openSheet }) {
   const log = [...(S.coach?.log || [])].reverse()
-  const icon = { create: ['clipboard', 'var(--indigo)'], review: ['sparkles', 'var(--acc)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'] }
+  const icon = { create: ['clipboard', 'var(--indigo)'], review: ['sparkles', 'var(--acc)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'], adapt: ['dumbbell', 'var(--orange)'] }
   return <div className="chat-menu">
     <h3>{t('Everything the Coach proposed')}</h3>
     {!log.length && <div className="chat-empty">{t('Nothing yet. Every plan, suggestion and debrief will be kept here, whether you said yes or no.')}</div>}
@@ -669,7 +714,7 @@ function HistorySheet({ S, close, openSheet }) {
           : e.kind === 'debrief' ? t('Debrief: {0}', e.workout?.name || t('Workout')) + (e.score != null ? ` · ${e.score}/10` : '')
             : e.kind === 'revert' ? t('Reverted the last Coach changes.')
               : tn('{0} suggestion', '{0} suggestions', n)
-        const sub = fmtDate(new Date(e.at).toISOString().slice(0, 10)) + ' · ' + (e.kind === 'debrief' ? String(e.summary || '').slice(0, 60)
+        const sub = fmtDate(isoOf(new Date(e.at))) + ' · ' + (e.kind === 'debrief' ? String(e.summary || '').slice(0, 60)
           : e.dismissed ? t('Declined') : e.kind === 'create' ? t('Imported') : e.kind === 'revert' ? '' : t('{0} accepted · {1} declined', acc, n - acc))
         return <Row key={e.id} icon={ic} iconTint={tint} title={title} subtitle={sub} accessory="chevron"
           onClick={() => { close(); openSheet(() => <ProposalDetail entry={e} S={S} />) }} />
@@ -749,14 +794,25 @@ function CadenceSheet({ update }) {
   const coach = useStore(s => s.S.coach) || emptyCoach()
   const cadence = coach.cadence && coach.cadence !== 'off' ? coach.cadence : null
   const mode = !cadence ? 'off' : cadence.weekly ? 'weekly' : 'every'
-  const setMode = m => update(s => {
-    const c = (s.coach = s.coach || emptyCoach())
-    c.cadence = m === 'off' ? 'off' : m === 'weekly' ? { weekly: { day: 0, time: '18:00' } } : { everyWorkouts: 4 }
-  })
+  // A phone with its own key runs them itself, and only while the app is open (lib/coach-schedule.js).
+  const deviceMode = useStore(s => s.coachLocal?.mode)
+  const onPhone = MOBILE && deviceMode === 'byok'
+  // Automatic reviews send your training while nobody is looking, so switching them on is where
+  // the data-sharing question is asked for them. "Not now" leaves them off.
+  const setMode = async m => {
+    if (m !== 'off') {
+      try { await ensureAiConsent() } catch (e) { if (!isDeclined(e)) useUI.getState().toast(e.message || t('Could not ask the Coach')); return }
+    }
+    update(s => {
+      const c = (s.coach = s.coach || emptyCoach())
+      c.cadence = m === 'off' ? 'off' : m === 'weekly' ? { weekly: { day: 0, time: '18:00' } } : { everyWorkouts: 4 }
+    })
+  }
   const patch = fn => update(s => { const c = (s.coach = s.coach || emptyCoach()); fn(c) })
   return <>
     <h3>{t('Automatic reviews')}</h3>
-    <Section footer={mode === 'off' ? t('Off. The Coach only looks when you ask.') : t('You are only notified when the Coach actually has something to suggest.')}>
+    <Section footer={mode === 'off' ? t('Off. The Coach only looks when you ask.') : t('You are only notified when the Coach actually has something to suggest.')
+      + (onPhone ? ' ' + t('On this phone the Coach can only look while the app is open: right after a workout, or the next time you open it.') : '')}>
       <SelectRow icon="clock" iconTint="var(--purple)" title={t('When')} value={mode} onChange={setMode}
         options={[
           { value: 'off', label: t('Off') },

@@ -8,6 +8,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lying close-grip extension with an EZ bar, lowering the bar behind your head. Puts strong focus on the long head of the triceps.",
   "instructions": [
     "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",

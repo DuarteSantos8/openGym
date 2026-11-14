@@ -31,6 +31,8 @@ function mount(entry, over = {}) {
   act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
 }
 
+// The rarely used rows sit folded under More (MenuSheet's `more`, v1.4.4): open it like a user would.
+const unfold = c => { const m = c.querySelector('.menu-more'); if (m) act(() => m.click()); return c }
 function openMenu() {
   act(() => container.querySelector('button[aria-label="More"]').click())
   const sheet = useUI.getState().sheets.at(-1)
@@ -38,7 +40,7 @@ function openMenu() {
   document.body.appendChild(sheetContainer)
   sheetRoot = createRoot(sheetContainer)
   act(() => sheetRoot.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
-  return sheetContainer
+  return unfold(sheetContainer)
 }
 
 beforeEach(() => {
@@ -55,6 +57,14 @@ afterEach(() => {
 })
 
 describe('Focus workout view', () => {
+  // FocusView.css spaces the steppers and greys a finished set's numbers through .focus-set,
+  // which the set's wrapper had lost: the label sat closer to the stepper above it than to its own.
+  it('gives the set its focus-set class, with complete once it is done', () => {
+    mount({ id: SQUAT, target: { sets: 2, reps: 5 }, sets: [{ w: 95, r: 5, done: true }, { w: 95, r: 5, done: false }] })
+    const set = container.querySelector('[data-testid="focus-set"]')
+    expect(set.classList.contains('focus-set')).toBe(true)
+  })
+
   it('omits a plan that repeats the prescription and keeps plate guidance in the badge row', () => {
     mount({
       id: SQUAT,
@@ -102,6 +112,32 @@ describe('Focus workout view', () => {
     expect(status).toBeTruthy()
     expect(status.textContent).toContain('Not counted for progression')
     expect(container.querySelector('.noprog')).toBeNull()
+  })
+
+  // Discord: "In Focus mode, how do I add an extra set?" The ⋯ menu has it now, with the warm-up,
+  // like the Cards layout's buttons; the new set is the one on screen when the others are done.
+  it('adds a set and a warm-up set from the exercise menu', () => {
+    mount({ id: SQUAT, target: { sets: 2, reps: 5, weight: 95 }, sets: [{ w: 95, r: 5, done: true }, { w: 95, r: 5, done: true }] })
+    const pick = label => {
+      const item = [...openMenu().querySelectorAll('.menu-item')].find(el => el.querySelector('.tt')?.textContent === label)
+      expect(item, label).toBeTruthy()
+      act(() => item.click())
+      act(() => sheetRoot.unmount()); sheetContainer.remove(); sheetRoot = sheetContainer = null
+    }
+    pick('Add set')
+    const sets = () => useStore.getState().S.active.entries[0].sets
+    expect(sets()).toHaveLength(3)
+    expect(sets()[2]).toMatchObject({ w: 95, r: 5, done: false })
+    expect(container.querySelectorAll('.focus-dots button')).toHaveLength(3)
+    expect(container.querySelector('.focus-dots button.active').getAttribute('aria-label')).toBe('Set 3')
+    pick('Add warm-up set')
+    expect(sets()).toHaveLength(4)
+    expect(sets().filter(row => row.phase === 'warmup' || row.warmup)).toHaveLength(1)
+  })
+
+  it('title-cases the exercise menu\'s heading like the Cards layout does', () => {
+    mount({ id: SQUAT, target: { sets: 1, reps: 5, weight: 95 }, sets: [{ w: 95, r: 5, done: false }] })
+    expect(openMenu().querySelector('h3').className).toBe('capitalize')
   })
 
   it('uses the exercise rest-pause duration for a new burst', () => {

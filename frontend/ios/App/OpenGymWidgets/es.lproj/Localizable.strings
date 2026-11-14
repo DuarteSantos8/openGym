@@ -1,0 +1,17 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "Entreno de hoy";
+"Your plan for today, the week ahead and your streak." = "Tu plan de hoy, la semana que viene y tu racha.";
+"Streak" = "Racha";
+"Weeks in a row with a workout." = "Semanas seguidas con entreno.";
+"Open openGym once to see your plan here." = "Abre openGym una vez para ver aquí tu plan.";
+"What to show" = "Qué mostrar";
+"And beside it" = "Y al lado";
+"Week streak" = "Racha semanal";
+"Weight goal" = "Objetivo de peso";
+"This week" = "Esta semana";
+"Next workout" = "Próximo entreno";
+"Records" = "Récords";
+"Volume" = "Volumen";
+"Your streak, weight goal, week, next workout, records or volume. You pick." = "Tu racha, objetivo de peso, semana, próximo entreno, récords o volumen. Tú eliges.";
+"Pick what the widget shows." = "Elige qué muestra el widget.";
+"Challenges" = "Retos";

@@ -6,7 +6,7 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.4.1
+  version: 1.4.3
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.ch), a free, open-source
@@ -59,15 +59,22 @@ info:
     ### CSRF
     State-changing browser requests must come from the app's own origin. The server
     checks `Sec-Fetch-Site` (falling back to `Origin` vs the configured `ORIGIN`);
-    a mismatch is refused with `403 {"error":"cross-origin request refused"}` on any
-    non-GET route. Exempt: passkey sign-up and sign-in (`register/options`,
-    `register/verify`, `login/options`, `login/verify`) and `pair/redeem`, each of which
-    carries its own one-shot credential in the body, and any request authenticated with a
-    Bearer token.
-    The password routes are **not** exempt: a hostile page knows a valid name and
-    password of its own, and could otherwise sign a visitor into it (login CSRF).
-    Neither are the device-link routes: a link is redeemed on the app's own origin,
-    the only one a passkey can be created for.
+    a mismatch is refused with `403 {"error":"cross-origin request refused","code":"origin-mismatch","expected":ORIGIN}` on any
+    non-GET route, the passkey routes included. Exempt: `pair/redeem`, which the mobile
+    app calls from its own origin (the code in the body is the credential, and the token
+    comes back in the body, never as a cookie), and any request a Bearer token
+    authenticates by itself: a valid session token, with no session cookie beside it, on
+    any route but the sign-in ones — the four passkey routes, the password and reset-code
+    routes and the two device-link routes, which act on the credential in the body, never
+    on a Bearer. A cross-origin request whose Bearer does not buy the exemption is refused
+    before any handler runs: `401 {"error":"not signed in"}` when that Bearer does not
+    verify and is the only credential (a paired app whose token was revoked or expired),
+    the 403 otherwise.
+    The passkey routes were exempt before, on the grounds that the challenge id is a
+    credential; but it is bound to nothing else, so a hostile page could complete the
+    attacker's own passkey sign-in in the victim's browser (login CSRF) and the answer
+    set the victim's session to the attacker's account. The password routes are **not**
+    exempt for the same reason: a hostile page knows a valid name and password of its own.
 
     ### Environment-dependent behavior
     - `INVITE_ONLY=1`: registration requires a valid invite code (minted by an admin).
@@ -76,8 +83,11 @@ info:
       this API at all).
     - `ADMIN_UIDS=<uid>,<uid>`: user ids treated as admins (a `"admin": true` flag on
       the user record in `db.json` works too). Admins get the `/api/admin/*` routes.
+      One admin is the owner: the record with `"owner": true`, else the first
+      `ADMIN_UIDS` entry with a profile, else the oldest admin. Only the owner appoints
+      and removes admins, deletes an admin, hands the role on and clears the audit log.
     - `FIRST_USER_ADMIN` (default off; `1` turns it on): the first profile registered
-      on an instance with no profiles gets that `"admin": true` flag. Decided at
+      on an instance with no profiles gets that `"admin": true` flag and is the owner. Decided at
       registration only, never applied to an instance that already has profiles.
     - `AUDIT_LOG` (default on), `AUDIT_MAX` (default 5000 events), `AUDIT_DAYS`
       (default 90), `AUDIT_IP` (`off` | `net` | `full`, default off) shape the audit
@@ -88,6 +98,9 @@ info:
       the language of the sign-in screen and of every profile that never picked one.
     - `TRUST_PROXY=1`: the throttle reads the client address from proxy headers (set by
       the bundled `docker-compose.yml`, where only the web container can reach the API).
+    - `INTEGRATIONS` (unset by default, e.g. `webhook`): the providers of the `integrations`
+      routes, and the `integrations` block of `GET /api/config`. `INTEGRATIONS_ALLOW_LAN=1`
+      lets a webhook reach the home network (http too), never loopback or link-local.
     - `MEDIA_UPLOADS` (default on; `0` removes the `media` routes and the `media` block of
       `GET /api/config`), `MEDIA_QUOTA_MB` (200 per profile, `0` = no cap),
       `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (40),
@@ -103,7 +116,11 @@ info:
       `media` routes add a stable `code` for the client to word in its own language.
     - Unknown method+path pairs return `404 {"error":"not found"}`; an unhandled
       exception returns `500 {"error":"server error"}`.
-    - Request bodies are parsed as JSON regardless of Content-Type. A body that does
+    - Every route that reads a request body requires `Content-Type: application/json`
+      (a `charset` parameter is fine) and answers any other type with
+      `415 {"error":"content-type must be application/json"}` — the types a form can
+      send are the ones that skip the CORS preflight, which is how a cross-site form
+      reached these routes. A request with no body needs no Content-Type. A body that does
       not parse, or parses to anything but an object (`null`, a string, an array), is
       `400 {"error":"invalid json"}` on every route that reads one; an empty body counts
       as `{}`. A body over 5 MiB is `413 {"error":"body too large"}`; the rest of the
@@ -131,6 +148,8 @@ tags:
     description: Passkey (WebAuthn) registration and login, sessions
   - name: pairing
     description: Mobile-app pairing (code from a signed-in browser tab)
+  - name: watch
+    description: The watch relay for Zepp OS watches (docs/ZEPP_OS.md)
   - name: password
     description: >-
       Optional name-and-password sign-in (`PASSWORD_LOGIN=1`). Every route here is a 404
@@ -157,6 +176,11 @@ tags:
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
+  - name: integrations
+    description: >-
+      Settings → Integrations: outbound webhooks now, more providers later. Off unless the
+      server runs with `INTEGRATIONS` (e.g. `INTEGRATIONS=webhook`); then a profile can add
+      its own connections. Secrets are sealed at rest and shown once. See docs/INTEGRATIONS.md.
 
 security:
   - cookieAuth: []
@@ -285,6 +309,14 @@ paths:
                       always wins; a tag the app has no translation for is ignored.
                   media:
                     $ref: '#/components/schemas/MediaConfig'
+                  integrations:
+                    type: object
+                    description: >-
+                      Present for a signed-in caller when the server runs with INTEGRATIONS:
+                      the provider ids it offers, and `lan: true` with INTEGRATIONS_ALLOW_LAN=1.
+                    properties:
+                      providers: { type: array, items: { type: string }, example: [webhook] }
+                      lan: { type: boolean, const: true }
               examples:
                 anonymous: { value: { invite_only: true, allow_guest: false } }
                 signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
@@ -331,7 +363,7 @@ paths:
         `startRegistration`) and sends the result to `/api/register/verify` together
         with the `cid`. Challenges are one-shot and expire after 5 minutes.
 
-        CSRF-exempt (the challenge is the credential). No session required.
+        No session required.
       security: []
       requestBody:
         required: true
@@ -386,7 +418,7 @@ paths:
         Verifies the authenticator's attestation response against the stored
         challenge (`verifyRegistrationResponse`), creates the user + credential, and
         signs the caller in (sets the session cookie). On an invite-only instance the
-        invite is re-checked and burned here. CSRF-exempt.
+        invite is re-checked and burned here.
       security: []
       requestBody:
         required: true
@@ -447,7 +479,7 @@ paths:
         (`generateAuthenticationOptions` with an empty `allowCredentials`; discoverable
         credentials / resident keys are required at registration, so the browser offers
         the user their passkeys itself) plus a one-shot challenge id `cid`.
-        CSRF-exempt. Takes no request body.
+        Takes no request body.
       security: []
       responses:
         '200':
@@ -468,7 +500,7 @@ paths:
       summary: 'Finish passkey login (WebAuthn ceremony, step 2)'
       description: |
         Verifies the assertion (`verifyAuthenticationResponse`), updates the signature
-        counter, and signs the caller in (sets the session cookie). CSRF-exempt.
+        counter, and signs the caller in (sets the session cookie).
       security: []
       requestBody:
         required: true
@@ -565,6 +597,68 @@ paths:
               schema: { $ref: '#/components/schemas/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/account/delete:
+    post:
+      tags: [auth]
+      operationId: accountDelete
+      summary: Delete your own account and everything of yours
+      description: |
+        The signed-in account removes itself for good, with the same clean-up as
+        `/api/admin/user/delete`: the user record, their passkeys, their push
+        subscriptions, their live presence, their training history file, their
+        uploaded photos and videos (`DATA_DIR/uploads/<uid>/`) and any Coach credential
+        stored for them. Not reversible. The body carries the account's name, typed back
+        by its owner, and the same proof as setting a password (see OwnerProof): a
+        passkey assertion made for this request, or the current password while
+        `PASSWORD_LOGIN` is on. A paired phone (Bearer token) cannot hold a passkey for
+        the server, so for a profile with no password that counts the pairing itself is
+        the proof (audited as `device`; the app asks the phone's own screen lock first);
+        a profile with one sends the current password from the phone too. Cookie
+        sessions always need the proof. The name and the last-admin rule are checked
+        before the proof is asked. The last admin is refused while any other profile remains (the
+        instance would be left with nobody to run it); the only profile on an instance
+        may delete itself. Clears the caller's cookie; every other session and Bearer
+        token of the account stops working with it. Audited as `auth.account.delete`,
+        with the name and the proof it was made with (`passkey`, `password`, `device`); a refused proof as
+        `auth.proof.fail` with `act: account-delete`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/OwnerProof'
+                - type: object
+                  required: [name]
+                  properties:
+                    name: { type: string, description: 'The account name, exactly (surrounding spaces are ignored).' }
+            example: { name: "Ada", current: "correct horse battery staple" }
+      responses:
+        '200':
+          description: The account and everything of theirs is gone.
+          headers:
+            Set-Cookie:
+              description: Expires the caller's session cookie(s).
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: '`confirm-name`: the name is missing or is not this account''s.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "type the account name to confirm", code: "confirm-name" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/ProofRefused' }
+        '409':
+          description: '`last-admin`: the only admin, with other profiles still on the instance.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "the last admin cannot leave while other profiles remain", code: "last-admin" }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
   /api/pair/create:
     post:
       tags: [pairing]
@@ -574,7 +668,15 @@ paths:
         Called from an already signed-in browser tab (Settings → "Pair the mobile
         app"). Returns an 8-character code (alphabet without 0/O/1/I) the phone
         redeems within 5 minutes via /api/pair/redeem. One-shot. One live code per
-        profile: minting a new one retires the previous one.
+        profile: minting a new one retires the previous one. Same proof as a device
+        link (a passkey assertion made for this request, or the current password while
+        password sign-in is on), since the phone token a code turns into is renewed for
+        as long as it is used. Audited as `auth.pair.create`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OwnerProof' }
       responses:
         '200':
           description: A fresh pairing code.
@@ -588,6 +690,9 @@ paths:
                     description: 8 chars from ABCDEFGHJKLMNPQRSTUVWXYZ23456789.
               example: { code: "K7WQ2MZP" }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/ProofRefused' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Busy' }
 
   /api/pair/redeem:
     post:
@@ -632,6 +737,222 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "invalid or expired code", code: "pair-invalid" }
+
+  /api/watch/pair:
+    post:
+      tags: [watch]
+      operationId: watchPair
+      summary: A pairing code for a Zepp OS watch
+      description: |
+        A signed-in device asks for a code that the Zepp app's settings page for openGym
+        redeems (`POST /api/watch/redeem`). 12 characters typed as `XXXX-XXXX-XXXX`, one per
+        profile (a new one replaces the last), good for ten minutes, held only as a hash.
+      responses:
+        '200':
+          description: The code and when it expires (ms since the epoch).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  exp: { type: integer }
+              example: { code: "K7WQ-2MZP-8RTA", exp: 1761743400000 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/redeem:
+    post:
+      tags: [watch]
+      operationId: watchRedeem
+      summary: Redeem a watch pairing code for a watch token
+      description: |
+        Called by the openGym watch app's Side Service inside the Zepp phone app. The code is
+        the credential (CSRF-exempt, throttled per address like a device link). The answer is a
+        watch token (`ogw_…`) that opens `GET`/`POST /api/watch/box` and nothing else; it ends
+        with "sign out everywhere", a new password, a disabled account, an unlink, or 90 days
+        without use.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+                name: { type: string, description: The watch's name for Settings (40 characters). }
+            example: { code: "K7WQ-2MZP-8RTA", name: "Amazfit Balance" }
+      responses:
+        '200':
+          description: Paired.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  id: { type: string }
+                  name: { type: string, description: The profile's name. }
+        '400':
+          description: Code unknown, used or expired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Too many wrong codes from this address.
+  /api/watch/links:
+    get:
+      tags: [watch]
+      operationId: watchLinks
+      summary: The profile's paired watches
+      responses:
+        '200':
+          description: Id, name, when paired and when last used.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        name: { type: string }
+                        created: { type: integer }
+                        seen: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/unlink:
+    post:
+      tags: [watch]
+      operationId: watchUnlink
+      summary: Unpair one watch, or every watch
+      description: Without an `id`, every watch of the profile. The mailbox goes with the last one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: Done; the watches left.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/snapshot:
+    put:
+      tags: [watch]
+      operationId: watchSnapshot
+      summary: The page's snapshot for the profile's watches
+      description: |
+        The JSON text the page sends any watch (`frontend/src/lib/watch-sync.js` buildSnapshot),
+        64 KB at most. 409 `no-watch` while no watch is paired.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [json]
+              properties:
+                json: { type: string }
+      responses:
+        '200':
+          description: Stored.
+        '400':
+          description: Not a snapshot.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: No watch paired.
+  /api/watch/events:
+    get:
+      tags: [watch]
+      operationId: watchEvents
+      summary: What the watches sent, oldest first
+      description: |
+        The events exactly as a watch sent them (watch-sync.js applyEvents), until acknowledged
+        (`POST /api/watch/ack`), for two weeks at most. `paired` counts the watches, `seen` is
+        when one last checked in.
+      responses:
+        '200':
+          description: The queue.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events: { type: array, items: { type: object } }
+                  paired: { type: integer }
+                  seen: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/ack:
+    post:
+      tags: [watch]
+      operationId: watchAck
+      summary: Events applied, out of the queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: string } }
+      responses:
+        '200':
+          description: Done.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/box:
+    get:
+      tags: [watch]
+      operationId: watchBoxRead
+      summary: The watch reads the page's last snapshot
+      description: With the watch token as `Authorization Bearer`. `json` is null before the page sent one.
+      security: []
+      responses:
+        '200':
+          description: The snapshot text and when it came (ms).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  json: { type: string, nullable: true }
+                  at: { type: integer }
+        '401':
+          description: No live watch token (`watch-unpaired`).
+    post:
+      tags: [watch]
+      operationId: watchBoxSend
+      summary: The watch sends its events
+      description: |
+        With the watch token. At most 50 events a request, 4 KB each, of the types the page
+        applies; a queue holds 500. `accepted` names the ids the watch may forget (queued now or
+        before, or refused for good); the rest it sends again. The answer carries the snapshot
+        too, so one request does both.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                events: { type: array, items: { type: object } }
+      responses:
+        '200':
+          description: Accepted ids, and the snapshot.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accepted: { type: array, items: { type: string } }
+                  json: { type: string, nullable: true }
+                  at: { type: integer }
+        '401':
+          description: No live watch token (`watch-unpaired`).
 
   /api/login/password:
     post:
@@ -1036,6 +1357,67 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         '503': { $ref: '#/components/responses/Busy' }
 
+  /api/admin/user/recovery:
+    post:
+      tags: [admin, passkeys]
+      operationId: adminRecoveryCode
+      summary: 'Admin: make a one-time recovery code (#584)'
+      description: |
+        For someone who lost every way in, on any instance (with or without
+        `PASSWORD_LOGIN`). Returns a code (12 characters from the pairing alphabet, 60 bits),
+        shown once, stored only as a SHA-256, valid for 24 h. The person redeems it like a
+        device link (`POST /api/device-link/options` and `/verify`): the device they use gets a
+        new passkey for the profile and is signed in. Making it bumps the profile's session
+        version (every session, pending pairing code and device link ends); passkeys and the
+        password stay. A newer code replaces an older one.
+
+        Any admin may make one for a profile that is not an admin; only the owner for an
+        admin; nobody for the owner (403 `owner`: the owner uses the server command
+        `node recover.js <name>`), for oneself (400 `self`) or for a disabled profile (400
+        `disabled`). Audited as `admin.recovery.create`; a refusal for an admin as
+        `admin.denied`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, description: The user id. }
+      responses:
+        '200':
+          description: The code, once.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  name: { type: string }
+                  code: { type: string }
+                  expires: { type: number, description: Expiry (ms). }
+              example: { ok: true, name: "Ada", code: "K7WQ-2MZP-4HXA", expires: 1790000000000 }
+        '400':
+          description: Oneself, or a disabled profile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "enable the account first", code: disabled }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not an admin; an admin who is not the owner asking for an admin; or the target is the owner.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "the owner recovers with the server command (recover.js)", code: owner }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such user" }
+
   /api/admin/user/password-reset:
     post:
       tags: [admin, password]
@@ -1353,6 +1735,7 @@ paths:
                   options: { $ref: '#/components/schemas/WebAuthnRegistrationOptions' }
                   id: { type: string, description: "The profile's id (also the options' user handle). Names are not unique; this is what tells two profiles apart." }
                   name: { type: string, description: The profile this device is being added to. }
+                  recovery: { type: boolean, description: 'Present (true) when the code is a recovery code (POST /api/admin/user/recovery, recover.js).' }
         '400': { $ref: '#/components/responses/LinkInvalid' }
         '409': { $ref: '#/components/responses/PasskeyLimit' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
@@ -1366,8 +1749,10 @@ paths:
         Verifies the attestation against the challenge from step 1 (which must have been
         made for this very code), stores the passkey on the code's profile, burns the code
         and sets the session cookie; the passkey just made is what signs the device in.
-        Of two requests racing with one code, one wins. Audited as `auth.link.ok`, and every
-        refusal as `auth.link.fail`. **Not** CSRF-exempt.
+        Of two requests racing with one code, one wins. Audited as `auth.link.ok` (a recovery
+        code as `auth.recovery.ok`), and every refusal as `auth.link.fail`. A recovery code
+        also works on a profile at the passkey limit: the passkey used longest ago is removed
+        to make room. **Not** CSRF-exempt.
       security: []
       requestBody:
         required: true
@@ -1578,6 +1963,45 @@ paths:
                   wid: { type: string, description: 'The write id (`_wid`) of the stored document; absent before its first write.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/nudge-check:
+    get:
+      tags: [data]
+      operationId: nudgeCheck
+      summary: Whether a day was trained or excused (the phone's background check)
+      description: |
+        Asked by the phone app in the background before a missed-day nudge or a workout-day
+        reminder it scheduled on itself fires, so a day trained on another device is not
+        nudged. A few bytes instead of the whole document: `done` is true when a workout is
+        dated that day or the day carries a note; `nudge` is whether the server's copy of the
+        nudge rule would still nudge that day (false once it is done, or when the plan has no
+        session for it); `rev` is the profile's revision. Nothing of the workouts themselves.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+          description: The day, YYYY-MM-DD, in the phone's own calendar.
+      responses:
+        '200':
+          description: How that day stands.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date: { type: string, format: date }
+                  done: { type: boolean }
+                  nudge: { type: boolean }
+                  rev: { type: integer }
+              example: { date: "2026-09-14", done: true, nudge: false, rev: 7 }
+        '400':
+          description: '`date-invalid`: not a YYYY-MM-DD date.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "date must be YYYY-MM-DD", code: "date-invalid" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /api/media/{hash}:
     parameters:
       - name: hash
@@ -1688,7 +2112,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "cross-origin request refused" }
+              example: { error: "cross-origin request refused", code: "origin-mismatch", expected: "https://gym.example.com" }
         '408':
           description: No bytes arrived for 60 seconds (`timeout`). The connection is closed.
           content:
@@ -1783,7 +2207,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "cross-origin request refused" }
+              example: { error: "cross-origin request refused", code: "origin-mismatch", expected: "https://gym.example.com" }
 
   /api/media/sweep:
     post:
@@ -1822,7 +2246,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "cross-origin request refused" }
+              example: { error: "cross-origin request refused", code: "origin-mismatch", expected: "https://gym.example.com" }
         '429':
           description: More than 10 sweeps this hour (`locked`).
           headers:
@@ -1866,6 +2290,9 @@ paths:
         are dropped first. Re-subscribing an existing endpoint replaces it and keeps
         its original `created`. The client re-sends its subscription on every
         signed-in boot, so a row the instance lost comes back on its own.
+        An endpoint stored for another account moves to the caller only when the
+        request carries that subscription's own keys (the same browser, signed into
+        another account); otherwise it is a 409 and the row stays where it was.
       requestBody:
         required: true
         content:
@@ -1898,6 +2325,14 @@ paths:
                 malformed: { value: { error: "invalid subscription" } }
                 private: { value: { error: "endpoint must not point at a private address" } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: >-
+            The endpoint is stored for another account and the request does not carry
+            that subscription's keys.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "this subscription belongs to another account" }
 
   /api/push/status:
     get:
@@ -2052,6 +2487,253 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/integrations:
+    get:
+      tags: [integrations]
+      operationId: listIntegrations
+      summary: The integrations this server offers, and the caller's connections
+      description: |
+        `providers` is what the admin switched on with `INTEGRATIONS` (empty when it is unset,
+        the default), `connections` the caller's own. A connection never carries a secret or
+        its full URL: `info.url` is masked. `status` is `connected`, `paused` or `attention`
+        (the last deliveries failed for good, or its sealed settings no longer open because
+        `./data/secret` changed); `lastError` says why in plain words.
+      responses:
+        '200':
+          description: Providers and connections.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, example: webhook }
+                        kind: { type: string, enum: [webhook, apikey, oauth] }
+                        category: { type: string, example: automation }
+                        events: { type: array, items: { $ref: '#/components/schemas/IntegrationEvent' } }
+                        max: { type: integer, description: Connections of this kind a profile may have. }
+                        lan: { type: boolean, description: 'Present (true) when INTEGRATIONS_ALLOW_LAN=1: home-network receivers are allowed.' }
+                  connections:
+                    type: array
+                    items: { $ref: '#/components/schemas/IntegrationConnection' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/integrations/connect:
+    post:
+      tags: [integrations]
+      operationId: connectIntegration
+      summary: Add a connection (a webhook)
+      description: |
+        For `provider: webhook`: `url` (https, or http to a home-network address when
+        `INTEGRATIONS_ALLOW_LAN=1`; never loopback, link-local or, by default, a private
+        address), an optional `label` (60 characters) and `events` (at least one; default
+        `workout.finished`). At most 10 webhooks a profile. The answer's `reveal.secret` is
+        the signing secret, **shown this once**: the server keeps it sealed and never sends
+        it again. Payloads and the signature: docs/INTEGRATIONS.md.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider, url]
+              properties:
+                provider: { type: string, example: webhook }
+                url: { type: string, maxLength: 2048, example: 'https://ha.example.com/api/webhook/opengym-7f3a' }
+                label: { type: string, maxLength: 60 }
+                events: { type: array, items: { $ref: '#/components/schemas/IntegrationEvent' } }
+      responses:
+        '200':
+          description: Connected.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connection: { $ref: '#/components/schemas/IntegrationConnection' }
+                  reveal:
+                    type: object
+                    properties:
+                      secret: { type: string, example: ogwh_EXAMPLE-not-a-real-secret-0000000 }
+        '400':
+          description: 'The URL or the events were refused (`code`: `url`, `events`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/IntegrationsOff' }
+        '409':
+          description: 'Too many connections of this kind (`code`: `too-many`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
+
+  /api/integrations/update:
+    post:
+      tags: [integrations]
+      operationId: updateIntegration
+      summary: Rename a connection, change its events, pause or resume it
+      description: >-
+        A new URL is a new webhook (and a new secret): disconnect and connect again.
+        `paused: false` also clears a "Needs attention".
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+                label: { type: string, maxLength: 60 }
+                events: { type: array, items: { $ref: '#/components/schemas/IntegrationEvent' } }
+                paused: { type: boolean }
+      responses:
+        '200':
+          description: The connection as it is now.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connection: { $ref: '#/components/schemas/IntegrationConnection' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/IntegrationsOff' }
+        '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
+
+  /api/integrations/disconnect:
+    post:
+      tags: [integrations]
+      operationId: disconnectIntegration
+      summary: Remove a connection
+      description: >-
+        Forgets the connection, its sealed secrets, its log and anything still waiting to be
+        sent to it. Nothing is called on the far side.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: Gone.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/IntegrationsOff' }
+
+  /api/integrations/test:
+    post:
+      tags: [integrations]
+      operationId: testIntegration
+      summary: Send a test event now
+      description: >-
+        Delivers a made-up event of `type` (default: the connection's first event) straight
+        away, marked `"test": true`, and answers how it went. Six a minute per profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+                type: { $ref: '#/components/schemas/IntegrationEvent' }
+      responses:
+        '200':
+          description: The receiver's answer (`ok` false with `msg` when it failed).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  status: { type: ['integer', 'null'], description: The receiver's HTTP status. }
+                  ms: { type: ['integer', 'null'] }
+                  msg: { type: ['string', 'null'] }
+                  connection: { $ref: '#/components/schemas/IntegrationConnection' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/IntegrationsOff' }
+        '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
+
+  /api/integrations/retry:
+    post:
+      tags: [integrations]
+      operationId: retryIntegration
+      summary: Send the failed deliveries again
+      description: >-
+        Deliveries the server gave up on (after eight attempts over about an hour, or at once
+        for a refusal like a 404) go back into the queue from attempt one and are sent now.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: How many went back, and the connection afterwards.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requeued: { type: integer }
+                  connection: { $ref: '#/components/schemas/IntegrationConnection' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/IntegrationsOff' }
+        '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
+
+  /api/integrations/log:
+    get:
+      tags: [integrations]
+      operationId: integrationLog
+      summary: A connection's activity log
+      description: The last 50 deliveries and tests, newest first, plus what is queued or failed.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: The log.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  log:
+                    type: array
+                    maxItems: 50
+                    items:
+                      type: object
+                      properties:
+                        at: { type: integer, description: Epoch ms. }
+                        ev: { type: string, description: 'An event type, `test` or `connected`.' }
+                        ok: { type: boolean }
+                        status: { type: integer }
+                        ms: { type: integer }
+                        msg: { type: string, maxLength: 160 }
+                  queued: { type: integer }
+                  failed: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/IntegrationsOff' }
 
   /api/activity:
     post:
@@ -2229,8 +2911,9 @@ paths:
         subscriptions, their live presence, their training history file, their uploaded
         photos and videos (`DATA_DIR/uploads/<uid>/`) and any Coach credential stored for
         them. Not reversible; `/api/admin/user/disable` is the
-        reversible one. An admin cannot delete their own account, and the last admin
-        cannot be deleted. Audited by name, since the id stops meaning anything.
+        reversible one. An admin cannot delete their own account, the last admin and
+        the owner cannot be deleted, and only the owner deletes another admin. Audited
+        by name, since the id stops meaning anything.
       requestBody:
         required: true
         content:
@@ -2251,7 +2934,7 @@ paths:
                   ok: { type: boolean, const: true }
                   id: { type: string }
         '400':
-          description: Your own account, or the last admin.
+          description: Your own account, the last admin, or the owner.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -2264,6 +2947,90 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "no such user" }
+
+  /api/admin/user/role:
+    post:
+      tags: [admin]
+      operationId: adminUserRole
+      summary: 'Owner: make someone an admin, or remove the role'
+      description: >-
+        Owner only (403 for any other admin). Not on the owner themselves, not on an
+        admin named in `ADMIN_UIDS` (the server would restore them on restart), and a
+        disabled account is enabled before it can be promoted. Removing the role keeps
+        the account and its data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, admin]
+              properties:
+                id: { type: string, description: The user id. }
+                admin: { type: boolean }
+      responses:
+        '200':
+          description: Changed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  id: { type: string }
+                  admin: { type: boolean }
+        '400':
+          description: The owner, an `ADMIN_UIDS` admin, a disabled account, or no boolean.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/owner:
+    post:
+      tags: [admin]
+      operationId: adminOwnerTransfer
+      summary: 'Owner: hand the owner role to another admin'
+      description: >-
+        Owner only. The target must already be an enabled admin; the previous owner
+        stays an admin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, description: The user id. }
+      responses:
+        '200':
+          description: Handed over.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  id: { type: string }
+        '400':
+          description: Yourself, or not an enabled admin.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
 
   /api/admin/invites:
     get:
@@ -2419,9 +3186,9 @@ paths:
     post:
       tags: [admin]
       operationId: adminAuditClear
-      summary: 'Admin: clear the activity log'
+      summary: 'Owner: clear the activity log'
       description: >-
-        Deletes the log file. The clear is itself the first event of the fresh log,
+        Owner only, so no other admin can erase a trace of what they did. Deletes the log file. The clear is itself the first event of the fresh log,
         and event ids are never reset, so a wipe always leaves a visible id gap.
       responses:
         '200':
@@ -2459,6 +3226,13 @@ paths:
                 properties:
                   provider: { type: string, description: "Provider id, e.g. `anthropic`." }
                   providerLabel: { type: string }
+                  host:
+                    type: string
+                    nullable: true
+                    description: >-
+                      Host the provider's requests go to (an HTTPS provider's base URL, host and
+                      port only), or null for a runtime provider. The app asks the user once per
+                      provider and host before the first request.
                   categories:
                     type: array
                     items: { type: string, enum: [plan, training, bodyweight, profile, prefs] }
@@ -2467,6 +3241,7 @@ paths:
               example:
                 provider: anthropic
                 providerLabel: Claude
+                host: api.anthropic.com
                 categories: [plan, training, bodyweight, profile, prefs]
                 version: 1
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -2559,6 +3334,95 @@ paths:
                     language tag, the profile's stored `lang` is used.
       responses:
         '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/ask:
+    post:
+      tags: [coach]
+      operationId: postCoachAsk
+      summary: Ask the Coach a question
+      description: |
+        Queues an `ask` job: a question from the chat, answered in plain text. It changes
+        nothing; the answer arrives as a pending proposal of kind `ask` with an `answer`
+        string, which the client writes into the chat and resolves. The running session,
+        which the server never holds, may ride along as `today`; the payload builder bounds
+        it like a logged workout.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: The question. Cut at the instance's message length.
+                today:
+                  type: object
+                  description: The session running on the device (`entries` with their sets), or absent.
+                lang:
+                  type: string
+                  pattern: '^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$'
+                  description: The language the app is showing, which the Coach answers in.
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '400':
+          description: No question in the body (`code` is `invalid`).
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/adapt:
+    post:
+      tags: [coach]
+      operationId: postCoachAdapt
+      summary: Ask the Coach about an exercise mid-workout
+      description: |
+        Queues an `adapt` job: one exercise of the workout running on the device, and why it
+        needs a rethink (pain, a busy rack, short on time, feeling great, tired). The answer is a
+        pending proposal of kind `adapt` with up to six `changes` to the unfinished part of that
+        session (swap, sets, reps, weight, add, skip, move, rest), each naming the exercise by its
+        index in `today`. Logged sets are never changed. The client applies the ticked ones to its
+        own running session and resolves the proposal; the server never holds the session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [today, entry]
+              properties:
+                today:
+                  type: object
+                  description: The session running on the device (`entries` with their sets).
+                entry:
+                  type: integer
+                  minimum: 0
+                  description: The index in `today.entries` of the exercise asked about.
+                reason:
+                  type: string
+                  enum: [pain, busy, short, great, tired, other]
+                text:
+                  type: string
+                  description: What the lifter typed, optional. Cut at the instance's message length.
+                activeId:
+                  type: string
+                  description: The running session's id, handed back on the proposal.
+                lang:
+                  type: string
+                  pattern: '^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$'
+                  description: The language the app is showing, which the Coach answers in.
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '400':
+          description: No running workout, or no exercise of it named (`code` is `invalid`).
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/CoachRefused' }
         '409': { $ref: '#/components/responses/CoachRefused' }
@@ -2749,6 +3613,9 @@ paths:
         Everything the admin screen renders in one round trip, including a live check of
         the configured provider: for a runtime provider "is the runtime there", for an
         HTTPS one the model list its stored key can see.
+        A runtime-backed provider is not run when the privilege drop cannot be
+        performed, exactly as a job would not be: `runtime` then reads unavailable, with
+        the same reason a job is refused with.
 
         Counts and outcomes only: no intake answers, no payloads, no proposals, and never
         a credential, only whether one is filed and what it is labelled.
@@ -2826,6 +3693,8 @@ paths:
       description: |
         Checks the runtime, then asks the model for one fixed JSON object and validates
         the shape that comes back. That is the whole path a job takes, on nobody's profile.
+        A runtime-backed provider is refused, without spawning anything, when the
+        privilege drop cannot be performed, exactly as a job would be.
 
         Always 200: the outcome is in the body, because "the provider refused" is an
         answer to the question the button asks, not a failure of the request. An HTTPS
@@ -3034,6 +3903,24 @@ components:
               error: { type: string }
               code: { type: string, enum: [off, busy, cap, consent, shared, unprivileged] }
           example: { error: "the Coach is already thinking about your training", code: busy }
+    IntegrationsOff:
+      description: >-
+        `code` `off`: the server runs without `INTEGRATIONS` (the default). `code` `missing`:
+        no such connection on this profile (another profile's id is the same answer).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "integrations are off on this server", code: "off" }
+    IntegrationsSlowDown:
+      description: Connect, change or test tapped too often (20 a minute, tests 6). Try again after `Retry-After`.
+      headers:
+        Retry-After:
+          description: Seconds to wait.
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "slow down a little", code: "rate", retryAfter: 9 }
     TooManyRequests:
       description: >-
         Paused by the sign-in throttle (see *Throttling* in the description). The request
@@ -3099,6 +3986,39 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    IntegrationEvent:
+      type: string
+      enum: [workout.finished, workout.pr, weighin.logged]
+      description: >-
+        `workout.finished`: a workout reached the server (from any device). `workout.pr`: that
+        workout set personal records. `weighin.logged`: a new or changed weigh-in. Only events
+        from the last seven days that happened after the connection was made are sent.
+
+    IntegrationConnection:
+      type: object
+      properties:
+        id: { type: string, example: c_3uK8m2Qx9pLa }
+        provider: { type: string, example: webhook }
+        label: { type: string, maxLength: 60, example: Home Assistant }
+        events: { type: array, items: { $ref: '#/components/schemas/IntegrationEvent' } }
+        paused: { type: boolean }
+        status: { type: string, enum: [connected, paused, attention] }
+        info:
+          type: object
+          properties:
+            url: { type: string, example: 'https://ha.example.com/api/webhook/…7f3a', description: Masked. }
+        createdAt: { type: integer, description: Epoch ms. }
+        lastOk: { type: ['integer', 'null'], description: Epoch ms of the last delivery that landed. }
+        lastError:
+          type: ['object', 'null']
+          properties:
+            at: { type: integer }
+            msg: { type: string, maxLength: 160 }
+            code: { type: string, example: busy }
+        failures: { type: integer, description: Failed attempts since the last success. }
+        queued: { type: integer }
+        failed: { type: integer, description: Deliveries given up on; Retry sends them again. }
+
     Error:
       type: object
       required: [error]
@@ -3143,6 +4063,14 @@ components:
         lastWayIn:
           type: boolean
           description: Removing any one passkey would be refused (409 `last-way-in`).
+        deleteBlocked:
+          type: string
+          enum: [last-admin]
+          description: >-
+            Present when deleting this profile (`POST /api/account/delete`) would be refused
+            before any proof is checked: `last-admin`, the only admin while other profiles
+            remain. The delete sheet says so before asking for a passkey or the password; the
+            delete itself still checks.
       example:
         passkeys: [{ id: "g3Xq…", name: "Laptop", created: "2026-09-23T10:00:00.000Z", lastUsed: "2026-09-23T10:00:00.000Z", transports: [internal] }]
         password: false
@@ -3165,6 +4093,7 @@ components:
       properties:
         id: { type: string, description: Stable user id (16 base64url chars). }
         name: { type: string }
+        owner: { type: boolean, description: Present (true) only for the instance owner. }
         admin: { type: boolean }
       example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
 
@@ -3426,7 +4355,21 @@ components:
             This instance keeps the files a logged workout's `media` list names too, not only a
             custom exercise's. Absent on an instance from before; the app then offers photos and
             videos on custom exercises only.
-      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true }
+        days:
+          type: boolean
+          const: true
+          description: >-
+            This instance also keeps the files of progress photos filed under a day
+            (`dayPhotos`, a photo for a day without a workout). Absent on an instance from
+            before; the app then only adds photos to logged workouts there.
+        sets:
+          type: boolean
+          const: true
+          description: >-
+            This instance also keeps the files of a form video filmed for one set
+            (`workouts[].entries[].sets[].media`, v1.4.4). Absent on an instance from before; the
+            app then keeps a set's video on the phone that filmed it and never uploads it.
+      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
 
     MediaUsage:
       type: object
@@ -3454,18 +4397,17 @@ components:
         end: { type: number }
         routineId: { type: string }
         name: { type: string }
-        bw: { type: number, description: 'Body weight that day, in `unit`.' }
-        vol: { type: number, description: Total volume (Σ weight × reps). }
         healthMetrics:
           type: object
-          description: Optional measured energy; absent when no measurement is available. No estimated effort score.
-          required: [activeKcal, sampledAt, final]
+          description: Optional measured energy supplied by a workout collector. Missing values are not estimated.
           properties:
-            activeKcal: { type: number, minimum: 0, description: Measured active kilocalories. }
-            basalKcal: { type: number, minimum: 0, description: Measured resting kilocalories; absent when unavailable. }
-            sampledAt: { type: number, exclusiveMinimum: 0, description: Measurement timestamp in milliseconds. }
-            final: { type: boolean, description: Only finalized measurements are exported to Health. }
-          additionalProperties: false
+            activeKcal: { type: number, minimum: 0 }
+            basalKcal: { type: number, minimum: 0 }
+            sampledAt: { type: number, description: Measurement version in milliseconds since epoch. }
+            final: { type: boolean, description: Energy is exported to Apple Health only when finalized. }
+          additionalProperties: true
+        bw: { type: number, description: 'Body weight that day, in `unit`.' }
+        vol: { type: number, description: Total volume (Σ weight × reps). }
         prs:
           type: array
           items: { type: string }
@@ -3517,12 +4459,34 @@ components:
 
     BodyweightEntry:
       type: object
+      description: >-
+        One day of weigh-ins. `w` is the day's one value, the one the profile's `bwDaily`
+        setting picks from `ins` (first, the default; avg; last), so a reader that knows nothing
+        of `ins` gets the same number the app charts. A day from before v1.4.4 has no `ins`: one
+        weigh-in without a time. A client that writes `w` and `t` of a day with `ins` (an older
+        app correcting the day) has that taken as a correction of the weigh-in `w` came from.
       properties:
         d: { type: string, format: date }
-        w: { type: number, description: Weight in `unit`. }
-        t: { type: number, description: Timestamp (ms) the entry was last saved. }
-        src: { type: string, description: 'Health store the weight was read from, e.g. "apple-health". Absent on a typed weigh-in.' }
-        m: { type: number, description: Timestamp (ms) of the Health measurement; retained after a manual correction to avoid applying it again. }
+        w: { type: number, description: "The day's weight in `unit` (see the description)." }
+        t: { type: number, description: When the day was last edited (ms), its weigh-ins and removals included. }
+        src: { type: string, description: Set when every weigh-in of the day was read from a health app or a file. }
+        ins:
+          type: array
+          description: The day's weigh-ins, by time (#859).
+          items:
+            type: object
+            properties:
+              id: { type: string, description: Unique within the day. '0' is the weigh-in a day from before held. }
+              at: { type: [string, 'null'], description: 'Local time of day, HH:MM; null when not known.' }
+              w: { type: number, description: Weight in `unit`. }
+              t: { type: number, description: When this weigh-in was last edited (ms). }
+              src: { type: string, description: Read from a health app or a file. }
+              sid: { type: string, description: The health app's own id of the sample. }
+            additionalProperties: true
+        gone:
+          type: object
+          description: Weigh-ins removed from a day that keeps others, id → when (ms).
+          additionalProperties: { type: number }
       additionalProperties: true
 
     # ------------------------------------------------------------------ push
@@ -3550,6 +4514,7 @@ components:
         name: { type: string }
         created: { oneOf: [{ type: string }, { type: 'null' }], description: ISO timestamp. }
         disabled: { type: boolean }
+        owner: { type: boolean, description: The one admin who manages the others. }
         admin: { type: boolean }
         invitedBy:
           oneOf: [{ type: string }, { type: 'null' }]
@@ -3594,6 +4559,7 @@ components:
             name: { type: string }
             created: { oneOf: [{ type: string }, { type: 'null' }] }
             disabled: { type: boolean }
+            owner: { type: boolean, description: The one admin who manages the others. }
             admin: { type: boolean }
             invitedBy: { oneOf: [{ type: string }, { type: 'null' }] }
             password: { type: boolean, description: PASSWORD_LOGIN instances only. }
@@ -3603,6 +4569,9 @@ components:
             resetUntil:
               oneOf: [{ type: number }, { type: 'null' }]
               description: PASSWORD_LOGIN instances only. Expiry (ms) of an unused reset code.
+            recoveryUntil:
+              oneOf: [{ type: number }, { type: 'null' }]
+              description: Expiry (ms) of an unused recovery code (POST /api/admin/user/recovery, recover.js).
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
         routines:
@@ -3652,7 +4621,7 @@ components:
           description: |
             Event name. Currently one of:
             `auth.register.ok|fail|denied`, `auth.login.ok|fail`, `auth.logout`,
-            `auth.logout.all`, `auth.pair.create|ok|fail`,
+            `auth.logout.all`, `auth.account.delete`, `auth.pair.create|ok|fail`,
             `admin.denied`, `admin.user.disable|enable`,
             `admin.invite.create|revoke`, `admin.audit.clear`.
         ok: { type: boolean, description: false for failed/denied attempts. }
@@ -3724,6 +4693,7 @@ components:
                   oneOf: [{ type: string }, { type: 'null' }]
                   description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
                 at: { type: integer, description: Epoch ms. }
+                trigger: { type: string, enum: [scheduled], description: Present when it was an automatic review. }
                 reading: { type: string, description: "Present on `nochange`: why there was nothing to change." }
             - type: 'null'
 
@@ -3741,6 +4711,7 @@ components:
         expiresAt: { type: integer, description: Epoch ms. }
         planHash: { type: string, description: The plan this was written against. A later edit makes it stale. }
         iteration: { type: integer, description: "1, or higher after a refine." }
+        trigger: { type: string, enum: [scheduled], description: "Present when an automatic review made it, which nobody was watching for." }
         summary: { type: string, maxLength: 1200 }
         changes:
           type: array

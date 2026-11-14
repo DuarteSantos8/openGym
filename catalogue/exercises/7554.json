@@ -11,6 +11,9 @@
     "core"
   ],
   "category": "calisthenics",
+  "needs": [
+    "pull-up bar"
+  ],
   "description": "Easier bodyweight row under parallel bars with knees bent.",
   "instructions": [
     "Lie under parallel bars and grab them.",

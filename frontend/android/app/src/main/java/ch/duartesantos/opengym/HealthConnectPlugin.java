@@ -6,11 +6,16 @@ import android.os.Build;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.HealthConnectFeatures;
 import androidx.health.connect.client.PermissionController;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
+import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.WeightRecord;
 import androidx.health.connect.client.records.metadata.Metadata;
+import androidx.health.connect.client.request.ReadRecordsRequest;
+import androidx.health.connect.client.response.ReadRecordsResponse;
+import androidx.health.connect.client.time.TimeRangeFilter;
 import androidx.health.connect.client.units.Mass;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -59,6 +64,15 @@ import org.json.JSONObject;
  *   await HC.write({ sessions: [...], weights: [...] });
  *   await HC.remove({ sessions: [ids], weights: [ids] });
  *   await HC.openSettings();        // Health Connect's data screen, or its store page
+ *
+ * Reading back (v1.4.3), each only after the user turned it on and granted that one permission:
+ *   await HC.requestPermissions({ read: ['heartRate'], write: [] });  // { granted, read: { heartRate, weight } }
+ *   await HC.readHeartRate({ from, to });   // { samples: [[ms, bpm]], origins: [package] }
+ *   await HC.readWeights({ since });        // { records: [{ t, kg, id, origin, clientId }] }
+ * Foreground only: no READ_HEALTH_DATA_IN_BACKGROUND. Without READ_HEALTH_DATA_HISTORY Health
+ * Connect gives 30 days back from the first grant, plenty for the workout just done; weigh-ins
+ * ask for it too (read: ['weight', 'history']) where Health Connect has the feature, which
+ * status() says as `history`, so a scale's older weigh-ins come along (idea from #801).
  */
 @CapacitorPlugin(name = "HealthConnect")
 public class HealthConnectPlugin extends Plugin {
@@ -67,6 +81,12 @@ public class HealthConnectPlugin extends Plugin {
     // The literal permission names, as declared in AndroidManifest.xml.
     private static final String WRITE_EXERCISE = "android.permission.health.WRITE_EXERCISE";
     private static final String WRITE_WEIGHT = "android.permission.health.WRITE_WEIGHT";
+    private static final String READ_HEART_RATE = "android.permission.health.READ_HEART_RATE";
+    private static final String READ_WEIGHT = "android.permission.health.READ_WEIGHT";
+    private static final String READ_HISTORY = "android.permission.health.READ_HEALTH_DATA_HISTORY";
+    // Records per page when reading, and pages at most: a few hours of heart rate fit easily.
+    private static final int PAGE = 1000;
+    private static final int MAX_PAGES = 50;
     // Health Connect takes at most this many records in one insert.
     private static final int CHUNK = 500;
 
@@ -98,6 +118,17 @@ public class HealthConnectPlugin extends Plugin {
         return HealthConnectClient.Companion.getOrCreate(getContext(), PROVIDER);
     }
 
+    // Whether this Health Connect knows the history permission at all (newer provider versions
+    // only). Asked before it is requested: an unknown permission is not offered in the dialog.
+    private boolean historyAvailable() {
+        try {
+            return client().getFeatures().getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY)
+                    == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private Set<String> granted() throws InterruptedException {
         PermissionController pc = client().getPermissionController();
@@ -118,7 +149,10 @@ public class HealthConnectPlugin extends Plugin {
             try {
                 JSObject r = new JSObject();
                 r.put("status", status);
-                r.put("granted", granted().containsAll(permissions()));
+                Set<String> got = granted();
+                r.put("granted", got.containsAll(permissions()));
+                r.put("read", readState(got));
+                r.put("history", historyAvailable());
                 call.resolve(r);
             } catch (Exception e) {
                 call.reject(e.getMessage(), "failed");
@@ -132,8 +166,16 @@ public class HealthConnectPlugin extends Plugin {
             call.reject("Health Connect is not available", "unavailable");
             return;
         }
+        Set<String> asked;
+        try {
+            asked = asked(call);
+        } catch (JSONException e) {
+            call.reject(e.getMessage(), "failed");
+            return;
+        }
+        if (!historyAvailable()) asked.remove(READ_HISTORY);
         ActivityResultContract<Set<String>, Set<String>> contract = PermissionController.createRequestPermissionResultContract(PROVIDER);
-        Intent intent = contract.createIntent(getContext(), permissions());
+        Intent intent = contract.createIntent(getContext(), asked);
         startActivityForResult(call, intent, "permissionsResult");
     }
 
@@ -146,8 +188,11 @@ public class HealthConnectPlugin extends Plugin {
         // user may also have granted one of the two and not the other.
         worker.execute(() -> {
             try {
+                Set<String> now = new HashSet<>(granted());
+                if (got != null) now.addAll(got);
                 JSObject r = new JSObject();
-                r.put("granted", (got != null && got.containsAll(permissions())) || granted().containsAll(permissions()));
+                r.put("granted", now.containsAll(permissions()));
+                r.put("read", readState(now));
                 call.resolve(r);
             } catch (Exception e) {
                 call.reject(e.getMessage(), "failed");
@@ -201,6 +246,120 @@ public class HealthConnectPlugin extends Plugin {
                 call.reject(e.getMessage(), "failed");
             }
         });
+    }
+
+    @PluginMethod
+    public void readHeartRate(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        Long from = millis(call, "from"), to = millis(call, "to");
+        if (from == null || to == null || to <= from) {
+            call.reject("from and to are needed", "failed");
+            return;
+        }
+        worker.execute(() -> {
+            try {
+                List<HeartRateRecord> recs = read(HeartRateRecord.class,
+                        TimeRangeFilter.between(Instant.ofEpochMilli(from), Instant.ofEpochMilli(to)));
+                JSArray samples = new JSArray();
+                for (long[] s : HealthRead.samples(recs, from, to)) samples.put(new JSArray().put(s[0]).put(s[1]));
+                Set<String> origins = new HashSet<>();
+                for (HeartRateRecord r : recs) origins.add(r.getMetadata().getDataOrigin().getPackageName());
+                JSObject out = new JSObject();
+                out.put("samples", samples);
+                out.put("origins", new JSArray(origins));
+                call.resolve(out);
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
+    @PluginMethod
+    public void readWeights(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        Long since = millis(call, "since");
+        if (since == null) {
+            call.reject("since is needed", "failed");
+            return;
+        }
+        worker.execute(() -> {
+            try {
+                List<WeightRecord> recs = read(WeightRecord.class, TimeRangeFilter.after(Instant.ofEpochMilli(since)));
+                JSArray records = new JSArray();
+                for (HealthRead.Weight w : HealthRead.weights(recs)) {
+                    JSObject o = new JSObject();
+                    o.put("t", w.t);
+                    o.put("kg", w.kg);
+                    o.put("id", w.id);
+                    o.put("origin", w.origin);
+                    o.put("clientId", w.clientId);
+                    records.put(o);
+                }
+                JSObject out = new JSObject();
+                out.put("records", records);
+                call.resolve(out);
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
+    // Every page of one record type in the window, oldest first.
+    @SuppressWarnings("unchecked")
+    private <T extends Record> List<T> read(Class<T> type, TimeRangeFilter range) throws InterruptedException {
+        List<T> out = new ArrayList<>();
+        String token = null;
+        for (int page = 0; page < MAX_PAGES; page++) {
+            ReadRecordsRequest<T> req = new ReadRecordsRequest<>(JvmClassMappingKt.getKotlinClass(type), range,
+                    Collections.emptySet(), true, PAGE, token);
+            ReadRecordsResponse<T> res = (ReadRecordsResponse<T>) BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE,
+                    (scope, cont) -> client().readRecords(req, cont));
+            out.addAll(res.getRecords());
+            token = res.getPageToken();
+            if (token == null || token.isEmpty()) break;
+        }
+        return out;
+    }
+
+    // What was asked for: { read: ['heartRate', 'weight'], write: ['exercise', 'weight'] }, each
+    // optional. Without either, the two write permissions, as before v1.4.3.
+    private static Set<String> asked(PluginCall call) throws JSONException {
+        JSArray read = call.getArray("read", null), write = call.getArray("write", null);
+        if (read == null && write == null) return permissions();
+        Set<String> out = new HashSet<>();
+        if (read != null) for (int i = 0; i < read.length(); i++) {
+            String p = HealthRead.readPermission(read.getString(i));
+            if (p != null) out.add(p);
+        }
+        if (write != null) for (int i = 0; i < write.length(); i++) {
+            String p = HealthRead.writePermission(write.getString(i));
+            if (p != null) out.add(p);
+        }
+        return out;
+    }
+
+    // A time from JS: a number that may arrive as an Integer, Long or Double (getLong takes only Long).
+    private static Long millis(PluginCall call, String name) {
+        Object v = call.getData().opt(name);
+        return v instanceof Number ? ((Number) v).longValue() : null;
+    }
+
+    private static JSObject readState(Set<String> granted) {
+        JSObject r = new JSObject();
+        r.put("heartRate", granted.contains(READ_HEART_RATE));
+        r.put("weight", granted.contains(READ_WEIGHT));
+        r.put("history", granted.contains(READ_HISTORY));
+        return r;
     }
 
     // Health Connect's own screen for the data apps wrote, where the user can look at and delete
@@ -272,6 +431,12 @@ public class HealthConnectPlugin extends Plugin {
             case "biking_stationary": return ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY;
             case "elliptical": return ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL;
             case "stair_climbing_machine": return ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE;
+            case "biking": return ExerciseSessionRecord.EXERCISE_TYPE_BIKING;
+            case "rowing": return ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE;
+            case "hiit": return ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING;
+            case "yoga": return ExerciseSessionRecord.EXERCISE_TYPE_YOGA;
+            case "flexibility": return ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING;
+            // Health Connect has no jump rope and no mixed cardio: those are "other", as before.
             default: return ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT;
         }
     }

@@ -3,9 +3,9 @@
   "name": "barbell single leg deadlift",
   "bodyPart": "upper legs",
   "equipment": "barbell",
-  "target": "glutes",
+  "target": "hamstrings",
   "secondaryMuscles": [
-    "hamstrings",
+    "glutes",
     "lower back"
   ],
   "category": "strength",

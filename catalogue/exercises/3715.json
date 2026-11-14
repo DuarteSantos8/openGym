@@ -11,6 +11,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A balance hold on one leg on an unstable bosu ball. It challenges the ankle and hip stabilisers.",
   "instructions": [
     "Place a bosu ball dome-up in front of you.",

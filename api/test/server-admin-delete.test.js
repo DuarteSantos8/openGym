@@ -52,6 +52,10 @@ async function startServer(t, { twoAdmins = false } = {}) {
     const r = await fetch(`${h.api}/api/admin/user/delete`, { method: 'POST', headers: { ...as(uid), Origin: 'http://localhost:8080' }, body: JSON.stringify({ id }) });
     return { status: r.status, body: await r.json() };
   };
+  h.post = async (route, body, uid = ADMIN) => {
+    const r = await fetch(`${h.api}${route}`, { method: 'POST', headers: { ...as(uid), Origin: 'http://localhost:8080' }, body: JSON.stringify(body) });
+    return { status: r.status, body: await r.json() };
+  };
   h.db = () => JSON.parse(fs.readFileSync(path.join(h.dataDir, 'db.json'), 'utf8'));
   h.stackFrames = () => h.log.split('\n').filter(l => /^\s+at /.test(l)).length;
   return h;
@@ -94,11 +98,51 @@ test('refuses the two deletions that cannot be undone', async t => {
   assert.equal(h.db().users.length, 2, 'nothing was removed');
 });
 
-test('another admin can be deleted while one remains', async t => {
+test('the owner can delete another admin', async t => {
   const h = await startServer(t, { twoAdmins: true });
-  const res = await h.del(ADMIN2);
+  const res = await h.del(ADMIN2);   // ADMIN is the oldest admin record, so the owner
   assert.equal(res.status, 200);
   assert.deepEqual(h.db().users.map(u => u.id).sort(), [ADMIN, VICTIM].sort());
+});
+
+test('an admin who is not the owner cannot delete the owner or clear the log', async t => {
+  const h = await startServer(t, { twoAdmins: true });
+  const owner = await h.del(ADMIN, ADMIN2);
+  assert.equal(owner.status, 400);
+  assert.match(owner.body.error, /owner cannot be deleted/);
+  const clear = await h.post('/api/admin/audit/clear', {}, ADMIN2);
+  assert.equal(clear.status, 403);
+  assert.equal(h.db().users.length, 3, 'nothing was removed');
+  // Still an admin for everything else: an ordinary account goes.
+  assert.equal((await h.del(VICTIM, ADMIN2)).status, 200);
+});
+
+test('only the owner appoints and removes admins, and can hand the role on', async t => {
+  const h = await startServer(t, { twoAdmins: true });
+  assert.equal((await h.post('/api/admin/user/role', { id: VICTIM, admin: true }, ADMIN2)).status, 403, 'an admin cannot appoint');
+  assert.equal((await h.post('/api/admin/user/role', { id: ADMIN, admin: false }, ADMIN2)).status, 403, 'nor demote the owner');
+  assert.equal((await h.post('/api/admin/user/role', { id: ADMIN, admin: false })).status, 400, 'the owner stays an admin');
+
+  assert.equal((await h.post('/api/admin/user/role', { id: VICTIM, admin: true })).status, 200);
+  assert.equal(h.db().users.find(u => u.id === VICTIM).admin, true);
+  assert.equal((await h.post('/api/admin/user/role', { id: VICTIM, admin: false })).status, 200);
+  assert.equal(h.db().users.find(u => u.id === VICTIM).admin, undefined);
+
+  assert.equal((await h.post('/api/admin/owner', { id: VICTIM })).status, 400, 'only an admin can become owner');
+  assert.equal((await h.post('/api/admin/owner', { id: ADMIN2 })).status, 200);
+  const list = (await (await fetch(`${h.api}/api/admin/users`, { headers: as(ADMIN) })).json()).users;
+  assert.deepEqual(list.filter(u => u.owner).map(u => u.id), [ADMIN2]);
+  // The old owner is an admin like any other now.
+  assert.equal((await h.post('/api/admin/audit/clear', {}, ADMIN)).status, 403);
+  assert.equal((await h.del(ADMIN, ADMIN2)).status, 200, 'the new owner can remove them');
+});
+
+test('an admin cannot delete another admin', async t => {
+  const h = await startServer(t, { twoAdmins: true });
+  await h.post('/api/admin/user/role', { id: VICTIM, admin: true });
+  const res = await h.del(VICTIM, ADMIN2);
+  assert.equal(res.status, 403);
+  assert.equal(h.db().users.length, 3);
 });
 
 test('says so plainly when the account is not there, and needs an admin', async t => {

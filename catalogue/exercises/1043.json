@@ -3,12 +3,16 @@
   "name": "weighted lying neck flexion",
   "bodyPart": "neck",
   "equipment": "weighted",
-  "target": "traps",
+  "target": "levator scapulae",
   "secondaryMuscles": [
+    "traps",
     "sternocleidomastoid",
     "upper back"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on your back, you lift your head against a light load. It strengthens the muscles at the front of the neck.",
   "instructions": [
     "Lie on your back on a bench with your head past the edge and a light weight on your forehead.",

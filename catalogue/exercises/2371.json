@@ -3,9 +3,9 @@
   "name": "weighted russian twist v. 2",
   "bodyPart": "waist",
   "equipment": "weighted",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "strength",

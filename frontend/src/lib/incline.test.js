@@ -3,7 +3,8 @@
 import { describe, it, expect } from 'vitest'
 import { INCLINE_MAX, clampIncline, inclineFits, hasIncline, inclineFrom } from './incline.js'
 import { EXIDX } from './exercises.js'
-import { setLabel, buildSets, insertWarmupRow, copyRowAt } from './history.js'
+import { setLabel, buildSets, insertWarmupRow, copyRowAt, exLine } from './history.js'
+import { buildPlanBundle, parsePlan } from './plan-share.js'
 import { workoutText } from './workout-text.js'
 import { finishCardio } from './finish-compare.js'
 import { parseWorkoutCSV } from './import-csv.js'
@@ -88,6 +89,26 @@ describe('a set with an incline', () => {
       { min: 20, speed: 8, done: false },
       { min: 20, speed: 8, done: false },
     ])
+  })
+
+  it('opens at the routine\'s own incline when last time had none, and last time\'s grade wins (Discord)', () => {
+    const cfg = { id: TREADMILL, sets: 1, min: 20, speed: 8, incline: 6 }
+    const last = sets => ({ exWeights: {}, workouts: [{ id: 'w1', d: '2026-10-01', start: 0, end: 1, entries: [{ id: TREADMILL, target: { sets: 1, min: 20, speed: 8 }, sets }] }] })
+    expect(buildSets({ exWeights: {}, workouts: [] }, cfg)).toEqual([{ min: 20, speed: 8, incline: 6, done: false }])
+    expect(buildSets(last([{ min: 25, speed: 5, done: true }]), cfg)).toEqual([{ min: 25, speed: 5, incline: 6, done: false }])
+    expect(buildSets(last([{ min: 25, speed: 5, incline: 10, done: true }]), cfg)).toEqual([{ min: 25, speed: 5, incline: 10, done: false }])
+  })
+
+  it('reads in the routine\'s line and travels in a shared plan, clamped', () => {
+    expect(exLine({ id: TREADMILL, sets: 1, min: 30, speed: 5, incline: 12 }, 'kg')).toBe('1 × 30 min @ 5 km/h · 12% incline')
+    expect(exLine({ id: TREADMILL, sets: 1, min: 30, speed: 5 }, 'kg')).toBe('1 × 30 min @ 5 km/h')
+    const S = { unit: 'kg', customEx: [], routines: [{ id: 'r1', name: 'Walk', ex: [{ id: TREADMILL, sets: 1, min: 30, speed: 5, incline: 12 }] }] }
+    const file = buildPlanBundle(S, 'Walk')
+    expect(file.routines[0].ex[0].incline).toBe(12)
+    file.routines[0].ex[0].incline = 90
+    expect(parsePlan(file, 'kg').routines[0].ex[0].incline).toBe(INCLINE_MAX)
+    delete file.routines[0].ex[0].incline
+    expect(parsePlan(file, 'kg').routines[0].ex[0]).not.toHaveProperty('incline')
   })
 
   it('comes along on a warm-up added in front of it and on a copied row', () => {

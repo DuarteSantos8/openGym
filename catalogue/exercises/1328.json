@@ -3,12 +3,15 @@
   "name": "dumbbell lying rear delt row",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "upper back",
+  "target": "delts",
   "secondaryMuscles": [
-    "shoulders",
+    "upper back",
     "biceps"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lie face down on a bench and row two dumbbells up and out. It targets the rear shoulders and upper back without any body swing.",
   "instructions": [
     "Lie face down on a flat bench with a dumbbell in each hand, palms facing inwards.",

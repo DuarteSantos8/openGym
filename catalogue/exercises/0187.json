@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lying triceps extension using a cable, which keeps constant tension on the back of the arms. Good for building triceps size and strength.",
   "instructions": [
     "Set a low pulley with a bar or rope and lie on a bench with your head near the stack.",

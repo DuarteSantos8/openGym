@@ -22,6 +22,26 @@ const COPY = {
 
 const copyFor = lang => COPY[lang] || COPY.en;
 
+// A routine's `emoji` field held a literal emoji until the glyph redesign; since then it holds
+// an icon key ('dumbbell', 'figureRun') that the app renders as an SVG. A push notification has
+// no SVG to render, so an unmapped key reaches the phone as its own name — "dumbbell Push
+// today". Keys are ASCII and emoji are not, so anything ASCII is looked up here (falling back
+// rather than printing a word), and anything else is already an emoji and passes through.
+// Mirrors frontend/src/lib/glyphs.js: GLYPHS is the full set the picker offers.
+const DEFAULT_EMOJI = '🏋️';
+const GLYPH_EMOJI = {
+  figureStrength: '🏋️', arm: '💪', abs: '💥', legs: '🦵', pullup: '🧗',
+  dumbbell: '🏋️', barbell: '🏋️', kettlebell: '🏋️', plate: '🏋️', machine: '🏋️',
+  figureRun: '🏃', bike: '🚴', swim: '🏊', boxing: '🥊', timer: '⏱️',
+  stretch: '🤸', moon: '🌙', heart: '❤️', flame: '🔥', bolt: '⚡',
+};
+
+export function routineEmoji(value) {
+  if (!value) return DEFAULT_EMOJI;
+  if (!/^[A-Za-z]+$/.test(value)) return value;
+  return GLYPH_EMOJI[value] || DEFAULT_EMOJI;
+}
+
 export function restTimerPush(lang) {
   const copy = copyFor(lang);
   return { title: copy.restTitle, body: copy.restBody, tag: 'rest-timer' };
@@ -35,7 +55,7 @@ export function dayReminderPush(lang, routine) {
   const copy = copyFor(lang);
   return {
     title: routine
-      ? `${routine.emoji || '🏋️'} ${routine.name} ${copy.dayRoutineSuffix}`
+      ? `${routineEmoji(routine.emoji)} ${routine.name} ${copy.dayRoutineSuffix}`
       : copy.dayFallbackTitle,
     body: copy.dayBody,
     tag: 'day-reminder',

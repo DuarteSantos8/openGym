@@ -250,3 +250,24 @@ test('queue: a strict pass (the app\'s "Start new pass") ignores a same-named wo
   const after = { ...strict, workouts: [early, { ...early, start: 2000 }] };
   assert.equal(effectiveRoutineId(after, '2026-09-07'), 'r2');
 });
+
+// The reminder tick runs this every ten seconds for each profile with a reminder on, over whatever
+// the profile last PUT (up to 5 MB), in the one thread that also answers every request. A list
+// walked inside a walk of another made a crafted state take seconds here at a few hundred KB, and
+// minutes at the size a PUT allows, with everyone else's requests and reminders waiting behind it.
+// These are a fraction of that size; each took several seconds before.
+test('queue: a crafted state of any shape is read in time linear in its size', () => {
+  const ids = n => Array.from({ length: n }, (_, i) => 'r' + i);
+  const within = (S, iso) => {
+    const t = Date.now();
+    effectiveRoutineId(S, iso);
+    return Date.now() - t;
+  };
+  // tens of thousands of distinct queue ids, one of them a routine
+  assert.ok(within({ ...base, routines: [{ id: 'r0' }], queue: { ids: ids(40000), since: 1, startsOn: '2026-10-01' } }, '2026-10-12') < 1000);
+  // every queue id a routine, and as many workouts, none of them crediting a session
+  const R = 12000;
+  assert.ok(within({ ...base, routines: ids(R).map(id => ({ id })), workouts: Array.from({ length: R }, () => ({ d: '2026-01-01', routineId: 'x' })), queue: { ids: ids(R), since: 9e15, startsOn: '2099-01-01' } }, '2099-01-02') < 1000);
+  // a long weekday list against many routines
+  assert.ok(within({ ...base, routines: ids(R).map(id => ({ id })), week: { 1: ids(R).map(i => i + 'x') } }, '2026-10-12') < 1000);
+});

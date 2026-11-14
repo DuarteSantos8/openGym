@@ -3,9 +3,8 @@
   "name": "bodyweight standing oblique twist",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "mobility",

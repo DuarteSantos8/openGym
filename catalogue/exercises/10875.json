@@ -3,9 +3,9 @@
   "name": "weighted plate 45 degrees side bend",
   "bodyPart": "waist",
   "equipment": "weight plate",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "strength",

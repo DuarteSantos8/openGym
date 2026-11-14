@@ -3,10 +3,9 @@
   "name": "cable seated horizontal shrug",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "traps",
+  "target": "upper back",
   "secondaryMuscles": [
     "trapezius",
-    "upper back",
     "rhomboids"
   ],
   "category": "strength",

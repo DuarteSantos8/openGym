@@ -3,9 +3,9 @@
   "name": "dumbbell single leg deadlift",
   "bodyPart": "upper legs",
   "equipment": "dumbbell",
-  "target": "glutes",
+  "target": "hamstrings",
   "secondaryMuscles": [
-    "hamstrings",
+    "glutes",
     "lower back"
   ],
   "category": "strength",

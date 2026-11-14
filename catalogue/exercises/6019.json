@@ -9,6 +9,7 @@
     "hamstrings"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A prone hold that lifts the chest and legs, building lower back endurance.",
   "instructions": [
     "Lie face down with your arms extended.",

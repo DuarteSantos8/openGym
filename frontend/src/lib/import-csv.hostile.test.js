@@ -51,7 +51,7 @@ describe('Apple Health records that are not a weight', () => {
   it('a record without a unit follows the profile; lb is converted', () => {
     const p = parseImport(health({ value: '176.4', unit: 'lb', date: '2024-03-07' }), kg)
     expect(p.converted).toBe(true)
-    expect(p.bodyweight[0].w).toBe(80)
+    expect(p.bodyweight[0].w).toBe(80.01)
   })
 })
 
@@ -93,7 +93,7 @@ describe('numbers that are not numbers', () => {
     expect(p.converted).toBe(false)
     const mixed = parseImport(csv(row({ w: 50, u: 'kg', r: 5 }), row({ date: '2024-03-08', w: 100, u: 'lbs', r: 5 })), kg)
     expect(mixed.mixedUnits).toBe(true)
-    expect(mixed.workouts[1].entries[0].sets[0].w).toBe(45.4)
+    expect(mixed.workouts[1].entries[0].sets[0].w).toBe(45.36)
   })
 })
 

@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Adresse du serveur"
+
+msgid "code"
+msgstr "Code d’association"
+
+msgid "how"
+msgstr "Dans openGym, ouvre Réglages, Montre Zepp OS, Associer une montre, et saisis ici l’adresse et le code affichés."
+
+msgid "pair"
+msgstr "Associer"
+
+msgid "pairing"
+msgstr "Association…"
+
+msgid "paired"
+msgstr "Associée à {0}. Ouvre openGym sur ta montre."
+
+msgid "failed"
+msgstr "Ça n’a pas marché. Vérifie l’adresse et le code, un code dure dix minutes."
+
+msgid "unpair"
+msgstr "Dissocier"
+
+msgid "not_paired_yet"
+msgstr "Pas encore associée."
