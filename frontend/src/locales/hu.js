@@ -2773,6 +2773,9 @@ export default {
   'Fix it': 'Javítás',
   'Log as typed': 'Naplózás így',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "Ebben az időszakban nincs edzésvolumen ehhez a gyakorlathoz.",
+  "Volume per session ({0})": "Volumen edzésenként ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0} edzés beleszámít; {1} kimarad: {2} időalapú/kardió, {3} befejezett ismétlés vagy pozitív volumen nélkül, {4} pedig a gyakorlat sorozatadatai nélkül.",
   'Time per exercise': 'Idő gyakorlatonként',
   'Average time a session, counted from when its sets were ticked.': 'Átlagos idő edzésenként, a sorozatok kipipálásától számolva.',
   'No timed sets in this period.': 'Ebben az időszakban nincs időzített sorozat.',

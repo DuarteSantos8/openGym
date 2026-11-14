@@ -2849,6 +2849,9 @@ export default {
   'Fix it': 'ঠিক করুন',
   'Log as typed': 'যেমন লেখা তেমন লগ করুন',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "এই সময়ে এই ব্যায়ামের কোনো ভলিউম নেই।",
+  "Volume per session ({0})": "প্রতি সেশনের ভলিউম ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0}টি সেশন অন্তর্ভুক্ত; {1}টি বাদ: {2}টি সময়ভিত্তিক/কার্ডিও, {3}টিতে সম্পূর্ণ রিপ বা ধনাত্মক ভলিউম নেই এবং {4}টিতে ব্যায়ামের সেটের বিবরণ নেই।",
   'Time per exercise': 'প্রতি ব্যায়ামের সময়',
   'Average time a session, counted from when its sets were ticked.': 'প্রতি সেশনে গড় সময়, সেটগুলো যখন টিক দেওয়া হয়েছিল তা থেকে গণনা করা।',
   'No timed sets in this period.': 'এই সময়ে কোনো সময়-চিহ্নিত সেট নেই।',

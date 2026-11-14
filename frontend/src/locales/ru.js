@@ -2774,6 +2774,9 @@ export default {
   'Fix it': 'Исправить',
   'Log as typed': 'Записать как есть',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "За этот период нет объёма по этому упражнению.",
+  "Volume per session ({0})": "Объём за тренировку ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "Учтено тренировок: {0}; исключено: {1}, из них {2} на время/кардио, {3} без выполненных повторений или положительного объёма и {4} без данных о подходах упражнения.",
   'Time per exercise': 'Время на упражнение',
   'Average time a session, counted from when its sets were ticked.': 'Среднее время за тренировку, по времени отметки подходов.',
   'No timed sets in this period.': 'В этот период нет подходов со временем.',

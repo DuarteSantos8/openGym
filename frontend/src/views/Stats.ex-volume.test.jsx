@@ -38,7 +38,7 @@ const rows = () => [...card().querySelectorAll('tbody tr')].map(r => [...r.query
 
 describe('Stats exercise volume', () => {
   it('offers Volume for positive reps history but preserves Top set as the default', () => {
-    mount([session('2026-11-10'), session()])
+    mount([session('2026-11-10', undefined, { start: new Date(2026, 10, 10, 12).getTime() }), session(undefined, undefined, { start: now })])
     expect(pickerOptions(card(), 'Chart')).toContain('Volume')
     expect(chart().points.map(p => p.y)).toEqual([50, 50])
     expect(card().querySelector('table')).toBeNull()

@@ -2781,6 +2781,9 @@ export default {
   'Fix it': 'แก้ไข',
   'Log as typed': 'บันทึกตามที่พิมพ์',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "ไม่มีปริมาณการฝึกของท่านี้ในช่วงเวลานี้",
+  "Volume per session ({0})": "ปริมาณการฝึกต่อครั้ง ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "รวม {0} ครั้ง ไม่รวม {1} ครั้ง: แบบจับเวลา/คาร์ดิโอ {2} ครั้ง ไม่มีจำนวนครั้งที่ทำเสร็จหรือปริมาณการฝึกเป็นบวก {3} ครั้ง และไม่มีรายละเอียดเซ็ตของท่านี้ {4} ครั้ง",
   'Time per exercise': 'เวลาต่อท่า',
   'Average time a session, counted from when its sets were ticked.': 'เวลาเฉลี่ยต่อครั้ง นับจากเวลาที่ติ๊กเซต',
   'No timed sets in this period.': 'ไม่มีเซตที่มีเวลาในช่วงนี้',
