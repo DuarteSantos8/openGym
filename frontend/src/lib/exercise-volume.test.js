@@ -92,14 +92,14 @@ describe('exerciseVolumeSeries', () => {
 
   it('uses completed sides at their own loads, including their drops', () => {
     const sets = [{ w: 100, r: 100, done: false, sides: {
-      L: { ...done(14, 10), drops: [{ w: 10, r: 3 }] }, R: { ...done(12, 6), done: false },
+      L: { ...done(14, 10), type: 'dropset', drops: [{ w: 10, r: 3 }] }, R: { ...done(12, 6), done: false },
     } }, { sides: { L: done(14, 10), R: done(12.5, 6) } }]
     expect(series([workout(undefined, [entry(sets)])]).points[0]).toMatchObject({ y: 385, sets: 3 })
   })
 
   it('adds drop volume and both entries of the exercise once, ignoring other exercises', () => {
     const w = workout(undefined, [
-      entry([{ ...done(), drops: [{ w: 40, r: 3 }] }]),
+      entry([{ ...done(), type: 'dropset', drops: [{ w: 40, r: 3 }] }]),
       entry([done(30, 4)]), entry([done(1000, 100)], { id: PULLUP }),
     ])
     expect(series([w])).toMatchObject({ included: 1, excluded: 0, points: [{ y: 490, sets: 2 }] })
