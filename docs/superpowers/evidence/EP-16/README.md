@@ -1,6 +1,6 @@
 # MVP combined acceptance record
 
-Status: **final review findings closed; corrected frontend gate running, not release approval**. Parent working branch:
+Status: **final review findings closed; corrected acceptance passed, not release approval**. Parent working branch:
 `room/autonomous-project-resumption-orchestrat-djus`. The full acceptance commands below
 ran after the final EP-05b source review. The [whole-branch review](independent-review-round1.md)
 found a missing UUID fallback on supported plain-HTTP LAN origins plus a stale Modules-guide
@@ -62,9 +62,9 @@ the actual failing manual/lookup Saves and successful natural insecure-origin br
 
 | Corrected check | Result | Evidence |
 | --- | --- | --- |
-| Full frontend, one worker | RUNNING | [Exact command/start](final-frontend-full.json), `final-frontend-full.log` |
-| Production build | PENDING | Runs after frontend |
-| Locales / strict source strings | PENDING | Runs after build |
+| Full frontend, one worker | PASS:8,128 tests /674 files;exit0 | [Command/timestamps](final-frontend-full.json), [output](final-frontend-full.log);681.83s |
+| Production build | PASS;exit0 | [Build](final-build.log), [final bundle](bundle-final.json), deterministic gzip level9 |
+| Locales / strict source strings | PASS;both exit0 | [19×3,684 keys](final-locales.log), [3,030 strings](final-source-strings.log) |
 | API912 /MCP140 /three generators | Carried forward unchanged, not rerun | [Git object identity](carried-forward.json) for API/MCP/scripts/catalogue/lockfiles |
 
 The final correction is a concrete new source change, so one affected full frontend rerun is
