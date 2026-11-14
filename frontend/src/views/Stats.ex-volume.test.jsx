@@ -83,6 +83,21 @@ describe('Stats exercise volume', () => {
     expect(chart().points.map(p => p.y)).toEqual([200])
   })
 
+  it.each([
+    ['target', { target: { assisted: false } }],
+    ['entry', { assisted: false }],
+  ])('plots rising ordinary loads for saved %s false with bodyweight volume on, including load equal to bodyweight', (_, extra) => {
+    const workouts = [30, 40, 80].map((load, i) => session(`2026-11-${12 + i}`,
+      [entry([done(load)], { id: '0017', ...extra })], { bw: 80 }))
+    const before = structuredClone(workouts)
+    mount(workouts, { volumeBodyweight: true })
+    volume()
+    expect(chart().points.map(p => p.y)).toEqual([150, 200, 400])
+    expect(rows().map(r => r.slice(1))).toEqual([['1', '150'], ['1', '200'], ['1', '400']])
+    expect(card().textContent).toContain('Included 3 sessions; excluded 0:')
+    expect(workouts).toEqual(before)
+  })
+
   it('plots a d-only session and duplicate entries, with a semantic table matching every point', () => {
     mount([session('2026-11-10'), session(undefined, [entry([{ ...done(), type: 'dropset', drops: [{ w: 40, r: 3 }] }]), entry([done(30, 4)])])])
     volume()
