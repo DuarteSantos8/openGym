@@ -29,9 +29,9 @@ describe('MetricCard', () => {
     expect(g.getAttribute('aria-label')).toBe('Body weight: 82.4 kg')
   })
   it('states a change in words, not colour alone', () => {
-    const h = render(<MetricCard label="Body weight" value="82.4" unit="kg" delta={-0.6} deltaText="0.6 down" />)
-    expect(h.textContent).toContain('0.6 down')
-    expect(h.querySelector('[role="group"]').getAttribute('aria-label')).toContain('0.6 down')
+    const h = render(<MetricCard label="Body weight" value="82.4" unit="kg" delta={-0.6} deltaText="−0.6" />)
+    expect(h.textContent).toContain('−0.6')
+    expect(h.querySelector('[role="group"]').getAttribute('aria-label')).toContain('−0.6')
   })
   it('shows a dash for a missing value (empty state)', () => {
     const h = render(<MetricCard label="Body weight" value={null} />)
