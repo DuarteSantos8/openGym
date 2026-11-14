@@ -8,7 +8,7 @@
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
-import { eqAvailable, accessoriesOf, ALL_EQUIPMENT } from './equipment.js'
+import { eqAvailable, accessoriesOf, kitOf, ALL_EQUIPMENT } from './equipment.js'
 import { defaultConfig } from './history.js'
 import { STARTER_PLANS, AWAY_PLANS } from '../../../api/coach/core/starter-plans.js'
 export { AWAY_PLANS }
@@ -59,9 +59,10 @@ const NEEDS_BALL = /exercise ball|stability ball|swiss ball|bosu/i
 // same target muscle, then the movement by name, then helper muscles. When `ex` is a loaded
 // lift, one that is loaded too beats a body-weight drill — a push-up is not a bench press.
 // `taken` keeps a routine from ending up with the same exercise twice. null when nothing fits.
-// `bodyWeight` false (a profile with body weight unticked, #1159) also rules out what needs only you.
+// `bodyWeight` false (a profile with body weight unticked, #1159) also rules out what needs only
+// you: not a chin-up (its bar) nor one of your own with kit, the same line exAvailable draws.
 const fits = (c, equipment, machines, bodyWeight) =>
-  eqAvailable(equipment, c, machines) && (bodyWeight || c.eq !== 'body weight' || accessoriesOf(c).length > 0)
+  eqAvailable(equipment, c, machines) && (bodyWeight || c.eq !== 'body weight' || accessoriesOf(c).length > 0 || kitOf(c).length > 0)
 
 export const substituteFor = (ex, equipment, taken, machines, bodyWeight = true) => {
   const hasBall = equipment.includes('stability ball') || equipment.includes('bosu ball')

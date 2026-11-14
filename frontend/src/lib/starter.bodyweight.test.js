@@ -1,7 +1,7 @@
 // A starter plan fitted to a profile with body weight unticked (#1159) gets no exercise that
 // needs only your body; left out, the argument changes nothing.
 import { describe, expect, it } from 'vitest'
-import { EXIDX } from './exercises.js'
+import { EXIDX, registerCustom } from './exercises.js'
 import { ALL_EQUIPMENT, accessoriesOf } from './equipment.js'
 import { buildStarterPlan, fitRoutines, starterPlanOptions } from './starter.js'
 
@@ -27,5 +27,17 @@ describe('starter plans and the body-weight tick', () => {
     const [[, , , list]] = fitRoutines([['k', 'K', 'x', [['0652', 3, 8], ['0662', 3, 10]]]], ['pull-up bar', 'dumbbell'], undefined, false).routines
     expect(list[0][0]).toBe('0652')
     expect(list.map(([id]) => id).filter(pureBw)).toEqual([])
+  })
+
+  it('unticked: one of your own exercises with kit stays, as in the library', () => {
+    const rings = { ...EXIDX['0662'], id: 'c-ring', n: 'ring push-up', kit: ['Rings'], custom: true }
+    const bare = { ...EXIDX['0662'], id: 'c-bare', n: 'my push-up', custom: true }
+    registerCustom([rings, bare])
+    try {
+      const [[, , , list]] = fitRoutines([['k', 'K', 'x', [['c-ring', 3, 8]]]], ['dumbbell'], undefined, false).routines
+      expect(list.map(([id]) => id)).toEqual(['c-ring'])
+      const [[, , , other]] = fitRoutines([['k', 'K', 'x', [['c-bare', 3, 8]]]], ['dumbbell'], undefined, false).routines
+      expect(other.map(([id]) => id)).not.toContain('c-bare')
+    } finally { registerCustom([]) }
   })
 })
