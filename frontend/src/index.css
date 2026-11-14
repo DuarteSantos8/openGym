@@ -443,9 +443,10 @@ button.conn:active{filter:brightness(1.12)}
 .iconbtn,.chip,.seg button,.helpbtn{position:relative}
 .iconbtn::before,.chip::before,.seg button::before,.helpbtn::before{content:'';position:absolute;inset:-6px}
 .seg button::before{inset:-6px 0}
-/* the routine tile is the button itself: no grey disc behind it; the 29 px tile keeps a 45 px target */
-.iconbtn.look-btn{width:auto;height:auto;background:none;border-radius:7px}
-.iconbtn.look-btn::before{inset:-8px}
+/* the routine tile is the button itself, the same 36 px as the round buttons beside it, so the
+   header's buttons share one size and one centre line */
+.iconbtn.look-btn{background:none;border-radius:10px}
+.iconbtn.look-btn .lrow-i{width:36px;height:36px;border-radius:10px;font-size:1.25rem}
 /* More of the same (tap-target probe, 1.4.5 UX round): the guest line's × was 26 px, the links
    under About 15 px tall, a small button 35, a switch 31. Each keeps its painted size and gets a
    target of about 44 px. Vertical only where a neighbour sits beside it. */
