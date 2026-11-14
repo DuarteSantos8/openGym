@@ -150,8 +150,8 @@ export function addDeviceSetupMessage(routines) {
 export function askAddDeviceData(extras) {
   const logged = extras.workouts || extras.bodyweight || extras.customEx
   return new Promise(resolve => confirmSheet({
-    title: logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
-    message: logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
+    title: extras.nutritionEntries ? t('Add this device’s data to your profile?') : logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
+    message: extras.nutritionEntries ? t('This device has {0} nutrition entries logged while signed out. Add them and any other local entries, or keep the profile as it is on the server.', extras.nutritionEntries) : logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
     confirmText: t('Add them'), cancelText: t('Keep profile as is'),
     onConfirm: () => resolve(true), onCancel: () => resolve(false), locked: true
   }))
