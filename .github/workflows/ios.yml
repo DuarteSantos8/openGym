@@ -247,11 +247,11 @@ jobs:
                 || xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
             if [ "$size" = s40 ] || [ "$size" = s42 ]; then
-              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones music prompt left countdown go summary summary-end ended"
-              AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort prompt summary summary-end"
+              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-end ended"
+              AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort metrics-muscles prompt summary summary-end"
             else
-              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse summary"
-              AX="set rest overview"
+              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary"
+              AX="set rest overview metrics-muscles"
             fi
             for screen in $SCREENS; do shot "$screen" "$screen"; done
             # Long names (a workout name in the Overview's top corner, a long German compound on the set
@@ -266,6 +266,11 @@ jobs:
             # Russian (the other long one) and German at the largest text size, on every case size.
             shot "lang-ru" set -OpenGymWatchLang ru
             shot "lang-ru-rest" rest -OpenGymWatchLang ru
+            # The Muscles page with the longest German and Russian muscle names, also at the largest text size.
+            shot "lang-de-metrics-muscles" metrics-muscles -OpenGymWatchLang de
+            shot "lang-ru-metrics-muscles" metrics-muscles -OpenGymWatchLang ru
+            shot "ax-de-metrics-muscles" metrics-muscles -OpenGymWatchAX -OpenGymWatchLang de
+            shot "ax-ru-metrics-muscles" metrics-muscles -OpenGymWatchAX -OpenGymWatchLang ru
             shot "long-ru-overview" overview -OpenGymWatchLong -OpenGymWatchLang ru
             shot "ax-de-set" set -OpenGymWatchAX -OpenGymWatchLang de
             shot "ax-de-rest" rest -OpenGymWatchAX -OpenGymWatchLang de
@@ -279,7 +284,7 @@ jobs:
             # The largest text size (accessibility XXXL) on the screens with the most on them.
             for screen in $AX; do shot "ax-$screen" "$screen" -OpenGymWatchAX; done
             # The Metrics pages in Always On (wrist down).
-            for screen in metrics metrics-pulse metrics-effort; do shot "aod-$screen" "$screen" -OpenGymWatchAOD; done
+            for screen in metrics metrics-pulse metrics-effort metrics-muscles; do shot "aod-$screen" "$screen" -OpenGymWatchAOD; done
             # What each screen costs, on the 42 mm only: the app's CPU time over 20 s once it is up (the
             # simulator's process, on the Mac). Always On (wrist down) should cost next to nothing.
             if [ "$size" = s42 ]; then

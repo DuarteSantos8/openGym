@@ -397,7 +397,7 @@ enum SessionCore {
     /// A ready session started here, with the body weight just weighed in (or none).
     static func start(_ s0: SessionState, _ session: ReadySession, wid: String, at: Double, id: String, bw: Double? = nil) -> (SessionState, Event) {
         var s = s0
-        s.workout = ActiveWorkout(id: wid, name: session.name, unit: s.unit, cur: 0, restSec: s.restSec, rest: nil, entries: session.entries, start: at, healthType: session.healthType)
+        s.workout = ActiveWorkout(id: wid, name: session.name, unit: s.unit, cur: 0, restSec: s.restSec, rest: nil, entries: session.entries, start: at, healthType: session.healthType, muscleNames: session.muscleNames)
         s.startedHere = wid
         s.startId = id
         s.pending = [:]

@@ -26,6 +26,7 @@
 "Start without weighing in" = "체중 기록 없이 시작";
 "Body weight" = "체중";
 "Effort" = "강도";
+"Muscles" = "근육";
 "None" = "없음";
 "Exercises" = "운동";
 "Save" = "저장";
@@ -85,3 +86,6 @@
 "max" = "최대";
 "min" = "최소";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone에서 Apple 건강을 켜면 휴식과 버티기 중에도 openGym이 화면에 남아 있어요.";
+"No sets yet" = "아직 세트가 없어요";
+"+%lld more" = "+%lld개 더";
+"%@ sets" = "%@세트";

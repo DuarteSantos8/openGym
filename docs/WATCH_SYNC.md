@@ -129,6 +129,19 @@ clock stands at that moment. On resume the field goes and `start` moves on by th
 watch needs nothing else. The rest screen's "Next" shows the next set's weight and reps from the
 set rows the snapshot already holds (#911); nothing new is sent for it.
 
+Display-only fields for the Metrics pages (1.4.5, #1187, #1188): each entry of `active` and of
+`ready.today`/`ready.others` may carry `muscles` (muscle slug to the phone's weight for one set:
+main 1, helper 0.4, only the muscles the phone's map draws), and `active.muscleNames` and
+`ready.*.muscleNames` give those slugs' names in the app's language; the watch adds up its done
+working sets into the Muscles page (a workout started on the watch takes the names of the
+`ready` session it came from). `settings.birthYear` (ages 10 to 100 only, and only while
+the Zones page is on) and `settings.show.zones` drive the Zones page. Nothing about a set, a rest
+or an event depends on them: a watch that does not know them ignores them (Codable, Wear's
+`ignoreUnknownKeys`), `fitSnapshot` drops the muscle fields first when a snapshot is too big (the
+other routines', then today's, the running workout's last), and
+`garminSnapshot` leaves `muscles` and `muscleNames` out (Garmin's settings are a whitelist, so
+the birth year never reaches it either).
+
 ## One rest (protocol 2)
 
 The snapshot's `active` says:

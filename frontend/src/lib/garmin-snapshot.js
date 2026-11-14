@@ -136,8 +136,9 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   if (A && Array.isArray(A.entries)) {
     const win = garminWindow(A)
     const { progress, volume } = garminTotals(A)
-    const { entries, ...rest } = A
-    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...entries[i], i })) }
+    // The Garmin watch has no Muscles page: the muscle weights and names would only cost bytes.
+    const { entries, muscleNames, ...rest } = A
+    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...slim(entries[i], 'muscles'), i })) }
   }
   const R = snap?.ready
   if (R) {
@@ -145,7 +146,7 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
       // While a workout runs today's exercises are not needed (the watch starts one only when none
       // runs; the snapshot after the workout brings them again): by name, so the snapshots that go
       // with every set stay small.
-      today: R.today ? (out.active ? nameOnly(R.today) : { ...R.today, entries: (R.today.entries || []).map(e => ({ ...slim(e, 'last', 'best'), sets: (e.sets || []).map(leanRow) })) }) : null,
+      today: R.today ? (out.active ? nameOnly(R.today) : { ...slim(R.today, 'muscleNames'), entries: (R.today.entries || []).map(e => ({ ...slim(e, 'last', 'best', 'muscles'), sets: (e.sets || []).map(leanRow) })) }) : null,
       others: (R.others || []).slice(0, GARMIN_OTHERS_MAX).map(nameOnly),
     }
   }

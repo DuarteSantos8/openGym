@@ -26,6 +26,7 @@
 "Start without weighing in" = "不称重直接开始";
 "Body weight" = "体重";
 "Effort" = "强度";
+"Muscles" = "肌肉";
 "None" = "无";
 "Exercises" = "动作库";
 "Save" = "保存";
@@ -85,3 +86,6 @@
 "max" = "最高";
 "min" = "最低";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "在 iPhone 上打开 Apple 健康，休息和静力保持时 openGym 就会一直留在屏幕上。";
+"No sets yet" = "还没有组";
+"+%lld more" = "还有 %lld 个";
+"%@ sets" = "%@ 组";

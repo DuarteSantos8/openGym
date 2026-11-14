@@ -54,6 +54,8 @@ data class ReadySession(
     val name: String = "",
     val entries: List<Entry> = emptyList(),
     val healthType: String? = null,
+    /** Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it. */
+    val muscleNames: Map<String, String>? = null,
 )
 
 @Serializable
@@ -80,6 +82,8 @@ data class ActiveWorkout(
     val pausedAt: Double? = null,
     /** The phone walked out of the gym at this moment (ms, forgotten workouts, 1.4.5): asked at once. */
     val leftGymAt: Double? = null,
+    /** Each muscle's name in the app's language, for the Muscles page. Older phones never send it. */
+    val muscleNames: Map<String, String>? = null,
 )
 
 @Serializable
@@ -102,6 +106,8 @@ data class Entry(
     val step: Double? = null,
     /** Its own weight unit when it is not the workout's (#657). */
     val unit: String? = null,
+    /** What it trains, with the phone's weights (1 main, 0.4 helper). Older phones never send it. */
+    val muscles: Map<String, Double>? = null,
 ) {
     val isTimed get() = mode == "time"
     val isCardio get() = mode == "cardio"
@@ -162,6 +168,8 @@ data class WatchSettings(
     val onAccent: String? = null,
     /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
     val forgotten: ForgottenSettings? = null,
+    /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
+    val birthYear: Int? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */
@@ -181,11 +189,13 @@ data class WatchShow(
     val kcal: Boolean? = null,
     val next: Boolean? = null,
     val rest: String? = null,
+    val zones: Boolean? = null,
 ) {
     val showHr get() = hr ?: true
     val showKcal get() = kcal ?: true
     val showLast get() = last ?: true
     val showNext get() = next ?: true
+    val showZones get() = zones ?: true
 }
 
 /**

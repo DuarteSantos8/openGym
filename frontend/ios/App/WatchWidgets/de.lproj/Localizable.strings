@@ -26,6 +26,7 @@
 "Start without weighing in" = "Ohne Wiegen starten";
 "Body weight" = "Körpergewicht";
 "Effort" = "Anstrengung";
+"Muscles" = "Muskeln";
 "None" = "Keine";
 "Exercises" = "Übungen";
 "Save" = "Speichern";
@@ -85,3 +86,6 @@
 "max" = "max";
 "min" = "min";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Schalte auf dem iPhone Apple Health ein, dann bleibt openGym in Pausen und beim Halten im Vordergrund.";
+"No sets yet" = "Noch keine Sätze";
+"+%lld more" = "+%lld weitere";
+"%@ sets" = "%@ Sätze";

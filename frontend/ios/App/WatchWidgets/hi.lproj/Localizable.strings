@@ -26,6 +26,7 @@
 "Start without weighing in" = "बिना तौले शुरू करें";
 "Body weight" = "शरीर का वज़न";
 "Effort" = "मेहनत";
+"Muscles" = "मांसपेशियाँ";
 "None" = "कोई नहीं";
 "Exercises" = "व्यायाम";
 "Save" = "सहेजें";
@@ -85,3 +86,6 @@
 "max" = "अधिकतम";
 "min" = "न्यूनतम";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone पर Apple Health चालू करो, फिर आराम और होल्ड के दौरान openGym स्क्रीन पर बना रहेगा।";
+"No sets yet" = "अभी कोई सेट नहीं";
+"+%lld more" = "+%lld और";
+"%@ sets" = "%@ सेट";

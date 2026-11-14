@@ -26,6 +26,7 @@
 "Start without weighing in" = "Bắt đầu không cần cân";
 "Body weight" = "Thể trọng";
 "Effort" = "Độ gắng sức";
+"Muscles" = "Nhóm cơ";
 "None" = "Không";
 "Exercises" = "Bài tập";
 "Save" = "Lưu";
@@ -85,3 +86,6 @@
 "max" = "tối đa";
 "min" = "tối thiểu";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Bật Apple Sức khỏe trên iPhone để openGym luôn ở trên màn hình khi nghỉ và giữ tư thế.";
+"No sets yet" = "Chưa có hiệp nào";
+"+%lld more" = "+%lld nữa";
+"%@ sets" = "%@ hiệp";

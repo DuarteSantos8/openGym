@@ -26,6 +26,7 @@
 "Start without weighing in" = "Indítás mérés nélkül";
 "Body weight" = "Testsúly";
 "Effort" = "Megerőltetés";
+"Muscles" = "Izmok";
 "None" = "Nincs";
 "Exercises" = "Gyakorlatok";
 "Save" = "Mentés";
@@ -85,3 +86,6 @@
 "max" = "max.";
 "min" = "min.";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Kapcsold be az Apple Egészséget az iPhone-on, és az openGym a pihenők és tartások alatt is a képernyőn marad.";
+"No sets yet" = "Még nincs sorozat";
+"+%lld more" = "+%lld további";
+"%@ sets" = "%@ sorozat";
