@@ -44,6 +44,12 @@ export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur
   })
 }
 
+/** Runs `fn` (a toast) now, or 280 ms on when a bottom sheet is still on screen: it is the one that
+ *  just closed and is sliding out (components/Modals.jsx), so the toast must not sit on its rows. The Move path's timing. */
+export function afterSheet(fn, ms = 280) {
+  if (!still() && document.querySelector('.sheet')) setTimeout(fn, ms); else fn()
+}
+
 function ghost({ el, r, parent, first, after }, rm, slide, hold) {
   const g = el.cloneNode(true)
   g.removeAttribute('data-flip-key'); g.removeAttribute('id')

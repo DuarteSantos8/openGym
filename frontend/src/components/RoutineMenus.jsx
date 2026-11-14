@@ -13,7 +13,7 @@ import {
 } from '../lib/routine-folders.js'
 import { archiveFolder, archiveRoutines, deleteFolderWithRoutines, scheduledDays, undoSnapshot } from '../lib/routine-archive.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
-import { listMove } from '../lib/list-motion.js'
+import { listMove, afterSheet } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
 import { menuSheet, confirmSheet } from '../sheets.jsx'
 import { startOrPreview } from './StartSheets.jsx'
@@ -39,7 +39,7 @@ export function withUndo(message, change, m = {}) {
   let snap
   listMove(() => update(s => { snap = change(s) }), m)
   const marks = undoMarks(before, S())
-  // `hold` (the Move sheet still leaving): the toast comes with the row, not under the dismissing sheet.
+  // The sheet the pick came from is still sliding out: the toast waits for it (`hold`, the Move sheet, makes the row wait too).
   const say = () => useUI.getState().toast(message, { action: t('Undo'), ms: UNDO_MS, onAction: () => {
     let ok = false
     // The row comes back after the rows below have started to open a gap for it.
@@ -48,7 +48,7 @@ export function withUndo(message, change, m = {}) {
     // False when a sync brought it back first.
     if (!ok) useUI.getState().toast(t('It’s already back.'))
   } })
-  if (m.hold) setTimeout(say, m.hold); else say()
+  if (m.hold) setTimeout(say, m.hold); else afterSheet(say)
 }
 
 // Where a routine is scheduled, in words: weekdays, rescheduled dates, the loop.
@@ -114,9 +114,9 @@ export function duplicateRoutine(r) {
     const at = s.routines.findIndex(x => x.id === r.id)
     s.routines.splice(at < 0 ? s.routines.length : at + 1, 0, copy)
   })
-  useUI.getState().toast(t('Copied as “{0}”.', copy.name), { action: t('Undo'), onAction: () => {
+  afterSheet(() => useUI.getState().toast(t('Copied as “{0}”.', copy.name), { action: t('Undo'), onAction: () => {
     update(s => { if (s.routines.some(x => x.id === copy.id)) deleteRoutine(s, copy.id) })
-  } })
+  } }))
   return copy
 }
 

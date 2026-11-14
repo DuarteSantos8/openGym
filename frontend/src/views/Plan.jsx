@@ -37,7 +37,7 @@ import { isOn } from '../lib/modules.js'
 import { activeRoutines, currentFolder, folderList, folderOf, isLive, reorderFolders } from '../lib/routine-folders.js'
 import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
-import { listMove } from '../lib/list-motion.js'
+import { listMove, afterSheet } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
 import ExitFade, { routeLeaving } from '../components/ExitFade.jsx'
 import { routineMenu, folderMenu, duplicateRoutine, moveSheet, moveIds, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
@@ -69,7 +69,7 @@ export function deleteRoutineWithUndo(id) {
   // What the removal moved (weekdays, reschedules, the loop), for the Undo to mark as put back:
   // a change another device made to one of them before it saw the removal then still wins.
   snap.marks = undoMarks(before, useStore.getState().S)
-  useUI.getState().toast(t('“{0}” gone.', snap.routine.name), { action: t('Undo'), onAction: () => undoDeleteRoutine(snap) })
+  afterSheet(() => useUI.getState().toast(t('“{0}” gone.', snap.routine.name), { action: t('Undo'), onAction: () => undoDeleteRoutine(snap) }))
   return true
 }
 export function undoDeleteRoutine(snap) {

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { listMove } from './list-motion.js'
+import { listMove, afterSheet } from './list-motion.js'
 
 // Rows stack 50 px apart in DOM order; every animate() call is recorded.
 let calls
@@ -155,5 +155,18 @@ describe('Make current CSS', () => {
     expect(css).toContain('.plan-current.cur-land .plan-pin{animation:cur-pin 220ms var(--ease) 120ms backwards}')
     expect(css).toContain('.reduce-motion .plan-current.cur-land::before,.reduce-motion .plan-current.cur-land .plan-pin{animation:none}')
     expect(css).toContain('@media (prefers-reduced-motion:reduce){.plan-current.cur-land::before,.plan-current.cur-land .plan-pin{animation:none}}')
+  })
+})
+
+describe('afterSheet', () => {
+  it('runs at once with no sheet on screen, 280 ms on while one is leaving, at once under Reduce Motion', () => {
+    vi.useFakeTimers()
+    const fn = vi.fn()
+    afterSheet(fn); expect(fn).toHaveBeenCalledTimes(1)
+    document.body.innerHTML = '<div class="sheet"></div>'
+    afterSheet(fn); expect(fn).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(280); expect(fn).toHaveBeenCalledTimes(2)
+    document.documentElement.className = 'reduce-motion'
+    afterSheet(fn); expect(fn).toHaveBeenCalledTimes(3)
   })
 })
