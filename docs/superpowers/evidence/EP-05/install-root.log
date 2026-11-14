@@ -1,0 +1,12 @@
+
+added 2 packages, and audited 3 packages in 590ms
+
+1 package is looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

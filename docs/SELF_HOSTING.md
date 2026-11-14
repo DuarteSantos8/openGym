@@ -889,6 +889,33 @@ instances whose users you trust. Connections live in `data/integrations/`, the U
 secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
 [INTEGRATIONS.md](INTEGRATIONS.md).
 
+### Food barcode previews (`FOOD_LOOKUP`)
+
+Off by default. To enable the authenticated Open Food Facts preview API, set
+`FOOD_LOOKUP=1` in `.env` and restart the api container. Optionally set
+`FOOD_LOOKUP_CONTACT` to an operator contact email for the app/version User-Agent.
+Complete Open Food Facts' [API usage form](https://openfoodfacts.github.io/openfoodfacts-server/api/#before-you-start)
+before enabling service use. The profile must also have `modules.nutrition` explicitly
+set to boolean `true`; missing, false and invalid choices deny lookup on the server.
+
+This phase provides the API only; diary preview/save UI follows separately. Standalone
+phones have no server and no lookup. Authenticated `/api/config` reports `foodLookup.status`
+as `disabled` or `configured-unverified`, which does not promise provider reachability.
+
+Only a requested barcode and fixed app headers reach `world.openfoodfacts.org` over HTTPS.
+OFF can see the server IP, time and optional operator contact, but receives no profile,
+cookie or session token. Memory-only caching lasts at most 15 minutes (unknown products
+60 seconds), with at most 128 entries. No lookup writes the diary or disk.
+Limits are 5 calls per user/minute, including cache hits, and 7 upstream calls per
+instance/61 seconds. Instances sharing an IP must coordinate against OFF's current
+15 product reads/minute/IP limit. Timeouts are 2 seconds to connect and 5 seconds total;
+responses larger than 64 KiB, redirects and private DNS answers fail closed. Push and
+webhook private-address overrides do not apply.
+
+Remove `FOOD_LOOKUP` or set it to `0`, then restart to disable and clear the cache.
+No data migration or restoration is needed. See [the lookup contract, attribution and
+error codes](INTEGRATIONS.md#open-food-facts-barcode-previews-food_lookup).
+
 ## 8. Updating
 
 Running prebuilt images:

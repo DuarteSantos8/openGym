@@ -125,6 +125,8 @@ api:
     MEDIA_UPLOADS: ""        # "0" = off
     INTEGRATIONS: ""         # "webhook" = Settings → Integrations → Webhooks (docs/INTEGRATIONS.md)
     INTEGRATIONS_ALLOW_LAN: ""  # "1" = webhooks may reach the home network
+    FOOD_LOOKUP: ""          # "1" = Open Food Facts preview API; Nutrition opt-in also required
+    FOOD_LOOKUP_CONTACT: ""  # optional operator email in outbound User-Agent
     MEDIA_QUOTA_MB: ""
     MEDIA_IMAGE_MAX_MB: ""
     MEDIA_GIF_MAX_MB: ""
