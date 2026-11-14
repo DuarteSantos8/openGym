@@ -4365,8 +4365,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-routes.is-fav-on .plan-routine .ss{animation:fav-sub 320ms linear both}
 .reduce-motion .plan-routes.is-fav-on .plan-routine .ss{animation:none}
 @media (prefers-reduced-motion:reduce){.plan-routes.is-fav-on .plan-routine .ss{animation:none}}
-/* The arrival starts 60 ms after the leaving copy does (100 ms ease-out), so the two headers are never both readable. */
-.plan-top.is-swap,.plan-edithead.is-in{animation:drag-fade 180ms var(--ease) 60ms both}
+/* The arrival starts 80 ms after the leaving copy does (100 ms ease-out, nearly gone by then), so the two headers are never both readable. */
+.plan-top.is-swap,.plan-edithead.is-in{animation:drag-fade 180ms var(--ease) 80ms both}
 .reduce-motion .plan-top.is-swap,.reduce-motion .plan-edithead.is-in{animation:none}
 @media (prefers-reduced-motion:reduce){.plan-top.is-swap,.plan-edithead.is-in{animation:none}}
 .plan-selcount{min-height:1.25em;margin:8px 4px 10px;font-size:var(--fs-title1,28px);font-weight:700;letter-spacing:-.01em}
