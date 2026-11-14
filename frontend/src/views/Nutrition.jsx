@@ -22,7 +22,10 @@ export default function Nutrition() {
   if (!isOn(S, 'nutrition')) return null
   if (!ready) return <Skeleton label={t('Loading…')} />
   const days = diaryDays(S), rows = [...(days[day] || []), ...(days[''] || [])], meals = mealLabels()
-  const open = (entry, prefill) => useUI.getState().openSheet(close => <EntrySheet entry={entry} prefill={prefill} day={day} close={close} />)
+  const open = (entry, prefill) => {
+    const owner = useStore.getState().user?.id || null
+    useUI.getState().openSheet(close => <EntrySheet entry={entry} prefill={prefill} day={day} owner={owner} close={close} />)
+  }
   const remove = id => { useStore.getState().update(s => deleteEntry(s, id)); setRemoved(id) }
   return <div className="narrow nutrition">
     <header className="nutrition-header"><button className="btn" onClick={() => nav('/home')}>{t('Back')}</button><h1>{t('Nutrition diary')}</h1></header>
