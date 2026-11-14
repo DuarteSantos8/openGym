@@ -78,6 +78,7 @@ Ten read-only tools, and one that writes:
 | `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
 | `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. `form_videos` says how many sets were filmed; the videos themselves never leave the app. A set with a note of its own (set menu → Note) carries it as `sets[].note`. |
 | `get_bodyweight` | Weigh-ins, one value per day (the profile's "Daily weigh-in value": morning, average or last), each day's readings with their times, the latest weight, the goal line, and deltas vs goal. |
+| `get_measurements` | Body measurements from the Measurements screen (circumferences such as neck, shoulders, chest, waist, hips, arms and legs, body fat, custom fields): one entry per day for the window, the latest reading and the change between the first and last reading of each field, with a `units` map (cm, kg, %, `null` for a unitless field), custom fields keyed `other:<id>` and named in `labels`. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
 | `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
