@@ -39,6 +39,7 @@ import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
 import { listMove } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
+import ExitFade from '../components/ExitFade.jsx'
 import { routineMenu, folderMenu, duplicateRoutine, moveSheet, moveIds, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
@@ -195,22 +196,35 @@ export default function Plan() {
   const progChip = programmeChip(S)
 
   const picking = view === 'routines' && editing
+  // Edit swaps the header for its bar: the header leaves as a copy (ExitFade, 100 ms) and, coming back on
+  // Done, fades in 180 ms. Nothing here waits on it; Reduce Motion sets no class and makes no copy.
+  const [swap, setSwap] = useState(false)
+  const firstPick = useRef(true)
+  useLayoutEffect(() => {
+    if (firstPick.current) { firstPick.current = false; return }
+    if (still()) return
+    setSwap(true)
+    const id = setTimeout(() => setSwap(false), 320)
+    return () => clearTimeout(id)
+  }, [picking])
   return <div className="narrow plan">
-    {!picking && <div className="hdr">
-      <SeasonDeco spot="header-bats" />
-      <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
-      <div className="hdr-actions">
-        {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
-        {view === 'routines' && activeRoutines(S).length > 0 && <button ref={editBtn} className="plan-textbtn plan-edit" onClick={() => setEditing(true)}>{t('Edit')}</button>}
-        <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
-      </div>
-    </div>}
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
-    {!picking && <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
-      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />}
-    {!picking && progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
-      <Icon name="calendar" /><span className="grow">{S.programmes?.[S.programme?.id]?.name || t('Programme')}</span><span className="tag acc">{progChip}</span>
-    </button>}
+    {!picking && <ExitFade className={'plan-top' + (swap ? ' is-swap' : '')}>
+      <div className="hdr">
+        <SeasonDeco spot="header-bats" />
+        <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
+        <div className="hdr-actions">
+          {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
+          {view === 'routines' && activeRoutines(S).length > 0 && <button ref={editBtn} className="plan-textbtn plan-edit" onClick={() => setEditing(true)}>{t('Edit')}</button>}
+          <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
+        </div>
+      </div>
+      <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
+        options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
+      {progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
+        <Icon name="calendar" /><span className="grow">{S.programmes?.[S.programme?.id]?.name || t('Programme')}</span><span className="tag acc">{progChip}</span>
+      </button>}
+    </ExitFade>}
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} edit={editing} setEdit={setEditing} />
       : <Schedule S={S} update={update} nav={nav} mode={mode} />}
@@ -488,6 +502,21 @@ function Routines({ S, update, nav, edit, setEdit }) {
     const id = setTimeout(() => setPhase(''), 320)
     return () => clearTimeout(id)
   }, [edit])
+  // The header and the Edit bar differ in height, so the list would jump when Edit starts or ends: it
+  // slides once from where it was (transform only, 260 ms --ease after 40 ms). Reduce Motion: it just moves.
+  const routesEl = useRef(null)
+  const listY = useRef(null)
+  const seenEdit = useRef(edit)
+  useLayoutEffect(() => {
+    const el = routesEl.current
+    const y = el ? el.getBoundingClientRect().top + window.scrollY : null
+    const was = listY.current
+    listY.current = y
+    if (seenEdit.current === edit) return
+    seenEdit.current = edit
+    if (still() || y == null || was == null || !el.animate || Math.abs(was - y) < 1) return
+    el.animate([{ transform: `translateY(${was - y}px)` }, { transform: 'none' }], { duration: 260, delay: 40, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards' })
+  })
   // The Favourites filter: rows that leave fade, the rest move or fade in (lib/list-motion.js); a row that
   // would travel more than 160 px fades in at its new place.
   const showStarred = v => listMove(() => setStarred(v), { far: 160 })
@@ -578,14 +607,14 @@ function Routines({ S, update, nav, edit, setEdit }) {
   const starredRoutines = routines.filter(isFavRoutine)
 
   return <>
-    {edit && <>
+    {edit && <ExitFade className={'plan-edithead' + (phase === 'in' ? ' is-in' : '')}>
       <div className="row between plan-routines-bar">
         <button ref={selectAll} className="plan-textbtn" onClick={() => setSel(allPicked ? [] : shown.map(r => r.id))}>{allPicked ? t('Select none') : t('Select all')}</button>
         <button className="plan-textbtn" onClick={leave}>{t('Done')}</button>
       </div>
       <h2 className="plan-selcount" role="status">{ids.length ? t('{0} selected', ids.length) : t('Select items')}</h2>
-    </>}
-    {routines.length || folders.length || archived ? <div className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
+    </ExitFade>}
+    {routines.length || folders.length || archived ? <div ref={routesEl} className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
       {!edit && starred
           ? (starredRoutines.length
             ? <>

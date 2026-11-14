@@ -4352,6 +4352,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-group .item.is-selected{background:var(--surface-3)}
 .plan-grip{flex:none;display:grid;place-items:center;width:44px;height:44px;margin-inline-end:-8px;color:var(--label-3);font-size:1.125rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .plan-grip:active{cursor:grabbing;color:var(--label-2)}
+/* Edit swaps Plan's header for its bar (views/Plan.jsx): the leaver is an inert copy (lib/exit-copy.js, 100 ms
+   ease-out); the arrival fades in 180 ms --ease. Reduce Motion: no phase class, so none of this runs. */
+.plan-top.is-swap,.plan-edithead.is-in{animation:drag-fade 180ms var(--ease) both}
+.reduce-motion .plan-top.is-swap,.reduce-motion .plan-edithead.is-in{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-top.is-swap,.plan-edithead.is-in{animation:none}}
 .plan-selcount{min-height:1.25em;margin:8px 4px 10px;font-size:var(--fs-title1,28px);font-weight:700;letter-spacing:-.01em}
 .plan-editbar{
   position:fixed;z-index:60;bottom:0;inset-inline:0;
