@@ -87,6 +87,14 @@
   /* motion */
   --ease:cubic-bezier(.32,.72,0,1);
   --fast:140ms; --med:220ms;
+  /* Routine motion (docs/dev/ROUTINE_FOLDERS.md, motion recommendation "Final token set"): --ease for
+     every arrival, travel and FLIP; --ease-exit for exits that move; the keyword ease-out for
+     opacity-only leaves; linear for Reduce Motion. No spring. */
+  --ease-exit:cubic-bezier(.4,0,1,1);
+  --dur-flip:260ms; --flip-delay:40ms;     /* list close-up (lib/flip.js) */
+  --dur-leave:100ms;                       /* a row or old toast leaving on opacity */
+  --dur-in:260ms; --dur-out:180ms; --dur-out-quick:120ms;   /* toast in, timed out, out on Undo */
+  --dur-rm:120ms;                          /* Reduce Motion: fades only */
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
