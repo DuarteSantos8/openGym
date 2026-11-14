@@ -14,21 +14,25 @@ def wait_for(expr, secs=6):
 def open_blocked():
     # about:blank first, block licensed media, only then load the app
     new_tab("about:blank")
-    # tabs left by an earlier run on this throwaway origin share its storage and would sync old state into the new one
-    for t in list_tabs():
-        if t.get('url', '').startswith(BASE.rsplit(':', 1)[0] + ':' + BASE.rsplit(':', 1)[1].split('/')[0]):
-            try: close_tab(t.get('targetId') or t.get('id'))
-            except Exception: pass
+    me = current_tab()
     cdp("Network.enable"); cdp("Log.enable"); cdp("Runtime.enable")
     cdp("Network.setBlockedURLs", urls=["*exercise-media*", "*.gif", "*.webp", "*.mp4"])
     cdp("Emulation.setFocusEmulationEnabled", enabled=True)
     cdp("Emulation.setEmulatedMedia", features=[{"name": "prefers-reduced-motion", "value": RM}])
     cdp("Page.navigate", url=BASE + "/#/home"); wait_for_load(); time.sleep(1)
+    # Refuse BEFORE touching any tab or storage: a profile that is not this fixture (a real or signed-in one) is never closed over or cleared.
     cur = js("localStorage.getItem('gym_state_v1')")
     if cur and 'ep02-w' not in cur and os.environ.get('ALLOW_OVERWRITE') != '1':
-        raise SystemExit("refusing to overwrite a non-fixture profile on " + BASE)
-    # a clean throwaway origin: a guest session cookie from an earlier run would pull its server profile back in and merge it
-    cdp("Storage.clearDataForOrigin", origin=BASE, storageTypes="all"); cdp("Network.clearBrowserCookies")
+        raise SystemExit("refusing to touch a non-fixture profile on " + BASE)
+    # Only now: tabs left by an earlier run on this exact origin share its storage and would sync old state into the new one. Other origins are never touched.
+    origin = BASE.rstrip('/')
+    for t in list_tabs():
+        tid = t.get('targetId') or t.get('id')
+        if tid != (me.get('targetId') if isinstance(me, dict) else me) and t.get('url', '').startswith(origin):
+            try: close_tab(tid)
+            except Exception: pass
+    # Clear this one origin only (its storage and cookies), never the browser's other cookies.
+    cdp("Storage.clearDataForOrigin", origin=origin, storageTypes="all")
 _seed_id = [None]; _seed_n = [0]
 def seed(theme=None, lang='en'):
     """Seed through a script that runs before the app on the next load (the app writes its in-memory state back on unload, so
