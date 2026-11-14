@@ -230,6 +230,19 @@ not an ambiguous per-100g value. Catalog changes never silently rewrite diary en
   A missing or malformed day appears in a separate **Undated entries** section, still read-only
   and deletable, without changing its stored day. Undated rows never count toward any valid
   day's totals. An unsupported version with a valid day stays filed to that saved day.
+- Persisted servings must be objects with a nonblank bounded label, numeric finite count,
+  positive numeric size, `g`/`mL` unit, and the matching numeric canonical amount. Missing/null
+  counts, coercible strings and invalid shapes are unsupported; optional blank form input is
+  not a persisted serving. Retained malformed elements such as null are ignored for identity
+  scans, never deleted as a side effect of adding/editing/deleting/undoing a different row.
+- V1 reads require usable identity/schema, label, day and timezone. Missing legacy creation or
+  provenance metadata stays unknown and is not invented on read or edit. When present,
+  `createdAt`/`occurredAt` must be valid UTC ISO instants (seconds and optional millisecond
+  fraction); `createdBy` must be a documented creation kind; `source`, `externalId` and
+  `idempotencyKey` must be nonblank strings bounded to 200 characters; `contentFingerprint`
+  must be `sha256:` plus 64 lowercase hex digits. Explicit null or malformed present metadata
+  makes a row unsupported. Unknown extension fields, including a future `sourceSnapshot`,
+  remain opaque and untouched.
 - `createEntry(input, context)` in `frontend/src/lib/nutrition/entry.js` is the EP-05b seam.
   Input contains `label`, `day`, `meal`, optional `amount`/`unit`, serving fields, and entry-total
   nutrients. Context supplies creation-only `source`, `externalId`, `contentFingerprint`, and

@@ -1245,7 +1245,7 @@ export const useStore = create((set, get) => {
     // the server's, so the next pull still brings in what changed.
     const reread = async () => {
       if (!asked) return
-      try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
+      try { const r = await api('/api/data'); if (r && Object.hasOwn(r, 'state')) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
       const copy = sanitizeAccent(Object.assign(clone(DEF), state))
@@ -1255,8 +1255,10 @@ export const useStore = create((set, get) => {
       confirmed(get().S)
     }
     const S0 = get().S
-    if (!state) {
-      const push = hasData(S0) && (!alwaysAsk || sameAccount || await askAbout(localExtras(S0, null)))
+    // A device-link decision uses the same inventory split and fresh server read even when
+    // the account has no document yet. Only an unasked/new-account adoption takes this shortcut.
+    if (!state && (!alwaysAsk || sameAccount)) {
+      const push = hasData(S0)
       releaseAdopt()
       if (hasData(get().S) && !push) {
         if (asked) await keepDeviceCopy()
