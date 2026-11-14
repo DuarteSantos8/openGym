@@ -75,4 +75,31 @@ describe('Move sheet motion', () => {
     expect(host.querySelector('.sheet')).toBeNull()
     expect(useStore.getState().S.routines[0].folder).toBe('Travel')
   })
+
+  it('toasts "Moved to X" with an Undo once the sheet has gone; Undo puts the routines back', () => {
+    useUI.setState({ toastMsg: '', toastAction: null })
+    useStore.setState(s => ({ S: { ...s.S, routines: [{ id: 'a', name: 'Push', folder: 'Block', ex: [] }, { id: 'b', name: 'Pull', ex: [] }] } }))
+    const item = open()
+    act(() => { item.click() })
+    expect(useUI.getState().toastMsg).toBe('')
+    act(() => { vi.advanceTimersByTime(300) })
+    expect(useUI.getState().toastMsg).toBe('Moved to Travel')
+    act(() => { useUI.getState().runToastAction() })
+    const r = useStore.getState().S.routines
+    expect(r.map(x => x.id)).toEqual(['a', 'b'])
+    expect(r[0].folder).toBe('Block')
+  })
+
+  it('a move to No folder says so and Undo restores the folder; Reduce Motion toasts at once', () => {
+    document.documentElement.classList.add('reduce-motion')
+    useUI.setState({ toastMsg: '', toastAction: null })
+    useStore.setState(s => ({ S: { ...s.S, routines: [{ id: 'a', name: 'Push', folder: 'Block', ex: [] }] } }))
+    act(() => moveSheet(['a']))
+    act(() => { pick('No folder').click() })
+    expect(useUI.getState().toastMsg).toBe('Moved to No folder')
+    expect(useStore.getState().S.routines[0].folder).toBeUndefined()
+    act(() => { useUI.getState().runToastAction() })
+    expect(useStore.getState().S.routines[0].folder).toBe('Block')
+  })
 })
+

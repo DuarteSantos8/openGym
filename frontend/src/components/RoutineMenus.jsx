@@ -39,7 +39,8 @@ export function withUndo(message, change, m = {}) {
   let snap
   listMove(() => update(s => { snap = change(s) }), m)
   const marks = undoMarks(before, S())
-  useUI.getState().toast(message, { action: t('Undo'), ms: UNDO_MS, onAction: () => {
+  // `hold` (the Move sheet still leaving): the toast comes with the row, not under the dismissing sheet.
+  const say = () => useUI.getState().toast(message, { action: t('Undo'), ms: UNDO_MS, onAction: () => {
     let ok = false
     // The row comes back after the rows below have started to open a gap for it.
     listMove(() => update(s => { ok = snap.undo ? snap.undo(s) : undoSnapshot(s, snap); if (ok) markUndone(s, marks) }),
@@ -47,6 +48,7 @@ export function withUndo(message, change, m = {}) {
     // False when a sync brought it back first.
     if (!ok) useUI.getState().toast(t('It’s already back.'))
   } })
+  if (m.hold) setTimeout(say, m.hold); else say()
 }
 
 // Where a routine is scheduled, in words: weekdays, rescheduled dates, the loop.
@@ -152,15 +154,29 @@ export function folderMenu(name, onRenamed) {
   })
 }
 
-/** Moves routines to the end of a folder ('' for loose, at the end of the list). */
-function moveIds(ids, name, held = true) {
+/** Moves routines to the end of a folder ('' for loose, at the end of the list), with an Undo that puts each back in its folder and place. */
+export function moveIds(ids, name, held = true) {
   // The sheet leaves 120 ms after the pick, then the row goes (160 ms after the dismiss starts), then the target's count ticks.
-  // `held` is false when no sheet is dismissing (a new folder is named in its own sheet), so nothing waits.
+  // `held` is false when no sheet is dismissing (a new folder is named in its own sheet, a drag drop), so nothing waits.
   const hold = held && !still() ? MOVE_HOLD : 0
-  listMove(() => update(s => {
+  const order = S().routines.map(r => r.id), was = S().routines.filter(r => ids.includes(r.id)).map(r => [r.id, r.folder])
+  const to = cleanFolder(name)
+  withUndo(t('Moved to {0}', to || t('No folder')), s => {
     moveToFolder(s, ids, name)
     s.routines = [...s.routines.filter(r => !ids.includes(r.id)), ...s.routines.filter(r => ids.includes(r.id))]
-  }), { hold, tick: name ? { key: 'f' + name, at: hold + 100 } : undefined })
+    return { undo: s2 => {
+      let did = false
+      for (const [id, folder] of was) {
+        const r = s2.routines.find(x => x.id === id)
+        if (!r || !same(folderOf(r), to)) continue   // moved on since: its newer place stands
+        if (folder) r.folder = folder; else delete r.folder
+        did = true
+      }
+      const at = id => { const i = order.indexOf(id); return i < 0 ? order.length : i }
+      if (did) s2.routines = s2.routines.map((r, i) => [r, i]).sort((a, b) => at(a[0].id) - at(b[0].id) || a[1] - b[1]).map(x => x[0])
+      return did
+    } }
+  }, { hold, tick: name ? { key: 'f' + name, at: hold + 100 } : undefined })
 }
 
 export function moveSheet(ids) {
