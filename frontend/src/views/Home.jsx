@@ -232,7 +232,7 @@ export default function Home() {
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
           <MetricCard hideLabel label={t('Body weight')} value={fmtNum(bw.w)} unit={S.unit} delta={delta || 0}
-            deltaText={delta ? (delta > 0 ? '+' : '\u2212') + fmtNum(Math.abs(delta)) : undefined} deltaColor={delta ? bwDeltaColor(delta, bw.w) : undefined} />
+            deltaText={delta ? (delta > 0 ? '+' : '\u2212') + fmtNum(Math.abs(delta)) : undefined} deltaColor={delta ? bwDeltaColor(delta, bw.w, true) : undefined} />
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (

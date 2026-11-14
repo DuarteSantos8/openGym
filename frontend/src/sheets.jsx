@@ -845,11 +845,12 @@ function HevyImportSheet({ close }) {
 }
 
 /* ============================ target weight ============================ */
-export function bwDeltaColor(delta, currentW) {
+// `ink`: the text-safe pair (--acc-ink / --red-ink, 4.5:1 on the light theme) for small text.
+export function bwDeltaColor(delta, currentW, ink = false) {
   if (!delta) return 'var(--label-2)'
   if (!S().targetW) return 'var(--label)'
   const up = S().targetW > currentW
-  return (delta > 0) === up ? 'var(--acc)' : 'var(--red)'
+  return (delta > 0) === up ? (ink ? 'var(--acc-ink)' : 'var(--acc)') : (ink ? 'var(--red-ink)' : 'var(--red)')
 }
 function GoalSheet({ close }) {
   const st = S()

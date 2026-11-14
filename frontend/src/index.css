@@ -63,8 +63,7 @@
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
   --pad:16px;
-  /* EP-02: a soft settle with a small overshoot; --skel is the loading bar's base */
-  --spring:linear(0,.55 14%,.92 28%,1.03 42%,1.01 58%,1 75%,1);
+  /* EP-02: --skel is the loading bar's base */
   --skel:var(--surface-2);
   --icon-stroke:1.7;
 
@@ -1952,7 +1951,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   /* overflow-y:auto alone makes overflow-x auto as well, so one child wider than the sheet (the
      iOS 27 date input, #809) turned into a sideways scrollbar. A sheet only ever scrolls down. */
   overflow-y:auto;overflow-x:hidden;scroll-padding-bottom:calc(20px + var(--sab));
-  animation:sheetup .34s var(--spring,var(--ease));
+  animation:sheetup .34s var(--ease);
   overscroll-behavior:contain;touch-action:pan-y;will-change:transform;
 }
 /* A sheet with a field (.picker-search) or marked .kb-lift (the connect sheet) stands on the
@@ -3276,6 +3275,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
 
+/* no overshoot: the sheet rises from the bottom edge, so a value past 1 would lift it off the edge */
+@supports (transition-timing-function:linear(0,1)){:root{--spring:linear(0,.6 12%,.88 26%,.97 40%,.995 56%,1 72%,1)}.sheet{animation-timing-function:var(--spring)}}
 /* EP-02 primitives (components/MetricCard, Skeleton, ErrorState). Existing tokens only. */
 .metric{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:start;animation:viewfade .16s var(--ease) both}
 button.metric{min-height:44px;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}

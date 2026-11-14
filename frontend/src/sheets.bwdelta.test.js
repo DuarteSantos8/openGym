@@ -26,7 +26,7 @@ describe('bwDeltaColor', () => {
 const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2] }
 const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05) }
 describe('light-theme ink contrast on a white card', () => {
-  const css = readFileSync(new URL('./index.css', import.meta.url), 'utf8')
+  const css = readFileSync('src/index.css', 'utf8')
   it('--red-ink and every light --acc-ink pass 4.5:1', () => {
     const inks = [...css.matchAll(/data-theme="light"\](?:\[data-accent="\w+"\])?\s*\{\s*--(?:acc|red)-ink:(#[0-9a-f]{6})/gi)].map(m => m[1])
     expect(inks.length).toBeGreaterThanOrEqual(8)

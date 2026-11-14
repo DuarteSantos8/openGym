@@ -16,6 +16,6 @@ export default function MetricCard({ label, value, unit, delta, deltaText, delta
   </>
   const cls = 'metric' + (onClick ? ' tap' : '') + (className ? ' ' + className : '')
   return onClick
-    ? <button type="button" className={cls} onClick={onClick}>{inner}</button>
+    ? <button type="button" className={cls} aria-label={name} onClick={onClick}>{inner}</button>
     : <div role="group" aria-label={name} className={cls}>{inner}</div>
 }
