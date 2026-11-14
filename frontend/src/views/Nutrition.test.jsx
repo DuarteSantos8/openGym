@@ -78,3 +78,15 @@ for (const reason of ['module off', 'account switch', 'sign out']) test(`an open
   expect(useUI.getState().sheets.some(s => s.id === sheet.id)).toBe(false)
   expect(visible()).toHaveLength(0)
 })
+test('malformed and missing day records have an explicit undated surface and can be deleted', async () => {
+  const rows = [{ id: 'future-invalid', schemaVersion: 2, day: '2026-99-99', energyKcal: 999 }, { id: 'missing-day', schemaVersion: 1, label: 'old' }]
+  useStore.setState({ S: { ...useStore.getState().S, nutritionEntries: rows } })
+  await render(<Nutrition />)
+  expect(host.textContent).toContain('Undated entries')
+  expect(host.textContent.match(/Unsupported entry/g)).toHaveLength(2)
+  expect(host.textContent).not.toContain('999')
+  expect(host.textContent).toContain('0 entries unknown')
+  expect(useStore.getState().S.nutritionEntries).toEqual(rows)
+  await click('Delete')
+  expect(visible().map(e => e.id)).toEqual(['missing-day'])
+})

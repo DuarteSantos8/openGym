@@ -34,3 +34,16 @@ test('no-op actions do not materialize the collection in a legacy profile', () =
   deleteEntry(S, 'missing'); undoEntry(S, 'missing'); changeEntry(S, 'missing', { label: 'x' })
   expect(JSON.stringify(S)).toBe(before)
 })
+test('invalid or missing days are visible as undated, without refiling records or inflating daily unknowns', () => {
+  const rows = [
+    { ...food(), schemaVersion: 2, day: '2026-99-99' },
+    { ...food(), day: undefined },
+    { ...food(), schemaVersion: 2, day: '2026-11-14' },
+  ]
+  const S = { nutritionEntries: rows }, before = JSON.stringify(S)
+  expect(diaryDays(S)['']).toEqual(rows.slice(0, 2))
+  expect(diaryDays(S)['2026-11-14']).toEqual([rows[2]])
+  expect(dailyTotals(S, '2026-11-14').energyKcal.unknown).toBe(1)
+  expect(dailyTotals(S, '2026-11-15').energyKcal.unknown).toBe(0)
+  expect(JSON.stringify(S)).toBe(before)
+})
