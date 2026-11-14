@@ -175,6 +175,16 @@ describe('exercise settings in a live workout keep their changes on close (#1079
     expect(onSave).toHaveBeenCalledTimes(1)
   })
 
+  it('saves nothing when a load changed before a unit switch is put back in the other unit', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    step('5')
+    pickUnit('lb')
+    step('5')
+    swipeAway()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
   it('still saves an edit made before or after a unit switch in the sheet', () => {
     const onSave = vi.fn()
     open(onSave)

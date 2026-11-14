@@ -2783,12 +2783,13 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit. A unit switch
   // in this sheet converts the loads, so those are compared per unit: the unit it opened in keeps
   // its loads, and another unit gets its own from the first build there, if the loads were
-  // untouched until then. Everything else is compared with the opening, whatever the unit.
+  // untouched until then, else they are compared as they are stored. Everything else is compared
+  // with the opening, whatever the unit.
   const parts = out => { const loads = [], see = w => (loads.push(w), 1); return [JSON.stringify(mapTargetWeights(out, see, null, see)), JSON.stringify(loads)] }
   const opened = useRef(null)
   if (autosave && !opened.current) {
     const o = opened.current = { unit: exUnitOf(live, ex.id), loads: {} }
-    save(out => { [o.rest, o.loads[o.unit]] = parts(out) })
+    save(out => { [o.rest, o.loads[o.unit]] = parts(out); o.stored = parts(storedOf(out))[1] })
   }
   if (autosave && opened.current.retake) {
     const o = opened.current
@@ -2798,7 +2799,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const keep = useRef(null)
   keep.current = () => save(out => {
     const o = opened.current, [rest, loads] = parts(out)
-    if (rest !== o.rest || loads !== o.loads[o.unit]) onSave(storedOf(out))
+    // No baseline in this unit (the loads were edited before the switch): compared as stored.
+    const same = o.loads[o.unit] != null ? loads === o.loads[o.unit] : parts(storedOf(out))[1] === o.stored
+    if (rest !== o.rest || !same) onSave(storedOf(out))
   })
   useEffect(() => () => { if (autosave) keep.current() }, [])
   return <>
