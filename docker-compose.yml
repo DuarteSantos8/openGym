@@ -20,6 +20,7 @@ services:
       # cannot drift — change it in .env and both follow.
       - PORT=${PORT:-3000}
       - DATA_DIR=/data
+      - COACH_CHATGPT_CREDENTIAL_DIR=${COACH_CHATGPT_CREDENTIAL_DIR:-/data-coach-auth}
       # The API is reachable only through the web container here, and that container overwrites
       # X-Forwarded-For / X-Real-IP with the real peer — so the sign-in throttle may count
       # requests by those headers instead of lumping everyone in as "the web container".
@@ -31,6 +32,8 @@ services:
       # is `tar czf … data/`, and a live refresh token must not end up inside it. Nothing here
       # needs backing up — if you lose it, sign the provider in again.
       - ./coach-auth:/coach-auth
+      # The API owns the ChatGPT session. Keep it outside both the training backup and Codex's cache.
+      - chatgpt-coach-auth:${COACH_CHATGPT_CREDENTIAL_DIR:-/data-coach-auth}
 
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise animations, which are part of the image. Single origin for passkeys.
@@ -92,3 +95,6 @@ services:
       - ORIGIN=${ORIGIN:-}
       # The prefix under a subpath deployment, for the sign-in pointer its 401 carries.
       - BASE_PATH=${BASE_PATH:-}
+
+volumes:
+  chatgpt-coach-auth:

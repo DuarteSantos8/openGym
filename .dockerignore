@@ -2,6 +2,7 @@
 frontend/dist
 media
 data
+*-coach-auth
 .env
 .git
 *.log
