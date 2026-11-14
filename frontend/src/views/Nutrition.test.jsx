@@ -8,7 +8,8 @@ import Nutrition from './Nutrition.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { isOn } from '../lib/modules.js'
-import { localDay } from '../lib/nutrition/entry.js'
+import { localDay, createEntry } from '../lib/nutrition/entry.js'
+import { setWeightDecimals } from '../lib/format.js'
 import { visibleOptionalEntries } from '../lib/sync-merge.js'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let host, root
@@ -89,4 +90,14 @@ test('malformed and missing day records have an explicit undated surface and can
   expect(useStore.getState().S.nutritionEntries).toEqual(rows)
   await click('Delete')
   expect(visible().map(e => e.id)).toEqual(['missing-day'])
+})
+for (const decimals of [1, 2]) test(`nutrition keeps three-place precision independently of weight decimals=${decimals}`, async () => {
+  setWeightDecimals(decimals)
+  try {
+    const row = createEntry({ label: 'Fractional serving', day: localDay(), meal: 'snack', amount: 0.024, unit: 'serving', servingLabel: 'portion', servingSize: 100, servingUnit: 'g', proteinG: 0.024 })
+    useStore.setState({ S: { ...useStore.getState().S, nutritionEntries: [row] } })
+    await render(<Nutrition />)
+    expect(host.querySelector('.nutrition-entry').textContent).toContain('0.024 × portion (100 g)')
+    expect([...host.querySelectorAll('.nutrition-summary .metric-v')].map(e => e.textContent)).toContain('0.024')
+  } finally { setWeightDecimals(1) }
 })
