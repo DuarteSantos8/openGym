@@ -1,0 +1,45 @@
+TAP version 13
+# Subtest: every root-level module server.js needs is on the Dockerfile COPY line
+not ok 1 - every root-level module server.js needs is on the Dockerfile COPY line
+  ---
+  duration_ms: 7.958304
+  type: 'test'
+  location: '/code/openGym-fork/api/test/dockerfile-copy.test.js:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    add food-lookup.js to the COPY line in api/Dockerfile
+    + actual - expected
+    
+    + [
+    +   'food-lookup.js'
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'food-lookup.js'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/dockerfile-copy.test.js:33:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: the integrations directory is copied whole, like coach/
+ok 2 - the integrations directory is copied whole, like coach/
+  ---
+  duration_ms: 1.756468
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 87.042639
