@@ -32,6 +32,12 @@ describe('body weight in an equipment profile', () => {
     expect(exAvailable(off(['dumbbell']), ex('dumbbell curl', 'dumbbell'))).toBe(true)
   })
 
+  test('saved unticked, a body-weight exercise that needs your own kit follows the kit', () => {
+    const RING_PUSH_UP = { id: 'c1', n: 'ring push-up', eq: 'body weight', custom: true, kit: ['rings'] }
+    expect(exAvailable(S({ equipment: ['dumbbell'], bwV: BW_V, kit: ['Rings'] }), RING_PUSH_UP)).toBe(true)
+    expect(exAvailable(S({ equipment: ['dumbbell'], bwV: BW_V }), RING_PUSH_UP)).toBe(false)
+  })
+
   test('saved ticked, body-weight exercises show', () => {
     const on = S({ equipment: ['body weight'], bwV: BW_V })
     expect(exAvailable(on, PUSH_UP)).toBe(true)
