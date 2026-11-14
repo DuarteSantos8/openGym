@@ -7,6 +7,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
 import { withExUnit } from './lib/ex-unit.js'
+import { bindUI } from './components/ui.jsx'
 
 // #1079: the live workout's Exercise settings keep their changes however the sheet closes (a tap
 // outside, a swipe down, back), and only when something really changed. The other sheets discard.
@@ -36,6 +37,7 @@ const swipeAway = () => act(() => root.unmount())
 describe('exercise settings in a live workout keep their changes on close (#1079)', () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    bindUI(useUI)
     useUI.setState({ sheets: [] })
     useStore.setState(s => ({ S: { ...s.S, unit: 'kg', restSec: 120, exUnit: {} } }))
   })
@@ -112,6 +114,37 @@ describe('exercise settings in a live workout keep their changes on close (#1079
     swipeAway()
     expect(onSave).toHaveBeenCalledTimes(1)
     expect(onSave.mock.calls[0][0]).toMatchObject({ note: 'seat on 4' })
+  })
+
+  // The Weight unit row opens a picker sheet of its own; pick `label` in it.
+  const pickUnit = label => {
+    act(() => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === 'Weight unit').click())
+    const sheet = useUI.getState().sheets.at(-1)
+    const pickerHost = document.body.appendChild(document.createElement('div'))
+    const picker = createRoot(pickerHost)
+    act(() => picker.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+    act(() => [...pickerHost.querySelectorAll('button, .lrow')].find(b => b.textContent.trim() === label).click())
+    act(() => picker.unmount())
+    pickerHost.remove()
+  }
+
+  it('saves nothing when only the unit was switched in the sheet', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    pickUnit('lb')
+    expect(useStore.getState().S.exUnit[ex.id].unit).toBe('lb')
+    swipeAway()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('still saves an edit made before or after a unit switch in the sheet', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    note('seat on 4')
+    pickUnit('lb')
+    swipeAway()
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave.mock.calls[0][0]).toMatchObject({ note: 'seat on 4', weight: 40 })
   })
 
   it('adding an exercise keeps its own button and discards on close', () => {
