@@ -17,7 +17,7 @@ const repsSets = s => isSideSet(s)
 export function exerciseVolumeSeries(S, exId, { days = 0, now = Date.now() } = {}) {
   const result = { unit: exUnitOf(S, exId), points: [], included: 0, excluded: 0,
     reasons: { timedOrCardio: 0, noVolume: 0, missingDetails: 0 } }
-  if (!exId || isAssisted(exId)) return result
+  if (!exId) return result
   const XS = exView(S, exId)
   const start = new Date(now)
   start.setHours(0, 0, 0, 0)
@@ -29,8 +29,12 @@ export function exerciseVolumeSeries(S, exId, { days = 0, now = Date.now() } = {
     const d = workoutDay(w), t = workoutAt(w)
     if (!d || !Number.isFinite(t) || (days && (d < from || d > today))) continue
     if (!Array.isArray(w.entries) || !w.entries.length) { exclude('missingDetails'); continue }
-    const entries = entriesForExercise(w, exId)
-    if (!entries.length) continue
+    const occurrences = entriesForExercise(w, exId)
+    if (!occurrences.length) continue
+    // Saved entry/target overrides define what the logged weight meant then.
+    // Assistance is not lifted volume, even beside ordinary work in one session.
+    const entries = occurrences.filter(e => !isAssisted(e))
+    if (!entries.length) { exclude('noVolume'); continue }
     if (entries.every(e => !Array.isArray(e.sets) || !e.sets.length)) { exclude('missingDetails'); continue }
     const reps = entries.map(e => ({ ...e, sets: (e.sets || []).filter(s => modeForSet(s, e.target || e) === 'reps') }))
     if (!reps.some(e => e.sets.length)) { exclude('timedOrCardio'); continue }
