@@ -1,0 +1,74 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/components/Tour.test.jsx (30 tests | 1 failed) 23096ms
+     × also asks how much app this profile wants (Settings → Modules): Everything until a tap, a tap applies it 173ms
+DOMException [NotSupportedError]: Failed to load iframe page "https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1". Iframe page loading is disabled.
+    at #loadPage (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:333:27)
+    at [connectedToDocument] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at [connectedToNode] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:801:53)
+    at [appendChild] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:421:45)
+    at [appendChild] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/element/Element.js:1102:62)
+    at HTMLDivElement.appendChild (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:314:48)
+    at insertOrAppendPlacementNode (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14263:62)
+    at commitPlacement (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14337:11)
+    at runWithFiberInDEV (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at commitReconciliationEffects (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:16330:11)
+DOMException [NotSupportedError]: Failed to load iframe page "https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1". Iframe page loading is disabled.
+    at #loadPage (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:333:27)
+    at [connectedToDocument] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at [connectedToNode] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:801:53)
+    at [appendChild] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:421:45)
+    at [appendChild] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/element/Element.js:1102:62)
+    at HTMLDivElement.appendChild (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:314:48)
+    at insertOrAppendPlacementNode (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14263:62)
+    at commitPlacement (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14337:11)
+    at runWithFiberInDEV (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at commitReconciliationEffects (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:16330:11)
+DOMException [NotSupportedError]: Failed to load iframe page "https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1". Iframe page loading is disabled.
+    at #loadPage (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:333:27)
+    at [connectedToDocument] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at [connectedToNode] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:801:53)
+    at [appendChild] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:421:45)
+    at [appendChild] (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/element/Element.js:1102:62)
+    at HTMLDivElement.appendChild (file:///code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:314:48)
+    at insertOrAppendPlacementNode (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14263:62)
+    at commitPlacement (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14337:11)
+    at runWithFiberInDEV (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at commitReconciliationEffects (/code/openGym-fork/.worktrees/ep-04-codex/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:16330:11)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/Tour.test.jsx > the first-run question > also asks how much app this profile wants (Settings → Modules): Everything until a tap, a tap applies it
+AssertionError: expected [ 'false', 'false', 'false' ] to deeply equal [ 'false', 'false', 'true' ]
+
+- Expected
++ Received
+
+  [
+    "false",
+    "false",
+-   "true",
++   "false",
+  ]
+
+ ❯ src/components/Tour.test.jsx:132:61
+    130|     const radios = [...card().querySelectorAll('[role="radio"]')]
+    131|     expect(radios.map(r => r.querySelector('.tour-tut-t').textContent)…
+    132|     expect(radios.map(r => r.getAttribute('aria-checked'))).toEqual(['…
+       |                                                             ^
+    133|     expect(card().textContent).toContain('Change it anytime in Setting…
+    134|     await click(radios[0])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 664 passed (665)
+      Tests  1 failed | 7962 passed (7963)
+   Start at  09:58:38
+   Duration  400.46s (transform 36.86s, setup 113.27s, import 215.51s, tests 215.63s, environment 134.96s)
+
