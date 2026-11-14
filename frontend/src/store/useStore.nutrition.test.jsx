@@ -26,6 +26,26 @@ test('diary-only guests are data, and only visible guest-only rows are adoption 
   expect(localExtras({ ...base(), deleted: { nutritionEntries: { [fixture.id]: 10 } } }, {}).nutritionEntries || 0).toBe(0)
 })
 test('diary-only profiles count as data for initial sync and kept copies', () => expect(hasData(base())).toBe(true))
+test('deletion-only diary state remains data even with no visible or retained rows', () => {
+  expect(hasData({ ...clone(DEF), deleted: { nutritionEntries: { [fixture.id]: 123 } } })).toBe(true)
+})
+test('Keep profile as is preserves a food logged for the account while adoption was pending', async () => {
+  let stored = { ...clone(DEF), _ts: 5 }
+  api.mockImplementation(async (path, opt) => {
+    if (opt?.method === 'PUT') { stored = JSON.parse(opt.body).state; return { ok: true, rev: 2 } }
+    return { state: clone(stored), rev: 1 }
+  })
+  useStore.setState({ S: base(), user: null })
+  useStore.getState().setUser({ id: 'pending-account' }, { adopt: true })
+  let answer
+  const pending = useStore.getState().adoptProfile(() => new Promise(r => { answer = r }))
+  await new Promise(r => setTimeout(r, 0))
+  const later = createEntry({ label: 'Account food', day: '2026-11-14', meal: 'snack' })
+  useStore.getState().update(s => addEntry(s, later), false)
+  answer(false); await pending
+  expect(visible(stored).map(e => e.id)).toEqual([later.id])
+  expect(visible(useStore.getState().S).map(e => e.id)).toEqual([later.id])
+})
 test('the real adoption question describes nutrition rather than a nonexistent plan', async () => {
   const pending = askAddDeviceData({ workouts: 0, bodyweight: 0, customEx: 0, nutritionEntries: 1 })
   const sheet = useUI.getState().sheets.at(-1)
