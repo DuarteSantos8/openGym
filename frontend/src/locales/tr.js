@@ -5958,4 +5958,5 @@ export default {
   "No favourites yet.": "Henüz favori yok.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Bir rutinin menüsünü açıp Favorilere ekle’yi seçin. Burada görünür.",
   "{0} of {1} routines": "{1} rutinin {0} tanesi",
+  "Moved {0} to {1}": "{0}, {1} içine taşındı",
 }

@@ -5924,4 +5924,5 @@ export default {
   "No favourites yet.": "Zatím nic oblíbeného.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Otevřete nabídku u rutiny a zvolte Přidat do oblíbených. Zobrazí se tady.",
   "{0} of {1} routines": "{0} z {1} rutin",
+  "Moved {0} to {1}": "{0} přesunuto do {1}",
 }

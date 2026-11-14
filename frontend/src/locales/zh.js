@@ -5958,4 +5958,5 @@ export default {
   "No favourites yet.": "还没有收藏。",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "打开训练的菜单，选择加入收藏。它会显示在这里。",
   "{0} of {1} routines": "{1} 个训练中的 {0} 个",
+  "Moved {0} to {1}": "已将 {0} 移到 {1}",
 }

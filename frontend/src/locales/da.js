@@ -5898,4 +5898,5 @@ export default {
   "No favourites yet.": "Ingen favoritter endnu.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Åbn menuen på en rutine og vælg Tilføj til favoritter. Den vises her.",
   "{0} of {1} routines": "{0} af {1} rutiner",
+  "Moved {0} to {1}": "{0} flyttet til {1}",
 }

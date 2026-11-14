@@ -5969,4 +5969,5 @@ export default {
   "No favourites yet.": "ยังไม่มีรายการโปรด",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "เปิดเมนูของรูทีนแล้วเลือกเพิ่มในรายการโปรด รูทีนนั้นจะแสดงที่นี่",
   "{0} of {1} routines": "{0} จาก {1} รูทีน",
+  "Moved {0} to {1}": "ย้าย {0} ไปที่ {1} แล้ว",
 }

@@ -5958,4 +5958,5 @@ export default {
   "No favourites yet.": "Ainda não há favoritos.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Abre o menu de uma rotina e escolhe Adicionar aos favoritos. Vai aparecer aqui.",
   "{0} of {1} routines": "{0} de {1} rotinas",
+  "Moved {0} to {1}": "{0} movida para {1}",
 }

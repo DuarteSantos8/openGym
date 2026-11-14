@@ -5958,4 +5958,5 @@ export default {
   "No favourites yet.": "अभी कोई पसंदीदा नहीं।",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "किसी रूटीन का मेन्यू खोलें और पसंदीदा में जोड़ें चुनें। वह यहाँ दिखेगा।",
   "{0} of {1} routines": "{1} में से {0} रूटीन",
+  "Moved {0} to {1}": "{0} को {1} में ले जाया गया",
 }

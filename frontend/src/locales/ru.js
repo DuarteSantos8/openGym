@@ -5962,4 +5962,5 @@ export default {
   "No favourites yet.": "Пока нет избранного.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Откройте меню тренировки и выберите В избранное. Она появится здесь.",
   "{0} of {1} routines": "{0} из {1} тренировок",
+  "Moved {0} to {1}": "{0} перемещено в {1}",
 }

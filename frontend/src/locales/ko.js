@@ -5958,4 +5958,5 @@ export default {
   "No favourites yet.": "아직 즐겨찾기가 없어요.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "루틴의 메뉴를 열고 즐겨찾기에 추가를 선택하세요. 여기에 표시돼요.",
   "{0} of {1} routines": "루틴 {1}개 중 {0}개",
+  "Moved {0} to {1}": "{0}을(를) {1}(으)로 옮겼어요",
 }

@@ -5923,4 +5923,5 @@ export default {
   "No favourites yet.": "Belum ada favorit.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Buka menu pada rutinitas dan pilih Tambahkan ke favorit. Rutinitas itu akan muncul di sini.",
   "{0} of {1} routines": "{0} dari {1} rutinitas",
+  "Moved {0} to {1}": "{0} dipindahkan ke {1}",
 };

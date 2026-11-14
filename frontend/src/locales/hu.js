@@ -5961,4 +5961,5 @@ export default {
   "No favourites yet.": "Még nincs kedvenc.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Nyisd meg egy rutin menüjét, és válaszd a Kedvencekhez adás lehetőséget. Itt fog megjelenni.",
   "{0} of {1} routines": "{0} / {1} rutin",
+  "Moved {0} to {1}": "{0} áthelyezve ide: {1}",
 }
