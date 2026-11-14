@@ -168,13 +168,13 @@ describe('useLongPressDrag', () => {
 
 describe('where the lifted row rides', () => {
   const lift = y => { fire($('b'), 'pointerdown', 10, 180); act(() => { vi.advanceTimersByTime(450) }); fire(window, 'pointermove', 10, y) }
-  it('puts its bottom edge 16 px above the finger', () => {
-    lift(300) // row b starts at top 160, 50 high: wanted top 300 - 16 - 50 = 234
-    expect(d.drag.dy).toBe(234 - 160)
+  it('puts its bottom edge 20 px above the finger (16 plus the tilt)', () => {
+    lift(300) // row b starts at top 160, 50 high: wanted top 300 - 20 - 50 = 230
+    expect(d.drag.dy).toBe(230 - 160)
   })
   it('rides below the finger when there is no room above', () => {
-    lift(120) // 120 - 16 - 50 < 0 (the page top): top at 136
-    expect(d.drag.dy).toBe(136 - 160)
+    lift(120) // 120 - 20 - 50 < 0 (the page top): top at 140
+    expect(d.drag.dy).toBe(140 - 160)
   })
 })
 
@@ -190,5 +190,16 @@ describe('edge scroll', () => {
     expect($('list').scrollTop).toBe(0)
     expect(d.drag).toBe(at) // no refresh from the timer
     expect(before).not.toBe(undefined)
+  })
+})
+
+describe('over another list', () => {
+  it('rides below the finger, since that list\'s caption is above it', () => {
+    const a = document.createElement('div'); a.setAttribute('data-drop-area', 'other'); a.getBoundingClientRect = () => rect(300, 200); host.appendChild(a)
+    fire($('a'), 'pointerdown', 10, 120)
+    act(() => { vi.advanceTimersByTime(450) })
+    fire(window, 'pointermove', 10, 400)
+    expect(d.over).toEqual({ kind: 'target', key: 'other' })
+    expect(d.drag.dy).toBe(420 - 100)
   })
 })

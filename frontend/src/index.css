@@ -4242,12 +4242,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-routes.is-dragging .plan-group{overflow:visible}
 .plan-group .item.is-drop,.plan-textbtn.is-drop{background:var(--acc);color:var(--on-acc);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--on-acc)}
 .is-drop .ss,.is-drop .ss b,.is-drop .tt,.is-drop .lrow-i{color:var(--on-acc)}
-.plan-here{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--on-acc);color:var(--acc-ink);font-weight:600;font-size:var(--fs-callout)}
+.plan-here{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--on-acc);color:var(--acc);font-weight:600;font-size:var(--fs-callout)}
 .plan-moveout{min-height:36px;background:var(--acc);color:var(--on-acc)}
 .plan-moveout .icon{width:18px;height:18px}
-.reduce-motion .drag-row.is-lifted .drag-in{transform:translateY(var(--dy));box-shadow:none;outline:2px solid var(--label);outline-offset:-2px}
+.reduce-motion .drag-row.is-lifted .drag-in{transform:translateY(var(--dy));box-shadow:none}
+.reduce-motion .drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}
 .reduce-motion .drag-row.is-lifted::before,.reduce-motion .drag-row .drag-in{transition:none !important}
-@media (prefers-reduced-motion:reduce){.drag-row.is-lifted .drag-in{transform:translateY(var(--dy));box-shadow:none;outline:2px solid var(--label);outline-offset:-2px}.drag-row.is-lifted::before,.drag-row .drag-in{transition:none !important}}
+@media (prefers-reduced-motion:reduce){.drag-row.is-lifted .drag-in{transform:translateY(var(--dy));box-shadow:none}.drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}.drag-row.is-lifted::before,.drag-row .drag-in{transition:none !important}}
 .plan-hdr.is-drop{background:var(--acc);color:var(--on-acc);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--on-acc);display:flex;align-items:center;justify-content:space-between;border-radius:12px;padding:4px 8px}
 .plan-group.is-drop-area{box-shadow:0 0 0 2px var(--acc)}
 @media (max-width:359px){.plan-routine .bm-mini-wrap .bm-v+.bm-v{display:none}}

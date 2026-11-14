@@ -17,7 +17,7 @@ import { t } from './i18n.js'
 // (their id, on the row or on any wrapper inside the list, such as SwipeRow), targets by `data-drop-target` (their key), both hit-tested by rectangle.
 const EDGE = 56      // px from a scroll edge where the list starts to scroll
 const SPEED = 12     // px per 16 ms tick
-const GAP = 16       // px between the finger and the lifted row, so what is under the finger stays readable
+const GAP = 20       // px between the finger and the lifted row, so what is under the finger stays readable
 
 const scrollParent = el => {
   for (let n = el?.parentElement; n; n = n.parentElement) {
@@ -28,7 +28,7 @@ const scrollParent = el => {
 
 const inside = (r, x, y) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
 
-// `ride`: the lifted row rides 'above' the finger (its bottom edge GAP over it; below when there is no room
+// `ride`: the lifted row rides 'above' the finger (its bottom edge about 16 px over it; below when there is no room
 // above) or 'below' it (its top edge GAP under it).
 export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = x => x, ride = 'above', holdMs = 450, slop = 8 }) {
   const [lifted, setLifted] = useState(null)
@@ -60,12 +60,14 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
 
       const hit = () => {
         const { x, y } = s
+        s.byArea = false
         const tgt = [...document.querySelectorAll('[data-drop-target]')].find(n => inside(n.getBoundingClientRect(), x, y))
         if (tgt) return { kind: 'target', key: tgt.getAttribute('data-drop-target') }
         const row = [...(listRef.current?.querySelectorAll('[data-drag-row]') || [])].find(n => n.getAttribute('data-drag-row') !== id && inside(n.getBoundingClientRect(), x, y))
         if (row) return { kind: 'row', key: row.getAttribute('data-drag-row') }
         // Another list as a whole: its rows count as that list's target.
         const area = [...document.querySelectorAll('[data-drop-area]')].find(n => !n.contains(el) && inside(n.getBoundingClientRect(), x, y))
+        s.byArea = !!area // its caption is above the finger, so the row rides below
         return area ? { kind: 'target', key: area.getAttribute('data-drop-area') } : null
       }
       const top = () => s.sp === document.scrollingElement || s.sp === document.documentElement ? 0 : s.sp.getBoundingClientRect().top
@@ -73,7 +75,7 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         s.over = hit()
         setOver(s.over)
         const natural = s.top0 - (s.sp.scrollTop - s.sp0)
-        const above = ride === 'above' && s.y - GAP - s.height >= top()
+        const above = ride === 'above' && !s.byArea && s.y - GAP - s.height >= top()
         setDrag({ id, dy: (above ? s.y - GAP - s.height : s.y + GAP) - natural, height: s.height })
       }
       const end = () => { s.stop(); setLifted(null); setOver(null); setDrag(null) }
