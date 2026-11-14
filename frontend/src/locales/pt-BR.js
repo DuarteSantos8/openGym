@@ -2441,6 +2441,11 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
+  // Optional workout weather (Apple Health).
+  "Workout weather": "Clima do treino",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Salva a temperatura e umidade externas no Apple Saúde. Sua localização aproximada é enviada uma vez por treino ao Open-Meteo; ela não é armazenada nem enviada ao seu servidor openGym.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Dados meteorológicos do Open-Meteo (CC BY 4.0)",
+  "Manual": "Manual",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

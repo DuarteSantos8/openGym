@@ -5,6 +5,7 @@
 // Write-only, and only on request: the user turns it on in Settings, on each phone. Every record
 // carries a client id of its own (a workout's id, a weigh-in's day), so writing it again replaces
 // it instead of adding a second one, and anything openGym wrote can be found and removed again.
+import { workoutEnergy } from './workout-energy.js'
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
@@ -104,11 +105,12 @@ function sessionNotes(w, opts) {
  * One exercise session per finished workout. A workout with no start or end (or an end not after
  * its start) is left out rather than given made-up times: Health Connect needs both.
  */
-export function sessionRecord(w, { unit, nameOf, speedUnit }) {
+export function sessionRecord(w, { unit, nameOf, speedUnit, includeEnergy = false }) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!w?.id || !(start > 0) || !(end > start)) return null
   return {
     id: 'opengym-w-' + w.id,
+    ...(includeEnergy && workoutEnergy(w.healthMetrics)?.final ? { healthMetrics: workoutEnergy(w.healthMetrics) } : {}),
     start, end,
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
@@ -144,10 +146,10 @@ function localMorning(iso) {
 }
 
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit }) {
+export function healthRecords(S, { nameOf, speedUnit, includeEnergy = false }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
-    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
+    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit, includeEnergy })).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
     // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
     weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
@@ -161,7 +163,10 @@ export function healthRecords(S, { nameOf, speedUnit }) {
 // cyrb53: 53 bits are plenty to tell two versions of one record apart, and the file that keeps a
 // fingerprint per record stays small next to a history of hundreds of workouts with their notes.
 export function recordKey(rec) {
-  const str = JSON.stringify(rec)
+  // Weather is a one-time annotation of a newly exported workout. Clearing its local cache
+  // or opting out must not replace an existing Health workout just to remove that metadata.
+  const { weather: _weather, ...stable } = rec
+  const str = JSON.stringify(stable)
   let h1 = 0xdeadbeef, h2 = 0x41c6ce57
   for (let i = 0; i < str.length; i++) {
     const ch = str.charCodeAt(i)

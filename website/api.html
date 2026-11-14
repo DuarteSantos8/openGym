@@ -5053,6 +5053,31 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
+    <span class="p-name">healthMetrics</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Optional measured energy supplied by a workout collector. Missing values are not estimated.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.activeKcal</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.basalKcal</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.sampledAt</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Measurement version in milliseconds since epoch.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">healthMetrics.final</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Energy is exported to Apple Health only when finalized.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">bw</span>
     <span class="p-type">number</span>
     <span class="p-desc">Body weight that day, in <code>unit</code>.</span>

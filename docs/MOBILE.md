@@ -243,7 +243,7 @@ that.
   (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
   or weigh-in is written again; a deleted one is removed from Health Connect.
 - **This phone only.** Whether it is on, and a fingerprint of each record already written, live in
-  `opengym-health.json` in the app's data directory, never in the synced state: it does not travel
+  `opengym-health-<owner fingerprint>.json` in the app's data directory, never in the synced state: it does not travel
   to a server, into a backup export, or to a second phone. It works the same in local mode and
   paired with a server, because the writing happens on the phone.
 - **When it writes:** after each save (finishing a workout, a weigh-in, an edit), when the app comes
@@ -266,6 +266,45 @@ that.
 Worth checking on a real device after changes here: turning it on shows Health Connect's own
 permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
 in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
+
+#### Apple Health additions and account safety
+
+The iPhone uses the existing `AppleHealthPlugin` and `health-sync.js`, including the Watch and
+AirPods deduplication paths. There is one Health settings card under **Settings → Integrations**.
+Several timed weigh-ins per day and the daily first/average/last choice remain unchanged. The
+pre-workout sheet identifies the source and age of its prefilled individual reading; an average
+of several readings is not labelled as a single measurement. Changing the value hides that label.
+
+Consent, imported-sample cursors and export fingerprints belong to this phone, server and account.
+Pairing, sign-out, profile adoption and account/guest changes pause the sync and invalidate results
+already in flight, including leaving and returning to the same account. The old unscoped health
+file is retained but its consent is not adopted: after upgrading, each account must enable its
+switches again. Returning to a previously opted-in account restores that account's own switches.
+No profile, JSON backup or server payload contains these switches or cursors.
+
+**Workout weather** is a separate iPhone opt-in, visible while writing to Apple Health is on.
+Before asking for location, the row discloses the request to Open-Meteo and links its attribution
+(CC BY 4.0). One foreground fix is rounded to two decimal places (roughly a kilometre) and sent
+through an ephemeral native session for outdoor temperature and humidity. Coordinates never
+cross the bridge or enter the profile/server. A bounded account-local cache holds only the values,
+workout identity and observation time. Backfills, edits and stale sessions do not initiate requests.
+The first export waits for its matching pending capture (bounded to 25 seconds); denied location
+or an offline provider leaves the normal export available. Turning writing or weather off clears
+the cache. This does not rewrite existing Health workouts. Weather is attached when this plugin
+creates a workout; existing Watch/AirPods live workouts are left intact and are not recreated to
+add weather. No background location or route capture is added.
+
+**Measured energy** is optional `healthMetrics` on a session: `activeKcal`, optional `basalKcal`,
+`sampledAt` (version) and `final`. Finishing preserves valid measurements without inventing values.
+On iPhone, provisional measurements wait for finalization; finalized ones request their additional
+HealthKit write permissions and use stable versioned sample identifiers. Enrichment targets only
+this app's exact exported workout (identifier and start/end), without deleting/recreating it.
+Watch/AirPods live workouts continue through their existing path. This adds no collector or calorie
+estimate; Android's exported payload is unchanged. Validate the optional weather and energy paths
+on a physical iPhone before release; compilation and mock-based tests do not prove Health rendering.
+
+Dan Sedano's (@thedandano) original #463 commit remains in this PR's history. The source/age
+presentation derives from that work, adapted here to upstream's timed-weigh-in model.
 
 #### Reading back: heart rate and weigh-ins (v1.4.3, #544, #127)
 

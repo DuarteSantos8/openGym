@@ -117,7 +117,7 @@
 	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,
 	     but no background location mode (UIBackgroundModes stays without "location"). -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used to put a gym on the map where you are standing, for the gym reminder. Your location stays on this iPhone.</string>
+	<string>Used to put a gym on the map for the gym reminder. If you separately enable workout weather, an approximate location is sent to Open-Meteo once per workout for outdoor temperature and humidity; it is not stored.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Lets the gym reminder notice when you arrive at a gym you added, even with openGym closed. iOS only watches those places, and your location never leaves this iPhone.</string>
 	<!-- NFC stickers (NfcTagsPlugin.swift): Core NFC's own sheet, only when you write one. -->

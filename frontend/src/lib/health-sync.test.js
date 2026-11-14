@@ -23,9 +23,10 @@ vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => h.platform },
   registerPlugin: name => (h.plugins.push(name), {
     status: async () => ({ ...h.status }),
-    requestPermissions: async () => { h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant } },
+    requestPermissions: async () => { h.calls.push(['request']); if (h.permissionWait) await h.permissionWait; h.status.granted = h.grant; return { granted: h.grant } },
     write: async arg => {
       h.calls.push(['write', arg])
+      if (h.writeWait) await h.writeWait
       if (h.fail) throw Object.assign(new Error('refused'), { code: h.fail })
     },
     remove: async arg => {
@@ -49,7 +50,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
+  h.permissionWait = null; h.writeWait = null; h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
   hs = await import('./health-sync.js')
 })
 
@@ -262,4 +263,94 @@ describe('on the iPhone', () => {
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([])
     expect((await hs.healthStatus()).platform).toBe('android')
   })
+})
+
+
+describe('account-scoped consent and in-flight operations', () => {
+  const context = () => ({ user: { id: 'alice' }, sync: { server: 'https://one.example' }, ready: true })
+  it('does not adopt consent or export markers from the old unscoped file', async () => {
+    h.files.set('opengym-health.json', JSON.stringify({ on: true, written: { old: 'marker' } }))
+    const ctx = context(); hs.bindHealthOwner(() => ctx)
+    const local = await hs.loadHealth()
+    expect(local.on).toBe(false); expect(local.written).toEqual({})
+    await hs.syncHealth(state([workout('a', 17)]))
+    expect(writes()).toEqual([])
+  })
+  it('keeps consent and export markers local to each account and server', async () => {
+    const ctx = context(); hs.bindHealthOwner(() => ctx)
+    await hs.enableHealth(state([workout('a', 17)]))
+    const alice = [...h.files.keys()].find(k => k.startsWith('opengym-health-'))
+    expect(alice).toBeTruthy()
+    ctx.user = { id: 'bob' }; hs.invalidateHealthSync()
+    expect((await hs.loadHealth()).on).toBe(false)
+    await hs.syncHealth(state([workout('b', 17)])); expect(writes()).toHaveLength(1)
+    ctx.user = { id: 'alice' }; ctx.sync.server = 'https://two.example'; hs.invalidateHealthSync()
+    expect((await hs.loadHealth()).on).toBe(false)
+    ctx.sync.server = 'https://one.example'; hs.invalidateHealthSync()
+    expect((await hs.loadHealth()).on).toBe(true)
+    expect(Object.keys((await hs.loadHealth()).written)).toEqual(['opengym-w-a'])
+  })
+  it('drops a permission response after leaving and returning to the same account', async () => {
+    const ctx = context(); hs.bindHealthOwner(() => ctx)
+    let finish; h.permissionWait = new Promise(resolve => { finish = resolve })
+    const result = hs.enableHealth(state([])).catch(e => e.code)
+    await vi.waitFor(() => expect(h.calls.some(c => c[0] === 'request')).toBe(true))
+    ctx.user = { id: 'bob' }; hs.invalidateHealthSync()
+    ctx.user = { id: 'alice' }; hs.invalidateHealthSync()
+    finish()
+    expect(await result).toBe('accountChanged')
+    expect((await hs.loadHealth()).on).toBe(false)
+  })
+  it('does not record a completed old-account write in the new account ledger', async () => {
+    const ctx = context(); hs.bindHealthOwner(() => ctx)
+    await hs.enableHealth(state([]))
+    let finish; h.writeWait = new Promise(resolve => { finish = resolve })
+    const result = hs.syncHealth(state([workout('a', 17)]))
+    await vi.waitFor(() => expect(writes()).toHaveLength(1))
+    ctx.user = { id: 'bob' }; hs.invalidateHealthSync()
+    await hs.loadHealth(); finish(); await result
+    expect((await hs.loadHealth()).written).toEqual({})
+    expect((await hs.loadHealth()).on).toBe(false)
+  })
+  it('does not ask for consent or read a profile during restoration/adoption', async () => {
+    const ctx = context(); ctx.ready = false; hs.bindHealthOwner(() => ctx)
+    await expect(hs.enableHealth(state([]))).rejects.toMatchObject({ code: 'accountChanged' })
+    expect((await hs.loadHealth()).on).toBe(false)
+    await hs.syncHealth(state([workout('a', 17)])); expect(writes()).toEqual([])
+    expect(h.calls.filter(c => c[0] === 'request')).toEqual([])
+  })
+})
+
+describe('measured energy on the iPhone', () => {
+  it('waits for finalization, preserves precision and retries idempotently', async () => {
+    h.platform = 'ios'
+    const w = { ...workout('measured', 17), healthMetrics: { activeKcal: 12.345, basalKcal: 3.21, sampledAt: at(17, 19), final: false } }
+    await hs.enableHealth(state([w])); expect(writes()).toEqual([])
+    w.healthMetrics.final = true
+    await hs.syncHealth(state([w]))
+    expect(writes()[0].sessions[0].healthMetrics).toEqual(w.healthMetrics)
+    await hs.syncHealth(state([w])); expect(writes()).toHaveLength(1)
+    w.healthMetrics.activeKcal = 13.125; w.healthMetrics.sampledAt++
+    await hs.syncHealth(state([w])); expect(writes()).toHaveLength(2)
+  })
+  it('keeps Android export payloads unchanged when optional iPhone energy is present', async () => {
+    const w = { ...workout('android', 17), healthMetrics: { activeKcal: 12, sampledAt: 1000, final: true } }
+    await hs.enableHealth(state([w]))
+    expect(writes()[0].sessions[0]).not.toHaveProperty('healthMetrics')
+  })
+})
+
+it('runs the new account’s queued export after an old account write finishes', async () => {
+  const ctx = { user: { id: 'alice' }, sync: { server: 'https://gym.example' }, ready: true }
+  hs.bindHealthOwner(() => ctx)
+  await hs.enableHealth(state([]))
+  let finish; h.writeWait = new Promise(resolve => { finish = resolve })
+  const old = hs.syncHealth(state([workout('alice-workout', 17)]))
+  await vi.waitFor(() => expect(writes()).toHaveLength(1))
+  ctx.user = { id: 'bob' }; hs.invalidateHealthSync()
+  const next = hs.enableHealth(state([workout('bob-workout', 18)]))
+  await vi.waitFor(() => expect([...h.files.keys()].filter(k => k.startsWith('opengym-health-'))).toHaveLength(2))
+  finish(); await Promise.all([old, next])
+  expect(writes().map(v => v.sessions.map(w => w.id))).toEqual([['opengym-w-alice-workout'], ['opengym-w-bob-workout']])
+  expect(Object.keys((await hs.loadHealth()).written)).toEqual(['opengym-w-bob-workout'])
 })

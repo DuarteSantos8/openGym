@@ -35,6 +35,7 @@ vi.mock('@capacitor/core', () => ({
     },
     readWeights: async arg => {
       h.calls.push(['readWeights', arg])
+      if (h.weightWait) await h.weightWait
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return { records: h.weights.filter(r => r.t >= arg.since) }
     },
@@ -61,7 +62,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
+  h.weightWait = null; h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
   S = { unit: 'kg', workouts: [workout('w1')], bodyweight: [] }
   applied = 0
   hs = await import('./health-sync.js')
@@ -247,4 +248,19 @@ describe('weigh-ins with the history permission', () => {
     await hs.enableRead('weight', getState, { apply })
     expect(h.calls[0]).toEqual(['request', { read: ['weight'], write: [] }])
   })
+})
+
+
+it('drops weigh-ins returned after an account switch, including a switch back to the same account', async () => {
+  const ctx = { user: { id: 'alice' }, sync: { server: 'https://gym.example' }, ready: true }
+  hs.bindHealthOwner(() => ctx)
+  await hs.enableRead('weight', getState, { apply })
+  let finish; h.weightWait = new Promise(resolve => { finish = resolve })
+  h.weights = [{ t: NOW + 1000, kg: 80, id: 'late' }]
+  const result = hs.readHealth(getState, { force: true, now: NOW + 600000, apply })
+  await vi.waitFor(() => expect(reads('readWeights')).toHaveLength(2))
+  ctx.user = { id: 'bob' }; hs.invalidateHealthSync()
+  ctx.user = { id: 'alice' }; hs.invalidateHealthSync()
+  finish(); await result
+  expect(S.bodyweight).toEqual([])
 })

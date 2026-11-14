@@ -1,3 +1,4 @@
+import WorkoutWeatherSettings from '../components/WorkoutWeatherSettings.jsx'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
@@ -1879,7 +1880,11 @@ function HealthLinkRow({ android, nav }) {
   </Section>
 }
 
-function HealthConnectCard({ S, toast, android, page = false }) {
+function HealthConnectCard(props) {
+  const owner = useStore(s => JSON.stringify([s.sync?.server || 'local', s.user?.id || 'local', !!s.isGuest?.()]))
+  return <HealthAccountCard key={owner} {...props} />
+}
+function HealthAccountCard({ S, toast, android, page = false }) {
   const getState = () => useStore.getState().S
   const [st, setSt] = useState(null)
   const [h, setH] = useState(null)
@@ -1959,6 +1964,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={t('Finished workouts and weigh-ins, from this phone only.')}>
         <Switch checked={!!h.on} disabled={busy} onChange={v => (v ? turnOn() : askOff())} />
       </Row>
+      {ios && h.on && <WorkoutWeatherSettings />}
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron" onClick={turnOn} />}
       <Row icon="heart" iconTint="var(--red)" title={t('Heart rate from your watch')}

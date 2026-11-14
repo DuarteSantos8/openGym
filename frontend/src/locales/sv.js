@@ -3699,4 +3699,8 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Dina webhooks skickar inget medan ”Integrationer” är av. De förblir inställda.",
   "{0} of {1} modules on.": "{0} av {1} moduler på.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} slutar synka medan ”Hälsa” är av. Inget kopplas bort, och allt kommer ikapp när ”Hälsa” är tillbaka.",
+  "Manual": "Manuellt",
+  "Workout weather": "Väder under passet",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Spara utomhustemperatur och luftfuktighet i Apple Hälsa. Din ungefärliga plats skickas en gång per pass till Open-Meteo; den sparas inte och skickas inte till din openGym-server.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Väderdata från Open-Meteo (CC BY 4.0)",
 }

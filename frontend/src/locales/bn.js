@@ -3731,4 +3731,10 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "\"ইন্টিগ্রেশন\" বন্ধ থাকলে আপনার ওয়েবহুক কিছু পাঠায় না। সেগুলো সেট আপ করাই থাকে।",
   "{0} of {1} modules on.": "{1}টির মধ্যে {0}টি মডিউল চালু।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"স্বাস্থ্য\" বন্ধ থাকলে {0} সিঙ্ক বন্ধ রাখে। কিছুই বিচ্ছিন্ন হয় না, আর \"স্বাস্থ্য\" ফিরলেই সব পুষিয়ে নেয়।",
+
+  // Optional workout weather (Apple Health).
+  "Workout weather": "ওয়ার্কআউটের আবহাওয়া",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "বাইরের তাপমাত্রা ও আর্দ্রতা Apple Health-এ সংরক্ষণ করুন। প্রতি ওয়ার্কআউটে একবার আপনার আনুমানিক অবস্থান Open-Meteo-তে পাঠানো হয়; এটি সংরক্ষণ বা আপনার openGym সার্ভারে পাঠানো হয় না।",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo-এর আবহাওয়ার তথ্য (CC BY 4.0)",
+  "Manual": "ম্যানুয়াল",
 }

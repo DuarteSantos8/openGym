@@ -1,3 +1,4 @@
+import { prefilledReading, measuredAt } from './lib/weight-origin.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
@@ -6,7 +7,7 @@ import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipme
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
-import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { fmtAgo, fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -361,6 +362,13 @@ function BwSheet({ required, onDone, close, initial, edit }) {
   const bw = lastBW(st)
   const editing = useMemo(() => (edit ? readingsOf(st.bodyweight.find(b => b.d === edit.d)).find(r => r.id === String(edit.id)) || null : null), []) // eslint-disable-line react-hooks/exhaustive-deps
   const [v, setV] = useState(editing ? editing.w : Number(initial) > 0 ? Math.round(Number(initial) * 10) / 10 : bw ? bw.w : 70)
+  const originReading = editing || (bw && prefilledReading(bw, st.bwDaily))
+  const originDay = editing ? edit.d : bw?.d
+  const source = originReading?.src
+  const originLabel = source === 'ah' ? t('Apple Health') : source === 'hc' ? t('Health Connect') : source ? t('Imported') : t('Manual')
+  const originAt = measuredAt(originDay, originReading)
+  const origin = originReading && v === originReading.w && (editing || !(Number(initial) > 0))
+    ? [originLabel, originAt ? fmtAgo(originAt) : fmtDate(originDay, true)].join(' · ') : null
   const [date, setDate] = useState(editing ? edit.d : todayISO())
   // Now for today; another day starts on the time of its first weigh-in, or 08:00. Once picked
   // by hand, the time stays when the date changes.
@@ -408,6 +416,7 @@ function BwSheet({ required, onDone, close, initial, edit }) {
               onChange={e => { setTime(e.target.value); setTimeSet(true) }} />
           </label>
         </div>}
+    {origin && <p className="muted small" role="status">{origin}</p>}
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>

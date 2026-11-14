@@ -4397,6 +4397,15 @@ components:
         end: { type: number }
         routineId: { type: string }
         name: { type: string }
+        healthMetrics:
+          type: object
+          description: Optional measured energy supplied by a workout collector. Missing values are not estimated.
+          properties:
+            activeKcal: { type: number, minimum: 0 }
+            basalKcal: { type: number, minimum: 0 }
+            sampledAt: { type: number, description: Measurement version in milliseconds since epoch. }
+            final: { type: boolean, description: Energy is exported to Apple Health only when finalized. }
+          additionalProperties: true
         bw: { type: number, description: 'Body weight that day, in `unit`.' }
         vol: { type: number, description: Total volume (Σ weight × reps). }
         prs:

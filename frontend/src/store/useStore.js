@@ -9,7 +9,7 @@ import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { stateJson } from '../lib/state-json.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
-import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
+import { initHealthSync, syncHealth, readHealth, invalidateHealthSync } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
@@ -434,7 +434,7 @@ export const useStore = create((set, get) => {
   // The adoption owed by the account signed in now, if there is one.
   const adoptOwed = () => { const m = readAdopt(); const u = get()?.user; return m && u && m.uid === u.id ? m : null }
   // Sync held or not, and the screens told (`sync.held`, status 'held').
-  const setHold = on => { adoptHold = on; if (get()?.sync) setSync({ held: on }) }
+  const setHold = on => { if (adoptHold !== on) invalidateHealthSync(); adoptHold = on; if (get()?.sync) setSync({ held: on }) }
   // The question is answered: sync as usual from here.
   const releaseAdopt = () => { setHold(false); writeAdopt(null) }
   const readStoredSync = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || null } catch { return null } }
@@ -553,7 +553,15 @@ export const useStore = create((set, get) => {
   // A phone with its own Coach key runs its automatic reviews itself, while the app is open.
   initCoachSchedule(() => get())
   // What it reads back from the health hub (heart rate, weigh-ins) goes in as any change does.
-  initHealthSync(() => get().S, fn => get().update(fn))
+  let healthHolds = 0
+  const pauseHealth = async work => {
+    healthHolds++; invalidateHealthSync()
+    try { return await work() }
+    finally { healthHolds--; invalidateHealthSync() }
+  }
+  initHealthSync(() => get().S, fn => get().update(fn), () => ({
+    ...get(), sync: { ...get()?.sync, server: serverBase() }, healthPaused: healthHolds > 0 || adoptHold,
+  }))
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -1636,6 +1644,7 @@ export const useStore = create((set, get) => {
     isGuest: () => localStorage.getItem('gym_guest') === '1',
     // Choosing to go on without a server ends whatever was said about the last one.
     setGuest(v) {
+      invalidateHealthSync()
       if (v) localStorage.setItem('gym_guest', '1'); else localStorage.removeItem('gym_guest')
       set({})
       if (v) setSync({ auth: false, offline: false, lastError: null })
@@ -1666,6 +1675,7 @@ export const useStore = create((set, get) => {
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
     setUser(u, { adopt } = {}) {
+      invalidateHealthSync()
       if (u) {
         // The local copy belongs to whoever last signed in here. When a session expires or is
         // revoked elsewhere, boot() only drops the user and the data stays; a different profile
@@ -1916,56 +1926,64 @@ export const useStore = create((set, get) => {
        Otherwise { owed: false } or { owed: true, count, stashed: true }, signed out. A workout
        running here is kept aside either way (stashActive), and the rest and hold timers stop. */
     async signOut({ force = false } = {}) {
-      await settle()
-      const left = get().unsyncedChanges()
-      if (left.owed && !force) return owedResult(left)
-      await stopTimers()
-      if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
-      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
-      // The device is signed out either way. A request that did not get through leaves the cookie
-      // behind, still valid, so the logout is owed until the server answers it (see boot).
-      try { await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
-      await clearLocalSession()
-      return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      return pauseHealth(async () => {
+        await settle()
+        const left = get().unsyncedChanges()
+        if (left.owed && !force) return owedResult(left)
+        await stopTimers()
+        if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
+        if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
+        // The device is signed out either way. A request that did not get through leaves the cookie
+        // behind, still valid, so the logout is owed until the server answers it (see boot).
+        try { await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
+        await clearLocalSession()
+        return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      })
     },
 
     // Mobile-only ("connect to my server" onboarding, see App.jsx's needsMobileOnboarding).
     // Picking local — even before there's any data — persists the choice so onboarding never
     // asks again.
     async chooseLocalMode() {
-      await chooseLocal()
-      set({ needsMobileOnboarding: false, permSteps: true })
+      return pauseHealth(async () => {
+        await chooseLocal()
+        set({ needsMobileOnboarding: false, permSteps: true })
+      })
     },
     // Redeems the pairing code shown in the browser (Settings → "Pair the mobile app") and
     // switches this device over to that account, same as signing in on the web does — the same
     // account pairing again merges what the phone kept (adoptProfile).
     async connectToServer(url, code, ask) {
-      const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
-      // The account first, the address after: a copy another account still owed is kept aside
-      // for it under the server it belongs to, not the one being paired.
-      get().setUser(user, { adopt: true })
-      if (keeping) { await keeping; keeping = null }
-      pairedBase = normalizeServerUrl(url)
-      setSync({ server: pairedBase })
-      await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
-      await get().adoptProfile(ask)
-      await nativePersist(true)   // the file holds this account's copy before anything else can happen
-      // Paired from the first-launch screen: the permission steps come next. From Settings later
-      // on, nothing new is asked here.
-      set(st => ({ needsMobileOnboarding: false, permSteps: st.permSteps || st.needsMobileOnboarding }))
+      return pauseHealth(async () => {
+        const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
+        // The account first, the address after: a copy another account still owed is kept aside
+        // for it under the server it belongs to, not the one being paired.
+        get().setUser(user, { adopt: true })
+        if (keeping) { await keeping; keeping = null }
+        pairedBase = normalizeServerUrl(url)
+        setSync({ server: pairedBase })
+        await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
+        await get().adoptProfile(ask)
+        await nativePersist(true)   // the file holds this account's copy before anything else can happen
+        // Paired from the first-launch screen: the permission steps come next. From Settings later
+        // on, nothing new is asked here.
+        set(st => ({ needsMobileOnboarding: false, permSteps: st.permSteps || st.needsMobileOnboarding }))
+      })
     },
     // Leaves remote mode and drops back to local-only, the way signOut does: never with changes
     // the server has not seen, unless `force` keeps them aside first. Same result as signOut;
     // the phone stays paired when that comes back owed and not stashed.
     async disconnectServer(opts) {
-      const r = await get().signOut(opts)
-      if (r.owed && !r.stashed) return r
-      await forgetRemote()
-      pairedBase = null
-      setSync({ server: null })
-      get().setGuest(true)
-      set({ ready: true })
-      return r
+      return pauseHealth(async () => {
+        const r = await get().signOut(opts)
+        if (r.owed && !r.stashed) return r
+        await forgetRemote()
+        pairedBase = null
+        setSync({ server: null })
+        get().setGuest(true)
+        set({ ready: true })
+        return r
+      })
     },
 
     // "Sign out everywhere": the server bumps this profile's session version, which kills every
@@ -1975,15 +1993,17 @@ export const useStore = create((set, get) => {
     // valid, and wiping this device's copy of the data would sign the user out of the one place
     // the bump didn't reach. Caller reports the error.
     async signOutAll({ force = false } = {}) {
-      await settle()
-      const left = get().unsyncedChanges()
-      if (left.owed && !force) return owedResult(left)
-      await stopTimers()
-      await api('/api/logout/all', { method: 'POST', body: '{}' })
-      if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
-      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
-      await clearLocalSession()
-      return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      return pauseHealth(async () => {
+        await settle()
+        const left = get().unsyncedChanges()
+        if (left.owed && !force) return owedResult(left)
+        await stopTimers()
+        await api('/api/logout/all', { method: 'POST', body: '{}' })
+        if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
+        if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
+        await clearLocalSession()
+        return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+      })
     },
 
     // Settings → "Delete my account": the server removes the profile and everything of it
@@ -1994,20 +2014,22 @@ export const useStore = create((set, get) => {
     // running workout to come back to. The request is not swallowed: refused (the name, the
     // proof, the last admin) or not answered, nothing here changes and the caller says why.
     async deleteAccount(name, proof = {}) {
-      const uid = get().user?.id
-      await api('/api/account/delete', { method: 'POST', body: JSON.stringify({ name, ...proof }) })
-      await stopTimers()
-      const all = await readStashes()
-      const key = stashKey(serverBase(), uid)
-      if (all[key]) { delete all[key]; await writeStashes(all) }
-      await clearLocalSession()
-      if (MOBILE) {
-        await forgetRemote()
-        pairedBase = null
-        setSync({ server: null })
-        get().setGuest(true)
-        set({ ready: true })
-      }
+      return pauseHealth(async () => {
+        const uid = get().user?.id
+        await api('/api/account/delete', { method: 'POST', body: JSON.stringify({ name, ...proof }) })
+        await stopTimers()
+        const all = await readStashes()
+        const key = stashKey(serverBase(), uid)
+        if (all[key]) { delete all[key]; await writeStashes(all) }
+        await clearLocalSession()
+        if (MOBILE) {
+          await forgetRemote()
+          pairedBase = null
+          setSync({ server: null })
+          get().setGuest(true)
+          set({ ready: true })
+        }
+      })
     },
 
     // Demo build only: drop the seeded example profile back in (Settings → "Reset demo data").

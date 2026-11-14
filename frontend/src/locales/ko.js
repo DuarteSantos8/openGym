@@ -3652,4 +3652,10 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "'연동'이 꺼져 있는 동안 웹훅이 전송되지 않아요. 설정은 그대로예요.",
   "{0} of {1} modules on.": "모듈 {1}개 중 {0}개 켜짐.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "'건강'이 꺼져 있는 동안 {0} 동기화가 멈춰요. 연결은 끊기지 않고, '건강'을 다시 켜면 밀린 걸 따라잡아요.",
+
+  // Optional workout weather (Apple Health).
+  "Workout weather": "운동 날씨",
+  "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "실외 온도와 습도를 Apple 건강에 저장합니다. 대략적인 위치는 운동당 한 번 Open-Meteo로 전송되며, 저장되거나 openGym 서버로 전송되지 않습니다.",
+  "Weather data by Open-Meteo (CC BY 4.0)": "Open-Meteo 날씨 데이터 (CC BY 4.0)",
+  "Manual": "수동",
 }
