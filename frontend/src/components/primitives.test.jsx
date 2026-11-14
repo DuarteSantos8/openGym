@@ -57,7 +57,7 @@ describe('MetricCard button name', () => {
 })
 
 describe('Skeleton', () => {
-  it('is hidden from assistive tech and flags busy status once', () => {
+  it('announces its translated label once and hides the decorative bars', () => {
     const h = render(<Skeleton lines={3} label="Loading" />)
     const s = h.querySelector('[role="status"]')
     expect(s.hasAttribute('aria-busy')).toBe(false)

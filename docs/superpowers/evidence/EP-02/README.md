@@ -1,22 +1,23 @@
 # EP-02 evidence
 
-Synthetic guest profile (one routine, 4 workouts, 3 weigh-ins), Vite dev server only (no API running, so `/api/*` returns 502 from the dev proxy), Chromium through browser-harness. Exercise media URLs were blocked, so no media appears. `before/` is `origin/next/integration` bd1ab806 built from a separate worktree; `after/` is this branch.
+Synthetic guest profile (one routine, 4 workouts, 3 weigh-ins, rest 90 s). Vite dev server with a disposable API (`DATA_DIR` in /tmp, `ALLOW_GUEST=1`, port 3000) behind the dev proxy. Chromium via browser-harness. Exercise media URLs were blocked, so no media is shown.
 
-- `before/`, `after/`: Home, Stats, Settings, active workout at 320, 390, 1280 px, dark and light (24 each).
-- `after/bodyweight-*`: the changed card at 320 and 390, dark and light.
-- `after/rtl-ar-bodyweight-320.png`: Arabic (dir=rtl). `after/zoom200-bodyweight-320.png`: root font size 200% at 320 px (no horizontal overflow; the card title wraps by letters, as CardHead already did, not changed here).
-- The "before" captures were taken after the code was written, from the untouched base commit. The order differs from the brief's "before any source change".
+## Chronology disclosure
+`before/` was captured from the unchanged base commit bd1ab806 (separate worktree) after the code was written, not before it. It is a reproducible comparison, not a pre-change capture.
 
-## Taps to log a set
-1 tap ("Set 1 done" button, weight and reps prefilled). Unchanged: no workout file was touched. Click to stored-state time, median of 3 runs in a 390 px viewport: base 14.4 ms, branch 16.3 ms (motion allowed), 13.4 ms (prefers-reduced-motion). Within noise. The rest timer element was not detected by that probe (`#timer` selector), so rest-timer timing is covered only by unit tests, not measured here.
+## Screenshots
+`before/` and `after/`: Home, Stats, Settings, active workout at 320, 390, 1280 px, dark and light (24 each), plus `manifest.json` (sha, base URL, theme, viewport, expected and observed `location.hash`, observed `<h1>`, bytes). The capture script refuses to save a file when the hash (the app uses HashRouter: `#/home`, `#/stats`, `#/settings`, `#/workout`) or heading does not match, so a mislabelled capture cannot be written. An earlier set of captures at c0393641 had Stats and Settings showing Home (the script navigated by path, not hash); those were deleted and retaken.
+Also in `after/`: `bodyweight-{dark,light}-{320,390}.png` (the changed card), `rtl-ar-bodyweight-320.png`, `zoom200-bodyweight-320.png` (root font size 200%, no horizontal overflow; the card title wraps by letters at that size, as CardHead already did). These extras were taken before the final route-fix and are not in the manifest.
+
+## Interaction probe (`probe.py`)
+Real Chromium. Per motion setting (`probe-after-no-preference.json`, `probe-after-reduce.json`, both exit 0, `failed: []`): metric animation-name `viewfade` / `none`; Start row present; workout opens (`#/workout`); tap Set 1 done (aria-label "Set 1 done", values prefilled) persists to `gym_state_v1` in 14 ms (limit asserted 100 ms); `#timer.rest` visible and its text counts down; Finish (`.whdr-finish`) then "Finish workout early" then `button.primary` "Finish workout" adds one workout and clears `active`; the saved workout survives a reload; a clickable MetricCard focused with its signed accessible name, activated once by real CDP Enter and once by Space, focus ring solid, target at least 44 px.
+Taps to log one set: 2 (Start, Set done), same as base (base set tap measured 11.6 to 14.7 ms before the change). Focus stops were not counted separately. The probe's MetricCard step needs the dev server and does not run on the base commit.
 
 ## Console and network
-Home, Stats, Settings, Home: 3 errors, all `GET /api/config` or `/api/me` returning 502 (no API started). No JS exceptions.
+Capture runs (24 shots each): 2 console errors per run, both `GET /api/me` 401 (guest, no session), no JS exceptions, no failed requests. Not a zero-console run; the 401s are the app's normal signed-out probe.
 
-## Bundle (frontend `npm run build`, Node 24 locally)
-Entry chunk `index-*.js`: 586,454 to 587,149 bytes (+695 raw, +259 gzip: 183,471 to 183,730). `dist/assets` total 29,252,647 to 29,254,554 (+1,907).
+## Bundle (frontend `npm run build`, Node 24.22.1)
+Entry chunk: 586,454 to 587,149 bytes (+695 raw, +259 gzip) at 12f8e8d4 (reviewer measured +575 raw / +212 gzip; the entry hash includes the MetricCard import). `dist/assets` total +1,907 bytes. Final (c-head after review fixes): entry 587,167 (+713 raw), gzip 183,729 (+258), `dist/assets` 29,254,704 (+2,057).
 
-## Updated after review (final numbers are in the PR description)
-- Keyboard: a clickable MetricCard (no production caller; mounted in the dev page) was focused and activated with real CDP key events: Enter and Space each fired onClick once; focus ring solid 2px; button 300 x 56 px. Accessible name: `Body weight: 82.4 kg −0.6`.
-- Reduced motion, real Chromium (`Emulation.setEmulatedMedia`): `.metric` computed animation-name `viewfade` normally, `none` with `prefers-reduced-motion: reduce`.
-- Screenshots in `after/` were retaken after the ink-colour, spring and skeleton fixes.
+## Suites
+Full frontend: 655 files, 7855 tests, exit 0, Node 24.22.1 (Node 22 not installed here). API and MCP not rerun (untouched); baseline CI run 43498778572.

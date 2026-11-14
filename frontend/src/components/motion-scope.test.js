@@ -1,5 +1,6 @@
-// EP-02: the new motion is confined to loading UI, the metric card and the sheet, and it has a
-// reduced-motion branch. A set tap, the rest timer and a save are never behind an animation.
+// EP-02 static scope check on index.css only: the new animation rules name only the metric card,
+// loading bars and the sheet, and have a reduced-motion branch. This does NOT prove set, rest-timer
+// or save behaviour; that is the real-browser probe in docs/superpowers/evidence/EP-02/probe.py.
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 

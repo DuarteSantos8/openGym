@@ -28,8 +28,8 @@ Branch: `room/ep-02-design-foundation-sevy` (brief name `feat/ep-02-design`). Sp
 
 1. Bottom sheet: existing `sheetup` keyframes get the `--spring` easing.
 2. `MetricCard` entrance fade/rise, 160 ms (reuses `viewfade`).
-Both are removed by the existing `prefers-reduced-motion` rule, and a second explicit `@media` branch in the new rules. Set rows, rest timer and save are not animated; an interaction test checks a set tap works synchronously.
+Both are removed by the existing `prefers-reduced-motion` rule, and a second explicit `@media` branch in the new rules. Set rows, rest timer and save are not animated. `components/motion-scope.test.js` is a static CSS scope check only. The behaviour proof is `docs/superpowers/evidence/EP-02/probe.py` (real Chromium: set tap, rest timer, finish/save, reload persistence, CDP Enter/Space, normal and reduced motion).
 
 ## Tests
 
-Role, accessible name, keyboard, empty and error state per primitive; retry button fires once; a set tap in `Workout` is not behind any animation class. Existing Home tests stay untouched.
+Role, accessible name, keyboard, empty and error state per primitive; retry button fires once. In happy-dom a `.click()` is only an activation check; real keyboard activation is in the browser probe. `Skeleton`'s `label` is required consumer input and must be a translated string (no locale key is added here because the primitive has no production caller). Existing Home tests stay untouched.
