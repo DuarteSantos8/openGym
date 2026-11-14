@@ -808,7 +808,9 @@ export function stampOptionalCollections(prev, next, now) {
   for (const key of OPTIONAL_COLLECTIONS) {
     if (!Object.hasOwn(prev || {}, key) && !Object.hasOwn(next, key)) continue
     const before = new Map(optionalRows(prev?.[key]).map(x => [x.id, x]))
-    const rows = optionalRows(next[key]).map(raw => {
+    const identified = new Set(optionalRows(next[key]))
+    const rows = list(next[key]).map(raw => {
+      if (!identified.has(raw)) return raw // Unrelated edits do not discard opaque retained elements.
       const x = clone(raw), old = before.get(x.id)
       const data = v => Object.fromEntries(Object.entries(v || {}).filter(([k]) => !ENTRY_META.has(k)))
       if (!old || optionalJSON(data(old)) !== optionalJSON(data(x))) {
@@ -1402,6 +1404,8 @@ export function localExtras(local, server) {
   // dropped it. Present only when there are any.
   const ids = f => new Set(list(server?.[f]).map(x => x?.id))
   const routines = list(local?.routines).filter(r => r && r.id != null && !ids('routines').has(r.id)).length
+  // Adoption offers visible guest foods only; retained deletion evidence is still profile data.
+  const nutritionEntries = visibleOptionalEntries(local, 'nutritionEntries').filter(e => !ids('nutritionEntries').has(e.id)).length
   const keysNew = f => Object.entries(isMap(local?.[f]) ? local[f] : {})
     .filter(([k, v]) => v != null && !(Array.isArray(v) && !v.length) && !(isMap(server?.[f]) && k in server[f])).length
   const measured = new Set(list(server?.measurements).map(e => e?.d))
@@ -1414,6 +1418,7 @@ export function localExtras(local, server) {
     bodyweight: list(local?.bodyweight).filter(e => e && e.d != null && (!days.has(e.d) || differs(e, days.get(e.d)))).length,
     customEx: list(local?.customEx).filter(e => e && !ex.has(e.id)).length,
     ...(routines ? { routines } : {}),
+    ...(nutritionEntries ? { nutritionEntries } : {}),
     ...(setup ? { setup } : {}),
   }
 }

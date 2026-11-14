@@ -11,9 +11,9 @@ test('every existing module retains its exact legacy decision without mutating a
   for (const modules of [undefined, null, [], {}, ...[true, false, null, 0, 'false'].map(v => Object.fromEntries(MODULES.map(m => [m.id, v])))]) {
     for (const checkIn of [undefined, true, false]) {
       const S = { modules, checkIn }, before = JSON.stringify(S)
-      for (const { id } of MODULES) {
+      for (const { id, optIn } of MODULES) {
         const v = modules?.[id]
-        expect(isOn(S, id)).toBe(typeof v === 'boolean' ? v : id === 'checkin' ? checkIn !== false : true)
+        expect(isOn(S, id)).toBe(typeof v === 'boolean' ? v : id === 'checkin' ? checkIn !== false : !optIn)
       }
       expect(isOn(S, 'unknownFutureId')).toBe(true)
       expect(JSON.stringify(S)).toBe(before)

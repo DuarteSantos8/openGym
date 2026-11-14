@@ -1,0 +1,21 @@
+.nutrition { padding-bottom: 24px; }
+.nutrition h1 { font-size: 1.5rem; margin: 0; }
+.nutrition h2, .nutrition-form h2 { font-size: 1.125rem; margin-bottom: 12px; }
+.nutrition-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.nutrition-summary, .nutrition-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+.nutrition-summary { grid-template-columns: repeat(auto-fit,minmax(min(100%,8rem),1fr)); }
+.nutrition-summary .metric { padding: 14px; background: var(--surface-2); border-radius: 16px; min-width: 0; }
+.nutrition-summary .metric-v { font-size: 1.6rem; overflow-wrap: anywhere; }
+.nutrition-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; min-width: 0; }
+.nutrition-field input, .nutrition-field select { width: 100%; min-width: 0; min-height: 44px; padding: 10px; background: var(--surface-2); color: var(--label); border: 1px solid var(--sep); border-radius: 10px; font: inherit; }
+.nutrition-field :focus-visible, .nutrition .btn:focus-visible, .nutrition-form .btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+.nutrition-form fieldset { border: 0; padding: 0; min-width: 0; }
+.nutrition-form legend { font-weight: 700; margin-bottom: 8px; }
+.nutrition .btn, .nutrition-form .btn { min-height: 44px; min-width: 44px; white-space: normal; }
+.nutrition-list { list-style: none; padding: 0; margin: 0; }
+.nutrition-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--sep); }
+.nutrition-list li:last-child { border-bottom: 0; }
+.nutrition-entry { flex: 1 1 140px; display: flex; flex-direction: column; gap: 5px; overflow-wrap: anywhere; }
+.nutrition-actions, .nutrition-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.nutrition-suggestions .btn { max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 350px) { .nutrition-pair { grid-template-columns: minmax(0,1fr); } }

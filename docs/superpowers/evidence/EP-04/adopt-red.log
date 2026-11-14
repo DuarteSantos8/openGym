@@ -1,0 +1,103 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/store/useStore.nutrition.test.jsx
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/store/useStore.nutrition.test.jsx (10 tests | 5 failed) 95ms
+   × diary-only guests are data, and only visible guest-only rows are adoption extras 15ms
+   × diary-only profiles count as data for initial sync and kept copies 3ms
+   × the real adoption question describes nutrition rather than a nonexistent plan 2ms
+   × actual adoption sheet: diary-only guest chooses Add them 5ms
+   × actual adoption sheet: diary-only guest chooses Keep profile as is 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > diary-only guests are data, and only visible guest-only rows are adoption extras
+AssertionError: expected { workouts: +0, bodyweight: +0, …(1) } to match object { nutritionEntries: 1 }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "nutritionEntries": 1,
++   "bodyweight": 0,
++   "customEx": 0,
++   "workouts": 0,
+  }
+
+ ❯ src/store/useStore.nutrition.test.jsx:24:35
+     22| afterEach(() => { useStore.setState({ user: null, ready: false }); use…
+     23| test('diary-only guests are data, and only visible guest-only rows are…
+     24|   expect(localExtras(base(), {})).toMatchObject({ nutritionEntries: 1 …
+       |                                   ^
+     25|   expect(localExtras(base(), base()).nutritionEntries || 0).toBe(0)
+     26|   expect(localExtras({ ...base(), deleted: { nutritionEntries: { [fixt…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > diary-only profiles count as data for initial sync and kept copies
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/store/useStore.nutrition.test.jsx:28:106
+     26|   expect(localExtras({ ...base(), deleted: { nutritionEntries: { [fixt…
+     27| })
+     28| test('diary-only profiles count as data for initial sync and kept copi…
+       |                                                                                                          ^
+     29| test('the real adoption question describes nutrition rather than a non…
+     30|   const pending = askAddDeviceData({ workouts: 0, bodyweight: 0, custo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > the real adoption question describes nutrition rather than a nonexistent plan
+AssertionError: expected 'Your plan, notes or gym cards on this…' to match /nutrition/i
+
+- Expected:
+/nutrition/i
+
++ Received:
+"Your plan, notes or gym cards on this device were set up while signed out. Add them to your profile, or keep the profile exactly as it is on the server."
+
+ ❯ src/store/useStore.nutrition.test.jsx:33:33
+     31|   const sheet = useUI.getState().sheets.at(-1)
+     32|   const element = sheet.render(() => {})
+     33|   expect(element.props.message).toMatch(/nutrition/i)
+       |                                 ^
+     34|   element.props.onCancel(); await pending
+     35| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > actual adoption sheet: diary-only guest chooses Add them
+ FAIL  src/store/useStore.nutrition.test.jsx > actual adoption sheet: diary-only guest chooses Keep profile as is
+AssertionError: nutrition must ask before adoption: expected undefined to be truthy
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ src/store/useStore.nutrition.test.jsx:47:55
+     45|   await new Promise(r => setTimeout(r, 0))
+     46|   const sheet = useUI.getState().sheets.at(-1)
+     47|   expect(sheet, 'nutrition must ask before adoption').toBeTruthy()
+       |                                                       ^
+     48|   const host = document.createElement('div'); document.body.append(hos…
+     49|   try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 5 passed (10)
+   Start at  09:32:11
+   Duration  7.01s (transform 4.99s, setup 45ms, import 6.18s, tests 95ms, environment 442ms)

@@ -1,0 +1,178 @@
+
+> opengym-frontend@1.4.4 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 479 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               10.26 kB │ gzip:   3.72 kB
+dist/assets/Nutrition-BgH2N4QL.css             1.91 kB │ gzip:   0.65 kB
+dist/assets/Tour-C96LhuIO.css                  4.11 kB │ gzip:   1.38 kB
+dist/assets/Wrapped-DofJKFEc.css               6.77 kB │ gzip:   2.05 kB
+dist/assets/halloween-7CwKpUf5.css            11.04 kB │ gzip:   2.77 kB
+dist/assets/christmas-Dop0I10C.css            14.71 kB │ gzip:   4.04 kB
+dist/assets/leaflet-vh-t_kPv.css              15.09 kB │ gzip:   6.36 kB
+dist/assets/index-CdkOuIlO.css               175.67 kB │ gzip:  34.07 kB
+dist/assets/scan-web-Cmf-hZK_.js               0.06 kB │ gzip:   0.08 kB
+dist/assets/categories-B2tdkgdE.js             0.08 kB │ gzip:   0.10 kB
+dist/assets/platform-now-CIGTrnA-.js           0.13 kB │ gzip:   0.13 kB
+dist/assets/pending-CG0YB1pl.js                0.13 kB │ gzip:   0.12 kB
+dist/assets/channel-DOnL-o8C.js                0.34 kB │ gzip:   0.21 kB
+dist/assets/web-Cm1I_skM.js                    0.36 kB │ gzip:   0.24 kB
+dist/assets/jsx-runtime-LKYXHABd.js            0.43 kB │ gzip:   0.30 kB
+dist/assets/media-limits-O_QuQtBa.js           0.64 kB │ gzip:   0.42 kB
+dist/assets/rolldown-runtime-XKyaHtl9.js       0.72 kB │ gzip:   0.42 kB
+dist/assets/native-ChjpqOEJ.js                 0.77 kB │ gzip:   0.33 kB
+dist/assets/web-BNb0IB1x.js                    0.79 kB │ gzip:   0.39 kB
+dist/assets/web-DwJv3iN-.js                    0.84 kB │ gzip:   0.40 kB
+dist/assets/nudge-check-B1gYbdFC.js            0.93 kB │ gzip:   0.60 kB
+dist/assets/Muscles-B5_Rs4vU.js                0.98 kB │ gzip:   0.57 kB
+dist/assets/day-photos-CAayG0VX.js             1.42 kB │ gzip:   0.73 kB
+dist/assets/equipment-D2oiCGE7.js              1.51 kB │ gzip:   0.85 kB
+dist/assets/preload-helper-CRzLMJPS.js         1.53 kB │ gzip:   0.80 kB
+dist/assets/esm-CR6Onqqu.js                    1.54 kB │ gzip:   0.90 kB
+dist/assets/esm-humVC4Rx.js                    1.55 kB │ gzip:   0.90 kB
+dist/assets/workout-date-BsVRxI-_.js           1.58 kB │ gzip:   0.84 kB
+dist/assets/app-icon-h5qNWa87.js               1.58 kB │ gzip:   0.69 kB
+dist/assets/backfill-DvcScGMs.js               1.66 kB │ gzip:   0.89 kB
+dist/assets/modules-copy-Dl7G2zil.js           1.72 kB │ gzip:   0.90 kB
+dist/assets/esm-2iK0r1EF.js                    1.79 kB │ gzip:   1.01 kB
+dist/assets/de-CUISC6gj.js                     1.83 kB │ gzip:   0.76 kB
+dist/assets/ReportSheet-Ck7KMAZs.js            1.91 kB │ gzip:   0.99 kB
+dist/assets/coach-consent-Dm6OYAsW.js          2.10 kB │ gzip:   1.12 kB
+dist/assets/capacitor-fetch-iio-riPL.js        2.19 kB │ gzip:   1.27 kB
+dist/assets/seasonal-EWQfGtyW.js               2.44 kB │ gzip:   1.10 kB
+dist/assets/media-prefetch-DNv9cxMH.js         2.50 kB │ gzip:   1.28 kB
+dist/assets/esm-DHfxFR7V.js                    2.57 kB │ gzip:   1.38 kB
+dist/assets/supersetFlow-CsJwa_xJ.js           2.60 kB │ gzip:   1.06 kB
+dist/assets/set-videos-B-jSizEU.js             2.61 kB │ gzip:   1.23 kB
+dist/assets/History-BMkrat1g.js                2.62 kB │ gzip:   1.24 kB
+dist/assets/esm-DrCI7bkz.js                    2.73 kB │ gzip:   1.21 kB
+dist/assets/base-B-8Wm65N.js                   2.85 kB │ gzip:   1.02 kB
+dist/assets/ex-unit-v1oTCEI3.js                2.98 kB │ gzip:   1.24 kB
+dist/assets/esm-P1nv14SE.js                    3.02 kB │ gzip:   1.56 kB
+dist/assets/coach-device-DVS8qb-R.js           3.19 kB │ gzip:   1.70 kB
+dist/assets/demoSeed-DMnc0src.js               3.28 kB │ gzip:   1.68 kB
+dist/assets/providers-CC0t0Cvg.js              3.42 kB │ gzip:   1.50 kB
+dist/assets/web-rbuFXOFR.js                    3.48 kB │ gzip:   1.14 kB
+dist/assets/CoachConsentSheet-BWqiwBWq.js      3.55 kB │ gzip:   1.68 kB
+dist/assets/StructuralBalance-Dfh6yHhm.js      3.79 kB │ gzip:   1.66 kB
+dist/assets/web-W41cyBJp.js                    4.43 kB │ gzip:   1.29 kB
+dist/assets/media-refs-CjgGBvJX.js             4.67 kB │ gzip:   1.78 kB
+dist/assets/health-sync-DVEw85MP.js            4.75 kB │ gzip:   2.14 kB
+dist/assets/DateField-CsDvP902.js              4.98 kB │ gzip:   2.10 kB
+dist/assets/media-ingest-CrboahAJ.js           6.30 kB │ gzip:   2.49 kB
+dist/assets/DurationWheel-D7bVLKOm.js          6.36 kB │ gzip:   2.37 kB
+dist/assets/media-store-BaHPNDMR.js            6.44 kB │ gzip:   2.55 kB
+dist/assets/lean-qr-DWZdVoNy.js                6.78 kB │ gzip:   3.55 kB
+dist/assets/backup-media-pP5tG5AL.js           6.85 kB │ gzip:   2.95 kB
+dist/assets/Library-BL5zR70Y.js                7.30 kB │ gzip:   2.67 kB
+dist/assets/exercise-history-DlUygmRA.js       7.59 kB │ gzip:   3.44 kB
+dist/assets/health-connect-C1DgwgR6.js         7.68 kB │ gzip:   3.41 kB
+dist/assets/web-CRENdaeV.js                    8.47 kB │ gzip:   2.84 kB
+dist/assets/coach-demo-Bp8usdgo.js             9.18 kB │ gzip:   4.07 kB
+dist/assets/measurements-C4eau4vk.js           9.56 kB │ gzip:   3.81 kB
+dist/assets/coach-api-CCyI3G9-.js              9.86 kB │ gzip:   3.92 kB
+dist/assets/api-BTjb283u.js                   10.43 kB │ gzip:   4.26 kB
+dist/assets/Measurements--etdMnh3.js          10.45 kB │ gzip:   3.54 kB
+dist/assets/ProgressPhotos-RlCqDzwJ.js        10.51 kB │ gzip:   4.14 kB
+dist/assets/CoachSetup-aET15W4Z.js            10.60 kB │ gzip:   4.19 kB
+dist/assets/halloween-BZmgGqkY.js             10.91 kB │ gzip:   3.81 kB
+dist/assets/CoachIntake-Zx_llMiH.js           11.87 kB │ gzip:   4.15 kB
+dist/assets/Programmes-CfnKzkbo.js            11.96 kB │ gzip:   4.26 kB
+dist/assets/CheckIn-CGMnGtZW.js               12.32 kB │ gzip:   4.85 kB
+dist/assets/Nutrition-DTofMvrl.js             13.94 kB │ gzip:   4.91 kB
+dist/assets/ShareCard-Cdwbp1Qy.js             14.74 kB │ gzip:   6.56 kB
+dist/assets/mobile-CL_oX06H.js                15.59 kB │ gzip:   5.11 kB
+dist/assets/session-merge-CFpIy-ff.js         17.53 kB │ gzip:   7.17 kB
+dist/assets/media-store-fs-DatGrPYA.js        17.84 kB │ gzip:   7.74 kB
+dist/assets/RoutineEdit-CE93ciiO.js           18.48 kB │ gzip:   6.59 kB
+dist/assets/Wrapped-CqaYzLm8.js               19.46 kB │ gzip:   7.64 kB
+dist/assets/christmas-Dbg3eGDu.js             22.56 kB │ gzip:   8.36 kB
+dist/assets/workout-media-D1wgi75T.js         22.71 kB │ gzip:   8.82 kB
+dist/assets/Tour-DW09ekDp.js                  23.53 kB │ gzip:   8.80 kB
+dist/assets/useUI-BEF68E1W.js                 28.55 kB │ gzip:  10.78 kB
+dist/assets/plan-share-Do-N3-a3.js            32.22 kB │ gzip:  12.15 kB
+dist/assets/rotation-CmKIgTh_.js              37.04 kB │ gzip:  13.13 kB
+dist/assets/ui-B-sMTwNR.js                    38.04 kB │ gzip:  11.22 kB
+dist/assets/CoachChat-BRWSgSnV.js             39.24 kB │ gzip:  11.83 kB
+dist/assets/Stats-BAoNq8ua.js                 42.94 kB │ gzip:  14.54 kB
+dist/assets/useStore-DAzFH87h.js              49.95 kB │ gzip:  17.71 kB
+dist/assets/Admin-D5nKTps2.js                 51.65 kB │ gzip:  14.78 kB
+dist/assets/sync-merge-DTd_mWdO.js            54.17 kB │ gzip:  18.76 kB
+dist/assets/history-DdKkskGN.js               54.98 kB │ gzip:  20.46 kB
+dist/assets/body-paths-D_5SR19s.js            93.27 kB │ gzip:  40.92 kB
+dist/assets/jsQR-DMfxOdIb.js                 129.98 kB │ gzip:  47.51 kB
+dist/assets/Settings-Dc4Rttkd.js             148.33 kB │ gzip:  46.86 kB
+dist/assets/leaflet-src-Dcu4YAMi.js          148.61 kB │ gzip:  43.33 kB
+dist/assets/zh-TW-C9gXV6lG.js                184.15 kB │ gzip:  51.79 kB
+dist/assets/zh-mnY0Y2gQ.js                   185.17 kB │ gzip:  52.08 kB
+dist/assets/tr-sBccyaEk.js                   225.94 kB │ gzip:  54.79 kB
+dist/assets/pt-BR-7mhNHXaA.js                226.91 kB │ gzip:  79.48 kB
+dist/assets/sv-CiwNT847.js                   236.34 kB │ gzip:  56.23 kB
+dist/assets/hu-_NLvWIXy.js                   248.11 kB │ gzip:  57.91 kB
+dist/assets/ko-DXGCymFq.js                   251.58 kB │ gzip:  57.04 kB
+dist/assets/de-CKpzH790.js                   265.38 kB │ gzip:  59.77 kB
+dist/assets/zh-BWTHoHJv.js                   265.39 kB │ gzip: 103.53 kB
+dist/assets/fr-dBmS1b4A.js                   267.71 kB │ gzip:  56.48 kB
+dist/assets/it-X0w6XOGn.js                   269.11 kB │ gzip:  56.93 kB
+dist/assets/zh-TW-DMiwD2kY.js                270.31 kB │ gzip: 106.99 kB
+dist/assets/pt-BR-Do3yZIoq.js                270.59 kB │ gzip:  56.98 kB
+dist/assets/pt-CnKzKdMZ.js                   272.46 kB │ gzip:  57.25 kB
+dist/assets/es-CFQh82Kg.js                   273.38 kB │ gzip:  56.32 kB
+dist/assets/sv-BgetaiXR.js                   274.03 kB │ gzip:  96.98 kB
+dist/assets/tr-DcDGqJR3.js                   279.61 kB │ gzip:  98.91 kB
+dist/assets/pl-DmWp2PTk.js                   279.81 kB │ gzip:  60.80 kB
+dist/assets/es-C8QO8GA7.js                   283.56 kB │ gzip:  99.61 kB
+dist/assets/it-BoWXLyIO.js                   283.58 kB │ gzip:  98.68 kB
+dist/assets/pt-rgukvHk5.js                   284.19 kB │ gzip:  99.33 kB
+dist/assets/de-DhdoI0a2.js                   286.80 kB │ gzip: 101.62 kB
+dist/assets/hu-BfwZQ9dT.js                   289.18 kB │ gzip: 104.49 kB
+dist/assets/fr-CHPo3i7c.js                   292.79 kB │ gzip: 101.38 kB
+dist/assets/pl-p4TcANVW.js                   295.33 kB │ gzip: 105.07 kB
+dist/assets/ko-D7hcqAFw.js                   295.61 kB │ gzip: 104.09 kB
+dist/assets/ar-DXU1MlR3.js                   339.21 kB │ gzip: 107.83 kB
+dist/assets/ar-n3dBOUwe.js                   354.62 kB │ gzip:  60.14 kB
+dist/assets/sheets-CndfijpM.js               371.18 kB │ gzip: 119.27 kB
+dist/assets/zh-TW-B1bVpwUU.js                381.04 kB │ gzip:  81.10 kB
+dist/assets/uk-BFVefRi8.js                   385.47 kB │ gzip: 116.54 kB
+dist/assets/ru-BTYdRjd5.js                   392.98 kB │ gzip: 116.89 kB
+dist/assets/ru-CXcRwy7n.js                   427.39 kB │ gzip:  69.24 kB
+dist/assets/uk-c1-draNn.js                   430.56 kB │ gzip:  68.61 kB
+dist/assets/hi-pXh8RrYX.js                   450.99 kB │ gzip: 114.16 kB
+dist/assets/hi-6tJcsCRU.js                   453.54 kB │ gzip:  63.52 kB
+dist/assets/bn-CvzduWis.js                   458.54 kB │ gzip: 111.57 kB
+dist/assets/th-CSXVX7GD.js                   458.80 kB │ gzip:  66.02 kB
+dist/assets/th-CxFrxhZB.js                   461.97 kB │ gzip: 111.82 kB
+dist/assets/zh-DOuyA1pV.js                   481.53 kB │ gzip:  76.32 kB
+dist/assets/bn-D6CP0iEe.js                   494.05 kB │ gzip:  64.47 kB
+dist/assets/index-Cx0vs0Jq.js                587.72 kB │ gzip: 185.61 kB
+dist/assets/coach-local-OOPlq75o.js          595.66 kB │ gzip: 106.81 kB
+dist/assets/en-CNDRxJeJ.js                   616.04 kB │ gzip: 153.17 kB
+dist/assets/de-DY5LZmnD.js                   645.57 kB │ gzip:  86.77 kB
+dist/assets/pl-Vd91jsCG.js                   655.34 kB │ gzip:  92.32 kB
+dist/assets/ko-Brow1u2B.js                   658.19 kB │ gzip:  99.60 kB
+dist/assets/hu-CsBkqtnp.js                   679.09 kB │ gzip:  98.04 kB
+dist/assets/it-DGOnoX1O.js                   682.77 kB │ gzip:  88.55 kB
+dist/assets/pt-BR-DYGSMjF1.js                696.13 kB │ gzip:  85.47 kB
+dist/assets/fr-CWiC_6EN.js                   713.81 kB │ gzip:  86.55 kB
+dist/assets/es-CinwZtNH.js                   718.95 kB │ gzip:  87.27 kB
+dist/assets/tr-DUKW85d9.js                   732.51 kB │ gzip:  90.54 kB
+dist/assets/ar-CpDUmjvE.js                   827.23 kB │ gzip:  82.50 kB
+dist/assets/ru-CJ33ZKaN.js                 1,056.93 kB │ gzip: 106.41 kB
+dist/assets/exercises-CQf54rEW.js          1,225.30 kB │ gzip: 158.99 kB
+dist/assets/hi-CrhvEsuL.js                 1,585.00 kB │ gzip: 122.05 kB
+dist/assets/en-BJ9FHc_q.js                 1,794.89 kB │ gzip: 312.80 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 1500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/@capacitor/core/dist/index.js is dynamically imported by src/lib/anim-packs.js, src/lib/app-icon.js, src/lib/capacitor-fetch.js, src/lib/channel.js, src/lib/device-auth.js, ... but also statically imported by node_modules/@aparajita/capacitor-secure-storage/dist/esm/base.js, node_modules/@aparajita/capacitor-secure-storage/dist/esm/index.js, node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/index.js, node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/web.js, node_modules/@capacitor/app/dist/esm/index.js, ..., dynamic import will not move module into another chunk.
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0msrc/lib/scan-web.js is dynamically imported by src/lib/scan.js but also statically imported by src/components/CameraScan.jsx, dynamic import will not move module into another chunk.
+
+✓ built in 1.80s

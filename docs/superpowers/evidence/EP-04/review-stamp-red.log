@@ -1,0 +1,49 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/lib/sync-stamps-parity.test.js
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/lib/sync-stamps-parity.test.js (11 tests | 1 failed) 174ms
+   × optional stamping preserves malformed retained elements during unrelated edits on both sides 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/sync-stamps-parity.test.js > optional stamping preserves malformed retained elements during unrelated edits on both sides
+AssertionError: expected [ Array(1) ] to deeply equal [ null, false, 17, [], …(1) ]
+
+- Expected
++ Received
+
+  [
+-   null,
+-   false,
+-   17,
+-   [],
+    {
+-     "opaque": true,
++     "_f": {
++       "label": 20,
++     },
++     "_ts": 20,
++     "id": "food",
++     "label": "After",
+    },
+  ]
+
+ ❯ src/lib/sync-stamps-parity.test.js:15:56
+     13|   const client = clone(next), server = clone(next)
+     14|   stampOptionalCollections(prev, client, 20); S.stampOptionalCollectio…
+     15|   expect(client.nutritionEntries.slice(0, raw.length)).toEqual(raw)
+       |                                                        ^
+     16|   expect(server.nutritionEntries).toEqual(client.nutritionEntries)
+     17| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  10:08:57
+   Duration  1.70s (transform 915ms, setup 307ms, import 1.06s, tests 174ms, environment 0ms)

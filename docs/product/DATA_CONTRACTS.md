@@ -211,6 +211,55 @@ Unknown nutrient values are omitted/null, never silently zero. Source serving un
 conversion factors must accompany non-gram input. Nutrients are amounts for the saved entry,
 not an ambiguous per-100g value. Catalog changes never silently rewrite diary entries.
 
+### EP-04 diary additions and creation seam
+
+- `meal` is `breakfast`, `lunch`, `dinner` or `snack`. Existing v1 records without a meal
+  are displayed in Snack without rewriting the record.
+- `amountMl` stores millilitres. A row may contain `amountG` or `amountMl`, never both.
+  Volume is never converted to mass: no density is inferred. `serving` is an optional atomic
+  field `{ label, count, size, unit }`, with `unit: 'g' | 'mL'`; the saved amount equals
+  `count * size`, rounded to three decimal places. Plain mL needs no serving object.
+- All amounts/nutrients accept zero, omit blank/null input, reject negative/nonfinite values
+  and values over 1,000,000, and round to three decimals. Serving size must be positive;
+  text is trimmed and bounded to 200 characters. These are input bounds, not dietary targets.
+- Nutrients are explicitly labelled **Totals for this entry**. Editing an amount or serving
+  alone never scales nutrients. A user changes each total deliberately.
+- Reads validate without rewriting. Future versions, older unsupported schemas and invalid
+  rows remain opaque and read-only, contribute unknowns instead of numeric totals, and are
+  excluded from recent/frequent suggestions. Unknown fields on supported rows survive edits.
+  A missing or malformed day appears in a separate **Undated entries** section, still read-only
+  and deletable, without changing its stored day. Undated rows never count toward any valid
+  day's totals. An unsupported version with a valid day stays filed to that saved day.
+- Persisted servings must be objects with a nonblank bounded label, numeric finite count,
+  positive numeric size, `g`/`mL` unit, and the matching numeric canonical amount. Missing/null
+  counts, coercible strings and invalid shapes are unsupported; optional blank form input is
+  not a persisted serving. Retained malformed elements such as null are ignored for identity
+  scans, never deleted as a side effect of adding/editing/deleting/undoing a different row.
+- V1 reads require usable identity/schema, label, day and timezone. Missing legacy creation or
+  provenance metadata stays unknown and is not invented on read or edit. When present,
+  `createdAt`/`occurredAt` must be valid UTC ISO instants (seconds and optional millisecond
+  fraction); `createdBy` must be a documented creation kind; `source`, `externalId` and
+  `idempotencyKey` must be nonblank strings bounded to 200 characters; `contentFingerprint`
+  must be `sha256:` plus 64 lowercase hex digits. Explicit null or malformed present metadata
+  makes a row unsupported. Unknown extension fields, including a future `sourceSnapshot`,
+  remain opaque and untouched.
+- `createEntry(input, context)` in `frontend/src/lib/nutrition/entry.js` is the EP-05b seam.
+  Input contains `label`, `day`, `meal`, optional `amount`/`unit`, serving fields, and entry-total
+  nutrients. Context supplies creation-only `source`, `externalId`, `contentFingerprint`, and
+  optional `now`/IANA `timeZone`. Call it only after confirmation, then use
+  `useStore.getState().update(s => addEntry(s, record))`. It allocates a new UUID v4 and the
+  store stamps the initial fields. It is not an importer/idempotency API.
+- `components/nutrition/EntrySheet.jsx` accepts `prefill` as a canonical snapshot and forwards
+  its provenance only at creation. EP-05b can provide a confirmed lookup snapshot here; no
+  request or provider payload belongs in this component or persisted diary. `editEntry` only
+  accepts editable food fields and cannot change identity, provenance, day, zone or creation.
+- Date-only past/future input omits `occurredAt`; today's entry uses the actual creation instant
+  in its saved zone. Later timezone changes do not refile any row.
+- Diary guest adoption distinguishes retained rows/deletion evidence (`hasData`) from visible
+  guest-only rows offered to the user (`localExtras`). Pending sign-in tracks food UUIDs so
+  declining old guest data does not discard new account foods. Client-only `localExtras` has
+  no API counterpart; shared merge/stamp code is unchanged and parity remains tested.
+
 `activities` stores `type`, `durationSec`, `distanceM`, optional `movingDurationSec`,
 `ascentM`, and provenance/original units. Use seconds, metres, kilograms and explicit
 coordinate conventions for any later route schema. Never put activity records into workouts

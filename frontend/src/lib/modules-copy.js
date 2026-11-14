@@ -12,6 +12,7 @@ export const moduleCopy = () => ({
   watch: [t('Watch'), t('Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.')],
   checkin: [t('Gym check-in'), t('Your membership codes on Home, and NFC stickers that start a workout.')],
   body: [t('Body'), t('Weigh-ins, measurements, progress photos and your weight goal.')],
+  nutrition: [t('Nutrition diary'), t('Log food, servings and daily totals on this device, including offline.')],
   health: [t('Health'), t('Apple Health or Health Connect, heart rate and recovery tips.')],
   motivation: [t('Motivation'), t('Streaks, challenges, badges, recaps and your year in openGym.')],
   coach: [t('AI Coach'), t('Reviews your training and suggests changes. You still say yes or no.')],
