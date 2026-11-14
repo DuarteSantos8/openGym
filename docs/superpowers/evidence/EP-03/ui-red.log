@@ -1,0 +1,148 @@
+
+ RUN  v4.1.12 /code/openGym-fork/frontend
+
+ ❯ src/views/Stats.ex-range.test.jsx (5 tests | 1 failed) 493ms
+     × offers 1W on exercise and body charts without changing either default 121ms
+ ❯ src/views/Stats.ex-volume.test.jsx (11 tests | 6 failed) 521ms
+     × offers Volume for positive reps history but preserves Top set as the default 137ms
+     × plots a d-only session and duplicate entries, with a semantic table matching every point 56ms
+     × uses the exercise pin in both chart and table instead of the profile unit 41ms
+     × keeps a single session visible in a limited range and shows a true empty state when none remain 34ms
+     × counts only exclusions inside the selected window and tolerates legacy missing entries 18ms
+     × keeps same-day sessions separate in the table and restores the original top-set output 35ms
+ ❯ src/views/Stats.exercise-time.test.jsx (3 tests | 1 failed) 53ms
+     × offers 1W and leaves out older ticked sessions 31ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/views/Stats.ex-range.test.jsx > Stats: exercise progress date range > offers 1W on exercise and body charts without changing either default
+TypeError: Cannot read properties of undefined (reading 'click')
+ ❯ src/views/Stats.ex-range.test.jsx:46:120
+     44| const exChart = () => mocks.charts.filter(c => c.h === 150).at(-1)
+     45| const exCard = () => [...host.querySelectorAll('.card')].find(c => c.q…
+     46| const press = (scope, label) => act(() => [...scope.querySelectorAll('…
+       |                                                                                                                        ^
+     47|
+     48| describe('Stats: exercise progress date range', () => {
+ ❯ process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:890:22
+ ❯ press src/views/Stats.ex-range.test.jsx:46:33
+ ❯ src/views/Stats.ex-range.test.jsx:53:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > offers Volume for positive reps history but preserves Top set as the default
+AssertionError: expected [ 'Top set', 'Est. 1RM' ] to include 'Volume'
+ ❯ src/views/Stats.ex-volume.test.jsx:42:44
+     40|   it('offers Volume for positive reps history but preserves Top set as…
+     41|     mount([session('2026-11-10'), session()])
+     42|     expect(pickerOptions(card(), 'Chart')).toContain('Volume')
+       |                                            ^
+     43|     expect(chart().points.map(p => p.y)).toEqual([50, 50])
+     44|     expect(card().querySelector('table')).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > plots a d-only session and duplicate entries, with a semantic table matching every point
+Error: no option Volume in Chart
+ ❯ src/views/stats-pick.test-util.js:36:19
+     34|   if (!host) throw new Error('no picker named ' + title)
+     35|   const opt = [...host.querySelectorAll('.sect-b button')].find(b => b…
+     36|   if (!opt) throw new Error('no option ' + label + ' in ' + title)
+       |                   ^
+     37|   act(() => opt.click())
+     38| })
+ ❯ withSheet src/views/stats-pick.test-util.js:22:16
+ ❯ Module.pickFrom src/views/stats-pick.test-util.js:33:50
+ ❯ volume src/views/Stats.ex-volume.test.jsx:35:22
+ ❯ src/views/Stats.ex-volume.test.jsx:60:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > uses the exercise pin in both chart and table instead of the profile unit
+Error: no option Volume in Chart
+ ❯ src/views/stats-pick.test-util.js:36:19
+     34|   if (!host) throw new Error('no picker named ' + title)
+     35|   const opt = [...host.querySelectorAll('.sect-b button')].find(b => b…
+     36|   if (!opt) throw new Error('no option ' + label + ' in ' + title)
+       |                   ^
+     37|   act(() => opt.click())
+     38| })
+ ❯ withSheet src/views/stats-pick.test-util.js:22:16
+ ❯ Module.pickFrom src/views/stats-pick.test-util.js:33:50
+ ❯ volume src/views/Stats.ex-volume.test.jsx:35:22
+ ❯ src/views/Stats.ex-volume.test.jsx:75:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > keeps a single session visible in a limited range and shows a true empty state when none remain
+Error: no option Volume in Chart
+ ❯ src/views/stats-pick.test-util.js:36:19
+     34|   if (!host) throw new Error('no picker named ' + title)
+     35|   const opt = [...host.querySelectorAll('.sect-b button')].find(b => b…
+     36|   if (!opt) throw new Error('no option ' + label + ' in ' + title)
+       |                   ^
+     37|   act(() => opt.click())
+     38| })
+ ❯ withSheet src/views/stats-pick.test-util.js:22:16
+ ❯ Module.pickFrom src/views/stats-pick.test-util.js:33:50
+ ❯ volume src/views/Stats.ex-volume.test.jsx:35:22
+ ❯ src/views/Stats.ex-volume.test.jsx:84:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > counts only exclusions inside the selected window and tolerates legacy missing entries
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ src/views/Stats.jsx:662:62
+    660|     return { mx: 0, unit: S.unit }
+    661|   }
+    662|   const exHist = [...new Set(workouts.flatMap(w => w.entries.map(e => …
+       |                                                              ^
+    663|   const exCurrent = Object.fromEntries(exHist.map(id => [id, currentOf…
+    664|   exHist.sort((a, b) => exCurrent[b].mx - exCurrent[a].mx || nameOf(a)…
+ ❯ Stats src/views/Stats.jsx:662:39
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > keeps same-day sessions separate in the table and restores the original top-set output
+Error: no option Volume in Chart
+ ❯ src/views/stats-pick.test-util.js:36:19
+     34|   if (!host) throw new Error('no picker named ' + title)
+     35|   const opt = [...host.querySelectorAll('.sect-b button')].find(b => b…
+     36|   if (!opt) throw new Error('no option ' + label + ' in ' + title)
+       |                   ^
+     37|   act(() => opt.click())
+     38| })
+ ❯ withSheet src/views/stats-pick.test-util.js:22:16
+ ❯ Module.pickFrom src/views/stats-pick.test-util.js:33:50
+ ❯ volume src/views/Stats.ex-volume.test.jsx:35:22
+ ❯ src/views/Stats.ex-volume.test.jsx:115:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  src/views/Stats.exercise-time.test.jsx > Stats — time per exercise > offers 1W and leaves out older ticked sessions
+TypeError: Cannot read properties of undefined (reading 'click')
+ ❯ src/views/Stats.exercise-time.test.jsx:48:85
+     46|     const workouts = [...S.workouts, session(10, s => [{ id: '0032', s…
+     47|     act(() => root.render(<ExerciseTimeCard S={{ ...S, workouts }} />))
+     48|     act(() => [...host.querySelectorAll('button')].find(b => b.textCon…
+       |                                                                                     ^
+     49|     expect(rows()).toHaveLength(2)
+     50|     expect(rows()[0]).toContain('8 min')
+ ❯ process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:890:22
+ ❯ src/views/Stats.exercise-time.test.jsx:48:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  8 failed | 11 passed (19)
+   Start at  09:21:12
+   Duration  4.87s (transform 4.39s, setup 65ms, import 5.74s, tests 1.07s, environment 1.06s)
+
