@@ -25,6 +25,7 @@ vi.mock('../store/useUI.js', () => {
 
 import { routineLookSheet } from './RoutineLook.jsx'
 import { ROUTINE_COLORS } from '../lib/routine-colors.js'
+import { GLYPHS } from '../lib/glyphs.js'
 
 let host, root, close
 const click = el => act(async () => { el.dispatchEvent(new MouseEvent('click', { bubbles: true })) })
@@ -60,14 +61,21 @@ describe('RoutineLook', () => {
   })
 
   it('writes the glyph on Done', async () => {
-    await click(byLabel('splitPush'))
+    await click(byLabel('Push day'))
     await click(byText('Done'))
     expect(m.S.routines[0].emoji).toBe('splitPush')
   })
 
+  it('names every glyph in plain words, never by its code key', () => {
+    const labels = [...host.querySelectorAll('.glyph-cell')].map(b => b.getAttribute('aria-label'))
+    expect(labels).toHaveLength(GLYPHS.length)
+    expect(labels.every(l => l && !GLYPHS.includes(l))).toBe(true)
+    expect(new Set(labels).size).toBe(GLYPHS.length)
+  })
+
   it('writes nothing on Cancel', async () => {
     await click(byLabel('Orange'))
-    await click(byLabel('splitPush'))
+    await click(byLabel('Push day'))
     await click(byText('Cancel'))
     expect(m.S.routines[0]).toMatchObject({ color: 'blue', emoji: 'figureStrength' })
     expect(close).toHaveBeenCalled()
