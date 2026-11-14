@@ -30,7 +30,7 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null }
+const OFF = { on: false, written: {}, pending: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null }
 
 // Bound by the store, after its profile has been restored. Tests and standalone consumers
 // without a binding retain the legacy local file. A bound account never adopts unscoped consent.
@@ -92,19 +92,52 @@ export async function loadHealth() {
   if (!ready()) return { ...OFF }
   const who = owner(), attempt = generation
   if (cached && cachedOwner === who) return cached
-  const f = await readJsonFile(fileFor(who))
+  const path = fileFor(who)
+  if (ledgerWrites.has(path)) { await ledgerWrites.get(path).catch(() => {}); return loadHealth() }
+  const f = await readJsonFile(path)
+  if (ledgerWrites.has(path)) { await ledgerWrites.get(path).catch(() => {}); return loadHealth() }
   if (who !== owner() || attempt !== generation) return loadHealth()
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried) } : { ...OFF }
+  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), pending: map(f.pending), seen: map(f.seen), hrTried: map(f.hrTried) } : { ...OFF }
+  if (who != null) {
+    const legacy = await readJsonFile(HEALTH_FILE)
+    if (who !== owner() || attempt !== generation) return loadHealth()
+    const ids = writtenIds({ ...mapOf(legacy?.written), ...mapOf(legacy?.pending) })
+    cached.legacyCount = ids.sessions.length + ids.weights.length
+  }
   cachedOwner = who
   return cached
 }
-const saveHealth = async (h, t = token()) => {
-  if (!current(t)) return
-  // Capture the destination before awaiting disk: an old write can only reach its old account.
-  cached = h; cachedOwner = t.owner
-  await writeJsonFile(fileFor(t.owner), h)
+// Serialize every update of an owner's file. Export completion must survive an account
+// switch, but must never replace the active account's cache or consent with the old owner's.
+const ledgerWrites = new Map()
+const mapOf = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {}
+async function updateOwnerLedger(t, update) {
+  const path = fileFor(t.owner)
+  const previous = ledgerWrites.get(path) || Promise.resolve()
+  const work = previous.catch(() => {}).then(async () => {
+    const disk = await readJsonFile(path)
+    const base = { ...OFF, ...mapOf(disk), written: mapOf(disk?.written), pending: mapOf(disk?.pending) }
+    const next = update(base)
+    await writeJsonFile(path, next, { strict: true })
+    if (current(t)) { cached = next; cachedOwner = t.owner }
+    return next
+  })
+  ledgerWrites.set(path, work)
+  try { return await work }
+  finally { if (ledgerWrites.get(path) === work) ledgerWrites.delete(path) }
 }
+const saveHealth = async (h, t = token()) => {
+  if (!current(t)) return h
+  // Export markers are authoritative on disk; a UI/read snapshot must not erase an in-flight
+  // operation's pending or completed identifiers.
+  return updateOwnerLedger(t, disk => ({ ...h, written: disk.written, pending: disk.pending }))
+}
+const knownExports = h => ({ ...h.written, ...h.pending })
+const withoutIds = (records, ids) => Object.fromEntries(Object.entries(records || {}).filter(([id]) => !ids.has(id)))
+const forgetExports = (t, ids) => updateOwnerLedger(t, h => ({
+  ...h, written: withoutIds(h.written, ids), pending: withoutIds(h.pending, ids),
+}))
 
 /** { status: 'available' | 'update' | 'missing' | 'unsupported', granted, platform } */
 export async function healthStatus() {
@@ -191,7 +224,7 @@ async function syncOnce(S, h, attempt) {
       return weather ? { ...rec, weather } : rec
     })
   }
-  const plan = planSync(records, h.written, goneIds(S))
+  const plan = planSync(records, knownExports(h), goneIds(S))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h
@@ -208,29 +241,44 @@ async function syncOnce(S, h, attempt) {
   try {
     if (plan.sessions.length || plan.weights.length) {
       if (!current(attempt)) return h
-      await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+      const entries = [
+        ...plan.sessions.map(r => [r.id, { k: 'session', h: null }]),
+        ...plan.weights.map(r => [r.id, { k: 'weight', h: null }]),
+      ]
+      // Persist intent before touching Health. A crash or a partially successful native batch
+      // leaves enough identifiers to retry or honour an explicit deletion later.
+      await updateOwnerLedger(attempt, disk => ({ ...disk, pending: { ...disk.pending, ...Object.fromEntries(entries) } }))
       if (!current(attempt)) return h
-      // Written but not yet removed: kept as written, so a failed remove is tried again.
-      const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
-      out.written = { ...kept, ...plan.written }
+      const result = await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+      const deferred = new Set(Array.isArray(result?.deferred) ? result.deferred : [])
+      const ids = new Set(entries.map(([id]) => id))
+      const completed = Object.fromEntries([...ids].map(id => [id, plan.written[id]]))
+      const saved = await updateOwnerLedger(attempt, disk => ({
+        ...disk, written: { ...disk.written, ...completed }, pending: {
+          ...withoutIds(disk.pending, ids), ...Object.fromEntries(entries.filter(([id]) => deferred.has(id))),
+        },
+      }))
+      if (!current(attempt)) return h
+      out = { ...out, written: saved.written, pending: saved.pending }
     }
-    let written = plan.written
     if (plan.remove.sessions.length || plan.remove.weights.length) {
       // Apple Health answers what it could not take out (`left`: one the watch saved that the
       // phone may not delete): kept as written, so the next sync tries again.
       if (!current(attempt)) return h
       const res = await p.HC.remove(plan.remove)
+      const left = new Set(Array.isArray(res?.left) ? res.left : [])
+      const removed = new Set([...plan.remove.sessions, ...plan.remove.weights].filter(id => !left.has(id)))
+      const saved = await forgetExports(attempt, removed)
       if (!current(attempt)) return h
-      const left = Array.isArray(res?.left) ? res.left : []
-      if (left.length) written = { ...written, ...Object.fromEntries(left.filter(id => h.written[id]).map(id => [id, h.written[id]])) }
+      out = { ...out, written: saved.written, pending: saved.pending }
     }
-    out = { ...out, written, at: Date.now(), error: null }
+    out = { ...out, at: Date.now(), error: null }
   } catch (e) {
     out.error = e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed'
   }
-  await saveHealth(out, attempt)
-  if (current(attempt)) told(out)
-  return out
+  const saved = await saveHealth(out, attempt)
+  if (current(attempt)) told(saved)
+  return saved
 }
 
 /**
@@ -274,23 +322,55 @@ export async function disableHealth({ removeWritten = false } = {}) {
   const h = await loadHealth()
   requireCurrent(attempt)
   if (removeWritten) {
-    const ids = writtenIds(h.written)
+    const ids = writtenIds(knownExports(h))
     if (ids.sessions.length || ids.weights.length) {
       const p = await plugin()
       requireCurrent(attempt)
       if (!p) throw new Error('unavailable')
-      await p.HC.remove(ids)
+      const result = await p.HC.remove(ids)
+      const left = new Set(Array.isArray(result?.left) ? result.left : [])
+      await forgetExports(attempt, new Set([...ids.sessions, ...ids.weights].filter(id => !left.has(id))))
       requireCurrent(attempt)
+      if (left.size) throw new Error('Some Health exports could not be removed')
     }
   }
   disableWorkoutWeather()
   const out = { ...h, on: false, error: null, written: removeWritten ? {} : h.written }
-  await saveHealth(out)
+  const saved = await saveHealth(out)
   requireCurrent(attempt)
   await mirrorOn(false)
   requireCurrent(attempt)
-  told(out)
-  return out
+  told(saved)
+  return saved
+}
+
+// Unscoped exports cannot be assigned to a particular account, and their consent is never
+// inherited. Only this explicit, disclosed cleanup action uses their retained identifiers.
+export async function removeLegacyHealthExports() {
+  const attempt = token()
+  requireCurrent(attempt)
+  const legacy = await readJsonFile(HEALTH_FILE)
+  requireCurrent(attempt)
+  const ids = writtenIds({ ...mapOf(legacy?.written), ...mapOf(legacy?.pending) })
+  if (!ids.sessions.length && !ids.weights.length) return loadHealth()
+  const p = await plugin()
+  requireCurrent(attempt)
+  if (!p) throw new Error('unavailable')
+  const st = await p.HC.status()
+  requireCurrent(attempt)
+  const granted = st.granted || (await p.HC.requestPermissions()).granted
+  requireCurrent(attempt)
+  if (!granted) throw new Error('permission')
+  const result = await p.HC.remove(ids)
+  const left = new Set(Array.isArray(result?.left) ? result.left : [])
+  const gone = new Set([...ids.sessions, ...ids.weights].filter(id => !left.has(id)))
+  const kept = await forgetExports({ ...attempt, owner: null }, gone)
+  requireCurrent(attempt)
+  const remaining = writtenIds(knownExports(kept))
+  const saved = await saveHealth({ ...(await loadHealth()), legacyCount: remaining.sessions.length + remaining.weights.length }, attempt)
+  if (current(attempt)) told(saved)
+  if (left.size) throw new Error('Some Health exports could not be removed')
+  return saved
 }
 
 // Back in the foreground: a change synced from another device while the phone was away, or a

@@ -2,7 +2,7 @@ import WorkoutWeatherSettings from '../components/WorkoutWeatherSettings.jsx'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, removeLegacyHealthExports } from '../lib/health-sync.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -1945,6 +1945,17 @@ function HealthAccountCard({ S, toast, android, page = false }) {
     } catch { toast(c.failed) }
     setBusy(false)
   }
+  const removeLegacy = () => confirmSheet({
+    title: t('Remove older Health exports'),
+    message: t('Remove older exports from this phone’s health store? They may belong to another account.'),
+    confirmText: t('Delete'), danger: true,
+    onConfirm: async () => {
+      setBusy(true)
+      try { setH(await removeLegacyHealthExports()) }
+      catch { toast(c.removeFailed) }
+      finally { setBusy(false) }
+    },
+  })
   const reading = h.readHr || h.readWeight
 
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
@@ -1965,6 +1976,9 @@ function HealthAccountCard({ S, toast, android, page = false }) {
         <Switch checked={!!h.on} disabled={busy} onChange={v => (v ? turnOn() : askOff())} />
       </Row>
       {ios && h.on && <WorkoutWeatherSettings />}
+      {h.legacyCount > 0 && <Row icon="trash" iconTint="var(--red)" title={t('Remove older Health exports')}
+        subtitle={t('Remove older exports from this phone’s health store? They may belong to another account.')}
+        accessory="chevron" onClick={busy ? undefined : removeLegacy} />}
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron" onClick={turnOn} />}
       <Row icon="heart" iconTint="var(--red)" title={t('Heart rate from your watch')}

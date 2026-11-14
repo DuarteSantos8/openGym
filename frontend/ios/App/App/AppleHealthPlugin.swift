@@ -124,17 +124,21 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         Task {
             do {
                 guard self.granted else { throw HKError(.errorAuthorizationDenied) }
-                let hasEnergy = sessions.contains { ($0["healthMetrics"] as? [String: Any])?["final"] as? Bool == true }
-                if hasEnergy {
-                    let energy: Set<HKSampleType> = [HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!, HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned)!]
-                    try await self.store.requestAuthorization(toShare: energy, read: [])
+                let requested = Set(sessions.flatMap { HealthExportCore.energy($0["healthMetrics"] as? [String: Any], allowed: Set(HealthExportCore.energyKeys)).map(\.key) })
+                let types: Set<HKSampleType> = Set(requested.compactMap { self.energyType($0) })
+                if !types.isEmpty {
+                    // Energy is optional. Refusing either type must not abort workouts or weights.
+                    try? await self.store.requestAuthorization(toShare: types, read: [])
                 }
-                for s in sessions { try await self.saveSession(s) }
+                var deferred: [String] = []
+                for s in sessions {
+                    if try await !self.saveSession(s), let id = s["id"] as? String { deferred.append(id) }
+                }
                 if self.store.authorizationStatus(for: self.bodyMass) == .sharingAuthorized {
                     let samples = weights.compactMap { self.weightSample($0) }
                     if !samples.isEmpty { try await self.store.save(samples) }
                 }
-                call.resolve()
+                call.resolve(["deferred": deferred])
             } catch {
                 self.fail(call, error)
             }
@@ -147,7 +151,16 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         Task {
             do {
                 var left: [String] = []
-                if !sessions.isEmpty { left += try await self.delete(HKObjectType.workoutType(), ids: sessions) }
+                if !sessions.isEmpty {
+                    left += try await self.delete(HKObjectType.workoutType(), ids: sessions)
+                    // HealthKit does not delete associated quantity samples with the workout.
+                    for key in HealthExportCore.energyKeys {
+                        guard let type = self.energyType(key) else { continue }
+                        let ids = HealthExportCore.energyIDs(sessions, keys: [key])
+                        let remaining = try await self.delete(type, ids: ids, ownOnly: true)
+                        if !remaining.isEmpty { throw HKError(.errorInvalidArgument) }
+                    }
+                }
                 if !weights.isEmpty { left += try await self.delete(self.bodyMass, ids: weights) }
                 call.resolve(["left": left])
             } catch {
@@ -220,43 +233,41 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         "yoga": .yoga, "flexibility": .flexibility, "other_workout": .other,
     ]
 
-    private func saveSession(_ s: [String: Any]) async throws {
+    private func saveSession(_ s: [String: Any]) async throws -> Bool {
         guard let id = s["id"] as? String,
-              let startMs = (s["start"] as? NSNumber)?.doubleValue, let endMs = (s["end"] as? NSNumber)?.doubleValue, endMs > startMs else { return }
-        if try await watchSaved(id) { return }
+              let startMs = (s["start"] as? NSNumber)?.doubleValue, let endMs = (s["end"] as? NSNumber)?.doubleValue, endMs > startMs else { return true }
+        if try await watchSaved(id) { return true }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
         // heart rate: left as it is, like the watch's copy.
-        if await PhoneWorkoutLedger.handled(id) { return }
+        if await PhoneWorkoutLedger.handled(id) { return true }
         let start = Date(timeIntervalSince1970: startMs / 1000), end = Date(timeIntervalSince1970: endMs / 1000)
-        let measured = s["healthMetrics"] as? [String: Any]
-        var energy: [HKQuantitySample] = []
-        for (key, identifier) in [("activeKcal", HKQuantityTypeIdentifier.activeEnergyBurned), ("basalKcal", .basalEnergyBurned)] {
-            guard measured?["final"] as? Bool == true,
-                  let stamp = (measured?["sampledAt"] as? NSNumber)?.doubleValue, stamp.isFinite, stamp > 0, stamp <= 9007199254740991,
-                  let kcal = (measured?[key] as? NSNumber)?.doubleValue, kcal.isFinite, kcal >= 0,
-                  let type = HKQuantityType.quantityType(forIdentifier: identifier) else { continue }
-            guard store.authorizationStatus(for: type) == .sharingAuthorized else { throw HKError(.errorAuthorizationDenied) }
-            energy.append(HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: kcal),
-                start: start, end: end, metadata: [HKMetadataKeySyncIdentifier: id + "-" + key, HKMetadataKeySyncVersion: Int64(stamp)]))
+        let own = try await ownSession(id)
+        let previous = (own?.metadata?[HKMetadataKeySyncVersion] as? NSNumber)?.doubleValue ?? 0
+        let version = HealthExportCore.version(now: Date().timeIntervalSince1970 * 1000, previous: previous)
+        let allowed = Set(HealthExportCore.energyKeys.filter { key in
+            guard let type = energyType(key) else { return false }
+            return store.authorizationStatus(for: type) == .sharingAuthorized
+        })
+        let energy = HealthExportCore.energy(s["healthMetrics"] as? [String: Any], allowed: allowed).compactMap { value -> HKQuantitySample? in
+            guard let type = energyType(value.key) else { return nil }
+            return HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: value.kcal),
+                start: start, end: end, metadata: [HKMetadataKeySyncIdentifier: id + "-" + value.key, HKMetadataKeySyncVersion: version])
         }
-        // A retry/enrichment adds versioned samples only to this app's exact exported session.
-        // Watch/phone live workouts were handled above; never recreate those to attach metadata.
-        if !energy.isEmpty, let own = try await ownSession(id, start: start, end: end) {
-            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-                store.add(energy, to: own) { ok, error in
-                    if let error { cont.resume(throwing: error) }
-                    else if ok { cont.resume() }
-                    else { cont.resume(throwing: HKError(.errorInvalidArgument)) }
-                }
-            }
-            return
-        }
+        // Rebuild with a newer sync version: HealthKit atomically replaces this app's workout.
+        // This updates title/activity and recomputes the workout's energy summary from its samples;
+        // merely associating samples with an old workout would leave that summary unchanged.
         let config = HKWorkoutConfiguration()
         config.activityType = AppleHealthPlugin.activityTypes[(s["type"] as? String) ?? ""] ?? .other
         config.locationType = .indoor
         let builder = HKWorkoutBuilder(healthStore: store, configuration: config, device: .local())
         try await builder.beginCollection(at: start)
         var meta = syncMetadata(id)
+        meta[HKMetadataKeySyncVersion] = version
+        if let own, abs(own.startDate.timeIntervalSince(start)) < 0.001, abs(own.endDate.timeIntervalSince(end)) < 0.001 {
+            // An ordinary edit after the local weather cache expired preserves its annotation.
+            meta[HKMetadataKeyWeatherTemperature] = own.metadata?[HKMetadataKeyWeatherTemperature]
+            meta[HKMetadataKeyWeatherHumidity] = own.metadata?[HKMetadataKeyWeatherHumidity]
+        }
         if let title = s["title"] as? String, !title.isEmpty { meta["OpenGymTitle"] = title }
         if let weather = s["weather"] as? [String: Any],
            let celsius = (weather["celsius"] as? NSNumber)?.doubleValue, celsius.isFinite, (-90...60).contains(celsius),
@@ -269,9 +280,15 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         if !energy.isEmpty { try await builder.addSamples(energy) }
         try await builder.endCollection(at: end)
         _ = try await builder.finishWorkout()
+        let requested = HealthExportCore.energy(s["healthMetrics"] as? [String: Any], allowed: Set(HealthExportCore.energyKeys))
+        return requested.allSatisfy { allowed.contains($0.key) }
     }
 
-    private func ownSession(_ id: String, start: Date, end: Date) async throws -> HKWorkout? {
+    private func energyType(_ key: String) -> HKQuantityType? {
+        HKQuantityType.quantityType(forIdentifier: key == "activeKcal" ? .activeEnergyBurned : .basalEnergyBurned)
+    }
+
+    private func ownSession(_ id: String) async throws -> HKWorkout? {
         let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             HKQuery.predicateForObjects(from: .default()),
             HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: [id]),
@@ -279,8 +296,8 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         return try await withCheckedThrowingContinuation { cont in
             let q = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, found, error in
                 if let error { cont.resume(throwing: error); return }
-                cont.resume(returning: (found ?? []).compactMap { $0 as? HKWorkout }.first {
-                    abs($0.startDate.timeIntervalSince(start)) < 0.001 && abs($0.endDate.timeIntervalSince(end)) < 0.001
+                cont.resume(returning: (found ?? []).compactMap { $0 as? HKWorkout }.max {
+                    (($0.metadata?[HKMetadataKeySyncVersion] as? NSNumber)?.doubleValue ?? 0) < (($1.metadata?[HKMetadataKeySyncVersion] as? NSNumber)?.doubleValue ?? 0)
                 })
             }
             store.execute(q)
@@ -312,8 +329,9 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     /// Deletes every sample with one of these sync identifiers, the Apple Watch app's copy of a
     /// workout included, and answers the ids Apple Health still holds afterwards (one it would not
     /// let this app delete), so the next sync tries them again instead of forgetting them.
-    private func delete(_ type: HKObjectType, ids: [String]) async throws -> [String] {
-        let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: ids)
+    private func delete(_ type: HKObjectType, ids: [String], ownOnly: Bool = false) async throws -> [String] {
+        let byID = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: ids)
+        let predicate = ownOnly ? NSCompoundPredicate(andPredicateWithSubpredicates: [byID, HKQuery.predicateForObjects(from: .default())]) : byID
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             store.deleteObjects(of: type, predicate: predicate) { _, _, error in
                 if let error = error { cont.resume(throwing: error) } else { cont.resume() }
@@ -342,11 +360,18 @@ private final class WorkoutWeatherCapture: NSObject, CLLocationManagerDelegate {
     private var timeout: DispatchWorkItem?
     private var started = Date.distantPast
     private var generation = UUID()
+    private var inactiveObserver: NSObjectProtocol?
 
     override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyKilometer
+        inactiveObserver = NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.cancel()
+        }
+    }
+    deinit {
+        if let inactiveObserver { NotificationCenter.default.removeObserver(inactiveObserver) }
     }
     func authorize(_ callback: @escaping (String?) -> Void) {
         switch manager.authorizationStatus {
@@ -393,6 +418,7 @@ private final class WorkoutWeatherCapture: NSObject, CLLocationManagerDelegate {
         if completion != nil { finish(nil, "Workout weather is unavailable") }
     }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard UIApplication.shared.applicationState == .active else { cancel(); return }
         guard completion != nil, task == nil,
               let point = locations.last(where: {
                   CLLocationCoordinate2DIsValid($0.coordinate) && $0.horizontalAccuracy >= 0 && $0.horizontalAccuracy <= 1500 &&
@@ -419,6 +445,7 @@ private final class WorkoutWeatherCapture: NSObject, CLLocationManagerDelegate {
         task = session.dataTask(with: url.url!) { [weak self] data, response, _ in
             DispatchQueue.main.async {
                 guard let self, self.generation == token, self.completion != nil else { return }
+                guard UIApplication.shared.applicationState == .active else { self.cancel(); return }
                 guard let http = response as? HTTPURLResponse, http.statusCode == 200,
                       let data, data.count <= 32768,
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

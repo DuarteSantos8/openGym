@@ -131,3 +131,20 @@ describe('Settings: daily value', () => {
     expect(readingsOf(dayOf(D)).map(r => r.t)).toEqual([10, 30])
   })
 })
+
+
+describe('prefilled measurement provenance', () => {
+  it('keeps the original source and age when a delayed same-weight import arrives', () => {
+    const bodyweight = [{ d: '2020-11-14', w: 80, t: 1 }]
+    useStore.setState({ S: { ...S(), bodyweight } })
+    bwSheet({ required: true }); const host = mountTopSheet()
+    const before = host.querySelector('[role="status"]').textContent
+    expect(before).toContain('Manual'); expect(before).toContain('2020')
+    act(() => useStore.setState({ S: { ...S(), bodyweight: [{ d: todayISO(), w: 80, t: Date.now(), src: 'ah' }] } }))
+    expect(host.querySelector('[role="status"]').textContent).toBe(before)
+    act(() => useStore.setState({ S: { ...S(), bodyweight: [{ d: todayISO(), w: 82, t: Date.now(), src: 'ah' }] } }))
+    expect(host.querySelector('[role="status"]').textContent).toBe(before)
+    setValue(host.querySelector('.bw-read input'), '81')
+    expect(host.querySelector('[role="status"]')).toBeNull()
+  })
+})

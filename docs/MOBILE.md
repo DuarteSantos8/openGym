@@ -280,7 +280,11 @@ Pairing, sign-out, profile adoption and account/guest changes pause the sync and
 already in flight, including leaving and returning to the same account. The old unscoped health
 file is retained but its consent is not adopted: after upgrading, each account must enable its
 switches again. Returning to a previously opted-in account restores that account's own switches.
-No profile, JSON backup or server payload contains these switches or cursors.
+Export intentions are journaled before the native write, and successful completions are recorded
+against the initiating owner even if the active account changes. Pending identifiers survive
+partial failures and restarts so explicit cleanup can find them. Older unscoped identifiers have
+an explicit removal action that warns they may belong to another account; it never enables sync
+or imports their consent. No profile, JSON backup or server payload contains these switches or cursors.
 
 **Workout weather** is a separate iPhone opt-in, visible while writing to Apple Health is on.
 Before asking for location, the row discloses the request to Open-Meteo and links its attribution
@@ -297,8 +301,12 @@ add weather. No background location or route capture is added.
 **Measured energy** is optional `healthMetrics` on a session: `activeKcal`, optional `basalKcal`,
 `sampledAt` (version) and `final`. Finishing preserves valid measurements without inventing values.
 On iPhone, provisional measurements wait for finalization; finalized ones request their additional
-HealthKit write permissions and use stable versioned sample identifiers. Enrichment targets only
-this app's exact exported workout (identifier and start/end), without deleting/recreating it.
+HealthKit write permissions and use stable versioned sample identifiers. Denied optional energy
+permissions do not block ordinary workouts or weights; deferred energy can be retried. Corrections
+replace only this plugin's exported workout under its stable sync identifier and a newer version,
+using a workout builder so the energy summary and associated samples agree. Title/type changes
+still apply; existing weather survives replacement when the interval is unchanged. Removing an
+export also removes its separately stored energy samples, retaining cleanup markers on failure.
 Watch/AirPods live workouts continue through their existing path. This adds no collector or calorie
 estimate; Android's exported payload is unchanged. Validate the optional weather and energy paths
 on a physical iPhone before release; compilation and mock-based tests do not prove Health rendering.

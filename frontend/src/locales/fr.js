@@ -3658,4 +3658,6 @@ export default {
   "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Enregistre la température et l’humidité extérieures dans Apple Santé. Votre position approximative est envoyée une fois par séance à Open-Meteo ; elle n’est ni conservée ni envoyée à votre serveur openGym.",
   "Weather data by Open-Meteo (CC BY 4.0)": "Données météo par Open-Meteo (CC BY 4.0)",
   "Manual": "Manuel",
+  "Remove older Health exports": "Supprimer les anciens exports de santé",
+  "Remove older exports from this phone’s health store? They may belong to another account.": "Supprimer les anciens exports du stockage de santé de ce téléphone ? Ils peuvent appartenir à un autre compte.",
 }

@@ -3703,4 +3703,6 @@ export default {
   "Workout weather": "Väder under passet",
   "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Spara utomhustemperatur och luftfuktighet i Apple Hälsa. Din ungefärliga plats skickas en gång per pass till Open-Meteo; den sparas inte och skickas inte till din openGym-server.",
   "Weather data by Open-Meteo (CC BY 4.0)": "Väderdata från Open-Meteo (CC BY 4.0)",
+  "Remove older Health exports": "Ta bort äldre hälsoexporter",
+  "Remove older exports from this phone’s health store? They may belong to another account.": "Ta bort äldre exporter från den här telefonens hälsolagring? De kan tillhöra ett annat konto.",
 }

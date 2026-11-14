@@ -15,7 +15,7 @@ vi.mock('@capacitor/filesystem', () => ({
       if (!h.files.has(path)) throw new Error('File does not exist')
       return { data: h.files.get(path) }
     },
-    writeFile: async ({ path, data }) => { h.files.set(path, data) },
+    writeFile: async ({ path, data }) => { if (h.diskFail) throw new Error('disk full'); h.files.set(path, data) },
   },
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
@@ -28,6 +28,7 @@ vi.mock('@capacitor/core', () => ({
       h.calls.push(['write', arg])
       if (h.writeWait) await h.writeWait
       if (h.fail) throw Object.assign(new Error('refused'), { code: h.fail })
+      return { deferred: h.deferred || [] }
     },
     remove: async arg => {
       h.calls.push(['remove', arg])
@@ -50,7 +51,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.permissionWait = null; h.writeWait = null; h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
+  h.diskFail = false; h.deferred = []; h.permissionWait = null; h.writeWait = null; h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
   hs = await import('./health-sync.js')
 })
 
@@ -353,4 +354,71 @@ it('runs the new account’s queued export after an old account write finishes',
   finish(); await Promise.all([old, next])
   expect(writes().map(v => v.sessions.map(w => w.id))).toEqual([['opengym-w-alice-workout'], ['opengym-w-bob-workout']])
   expect(Object.keys((await hs.loadHealth()).written)).toEqual(['opengym-w-bob-workout'])
+})
+
+
+describe('export cleanup survives interruptions', () => {
+  it('journals before the native write and completes the originating ledger after switching accounts', async () => {
+    const ctx = { user: { id: 'alice' }, sync: { server: 'https://gym.example' }, ready: true }
+    hs.bindHealthOwner(() => ctx)
+    await hs.enableHealth(state([]))
+    const alicePath = [...h.files.keys()][0]
+    let finish; h.writeWait = new Promise(resolve => { finish = resolve })
+    const writing = hs.syncHealth(state([workout('a', 17)]))
+    await vi.waitFor(() => expect(writes()).toHaveLength(1))
+    expect(JSON.parse(h.files.get(alicePath)).pending).toHaveProperty('opengym-w-a')
+    ctx.user = { id: 'bob' }; hs.invalidateHealthSync(); await hs.loadHealth()
+    finish(); await writing
+    expect(JSON.parse(h.files.get(alicePath)).written).toHaveProperty('opengym-w-a')
+    expect(JSON.parse(h.files.get(alicePath)).pending).toEqual({})
+    expect((await hs.loadHealth()).written).toEqual({})
+    ctx.user = { id: 'alice' }; hs.invalidateHealthSync(); await hs.loadHealth()
+    await hs.syncHealth({ ...state([]), deleted: { workouts: { a: at(18, 20) } } })
+    expect(removes().at(-1).sessions).toEqual(['opengym-w-a'])
+    expect((await hs.loadHealth()).written).toEqual({})
+  })
+  it('a partially failed native batch remains discoverable after restart for explicit cleanup', async () => {
+    await hs.enableHealth(state([])); h.fail = 'failed'
+    await hs.syncHealth(state([workout('partial', 17)]))
+    expect(file().pending).toHaveProperty('opengym-w-partial')
+    vi.resetModules(); hs = await import('./health-sync.js'); await hs.loadHealth(); h.fail = null
+    await hs.disableHealth({ removeWritten: true })
+    expect(removes().at(-1).sessions).toEqual(['opengym-w-partial'])
+    expect(file().pending).toEqual({}); expect(file().written).toEqual({})
+  })
+  it('does not export when the pending identifiers cannot be saved durably', async () => {
+    await hs.enableHealth(state([])); h.diskFail = true
+    await expect(hs.syncHealth(state([workout('not-safe', 17)]))).rejects.toThrow('disk full')
+    expect(writes()).toEqual([])
+  })
+  it('keeps unresolved removals discoverable instead of claiming they were all removed', async () => {
+    await hs.enableHealth(state([workout('kept', 17)])); h.left = ['opengym-w-kept']
+    await expect(hs.disableHealth({ removeWritten: true })).rejects.toThrow('could not be removed')
+    expect(file().written).toHaveProperty('opengym-w-kept')
+    expect(file().on).toBe(true)
+  })
+  it('retries denied optional energy while keeping workouts and weights exported', async () => {
+    h.platform = 'ios'; h.deferred = ['opengym-w-measured']
+    const w = { ...workout('measured', 17), healthMetrics: { activeKcal: 12, sampledAt: at(17, 19), final: true } }
+    const S = state([w, workout('ordinary', 18)], [{ d: '2026-09-17', w: 80, t: at(17, 7) }])
+    await hs.enableHealth(S)
+    expect(Object.keys(file().written)).toHaveLength(3)
+    expect(Object.keys(file().pending)).toEqual(['opengym-w-measured'])
+    h.deferred = []; await hs.syncHealth(S)
+    expect(writes().at(-1).sessions.map(s => s.id)).toEqual(['opengym-w-measured'])
+    expect(writes().at(-1).weights).toEqual([])
+    expect(file().pending).toEqual({})
+  })
+})
+
+it('retains legacy cleanup authority without assigning old consent or exports to a new account', async () => {
+  h.files.set('opengym-health.json', JSON.stringify({ on: true, written: { 'opengym-w-old': { k: 'session', h: 'old' } } }))
+  const ctx = { user: { id: 'new' }, sync: { server: 'https://gym.example' }, ready: true }
+  hs.bindHealthOwner(() => ctx)
+  expect(await hs.loadHealth()).toMatchObject({ on: false, written: {}, legacyCount: 1 })
+  expect(removes()).toEqual([])
+  expect(await hs.removeLegacyHealthExports()).toMatchObject({ on: false, written: {}, legacyCount: 0 })
+  expect(removes()).toEqual([{ sessions: ['opengym-w-old'], weights: [] }])
+  expect(JSON.parse(h.files.get('opengym-health.json')).written).toEqual({})
+  expect((await hs.loadHealth()).on).toBe(false)
 })

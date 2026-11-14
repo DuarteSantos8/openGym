@@ -21,6 +21,7 @@ it('discloses the external provider before asking for location', async () => {
   await render()
   expect(host.textContent).toContain('approximate location')
   expect(host.querySelector('a').href).toBe('https://open-meteo.com/')
+  expect(host.querySelector('[role=switch]').getAttribute('aria-label')).toBe('Workout weather')
   expect(native.authorizeWeather).not.toHaveBeenCalled()
   await act(async () => host.querySelector('[role=switch]').click())
   expect(native.authorizeWeather).toHaveBeenCalledOnce()

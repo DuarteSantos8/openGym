@@ -3,6 +3,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Settings from './Settings.jsx'
+import { confirmSheet } from '../sheets.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => {
   })
   state.enableHealth = vi.fn(async () => { state.health = { ...state.health, on: true }; return { ok: true, health: state.health } })
   state.disableHealth = vi.fn(async ({ removeWritten }) => { state.health = { ...state.health, on: false, written: removeWritten ? {} : state.health.written }; return state.health })
+  state.removeLegacy = vi.fn(async () => { state.health = { ...state.health, legacyCount: 0 }; return state.health })
   state.openHealthConnect = vi.fn(async () => {})
   state.readGrant = true
   state.enableRead = vi.fn(async kind => {
@@ -60,6 +62,7 @@ vi.mock('../lib/health-sync.js', () => ({
   onHealthChange: () => () => {},
   enableRead: (...a) => mocks.enableRead(...a),
   disableRead: (...a) => mocks.disableRead(...a),
+  removeLegacyHealthExports: (...a) => mocks.removeLegacy(...a),
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
@@ -221,4 +224,18 @@ describe('Settings — reading back', () => {
     expect(mocks.disableRead).toHaveBeenCalledWith('weight')
     expect(mocks.menuSheet).not.toHaveBeenCalled()
   })
+})
+
+it('older unscoped exports require a disclosed confirmation and do not enable sync', async () => {
+  mocks.health = { ...mocks.health, legacyCount: 1 }
+  await mount()
+  expect(mocks.removeLegacy).not.toHaveBeenCalled()
+  await act(async () => row('Remove older Health exports').click())
+  const question = confirmSheet.mock.calls.at(-1)[0]
+  expect(question.message).toContain('another account')
+  expect(mocks.removeLegacy).not.toHaveBeenCalled()
+  await act(async () => question.onConfirm())
+  expect(mocks.removeLegacy).toHaveBeenCalledOnce()
+  expect(mocks.enableHealth).not.toHaveBeenCalled()
+  expect(row('Remove older Health exports')).toBeUndefined()
 })

@@ -32,7 +32,10 @@ createRoot(document.getElementById('root')).render(
 // The photos and videos of custom exercises, in every build (the phone and the demo included):
 // uploads of what the server lacks, the local clean-up, and the plan's files kept offline.
 startMediaSync(useStore)
-if (MOBILE) startWorkoutWeather(useStore, healthWritingEnabled, onHealthChange, startHealthScope)
+if (MOBILE) {
+  startHealthScope(useStore)
+  startWorkoutWeather(useStore, healthWritingEnabled, onHealthChange)
+}
 
 // Android 15 does not resize the page for the soft keyboard; the app says how much it covers and
 // this keeps the focused field above it. Idle everywhere else.

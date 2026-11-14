@@ -434,7 +434,12 @@ export const useStore = create((set, get) => {
   // The adoption owed by the account signed in now, if there is one.
   const adoptOwed = () => { const m = readAdopt(); const u = get()?.user; return m && u && m.uid === u.id ? m : null }
   // Sync held or not, and the screens told (`sync.held`, status 'held').
-  const setHold = on => { if (adoptHold !== on) invalidateHealthSync(); adoptHold = on; if (get()?.sync) setSync({ held: on }) }
+  const setHold = on => {
+    const changed = adoptHold !== on
+    adoptHold = on
+    if (changed) invalidateHealthSync()
+    if (get()?.sync) setSync({ held: on })
+  }
   // The question is answered: sync as usual from here.
   const releaseAdopt = () => { setHold(false); writeAdopt(null) }
   const readStoredSync = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || null } catch { return null } }

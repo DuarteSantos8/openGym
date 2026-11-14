@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => {
   vi.stubEnv('VITE_MOBILE', '1')
-  return { files: new Map(), server: null, calls: [], ask: null }
+  return { files: new Map(), server: null, calls: [], ask: null, healthWrites: [] }
 })
 
 vi.mock('@capacitor/filesystem', () => ({
@@ -30,11 +30,21 @@ vi.mock('@capacitor/filesystem', () => ({
     writeFile: async ({ path, directory, data }) => { h.files.set(directory + '/' + path, data); return { uri: 'file://' + path } },
   },
 }))
+// Keep the small consent ledger on the same in-memory disk across module reloads.
+// Other mobile helpers still exercise the native-filesystem mock above.
+vi.mock('../lib/mobile.js', async original => ({
+  ...await original(),
+  readJsonFile: async path => JSON.parse(h.files.get('DATA/' + path) || 'null'),
+  writeJsonFile: async (path, value) => { h.files.set('DATA/' + path, JSON.stringify(value)) },
+}))
 vi.mock('@capacitor/local-notifications', () => ({
   LocalNotifications: { cancel: async () => {}, checkPermissions: async () => ({ display: 'granted' }), requestPermissions: async () => ({ display: 'granted' }), schedule: async () => {} },
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
-vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'android', isNativePlatform: () => true }, registerPlugin: () => ({}) }))
+vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'android', isNativePlatform: () => true }, registerPlugin: name => name === 'HealthConnect' ? {
+  status: async () => ({ status: 'available', granted: true }),
+  write: async payload => { h.healthWrites.push(payload) }, remove: async () => ({}),
+} : ({}) }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {} }) } }))
 // The question a resumed adoption asks (useStore resumeAdoption): the sign-in's own sheet.
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: extras => h.ask(extras) }))
@@ -120,7 +130,7 @@ async function everySyncTrigger(useStore) {
   await sleep(1700)
 }
 
-beforeEach(() => { vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }); installFetch(); h.ask = null })
+beforeEach(() => { vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }); installFetch(); h.ask = null; h.healthWrites = [] })
 afterEach(async () => {
   window.dispatchEvent(new Event('pagehide'))
   await sleep(20)
@@ -222,4 +232,28 @@ describe('pairing a phone: nothing syncs while the question is open', () => {
     expect(ids(srv.doc.workouts)).toHaveLength(12)
     expect(ids(useStore.getState().S.workouts)).toEqual(ids(TWELVE))
   })
+})
+
+it('a resumed adoption reloads the account’s existing Health consent after releasing its hold', async () => {
+  localPhone(); serverWith(SERVER)
+  let useStore = await freshStore(); await useStore.getState().boot()
+  const first = vi.fn(() => new Promise(() => {}))
+  useStore.getState().connectToServer('gym.example.com', 'ABCD2345', first)
+  while (!first.mock.calls.length) await sleep(5)
+  await sleep(900)
+  for (const old of stores) old.setState({ user: null, ready: false })
+  const { recordKey } = await import('../lib/health-connect.js')
+  const owner = JSON.stringify([BASE, USER.id, false])
+  h.files.set('DATA/opengym-health-' + recordKey({ owner }) + '.json', JSON.stringify({ on: true, written: {} }))
+  const answer = deferred(); h.ask = vi.fn(() => answer.p)
+  useStore = await freshStore(); await useStore.getState().boot()
+  while (!h.ask.mock.calls.length) await sleep(5)
+  const health = await import('../lib/health-sync.js')
+  expect(health.healthWritingEnabled()).toBe(false)
+  answer.resolve(false)
+  while (localStorage.getItem('gym_adopt')) await sleep(5)
+  await sleep(20)
+  expect(health.healthWritingEnabled()).toBe(true)
+  await health.syncHealth({ ...useStore.getState().S, workouts: [{ id: 'resumed-health', start: 1000, end: 2000, entries: [] }] })
+  expect(h.healthWrites.flatMap(p => p.sessions).map(s => s.id)).toContain('opengym-w-resumed-health')
 })

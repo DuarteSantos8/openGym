@@ -2,13 +2,14 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 
 const native = vi.hoisted(() => ({ authorizeWeather: vi.fn(), captureWeather: vi.fn(), cancelWeather: vi.fn(),
-  status: vi.fn(), requestPermissions: vi.fn(), readWeights: vi.fn(), write: vi.fn(), setEnabled: vi.fn() }))
+  appListeners: [], status: vi.fn(), requestPermissions: vi.fn(), readWeights: vi.fn(), write: vi.fn(), setEnabled: vi.fn() }))
 const files = new Map()
 vi.mock('./mobile.js', () => ({ MOBILE: true, nativePlatform: async () => 'ios',
   readJsonFile: async path => files.get(path) || null,
   writeJsonFile: async (path, value) => { files.set(path, structuredClone(value)) },
 }))
 vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'ios' }, registerPlugin: () => native }))
+vi.mock('@capacitor/app', () => ({ App: { addListener: (event, fn) => { native.appListeners.push(fn); return { remove() {} } } } }))
 let weather, health, store, now
 const sample = () => ({ celsius: 22, humidity: 61, observedAt: now })
 const finish = () => {
@@ -19,6 +20,7 @@ const finish = () => {
 }
 beforeEach(async () => {
   vi.resetModules(); vi.clearAllMocks(); localStorage.clear(); files.clear()
+  native.appListeners = []
   now = Date.now()
   const state = { user: { id: 'a' }, sync: { server: 'https://one.example' },
     S: { active: { id: 'current', start: now - 10000 }, workouts: [], bodyweight: [], unit: 'kg' } }
@@ -133,4 +135,19 @@ it('does not rewrite an exported workout when weather is switched off and its ca
   expect(native.write).toHaveBeenCalledOnce()
   weather.disableWorkoutWeather(); await health.syncAppleHealth(store)
   expect(native.write).toHaveBeenCalledOnce()
+})
+
+it('cancels foreground capture and ignores a late native result after the app becomes inactive', async () => {
+  let complete
+  native.captureWeather.mockImplementationOnce(() => new Promise(resolve => { complete = resolve }))
+  store.subscribe = () => () => {}
+  weather.startWorkoutWeather(store, () => true, () => () => {})
+  await weather.enableWorkoutWeather(store)
+  await vi.waitFor(() => expect(complete).toBeTypeOf('function'))
+  await vi.waitFor(() => expect(native.appListeners.length).toBeGreaterThan(0))
+  for (const fn of native.appListeners) fn({ isActive: false })
+  const workout = finish(); complete(sample())
+  await weather.waitForWorkoutWeather(store)
+  await vi.waitFor(() => expect(native.cancelWeather).toHaveBeenCalled())
+  expect(weather.weatherForWorkout(store, workout)).toBeNull()
 })

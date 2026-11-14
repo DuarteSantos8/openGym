@@ -98,11 +98,11 @@ export async function readJsonFile(name) {
     return JSON.parse(r.data)
   } catch (e) { return null }
 }
-export async function writeJsonFile(name, data) {
+export async function writeJsonFile(name, data, { strict = false } = {}) {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
     await Filesystem.writeFile({ path: name, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
-  } catch (e) { /* not a Capacitor build, or the write failed — the caller's in-memory copy stands */ }
+  } catch (e) { if (strict) throw e /* best-effort callers keep their in-memory copy */ }
 }
 
 // Where the pairing lives. It holds the session token, so on iOS it stays out of iCloud and

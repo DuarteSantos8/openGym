@@ -362,13 +362,14 @@ function BwSheet({ required, onDone, close, initial, edit }) {
   const bw = lastBW(st)
   const editing = useMemo(() => (edit ? readingsOf(st.bodyweight.find(b => b.d === edit.d)).find(r => r.id === String(edit.id)) || null : null), []) // eslint-disable-line react-hooks/exhaustive-deps
   const [v, setV] = useState(editing ? editing.w : Number(initial) > 0 ? Math.round(Number(initial) * 10) / 10 : bw ? bw.w : 70)
-  const originReading = editing || (bw && prefilledReading(bw, st.bwDaily))
-  const originDay = editing ? edit.d : bw?.d
+  const [{ reading: originReading, day: originDay }] = useState(() => ({
+    reading: editing || (bw && prefilledReading(bw, st.bwDaily)), day: editing ? edit.d : bw?.d,
+  }))
   const source = originReading?.src
   const originLabel = source === 'ah' ? t('Apple Health') : source === 'hc' ? t('Health Connect') : source ? t('Imported') : t('Manual')
   const originAt = measuredAt(originDay, originReading)
   const origin = originReading && v === originReading.w && (editing || !(Number(initial) > 0))
-    ? [originLabel, originAt ? fmtAgo(originAt) : fmtDate(originDay, true)].join(' · ') : null
+    ? [originLabel, originAt ? fmtAgo(originAt) : fmtDate(originDay, true, true)].join(' · ') : null
   const [date, setDate] = useState(editing ? edit.d : todayISO())
   // Now for today; another day starts on the time of its first weigh-in, or 08:00. Once picked
   // by hand, the time stays when the date changes.

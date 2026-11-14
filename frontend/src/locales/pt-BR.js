@@ -2446,6 +2446,8 @@ export const PT_BR_OVERRIDES = {
   "Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.": "Salva a temperatura e umidade externas no Apple Saúde. Sua localização aproximada é enviada uma vez por treino ao Open-Meteo; ela não é armazenada nem enviada ao seu servidor openGym.",
   "Weather data by Open-Meteo (CC BY 4.0)": "Dados meteorológicos do Open-Meteo (CC BY 4.0)",
   "Manual": "Manual",
+  "Remove older Health exports": "Remover exportações antigas de saúde",
+  "Remove older exports from this phone’s health store? They may belong to another account.": "Remover as exportações antigas do armazenamento de saúde deste celular? Elas podem pertencer a outra conta.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

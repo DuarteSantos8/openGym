@@ -14,7 +14,7 @@ function WeatherRow() {
   const [error, setError] = useState('')
   return <>
     <Row icon="cloud" title={t('Workout weather')} subtitle={t('Save outdoor temperature and humidity to Apple Health. Your approximate location is sent once per workout to Open-Meteo; it is not stored or sent to your openGym server.')}>
-      <Switch checked={enabled} disabled={busy} onChange={async value => {
+      <Switch aria-label={t('Workout weather')} checked={enabled} disabled={busy} onChange={async value => {
         setBusy(true); setError('')
         try {
           if (value) await enableWorkoutWeather(useStore)

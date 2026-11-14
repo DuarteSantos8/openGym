@@ -104,6 +104,7 @@ export function startWorkoutWeather(store, enabled, onHealthChange) {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) capture(true) })
   import('@capacitor/app').then(({ App }) => App.addListener('appStateChange', ({ isActive }) => {
     if (isActive) capture(true)
+    else invalidateWorkoutWeather()
   })).catch(() => {})
   capture()
 }
