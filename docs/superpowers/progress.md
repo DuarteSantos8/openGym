@@ -8,7 +8,9 @@ Wave 2 now has sole Codex owners: EP-03 `thr_pbxv6g7svw`, EP-04 `cr_child_6adc11
 EP-05a `thr_96ja8kwfhg`. Their prior attempts produced no implementation. Recovered baseline
 logs ended before shutdown with the counts below; no fresh full-suite pass is claimed yet.
 Final reviewed EP-03/04/05a deliveries are integrated into the working candidate below.
-EP-05b correction review and integration are complete; combined automated/browser gates passed; final whole-branch review is pending. Read-only reviewers
+EP-05b correction review and integration are complete; initial combined automated/browser gates
+passed. Final whole-branch review found the HTTP-LAN UUID defect; its bounded correction is
+in progress (see final correction wave below). Read-only reviewers
 run on frozen task worktrees.
 The first Codex EP-04 child (`thr_f6kmim4v34`) was stopped by the parent after its project-copy
 gate timed out with an empty destination and no edits. Its replacement uses the ready local
