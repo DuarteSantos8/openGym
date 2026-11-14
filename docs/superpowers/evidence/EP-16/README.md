@@ -1,11 +1,12 @@
 # MVP combined acceptance record
 
-Status: **final review requires UUID correction; earlier combined checks passed, not release approval**. Parent working branch:
+Status: **final review findings closed; corrected frontend gate running, not release approval**. Parent working branch:
 `room/autonomous-project-resumption-orchestrat-djus`. The full acceptance commands below
 ran after the final EP-05b source review. The [whole-branch review](independent-review-round1.md)
 found a missing UUID fallback on supported plain-HTTP LAN origins plus a stale Modules-guide
-statement. One bounded correction wave is in progress. The original passes below do not cover
-that missing browser capability. Corrected frontend acceptance will be recorded separately.
+statement. Both were resolved in one bounded wave and the [scoped final review passed](independent-fix-review.md),
+with zero open/new findings. The original passes below predate that correction. Corrected
+frontend acceptance is recorded separately below.
 The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-16-mvp-gates.md).
 
 ## Source lineage and reviews
@@ -16,6 +17,7 @@ The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-
 | EP-04 diary and adoption/validation corrections | finalddcd1be5, runtime0ac5cbc8 (identical to reviewedfe22da11) | faede047..7d9423bd,50 source/test/contract paths identical | [Scoped PASS](../EP-04-parent-review/independent-fix1-review.md);218 focused frontend/47API; browser/backup evidence |
 | EP-05a server lookup | finalc976b963, runtime176b1698 | Original task cherry-picks then external PR11 merge470defb7 | [Independent PASS](../EP-05-parent-review/independent-review.md); FE7917/API911/MCP140; three live requests exhausted |
 | EP-05b preview and saved source snapshot | final1ee7d922, reviewed runtime762f48a5; [draftPR14](https://github.com/sorensadrgit-art/openGym/pull/14) | d9b54358..ef571176 plus evidence; source/tests/operator docs identical | [Scoped PASS](../EP-05b-parent-review/independent-fix1-review.md);172 focused tests, browser/build; EOF evidence cleanup verified |
+| Final whole-branch UUID/guide correction | final766a99a2, runtime0a56181b | dd3eabdd..88927683; source/tests/guide identical | [Scoped PASS](independent-fix-review.md);37 focused/171 covering tests, natural insecure-HTTP browser proof |
 
 Original task/review failures are retained, not turned into passes by later focused checks.
 EP-03 full frontend had7,952 pass/1 timeout, with isolated31/31. EP-04 pre-correction full
@@ -38,7 +40,7 @@ passing. Later evidence-only commits do not change this tested runtime.
 | Locale and strict source-string checks | PASS; both exit0 | [19 packs ×3,684 keys](locales.log), [3,030 strings](source-strings.log) |
 | Catalogue, coach-assets and API-docs generators | PASS; all exit0 | [Catalogue](catalogue.log), [coach](coach-assets.log), [API docs](api-docs.log):93 endpoints/34 schemas |
 | Combined browser paths | PASS for bounded smoke below | [Observed results](browser-results.json); synthetic account, media blocked, no live provider calls |
-| Final whole-branch independent review | CHANGES REQUIRED:I1 UUID fallback /M1 guide drift | [Full verdict](independent-review-round1.md); correction and scoped review pending |
+| Final whole-branch independent review | Initial I1/M1 closed; scoped PASS, zero findings open | [Full verdict](independent-review-round1.md), [final scoped verdict](independent-fix-review.md) |
 
 The UI author ran focused tests/browser/build during implementation. Parent ran the full
 combined gate once; no duplicate task full run is requested. If a real failure requires a code
@@ -49,6 +51,25 @@ the expanded command, exact Node/source SHA, working directory, UTC start/end an
 nine stages exited0. Frontend logs retain happy-dom's disabled YouTube iframe warnings; build
 logs retain existing large-chunk/ineffective-dynamic-import warnings. Neither is hidden or
 described as a failed assertion. Logs were trimmed only for trailing whitespace.
+
+## Corrected candidate gate
+
+Corrected runtime candidate: `bb123447699e5f1eb96d4ced815856eb21942d2c`. It integrates reviewed
+`0a56181b` byte for byte. The only runtime correction is the private food-event UUID helper:
+native randomUUID is preferred; insecure HTTP LAN origins use getRandomValues with RFC4122-v4
+version/variant bits. [Complete correction evidence](../EP-16-final-fix/README.md) preserves
+the actual failing manual/lookup Saves and successful natural insecure-origin browser rerun.
+
+| Corrected check | Result | Evidence |
+| --- | --- | --- |
+| Full frontend, one worker | RUNNING | [Exact command/start](final-frontend-full.json), `final-frontend-full.log` |
+| Production build | PENDING | Runs after frontend |
+| Locales / strict source strings | PENDING | Runs after build |
+| API912 /MCP140 /three generators | Carried forward unchanged, not rerun | [Git object identity](carried-forward.json) for API/MCP/scripts/catalogue/lockfiles |
+
+The final correction is a concrete new source change, so one affected full frontend rerun is
+warranted. API/MCP and generated inputs are unchanged; their original exact full passes remain
+applicable. No additional provider request or duplicate API/MCP run is claimed.
 
 ## Combined browser smoke
 
