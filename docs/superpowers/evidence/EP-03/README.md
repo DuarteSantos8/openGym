@@ -5,6 +5,10 @@
 [#9](https://github.com/sorensadrgit-art/openGym/pull/9), base `next/integration`.
 No merge or deployment. Parent arranges independent Codex review.
 
+**Round 1 correction is appended below.** Its tested runtime is
+`3d996466fcd4f4e8dea34ba90d60bbc36351f994`; the original delivery evidence below
+is retained as historical evidence, not a claim that full suites ran again.
+
 ## Exact revision and scope
 
 Runtime and browser/full-suite revision:
@@ -178,3 +182,112 @@ this task does not claim a new CI run. Native devices, sensors, passkeys, Docker
 staging, production and live external-service checks were not run. No merge or
 deployment. Recommended next step: review this exact branch, combine reviewed
 changes, then run the parent's agreed one-worker full frontend gate.
+
+## Review correction round 1 — Important I1
+
+Reviewed defect: saved `target.assisted` or entry-level `assisted` on an ordinary
+exercise was treated as lifted load. Scope of this round is the helper, Stats,
+their two volume test files, and evidence only. No dependencies, locale changes,
+legacy Stats arithmetic changes or progress-ledger edits.
+
+### Correction and historical meaning
+
+- Resolve each saved occurrence with the existing `isAssisted(entry)` helper,
+  which honors entry and target overrides before catalogue/custom identity.
+  Filter assisted occurrences before sets, drops, bodyweight or volume arithmetic.
+- Keep non-assisted history, including a saved explicit `assisted: false`
+  override of assisted catalogue identity. Current settings do not relabel old
+  logged assistance as lifted weight or erase earlier ordinary work.
+- An assistance-only session has no lifted volume and is counted in `noVolume`
+  inside the selected window. A session with both assisted and ordinary entries
+  contributes only the ordinary entries and counts once as included, not excluded.
+  The existing note's "without completed reps or positive volume" reason applies
+  to the absence of positive **lifted** volume, not the assistance number.
+- Stats eligibility follows the latest saved occurrence, using the same history
+  order as its existing current-mode traversal. Hide Volume while that occurrence
+  declares assistance, even with earlier ordinary history. If subsequent work
+  returns to ordinary load, offer the retained ordinary history only. Unsaved
+  routine edits do not reinterpret historical session weights.
+
+### Commits and targeted evidence
+
+RED `92898881475d76d9cc5f03238fc72aceaa8f4502` precedes runtime GREEN
+`3d996466fcd4f4e8dea34ba90d60bbc36351f994`. Tests first reproduce both override
+shapes, current assistance after older normal work, a return to normal work,
+mixed duplicate entries, window-scoped exclusions and explicit false overrides.
+The final evidence-only commit is the PR delivery head; no later runtime change.
+
+All commands use Node **v22.23.5**, frontend working directory unless stated,
+with the same PATH as above. Existing installs retained; no lockfile changes.
+Load/memory/disk checked (load 2.72, approximately 23 GB available, 282 GB free).
+
+| Command | Exit | Result / evidence |
+|---|---|---|
+| `npx vitest run src/lib/exercise-volume.test.js src/views/Stats.ex-volume.test.jsx --maxWorkers=2` before fix | 1 | **11 failed, 34 passed / 45**, 2 files; `round1-red.log` |
+| Same command after fix | 0 | **45/45**, 2 files; `round1-green.log` |
+| `npx vitest run src/views/Stats src/lib/exercise-volume.test.js src/lib/bw-load.test.js src/lib/onerm.test.js src/lib/dumbbells.test.js --maxWorkers=2` | 0 | **215/215**, 17 files, 14.20 s; `round1-regressions.log` |
+| `RAYON_NUM_THREADS=2 npm run build` | 0 | 4.43 s; existing warnings retained, `round1-build.log` |
+| `node scripts/check-locales.mjs` | 0 | 19 packs × 3,618 keys; `round1-locales.log` |
+| `node scripts/check-source-strings.mjs --strict` | 0 | 2,964 strings; `round1-source-strings.log` |
+| Root: `BU_NAME=ep03r1 BU_CDP_URL=http://127.0.0.1:9323 BH_TAB_MARKER=0 browser-harness < docs/superpowers/evidence/EP-03/round1-browser.py` | 0 | Six scenarios, six screenshots; `round1-browser.json` |
+| Root: `node docs/superpowers/evidence/EP-03/bundle.mjs docs/superpowers/evidence/EP-03/round1-bundle.json` | 0 | Node 22 gzip level 9 measurement below |
+
+The 215-test run includes all Stats tests (including existing bodyweight tests),
+the helper, bodyweight arithmetic, 1RM and dumbbell regressions. No existing
+assertion weakened and no timeout changed. No full frontend/API/MCP suite or
+generator rerun in this focused correction; their original logs remain unchanged.
+
+### Narrow browser proof and localized rendering
+
+`round1-browser.py` reuses the committed synthetic seed, then overrides only its
+synthetic workouts and language. Dedicated headless Chromium profile
+`/tmp/ep03-r1-chromium`; media blocked before navigation; keyboard controls;
+320 × 1000, light theme, reduced motion. Six cases in `round1-browser.json`:
+
+| Scenario | Observed result | Screenshot |
+|---|---|---|
+| Target assistance only | Volume absent | `round1-target-only.png` |
+| Entry assistance only | Volume absent | `round1-entry-only.png` |
+| Latest target-assisted after ordinary work | Volume absent | `round1-target-latest.png` |
+| Latest entry-assisted after ordinary work | Volume absent | `round1-entry-latest.png` |
+| Return to ordinary work, including assisted duplicate entry | Only 250 kg / 200 kg, one set each; two included, one excluded | `round1-mixed-return.png` |
+| Same retained history in Arabic RTL | Localized chart/table/note; same values; `lang=ar`, `dir=rtl`, table direction RTL | `round1-volume-ar-rtl-320.png` |
+
+All six passed eligibility and no-overflow assertions. Both visible tables have
+semantic AX table/columnheader/rowheader roles and visible keyboard focus.
+The Arabic sample was visually inspected: caption, translated note and table
+wrap within 320 px, both rows visible, no clipped range labels. This closes the
+requested localized/RTL sample gap; it is not certification of every locale,
+translation quality or full screen-reader behavior. All six record two expected
+guest `/api/me` 401 responses and matching console network errors (12 total),
+with no JavaScript exceptions or other failed requests. No exercise media elements.
+
+Retained foreground TTY sessions stayed alive throughout this round:
+
+| Process | PID / retained session | Spawn UTC | Deliberate stop UTC / exit |
+|---|---|---|---|
+| API, throwaway `/tmp/ep03-r1-data-*`, port 33103 | 18128 / 69384 | 09:59:28 wrapper (`ps` 09:59:27) | 10:01:41 / 143 |
+| Vite, port 5177 | 18150 / 19122 | 09:59:38 wrapper (`ps` 09:59:37) | 10:01:41 / 143 |
+| Chromium, debugging port 9323 | 18194 / 18725 | 09:59:39 wrapper (`ps` 09:59:38) | 10:01:41 / 0 |
+
+Own QA tab closed, then only those three PIDs stopped. `ss` confirmed none of
+the three ports listening afterward. Chromium emitted host D-Bus/OOM-score
+permission diagnostics; these are separate from the recorded page console.
+No unexplained runtime termination occurred during this round.
+
+New bundle against the same published baseline: entry 587,154 raw / 183,563 gzip
+(**+700 / +247**); Stats 46,037 raw / 15,459 gzip (**+3,091 / +1,020**).
+Relative to the previous EP-03 build: entry +0 raw / +7 gzip (changed chunk
+references), Stats +132 raw / +45 gzip. Original baseline/environment limitations
+remain; the original bundle evidence is preserved separately.
+
+### Remaining gates, separate from I1 correction
+
+Independent scoped re-review is parent-owned and pending. The parent's combined
+reviewed candidate still needs the **one-worker full frontend acceptance gate**.
+Original `frontend-full.log` remains **7,952 passed / 1 timeout**, outer exit 143
+and child exit uncaptured; `media-sync-isolated.log` remains **31/31, exit 0**.
+Neither was repeated or reclassified as green. Delivery remains conditional.
+Actions dispatch 422, existing shared-picker focus limitations, full assistive
+technology/device checks and deployment limitations remain as separately stated
+above. No merge or deployment performed.
