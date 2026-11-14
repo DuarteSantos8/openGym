@@ -10,6 +10,7 @@ import { askAddDeviceData } from '../sheets.jsx'
 import { localExtras, visibleOptionalEntries, mergeStates } from '../lib/sync-merge.js'
 import fixture from '../lib/__fixtures__/contracts/nutrition-entry.json'
 import volume from '../lib/__fixtures__/contracts/nutrition-volume-entry.json'
+import sourced from '../lib/__fixtures__/contracts/nutrition-source-entry.json'
 import { stampPut } from '../../../api/sync-stamps.js'
 import { createEntry } from '../lib/nutrition/entry.js'
 import { addEntry, changeEntry, deleteEntry, undoEntry } from '../lib/nutrition/diary.js'
@@ -123,7 +124,7 @@ test('offline update reconnects through real store 409 merge and retry', async (
   expect(visible(useStore.getState().S)[0]).toMatchObject({ proteinG: 12, fatG: 8 })
   expect(JSON.parse(localStorage.getItem('gym_sync')).rev).toBe(3)
 })
-for (const row of [fixture, volume]) for (const zip of [false, true]) test(`${zip ? 'ZIP' : 'JSON'} export/read/import ${row.amountMl ? 'mL serving' : 'grams'} keeps deletes and restores a live backup`, async () => {
+for (const row of [fixture, volume, sourced]) for (const zip of [false, true]) test(`${zip ? 'ZIP' : 'JSON'} export/read/import ${row.sourceSnapshot ? 'source snapshot' : row.amountMl ? 'mL serving' : 'grams'} keeps deletes and restores a live backup`, async () => {
   const live = { ...base(), nutritionEntries: [clone(row)] }, deleted = mutate(live, s => deleteEntry(s, row.id))
   for (const [state, count] of [[deleted, 0], [live, 1]]) {
     const blob = zip ? (await exportBackupZip(state, { media: { get: async () => null } })).blob : new Blob([JSON.stringify(state)])
@@ -134,6 +135,27 @@ for (const row of [fixture, volume]) for (const zip of [false, true]) test(`${zi
     const data = e => Object.fromEntries(Object.entries(e).filter(([key]) => !['_f', '_ts'].includes(key)))
     expect(data(useStore.getState().S.nutritionEntries[0])).toEqual(data(row))
   }
+})
+test('confirmed source snapshot is one atomic field through real update, edit, delete, undo and an older writer', () => {
+  const created = mutate(clone(DEF), s => addEntry(s, clone(sourced)))
+  const saved = created.nutritionEntries[0]
+  expect(saved._f.sourceSnapshot).toBeGreaterThan(0)
+  expect(Object.keys(saved._f).some(k => k.startsWith('sourceSnapshot.'))).toBe(false)
+  const edited = mutate(created, s => changeEntry(s, saved.id, { energyKcal: 123, label: 'Local correction' }))
+  expect(edited.nutritionEntries[0].sourceSnapshot).toEqual(sourced.sourceSnapshot)
+  expect(edited.nutritionEntries[0].contentFingerprint).toBe(sourced.contentFingerprint)
+  expect(edited.nutritionEntries[0]._f.sourceSnapshot).toBe(saved._f.sourceSnapshot)
+  const deleted = mutate(edited, s => deleteEntry(s, saved.id))
+  expect(visible(deleted)).toEqual([])
+  const restored = mutate(deleted, s => undoEntry(s, saved.id))
+  expect(visible(restored)[0]).toMatchObject({ energyKcal: 123, sourceSnapshot: sourced.sourceSnapshot })
+  const older = clone(restored)
+  delete older.nutritionEntries[0].sourceSnapshot
+  delete older.nutritionEntries[0]._f.sourceSnapshot
+  const roundtrip = stampPut(restored, older, { overRead: true, now: restored._ts + 1 })
+  expect(roundtrip.nutritionEntries[0].sourceSnapshot).toEqual(sourced.sourceSnapshot)
+  expect(mergeStates(restored, older).nutritionEntries[0].sourceSnapshot).toEqual(sourced.sourceSnapshot)
+  expect(JSON.parse(localStorage.getItem('gym_state_v1')).nutritionEntries[0].sourceSnapshot).toEqual(sourced.sourceSnapshot)
 })
 for (const omitted of [false, true]) test(`older writer round-trip preserves mL serving and omitted nutrients (collection omitted=${omitted})`, () => {
   const current = { ...clone(DEF), nutritionEntries: [clone(volume)] }

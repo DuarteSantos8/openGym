@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../../store/useStore.js'
 import { t } from '../../lib/i18n.js'
 import { createEntry, MEALS, NUTRIENTS } from '../../lib/nutrition/entry.js'
@@ -7,6 +7,7 @@ import { visibleOptionalEntries } from '../../lib/sync-merge.js'
 import { isOn } from '../../lib/modules.js'
 import ErrorState from '../ErrorState.jsx'
 import { nutrientLabels } from './DiarySummary.jsx'
+import SourceSnapshot from './SourceSnapshot.jsx'
 export const mealLabels = () => ({ breakfast: t('Breakfast'), lunch: t('Lunch'), dinner: t('Dinner'), snack: t('Snack') })
 export default function EntrySheet({ entry, prefill, day, owner, close }) {
   const currentOwner = useStore(s => s.user?.id || null)
@@ -23,12 +24,15 @@ export default function EntrySheet({ entry, prefill, day, owner, close }) {
   }))
   const [dirty, setDirty] = useState(new Set())
   const [error, setError] = useState(false)
+  const submitting = useRef(false)
   const set = (key, value) => { setValues(v => ({ ...v, [key]: value })); setDirty(d => new Set([...d, key])); setError(false) }
   const labels = nutrientLabels(), meals = mealLabels()
   const save = event => {
     event.preventDefault()
+    if (submitting.current) return
     const current = useStore.getState()
     if (!isOn(current.S, 'nutrition') || (current.user?.id || null) !== owner) { close(); return }
+    submitting.current = true
     try {
       if (entry) {
         const patch = Object.fromEntries([...dirty].map(k => [k, values[k]]))
@@ -40,11 +44,11 @@ export default function EntrySheet({ entry, prefill, day, owner, close }) {
         })
       } else {
         // EP-05b seam: pass a confirmed snapshot and creation-only provenance here.
-        const record = createEntry({ ...values, day }, prefill ? { source: prefill.source, externalId: prefill.externalId, contentFingerprint: prefill.contentFingerprint } : undefined)
+        const record = createEntry({ ...values, day }, prefill ? { source: prefill.source, externalId: prefill.externalId, contentFingerprint: prefill.contentFingerprint, sourceSnapshot: prefill.sourceSnapshot } : undefined)
         useStore.getState().update(s => addEntry(s, record))
       }
       close()
-    } catch { setError(true) }
+    } catch { submitting.current = false; setError(true) }
   }
   const field = (key, title, numeric = false) => <label className="nutrition-field" key={key}>
     <span>{title}</span><input name={key} value={values[key]} onChange={e => set(key, e.target.value)}
@@ -55,6 +59,7 @@ export default function EntrySheet({ entry, prefill, day, owner, close }) {
   if (!allowed) return null
   return <form className="nutrition-form" onSubmit={save}>
     <h2>{entry ? t('Edit food') : t('Add food')}</h2>
+    {source?.sourceSnapshot !== undefined && <SourceSnapshot value={source.sourceSnapshot} />}
     {field('label', t('Food name'))}
     <label className="nutrition-field"><span>{t('Meal')}</span><select name="meal" value={values.meal} onChange={e => set('meal', e.target.value)}>
       {MEALS.map(m => <option key={m} value={m}>{meals[m]}</option>)}

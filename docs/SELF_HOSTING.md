@@ -892,14 +892,21 @@ secret encrypted with a key from `data/secret`. Payloads, signatures and retries
 ### Food barcode previews (`FOOD_LOOKUP`)
 
 Off by default. To enable the authenticated Open Food Facts preview API, set
-`FOOD_LOOKUP=1` in `.env` and restart the api container. Optionally set
+`FOOD_LOOKUP=1` in `.env` and recreate the service with `docker compose up -d api`.
+This re-reads the changed environment; `docker compose restart` does not. Optionally set
 `FOOD_LOOKUP_CONTACT` to an operator contact email for the app/version User-Agent.
 Complete Open Food Facts' [API usage form](https://openfoodfacts.github.io/openfoodfacts-server/api/#before-you-start)
 before enabling service use. The profile must also have `modules.nutrition` explicitly
 set to boolean `true`; missing, false and invalid choices deny lookup on the server.
 
-This phase provides the API only; diary preview/save UI follows separately. Standalone
-phones have no server and no lookup. Authenticated `/api/config` reports `foodLookup.status`
+In the enabled Nutrition diary, sign in, type a barcode and choose **Lookup**. Inspect the
+source, missing values and nutrient basis, choose an amount and meal, then explicitly choose
+**Save** to persist a diary entry with its original source snapshot. Previewing alone writes
+nothing. A newly enabled Nutrition switch must finish normal sync before server lookup is
+authorized; if refused, wait for sync and try again. Manual entry works offline and when
+lookup is disabled. Saved source attribution remains readable offline; reopening or editing
+never refreshes catalogue nutrients. Standalone phones have no server and no lookup.
+Authenticated `/api/config` reports `foodLookup.status`
 as `disabled` or `configured-unverified`, which does not promise provider reachability.
 
 Only a requested barcode and fixed app headers reach `world.openfoodfacts.org` over HTTPS.
@@ -912,7 +919,8 @@ instance/61 seconds. Instances sharing an IP must coordinate against OFF's curre
 responses larger than 64 KiB, redirects and private DNS answers fail closed. Push and
 webhook private-address overrides do not apply.
 
-Remove `FOOD_LOOKUP` or set it to `0`, then restart to disable and clear the cache.
+Remove `FOOD_LOOKUP` or set it to `0`, then run `docker compose up -d api` to recreate the
+service, disable lookup and clear the cache. Saved diary entries and attribution remain.
 No data migration or restoration is needed. See [the lookup contract, attribution and
 error codes](INTEGRATIONS.md#open-food-facts-barcode-previews-food_lookup).
 
