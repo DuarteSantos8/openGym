@@ -3,11 +3,24 @@
 // landmark source feeds frames in, and this decides angles and rep events.
 // Frames with unusable landmarks are reported, never silently trusted.
 const MIN_VISIBILITY = 0.5
+const ANGLE_MIN = 0
+const ANGLE_MAX = 180
+
+function isFiniteNumber(n) {
+  return typeof n === 'number' && Number.isFinite(n)
+}
+
+function isValidAngle(n) {
+  return isFiniteNumber(n) && n >= ANGLE_MIN && n <= ANGLE_MAX
+}
 
 export function landmarkProblem(landmarks) {
   if (!Array.isArray(landmarks) || landmarks.length === 0) return 'Landmarks missing from frame'
   if (landmarks.some(p => !p || !Number.isFinite(p.x) || !Number.isFinite(p.y))) return 'Landmarks missing from frame'
-  if (landmarks.some(p => Number.isFinite(p.visibility) && p.visibility < MIN_VISIBILITY)) return 'Landmark visibility too low'
+  // Missing visibility stays compatible; only reject when present and unusable.
+  if (landmarks.some(p => p.visibility !== undefined && (!Number.isFinite(p.visibility) || p.visibility < MIN_VISIBILITY))) {
+    return 'Landmark visibility too low'
+  }
   return null
 }
 
@@ -17,21 +30,24 @@ export function jointAngle(a, b, c) {
   const v2 = { x: c.x - b.x, y: c.y - b.y }
   const dot = v1.x * v2.x + v1.y * v2.y
   const mag = Math.hypot(v1.x, v1.y) * Math.hypot(v2.x, v2.y)
-  if (!mag) return null
+  if (!Number.isFinite(dot) || !Number.isFinite(mag) || !mag) return null
   const cosine = Math.min(1, Math.max(-1, dot / mag))
-  return Math.acos(cosine) * 180 / Math.PI
+  if (!Number.isFinite(cosine)) return null
+  const angle = Math.acos(cosine) * 180 / Math.PI
+  return Number.isFinite(angle) ? angle : null
 }
 
 export function createRepCounter({ downBelow, upAbove } = {}) {
-  if (!(Number(downBelow) < Number(upAbove))) throw new Error('Rep thresholds must satisfy downBelow < upAbove')
+  if (!isValidAngle(downBelow) || !isValidAngle(upAbove) || !(downBelow < upAbove)) {
+    throw new Error('Rep thresholds must satisfy downBelow < upAbove')
+  }
   let phase = 'up'
   let reps = 0
   return {
     push(angle) {
-      if (angle == null || !Number.isFinite(Number(angle))) return { type: 'ignored' }
-      const value = Number(angle)
-      if (phase === 'up' && value <= downBelow) { phase = 'down'; return { type: 'down', count: reps } }
-      if (phase === 'down' && value >= upAbove) { phase = 'up'; reps++; return { type: 'rep', count: reps } }
+      if (!isValidAngle(angle)) return { type: 'ignored' }
+      if (phase === 'up' && angle <= downBelow) { phase = 'down'; return { type: 'down', count: reps } }
+      if (phase === 'down' && angle >= upAbove) { phase = 'up'; reps++; return { type: 'rep', count: reps } }
       return { type: 'hold', count: reps }
     },
     count: () => reps,
