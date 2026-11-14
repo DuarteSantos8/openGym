@@ -51,8 +51,8 @@ const entry = e => {
 const DAY = 86400000;
 const ms = iso => Date.parse(iso + 'T12:00:00Z');
 const isoAt = t => new Date(t).toISOString().slice(0, 10);
-export const weekStartOf = S => (S?.weekStart === 0 ? 0 : 1);
-/** The first day of the week `iso` falls in, for a week starting on `ws` (0 Sunday, 1 Monday). */
+export const weekStartOf = S => (S?.weekStart === 0 || S?.weekStart === 6 ? S.weekStart : 1);
+/** The first day of the week `iso` falls in, for a week starting on `ws` (0 Sunday, 1 Monday, 6 Saturday). */
 export function weekKeyOf(iso, ws = 1) {
   const t = ms(iso);
   return isoAt(t - ((new Date(t).getUTCDay() - ws + 7) % 7) * DAY);

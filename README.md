@@ -52,8 +52,8 @@ if you want to try it before installing anything.
   editable routines.
 - Every session on the Plan page and today's on Home carries a tiny body map with the muscles it
   works lit up, so you know Leg Day is legs before you open it.
-- Move a session to another day without touching the weekly plan. The week starts on Monday or
-  Sunday, your choice.
+- Move a session to another day without touching the weekly plan. The week starts on Monday,
+  Sunday or Saturday, your choice.
 - Or skip the weekdays altogether: a **rotation** (A, B, C, A, ...) where the next session is
   simply the next one you haven't done, however the week went.
 - Supersets, warm-up sets, drop sets and rest-pause, timed exercises (planks, hangs, carries),

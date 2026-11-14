@@ -10,7 +10,7 @@
  * references, photo hashes and notes are stripped from workouts unless their own category is on. */
 import { effectiveRoutineId } from '../queue.js';
 import { excusedOn } from '../nudge.js';
-import { streakWalk } from '../coach/core/streak.js';
+import { streakWalk, weekStartOf } from '../coach/core/streak.js';
 
 const DAY = 86400000;
 const records = v => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []);
@@ -24,9 +24,9 @@ const ms = iso => Date.parse(iso + 'T12:00:00Z');
 const iso = t => new Date(t).toISOString().slice(0, 10);
 export const addDays = (d, n) => iso(ms(d) + n * DAY);
 export const daysBetween = (a, b) => Math.round((ms(b) - ms(a)) / DAY);
-/** The first day of the week `d` falls in: Monday, or Sunday for a profile that starts weeks then. */
+/** The first day of the week `d` falls in: Monday, or Sunday or Saturday for a profile that starts weeks then. */
 export function weekOf(d, S) {
-  const start = S?.weekStart === 0 ? 0 : 1;
+  const start = weekStartOf(S);
   const wd = new Date(ms(d)).getUTCDay();
   return addDays(d, -((wd - start + 7) % 7));
 }
@@ -247,7 +247,7 @@ export function project(S, levels, { today, before = null, limit = 20, nutrition
     out.plans = {
       routines, week: S.week && typeof S.week === 'object' ? S.week : {}, dayPlan,
       ...(S.queue ? { queue: S.queue } : {}), ...(S.rotation ? { rotation: S.rotation } : {}),
-      ...(S.schedule ? { schedule: S.schedule } : {}), weekStart: S.weekStart === 0 ? 0 : 1,
+      ...(S.schedule ? { schedule: S.schedule } : {}), weekStart: weekStartOf(S),
     };
   }
   if (on(levels, 'bodyweight')) {

@@ -107,6 +107,11 @@ describe('the root', () => {
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
+    for (const [weekStart, day] of [[0, 'Sun'], [6, 'Sat']]) {
+      mocks.S = { ...mocks.S, weekStart }
+      mount()
+      expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(new RegExp('^Fixed Week · ' + day))
+    }
     expect(rowTitled('Units & language').querySelector('.lrow-v').textContent).toBe('kg · English')
     expect(rowTitled('Equipment').querySelector('.lrow-v').textContent).toBe('Everything')
     expect(rowTitled('About & updates').querySelector('.lrow-v').textContent).toMatch(/^v\d|^vtest/)
@@ -249,6 +254,10 @@ describe('the search lands on a row', () => {
     const hit = searchSettings('subscription', guestWeb, s => s).find(h => h.title === 'Use your subscription')
     expect(hit.trail).toBe('Settings')
     expect(searchSettings('look', guestWeb, s => s).map(h => h.title)).not.toContain('Use your subscription')
+  })
+
+  it('finds the week start by each of its three days', () => {
+    for (const q of ['monday', 'sunday', 'saturday']) expect(searchSettings(q, guestWeb, s => s).map(h => h.title), q).toContain('Week starts on')
   })
 
   // CodeRabbit on #1120: a hit must lead to a row that is there, and say it once.
@@ -635,6 +644,7 @@ describe('searchSettings', () => {
       expect(first('Dunkel')).toBe('Theme')
       expect(first('Feste Woche')).toBe('How you train')
       expect(first('Wochenstart')).toBe('Week starts on')
+      expect(first('Samstag')).toBe('Week starts on')
       expect(first('kompakt')).toBe('Layout')
       expect(first('wischen')).toBe('Swipe actions')
       expect(first('Geste')).toBe('Swipe actions')
