@@ -41,7 +41,7 @@ beforeEach(() => {
   ;['a', 'b', 'c'].forEach((id, i) => { $(id).getBoundingClientRect = () => rect(100 + i * 60) })
   $('list').getBoundingClientRect = () => rect(80, 400)
 })
-afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers(); vi.restoreAllMocks() })
+afterEach(() => { act(() => root.unmount()); host.remove(); vi.runOnlyPendingTimers(); vi.useRealTimers(); vi.restoreAllMocks() })
 
 describe('useLongPressDrag', () => {
   it('does not lift when the finger moves 9 px before the hold', () => {
@@ -107,5 +107,36 @@ describe('useLongPressDrag', () => {
     fire(window, 'pointermove', 10, 100) // 20 px under the list top (80)
     act(() => { vi.advanceTimersByTime(48) })
     expect($('list').scrollTop).toBeLessThan(100)
+  })
+
+  it('swallows the click after a lifted release, not a plain tap', () => {
+    const click = vi.fn()
+    $('a').addEventListener('click', click)
+    fire($('a'), 'pointerdown', 10, 120)
+    act(() => { vi.advanceTimersByTime(450) })
+    fire(window, 'pointerup', 10, 120)
+    act(() => { $('a').dispatchEvent(new Event('click', { bubbles: true, cancelable: true })) })
+    expect(click).not.toHaveBeenCalled()
+    act(() => { vi.advanceTimersByTime(1) })
+    act(() => { $('a').dispatchEvent(new Event('click', { bubbles: true, cancelable: true })) })
+    expect(click).toHaveBeenCalledTimes(1)
+  })
+
+  it('finds a row wrapped by another element (SwipeRow)', () => {
+    act(() => root.unmount())
+    root = createRoot(host)
+    function Wrapped() {
+      const listRef = React.useRef(null)
+      d = useLongPressDrag({ listRef, rows: ['a', 'b'], onReorder, onDropOn })
+      return <div id="list" ref={listRef}>{['a', 'b'].map(id => <div key={id} className="swipe"><div id={id} {...d.rowProps(id)} /></div>)}</div>
+    }
+    act(() => root.render(<Wrapped />))
+    $('a').getBoundingClientRect = () => rect(100)
+    $('b').getBoundingClientRect = () => rect(160)
+    fire($('a'), 'pointerdown', 10, 120)
+    act(() => { vi.advanceTimersByTime(450) })
+    fire(window, 'pointermove', 10, 180)
+    fire(window, 'pointerup', 10, 180)
+    expect(onReorder).toHaveBeenCalledWith(0, 1)
   })
 })

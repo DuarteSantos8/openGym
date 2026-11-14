@@ -13,7 +13,7 @@ import { t } from './i18n.js'
 //
 // Moving more than `slop` px before the hold fires is a scroll or a swipe: nothing lifts and the
 // row's own gesture (SwipeRow, the page scroll) carries on. Rows are found by `data-drag-row`
-// (their id), targets by `data-drop-target` (their key), both hit-tested by rectangle.
+// (their id, on the row or on any wrapper inside the list, such as SwipeRow), targets by `data-drop-target` (their key), both hit-tested by rectangle.
 const EDGE = 56      // px from a scroll edge where the list starts to scroll
 const SPEED = 12     // px per 16 ms tick
 
@@ -51,7 +51,7 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         const { x, y } = s
         const tgt = [...document.querySelectorAll('[data-drop-target]')].find(n => inside(n.getBoundingClientRect(), x, y))
         if (tgt) return { kind: 'target', key: tgt.getAttribute('data-drop-target') }
-        const row = [...(listRef.current?.children || [])].find(n => n.hasAttribute('data-drag-row')
+        const row = [...(listRef.current?.querySelectorAll('[data-drag-row]') || [])].find(n => n.hasAttribute('data-drag-row')
           && n.getAttribute('data-drag-row') !== id && inside(n.getBoundingClientRect(), x, y))
         return row ? { kind: 'row', key: row.getAttribute('data-drag-row') } : null
       }
@@ -92,6 +92,10 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         const was = s.lifted
         end()
         if (!was) return
+        // The browser still fires a click after a lifted release; it must not open the routine.
+        const eat = ev => { ev.preventDefault(); ev.stopPropagation() }
+        window.addEventListener('click', eat, { capture: true })
+        setTimeout(() => window.removeEventListener('click', eat, { capture: true }), 0)
         tick('drop')
         if (o?.kind === 'target') {
           dropOn?.(o.key, id)
