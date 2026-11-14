@@ -89,6 +89,40 @@ describe('Plan drag', () => {
     expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['a', 'b', 'c', 'd'])
   })
 
+  it('over a row of another list the drop targets that list: the current plan block lights up', () => {
+    act(() => root.render(<Plan />))
+    at(host.querySelector('[data-drop-area="Block 2"]'), 100)
+    press(dragRow('d')); hold(); moveTo(50, 120)
+    expect(host.querySelector('.plan-current').className).toContain('is-drop')
+    release(50, 120)
+    expect(folderOf('d')).toBe('Block 2')
+    expect(host.querySelector('[role="status"][aria-live="polite"]').textContent).toBe('Moved Pull A to Block 2')
+  })
+
+  it('over the Not in a folder rows the caption lights up and a drop makes the routine loose', () => {
+    act(() => root.render(<Plan />))
+    at(host.querySelector('[data-drop-area=""]'), 300)
+    press(dragRow('a')); hold(); moveTo(50, 320)
+    const cap = host.querySelector('.plan-hdr')
+    expect(cap.className).toContain('is-drop')
+    expect(cap.textContent).toContain('Move here')
+    release(50, 320)
+    expect(folderOf('a')).toBeUndefined()
+    expect(host.querySelector('[role="status"][aria-live="polite"]').textContent).toBe('Moved Push A to Not in a folder')
+  })
+
+  it('over a row of its own list the rows between shift and the slot moves', () => {
+    useStore.setState(s => ({ S: { ...s.S, routines: [...s.S.routines, routine('e', 'Third')] } }))
+    act(() => root.render(<Plan />))
+    ;['b', 'd', 'e'].forEach((id, i) => at(dragRow(id), 100 + i * 50))
+    press(dragRow('b')); hold(); moveTo(50, 220)
+    expect(dragRow('b').style.getPropertyValue('--slot')).toBe('100px')
+    expect(dragRow('d').querySelector('.drag-in').style.transform).toBe('translateY(-50px)')
+    expect(dragRow('e').querySelector('.drag-in').style.transform).toBe('translateY(-50px)')
+    release(50, 220)
+    expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['a', 'c', 'd', 'e', 'b'])
+  })
+
   it('no drag while Edit is on', () => {
     act(() => root.render(<Plan />))
     act(() => { host.querySelector('.plan-edit').dispatchEvent(new MouseEvent('click', { bubbles: true })) })

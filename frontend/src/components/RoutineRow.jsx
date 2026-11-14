@@ -15,8 +15,16 @@ export function MoreButton({ name, onClick }) {
 }
 
 /** What RoutineRow's `drag` prop takes, from a useLongPressDrag: the row's handlers, whether it is the
- *  lifted one, and how far it rides (`ride` px above or below the finger). */
-export const dragOf = (d, id, ride) => ({ props: d.rowProps(id), lifted: d.lifted === id, dy: (d.drag?.dy ?? 0) + ride, held: d.held })
+ *  lifted one, how far it rides (`dy`), and the reorder cue: while the held row is over a row of its own
+ *  list, the rows between shift by one row height (`shift`) and the dashed slot moves (`slot`). */
+export const dragOf = (d, id) => {
+  const h = d.drag?.height ?? 0
+  const from = d.rows.indexOf(d.lifted), to = d.over?.kind === 'row' ? d.rows.indexOf(d.over.key) : -1
+  const i = d.rows.indexOf(id)
+  const moving = from >= 0 && to >= 0 && from !== to
+  const shift = !moving ? 0 : from < to && i > from && i <= to ? -h : from > to && i >= to && i < from ? h : 0
+  return { props: d.rowProps(id), lifted: d.lifted === id, dy: d.drag?.dy ?? 0, shift, slot: moving ? (to - from) * h : 0, held: d.held }
+}
 
 /** One routine on Plan: colour tile, name (a gold star when starred), `sub`, muscle maps, "…".
  *  `swipe` is the props of the SwipeRow around it (Settings → Swipe actions), or falsy.
@@ -43,7 +51,7 @@ export default function RoutineRow({ r, sub, body, onOpen, onMenu, swipe, edit, 
   const out = swipe ? <SwipeRow className="swrow-item" canSwipe={drag ? () => !drag.held() : undefined} {...swipe}>{row}</SwipeRow> : row
   if (!drag) return out
   // The wrapper keeps the old slot (a dashed outline while lifted); the inner one rides the finger.
-  return <div className={'drag-row' + (drag.lifted ? ' is-lifted' : '')} data-name={r.name} {...drag.props}>
-    <div className="drag-in" style={drag.lifted ? { '--dy': drag.dy + 'px' } : undefined}>{out}</div>
+  return <div className={'drag-row' + (drag.lifted ? ' is-lifted' : '')} data-name={r.name} style={drag.lifted ? { '--slot': drag.slot + 'px' } : undefined} {...drag.props}>
+    <div className="drag-in" style={drag.lifted ? { '--dy': drag.dy + 'px' } : drag.shift ? { transform: `translateY(${drag.shift}px)` } : undefined}>{out}</div>
   </div>
 }

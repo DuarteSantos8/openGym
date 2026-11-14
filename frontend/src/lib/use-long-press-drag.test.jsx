@@ -165,3 +165,30 @@ describe('useLongPressDrag', () => {
     expect(d.announce).toBe('')
   })
 })
+
+describe('where the lifted row rides', () => {
+  const lift = y => { fire($('b'), 'pointerdown', 10, 180); act(() => { vi.advanceTimersByTime(450) }); fire(window, 'pointermove', 10, y) }
+  it('puts its bottom edge 16 px above the finger', () => {
+    lift(300) // row b starts at top 160, 50 high: wanted top 300 - 16 - 50 = 234
+    expect(d.drag.dy).toBe(234 - 160)
+  })
+  it('rides below the finger when there is no room above', () => {
+    lift(120) // 120 - 16 - 50 < 0 (the page top): top at 136
+    expect(d.drag.dy).toBe(136 - 160)
+  })
+})
+
+describe('edge scroll', () => {
+  it('does not touch the page when there is nothing above to scroll to', () => {
+    $('list').scrollTop = 0
+    fire($('a'), 'pointerdown', 10, 120)
+    act(() => { vi.advanceTimersByTime(450) })
+    const before = d.drag
+    fire(window, 'pointermove', 10, 100)
+    const at = d.drag
+    act(() => { vi.advanceTimersByTime(160) })
+    expect($('list').scrollTop).toBe(0)
+    expect(d.drag).toBe(at) // no refresh from the timer
+    expect(before).not.toBe(undefined)
+  })
+})

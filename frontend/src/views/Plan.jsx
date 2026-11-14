@@ -499,7 +499,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
   const reorderLoose = useListReorder(loose.length, moveIn(inLoose))
   // Long-press drag (not in Edit, which has its grips): a drop between rows reorders within the
   // group, a drop on a folder row or the current plan block moves the routine there.
-  const dragOpts = { onDropOn: (folder, id) => dropRoutine(update, id, folder), nameOf: x => S.routines.find(r => r.id === x)?.name ?? x }
+  const dragOpts = { onDropOn: (folder, id) => dropRoutine(update, id, folder), nameOf: x => S.routines.find(r => r.id === x)?.name ?? (x || t('Not in a folder')) }
   const dragCur = useLongPressDrag({ ...dragOpts, listRef: reorderCur.listRef, rows: curRoutines.map(r => r.id), onReorder: moveIn(inCur) })
   const dragLoose = useLongPressDrag({ ...dragOpts, listRef: reorderLoose.listRef, rows: loose.map(r => r.id), onReorder: moveIn(inLoose) })
   const lifted = dragCur.lifted || dragLoose.lifted
@@ -544,11 +544,11 @@ function Routines({ S, update, nav, edit, setEdit }) {
   // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo, toward the
   // end duplicates. Edit's Delete and the routine's own page stay the way in for a keyboard and a screen reader.
   const rowOf = (r, where, rd, list, dg) => <RoutineRow key={r.id} r={r} sub={sub(r, where)} body={S.body} onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)}
-    drag={!edit && dg && dragOf(dg, r.id, -28)}
+    drag={!edit && dg && dragOf(dg, r.id)}
     edit={edit && { checked: sel.includes(r.id), onToggle: () => toggle(r.id), handle: rd.handle(list.indexOf(r)), style: rd.rowStyle(list.indexOf(r)), grip: list.length > 1 }}
     swipe={swipe && { copyLabel: t('Duplicate'), deleteName: t('Delete {0}', said(r.name)), copyName: nameIn(r.name, t('Duplicate')),
       onDelete: () => remove(r), onCopy: () => duplicate(r), flash: flash?.id === r.id ? flash.n : 0 }} />
-  const group = (key, rows, cls = '', ref) => <div key={key} ref={ref} className={'list plan-group ' + cls}>{rows}</div>
+  const group = (key, rows, cls = '', ref, area) => <div key={key} ref={ref} className={'list plan-group ' + cls} {...area}>{rows}</div>
   const folderText = (tile, name, count) => <>
     <span className="lrow-i plan-ftile">{tile}</span>
     <div className="grow"><div className="tt">{name}</div><div className="ss">{count}</div></div>
@@ -595,10 +595,10 @@ function Routines({ S, update, nav, edit, setEdit }) {
                 <span className="lrow-i plan-pin"><Icon name="pushpin" /></span>
                 <div className="grow"><div className="tt">{cur.name}</div><div className="ss"><b>{t('Current plan')}</b> · {routineCount(cur.live)}</div></div>
                 {hot(cur.name) ? here : !edit && <MoreButton name={cur.name} onClick={() => folderMenu(cur.name)} />}
-              </div>, ...curRoutines.map(r => rowOf(r, undefined, reorderCur, curRoutines, dragCur))], 'routine-list plan-routines', reorderCur.listRef)}
+              </div>, ...curRoutines.map(r => rowOf(r, undefined, reorderCur, curRoutines, dragCur))], 'routine-list plan-routines', reorderCur.listRef, !edit && dragCur.areaProps(cur.name))}
             {loose.length > 0 && <>
-              {(cur || others.length > 0) && <h4 className="sec plan-hdr">{t('Not in a folder')}</h4>}
-              {group('loose', loose.map(r => rowOf(r, undefined, reorderLoose, loose, dragLoose)), 'routine-list plan-routines', reorderLoose.listRef)}
+              {(cur || others.length > 0) && <h4 className={'sec plan-hdr' + (hot('') ? ' is-drop' : '')}>{t('Not in a folder')}{hot('') && here}</h4>}
+              {group('loose', loose.map(r => rowOf(r, undefined, reorderLoose, loose, dragLoose)), 'routine-list plan-routines' + (hot('') ? ' is-drop-area' : ''), reorderLoose.listRef, !edit && dragCur.areaProps(''))}
             </>}
             {others.length > 0 && loose.length > 0 && <h4 className="sec plan-hdr">{t('Folders')}</h4>}
             {others.length > 0 && group('folders', others.map((f, i) => folderRow('f' + f.name, <Icon name="folder" />, f.name, routineCount(f.live),

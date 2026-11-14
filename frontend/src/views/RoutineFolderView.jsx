@@ -27,7 +27,8 @@ export default function RoutineFolderView() {
   const listRef = useRef(null)
   const inFolder = r => !!f && isLive(r) && folderOf(r).toLowerCase() === f.name.toLowerCase()
   // Long-press drag: between rows reorders; the "Plan" crumb is the drop target that makes a routine loose.
-  const drag = useLongPressDrag({ listRef, rows: S.routines.filter(inFolder).map(r => r.id),
+  const drag = useLongPressDrag({ listRef, ride: 'below', // under the finger, so the Plan crumb and the pill stay in view
+    rows: S.routines.filter(inFolder).map(r => r.id),
     onReorder: (from, to) => update(s => reorderWithin(s, inFolder, from, to)),
     onDropOn: (folder, id) => dropRoutine(update, id, folder),
     nameOf: x => S.routines.find(r => r.id === x)?.name ?? (x || t('Plan')) })
@@ -57,7 +58,7 @@ export default function RoutineFolderView() {
       <div ref={listRef} className="list plan-group routine-list plan-routines">
         {rows.map(r => <RoutineRow key={r.id} r={r} body={S.body}
           sub={[exCount(r.ex.length), daysOf(r.id).join(', ')].filter(Boolean).join(' · ')}
-          onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)} drag={dragOf(drag, r.id, 28 /* below the finger, so the Plan crumb stays in view */)}
+          onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)} drag={dragOf(drag, r.id)}
           swipe={swipe && { copyLabel: t('Duplicate'), deleteName: t('Delete {0}', said(r.name)), copyName: nameIn(r.name, t('Duplicate')),
             onDelete: () => deleteRoutineWithUndo(r.id), onCopy: () => duplicateRoutine(r) }} />)}
         {!rows.length && <p className="item small" style={{ color: 'var(--label-2)' }}>{t('No routines here yet.')}</p>}

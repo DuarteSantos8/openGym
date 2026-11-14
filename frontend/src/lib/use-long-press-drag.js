@@ -10,12 +10,14 @@ import { t } from './i18n.js'
 //   const d = useLongPressDrag({ listRef, rows: ids, onReorder: (from, to) => …, onDropOn: (key, id) => … })
 //   <div ref={listRef}>{ids.map(id => <div key={id} {...d.rowProps(id)}>…</div>)}</div>
 //   <div {...d.targetProps(folderId)}>…</div>
+//   <div {...d.areaProps(key)}>…another list; over its rows the drop goes to `key` as a target…</div>
 //
 // Moving more than `slop` px before the hold fires is a scroll or a swipe: nothing lifts and the
 // row's own gesture (SwipeRow, the page scroll) carries on. Rows are found by `data-drag-row`
 // (their id, on the row or on any wrapper inside the list, such as SwipeRow), targets by `data-drop-target` (their key), both hit-tested by rectangle.
 const EDGE = 56      // px from a scroll edge where the list starts to scroll
 const SPEED = 12     // px per 16 ms tick
+const GAP = 16       // px between the finger and the lifted row, so what is under the finger stays readable
 
 const scrollParent = el => {
   for (let n = el?.parentElement; n; n = n.parentElement) {
@@ -26,7 +28,9 @@ const scrollParent = el => {
 
 const inside = (r, x, y) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
 
-export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = x => x, holdMs = 450, slop = 8 }) {
+// `ride`: the lifted row rides 'above' the finger (its bottom edge GAP over it; below when there is no room
+// above) or 'below' it (its top edge GAP under it).
+export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = x => x, ride = 'above', holdMs = 450, slop = 8 }) {
   const [lifted, setLifted] = useState(null)
   const [over, setOver] = useState(null)       // { kind: 'row' | 'target', key }
   const [drag, setDrag] = useState(null)       // { id, dy, height } while lifted
@@ -59,12 +63,18 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         const tgt = [...document.querySelectorAll('[data-drop-target]')].find(n => inside(n.getBoundingClientRect(), x, y))
         if (tgt) return { kind: 'target', key: tgt.getAttribute('data-drop-target') }
         const row = [...(listRef.current?.querySelectorAll('[data-drag-row]') || [])].find(n => n.getAttribute('data-drag-row') !== id && inside(n.getBoundingClientRect(), x, y))
-        return row ? { kind: 'row', key: row.getAttribute('data-drag-row') } : null
+        if (row) return { kind: 'row', key: row.getAttribute('data-drag-row') }
+        // Another list as a whole: its rows count as that list's target.
+        const area = [...document.querySelectorAll('[data-drop-area]')].find(n => !n.contains(el) && inside(n.getBoundingClientRect(), x, y))
+        return area ? { kind: 'target', key: area.getAttribute('data-drop-area') } : null
       }
+      const top = () => s.sp === document.scrollingElement || s.sp === document.documentElement ? 0 : s.sp.getBoundingClientRect().top
       const refresh = () => {
         s.over = hit()
         setOver(s.over)
-        setDrag({ id, dy: s.y - s.y0 + s.sp.scrollTop - s.sp0, height: s.height })
+        const natural = s.top0 - (s.sp.scrollTop - s.sp0)
+        const above = ride === 'above' && s.y - GAP - s.height >= top()
+        setDrag({ id, dy: (above ? s.y - GAP - s.height : s.y + GAP) - natural, height: s.height })
       }
       const end = () => { s.stop(); setLifted(null); setOver(null); setDrag(null) }
 
@@ -72,7 +82,8 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
 
       const hold = setTimeout(() => {
         s.lifted = true
-        s.height = el.getBoundingClientRect().height
+        const b = el.getBoundingClientRect()
+        s.height = b.height; s.top0 = b.top
         tick('lift')
         setLifted(id)
         refresh()
@@ -81,7 +92,9 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
           const r = s.sp === document.scrollingElement || s.sp === document.documentElement
             ? { top: 0, bottom: window.innerHeight } : s.sp.getBoundingClientRect()
           const by = s.y < r.top + EDGE ? -SPEED : s.y > r.bottom - EDGE ? SPEED : 0
-          if (by) { s.sp.scrollTop += by; refresh() }
+          const max = s.sp.scrollHeight - s.sp.clientHeight
+          // Nothing left to scroll that way: leave the page where it is.
+          if (by && (by < 0 ? s.sp.scrollTop > 0 : s.sp.scrollTop < max)) { s.sp.scrollTop += by; refresh() }
         }, 16)
       }, holdMs)
 
@@ -136,8 +149,9 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
   })
 
   const targetProps = key => ({ 'data-drop-target': key })
+  const areaProps = key => ({ 'data-drop-area': key })
 
   const held = () => !!g.current?.lifted
 
-  return { lifted, over, held, drag, announce, rowProps, targetProps }
+  return { lifted, over, held, drag, announce, rows, rowProps, targetProps, areaProps }
 }
