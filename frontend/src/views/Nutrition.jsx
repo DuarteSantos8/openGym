@@ -11,6 +11,7 @@ import DateField from '../components/DateField.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import DiarySummary from '../components/nutrition/DiarySummary.jsx'
 import EntrySheet, { mealLabels } from '../components/nutrition/EntrySheet.jsx'
+import FoodLookup from '../components/nutrition/FoodLookup.jsx'
 import '../components/nutrition/nutrition.css'
 
 export default function Nutrition() {
@@ -31,6 +32,7 @@ export default function Nutrition() {
     <header className="nutrition-header"><button className="btn" onClick={() => nav('/home')}>{t('Back')}</button><h1>{t('Nutrition diary')}</h1></header>
     <div className="nutrition-header"><DateField label={t('Date')} value={day} onChange={setDay} /><button className="btn primary" onClick={() => open()}>{t('Add food')}</button></div>
     <DiarySummary S={S} day={day} />
+    <FoodLookup key={day} day={day} />
     {removed && <div role="status" className="nutrition-header card"><span>{t('Food deleted')}</span><button className="btn" onClick={() => { useStore.getState().update(s => undoEntry(s, removed)); setRemoved(null) }}>{t('Undo')}</button></div>}
     {!rows.length && <p className="card muted">{t('No food logged for this day.')}</p>}
     {[...MEALS, 'undated'].map(meal => {

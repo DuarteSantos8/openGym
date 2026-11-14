@@ -207,13 +207,19 @@ container after changing it.
 
 ### Open Food Facts barcode previews (`FOOD_LOOKUP`)
 
-This is a separate read-only API, not a webhook connection. Set `FOOD_LOOKUP=1` and
-restart the API to enable it. It remains off for any profile whose stored
+This is a separate read-only API, not a webhook connection. Set `FOOD_LOOKUP=1` in `.env`
+and recreate the API service with `docker compose up -d api` to enable it. A plain
+`docker compose restart` does not re-read changed environment values. It remains off for any profile whose stored
 `modules.nutrition` is not exactly boolean `true`. An optional operator email in
 `FOOD_LOOKUP_CONTACT` identifies the operator in the outbound app/version User-Agent;
 invalid values are omitted, and no user's email is read. Complete the
 [OFF usage form](https://openfoodfacts.github.io/openfoodfacts-server/api/#before-you-start)
-before enabling. No UI is added in EP-05a, and standalone phones cannot use this API.
+before enabling. Standalone phones cannot use this API. In the enabled Nutrition diary,
+signed-in users type a barcode and choose **Lookup** to preview a product. The preview writes
+nothing. Choose an amount in the stated basis (or an explicit matching serving), select a
+meal and choose **Save** to create a distinct diary entry. Unknown nutrients stay unknown.
+Manual entry remains available offline and when lookup is disabled. After enabling Nutrition,
+wait for normal sync if the server still refuses the request; there is no consent bypass.
 
 `GET /api/food-lookup?barcode=<GTIN>` accepts exactly one checked 8, 12, 13 or 14 digit
 barcode. The signed-in `/api/config` response includes
@@ -231,7 +237,7 @@ mixed addresses and redirects are refused, regardless of push/webhook overrides.
 
 The cache contains at most 128 public normalized products for 15 minutes, with a
 60 second lifetime for not-found. Every hit still checks current consent. Turning off
-the user module prevents further requests; disabling the operator switch and restarting
+the user module prevents further requests; disabling the operator switch and recreating the service
 also clears cache. No diary data is deleted. Limits: 5 requests/user/minute including
 hits, 7 upstream calls/instance/61 seconds. Multiple processes and services behind one
 public IP must coordinate with OFF's current 15 reads/minute/IP limit.
@@ -242,14 +248,17 @@ The preview has `source`, `externalId`, `label`, optional `brand`/`quantityText`
 nutrients are omitted, never silently zero. kJ-only energy uses kJ/4.184 and includes
 `per100.energyConversion`. The basis always comes from OFF's nutrition aggregation,
 never package volume; a product sold in ml may still report per-100g nutrition. The
-later diary UI must not convert g to ml without an explicit conversion factor.
+diary does not convert g to ml or infer density from the package quantity.
 
-Display this attribution beside the preview, linking Open Food Facts to
-`attribution.url` (the product) and ODbL to `attribution.licenseUrl`:
+The preview and saved entry display this attribution. Product and licence links are
+constructed from the supported source and validated barcode, never arbitrary imported URLs:
 
 > Contains information from Open Food Facts, available under the Open Database License (ODbL).
 
-Preserve those links, source and fetch time in any future user-confirmed saved snapshot.
+An explicit save retains original nutrients/basis, source, fetch time, attribution and
+fingerprint in a bounded immutable snapshot, separate from editable entry totals. Reopening
+offline, editing or reusing a recent food never calls the catalogue or refreshes that snapshot.
+Saved attribution survives backup/export/import and disabling lookup.
 The database is ODbL and individual contents use the Database Contents License. A
 public derivative database has share-alike and access requirements; private diary use
 does not by itself require publishing the diary. Images have separate rights and are

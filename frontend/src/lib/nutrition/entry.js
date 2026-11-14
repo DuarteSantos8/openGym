@@ -1,3 +1,4 @@
+import { sourceSnapshot as copySourceSnapshot, sourceFingerprint } from './food-source.js'
 // Saved-entry amounts, never per-100g values. Limits bound input, not dietary guidance.
 export const NUTRIENTS = ['energyKcal', 'proteinG', 'carbohydrateG', 'fatG']
 export const MEALS = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -40,6 +41,7 @@ function nutrients(input, out) {
     else out[key] = v
   }
 }
+export function createEntry(input, { now = new Date(), timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone, source = 'manual', externalId, contentFingerprint, sourceSnapshot } = {}) {
 export function createEntry(input, { now = new Date(), timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone, source = 'manual', externalId, contentFingerprint } = {}) {
   new Intl.DateTimeFormat('en', { timeZone }).format(now)
   if (!validDay(input.day) || !MEALS.includes(input.meal)) throw new Error('filing')
@@ -51,6 +53,11 @@ export function createEntry(input, { now = new Date(), timeZone = Intl.DateTimeF
     entry.contentFingerprint = contentFingerprint
   }
   nutrients(input, entry)
+  if (sourceSnapshot !== undefined) {
+    const snapshot = copySourceSnapshot(sourceSnapshot)
+    if (snapshot.source !== source || snapshot.externalId !== externalId || sourceFingerprint(snapshot) !== contentFingerprint) throw new Error('source-provenance')
+    entry.sourceSnapshot = snapshot
+  }
   return entry
 }
 // Read validation returns the original object. Never migrate/normalize persisted records on read.

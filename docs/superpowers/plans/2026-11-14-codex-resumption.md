@@ -24,6 +24,7 @@ idle/asleep when checked. New Codex assignments supersede those tasks; Claude is
 | Wave | Deliverable and owner | Depends on | Verification and reviewer | Risk / approval |
 | --- | --- | --- | --- | --- |
 | 2A | EP-03 volume trend: Codex `thr_pbxv6g7svw` | merged EP-01/02 | brief tests, real browser, locales/build; parent spec review and independent Codex code review | Medium: historical date/unit correctness; no new dependency |
+| 2A | EP-04 diary: Codex `cr_child_6adc1136d3d29d50bd726c63` | merged EP-01/02 | real store/merge/backup matrix, browser/offline, locales/build; parent plus independent reviewer | High: sync/deletion integrity; preserve EP-01 hooks |
 | 2A | EP-04 diary: Codex `thr_f6kmim4v34` | merged EP-01/02 | real store/merge/backup matrix, browser/offline, locales/build; parent plus independent reviewer | High: sync/deletion integrity; preserve EP-01 hooks |
 | 2A | EP-05a lookup API: Codex `thr_96ja8kwfhg` | merged EP-01 contracts | transport tests, real HTTP auth/status tests, source terms, API/docs; parent plus independent reviewer | High: outbound requests and untrusted provider data; bounded live probes already authorized by brief |
 | 2B | Review and combine accepted branches on parent working branch | 2A deliveries | inspect full changes from baseline, independently rerun meaningful tests and final combined regressions | No merge into `main` or `next/integration` |
@@ -34,6 +35,12 @@ Tools: Cloudroom isolated Codex child threads, Git/GitHub CLI, Node 22, existing
 repository tests, browser-harness for rendered QA. No project dependencies are approved in Wave 2.
 Workers must be capped and heavy suites run serially within each sandbox. Child threads have
 separate checkouts and branches; no shared source writers.
+
+EP-04 exception: its first Codex child's project copy timed out with no files available. Parent
+stopped that child (`thr_f6kmim4v34`, no edits) and created `.worktrees/ep-04-codex` on
+`feat/ep-04-codex-diary` from `be8fc9bf`. The replacement shares the parent sandbox but works
+only in that distinct worktree. Parent must not run heavy jobs concurrently with it. This
+avoids another full remote clone while retaining branch and file isolation.
 
 ## Interface review before dependent work
 
@@ -59,3 +66,35 @@ separate checkouts and branches; no shared source writers.
   these deliveries and remain untouched.
 
 Progress and final evidence live in `../progress.md` and each task's evidence directory.
+
+## Final-delivery review assignments (2026-11-14)
+
+- EP-03: final `97fca350`, runtime `f28c91ea`, draft PR #9. Independent Codex reviewer
+  `cr_child_a39070f7c183a2eda7b70a57`, frozen worktree `.worktrees/review-ep03`.
+- EP-05a: final `c976b963`, runtime `176b1698`, draft PR #11. Independent Codex reviewer
+  `cr_child_1bcb6e44c4f8aea8c9da7c59`, frozen worktree `.worktrees/review-ep05a`.
+- Review packets and pending verdicts: `/tmp/opengym-review/`. Packets include every task
+  commit from each plan commit's parent through final delivery; inherited orchestration docs
+  are excluded. Parent will preserve final verdicts in tracked evidence.
+- Reviewers are read-only, with no suite duplication, source changes or provider requests.
+  EP-04 remains the only implementation writer in this sandbox and owns heavy verification.
+- EP-05a review passed and task commits were integrated into the working candidate as
+  `f07839b4..4ee5a409`; runtime/test/deployment paths match reviewed source byte for byte.
+- EP-03 review found saved assistance overrides counted as volume. Fix round1/5 is assigned
+  to the original author; source is not integrated until correction and scoped review pass.
+- EP-04 source review: `cr_child_77c3d2ed9c6aed815fde2af6`, frozen runtime `4d87fc32` at
+  `.worktrees/review-ep04`. Author finishes final evidence separately; source review is not
+  a substitute for its full verification. Parent's invalid-day visibility probe caused
+  RED `4387f0d6` / GREEN `4d87fc32`, preserving dates and separating undated rows from totals.
+- EP-03's full frontend timeout remains a failed gate despite its isolated pass. One final
+  combined candidate run with one worker is required; no second isolated full retry.
+
+## External integration update
+
+Read-only GitHub checks confirmed PR9 merged at09:52:53Z as7362eeb7 and PR11 at09:53:42Z
+as470defb7, both 2026-11-14. These were external actions, not this coordinator or its children.
+The parent merged updated integration into its unprotected working branch as2cecef7b. The sole
+conflict was stale inherited progress text; the newer parent-owned ledger was retained.
+EP-03's independently found assistance defect remains open despite the external merge. Its
+correction is new draftPR12 at44b24eed and receives scoped review before acceptance. EP-05a
+source is unchanged and reviewed. No protected branch write or deployment was performed here.

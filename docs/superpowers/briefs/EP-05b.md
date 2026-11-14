@@ -1,5 +1,8 @@
 # EP-05b: confirm a food lookup into the diary
 
+Status: producer source reviews passed; exact interfaces confirmed below. Implementation starts
+only in the parent's assigned worktree containing both producers and the analytics corrections.
+Final full-suite acceptance is consolidated into the parent's combined gate, not yet passed.
 Status: dependent design prepared by parent; **do not start implementation until the parent
 names reviewed EP-04 and EP-05a commits and confirms their exact interfaces below**.
 
@@ -16,6 +19,16 @@ snapshot as an ordinary diary entry. The manual entry path works offline and wit
 Opening the diary, rendering a barcode, choosing a day, or editing an existing meal must never
 look up a product. Reopening an entry never refreshes its nutrients from the catalogue.
 
+## Reviewed producer interfaces
+
+The implementer verifies these against the assigned checkout before committing its task plan:
+
+- EP-04 runtime `0ac5cbc8` after rebase onto470defb7. Its29 non-locale source/test files are
+  byte-identical to independently reviewed runtime `fe22da11`/test head `a1639383`; each of
+  19 locale packs differs only by three already-integrated Stats strings. Parent independently
+  verified both statements. Source and correction spec/quality reviews passed; full gate pending.
+- EP-05a final `c976b963`, runtime `176b1698`, independently reviewed spec/quality PASS.
+  Already in integration470defb7. Route/capability/error contract is listed below.
 ## Interfaces to confirm before dispatch
 
 The parent fills these from the reviewed producers, and the implementer verifies them against
@@ -29,6 +42,53 @@ the checkout before committing its task plan:
   it already supports paired mobile servers, subpaths, timeouts and typed response failures.
 - Reuse `useStore.config` for capability information; configuration means configured/unverified,
   never a claim that the external service is reachable.
+
+### Exact producer interfaces and consumer rulings
+
+These are confirmed against the reviewed producers. Preserve their established behavior.
+
+- Diary `createEntry(input, context)` accepts input `label`, `day`, `meal`, `amount`,
+  `unit: 'g'|'mL'|'serving'`, `servingLabel`, `servingSize`, `servingUnit: 'g'|'mL'`, and optional
+  entry-total `energyKcal`, `proteinG`, `carbohydrateG`, `fatG`. Context supplies immutable
+  `source`, `externalId`, `contentFingerprint`, optional `now`/`timeZone`. Save through
+  `update(s => addEntry(s, record))`. Numeric bounds are 0..1,000,000 and three decimals;
+  serving size must be positive. `servingAmount()` converts explicit serving counts only.
+- Reuse `lib/nutrition/format.js` for locale-aware three-decimal display. Workout weight
+  precision must not change food amounts or round a known small nutrient silently to zero.
+- Saved fields use `amountMl` and serving unit `mL`; API basis is lowercase `ml`. Map explicitly.
+  `editEntry()` preserves unknown fields and provenance. The global EntrySheet captures its
+  account owner and rechecks module/owner on render and save; preserve these guards.
+- EP-05a direct preview: `source: 'open-food-facts'`, `externalId`, `label`, optional `brand`
+  and `quantityText`, `per100: {basis: 'g'|'ml', energyKcal?, proteinG?, carbohydrateG?, fatG?,
+  energyConversion?: 'kJ/4.184'}`, optional `serving: {label, grams}` or `{label, millilitres}`,
+  `fetchedAt`, `attribution: {text, url, license: 'ODbL-1.0', licenseUrl}`.
+- `/api/config.foodLookup.status` is `disabled` or `configured-unverified`, absent while
+  signed out/older server. GET `/api/food-lookup?barcode=...` accepts one ASCII GTIN with
+  valid check digit and length8/12/13/14. Keep leading zeros.
+- Error body codes: 401 `food-lookup-auth-required`; 403 `food-lookup-disabled` or
+  `nutrition-disabled`; 400 `food-lookup-invalid-barcode`; 404 `food-lookup-not-found`;
+  429 `food-lookup-rate-limited`; 502 `food-lookup-upstream`; 504 `food-lookup-timeout`.
+  The existing `api()` wrapper exposes HTTP codes under `error.data.code`, transport codes
+  under `error.code`, and overwrites caller abort signals with its own timeout controller.
+  Use request generations/owner checks for stale responses without rewriting shared transport.
+- Reuse existing `lib/sha256.js` for fingerprinting; it supports insecure local HTTP through
+  an existing pure-JS fallback. No new crypto dependency. Hash canonical bounded source values,
+  excluding `fetchedAt` and user edits. Preserve the original hash on local corrections.
+- Authorize one explicit atomic `sourceSnapshot` field containing the validated bounded
+  preview (including original nutrients/basis, fetchedAt and attribution), distinct from editable
+  entry totals. Extend the creation context/prefill seam minimally, document this field in
+  DATA_CONTRACTS and add contract/backup fixtures. Deep-copy the snapshot at creation; later
+  preview mutation must not affect stored entries. Existing-entry edits and recent-food reuse
+  must preserve the snapshot and provenance. Do not store raw upstream payloads.
+- Validate stored source metadata before rendering. Construct product and license links from
+  the fixed supported source/validated barcode; never trust arbitrary imported URL schemes.
+  Show source attribution when reopening offline, not only in the original lookup preview.
+- Server opt-in reads synced `modules.nutrition === true`. A newly enabled local switch may
+  not have reached the server yet. Keep its 403 authoritative and explain retry after normal
+  sync; do not introduce a consent-bypass flag or passive request to work around this.
+- Live product request budget is exhausted (3/3). Every EP-05b test/browser response must use
+  synthetic fixtures at the transport boundary. The two live samples both explicitly say100g,
+  including a330mL drink; package quantity must never determine nutrient basis.
 
 ## Bounded behavior
 
@@ -75,6 +135,10 @@ the checkout before committing its task plan:
   failed lookup with manual fallback. Mock provider responses only at the transport boundary;
   label mocked checks honestly. Do not consume extra live provider requests by default.
 - All new strings go in every locale, with genuine translations. Run source-string/locale
+  checks, focused regressions and production build. Parent owns the single final full
+  frontend run (one worker) on the reviewed combined candidate, plus API/MCP and generated
+  checks. Do not duplicate those full runs in this task; handoff stays conditional until that
+  exact runtime passes. This overrides the common brief's duplicate full-suite requirement.
   checks, focused regressions, full frontend once at final handoff and production build.
   API/MCP suites only if their code/shared imports change. Parent runs combined final gates.
 - Evidence under `docs/superpowers/evidence/EP-05b/`; report lazy chunk and entry delta. No
