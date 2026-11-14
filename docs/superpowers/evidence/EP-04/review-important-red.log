@@ -1,0 +1,648 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/lib/nutrition src/store/useStore.nutrition.test.jsx
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/lib/nutrition/diary.test.js (6 tests | 1 failed) 43ms
+   × invalid persisted serving stays opaque, unknown in totals and absent from suggestions 8ms
+ ❯ src/lib/nutrition/entry.test.js (48 tests | 20 failed) 68ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","size":-10,"unit":"oz"}} 9ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","count":null,"size":100,"unit":"g"}} 2ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","count":"1","size":100,"unit":"g"},"amountG":100} 2ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","count":1,"size":"100","unit":"g"},"amountG":100} 2ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":null} 1ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":false} 1ms
+   × persisted malformed serving is unsupported without rewriting: {"serving":[]} 1ms
+   × present malformed provenance is unsupported: {"createdAt":123} 1ms
+   × present malformed provenance is unsupported: {"createdAt":"2026-02-30T10:00:00.000Z"} 1ms
+   × present malformed provenance is unsupported: {"createdAt":"yesterday"} 1ms
+   × present malformed provenance is unsupported: {"occurredAt":null} 1ms
+   × present malformed provenance is unsupported: {"occurredAt":"2026-11-14"} 1ms
+   × present malformed provenance is unsupported: {"occurredAt":"2026-11-14T25:00:00Z"} 1ms
+   × present malformed provenance is unsupported: {"createdBy":{}} 1ms
+   × present malformed provenance is unsupported: {"createdBy":"unknown-kind"} 1ms
+   × present malformed provenance is unsupported: {"source":[]} 1ms
+   × present malformed provenance is unsupported: {"source":""} 1ms
+   × present malformed provenance is unsupported: {"externalId":123} 1ms
+   × present malformed provenance is unsupported: {"contentFingerprint":"sha256:no"} 1ms
+   × present malformed provenance is unsupported: {"idempotencyKey":{}} 1ms
+ ❯ src/store/useStore.nutrition.test.jsx (24 tests | 12 failed) 150ms
+   × retained malformed elements do not block real-store add 9ms
+   × retained malformed elements do not block real-store edit 2ms
+   × retained malformed elements do not block real-store delete 6ms
+   × retained malformed elements do not block real-store undo 1ms
+   × empty-account delayed adoption: add guest=false, later deleted=false, server changes=false 4ms
+   × empty-account delayed adoption: add guest=false, later deleted=false, server changes=true 3ms
+   × empty-account delayed adoption: add guest=false, later deleted=true, server changes=false 4ms
+   × empty-account delayed adoption: add guest=false, later deleted=true, server changes=true 3ms
+   × empty-account delayed adoption: add guest=true, later deleted=false, server changes=false 6ms
+   × empty-account delayed adoption: add guest=true, later deleted=false, server changes=true 4ms
+   × empty-account delayed adoption: add guest=true, later deleted=true, server changes=false 4ms
+   × empty-account delayed adoption: add guest=true, later deleted=true, server changes=true 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 33 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store add
+TypeError: Cannot read properties of null (reading 'id')
+ ❯ src/lib/nutrition/diary.js:6:34
+      4| export function addEntry(S, entry) {
+      5|   if (!normalizeEntry(entry).supported) throw new Error('unsupported')
+      6|   if ((S[key] || []).some(e => e.id === entry.id)) throw new Error('du…
+       |                                  ^
+      7|   S[key] = [...(S[key] || []), entry]
+      8| }
+ ❯ Module.addEntry src/lib/nutrition/diary.js:6:22
+ ❯ src/store/useStore.nutrition.test.jsx:145:27
+ ❯ Object.update src/store/useStore.js:1467:7
+ ❯ mutate src/store/useStore.nutrition.test.jsx:20:97
+ ❯ src/store/useStore.nutrition.test.jsx:144:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store edit
+TypeError: Cannot read properties of null (reading 'id')
+ ❯ src/lib/nutrition/diary.js:11:30
+      9| export function changeEntry(S, id, patch) {
+     10|   if (!visibleOptionalEntries(S, key).some(e => e.id === id)) return
+     11|   S[key] = S[key].map(e => e.id === id ? editEntry(e, patch) : e)
+       |                              ^
+     12| }
+     13| export function deleteEntry(S, id) {
+ ❯ Module.changeEntry src/lib/nutrition/diary.js:11:19
+ ❯ src/store/useStore.nutrition.test.jsx:146:28
+ ❯ Object.update src/store/useStore.js:1467:7
+ ❯ mutate src/store/useStore.nutrition.test.jsx:20:97
+ ❯ src/store/useStore.nutrition.test.jsx:144:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store delete
+AssertionError: expected [ { …(16) } ] to deeply equal [ null, false, 17, [], …(1) ]
+
+- Expected
++ Received
+
+  [
+-   null,
+-   false,
+-   17,
+-   [],
+    {
+-     "opaque": "future payload",
++     "_f": {
++       "amountG": 1794564000000,
++       "carbohydrateG": 1794564000000,
++       "createdAt": 1794564000000,
++       "createdBy": 1794564000000,
++       "day": 1794564000000,
++       "energyKcal": 1794564000000,
++       "fatG": 1794564000000,
++       "label": 1794564000000,
++       "occurredAt": 1794564000000,
++       "proteinG": 1794564000000,
++       "schemaVersion": 1794564000000,
++       "source": 1794564000000,
++       "timeZone": 1794564000000,
++     },
++     "_ts": 1794564000000,
++     "amountG": 60,
++     "carbohydrateG": 40,
++     "createdAt": "2026-11-13T10:00:00.000Z",
++     "createdBy": "manual",
++     "day": "2026-11-13",
++     "energyKcal": 228,
++     "fatG": 4,
++     "id": "5cbde324-1f60-43ef-9188-4f555376ddc5",
++     "label": "Synthetic oats",
++     "occurredAt": "2026-11-13T10:00:00.000Z",
++     "proteinG": 8,
++     "schemaVersion": 1,
++     "source": "manual",
++     "timeZone": "Europe/Lisbon",
+    },
+  ]
+
+ ❯ src/store/useStore.nutrition.test.jsx:150:62
+    148|     if (action === 'undo') undoEntry(s, fixture.id)
+    149|   })
+    150|   expect(result.nutritionEntries.slice(0, malformed.length)).toEqual(m…
+       |                                                              ^
+    151|   expect(visible(result)).toHaveLength(action === 'add' ? 2 : action =…
+    152|   if (action === 'edit') expect(visible(result)[0].label).toBe('Edited…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store undo
+TypeError: Cannot read properties of null (reading 'id')
+ ❯ src/lib/nutrition/diary.js:19:35
+     17| // Caller joins available copies before undo. Change visibility only, …
+     18| export function undoEntry(S, id, knownCopies = []) {
+     19|   if (!(S[key] || []).some(e => e.id === id) || !(S.deleted?.[key]?.[i…
+       |                                   ^
+     20|   const at = [S, ...knownCopies].reduce((n, copy) => Math.max(n, highe…
+     21|   S.deleted = { ...S.deleted, [key]: { ...S.deleted?.[key], [id]: -at …
+ ❯ Module.undoEntry src/lib/nutrition/diary.js:19:23
+ ❯ src/store/useStore.nutrition.test.jsx:148:28
+ ❯ Object.update src/store/useStore.js:1467:7
+ ❯ mutate src/store/useStore.nutrition.test.jsx:20:97
+ ❯ src/store/useStore.nutrition.test.jsx:144:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=false, later deleted=false, server changes=false
+AssertionError: expected [] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+- [
+-   "b3bb0263-eed0-4a5b-b485-4fe181bee412",
+- ]
++ []
+
+ ❯ src/store/useStore.nutrition.test.jsx:177:66
+    175|     answer(keep); await pending
+    176|     const ids = [keep && fixture.id, !deleted && later.id, changedServ…
+    177|     expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqu…
+       |                                                                  ^
+    178|     expect(puts).toBeGreaterThan(0)
+    179|     expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=false, later deleted=false, server changes=true
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   "0093a6ff-8342-480f-96de-c4b7a740cd37",
+-   "bd207b16-85be-4bf2-b7e3-2c9fb7ea0dcd",
+- ]
++ []
+
+ ❯ src/store/useStore.nutrition.test.jsx:177:66
+    175|     answer(keep); await pending
+    176|     const ids = [keep && fixture.id, !deleted && later.id, changedServ…
+    177|     expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqu…
+       |                                                                  ^
+    178|     expect(puts).toBeGreaterThan(0)
+    179|     expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=false, later deleted=true, server changes=false
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=true, later deleted=false, server changes=false
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=true, later deleted=true, server changes=false
+AssertionError: expected 0 to be greater than 0
+ ❯ src/store/useStore.nutrition.test.jsx:178:18
+    176|     const ids = [keep && fixture.id, !deleted && later.id, changedServ…
+    177|     expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqu…
+    178|     expect(puts).toBeGreaterThan(0)
+       |                  ^
+    179|     expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+    180|     if (deleted) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=false, later deleted=true, server changes=true
+AssertionError: expected [] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+- [
+-   "f66dc60a-da24-4f07-96b4-696ac12c982b",
+- ]
++ []
+
+ ❯ src/store/useStore.nutrition.test.jsx:177:66
+    175|     answer(keep); await pending
+    176|     const ids = [keep && fixture.id, !deleted && later.id, changedServ…
+    177|     expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqu…
+       |                                                                  ^
+    178|     expect(puts).toBeGreaterThan(0)
+    179|     expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=true, later deleted=false, server changes=true
+AssertionError: expected [ …(2) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    "34b56350-1cd9-4bee-9eae-2a7a0c23529a",
+    "5cbde324-1f60-43ef-9188-4f555376ddc5",
+-   "5feff09e-4a64-43ae-a2e2-af13a175ea87",
+  ]
+
+ ❯ src/store/useStore.nutrition.test.jsx:177:66
+    175|     answer(keep); await pending
+    176|     const ids = [keep && fixture.id, !deleted && later.id, changedServ…
+    177|     expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqu…
+       |                                                                  ^
+    178|     expect(puts).toBeGreaterThan(0)
+    179|     expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/33]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > empty-account delayed adoption: add guest=true, later deleted=true, server changes=true
+AssertionError: expected [ Array(1) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "5cbde324-1f60-43ef-9188-4f555376ddc5",
+-   "858369fa-8480-4b42-a0b7-31d11c242b95",
+  ]
+
+ ❯ src/store/useStore.nutrition.test.jsx:177:66
+    175|     answer(keep); await pending
+    176|     const ids = [keep && fixture.id, !deleted && later.id, changedServ…
+    177|     expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqu…
+       |                                                                  ^
+    178|     expect(puts).toBeGreaterThan(0)
+    179|     expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/33]⎯
+
+ FAIL  src/lib/nutrition/diary.test.js > invalid persisted serving stays opaque, unknown in totals and absent from suggestions
+AssertionError: expected { value: 0.024, unknown: +0 } to deeply equal { value: +0, unknown: 1 }
+
+- Expected
++ Received
+
+  {
+-   "unknown": 1,
+-   "value": 0,
++   "unknown": 0,
++   "value": 0.024,
+  }
+
+ ❯ src/lib/nutrition/diary.test.js:53:44
+     51|   const row = { ...food({ proteinG: 0.024 }), serving: { label: 'porti…
+     52|   const S = { nutritionEntries: [row] }, before = JSON.stringify(S)
+     53|   expect(dailyTotals(S, row.day).proteinG).toEqual({ value: 0, unknown…
+       |                                            ^
+     54|   expect(foodSuggestions(S)).toEqual([])
+     55|   expect(JSON.stringify(S)).toBe(before)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","size":-10,"unit":"oz"}}
+AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal { supported: false, entry: { …(12) } }
+
+- Expected
++ Received
+
+@@ -15,7 +15,7 @@
+        "unit": "oz",
+      },
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:65:29
+     63|   const e = { ...createEntry(input, context), ...patch }
+     64|   const before = structuredClone(e)
+     65|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     66|   expect(e).toEqual(before)
+     67| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","count":null,"size":100,"unit":"g"}}
+AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal { supported: false, entry: { …(12) } }
+
+- Expected
++ Received
+
+@@ -16,7 +16,7 @@
+        "unit": "g",
+      },
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:65:29
+     63|   const e = { ...createEntry(input, context), ...patch }
+     64|   const before = structuredClone(e)
+     65|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     66|   expect(e).toEqual(before)
+     67| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","count":"1","size":100,"unit":"g"},"amountG":100}
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":{"label":"portion","count":1,"size":"100","unit":"g"},"amountG":100}
+AssertionError: expected { supported: true, entry: { …(13) } } to deeply equal { supported: false, entry: { …(13) } }
+
+- Expected
++ Received
+
+@@ -17,7 +17,7 @@
+        "unit": "g",
+      },
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:65:29
+     63|   const e = { ...createEntry(input, context), ...patch }
+     64|   const before = structuredClone(e)
+     65|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     66|   expect(e).toEqual(before)
+     67| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":null}
+AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal { supported: false, entry: { …(12) } }
+
+- Expected
++ Received
+
+@@ -11,7 +11,7 @@
+      "schemaVersion": 1,
+      "serving": null,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:65:29
+     63|   const e = { ...createEntry(input, context), ...patch }
+     64|   const before = structuredClone(e)
+     65|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     66|   expect(e).toEqual(before)
+     67| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":false}
+AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal { supported: false, entry: { …(12) } }
+
+- Expected
++ Received
+
+@@ -11,7 +11,7 @@
+      "schemaVersion": 1,
+      "serving": false,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:65:29
+     63|   const e = { ...createEntry(input, context), ...patch }
+     64|   const before = structuredClone(e)
+     65|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     66|   expect(e).toEqual(before)
+     67| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > persisted malformed serving is unsupported without rewriting: {"serving":[]}
+AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal { supported: false, entry: { …(12) } }
+
+- Expected
++ Received
+
+@@ -11,7 +11,7 @@
+      "schemaVersion": 1,
+      "serving": [],
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:65:29
+     63|   const e = { ...createEntry(input, context), ...patch }
+     64|   const before = structuredClone(e)
+     65|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     66|   expect(e).toEqual(before)
+     67| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"createdAt":123}
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"createdAt":"2026-02-30T10:00:00.000Z"}
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"createdAt":"yesterday"}
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"createdBy":{}}
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"createdBy":"unknown-kind"}
+AssertionError: expected { supported: true, entry: { …(11) } } to deeply equal { supported: false, entry: { …(11) } }
+
+- Expected
++ Received
+
+@@ -10,7 +10,7 @@
+      "occurredAt": "2026-11-14T10:00:00.000Z",
+      "schemaVersion": 1,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"occurredAt":null}
+AssertionError: expected { supported: true, entry: { …(11) } } to deeply equal { supported: false, entry: { …(11) } }
+
+- Expected
++ Received
+
+@@ -10,7 +10,7 @@
+      "occurredAt": null,
+      "schemaVersion": 1,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"occurredAt":"2026-11-14"}
+AssertionError: expected { supported: true, entry: { …(11) } } to deeply equal { supported: false, entry: { …(11) } }
+
+- Expected
++ Received
+
+@@ -10,7 +10,7 @@
+      "occurredAt": "2026-11-14",
+      "schemaVersion": 1,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"occurredAt":"2026-11-14T25:00:00Z"}
+AssertionError: expected { supported: true, entry: { …(11) } } to deeply equal { supported: false, entry: { …(11) } }
+
+- Expected
++ Received
+
+@@ -10,7 +10,7 @@
+      "occurredAt": "2026-11-14T25:00:00Z",
+      "schemaVersion": 1,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"source":[]}
+AssertionError: expected { supported: true, entry: { …(11) } } to deeply equal { supported: false, entry: { …(11) } }
+
+- Expected
++ Received
+
+@@ -10,7 +10,7 @@
+      "occurredAt": "2026-11-14T10:00:00.000Z",
+      "schemaVersion": 1,
+      "source": [],
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"source":""}
+AssertionError: expected { supported: true, entry: { …(11) } } to deeply equal { supported: false, entry: { …(11) } }
+
+- Expected
++ Received
+
+@@ -10,7 +10,7 @@
+      "occurredAt": "2026-11-14T10:00:00.000Z",
+      "schemaVersion": 1,
+      "source": "",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/33]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"externalId":123}
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"contentFingerprint":"sha256:no"}
+ FAIL  src/lib/nutrition/entry.test.js > present malformed provenance is unsupported: {"idempotencyKey":{}}
+AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal { supported: false, entry: { …(12) } }
+
+- Expected
++ Received
+
+@@ -11,7 +11,7 @@
+      "occurredAt": "2026-11-14T10:00:00.000Z",
+      "schemaVersion": 1,
+      "source": "manual",
+      "timeZone": "Europe/Lisbon",
+    },
+-   "supported": false,
++   "supported": true,
+  }
+
+ ❯ src/lib/nutrition/entry.test.js:75:29
+     73| ])('present malformed provenance is unsupported: %j', patch => {
+     74|   const e = { ...createEntry(input, context), ...patch }, before = str…
+     75|   expect(normalizeEntry(e)).toEqual({ supported: false, entry: before …
+       |                             ^
+     76|   expect(e).toEqual(before)
+     77| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/33]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  33 failed | 45 passed (78)
+   Start at  10:06:50
+   Duration  4.48s (transform 4.54s, setup 770ms, import 5.48s, tests 261ms, environment 328ms)
+
