@@ -3656,6 +3656,7 @@ export default {
   "{0} of {1} modules on.": "{1} modülden {0} tanesi açık.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“Sağlık” kapalıyken {0} eşitlemeyi durdurur. Hiçbir bağlantı kesilmez, “Sağlık” geri gelince her şeyi yakalar.",
   // Nutrition
+  "Undated entries": "Tarihsiz kayıtlar",
   "Add food": "Yiyecek ekle",
   "Add this device’s data to your profile?": "Bu cihazın verileri profiline eklensin mi?",
   "Amount": "Miktar",

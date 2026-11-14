@@ -21,7 +21,7 @@ export default function Nutrition() {
   const [removed, setRemoved] = useState(null)
   if (!isOn(S, 'nutrition')) return null
   if (!ready) return <Skeleton label={t('Loading…')} />
-  const days = diaryDays(S), rows = [...(days[day] || []), ...(days[''] || [])], meals = mealLabels()
+  const days = diaryDays(S), rows = days[day] || [], meals = mealLabels()
   const open = (entry, prefill) => {
     const owner = useStore.getState().user?.id || null
     useUI.getState().openSheet(close => <EntrySheet entry={entry} prefill={prefill} day={day} owner={owner} close={close} />)
@@ -33,10 +33,10 @@ export default function Nutrition() {
     <DiarySummary S={S} day={day} />
     {removed && <div role="status" className="nutrition-header card"><span>{t('Food deleted')}</span><button className="btn" onClick={() => { useStore.getState().update(s => undoEntry(s, removed)); setRemoved(null) }}>{t('Undo')}</button></div>}
     {!rows.length && <p className="card muted">{t('No food logged for this day.')}</p>}
-    {MEALS.map(meal => {
-      const entries = rows.filter(e => (MEALS.includes(e.meal) ? e.meal : 'snack') === meal)
+    {[...MEALS, 'undated'].map(meal => {
+      const entries = meal === 'undated' ? days[''] || [] : rows.filter(e => (MEALS.includes(e.meal) ? e.meal : 'snack') === meal)
       if (!entries.length) return null
-      return <section className="card" key={meal}><h2>{meals[meal]}</h2><ul className="nutrition-list">
+      return <section className="card" key={meal}><h2>{meal === 'undated' ? t('Undated entries') : meals[meal]}</h2><ul className="nutrition-list">
         {entries.map(e => {
           const { supported } = normalizeEntry(e)
           return <li key={e.id}>

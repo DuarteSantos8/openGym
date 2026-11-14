@@ -3667,6 +3667,7 @@ export default {
   "{0} of {1} modules on.": "เปิดอยู่ {0} จาก {1} โมดูล",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} จะหยุดซิงก์ระหว่างที่ \"สุขภาพ\" ปิดอยู่ ไม่มีอะไรถูกตัดการเชื่อมต่อ และจะตามทันเมื่อเปิด \"สุขภาพ\" อีกครั้ง",
   // Nutrition
+  "Undated entries": "รายการที่ไม่มีวันที่",
   "Add food": "เพิ่มอาหาร",
   "Add this device’s data to your profile?": "เพิ่มข้อมูลของอุปกรณ์นี้ในโปรไฟล์หรือไม่",
   "Amount": "ปริมาณ",

@@ -1,5 +1,5 @@
 import { visibleOptionalEntries, highestStamp } from '../sync-merge.js'
-import { NUTRIENTS, normalizeEntry, editEntry, roundAmount } from './entry.js'
+import { NUTRIENTS, normalizeEntry, editEntry, roundAmount, validDay } from './entry.js'
 const key = 'nutritionEntries'
 export function addEntry(S, entry) {
   if (!normalizeEntry(entry).supported) throw new Error('unsupported')
@@ -23,7 +23,7 @@ export function undoEntry(S, id, knownCopies = []) {
 export function diaryDays(S) {
   const days = Object.create(null)
   for (const entry of visibleOptionalEntries(S, key)) {
-    const day = typeof entry.day === 'string' ? entry.day : ''
+    const day = validDay(entry.day) ? entry.day : ''
     ;(days[day] ||= []).push(entry)
   }
   return days

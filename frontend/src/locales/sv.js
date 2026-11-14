@@ -3703,6 +3703,7 @@ export default {
   "{0} of {1} modules on.": "{0} av {1} moduler på.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} slutar synka medan ”Hälsa” är av. Inget kopplas bort, och allt kommer ikapp när ”Hälsa” är tillbaka.",
   // Nutrition
+  "Undated entries": "Poster utan datum",
   "Add food": "Lägg till mat",
   "Add this device’s data to your profile?": "Lägga till enhetens data i din profil?",
   "Amount": "Mängd",

@@ -3735,6 +3735,7 @@ export default {
   "{0} of {1} modules on.": "{1}টির মধ্যে {0}টি মডিউল চালু।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"স্বাস্থ্য\" বন্ধ থাকলে {0} সিঙ্ক বন্ধ রাখে। কিছুই বিচ্ছিন্ন হয় না, আর \"স্বাস্থ্য\" ফিরলেই সব পুষিয়ে নেয়।",
   // Nutrition
+  "Undated entries": "তারিখবিহীন এন্ট্রি",
   "Add food": "খাবার যোগ করুন",
   "Add this device’s data to your profile?": "এই ডিভাইসের তথ্য আপনার প্রোফাইলে যোগ করবেন?",
   "Amount": "পরিমাণ",

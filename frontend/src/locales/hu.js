@@ -3659,6 +3659,7 @@ export default {
   "{0} of {1} modules on.": "{1} modulból {0} bekapcsolva.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Amíg az „Egészség” ki van kapcsolva, a(z) {0} nem szinkronizál. A kapcsolat megmarad, és mindent bepótol, amint az „Egészség” újra be van kapcsolva.",
   // Nutrition
+  "Undated entries": "Dátum nélküli bejegyzések",
   "Add food": "Étel hozzáadása",
   "Add this device’s data to your profile?": "Hozzáadod az eszköz adatait a profilodhoz?",
   "Amount": "Mennyiség",

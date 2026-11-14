@@ -227,6 +227,9 @@ not an ambiguous per-100g value. Catalog changes never silently rewrite diary en
 - Reads validate without rewriting. Future versions, older unsupported schemas and invalid
   rows remain opaque and read-only, contribute unknowns instead of numeric totals, and are
   excluded from recent/frequent suggestions. Unknown fields on supported rows survive edits.
+  A missing or malformed day appears in a separate **Undated entries** section, still read-only
+  and deletable, without changing its stored day. Undated rows never count toward any valid
+  day's totals. An unsupported version with a valid day stays filed to that saved day.
 - `createEntry(input, context)` in `frontend/src/lib/nutrition/entry.js` is the EP-05b seam.
   Input contains `label`, `day`, `meal`, optional `amount`/`unit`, serving fields, and entry-total
   nutrients. Context supplies creation-only `source`, `externalId`, `contentFingerprint`, and
