@@ -63,6 +63,7 @@ import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substit
 import { backupSuggestions } from './lib/backup-suggestions.js'
 import { refusalsFor, markUsed } from './lib/session-targets.js'
 import { isGymSplit, brandAt, withExGym, currentGymId, cleanBrand, BRAND_MAX, placesOf, onlyPlace } from './lib/gym-split.js'
+import { brandMatches, withBrandHits, brandFirst } from './lib/brand-search.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle, MUSCLE_MODEL } from './lib/muscles.js'
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
@@ -2043,7 +2044,10 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   const profile = activeProfile(gymS)
   const profiles = st.equipProfiles || []
   const inScope = e => bp === '★' ? usage[e.id] : bp === '☆' ? isFav(st, e.id) : (!bp || e.bp === bp)
-  let inPart = searchExercises(bp === SAME ? sameMuscleFirst(all, likeEx) : all.filter(inScope), q)
+  const scope = bp === SAME ? sameMuscleFirst(all, likeEx) : all.filter(inScope)
+  // What a typed machine brand reaches (#1082) joins the results, led by it once ranked below.
+  const byBrand = brandMatches(scope, st, q)
+  let inPart = withBrandHits(scope, searchExercises(scope, q), byBrand)
   if (bp === '★') inPart = [...inPart].sort((a, b) => (usage[b.id] - usage[a.id]) || exerciseNameFor(a).localeCompare(exerciseNameFor(b)))
   // The Library's Type row (issue #521), with its fallback: a type the search or muscle group
   // narrowed away is ignored for this view, not forgotten.
@@ -2060,7 +2064,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   // While searching, what you have logged or planned follows right after them.
   const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
   const ranked = q.trim() ? sortYoursFirst(narrowedList, st, usage) : sortFavouritesFirst(narrowedList, st)
-  const f = bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked
+  const f = brandFirst(bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked, byBrand)
   const showSuggestions = !!like && !q.trim() && bp !== '★' && bp !== '☆'
   // A planned backup is already listed first, so it is not suggested a second time.
   const pool = backupList.length && !q.trim() ? f.filter(e => !backupList.includes(e)) : f
@@ -2084,7 +2088,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
     : []
   // The name opens the config sheet, stretched over the row; the quick add is its sibling (card dismiss pass).
   const pickRow = e => <div key={e.id} className="item tap-host">
-        <Thumb ex={e} /><button type="button" className="grow item-open tap-main" onClick={() => onPick(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
+        <Thumb ex={e} /><button type="button" className="grow item-open tap-main" onClick={() => onPick(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span>{byBrand.has(e.id) && <span className="ss">{byBrand.get(e.id)}</span>}</button>
         {/* Accent tag = already in a routine/log ("Chosen"); the yellow star by the name = favourite. */}
         {usage[e.id] && <span className="tag acc"><Icon name="starFill" /></span>}
         {/* "Not at my gym" (#923): takes this machine out of the gym the list is filtered for. */}
