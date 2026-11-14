@@ -1,7 +1,8 @@
 # EP-04 parent integration review
 
-Source review is in progress at frozen `4d87fc32`. Final owner evidence and independent
-verdict are pending; this file does not accept the task or its full test suite.
+Source review at frozen `4d87fc32` found three Important issues and one Minor precision issue:
+[independent review](independent-review-round1.md). Final owner evidence and corrections are
+pending; this file does not accept the task or its full test suite.
 
 ## Findings returned to the owner before final verification
 
@@ -41,3 +42,20 @@ exception; the final handoff must explain and retain those instead of erasing th
 
 First full frontend wrapper terminated143 before a result summary; that is not a pass.
 Final full verification is pending. Parent has not rerun full suites or touched author services.
+
+## Independent-review correction round1/5
+
+Original author received all findings: retained null elements crash reducers; malformed serving
+metadata passes read validation; declining delayed guest adoption into an empty server document
+loses post-sign-in foods from the active copy (recoverable in stash). Real-store regression
+tests, narrow fixes and scoped re-review are required. The active full run finishes before
+source edits, so its tested tree remains identifiable; subsequent source changes justify a
+final rerun. No correction has yet been accepted.
+
+Minor M1 (nutrition formatting accidentally uses workout weight precision) is assigned as a
+separate small correction in the same area, preserving global workout formatting. The missing
+mL/serving JSON+ZIP and older-client roundtrip coverage is also assigned to close the evidence gap.
+Read-validation ruling: missing legacy provenance remains unknown without invented values;
+present creation/provenance metadata must have valid types/formats. Document/test that policy
+without silently migrating stored rows. This preserves older data while rejecting malformed
+metadata; the independent scoped reviewer must verify it.

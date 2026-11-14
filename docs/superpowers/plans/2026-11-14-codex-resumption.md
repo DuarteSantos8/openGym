@@ -87,3 +87,13 @@ Progress and final evidence live in `../progress.md` and each task's evidence di
   RED `4387f0d6` / GREEN `4d87fc32`, preserving dates and separating undated rows from totals.
 - EP-03's full frontend timeout remains a failed gate despite its isolated pass. One final
   combined candidate run with one worker is required; no second isolated full retry.
+
+## External integration update
+
+Read-only GitHub checks confirmed PR9 merged at09:52:53Z as7362eeb7 and PR11 at09:53:42Z
+as470defb7, both 2026-11-14. These were external actions, not this coordinator or its children.
+The parent merged updated integration into its unprotected working branch as2cecef7b. The sole
+conflict was stale inherited progress text; the newer parent-owned ledger was retained.
+EP-03's independently found assistance defect remains open despite the external merge. Its
+correction is new draftPR12 at44b24eed and receives scoped review before acceptance. EP-05a
+source is unchanged and reviewed. No protected branch write or deployment was performed here.
