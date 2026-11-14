@@ -55,6 +55,8 @@ function flyTo(n, from, slot, key) {
   const sl = document.createElement('div')
   sl.className = 'drag-slot-ghost'
   sl.style.cssText = `left:${slot.left + 8}px;top:${slot.top + 4}px;width:${slot.width - 16}px;height:${slot.height - 8}px`
+  // Copies for the eye only: out of the accessibility tree, the focus order and the id space.
+  for (const x of [g, sl]) { x.setAttribute('aria-hidden', 'true'); x.inert = true; x.removeAttribute('id'); x.querySelectorAll('[id]').forEach(c => c.removeAttribute('id')) }
   document.body.append(sl, g)
   const dx = tr.left + tr.width * .7 - from.x, dy = tr.top + Math.min(tr.height, 56) / 2 - from.y
   const a = g.animate([
@@ -65,11 +67,8 @@ function flyTo(n, from, slot, key) {
   const clean = () => { g.remove(); sl.remove() }
   a.onfinish = clean
   later(SETTLE_MS + 200, clean)
-  later(200, () => {
-    const c = tgt.querySelector('.ss') || tgt
-    c.classList.add('drop-tick')
-    later(220, () => c.classList.remove('drop-tick'))
-  })
+  const c = tgt.querySelector('.ss') // only a folder's count ticks; a pill or crumb has none
+  if (c) later(200, () => { c.classList.add('drop-tick'); later(220, () => c.classList.remove('drop-tick')) })
   return true
 }
 
@@ -90,7 +89,8 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
   // only). Reduce Motion: no flight, the row just fades in at its place.
   useLayoutEffect(() => {
     const p = pending.current
-    if (!p) return
+    // A store write can render before our own lift clears; the row is still at the finger then.
+    if (!p || lifted) return
     pending.current = null
     const el = rowEl(listRef.current, p.id)
     if (!el) return

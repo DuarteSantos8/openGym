@@ -4278,7 +4278,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .drag-ghost{position:fixed;z-index:80;margin:0;pointer-events:none;background:var(--surface-3);border-radius:var(--r-card);box-shadow:0 12px 28px rgba(0,0,0,.35);transform-origin:center}
 .drag-slot-ghost{position:fixed;z-index:79;pointer-events:none;border:2px dashed var(--label-3);border-radius:10px;animation:drag-slot-out 100ms ease-out forwards}
 @keyframes drag-slot-out{to{opacity:0}}
-.drop-tick{display:inline-block;animation:drag-tick 200ms var(--ease)}
+.drop-tick{transform-origin:left center;animation:drag-tick 200ms var(--ease)}
 @keyframes drag-tick{from{transform:scale(1.15)}to{transform:none}}
 @keyframes drag-fade{from{opacity:0}to{opacity:1}}
 .plan-routes.is-dragging .plan-group{overflow:visible}

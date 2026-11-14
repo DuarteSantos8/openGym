@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { flushSync } from 'react-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLongPressDrag } from './use-long-press-drag.js'
 import * as haptics from './haptics.js'
@@ -20,7 +21,7 @@ function Harness() {
   d = useLongPressDrag({ listRef, rows: ['a', 'b', 'c'], onReorder, onDropOn, nameOf: x => x.toUpperCase() })
   return (
     <div>
-      <div id="t" {...d.targetProps('folder1')} />
+      <div id="t" {...d.targetProps('folder1')}><div className="ss" /></div>
       <div id="list" ref={listRef} style={{ overflowY: 'auto' }}>
         {['a', 'b', 'c'].map(id => <div key={id} id={id} {...d.rowProps(id)} />)}
       </div>
@@ -246,6 +247,26 @@ describe('over another list', () => {
       expect($('a').style.transition).toBe('')
     })
 
+    it('a store write that renders before the lift clears still settles the row', () => {
+      let n = 0; const subs = new Set()
+      const store = { get: () => n, sub: f => { subs.add(f); return () => subs.delete(f) } }
+      onReorder = vi.fn(() => { n++; flushSync(() => subs.forEach(f => f())) }) // a sync-lane render, ahead of the hook's own state
+      function Store() {
+        React.useSyncExternalStore(store.sub, store.get)
+        return <Harness />
+      }
+      act(() => root.render(<Store />))
+      ;['a', 'b', 'c'].forEach((id, i) => { $(id).getBoundingClientRect = () => rect(100 + i * 60) })
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      fire(window, 'pointermove', 10, 175) // over b
+      let reads = 0
+      $('a').getBoundingClientRect = () => rect(reads++ < 2 ? 200 : 100)
+      fire(window, 'pointerup', 10, 175)
+      expect(onReorder).toHaveBeenCalled()
+      expect($('a').style.transition).toContain('transform 280ms')
+    })
+
     it('a drop into a folder flies a copy and ticks the target, then cleans up', () => {
       const anim = { onfinish: null }
       const animate = vi.fn(() => anim)
@@ -258,7 +279,9 @@ describe('over another list', () => {
       expect(document.querySelector('.drag-ghost')).not.toBeNull()
       expect(document.querySelector('.drag-slot-ghost')).not.toBeNull()
       act(() => { vi.advanceTimersByTime(200) })
-      expect($('t').classList.contains('drop-tick')).toBe(true)
+      expect($('t').querySelector('.ss').classList.contains('drop-tick')).toBe(true)
+      expect(document.querySelector('.drag-ghost').getAttribute('aria-hidden')).toBe('true')
+      expect(document.querySelector('.drag-ghost').inert).toBe(true)
       act(() => { anim.onfinish() })
       expect(document.querySelector('.drag-ghost')).toBeNull()
       delete window.Element.prototype.animate
