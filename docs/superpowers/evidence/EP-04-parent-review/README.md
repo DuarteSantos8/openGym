@@ -1,8 +1,9 @@
 # EP-04 parent integration review
 
 Source review at frozen `4d87fc32` found three Important issues and one Minor precision issue:
-[independent review](independent-review-round1.md). Final owner evidence and corrections are
-pending; this file does not accept the task or its full test suite.
+[independent review](independent-review-round1.md). The [scoped correction review](independent-fix1-review.md)
+at `a1639383` (runtime `fe22da11`) passes: I1/I2/I3/M1 addressed, no new runtime defect.
+Final owner evidence/rebase identity check and combined acceptance remain pending.
 
 ## Findings returned to the owner before final verification
 
@@ -68,3 +69,10 @@ with focused parity and API stamping coverage; generic ID merge stays unchanged.
 test's all-default-on assertion also needs an opt-in-aware expectation, with no Tour runtime
 change. Pre-fix full frontend completed exit1:7,962 pass/1 Tour assertion failure. Preserve it;
 the final combined gate must pass after the corrections. These are not yet accepted fixes.
+
+Round1/5 result: four findings addressed, zero runtime findings open, commits
+`4d87fc32..a1639383`. Reviewer inspected218/218 focused frontend tests14files and API26/26.
+One nonblocking Minor E1 remains: eight evidence logs have blank EOF lines. Author is trimming
+them during final evidence cleanup. Source/correction approval is granted; final full runtime
+acceptance awaits the combined gate. The reviewer confirms raw malformed preservation is local
+edit behavior, not a new reconciliation rule for unidentified elements during remote merging.
