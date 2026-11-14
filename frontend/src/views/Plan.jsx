@@ -20,7 +20,7 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
-import { colorOf, nextColor } from '../lib/routine-colors.js'
+import { colorOf, nextColor, tileStyle } from '../lib/routine-colors.js'
 import RoutineTile from '../components/RoutineTile.jsx'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -278,7 +278,7 @@ function Schedule({ S, update, nav, mode }) {
     items: [
       ...(seq.length ? [{ icon: 'moon', label: t('Rest day'), sub: t('A day off before the next one'), onClick: () => setSeq([...seq, REST]) }] : []),
       ...S.routines.map(r => ({
-        icon: glyphOf(r.emoji), label: r.name, sub: seq.includes(r.id) ? t('Already in the loop: adds it again') : undefined, onClick: () => setSeq([...seq, r.id]),
+        icon: glyphOf(r.emoji), iconStyle: tileStyle(r), label: r.name, sub: seq.includes(r.id) ? t('Already in the loop: adds it again') : undefined, onClick: () => setSeq([...seq, r.id]),
       })),
     ],
   })

@@ -179,6 +179,14 @@ describe('Plan — the loop', () => {
     expect(mocks.S.rotation.sequence).toEqual(['a', 'b', 'c'])
   })
 
+  it('the rotation menu shows a coloured routine on its own colour tile', () => {
+    mount({ queue: live({ rotationId: 'r1' }), rotation: saved, routines: routines.map(r => r.id === 'c' ? { ...r, color: 'teal' } : r) })
+    click(byLabel('Add routine to the rotation'))
+    const items = menuSheet.mock.calls[0][0].items
+    expect(items[3].iconStyle).toEqual({ '--tint': 'var(--teal)', '--on-tint': 'var(--on-teal)' })
+    expect(items[2].iconStyle).toBeUndefined()
+  })
+
   it('Edit reveals the handles; moving one reorders without restarting the pass', () => {
     const since = Date.now() - 86400000
     mount({ queue: live({ since, rotationId: 'r1' }), rotation: saved })

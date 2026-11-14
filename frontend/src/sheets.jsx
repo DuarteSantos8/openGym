@@ -241,7 +241,7 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
           aria-disabled={it.disabled || undefined}
           aria-expanded={it.fold ? false : undefined}
           {...tappable(it.disabled ? null : it.fold ? it.onClick : () => { close(); it.onClick && it.onClick() })}>
-          {it.lead ? <span className="lrow-i" aria-hidden="true">{it.lead}</span> : it.icon && <span className="lrow-i"><Icon name={it.icon} /></span>}
+          {it.lead ? <span className="lrow-i" aria-hidden="true">{it.lead}</span> : it.icon && <span className="lrow-i" style={it.iconStyle}><Icon name={it.icon} /></span>}
           <div className="grow"><div className="tt">{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
           {it.on != null && <span className={'menu-on' + (it.on ? ' is-on' : '')}><Icon name="check" /></span>}
           {it.chevron && <Icon name="chevronRight" className="menu-chev" />}
