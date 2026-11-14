@@ -3,9 +3,18 @@
    its own changes (an older app, an API planner) must hold in this side's merge. */
 import { describe, expect, it } from 'vitest'
 import * as S from '../../../api/sync-stamps.js'
-import { highestStamp, mergeDeletions, mergeEdits, mergeStates, stampChange, stampEntry, stampEdits, stampRestore } from './sync-merge.js'
+import { highestStamp, mergeDeletions, mergeEdits, mergeStates, stampChange, stampEntry, stampEdits, stampRestore, stampOptionalCollections } from './sync-merge.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
+it('optional stamping preserves malformed retained elements during unrelated edits on both sides', () => {
+  const raw = [null, false, 17, [], { opaque: true }]
+  const prev = { nutritionEntries: [...raw, { id: 'food', label: 'Before', _ts: 10, _f: { label: 10 } }] }
+  const next = clone(prev); next.nutritionEntries.at(-1).label = 'After'
+  const client = clone(next), server = clone(next)
+  stampOptionalCollections(prev, client, 20); S.stampOptionalCollections(prev, server, 20)
+  expect(client.nutritionEntries.slice(0, raw.length)).toEqual(raw)
+  expect(server.nutritionEntries).toEqual(client.nutritionEntries)
+})
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296 } }
 
 describe('api/sync-stamps.js matches sync-merge.js', () => {
