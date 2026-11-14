@@ -13,6 +13,8 @@ import {
 } from '../lib/routine-folders.js'
 import { archiveFolder, archiveRoutines, deleteFolderWithRoutines, scheduledDays, undoSnapshot } from '../lib/routine-archive.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
+import { listMove } from '../lib/list-motion.js'
+import { still } from '../lib/flip.js'
 import { menuSheet, confirmSheet } from '../sheets.jsx'
 import { startOrPreview } from './StartSheets.jsx'
 import { routineLookSheet } from './RoutineLook.jsx'
@@ -20,22 +22,28 @@ import { deleteRoutineWithUndo, newRoutine } from '../views/Plan.jsx'
 import { folderNameSheet } from './RoutineFolder.jsx'
 
 const UNDO_MS = 8000
+const SHEET_HOLD = 120, MOVE_HOLD = SHEET_HOLD + 160   // Move sheet: dismiss after the pick, the row leaves 160 ms after that starts
 // The current plan's tile: round, in the accent, so it never reads as a routine's colour square.
 const PIN = { borderRadius: '50%', background: 'var(--acc)', color: 'var(--on-acc)' }
 const same = (a, b) => cleanFolder(a).toLowerCase() === cleanFolder(b).toLowerCase()
 const S = () => useStore.getState().S
 const update = fn => useStore.getState().update(fn)
 
+// Archive: the row trails 16 px as it goes, and the Archive row's count ticks once it has left.
+const ARCHIVE_MOTION = { slide: true, tick: { key: 'archive', at: 160 } }
+
 /** Runs `change(s)` and offers an Undo. `change` returns a snapshot for undoSnapshot, or
  *  `{ undo(s) }` of its own. The Undo marks what it put back, so another device's later edit wins. */
-export function withUndo(message, change) {
+export function withUndo(message, change, m = {}) {
   const before = S()
   let snap
-  update(s => { snap = change(s) })
+  listMove(() => update(s => { snap = change(s) }), m)
   const marks = undoMarks(before, S())
   useUI.getState().toast(message, { action: t('Undo'), ms: UNDO_MS, onAction: () => {
     let ok = false
-    update(s => { ok = snap.undo ? snap.undo(s) : undoSnapshot(s, snap); if (ok) markUndone(s, marks) })
+    // The row comes back after the rows below have started to open a gap for it.
+    listMove(() => update(s => { ok = snap.undo ? snap.undo(s) : undoSnapshot(s, snap); if (ok) markUndone(s, marks) }),
+      { delay: '0ms', enterDelay: 100, tick: m.tick && { ...m.tick, at: 160 } })
     // False when a sync brought it back first.
     if (!ok) useUI.getState().toast(t('It’s already back.'))
   } })
@@ -49,7 +57,7 @@ const whenText = id => {
 const isScheduled = id => { const d = scheduledDays(S(), id); return d.week.length + d.dayPlan.length > 0 || d.loop }
 
 export function archiveRoutineWithUndo(r) {
-  const go = () => withUndo(t('“{0}” archived.', r.name), s => archiveRoutines(s, [r.id]))
+  const go = () => withUndo(t('“{0}” archived.', r.name), s => archiveRoutines(s, [r.id]), ARCHIVE_MOTION)
   if (!isScheduled(r.id)) return go()
   confirmSheet({ title: t('Archive'), message: t('{0} is on {1}. Archive takes it off the schedule.', r.name, whenText(r.id)), confirmText: t('Archive'), onConfirm: go })
 }
@@ -58,13 +66,13 @@ export function archiveRoutineWithUndo(r) {
 export function archiveIdsWithUndo(ids) {
   const r = ids.length === 1 && S().routines.find(x => x.id === ids[0])
   if (r) return archiveRoutineWithUndo(r)
-  const go = () => withUndo(t('{0} archived.', routineCount(ids.length)), s => archiveRoutines(s, ids))
+  const go = () => withUndo(t('{0} archived.', routineCount(ids.length)), s => archiveRoutines(s, ids), ARCHIVE_MOTION)
   if (!ids.some(isScheduled)) return go()
   confirmSheet({ title: t('Archive'), message: t('{0} are on your schedule. Archive takes them off the schedule.', routineCount(ids.length)), confirmText: t('Archive'), onConfirm: go })
 }
 
 export function archiveFolderWithUndo(name) {
-  const go = () => withUndo(t('“{0}” archived.', name), s => archiveFolder(s, name))
+  const go = () => withUndo(t('“{0}” archived.', name), s => archiveFolder(s, name), ARCHIVE_MOTION)
   if (!S().routines.some(r => isLive(r) && same(folderOf(r), name) && isScheduled(r.id))) return go()
   confirmSheet({ title: t('Archive'), message: t('{0} has routines on your schedule. Archive takes them off the schedule.', name), confirmText: t('Archive'), onConfirm: go })
 }
@@ -132,7 +140,8 @@ export function folderMenu(name, onRenamed) {
   menuSheet({
     title: name,
     sections: [{ items: [
-      { icon: 'pushpin', iconStyle: PIN, label: current ? t('Not the current plan') : t('Make current plan'), onClick: () => update(s => setCurrent(s, current ? null : name)) },
+      { icon: 'pushpin', iconStyle: PIN, label: current ? t('Not the current plan') : t('Make current plan'),
+        onClick: () => listMove(() => update(s => setCurrent(s, current ? null : name)), { dur: '320ms', delay: '0ms', land: current ? undefined : 'f' + name }) },
       { icon: 'pencil', label: t('Rename'), onClick: () => folderNameSheet({ mode: 'rename', name, onDone: onRenamed }) },
       { icon: 'plus', label: t('New routine here'), onClick: () => newRoutine(update, nav, name) },
       { icon: 'archive', label: t('Archive folder and routines'), onClick: () => archiveFolderWithUndo(name) },
@@ -145,10 +154,12 @@ export function folderMenu(name, onRenamed) {
 
 /** Moves routines to the end of a folder ('' for loose, at the end of the list). */
 function moveIds(ids, name) {
-  update(s => {
+  // The sheet leaves 120 ms after the pick, then the row goes (160 ms after the dismiss starts), then the target's count ticks.
+  const hold = still() ? 0 : MOVE_HOLD
+  listMove(() => update(s => {
     moveToFolder(s, ids, name)
     s.routines = [...s.routines.filter(r => !ids.includes(r.id)), ...s.routines.filter(r => ids.includes(r.id))]
-  })
+  }), { hold, tick: name ? { key: 'f' + name, at: hold + 100 } : undefined })
 }
 
 export function moveSheet(ids) {
@@ -161,7 +172,7 @@ export function moveSheet(ids) {
     return {
       icon: now ? 'pushpin' : 'folder', iconStyle: now ? PIN : undefined, label: f.name,
       sub: [now && t('Current plan'), here ? t('Here now') : !now && routineCount(f.live)].filter(Boolean).join(' · ') || routineCount(f.live),
-      on: here, onClick: () => moveIds(ids, f.name),
+      on: here, closeAfter: SHEET_HOLD, onClick: () => moveIds(ids, f.name),
     }
   }
   menuSheet({
@@ -169,7 +180,7 @@ export function moveSheet(ids) {
     sections: [{ items: [
       ...folders.filter(f => same(f.name, cur)).map(item),
       ...folders.filter(f => !same(f.name, cur)).map(item),
-      { icon: 'folderOff', label: t('No folder'), sub: t('Takes it out of its folder'), on: where === '', onClick: () => moveIds(ids, '') },
+      { icon: 'folderOff', label: t('No folder'), sub: t('Takes it out of its folder'), on: where === '', closeAfter: SHEET_HOLD, onClick: () => moveIds(ids, '') },
       { icon: 'plus', iconStyle: { background: 'var(--acc-soft)', color: 'var(--acc-ink)' }, labelStyle: { color: 'var(--acc-ink)' }, label: t('New folder'),
         onClick: () => folderNameSheet({ mode: 'new', onDone: n => moveIds(ids, n) }) },
     ] }],

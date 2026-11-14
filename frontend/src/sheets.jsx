@@ -142,6 +142,7 @@ import { isOn } from './lib/modules.js'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
 import DailyCheckin from './components/DailyCheckin.jsx'
+import { still } from './lib/flip.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -219,6 +220,7 @@ const menuGroups = list => (list || [])
   .filter(g => g.more || g.items.length)
 function MenuSheet({ title, titleClass = '', subtitle, items, sections, cancel, close }) {
   const [open, setOpen] = useState(false)
+  const [picked, setPicked] = useState(null)   // an item with `closeAfter`: its check shows at once, the sheet goes after that many ms
   const firstMore = useRef(null)
   useEffect(() => { if (open) firstMore.current?.focus() }, [open])
   const groups = []
@@ -244,10 +246,13 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, cancel, 
           className={'item menu-item' + (it.danger ? ' danger' : '') + (it.disabled ? ' disabled' : '') + (it.accent ? ' accent' : '') + (it.fold ? ' menu-more' : '')}
           aria-disabled={it.disabled || undefined}
           aria-expanded={it.fold ? false : undefined}
-          {...tappable(it.disabled ? null : it.fold ? it.onClick : () => { close(); it.onClick && it.onClick() })}>
+          {...tappable(it.disabled || picked ? null : it.fold ? it.onClick : () => {
+            if (it.closeAfter && !still()) { setPicked(gi + '.' + i); setTimeout(close, it.closeAfter) } else close()
+            it.onClick && it.onClick()
+          })}>
           {it.lead ? <span className="lrow-i" aria-hidden="true">{it.lead}</span> : it.icon && <span className="lrow-i" style={it.iconStyle}><Icon name={it.icon} /></span>}
           <div className="grow"><div className="tt" style={it.labelStyle}>{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
-          {it.on != null && <span className={'menu-on' + (it.on ? ' is-on' : '')}><Icon name="check" /></span>}
+          {it.on != null && <span className={'menu-on' + ((picked ? picked === gi + '.' + i : it.on) ? ' is-on' : '')}><Icon name="check" /></span>}
           {it.chevron && <Icon name="chevronRight" className="menu-chev" />}
           {it.fold && <Icon name="chevronDown" className="menu-chev" />}
         </div>)}

@@ -34,7 +34,7 @@ export default function RoutineRow({ r, sub, body, onOpen, onMenu, swipe, edit, 
   const name = <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub}</div></div>
   // Edit: the row is no button (it holds the grip, which a screen reader would lose inside one). The
   // check circle is the stretched primary (.tap-main), so a tap anywhere on the row ticks it.
-  if (edit) return <div className={'item plan-routine tap-host' + (edit.checked ? ' is-selected' : '')} data-reorder-row="" style={edit.style}>
+  if (edit) return <div className={'item plan-routine tap-host' + (edit.checked ? ' is-selected' : '')} data-reorder-row="" data-flip-key={r.id} style={edit.style}>
     <button type="button" role="checkbox" aria-checked={!!edit.checked} className="plan-check tap-main" aria-label={t('Select {0}', said(r.name))}
       onClick={edit.onToggle}><span><Icon name="check" /></span></button>
     <RoutineTile r={r} />
@@ -42,16 +42,16 @@ export default function RoutineRow({ r, sub, body, onOpen, onMenu, swipe, edit, 
     <MiniBodyMap routines={[r]} tint={colorOf(r)} body={body} />
     {edit.grip && <button type="button" className="plan-grip" aria-label={t('Move {0}', said(r.name))} title={t('Drag to reorder')} {...edit.handle}><Icon name="grip" /></button>}
   </div>
-  const row = <div className="item plan-routine" {...tappable(onOpen)}>
+  const row = <div className="item plan-routine" data-flip-key={swipe || drag ? undefined : r.id} {...tappable(onOpen)}>
     <RoutineTile r={r} />
     {name}
     <MiniBodyMap routines={[r]} tint={colorOf(r)} body={body} />
     <MoreButton name={r.name} onClick={onMenu} />
   </div>
-  const out = swipe ? <SwipeRow className="swrow-item" canSwipe={drag ? () => !drag.held() : undefined} {...swipe}>{row}</SwipeRow> : row
+  const out = swipe ? <SwipeRow className="swrow-item" data-flip-key={drag ? undefined : r.id} canSwipe={drag ? () => !drag.held() : undefined} {...swipe}>{row}</SwipeRow> : row
   if (!drag) return out
   // The wrapper keeps the old slot (a dashed outline while lifted); the inner one rides the finger.
-  return <div className={'drag-row' + (drag.lifted ? ' is-lifted' : '')} data-name={r.name} style={drag.lifted ? { '--slot': drag.slot + 'px' } : undefined} {...drag.props}>
+  return <div className={'drag-row' + (drag.lifted ? ' is-lifted' : '')} data-name={r.name} data-flip-key={r.id} style={drag.lifted ? { '--slot': drag.slot + 'px' } : undefined} {...drag.props}>
     <div className="drag-in" style={drag.lifted ? { '--dy': drag.dy + 'px' } : drag.shift ? { transform: `translateY(${drag.shift}px)` } : undefined}>{out}</div>
   </div>
 }

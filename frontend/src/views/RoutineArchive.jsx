@@ -13,6 +13,7 @@ import Icon from '../components/Icon.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import RoutineTile from '../components/RoutineTile.jsx'
 import { withUndo } from '../components/RoutineMenus.jsx'
+import { listMove } from '../lib/list-motion.js'
 import { MoreButton } from '../components/RoutineRow.jsx'
 
 const update = fn => useStore.getState().update(fn)
@@ -29,7 +30,7 @@ const restored = name => useUI.getState().toast(t('“{0}” restored.', name))
 
 function routineMenu(r) {
   menuSheet({ title: r.name, sections: [{ items: [
-    { icon: 'undo', label: t('Restore'), onClick: () => { update(s => { restoreRoutines(s, [r.id]) }); restored(r.name) } },
+    { icon: 'undo', label: t('Restore'), onClick: () => restoreOne(r) },
   ] }, { items: [
     { icon: 'trash', label: t('Delete for good'), danger: true, onClick: () => deleteForGood([r.id], r.name, t('“{0}” gone.', r.name)) },
   ] }] })
@@ -37,16 +38,16 @@ function routineMenu(r) {
 
 function folderMenu(name, ids) {
   menuSheet({ title: name, sections: [{ items: [
-    { icon: 'undo', label: t('Restore folder'), onClick: () => { update(s => { restoreFolder(s, name) }); restored(name) } },
+    { icon: 'undo', label: t('Restore folder'), onClick: () => { listMove(() => update(s => { restoreFolder(s, name) })); restored(name) } },
   ] }, { items: [
     { icon: 'trash', label: t('Delete folder for good'), danger: true, onClick: () => deleteForGood(ids, routineCount(ids.length), t('“{0}” and its routines gone.', name)) },
   ] }] })
 }
 
-const restoreOne = r => { update(s => { restoreRoutines(s, [r.id]) }); restored(r.name) }
+function restoreOne(r) { listMove(() => update(s => { restoreRoutines(s, [r.id]) })); restored(r.name) }
 
 const rows = rs => rs.map(r =>
-  <div key={r.id} className="item plan-routine arch-routine">
+  <div key={r.id} data-flip-key={r.id} className="item plan-routine arch-routine">
     <RoutineTile r={r} />
     <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
     <button type="button" className="arch-restore" aria-label={nameIn(r.name, t('Restore'))} onClick={() => restoreOne(r)}><Icon name="undo" />{t('Restore')}</button>
@@ -74,7 +75,7 @@ export default function RoutineArchive() {
     {archived.length ? <>
       {/* One card per archived folder, then the loose ones in their own, so they never read as part of the last folder. */}
       {folders.map(g => <div key={g.folder} className="list plan-group routine-list plan-routines">
-        <div className="plan-folder-bar arch-folder">
+        <div className="plan-folder-bar arch-folder" data-flip-key={'ag' + g.folder}>
           <span className="plan-folder"><Icon name="folder" /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span></span>
           <MoreButton name={g.folder} onClick={() => folderMenu(g.folder, g.routines.map(r => r.id))} />
         </div>

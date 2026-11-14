@@ -37,6 +37,7 @@ import { isOn } from '../lib/modules.js'
 import { activeRoutines, currentFolder, folderList, folderOf, isLive, moveToFolder, reorderFolders } from '../lib/routine-folders.js'
 import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
+import { listMove } from '../lib/list-motion.js'
 import { routineMenu, folderMenu, duplicateRoutine, moveSheet, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
@@ -62,7 +63,7 @@ export function deleteRoutineWithUndo(id) {
   const snap = routineSnapshot(st.S, id)
   if (!snap) return false
   const before = st.S
-  st.update(s => { deleteRoutine(s, id) })
+  listMove(() => st.update(s => { deleteRoutine(s, id) }))
   // What the removal moved (weekdays, reschedules, the loop), for the Undo to mark as put back:
   // a change another device made to one of them before it saw the removal then still wins.
   snap.marks = undoMarks(before, useStore.getState().S)
@@ -71,7 +72,7 @@ export function deleteRoutineWithUndo(id) {
 }
 export function undoDeleteRoutine(snap) {
   let ok = false
-  useStore.getState().update(s => { ok = restoreRoutine(s, snap); if (ok && snap.marks) markUndone(s, snap.marks) })
+  listMove(() => useStore.getState().update(s => { ok = restoreRoutine(s, snap); if (ok && snap.marks) markUndone(s, snap.marks) }), { delay: '0ms', enterDelay: 100 })
   // False when a sync brought it back first (another device's Undo, or its later edit).
   if (!ok) useUI.getState().toast(t('It’s already back.'))
   return ok
@@ -555,11 +556,11 @@ function Routines({ S, update, nav, edit, setEdit }) {
   </>
   // In Edit a folder is only reordered: no tap, no "…", just the grip.
   const folderRow = (key, tile, name, count, onOpen, onMenu, grip, drop) => grip
-    ? <div key={key} className="item plan-folder is-edit" data-reorder-row="" style={grip.style}>
+    ? <div key={key} data-flip-key={key} className="item plan-folder is-edit" data-reorder-row="" style={grip.style}>
       {folderText(tile, name, count)}
       {grip.grip && <button type="button" className="plan-grip" aria-label={t('Move {0}', said(name))} title={t('Drag to reorder')} {...grip.handle}><Icon name="grip" /></button>}
     </div>
-    : <div key={key} className={'item plan-folder' + (drop && hot(name) ? ' is-drop' : '')} {...(drop || {})} {...tappable(onOpen)}>
+    : <div key={key} data-flip-key={key} className={'item plan-folder' + (drop && hot(name) ? ' is-drop' : '')} {...(drop || {})} {...tappable(onOpen)}>
       {folderText(tile, name, count)}
       {drop && hot(name) ? here : <>{onMenu && <MoreButton name={name} onClick={onMenu} />}<Icon name="chevronRight" className="chev" /></>}
     </div>
@@ -591,7 +592,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
             </div>)
           : <>
             {cur && group('cur', [
-              <div key="cur" className={'item plan-current' + (hot(cur.name) ? ' is-drop' : '')} {...dragCur.targetProps(cur.name)}>
+              <div key="cur" data-flip-key={'f' + cur.name} className={'item plan-current' + (hot(cur.name) ? ' is-drop' : '')} {...dragCur.targetProps(cur.name)}>
                 <span className="lrow-i plan-pin"><Icon name="pushpin" /></span>
                 <div className="grow"><div className="tt">{cur.name}</div><div className="ss"><b>{t('Current plan')}</b> · {routineCount(cur.live)}</div></div>
                 {hot(cur.name) ? here : !edit && <MoreButton name={cur.name} onClick={() => folderMenu(cur.name)} />}

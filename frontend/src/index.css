@@ -4279,6 +4279,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .drag-slot-ghost{position:fixed;z-index:79;pointer-events:none;border:2px dashed var(--label-3);border-radius:10px;animation:drag-slot-out 100ms ease-out forwards}
 @keyframes drag-slot-out{to{opacity:0}}
 .drop-tick{transform-origin:left center;animation:drag-tick 200ms var(--ease)}
+/* Make current plan (lib/list-motion.js): the new block's tint (200, linear, an overlay so no colour animates)
+   and pin (.85 to 1, 220) land 120 ms after the block starts to move. Reduce Motion: no animation. */
+.plan-group .plan-current.cur-land{background:none;position:relative;isolation:isolate}
+.plan-current.cur-land::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--acc-soft);animation:cur-tint 200ms linear 120ms backwards}
+.plan-current.cur-land .plan-pin{animation:cur-pin 220ms var(--ease) 120ms backwards}
+@keyframes cur-tint{from{opacity:0}to{opacity:1}}
+@keyframes cur-pin{from{transform:scale(.85)}to{transform:none}}
+.reduce-motion .plan-current.cur-land::before,.reduce-motion .plan-current.cur-land .plan-pin{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-current.cur-land::before,.plan-current.cur-land .plan-pin{animation:none}}
 @keyframes drag-tick{from{transform:scale(1.15)}to{transform:none}}
 @keyframes drag-fade{from{opacity:0}to{opacity:1}}
 .plan-routes.is-dragging .plan-group{overflow:visible}
