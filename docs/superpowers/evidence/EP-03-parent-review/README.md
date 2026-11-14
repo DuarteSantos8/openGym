@@ -1,5 +1,15 @@
 # EP-03 parent review
 
+Independent review supersedes the initial parent probe's limited finding-free result:
+[initial I1](independent-review-round1.md), [round1 re-review](independent-fix1-review.md).
+Round1/5 (`470defb7..44b24eed`): I1 addressed; one new Important I2 remains. Saved false
+assistance overrides now reach old ID-based bodyweight subtraction, reversing the trend.
+Round2/5 is assigned to the original author with helper/Stats/bodyweight regressions and
+narrow browser proof. No fix acceptance is claimed. A minimal optional resolver in history.js
+is authorized only if needed to reuse arithmetic while preserving every existing caller's
+default behavior; no unrelated global volume change or copied arithmetic is authorized.
+Combined one-worker full frontend acceptance remains pending.
+
 Runtime inspected: `f28c91eafa1848a831493a96a82bc818738ad7bb`.
 
 The parent inspected the helper, Stats diff, required cases, semantic table and locale additions.

@@ -61,3 +61,10 @@ Read-validation ruling: missing legacy provenance remains unknown without invent
 present creation/provenance metadata must have valid types/formats. Document/test that policy
 without silently migrating stored rows. This preserves older data while rejecting malformed
 metadata; the independent scoped reviewer must verify it.
+
+Correction RED also exposed `stampOptionalCollections` filtering malformed retained elements
+after reducer guards. Parent authorized the smallest mirrored client/API retention correction
+with focused parity and API stamping coverage; generic ID merge stays unchanged. The old Tour
+test's all-default-on assertion also needs an opt-in-aware expectation, with no Tour runtime
+change. Pre-fix full frontend completed exit1:7,962 pass/1 Tour assertion failure. Preserve it;
+the final combined gate must pass after the corrections. These are not yet accepted fixes.
