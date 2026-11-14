@@ -46,6 +46,10 @@ describe('toast motion', () => {
     expect(el().className).not.toContain('quick')
   })
 
+  it('on Plan the toast sits above the pill (158px), not on it', () => {
+    expect(css).toContain('body:has(.plan-pill:not(.is-away)) #toast{bottom:calc(158px + var(--sab))}')
+  })
+
   it('Reduce Motion: no rise or ghost, under html.reduce-motion and under the phone setting', () => {
     expect(css).toMatch(/\.reduce-motion #toast,\.reduce-motion #toast\.show\{transform:translateX\(-50%\)\}/)
     expect(css).toMatch(/\.reduce-motion #toast \.toast-ghost\{display:none\}/)

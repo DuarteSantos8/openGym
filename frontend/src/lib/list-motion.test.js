@@ -94,6 +94,17 @@ describe('listMove', () => {
     expect(rowAt('b').classList.contains('cur-land')).toBe(false)
   })
 
+  it('a folder name with quotes and a backslash still ticks and lands (no selector error)', async () => {
+    vi.useFakeTimers()
+    setup(['a', 'fBlock "A"\\'])
+    listMove(() => { rowAt('a').remove(); place() }, { tick: { key: 'fBlock "A"\\', at: 0 }, land: 'fBlock "A"\\' })
+    await Promise.resolve()
+    vi.advanceTimersByTime(1)
+    const b = [...document.querySelectorAll('[data-flip-key]')].find(e => e.dataset.flipKey === 'fBlock "A"\\')
+    expect(b.classList.contains('cur-land')).toBe(true)
+    expect(b.querySelector('.ss').classList.contains('drop-tick')).toBe(true)
+  })
+
   it('Reduce Motion: the row fades in place, no slide, no FLIP, no tick or land', async () => {
     document.documentElement.classList.add('reduce-motion')
     const root = setup(['a', 'b', 'c'])

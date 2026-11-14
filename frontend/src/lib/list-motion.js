@@ -74,8 +74,11 @@ function arrive(el, rm, enterDelay) {
   el.animate?.([{ opacity: 0 }, { opacity: 1 }], rm ? { duration: RM_MS, easing: 'linear' } : { duration: 160, delay: enterDelay, easing: EASE, fill: 'backwards' })
 }
 
+// Equality, not a selector: a folder name may hold quotes and backslashes.
+const byKey = key => [...document.querySelectorAll('[data-flip-key]')].find(e => e.dataset.flipKey === key)
+
 function popCount(key) {
-  const n = document.querySelector(`[data-flip-key="${key}"] .ss`)
+  const n = byKey(key)?.querySelector('.ss')
   if (!n) return
   n.classList.remove('drop-tick'); void n.offsetWidth
   n.classList.add('drop-tick')
@@ -83,7 +86,7 @@ function popCount(key) {
 }
 
 function landBlock(key) {
-  const b = document.querySelector(`[data-flip-key="${key}"]`)
+  const b = byKey(key)
   if (!b) return
   b.classList.add('cur-land')
   setTimeout(() => b.classList.remove('cur-land'), 450)   // the end look is the plain look, so the swap is unseen

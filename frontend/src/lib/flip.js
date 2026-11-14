@@ -25,6 +25,7 @@ export function flipMeasure(root) {
 
 /** Slides each row that moved from its `before` place to where it is now. Call after the commit.
  *  `far`: a row that would travel more than this many px does not fly through the list: it fades in at its new place (160 ms, after 80). */
+// Call only after a commit, never during a live drag: it clears inline transform/transition on every keyed row.
 export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = 'var(--flip-delay)', far } = {}) {
   if (!root || !before?.size) return
   const rows = [...root.querySelectorAll(KEY)]

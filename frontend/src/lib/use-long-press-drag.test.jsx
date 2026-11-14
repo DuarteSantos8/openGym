@@ -287,6 +287,22 @@ describe('over another list', () => {
       delete window.Element.prototype.animate
     })
 
+    it('a drop into a list with no target of its own ticks nothing in it', () => {
+      const area = document.createElement('div'); area.setAttribute('data-drop-area', 'loose')
+      area.innerHTML = '<div><span class="ss">x</span></div>'
+      host.appendChild(area)
+      window.Element.prototype.animate = vi.fn(() => ({}))
+      const a = document.querySelector('[data-drop-area="loose"]')
+      a.getBoundingClientRect = () => rect(500, 200)
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      fire(window, 'pointermove', 10, 550)
+      fire(window, 'pointerup', 10, 550)
+      act(() => { vi.advanceTimersByTime(300) })
+      expect(a.querySelector('.ss').classList.contains('drop-tick')).toBe(false)
+      area.remove(); delete window.Element.prototype.animate
+    })
+
     it('Reduce Motion: no cue, no flight, no transform transition, a 120 ms fade instead', () => {
       document.documentElement.classList.add('reduce-motion')
       const animate = window.Element.prototype.animate = vi.fn()

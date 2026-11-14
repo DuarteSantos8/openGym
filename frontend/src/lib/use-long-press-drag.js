@@ -45,7 +45,8 @@ const inside = (r, x, y) => x >= r.left && x <= r.right && y >= r.top && y <= r.
 // Into a folder: a copy of the lifted row flies to the target (its opacity held for 60% of the flight,
 // ending at scale .92), the dashed slot fades out in 100 ms, and the target's count ticks at 200 ms.
 function flyTo(n, from, slot, key) {
-  const tgt = [...document.querySelectorAll('[data-drop-target],[data-drop-area]')].find(x => (x.getAttribute('data-drop-target') ?? x.getAttribute('data-drop-area')) === key)
+  const by = (sel, a) => [...document.querySelectorAll(sel)].find(x => x.getAttribute(a) === key)
+  const tgt = by('[data-drop-target]', 'data-drop-target') || by('[data-drop-area]', 'data-drop-area') // a target wins over its list
   if (!tgt) return false
   const tr = tgt.getBoundingClientRect()
   const w = n.offsetWidth, h = n.offsetHeight
@@ -67,7 +68,7 @@ function flyTo(n, from, slot, key) {
   const clean = () => { g.remove(); sl.remove() }
   a.onfinish = clean
   later(SETTLE_MS + 200, clean)
-  const c = tgt.querySelector('.ss') // only a folder's count ticks; a pill or crumb has none
+  const c = tgt.hasAttribute('data-drop-target') && tgt.querySelector('.ss') // only a folder's count ticks; a pill or crumb has none
   if (c) later(200, () => { c.classList.add('drop-tick'); later(220, () => c.classList.remove('drop-tick')) })
   return true
 }

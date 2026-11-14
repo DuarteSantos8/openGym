@@ -111,6 +111,16 @@ describe('flip', () => {
     expect(rows[0].style.transition).toBe('')
   })
 
+  it('a bubbled transitionend of another property keeps the transition', () => {
+    const { root, rows, place } = setup(2)
+    const before = flipMeasure(root)
+    root.appendChild(rows[0]); place()
+    flipPlay(root, before)
+    const e = new Event('transitionend'); e.propertyName = 'opacity'
+    rows[0].dispatchEvent(e)
+    expect(rows[0].style.transition).toMatch(/^transform /)
+  })
+
   it('a second flip on the same row is not ended by the first flip\'s late transitioncancel', () => {
     const { root, rows, place } = setup(2)
     const b1 = flipMeasure(root)

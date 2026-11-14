@@ -26,7 +26,7 @@ export default function Toast() {
   useEffect(() => {
     const was = shown.current
     shown.current = !!msg
-    if (!msg) return
+    if (!msg) { setSwapKey(''); return }
     quick.current = false
     if (was && last.current.key !== key) { setGhost(last.current.msg); setSwapKey(key) }
     last.current = { msg, action, key }

@@ -100,11 +100,12 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
 // The phone's size changed while the app was open (iOS posts an event, Android is asked again
 // whenever the app comes back to the front): "Default" follows at once.
 let listening = false
+let rmQuery   // kept: WebKit may drop listeners on an unreferenced MediaQueryList
 function listenForSystem(win) {
   if (listening || typeof win?.addEventListener !== 'function') return
   listening = true
   // The phone's Reduce Motion flipped while the app was open: the class follows, the app's own 'less' stays.
-  try { realMM?.call(win, '(prefers-reduced-motion: reduce)').addEventListener?.('change', () => applyDisplay(readDisplay(), { win })) } catch { /* no matchMedia */ }
+  try { rmQuery = realMM?.call(win, '(prefers-reduced-motion: reduce)'); rmQuery?.addEventListener?.('change', () => applyDisplay(readDisplay(), { win })) } catch { /* no matchMedia */ }
   const again = () => { if (readDisplay().text === 'default') applyDisplay(readDisplay(), { win }) }
   win.addEventListener(TEXT_SCALE_EVENT, again)
   win.document?.addEventListener?.('visibilitychange', () => { if (win.document.visibilityState === 'visible') again() })
