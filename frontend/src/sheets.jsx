@@ -41,7 +41,7 @@ import MuscleExplorer from './components/MuscleExplorer.jsx'
 import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substitutes.js'
-import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
+import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle } from './lib/muscles.js'
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
@@ -1272,28 +1272,104 @@ function OneRM({ ex }) {
 
 // A muscle the catalogue credits with nothing (a bench press's biceps, #359) is not one it trains,
 // so it is not shown as a tag either; "By muscle" already leaves the exercise out.
-const trainedBy = ex => { const weights = muscleWeightsOf(ex); return slug => weights[slug] !== 0 }
-// The detail page's tags: body part, main muscles, equipment, then up to three helpers. A word
-// says once what it says: the body part "Chest" and the main muscle "Chest" of a bench press
-// were two tags (QA 10-06), and a helper never repeats a main muscle.
+const trainedBy = ex => {
+  const weights = muscleWeightsOf(ex)
+  return name => {
+    const slug = canonicalMuscle(name)
+    return slug != null && (weights[slug] || 0) !== 0
+  }
+}
+// The detail page's tags, in order: equipment, body part, then every involved muscle,
+// primaries first. A word says once what it says: the body part "Chest" and the main muscle
+// "Chest" of a bench press were two tags (QA 10-06), and a helper never repeats a main muscle.
+// Each involved muscle's share of the exercise's total stimulus: the weights are
+// normalised so the involved muscles add up to 100 %.
 export function detailTags(ex) {
+  const weights = muscleWeightsOf(ex)
+  const positive = Object.entries(weights).filter(([, w]) => (w || 0) > 0)
+  const total = positive.reduce((sum, [, w]) => sum + w, 0)
+  const bpSlug = canonicalMuscle(ex.bp)
+  const sameWord = bpSlug != null && t(ex.bp).trim().toLocaleLowerCase() === t(MUSCLE_NAME[bpSlug] || bpSlug).trim().toLocaleLowerCase()
+
+  // One muscle list for the tag limit: primaries then supporting muscles, at most three tags
+  // in total ("Other" counts as one). Three or fewer muscles all get their own tag; more fold
+  // the rest into "Other".
+  const all = []
+  const pushed = new Set()
+  const pushedSlugs = new Set()
+  const push = (raw, primary) => {
+    const slug = canonicalMuscle(raw)
+    if (!slug) return
+    const label = t(MUSCLE_NAME[slug] || slug)
+    const key = label.toLocaleLowerCase()
+    if (pushed.has(key)) return
+    if (!((weights[slug] || 0) > 0)) return
+    pushed.add(key)
+    pushedSlugs.add(slug)
+    all.push({ slug, label, primary })
+  }
+  if (ex.bp === 'cardio' && (weights['cardiovascular system'] || 0) > 0) push('cardiovascular system', true)
+  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : []))) push(s, true)
+  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex))) push(s, false)
+  // Include every muscle the weights credit, not just the named ones: a custom exercise
+  // with empty muscle arrays falls back to its body part, and legacy ex.mg / explicit
+  // muscleWeights contribute to the total. Heaviest first, primary order preserved.
+  const leftovers = positive
+    .filter(([slug]) => !pushedSlugs.has(slug))
+    .sort((a, b) => (b[1] - a[1]) || (MUSCLES.indexOf(a[0]) - MUSCLES.indexOf(b[0])))
+  for (const [slug] of leftovers) push(slug, false)
+  // The body-part tag already carries this muscle's share when both say the same word
+  // ("Chest"/"Chest"): drop it from the muscle list before the 3-tag split, or the
+  // collapsed tags sum past 100 and expansion shows it twice.
+  const list = (sameWord && bpSlug ? all.filter(m => m.slug !== bpSlug) : all)
+
+  // Largest-remainder allocation so the displayed shares sum to exactly 100. Ties break
+  // toward the tags the user actually sees (body part, then shown muscles), so a hidden
+  // muscle never rounds up past a visible one.
+  const order = new Map()
+  if (sameWord && bpSlug) order.set(bpSlug, -1)
+  list.forEach((m, i) => { if (!order.has(m.slug)) order.set(m.slug, i) })
+  const alloc = {}
+  if (total > 0) {
+    const rows = positive.map(([slug, w]) => {
+      const exact = (w / total) * 100
+      const floor = Math.floor(exact)
+      return { slug, w, floor, rem: exact - floor, at: order.has(slug) ? order.get(slug) : 1e6 }
+    })
+    let need = 100 - rows.reduce((s, r) => s + r.floor, 0)
+    rows.sort((a, b) => (b.rem - a.rem) || (b.w - a.w) || (a.at - b.at))
+    for (let i = 0; i < rows.length && need > 0; i++, need--) rows[i].floor += 1
+    for (const r of rows) alloc[r.slug] = r.floor
+  }
+  const pctOf = slug => (total > 0 && alloc[slug] != null ? alloc[slug] + '%' : '0%')
+
   const seen = new Set()
   const out = []
-  const add = (label, extra) => {
-    const k = String(label || '').trim().toLocaleLowerCase()
+  // `key` lets a label that carries extra text (a percentage) still dedupe on the
+  // underlying word, so "Chest 100 %" and "Chest 40 %" never both appear.
+  const add = (label, extra, key) => {
+    const k = String(key != null ? key : label || '').trim().toLocaleLowerCase()
     if (!k || seen.has(k)) return false
     seen.add(k)
     out.push({ key: out.length, label, ...extra })
     return true
   }
-  add(t(ex.bp), { acc: true })
-  if (ex.bp === 'cardio') add(t(MUSCLE_NAME['cardiovascular system']), { icon: 'figureStrength' })
-  else for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) add(t(MUSCLE_NAME[s] || s), { icon: 'figureStrength' })
+  // 1) equipment, 2) body part (with the muscle's percentage folded in when the two are the
+  //    same word, like "Chest"/"Chest"), 3) every involved muscle, primaries first.
   add(t(ex.eq), { icon: 'kettlebell' })
-  let helpers = 0
-  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex))) {
-    if (helpers >= 3) break
-    if (add(t(MUSCLE_NAME[s] || s))) helpers++
+  const bpPct = sameWord && bpSlug && (weights[bpSlug] || 0) !== 0 ? ' ' + pctOf(bpSlug) : ''
+  add(t(ex.bp) + bpPct, { acc: true }, t(ex.bp))
+
+  const shown = list.length > 3 ? list.slice(0, 2) : list.slice(0, 3)
+  const rest = list.slice(shown.length)
+  for (const m of shown) add(m.label + ' ' + pctOf(m.slug), m.primary ? { icon: 'figureStrength' } : undefined, m.label)
+  if (rest.length) {
+    const restPct = rest.reduce((s, m) => s + (alloc[m.slug] || 0), 0)
+    if (restPct > 0) {
+      add(t('Other') + ' ' + restPct + '%', {
+        other: rest.map(m => ({ slug: m.slug, label: m.label, pct: pctOf(m.slug) })),
+      })
+    }
   }
   return out
 }
@@ -1309,6 +1385,7 @@ function ExerciseDetail({ ex, close }) {
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
+  const [showOther, setShowOther] = useState(false)
   const flipFav = () => {
     let on = false
     update(s => { on = toggleFav(s, ex.id) })
@@ -1324,7 +1401,18 @@ function ExerciseDetail({ ex, close }) {
     </div>
     <Media ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
-      {detailTags(ex).map(tg => <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
+      {detailTags(ex).map(tg => {
+        if (tg.other) {
+          if (!showOther) {
+            return <button key={tg.key} type="button" className="tag" onClick={() => setShowOther(true)}>{tg.label}</button>
+          }
+          return [
+            ...tg.other.map((m, i) => <span key={tg.key + '-o-' + i} className="tag dim">{m.label} {m.pct}</span>),
+            <button key={tg.key + '-close'} type="button" className="tag" onClick={() => setShowOther(false)} aria-label={t('Close')}>×</button>,
+          ]
+        }
+        return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
+      })}
     </div>
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
@@ -2211,6 +2299,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // in its `mode` (modeOf reads it before the body part).
   const mode = modeOf({ ...c, id: ex.id })
   const cardio = cardioEx && mode === 'cardio'
+  const [showOther, setShowOther] = useState(false)
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
@@ -2352,10 +2441,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         metadata name muscles by the map's ids ("forearm", "gluteal"), which only MUSCLE_NAME
         turns into a translatable label. */}
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0 14px' }}>
-      {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
-      <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span><span className="tag">{t(ex.eq)}</span>
-      {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
-        .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
+      {detailTags(ex).map(tg => {
+        if (tg.other) {
+          if (!showOther) return <button key={tg.key} type="button" className="tag" onClick={() => setShowOther(true)}>{tg.label}</button>
+          return [
+            ...tg.other.map((m, i) => <span key={tg.key + '-o-' + i} className="tag dim">{m.label} {m.pct}</span>),
+            <button key={tg.key + '-close'} type="button" className="tag" onClick={() => setShowOther(false)} aria-label={t('Close')}>×</button>,
+          ]
+        }
+        return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
+      })}
     </div>
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     <div style={{ marginBottom: 14 }}>
