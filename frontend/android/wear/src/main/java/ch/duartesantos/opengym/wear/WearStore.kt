@@ -609,9 +609,11 @@ object WearStore {
         val before = _state.value
         val w = before.workout ?: return
         closeRest(minOf(at, now()))
-        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
+        // An idle end is saved at the last set plus rest, but the count runs to now: none sent, the phone estimates.
+        val kcal = if (idle) null else _calories.value
+        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left, kcal = kcal)
         event?.let { PhoneLink.send(app, it) }
-        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = _calories.value)
+        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = kcal)
         endAll()
         commit(s1)
         Haptics.finished(app)

@@ -147,10 +147,12 @@ export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null, segments 
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
   }
-  // The estimated active energy (lib/active-energy.js), only when the hub lets openGym write it:
-  // `kg` is then the body weight to work it out with.
-  // A workout longer than a day: no calories (nor segments), see ENERGY_SPAN_MS.
-  const kcal = kg > 0 && !long ? activeKcal(w, kg) : null
+  // The active calories, only when the hub lets openGym write them: `kg` is then the body weight.
+  // A Wear OS watch's (`w.kcal`, #724) are Health Services' total, so the resting burn comes off
+  // (1 kcal per kg per hour, the 1 MET the estimate leaves out too); none left, the estimate
+  // (lib/active-energy.js). A workout longer than a day: no calories (nor segments), see ENERGY_SPAN_MS.
+  const measured = Math.round(Number(w.kcal) - kg * (end - start) / 3600e3)
+  const kcal = !(kg > 0) || long ? null : measured > 0 ? measured : activeKcal(w, kg)
   if (Number.isFinite(kcal) && kcal > 0 && kcal <= MAX_KCAL) rec.kcal = kcal
   // Health Connect (Android) takes the sets as segments of a strength session (lib/health-segments.js).
   // Only there: Apple Health has no such thing, and an iPhone's records stay as they were written.
