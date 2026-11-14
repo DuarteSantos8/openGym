@@ -85,3 +85,9 @@
 .nt-cannot{max-width:180px;text-align:right;margin:0!important}
 .nt-tools{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:740px){.nt-result{grid-template-columns:1fr}.nt-add{justify-content:flex-end}.nt-cannot{max-width:none;text-align:left}}
+
+/* Movement lab (components/MovementLab.jsx): front camera, mirrored like a mirror */
+.addon-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--label-2)}
+.addon-cam{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
+.addon-cam[hidden]{display:none}
+.addon-cam video,.addon-cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}

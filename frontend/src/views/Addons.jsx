@@ -11,6 +11,7 @@ import { previewActivityFile } from '../lib/addon-activity.js'
 import { MEALS, addFood, fromLookup } from '../lib/nutrition-diary.js'
 import FoodDiary, { MEAL_LABEL } from '../components/FoodDiary.jsx'
 import NutriTraceCard from '../components/NutriTraceCard.jsx'
+import MovementLab from '../components/MovementLab.jsx'
 import './addons.css'
 
 const TrendChart = lazy(() => import('../components/AddonTrendChart.jsx'))
@@ -162,7 +163,7 @@ const ROADS = [
   { name: 'Recipes and meal plans', status: 'Not connected', detail: 'Mealie can be connected as a separate recipe service.' },
   { name: 'Advanced progression', status: 'Research', detail: 'Liftosaur rules require an isolated evaluator and verified program behavior.' },
   { name: 'Endurance activities', status: 'Not connected', detail: 'FitTrackee is optional once activity previews prove useful.' },
-  { name: 'Camera / sensor coaching', status: 'Hardware validation needed', detail: 'MediaPipe and Bluetooth device support require permission, calibration, and physical testing.' },
+  { name: 'Camera coaching', status: 'Lab preview', detail: 'The Movement lab above counts squats on this device; other movements and real-device testing come next. Bluetooth sensors wait on a real gap (docs/next/adr/0003).' },
   { name: '3D anatomy explorer', status: 'Asset clearance needed', detail: 'Three.js / React Three Fiber need properly licensed anatomy geometry.' },
   { name: 'Automations and AI', status: 'Existing integrations first', detail: 'Use openGym webhooks and its coach before adding Node-RED or LangGraph.' },
 ]
@@ -207,6 +208,7 @@ export default function Addons() {
       <FoodLookup enabled={signedIn && config?.addons?.nutrition === true} day={day} />
       {signedIn && config?.integrations?.providers?.includes('nutritrace') && <NutriTraceCard day={day} />}
       <ActivityPreview />
+      <MovementLab />
       <Roadmap />
     </div>
   </main>
