@@ -30,7 +30,7 @@ function type(el, value) {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 const note = text => act(() => type(host.querySelector('textarea'), text))
-const step = value => act(() => type([...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l')?.textContent === 'Step (kg)').querySelector('input.num'), value))
+const step = value => act(() => type([...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l')?.textContent.startsWith('Step (')).querySelector('input.num'), value))
 const button = label => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === label)
 const swipeAway = () => act(() => root.unmount())
 
@@ -153,6 +153,26 @@ describe('exercise settings in a live workout keep their changes on close (#1079
     pickUnit('lb')
     swipeAway()
     expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('saves nothing when an edit is undone after a unit switch', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    note('seat on 4')
+    pickUnit('lb')
+    note('')
+    swipeAway()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('saves a load changed in the other unit, and nothing once the unit and the load are back', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    pickUnit('lb')
+    step('10')
+    pickUnit('kg')
+    swipeAway()
+    expect(onSave).toHaveBeenCalledTimes(1)
   })
 
   it('still saves an edit made before or after a unit switch in the sheet', () => {

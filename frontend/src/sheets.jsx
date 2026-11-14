@@ -5,6 +5,7 @@ import { normalizeTempo, repSec } from './lib/tempo.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
+import { mapTargetWeights } from './lib/units.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
@@ -2780,12 +2781,25 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // The live workout's sheet (#1079) saves however it closes, but only when what it builds differs
   // from what it built as it opened: a look, or a change undone, keeps the rows. Compared before the
   // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit. A unit switch
-  // in this sheet converts the fields, so it notes whether anything was edited so far (`edited`)
-  // and the next render takes the snapshot again, in the new unit.
-  const opened = useRef(null), edited = useRef(false)
-  if (autosave && opened.current === null) { opened.current = ''; save(out => { opened.current = JSON.stringify(out) }) }
+  // in this sheet converts the loads, so those are compared per unit: the unit it opened in keeps
+  // its loads, and another unit gets its own from the first build there, if the loads were
+  // untouched until then. Everything else is compared with the opening, whatever the unit.
+  const parts = out => { const loads = [], see = w => (loads.push(w), 1); return [JSON.stringify(mapTargetWeights(out, see, null, see)), JSON.stringify(loads)] }
+  const opened = useRef(null)
+  if (autosave && !opened.current) {
+    const o = opened.current = { unit: exUnitOf(live, ex.id), loads: {} }
+    save(out => { [o.rest, o.loads[o.unit]] = parts(out) })
+  }
+  if (autosave && opened.current.retake) {
+    const o = opened.current
+    o.retake = false
+    save(out => { o.loads[o.unit] ??= parts(out)[1] })
+  }
   const keep = useRef(null)
-  keep.current = () => save(out => { if (edited.current || JSON.stringify(out) !== opened.current) onSave(storedOf(out)) })
+  keep.current = () => save(out => {
+    const o = opened.current, [rest, loads] = parts(out)
+    if (rest !== o.rest || loads !== o.loads[o.unit]) onSave(storedOf(out))
+  })
   useEffect(() => () => { if (autosave) keep.current() }, [])
   return <>
     {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
@@ -3176,7 +3190,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {!cardio && <>
       <h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} onChange={(before, after) => {
-        if (autosave) { save(out => { if (JSON.stringify(out) !== opened.current) edited.current = true }); opened.current = null }
+        if (autosave) {
+          const o = opened.current
+          save(out => { o.retake = parts(out)[1] === o.loads[o.unit] })
+          o.unit = exUnitOf(after, ex.id)
+        }
         setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))
       }} />
       <GymSplitRow ex={ex} />
