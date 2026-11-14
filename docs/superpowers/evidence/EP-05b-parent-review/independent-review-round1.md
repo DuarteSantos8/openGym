@@ -155,4 +155,3 @@ console.log('Synthetic fetch calls: '+requests+'; actual network: 0');
 await win.happyDOM.abort();process.exit(0);
 NODE
 ```
-

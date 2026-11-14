@@ -2,7 +2,7 @@
 
 Status: **in progress, not release approval**. Parent working branch:
 `room/autonomous-project-resumption-orchestrat-djus`. The full acceptance commands below
-will run only after the final EP-05b source review. No final combined pass is claimed yet.
+run after the final EP-05b source review. No final combined pass is claimed yet.
 The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-16-mvp-gates.md).
 
 ## Source lineage and reviews
@@ -12,7 +12,7 @@ The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-
 | EP-03 volume plus assistance corrections | final6434f47c, runtime7a0d9f4c | Original PR9 merged externally; correctionf6e9dafb..1940ebdf | [Final scoped PASS](../EP-03-parent-review/independent-fix2-review.md);414 focused tests; browser; earlier failure preserved |
 | EP-04 diary and adoption/validation corrections | finalddcd1be5, runtime0ac5cbc8 (identical to reviewedfe22da11) | faede047..7d9423bd,50 source/test/contract paths identical | [Scoped PASS](../EP-04-parent-review/independent-fix1-review.md);218 focused frontend/47API; browser/backup evidence |
 | EP-05a server lookup | finalc976b963, runtime176b1698 | Original task cherry-picks then external PR11 merge470defb7 | [Independent PASS](../EP-05-parent-review/independent-review.md); FE7917/API911/MCP140; three live requests exhausted |
-| EP-05b preview and saved source snapshot | Implementation in progress | Pending | Focused/source/browser review pending final delivery |
+| EP-05b preview and saved source snapshot | final1ee7d922, reviewed runtime762f48a5; [draftPR14](https://github.com/sorensadrgit-art/openGym/pull/14) | d9b54358..ef571176 plus evidence; source/tests/operator docs identical | [Scoped PASS](../EP-05b-parent-review/independent-fix1-review.md);172 focused tests, browser/build; EOF evidence cleanup verified |
 
 Original task/review failures are retained, not turned into passes by later focused checks.
 EP-03 full frontend had7,952 pass/1 timeout, with isolated31/31. EP-04 pre-correction full
@@ -21,13 +21,14 @@ tasks' final full acceptance is consolidated into the exact combined runtime gat
 
 ## Combined checks to record
 
-Environment: Linux; Node22.23.5; existing lockfiles; one heavy job at a time. Final runtime SHA,
-start/end/exit and counts will be recorded with each command. Long jobs use retained TTY
-sessions; interrupted output cannot be labelled passing.
+Environment: Linux; Node22.23.5; existing lockfiles; one heavy job at a time. Combined runtime
+candidate: `4cf4bad31575d1f94cf208a8482de5f372488b69`. Start/end/exit and counts are recorded
+with each command. Long jobs use retained TTY sessions; interrupted output cannot be labelled
+passing. Later evidence-only commits do not change this tested runtime.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| frontend `npm test -- --maxWorkers=1` | PENDING | Not run on final combined runtime |
+| frontend `npm test -- --maxWorkers=1` | RUNNING | `frontend-full.json`, `frontend-full.log`; started2026-11-14T10:45:59Z |
 | API `node --test --test-concurrency=2 test/*.test.js` | PENDING | Not run on final combined runtime |
 | MCP `npm test -- --maxWorkers=2` | PENDING | Not run on final combined runtime |
 | Production build, entry/lazy bundle sizes | PENDING | Final build after integration |
