@@ -64,10 +64,13 @@ export function readDisplay() {
 
 let less = false
 let patched = false
+let realMM = null
+// The phone's own setting, read through the unpatched matchMedia.
+const osReduces = win => { try { return !!realMM?.call(win, '(prefers-reduced-motion: reduce)').matches } catch { return false } }
 function patchMatchMedia(win) {
   if (patched || typeof win?.matchMedia !== 'function') return
   patched = true
-  const orig = win.matchMedia
+  const orig = realMM = win.matchMedia
   win.matchMedia = function (q) {
     const real = orig.call(win, q)
     if (!less || !QUERY.test(String(q))) return real
@@ -82,7 +85,8 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
   patchMatchMedia(win)
   const root = win?.document?.documentElement
   if (root) {
-    root.classList.toggle('reduce-motion', less)
+    // The class follows the app's switch or the phone's, whichever says less (index.css also has an @media twin).
+    root.classList.toggle('reduce-motion', less || osReduces(win))
     const k = textScaleFor(d.text, win)
     if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = Math.round(k * 100) + '%'
     // For the few things that size themselves in px from JS (canvas charts): the same factor.
@@ -99,10 +103,12 @@ let listening = false
 function listenForSystem(win) {
   if (listening || typeof win?.addEventListener !== 'function') return
   listening = true
+  // The phone's Reduce Motion flipped while the app was open: the class follows, the app's own 'less' stays.
+  try { realMM?.call(win, '(prefers-reduced-motion: reduce)').addEventListener?.('change', () => applyDisplay(readDisplay(), { win })) } catch { /* no matchMedia */ }
   const again = () => { if (readDisplay().text === 'default') applyDisplay(readDisplay(), { win }) }
   win.addEventListener(TEXT_SCALE_EVENT, again)
   win.document?.addEventListener?.('visibilitychange', () => { if (win.document.visibilityState === 'visible') again() })
 }
 
 /** For the tests. */
-export function _resetDisplay() { less = false; patched = false; listening = false }
+export function _resetDisplay() { less = false; patched = false; listening = false; realMM = null }
