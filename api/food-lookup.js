@@ -1,5 +1,15 @@
 /* User-initiated Open Food Facts previews. No profile persistence or background work.
  * The outbound contract and limits live in docs/superpowers/plans/EP-05-tasks.md. */
+import https from 'node:https';
+import net from 'node:net';
+import { readFileSync } from 'node:fs';
+import { createWindow } from './rate-limit.js';
+import { guardedLookup, isAllowedPrivateAddr, isPrivateAddr } from './net-guard.js';
+
+const VERSION = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
+const ORIGIN = 'https://world.openfoodfacts.org';
+const FIELDS = 'code,product_name,brands,quantity,serving_size,nutrition';
+const MAX_BYTES = 64 * 1024;
 export class FoodLookupError extends Error {
   constructor(status, code, message, retryAfter) {
     super(message);
@@ -9,6 +19,8 @@ export class FoodLookupError extends Error {
   }
 }
 const upstreamError = () => new FoodLookupError(502, 'food-lookup-upstream', 'Food lookup could not read the provider response');
+const timeoutError = () => new FoodLookupError(504, 'food-lookup-timeout', 'Food lookup timed out');
+const notFoundError = () => new FoodLookupError(404, 'food-lookup-not-found', 'Product not found');
 const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 export function validateBarcode(value) {
@@ -74,6 +86,127 @@ export function normalizeProduct(payload, barcode, now = Date.now()) {
       text: 'Contains information from Open Food Facts, available under the Open Database License (ODbL).',
       url: `https://world.openfoodfacts.org/product/${barcode}`,
       license: 'ODbL-1.0', licenseUrl: 'https://opendatacommons.org/licenses/odbl/1-0/'
+    }
+  };
+}
+
+// Guard the DNS lookup used by the actual socket, not a separate preflight. Request all
+// addresses even if Node asks for only one: mixed public/private answers fail closed.
+export function foodLookupDns(hostname, options, cb) {
+  if (hostname !== 'world.openfoodfacts.org') return cb(upstreamError());
+  guardedLookup(hostname, { ...options, all: true }, (err, addresses) => {
+    if (err) return cb(upstreamError());
+    // ALLOWED_PRIVATE_IPS is a push/webhook override and must never open this adapter.
+    if (!Array.isArray(addresses) || !addresses.length || addresses.some(a =>
+      !net.isIP(a.address) || isPrivateAddr(a.address) || isAllowedPrivateAddr(a.address))) return cb(upstreamError());
+    const selected = addresses.filter(a => !options.family || options.family === a.family);
+    if (!selected.length) return cb(upstreamError());
+    if (options.all) cb(null, selected);
+    else cb(null, selected[0].address, selected[0].family);
+  });
+}
+
+export function createFoodTransport({ request = https.request } = {}) {
+  return (url, { headers, signal, connectTimeoutMs }) => new Promise((resolve, reject) => {
+    const u = new URL(url);
+    if (u.origin !== ORIGIN || u.username || u.password || u.hash) return reject(upstreamError());
+    let req, timer;
+    const clear = () => clearTimeout(timer);
+    try {
+      req = request(u, { method: 'GET', headers, signal, agent: false, lookup: foodLookupDns });
+      // Covers DNS, TCP and TLS from the moment the request starts. No pooled sockets.
+      timer = setTimeout(() => req.destroy(timeoutError()), connectTimeoutMs);
+      req.on('socket', socket => socket.once('secureConnect', clear));
+      req.once('error', err => { clear(); reject(err); });
+      req.once('response', res => {
+        clear();
+        resolve({ statusCode: res.statusCode, headers: res.headers, body: res });
+      });
+      req.end();
+    } catch (err) { clear(); req?.destroy(); reject(err); }
+  });
+}
+
+export function createFoodLookup({ enabled = false, contact = '', transport = createFoodTransport(),
+  now = Date.now, connectTimeoutMs = 2000, totalTimeoutMs = 5000,
+  cacheMax = 128, cacheTtlMs = 15 * 60000, notFoundTtlMs = 60000,
+  userMax = 5, instanceMax = 7 } = {}) {
+  const users = createWindow({ max: userMax, windowMs: 60000, maxKeys: 1000, now });
+  const instance = createWindow({ max: instanceMax, windowMs: 61000, maxKeys: 1, now });
+  const cache = new Map();
+  // Operator-owned contact only; no profile email or personal contact baked into source.
+  const safeContact = typeof contact === 'string' && contact.length <= 120
+    && /^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(contact) ? contact : '';
+  const headers = { Accept: 'application/json', 'User-Agent': `openGym/${VERSION}${safeContact ? ` (${safeContact})` : ''}` };
+  const limited = wait => { if (wait) throw new FoodLookupError(429, 'food-lookup-rate-limited', 'Food lookup limit reached', wait); };
+
+  async function fetchProduct(barcode) {
+    const controller = new AbortController();
+    let body, expired = false, timer;
+    const deadline = new Promise((resolve, reject) => {
+      timer = setTimeout(() => {
+        expired = true;
+        controller.abort();
+        body?.destroy();
+        reject(timeoutError());
+      }, totalTimeoutMs);
+    });
+    const work = async () => {
+      const response = await transport(`${ORIGIN}/api/v3.6/product/${barcode}?fields=${FIELDS}`, {
+        headers: { ...headers }, signal: controller.signal, connectTimeoutMs
+      });
+      body = response.body;
+      // A late injected/failed transport must not leave an orphan stream after the deadline.
+      if (expired) { body?.destroy(); throw timeoutError(); }
+      if (![200, 404].includes(response.statusCode)
+        || (response.headers?.['content-encoding'] && response.headers['content-encoding'] !== 'identity')) throw upstreamError();
+      let bytes = 0;
+      const chunks = [];
+      for await (const chunk of body) {
+        const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        bytes += buf.length;
+        if (bytes > MAX_BYTES) throw upstreamError();
+        chunks.push(buf);
+      }
+      const payload = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      const result = normalizeProduct(payload, barcode, now());
+      if (response.statusCode === 404 && result !== null) throw upstreamError();
+      return result;
+    };
+    try { return await Promise.race([work(), deadline]); }
+    catch (err) {
+      if (expired || err?.code === 'food-lookup-timeout') throw timeoutError();
+      throw upstreamError();
+    } finally {
+      clearTimeout(timer);
+      controller.abort();
+      body?.destroy();
+    }
+  }
+
+  return {
+    publicConfig: () => ({ status: enabled === true ? 'configured-unverified' : 'disabled' }),
+    async lookup({ uid, nutrition, barcode }) {
+      if (typeof uid !== 'string' || !uid) throw new FoodLookupError(401, 'food-lookup-auth-required', 'Not signed in');
+      if (enabled !== true) throw new FoodLookupError(403, 'food-lookup-disabled', 'Food lookup is not enabled on this server');
+      if (nutrition !== true) throw new FoodLookupError(403, 'nutrition-disabled', 'Nutrition is not enabled for this profile');
+      if (!validateBarcode(barcode)) throw new FoodLookupError(400, 'food-lookup-invalid-barcode', 'A valid GTIN barcode is required');
+      limited(users.take(uid));
+      const cached = cache.get(barcode);
+      if (cached && cached.until > now()) {
+        if (cached.product === null) throw notFoundError();
+        return structuredClone(cached.product);
+      }
+      cache.delete(barcode);
+      limited(instance.take('instance'));
+      const product = await fetchProduct(barcode);
+      for (const [key, entry] of cache) if (entry.until <= now()) cache.delete(key);
+      // Concurrent replies for one barcode still occupy only one slot.
+      cache.delete(barcode);
+      if (cache.size >= cacheMax) cache.delete(cache.keys().next().value);
+      cache.set(barcode, { product, until: now() + (product === null ? notFoundTtlMs : cacheTtlMs) });
+      if (product === null) throw notFoundError();
+      return structuredClone(product);
     }
   };
 }
