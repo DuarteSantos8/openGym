@@ -60,3 +60,21 @@ test('unknown future rows stay opaque and read-only with unknown totals', async 
   expect([...host.querySelectorAll('button')].some(b => b.textContent === 'Edit')).toBe(false)
   expect(useStore.getState().S.nutritionEntries[0]).toEqual(future)
 })
+for (const reason of ['module off', 'account switch', 'sign out']) test(`an open food sheet closes and cannot save after ${reason}`, async () => {
+  useStore.setState({ user: { id: 'original-account' } })
+  await render(<Nutrition />); await click('Add food')
+  const sheet = useUI.getState().sheets.at(-1)
+  const GlobalSheet = () => {
+    const sheets = useUI(s => s.sheets)
+    return <>{sheets.map(s => <React.Fragment key={s.id}>{s.render(() => useUI.getState().closeSheet(s.id))}</React.Fragment>)}</>
+  }
+  await render(<GlobalSheet />)
+  await input('label', 'Stale food')
+  await act(async () => {
+    if (reason === 'module off') useStore.getState().update(s => { s.modules = { ...s.modules, nutrition: false } }, false)
+    else useStore.setState({ user: reason === 'sign out' ? null : { id: 'other-account' }, S: { ...structuredClone(DEF), modules: { nutrition: true } } })
+  })
+  expect(host.querySelector('form')).toBeNull()
+  expect(useUI.getState().sheets.some(s => s.id === sheet.id)).toBe(false)
+  expect(visible()).toHaveLength(0)
+})
