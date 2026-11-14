@@ -46,11 +46,12 @@ const palettes = {
 
 describe('tile ink', () => {
   for (const [name, [tiles, inks]] of Object.entries(palettes)) {
-    it(`reaches 4.5:1 on every colour, ${name}`, () => {
+    it(`glyph ink reaches 3:1, and is white wherever white does, ${name}`, () => {
       for (const c of ROUTINE_COLORS) {
         expect(tiles[c], `${c} tile`).toBeTruthy()
         expect(inks[c], `${c} ink`).toBeTruthy()
-        expect(contrast(tiles[c], inks[c]), `${c} on ${name}`).toBeGreaterThanOrEqual(4.5)
+        expect(contrast(tiles[c], inks[c]), `${c} on ${name}`).toBeGreaterThanOrEqual(3)
+        if (contrast(tiles[c], '#ffffff') >= 3) expect(inks[c].toLowerCase(), `${c} wants white on ${name}`).toMatch(/^#(fff|ffffff)$/)
       }
     })
   }

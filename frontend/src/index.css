@@ -573,10 +573,9 @@ h4.sec{
 /* a routine's coloured tile (tileStyle) brings its own ink; beats the weak accent and green rules below */
 .lrow-i[style*="--on-tint"]{color:var(--on-tint)}
 /* A tile on the accent itself (no tint of its own, or the accent passed as one) takes the text
-   colour made for the accent, and a green tile the one made for green: white on the brand's light
-   green was 1.5:1. :where() keeps these as weak as .lrow-i, so a class that paints its own tile
-   (.rec-i, .act-i, .rest) still wins. */
-:root{--on-green:#fff}
+   colour made for the accent, and a green tile the one made for green (--on-green, defined with
+   the routine tile ink below: white on green was 2.0:1). :where() keeps these as weak as .lrow-i,
+   so a class that paints its own tile (.rec-i, .act-i, .rest) still wins. */
 .lrow-i:where(:not([style]),[style*="var(--acc)"]){color:var(--on-acc)}
 .lrow-i:where([style*="var(--green)"]){color:var(--on-green)}
 /* The title column never shrinks below its own longest word. With a basis of 0 and min-width:0 it
@@ -2045,6 +2044,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* --- menu sheet (the workout's "more" menus) --- */
 .menu-list .menu-item{min-height:52px;padding:8px 12px}
 .menu-list .menu-item .lrow-i{width:32px;height:32px;font-size:var(--fs-callout);background:var(--surface-2);color:var(--label)}
+.menu-list .menu-item .lrow-i[style*="--on-tint"]{background:var(--tint);color:var(--on-tint)}
 .menu-list .menu-item.danger .tt,.menu-list .menu-item.danger .lrow-i{color:var(--red)}
 .menu-list .menu-item.disabled{opacity:.4;pointer-events:none}
 .menu-on{color:transparent;font-size:var(--fs-callout);flex:none}
@@ -2739,17 +2739,22 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --teal-ink:#0e7490;
   --blue-ink:#0058c4;
 }
-/* Routine tile ink (lib/routine-colors.js): the glyph colour on a routine's coloured tile, measured
-   per palette (routine-colors.test.js, 4.5:1). Black wins on nearly every system colour; indigo
-   (and purple, grey in increased contrast on light) need white. Written one rule per palette. */
+/* Routine tile ink (lib/routine-colors.js): the glyph colour on a routine's coloured tile. A glyph
+   is a graphic, so the bar is 3:1 (WCAG 1.4.11), measured per palette in routine-colors.test.js.
+   White wherever it reaches 3:1, black otherwise. Dark and light agree; the increased-contrast
+   palettes shift the tiles, so dark goes all black and light all white. */
 :root{
-  --on-blue:#000; --on-green:#000; --on-red:#000; --on-orange:#000; --on-yellow:#000; --on-teal:#000;
-  --on-indigo:#fff; --on-pink:#000; --on-purple:#000; --on-mint:#000; --on-brown:#000; --on-grey:#000;
+  --on-blue:#fff; --on-indigo:#fff; --on-purple:#fff; --on-pink:#fff; --on-red:#fff; --on-brown:#fff; --on-grey:#fff;
+  --on-green:#000; --on-orange:#000; --on-yellow:#000; --on-teal:#000; --on-mint:#000;
 }
 :root[data-theme="light"]{--on-indigo:#fff}
 @media (prefers-contrast: more){
-  :root:not([data-theme="light"]){--on-indigo:#000}
-  :root[data-theme="light"]{--on-indigo:#fff; --on-purple:#fff; --on-grey:#fff}
+  :root:not([data-theme="light"]){
+    --on-blue:#000; --on-indigo:#000; --on-purple:#000; --on-pink:#000; --on-red:#000; --on-brown:#000; --on-grey:#000;
+  }
+  :root[data-theme="light"]{
+    --on-green:#fff; --on-orange:#fff; --on-yellow:#fff; --on-teal:#fff; --on-mint:#fff;
+  }
 }
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
@@ -4680,11 +4685,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    Each swatch is a 44 pt hit area round a 38 pt circle; the chosen one has a ring and a check,
    so colour is never the only signal. */
 .look-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.look-hd h3{margin:0;font-size:var(--fs-headline)}
+.look-hd h3{margin:0;font-size:var(--fs-body);font-weight:600}
 .look-hd .btn{width:auto;min-height:44px;padding:0 8px}
 .look-prev{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .look-tile{width:56px;height:56px;border-radius:14px;font-size:1.75rem}
-.look-name{flex:1;min-width:0;padding:14px;border-radius:var(--r-md);background:var(--surface);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.look-name{flex:1;min-width:0;padding:14px;border-radius:var(--r);background:var(--surface);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .look-sw{display:grid;grid-template-columns:repeat(6,1fr);justify-items:center}
 .look-s{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .look-s>span{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center}
