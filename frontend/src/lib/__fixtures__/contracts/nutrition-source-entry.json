@@ -1,0 +1,46 @@
+{
+  "id": "505b0000-0000-4000-8000-000000000001",
+  "schemaVersion": 1,
+  "createdAt": "2026-11-14T10:01:00.000Z",
+  "createdBy": "manual",
+  "source": "open-food-facts",
+  "day": "2026-11-14",
+  "timeZone": "UTC",
+  "meal": "snack",
+  "label": "Synthetic drink",
+  "amountMl": 250,
+  "serving": {
+    "label": "125 ml",
+    "count": 2,
+    "size": 125,
+    "unit": "mL"
+  },
+  "occurredAt": "2026-11-14T10:01:00.000Z",
+  "externalId": "012345678905",
+  "contentFingerprint": "sha256:2c67645dd304df167e544e50de78768b49594a398a9582ecf7af03a79cda59cb",
+  "energyKcal": 100,
+  "proteinG": 0,
+  "sourceSnapshot": {
+    "source": "open-food-facts",
+    "externalId": "012345678905",
+    "label": "Synthetic drink",
+    "brand": "Fixture",
+    "quantityText": "250 ml",
+    "per100": {
+      "basis": "ml",
+      "energyKcal": 40,
+      "proteinG": 0
+    },
+    "serving": {
+      "label": "125 ml",
+      "millilitres": 125
+    },
+    "fetchedAt": "2026-11-14T10:00:00.000Z",
+    "attribution": {
+      "text": "Contains information from Open Food Facts, available under the Open Database License (ODbL).",
+      "url": "https://world.openfoodfacts.org/product/012345678905",
+      "license": "ODbL-1.0",
+      "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/"
+    }
+  }
+}

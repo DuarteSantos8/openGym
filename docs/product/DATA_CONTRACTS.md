@@ -241,18 +241,44 @@ not an ambiguous per-100g value. Catalog changes never silently rewrite diary en
   fraction); `createdBy` must be a documented creation kind; `source`, `externalId` and
   `idempotencyKey` must be nonblank strings bounded to 200 characters; `contentFingerprint`
   must be `sha256:` plus 64 lowercase hex digits. Explicit null or malformed present metadata
-  makes a row unsupported. Unknown extension fields, including a future `sourceSnapshot`,
-  remain opaque and untouched.
+  makes a row unsupported. Unknown extension fields remain opaque and untouched.
 - `createEntry(input, context)` in `frontend/src/lib/nutrition/entry.js` is the EP-05b seam.
   Input contains `label`, `day`, `meal`, optional `amount`/`unit`, serving fields, and entry-total
   nutrients. Context supplies creation-only `source`, `externalId`, `contentFingerprint`, and
-  optional `now`/IANA `timeZone`. Call it only after confirmation, then use
+  optional `sourceSnapshot` and `now`/IANA `timeZone`. Call it only after confirmation, then use
   `useStore.getState().update(s => addEntry(s, record))`. It allocates a new UUID v4 and the
   store stamps the initial fields. It is not an importer/idempotency API.
 - `components/nutrition/EntrySheet.jsx` accepts `prefill` as a canonical snapshot and forwards
-  its provenance only at creation. EP-05b can provide a confirmed lookup snapshot here; no
-  request or provider payload belongs in this component or persisted diary. `editEntry` only
+  its provenance and source snapshot only at creation, including recent-food reuse. Lookup
+  requests stay in the separate explicit preview panel; no raw provider payload belongs in
+  this component or persisted diary. `editEntry` only
   accepts editable food fields and cannot change identity, provenance, day, zone or creation.
+- EP-05b adds optional **atomic `sourceSnapshot`** to schemaVersion1 entries. The existing
+  field stamp `_f.sourceSnapshot` owns the whole object; no nested clock or new merge rule.
+  Creation validates and deep-copies only these fields: `source: 'open-food-facts'`,
+  `externalId` (ASCII GTIN8/12/13/14 with check digit, leading zeros retained), `label` (160),
+  optional `brand` (120), `quantityText` (80), `per100: {basis: 'g'|'ml', energyKcal?,
+  proteinG?, carbohydrateG?, fatG?, energyConversion?: 'kJ/4.184'}`, optional
+  `serving: {label, grams}` or `{label, millilitres}`, `fetchedAt` (UTC ISO instant),
+  `attribution: {text, url, license: 'ODbL-1.0', licenseUrl}`. Text bounds are characters;
+  serving label160 and attribution text200, no control/format characters or HTML delimiters.
+  Source nutrients are finite nonnegative numbers, kcal <=900/1800 and macros <=100/200
+  for g/ml respectively; serving size is positive <=10000. Missing nutrients stay absent,
+  zero stays known. A serving can scale only its explicit matching basis; volume never
+  implies mass. Editable entry totals remain distinct from original per100 values.
+- `contentFingerprint` is `sha256:` plus the lowercase SHA256 of UTF-8 JSON of the bounded
+  snapshot in the field order above (nutrients energy/protein/carbohydrate/fat), excluding
+  `fetchedAt`. It includes constructed attribution links and optional conversion/serving;
+  it excludes meal identity, day, amount and all local corrections. Creation verifies that
+  source/externalId/hash agree with the snapshot. Repeated confirmations allocate distinct
+  UUID v4 eating events; this hash is source provenance, not a meal deduplication key.
+- Source metadata is immutable in ordinary edits/reuse, survives JSON/ZIP backups, existing
+  merge/older-writer retention and delete/undo. Reads do not rewrite malformed snapshots:
+  show an unreadable-source message and retain the saved entry. Render only validated plain
+  text and construct links from the fixed supported source and GTIN, ignoring imported URLs:
+  `https://world.openfoodfacts.org/product/<GTIN>` and
+  `https://opendatacommons.org/licenses/odbl/1-0/`. Reopening offline shows original attribution
+  and fetch time without refreshing nutrients. Fixture: `nutrition-source-entry.json`.
 - Date-only past/future input omits `occurredAt`; today's entry uses the actual creation instant
   in its saved zone. Later timezone changes do not refile any row.
 - Diary guest adoption distinguishes retained rows/deletion evidence (`hasData`) from visible
