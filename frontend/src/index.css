@@ -4887,7 +4887,25 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .look-sw{display:grid;grid-template-columns:repeat(6,1fr);justify-items:center;row-gap:10px;padding:4px 0}
 .look-s{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .look-s>span{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.look-s.on>span{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--label)}
+/* Colour and icon motion (motion recommendation): the ring and check 160 ms (check .85 to 1), the preview tile's old colour
+   fades out over the new one 180 ms (a stacked layer), the old glyph out 90 and the new in 160 from .92, the colour name 100. */
+.look-s>span{position:relative}
+.look-s>span::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--label);opacity:0;pointer-events:none;transition:opacity 160ms var(--ease)}
+.look-s.on>span::after{opacity:1}
+.look-s>span>.icn{animation:look-check 160ms var(--ease)}
+.look-tile{position:relative;isolation:isolate}
+.look-old{position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;animation:look-old 180ms linear forwards}
+.look-g,.look-gout{display:flex;align-items:center;justify-content:center}
+.look-gout{position:absolute;inset:0;pointer-events:none;animation:look-gout 90ms ease-out forwards}
+.look-gin{animation:look-gin 160ms var(--ease) 90ms backwards}
+.look-cn{animation:drag-fade 100ms ease-out}
+@keyframes look-check{from{opacity:0;transform:scale(.85)}}
+@keyframes look-old{to{opacity:0}}
+@keyframes look-gout{to{opacity:0}}
+@keyframes look-gin{from{opacity:0;transform:scale(.92)}}
+.reduce-motion .look-s>span::after{transition:none}
+.reduce-motion .look-s>span>.icn,.reduce-motion .look-old,.reduce-motion .look-gout,.reduce-motion .look-gin,.reduce-motion .look-cn{animation:none}
+@media (prefers-reduced-motion:reduce){.look-s>span::after{transition:none}.look-s>span>.icn,.look-old,.look-gout,.look-gin,.look-cn{animation:none}}
 .look-grid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
 .look-grid .glyph-cell{border-radius:50%;font-size:1.4rem}
 .look-cn{min-height:1.4em;margin:8px 0 18px;text-align:center;font-weight:600;font-size:var(--fs-subhead)}

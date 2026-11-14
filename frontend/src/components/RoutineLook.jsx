@@ -1,11 +1,12 @@
 // A routine's colour and icon on one sheet: twelve colours, then the glyph groups. The tile shows
 // the pending choice; nothing is written until Done.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { ROUTINE_COLORS, colorOf, tileStyle } from '../lib/routine-colors.js'
 import { glyphOf, GLYPH_GROUPS } from '../lib/glyphs.js'
+import { still } from '../lib/flip.js'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 
@@ -32,8 +33,17 @@ function LookSheet({ id, close }) {
   const [pick, setPick] = useState({})
   const color = 'color' in pick ? pick.color : colorOf(r)
   const glyph = pick.glyph || glyphOf(r?.emoji)
-  const setColor = c => setPick(p => ({ ...p, color: c }))
-  const setGlyph = g => setPick(p => ({ ...p, glyph: g }))
+  // What the preview tile showed before the last pick: it fades out over the new one (a stacked layer, so no
+  // colour animates) for 180 ms. Reduce Motion: no layer, the tile switches.
+  const [from, setFrom] = useState(null)
+  useEffect(() => {
+    if (!from) return
+    const id = setTimeout(() => setFrom(null), 200)
+    return () => clearTimeout(id)
+  }, [from])
+  const noted = () => { if (!still()) setFrom(f => ({ color, glyph, n: (f?.n || 0) + 1 })) }
+  const setColor = c => { if (c !== color) noted(); setPick(p => ({ ...p, color: c })) }
+  const setGlyph = g => { if (g !== glyph) noted(); setPick(p => ({ ...p, glyph: g })) }
   if (!r) return null
   const save = () => {
     update(s => {
@@ -51,7 +61,11 @@ function LookSheet({ id, close }) {
       <Button variant="ghost" onClick={save}>{t('Done')}</Button>
     </div>
     <div className="look-prev">
-      <span className="lrow-i look-tile" style={tileStyle({ color })}><Icon name={glyph} /></span>
+      <span className="lrow-i look-tile" style={tileStyle({ color })}>
+        {from && from.color !== color && <span key={'c' + from.n} className="look-old" style={{ background: `var(--${from.color || 'acc'})` }} />}
+        {from && from.glyph !== glyph && <span key={'o' + from.n} className="look-gout" style={{ color: `var(--on-${from.color || 'acc'})` }}><Icon name={from.glyph} /></span>}
+        <span key={glyph} className={'look-g' + (from && from.glyph !== glyph ? ' look-gin' : '')}><Icon name={glyph} /></span>
+      </span>
       <div className="look-name">{r.name}</div>
     </div>
     <div className="look-sw">
@@ -61,7 +75,7 @@ function LookSheet({ id, close }) {
         </button>
       ))}
     </div>
-    <div className="look-cn" data-colour-name>{color ? colourName(color) : ''}</div>
+    <div key={color || ''} className="look-cn" data-colour-name>{color ? colourName(color) : ''}</div>
     {GLYPH_GROUPS.map(g => (
       <div key={g.key} style={{ marginBottom: 14 }}>
         <div className="sect-t" style={{ padding: '0 2px 7px' }}>{t(g.key)}</div>

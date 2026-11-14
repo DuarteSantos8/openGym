@@ -102,3 +102,43 @@ describe('RoutineLook', () => {
     expect(close).toHaveBeenCalled()
   })
 })
+
+describe('RoutineLook motion', () => {
+  const tile = () => host.querySelector('.look-tile')
+
+  it('a new colour stacks the old one on the tile to fade out; the check is the pressed swatch\'s only', async () => {
+    expect(tile().querySelector('.look-old')).toBeNull()
+    await click(byLabel('Orange'))
+    expect(tile().querySelector('.look-old').getAttribute('style')).toContain('var(--blue)')
+    expect(host.querySelectorAll('.look-s .icn')).toHaveLength(1)
+    expect(byLabel('Orange').querySelector('.icn')).not.toBeNull()
+  })
+
+  it('a new icon keeps the old glyph for its fade and brings the new one in', async () => {
+    await click(byLabel('Push day'))
+    expect(tile().querySelector('.look-gout [data-icon="figureStrength"]')).not.toBeNull()
+    expect(tile().querySelector('.look-gin [data-icon="splitPush"]')).not.toBeNull()
+  })
+
+  it('the colour name is re-keyed so it fades in', async () => {
+    const before = host.querySelector('[data-colour-name]')
+    await click(byLabel('Orange'))
+    expect(host.querySelector('[data-colour-name]')).not.toBe(before)
+  })
+
+  it('Reduce Motion: no stacked layer, no ghost glyph, no entry class; the pick still lands', async () => {
+    document.documentElement.classList.add('reduce-motion')
+    await click(byLabel('Orange'))
+    await click(byLabel('Push day'))
+    document.documentElement.classList.remove('reduce-motion')
+    expect(tile().querySelector('.look-old, .look-gout, .look-gin')).toBeNull()
+    expect(host.querySelector('[data-colour-name]').textContent).toBe('Orange')
+  })
+
+  it('the stylesheet turns the sheet\'s animations off under the class and the media query', async () => {
+    const { readFileSync } = await import('node:fs')
+    const css = readFileSync('src/index.css', 'utf8')
+    expect(css).toContain('.reduce-motion .look-s>span>.icn,.reduce-motion .look-old,.reduce-motion .look-gout,.reduce-motion .look-gin,.reduce-motion .look-cn{animation:none}')
+    expect(css).toContain('@media (prefers-reduced-motion:reduce){.look-s>span::after{transition:none}.look-s>span>.icn,.look-old,.look-gout,.look-gin,.look-cn{animation:none}}')
+  })
+})
