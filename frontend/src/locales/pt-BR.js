@@ -2445,6 +2445,7 @@ export const PT_BR_OVERRIDES = {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
   // Nutrition
+  "Undated entries": "Registros sem data",
   "Add food": "Adicionar alimento",
   "Add this device’s data to your profile?": "Adicionar os dados deste dispositivo ao perfil?",
   "Amount": "Quantidade",

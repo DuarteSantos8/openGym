@@ -3656,6 +3656,7 @@ export default {
   "{0} of {1} modules on.": "已开启 {0}/{1} 个模块。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“健康”关闭期间，{0} 会停止同步。不会断开任何连接，“健康”重新开启后会自动补上。",
   // Nutrition
+  "Undated entries": "无日期记录",
   "Add food": "添加食物",
   "Add this device’s data to your profile?": "将此设备的数据添加到你的个人资料？",
   "Amount": "数量",

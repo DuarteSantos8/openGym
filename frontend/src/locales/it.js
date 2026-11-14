@@ -3656,6 +3656,7 @@ export default {
   "{0} of {1} modules on.": "{0} moduli attivi su {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} smette di sincronizzare mentre «Salute» è disattivato. Non si scollega niente e recupera tutto quando «Salute» torna attivo.",
   // Nutrition
+  "Undated entries": "Voci senza data",
   "Add food": "Aggiungi alimento",
   "Add this device’s data to your profile?": "Aggiungere i dati di questo dispositivo al profilo?",
   "Amount": "Quantità",

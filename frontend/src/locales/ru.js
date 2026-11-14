@@ -3660,6 +3660,7 @@ export default {
   "{0} of {1} modules on.": "Включено модулей: {0} из {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Пока «Здоровье» выключено, {0} не синхронизируется. Ничего не отключается, и всё догонится, когда «Здоровье» вернётся.",
   // Nutrition
+  "Undated entries": "Записи без даты",
   "Add food": "Добавить еду",
   "Add this device’s data to your profile?": "Добавить данные этого устройства в профиль?",
   "Amount": "Количество",

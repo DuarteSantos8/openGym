@@ -3656,6 +3656,7 @@ export default {
   "{0} of {1} modules on.": "{1} में से {0} मॉड्यूल चालू।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"सेहत\" बंद रहने तक {0} सिंक नहीं करता। कुछ भी डिस्कनेक्ट नहीं होता, और \"सेहत\" लौटते ही सब पकड़ लेता है।",
   // Nutrition
+  "Undated entries": "बिना तारीख की प्रविष्टियाँ",
   "Add food": "भोजन जोड़ें",
   "Add this device’s data to your profile?": "इस डिवाइस का डेटा अपनी प्रोफ़ाइल में जोड़ें?",
   "Amount": "मात्रा",

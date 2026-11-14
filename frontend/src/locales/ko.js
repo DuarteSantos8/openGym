@@ -3656,6 +3656,7 @@ export default {
   "{0} of {1} modules on.": "모듈 {1}개 중 {0}개 켜짐.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "'건강'이 꺼져 있는 동안 {0} 동기화가 멈춰요. 연결은 끊기지 않고, '건강'을 다시 켜면 밀린 걸 따라잡아요.",
   // Nutrition
+  "Undated entries": "날짜 없는 기록",
   "Add food": "음식 추가",
   "Add this device’s data to your profile?": "이 기기의 데이터를 프로필에 추가할까요?",
   "Amount": "양",

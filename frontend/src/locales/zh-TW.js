@@ -3649,6 +3649,7 @@ export default {
   "{0} of {1} modules on.": "已開啟 {0}/{1} 個模組。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "「健康」關閉期間，{0} 會停止同步。不會中斷任何連線，「健康」重新開啟後會自動補上。",
   // Nutrition
+  "Undated entries": "無日期紀錄",
   "Add food": "新增食物",
   "Add this device’s data to your profile?": "將此裝置的資料加入你的個人檔案？",
   "Amount": "數量",

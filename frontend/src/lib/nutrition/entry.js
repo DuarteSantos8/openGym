@@ -15,7 +15,7 @@ function label(v) {
   if (typeof v !== 'string' || !v.trim() || v.trim().length > 200) throw new Error('label')
   return v.trim()
 }
-function validDay(day) {
+export function validDay(day) {
   return typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) && Number.isFinite(Date.parse(day)) && new Date(day).toISOString().slice(0, 10) === day
 }
 export function localDay(now = new Date(), timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
