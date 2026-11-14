@@ -1294,7 +1294,7 @@ export default {
   'New equipment profile': 'नई उपकरण प्रोफ़ाइल',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'जहाँ आप कसरत करते हैं उसी के नाम पर रखें (जैसे "घर" या "जिम"), फिर वहाँ जो है उस पर टिक करें।',
   'Profile name': 'प्रोफ़ाइल का नाम',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'बॉडीवेट व्यायाम हमेशा उपलब्ध रहते हैं, जब तक उन्हें पुल-अप बार या बेंच की ज़रूरत न हो।',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'यहाँ बॉडीवेट व्यायाम छिपाने के लिए शरीर का वज़न से टिक हटाएँ। जिस व्यायाम को पुल-अप बार या बेंच चाहिए, वह उस पर टिक होने पर दिखता है।',
   '{0} of {1} exercises need equipment outside "{2}"': '{1} में से {0} कसरतों को “{2}” के बाहर के उपकरण चाहिए',
   'Needs {0}, which isn’t in your active profile': '{0} चाहिए, जो आपकी सक्रिय प्रोफ़ाइल में नहीं है',
   'Filter by equipment': 'उपकरण से फ़िल्टर करें',

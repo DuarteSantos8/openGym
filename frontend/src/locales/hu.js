@@ -1208,7 +1208,7 @@ export default {
   'Filter by equipment': 'Szűrés eszköz szerint',
   'Needs {0}, which isn’t in your active profile': '{0} szükséges, ami nincs az aktív profilodban',
   '{0} of {1} exercises need equipment outside "{2}"': '{0}/{1} gyakorlathoz kell eszköz a(z) „{2}” profilon kívülről',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'A testsúlyos gyakorlatok mindig elérhetők, hacsak nem kell hozzájuk húzódzkodórúd vagy pad.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Vedd ki a pipát a testsúly elől, és a testsúlyos gyakorlatok itt rejtve maradnak. Amelyikhez húzódzkodórúd vagy pad kell, az akkor látszik, ha az be van pipálva.',
   'Profile name': 'Profil neve',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Nevezd el arról a helyről, ahol edzel (pl. „Otthon” vagy „Terem”), majd pipáld ki, ami ott megvan.',
   'New equipment profile': 'Új eszközprofil',

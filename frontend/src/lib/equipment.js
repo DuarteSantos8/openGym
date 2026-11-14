@@ -46,10 +46,15 @@ export const ALL_EQUIPMENT = (() => {
   return ranked.concat(ACCESSORIES)
 })()
 
-// Body weight is never gated by a profile — no gym or home setup can take it away from you,
-// and every profile should be able to see bodyweight exercises regardless of what's checked.
-// Only the accessory an exercise needs (a bar, a bench) can still gate it.
+// Body weight is never gated by an equipment list — no gym or home setup can take it away from
+// you. Only the accessory an exercise needs (a bar, a bench) can still gate it. A profile can
+// still say "not here" with its own body-weight tick (#1159, bodyWeightOf below).
 const ALWAYS_AVAILABLE = 'body weight'
+
+// Body weight as a tick (#1159): a profile saved by the profile sheet carries `bwV: 1` and has body
+// weight only if it is ticked. One saved before has no mark and had no say, so it has it.
+export const BW_V = 1
+export const bodyWeightOf = p => !p || p.bwV !== BW_V || (p.equipment || []).includes(ALWAYS_AVAILABLE)
 
 // "I own no dumbbells" (Settings → Equipment → Dumbbells) filters without a profile of its own:
 // everything but the dumbbell. It stands in as the active profile, so the library, the picker and
@@ -104,6 +109,8 @@ export function exAvailable(S, ex) {
   // Your own kit (1.4.5, #323): one of your exercises that needs a sandbag or rings shows only
   // where the gym's profile has it. Without a profile that filters, everything shows, as ever.
   if (p.id && !kitAvailable(p, ex)) return false
+  // Unticked body weight hides only what needs nothing else: a chin-up follows the bar, a ring push-up its kit.
+  if (ex.eq === ALWAYS_AVAILABLE && !bodyWeightOf(p) && !accessoriesOf(ex).length && !kitOf(ex).length) return false
   return eqAvailable(profileEquipment(p), ex, profileMachines(p))
 }
 
@@ -178,5 +185,5 @@ export function eqAvailable(equipment, ex, machines) {
 }
 
 export function newProfile(name) {
-  return { id: 'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, equipment: [], accV: ACC_V }
+  return { id: 'eq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, equipment: [ALWAYS_AVAILABLE], accV: ACC_V, bwV: BW_V }
 }

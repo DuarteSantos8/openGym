@@ -1375,7 +1375,7 @@ export default {
   'New equipment profile': 'নতুন ইকুইপমেন্ট প্রোফাইল',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'যেখানে ট্রেন করেন সেই নামে রাখুন (যেমন "বাড়ি" বা "জিম"), তারপর সেখানে কী কী আছে টিক দিন।',
   'Profile name': 'প্রোফাইলের নাম',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'শরীরের ওজনের ব্যায়াম সবসময় পাওয়া যায়, যদি না সেগুলোর জন্য পুল-আপ বার বা বেঞ্চ লাগে।',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'এখানে শরীরের ওজনের ব্যায়াম লুকাতে শরীরের ওজন থেকে টিক তুলে দিন। যে ব্যায়ামে পুল-আপ বার বা বেঞ্চ লাগে, সেটি সেগুলোতে টিক থাকলে দেখা যায়।',
   '{0} of {1} exercises need equipment outside "{2}"': '{1}টির মধ্যে {0}টি ব্যায়ামে "{2}"-এর বাইরের ইকুইপমেন্ট লাগে',
   'Needs {0}, which isn’t in your active profile': '{0} লাগে, যা আপনার সক্রিয় প্রোফাইলে নেই',
   'Filter by equipment': 'ইকুইপমেন্ট অনুযায়ী ফিল্টার করুন',

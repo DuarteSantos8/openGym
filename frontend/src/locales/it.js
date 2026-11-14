@@ -1298,7 +1298,7 @@ export default {
   'New equipment profile': 'Nuovo profilo attrezzi',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Chiamalo come il posto dove ti alleni (ad es. “Casa” o “Palestra”), poi spunta ciò che hai lì.',
   'Profile name': 'Nome del profilo',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Gli esercizi a corpo libero sono sempre disponibili, a meno che non servano una sbarra per trazioni o una panca.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Togli la spunta a corpo libero per nascondere qui gli esercizi a corpo libero. Uno che richiede una sbarra per trazioni o una panca compare quando quella è spuntata.',
   '{0} of {1} exercises need equipment outside "{2}"': '{0} di {1} esercizi richiedono attrezzi fuori da “{2}”',
   'Needs {0}, which isn’t in your active profile': 'Richiede {0}, che non è nel profilo attivo',
   'Filter by equipment': 'Filtra per attrezzi',
