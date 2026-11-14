@@ -4354,6 +4354,30 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-editbar button.danger{color:var(--danger-ink)}
 .plan-editbar button.apart{margin-inline-start:12px;border-inline-start:var(--hair) solid var(--sep)}
 .plan-editbar button:disabled{opacity:.4}
+/* Edit mode motion (Plan.jsx phase, motion recommendation): the check circles and grips fade in 180 ms with a 12 px
+   slide, the titles shift 34-36 px over 260 (the layout is already final, so it is a transform from the old place),
+   the bar rises 300 ms --ease and leaves 220 --ease-exit, the pill fades out 140. First 12 rows of a group only.
+   Reduce Motion: Plan.jsx sets no phase; the twins below cover a setting that changes mid-way. */
+.plan{--dx:1}
+[dir="rtl"] .plan{--dx:-1}
+@keyframes edit-from{from{opacity:0;transform:translateX(calc(var(--dx)*var(--s)*1px))}}
+@keyframes edit-shift{from{transform:translateX(calc(var(--dx)*var(--s)*1px))}}
+@keyframes edit-bar-in{from{transform:translateY(100%)}}
+@keyframes edit-bar-out{to{transform:translateY(100%)}}
+@keyframes edit-pill-out{to{opacity:0}}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-check{--s:-12;animation:edit-from 180ms var(--ease) backwards}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-grip{--s:12;animation:edit-from 180ms var(--ease) backwards}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-check~:is(.lrow-i,.grow){--s:-34;animation:edit-shift 260ms var(--ease)}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-check~.bm-mini-wrap{--s:36;animation:edit-shift 260ms var(--ease)}
+.is-edit-out .plan-group>:nth-child(-n+12) .plan-routine>:is(.lrow-i,.grow){--s:34;animation:edit-shift 260ms var(--ease)}
+.is-edit-out .plan-group>:nth-child(-n+12) .plan-routine>.bm-mini-wrap{--s:-36;animation:edit-shift 260ms var(--ease)}
+.plan-editbar{animation:edit-bar-in 300ms var(--ease)}
+.plan-editbar.is-leaving{animation:edit-bar-out 220ms var(--ease-exit) forwards;pointer-events:none}
+.plan-pill.is-away{animation:edit-pill-out 140ms ease-out forwards;pointer-events:none}
+.plan-pill.is-back{animation:drag-fade 180ms ease-out}
+.plan-starred-bar .ss{animation:drag-fade 140ms ease-out}
+.reduce-motion .plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.reduce-motion .plan-editbar,.reduce-motion .plan-pill,.reduce-motion .plan-starred-bar .ss{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.plan-editbar,.plan-pill,.plan-starred-bar .ss{animation:none}}
 
 
 /* Tempo (#572, components/Tempo.jsx): the tag on an exercise, the picker's big readout and the

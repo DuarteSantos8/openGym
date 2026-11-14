@@ -43,6 +43,21 @@ describe('flip', () => {
     expect(seen).toContain('translate(0px,50px)')   // k1 sat 50 px lower; the start is committed before it is released
   })
 
+  it('a row that would travel more than `far` px fades in at its new place instead of flying', () => {
+    const { root, rows, place } = setup(6)
+    const calls = []
+    rows[0].animate = (f, o) => { calls.push({ f, o }); return {} }
+    const before = flipMeasure(root)
+    root.appendChild(rows[0]); place()   // k0 travels 250 px; the others 50
+    flipPlay(root, before, { far: 160 })
+    expect(rows[0].style.transform).toBe('')
+    expect(rows[0].style.transition).toBe('')
+    expect(calls).toHaveLength(1)
+    expect(calls[0].o).toMatchObject({ duration: 160, delay: 80 })
+    expect(Object.keys(calls[0].f[0])).toEqual(['opacity'])
+    expect(rows[1].style.transition).toMatch(/^transform /)
+  })
+
   it('animates at most 12 rows; the rest switch', () => {
     const { root, rows, place } = setup(20)
     const before = flipMeasure(root)

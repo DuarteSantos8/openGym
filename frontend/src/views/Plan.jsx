@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -38,6 +38,7 @@ import { activeRoutines, currentFolder, folderList, folderOf, isLive, moveToFold
 import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
 import { listMove } from '../lib/list-motion.js'
+import { still } from '../lib/flip.js'
 import { routineMenu, folderMenu, duplicateRoutine, moveSheet, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
@@ -480,6 +481,22 @@ function Routines({ S, update, nav, edit, setEdit }) {
     setStarredNow(v)
     try { v ? localStorage.setItem('og_plan_starred', '1') : localStorage.removeItem('og_plan_starred') } catch { /* private mode: the filter just isn't remembered */ }
   }
+  // Edit mode's motion: checks, grips and titles slide in (`in`) or the titles settle back (`out`), the Edit bar
+  // rises or leaves, the pill fades. One phase class for 320 ms, so a row that mounts later in Edit stays still.
+  // Nothing here waits on it; Reduce Motion sets no phase at all.
+  const [phase, setPhase] = useState('')
+  const wasEdit = useRef(edit)
+  useLayoutEffect(() => {
+    if (wasEdit.current === edit) return
+    wasEdit.current = edit
+    if (still()) return
+    setPhase(edit ? 'in' : 'out')
+    const id = setTimeout(() => setPhase(''), 320)
+    return () => clearTimeout(id)
+  }, [edit])
+  // The Favourites filter: rows that leave fade, the rest move or fade in (lib/list-motion.js); a row that
+  // would travel more than 160 px fades in at its new place.
+  const showStarred = v => listMove(() => setStarred(v), { far: 160 })
   const swipe = workoutControls(S).swipeSets
   // Archived routines are not listed here (they have their own screen); they keep their place in S.routines.
   const routines = activeRoutines(S)
@@ -574,13 +591,13 @@ function Routines({ S, update, nav, edit, setEdit }) {
       </div>
       <h2 className="plan-selcount" role="status">{ids.length ? t('{0} selected', ids.length) : t('Select items')}</h2>
     </>}
-    {routines.length || folders.length || archived ? <div className={'plan-routes' + (edit ? ' is-editing' : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
+    {routines.length || folders.length || archived ? <div className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
       {!edit && starred
           ? (starredRoutines.length
             ? <>
               <div className="plan-starred-bar">
-                <span className="ss">{t('{0} of {1} routines', starredRoutines.length, routines.length)}</span>
-                <button className="plan-textbtn" onClick={() => setStarred(false)}>{t('Show all')}</button>
+                <span key={starredRoutines.length} className="ss">{t('{0} of {1} routines', starredRoutines.length, routines.length)}</span>
+                <button className="plan-textbtn" onClick={() => showStarred(false)}>{t('Show all')}</button>
               </div>
               {group('starred', starredRoutines.map(r => rowOf(r, cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
             </>
@@ -588,7 +605,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
               <span className="plan-fav-i"><Icon name="star" /></span>
               <h3>{t('No favourites yet.')}</h3>
               <p>{t('Open the menu on a routine and pick Add to favourites. It will show here.')}</p>
-              <button type="button" className="plan-textbtn" onClick={() => setStarred(false)}>{t('Show all routines')}</button>
+              <button type="button" className="plan-textbtn" onClick={() => showStarred(false)}>{t('Show all routines')}</button>
             </div>)
           : <>
             {cur && group('cur', [
@@ -611,14 +628,14 @@ function Routines({ S, update, nav, edit, setEdit }) {
     </div> : <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
     </EmptyState>}
-    {edit && <div className="plan-editbar">
+    {(edit || phase === 'out') && <div className={'plan-editbar' + (edit ? '' : ' is-leaving')} inert={!edit || undefined}>
       <button type="button" disabled={!ids.length} onClick={archiveSel}><Icon name="archive" />{t('Archive')}</button>
       <button type="button" disabled={!ids.length} onClick={() => moveSheet(ids)}><Icon name="folder" />{t('Move to folder')}</button>
       <button type="button" className="danger apart" disabled={!ids.length} onClick={deleteSel}><Icon name="trash" />{t('Delete')}</button>
     </div>}
     <div className="vh" role="status" aria-live="polite">{dragCur.announce || dragLoose.announce}</div>
-    {!edit && !lifted && <div className="plan-pill">
-      <button type="button" className="plan-pill-star" aria-label={t('Favourites')} aria-pressed={starred} onClick={() => setStarred(!starred)}>
+    {((!edit && !lifted) || phase === 'in') && <div className={'plan-pill' + (edit ? ' is-away' : phase === 'out' ? ' is-back' : '')} inert={edit || undefined} aria-hidden={edit || undefined}>
+      <button type="button" className="plan-pill-star" aria-label={t('Favourites')} aria-pressed={starred} onClick={() => showStarred(!starred)}>
         <Icon name={starred ? 'starFill' : 'star'} />{starred && <span>{t('Favourites')}</span>}
       </button>
       <button type="button" className="plan-pill-new" data-tour="plan-new" onClick={newMenu}><Icon name="plus" />{t('New')}</button>

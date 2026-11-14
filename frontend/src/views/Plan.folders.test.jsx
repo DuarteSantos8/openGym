@@ -144,6 +144,6 @@ describe('The pill', () => {
   it('is not there in Edit', () => {
     mount()
     click([...host.querySelectorAll('.plan-textbtn')].find(b => b.textContent === 'Edit'))
-    expect(host.querySelector('.plan-pill')).toBeNull()
+    expect(host.querySelector('.plan-pill:not(.is-away)')).toBeNull()
   })
 })

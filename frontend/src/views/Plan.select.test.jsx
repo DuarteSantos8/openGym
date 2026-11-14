@@ -57,7 +57,7 @@ describe('Edit with select', () => {
       .toEqual(['Move Push A', 'Move Pull A', 'Move Mobility', 'Move Core', 'Move Hyper', 'Move Travel'])
     expect(host.querySelector('.plan-more')).toBeNull()
     expect(label('Plan options')).toBeNull()
-    expect(host.querySelector('.plan-pill')).toBeNull()
+    expect(host.querySelector('.plan-pill:not(.is-away)')).toBeNull()
     click(button('Done'))
     expect(host.querySelector('[data-reorder-handle]')).toBeNull()
     expect(label('Plan options')).toBeTruthy()
@@ -167,7 +167,7 @@ describe('Edit with select', () => {
     act(() => confirmSheet.mock.lastCall[0].onConfirm())
     expect(button('Done')).toBeTruthy()
     click(button('Done'))
-    expect(document.querySelector('.plan-editbar')).toBeNull()
+    expect(document.querySelector('.plan-editbar:not(.is-leaving)')).toBeNull()
   })
 
   it('Delete is off with nothing selected', () => {

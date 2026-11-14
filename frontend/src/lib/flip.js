@@ -2,6 +2,7 @@
 // commit play it from the old place to the new one (flipPlay). Transform only, so it runs on the
 // compositor. Rows carry data-flip-key. Reduce Motion and the OS setting: rows just switch.
 const KEY = '[data-flip-key]'
+const EASE = 'cubic-bezier(.32,.72,0,1)'   // = --ease; the Web Animations API takes no var()
 export const FLIP_MAX = 12   // rows that animate; the rest switch
 const live = new WeakMap()   // each row's running cleanup, so a new flip can retire the old one
 
@@ -22,8 +23,9 @@ export function flipMeasure(root) {
   return m
 }
 
-/** Slides each row that moved from its `before` place to where it is now. Call after the commit. */
-export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = 'var(--flip-delay)' } = {}) {
+/** Slides each row that moved from its `before` place to where it is now. Call after the commit.
+ *  `far`: a row that would travel more than this many px does not fly through the list: it fades in at its new place (160 ms, after 80). */
+export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = 'var(--flip-delay)', far } = {}) {
   if (!root || !before?.size) return
   const rows = [...root.querySelectorAll(KEY)]
   // Drop any flip still in flight: the rows are back at their layout place, which is what we measure.
@@ -42,8 +44,10 @@ export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = '
   }
   for (const el of rows) if (!moved.some(([e]) => e === el)) el.style.transition = ''
   if (still()) { for (const [el] of moved) el.style.transition = ''; return }
-  const go = moved.slice(0, FLIP_MAX)
-  for (const [el] of moved.slice(FLIP_MAX)) el.style.transition = ''
+  const fade = far ? moved.filter(([, , dy]) => Math.abs(dy) > far) : []
+  for (const [el] of fade) { el.style.transition = ''; el.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 160, delay: 80, easing: EASE, fill: 'backwards' }) }
+  const go = moved.filter(m => !fade.includes(m)).slice(0, FLIP_MAX)
+  for (const [el] of moved) if (!go.some(([e]) => e === el)) el.style.transition = ''
   for (const [el, dx, dy] of go) el.style.transform = `translate(${dx}px,${dy}px)`
   go[0]?.[0].getBoundingClientRect()   // commit the start position once, then let go
   const t0 = performance.now()   // events born before this belong to a flip we retired

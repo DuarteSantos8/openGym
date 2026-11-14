@@ -15,9 +15,10 @@ const RM_MS = 120
 /** Runs `change()` (the state write) and plays the motion. Options:
  *  slide: a leaver trails 16 px (archive); hold: ms before leavers start to go (Move sheet);
  *  enterDelay: ms before an arrival fades in; dur / delay: the FLIP's, as CSS times;
+ *  far: px a follower may travel before it fades in at its new place instead (Favourites, 160);
  *  tick: { key, at } pops the count line of the keyed row `at` ms in; land: key of the block that takes the
  *  new tint and pin (Make current). */
-export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur, delay, tick, land } = {}) {
+export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur, delay, tick, land, far } = {}) {
   const rm = still()
   const root = document.body
   const before = new Map(), olds = []
@@ -36,7 +37,7 @@ export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur
     for (const o of gone) ghost(o, rm, slide, hold)
     for (const el of now) if (!before.has(el.dataset.flipKey)) arrive(el, rm, enterDelay)
     if (hold && !rm) delay = `${hold + 40}ms`   // followers wait for the leaver to go
-    flipPlay(root, before, { duration: dur, delay })
+    flipPlay(root, before, { duration: dur, delay, far })
     if (tick && !rm) setTimeout(() => popCount(tick.key), tick.at)
     if (land && !rm) landBlock(land)
   })
