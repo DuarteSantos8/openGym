@@ -145,6 +145,16 @@ describe('exercise settings in a live workout keep their changes on close (#1079
     expect(onSave).not.toHaveBeenCalled()
   })
 
+  it('saves nothing after switching the unit and back, on a lb profile with a pyramid', () => {
+    act(() => useStore.setState(s => ({ S: { ...s.S, unit: 'lb' } })))
+    const onSave = vi.fn()
+    open(onSave, { cfg: { ...config, pyramid: [10, 8, 6], pyramidWeight: [40, 45, 50] } })
+    pickUnit('kg')
+    pickUnit('lb')
+    swipeAway()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
   it('still saves an edit made before or after a unit switch in the sheet', () => {
     const onSave = vi.fn()
     open(onSave)

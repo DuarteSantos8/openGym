@@ -2779,14 +2779,13 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   }
   // The live workout's sheet (#1079) saves however it closes, but only when what it builds differs
   // from what it built as it opened: a look, or a change undone, keeps the rows. Compared before the
-  // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit; a switch in
-  // this sheet converts the snapshot with the fields.
-  const opened = useRef(null)
+  // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit. A unit switch
+  // in this sheet converts the fields, so it notes whether anything was edited so far (`edited`)
+  // and the next render takes the snapshot again, in the new unit.
+  const opened = useRef(null), edited = useRef(false)
   if (autosave && opened.current === null) { opened.current = ''; save(out => { opened.current = JSON.stringify(out) }) }
-  // A converted snapshot takes the rounding the build gives a pyramid's weights.
-  const asBuilt = o => (Array.isArray(o.pyramidWeight) ? { ...o, pyramidWeight: normalizePyramidWeight(o.pyramidWeight, o.pyramidWeight.length) } : o)
   const keep = useRef(null)
-  keep.current = () => save(out => { if (JSON.stringify(out) !== opened.current) onSave(storedOf(out)) })
+  keep.current = () => save(out => { if (edited.current || JSON.stringify(out) !== opened.current) onSave(storedOf(out)) })
   useEffect(() => () => { if (autosave) keep.current() }, [])
   return <>
     {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
@@ -3177,10 +3176,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {!cardio && <>
       <h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} onChange={(before, after) => {
-        const turn = x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored))
-        // The autosave snapshot follows the unit, so a switch alone is not an edit (#1079).
-        if (opened.current) opened.current = JSON.stringify(asBuilt(turn(JSON.parse(opened.current))))
-        setC(turn)
+        if (autosave) { save(out => { if (JSON.stringify(out) !== opened.current) edited.current = true }); opened.current = null }
+        setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))
       }} />
       <GymSplitRow ex={ex} />
     </>}
