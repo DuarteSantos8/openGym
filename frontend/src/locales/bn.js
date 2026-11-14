@@ -6038,4 +6038,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "কোনো রুটিনের মেনু খুলে প্রিয়তে যোগ করুন বেছে নিন। সেটি এখানে দেখা যাবে।",
   "{0} of {1} routines": "{1}টির মধ্যে {0}টি রুটিন",
   "Moved {0} to {1}": "{0} সরানো হয়েছে {1}-এ",
+  "Move here": "এখানে সরান",
+  "Move out to Plan": "প্ল্যানে সরান",
 }

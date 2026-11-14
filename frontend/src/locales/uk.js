@@ -5956,4 +5956,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Відкрийте меню тренування й виберіть Додати в обране. Воно з’явиться тут.",
   "{0} of {1} routines": "{0} із {1} тренувань",
   "Moved {0} to {1}": "{0} переміщено до {1}",
+  "Move here": "Перемістити сюди",
+  "Move out to Plan": "Винести в План",
 }

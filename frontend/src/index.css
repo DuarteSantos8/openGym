@@ -4231,6 +4231,21 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-routine .bodymap.bm-mini .bm-ph{height:36px;width:34px}
 .plan-current .ss{color:var(--label-2)}
 .plan-current .ss b{color:var(--acc-ink);font-weight:600}
+/* Long-press drag (lib/use-long-press-drag.js). Lifted row: scale, shadow, a degree of tilt, transform
+   only; its old slot stays as a dashed outline. A drop target fills with the accent and rings in two
+   lines (neutral inside, accent outside), so it reads on any tile colour. Reduce Motion: outline only. */
+.drag-row{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.drag-row.is-lifted{z-index:5}
+.drag-row.is-lifted::before{content:attr(data-name);position:absolute;inset:4px 8px;display:flex;align-items:center;justify-content:center;border:2px dashed var(--label-3);border-radius:10px;color:var(--label-2);font-size:var(--fs-footnote)}
+.drag-row.is-lifted .drag-in{position:relative;background:var(--surface-3);border-radius:var(--r-card);transform:translateY(var(--dy)) scale(1.03) rotate(1deg);box-shadow:0 12px 28px rgba(0,0,0,.35);will-change:transform;pointer-events:none}
+.plan-routes.is-dragging .plan-group{overflow:visible}
+.plan-group .item.is-drop,.plan-textbtn.is-drop{background:var(--acc);color:var(--on-acc);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--on-acc)}
+.is-drop .ss,.is-drop .ss b,.is-drop .tt,.is-drop .lrow-i{color:var(--on-acc)}
+.plan-here{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--on-acc);color:var(--acc-ink);font-weight:600;font-size:var(--fs-callout)}
+.plan-moveout{min-height:36px;background:var(--acc);color:var(--on-acc)}
+.plan-moveout .icon{width:18px;height:18px}
+.reduce-motion .drag-row.is-lifted .drag-in{transform:none;box-shadow:none;outline:2px solid var(--label);outline-offset:-2px}
+@media (prefers-reduced-motion:reduce){.drag-row.is-lifted .drag-in{transform:none;box-shadow:none;outline:2px solid var(--label);outline-offset:-2px}}
 @media (max-width:359px){.plan-routine .bm-mini-wrap .bm-v+.bm-v{display:none}}
 /* the pill: Starred and New, above the tab bar and the raised Start button */
 .plan-pill{

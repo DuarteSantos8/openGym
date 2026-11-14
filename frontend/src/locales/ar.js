@@ -6014,4 +6014,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "افتح القائمة على روتين واختر إضافة إلى المفضلة. سيظهر هنا.",
   "{0} of {1} routines": "{0} من {1} روتينات",
   "Moved {0} to {1}": "نُقل {0} إلى {1}",
+  "Move here": "انقل إلى هنا",
+  "Move out to Plan": "انقل إلى الخطة",
 }

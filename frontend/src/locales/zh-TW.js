@@ -5952,4 +5952,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "開啟訓練的選單，選擇加入我的最愛。它會顯示在這裡。",
   "{0} of {1} routines": "{1} 個訓練中的 {0} 個",
   "Moved {0} to {1}": "已將 {0} 移到 {1}",
+  "Move here": "移到這裡",
+  "Move out to Plan": "移出到計畫",
 }

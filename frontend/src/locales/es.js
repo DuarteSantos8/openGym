@@ -5959,4 +5959,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Abre el menú de una rutina y elige Añadir a favoritos. Saldrá aquí.",
   "{0} of {1} routines": "{0} de {1} rutinas",
   "Moved {0} to {1}": "{0} movida a {1}",
+  "Move here": "Mover aquí",
+  "Move out to Plan": "Sacar al Plan",
 }

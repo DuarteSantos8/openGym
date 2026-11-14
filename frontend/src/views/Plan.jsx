@@ -34,11 +34,12 @@ import {
   chooseRotation, chooseFixedWeek, sequenceOf, isSimpleSequence, segmentAt, REST,
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
-import { activeRoutines, currentFolder, folderList, folderOf, isLive, reorderFolders } from '../lib/routine-folders.js'
+import { activeRoutines, currentFolder, folderList, folderOf, isLive, moveToFolder, reorderFolders } from '../lib/routine-folders.js'
+import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
 import { routineMenu, folderMenu, duplicateRoutine, moveSheet, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
-import RoutineRow, { MoreButton } from '../components/RoutineRow.jsx'
+import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
 import { folderNameSheet } from '../components/RoutineFolder.jsx'
 import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
 import { routineSources } from '../lib/session-routines.js'
@@ -450,6 +451,24 @@ function Schedule({ S, update, nav, mode }) {
 
 /* ================================ Routines ================================ */
 
+/** Moves one live routine of a group (the rows `pred` picks) from one place to another. */
+export function reorderWithin(s, pred, from, to) {
+  const sec = s.routines.filter(r => isLive(r) && pred(r))
+  if (to < 0 || to >= sec.length) return
+  const [m] = s.routines.splice(s.routines.indexOf(sec[from]), 1)
+  const rest = s.routines.filter(r => isLive(r) && pred(r))
+  s.routines.splice(to < rest.length ? s.routines.indexOf(rest[to]) : s.routines.length, 0, m)
+}
+
+/** A drop on a folder (or '' for Plan itself): the routine goes there, last in its group. */
+export function dropRoutine(update, id, folder) {
+  update(s => {
+    moveToFolder(s, [id], folder)
+    const i = s.routines.findIndex(r => r.id === id)
+    if (i >= 0) s.routines.push(...s.routines.splice(i, 1))
+  })
+}
+
 function Routines({ S, update, nav, edit, setEdit }) {
   const selectAll = useRef(null)
   useEffect(() => { if (edit) selectAll.current?.focus() }, [edit])
@@ -474,16 +493,18 @@ function Routines({ S, update, nav, edit, setEdit }) {
   // it everywhere (#142). Reordering lives behind Edit, like on an iPhone, within one group.
   const inCur = r => !!cur && at(cur)(r)
   const inLoose = r => !folderOf(r)
-  const moveIn = pred => (from, to) => update(s => {
-    const sec = s.routines.filter(r => isLive(r) && pred(r))
-    if (to < 0 || to >= sec.length) return
-    const [m] = s.routines.splice(s.routines.indexOf(sec[from]), 1)
-    const rest = s.routines.filter(r => isLive(r) && pred(r))
-    s.routines.splice(to < rest.length ? s.routines.indexOf(rest[to]) : s.routines.length, 0, m)
-  })
+  const moveIn = pred => (from, to) => update(s => reorderWithin(s, pred, from, to))
   const curRoutines = routines.filter(inCur)
   const reorderCur = useListReorder(curRoutines.length, moveIn(inCur))
   const reorderLoose = useListReorder(loose.length, moveIn(inLoose))
+  // Long-press drag (not in Edit, which has its grips): a drop between rows reorders within the
+  // group, a drop on a folder row or the current plan block moves the routine there.
+  const dragOpts = { onDropOn: (folder, id) => dropRoutine(update, id, folder), nameOf: x => S.routines.find(r => r.id === x)?.name ?? x }
+  const dragCur = useLongPressDrag({ ...dragOpts, listRef: reorderCur.listRef, rows: curRoutines.map(r => r.id), onReorder: moveIn(inCur) })
+  const dragLoose = useLongPressDrag({ ...dragOpts, listRef: reorderLoose.listRef, rows: loose.map(r => r.id), onReorder: moveIn(inLoose) })
+  const lifted = dragCur.lifted || dragLoose.lifted
+  const hot = key => [dragCur, dragLoose].some(d => d.over?.kind === 'target' && d.over.key === key)
+  const here = <span className="plan-here">{t('Move here')}</span>
   // The folders list skips the current plan, so its positions are looked up in the whole list.
   const reorderFolder = useListReorder(others.length, (from, to) => update(s => {
     const all = folderList(s).map(f => f.name.toLowerCase())
@@ -522,7 +543,8 @@ function Routines({ S, update, nav, edit, setEdit }) {
   const sub = (r, where) => [where, exCount(r.ex.length), daysOf(r.id).join(', '), r._by?.kind === 'trainer' && r._by.name ? t('from {0}', r._by.name) : null].filter(Boolean).join(' · ')
   // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo, toward the
   // end duplicates. Edit's Delete and the routine's own page stay the way in for a keyboard and a screen reader.
-  const rowOf = (r, where, rd, list) => <RoutineRow key={r.id} r={r} sub={sub(r, where)} body={S.body} onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)}
+  const rowOf = (r, where, rd, list, dg) => <RoutineRow key={r.id} r={r} sub={sub(r, where)} body={S.body} onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)}
+    drag={!edit && dg && dragOf(dg, r.id, -28)}
     edit={edit && { checked: sel.includes(r.id), onToggle: () => toggle(r.id), handle: rd.handle(list.indexOf(r)), style: rd.rowStyle(list.indexOf(r)), grip: list.length > 1 }}
     swipe={swipe && { copyLabel: t('Duplicate'), deleteName: t('Delete {0}', said(r.name)), copyName: nameIn(r.name, t('Duplicate')),
       onDelete: () => remove(r), onCopy: () => duplicate(r), flash: flash?.id === r.id ? flash.n : 0 }} />
@@ -532,14 +554,14 @@ function Routines({ S, update, nav, edit, setEdit }) {
     <div className="grow"><div className="tt">{name}</div><div className="ss">{count}</div></div>
   </>
   // In Edit a folder is only reordered: no tap, no "…", just the grip.
-  const folderRow = (key, tile, name, count, onOpen, onMenu, grip) => grip
+  const folderRow = (key, tile, name, count, onOpen, onMenu, grip, drop) => grip
     ? <div key={key} className="item plan-folder is-edit" data-reorder-row="" style={grip.style}>
       {folderText(tile, name, count)}
       {grip.grip && <button type="button" className="plan-grip" aria-label={t('Move {0}', said(name))} title={t('Drag to reorder')} {...grip.handle}><Icon name="grip" /></button>}
     </div>
-    : <div key={key} className="item plan-folder" {...tappable(onOpen)}>
+    : <div key={key} className={'item plan-folder' + (drop && hot(name) ? ' is-drop' : '')} {...(drop || {})} {...tappable(onOpen)}>
       {folderText(tile, name, count)}
-      {onMenu && <MoreButton name={name} onClick={onMenu} />}<Icon name="chevronRight" className="chev" />
+      {drop && hot(name) ? here : <>{onMenu && <MoreButton name={name} onClick={onMenu} />}<Icon name="chevronRight" className="chev" /></>}
     </div>
   const starredRoutines = routines.filter(isFavRoutine)
 
@@ -551,7 +573,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
       </div>
       <h2 className="plan-selcount" role="status">{ids.length ? t('{0} selected', ids.length) : t('Select items')}</h2>
     </>}
-    {routines.length || folders.length || archived ? <div className={'plan-routes' + (edit ? ' is-editing' : '') + (starred && !edit ? ' is-starred' : '')}>
+    {routines.length || folders.length || archived ? <div className={'plan-routes' + (edit ? ' is-editing' : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
       {!edit && starred
           ? (starredRoutines.length
             ? <>
@@ -569,19 +591,20 @@ function Routines({ S, update, nav, edit, setEdit }) {
             </div>)
           : <>
             {cur && group('cur', [
-              <div key="cur" className="item plan-current">
+              <div key="cur" className={'item plan-current' + (hot(cur.name) ? ' is-drop' : '')} {...dragCur.targetProps(cur.name)}>
                 <span className="lrow-i plan-pin"><Icon name="pushpin" /></span>
                 <div className="grow"><div className="tt">{cur.name}</div><div className="ss"><b>{t('Current plan')}</b> · {routineCount(cur.live)}</div></div>
-                {!edit && <MoreButton name={cur.name} onClick={() => folderMenu(cur.name)} />}
-              </div>, ...curRoutines.map(r => rowOf(r, undefined, reorderCur, curRoutines))], 'routine-list plan-routines', reorderCur.listRef)}
+                {hot(cur.name) ? here : !edit && <MoreButton name={cur.name} onClick={() => folderMenu(cur.name)} />}
+              </div>, ...curRoutines.map(r => rowOf(r, undefined, reorderCur, curRoutines, dragCur))], 'routine-list plan-routines', reorderCur.listRef)}
             {loose.length > 0 && <>
               {(cur || others.length > 0) && <h4 className="sec plan-hdr">{t('Not in a folder')}</h4>}
-              {group('loose', loose.map(r => rowOf(r, undefined, reorderLoose, loose)), 'routine-list plan-routines', reorderLoose.listRef)}
+              {group('loose', loose.map(r => rowOf(r, undefined, reorderLoose, loose, dragLoose)), 'routine-list plan-routines', reorderLoose.listRef)}
             </>}
             {others.length > 0 && loose.length > 0 && <h4 className="sec plan-hdr">{t('Folders')}</h4>}
             {others.length > 0 && group('folders', others.map((f, i) => folderRow('f' + f.name, <Icon name="folder" />, f.name, routineCount(f.live),
               () => nav('/plan/folder/' + encodeURIComponent(f.name)), () => folderMenu(f.name),
-              edit && { handle: reorderFolder.handle(i), style: reorderFolder.rowStyle(i), grip: others.length > 1 })), '', reorderFolder.listRef)}
+              edit && { handle: reorderFolder.handle(i), style: reorderFolder.rowStyle(i), grip: others.length > 1 },
+              !edit && dragCur.targetProps(f.name))), '', reorderFolder.listRef)}
             {archived > 0 && !edit && group('archive', folderRow('archive', <Icon name="archive" />, t('Archive'), routineCount(archived), () => nav('/plan/archive')), 'plan-archive')}
           </>}
     </div> : <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
@@ -592,7 +615,8 @@ function Routines({ S, update, nav, edit, setEdit }) {
       <button type="button" disabled={!ids.length} onClick={() => moveSheet(ids)}><Icon name="folder" />{t('Move to folder')}</button>
       <button type="button" className="danger apart" disabled={!ids.length} onClick={deleteSel}><Icon name="trash" />{t('Delete')}</button>
     </div>}
-    {!edit && <div className="plan-pill">
+    <div className="vh" role="status" aria-live="polite">{dragCur.announce || dragLoose.announce}</div>
+    {!edit && !lifted && <div className="plan-pill">
       <button type="button" className="plan-pill-star" aria-label={t('Favourites')} aria-pressed={starred} onClick={() => setStarred(!starred)}>
         <Icon name={starred ? 'starFill' : 'star'} />{starred && <span>{t('Favourites')}</span>}
       </button>

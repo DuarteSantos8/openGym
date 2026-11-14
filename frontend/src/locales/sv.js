@@ -6006,4 +6006,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Öppna menyn på en rutin och välj Lägg till i favoriter. Den visas här.",
   "{0} of {1} routines": "{0} av {1} rutiner",
   "Moved {0} to {1}": "{0} flyttad till {1}",
+  "Move here": "Flytta hit",
+  "Move out to Plan": "Flytta ut till Plan",
 }

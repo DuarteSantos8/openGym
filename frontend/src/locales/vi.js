@@ -5925,4 +5925,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Mở menu của một bài tập và chọn Thêm vào mục yêu thích. Bài đó sẽ hiện ở đây.",
   "{0} of {1} routines": "{0} trên {1} bài tập",
   "Moved {0} to {1}": "Đã chuyển {0} tới {1}",
+  "Move here": "Chuyển vào đây",
+  "Move out to Plan": "Chuyển ra Kế hoạch",
 };

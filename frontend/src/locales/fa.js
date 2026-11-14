@@ -5925,4 +5925,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "منوی یک روتین را باز کنید و به علاقه‌مندی‌ها اضافه کنید را بزنید. اینجا نشان داده می‌شود.",
   "{0} of {1} routines": "{0} از {1} روتین",
   "Moved {0} to {1}": "{0} به {1} منتقل شد",
+  "Move here": "انتقال به اینجا",
+  "Move out to Plan": "انتقال به برنامه",
 }

@@ -5955,4 +5955,6 @@ export default {
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Atidarykite rutinos meniu ir pasirinkite Pridėti prie mėgstamiausių. Ji bus rodoma čia.",
   "{0} of {1} routines": "{0} iš {1} rutinų",
   "Moved {0} to {1}": "{0} perkelta į {1}",
+  "Move here": "Perkelti čia",
+  "Move out to Plan": "Perkelti į planą",
 }
