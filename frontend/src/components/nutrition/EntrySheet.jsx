@@ -1,13 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../../store/useStore.js'
 import { t } from '../../lib/i18n.js'
 import { createEntry, MEALS, NUTRIENTS } from '../../lib/nutrition/entry.js'
 import { addEntry, changeEntry } from '../../lib/nutrition/diary.js'
 import { visibleOptionalEntries } from '../../lib/sync-merge.js'
+import { isOn } from '../../lib/modules.js'
 import ErrorState from '../ErrorState.jsx'
 import { nutrientLabels } from './DiarySummary.jsx'
 export const mealLabels = () => ({ breakfast: t('Breakfast'), lunch: t('Lunch'), dinner: t('Dinner'), snack: t('Snack') })
-export default function EntrySheet({ entry, prefill, day, close }) {
+export default function EntrySheet({ entry, prefill, day, owner, close }) {
+  const currentOwner = useStore(s => s.user?.id || null)
+  const enabled = useStore(s => isOn(s.S, 'nutrition'))
+  const allowed = enabled && currentOwner === owner
+  useEffect(() => { if (!allowed) close() }, [allowed, close])
   const source = entry || prefill
   const [values, setValues] = useState(() => ({
     label: source?.label || '', meal: source?.meal || 'snack',
@@ -22,6 +27,8 @@ export default function EntrySheet({ entry, prefill, day, close }) {
   const labels = nutrientLabels(), meals = mealLabels()
   const save = event => {
     event.preventDefault()
+    const current = useStore.getState()
+    if (!isOn(current.S, 'nutrition') || (current.user?.id || null) !== owner) { close(); return }
     try {
       if (entry) {
         const patch = Object.fromEntries([...dirty].map(k => [k, values[k]]))
@@ -45,6 +52,7 @@ export default function EntrySheet({ entry, prefill, day, close }) {
       max={numeric ? 1000000 : undefined} step={numeric ? 'any' : undefined} maxLength={numeric ? undefined : 200}
       required={key === 'label'} autoFocus={key === 'label'} />
   </label>
+  if (!allowed) return null
   return <form className="nutrition-form" onSubmit={save}>
     <h2>{entry ? t('Edit food') : t('Add food')}</h2>
     {field('label', t('Food name'))}
