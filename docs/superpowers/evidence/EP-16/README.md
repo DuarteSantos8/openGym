@@ -143,6 +143,11 @@ synthetic HTTPS boundary for provider responses while retaining real route/auth/
 
 ## Updated integration and final disposition
 
+Draft [PR #15](https://github.com/sorensadrgit-art/openGym/pull/15) targets `next/integration`.
+It restores clean nutrition syntax after the external task merges and includes the verified
+HTTP-LAN UUID fallback. The source is identical to the final tested runtime; later commits
+only record evidence and the PR handoff. No protected-branch merge or deployment was performed.
+
 External PR12/13/14 merges advanced integration to ccf8188a and introduced duplicate syntax
 blocks. [Reconciliation evidence](upstream-merge-reconciliation.md) records the failing upstream
 parse and the ancestry merge preserving our exact passing tree. Final source remains identical

@@ -6,12 +6,13 @@ This ledger tracks review state, not permission to start the next epic. Imported
 coordination in place of draftbus; no Claude resumes. See the [execution/review plan](plans/2026-11-14-codex-resumption.md).
 Wave 2 now has sole Codex owners: EP-03 `thr_pbxv6g7svw`, EP-04 `cr_child_6adc1136d3d29d50bd726c63`,
 EP-05a `thr_96ja8kwfhg`. Their prior attempts produced no implementation. Recovered baseline
-logs ended before shutdown with the counts below; no fresh full-suite pass is claimed yet.
+logs ended before shutdown with the historical counts below; corrected final results follow.
 Reviewed MVP source is integrated. Final whole-branch findings were resolved in one bounded
 wave; scoped review passed with zero open findings. Corrected full frontend8,128/674, API912,
 MCP140, build/static/generators and synthetic browser checks pass. External PR12/13/14 merges
 were reconciled without changing the tested candidate tree; the updated integration head itself
-had duplicate nutrition syntax. Final draft handoff follows; production gates remain explicit.
+had duplicate nutrition syntax. Final handoff is [draft PR #15](https://github.com/sorensadrgit-art/openGym/pull/15);
+production gates remain explicit in the [EP-16 evidence](evidence/EP-16/README.md).
 The first Codex EP-04 child (`thr_f6kmim4v34`) was stopped by the parent after its project-copy
 gate timed out with an empty destination and no edits. Its replacement uses the ready local
 worktree `.worktrees/ep-04-codex`, branch `feat/ep-04-codex-diary`, in the parent's sandbox.
