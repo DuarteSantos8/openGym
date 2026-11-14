@@ -34,7 +34,7 @@ export default function RoutineFolderView() {
   const drag = useLongPressDrag({ listRef, ride: 'below', // under the finger, so the Plan crumb and the pill stay in view
     rows: S.routines.filter(inFolder).map(r => r.id),
     onReorder: (from, to) => update(s => reorderWithin(s, inFolder, from, to)),
-    onDropOn: (folder, id) => dropRoutine(update, id, folder),
+    onDropOn: (folder, id) => dropRoutine(id, folder),
     nameOf: x => S.routines.find(r => r.id === x)?.name ?? (x || t('Plan')) })
   useEffect(() => { if (!f) nav('/plan', { replace: true }) }, [f, nav])
   if (!f) return null

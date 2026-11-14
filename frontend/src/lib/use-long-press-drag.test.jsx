@@ -287,6 +287,18 @@ describe('over another list', () => {
       delete window.Element.prototype.animate
     })
 
+    it('the flying copy holds its opacity to 60% of the flight and is gone by 85%', () => {
+      const animate = window.Element.prototype.animate = vi.fn(() => ({}))
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      fire(window, 'pointermove', 10, 20)
+      fire(window, 'pointerup', 10, 20)
+      const kf = animate.mock.calls.at(-1)[0]
+      const op = o => kf.filter(k => k.opacity !== undefined && (k.offset ?? (k === kf[0] ? 0 : 1)) === o)[0]?.opacity
+      expect([op(0), op(.6), op(.85), op(1)]).toEqual([1, 1, 0, 0])
+      delete window.Element.prototype.animate
+    })
+
     it('a drop into a list with no target of its own ticks nothing in it', () => {
       const area = document.createElement('div'); area.setAttribute('data-drop-area', 'loose')
       area.innerHTML = '<div><span class="ss">x</span></div>'

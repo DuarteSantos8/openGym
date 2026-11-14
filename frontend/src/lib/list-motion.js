@@ -15,10 +15,11 @@ const RM_MS = 120
 /** Runs `change()` (the state write) and plays the motion. Options:
  *  slide: a leaver trails 16 px (archive); hold: ms before leavers start to go (Move sheet);
  *  enterDelay: ms before an arrival fades in; dur / delay: the FLIP's, as CSS times;
+ *  leave: false when something else already shows the leaver going (the drag drop's flying copy): no ghost for it;
  *  far: px a follower may travel before it fades in at its new place instead (Favourites, 160);
  *  tick: { key, at } pops the count line of the keyed row `at` ms in; land: key of the block that takes the
  *  new tint and pin (Make current). */
-export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur, delay, tick, land, far } = {}) {
+export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur, delay, tick, land, far, leave = true } = {}) {
   const rm = still()
   const root = document.body
   const before = new Map(), olds = []
@@ -33,7 +34,7 @@ export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur
   queueMicrotask(() => {
     const now = [...root.querySelectorAll(KEY)]
     const keys = new Set(now.map(el => el.dataset.flipKey))
-    const gone = olds.filter(o => !keys.has(o.key) && !o.el.parentElement?.closest(KEY)).slice(0, FLIP_MAX)
+    const gone = !leave ? [] : olds.filter(o => !keys.has(o.key) && !o.el.parentElement?.closest(KEY)).slice(0, FLIP_MAX)
     for (const o of gone) ghost(o, rm, slide, hold)
     for (const el of now) if (!before.has(el.dataset.flipKey)) arrive(el, rm, enterDelay)
     if (hold && !rm) delay = `${hold + 40}ms`   // followers wait for the leaver to go

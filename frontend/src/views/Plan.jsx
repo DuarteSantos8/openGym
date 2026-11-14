@@ -34,12 +34,12 @@ import {
   chooseRotation, chooseFixedWeek, sequenceOf, isSimpleSequence, segmentAt, REST,
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
-import { activeRoutines, currentFolder, folderList, folderOf, isLive, moveToFolder, reorderFolders } from '../lib/routine-folders.js'
+import { activeRoutines, currentFolder, folderList, folderOf, isLive, reorderFolders } from '../lib/routine-folders.js'
 import { useLongPressDrag } from '../lib/use-long-press-drag.js'
 import { deleteLive } from '../lib/routine-archive.js'
 import { listMove } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
-import { routineMenu, folderMenu, duplicateRoutine, moveSheet, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
+import { routineMenu, folderMenu, duplicateRoutine, moveSheet, moveIds, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
 import { folderNameSheet } from '../components/RoutineFolder.jsx'
@@ -462,14 +462,8 @@ export function reorderWithin(s, pred, from, to) {
   s.routines.splice(to < rest.length ? s.routines.indexOf(rest[to]) : s.routines.length, 0, m)
 }
 
-/** A drop on a folder (or '' for Plan itself): the routine goes there, last in its group. */
-export function dropRoutine(update, id, folder) {
-  update(s => {
-    moveToFolder(s, [id], folder)
-    const i = s.routines.findIndex(r => r.id === id)
-    if (i >= 0) s.routines.push(...s.routines.splice(i, 1))
-  })
-}
+/** A drop on a folder (or '' for Plan itself): the routine goes there, last in its group, with the Move toast and its Undo. */
+export const dropRoutine = (id, folder) => moveIds([id], folder, false, true)
 
 function Routines({ S, update, nav, edit, setEdit }) {
   const selectAll = useRef(null)
@@ -517,7 +511,7 @@ function Routines({ S, update, nav, edit, setEdit }) {
   const reorderLoose = useListReorder(loose.length, moveIn(inLoose))
   // Long-press drag (not in Edit, which has its grips): a drop between rows reorders within the
   // group, a drop on a folder row or the current plan block moves the routine there.
-  const dragOpts = { onDropOn: (folder, id) => dropRoutine(update, id, folder), nameOf: x => S.routines.find(r => r.id === x)?.name ?? (x || t('Not in a folder')) }
+  const dragOpts = { onDropOn: (folder, id) => dropRoutine(id, folder), nameOf: x => S.routines.find(r => r.id === x)?.name ?? (x || t('Not in a folder')) }
   const dragCur = useLongPressDrag({ ...dragOpts, listRef: reorderCur.listRef, rows: curRoutines.map(r => r.id), onReorder: moveIn(inCur) })
   const dragLoose = useLongPressDrag({ ...dragOpts, listRef: reorderLoose.listRef, rows: loose.map(r => r.id), onReorder: moveIn(inLoose) })
   const lifted = dragCur.lifted || dragLoose.lifted

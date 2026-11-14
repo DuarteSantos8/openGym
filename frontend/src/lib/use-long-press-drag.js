@@ -29,7 +29,7 @@ const scrollParent = el => {
 
 const CUE_MS = 120   // into the hold, the row dips (data-cue) so the lift is not a surprise
 const SETTLE_MS = 280
-const EASE = 'cubic-bezier(.32,.72,0,1)' // --ease; WAAPI takes no var()
+const FLIGHT = 'cubic-bezier(.4,0,.2,1)'   // a gentle start: --ease covers a third of the way in the first frame, which reads as a step
 const DRAG_ROW = '[data-drag-row]'
 const GATE = 2       // px the finger must move before the row layout is read again
 
@@ -42,7 +42,7 @@ const inside = (r, x, y) => x >= r.left && x <= r.right && y >= r.top && y <= r.
 
 // `ride`: the lifted row rides 'above' the finger (its bottom edge about 16 px over it; below when there is no room
 // above) or 'below' it (its top edge GAP under it).
-// Into a folder: a copy of the lifted row flies to the target (its opacity held for 60% of the flight,
+// Into a folder: a copy of the lifted row flies to the target (its opacity held for 60% of the flight and gone by 85%,
 // ending at scale .92), the dashed slot fades out in 100 ms, and the target's count ticks at 200 ms.
 function flyTo(n, from, slot, key) {
   const by = (sel, a) => [...document.querySelectorAll(sel)].find(x => x.getAttribute(a) === key)
@@ -63,8 +63,9 @@ function flyTo(n, from, slot, key) {
   const a = g.animate([
     { transform: 'scale(1.03) rotate(1deg)', opacity: 1 },
     { opacity: 1, offset: .6 },
+    { opacity: 0, offset: .85 },   // gone before it reaches the title: text never prints over text
     { transform: `translate(${dx}px,${dy}px) scale(.92)`, opacity: 0 },
-  ], { duration: SETTLE_MS, easing: EASE, fill: 'forwards' })
+  ], { duration: SETTLE_MS, easing: FLIGHT, fill: 'forwards' })
   const clean = () => { g.remove(); sl.remove() }
   a.onfinish = clean
   later(SETTLE_MS + 200, clean)

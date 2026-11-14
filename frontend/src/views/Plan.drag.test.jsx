@@ -49,6 +49,18 @@ const folderOf = id => useStore.getState().S.routines.find(r => r.id === id).fol
 const dragRow = id => host.querySelector(`[data-drag-row="${id}"]`)
 
 describe('Plan drag', () => {
+  it('a drop into a folder says Moved to it, and Undo puts the routine back', async () => {
+    const { useUI } = await import('../store/useUI.js')
+    useUI.setState({ toastMsg: '', toastAction: null })
+    act(() => root.render(<Plan />))
+    at(host.querySelector('[data-drop-target="Travel"]'), 300)
+    press(dragRow('b')); hold(); moveTo(50, 320); release(50, 320)
+    expect(folderOf('b')).toBe('Travel')
+    expect(useUI.getState().toastMsg).toBe('Moved to Travel')
+    act(() => { useUI.getState().runToastAction() })
+    expect(folderOf('b')).toBeUndefined()
+  })
+
   it('dropping Mobility on the Travel row moves it to the end of Travel', () => {
     act(() => root.render(<Plan />))
     at(host.querySelector('[data-drop-target="Travel"]'), 300)

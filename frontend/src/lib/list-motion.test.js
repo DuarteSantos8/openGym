@@ -36,6 +36,14 @@ describe('listMove', () => {
     expect(root.children.length).toBe(1)
   })
 
+  it('leave:false makes no ghost for the leaver but the rows below still close up', async () => {
+    setup(['a', 'b', 'c'])
+    listMove(() => { rowAt('a').remove(); place() }, { leave: false })
+    await flush()
+    expect(calls.length).toBe(0)
+    expect(rowAt('b').style.transition).toMatch(/^transform /)
+  })
+
   it('a leaver becomes an inert ghost that fades in 100 ms ease-out; followers FLIP with transform only', async () => {
     const root = setup(['a', 'b', 'c'])
     listMove(() => { rowAt('a').remove(); place() })

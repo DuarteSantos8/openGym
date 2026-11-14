@@ -155,9 +155,10 @@ export function folderMenu(name, onRenamed) {
 }
 
 /** Moves routines to the end of a folder ('' for loose, at the end of the list), with an Undo that puts each back in its folder and place. */
-export function moveIds(ids, name, held = true) {
+export function moveIds(ids, name, held = true, drop = false) {
   // The sheet leaves 120 ms after the pick, then the row goes (160 ms after the dismiss starts), then the target's count ticks.
-  // `held` is false when no sheet is dismissing (a new folder is named in its own sheet, a drag drop), so nothing waits.
+  // `held` is false when no sheet is dismissing (a new folder is named in its own sheet), so nothing waits.
+  // `drop`: a drag drop, whose flying copy is the leaver and ticks the count itself; the rows below still close up.
   const hold = held && !still() ? MOVE_HOLD : 0
   const order = S().routines.map(r => r.id), was = S().routines.filter(r => ids.includes(r.id)).map(r => [r.id, r.folder])
   const to = cleanFolder(name)
@@ -176,7 +177,7 @@ export function moveIds(ids, name, held = true) {
       if (did) s2.routines = s2.routines.map((r, i) => [r, i]).sort((a, b) => at(a[0].id) - at(b[0].id) || a[1] - b[1]).map(x => x[0])
       return did
     } }
-  }, { hold, tick: name ? { key: 'f' + name, at: hold + 100 } : undefined })
+  }, drop ? { hold, leave: false } : { hold, tick: name ? { key: 'f' + name, at: hold + 100 } : undefined })
 }
 
 export function moveSheet(ids) {
