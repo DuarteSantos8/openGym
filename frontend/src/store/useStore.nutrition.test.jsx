@@ -9,6 +9,8 @@ import { useUI } from './useUI.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { localExtras, visibleOptionalEntries, mergeStates } from '../lib/sync-merge.js'
 import fixture from '../lib/__fixtures__/contracts/nutrition-entry.json'
+import volume from '../lib/__fixtures__/contracts/nutrition-volume-entry.json'
+import { stampPut } from '../../../api/sync-stamps.js'
 import { createEntry } from '../lib/nutrition/entry.js'
 import { addEntry, changeEntry, deleteEntry, undoEntry } from '../lib/nutrition/diary.js'
 import { exportBackupZip, readBackupFile } from '../lib/backup-media.js'
@@ -121,15 +123,29 @@ test('offline update reconnects through real store 409 merge and retry', async (
   expect(visible(useStore.getState().S)[0]).toMatchObject({ proteinG: 12, fatG: 8 })
   expect(JSON.parse(localStorage.getItem('gym_sync')).rev).toBe(3)
 })
-for (const zip of [false, true]) test(`${zip ? 'ZIP' : 'JSON'} export/read/import keeps deletes and restores a live backup`, async () => {
-  const live = base(), deleted = mutate(live, s => deleteEntry(s, fixture.id))
+for (const row of [fixture, volume]) for (const zip of [false, true]) test(`${zip ? 'ZIP' : 'JSON'} export/read/import ${row.amountMl ? 'mL serving' : 'grams'} keeps deletes and restores a live backup`, async () => {
+  const live = { ...base(), nutritionEntries: [clone(row)] }, deleted = mutate(live, s => deleteEntry(s, row.id))
   for (const [state, count] of [[deleted, 0], [live, 1]]) {
     const blob = zip ? (await exportBackupZip(state, { media: { get: async () => null } })).blob : new Blob([JSON.stringify(state)])
     const read = await readBackupFile(new File([blob], zip ? 'diary.zip' : 'diary.json'))
     useStore.getState().importBackup(read.state)
     expect(visible(useStore.getState().S)).toHaveLength(count)
     expect(useStore.getState().S.nutritionEntries).toHaveLength(1)
+    const data = e => Object.fromEntries(Object.entries(e).filter(([key]) => !['_f', '_ts'].includes(key)))
+    expect(data(useStore.getState().S.nutritionEntries[0])).toEqual(data(row))
   }
+})
+for (const omitted of [false, true]) test(`older writer round-trip preserves mL serving and omitted nutrients (collection omitted=${omitted})`, () => {
+  const current = { ...clone(DEF), nutritionEntries: [clone(volume)] }
+  const olderWriter = JSON.parse(JSON.stringify(current))
+  if (omitted) delete olderWriter.nutritionEntries
+  olderWriter.restSec = 91
+  const saved = stampPut(current, olderWriter, { overRead: true, now: volume._ts + 100 })
+  const restored = JSON.parse(JSON.stringify(saved))
+  expect(restored.nutritionEntries).toEqual([volume])
+  expect(restored.nutritionEntries[0]).not.toHaveProperty('amountG')
+  expect(restored.nutritionEntries[0]).not.toHaveProperty('proteinG')
+  expect(restored.restSec).toBe(91)
 })
 test('reset prevents a stale replay from resurrecting entries', async () => {
   useStore.setState({ S: base() })
