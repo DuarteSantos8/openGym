@@ -1,0 +1,301 @@
+TAP version 13
+# Subtest: HTTP signed-out 401 and operator-off 403 have stable codes with zero outbound
+not ok 1 - HTTP signed-out 401 and operator-off 403 have stable codes with zero outbound
+  ---
+  duration_ms: 692.484868
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:54:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 401
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 401
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:56:3)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: HTTP user module requires true, is read from current profile, and fails closed on corrupt state
+not ok 2 - HTTP user module requires true, is read from current profile, and fails closed on corrupt state
+  ---
+  duration_ms: 492.90751
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:63:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 403
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 403
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:66:21)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP invalid, duplicate and extra barcode parameters fail before transport
+not ok 3 - HTTP invalid, duplicate and extra barcode parameters fail before transport
+  ---
+  duration_ms: 467.02356
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:76:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 400
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 400
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:80:5)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP 200 through cookie and bearer sends no personal headers or data and writes no profile
+not ok 4 - HTTP 200 through cookie and bearer sends no personal headers or data and writes no profile
+  ---
+  duration_ms: 478.58857
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:85:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + undefined
+    - {
+    -   status: 'configured-unverified'
+    - }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    status: 'configured-unverified'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:89:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP unknown product is 404 and a repeated unknown lookup uses the short cache
+not ok 5 - HTTP unknown product is 404 and a repeated unknown lookup uses the short cache
+  ---
+  duration_ms: 481.539822
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:107:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'food-lookup-not-found'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'food-lookup-not-found'
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:48:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:109:3)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP error provider response is a safe 502
+not ok 6 - HTTP error provider response is a safe 502
+  ---
+  duration_ms: 489.964389
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:114:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 502
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 502
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:116:5)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP redirect provider response is a safe 502
+not ok 7 - HTTP redirect provider response is a safe 502
+  ---
+  duration_ms: 496.184314
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:114:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 502
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 502
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:116:5)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP truncated provider response is a safe 502
+not ok 8 - HTTP truncated provider response is a safe 502
+  ---
+  duration_ms: 479.402113
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:114:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 502
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 502
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:116:5)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP oversized provider response is a safe 502
+not ok 9 - HTTP oversized provider response is a safe 502
+  ---
+  duration_ms: 471.900691
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:114:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 502
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 502
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:116:5)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP stalled upstream body is 504 within the real total deadline
+not ok 10 - HTTP stalled upstream body is 504 within the real total deadline
+  ---
+  duration_ms: 459.043008
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:121:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 504
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 504
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:123:3)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP per-user 429 includes Retry-After while another profile may use the cache
+not ok 11 - HTTP per-user 429 includes Retry-After while another profile may use the cache
+  ---
+  duration_ms: 510.661025
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:126:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:128:38)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP per-instance 429 reserves budget across users and never sends the eighth request
+not ok 12 - HTTP per-instance 429 reserves budget across users and never sends the eighth request
+  ---
+  duration_ms: 504.124798
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-http.test.js:134:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"not found"}
+    
+    404 !== 502
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 502
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    error (file:///code/openGym-fork/api/test/food-lookup-http.test.js:47:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-http.test.js:136:31)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 0
+# fail 12
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6126.875877
