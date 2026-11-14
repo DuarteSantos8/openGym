@@ -799,8 +799,13 @@ export default function Stats() {
   const onMax = showMax && exMetric === 'max'
   // Availability is all-time so an empty selected range can still explain its exclusions.
   // Volume alone uses local calendar-day windows; the existing metrics keep their ranges.
-  const allVolume = useMemo(() => curMode === 'reps' && !isAssisted(curEx)
-    ? exerciseVolumeSeries(S, curEx) : null, [S, curEx, curMode])
+  const allVolume = useMemo(() => {
+    if (curMode !== 'reps') return null
+    // Like curMode, eligibility follows the latest saved occurrence. Earlier
+    // ordinary load stays historical volume; assisted occurrences are filtered.
+    const latest = S.workouts.flatMap(w => entriesForExercise(w, curEx)).at(-1)
+    return isAssisted(latest || curEx) ? null : exerciseVolumeSeries(S, curEx)
+  }, [S, curEx, curMode])
   const showVolume = allVolume?.included > 0
   const onVolume = showVolume && exMetric === 'volume'
   const volume = useMemo(() => onVolume && exRange
