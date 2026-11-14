@@ -4354,6 +4354,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-grip:active{cursor:grabbing;color:var(--label-2)}
 /* Edit swaps Plan's header for its bar (views/Plan.jsx): the leaver is an inert copy (lib/exit-copy.js, 100 ms
    ease-out); the arrival fades in 180 ms --ease. Reduce Motion: no phase class, so none of this runs. */
+/* Favourites off: the group cards come back with their rows (same 160 ms after 80 as the rows), never empty. */
+.plan-routes.is-unstar .plan-group{animation:drag-fade 160ms var(--ease) 80ms backwards}
+.reduce-motion .plan-routes.is-unstar .plan-group{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-routes.is-unstar .plan-group{animation:none}}
 .plan-top.is-swap,.plan-edithead.is-in{animation:drag-fade 180ms var(--ease) both}
 .reduce-motion .plan-top.is-swap,.reduce-motion .plan-edithead.is-in{animation:none}
 @media (prefers-reduced-motion:reduce){.plan-top.is-swap,.plan-edithead.is-in{animation:none}}

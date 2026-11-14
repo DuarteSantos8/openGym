@@ -519,7 +519,17 @@ function Routines({ S, update, nav, edit, setEdit }) {
   })
   // The Favourites filter: rows that leave fade, the rest move or fade in (lib/list-motion.js); a row that
   // would travel more than 160 px fades in at its new place.
-  const showStarred = v => listMove(() => setStarred(v), { far: 160 })
+  // `favPhase` (320 ms): 'on' keeps the subtitles as they were until the rows have landed; 'off' fades the group cards
+  // in with their rows, so no card shows empty. Reduce Motion: no phase.
+  const [favPhase, setFavPhase] = useState('')
+  const favTm = useRef()
+  useEffect(() => () => clearTimeout(favTm.current), [])
+  const showStarred = v => listMove(() => {
+    setStarred(v)
+    if (still()) return
+    setFavPhase(v ? 'on' : 'off')
+    clearTimeout(favTm.current); favTm.current = setTimeout(() => setFavPhase(''), 320)
+  }, { far: 160 })
   const swipe = workoutControls(S).swipeSets
   // Archived routines are not listed here (they have their own screen); they keep their place in S.routines.
   const routines = activeRoutines(S)
@@ -614,15 +624,15 @@ function Routines({ S, update, nav, edit, setEdit }) {
       </div>
       <h2 className="plan-selcount" role="status">{ids.length ? t('{0} selected', ids.length) : t('Select items')}</h2>
     </ExitFade>}
-    {routines.length || folders.length || archived ? <div ref={routesEl} className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
+    {routines.length || folders.length || archived ? <div ref={routesEl} className={'plan-routes' + (edit ? ' is-editing' : '') + (phase ? ' is-edit-' + phase : '') + (favPhase === 'off' ? ' is-unstar' : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
       {!edit && starred
           ? (starredRoutines.length
             ? <>
-              <div className="plan-starred-bar">
+              <ExitFade className="plan-starred-bar">
                 <span key={starredRoutines.length} className="ss">{t('{0} of {1} routines', starredRoutines.length, routines.length)}</span>
                 <button className="plan-textbtn" onClick={() => showStarred(false)}>{t('Show all')}</button>
-              </div>
-              {group('starred', starredRoutines.map(r => rowOf(r, cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
+              </ExitFade>
+              {group('starred', starredRoutines.map(r => rowOf(r, favPhase === 'on' ? undefined : cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
             </>
             : <div className="plan-fav-empty">
               <span className="plan-fav-i"><Icon name="star" /></span>

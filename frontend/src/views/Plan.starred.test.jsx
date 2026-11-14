@@ -19,6 +19,7 @@ const KEY = 'og_plan_starred'
 let host, root
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  vi.useFakeTimers()
   localStorage.clear()
   localStorage.setItem('gym_plan_view', 'routines')
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
@@ -27,7 +28,7 @@ beforeEach(() => {
       routine('d', 'Loose fav', { fav: true }), routine('e', 'Gone', { archived: true, fav: true })],
     routineFolders: [{ name: 'Block 2', current: true }, { name: 'Hyper' }], week: {}, dayPlan: {} }, user: null }))
 })
-afterEach(() => { act(() => root.unmount()); host.remove() })
+afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers(); document.documentElement.className = ''; document.querySelectorAll('body > [inert]').forEach(n => n.remove()) })
 
 const mount = () => act(() => root.render(<Plan />))
 const click = el => act(() => { el.dispatchEvent(new MouseEvent('click', { bubbles: true })) })
@@ -39,6 +40,7 @@ describe('Starred filter', () => {
     mount()
     click(star())
     expect(names()).toEqual(['Push A', 'Old legs', 'Loose fav'])
+    act(() => { vi.advanceTimersByTime(320) })   // the folder names join the subtitles once the rows have landed
     const subs = [...host.querySelectorAll('.plan-routine .ss')].map(e => e.textContent)
     expect(subs[0]).toContain('Current plan')
     expect(subs[1]).toContain('Hyper')
@@ -65,5 +67,38 @@ describe('Starred filter', () => {
     expect(star().getAttribute('aria-pressed')).toBe('true')
     click(star())
     expect(localStorage.getItem(KEY)).toBeNull()
+  })
+
+  const subsOf = () => [...host.querySelectorAll('.plan-routine .ss')].map(e => e.textContent)
+  const showAll = () => click([...host.querySelectorAll('.plan-starred-bar button')].find(b => b.textContent === 'Show all'))
+
+  it('on: the subtitles keep their text until the rows have landed, then say where each lives', () => {
+    mount()
+    click(star())
+    expect(subsOf().some(x => x.includes('Current plan') || x.includes('Hyper'))).toBe(false)
+    act(() => { vi.advanceTimersByTime(319) }); expect(subsOf().some(x => x.includes('Hyper'))).toBe(false)
+    act(() => { vi.advanceTimersByTime(2) }); expect(subsOf().some(x => x.includes('Hyper'))).toBe(true)
+  })
+
+  it('off: the cards fade in with their rows for 320 ms; the count bar leaves as an inert copy', () => {
+    Element.prototype.animate = function () { return {} }
+    mount()
+    click(star())
+    act(() => { vi.advanceTimersByTime(320) })
+    showAll()
+    expect(host.querySelector('.plan-routes').classList.contains('is-unstar')).toBe(true)
+    expect([...document.querySelectorAll('body > [inert]')].some(n => n.querySelector('.plan-starred-bar') || n.classList.contains('plan-starred-bar'))).toBe(true)
+    act(() => { vi.advanceTimersByTime(320) })
+    expect(host.querySelector('.plan-routes').classList.contains('is-unstar')).toBe(false)
+    delete Element.prototype.animate
+  })
+
+  it('Reduce Motion: no hold on the subtitles, no card class, no copy', () => {
+    document.documentElement.classList.add('reduce-motion')
+    mount()
+    click(star())
+    expect(subsOf().some(x => x.includes('Hyper'))).toBe(true)
+    showAll()
+    expect(host.querySelector('.plan-routes').classList.contains('is-unstar')).toBe(false)
   })
 })
