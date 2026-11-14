@@ -1,5 +1,12 @@
 # EP-03 parent review
 
+Current source-review verdict: **PASS** after [round2 correction review](independent-fix2-review.md)
+at `6434f47c` (runtime `7a0d9f4c`). I1 and I2 are addressed; no runtime findings remain.
+Round2/5: one addressed, zero open. Focused414/414 plus rising-load browser evidence were
+verified on the published runtime. Parent integrated fix commits as `f6e9dafb..1940ebdf` and
+compared all five changed runtime/test paths with the reviewed head: `git diff --quiet` exit0.
+Full combined frontend acceptance remains pending; original timeout evidence is unchanged.
+
 Independent review supersedes the initial parent probe's limited finding-free result:
 [initial I1](independent-review-round1.md), [round1 re-review](independent-fix1-review.md).
 Round1/5 (`470defb7..44b24eed`): I1 addressed; one new Important I2 remains. Saved false
@@ -8,7 +15,8 @@ Round2/5 is assigned to the original author with helper/Stats/bodyweight regress
 narrow browser proof. No fix acceptance is claimed. A minimal optional resolver in history.js
 is authorized only if needed to reuse arithmetic while preserving every existing caller's
 default behavior; no unrelated global volume change or copied arithmetic is authorized.
-Combined one-worker full frontend acceptance remains pending.
+That round's I2 is now closed by the current verdict above. Combined one-worker full frontend
+acceptance remains pending.
 
 Runtime inspected: `f28c91eafa1848a831493a96a82bc818738ad7bb`.
 
