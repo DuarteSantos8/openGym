@@ -45,6 +45,7 @@ import { activeProfile } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import { tileStyle } from '../lib/routine-colors.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
 import '../coach.css'
@@ -188,7 +189,7 @@ export default function CoachChat() {
   const pickRoutine = () => openSheet(close => <div className="chat-menu">
     <h3>{t('Improve which routine?')}</h3>
     <div className="sect-b">
-      {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" title={r.name} subtitle={tn('{0} exercise', '{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
+      {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" iconStyle={tileStyle(r)} title={r.name} subtitle={tn('{0} exercise', '{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
       {!(S.routines || []).length && <div className="chat-empty">{t('You don’t have any routines yet. Ask the Coach for a plan first.')}</div>}
     </div>
     <div style={{ height: 10 }} />

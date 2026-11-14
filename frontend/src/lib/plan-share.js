@@ -31,6 +31,7 @@ import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { MEDIA_CREDIT, isPrintPicture, loadPrintPictures } from './print-pictures.js'
 import { normalizeAliases } from './exercise-aliases.js'
+import { colorOf } from './routine-colors.js'
 import { bundleProgramme, importedProgramme, programmeById, programmeRoutineIds, programmesOf, IMPORT_MAX_PROGRAMMES } from './programmes.js'
 
 const PLAN_FMT = 1
@@ -269,6 +270,7 @@ export function buildPlanBundle(S, name) {
   if (!unit) unitError()
   const routines = (S.routines || []).map(r => ({
     id: r.id, name: r.name, emoji: r.emoji,
+    ...(colorOf(r) ? { color: r.color } : {}),
     ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
     ex: (r.ex || []).map(cleanEx)
@@ -416,6 +418,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       id: nid,
       name: r.name || t('Shared routine'),
       emoji: r.emoji,
+      ...(colorOf(r) ? { color: r.color } : {}),
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))

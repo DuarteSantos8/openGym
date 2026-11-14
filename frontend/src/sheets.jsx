@@ -54,6 +54,8 @@ import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './li
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, DEFAULT_GLYPH } from './lib/glyphs.js'
+import RoutineTile from './components/RoutineTile.jsx'
+import { tileStyle } from './lib/routine-colors.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import GymHiddenLine from './components/GymHiddenLine.jsx'
@@ -1777,7 +1779,7 @@ function AddToRoutine({ ex, close }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick a routine. Sets, reps and weight come next.')}</div>
     <div className="list">
       {st.routines.map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+        <RoutineTile r={r} />
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
         {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
       </div>)}
@@ -3393,7 +3395,7 @@ function DayOverride({ iso, close }) {
     toast(v === '' ? t('Back to weekly plan') : v === 'rest' ? t('{0} set to rest', fmtDate(iso)) : t('{0} planned for {1}', (st.routines.find(r => r.id === v) || {}).name, fmtDate(iso)))
   }
   const row = r => <div key={r.id} className="item" {...tappable(() => set(r.id))}>
-    <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+    <RoutineTile r={r} />
     <div className="grow"><div className="tt">{r.name}</div><div className="ss">{pinnedOn[r.id] && pinnedOn[r.id] !== iso ? fmtDate(pinnedOn[r.id], true) : exCount(r.ex.length)}</div></div>
     {effIds.includes(r.id) && <Icon name="check" className="accent" />}</div>
   return <>
@@ -3498,7 +3500,7 @@ function DayAssign({ day, close }) {
       {st.routines.map(r => {
         const on = cur.includes(r.id)
         return <div key={r.id} className="item menu-item" aria-pressed={on} {...tappable(() => toggle(r.id))}>
-          <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+          <RoutineTile r={r} />
           <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
           <span className={'menu-on' + (on ? ' is-on' : '')}><Icon name="check" /></span>
         </div>
@@ -3949,10 +3951,11 @@ export const calendarSheet = (start, { help = false } = {}) => ui().openSheet(cl
 /* shared small workout row (used in lists) */
 export function WorkoutRow({ w, onClick, tour }) {
   const st = useStore(s => s.S)
-  const glyph = glyphOf((st.routines.find(r => r.id === w.routineId) || {}).emoji)
+  const routine = st.routines.find(r => r.id === w.routineId)
+  const glyph = glyphOf(routine?.emoji)
   const mediaN = workoutMediaCount(w)
   return <div className="item" data-tour={tour} {...tappable(onClick)}>
-    <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
+    <span className="lrow-i" style={{ ...tileStyle(routine), width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
     <div className="grow"><div className="tt">{w.name}</div>
       <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(sessionVolume(w, st), st.unit)].join(' · ')}</div></div>
     {mediaN > 0 && <span className="wrow-media" title={tn('{0} photo or video', '{0} photos or videos', mediaN)} aria-label={tn('{0} photo or video', '{0} photos or videos', mediaN)}><Icon name="image" />{mediaN}</span>}
@@ -4234,7 +4237,7 @@ function AddRoutineToSession({ close }) {
         const disabled = already || empty
         return <div key={r.id} className={'item' + (disabled ? ' disabled' : '')} aria-disabled={disabled || undefined}
           {...tappable(disabled ? null : () => add(r))}>
-          <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+          <RoutineTile r={r} />
           <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
           {already ? <span className="tag">{t('already added')}</span> : empty ? <span className="tag">{t('no exercises')}</span> : <Icon name="chevronRight" className="chev" />}
         </div>

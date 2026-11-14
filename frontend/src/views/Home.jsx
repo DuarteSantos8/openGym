@@ -26,6 +26,7 @@ import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { colorOf, tileStyle } from '../lib/routine-colors.js'
 import { dayNoteOf } from '../lib/day-notes.js'
 import { weighInAt } from '../lib/bodyweight.js'
 import WeightRate from '../components/WeightRate.jsx'
@@ -172,7 +173,7 @@ export default function Home() {
         const name = deriveSessionName(x.routines.map(r => r.name))
         return <div key={x.ids.join('+')} className="today-row today-split" data-tour={i ? undefined : 'today'} {...tappable(() => startOrPreview(x.ids))}>
           <div className="row" style={{ gap: 9, minWidth: 0 }}>
-            <span className="lrow-i" style={{ background: x.done ? 'var(--surface-3)' : 'var(--acc)' }}>
+            <span className="lrow-i" style={x.done ? { background: 'var(--surface-3)' } : tileStyle(x.routines[0])}>
               <Icon name={x.done ? 'checkCircle' : glyphOf(x.routines[0].emoji)} style={x.done ? { color: 'var(--green)' } : undefined} />
             </span>
             <div style={{ minWidth: 0 }}>
@@ -181,11 +182,11 @@ export default function Home() {
             </div>
           </div>
           {x.done ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
-            : <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={x.routines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>}
+            : <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={x.routines} tint={colorOf(x.routines[0])} body={S.body} /><span className="tag acc">{t('Start')}</span></span>}
         </div>
       }) : <div className="today-row" data-tour="today" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
-          <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)',
+          <span className="lrow-i" style={{ ...(!S.active && !doneToday ? tileStyle(routine) : null), background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--tint, var(--acc))' : 'var(--surface-3)',
             // the rest day's moon on the grey square: white on #e3e3e8 vanished in the light theme
             ...(!S.active && !doneToday && !routine ? { color: 'var(--label-2)' } : {}) }}>
             <Icon name={S.active ? (editingSaved ? 'pencil' : 'play') : doneToday ? 'checkCircle' : routine ? glyphOf(routine.emoji) : 'moon'}
@@ -201,7 +202,7 @@ export default function Home() {
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange-ink)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
-          : routine ? <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={todayRoutines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>
+          : routine ? <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={todayRoutines} tint={colorOf(routine)} body={S.body} /><span className="tag acc">{t('Start')}</span></span>
           : <Icon name="plus" className="chev" />}
       </div>}
       {/* openNutrition's fasting window (lib/sister-nutrition.js), when this device is linked. */}

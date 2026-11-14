@@ -62,7 +62,9 @@ import { workoutCoachSheet } from '../components/WorkoutCoachSheet.jsx'
 import { splitLabel } from '../lib/gym-split.js'
 import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
+import RoutineTile from '../components/RoutineTile.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import { tileStyle } from '../lib/routine-colors.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
@@ -116,13 +118,13 @@ function StartChooser() {
       <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
       <div className="row between" style={{ marginBottom: 12 }}>
         <div><div className="big">{todayName}</div><div className="muted small">{exCount(todayRoutines.reduce((n, r) => n + r.ex.length, 0))}</div></div>
-        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 'var(--fs-title2)' }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
+        <span className="lrow-i" style={{ ...tileStyle(todayRoutines[0]), width: 38, height: 38, borderRadius: 9, fontSize: 'var(--fs-title2)' }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
       </div>
       <Button variant="primary" icon="play" onClick={() => startOrPreview(todayIds)}>{t('Start {0}', todayName)}</Button>
     </div>}
     {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
       <div className="list">{others.map(r => <div key={r.id} className="item" onClick={() => startOrPreview([r.id])}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+        <RoutineTile r={r} />
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
     <div style={{ height: 14 }} />

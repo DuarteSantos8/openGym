@@ -9,6 +9,7 @@ import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX 
 import { LADDER_TOP, LADDER_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
 import { DEFAULT_GLYPH, glyphOf } from '../lib/glyphs.js'
+import RoutineTile from './RoutineTile.jsx'
 import Icon from './Icon.jsx'
 import { Button, TextField } from './ui.jsx'
 
@@ -56,7 +57,7 @@ function TrainIt ({ ladder, rung, close }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Three sets, from {0} up to {1} reps. Every set at {1} and the next rung is yours.', LADDER_BOTTOM, LADDER_TOP)}</div>
     <div className="list">
       {S.routines.map(r => <button type="button" key={r.id} className="item" onClick={() => put(r.id)}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+        <RoutineTile r={r} />
         <span className="grow"><span className="tt">{r.name}</span></span>
         {r.ex.some(e => ladder.steps.includes(e.id)) && <span className="tag">{t('moves up')}</span>}
         <Icon name="plus" className="chev" />

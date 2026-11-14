@@ -20,6 +20,8 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
+import { colorOf, nextColor } from '../lib/routine-colors.js'
+import RoutineTile from '../components/RoutineTile.jsx'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { coachAvailable } from '../lib/coach.js'
@@ -205,9 +207,14 @@ export default function Plan() {
 
 // An empty routine, opened in its editor. From the Routines tab's header, and from the Schedule's
 // empty state: "Build my own plan" on Home lands there, and it said "Make one" without a way to.
-function newRoutine(update, nav) {
+function newRoutine(update, nav, folder) {
   const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
-  update(s => { s.routines.push(r) })
+  update(s => {
+    if (folder) r.folder = folder
+    // Its neighbours are the routines in the same folder (or the loose ones): the first colour they lack.
+    r.color = nextColor(s.routines.filter(x => folderOf(x) === folderOf(r)))
+    s.routines.push(r)
+  })
   nav('/plan/r/' + r.id)
 }
 
@@ -300,12 +307,12 @@ function Schedule({ S, update, nav, mode }) {
   const dayRow = (d, rs = dayRoutines(d)) => {
     return <div key={d} className="item plan-day" data-day={d} aria-label={t(DAYN[d])} {...tappable(() => dayAssignSheet(d))}>
       <span className={'plan-day-n' + (d === todayDow ? ' today' : '')} aria-hidden="true">{t(DAYS[d])}</span>
-      <span className={'lrow-i' + (rs.length ? '' : ' rest')}><Icon name={rs.length ? glyphOf(rs[0].emoji) : 'moon'} /></span>
+      {rs.length ? <RoutineTile r={rs[0]} /> : <span className="lrow-i rest"><Icon name="moon" /></span>}
       <div className="grow">
         <div className="tt">{rs.length ? deriveSessionName(rs.map(r => r.name)) : t('Rest day')}</div>
         <div className="ss">{rs.length === 1 ? exCount(rs[0].ex.length) : rs.length ? routineCount(rs.length) : t('Tap to plan something')}</div>
       </div>
-      {rs.length > 0 && <MiniBodyMap routines={rs} body={S.body} tour="plan-body" />}
+      {rs.length > 0 && <MiniBodyMap routines={rs} tint={colorOf(rs[0])} body={S.body} tour="plan-body" />}
       <Icon name="chevronRight" className="chev" />
     </div>
   }
@@ -382,12 +389,12 @@ function Schedule({ S, update, nav, mode }) {
             {editing && <button className="plan-minus" aria-label={t('Remove {0}', said(sayName))} title={t('Remove')}
               onClick={() => takeOut(i)}><Icon name="minus" /></button>}
             <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
-            <span className={'lrow-i' + (rest ? ' rest' : '')}><Icon name={rest ? 'moon' : glyphOf(r?.emoji)} /></span>
+            {rest ? <span className="lrow-i rest"><Icon name="moon" /></span> : <RoutineTile r={r} />}
             <div className="grow" style={{ minWidth: 0 }}>
               <div className="tt">{name}</div>
               <div className="ss">{item ? stateWord(item) : rest ? t('A day off before the next one') : r ? exCount(r.ex.length) : ''}</div>
             </div>
-            {r && !rest && !editing && <MiniBodyMap routines={[r]} body={S.body} />}
+            {r && !rest && !editing && <MiniBodyMap routines={[r]} tint={colorOf(r)} body={S.body} />}
             {editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', said(sayName))} title={t('Drag to reorder')}
               {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>
@@ -486,7 +493,7 @@ function Routines({ S, update, nav }) {
         ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
           <div key={r.id} data-reorder-row className="item plan-routine" style={reorder.rowStyle(i)}>
             <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+            <RoutineTile r={r} />
             <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
             {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
               {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
@@ -499,9 +506,9 @@ function Routines({ S, update, nav }) {
           const open = !g.folder || (openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder))
           const list = open && <div key={'l' + (g.fav ? '*' : g.folder)} className="list routine-list plan-routines" data-folder={g.folder || undefined} data-favs={g.fav || undefined}>{g.routines.map(r => {
           const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+            <RoutineTile r={r} />
             <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub(r)}</div></div>
-            <MiniBodyMap routines={[r]} body={S.body} />
+            <MiniBodyMap routines={[r]} tint={colorOf(r)} body={S.body} />
             <Icon name="chevronRight" className="chev" /></div>
           // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo,
           // toward the end duplicates. Edit's minus and the routine's own page stay the way in
