@@ -49,6 +49,7 @@ describe('sheet exit ghost', () => {
     expect(g.inert).toBe(true)
     expect(g.querySelector('.sheet h3').textContent).toBe('Menu')
     expect(g.querySelector('.mback')).toBeTruthy()
+    expect(g.classList.contains('is-handoff')).toBe(false)
     expect(g.querySelector('[id]')).toBeNull()
   })
 
@@ -76,6 +77,7 @@ describe('sheet exit ghost', () => {
     const [g] = ghosts()
     expect(g.querySelector('.sheet h3').textContent).toBe('Menu')
     expect(g.querySelector('.mback')).toBeNull()
+    expect(g.classList.contains('is-handoff')).toBe(true)   // its rows fade while it slides
     expect(document.querySelectorAll('#modal-root .mback').length).toBe(1)
   })
 

@@ -57,10 +57,11 @@ function exitGhost(node) {
   g.setAttribute('aria-hidden', 'true'); g.inert = true
   const c = node.cloneNode(true)
   c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'))
-  if (useUI.getState().sheets.length) c.querySelector('.mback')?.remove()
+  // Handed off to another sheet: its rows fade in 100 ms (CSS .is-handoff) while it slides, so two sheets' text is never readable together.
+  if (useUI.getState().sheets.length) { c.querySelector('.mback')?.remove(); g.classList.add('is-handoff') }
   g.appendChild(c)
   const done = () => g.remove()
-  g.addEventListener('animationend', e => { if (e.target.classList?.contains('sheet')) done() })
+  g.addEventListener('animationend', e => { if (e.target.classList?.contains('sheet') && e.animationName !== 'dimout') done() })
   setTimeout(done, 400)
   document.body.appendChild(g)
 }
