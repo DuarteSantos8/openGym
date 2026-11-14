@@ -24,7 +24,7 @@ idle/asleep when checked. New Codex assignments supersede those tasks; Claude is
 | Wave | Deliverable and owner | Depends on | Verification and reviewer | Risk / approval |
 | --- | --- | --- | --- | --- |
 | 2A | EP-03 volume trend: Codex `thr_pbxv6g7svw` | merged EP-01/02 | brief tests, real browser, locales/build; parent spec review and independent Codex code review | Medium: historical date/unit correctness; no new dependency |
-| 2A | EP-04 diary: Codex `thr_f6kmim4v34` | merged EP-01/02 | real store/merge/backup matrix, browser/offline, locales/build; parent plus independent reviewer | High: sync/deletion integrity; preserve EP-01 hooks |
+| 2A | EP-04 diary: Codex `cr_child_6adc1136d3d29d50bd726c63` | merged EP-01/02 | real store/merge/backup matrix, browser/offline, locales/build; parent plus independent reviewer | High: sync/deletion integrity; preserve EP-01 hooks |
 | 2A | EP-05a lookup API: Codex `thr_96ja8kwfhg` | merged EP-01 contracts | transport tests, real HTTP auth/status tests, source terms, API/docs; parent plus independent reviewer | High: outbound requests and untrusted provider data; bounded live probes already authorized by brief |
 | 2B | Review and combine accepted branches on parent working branch | 2A deliveries | inspect full changes from baseline, independently rerun meaningful tests and final combined regressions | No merge into `main` or `next/integration` |
 | 3 | EP-05b lookup preview and confirmed diary snapshot | reviewed EP-04 and EP-05a interfaces | no request on view/load, explicit lookup and save, missing values/provenance, offline reopen and browser flow | Medium; finalize bounded brief against actual delivered interfaces first |
@@ -34,6 +34,12 @@ Tools: Cloudroom isolated Codex child threads, Git/GitHub CLI, Node 22, existing
 repository tests, browser-harness for rendered QA. No project dependencies are approved in Wave 2.
 Workers must be capped and heavy suites run serially within each sandbox. Child threads have
 separate checkouts and branches; no shared source writers.
+
+EP-04 exception: its first Codex child's project copy timed out with no files available. Parent
+stopped that child (`thr_f6kmim4v34`, no edits) and created `.worktrees/ep-04-codex` on
+`feat/ep-04-codex-diary` from `be8fc9bf`. The replacement shares the parent sandbox but works
+only in that distinct worktree. Parent must not run heavy jobs concurrently with it. This
+avoids another full remote clone while retaining branch and file isolation.
 
 ## Interface review before dependent work
 
