@@ -16,8 +16,8 @@ const config = { sets: 3, reps: 10, weight: 40, mode: 'reps', prog: 'linear', in
 let root, host
 
 // Closing unmounts the sheet, as Modals does; unmounting by hand is closing it any other way.
-function open(onSave, { label, opts = { autosave: true } } = {}) {
-  exConfigSheet(ex, config, onSave, null, null, null, null, label, opts)
+function open(onSave, { label, opts = { autosave: true }, cfg = config } = {}) {
+  exConfigSheet(ex, cfg, onSave, null, null, null, null, label, opts)
   const sheet = useUI.getState().sheets.at(-1)
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -133,6 +133,14 @@ describe('exercise settings in a live workout keep their changes on close (#1079
     open(onSave)
     pickUnit('lb')
     expect(useStore.getState().S.exUnit[ex.id].unit).toBe('lb')
+    swipeAway()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('saves nothing after a unit switch on a pyramid with a weight per set', () => {
+    const onSave = vi.fn()
+    open(onSave, { cfg: { ...config, pyramid: [10, 8, 6], pyramidWeight: [40, 45, 50] } })
+    pickUnit('lb')
     swipeAway()
     expect(onSave).not.toHaveBeenCalled()
   })

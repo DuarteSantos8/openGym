@@ -2781,6 +2781,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // this sheet converts the snapshot with the fields.
   const opened = useRef(null)
   if (autosave && opened.current === null) { opened.current = ''; save(out => { opened.current = JSON.stringify(out) }) }
+  // A converted snapshot takes the rounding the build gives a pyramid's weights.
+  const asBuilt = o => (Array.isArray(o.pyramidWeight) ? { ...o, pyramidWeight: normalizePyramidWeight(o.pyramidWeight, o.pyramidWeight.length) } : o)
   const keep = useRef(null)
   keep.current = () => save(out => { if (JSON.stringify(out) !== opened.current) onSave(storedOf(out)) })
   useEffect(() => () => { if (autosave) keep.current() }, [])
@@ -3175,7 +3177,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       <ExUnitRow ex={ex} onChange={(before, after) => {
         const turn = x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored))
         // The autosave snapshot follows the unit, so a switch alone is not an edit (#1079).
-        if (opened.current) opened.current = JSON.stringify(turn(JSON.parse(opened.current)))
+        if (opened.current) opened.current = JSON.stringify(asBuilt(turn(JSON.parse(opened.current))))
         setC(turn)
       }} />
       <GymSplitRow ex={ex} />
