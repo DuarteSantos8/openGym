@@ -1,0 +1,7 @@
+# EP-02 parent review, 2026-11-14
+
+Initial implementation reviewed: `12f8e8d4`. Parent ran the component suite under Node22: 10/10 passed. In real Chromium, the existing synthetic guest profile received weigh-ins of 80kg on November13 and 79.5kg on November14 through normal UI controls. The resulting accessible group name was `Body weight: 79.5 kg 0.5`, omitting the decrease direction; visible text contained a down arrow. This confirmed the code-review finding. Under emulated reduced motion both the metric and sheet computed `animation-name: none`. [Captured observations](initial-browser.json). The parent stopped both temporary servers and closed its test tab.
+
+At corrected head `c0393641`, static corrections are under independent re-review. Parent visually inspected the committed `after/bodyweight-light-320.png`; the changed card is visible and readable. However, `after/stats-dark-390.png` shows Home, with the Home tab selected. Multiple Stats/Settings files have identical sizes to Home, including baseline captures. These are mislabeled evidence and do not establish those screens were checked. The owner has been instructed to recapture actual routes with a per-image manifest.
+
+Other pending gates: clean console/network with a running disposable API (the owner's first run deliberately produced502s); actual set/rest/save/reload interaction assertions (CSS regex tests do not establish this); final frontend suite/build evidence; independent final review. No EP-02 acceptance or merge is claimed.
