@@ -12,7 +12,7 @@ describe('drag look under Reduce Motion', () => {
     expect(rule('.reduce-motion .drag-row.is-lifted .drag-in::after')).toContain('border:2px solid var(--label)')
     expect(lifted).toContain('transform:translateY(var(--dy))')
     expect(lifted).toContain('box-shadow:none')
-    expect(lifted).not.toMatch(/scale|rotate/)
+    expect(lifted).not.toMatch(/(scale|rotate):(?!none)/)
     expect(rule('.reduce-motion .drag-row.is-lifted::before')).toMatch(/transition:none/)
   })
   it('the OS setting does the same', () => {

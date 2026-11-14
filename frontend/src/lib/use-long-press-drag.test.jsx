@@ -202,4 +202,87 @@ describe('over another list', () => {
     expect(d.over).toEqual({ kind: 'target', key: 'other' })
     expect(d.drag.dy).toBe(420 - 100)
   })
+
+  describe('motion', () => {
+    afterEach(() => { document.documentElement.classList.remove('reduce-motion') })
+
+    it('dips the row at 120 ms of the hold (data-cue) and clears it at the lift', () => {
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(119) })
+      expect($('a').hasAttribute('data-cue')).toBe(false)
+      act(() => { vi.advanceTimersByTime(1) })
+      expect($('a').hasAttribute('data-cue')).toBe(true)
+      act(() => { vi.advanceTimersByTime(330) })
+      expect(d.lifted).toBe('a')
+      expect($('a').hasAttribute('data-cue')).toBe(false)
+    })
+
+    it('a scroll away from the cue lets go of it', () => {
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(130) })
+      fire(window, 'pointermove', 10, 140)
+      expect($('a').hasAttribute('data-cue')).toBe(false)
+    })
+
+    it('reads the row layout again only after the finger moved 2 px', () => {
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      const spy = vi.spyOn($('b'), 'getBoundingClientRect')
+      fire(window, 'pointermove', 10, 121)
+      expect(spy).not.toHaveBeenCalled()
+      fire(window, 'pointermove', 10, 123)
+      expect(spy).toHaveBeenCalled()
+    })
+
+    it('a reorder drop settles the row from where it was let go (transform, 280 ms)', () => {
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      fire(window, 'pointermove', 10, 235)
+      let reads = 0
+      $('a').getBoundingClientRect = () => rect(reads++ < 2 ? 200 : 100) // lifted at 200, home at 100
+      fire(window, 'pointerup', 10, 235)
+      expect($('a').style.transition).toContain('transform 280ms')
+      act(() => { $('a').dispatchEvent(new Event('transitionend')) })
+      expect($('a').style.transition).toBe('')
+    })
+
+    it('a drop into a folder flies a copy and ticks the target, then cleans up', () => {
+      const anim = { onfinish: null }
+      const animate = vi.fn(() => anim)
+      window.Element.prototype.animate = animate
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      fire(window, 'pointermove', 10, 20)
+      fire(window, 'pointerup', 10, 20)
+      expect(animate).toHaveBeenCalled()
+      expect(document.querySelector('.drag-ghost')).not.toBeNull()
+      expect(document.querySelector('.drag-slot-ghost')).not.toBeNull()
+      act(() => { vi.advanceTimersByTime(200) })
+      expect($('t').classList.contains('drop-tick')).toBe(true)
+      act(() => { anim.onfinish() })
+      expect(document.querySelector('.drag-ghost')).toBeNull()
+      delete window.Element.prototype.animate
+    })
+
+    it('Reduce Motion: no cue, no flight, no transform transition, a 120 ms fade instead', () => {
+      document.documentElement.classList.add('reduce-motion')
+      const animate = window.Element.prototype.animate = vi.fn()
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(200) })
+      expect($('a').hasAttribute('data-cue')).toBe(false)
+      act(() => { vi.advanceTimersByTime(250) })
+      fire(window, 'pointermove', 10, 235)
+      fire(window, 'pointerup', 10, 235)
+      expect($('a').style.transition).toBe('')
+      expect($('a').style.transform).toBe('')
+      expect($('a').classList.contains('drop-fade')).toBe(true)
+      fire($('a'), 'pointerdown', 10, 120)
+      act(() => { vi.advanceTimersByTime(450) })
+      fire(window, 'pointermove', 10, 20)
+      fire(window, 'pointerup', 10, 20)
+      expect(animate).not.toHaveBeenCalled()
+      delete window.Element.prototype.animate
+      expect(document.querySelector('.drag-ghost')).toBeNull()
+    })
+  })
 })

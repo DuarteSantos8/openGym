@@ -5,7 +5,7 @@ const KEY = '[data-flip-key]'
 export const FLIP_MAX = 12   // rows that animate; the rest switch
 const live = new WeakMap()   // each row's running cleanup, so a new flip can retire the old one
 
-const still = () => {
+export const still = () => {
   try {
     return document.documentElement.classList.contains('reduce-motion') ||
       !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches

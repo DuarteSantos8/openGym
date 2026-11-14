@@ -4263,17 +4263,38 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .drag-row.is-lifted{z-index:5}
 .drag-row.is-lifted::before{content:attr(data-name);position:absolute;inset:4px 8px;display:flex;align-items:center;justify-content:center;border:2px dashed var(--label-3);border-radius:10px;color:var(--label-2);font-size:var(--fs-footnote);transform:translateY(var(--slot,0px));transition:transform var(--fast) var(--ease)}
 .plan-routes.is-dragging .drag-row:not(.is-lifted) .drag-in{transition:transform var(--fast) var(--ease)}
-.drag-row.is-lifted .drag-in{position:relative;background:var(--surface-3);border-radius:var(--r-card);transform:translateY(var(--dy)) scale(1.03) rotate(1deg);box-shadow:0 12px 28px rgba(0,0,0,.35);will-change:transform;pointer-events:none}
+/* Press cue at 120 ms of the hold (scale .985, 140), then the lift (220): scale, tilt and a separate
+   shadow layer fading in; scale and rotate are their own properties so the ride (transform) never lags. */
+.drag-row .drag-in{transition:scale var(--fast) var(--ease)}
+.drag-row[data-cue] .drag-in{scale:.985}
+.drag-row.is-lifted .drag-in{position:relative;isolation:isolate;background:var(--surface-3);border-radius:var(--r-card);transform:translateY(var(--dy));scale:1.03;rotate:1deg;transition:scale var(--med) var(--ease),rotate var(--med) var(--ease);will-change:transform;pointer-events:none}
+.drag-row.is-lifted .drag-in::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;box-shadow:0 12px 28px rgba(0,0,0,.35);animation:drag-shadow var(--med) var(--ease)}
+@keyframes drag-shadow{from{opacity:0}to{opacity:1}}
+/* Dark theme: a shadow is invisible on black, so the lifted row gets a fill and a hairline. */
+:root:not([data-theme="light"]) .drag-row.is-lifted .drag-in{background:linear-gradient(rgba(255,255,255,.06),rgba(255,255,255,.06)),var(--surface-3)}
+:root:not([data-theme="light"]) .drag-row.is-lifted .drag-in::before{box-shadow:0 12px 28px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.10)}
+:root:not([data-theme="light"]) .drag-row.is-lifted::before{background:rgba(255,255,255,.04)}
+/* The drop into a folder: a copy flies (lib/use-long-press-drag.js), the slot fades, the count ticks. */
+.drag-ghost{position:fixed;z-index:80;margin:0;pointer-events:none;background:var(--surface-3);border-radius:var(--r-card);box-shadow:0 12px 28px rgba(0,0,0,.35);transform-origin:center}
+.drag-slot-ghost{position:fixed;z-index:79;pointer-events:none;border:2px dashed var(--label-3);border-radius:10px;animation:drag-slot-out 100ms ease-out forwards}
+@keyframes drag-slot-out{to{opacity:0}}
+.drop-tick{display:inline-block;animation:drag-tick 200ms var(--ease)}
+@keyframes drag-tick{from{transform:scale(1.15)}to{transform:none}}
+@keyframes drag-fade{from{opacity:0}to{opacity:1}}
 .plan-routes.is-dragging .plan-group{overflow:visible}
 .plan-group .item.is-drop{background:var(--acc-soft);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--bg)}
 .plan-textbtn.is-drop{background:var(--acc-soft);border-radius:10px;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc)}
 .plan-here{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--acc);color:var(--on-acc);font-weight:600;font-size:var(--fs-callout)}
 .plan-moveout{min-height:36px;background:var(--acc);color:var(--on-acc)}
 .plan-moveout .icon{width:18px;height:18px}
-.reduce-motion .drag-row.is-lifted .drag-in{transform:translateY(var(--dy));box-shadow:none}
+.reduce-motion .drag-row.is-lifted .drag-in{transform:translateY(var(--dy));scale:none;rotate:none;box-shadow:none;transition:none !important}
+.reduce-motion .drag-row.is-lifted .drag-in::before{display:none}
 .reduce-motion .drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}
 .reduce-motion .drag-row.is-lifted::before,.reduce-motion .drag-row .drag-in{transition:none !important}
-@media (prefers-reduced-motion:reduce){.drag-row.is-lifted .drag-in{transform:translateY(var(--dy));box-shadow:none}.drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}.drag-row.is-lifted::before,.drag-row .drag-in{transition:none !important}}
+.reduce-motion .drag-row[data-cue] .drag-in{scale:none}
+.reduce-motion .drop-tick{animation:none}
+.reduce-motion .drag-in.drop-fade{animation:drag-fade var(--dur-rm) linear}
+@media (prefers-reduced-motion:reduce){.drag-row.is-lifted .drag-in{transform:translateY(var(--dy));scale:none;rotate:none;box-shadow:none;transition:none !important}.drag-row.is-lifted .drag-in::before{display:none}.drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}.drag-row.is-lifted::before,.drag-row .drag-in{transition:none !important}.drag-row[data-cue] .drag-in{scale:none}.drop-tick{animation:none}.drag-in.drop-fade{animation:drag-fade var(--dur-rm) linear}}
 .plan-hdr.is-drop{background:var(--acc-soft);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--bg);display:flex;align-items:center;justify-content:space-between;border-radius:12px;padding:4px 8px}
 .plan-group.is-drop-area{box-shadow:0 0 0 2px var(--acc)}
 @media (max-width:359px){.plan-routine .bm-mini-wrap .bm-v+.bm-v{display:none}}
