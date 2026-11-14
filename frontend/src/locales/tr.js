@@ -1294,7 +1294,7 @@ export default {
   'New equipment profile': 'Yeni ekipman profili',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Antrenman yaptığın yerin adını ver (“Ev” ya da “Spor salonu” gibi), sonra orada neyin olduğunu işaretle.',
   'Profile name': 'Profil adı',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Vücut ağırlığı egzersizleri, bir barfiks barı veya sehpa gerektirmedikçe her zaman kullanılabilir.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Burada vücut ağırlığı egzersizlerini gizlemek için vücut ağırlığının işaretini kaldırın. Barfiks barı veya sehpa gerektiren bir egzersiz, o işaretliyken görünür.',
   '{0} of {1} exercises need equipment outside "{2}"': '{1} hareketten {0} tanesi “{2}” dışında ekipman gerektiriyor',
   'Needs {0}, which isn’t in your active profile': '{0} gerekiyor, o da aktif profilinde yok',
   'Filter by equipment': 'Ekipmana göre filtrele',

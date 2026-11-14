@@ -1313,7 +1313,7 @@ export default {
   'New equipment profile': 'Ny utrustningsprofil',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Döp den efter var du tränar (t.ex. ”Hemma” eller ”Gymmet”) och bocka sedan för vad du har där.',
   'Profile name': 'Profilnamn',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Övningar med kroppsvikt är alltid tillgängliga, om de inte kräver chinsstång eller bänk.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Bocka ur kroppsvikt för att dölja övningar med kroppsvikt här. En övning som kräver chinsstång eller bänk visas när den är ibockad.',
   '{0} of {1} exercises need equipment outside "{2}"': '{0} av {1} övningar kräver utrustning utanför ”{2}”',
   'Needs {0}, which isn’t in your active profile': 'Kräver {0}, som inte finns i din aktiva profil',
   'Filter by equipment': 'Filtrera efter utrustning',

@@ -1326,7 +1326,7 @@ export default {
   'New equipment profile': 'Hồ sơ thiết bị mới',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Đặt tên theo nơi bạn tập luyện (như "Nhà" hoặc "Phòng gym"), sau đó đánh dấu các thiết bị bạn có ở đó.',
   'Profile name': 'Tên hồ sơ',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Các bài tập thể trọng luôn khả dụng, trừ khi cần dùng xà đơn hoặc ghế tập.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Bỏ chọn thể trọng để ẩn các bài tập thể trọng ở đây. Bài cần xà đơn hoặc ghế tập sẽ hiện khi mục đó được chọn.',
   '{0} of {1} exercises need equipment outside "{2}"': '{0}/{1} bài tập cần thiết bị không có trong "{2}"',
   'Needs {0}, which isn’t in your active profile': 'Cần {0}, thiết bị này không có trong hồ sơ đang kích hoạt',
   'Filter by equipment': 'Lọc theo thiết bị',

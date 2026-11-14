@@ -1030,7 +1030,7 @@ export default {
   'New equipment profile': 'ملف معدات جديد',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'سمِّه باسم مكان تدريبك (مثل «المنزل» أو «النادي»)، ثم حدد ما لديك فيه.',
   'Profile name': 'اسم الملف',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'تمارين وزن الجسم متاحة دائمًا، ما لم تتطلب بار عقلة أو مقعدًا.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'ألغِ تحديد وزن الجسم لإخفاء تمارين وزن الجسم هنا. التمرين الذي يحتاج بار عقلة أو مقعدًا يظهر عند تحديدهما.',
   '{0} of {1} exercises need equipment outside "{2}"': '{0} من {1} تمارين تحتاج معدات خارج «{2}»',
   'Needs {0}, which isn’t in your active profile': 'تحتاج {0}، وهي غير موجودة في ملفك النشط',
   'Filter by equipment': 'التصفية حسب المعدات',

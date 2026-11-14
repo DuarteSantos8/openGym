@@ -1327,7 +1327,7 @@ export default {
   "New equipment profile": "Naujas įrangos profilis",
   "Name it after where you train (like \"Home\" or \"Gym\"), then tick what you’ve got there.": "Pavadinkite pagal treniruočių vietą (pvz., „Namai“ ar „Sporto salė“), tada pažymėkite, ką ten turite.",
   "Profile name": "Profilio pavadinimas",
-  "Body-weight exercises are always available, unless they need a pull-up bar or a bench.": "Su savuoju svoriu atliekami pratimai visada prieinami, nebent reikia pakabos ar suoliuko.",
+  "Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.": "Nuimkite žymę nuo kūno svorio, kad čia būtų paslėpti pratimai su savuoju svoriu. Pratimas, kuriam reikia skersinio ar suoliuko, rodomas, kai jie pažymėti.",
   "{0} of {1} exercises need equipment outside \"{2}\"": "Iš {1} pratimų {0} reikia įrangos, kurios nėra „{2}“",
   "Needs {0}, which isn’t in your active profile": "Reikia {0}, ko nėra jūsų aktyviame profilyje",
   "Filter by equipment": "Filtruoti pagal įrangą",
