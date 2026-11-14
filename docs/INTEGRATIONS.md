@@ -205,6 +205,74 @@ INTEGRATIONS=webhook
 Comma-separated; `webhook` is the one provider today (Strava is next, see below). Restart the api
 container after changing it.
 
+### Open Food Facts barcode previews (`FOOD_LOOKUP`)
+
+This is a separate read-only API, not a webhook connection. Set `FOOD_LOOKUP=1` and
+restart the API to enable it. It remains off for any profile whose stored
+`modules.nutrition` is not exactly boolean `true`. An optional operator email in
+`FOOD_LOOKUP_CONTACT` identifies the operator in the outbound app/version User-Agent;
+invalid values are omitted, and no user's email is read. Complete the
+[OFF usage form](https://openfoodfacts.github.io/openfoodfacts-server/api/#before-you-start)
+before enabling. No UI is added in EP-05a, and standalone phones cannot use this API.
+
+`GET /api/food-lookup?barcode=<GTIN>` accepts exactly one checked 8, 12, 13 or 14 digit
+barcode. The signed-in `/api/config` response includes
+`foodLookup: {status: 'disabled'|'configured-unverified'}`. Config does not make a
+network request, and configuration is never advertised as successful connectivity.
+
+**What leaves the server, and when:** only an explicit lookup request with both gates
+open can call `https://world.openfoodfacts.org/api/v3.6/product/<barcode>`, using fixed
+fields `code,product_name,brands,quantity,serving_size,nutrition`, `Accept: application/json`
+and `User-Agent: openGym/<version> (optional operator contact)`. No other request value,
+cookie, token, profile, uid, image or client header is forwarded. OFF necessarily sees
+the server IP and request time. Nothing polls, retries automatically or writes lookup
+results to disk. No image URL is returned. DNS is checked when connecting; private and
+mixed addresses and redirects are refused, regardless of push/webhook overrides.
+
+The cache contains at most 128 public normalized products for 15 minutes, with a
+60 second lifetime for not-found. Every hit still checks current consent. Turning off
+the user module prevents further requests; disabling the operator switch and restarting
+also clears cache. No diary data is deleted. Limits: 5 requests/user/minute including
+hits, 7 upstream calls/instance/61 seconds. Multiple processes and services behind one
+public IP must coordinate with OFF's current 15 reads/minute/IP limit.
+
+The preview has `source`, `externalId`, `label`, optional `brand`/`quantityText`,
+`per100` with explicit `basis: g|ml`, optional canonical `serving`, `fetchedAt`, and
+`attribution`. It uses as-sold values; unknown/invalid/string/qualified/estimated
+nutrients are omitted, never silently zero. kJ-only energy uses kJ/4.184 and includes
+`per100.energyConversion`. The basis always comes from OFF's nutrition aggregation,
+never package volume; a product sold in ml may still report per-100g nutrition. The
+later diary UI must not convert g to ml without an explicit conversion factor.
+
+Display this attribution beside the preview, linking Open Food Facts to
+`attribution.url` (the product) and ODbL to `attribution.licenseUrl`:
+
+> Contains information from Open Food Facts, available under the Open Database License (ODbL).
+
+Preserve those links, source and fetch time in any future user-confirmed saved snapshot.
+The database is ODbL and individual contents use the Database Contents License. A
+public derivative database has share-alike and access requirements; private diary use
+does not by itself require publishing the diary. Images have separate rights and are
+excluded. See [OFF's licence guidance](https://openfoodfacts.github.io/openfoodfacts-server/api/tutorials/license-be-on-the-legal-side/)
+and [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Product information can be
+incomplete or inaccurate; confirm against the package before saving.
+
+Errors have a stable `code` and fixed safe `error` message:
+
+| HTTP | Code | Meaning |
+| --- | --- | --- |
+| 401 | `food-lookup-auth-required` | Sign in |
+| 403 | `food-lookup-disabled` | Operator has not enabled lookup |
+| 403 | `nutrition-disabled` | Profile has not opted into Nutrition |
+| 400 | `food-lookup-invalid-barcode` | Invalid GTIN or query parameters |
+| 404 | `food-lookup-not-found` | OFF explicitly reports an unknown product |
+| 429 | `food-lookup-rate-limited` | Wait the `Retry-After` seconds |
+| 502 | `food-lookup-upstream` | Unsafe, failed, unsupported, malformed or oversized reply |
+| 504 | `food-lookup-timeout` | 2 s connect or 5 s total deadline, including body reads |
+
+Full schemas are in [the API reference](../api/openapi.yaml). Turning this API off does
+not affect workout logging, offline saves or manual nutrition records.
+
 ### Webhooks to your home network (`INTEGRATIONS_ALLOW_LAN`)
 
 A webhook URL is a request your server makes for whoever is signed in, so it follows the same rules

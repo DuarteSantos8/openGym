@@ -1,0 +1,67 @@
+{
+  "code": "5449000000996",
+  "status": "success",
+  "result": {
+    "id": "product_found"
+  },
+  "product": {
+    "code": "5449000000996",
+    "product_name": "Coca-Cola Original",
+    "brands": "COCA-COLA SERVICES SA/NV",
+    "quantity": "330 ml",
+    "serving_size": "1 portion (330 ml)",
+    "nutrition": {
+      "aggregated_set": {
+        "per": "100g",
+        "preparation": "as_sold",
+        "nutrients": {
+          "carbohydrates": {
+            "source": "packaging",
+            "source_index": 0,
+            "source_per": "100g",
+            "unit": "g",
+            "value": 10.9
+          },
+          "energy": {
+            "source": "packaging",
+            "source_index": 0,
+            "source_per": "100g",
+            "unit": "kJ",
+            "value": 185,
+            "value_computed": 185.3
+          },
+          "energy-kcal": {
+            "source": "packaging",
+            "source_index": 0,
+            "source_per": "100g",
+            "unit": "kcal",
+            "value": 44,
+            "value_computed": 43.6
+          },
+          "energy-kj": {
+            "source": "packaging",
+            "source_index": 0,
+            "source_per": "100g",
+            "unit": "kJ",
+            "value": 185,
+            "value_computed": 185.3
+          },
+          "fat": {
+            "source": "packaging",
+            "source_index": 0,
+            "source_per": "100g",
+            "unit": "g",
+            "value": 0
+          },
+          "proteins": {
+            "source": "packaging",
+            "source_index": 0,
+            "source_per": "100g",
+            "unit": "g",
+            "value": 0
+          }
+        }
+      }
+    }
+  }
+}

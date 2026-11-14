@@ -142,6 +142,20 @@ Errors are `{error: <fixed safe message>, code: <stable code>}`:
 
 ## Execution ledger
 
+- Parent approved adding `food-lookup.js` to `api/Dockerfile`'s explicit COPY list.
+  Existing `api/test/dockerfile-copy.test.js` reused: 1 pass/1 fail before the COPY
+  addition, then GREEN with route tests. No duplicate manifest test, no Docker available.
+- Normalization RED `2678338d` (0/20), GREEN `31a56b99` (20/20).
+  Adapter RED `57854c0e` (0/24), GREEN `63b650a8` (44/44 including normalization).
+- Extra DNS regression RED `0ddbd713` exposed NAT64 inheriting a global IPv4 push
+  override. GREEN `706d8100` (44/44) rechecks embedded IPv4 for mapped/NAT64/6to4.
+- Route RED `cdad286f`: 0/12 actual HTTP tests (missing route). GREEN targeted run
+  passes 62/62 including normalization, adapter, HTTP, Docker COPY and OpenAPI checks.
+- Two manual public requests used, both HTTP 200: 3017620422003 and 5449000000996.
+  Both upstream aggregations explicitly report **100g**, even the 330 ml drink; do not
+  guess a volume basis. Fixtures are selected fields only, without images, under
+  `../evidence/EP-05/fixtures/`. Automated tests never request the live service.
+
 - Plan inspection complete. First manual public request used (3017620422003): HTTP 200,
   v3.6 `status: success`, `result.id: product_found`, as_sold/100g aggregation.
   Trimmed image-free fixture will preserve just the selected product fields/nutrients.
