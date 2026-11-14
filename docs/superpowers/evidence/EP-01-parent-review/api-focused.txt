@@ -1,0 +1,209 @@
+TAP version 13
+# Subtest: HTTP optional profile compatibility: PUT, 409, old writers, tombstones, reset and malformed records
+    # Subtest: initial unstamped PUT and a later stamped merge preserve zero-stamp fields
+    ok 1 - initial unstamped PUT and a later stamped merge preserve zero-stamp fields
+      ---
+      duration_ms: 72.023584
+      type: 'test'
+      ...
+    # Subtest: stale revision receives 409 and the exact optional record
+    ok 2 - stale revision receives 409 and the exact optional record
+      ---
+      duration_ms: 4.15566
+      type: 'test'
+      ...
+    # Subtest: an older unstamped writer omitting the whole collection preserves it
+    ok 3 - an older unstamped writer omitting the whole collection preserves it
+      ---
+      duration_ms: 13.214344
+      type: 'test'
+      ...
+    # Subtest: an older stamped writer omitting the whole collection preserves it
+    ok 4 - an older stamped writer omitting the whole collection preserves it
+      ---
+      duration_ms: 10.255249
+      type: 'test'
+      ...
+    # Subtest: unstamped writer omitting unknown fields within optional records preserves them
+    ok 5 - unstamped writer omitting unknown fields within optional records preserves them
+      ---
+      duration_ms: 11.044392
+      type: 'test'
+      ...
+    # Subtest: explicit tombstone remains hidden through an older writer and replay
+    ok 6 - explicit tombstone remains hidden through an older writer and replay
+      ---
+      duration_ms: 15.753405
+      type: 'test'
+      ...
+    # Subtest: malformed optional records cannot erase valid records or crash the server
+    ok 7 - malformed optional records cannot erase valid records or crash the server
+      ---
+      duration_ms: 8.900172
+      type: 'test'
+      ...
+    # Subtest: reset ids survive GET and suppress stale replay without reviving legacy unknown settings
+    ok 8 - reset ids survive GET and suppress stale replay without reviving legacy unknown settings
+      ---
+      duration_ms: 13.033262
+      type: 'test'
+      ...
+    # Subtest: a valid stamp map below MAX_BODY is accepted without argument-stack overflow
+    ok 9 - a valid stamp map below MAX_BODY is accepted without argument-stack overflow
+      ---
+      duration_ms: 1061.572635
+      type: 'test'
+      ...
+    1..9
+ok 1 - HTTP optional profile compatibility: PUT, 409, old writers, tombstones, reset and malformed records
+  ---
+  duration_ms: 1725.884927
+  type: 'test'
+  ...
+# Subtest: provider declares finite per-instance and per-connection rate limits
+ok 2 - provider declares finite per-instance and per-connection rate limits
+  ---
+  duration_ms: 1.187706
+  type: 'test'
+  ...
+# Subtest: configuration does not contact a third party and keeps secrets out of public info
+ok 3 - configuration does not contact a third party and keeps secrets out of public info
+  ---
+  duration_ms: 5.348076
+  type: 'test'
+  ...
+# Subtest: redirect and unavailable response cannot be reported as successful delivery
+ok 4 - redirect and unavailable response cannot be reported as successful delivery
+  ---
+  duration_ms: 2.533693
+  type: 'test'
+  ...
+# Subtest: same job keeps its delivery identity across retries
+ok 5 - same job keeps its delivery identity across retries
+  ---
+  duration_ms: 0.436083
+  type: 'test'
+  ...
+# Subtest: existing webhook bounds timeout/response size and rejects private addresses at connect
+ok 6 - existing webhook bounds timeout/response size and rejects private addresses at connect
+  ---
+  duration_ms: 1.578948
+  type: 'test'
+  ...
+# Subtest: characterization: legacy generic network errors expose their message, so new adapters must sanitize them
+ok 7 - characterization: legacy generic network errors expose their message, so new adapters must sanitize them
+  ---
+  duration_ms: 0.245561
+  type: 'test'
+  ...
+# Subtest: characterization: connected means configured, and cross-user revoke fails closed
+ok 8 - characterization: connected means configured, and cross-user revoke fails closed
+  ---
+  duration_ms: 20.552569
+  type: 'test'
+  ...
+# Subtest: add/add keeps both ids
+ok 9 - add/add keeps both ids
+  ---
+  duration_ms: 3.143075
+  type: 'test'
+  ...
+# Subtest: add/edit keeps independent records and the edit
+ok 10 - add/edit keeps independent records and the edit
+  ---
+  duration_ms: 0.815885
+  type: 'test'
+  ...
+# Subtest: different-field edits both survive
+ok 11 - different-field edits both survive
+  ---
+  duration_ms: 0.785463
+  type: 'test'
+  ...
+# Subtest: edit/delete retains merge evidence but hides a deleted record
+ok 12 - edit/delete retains merge evidence but hides a deleted record
+  ---
+  duration_ms: 1.626268
+  type: 'test'
+  ...
+# Subtest: delete/re-add uses the existing negative tombstone convention
+ok 13 - delete/re-add uses the existing negative tombstone convention
+  ---
+  duration_ms: 0.554881
+  type: 'test'
+  ...
+# Subtest: deletion replay cannot resurrect an entry or remove a later re-add
+ok 14 - deletion replay cannot resurrect an entry or remove a later re-add
+  ---
+  duration_ms: 0.458602
+  type: 'test'
+  ...
+# Subtest: same change replay is idempotent
+ok 15 - same change replay is idempotent
+  ---
+  duration_ms: 0.303532
+  type: 'test'
+  ...
+# Subtest: equal timestamps and id collisions resolve per field, independent of argument order
+ok 16 - equal timestamps and id collisions resolve per field, independent of argument order
+  ---
+  duration_ms: 0.395242
+  type: 'test'
+  ...
+# Subtest: field deletion wins an equal-stamp tie and replay preserves it
+ok 17 - field deletion wins an equal-stamp tie and replay preserves it
+  ---
+  duration_ms: 0.615233
+  type: 'test'
+  ...
+# Subtest: all three-device permutations and groupings converge, including edit/delete
+ok 18 - all three-device permutations and groupings converge, including edit/delete
+  ---
+  duration_ms: 3.379857
+  type: 'test'
+  ...
+# Subtest: older record missing a field cannot erase a stamped newer field
+ok 19 - older record missing a field cannot erase a stamped newer field
+  ---
+  duration_ms: 0.300211
+  type: 'test'
+  ...
+# Subtest: older backup replay respects deletion unless explicitly restored
+ok 20 - older backup replay respects deletion unless explicitly restored
+  ---
+  duration_ms: 0.376542
+  type: 'test'
+  ...
+# Subtest: resetAt/resetIds hides only reset entries, without losing tombstone evidence
+ok 21 - resetAt/resetIds hides only reset entries, without losing tombstone evidence
+  ---
+  duration_ms: 0.617813
+  type: 'test'
+  ...
+# Subtest: a legacy reset without resetIds suppresses older optional records
+ok 22 - a legacy reset without resetIds suppresses older optional records
+  ---
+  duration_ms: 0.325491
+  type: 'test'
+  ...
+# Subtest: invalid optional records are ignored safely
+ok 23 - invalid optional records are ignored safely
+  ---
+  duration_ms: 0.256952
+  type: 'test'
+  ...
+# Subtest: deletion replay after a third-device merge remains hidden
+ok 24 - deletion replay after a third-device merge remains hidden
+  ---
+  duration_ms: 0.499682
+  type: 'test'
+  ...
+1..24
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1817.636904

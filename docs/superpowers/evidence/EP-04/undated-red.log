@@ -1,0 +1,74 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/lib/nutrition/diary.test.js src/views/Nutrition.test.jsx
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/lib/nutrition/diary.test.js (5 tests | 1 failed) 46ms
+   × invalid or missing days are visible as undated, without refiling records or inflating daily unknowns 10ms
+ ❯ src/views/Nutrition.test.jsx (7 tests | 1 failed) 208ms
+   × malformed and missing day records have an explicit undated surface and can be deleted 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/views/Nutrition.test.jsx > malformed and missing day records have an explicit undated surface and can be deleted
+AssertionError: expected 'BackNutrition diarySat, 14 Nov 2026Ad…' to contain 'Undated entries'
+
+Expected: "Undated entries"
+Received: "BackNutrition diarySat, 14 Nov 2026Add foodEnergy (kcal)00 entries unknownProtein (g)00 entries unknownCarbohydrate (g)00 entries unknownFat (g)00 entries unknownSnackUnsupported entryKept unchanged. Use a compatible app to edit this entry.DeleteYour foodsChoose an earlier entry to prefill a new one.Search your foodsOrderRecentFrequent"
+
+ ❯ src/views/Nutrition.test.jsx:85:28
+     83|   useStore.setState({ S: { ...useStore.getState().S, nutritionEntries:…
+     84|   await render(<Nutrition />)
+     85|   expect(host.textContent).toContain('Undated entries')
+       |                            ^
+     86|   expect(host.textContent.match(/Unsupported entry/g)).toHaveLength(2)
+     87|   expect(host.textContent).not.toContain('999')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/lib/nutrition/diary.test.js > invalid or missing days are visible as undated, without refiling records or inflating daily unknowns
+AssertionError: expected [ { …(10) } ] to deeply equal [ { …(10) }, { …(10) } ]
+
+- Expected
++ Received
+
+@@ -1,21 +1,9 @@
+  [
+    {
+      "createdAt": "2026-11-14T10:00:00.000Z",
+      "createdBy": "manual",
+-     "day": "2026-99-99",
+-     "id": "ddc2cdd3-cccd-449f-8783-2917076cc49e",
+-     "label": "Oats",
+-     "meal": "breakfast",
+-     "occurredAt": "2026-11-14T10:00:00.000Z",
+-     "schemaVersion": 2,
+-     "source": "manual",
+-     "timeZone": "UTC",
+-   },
+-   {
+-     "createdAt": "2026-11-14T10:00:00.000Z",
+-     "createdBy": "manual",
+      "day": undefined,
+      "id": "711130b8-d3a0-4487-8c39-01634c83bd51",
+      "label": "Oats",
+      "meal": "breakfast",
+      "occurredAt": "2026-11-14T10:00:00.000Z",
+
+ ❯ src/lib/nutrition/diary.test.js:44:28
+     42|   ]
+     43|   const S = { nutritionEntries: rows }, before = JSON.stringify(S)
+     44|   expect(diaryDays(S)['']).toEqual(rows.slice(0, 2))
+       |                            ^
+     45|   expect(diaryDays(S)['2026-11-14']).toEqual([rows[2]])
+     46|   expect(dailyTotals(S, '2026-11-14').energyKcal.unknown).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 10 passed (12)
+   Start at  09:56:24
+   Duration  3.79s (transform 3.86s, setup 415ms, import 5.05s, tests 254ms, environment 354ms)

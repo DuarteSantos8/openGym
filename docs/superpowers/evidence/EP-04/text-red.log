@@ -1,0 +1,12 @@
+[{'text': '278', 'lines': 2}, {'text': '16', 'lines': 1}, {'text': '40', 'lines': 1}, {'text': '11', 'lines': 1}]
+Traceback (most recent call last):
+  File "/usr/local/lib/cloudroom/browser-harness/venv/bin/browser-harness", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/run.py", line 255, in main
+    _run(args)
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/run.py", line 406, in _run
+    snippet = __import__("types").ModuleType("browser_harness_snippet"); snippet.__dict__.update(globals(), __name__=snippet.__name__); sys.modules[snippet.__name__] = snippet; exec(code, snippet.__dict__)
+                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 9, in <module>
+AssertionError: ordinary daily totals must remain readable on one line at 200% text

@@ -1,0 +1,608 @@
+{
+ "sha": "bd1ab806",
+ "base": "http://127.0.0.1:5198",
+ "manifest": [
+  {
+   "file": "home-dark-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/home",
+    "h1": "openGym"
+   },
+   "observed": {
+    "hash": "#/home",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 46908
+  },
+  {
+   "file": "stats-dark-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/stats",
+    "h1": "Stats"
+   },
+   "observed": {
+    "hash": "#/stats",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 41503
+  },
+  {
+   "file": "settings-dark-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/settings",
+    "h1": "Settings"
+   },
+   "observed": {
+    "hash": "#/settings",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 42485
+  },
+  {
+   "file": "workout-dark-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/workout",
+    "text": "Barbell Bench Press"
+   },
+   "observed": {
+    "hash": "#/workout",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 31892
+  },
+  {
+   "file": "home-dark-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/home",
+    "h1": "openGym"
+   },
+   "observed": {
+    "hash": "#/home",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 66784
+  },
+  {
+   "file": "stats-dark-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/stats",
+    "h1": "Stats"
+   },
+   "observed": {
+    "hash": "#/stats",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 57088
+  },
+  {
+   "file": "settings-dark-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/settings",
+    "h1": "Settings"
+   },
+   "observed": {
+    "hash": "#/settings",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 55461
+  },
+  {
+   "file": "workout-dark-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/workout",
+    "text": "Barbell Bench Press"
+   },
+   "observed": {
+    "hash": "#/workout",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 45825
+  },
+  {
+   "file": "home-dark-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/home",
+    "h1": "openGym"
+   },
+   "observed": {
+    "hash": "#/home",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 78443
+  },
+  {
+   "file": "stats-dark-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/stats",
+    "h1": "Stats"
+   },
+   "observed": {
+    "hash": "#/stats",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 66812
+  },
+  {
+   "file": "settings-dark-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/settings",
+    "h1": "Settings"
+   },
+   "observed": {
+    "hash": "#/settings",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 65878
+  },
+  {
+   "file": "workout-dark-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "dark",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/workout",
+    "text": "Barbell Bench Press"
+   },
+   "observed": {
+    "hash": "#/workout",
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 49995
+  },
+  {
+   "file": "home-light-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/home",
+    "h1": "openGym"
+   },
+   "observed": {
+    "hash": "#/home",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 45849
+  },
+  {
+   "file": "stats-light-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/stats",
+    "h1": "Stats"
+   },
+   "observed": {
+    "hash": "#/stats",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 40934
+  },
+  {
+   "file": "settings-light-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/settings",
+    "h1": "Settings"
+   },
+   "observed": {
+    "hash": "#/settings",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 42110
+  },
+  {
+   "file": "workout-light-320.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    320,
+    640
+   ],
+   "expected": {
+    "hash": "#/workout",
+    "text": "Barbell Bench Press"
+   },
+   "observed": {
+    "hash": "#/workout",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 32285
+  },
+  {
+   "file": "home-light-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/home",
+    "h1": "openGym"
+   },
+   "observed": {
+    "hash": "#/home",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 64288
+  },
+  {
+   "file": "stats-light-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/stats",
+    "h1": "Stats"
+   },
+   "observed": {
+    "hash": "#/stats",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 56010
+  },
+  {
+   "file": "settings-light-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/settings",
+    "h1": "Settings"
+   },
+   "observed": {
+    "hash": "#/settings",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 54165
+  },
+  {
+   "file": "workout-light-390.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    390,
+    844
+   ],
+   "expected": {
+    "hash": "#/workout",
+    "text": "Barbell Bench Press"
+   },
+   "observed": {
+    "hash": "#/workout",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 45645
+  },
+  {
+   "file": "home-light-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/home",
+    "h1": "openGym"
+   },
+   "observed": {
+    "hash": "#/home",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 78081
+  },
+  {
+   "file": "stats-light-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/stats",
+    "h1": "Stats"
+   },
+   "observed": {
+    "hash": "#/stats",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 67347
+  },
+  {
+   "file": "settings-light-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/settings",
+    "h1": "Settings"
+   },
+   "observed": {
+    "hash": "#/settings",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 67186
+  },
+  {
+   "file": "workout-light-1280.png",
+   "sha": "bd1ab806",
+   "base": "http://127.0.0.1:5198",
+   "requestedTheme": "light",
+   "viewport": [
+    1280,
+    800
+   ],
+   "expected": {
+    "hash": "#/workout",
+    "text": "Barbell Bench Press"
+   },
+   "observed": {
+    "hash": "#/workout",
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
+   },
+   "bytes": 49714
+  }
+ ],
+ "expectedConsole": 4,
+ "unexpectedErrors": []
+}

@@ -1,0 +1,39 @@
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+
+ ❯ src/lib/nutrition/food-source.test.js (0 test)
+ ❯ src/lib/nutrition/source-creation.test.js (1 test | 1 failed) 24ms
+   × creation rejects invalid atomic source metadata instead of silently dropping it 23ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/nutrition/food-source.test.js [ src/lib/nutrition/food-source.test.js ]
+Error: Cannot find module './food-source.js' imported from /code/openGym-fork/.worktrees/ep-05b-codex/frontend/src/lib/nutrition/food-source.test.js
+ ❯ src/lib/nutrition/food-source.test.js:2:1
+      1| import { expect, test } from 'vitest'
+      2| import { validateBarcode, sourceSnapshot, sourceFingerprint, lookupInp…
+       | ^
+      3| import { createEntry, editEntry } from './entry.js'
+      4|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/nutrition/source-creation.test.js > creation rejects invalid atomic source metadata instead of silently dropping it
+AssertionError: expected [Function] to throw an error
+ ❯ src/lib/nutrition/source-creation.test.js:4:124
+      2| import { createEntry } from './entry.js'
+      3| test('creation rejects invalid atomic source metadata instead of silen…
+      4|   expect(() => createEntry({ label: 'food', day: '2026-11-14', meal: '…
+       |                                                                                                                            ^
+      5| })
+      6|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  1 failed (1)
+   Start at  10:24:39
+   Duration  852ms (transform 105ms, setup 1.23s, import 45ms, tests 24ms, environment 0ms)

@@ -1,0 +1,30 @@
+[
+  {
+    "cwd": "api",
+    "command": "npm test",
+    "name": "api-diagnostic",
+    "exit_code": 1,
+    "duration_seconds": 32.527,
+    "summary": [
+      "ℹ tests 800",
+      "ℹ suites 9",
+      "ℹ pass 769",
+      "ℹ fail 31",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 32149.5489"
+    ]
+  },
+  {
+    "cwd": "frontend",
+    "command": "npx vitest run --maxWorkers=2 scripts/app-icons.test.mjs scripts/check-mobile-bundle.test.mjs src/color-mix-fallback.test.js src/components/Seasonal.lazy.test.jsx src/views/settings-pages.test.jsx src/lib/android-asset-packs.test.js src/lib/api-base.test.js src/lib/backup-media.test.js src/lib/csp.test.js src/store/useStore.tabs-owner.test.jsx",
+    "name": "frontend-diagnostic",
+    "exit_code": 1,
+    "duration_seconds": 15.342,
+    "summary": [
+      " Test Files  8 failed | 2 passed (10)",
+      "      Tests  21 failed | 136 passed (157)"
+    ]
+  }
+]

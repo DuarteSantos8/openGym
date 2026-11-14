@@ -1,0 +1,60 @@
+{
+  "filename": "opengym-backup-2026-11-13.json",
+  "sha256": "a28f09a4ed21fc1cb5309218c29c810b83b69f80318811517c1ee65c2c7acc40",
+  "bytes": 6153,
+  "workoutCount": 1,
+  "workout": {
+    "id": "mwfha5j25mt2v",
+    "d": "2026-11-13",
+    "start": 1794604664702,
+    "end": 1794604721683,
+    "routineIds": [
+      "mwfh9zhxfqysr"
+    ],
+    "routineId": "mwfh9zhxfqysr",
+    "name": "Full Body C",
+    "bw": null,
+    "entries": [
+      {
+        "id": "0739",
+        "sets": [
+          {
+            "w": 40,
+            "r": 10,
+            "done": true,
+            "at": 1794604682608
+          },
+          {
+            "w": 40,
+            "r": 10,
+            "done": true,
+            "at": 1794604702656
+          },
+          {
+            "w": 40,
+            "r": 10,
+            "done": false
+          }
+        ],
+        "topW": 40,
+        "target": {
+          "id": "0739",
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        },
+        "rid": "mwfh9zhxfqysr",
+        "planned": {
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        }
+      }
+    ],
+    "prs": [
+      "0739"
+    ],
+    "vol": 800
+  },
+  "active": null
+}

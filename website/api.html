@@ -247,7 +247,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>92 endpoints</span>
+    <span>93 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -345,7 +345,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, integrations: object }</span></span>
+    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, integrations: object, foodLookup: object }</span></span>
   </div>
     </div>
   </div>
@@ -3009,6 +3009,64 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="sub">Settings → Integrations: outbound webhooks now, more providers later. Off unless the server runs with <code>INTEGRATIONS</code> (e.g. <code>INTEGRATIONS=webhook</code>); then a profile can add its own connections. Secrets are sealed at rest and shown once. See docs/INTEGRATIONS.md.</p>
   <div class="eps">
 
+<details class="ep" id="op-getFoodLookup">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/food-lookup</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Look up a food barcode</span>
+  </summary>
+  <div class="ep-body">
+<p>User-initiated read-only preview from Open Food Facts. Requires a valid session, FOOD_LOOKUP enabled by the operator, and the user's current stored modules.nutrition === true. Missing/non-boolean choices are off. No diary write.</p>
+<p>Only the barcode reaches the fixed HTTPS v3.6 product endpoint, with fixed fields, Accept and an app/version User-Agent (optional operator FOOD_LOOKUP_CONTACT). No cookies, tokens, user id, profile data, client headers or images. Redirects and private/mixed DNS are refused. Connect timeout 2 seconds, total including body 5 seconds; response cap 64 KiB before parsing. No retries or background work.</p>
+<p>Memory cache: at most 128 products, 15 minute positive and 60 second not-found lifetime. Authorization still runs on hits. Per-user limit 5/minute includes hits; instance limit 7 upstream calls/61 seconds. Limits are per process, not coordinated across replicas or other users of the same public IP. Render attribution with the preview. Nothing is saved automatically.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">barcode<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Exactly one parameter. ASCII GTIN with valid check digit; leading zeros preserved. Extra parameters are rejected.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Attributed preview, not a saved diary entry.<span class="r-sig"><a href="#schema-FoodPreview">FoodPreview</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">food-lookup-invalid-barcode (syntax, length, check digit or parameters).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">food-lookup-auth-required.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">food-lookup-disabled (operator) or nutrition-disabled (profile). No outbound request.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">food-lookup-not-found. Explicit unknown-product response from OFF.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">food-lookup-rate-limited. Per-user or per-instance budget exhausted.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">food-lookup-upstream. Unsafe DNS, redirect, upstream error, oversized, malformed or unsupported response.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">504</span>
+    <span class="p-desc">food-lookup-timeout. Connect or total deadline exceeded.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-listIntegrations">
   <summary>
     <span class="m get">GET</span>
@@ -4142,6 +4200,152 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
        is <b>representative, not enforced</b>: the server stores it opaquely and the app
        grows it over time.</p>
     <div class="eps">
+
+<details class="ep sch" id="schema-FoodPreview">
+  <summary>
+    <span class="sch-name"><code>FoodPreview</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">source<em class="p-req" title="required">required</em></span>
+    <span class="p-type">always &quot;open-food-facts&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">externalId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Requested GTIN including leading zeros</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">label<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 160 chars)</span></span>
+    <span class="p-desc">Control-free plain text. Barcode fallback if unnamed.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">brand</span>
+    <span class="p-type">string <span class="p-hint">(&le; 120 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">quantityText</span>
+    <span class="p-type">string <span class="p-hint">(&le; 80 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">As-sold values from the explicit upstream 100g or 100ml basis. Unknown, invalid, string, qualified or estimated nutrients are omitted, never made zero. Mass-basis caps are 900 kcal and 100 g per macro; volume-basis caps are 1800 kcal and 200 g. No inference from package size or density.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100.basis<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;g&quot; | &quot;ml&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100.energyKcal</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;1800)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100.proteinG</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;200)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100.carbohydrateG</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;200)</span></span>
+    <span class="p-desc">Available carbohydrates as reported by OFF</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100.fatG</span>
+    <span class="p-type">number <span class="p-hint">(0&ndash;200)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">per100.energyConversion</span>
+    <span class="p-type">always &quot;kJ/4.184&quot;</span>
+    <span class="p-desc">Present only when energy was converted from kJ.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">serving</span>
+    <span class="p-type">object | object</span>
+    <span class="p-desc">Only an explicitly parseable positive g or ml serving. Exactly one amount property, with a canonical label.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">serving.label<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 32 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">serving.grams</span>
+    <span class="p-type">number <span class="p-hint">(&ndash;10000)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">serving.millilitres</span>
+    <span class="p-type">number <span class="p-hint">(&ndash;10000)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">fetchedAt<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span></span>
+    <span class="p-desc">Time fetched from OFF; cache hits retain the original time.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">attribution<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Display with the preview and retain with any future user-confirmed snapshot.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">attribution.text<em class="p-req" title="required">required</em></span>
+    <span class="p-type">always &quot;Contains information from Open Food Facts, available under the Open Database License (ODbL).&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">attribution.url<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(uri)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">attribution.license<em class="p-req" title="required">required</em></span>
+    <span class="p-type">always &quot;ODbL-1.0&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">attribution.licenseUrl<em class="p-req" title="required">required</em></span>
+    <span class="p-type">always &quot;https://opendatacommons.org/licenses/odbl/1-0/&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-FoodLookupError">
+  <summary>
+    <span class="sch-name"><code>FoodLookupError</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">error<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Fixed safe message; never upstream text.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;food-lookup-auth-required&quot; | &quot;food-lookup-disabled&quot; | &quot;nutrition-disabled&quot; | &quot;food-lookup-invalid-barcode&quot; | &quot;food-lookup-not-found&quot; | &quot;food-lookup-rate-limited&quot; | &quot;food-lookup-upstream&quot; | &quot;food-lookup-timeout&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
 
 <details class="ep sch" id="schema-IntegrationEvent">
   <summary>

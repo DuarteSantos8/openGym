@@ -41,6 +41,7 @@ import { atomicWrite as durableWrite } from './durable.js';
 import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
+import { createFoodLookup, FoodLookupError } from './food-lookup.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 
@@ -125,6 +126,10 @@ const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 // Integrations (integrations/, docs/INTEGRATIONS.md): off unless INTEGRATIONS names some. Their
 // connections live in DATA_DIR/integrations/, sealed with a key derived from SECRET.
 const integrations = createIntegrations({ dataDir: DATA, secret: SECRET, version: '1' });
+const foodLookup = createFoodLookup({
+  enabled: /^(1|true|yes|on)$/i.test(process.env.FOOD_LOOKUP || ''),
+  contact: process.env.FOOD_LOOKUP_CONTACT || ''
+});
 
 const dbFile = path.join(DATA, 'db.json');
 // Every account, passkey and invite. Only a missing file starts empty: an unreadable one (a write
@@ -2115,8 +2120,25 @@ const routes = {
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
       // Which integrations this server offers (only to a session, like the Coach block). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
-      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {})
+      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
+      // Setup discovery only: this does not probe OFF or assert that it is reachable.
+      ...(readSession(req) ? { foodLookup: foodLookup.publicConfig() } : {})
     });
+  },
+
+  'GET /api/food-lookup': async (req, res) => {
+    const user = readSession(req);
+    const params = new URL(req.url, 'http://x').searchParams;
+    const barcode = params.size === 1 && params.has('barcode') ? params.get('barcode') : null;
+    try {
+      const product = await foodLookup.lookup({ uid: user?.id,
+        nutrition: user ? readState(user.id)?.modules?.nutrition : false, barcode });
+      json(res, 200, product);
+    } catch (e) {
+      if (!(e instanceof FoodLookupError)) throw e;
+      json(res, e.status, { error: e.message, code: e.code },
+        e.retryAfter ? { 'Retry-After': String(e.retryAfter) } : undefined);
+    }
   },
 
   // A paired phone's token was minted once, at pairing, and nothing ever renewed it: after

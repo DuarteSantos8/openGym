@@ -63,6 +63,8 @@
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
   --pad:16px;
+  /* EP-02: --skel is the loading bar's base */
+  --skel:var(--surface-2);
   --icon-stroke:1.7;
 
   /* type scale (redesign 1.4.5, P1): the iPhone's text styles, in rem so a browser's text size
@@ -3272,3 +3274,19 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
+
+/* no overshoot: the sheet rises from the bottom edge, so a value past 1 would lift it off the edge */
+@supports (transition-timing-function:linear(0,1)){:root{--spring:linear(0,.6 12%,.88 26%,.97 40%,.995 56%,1 72%,1)}.sheet{animation-timing-function:var(--spring)}}
+/* EP-02 primitives (components/MetricCard, Skeleton, ErrorState). Existing tokens only. */
+.metric{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:start;animation:viewfade .16s var(--ease) both}
+button.metric{min-height:44px;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.metric-l{font-size:var(--fs-footnote);color:var(--label-2)}
+.metric-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+.metric-v{font-size:var(--fs-large);font-weight:600;letter-spacing:-.026em;line-height:1.1;font-variant-numeric:tabular-nums}
+.metric-u{font-size:var(--fs-callout);color:var(--label-2)}
+.metric-d{font-size:var(--fs-footnote);color:var(--label-2)}
+.skel{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.skel-line{display:block;height:14px;width:100%;border-radius:var(--r-sm);background:linear-gradient(90deg,var(--skel) 0%,var(--surface-3) 50%,var(--skel) 100%);background-size:200% 100%;animation:skelshine 1.4s linear infinite}
+@keyframes skelshine{from{background-position:200% 0}to{background-position:-200% 0}}
+.err-state .btn{min-height:44px}
+@media (prefers-reduced-motion: reduce){.metric,.skel-line,.sheet{animation:none!important}}

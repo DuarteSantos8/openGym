@@ -1,0 +1,836 @@
+{
+  "runtimeHead": "4d87fc32",
+  "node": "v22.23.5",
+  "gzipLevel": 9,
+  "baseline": {
+    "files": 155,
+    "raw": 29262336,
+    "gzip": 5884077,
+    "entry": {
+      "raw": 586454,
+      "gzip": 183316
+    }
+  },
+  "total": {
+    "files": 158,
+    "raw": 29335246,
+    "gzip": 5910273
+  },
+  "delta": {
+    "raw": 72910,
+    "gzip": 26196
+  },
+  "entry": {
+    "path": "assets/index-ymlUF5pf.js",
+    "raw": 587720,
+    "gzip": 183751
+  },
+  "entryDelta": {
+    "raw": 1266,
+    "gzip": 435
+  },
+  "nutrition": [
+    {
+      "path": "assets/Nutrition-BXlQ47YD.js",
+      "raw": 13032,
+      "gzip": 4610
+    },
+    {
+      "path": "assets/Nutrition-BgH2N4QL.css",
+      "raw": 1917,
+      "gzip": 647
+    }
+  ],
+  "files": [
+    {
+      "path": "sw.js",
+      "raw": 21782,
+      "gzip": 8472
+    },
+    {
+      "path": "assets/Admin-Usf1UVKx.js",
+      "raw": 51655,
+      "gzip": 14660
+    },
+    {
+      "path": "assets/CheckIn-BNyVzxRD.js",
+      "raw": 12321,
+      "gzip": 4836
+    },
+    {
+      "path": "assets/CoachChat-7fx475W5.js",
+      "raw": 39247,
+      "gzip": 11757
+    },
+    {
+      "path": "assets/CoachConsentSheet-JUdPbYF8.js",
+      "raw": 3555,
+      "gzip": 1681
+    },
+    {
+      "path": "assets/CoachIntake-CUXcfWAn.js",
+      "raw": 11872,
+      "gzip": 4137
+    },
+    {
+      "path": "assets/CoachSetup-BUK5X-ax.js",
+      "raw": 10601,
+      "gzip": 4196
+    },
+    {
+      "path": "assets/DateField-AbWmgKl1.js",
+      "raw": 4981,
+      "gzip": 2095
+    },
+    {
+      "path": "assets/DurationWheel-dUS4W0fP.js",
+      "raw": 6368,
+      "gzip": 2366
+    },
+    {
+      "path": "assets/History-Bgzm0BDM.js",
+      "raw": 2621,
+      "gzip": 1242
+    },
+    {
+      "path": "assets/Library-ueWYRwR8.js",
+      "raw": 7305,
+      "gzip": 2655
+    },
+    {
+      "path": "assets/Measurements-aSmMpyHz.js",
+      "raw": 10459,
+      "gzip": 3534
+    },
+    {
+      "path": "assets/Muscles-Dfxyk444.js",
+      "raw": 987,
+      "gzip": 576
+    },
+    {
+      "path": "assets/Nutrition-BXlQ47YD.js",
+      "raw": 13032,
+      "gzip": 4610
+    },
+    {
+      "path": "assets/Nutrition-BgH2N4QL.css",
+      "raw": 1917,
+      "gzip": 647
+    },
+    {
+      "path": "assets/Programmes-DfLW373C.js",
+      "raw": 11961,
+      "gzip": 4261
+    },
+    {
+      "path": "assets/ProgressPhotos-C5CR4sq7.js",
+      "raw": 10513,
+      "gzip": 4130
+    },
+    {
+      "path": "assets/ReportSheet-DtFyLtE5.js",
+      "raw": 1916,
+      "gzip": 986
+    },
+    {
+      "path": "assets/RoutineEdit-2ZuAhM13.js",
+      "raw": 18487,
+      "gzip": 6562
+    },
+    {
+      "path": "assets/Settings-DYupYype.js",
+      "raw": 148330,
+      "gzip": 46525
+    },
+    {
+      "path": "assets/ShareCard-DgAECpCG.js",
+      "raw": 14746,
+      "gzip": 6550
+    },
+    {
+      "path": "assets/Stats-CBnLkBUe.js",
+      "raw": 42945,
+      "gzip": 14443
+    },
+    {
+      "path": "assets/StructuralBalance-BVwJv8xG.js",
+      "raw": 3793,
+      "gzip": 1654
+    },
+    {
+      "path": "assets/Tour-C96LhuIO.css",
+      "raw": 4119,
+      "gzip": 1378
+    },
+    {
+      "path": "assets/Tour-DvezWa-U.js",
+      "raw": 23534,
+      "gzip": 8762
+    },
+    {
+      "path": "assets/Wrapped-DofJKFEc.css",
+      "raw": 6773,
+      "gzip": 2047
+    },
+    {
+      "path": "assets/Wrapped-gsx9lBpt.js",
+      "raw": 19468,
+      "gzip": 7597
+    },
+    {
+      "path": "assets/api-aSjioLXR.js",
+      "raw": 10437,
+      "gzip": 4254
+    },
+    {
+      "path": "assets/app-icon-nUtK7Mgy.js",
+      "raw": 1586,
+      "gzip": 688
+    },
+    {
+      "path": "assets/ar-CpDUmjvE.js",
+      "raw": 827233,
+      "gzip": 81441
+    },
+    {
+      "path": "assets/ar-DXU1MlR3.js",
+      "raw": 339218,
+      "gzip": 107268
+    },
+    {
+      "path": "assets/ar-n3dBOUwe.js",
+      "raw": 354621,
+      "gzip": 58103
+    },
+    {
+      "path": "assets/backfill-BHVeaY86.js",
+      "raw": 1669,
+      "gzip": 895
+    },
+    {
+      "path": "assets/backup-media-CbuJuHJu.js",
+      "raw": 6853,
+      "gzip": 2945
+    },
+    {
+      "path": "assets/base-D2hyDhgU.js",
+      "raw": 2855,
+      "gzip": 1019
+    },
+    {
+      "path": "assets/bn-CvzduWis.js",
+      "raw": 458548,
+      "gzip": 111094
+    },
+    {
+      "path": "assets/bn-D6CP0iEe.js",
+      "raw": 494059,
+      "gzip": 62282
+    },
+    {
+      "path": "assets/body-paths-D_5SR19s.js",
+      "raw": 93278,
+      "gzip": 40042
+    },
+    {
+      "path": "assets/capacitor-fetch-BnaHhqkb.js",
+      "raw": 2195,
+      "gzip": 1277
+    },
+    {
+      "path": "assets/categories-B2tdkgdE.js",
+      "raw": 87,
+      "gzip": 102
+    },
+    {
+      "path": "assets/channel-BlHCrlHF.js",
+      "raw": 342,
+      "gzip": 213
+    },
+    {
+      "path": "assets/christmas-Dop0I10C.css",
+      "raw": 14712,
+      "gzip": 3991
+    },
+    {
+      "path": "assets/christmas-jrH36kSt.js",
+      "raw": 22568,
+      "gzip": 8324
+    },
+    {
+      "path": "assets/coach-api-CA-_xdho.js",
+      "raw": 9862,
+      "gzip": 3932
+    },
+    {
+      "path": "assets/coach-consent-C9wNShVW.js",
+      "raw": 2105,
+      "gzip": 1122
+    },
+    {
+      "path": "assets/coach-demo-9jB0P2SH.js",
+      "raw": 9183,
+      "gzip": 4064
+    },
+    {
+      "path": "assets/coach-device-BORAbAOo.js",
+      "raw": 3197,
+      "gzip": 1711
+    },
+    {
+      "path": "assets/coach-local-BP9wpU5x.js",
+      "raw": 595668,
+      "gzip": 104424
+    },
+    {
+      "path": "assets/day-photos-WwNGzIAS.js",
+      "raw": 1423,
+      "gzip": 732
+    },
+    {
+      "path": "assets/de-CKpzH790.js",
+      "raw": 265382,
+      "gzip": 58195
+    },
+    {
+      "path": "assets/de-CUISC6gj.js",
+      "raw": 1832,
+      "gzip": 764
+    },
+    {
+      "path": "assets/de-DY5LZmnD.js",
+      "raw": 645575,
+      "gzip": 85939
+    },
+    {
+      "path": "assets/de-DhdoI0a2.js",
+      "raw": 286801,
+      "gzip": 100615
+    },
+    {
+      "path": "assets/demoSeed-DMnc0src.js",
+      "raw": 3280,
+      "gzip": 1680
+    },
+    {
+      "path": "assets/en-BJ9FHc_q.js",
+      "raw": 1794898,
+      "gzip": 307771
+    },
+    {
+      "path": "assets/en-CNDRxJeJ.js",
+      "raw": 616048,
+      "gzip": 150993
+    },
+    {
+      "path": "assets/equipment-D2oiCGE7.js",
+      "raw": 1514,
+      "gzip": 852
+    },
+    {
+      "path": "assets/es-C8QO8GA7.js",
+      "raw": 283566,
+      "gzip": 98299
+    },
+    {
+      "path": "assets/es-CFQh82Kg.js",
+      "raw": 273386,
+      "gzip": 54186
+    },
+    {
+      "path": "assets/es-CinwZtNH.js",
+      "raw": 718959,
+      "gzip": 86340
+    },
+    {
+      "path": "assets/esm-B3a6MyXl.js",
+      "raw": 3027,
+      "gzip": 1568
+    },
+    {
+      "path": "assets/esm-BCDCEHCs.js",
+      "raw": 2574,
+      "gzip": 1388
+    },
+    {
+      "path": "assets/esm-CeNhH8DP.js",
+      "raw": 2733,
+      "gzip": 1222
+    },
+    {
+      "path": "assets/esm-DBEzJ8fC.js",
+      "raw": 1546,
+      "gzip": 906
+    },
+    {
+      "path": "assets/esm-DgeZHMcS.js",
+      "raw": 1552,
+      "gzip": 905
+    },
+    {
+      "path": "assets/esm-Yylq016h.js",
+      "raw": 1797,
+      "gzip": 1020
+    },
+    {
+      "path": "assets/ex-unit-DKvQH5Zu.js",
+      "raw": 2986,
+      "gzip": 1250
+    },
+    {
+      "path": "assets/exercise-history-BjjKceMg.js",
+      "raw": 7599,
+      "gzip": 3442
+    },
+    {
+      "path": "assets/exercises-CQf54rEW.js",
+      "raw": 1225305,
+      "gzip": 155687
+    },
+    {
+      "path": "assets/fr-CHPo3i7c.js",
+      "raw": 292795,
+      "gzip": 100225
+    },
+    {
+      "path": "assets/fr-CWiC_6EN.js",
+      "raw": 713817,
+      "gzip": 85607
+    },
+    {
+      "path": "assets/fr-dBmS1b4A.js",
+      "raw": 267710,
+      "gzip": 54490
+    },
+    {
+      "path": "assets/halloween-7CwKpUf5.css",
+      "raw": 11043,
+      "gzip": 2758
+    },
+    {
+      "path": "assets/halloween-BYEa2QkM.js",
+      "raw": 10919,
+      "gzip": 3796
+    },
+    {
+      "path": "assets/health-connect-DWRMXDRH.js",
+      "raw": 7684,
+      "gzip": 3413
+    },
+    {
+      "path": "assets/health-sync-U3FwhR0e.js",
+      "raw": 4750,
+      "gzip": 2148
+    },
+    {
+      "path": "assets/hi-6tJcsCRU.js",
+      "raw": 453547,
+      "gzip": 61541
+    },
+    {
+      "path": "assets/hi-CrhvEsuL.js",
+      "raw": 1585003,
+      "gzip": 119528
+    },
+    {
+      "path": "assets/hi-pXh8RrYX.js",
+      "raw": 450996,
+      "gzip": 113847
+    },
+    {
+      "path": "assets/history-DdKkskGN.js",
+      "raw": 54988,
+      "gzip": 20189
+    },
+    {
+      "path": "assets/hu-BfwZQ9dT.js",
+      "raw": 289187,
+      "gzip": 103197
+    },
+    {
+      "path": "assets/hu-CsBkqtnp.js",
+      "raw": 679094,
+      "gzip": 97148
+    },
+    {
+      "path": "assets/hu-_NLvWIXy.js",
+      "raw": 248119,
+      "gzip": 56023
+    },
+    {
+      "path": "assets/index-CdkOuIlO.css",
+      "raw": 175679,
+      "gzip": 33717
+    },
+    {
+      "path": "assets/index-ymlUF5pf.js",
+      "raw": 587720,
+      "gzip": 183751
+    },
+    {
+      "path": "assets/it-BoWXLyIO.js",
+      "raw": 283586,
+      "gzip": 97455
+    },
+    {
+      "path": "assets/it-DGOnoX1O.js",
+      "raw": 682773,
+      "gzip": 87507
+    },
+    {
+      "path": "assets/it-X0w6XOGn.js",
+      "raw": 269117,
+      "gzip": 55050
+    },
+    {
+      "path": "assets/jsQR-DMfxOdIb.js",
+      "raw": 129986,
+      "gzip": 46365
+    },
+    {
+      "path": "assets/jsx-runtime-LKYXHABd.js",
+      "raw": 435,
+      "gzip": 304
+    },
+    {
+      "path": "assets/ko-Brow1u2B.js",
+      "raw": 658191,
+      "gzip": 98900
+    },
+    {
+      "path": "assets/ko-D7hcqAFw.js",
+      "raw": 295616,
+      "gzip": 103405
+    },
+    {
+      "path": "assets/ko-DXGCymFq.js",
+      "raw": 251584,
+      "gzip": 55288
+    },
+    {
+      "path": "assets/leaflet-src-Dcu4YAMi.js",
+      "raw": 148613,
+      "gzip": 42804
+    },
+    {
+      "path": "assets/leaflet-vh-t_kPv.css",
+      "raw": 15095,
+      "gzip": 6363
+    },
+    {
+      "path": "assets/lean-qr-DWZdVoNy.js",
+      "raw": 6781,
+      "gzip": 3543
+    },
+    {
+      "path": "assets/measurements-C4eau4vk.js",
+      "raw": 9569,
+      "gzip": 3800
+    },
+    {
+      "path": "assets/media-ingest-DyWUVH8F.js",
+      "raw": 6302,
+      "gzip": 2490
+    },
+    {
+      "path": "assets/media-limits-O_QuQtBa.js",
+      "raw": 648,
+      "gzip": 425
+    },
+    {
+      "path": "assets/media-prefetch-DNv9cxMH.js",
+      "raw": 2509,
+      "gzip": 1286
+    },
+    {
+      "path": "assets/media-refs-CjgGBvJX.js",
+      "raw": 4671,
+      "gzip": 1780
+    },
+    {
+      "path": "assets/media-store-BWQm1hOv.js",
+      "raw": 6441,
+      "gzip": 2537
+    },
+    {
+      "path": "assets/media-store-fs-BC2Fz_iT.js",
+      "raw": 17848,
+      "gzip": 7713
+    },
+    {
+      "path": "assets/mobile-DVrKpaTH.js",
+      "raw": 15590,
+      "gzip": 5098
+    },
+    {
+      "path": "assets/modules-copy-Dl7G2zil.js",
+      "raw": 1721,
+      "gzip": 893
+    },
+    {
+      "path": "assets/native-D9nJOXkw.js",
+      "raw": 774,
+      "gzip": 334
+    },
+    {
+      "path": "assets/nudge-check-Odpw0NpV.js",
+      "raw": 937,
+      "gzip": 598
+    },
+    {
+      "path": "assets/pending-CG0YB1pl.js",
+      "raw": 135,
+      "gzip": 125
+    },
+    {
+      "path": "assets/pl-DmWp2PTk.js",
+      "raw": 279815,
+      "gzip": 58869
+    },
+    {
+      "path": "assets/pl-Vd91jsCG.js",
+      "raw": 655342,
+      "gzip": 91474
+    },
+    {
+      "path": "assets/pl-p4TcANVW.js",
+      "raw": 295333,
+      "gzip": 103797
+    },
+    {
+      "path": "assets/plan-share-DEzBi6b7.js",
+      "raw": 32224,
+      "gzip": 12090
+    },
+    {
+      "path": "assets/platform-now-CIGTrnA-.js",
+      "raw": 134,
+      "gzip": 134
+    },
+    {
+      "path": "assets/preload-helper-CRzLMJPS.js",
+      "raw": 1534,
+      "gzip": 798
+    },
+    {
+      "path": "assets/providers-CC0t0Cvg.js",
+      "raw": 3420,
+      "gzip": 1497
+    },
+    {
+      "path": "assets/pt-BR-7mhNHXaA.js",
+      "raw": 226912,
+      "gzip": 78559
+    },
+    {
+      "path": "assets/pt-BR-DYGSMjF1.js",
+      "raw": 696134,
+      "gzip": 84643
+    },
+    {
+      "path": "assets/pt-BR-Do3yZIoq.js",
+      "raw": 270599,
+      "gzip": 54863
+    },
+    {
+      "path": "assets/pt-CnKzKdMZ.js",
+      "raw": 272469,
+      "gzip": 55038
+    },
+    {
+      "path": "assets/pt-rgukvHk5.js",
+      "raw": 284192,
+      "gzip": 98121
+    },
+    {
+      "path": "assets/rolldown-runtime-XKyaHtl9.js",
+      "raw": 726,
+      "gzip": 429
+    },
+    {
+      "path": "assets/rotation-CmKIgTh_.js",
+      "raw": 37040,
+      "gzip": 13032
+    },
+    {
+      "path": "assets/ru-BTYdRjd5.js",
+      "raw": 392982,
+      "gzip": 116445
+    },
+    {
+      "path": "assets/ru-CJ33ZKaN.js",
+      "raw": 1056933,
+      "gzip": 105222
+    },
+    {
+      "path": "assets/ru-CXcRwy7n.js",
+      "raw": 427394,
+      "gzip": 67117
+    },
+    {
+      "path": "assets/scan-web-mpY-N_En.js",
+      "raw": 63,
+      "gzip": 80
+    },
+    {
+      "path": "assets/seasonal-EWQfGtyW.js",
+      "raw": 2449,
+      "gzip": 1104
+    },
+    {
+      "path": "assets/session-merge-CMdncW7r.js",
+      "raw": 17533,
+      "gzip": 7133
+    },
+    {
+      "path": "assets/set-videos-Dif8VYID.js",
+      "raw": 2610,
+      "gzip": 1232
+    },
+    {
+      "path": "assets/sheets-B3_AhpQE.js",
+      "raw": 371188,
+      "gzip": 118306
+    },
+    {
+      "path": "assets/supersetFlow-CsJwa_xJ.js",
+      "raw": 2608,
+      "gzip": 1062
+    },
+    {
+      "path": "assets/sv-BgetaiXR.js",
+      "raw": 274032,
+      "gzip": 95830
+    },
+    {
+      "path": "assets/sv-CiwNT847.js",
+      "raw": 236342,
+      "gzip": 54444
+    },
+    {
+      "path": "assets/sync-merge-DLEUTNUD.js",
+      "raw": 54133,
+      "gzip": 18539
+    },
+    {
+      "path": "assets/th-CSXVX7GD.js",
+      "raw": 458805,
+      "gzip": 64019
+    },
+    {
+      "path": "assets/th-CxFrxhZB.js",
+      "raw": 461972,
+      "gzip": 111485
+    },
+    {
+      "path": "assets/tr-DUKW85d9.js",
+      "raw": 732512,
+      "gzip": 89520
+    },
+    {
+      "path": "assets/tr-DcDGqJR3.js",
+      "raw": 279616,
+      "gzip": 97746
+    },
+    {
+      "path": "assets/tr-sBccyaEk.js",
+      "raw": 225944,
+      "gzip": 52885
+    },
+    {
+      "path": "assets/ui-B-sMTwNR.js",
+      "raw": 38047,
+      "gzip": 11100
+    },
+    {
+      "path": "assets/uk-BFVefRi8.js",
+      "raw": 385470,
+      "gzip": 116009
+    },
+    {
+      "path": "assets/uk-c1-draNn.js",
+      "raw": 430563,
+      "gzip": 66412
+    },
+    {
+      "path": "assets/useStore-YT15plgS.js",
+      "raw": 49964,
+      "gzip": 17564
+    },
+    {
+      "path": "assets/useUI-Ct8Azq0h.js",
+      "raw": 28557,
+      "gzip": 10731
+    },
+    {
+      "path": "assets/web-CfB61foI.js",
+      "raw": 845,
+      "gzip": 400
+    },
+    {
+      "path": "assets/web-DFT8ia9k.js",
+      "raw": 4439,
+      "gzip": 1290
+    },
+    {
+      "path": "assets/web-DTbOaZPd.js",
+      "raw": 366,
+      "gzip": 248
+    },
+    {
+      "path": "assets/web-DhFgskpA.js",
+      "raw": 3487,
+      "gzip": 1139
+    },
+    {
+      "path": "assets/web-nYHkg74Z.js",
+      "raw": 793,
+      "gzip": 392
+    },
+    {
+      "path": "assets/web-r1Ko9pv6.js",
+      "raw": 8478,
+      "gzip": 2826
+    },
+    {
+      "path": "assets/workout-date-B8D62i0c.js",
+      "raw": 1585,
+      "gzip": 850
+    },
+    {
+      "path": "assets/workout-media-oJyZJURO.js",
+      "raw": 22718,
+      "gzip": 8778
+    },
+    {
+      "path": "assets/zh-BWTHoHJv.js",
+      "raw": 265393,
+      "gzip": 102977
+    },
+    {
+      "path": "assets/zh-DOuyA1pV.js",
+      "raw": 481535,
+      "gzip": 75692
+    },
+    {
+      "path": "assets/zh-TW-B1bVpwUU.js",
+      "raw": 381048,
+      "gzip": 80508
+    },
+    {
+      "path": "assets/zh-TW-C9gXV6lG.js",
+      "raw": 184159,
+      "gzip": 50223
+    },
+    {
+      "path": "assets/zh-TW-DMiwD2kY.js",
+      "raw": 270315,
+      "gzip": 106342
+    },
+    {
+      "path": "assets/zh-mnY0Y2gQ.js",
+      "raw": 185174,
+      "gzip": 50534
+    }
+  ]
+}

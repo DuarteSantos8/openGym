@@ -1,0 +1,7 @@
+{
+  "url": "http://localhost:5173/#/settings/data",
+  "workouts": 1,
+  "volume": 800,
+  "active": null,
+  "visibleText": "Settings\nData & backup\nBack up\nExport backup (JSON)\nPerformance report (PDF)\nCharts, totals and every workout of the last days or weeks.\nExport as spreadsheet (CSV)\nWorkouts, body weight and measurements\nBring data in\nImport backup\nImport from another app\nStrong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health\nImport from Hevy\nPull your history with a Hevy Pro API key\nReset everything\nGuest mode: your data lives only in this browser.\nSign in\nHome\nPlan\nStart\nStats\nExercises"
+}

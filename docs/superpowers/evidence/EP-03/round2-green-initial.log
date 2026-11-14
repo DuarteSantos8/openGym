@@ -1,0 +1,8 @@
+
+ RUN  v4.1.12 /code/openGym-fork/frontend
+
+
+ Test Files  2 passed (2)
+      Tests  51 passed (51)
+   Start at  10:11:01
+   Duration  4.36s (transform 3.16s, setup 477ms, import 4.50s, tests 955ms, environment 392ms)

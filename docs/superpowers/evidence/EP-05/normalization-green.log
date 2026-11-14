@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: GTIN accepts all four lengths and preserves leading zeros
+ok 1 - GTIN accepts all four lengths and preserves leading zeros
+  ---
+  duration_ms: 2.259811
+  type: 'test'
+  ...
+# Subtest: GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+ok 2 - GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+  ---
+  duration_ms: 0.325431
+  type: 'test'
+  ...
+# Subtest: normalization returns only bounded preview fields with attribution and fetch time
+ok 3 - normalization returns only bounded preview fields with attribution and fetch time
+  ---
+  duration_ms: 1.016354
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient null without converting it to zero
+ok 4 - omits invalid nutrient null without converting it to zero
+  ---
+  duration_ms: 0.371581
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient undefined without converting it to zero
+ok 5 - omits invalid nutrient undefined without converting it to zero
+  ---
+  duration_ms: 0.147031
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient -1 without converting it to zero
+ok 6 - omits invalid nutrient -1 without converting it to zero
+  ---
+  duration_ms: 0.272301
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient 5 without converting it to zero
+ok 7 - omits invalid nutrient 5 without converting it to zero
+  ---
+  duration_ms: 0.123051
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient  without converting it to zero
+ok 8 - omits invalid nutrient  without converting it to zero
+  ---
+  duration_ms: 0.191721
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient true without converting it to zero
+ok 9 - omits invalid nutrient true without converting it to zero
+  ---
+  duration_ms: 0.351101
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient NaN without converting it to zero
+ok 10 - omits invalid nutrient NaN without converting it to zero
+  ---
+  duration_ms: 0.436262
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient Infinity without converting it to zero
+ok 11 - omits invalid nutrient Infinity without converting it to zero
+  ---
+  duration_ms: 0.155702
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient 100000000000000000000 without converting it to zero
+ok 12 - omits invalid nutrient 100000000000000000000 without converting it to zero
+  ---
+  duration_ms: 0.384171
+  type: 'test'
+  ...
+# Subtest: missing nutrients remain absent; explicit numeric zero remains known
+ok 13 - missing nutrients remain absent; explicit numeric zero remains known
+  ---
+  duration_ms: 0.178362
+  type: 'test'
+  ...
+# Subtest: kJ alone converts with stated provenance, but valid kcal takes priority
+ok 14 - kJ alone converts with stated provenance, but valid kcal takes priority
+  ---
+  duration_ms: 0.207561
+  type: 'test'
+  ...
+# Subtest: explicit g/ml basis determines bounds, never package quantity
+ok 15 - explicit g/ml basis determines bounds, never package quantity
+  ---
+  duration_ms: 0.14899
+  type: 'test'
+  ...
+# Subtest: wrong units, qualifiers, estimates and computed-only nutrients remain unknown
+ok 16 - wrong units, qualifiers, estimates and computed-only nutrients remain unknown
+  ---
+  duration_ms: 1.177026
+  type: 'test'
+  ...
+# Subtest: hostile label fields become bounded control-free text and never objects
+ok 17 - hostile label fields become bounded control-free text and never objects
+  ---
+  duration_ms: 0.772793
+  type: 'test'
+  ...
+# Subtest: servings parse only explicit positive g or ml without density or household guesses
+ok 18 - servings parse only explicit positive g or ml without density or household guesses
+  ---
+  duration_ms: 0.247582
+  type: 'test'
+  ...
+# Subtest: unparseable shapes, absent basis, prepared values and wrong product fail safely
+ok 19 - unparseable shapes, absent basis, prepared values and wrong product fail safely
+  ---
+  duration_ms: 0.659712
+  type: 'test'
+  ...
+# Subtest: only the explicit v3 unknown-product shape is not found
+ok 20 - only the explicit v3 unknown-product shape is not found
+  ---
+  duration_ms: 0.169071
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 92.373562

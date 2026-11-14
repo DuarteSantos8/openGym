@@ -1,0 +1,11 @@
+{
+  "commit": "ffcf68ea",
+  "node": "v22.23.5",
+  "preferredAccountReset": "PASS",
+  "unstampedFieldUnion": "PASS",
+  "largeStampMap": {
+    "result": "PASS",
+    "fields": 150000,
+    "bytes": 1688921
+  }
+}

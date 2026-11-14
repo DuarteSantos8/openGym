@@ -1,0 +1,12 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/views/Nutrition.test.jsx
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  09:45:58
+   Duration  3.53s (transform 2.29s, setup 34ms, import 2.76s, tests 268ms, environment 300ms)

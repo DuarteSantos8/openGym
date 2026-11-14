@@ -5,6 +5,7 @@
 // Off hides; it never deletes. A module that is connected to something (the phone's health app,
 // a watch, webhooks, scheduled Coach reviews) says what pauses and asks once before it goes off.
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -108,6 +109,7 @@ export default function ModulesPage() {
           <Switch aria-label={mc[m.id][0]} checked={isOn(S, m.id)} onChange={v => flip(m.id, v)} />
         </Row>
       ))}
+      {g.id === 'body' && isOn(S, 'nutrition') && <Link className="btn" style={{ minHeight: 44 }} to="/nutrition">{t('Open nutrition diary')}</Link>}
     </Section>)}
   </div>
 }

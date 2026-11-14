@@ -1,0 +1,43 @@
+{
+ "base": "http://127.0.0.1:5199",
+ "motion": "no-preference",
+ "results": {
+  "metricPresent": true,
+  "metric_anim_matches_motion_setting": true,
+  "workout_open": true,
+  "tab_reaches_set_done": {
+   "tabStopsFromInitialFocus": 18
+  },
+  "set_done_persisted": {
+   "pointerdownToVisibleDoneMs": 86.1,
+   "pointerdownToStoredDoneMs": 86.1
+  },
+  "set_done_under_250ms": [
+   86.09999999776483,
+   86.09999999776483
+  ],
+  "taps_to_log_one_set": 2,
+  "taps_within_workout_for_one_set": 1,
+  "rest_timer_visible": "1:30\nRest\n15s\n15s\nSkip",
+  "rest_timer_counts_down": [
+   "1:30\nRest\n15s\n15s\nSkip",
+   "1:29\nRest\n15s\n15s\nSkip"
+  ],
+  "saved_workout_added": {
+   "before": 4,
+   "after": 5
+  },
+  "persists_after_reload": true,
+  "kb_host_mounted": true,
+  "metric_name": "Body weight: 82.4 kg \u22120.6",
+  "enter_activates_once": 1,
+  "space_activates_once": 2,
+  "focus_ring_visible": true,
+  "touch_target_44": [
+   300,
+   51.765625
+  ],
+  "no_unexpected_console_errors": []
+ },
+ "failed": []
+}
