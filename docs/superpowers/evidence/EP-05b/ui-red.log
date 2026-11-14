@@ -1,0 +1,33 @@
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+
+ ❯ src/components/nutrition/FoodLookup.test.jsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/nutrition/FoodLookup.test.jsx [ src/components/nutrition/FoodLookup.test.jsx ]
+Error: Failed to resolve import "./FoodLookup.jsx" from "src/components/nutrition/FoodLookup.test.jsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /code/openGym-fork/.worktrees/ep-05b-codex/frontend/src/components/nutrition/FoodLookup.test.jsx:8:0
+  11 |  const __vi_import_2__ = await import("react/jsx-dev-runtime");
+  12 |  const __vi_import_3__ = await import("../../lib/api.js");
+  13 |  const __vi_import_4__ = await import("./FoodLookup.jsx");
+     |                                       ^
+  14 |  const __vi_import_5__ = await import("./EntrySheet.jsx");
+  15 |  const __vi_import_6__ = await import("../../store/useStore.js");
+ ❯ TransformPluginContext._formatLog ../../../frontend/node_modules/vite/dist/node/chunks/node.js:8803:39
+ ❯ TransformPluginContext.error ../../../frontend/node_modules/vite/dist/node/chunks/node.js:8800:14
+ ❯ resolveId ../../../frontend/node_modules/vite/dist/node/chunks/node.js:26594:18
+ ❯ ../../../frontend/node_modules/vite/dist/node/chunks/node.js:26693:23
+ ❯ TransformPluginContext.transform ../../../frontend/node_modules/vite/dist/node/chunks/node.js:26666:4
+ ❯ EnvironmentPluginContainer.transform ../../../frontend/node_modules/vite/dist/node/chunks/node.js:8582:14
+ ❯ loadAndTransform ../../../frontend/node_modules/vite/dist/node/chunks/node.js:20155:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:26:49
+   Duration  558ms (transform 24ms, setup 31ms, import 0ms, tests 0ms, environment 281ms)
+
