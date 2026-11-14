@@ -211,6 +211,39 @@ Unknown nutrient values are omitted/null, never silently zero. Source serving un
 conversion factors must accompany non-gram input. Nutrients are amounts for the saved entry,
 not an ambiguous per-100g value. Catalog changes never silently rewrite diary entries.
 
+### EP-04 diary additions and creation seam
+
+- `meal` is `breakfast`, `lunch`, `dinner` or `snack`. Existing v1 records without a meal
+  are displayed in Snack without rewriting the record.
+- `amountMl` stores millilitres. A row may contain `amountG` or `amountMl`, never both.
+  Volume is never converted to mass: no density is inferred. `serving` is an optional atomic
+  field `{ label, count, size, unit }`, with `unit: 'g' | 'mL'`; the saved amount equals
+  `count * size`, rounded to three decimal places. Plain mL needs no serving object.
+- All amounts/nutrients accept zero, omit blank/null input, reject negative/nonfinite values
+  and values over 1,000,000, and round to three decimals. Serving size must be positive;
+  text is trimmed and bounded to 200 characters. These are input bounds, not dietary targets.
+- Nutrients are explicitly labelled **Totals for this entry**. Editing an amount or serving
+  alone never scales nutrients. A user changes each total deliberately.
+- Reads validate without rewriting. Future versions, older unsupported schemas and invalid
+  rows remain opaque and read-only, contribute unknowns instead of numeric totals, and are
+  excluded from recent/frequent suggestions. Unknown fields on supported rows survive edits.
+- `createEntry(input, context)` in `frontend/src/lib/nutrition/entry.js` is the EP-05b seam.
+  Input contains `label`, `day`, `meal`, optional `amount`/`unit`, serving fields, and entry-total
+  nutrients. Context supplies creation-only `source`, `externalId`, `contentFingerprint`, and
+  optional `now`/IANA `timeZone`. Call it only after confirmation, then use
+  `useStore.getState().update(s => addEntry(s, record))`. It allocates a new UUID v4 and the
+  store stamps the initial fields. It is not an importer/idempotency API.
+- `components/nutrition/EntrySheet.jsx` accepts `prefill` as a canonical snapshot and forwards
+  its provenance only at creation. EP-05b can provide a confirmed lookup snapshot here; no
+  request or provider payload belongs in this component or persisted diary. `editEntry` only
+  accepts editable food fields and cannot change identity, provenance, day, zone or creation.
+- Date-only past/future input omits `occurredAt`; today's entry uses the actual creation instant
+  in its saved zone. Later timezone changes do not refile any row.
+- Diary guest adoption distinguishes retained rows/deletion evidence (`hasData`) from visible
+  guest-only rows offered to the user (`localExtras`). Pending sign-in tracks food UUIDs so
+  declining old guest data does not discard new account foods. Client-only `localExtras` has
+  no API counterpart; shared merge/stamp code is unchanged and parity remains tested.
+
 `activities` stores `type`, `durationSec`, `distanceM`, optional `movingDurationSec`,
 `ascentM`, and provenance/original units. Use seconds, metres, kilograms and explicit
 coordinate conventions for any later route schema. Never put activity records into workouts

@@ -12,12 +12,12 @@ describe('modules', () => {
     expect(new Set(MODULE_IDS).size).toBe(MODULE_IDS.length)
   })
 
-  it('a profile from before Modules has every module on', () => {
-    for (const id of MODULE_IDS) expect(isOn({}, id)).toBe(true)
+  it('a profile from before Modules keeps legacy modules on and new opt-in modules off', () => {
+    for (const m of MODULES) expect(isOn({}, m.id)).toBe(!m.optIn)
     expect(isOn(null, 'body')).toBe(true)
     expect(isOn({ modules: 'junk' }, 'body')).toBe(true)
-    expect(presetOf({})).toBe('all')
-    expect(onCount({})).toBe(MODULE_IDS.length)
+    expect(presetOf({})).toBe('custom')
+    expect(onCount({})).toBe(MODULES.filter(m => !m.optIn).length)
   })
 
   it('reads an explicit choice, and an unknown id is on', () => {

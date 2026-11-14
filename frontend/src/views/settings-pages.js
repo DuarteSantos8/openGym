@@ -89,6 +89,7 @@ const MODULE_KW = {
   watch: 'watch apple watch wear os zepp amazfit wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
+  nutrition: 'nutrition food diary meals servings calories protein carbohydrate fat',
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
   coach: 'ai coach llm assistant review suggestions',

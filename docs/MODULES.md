@@ -24,6 +24,7 @@ cannot be switched off.
 | **Watch** | The Apple Watch and Zepp OS pages. A paired Apple Watch, Wear OS, Zepp or Garmin watch is told there is nothing to show, as with the watch's own off switch. It stays paired. |
 | **Gym check-in** | The check-in card on Home, the check-in screen with your membership codes, NFC stickers. Your cards stay. Before 1.4.4 this had its own switch in Look & Home, which still counts until you set the module. |
 | **Body** | The body weight card on Home, the Body part of Stats (weight chart, goal, measurements, progress photos) and its Weight 30d figure, the weigh-in before a workout, the measurements and photos screens, the weight block of the widgets, the body weight settings. |
+| **Nutrition diary** | Off by default. A Home tile and a link in Modules → Body and health open the local food diary. Log food per day and meal, reuse earlier foods, edit totals, delete and undo. Unknown nutrients remain unknown. Turning it off hides the route and links without deleting entries. No lookup service, Coach or MCP access is added. |
 | **Health** | The Apple Health and Health Connect pages and cards, the Works with list, live heart rate during a workout, recovery tips on Home. Syncing with the health app pauses (see below). |
 | **Motivation** | The streak card on Home and in Stats, monthly challenges and the trophy shelf, the week and month recap, Your year (its Home card, its Stats rows and its December notification), Share as image, the streak on the watch. With it off, Weekly sets on Home gets a small card of its own. |
 | **AI Coach** | The Coach button on Plan, Ask the Coach in a workout, the Coach screens, its Settings row and Integrations card, scheduled reviews. |
@@ -43,8 +44,9 @@ The row at the top picks a preset for every module at once:
 - **Everything**: every module on.
 - **Custom** is what the row says once you flip a switch away from a preset.
 
-New profiles are asked once, on the first card after setup (the one that offers the tour). Everything
-is chosen until another one is tapped, so skipping straight on gives you every module.
+New profiles are asked once, on the first card after setup (the one that offers the tour).
+Choosing Everything explicitly enables every module. Without an explicit choice, new opt-in
+modules such as Nutrition diary stay off; existing modules retain their defaults.
 
 ## Nothing is deleted
 

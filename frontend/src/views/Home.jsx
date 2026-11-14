@@ -125,6 +125,7 @@ export default function Home() {
   const onQueueStart = id => { if (S.active) nav('/workout'); else startFlow([id]) }
 
   return <div className="narrow">
+    {isOn(S, 'nutrition') && <button className="card btn" style={{ width: '100%', minHeight: 44, textAlign: 'start' }} onClick={() => nav('/nutrition')}>{t('Nutrition diary')}</button>}
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
