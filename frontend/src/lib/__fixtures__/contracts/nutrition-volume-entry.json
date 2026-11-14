@@ -1,0 +1,28 @@
+{
+  "id": "da4b91ae-9811-4291-813a-429bbbc028ab",
+  "schemaVersion": 1,
+  "createdAt": "2026-11-14T10:00:00.000Z",
+  "createdBy": "manual",
+  "source": "manual",
+  "day": "2026-11-13",
+  "timeZone": "Europe/Lisbon",
+  "meal": "breakfast",
+  "label": "Synthetic drink",
+  "amountMl": 300,
+  "serving": { "label": "cup", "count": 1.5, "size": 200, "unit": "mL" },
+  "energyKcal": 0,
+  "_ts": 1794650400000,
+  "_f": {
+    "schemaVersion": 1794650400000,
+    "createdAt": 1794650400000,
+    "createdBy": 1794650400000,
+    "source": 1794650400000,
+    "day": 1794650400000,
+    "timeZone": 1794650400000,
+    "meal": 1794650400000,
+    "label": 1794650400000,
+    "amountMl": 1794650400000,
+    "serving": 1794650400000,
+    "energyKcal": 1794650400000
+  }
+}
