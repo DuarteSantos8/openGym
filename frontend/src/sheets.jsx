@@ -7,7 +7,7 @@ import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
-import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
+import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, BW_V, bodyWeightOf, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
@@ -279,7 +279,7 @@ const PLAN_COPY = {
 // nothing at all. planId is deliberately required — a default invites `onClick={loadStarterPlan}`,
 // which hands the click event in as the plan and silently loads nothing.
 export function loadStarterPlan(planId, profile) {
-  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined, profileMachines(profile))
+  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined, profileMachines(profile), bodyWeightOf(profile))
   if (!plan) return false
   update(st => {
     // Loading the same plan again reuses the routines it added last time (same name, same
@@ -2309,7 +2309,12 @@ export function swapGroupSheet(choose) {
 function EquipmentProfileSheet({ profile, close }) {
   const update = useStore(s => s.update)
   const nameRef = useRef(null)
-  const [checked, setChecked] = useState(new Set(profile ? profileEquipment(profile) : []))
+  // Body weight shows ticked on a new profile and on one saved before it was a tick (#1159).
+  const [checked, setChecked] = useState(() => {
+    const have = new Set(profile ? profileEquipment(profile) : [])
+    if (bodyWeightOf(profile)) have.add('body weight')
+    return have
+  })
   // The machines (#923) are cards of their own, one sheet deeper: null until they are edited
   // there, so a profile saved without touching them keeps its machine fields exactly as they were.
   const [kinds, setKinds] = useState(null)
@@ -2331,7 +2336,7 @@ function EquipmentProfileSheet({ profile, close }) {
       const fields = kinds ? machineFields([...checked], kinds) : { equipment: [...checked] }
       if (profile) {
         const p = s.equipProfiles.find(x => x.id === profile.id)
-        if (p) { p.name = name; p.equipment = fields.equipment; p.accV = ACC_V; if (fields.machines) p.machines = fields.machines; if (kit.length) p.kit = kit; else delete p.kit }
+        if (p) { p.name = name; p.equipment = fields.equipment; p.accV = ACC_V; p.bwV = BW_V; if (fields.machines) p.machines = fields.machines; if (kit.length) p.kit = kit; else delete p.kit }
       } else {
         const p = newProfile(name); p.equipment = fields.equipment
         if (kit.length) p.kit = kit
@@ -2362,7 +2367,7 @@ function EquipmentProfileSheet({ profile, close }) {
     <KitChips value={kit} onChange={setKit} known={known}
       label={t('Things the list has no word for. Your own exercises that need them show only here.')} />
     <div className="dim small" style={{ marginTop: 10 }}>
-      {t('Body-weight exercises are always available, unless they need a pull-up bar or a bench.')}
+      {t('Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.')}
     </div>
     {!profile && <div className="dim small" style={{ marginTop: 6 }}>
       {t('It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.')}

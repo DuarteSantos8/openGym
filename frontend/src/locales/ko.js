@@ -1294,7 +1294,7 @@ export default {
   'New equipment profile': '새 장비 프로필',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': '운동하는 장소 이름을 붙이고(예: ‘집’ 또는 ‘헬스장’), 그곳에 있는 장비를 체크하세요.',
   'Profile name': '프로필 이름',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': '맨몸 운동은 턱걸이 바나 벤치가 필요하지 않은 한 항상 사용할 수 있습니다.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': '여기서 맨몸 운동을 숨기려면 맨몸의 체크를 해제하세요. 턱걸이 바나 벤치가 필요한 운동은 그 항목이 체크되어 있으면 표시됩니다.',
   '{0} of {1} exercises need equipment outside "{2}"': '{1}개 운동 중 {0}개가 ‘{2}’ 외의 장비를 필요로 합니다',
   'Needs {0}, which isn’t in your active profile': '{0} 필요, 활성 프로필에 없음',
   'Filter by equipment': '장비로 필터',

@@ -1366,7 +1366,7 @@ export default {
   "New equipment profile": "Profil peralatan baru",
   "Name it after where you train (like \"Home\" or \"Gym\"), then tick what you’ve got there.": "Beri nama sesuai tempat kamu berlatih (seperti \"Rumah\" atau \"Gym\"), lalu centang apa yang kamu dapatkan di sana.",
   "Profile name": "Nama profil",
-  "Body-weight exercises are always available, unless they need a pull-up bar or a bench.": "Latihan body weight selalu tersedia, kecuali jika memerlukan pull-up bar atau bangku.",
+  "Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.": "Hapus centang berat badan untuk menyembunyikan latihan body weight di sini. Latihan yang memerlukan palang pull-up atau bangku tampil jika itu dicentang.",
   "{0} of {1} exercises need equipment outside \"{2}\"": "{0} dari latihan {1} memerlukan peralatan di luar \"{2}\"",
   "Needs {0}, which isn’t in your active profile": "Membutuhkan {0}, yang tidak ada di profil aktif kamu",
   "Filter by equipment": "Saring berdasarkan peralatan",

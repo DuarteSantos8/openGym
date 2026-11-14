@@ -1010,7 +1010,7 @@ export default {
   "New equipment profile": "مشخصات تجهیزات جدید",
   "Name it after where you train (like \"Home\" or \"Gym\"), then tick what you’ve got there.": "نام محل تمرین را بگذارید، مثلاً «خانه» یا «باشگاه»، سپس تجهیزات موجود در آن را علامت بزنید.",
   "Profile name": "نام پروفایل",
-  "Body-weight exercises are always available, unless they need a pull-up bar or a bench.": "تمرین‌های وزن بدن همیشه در دسترس‌اند، مگر اینکه به میله بارفیکس یا نیمکت نیاز داشته باشند.",
+  "Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.": "برای پنهان کردن تمرین‌های وزن بدن در اینجا، تیک وزن بدن را بردارید. تمرینی که به میله بارفیکس یا نیمکت نیاز دارد، وقتی آن تیک خورده باشد نشان داده می‌شود.",
   "{0} of {1} exercises need equipment outside \"{2}\"": "{0} از {1} تمرین به تجهیزات خارج از \"{2}\" نیاز دارد",
   "Needs {0}, which isn’t in your active profile": "به {0} نیاز دارد که در پروفایل فعال شما نیست",
   "Filter by equipment": "فیلتر بر اساس تجهیزات",

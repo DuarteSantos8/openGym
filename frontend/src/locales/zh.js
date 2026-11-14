@@ -1294,7 +1294,7 @@ export default {
   'New equipment profile': '新建器械配置',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': '用你训练的地点命名（比如“家里”或“健身房”），然后勾选你在那里有的器械。',
   'Profile name': '配置名称',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': '自重动作始终可用，除非需要引体向上杆或卧推凳。',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': '取消勾选自重即可在此隐藏自重动作。需要引体向上杆或卧推凳的动作，在勾选了它们时显示。',
   '{0} of {1} exercises need equipment outside "{2}"': '{1} 个动作中有 {0} 个需要“{2}”之外的器械',
   'Needs {0}, which isn’t in your active profile': '需要{0}，但它不在你的当前配置中',
   'Filter by equipment': '按器械筛选',

@@ -1326,7 +1326,7 @@ export default {
   'New equipment profile': 'Nový profil vybavení',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Pojmenuj ho podle místa, kde trénuješ (např. „Doma“ nebo „Posilovna“), a pak zaškrtni, co tam máš.',
   'Profile name': 'Název profilu',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Cviky s vlastní vahou jsou dostupné vždy, pokud nepotřebují hrazdu nebo lavici.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Zrušte zaškrtnutí vlastní váhy a cviky s vlastní vahou se tu skryjí. Cvik, který potřebuje hrazdu nebo lavici, se ukáže, když je zaškrtnutá ona.',
   '{0} of {1} exercises need equipment outside "{2}"': 'Cviky, které potřebují vybavení mimo „{2}“: {0} z {1}',
   'Needs {0}, which isn’t in your active profile': 'Vyžaduje: {0} (v aktivním profilu chybí)',
   'Filter by equipment': 'Filtrovat podle vybavení',
