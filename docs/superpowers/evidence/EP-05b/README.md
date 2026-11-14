@@ -2,6 +2,10 @@
 
 **Final source runtime: `762f48a59fa4d03fc4f4e177c0b7d89f8dc11727`.**
 Assigned branch: `feat/ep-05b-codex-preview`; base: `7d9423bd` with inherited merge history.
+Draft PR: [#14](https://github.com/sorensadrgit-art/openGym/pull/14), targeting `next/integration`.
+Evidence delivery commit: `bc7fc907`; subsequent PR-link documentation does not alter source.
+First `git pull --no-rebase origin next/integration` was already up to date, with no conflict
+or source delta; push was only to the assigned branch. No published ancestry was rewritten.
 Work stayed in `/code/openGym-fork/.worktrees/ep-05b-codex`. No agents, Claude, parent worktree
 edits, progress.md edits, new dependencies/lockfiles, live food calls, deployment or protected
 branch push/merge. Later delivery commits contain evidence only. Source identity is recorded
