@@ -29,6 +29,9 @@ Approved brief `../briefs/EP-05b.md` overrides the older outline/common full-sui
   atomic field clocks, JSON/ZIP backup reader/import, delete/undo, older-client round trip.
 - `frontend/src/locales/*.js`: genuine translations for every added UI string.
 - `docs/product/DATA_CONTRACTS.md`: sourceSnapshot shape/bounds/immutability/fingerprint.
+- Parent-authorized documentation extension: food sections in `docs/SELF_HOSTING.md`,
+  `docs/INTEGRATIONS.md` and `.env.example` comments. Describe explicit preview versus saved
+  snapshot, offline manual entry/attribution and service recreation after env changes.
 - Evidence and reproducible synthetic browser transport under `../evidence/EP-05b/`.
   No progress.md, API runtime, dependencies, lockfiles or generated catalogue edits.
 
