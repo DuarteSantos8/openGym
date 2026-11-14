@@ -2770,6 +2770,9 @@ export default {
   'Fix it': '고치기',
   'Log as typed': '입력한 대로 기록',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "이 기간에 이 운동의 볼륨이 없습니다.",
+  "Volume per session ({0})": "세션당 볼륨 ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0}개 세션 포함, {1}개 제외: 시간/유산소 {2}개, 완료한 반복 또는 양수 볼륨이 없는 세션 {3}개, 운동 세트 정보가 없는 세션 {4}개.",
   'Time per exercise': '운동별 시간',
   'Average time a session, counted from when its sets were ticked.': '세트를 체크한 시각으로 계산한 세션당 평균 시간입니다.',
   'No timed sets in this period.': '이 기간에는 시간이 기록된 세트가 없어요.',

@@ -2770,6 +2770,9 @@ export default {
   'Fix it': 'Correggi',
   'Log as typed': 'Registra così',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "Nessun volume per questo esercizio nel periodo.",
+  "Volume per session ({0})": "Volume per sessione ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "Incluse {0} sessioni; escluse {1}: {2} a tempo/cardio, {3} senza ripetizioni completate o volume positivo e {4} senza dettagli delle serie di questo esercizio.",
   'Time per exercise': 'Tempo per esercizio',
   'Average time a session, counted from when its sets were ticked.': 'Tempo medio per sessione, contato da quando sono state spuntate le serie.',
   'No timed sets in this period.': 'Nessuna serie con tempo in questo periodo.',

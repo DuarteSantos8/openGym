@@ -2825,6 +2825,9 @@ export default {
   'Fix it': 'صحّحه',
   'Log as typed': 'سجّل كما كُتب',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "لا يوجد حجم تدريب لهذا التمرين في هذه الفترة.",
+  "Volume per session ({0})": "حجم التدريب لكل جلسة ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "شمل الحساب {0} جلسات؛ واستُبعدت {1}: {2} للتمارين الزمنية أو القلبية، و{3} دون تكرارات مكتملة أو حجم موجب، و{4} دون تفاصيل مجموعات التمرين.",
   'Time per exercise': 'الوقت لكل تمرين',
   'Average time a session, counted from when its sets were ticked.': 'متوسط الوقت في الجلسة، محسوبًا من أوقات تسجيل مجموعاته.',
   'No timed sets in this period.': 'لا توجد مجموعات مُوقّتة في هذه الفترة.',

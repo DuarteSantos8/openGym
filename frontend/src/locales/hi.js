@@ -2770,6 +2770,9 @@ export default {
   'Fix it': 'ठीक करें',
   'Log as typed': 'जैसा लिखा, वैसा दर्ज करें',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "इस अवधि में इस व्यायाम का कोई वॉल्यूम नहीं है।",
+  "Volume per session ({0})": "प्रति सत्र वॉल्यूम ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0} सत्र शामिल; {1} बाहर: {2} समय आधारित/कार्डियो, {3} में पूरे किए गए रेप या सकारात्मक वॉल्यूम नहीं और {4} में व्यायाम के सेट का विवरण नहीं।",
   'Time per exercise': 'प्रति व्यायाम समय',
   'Average time a session, counted from when its sets were ticked.': 'प्रति सत्र औसत समय, सेट्स पर टिक लगाने के समय से गिना गया।',
   'No timed sets in this period.': 'इस अवधि में समय वाले कोई सेट नहीं।',

@@ -18,6 +18,9 @@ export const PT_BR_OVERRIDES = {
   'Fix it': 'Corrigir',
   'Log as typed': 'Registrar assim',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "Sem volume deste exercício neste período.",
+  "Volume per session ({0})": "Volume por sessão ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "Incluídas {0} sessões; excluídas {1}: {2} de tempo/cardio, {3} sem repetições concluídas ou volume positivo e {4} sem detalhes das séries do exercício.",
   'Time per exercise': 'Tempo por exercício',
   'Average time a session, counted from when its sets were ticked.': 'Tempo médio por sessão, contado a partir de quando as séries foram marcadas.',
   'No timed sets in this period.': 'Nenhuma série com tempo neste período.',

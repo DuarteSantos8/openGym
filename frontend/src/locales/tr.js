@@ -2770,6 +2770,9 @@ export default {
   'Fix it': 'Düzelt',
   'Log as typed': 'Yazıldığı gibi kaydet',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "Bu dönemde bu egzersiz için hacim yok.",
+  "Volume per session ({0})": "Antrenman başına hacim ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0} antrenman dahil; {1} hariç: {2} süreli/kardiyo, {3} tamamlanmış tekrar veya pozitif hacim olmadan ve {4} egzersiz set ayrıntıları olmadan.",
   'Time per exercise': 'Egzersiz başına süre',
   'Average time a session, counted from when its sets were ticked.': 'Setlerin işaretlendiği zamanlardan hesaplanan, antrenman başına ortalama süre.',
   'No timed sets in this period.': 'Bu dönemde süresi olan set yok.',
