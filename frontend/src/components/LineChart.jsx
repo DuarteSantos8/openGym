@@ -143,23 +143,32 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   // Several lines share one x axis, so the days are said once for all of them and each line brings
   // only its own two values. Repeating them per line, the five sets of a 5×5 read as ten dates and
   // no shape, and two sessions on one day say that day twice per line. The span is the axis's own,
-  // so it is the widest of the lines, not whichever happens to come first.
-  const all = multi ? series.flatMap(s => s.points) : pts
-  const from = all.reduce((m, p) => (p.t < m.t ? p : m), all[0])
-  const to = all.reduce((m, p) => (p.t > m.t ? p : m), all[0])
-  // Compared as written, not as timestamps: two sessions on one day are two points but one day,
-  // and "Saturday to Saturday" is noise. Same rule the axis ticks follow for the same reason.
-  const dFrom = day(from), dTo = day(to)
-  const span = multi ? ' (' + (dFrom === dTo ? dFrom : t('{0} to {1}', dFrom, dTo)) + ')' : ''
+  // so it is the widest of the lines, not whichever happens to come first, and the days are compared
+  // as written rather than as timestamps: two sessions on one day are two points but one day, and
+  // "Saturday to Saturday" is noise. Same rule the axis ticks follow for the same reason.
+  //
+  // Only the lines that carry points are described. A blood-pressure entry may hold the top number
+  // without the bottom one (the pair is checked in the form, not in the stored entry), and
+  // measurementSeries drops the missing key, so a series can arrive empty: nothing drawn, nothing
+  // to say, and no value to reach for.
+  const drawn = multi ? series.filter(s => s.points && s.points.length) : []
   const valueRun = (ps, name) => {
     const a = ps[0], b = ps[ps.length - 1]
     return (name ? name + ' ' : '') + ends(a, b, p => withUnit(p.y))
   }
-  const spoken = multi ? series.map(s => valueRun(s.points, s.label)).join(', ') : lineRun(pts)
-  const aria = ariaLabel
-    ? ariaLabel + span + ': ' + spoken
-      + (goal != null && isFinite(goal) ? ', ' + t('Goal') + ' ' + withUnit(goal) : '')
-    : null
+  const spanOf = ps => {
+    const a = ps.reduce((m, p) => (p.t < m.t ? p : m), ps[0])
+    const b = ps.reduce((m, p) => (p.t > m.t ? p : m), ps[0])
+    const dFrom = day(a), dTo = day(b)
+    return dFrom === dTo ? dFrom : t('{0} to {1}', dFrom, dTo)
+  }
+  const spoken = multi ? drawn.map(s => valueRun(s.points, s.label)).join(', ') : lineRun(pts)
+  const span = multi && drawn.length ? ' (' + spanOf(drawn.flatMap(s => s.points)) + ')' : ''
+  const said = [spoken, goal != null && isFinite(goal) ? t('Goal') + ' ' + withUnit(goal) : '']
+    .filter(Boolean).join(', ')
+  // A name with nothing to report stays the bare label: "Blood pressure:" and then silence reads
+  // as a broken chart.
+  const aria = ariaLabel ? ariaLabel + span + (said ? ': ' + said : '') : null
 
   const onMove = e => {
     const c = e.touches ? e.touches[0] : e

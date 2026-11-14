@@ -223,6 +223,26 @@ describe('LineChart accessible name', () => {
     expect(aria).toContain('(' + fmtDate('2026-01-01', true) + ' to ' + fmtDate('2026-01-20', true) + ')')
   })
 
+  // A blood-pressure entry may hold the top number without the bottom one: measurementSeries drops
+  // the missing key, so the second series arrives empty. The chart draws nothing for it, and the
+  // name must not reach for a value that is not there.
+  it('leaves a series with no points out of the name instead of reaching for a value', () => {
+    const sys = [{ t: Date.UTC(2026, 0, 1), y: 120, d: '2026-01-01' }, { t: Date.UTC(2026, 0, 15), y: 118, d: '2026-01-15' }]
+    act(() => root.render(<LineChart points={sys} axes={false} unit="mmHg" ariaLabel="Blood pressure"
+      series={[{ points: sys, color: 'var(--red)', label: 'Systolic' }, { points: [], color: 'var(--blue)', label: 'Diastolic' }]} />))
+    const { role, label: aria } = label()
+    expect(role).toBe('img')
+    expect(aria).toContain('Systolic 120 mmHg to 118 mmHg')
+    expect(aria).not.toContain('Diastolic')
+  })
+
+  it('names the chart alone when no series has a point', () => {
+    const anchors = [{ t: Date.UTC(2026, 0, 1), y: 120, d: '2026-01-01' }]
+    act(() => root.render(<LineChart points={anchors} axes={false} unit="mmHg" ariaLabel="Blood pressure"
+      series={[{ points: [], color: 'var(--red)', label: 'Systolic' }, { points: [], color: 'var(--blue)', label: 'Diastolic' }]} />))
+    expect(label().label).toBe('Blood pressure')
+  })
+
   it('stays an ordinary svg when nothing names it, rather than an image with no name', () => {
     act(() => root.render(<LineChart points={firstPoints} axes={false} unit="kg" />))
     expect(label().role).toBeNull()

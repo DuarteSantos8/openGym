@@ -778,6 +778,10 @@ export default function Stats() {
   // where reps were lost. Reps instead for unloaded work, an assistance machine (where a 1RM
   // reads backwards), or a history of sets all past the estimate's rep cap.
   const oneRmFormula = formulaOf(S)
+  // The language, read here for the names the per-set series carry. The shell re-renders when the
+  // language changes (App's useLang), and the memo has to follow it: the legend under the chart
+  // renames itself on every render, so a name left in the old language disagrees with it.
+  const lang = getLang()
   const perSet = useMemo(() => {
     if (!curEx || curMode !== 'reps') return null
     const usable = list => list.length >= 2 && list.some(s => s.sets.length >= 2)
@@ -798,7 +802,7 @@ export default function Stats() {
       metric,
       drop: dropOffSet(sessions),
     }
-  }, [xw, curEx, curMode, repsOnly, oneRmFormula])
+  }, [xw, curEx, curMode, repsOnly, oneRmFormula, lang])
   // The same sessions cut to the range; a set number with nothing left in it drops out of the legend.
   const perSetChart = useMemo(() => {
     if (!perSet) return null
