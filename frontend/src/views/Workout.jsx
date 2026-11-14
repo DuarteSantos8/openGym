@@ -46,6 +46,7 @@ import { afterScrollRestore, scrollRestorePending } from '../components/Modals.j
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
+import LinkSign, { showLinkSign } from '../components/LinkSign.jsx'
 import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -1263,6 +1264,7 @@ const coveredTop = () => {
 function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const tourSandbox = useStore(s => s.tourSandbox)
   const update = useStore(s => s.update)
   // Whether "Ask the Coach" is on the exercise menu (lib/use-coach-gate.js).
   const coachGate = useCoachGate()
@@ -2717,6 +2719,7 @@ function ActiveWorkout() {
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
+      {showLinkSign(A, editing, tourSandbox) && <LinkSign />}
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>

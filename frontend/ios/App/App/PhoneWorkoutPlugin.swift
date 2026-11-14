@@ -1,3 +1,4 @@
+import AVFoundation
 import Capacitor
 import Foundation
 import HealthKit
@@ -42,9 +43,22 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
     override public func load() {
         if #available(iOS 26.0, *) {
             PhoneWorkoutSession.shared.onReading = { [weak self] bpm, at in
-                self?.notifyListeners("heartRate", data: ["bpm": bpm, "at": at])
+                var data: [String: Any] = ["bpm": bpm, "at": at]
+                // The device that measured it ("AirPods Pro"), when iOS names one: the page draws earbuds.
+                // AirPods Pro 3 samples come with no device, so the earbuds playing the phone's audio
+                // stand in: on an iPhone only AirPods and Beats feed a phone session's heart rate.
+                if let name = PhoneWorkoutSession.shared.deviceName ?? Self.earbudsOnRoute() { data["device"] = name }
+                self?.notifyListeners("heartRate", data: data)
             }
         }
+    }
+
+    /// The AirPods or Beats the phone's audio goes to right now, by the name the user gave them.
+    private static func earbudsOnRoute() -> String? {
+        let bt: [AVAudioSession.Port] = [.bluetoothA2DP, .bluetoothHFP, .bluetoothLE]
+        return AVAudioSession.sharedInstance().currentRoute.outputs.first {
+            bt.contains($0.portType) && $0.portName.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil
+        }?.portName
     }
 
     @objc func status(_ call: CAPPluginCall) {
@@ -171,6 +185,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
     var running: Bool { session != nil }
     /// Told about a new reading, at most every few seconds (the page's small live readout).
     var onReading: ((Double, Double) -> Void)?
+    /// The name of the device behind the latest heart-rate sample from the query, if iOS gives one.
+    private(set) var deviceName: String?
     private var toldAt = Date.distantPast
     private var toldBpm: Double?
     /// A recovery asked for at launch, before anyone was listening: its answer, for the page.
@@ -198,6 +214,7 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         builder = b
         readings = []
         toldBpm = nil
+        deviceName = nil
         workoutId = wid
         let now = Date()
         startedAt = now
@@ -291,6 +308,7 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         startedAt = nil
         readings = []
         toldBpm = nil
+        deviceName = nil
         if !save {
             // Discarded while the builder still collects, the session ended after: ended first,
             // HealthKit can take the discard for a finish and save the workout (TestFlight 1.4.4).
@@ -352,9 +370,18 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         let predicate = HKQuery.predicateForSamples(withStart: start, end: nil, options: .strictStartDate)
         let handler: (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] _, added, _, _, _ in
             guard let self = self else { return }
-            let fresh = (added as? [HKQuantitySample] ?? []).map { ($0.endDate, $0.quantity.doubleValue(for: self.bpm)) }
+            let samples = added as? [HKQuantitySample] ?? []
+            let fresh = samples.map { ($0.endDate, $0.quantity.doubleValue(for: self.bpm)) }
             guard !fresh.isEmpty else { return }
-            DispatchQueue.main.async { self.add(fresh) }
+            // AirPods readings name the earbuds ("Adrián's AirPods Pro", model "AirPods Pro"); a renamed
+            // pair is still told apart by its model, which the page's earbuds check reads then.
+            let device = samples.max(by: { $0.endDate < $1.endDate })?.device
+            let earbuds = { (s: String?) in s?.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil }
+            let name = earbuds(device?.model) && !earbuds(device?.name) ? device?.model : device?.name ?? device?.model
+            DispatchQueue.main.async {
+                if let name = name, !name.isEmpty { self.deviceName = name }
+                self.add(fresh)
+            }
         }
         let q = HKAnchoredObjectQuery(type: type, predicate: predicate, anchor: nil, limit: HKObjectQueryNoLimit, resultsHandler: handler)
         q.updateHandler = handler

@@ -1324,7 +1324,69 @@ body.chips-dragging *{cursor:inherit}
    never shrinks. */
 .hdr.whdr-bar{align-items:center;gap:8px;margin:4px 0 12px}
 .whdr-mid{flex:1;min-width:0;text-align:center}
-.whdr-name{font-weight:600;font-size:var(--fs-callout);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.whdr-name{display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--fs-callout)}
+.whdr-title{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The device button (LinkSign.jsx): the ⋯ button's twin. The glow is the status green, never the
+   accent the user picks. One authored moment, the screen waking: the green rises through the watch's
+   screen when it first answers. Everything else is a quiet transition; Live never breathes. All of it
+   keys on data-state, so a re-render or a remount lands in place without replaying. */
+.dev-sign{--lit:var(--green);--warn:var(--orange);--out:cubic-bezier(.16,1,.3,1);transition:background-color var(--med),color var(--med),transform var(--fast)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-sign{--lit:#1f9d48;--warn:#c55300}}
+.dev-sign svg{position:absolute;pointer-events:none;overflow:visible}
+.ds-glyph{inset:0;margin:auto;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ds-body{transition:stroke var(--med),opacity var(--med)}
+.ds-fill{fill:var(--lit);stroke:none;transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform 180ms ease-in,opacity 180ms ease-in}
+.ds-bloom{fill:var(--lit);stroke:none;opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(1.2);transition:opacity 180ms ease-in}
+.ds-clock,.ds-alert{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.6);transition:opacity 100ms ease-in,transform 100ms ease-in}
+.ds-clock{stroke-width:1.2;stroke:var(--label-2)}
+.ds-alert{stroke-width:1.9}
+/* Live: the screen is lit. Back from sleep it brightens in place; waking from nothing (data-wake,
+   set only on a real change) the light opens from the middle of the screen until it fills it, and
+   the glow reaches past it a beat later. */
+.dev-sign[data-state="live"] .ds-fill{transform:none;transition:opacity 420ms var(--out)}
+.dev-sign[data-state="live"] .ds-bloom{opacity:1;transition:opacity 700ms var(--out) 180ms}
+.dev-sign[data-wake] .ds-fill{animation:ds-wake 640ms var(--out)}
+@keyframes ds-wake{from{transform:scale(0)}}
+.dev-sign[data-device="cloud"][data-state="live"] .ds-fill{opacity:.32}
+/* Bluetooth: the rune itself lights up, with a soft glow behind it. */
+.ds-bt-bloom{stroke:var(--lit);stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
+.dev-sign[data-device="bluetooth"][data-state="live"] .ds-rune{stroke:var(--lit);transition:stroke 420ms var(--out)}
+.dev-sign[data-device="bluetooth"][data-state="live"] .ds-bt-bloom{opacity:.75;transition:opacity 700ms var(--out) 120ms}
+/* Earbuds: the heartbeat trace lights up; on the wake it draws itself left to right, then the glow. */
+.ds-trace{opacity:.35}
+.ds-pulse,.ds-pulse-bloom{stroke:var(--lit);stroke-dasharray:1 2;stroke-dashoffset:1.01}
+.ds-pulse-bloom{stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
+.dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse{stroke-dashoffset:0}
+.dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse-bloom{stroke-dashoffset:0;opacity:.75;transition:opacity 700ms var(--out) 120ms}
+.dev-sign[data-device="earbuds"][data-wake] .ds-pulse,.dev-sign[data-device="earbuds"][data-wake] .ds-pulse-bloom{animation:ds-draw 800ms cubic-bezier(.45,0,.25,1)}
+@keyframes ds-draw{from{stroke-dashoffset:1.01}}
+/* Checking: the light swells from the middle and settles back while the first look runs (a still half
+   fill under Reduce Motion). */
+.dev-sign[data-state="checking"] .ds-fill{opacity:.55;animation:ds-look 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.dev-sign[data-state="checking"] .ds-fill{transform:scale(.5)}}
+@keyframes ds-look{0%,100%{transform:scale(.15)}50%{transform:scale(.9)}}
+/* Delayed: the display goes to sleep and shows the time, the way a resting watch does. */
+.dev-sign[data-state="delayed"] .ds-fill{transform:none;opacity:0;transition:opacity 900ms var(--out)}
+.dev-sign[data-state="delayed"] .ds-clock{opacity:1;transform:none;transition:opacity 400ms var(--out) 350ms,transform 400ms var(--out) 350ms}
+/* Nothing linked: the phone, dim. */
+.dev-sign[data-state="none"] .ds-glyph{opacity:.5}
+/* Trouble: the ring draws round the button and the mark settles in; no shake. It leaves faster. */
+.ds-ring{inset:0;width:100%;height:100%;fill:none;stroke:var(--warn);stroke-width:1.5;transform:rotate(-90deg);stroke-dasharray:107.5;stroke-dashoffset:107.5;opacity:0;transition:stroke-dashoffset 220ms ease-in,opacity 220ms ease-in}
+.dev-sign[data-state="trouble"]{background:rgba(255,159,10,.18);background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.dev-sign[data-state="trouble"] .ds-ring{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset 480ms var(--out),opacity 120ms linear}
+.dev-sign[data-state="trouble"] .ds-alert{opacity:1;transform:none;transition:opacity 260ms var(--out) 160ms,transform 360ms var(--out) 160ms}
+/* Devices sheet: a row per link; the state is a glyph and a word, speed a bars glyph and a word. */
+.dev-item+.dev-item{border-top:var(--hair) solid var(--sep)}
+.dev-state,.dev-speed{display:inline-flex;align-items:center;gap:4px;flex:none;font-size:var(--fs-footnote);font-weight:600;color:var(--label-2)}
+.dev-state .icn,.dev-speed .icn{width:16px;height:16px}
+.dev-state.warn{color:var(--orange)}
+/* a link that syncs: its glyph in the button's status green, with the same soft glow; the word keeps the label colour to stay readable */
+.dev-item{--lit:var(--green)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-item{--lit:#1f9d48}}
+.dev-state.ok .icn,.dev-speed.fast .icn{color:var(--lit);filter:drop-shadow(0 0 3px var(--lit))}
+.dev-bpm{flex:none;font-size:var(--fs-footnote);color:var(--label-2)}
+.dev-note{padding:0 14px 10px 55px}
+.dev-fix{width:auto;min-height:44px;margin:0 14px 12px 55px}
 /* The clock and set count may take a second line: in ru/uk the count is the long half and a
    one-line ellipsis cut exactly the 0/19 the line is there for. */
 .whdr-mid .sub{font-size:var(--fs-footnote);margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}

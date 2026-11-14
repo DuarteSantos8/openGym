@@ -19,6 +19,9 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
+// Set once a status has found the watch app installed: from then on the Devices sheet names a watch
+// that goes missing ("Not found"), where a phone that never had one shows no watch row.
+export const WATCH_SEEN_KEY = 'gym_watch_seen_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, rest: 'ring' })
 export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
 
@@ -55,6 +58,11 @@ export function writeWatchPrefs(patch, storage = globalThis.localStorage) {
   try { storage?.setItem(WATCH_PREFS_KEY, JSON.stringify(next)) } catch { /* private mode: for this run */ }
   emit()
   return next
+}
+
+export const readWatchSeen = (storage = globalThis.localStorage) => read(WATCH_SEEN_KEY, storage) === true
+export function markWatchSeen(storage = globalThis.localStorage) {
+  try { storage?.setItem(WATCH_SEEN_KEY, 'true') } catch { /* seen again next time */ }
 }
 
 /** Whether a Garmin with the openGym app was there the last time the link looked. */

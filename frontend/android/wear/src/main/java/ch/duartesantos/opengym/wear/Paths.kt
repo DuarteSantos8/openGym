@@ -10,6 +10,7 @@ package ch.duartesantos.opengym.wear
  *                          events), "seq" (its order). The phone stores it, then deletes the item:
  *                          until then the Data Layer keeps it, phone asleep or out of reach.
  *   /opengym/open          message, phone → watch: a workout started on the phone, show it here.
+ *   /opengym/ping          request, phone → watch: the link check; the watch answers with one byte.
  *   /opengym/still/<exId>  data item, phone → watch: "img" (an Asset: the exercise's 180 px WebP
  *                          still from the phone's app package), "wid" (the workout it is for). For
  *                          the Overview's rows (Stills in WatchLogic.kt); the phone deletes them when
@@ -19,6 +20,7 @@ object Paths {
     const val SNAPSHOT = "/opengym/snapshot"
     const val EVENT_PREFIX = "/opengym/event/"
     const val OPEN = "/opengym/open"
+    const val PING = "/opengym/ping"
     const val STILL_PREFIX = "/opengym/still/"
     const val KEY_IMG = "img"
     const val KEY_WID = "wid"

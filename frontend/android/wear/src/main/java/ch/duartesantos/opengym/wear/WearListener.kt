@@ -1,5 +1,6 @@
 package ch.duartesantos.opengym.wear
 
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.tasks.Tasks
@@ -51,6 +52,10 @@ class WearListener : WearableListenerService() {
         PhoneLink.pull(this)
         WorkoutService.sync(this, fromPhone = true)
     }
+
+    /** The phone's link check: answered at once, nothing else touched. */
+    override fun onRequest(nodeId: String, path: String, request: ByteArray): Task<ByteArray>? =
+        if (path == Paths.PING) Tasks.forResult(byteArrayOf(1)) else null
 
     /**
      * The store is the main thread's (the screens, the timers, the heart rate all change it there);

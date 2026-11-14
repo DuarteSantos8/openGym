@@ -2,6 +2,7 @@ package ch.duartesantos.opengym;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.SystemClock;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -63,6 +64,7 @@ import org.json.JSONObject;
  *   drain()              { events }
  *   ack({ids})
  *   openOnWatch({type})  { ok }: a workout started here shows on the watch
+ *   ping()               { ok, ms? }: the watch answers; ms is the round trip (5 s, then ok false)
  *   sendClips({wid, clips: [{exId, still}]})   each exercise's 180 px still from the app package,
  *                        as the data item /opengym/still/<exId> (its bytes an Asset, and the
  *                        workout's id), for the watch's Overview; no animations. { queued }
@@ -78,6 +80,7 @@ public class WatchBridgePlugin extends Plugin {
     static final String SNAPSHOT = "/opengym/snapshot";
     static final String EVENT_PREFIX = "/opengym/event/";
     static final String OPEN = "/opengym/open";
+    static final String PING = "/opengym/ping";
     static final String STILL_PREFIX = "/opengym/still/";
     static final String CAPABILITY_WEAR = "opengym_wear";
     private static final String QUEUE_FILE = "watch-events.json";
@@ -231,6 +234,27 @@ public class WatchBridgePlugin extends Plugin {
             // A Garmin with the app shows its own "open openGym?" prompt.
             if (GarminLink.get(getContext()).open()) ok = true;
             call.resolve(new JSObject().put("ok", ok));
+        });
+    }
+
+    /** The link check: the watch answers a request, timed here. The first reachable watch that does wins. */
+    @PluginMethod
+    public void ping(PluginCall call) {
+        io.execute(() -> {
+            JSObject out = new JSObject().put("ok", false);
+            try {
+                Context ctx = getContext();
+                CapabilityInfo near = Tasks.await(Wearable.getCapabilityClient(ctx).getCapability(CAPABILITY_WEAR, CapabilityClient.FILTER_REACHABLE), 5, TimeUnit.SECONDS);
+                for (Node n : near.getNodes()) {
+                    try {
+                        long start = SystemClock.elapsedRealtime();
+                        Tasks.await(Wearable.getMessageClient(ctx).sendRequest(n.getId(), PING, new byte[0]), 5, TimeUnit.SECONDS);
+                        out = new JSObject().put("ok", true).put("ms", SystemClock.elapsedRealtime() - start);
+                        break;
+                    } catch (Exception ignored) {}
+                }
+            } catch (Exception ignored) {}
+            call.resolve(out);
         });
     }
 
