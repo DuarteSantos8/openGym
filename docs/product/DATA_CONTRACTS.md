@@ -148,7 +148,14 @@ changes after `keepUnknown`, just as for an unstamped write over its read revisi
 collections and unknown fields are preserved, positive deletion history stays positive,
 and repeat payloads keep unchanged clocks. The HTTP tests exercise edits in both lexical
 directions, omission, partial stamps/replay and malformed records. This changes only optional
-record handling. The legacy `stampUnstamped` function is still gated by `overRead`; it is not
+record handling. A revisionless unstamped deliberate replacement treats omitted rows in a
+**present** optional collection as new deletions, which can override an earlier add-back;
+repeating that revisionless omission may advance deletion evidence. A missing whole collection
+is still preserved. This authoritative replacement behavior is distinct from a stamped normal
+app replay. Clients requiring concurrency safety must send `baseRev` and handle 409 rather than
+repeatedly submit revisionless partial collections.
+
+The legacy `stampUnstamped` function is still gated by `overRead`; it is not
 invoked for these no-base writes. The observed legacy setting replacement (for example
 `restSec: 75`) is unchanged. Clients should still send a revision whenever available to detect
 concurrent changes; a revisionless write does not gain a 409 concurrency check.
@@ -298,10 +305,18 @@ The plan and RED commits precede implementation. Initial RED: optional/default-o
 then found an optional unknown-field omission, fixed through the existing preservation helper.
 Independent parent probes added RED cases for preferred-account resets, unstamped record
 union and large stamp maps before corrections. Full-suite results belong in the PR/handoff;
-the final run passed all 7,876 frontend, 833 API and 140 MCP tests, plus build and
+the initial run passed all 7,876 frontend, 833 API and 140 MCP tests, plus build and
 all required checks (exact commands and evidence in `EP-01-tasks.md`).
 
 Correction to commit `411aed42` message: expanded parity+optional run was **32 passed**, not
 33. Earlier focused frontend 143, API 45 and MCP 2 counts refer to those exact selected runs,
 not the final suite totals. Linux reference CI 43498778572: frontend 7,832 tests/651 files,
 API 800 tests, MCP 138 tests/5 files. Windows baseline failures are not accepted as Linux failures.
+
+The resumed review fixes at runtime commit `ffac4559` passed a fresh full run: **7,894
+frontend tests, 854 API tests and 140 MCP tests**, plus production build and required checks.
+Independent Pi/MiniMax review accepted that runtime after its own reset, replay, revisionless
+write and add-back probes; parent reported 0/300 clock drift, 0/800 unexplained loss and all
+four parent blocking assertions passing. Subsequent changes are documentation/evidence only.
+GitHub Tests on the final documentation commit remain for the parent to trigger; no new CI
+pass or merge is claimed. Exact commands and resumed results are in `EP-01-tasks.md`.

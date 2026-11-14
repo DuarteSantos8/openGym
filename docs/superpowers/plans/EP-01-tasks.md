@@ -40,7 +40,7 @@ No dependencies, routes, modules, UI, deployments or media changes.
 7. Review diff, commit everything, pull --rebase origin next/integration, push assigned branch,
    draft PR targeting next/integration. Parent owns independent review and browser baseline.
 
-## Final verification (Linux, Node v22.23.5)
+## Initial verification (2026-11-13; Linux, Node v22.23.5)
 
 Implementation/fixtures tested at `ffcf68ea`; subsequent changes are evidence documentation only.
 Existing dependencies installed successfully with `npm ci` in root, frontend, api and mcp.
@@ -97,7 +97,7 @@ Draft PR: https://github.com/sorensadrgit-art/openGym/pull/5, targeting `next/in
 No merge/deploy/public preview. No runtime store/server/MCP edits, dependencies, media or secrets.
 All edits stay in authorized source/documentation paths or new tests/fixtures.
 
-### Remaining gates and integration notes
+### Gates recorded at the initial checkpoint (superseded below)
 
 Cross-vendor review is **BLOCKED**, not passed: the Claude provider limit lasts until 23:20 UTC;
 the assigned Pi reviewer has no OpenAI credentials and produced no review. Parent focused review
@@ -109,3 +109,83 @@ and implement stable import identity before enabling modules. Logical deletion/r
 no automatic compaction or hard erasure is promised. Upgrade participating clients/server before
 concurrent optional edits; old binaries do not gain hooks. Existing webhook status and error-text
 limitations are documented without out-of-scope runtime changes. Parent owns progress.md and merge.
+
+## Resumed review closure (2026-11-14)
+
+Runtime SHA **ffac4559** is unchanged after independent acceptance. Final follow-up edits are
+only this evidence and the requested revisionless-replacement caveat in DATA_CONTRACTS.md.
+Existing branch/PR #5 retained; no force push or published-history rebase. Fetched integration
+at `02697e81`; its parent-owned documentation did not require a runtime integration merge.
+No edits to progress.md, no dependencies, no deployment or merge.
+
+### Assigned findings and RED/GREEN
+
+- RED **f9aa688c**: frontend optional/store 12 failed / 36 passed; API optional/HTTP
+  17 failed / 27 passed. One HTTP failure was incidental fixture indexing after new records
+  were added; lookup by record id corrected that fixture, not a product defect.
+- F2: a reset learned server-only ids at the same resetAt. Before the fix, deleted.b was
+  undefined instead of 200 and the actual store resetEverything follow-up left b visible.
+  The helper now processes explicit inventories at an equal epoch, without timestamp-only
+  legacy inference, without overriding later add-backs, and with existing prefer protection.
+  Tests cover all three keys, both merge orders, stale replay, post-reset new ids, actual
+  store follow-up, and actual HTTP unstamped PUTs.
+- F4 replay (F3 in review final labels): identical partial-stamp PUT replay changed an
+  unchanged distance clock from 286 to 495 and suppressed a third device's distance 9.
+  Unchanged rows now retain known per-field clocks. Tests use consistent document clocks,
+  all three keys, client/API parity and real HTTP writes both with and without baseRev.
+- Revisionless edits: before the fix, Apple → An apple was discarded by a lexical tie.
+  Every unstamped non-new-reset optional write now stamps explicit changes after keepUnknown;
+  legacy stampUnstamped remains gated by overRead. HTTP tests cover both lexical directions,
+  omitted collections/unknown fields, repeated partial payloads, positive deletion retention
+  and malformed input. No legacy runtime rule was broadened.
+- F1 add-back ownership: documentation plus all-three-key tests, no resurrection heuristic.
+  Callers write a negative clock newer than all known field/deletion stamps. Tests exercise
+  stampChange, stamped/unstamped PUT, both merge orders, unchanged field clocks and hidden
+  ordinary stale edits. stampRestore remains the dedicated bulk restore operation.
+- Nonblocking reviewer observation is documented, not changed: a revisionless unstamped
+  replacement's omitted rows in a present collection are new deletions, can override an earlier
+  add-back, and may advance deletion evidence on repetition. Omitted whole collections stay
+  preserved. Concurrent writers must send baseRev and handle 409; this is distinct from stamped
+  normal app replay.
+- GREEN **ffac4559**: focused frontend 58 passed; API optional/HTTP/legacy stamping 65 passed;
+  final expanded real HTTP 22 passed. No runtime edits followed this commit.
+
+### Fresh full verification at ffac4559
+
+Node v22.23.5/Linux. Full suites ran sequentially, at most two workers, once each at this
+runtime. MCP was rerun because its unstamped API write contract is affected, rather than merely
+carrying forward its earlier result. No skipped tests, baseline exclusions or removed assertions.
+
+| Command (directory) | Exit | Actual result |
+|---|---:|---|
+| `npm test -- --maxWorkers=2` (frontend) | 0 | 7,894 passed / 657 files; 371.57 s |
+| `node --test --test-concurrency=2 test/*.test.js` (api) | 0 | 854 passed / 9 suites; 0 fail/cancel/skip; 128.72 s |
+| `npm test -- --maxWorkers=2` (mcp) | 0 | 140 passed / 6 files; 3.14 s |
+| `RAYON_NUM_THREADS=2 npm run build` (frontend) | 0 | Built in 2.06 s; existing size/dynamic-import warnings |
+| `node scripts/check-locales.mjs` (frontend) | 0 | 19 locales / 3,615 keys |
+| `node scripts/check-source-strings.mjs --strict` (frontend) | 0 | 2,961 strings |
+| `node scripts/catalogue/build.mjs --check` (root) | 0 | 5,632 exercises current |
+| `node scripts/build-coach-assets.mjs --check` (root) | 0 | 5,632 exercises / 8 prompts current |
+| `node scripts/build-api-docs.mjs --check` (root) | 0 | 92 endpoints / 32 schemas current |
+| `git diff --check` | 0 | Clean |
+
+Relative to the original green Linux CI baseline: frontend +62 tests, API +54, MCP +2.
+Relative to the previous local full run: frontend +18 tests, API +21, MCP unchanged.
+Logs: `/tmp/ep01-review-full-{frontend,api,mcp}.log`, `/tmp/ep01-review-build.log` in this
+checkout only. The fixture regression RED/GREEN logs use `/tmp/ep01-review-*.log`.
+
+Bundle, same 155 emitted JS/CSS files, gzip level 9: **29,265,867 raw / 5,885,360 gzip bytes**.
+Delta from BASELINE_REPORT: **+3,531 raw / +1,283 gzip bytes**. Delta from the prior EP-01 build:
++52 raw / -5 gzip bytes. These are total emitted assets, not initial transfer sizes.
+
+### Independent acceptance and remaining gates
+
+Parent reports independent Pi/MiniMax **ACCEPT at ffac4559** after its own reset, replay,
+revisionless-write and add-back probes: 0/300 clock drift and 0/800 unexplained loss. Parent's
+four blocking assertions pass too. This supersedes the earlier blocked review status and
+CHANGES REQUESTED. These are independently supplied results, not additional full runs here.
+
+PR #5 remains draft. Parent will trigger the existing GitHub Tests workflow on the final pushed
+branch after this documentation commit; no GitHub check pass for that head is claimed here.
+Native devices/live providers remain unverified. Earlier parent browser evidence is still
+at ffcf68ea and is not relabeled as a browser run on ffac4559. Parent owns merge and evidence.
