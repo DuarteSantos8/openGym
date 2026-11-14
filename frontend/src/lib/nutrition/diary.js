@@ -3,12 +3,12 @@ import { NUTRIENTS, normalizeEntry, editEntry, roundAmount, validDay } from './e
 const key = 'nutritionEntries'
 export function addEntry(S, entry) {
   if (!normalizeEntry(entry).supported) throw new Error('unsupported')
-  if ((S[key] || []).some(e => e.id === entry.id)) throw new Error('duplicate')
+  if ((S[key] || []).some(e => e?.id === entry.id)) throw new Error('duplicate')
   S[key] = [...(S[key] || []), entry]
 }
 export function changeEntry(S, id, patch) {
   if (!visibleOptionalEntries(S, key).some(e => e.id === id)) return
-  S[key] = S[key].map(e => e.id === id ? editEntry(e, patch) : e)
+  S[key] = S[key].map(e => e?.id === id ? editEntry(e, patch) : e)
 }
 export function deleteEntry(S, id) {
   if (!visibleOptionalEntries(S, key).some(e => e.id === id)) return
@@ -16,7 +16,7 @@ export function deleteEntry(S, id) {
 }
 // Caller joins available copies before undo. Change visibility only, never field ownership.
 export function undoEntry(S, id, knownCopies = []) {
-  if (!(S[key] || []).some(e => e.id === id) || !(S.deleted?.[key]?.[id] > 0)) return
+  if (!(S[key] || []).some(e => e?.id === id) || !(S.deleted?.[key]?.[id] > 0)) return
   const at = [S, ...knownCopies].reduce((n, copy) => Math.max(n, highestStamp(copy)), Date.now()) + 1
   S.deleted = { ...S.deleted, [key]: { ...S.deleted?.[key], [id]: -at } }
 }

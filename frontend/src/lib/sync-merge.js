@@ -808,7 +808,9 @@ export function stampOptionalCollections(prev, next, now) {
   for (const key of OPTIONAL_COLLECTIONS) {
     if (!Object.hasOwn(prev || {}, key) && !Object.hasOwn(next, key)) continue
     const before = new Map(optionalRows(prev?.[key]).map(x => [x.id, x]))
-    const rows = optionalRows(next[key]).map(raw => {
+    const identified = new Set(optionalRows(next[key]))
+    const rows = list(next[key]).map(raw => {
+      if (!identified.has(raw)) return raw // Unrelated edits do not discard opaque retained elements.
       const x = clone(raw), old = before.get(x.id)
       const data = v => Object.fromEntries(Object.entries(v || {}).filter(([k]) => !ENTRY_META.has(k)))
       if (!old || optionalJSON(data(old)) !== optionalJSON(data(x))) {

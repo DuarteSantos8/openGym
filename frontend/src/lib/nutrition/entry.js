@@ -22,6 +22,7 @@ export function localDay(now = new Date(), timeZone = Intl.DateTimeFormat().reso
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).map(p => [p.type, p.value]))
   return `${parts.year}-${parts.month}-${parts.day}`
 }
+const utcInstant = value => typeof value === 'string' && validDay(value.slice(0, 10)) && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?Z$/.test(value)
 export function servingAmount({ amount, unit = 'g', servingLabel, servingSize, servingUnit }) {
   const count = number(amount)
   if (count === undefined) return {}
@@ -59,14 +60,21 @@ export function normalizeEntry(entry) {
     label(entry.label)
     if (typeof entry.timeZone !== 'string') throw new Error('zone')
     new Intl.DateTimeFormat('en', { timeZone: entry.timeZone }).format()
+    // Missing legacy provenance stays unknown. Present metadata must be readable as declared.
+    for (const key of ['createdAt', 'occurredAt']) if (Object.hasOwn(entry, key) && !utcInstant(entry[key])) throw new Error('instant')
+    if (Object.hasOwn(entry, 'createdBy') && !['manual', 'file-import', 'provider-import', 'provider-link'].includes(entry.createdBy)) throw new Error('creator')
+    for (const key of ['source', 'externalId', 'idempotencyKey']) if (Object.hasOwn(entry, key)) label(entry[key])
+    if (Object.hasOwn(entry, 'contentFingerprint') && (typeof entry.contentFingerprint !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(entry.contentFingerprint))) throw new Error('fingerprint')
     if (entry.meal != null && !MEALS.includes(entry.meal)) throw new Error('meal')
     for (const key of [...NUTRIENTS, 'amountG', 'amountMl']) if (entry[key] != null) {
       if (typeof entry[key] !== 'number') throw new Error('number')
       number(entry[key])
     }
     if (entry.amountG != null && entry.amountMl != null) throw new Error('unit')
-    if (entry.serving) {
+    if (Object.hasOwn(entry, 'serving')) {
+      if (!entry.serving || typeof entry.serving !== 'object' || Array.isArray(entry.serving)) throw new Error('serving')
       const { label: name, count, size, unit } = entry.serving
+      if (typeof count !== 'number' || typeof size !== 'number' || !(size > 0)) throw new Error('serving')
       const amount = servingAmount({ amount: count, unit: 'serving', servingLabel: name, servingSize: size, servingUnit: unit })
       const key = unit === 'g' ? 'amountG' : 'amountMl'
       if (amount[key] !== entry[key]) throw new Error('serving')

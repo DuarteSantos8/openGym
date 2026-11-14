@@ -1,0 +1,212 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/lib/nutrition src/store/useStore.nutrition.test.jsx src/store/useStore.adopt.test.jsx src/store/useStore.adopt-hold.test.jsx src/lib/sync-stamps-parity.test.js
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/store/useStore.nutrition.test.jsx (24 tests | 4 failed) 184ms
+   × retained malformed elements do not block real-store add 14ms
+   × retained malformed elements do not block real-store edit 4ms
+   × retained malformed elements do not block real-store delete 3ms
+   × retained malformed elements do not block real-store undo 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store add
+AssertionError: expected [ { …(16) }, { …(11) } ] to deeply equal [ null, false, 17, [], …(1) ]
+
+- Expected
++ Received
+
+  [
+-   null,
+-   false,
+-   17,
+-   [],
++   {
++     "_f": {
++       "amountG": 1794564000000,
++       "carbohydrateG": 1794564000000,
++       "createdAt": 1794564000000,
++       "createdBy": 1794564000000,
++       "day": 1794564000000,
++       "energyKcal": 1794564000000,
++       "fatG": 1794564000000,
++       "label": 1794564000000,
++       "occurredAt": 1794564000000,
++       "proteinG": 1794564000000,
++       "schemaVersion": 1794564000000,
++       "source": 1794564000000,
++       "timeZone": 1794564000000,
++     },
++     "_ts": 1794564000000,
++     "amountG": 60,
++     "carbohydrateG": 40,
++     "createdAt": "2026-11-13T10:00:00.000Z",
++     "createdBy": "manual",
++     "day": "2026-11-13",
++     "energyKcal": 228,
++     "fatG": 4,
++     "id": "5cbde324-1f60-43ef-9188-4f555376ddc5",
++     "label": "Synthetic oats",
++     "occurredAt": "2026-11-13T10:00:00.000Z",
++     "proteinG": 8,
++     "schemaVersion": 1,
++     "source": "manual",
++     "timeZone": "Europe/Lisbon",
++   },
+    {
+-     "opaque": "future payload",
++     "_f": {
++       "createdAt": 1794650859595,
++       "createdBy": 1794650859595,
++       "day": 1794650859595,
++       "label": 1794650859595,
++       "meal": 1794650859595,
++       "schemaVersion": 1794650859595,
++       "source": 1794650859595,
++       "timeZone": 1794650859595,
++     },
++     "_ts": 1794650859595,
++     "createdAt": "2026-11-14T10:07:39.594Z",
++     "createdBy": "manual",
++     "day": "2026-11-13",
++     "id": "86e56ac3-9ec1-46b2-8c9a-48fb5f5dd02b",
++     "label": "New food",
++     "meal": "snack",
++     "schemaVersion": 1,
++     "source": "manual",
++     "timeZone": "UTC",
+    },
+  ]
+
+ ❯ src/store/useStore.nutrition.test.jsx:150:62
+    148|     if (action === 'undo') undoEntry(s, fixture.id)
+    149|   })
+    150|   expect(result.nutritionEntries.slice(0, malformed.length)).toEqual(m…
+       |                                                              ^
+    151|   expect(visible(result)).toHaveLength(action === 'add' ? 2 : action =…
+    152|   if (action === 'edit') expect(visible(result)[0].label).toBe('Edited…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store edit
+AssertionError: expected [ { …(16) } ] to deeply equal [ null, false, 17, [], …(1) ]
+
+- Expected
++ Received
+
+  [
+-   null,
+-   false,
+-   17,
+-   [],
+    {
+-     "opaque": "future payload",
++     "_f": {
++       "amountG": 1794564000000,
++       "carbohydrateG": 1794564000000,
++       "createdAt": 1794564000000,
++       "createdBy": 1794564000000,
++       "day": 1794564000000,
++       "energyKcal": 1794564000000,
++       "fatG": 1794564000000,
++       "label": 1794650859609,
++       "occurredAt": 1794564000000,
++       "proteinG": 1794564000000,
++       "schemaVersion": 1794564000000,
++       "source": 1794564000000,
++       "timeZone": 1794564000000,
++     },
++     "_ts": 1794650859609,
++     "amountG": 60,
++     "carbohydrateG": 40,
++     "createdAt": "2026-11-13T10:00:00.000Z",
++     "createdBy": "manual",
++     "day": "2026-11-13",
++     "energyKcal": 228,
++     "fatG": 4,
++     "id": "5cbde324-1f60-43ef-9188-4f555376ddc5",
++     "label": "Edited food",
++     "occurredAt": "2026-11-13T10:00:00.000Z",
++     "proteinG": 8,
++     "schemaVersion": 1,
++     "source": "manual",
++     "timeZone": "Europe/Lisbon",
+    },
+  ]
+
+ ❯ src/store/useStore.nutrition.test.jsx:150:62
+    148|     if (action === 'undo') undoEntry(s, fixture.id)
+    149|   })
+    150|   expect(result.nutritionEntries.slice(0, malformed.length)).toEqual(m…
+       |                                                              ^
+    151|   expect(visible(result)).toHaveLength(action === 'add' ? 2 : action =…
+    152|   if (action === 'edit') expect(visible(result)[0].label).toBe('Edited…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store delete
+ FAIL  src/store/useStore.nutrition.test.jsx > retained malformed elements do not block real-store undo
+AssertionError: expected [ { …(16) } ] to deeply equal [ null, false, 17, [], …(1) ]
+
+- Expected
++ Received
+
+  [
+-   null,
+-   false,
+-   17,
+-   [],
+    {
+-     "opaque": "future payload",
++     "_f": {
++       "amountG": 1794564000000,
++       "carbohydrateG": 1794564000000,
++       "createdAt": 1794564000000,
++       "createdBy": 1794564000000,
++       "day": 1794564000000,
++       "energyKcal": 1794564000000,
++       "fatG": 1794564000000,
++       "label": 1794564000000,
++       "occurredAt": 1794564000000,
++       "proteinG": 1794564000000,
++       "schemaVersion": 1794564000000,
++       "source": 1794564000000,
++       "timeZone": 1794564000000,
++     },
++     "_ts": 1794564000000,
++     "amountG": 60,
++     "carbohydrateG": 40,
++     "createdAt": "2026-11-13T10:00:00.000Z",
++     "createdBy": "manual",
++     "day": "2026-11-13",
++     "energyKcal": 228,
++     "fatG": 4,
++     "id": "5cbde324-1f60-43ef-9188-4f555376ddc5",
++     "label": "Synthetic oats",
++     "occurredAt": "2026-11-13T10:00:00.000Z",
++     "proteinG": 8,
++     "schemaVersion": 1,
++     "source": "manual",
++     "timeZone": "Europe/Lisbon",
+    },
+  ]
+
+ ❯ src/store/useStore.nutrition.test.jsx:150:62
+    148|     if (action === 'undo') undoEntry(s, fixture.id)
+    149|   })
+    150|   expect(result.nutritionEntries.slice(0, malformed.length)).toEqual(m…
+       |                                                              ^
+    151|   expect(visible(result)).toHaveLength(action === 'add' ? 2 : action =…
+    152|   if (action === 'edit') expect(visible(result)[0].label).toBe('Edited…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  4 failed | 107 passed (111)
+   Start at  10:07:34
+   Duration  5.89s (transform 4.73s, setup 1.29s, import 6.64s, tests 1.09s, environment 1.11s)
+
