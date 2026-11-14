@@ -38,7 +38,7 @@ export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur
     for (const o of gone) ghost(o, rm, slide, hold)
     for (const el of now) if (!before.has(el.dataset.flipKey)) arrive(el, rm, enterDelay)
     if (hold && !rm) delay = `${hold + 40}ms`   // followers wait for the leaver to go
-    flipPlay(root, before, { duration: dur, delay, far })
+    flipPlay(root, before, { duration: dur, delay, far, fadeDelay: enterDelay })
     if (tick && !rm) setTimeout(() => popCount(tick.key), tick.at)
     if (land && !rm) landBlock(land, hold)
   })

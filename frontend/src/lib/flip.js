@@ -24,9 +24,9 @@ export function flipMeasure(root) {
 }
 
 /** Slides each row that moved from its `before` place to where it is now. Call after the commit.
- *  `far`: a row that would travel more than this many px does not fly through the list: it fades in at its new place (160 ms, after 80). */
+ *  `far`: a row that would travel more than this many px does not fly through the list: it fades in at its new place (160 ms, after `fadeDelay`, 80). */
 // Call only after a commit, never during a live drag: it clears inline transform/transition on every keyed row.
-export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = 'var(--flip-delay)', far } = {}) {
+export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = 'var(--flip-delay)', far, fadeDelay = 80 } = {}) {
   if (!root || !before?.size) return
   const rows = [...root.querySelectorAll(KEY)]
   // Drop any flip still in flight: the rows are back at their layout place, which is what we measure.
@@ -46,7 +46,7 @@ export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = '
   for (const el of rows) if (!moved.some(([e]) => e === el)) el.style.transition = ''
   if (still()) { for (const [el] of moved) el.style.transition = ''; return }
   const fade = far ? moved.filter(([, , dy]) => Math.abs(dy) > far) : []
-  for (const [el] of fade) { el.style.transition = ''; el.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 160, delay: 80, easing: EASE, fill: 'backwards' }) }
+  for (const [el] of fade) { el.style.transition = ''; el.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 160, delay: fadeDelay, easing: EASE, fill: 'backwards' }) }
   const go = moved.filter(m => !fade.includes(m)).slice(0, FLIP_MAX)
   for (const [el] of moved) if (!go.some(([e]) => e === el)) el.style.transition = ''
   for (const [el, dx, dy] of go) el.style.transform = `translate(${dx}px,${dy}px)`
