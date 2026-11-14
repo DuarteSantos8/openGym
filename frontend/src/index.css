@@ -413,6 +413,9 @@ button.conn:active{filter:brightness(1.12)}
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
 .hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+/* a header whose middle is a text field (the routine editor): every item on one centre line,
+   spaced by the gap alone */
+.hdr.hdr-mid{align-items:center}
 .hdr h1{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);overflow-wrap:break-word}
 /* the page title drops a step on phone widths (the Library's header leaves it the least room) */
 @media (max-width:420px){:root{--fs-large:1.875rem}}

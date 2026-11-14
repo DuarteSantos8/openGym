@@ -500,9 +500,9 @@ export default function RoutineEdit() {
   const swipe = workoutControls(S).swipeSets
 
   return <div className="narrow">
-    <div className="hdr">
+    <div className="hdr hdr-mid">
       <button className="iconbtn" data-back="/plan" data-tour="routine-back" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, margin: '0 12px' }}>
+      <div style={{ flex: 1 }}>
         <input className="input" data-tour="routine-name" aria-label={t('Routine name')} defaultValue={r.name} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em' }}
           onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
       </div>
