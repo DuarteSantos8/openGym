@@ -136,7 +136,12 @@ These are confirmed against the reviewed producers. Preserve their established b
 ## Authorized scope and completion
 
 Nutrition helper/component/view files and tests, relevant locale keys, contract documentation
-and fixtures for explicitly named source-snapshot fields, task plan and evidence. Do not alter
+and fixtures for explicitly named source-snapshot fields, task plan and evidence. The food
+sections of `docs/SELF_HOSTING.md`, `docs/INTEGRATIONS.md` and `.env.example` may be updated
+to replace API-only/future-UI wording with the actual explicit preview/save/offline flow.
+Clarify that changed `.env` values need container recreation (`docker compose up -d api`),
+not a plain container restart. Keep preview requests distinct from confirmed persistent saves.
+Do not alter
 API behavior or shared sync rules unless a demonstrated interface defect is returned to its
 producer and reviewed. No unrelated navigation changes.
 
