@@ -11,5 +11,5 @@ for (const [name, raw, gzip] of [['index-', 586454, 183316], ['Stats-', 42946, 1
   const compressed = gzipSync(bytes, { level: 9 }).length
   result.chunks[name] = { file, raw: bytes.length, gzip: compressed, baseline: { raw, gzip }, deltaRaw: bytes.length - raw, deltaGzip: compressed - gzip }
 }
-writeFileSync('docs/superpowers/evidence/EP-03/bundle.json', JSON.stringify(result, null, 2) + '\n')
+writeFileSync(process.argv[2] || 'docs/superpowers/evidence/EP-03/bundle.json', JSON.stringify(result, null, 2) + '\n')
 console.log(JSON.stringify(result, null, 2))

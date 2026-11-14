@@ -46,6 +46,8 @@ describe('Stats exercise volume', () => {
 
   it.each([
     ['assisted', entry(undefined, { id: '0017' })],
+    ['target-assisted', entry([done(30)], { target: { mode: 'reps', assisted: true } })],
+    ['entry-assisted', entry([done(30)], { assisted: true })],
     ['timed', entry([{ sec: 60, w: 50, done: true }], { target: { mode: 'time' } })],
     ['cardio', entry([{ min: 10, speed: 5, done: true }], { target: { mode: 'cardio' } })],
     ['unloaded', entry([done(0)], { id: '0652' })],
@@ -53,6 +55,47 @@ describe('Stats exercise volume', () => {
   ])('hides Volume for %s exercise history', (_, e) => {
     mount([session(undefined, [e])])
     expect(pickerOptions(card(), 'Chart')).not.toContain('Volume')
+  })
+
+  it.each([
+    ['target', { target: { mode: 'reps', assisted: true } }],
+    ['entry', { assisted: true }],
+  ])('hides Volume when the latest occurrence declares %s assistance despite earlier lifted volume', (_, extra) => {
+    mount([session('2026-11-10'), session(undefined, [entry([done(30)], extra)])])
+    expect(pickerOptions(card(), 'Chart')).not.toContain('Volume')
+  })
+
+  it('offers retained non-assisted history after returning to ordinary load, excluding assisted occurrences', () => {
+    mount([
+      session('2026-11-10'),
+      session('2026-11-12', [entry([done(30)], { target: { assisted: true } })]),
+      session(undefined, [entry([done(20)], { assisted: true }), entry([done(40)])]),
+    ])
+    volume()
+    expect(chart().points.map(p => p.y)).toEqual([250, 200])
+    expect(rows().map(r => r.slice(1))).toEqual([['1', '250'], ['1', '200']])
+    expect(card().textContent).toContain('Included 2 sessions; excluded 1: 0 timed/cardio, 1 without completed reps or positive volume, and 0 without exercise set details.')
+  })
+
+  it('respects a latest explicit non-assisted override of catalogue identity', () => {
+    mount([session(undefined, [entry([done(40)], { id: '0017', target: { assisted: false } })])])
+    volume()
+    expect(chart().points.map(p => p.y)).toEqual([200])
+  })
+
+  it.each([
+    ['target', { target: { assisted: false } }],
+    ['entry', { assisted: false }],
+  ])('plots rising ordinary loads for saved %s false with bodyweight volume on, including load equal to bodyweight', (_, extra) => {
+    const workouts = [30, 40, 80].map((load, i) => session(`2026-11-${12 + i}`,
+      [entry([done(load)], { id: '0017', ...extra })], { bw: 80 }))
+    const before = structuredClone(workouts)
+    mount(workouts, { volumeBodyweight: true })
+    volume()
+    expect(chart().points.map(p => p.y)).toEqual([150, 200, 400])
+    expect(rows().map(r => r.slice(1))).toEqual([['1', '150'], ['1', '200'], ['1', '400']])
+    expect(card().textContent).toContain('Included 3 sessions; excluded 0:')
+    expect(workouts).toEqual(before)
   })
 
   it('plots a d-only session and duplicate entries, with a semantic table matching every point', () => {
