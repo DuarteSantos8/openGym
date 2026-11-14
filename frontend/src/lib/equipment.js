@@ -109,8 +109,8 @@ export function exAvailable(S, ex) {
   // Your own kit (1.4.5, #323): one of your exercises that needs a sandbag or rings shows only
   // where the gym's profile has it. Without a profile that filters, everything shows, as ever.
   if (p.id && !kitAvailable(p, ex)) return false
-  // Unticked body weight hides only what needs nothing else: a chin-up still follows the bar.
-  if (ex.eq === ALWAYS_AVAILABLE && !bodyWeightOf(p) && !accessoriesOf(ex).length) return false
+  // Unticked body weight hides only what needs nothing else: a chin-up follows the bar, a ring push-up its kit.
+  if (ex.eq === ALWAYS_AVAILABLE && !bodyWeightOf(p) && !accessoriesOf(ex).length && !kitOf(ex).length) return false
   return eqAvailable(profileEquipment(p), ex, profileMachines(p))
 }
 
