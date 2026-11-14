@@ -71,7 +71,7 @@ export default function FoodLookup({ day }) {
         if (snapshot.externalId !== barcode) throw new Error('source-identity')
       } catch { throw { code: 'bad-response' } }
       const fingerprint = sourceFingerprint(snapshot)
-      setPreview({ snapshot, fingerprint }); setUnit(snapshot.per100.basis === 'g' ? 'g' : 'mL'); setAmount('100'); submitting.current = false
+      setPreview({ snapshot, fingerprint, generation: request }); setUnit(snapshot.per100.basis === 'g' ? 'g' : 'mL'); setAmount('100'); submitting.current = false
     } catch (err) {
       if (request === generation.current && allowed()) setError(failure(err))
     } finally { if (request === generation.current) setBusy(false) }
@@ -79,7 +79,7 @@ export default function FoodLookup({ day }) {
   let input
   if (preview) try { input = lookupInput(preview.snapshot, amount, unit) } catch { /* invalid amounts cannot be saved */ }
   const save = () => {
-    if (submitting.current || !preview || !input || !allowed()) return
+    if (submitting.current || !preview || preview.generation !== generation.current || !input || !allowed()) return
     submitting.current = true
     try {
       const p = preview.snapshot
