@@ -1,0 +1,14 @@
+{
+  "before_capabilities": {
+    "origin": "http://172.17.0.4:5180",
+    "secure": false,
+    "randomUUID": "undefined",
+    "getRandomValues": "function"
+  },
+  "before_save_failures": {
+    "manual": "Could not save food",
+    "lookup": "Could not save food",
+    "persistedRows": 0,
+    "provider": "committed synthetic HTTPS preload"
+  }
+}
