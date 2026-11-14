@@ -106,6 +106,53 @@ records already hidden in that backup stay hidden. Replace (`stampReplace`) reco
 removals of omitted live entries and retains evidence. Later readers must use the projection
 after restore, reset, merge and offline load, not only after server sync.
 
+### Deliberate add-back ownership
+
+EP-04/EP-07 importer and undo actions own deliberate add-back intent. `stampChange` does
+**not** infer resurrection from reappending a retained row, editing it, or advancing `_ts`.
+An ordinary edit stays hidden while its positive deletion stamp remains. To restore one
+record deliberately, first join the known copies, keep its unchanged `_f` clocks, then:
+
+```js
+const at = knownCopies.reduce((clock, S) => Math.max(clock, highestStamp(S)), Date.now()) + 1
+const next = structuredClone(current)
+// Restore/insert the chosen record if absent; do not re-date unchanged fields.
+next.deleted = { ...next.deleted, [key]: { ...next.deleted?.[key], [id]: -at } }
+next._ts = stampChange(current, next, at)
+```
+
+`knownCopies` includes `current` and every other copy available to this action. The clock
+exceeds all known record, field and absolute deletion/add-back stamps. A later concurrent
+removal may still win; handle that through the normal conflict flow. This recipe changes
+visibility, not ownership of concurrent field edits. Do not manufacture newer field clocks
+just to undelete. `stampRestore` remains the dedicated bulk-backup restore path, which
+intentionally restamps the restored content. All three collection keys are exercised through
+`stampChange`, stamped/unstamped server PUTs, both merge orders, and stale ordinary edits in
+`sync-optional.test.js` (F1 cases).
+
+### Reset growth and tolerant writer retries
+
+A reset can learn server-only ids after its first write, without increasing `resetAt`.
+Explicit `resetIds` from that same epoch still add positive tombstones at the epoch time.
+They do not remove newly created ids outside that inventory, override a newer negative
+add-back, or let a guest reset delete a preferred account record. The actual store's delayed
+`resetEverything` follow-up and HTTP PUTs cover all three collection keys (F2 cases).
+
+An identical old/partial-stamp row must retain every already-known unchanged field clock.
+Replaying a payload must not infer a newer clock for an unstamped unchanged field from the
+row's `_ts`; otherwise a third device's genuine edit could be lost (F4 replay cases, called
+F3 in the independent review's final labels).
+
+For an **unstamped PUT without baseRev**, the optional layer now stamps explicit record
+changes after `keepUnknown`, just as for an unstamped write over its read revision. Omitted
+collections and unknown fields are preserved, positive deletion history stays positive,
+and repeat payloads keep unchanged clocks. The HTTP tests exercise edits in both lexical
+directions, omission, partial stamps/replay and malformed records. This changes only optional
+record handling. The legacy `stampUnstamped` function is still gated by `overRead`; it is not
+invoked for these no-base writes. The observed legacy setting replacement (for example
+`restSec: 75`) is unchanged. Clients should still send a revision whenever available to detect
+concurrent changes; a revisionless write does not gain a 409 concurrency check.
+
 ## Compatibility findings and reproducible evidence
 
 Paths below are relative to `frontend/src/lib/` unless qualified. Tests use synthetic data

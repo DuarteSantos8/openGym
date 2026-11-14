@@ -131,7 +131,8 @@ export function mergeOptionalCollections(a, b, out, { prefer } = {}) {
     // A reset supplies ids, not wall-clock guesses. Legacy resets have only their time.
     for (const [reset, other] of [[a, b], [b, a]]) {
       const at = optionalTime(reset?.resetAt)
-      if (!at || at <= optionalTime(other?.resetAt)) continue
+      const otherAt = optionalTime(other?.resetAt)
+      if (!at || at < otherAt || (at === otherAt && !isMap(reset.resetIds))) continue
       const ids = isMap(reset.resetIds) ? list(reset.resetIds[key]) : optionalRows(other?.[key]).filter(x => optionalTime(x._ts) <= at).map(x => x.id)
       for (const id of ids) if (typeof id === 'string' && optionalKey(id) && !(preferred && reset !== preferred && owned.has(id)) && Math.abs(Number(gone[id]) || 0) < at) gone[id] = at
     }
@@ -164,6 +165,10 @@ export function stampOptionalCollections(prev, next, now) {
         stampEntry(old ? optionalRecord(old) : null, x, now)
         // Initial values also need individual clocks: later edits must not re-date them.
         if (!old) x._f = Object.fromEntries(Object.keys(x).filter(k => !ENTRY_META.has(k) && optionalKey(k)).map(k => [k, now]))
+      } else {
+        // An identical old/partial-stamp payload is not a new edit. Keep known field clocks
+        // instead of letting optionalRecord infer them again from the incoming entry time.
+        x._f = mergeEdits(optionalRecord(old)._f, x._f) || {}
       }
       before.delete(x.id)
       return x
@@ -738,7 +743,7 @@ export function stampPut(cur, next, { overRead = false, stamped = false, now = D
     if (before != null && content(next) !== before) report.changed = true;
   }
   const optionalBefore = !stamped && report ? content(next) : null;
-  if (!stamped && overRead && !reset) stampOptionalCollections(cur, next, t);
+  if (!stamped && !reset) stampOptionalCollections(cur, next, t);
   mergeOptionalCollections(cur, next, next);
   if (optionalBefore != null && content(next) !== optionalBefore) report.changed = true;
   keepHeld(next, t);

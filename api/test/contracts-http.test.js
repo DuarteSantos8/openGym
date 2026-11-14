@@ -97,18 +97,18 @@ test('HTTP optional profile compatibility: PUT, 409, old writers, tombstones, re
       assert.ok(visibleOptionalEntries(state, key).some(x => x.id === 'f2new'))
       assert.ok(!visibleOptionalEntries(state, key).some(x => x.id === 'f2b'))
     })
-    await t.test(`F4 HTTP ${key}: repeated partial-stamp payload does not advance unchanged distance`, async () => {
+    for (const noBase of [false, true]) await t.test(`F4 HTTP ${key} noBase=${noBase}: repeated partial-stamp payload does not advance unchanged distance`, async () => {
       let current = await get()
-      const base = { ...current.state, [key]: [{ id: 'f4', distanceM: 3, _ts: 286, _f: { distanceM: 286 } }] }
+      const base = { ...current.state, [key]: [{ id: noBase ? 'f4-no-base' : 'f4', distanceM: 3, _ts: 286, _f: { distanceM: 286 } }] }
       await put({ state: base, baseRev: current.rev, stamped: true })
       current = await get()
-      const payload = { ...current.state, [key]: [{ id: 'f4', distanceM: 3, note: 'x', _ts: 495, _f: { note: 495 } }] }
-      await put({ state: payload, baseRev: current.rev })
+      const payload = { ...current.state, [key]: [{ id: noBase ? 'f4-no-base' : 'f4', distanceM: 3, note: 'x', _ts: 495, _f: { note: 495 } }] }
+      await put({ state: payload, ...(noBase ? {} : { baseRev: current.rev }) })
       const first = await get()
-      await put({ state: payload, baseRev: first.rev })
+      await put({ state: payload, ...(noBase ? {} : { baseRev: first.rev }) })
       const second = await get()
-      assert.equal(first.state[key].find(x => x.id === 'f4')._f.distanceM, 286)
-      assert.equal(second.state[key].find(x => x.id === 'f4')._f.distanceM, 286)
+      assert.equal(first.state[key].find(x => x.id === (noBase ? 'f4-no-base' : 'f4'))._f.distanceM, 286)
+      assert.equal(second.state[key].find(x => x.id === (noBase ? 'f4-no-base' : 'f4'))._f.distanceM, 286)
     })
   }
 
@@ -144,6 +144,6 @@ test('HTTP optional profile compatibility: PUT, 409, old writers, tombstones, re
     const row = { id: 'large', _f: Object.fromEntries(Array.from({ length: 150000 }, (_, i) => [`f${i}`, 1])) }
     const r = await put({ state: { workouts: [], providerLinks: [row] }, baseRev: current.rev, stamped: true })
     assert.equal(r.status, 200)
-    assert.equal((await get()).state.providerLinks[0]._ts, 1)
+    assert.equal((await get()).state.providerLinks.find(x => x.id === 'large')._ts, 1)
   })
 })
