@@ -59,8 +59,8 @@ export function DevicesSheet({ close }) {
         return <div className="dev-item" key={r.id}>
           <Row icon={TILE[r.kind]} title={r.device || NAME[r.kind]()} subtitle={detail(r)}>
             {r.bpm != null && <span className="dev-bpm">{r.bpm} bpm</span>}
-            {r.speed && <span className="dev-speed"><Icon name="bars" />{r.speed === 'fast' ? t('Fast') : t('Slow')}</span>}
-            <span className={'dev-state' + (r.warn ? ' warn' : '')}><Icon name={glyph} />{word()}</span>
+            {r.speed && <span className={'dev-speed ' + r.speed}><Icon name="bars" />{r.speed === 'fast' ? t('Fast') : t('Slow')}</span>}
+            <span className={'dev-state' + (r.warn ? ' warn' : r.state === 'live' || r.state === 'ok' ? ' ok' : '')}><Icon name={glyph} />{word()}</span>
           </Row>
           {down && r.pending && <div className="small dim dev-note">{t('Your changes wait on this phone')}</div>}
           {r.fix === 'watchSettings' && <Button className="dev-fix" onClick={() => closeThenNav(close, '/settings/watch')}>{t('Open Watch settings')}</Button>}

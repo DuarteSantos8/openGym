@@ -1380,6 +1380,10 @@ body.chips-dragging *{cursor:inherit}
 .dev-state,.dev-speed{display:inline-flex;align-items:center;gap:4px;flex:none;font-size:var(--fs-footnote);font-weight:600;color:var(--label-2)}
 .dev-state .icn,.dev-speed .icn{width:16px;height:16px}
 .dev-state.warn{color:var(--orange)}
+/* a link that syncs: its glyph in the button's status green, with the same soft glow; the word keeps the label colour to stay readable */
+.dev-item{--lit:var(--green)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-item{--lit:#1f9d48}}
+.dev-state.ok .icn,.dev-speed.fast .icn{color:var(--lit);filter:drop-shadow(0 0 3px var(--lit))}
 .dev-bpm{flex:none;font-size:var(--fs-footnote);color:var(--label-2)}
 .dev-note{padding:0 14px 10px 55px}
 .dev-fix{width:auto;min-height:44px;margin:0 14px 12px 55px}
