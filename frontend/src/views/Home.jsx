@@ -10,6 +10,7 @@ import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starter
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
+import MetricCard from '../components/MetricCard.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
@@ -229,14 +230,9 @@ export default function Home() {
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
+          <MetricCard label={t('Body weight')} value={fmtNum(bw.w)} unit={S.unit} delta={delta || 0}
+            deltaText={delta ? fmtNum(Math.abs(delta)) : undefined} deltaColor={delta ? bwDeltaColor(delta, bw.w) : undefined} />
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (
