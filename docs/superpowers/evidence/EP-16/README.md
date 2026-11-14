@@ -1,6 +1,6 @@
 # MVP combined acceptance record
 
-Status: **final review findings closed; corrected acceptance passed, not release approval**. Parent working branch:
+Status: **final review findings closed; corrected acceptance passed; ready for draft integration review, not release approval**. Parent working branch:
 `room/autonomous-project-resumption-orchestrat-djus`. The full acceptance commands below
 ran after the final EP-05b source review. The [whole-branch review](independent-review-round1.md)
 found a missing UUID fallback on supported plain-HTTP LAN origins plus a stale Modules-guide
@@ -16,7 +16,7 @@ The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-
 | EP-03 volume plus assistance corrections | final6434f47c, runtime7a0d9f4c | Original PR9 merged externally; correctionf6e9dafb..1940ebdf | [Final scoped PASS](../EP-03-parent-review/independent-fix2-review.md);414 focused tests; browser; earlier failure preserved |
 | EP-04 diary and adoption/validation corrections | finalddcd1be5, runtime0ac5cbc8 (identical to reviewedfe22da11) | faede047..7d9423bd,50 source/test/contract paths identical | [Scoped PASS](../EP-04-parent-review/independent-fix1-review.md);218 focused frontend/47API; browser/backup evidence |
 | EP-05a server lookup | finalc976b963, runtime176b1698 | Original task cherry-picks then external PR11 merge470defb7 | [Independent PASS](../EP-05-parent-review/independent-review.md); FE7917/API911/MCP140; three live requests exhausted |
-| EP-05b preview and saved source snapshot | final1ee7d922, reviewed runtime762f48a5; [draftPR14](https://github.com/sorensadrgit-art/openGym/pull/14) | d9b54358..ef571176 plus evidence; source/tests/operator docs identical | [Scoped PASS](../EP-05b-parent-review/independent-fix1-review.md);172 focused tests, browser/build; EOF evidence cleanup verified |
+| EP-05b preview and saved source snapshot | final1ee7d922, reviewed runtime762f48a5; [PR14 merged externally](https://github.com/sorensadrgit-art/openGym/pull/14) | d9b54358..ef571176 plus evidence; source/tests/operator docs identical | [Scoped PASS](../EP-05b-parent-review/independent-fix1-review.md);172 focused tests, browser/build; EOF evidence cleanup verified |
 | Final whole-branch UUID/guide correction | final766a99a2, runtime0a56181b | dd3eabdd..88927683; source/tests/guide identical | [Scoped PASS](independent-fix-review.md);37 focused/171 covering tests, natural insecure-HTTP browser proof |
 
 Original task/review failures are retained, not turned into passes by later focused checks.
@@ -140,3 +140,13 @@ Owned API/Vite/Chromium PIDs52659/52689/52731, then53409/53439/53481 were stoppe
 No production data, credentials, licensed exercise media or raw browser session cookies belong
 in these artifacts. All browser records are synthetic; the final lookup UI uses a local
 synthetic HTTPS boundary for provider responses while retaining real route/auth/normalization.
+
+## Updated integration and final disposition
+
+External PR12/13/14 merges advanced integration to ccf8188a and introduced duplicate syntax
+blocks. [Reconciliation evidence](upstream-merge-reconciliation.md) records the failing upstream
+parse and the ancestry merge preserving our exact passing tree. Final source remains identical
+to tested bb123447; all review findings are closed. The candidate is ready for draft integration
+review; release/platform gates above remain blocked or unverified. No production approval is
+implied. The final reviewer's Declined-to-judge items are accepted as the documented environment,
+optional-track and historical-client limits, not silently cleared or newly implemented scope.
