@@ -53,6 +53,18 @@ describe('sheet exit ghost', () => {
     expect(g.querySelector('[id]')).toBeNull()
   })
 
+  it('keeps the scroll position of the sheet and of a scroller inside it', async () => {
+    await set([a])
+    const sheet = document.querySelector('#modal-root .sheet')
+    sheet.scrollTop = 120
+    const inner = document.createElement('div'); sheet.appendChild(inner); inner.scrollTop = 30
+    // the clone is taken when the sheet closes; the inner one stays in the sheet's DOM until then
+    await set([])
+    const g = ghosts()[0].querySelector('.sheet')
+    expect(g.scrollTop).toBe(120)
+    expect(g.lastElementChild.scrollTop).toBe(30)
+  })
+
   it('goes on animationend, and by a fallback timer', async () => {
     await set([a]); await set([])
     ghosts()[0].querySelector('.sheet').dispatchEvent(new Event('animationend', { bubbles: true }))

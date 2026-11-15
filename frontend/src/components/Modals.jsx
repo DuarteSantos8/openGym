@@ -56,6 +56,9 @@ function exitGhost(node) {
   g.className = 'sheet-ghost'
   g.setAttribute('aria-hidden', 'true'); g.inert = true
   const c = node.cloneNode(true)
+  // A clone starts scrolled to the top; read the pairs before the copy loses any element.
+  const was = [node, ...node.querySelectorAll('*')], copy = [c, ...c.querySelectorAll('*')]
+  const pairs = was.map((n, i) => [n, copy[i]]).filter(([n]) => n.scrollTop || n.scrollLeft)
   c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'))
   // Handed off to another sheet: its rows fade in 100 ms (CSS .is-handoff) while it slides, so two sheets' text is never readable together.
   if (useUI.getState().sheets.length) { c.querySelector('.mback')?.remove(); g.classList.add('is-handoff') }
@@ -64,6 +67,7 @@ function exitGhost(node) {
   g.addEventListener('animationend', e => { if (e.target.classList?.contains('sheet') && e.animationName !== 'dimout') done() })
   setTimeout(done, 400)
   document.body.appendChild(g)
+  for (const [n, k] of pairs) { k.scrollTop = n.scrollTop; k.scrollLeft = n.scrollLeft }
   return g
 }
 
