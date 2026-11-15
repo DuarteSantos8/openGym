@@ -98,6 +98,54 @@ describe('BodyMap interaction semantics', () => {
 // the difference is carried by fill colour alone. The interactive branch above already solves
 // this by naming one shape per muscle and hiding the rest; this is the same treatment for the
 // branch that has no tap handler, where there is nothing to name per shape.
+// The guard at the end of this file reads source rather than the rendered tree, so a new call
+// site cannot be added without deciding what a screen reader gets from it. It is here at module
+// scope, and fed made-up sources by its own test, because both ways it can fail are silent: it
+// can miss a site, and it can excuse one that needs naming.
+
+// The element's own opening tag, ending at the first ">" outside braces so that a prop holding an
+// arrow function (onMuscle={() => pick(m)}) does not cut it short. A window of lines around the
+// call is not the same thing: it takes in a <button> that closed above the map and a sibling's
+// aria-hidden below it, neither of which says anything about the map between them.
+const openTag = (text, from) => {
+  let depth = 0
+  for (let i = from; i < text.length; i++) {
+    if (text[i] === '{') depth++
+    else if (text[i] === '}') depth--
+    else if (text[i] === '>' && depth === 0) return text.slice(from, i + 1)
+  }
+  return text.slice(from)
+}
+
+// Two sites are decoration without a marker on the map itself, because the element wrapped around
+// them carries it. Both were read in Chrome's accessibility tree, not assumed:
+//  - the session's header button, whose aria-label names it. A <button aria-label> hides its
+//    subtree where role="img" does not, so the 116 shapes under it are not exposed;
+//  - the Wrapped card, whose wrapper is aria-hidden, the way MiniBodyMap hides itself.
+// Matched on the text of the call, not on a line number (any unrelated edit above would move it)
+// and not on neighbouring lines. Reformat one and the guard fails and points at it.
+const DECORATION_BY_ANCESTOR = [
+  '<BodyMap className="bm-mini bm-session"',
+  '<BodyMap load={st.load} body={body} />',
+]
+
+/** The maps in `text` that are neither tappable, named, nor hidden. */
+function unnamedMaps(text) {
+  const lines = text.split('\n')
+  const out = []
+  // \b, not a space: a call site written over several lines starts with "<BodyMap" alone, and a
+  // guard that quietly stopped seeing it would be worse than no guard. Still excludes
+  // <BodyMapLegend, which is a different component.
+  for (const m of text.matchAll(/<BodyMap\b/g)) {
+    const tag = openTag(text, m.index)
+    if (/onMuscle|aria-hidden|hits=/.test(tag)) continue
+    if (DECORATION_BY_ANCESTOR.some(named => tag.startsWith(named))) continue
+    const no = (text.slice(0, m.index).match(/\n/g) || []).length + 1
+    out.push({ line: no, snippet: (lines[no - 1] || '').trim() })
+  }
+  return out
+}
+
 describe('BodyMap as a read-only picture', () => {
   // Leaving the app in German would send every later test in this file looking for German names.
   afterEach(() => _setLangState('en', null, null, null))
@@ -172,34 +220,6 @@ describe('BodyMap as a read-only picture', () => {
   // A read-only map with no `hits` is silent: its shapes are hidden and nothing replaces them.
   // Right for decoration, a hole for content, so every call site has to say which it is. This
   // walks the tree rather than a list of files so a new one cannot slip in unnamed.
-  //
-  // Only the element's own opening tag counts. A window of lines around it accepts a map next to
-  // an aria-hidden that belongs to something else -- a closed <button> above it, a <div> below.
-  // The tag ends at the first ">" outside braces, so a prop holding an arrow function
-  // (onMuscle={() => pick(m)}) does not cut it short.
-  const openTag = (text, from) => {
-    let depth = 0
-    for (let i = from; i < text.length; i++) {
-      if (text[i] === '{') depth++
-      else if (text[i] === '}') depth--
-      else if (text[i] === '>' && depth === 0) return text.slice(from, i + 1)
-    }
-    return text.slice(from)
-  }
-
-  // Two sites are decoration without a marker on the map itself, because the element wrapped
-  // around them carries it. Both were read in Chrome's accessibility tree, not assumed:
-  //  - the session's header button, whose aria-label names it. A <button aria-label> hides its
-  //    subtree where role="img" does not, so the 116 shapes under it are not exposed;
-  //  - the Wrapped card, whose wrapper is aria-hidden, the way MiniBodyMap hides itself.
-  // Matched on the text of the call, not on a line number (any unrelated edit above would move
-  // it) and not on neighbouring lines (a closed button does not name the map, and a sibling's
-  // aria-hidden is not the map's). Reformat one and this test fails and points at it.
-  const DECORATION_BY_ANCESTOR = [
-    '<BodyMap className="bm-mini bm-session"',
-    '<BodyMap load={st.load} body={body} />',
-  ]
-
   it('gives every call site one of the three treatments', async () => {
     const fs = await import('node:fs')
     const path = await import('node:path')
@@ -213,21 +233,27 @@ describe('BodyMap as a read-only picture', () => {
     const offenders = []
     for (const f of files) {
       if (f.endsWith('BodyMap.jsx') || f.endsWith('MiniBodyMap.jsx')) continue
-      const text = fs.readFileSync(f, 'utf8')
-      // \b, not a space: a call site written over several lines starts with "<BodyMap" alone, and
-      // a guard that quietly stopped seeing it would be worse than no guard. Still excludes
-      // <BodyMapLegend, which is a different component.
-      for (const m of text.matchAll(/<BodyMap\b/g)) {
-        const tag = openTag(text, m.index)
-        if (/onMuscle|aria-hidden|hits=/.test(tag)) continue
-        if (DECORATION_BY_ANCESTOR.some(named => tag.startsWith(named))) continue
-        // The whole line, not what precedes the match: a call site at the start of a line would
-        // otherwise be reported with an empty snippet, and the report is the only lead a reader
-        // who breaks this gets.
-        const no = (text.slice(0, m.index).match(/\n/g) || []).length + 1
-        offenders.push(path.relative(src, f).split(path.sep).join('/') + ':' + no + '  ' + (text.split('\n')[no - 1] || '').trim().slice(0, 70))
-      }
+      const rel = path.relative(src, f).split(path.sep).join('/')
+      unnamedMaps(fs.readFileSync(f, 'utf8')).forEach(o => offenders.push(rel + ':' + o.line + '  ' + o.snippet.slice(0, 70)))
     }
     expect(offenders).toEqual([])
+  })
+
+  // The two ways that guard fails are silent, so they are tested rather than trusted. Every case
+  // here was a live hole at some point while this was being written.
+  it.each([
+    ['a button that closed above the map', '<button aria-label="Open">Open</button>\n<BodyMap load={{}} />'],
+    ['a sibling aria-hidden below the map', '<BodyMap load={{}} />\n<div aria-hidden="true" />'],
+    ['a call site written over several lines', '<BodyMap\n  load={{}}\n  body="male"\n/>'],
+  ])('still reports %s', (_case, source) => {
+    expect(unnamedMaps(source)).toHaveLength(1)
+  })
+
+  it.each([
+    ['a prop holding an arrow function', '<BodyMap load={{}} onMuscle={() => pick("chest")} />'],
+    ['hits= on a line of its own', '<BodyMap\n  load={{}}\n  hits={["chest"]}\n/>'],
+    ['a legend beside the map', '<BodyMap load={{}} hits={["chest"]} />\n<BodyMapLegend />'],
+  ])('does not report %s', (_case, source) => {
+    expect(unnamedMaps(source)).toHaveLength(0)
   })
 })
