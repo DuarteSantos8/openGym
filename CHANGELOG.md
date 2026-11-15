@@ -26,6 +26,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Indonesian: more natural wording across the app, the watch and the trainer notifications (#1238, thanks @m-ridha).
 - Bengali: the newer strings say আপনি and use everyday wording like the rest (#1234, thanks @mrjohndoel).
 - Fixed: with a rotation and Workouts per week set, Planned sets in Stats follow your week instead of one turn of the loop. A loop of six sessions at four a week plans four sixths of its sets, and a routine the loop names twice counts twice (#1249, thanks @avikl).
+- Fixed: on an exercise's page, "Your photo or video" and the description under it no longer touch. There is a gap between the two cards now (#1260, thanks @unabomberlive).
 
 ## v1.4.5 (2026-11-14)
 

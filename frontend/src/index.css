@@ -1406,7 +1406,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 .own-wrap .own-flip:active{transform:scale(.96);background:rgba(0,0,0,.6)}
 .own-wrap .own-flip .icn{font-size:var(--fs-footnote)}
-.own-media{margin-top:4px}
+/* The gap under it is the description's own (.exnote): the two cards sat flush (#1260). */
+.own-media{margin:4px 0 10px}
 /* superset: both exercises are on screen together, so the animations have to give way —
    at 180px you had to scroll a full screen between two exercises done back-to-back */
 .exmedia.compact img{height:120px}
