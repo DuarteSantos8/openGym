@@ -209,6 +209,16 @@ test('the level is a rung of the compatibility ladder, given up before JSON mode
     'losing the level is cheaper than losing the JSON contract');
 });
 
+test('a spec with only some rungs survives a 400 naming one it does not have', async () => {
+  // anthropic and gemini carry an `effort` rung and nothing else, because the other rungs are
+  // Chat Completions shapes they never send. A 400 that names one of those must not be answered
+  // by calling a step that does not exist; the provider's own words are the answer.
+  const f = async () => reply(400, { error: { message: "Unsupported value: 'temperature' does not support 0 with this model." } });
+  const r = await anthropic.invoke({ cfg: { provider: 'anthropic' }, prompt: 'P', env: { ANTHROPIC_API_KEY: 'k' }, model: 'claude-x', fetch: f, stream: false });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /temperature/, 'the provider\'s own words, not a crash');
+});
+
 test('a cut-off answer says which level was thinking, so the fix is obvious', async () => {
   const f = async () => reply(200, { choices: [{ message: { content: '{"coach_contract":1' }, finish_reason: 'length' }] });
   const r = await ask((await import('../coach/core/adapters/compatible.js')).default, at(), f);
