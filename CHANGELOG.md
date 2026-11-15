@@ -9,6 +9,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: "Add several at once" for a weight stack or your dumbbells opens the full keyboard on the phone. The number pad had no Return and no space, so on an iPhone a list could not be typed, only pasted (#926, thanks @johannes1984).
 - Android: when pairing cannot reach your server, the message now ends with what the phone itself said (no such host, an untrusted certificate, connection refused), so "my browser opens it" has an answer (#870).
 - Fixed: a timed exercise done per side no longer runs off the right edge of the phone. Left and Right are the short L and R badge there, as on a reps exercise (#1239, thanks @DomHeadroom).
+- F-Droid build: the app's own code is shrunk with R8 now (about 12 MB down to 2.4 MB), as F-Droid asked. The other Android builds are unchanged.
 
 ## v1.4.5 (2026-11-14)
 
