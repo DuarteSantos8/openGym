@@ -5908,4 +5908,10 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "ปรับแต่ง",
+  "Collapsed": "ย่อไว้",
+  "Hide": "ซ่อน",
+  "Totals": "ยอดรวม",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
 }

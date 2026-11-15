@@ -5976,4 +5976,10 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "কাস্টমাইজ করুন",
+  "Collapsed": "গুটানো",
+  "Hide": "লুকান",
+  "Totals": "মোট",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
 }

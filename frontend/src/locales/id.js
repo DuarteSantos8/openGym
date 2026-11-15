@@ -5862,4 +5862,10 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Sesuaikan",
+  "Collapsed": "Diciutkan",
+  "Hide": "Sembunyikan",
+  "Totals": "Total",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Panah mengubah urutannya.",
 };

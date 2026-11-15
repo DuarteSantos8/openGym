@@ -10,6 +10,8 @@ import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf,
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, tn, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { Arranged, CustomizeLink } from '../components/PageLayout.jsx'
+import { groupHidden } from '../lib/page-layout.js'
 import { nameIn } from '../lib/a11y-name.js'
 import { lifetimeTotals, likenessOf } from '../lib/lifetime.js'
 import { LB_KG } from '../lib/units.js'
@@ -872,9 +874,12 @@ export default function Stats() {
   const effortCard = effortOn && (hasEffort(S) || hasEstimableEffort(S))
   const timeCard = workouts.some(w => entryTimes(w).length)
   // With Effort off the time per exercise moves to the end of Lifts, so no part is a lone card.
-  const hasEffortSect = effortCard || (effortOn && timeCard)
+  // Hidden in Customize: a part whose cards are all hidden goes with them (Body and Lifts keep
+  // their list of pages, so they stay).
+  const gone = g => groupHidden(S, 'stats', g)
+  const hasEffortSect = (effortCard || (effortOn && timeCard)) && !gone('effort')
   const sections = [
-    { value: 'overview', label: t('Overview') },
+    ...(gone('overview') ? [] : [{ value: 'overview', label: t('Overview') }]),
     ...(bodyOn ? [{ value: 'body', label: t('Body') }] : []),
     { value: 'lifts', label: t('Lifts') },
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
@@ -921,11 +926,14 @@ export default function Stats() {
         scroll finds it. /stats?section=lifts (and body, effort) opens on that part. */}
     <StatsIndex sections={sections} />
 
-    <section className="stats-sect" id="stats-overview" data-stats-sect="overview" aria-label={t('Overview')}>
+    {!gone('overview') && <section className="stats-sect" id="stats-overview" data-stats-sect="overview" aria-label={t('Overview')}>
     {/* The headline numbers as one divided card: three across, the lifetime total under them at
         full width (a few hundred sessions make a long number). The week streak is not a tile any
         more: it is the card right below, once. */}
-    <div className={'kpis' + (bodyOn ? '' : ' two')} data-tour="stats-tiles">
+    {/* The cards of each part are yours to arrange (Customize at the end of the page,
+        components/PageLayout.jsx); a card stays in its own part. */}
+    <Arranged page="stats" S={S} items={[
+      { id: 'totals', node: <div className={'kpis' + (bodyOn ? '' : ' two')} data-tour="stats-tiles">
       <div className="tile"><div className="l">{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l">{t('This month')}</div><div className="v">{monthW}</div></div>
       {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
@@ -936,17 +944,15 @@ export default function Stats() {
         <div className="small muted lifetime-sub" data-lifetime-totals>{[tn('{0} workout', '{0} workouts', totals.workouts), tn('{0} set', '{0} sets', totals.sets), ...(totals.hours >= 1 ? [t('{0} h', fmtNum(Math.round(totals.hours)))] : [])].join(' · ')}</div>
         {likeness && <div className="small lifetime-like">{likeness}</div>}
       </div>}
-    </div>
-
-    {workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} />}
-    {/* The month's challenges and the trophy shelf (lib/challenges.js), folded to one line. */}
-    {workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} />}
-    {/* Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say. */}
-    {on('health') && <DailyFormCard S={S} />}
-    {/* Cardio minutes a week, with a goal if you set one (D#84). */}
-    {workouts.length > 0 && <CardioWeekCard S={S} />}
-
-    <div className="card">
+    </div> },
+      { id: 'streak', node: workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} /> },
+      // The month's challenges and the trophy shelf (lib/challenges.js), folded to one line.
+      { id: 'challenges', node: workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} /> },
+      // Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say.
+      { id: 'dailyform', node: on('health') && <DailyFormCard S={S} /> },
+      // Cardio minutes a week, with a goal if you set one (D#84).
+      { id: 'cardio', node: workouts.length > 0 && <CardioWeekCard S={S} /> },
+      { id: 'activity', node: <div className="card">
       <SeasonDeco spot="stats-heatmap" />
       <h2>{t('Activity (last 12 months)')}</h2>
       <Heatmap
@@ -955,21 +961,21 @@ export default function Stats() {
         onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
         onDay={iso => { const ws = workouts.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso); else dayOverrideSheet(iso) }}
       />
-    </div>
-
-    {workouts.length > 0 && <>
+    </div> },
+      { id: 'recent', node: workouts.length > 0 && <div>
       <div className="row between stats-list-h">
         <h4 className="sec" style={{ margin: 0 }}>{t('Recent workouts')}</h4>
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {workouts.length}</Button>
       </div>
       <div className="list">{recent.map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
-    </>}
+    </div> },
+    ]} />
 
-    </section>
+    </section>}
 
     {bodyOn && <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
       <h2 className="stats-sect-h" id="stats-h-body">{t('Body')}</h2>
-    <div className="card">
+    <Arranged page="stats" S={S} items={[{ id: 'bodyweight', node: <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 8 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
         <div className="row" style={{ gap: 8 }}>
@@ -987,13 +993,14 @@ export default function Stats() {
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </div>}
       <SeasonDeco spot="stats-web" />
-    </div>
+    </div> }]} />
       {statsLinks}
     </section>}
 
     <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
       <h2 className="stats-sect-h" id="stats-h-lifts">{t('Lifts')}</h2>
-    <div className="card" data-tour="stats-records">
+    <Arranged page="stats" S={S} items={[
+      { id: 'progress', node: <div className="card" data-tour="stats-records">
       <SeasonDeco spot="stats-peek" />
       <h2>{t('Exercise progress')}</h2>
       {exHist.length ? <>
@@ -1058,18 +1065,22 @@ export default function Stats() {
           </div>
         })}</div>
       </> : <div className="muted small">{t('Finish your first workout and your progress curves will show up here.')}</div>}
-    </div>
-    {(workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MusclesCard S={S} planFocus={planFocus} />}
-    {/* Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in. */}
-    {workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} />}
-    {!effortOn && timeCard && <ExerciseTimeCard S={S} />}
+    </div> },
+      { id: 'muscles', node: (workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MusclesCard S={S} planFocus={planFocus} /> },
+      // Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in.
+      { id: 'strength', node: workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} /> },
+      { id: 'time', node: !effortOn && timeCard && <ExerciseTimeCard S={S} /> },
+    ]} />
     {!bodyOn && statsLinks}
     </section>
 
     {hasEffortSect && <section className="stats-sect" id="stats-effort" data-stats-sect="effort" aria-labelledby="stats-h-effort">
       <h2 className="stats-sect-h" id="stats-h-effort">{t('Effort')}</h2>
-    {effortCard && <EffortCard S={S} />}
-    {timeCard && <ExerciseTimeCard S={S} />}
+    <Arranged page="stats" S={S} items={[
+      { id: 'effort', node: effortCard && <EffortCard S={S} /> },
+      { id: 'time', node: timeCard && <ExerciseTimeCard S={S} /> },
+    ]} />
     </section>}
+    <CustomizeLink page="stats" />
   </>
 }

@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Home and Stats are yours to arrange: Customize at the end of either page (or Settings → Look & Home) shows, collapses or hides each card and moves it up or down. A collapsed card is one line that opens on a tap. On Stats a card stays in its own part (Overview, Body, Lifts, Effort), and a part with nothing left in it disappears. It syncs with your profile (#1119, thanks @seals187 and Drakwen on Discord).
 - Fixed: "Add several at once" for a weight stack or your dumbbells opens the full keyboard on the phone. The number pad had no Return and no space, so on an iPhone a list could not be typed, only pasted (#926, thanks @johannes1984).
 - Android: when pairing cannot reach your server, the message now ends with what the phone itself said (no such host, an untrusted certificate, connection refused), so "my browser opens it" has an answer (#870).
 - Fixed: a timed exercise done per side no longer runs off the right edge of the phone. Left and Right are the short L and R badge there, as on a reps exercise (#1239, thanks @DomHeadroom).

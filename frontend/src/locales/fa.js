@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "سفارشی‌سازی",
+  "Collapsed": "جمع‌شده",
+  "Hide": "پنهان",
+  "Totals": "مجموع‌ها",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
 }

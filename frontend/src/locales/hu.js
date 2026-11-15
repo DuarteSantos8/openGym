@@ -5900,4 +5900,10 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Testreszabás",
+  "Collapsed": "Összecsukva",
+  "Hide": "Elrejtés",
+  "Totals": "Összesítők",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
 }

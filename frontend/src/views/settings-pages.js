@@ -278,6 +278,7 @@ export const SEARCH = [
   { page: 'look', title: 'Exercise drawings', icon: 'figureStrength', tint: 'var(--teal)', kw: 'figure male female woman man picture', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Set up an NFC sticker', icon: 'nfc', tint: 'var(--blue)', mod: 'checkin', kw: 'nfc sticker tag tap check in start workout locker machine', when: c => !!c.nfc },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'weight card home' },
+  { page: 'look', title: 'Customize', icon: 'layout', tint: 'var(--blue)', kw: 'customize customise arrange reorder order hide collapse fold cards tiles home stats layout personalize move' },
   { page: 'look', title: 'Recovery tips', icon: 'figureStrength', tint: 'var(--green)', mod: 'health', kw: 'recovery recovering rest muscle fatigue hint tip card home sore' },
   { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', mod: 'motivation', kw: 'recap summary weekly monthly report your week your month card home share' },
   { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
