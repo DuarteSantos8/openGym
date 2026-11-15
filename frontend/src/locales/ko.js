@@ -5897,4 +5897,19 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "운동 상세 정보에서",
+  "Your level on a main lift, beside its records.": "주요 리프트의 근력 수준, 기록 옆에.",
+  "Strength levels in Stats": "통계의 근력 수준",
+  "Every main lift with its level, in one card.": "주요 리프트마다 수준을 한 카드에.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "홈 카드, 운동 전 체중 측정, 목표와 체중 그래프.",
+  "Circumferences and your own fields.": "둘레 치수와 직접 만든 항목.",
+  "Photos of you over time, side by side.": "시간에 따른 내 사진을 나란히.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "홈, 통계, 캘린더, 워치의 연속 기록.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "한 달에 세 가지 목표와 트로피 선반, 홈과 통계에서.",
+  "Your week and Your month, once one is over.": "한 주나 한 달이 끝나면 보여 주는 이번 주 정리와 이번 달 정리.",
+  "Your year in December and January, and its notification.": "12월과 1월의 올해 정리와 알림.",
+  "A finished workout or a recap as a picture to send.": "끝낸 운동이나 정리를 보낼 수 있는 이미지로.",
+  "Parts of {0}": "{0}의 항목",
+  "{0} is off, so all of it is hidden.": "{0}이(가) 꺼져 있어 모두 숨겨져 있습니다.",
 }

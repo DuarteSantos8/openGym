@@ -5863,4 +5863,19 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "V detailu cviku",
+  "Your level on a main lift, beside its records.": "Tvoje úroveň v hlavním cviku, vedle jeho rekordů.",
+  "Strength levels in Stats": "Úrovně síly ve Statistikách",
+  "Every main lift with its level, in one card.": "Každý hlavní cvik s jeho úrovní, na jedné kartě.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Karta na Domů, vážení před tréninkem, tvůj cíl a graf váhy.",
+  "Circumferences and your own fields.": "Obvody a tvoje vlastní pole.",
+  "Photos of you over time, side by side.": "Tvoje fotky v čase, vedle sebe.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Tvoje série na Domů, ve Statistikách, v kalendáři a na hodinkách.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Tři cíle měsíčně a polička trofejí, na Domů a ve Statistikách.",
+  "Your week and Your month, once one is over.": "Tvůj týden a Tvůj měsíc, jakmile skončí.",
+  "Your year in December and January, and its notification.": "Tvůj rok v prosinci a lednu a jeho oznámení.",
+  "A finished workout or a recap as a picture to send.": "Dokončený trénink nebo shrnutí jako obrázek k odeslání.",
+  "Parts of {0}": "Části: {0}",
+  "{0} is off, so all of it is hidden.": "Modul {0} je vypnutý, takže je vše skryté.",
 }

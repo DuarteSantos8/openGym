@@ -5863,4 +5863,19 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "Trong chi tiết bài tập",
+  "Your level on a main lift, beside its records.": "Cấp độ của bạn ở một bài chính, cạnh các kỷ lục của nó.",
+  "Strength levels in Stats": "Cấp độ sức mạnh trong Thống kê",
+  "Every main lift with its level, in one card.": "Mỗi bài chính kèm cấp độ, trong một thẻ.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Thẻ ở Trang chủ, cân trước buổi tập, mục tiêu và biểu đồ cân nặng.",
+  "Circumferences and your own fields.": "Số đo vòng và các trường của riêng bạn.",
+  "Photos of you over time, side by side.": "Ảnh của bạn theo thời gian, đặt cạnh nhau.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Chuỗi của bạn ở Trang chủ, Thống kê, lịch và trên đồng hồ.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Ba mục tiêu mỗi tháng và kệ cúp, ở Trang chủ và Thống kê.",
+  "Your week and Your month, once one is over.": "Tuần của bạn và Tháng của bạn, khi đã kết thúc.",
+  "Your year in December and January, and its notification.": "Năm của bạn vào tháng 12 và tháng 1, cùng thông báo.",
+  "A finished workout or a recap as a picture to send.": "Buổi tập đã xong hoặc bản tóm tắt dưới dạng ảnh để gửi.",
+  "Parts of {0}": "Các phần của {0}",
+  "{0} is off, so all of it is hidden.": "{0} đang tắt, nên mọi thứ đều bị ẩn.",
 };

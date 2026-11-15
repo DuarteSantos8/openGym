@@ -5862,4 +5862,19 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "Di detail latihan",
+  "Your level on a main lift, beside its records.": "Levelmu di gerakan utama, di samping rekornya.",
+  "Strength levels in Stats": "Level kekuatan di Statistik",
+  "Every main lift with its level, in one card.": "Setiap gerakan utama dengan levelnya, dalam satu kartu.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Kartu di Beranda, timbang sebelum latihan, targetmu, dan grafik berat.",
+  "Circumferences and your own fields.": "Lingkar tubuh dan kolommu sendiri.",
+  "Photos of you over time, side by side.": "Foto dirimu dari waktu ke waktu, berdampingan.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Streak-mu di Beranda, Statistik, kalender, dan jam tangan.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Tiga target sebulan dan rak trofi, di Beranda dan Statistik.",
+  "Your week and Your month, once one is over.": "Minggumu dan Bulanmu, setelah selesai.",
+  "Your year in December and January, and its notification.": "Tahunmu di Desember dan Januari, beserta notifikasinya.",
+  "A finished workout or a recap as a picture to send.": "Latihan yang selesai atau rangkuman sebagai gambar untuk dikirim.",
+  "Parts of {0}": "Bagian dari {0}",
+  "{0} is off, so all of it is hidden.": "{0} mati, jadi semuanya disembunyikan.",
 };

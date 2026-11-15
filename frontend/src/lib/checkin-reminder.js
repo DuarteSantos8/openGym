@@ -18,6 +18,7 @@
 // mirror each other (lib/checkin-reminder.test.js, api/test/checkin-reminder.test.js).
 import { measurementValue, MEASUREMENT_FIELDS, BP_KEY } from './measurements.js'
 import { workoutMediaOf, normalizeMediaRef } from './media-refs.js'
+import { partOn } from './modules.js'
 
 export const DEFAULT_TIME = '07:30'
 export const EVERY_CHOICES = [7, 14, 28]
@@ -80,11 +81,14 @@ export function itemDue(item, last, iso) {
   return (days - item.every) % Math.min(item.every, OVERDUE_EVERY) === 0
 }
 
-/** The keys due on `iso` (none with the reminder off). */
+/** The Body part a key belongs to (Settings → Modules): its reminder pauses while that part is off. */
+const checkinPart = key => key === 'weight' ? 'weight' : key === 'photos' ? 'photos' : 'measurements'
+
+/** The keys due on `iso` (none with the reminder off, none whose Body part is off). */
 export function dueKeys(S, iso) {
   const r = reminderOf(S)
   if (!r.on) return []
-  return Object.entries(r.items).filter(([k, item]) => itemDue(item, lastLogged(S, k, iso), iso)).map(([k]) => k)
+  return Object.entries(r.items).filter(([k, item]) => partOn(S, 'body', checkinPart(k)) && itemDue(item, lastLogged(S, k, iso), iso)).map(([k]) => k)
 }
 
 /** What the day's one notification is about: 'measure', 'photos', 'both' or null. */

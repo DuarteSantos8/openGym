@@ -31,3 +31,17 @@ export const presetCopy = () => ({
   body: [t('Training and body'), t('Plus weigh-ins, measurements, photos and your health apps.')],
   all: [t('Everything'), t('Streaks, the Coach, themes, the lot.')],
 })
+
+/* The parts of a module (PARTS in lib/modules.js), keyed 'module.part'. */
+export const partCopy = () => ({
+  'strength.details': [t('In an exercise’s details'), t('Your level on a main lift, beside its records.')],
+  'strength.list': [t('Strength levels in Stats'), t('Every main lift with its level, in one card.')],
+  'body.weight': [t('Body weight'), t('The Home card, the weigh-in before a workout, your goal and the weight chart.')],
+  'body.measurements': [t('Body measurements'), t('Circumferences and your own fields.')],
+  'body.photos': [t('Progress photos'), t('Photos of you over time, side by side.')],
+  'motivation.streak': [t('Week streak'), t('Your streak on Home, in Stats, in the calendar and on the watch.')],
+  'motivation.challenges': [t('Monthly challenges'), t('Three goals a month and the trophy shelf, on Home and in Stats.')],
+  'motivation.recaps': [t('Week and month recap'), t('Your week and Your month, once one is over.')],
+  'motivation.year': [t('Your year in openGym'), t('Your year in December and January, and its notification.')],
+  'motivation.share': [t('Share as image'), t('A finished workout or a recap as a picture to send.')],
+})

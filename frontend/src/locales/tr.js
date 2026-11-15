@@ -5897,4 +5897,19 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "Bir egzersizin ayrıntılarında",
+  "Your level on a main lift, beside its records.": "Bir ana harekette seviyen, rekorlarının yanında.",
+  "Strength levels in Stats": "İstatistik’te güç seviyeleri",
+  "Every main lift with its level, in one card.": "Her ana hareket seviyesiyle, tek bir kartta.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Ana sayfadaki kart, antrenman öncesi tartı, hedefin ve kilo grafiği.",
+  "Circumferences and your own fields.": "Çevre ölçüleri ve kendi alanların.",
+  "Photos of you over time, side by side.": "Zaman içinde fotoğrafların, yan yana.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Serin Ana sayfada, İstatistik’te, takvimde ve saatte.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Ayda üç hedef ve kupa rafı, Ana sayfada ve İstatistik’te.",
+  "Your week and Your month, once one is over.": "Haftan ve Ayın, bittiğinde.",
+  "Your year in December and January, and its notification.": "Yılın aralık ve ocakta, bildirimiyle birlikte.",
+  "A finished workout or a recap as a picture to send.": "Biten bir antrenman ya da özet, gönderilecek bir resim olarak.",
+  "Parts of {0}": "{0} bölümleri",
+  "{0} is off, so all of it is hidden.": "{0} kapalı, bu yüzden hepsi gizli.",
 }

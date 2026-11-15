@@ -3608,6 +3608,16 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .modules-intro{margin:-2px 4px 14px;padding:0;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2);text-wrap:pretty}
 .module-row .lrow-s{text-wrap:pretty}
 .module-row .sw{flex:none;align-self:center}
+/* A module with parts (#1087): the row past the switch is one button laid over it that unfolds the
+   parts, indented to the title, each with its switch. 77px is the switch, its gap and the padding. */
+.module-open{position:absolute;inset:0;inset-inline-end:77px;padding:0;border:0;border-radius:0;background:none;color:inherit}
+.module-open:active{background:var(--press-fill)}
+.module-open:focus-visible{outline-offset:-3px}
+.module-row:has(> .module-open)>.sw{position:relative;z-index:1}
+.module-row:has(> .module-open)>.lrow-v{white-space:nowrap}
+.module-parts>.lrow{padding-inline-start:55px}
+.module-parts>.lrow::before,.module-parts+.lrow::before{content:'';position:absolute;inset-inline-start:55px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep)}
+.module-parts-off{margin:0;padding:0 14px 11px 55px;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
 .lrow.intg-card{padding:0;gap:0}
 .intg-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:11px 14px;text-align:start;color:inherit;background:none;border-radius:0;
   transition:background-color var(--fast) var(--ease)}

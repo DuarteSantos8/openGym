@@ -34,6 +34,28 @@ A module that is off is gone everywhere it shows: Home, Stats and its index, Set
 rows, the Settings search, tour stops that point at it (they are passed over), notifications it
 would send, widget fields.
 
+## Parts of a module
+
+A module whose surfaces split cleanly has a switch for each part. On Settings → Modules its row has
+a chevron beside the switch: tap the row and the parts unfold under it, each with its own switch
+and a line about what it holds. Folded, the row says how many are on: All, 2 of 3, or Off.
+
+| Module | Parts |
+|---|---|
+| **Strength levels** | In an exercise's details (the level under its records) · Strength levels in Stats (the card). The About you row stays with the module. |
+| **Body** | Body weight (the Home card and its Look & Home switch, the weigh-in before a workout and its setting, the daily weigh-in value, the Stats chart, goal and Weight 30d figure, the widgets' weight) · Body measurements (the screen and its Stats row) · Progress photos (the screen and its Stats row). Stats → Body shows while any of the three is on. |
+| **Motivation** | Week streak (Home, Stats, the calendar's week marks, the streak settings in Look & Home, the watch) · Monthly challenges (the Home card, the Stats card with the trophy shelf, its switch) · Week and month recap (the Home card, its switch, Your month in Stats) · Your year in openGym (its Home card, its Stats rows, the December notification, on the phone and from the server) · Share as image (a finished workout, a recap). Your level and the badges on your profile stay with the module. |
+
+The rules:
+
+- A module that is off hides every part, whatever its switches. Back on, each part is as it was left.
+- The presets set modules only and never touch the parts.
+- A part never set is on.
+- A part off hides its surfaces and pauses what it sends, like a module. Nothing is deleted.
+
+Effort, Plates and warm-ups, Health, Integrations and the single-purpose modules (Form videos,
+Watch, Gym check-in, AI Coach, Community, Seasonal themes) stay one switch.
+
 ## Presets
 
 The row at the top picks a preset for every module at once:
@@ -65,7 +87,8 @@ A module that is connected to something asks once before it goes off and says wh
 ## Sync
 
 The modules are a setting of your profile and sync between your devices like other settings, one
-module at a time: Body off on the phone and Seasonal themes off on the laptop both hold.
+module at a time: Body off on the phone and Seasonal themes off on the laptop both hold. The parts
+sync the same way, one part at a time.
 
 ## The Coach and the MCP server
 
@@ -81,12 +104,20 @@ advice you get or what your own assistant can answer.
   are in `lib/modules-copy.js`, inside `t()` so the string checks see them.
 - `S.modules` is `{ [id]: boolean }` with only the choices made; a missing key is on. It is a
   per-key field in `lib/sync-merge.js` and `api/sync-stamps.js` (`PER_KEY`).
+- The parts are `PARTS` in modules.js, stored in the same map as `'<module>.<part>'` keys
+  (`'body.photos': false`), so each syncs per key with no change to the merge. `moduleStates`,
+  `presetOf`, `onCount` and `turnedOff` walk `MODULE_IDS` and never see them. A screen asks
+  `partOn(S, module, part)`, which is `isOn` and the part's switch; `anyPartOn`, `partsOnCount` and
+  `setPart` serve Stats → Body and the Modules page. Their words are `partCopy` in modules-copy.js.
+  A Settings search entry of a part names it with `part` beside `mod` (ctx.part answers it).
 - Central gates rather than checks in every view where a helper already decides: `effortOf`
   (history.js), `warmupAutoOf` (warmup-ramp.js), `activeSeason` (seasonal.js), `challengesOn`,
   `recapOn`, Wrapped `notifyOn`, `syncHealth` / `readHealth`, the watch snapshot, the Coach gate and
   schedule, `directory()` in lib/integrations.js, and the settings index (`mod` on `PAGES` and
   `SEARCH` entries in views/settings-pages.js).
-- The server reads `S.modules` in three places: the Wrapped push (`api/wrapped.js`), scheduled Coach
-  reviews (`api/coach/core/due.js`) and the webhook hub (`api/integrations/index.js`).
+- The server reads `S.modules` in three places: the Wrapped push (`api/wrapped.js`, which also reads
+  the `motivation.year` part), scheduled Coach reviews (`api/coach/core/due.js`) and the webhook hub
+  (`api/integrations/index.js`).
 - A new module: add it to `MODULES` (and to a preset), its words to `modules-copy.js` and every
-  locale, its `MODULE_KW` search words, then gate its surfaces with `isOn`.
+  locale, its `MODULE_KW` search words, then gate its surfaces with `isOn`. A new part: add it to
+  `PARTS` and `partCopy`, and gate its surfaces with `partOn`.

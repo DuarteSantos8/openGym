@@ -5908,4 +5908,19 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "ในรายละเอียดของท่า",
+  "Your level on a main lift, beside its records.": "ระดับของคุณในท่าหลัก ข้างสถิติสูงสุดของท่านั้น",
+  "Strength levels in Stats": "ระดับความแข็งแรงในสถิติ",
+  "Every main lift with its level, in one card.": "ท่าหลักทุกท่าพร้อมระดับ ในการ์ดเดียว",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "การ์ดในหน้าหลัก การชั่งน้ำหนักก่อนออกกำลังกาย เป้าหมาย และกราฟน้ำหนัก",
+  "Circumferences and your own fields.": "เส้นรอบวงและช่องที่คุณสร้างเอง",
+  "Photos of you over time, side by side.": "รูปของคุณตามเวลา วางเทียบกัน",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "สตรีคของคุณในหน้าหลัก สถิติ ปฏิทิน และบนนาฬิกา",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "สามเป้าหมายต่อเดือนและชั้นถ้วยรางวัล ในหน้าหลักและสถิติ",
+  "Your week and Your month, once one is over.": "สัปดาห์ของคุณและเดือนของคุณ เมื่อจบลง",
+  "Your year in December and January, and its notification.": "ปีของคุณในเดือนธันวาคมและมกราคม พร้อมการแจ้งเตือน",
+  "A finished workout or a recap as a picture to send.": "การออกกำลังกายที่เสร็จหรือสรุป เป็นรูปภาพสำหรับส่ง",
+  "Parts of {0}": "ส่วนของ {0}",
+  "{0} is off, so all of it is hidden.": "{0} ปิดอยู่ ทุกส่วนจึงถูกซ่อน",
 }

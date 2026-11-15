@@ -5900,4 +5900,19 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "Egy gyakorlat részleteiben",
+  "Your level on a main lift, beside its records.": "A szinted egy fő gyakorlatban, a rekordjai mellett.",
+  "Strength levels in Stats": "Erőszintek a Statisztikában",
+  "Every main lift with its level, in one card.": "Minden fő gyakorlat a szintjével, egy kártyán.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "A kártya a Kezdőlapon, a mérlegelés edzés előtt, a célod és a súlygörbe.",
+  "Circumferences and your own fields.": "Körméretek és a saját mezőid.",
+  "Photos of you over time, side by side.": "Fotók rólad az idő során, egymás mellett.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "A szériád a Kezdőlapon, a Statisztikában, a naptárban és az órán.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Havi három cél és a trófeapolc, a Kezdőlapon és a Statisztikában.",
+  "Your week and Your month, once one is over.": "A heted és A hónapod, amikor véget érnek.",
+  "Your year in December and January, and its notification.": "Az éved decemberben és januárban, és az értesítése.",
+  "A finished workout or a recap as a picture to send.": "Egy befejezett edzés vagy összefoglaló képként, elküldésre.",
+  "Parts of {0}": "{0} részei",
+  "{0} is off, so all of it is hidden.": "{0} ki van kapcsolva, így minden rejtve van.",
 }

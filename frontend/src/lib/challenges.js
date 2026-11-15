@@ -33,7 +33,7 @@ import { EXIDX, isCardio, canonicalExId } from './exercises.js'
 import { musclesOf } from './muscles.js'
 import { isoOf, weekKey, weekStartOf } from './format.js'
 import { LB_KG } from './units.js'
-import { isOn } from './modules.js'
+import { partOn } from './modules.js'
 
 export const PICKS = 3
 export const LOOKBACK = 3
@@ -427,6 +427,6 @@ export function shelfOf(S) {
 
 /** Off in Settings → Look & Home → Monthly challenges. */
 // Off in Look & Home, or with the Motivation module (Settings → Modules); the shelf is kept.
-export const challengesOn = S => S?.monthlyChallenges !== false && isOn(S, 'motivation')
+export const challengesOn = S => S?.monthlyChallenges !== false && partOn(S, 'motivation', 'challenges')
 /** Whether the card is put away for `key` (its ×: until next month). */
 export const hiddenFor = (S, key) => S?.challengesHidden === key

@@ -5952,4 +5952,19 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "في تفاصيل التمرين",
+  "Your level on a main lift, beside its records.": "مستواك في تمرين أساسي، بجانب أرقامه القياسية.",
+  "Strength levels in Stats": "مستويات القوة في الإحصائيات",
+  "Every main lift with its level, in one card.": "كل تمرين أساسي بمستواه، في بطاقة واحدة.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "بطاقة الرئيسية، والوزن قبل التمرين، وهدفك ومخطط الوزن.",
+  "Circumferences and your own fields.": "المحيطات وحقولك الخاصة.",
+  "Photos of you over time, side by side.": "صورك عبر الوقت، جنبًا إلى جنب.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "سلسلتك في الرئيسية والإحصائيات والتقويم وعلى الساعة.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "ثلاثة أهداف شهريًا ورف الكؤوس، في الرئيسية والإحصائيات.",
+  "Your week and Your month, once one is over.": "أسبوعك وشهرك، عند انتهائهما.",
+  "Your year in December and January, and its notification.": "سنتك في ديسمبر ويناير، وإشعارها.",
+  "A finished workout or a recap as a picture to send.": "تمرين منتهٍ أو ملخص كصورة لإرسالها.",
+  "Parts of {0}": "أجزاء {0}",
+  "{0} is off, so all of it is hidden.": "{0} متوقف، لذا كل ما فيه مخفي.",
 }

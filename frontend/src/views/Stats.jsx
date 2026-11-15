@@ -52,7 +52,7 @@ import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
-import { isOn } from '../lib/modules.js'
+import { isOn, partOn, anyPartOn } from '../lib/modules.js'
 import { activityStimuli } from '../lib/activities.js'
 import { isoRun } from '../lib/bidi.js'
 
@@ -606,7 +606,9 @@ export default function Stats() {
   const hd = scaleName(kind)
   // Settings → Modules (lib/modules.js): a module switched off takes its parts of Stats with it.
   const on = id => isOn(S, id)
-  const effortOn = on('effort'), bodyOn = on('body'), motivationOn = on('motivation')
+  const effortOn = on('effort')
+  // Body's part of Stats shows while any of its parts does (lib/modules.js PARTS).
+  const bodyOn = anyPartOn(S, 'body'), weightOn = partOn(S, 'body', 'weight')
 
   const bwPts = S.bodyweight.filter(b => range === 0 || weighInAt(b) > now - range * 86400000)
     .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
@@ -880,21 +882,21 @@ export default function Stats() {
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
   ]
   const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
-  const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
+  const wrapped = partOn(S, 'motivation', 'year') ? wrappedYears(S).slice(0, 4) : []
   // Your month (v1.4.5): last month's story once it is over, this month's so far before that.
-  const storyMonth = motivationOn ? offeredMonth(S, todayISO()) : null
+  const storyMonth = partOn(S, 'motivation', 'recaps') ? offeredMonth(S, todayISO()) : null
   const thisYear = new Date().getFullYear()
   const exLegend = onSets && !rangeTooShort && perSetChart.ns.length > 0
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
   // paragraph and an Open button each, dressed as content. Under Body, where two of them live;
   // with the Body module off, at the end of Lifts, without the two that are Body's.
   const linkRows = [
-    bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
+    partOn(S, 'body', 'measurements') && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
     // Also before the first workout wherever a photo can be filed under a day: else the gallery,
     // and its camera, could not be reached to add the very first one.
-    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
+    partOn(S, 'body', 'photos') && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
     workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
     // Every note in one feed (views/Journal.jsx): workouts, sets, exercises, check-ins, days off.
     <Row key="j" title={t('Journal')} subtitle={t('Every note you wrote, in one place.')} accessory="chevron" className="stats-link" onClick={() => nav('/journal')} />,
@@ -925,10 +927,10 @@ export default function Stats() {
     {/* The headline numbers as one divided card: three across, the lifetime total under them at
         full width (a few hundred sessions make a long number). The week streak is not a tile any
         more: it is the card right below, once. */}
-    <div className={'kpis' + (bodyOn ? '' : ' two')} data-tour="stats-tiles">
+    <div className={'kpis' + (weightOn ? '' : ' two')} data-tour="stats-tiles">
       <div className="tile"><div className="l">{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l">{t('This month')}</div><div className="v">{monthW}</div></div>
-      {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
+      {weightOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). */}
       {/* With the rest of the all-time sums under it (Discord, 10-22), and a size to picture. */}
@@ -938,9 +940,9 @@ export default function Stats() {
       </div>}
     </div>
 
-    {workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} />}
+    {workouts.length > 0 && partOn(S, 'motivation', 'streak') && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} />}
     {/* The month's challenges and the trophy shelf (lib/challenges.js), folded to one line. */}
-    {workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} />}
+    {workouts.length > 0 && partOn(S, 'motivation', 'challenges') && <ChallengesStatsCard S={S} />}
     {/* Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say. */}
     {on('health') && <DailyFormCard S={S} />}
     {/* Cardio minutes a week, with a goal if you set one (D#84). */}
@@ -969,7 +971,7 @@ export default function Stats() {
 
     {bodyOn && <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
       <h2 className="stats-sect-h" id="stats-h-body">{t('Body')}</h2>
-    <div className="card">
+    {weightOn && <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 8 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
         <div className="row" style={{ gap: 8 }}>
@@ -987,7 +989,7 @@ export default function Stats() {
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </div>}
       <SeasonDeco spot="stats-web" />
-    </div>
+    </div>}
       {statsLinks}
     </section>}
 
@@ -1061,7 +1063,7 @@ export default function Stats() {
     </div>
     {(workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MusclesCard S={S} planFocus={planFocus} />}
     {/* Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in. */}
-    {workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} />}
+    {workouts.length > 0 && partOn(S, 'strength', 'list') && <StrengthLevelsCard S={S} />}
     {!effortOn && timeCard && <ExerciseTimeCard S={S} />}
     {!bodyOn && statsLinks}
     </section>

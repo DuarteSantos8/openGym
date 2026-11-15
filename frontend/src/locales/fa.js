@@ -5863,4 +5863,19 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "در جزئیات تمرین",
+  "Your level on a main lift, beside its records.": "سطح شما در یک حرکت اصلی، کنار رکوردهایش.",
+  "Strength levels in Stats": "سطوح قدرت در آمار",
+  "Every main lift with its level, in one card.": "هر حرکت اصلی با سطحش، در یک کارت.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "کارت خانه، وزن‌کشی پیش از تمرین، هدف شما و نمودار وزن.",
+  "Circumferences and your own fields.": "دور اندام‌ها و فیلدهای خودتان.",
+  "Photos of you over time, side by side.": "عکس‌های شما در گذر زمان، کنار هم.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "زنجیره هفتگی شما در خانه، آمار، تقویم و روی ساعت.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "سه هدف در ماه و قفسه جام‌ها، در خانه و آمار.",
+  "Your week and Your month, once one is over.": "هفته شما و ماه شما، وقتی تمام شوند.",
+  "Your year in December and January, and its notification.": "سال شما در دسامبر و ژانویه، و اعلانش.",
+  "A finished workout or a recap as a picture to send.": "یک تمرین تمام‌شده یا خلاصه، به‌صورت تصویر برای فرستادن.",
+  "Parts of {0}": "بخش‌های {0}",
+  "{0} is off, so all of it is hidden.": "{0} خاموش است، پس همه‌اش پنهان است.",
 }

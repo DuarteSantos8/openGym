@@ -4326,6 +4326,21 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "Nos detalhes de um exercício",
+  "Your level on a main lift, beside its records.": "Seu nível em um exercício principal, ao lado dos recordes.",
+  "Strength levels in Stats": "Níveis de força nas Estatísticas",
+  "Every main lift with its level, in one card.": "Cada exercício principal com seu nível, em um só cartão.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "O cartão no Início, a pesagem antes do treino, sua meta e o gráfico do peso.",
+  "Circumferences and your own fields.": "Circunferências e seus próprios campos.",
+  "Photos of you over time, side by side.": "Fotos suas ao longo do tempo, lado a lado.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Sua sequência no Início, nas Estatísticas, no calendário e no relógio.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Três metas por mês e a estante de troféus, no Início e nas Estatísticas.",
+  "Your week and Your month, once one is over.": "Sua semana e Seu mês, quando terminam.",
+  "Your year in December and January, and its notification.": "Seu ano em dezembro e janeiro, e a notificação dele.",
+  "A finished workout or a recap as a picture to send.": "Um treino terminado ou um resumo como imagem para enviar.",
+  "Parts of {0}": "Partes de {0}",
+  "{0} is off, so all of it is hidden.": "{0} está desligado, então tudo fica oculto.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

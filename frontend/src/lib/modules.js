@@ -16,6 +16,11 @@
 //     screen, the data is the same (docs/MODULES.md).
 //   - S.modules syncs per key (lib/sync-merge.js PER_KEY and api/sync-stamps.js), so switching
 //     Body off on the phone and Seasonal off on the laptop keeps both.
+//   - A module whose surfaces split cleanly has a switch per part (PARTS, #1087). Screens ask
+//     partOn(S, module, part): the module on and the part's switch. The module wins: off, every
+//     part is hidden whatever its switch; back on, each part is as it was left. A part never set
+//     is on, and the presets set modules only. Stored in S.modules as 'module.part' keys, so a
+//     part syncs per key like a module; everything that walks the modules walks MODULE_IDS.
 //
 // The core (logging, plans, history, the exercise library, the basic stats) is not a module.
 // Pure: no imports, so lib/ helpers such as history.js effortOf can use it without a cycle.
@@ -127,6 +132,51 @@ export function applyPreset(s, presetId) {
 export function setModule(s, id, on) {
   if (!MODULE[id]) return
   s.modules = { ...(isMap(s.modules) ? s.modules : {}), [id]: !!on }
+}
+
+/* The parts of a module, in the order its row lists them. `title` and `desc` are English keys,
+   translated where they are shown (lib/modules-copy.js partCopy). */
+export const PARTS = {
+  strength: [
+    { id: 'details', title: 'In an exercise’s details', desc: 'Your level on a main lift, beside its records.' },
+    { id: 'list', title: 'Strength levels in Stats', desc: 'Every main lift with its level, in one card.' },
+  ],
+  body: [
+    { id: 'weight', title: 'Body weight', desc: 'The Home card, the weigh-in before a workout, your goal and the weight chart.' },
+    { id: 'measurements', title: 'Body measurements', desc: 'Circumferences and your own fields.' },
+    { id: 'photos', title: 'Progress photos', desc: 'Photos of you over time, side by side.' },
+  ],
+  motivation: [
+    { id: 'streak', title: 'Week streak', desc: 'Your streak on Home, in Stats, in the calendar and on the watch.' },
+    { id: 'challenges', title: 'Monthly challenges', desc: 'Three goals a month and the trophy shelf, on Home and in Stats.' },
+    { id: 'recaps', title: 'Week and month recap', desc: 'Your week and Your month, once one is over.' },
+    { id: 'year', title: 'Your year in openGym', desc: 'Your year in December and January, and its notification.' },
+    { id: 'share', title: 'Share as image', desc: 'A finished workout or a recap as a picture to send.' },
+  ],
+}
+
+/** The parts of module `id` (an empty list for a module that is one switch). */
+export const partsOf = id => PARTS[id] || []
+
+/** A part's own switch, whatever its module says: the stored choice, else on. */
+export function partSwitch(S, id, part) {
+  const v = isMap(S?.modules) ? S.modules[id + '.' + part] : undefined
+  return typeof v === 'boolean' ? v : true
+}
+
+/** Whether part `part` of module `id` shows: the module on, and the part's switch. */
+export const partOn = (S, id, part) => isOn(S, id) && partSwitch(S, id, part)
+
+/** Whether any part of module `id` shows (a screen that holds only its parts, like Stats → Body). */
+export const anyPartOn = (S, id) => isOn(S, id) && (!partsOf(id).length || partsOf(id).some(p => partSwitch(S, id, p.id)))
+
+/** How many parts of module `id` have their switch on, the module aside ("2 of 3"). */
+export const partsOnCount = (S, id) => partsOf(id).filter(p => partSwitch(S, id, p.id)).length
+
+/** Sets a part's switch into a draft state, as setModule does a module's. */
+export function setPart(s, id, part, on) {
+  if (!partsOf(id).some(p => p.id === part)) return
+  s.modules = { ...(isMap(s.modules) ? s.modules : {}), [id + '.' + part]: !!on }
 }
 
 /** The modules a change from `S` to `next` (a modules map) switches off. */

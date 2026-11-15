@@ -5897,4 +5897,19 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "एक्सरसाइज़ की जानकारी में",
+  "Your level on a main lift, beside its records.": "किसी मुख्य लिफ़्ट में आपका स्तर, उसके रिकॉर्ड के पास।",
+  "Strength levels in Stats": "आँकड़ों में ताक़त के स्तर",
+  "Every main lift with its level, in one card.": "हर मुख्य लिफ़्ट अपने स्तर के साथ, एक कार्ड में।",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "होम का कार्ड, वर्कआउट से पहले वज़न, आपका लक्ष्य और वज़न का चार्ट।",
+  "Circumferences and your own fields.": "नाप और आपके अपने फ़ील्ड।",
+  "Photos of you over time, side by side.": "समय के साथ आपकी तस्वीरें, साथ-साथ।",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "होम, आँकड़ों, कैलेंडर और घड़ी पर आपकी स्ट्रीक।",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "हर महीने तीन लक्ष्य और ट्रॉफ़ी शेल्फ़, होम और आँकड़ों में।",
+  "Your week and Your month, once one is over.": "आपका हफ़्ता और आपका महीना, जब वह ख़त्म हो जाए।",
+  "Your year in December and January, and its notification.": "दिसंबर और जनवरी में आपका साल, और उसकी सूचना।",
+  "A finished workout or a recap as a picture to send.": "पूरा हुआ वर्कआउट या सारांश, भेजने के लिए तस्वीर के रूप में।",
+  "Parts of {0}": "{0} के हिस्से",
+  "{0} is off, so all of it is hidden.": "{0} बंद है, इसलिए इसका सब कुछ छिपा है।",
 }

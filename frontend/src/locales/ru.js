@@ -5901,4 +5901,19 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "В деталях упражнения",
+  "Your level on a main lift, beside its records.": "Ваш уровень в основном упражнении, рядом с его рекордами.",
+  "Strength levels in Stats": "Уровни силы в Статистике",
+  "Every main lift with its level, in one card.": "Каждое основное упражнение с его уровнем, в одной карточке.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Карточка на Главной, взвешивание перед тренировкой, ваша цель и график веса.",
+  "Circumferences and your own fields.": "Обхваты и ваши собственные поля.",
+  "Photos of you over time, side by side.": "Ваши фото со временем, рядом друг с другом.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Ваша серия на Главной, в Статистике, в календаре и на часах.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Три цели в месяц и полка трофеев, на Главной и в Статистике.",
+  "Your week and Your month, once one is over.": "Ваша неделя и Ваш месяц, когда они прошли.",
+  "Your year in December and January, and its notification.": "Ваш год в декабре и январе и его уведомление.",
+  "A finished workout or a recap as a picture to send.": "Завершённая тренировка или итоги в виде картинки для отправки.",
+  "Parts of {0}": "Части: {0}",
+  "{0} is off, so all of it is hidden.": "Модуль {0} выключен, поэтому всё скрыто.",
 }

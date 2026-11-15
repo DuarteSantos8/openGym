@@ -5897,4 +5897,19 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "在动作详情里",
+  "Your level on a main lift, beside its records.": "你在主要动作上的等级，显示在记录旁。",
+  "Strength levels in Stats": "统计中的力量等级",
+  "Every main lift with its level, in one card.": "每个主要动作及其等级，放在一张卡片里。",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "首页卡片、训练前称重、你的目标和体重曲线。",
+  "Circumferences and your own fields.": "围度和你自己的项目。",
+  "Photos of you over time, side by side.": "你随时间变化的照片，并排对比。",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "首页、统计、日历和手表上的连续记录。",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "每月三个目标和奖杯架，在首页和统计中。",
+  "Your week and Your month, once one is over.": "你的一周和你的一个月，结束后显示。",
+  "Your year in December and January, and its notification.": "十二月和一月的年度回顾，以及它的通知。",
+  "A finished workout or a recap as a picture to send.": "把完成的训练或回顾做成图片发送。",
+  "Parts of {0}": "{0}的各部分",
+  "{0} is off, so all of it is hidden.": "{0}已关闭，所以全部隐藏。",
 }

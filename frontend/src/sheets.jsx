@@ -135,7 +135,7 @@ import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/St
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
-import { isOn } from './lib/modules.js'
+import { partOn } from './lib/modules.js'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
 import DailyCheckin from './components/DailyCheckin.jsx'
@@ -3785,7 +3785,7 @@ function WorkoutDetail({ w, close }) {
         { title: t('Share'), items: [
           { icon: 'person', label: t('Share with a friend'), sub: t('As a routine they can do too'), onClick: shareWithFriend },
           // The share card is part of Motivation (Settings → Modules).
-          isOn(st, 'motivation') && { icon: 'share', label: t('Share as image'), onClick: shareAsImage },
+          partOn(st, 'motivation', 'share') && { icon: 'share', label: t('Share as image'), onClick: shareAsImage },
           { icon: 'copy', label: t('Copy as text'), onClick: copyAsText },
           { icon: 'note', label: t('Save as PDF'), onClick: saveAsPdf },
           { icon: 'download', label: t('Export as .fit file'), onClick: exportFit },
@@ -3880,7 +3880,7 @@ function Calendar({ start, close, help = false }) {
   const st = useStore(s => s.S)
   // The streak's week by week (components/StreakCalendar.jsx), with Motivation on and a workout
   // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
-  const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
+  const streakOn = partOn(st, 'motivation', 'streak') && st.workouts.length > 0
   const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule, st.recoverySessions, st.recoveryStreak, st.activities, st.activityStreak]) // eslint-disable-line react-hooks/exhaustive-deps
   // Days with a sauna, an ice bath, a massage (lib/recovery-sessions.js): a teal dot of their own.
   const recDays = useMemo(() => recoveryDays(st), [st.recoverySessions]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -4007,8 +4007,8 @@ export function startFlow(routineIds, opts = {}) {
   if (!opts.checked && checkinMode(S(), todayISO())) { dailyCheckinSheet(routineIds, opts); return }
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
-  // Off in Settings → Workout, or with the Body module (Settings → Modules): straight into the session.
-  if (S().weighIn === false || !isOn(S(), 'body')) { beginWorkout(routineIds, null, opts); return }
+  // Off in Settings → Workout, or with Body's weight (Settings → Modules): straight into the session.
+  if (S().weighIn === false || !partOn(S(), 'body', 'weight')) { beginWorkout(routineIds, null, opts); return }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, opts) })
 }
 function dailyCheckinSheet(routineIds, opts) {
@@ -4090,7 +4090,7 @@ export function repeatWorkout(w, close) {
     autoGymHere()
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
   }
-  if (st.weighIn === false) { go(null); return }
+  if (st.weighIn === false || !partOn(st, 'body', 'weight')) { go(null); return }
   if (close) close()
   bwSheet({ required: true, onDone: go })
 }
@@ -4116,7 +4116,7 @@ export function startBuiltSession(cfgs, name, close) {
     if (close) closeThenNav(close, '/workout'); else navToWorkout()
     autoGymHere()
   }
-  if (st.weighIn === false || !isOn(st, 'body')) { go(null); return }
+  if (st.weighIn === false || !partOn(st, 'body', 'weight')) { go(null); return }
   if (close) close()
   bwSheet({ required: true, onDone: go })
 }
@@ -4712,7 +4712,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
       <Button variant="primary" onClick={() => closeThenNav(close, '/home')}>{t('Nice!')}</Button>
       {/* The workout as a picture for a Story or a chat (components/ShareCard.jsx), the same
           card History's Share as image makes. */}
-      {isOn(st, 'motivation') && <Button variant="tinted" icon="share" data-fin-share onClick={() => shareWorkoutSheet(S().workouts.find(x => x.id === w.id) || w)}>{t('Share')}</Button>}
+      {partOn(st, 'motivation', 'share') && <Button variant="tinted" icon="share" data-fin-share onClick={() => shareWorkoutSheet(S().workouts.find(x => x.id === w.id) || w)}>{t('Share')}</Button>}
     </div>
     <div style={{ height: 14 }} />
     <h4 className="sec" style={{ textAlign: 'start' }}>{t('What you just trained')}</h4>

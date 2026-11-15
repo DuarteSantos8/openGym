@@ -5890,4 +5890,19 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "在動作詳情中",
+  "Your level on a main lift, beside its records.": "你在主要動作上的等級，顯示在紀錄旁。",
+  "Strength levels in Stats": "數據統計中的力量等級",
+  "Every main lift with its level, in one card.": "每個主要動作及其等級，放在一張卡片裡。",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "首頁卡片、訓練前量體重、你的目標和體重曲線。",
+  "Circumferences and your own fields.": "圍度和你自己的項目。",
+  "Photos of you over time, side by side.": "你隨時間變化的照片，並排比較。",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "首頁、數據統計、行事曆和手錶上的連續紀錄。",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "每月三個目標和獎盃架，在首頁和數據統計中。",
+  "Your week and Your month, once one is over.": "你的一週和你的一個月，結束後顯示。",
+  "Your year in December and January, and its notification.": "十二月和一月的年度回顧，以及它的通知。",
+  "A finished workout or a recap as a picture to send.": "把完成的訓練或回顧做成圖片傳送。",
+  "Parts of {0}": "{0}的各部分",
+  "{0} is off, so all of it is hidden.": "{0}已關閉，所以全部隱藏。",
 }

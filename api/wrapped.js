@@ -5,7 +5,8 @@
 // THE RULE. On Dec 1, from 18:00 to the end of the day on the server's clock, every user who
 //   - has a push subscription (sendPush has somewhere to send it),
 //   - has not switched it off (S.wrappedNotify !== false, Settings → Notifications),
-//   - has the Motivation module on (S.modules.motivation !== false, Settings → Modules),
+//   - has the Motivation module on (S.modules.motivation !== false, Settings → Modules), and
+//     its Your year part (S.modules['motivation.year'] !== false),
 //   - logged at least one workout that year,
 //   - and has no phone that planned its own for that year,
 // gets one push, once: `user.wrappedPush` in db.json holds the year it went out for, so a restart,
@@ -38,8 +39,8 @@ export function wrappedSummary(S) {
   const phone = S?.wrapped && typeof S.wrapped === 'object' && Number.isInteger(S.wrapped.phone) ? S.wrapped.phone : null;
   const lang = typeof S?.lang === 'string' && /^[A-Za-z-]{2,10}$/.test(S.lang) ? S.lang : 'en';
   return {
-    // Settings → Modules: with Motivation off, the year in review is not news to push.
-    notify: S?.wrappedNotify !== false && S?.modules?.motivation !== false,
+    // Settings → Modules: with Motivation or its Your year part off, the year in review is not news to push.
+    notify: S?.wrappedNotify !== false && S?.modules?.motivation !== false && S?.modules?.['motivation.year'] !== false,
     phone,
     lang,
     years: [...years].sort((a, b) => b - a).slice(0, MAX_YEARS),

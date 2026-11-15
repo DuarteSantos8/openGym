@@ -5897,4 +5897,19 @@ export default {
   "Preview on": "Vista previa en",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un poco más corto",
+  // --- Modules: a switch for each part of a module (#1087) ---
+  "In an exercise’s details": "En los detalles de un ejercicio",
+  "Your level on a main lift, beside its records.": "Tu nivel en un ejercicio principal, junto a sus récords.",
+  "Strength levels in Stats": "Niveles de fuerza en Progreso",
+  "Every main lift with its level, in one card.": "Cada ejercicio principal con su nivel, en una tarjeta.",
+  "The Home card, the weigh-in before a workout, your goal and the weight chart.": "La tarjeta de Inicio, el pesaje antes de entrenar, tu objetivo y la gráfica de peso.",
+  "Circumferences and your own fields.": "Perímetros y tus propios campos.",
+  "Photos of you over time, side by side.": "Fotos tuyas a lo largo del tiempo, lado a lado.",
+  "Your streak on Home, in Stats, in the calendar and on the watch.": "Tu racha en Inicio, en Progreso, en el calendario y en el reloj.",
+  "Three goals a month and the trophy shelf, on Home and in Stats.": "Tres metas al mes y la vitrina de trofeos, en Inicio y en Progreso.",
+  "Your week and Your month, once one is over.": "Tu semana y Tu mes, cuando terminan.",
+  "Your year in December and January, and its notification.": "Tu año en diciembre y enero, y su notificación.",
+  "A finished workout or a recap as a picture to send.": "Un entrenamiento terminado o un resumen como imagen para enviar.",
+  "Parts of {0}": "Partes de {0}",
+  "{0} is off, so all of it is hidden.": "{0} está desactivado, así que todo queda oculto.",
 }
