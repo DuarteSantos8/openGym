@@ -49,6 +49,14 @@ describe('log a past workout', () => {
     expect(toast).toHaveBeenCalledWith('Finish the current workout first.')
   })
 
+  it('does not offer an archived routine: a planned day that names one opens as Freestyle', () => {
+    useStore.setState(s => ({ S: { ...s.S, routines: [{ id: 'old', name: 'Old block', ex: [], archived: true }] } }))
+    logPastWorkoutSheet({ iso: todayISO(), routineIds: ['old'] })
+    const host = mountTopSheet()
+    expect(host.textContent).toContain('Freestyle')
+    expect(host.textContent).not.toContain('Old block')
+  })
+
   it('asks what to do when the day already has a workout', () => {
     logPastWorkoutSheet()
     const host = mountTopSheet()
