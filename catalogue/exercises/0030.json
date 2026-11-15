@@ -6,7 +6,7 @@
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A bench press with a narrower grip that shifts more of the work to the triceps while still working the chest.",
@@ -24,13 +24,13 @@
     ],
     "secondaries": [
       "chest",
-      "deltoids",
+      "front-delts",
       "biceps"
     ],
     "weights": {
       "triceps": 1,
       "chest": 0.4,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "biceps": 0
     }
   },

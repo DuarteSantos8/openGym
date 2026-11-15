@@ -3,12 +3,13 @@
   "name": "back kick overhead press",
   "bodyPart": "full body",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "glutes",
     "hamstrings",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "plyometrics",
   "description": "A dynamic combo of a backward leg kick with an overhead arm press. It works the shoulders and glutes together and raises your heart rate.",

@@ -7,7 +7,19 @@
           { "/": "/nfc", "comment": "NFC stickers" },
           { "/": "/nfc/*" },
           { "/": "/r", "comment": "shared routines" },
-          { "/": "/r/*" }
+          { "/": "/r/*" },
+          { "/": "/routines/", "exclude": true, "comment": "the library: only a routine's own page opens the app" },
+          { "/": "/routines/index.html", "exclude": true },
+          { "/": "/routines/submit/*", "exclude": true },
+          { "/": "/routines/api/*", "exclude": true },
+          { "/": "/routines/media/*", "exclude": true },
+          { "/": "/routines/plans/*", "exclude": true },
+          { "/": "/routines/assets/*", "exclude": true },
+          { "/": "/routines/covers/*", "exclude": true },
+          { "/": "/routines/*.json", "exclude": true },
+          { "/": "/routines/*.xml", "exclude": true },
+          { "/": "/routines/*/index.html", "exclude": true, "comment": "the app's own Open in browser" },
+          { "/": "/routines/*", "comment": "a whole routine from the library" }
         ]
       }
     ]

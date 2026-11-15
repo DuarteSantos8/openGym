@@ -3,10 +3,11 @@
   "name": "kettlebell double jerk",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "With two kettlebells you drive from the rack to overhead using legs and arms. It builds the shoulders and legs.",
@@ -25,7 +26,7 @@
     "primaries": [
       "quadriceps",
       "gluteal",
-      "deltoids",
+      "front-delts",
       "triceps"
     ],
     "secondaries": [
@@ -35,7 +36,8 @@
       "forearm",
       "lower-back",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

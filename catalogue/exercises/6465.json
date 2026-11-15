@@ -3,6 +3,7 @@
   "name": "smith frog hip thrust",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

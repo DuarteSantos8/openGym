@@ -3,9 +3,8 @@
   "name": "band face pull",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rotator cuff",
     "upper back"
   ],

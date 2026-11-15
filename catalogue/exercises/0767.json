@@ -3,9 +3,10 @@
   "name": "smith shrug",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "traps",
   "secondaryMuscles": [
-    "shoulders"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A shrug with the smith bar, lifting the shoulders straight up toward the ears. It builds the upper traps.",

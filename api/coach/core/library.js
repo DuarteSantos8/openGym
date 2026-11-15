@@ -28,11 +28,56 @@ export function equipmentAllows(equipment, id) {
   return !eq || eq === ALWAYS_AVAILABLE || wanted.includes(eq);
 }
 
+/* The machines the gym has (#923, frontend lib/machine-kinds.js): an equipment profile may list
+   the machine kinds it has ("leg press yes, leg extension no"). The active one's list, when the
+   app filters by it, keeps a catalogue machine exercise of any other kind out; no list (or no
+   filter) means the equipment alone decides, as before. A row without a kind is not a machine. */
+export function gymMachines(S) {
+  if (!S?.equipFilterOn || !Array.isArray(S.equipProfiles)) return null;
+  const prof = S.equipProfiles.find(p => p && p.id === S.activeEquipId);
+  const kinds = Array.isArray(prof?.machines) ? prof.machines.filter(k => typeof k === 'string' && k && k.length <= 40).slice(0, 64) : [];
+  return kinds.length ? kinds : null;
+}
+export function machineAllows(machines, id) {
+  if (!Array.isArray(machines) || !machines.length) return true;
+  const mk = LIB_BY_ID.get(id)?.mk;
+  return !mk || machines.includes(mk);
+}
+
 /* "I own no dumbbells", the app's switch under Settings → Equipment → Dumbbells (frontend
    lib/dumbbells.js ownsNoDumbbells): kept in the synced dumbbell map under `none`. It holds
    whatever the Coach's own equipment answer says, the switch being the more direct statement. */
 export const ownsNoDumbbells = S => S?.dumbbells?.none?.on === true;
 export const isDumbbellLift = id => (LIB_BY_ID.get(id)?.eq || '').toLowerCase() === 'dumbbell';
+
+/* The bench (v1.4.5, Settings → Equipment → Bench, frontend lib/equipment.js benchKindOf and
+   accessoriesOf, hand-copied here because the API cannot import the frontend): 'adjustable',
+   'flat' or 'none'. A flat bench gets no incline or decline work, no bench gets no bench work.
+   The profile that filters says it with its ticks; without one, S.bench does. */
+const SELF_CONTAINED = new Set(['leverage machine', 'sled machine', 'assisted']);
+const NO_TILT_BENCH = /push[- ]?ups?\b|pushups?\b|plank|pushdown|push press|jump|against (the |a )?wall|on (a )?box|chair|smith bar|suspender|stability ball|step[- ]?up|treadmill|walk|run\b|sprint|bike|cycl/;
+export function benchNeedOf(id) {
+  const e = LIB_BY_ID.get(id);
+  if (!e || !e.n || SELF_CONTAINED.has(e.eq)) return null;
+  const n = String(e.n).toLowerCase();
+  if (/\bincline\b|\bdecline\b/.test(n) && !NO_TILT_BENCH.test(n)) return 'adjustable';
+  return /\bbench\b/.test(n) ? 'flat' : null;
+}
+export function benchKind(S) {
+  const prof = S?.equipFilterOn && Array.isArray(S.equipProfiles) ? S.equipProfiles.find(p => p && p.id === S.activeEquipId) : null;
+  if (prof) {
+    const have = Array.isArray(prof.equipment) ? prof.equipment : [];
+    if ((prof.accV || 0) < 1) return 'adjustable';
+    if (!have.includes('bench')) return 'none';
+    return have.includes('adjustable bench') || (prof.accV || 0) < 3 ? 'adjustable' : 'flat';
+  }
+  return S?.bench === 'flat' || S?.bench === 'none' ? S.bench : 'adjustable';
+}
+export function benchAllows(kind, id) {
+  if (kind !== 'flat' && kind !== 'none') return true;
+  const need = benchNeedOf(id);
+  return !need || (kind === 'flat' && need === 'flat');
+}
 
 /* ---------- the library slice the model gets to choose from ----------
    Bounded. The whole catalogue is 1,324 rows — 10k+ tokens on every job, which costs real money
@@ -165,8 +210,10 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus
   // leave the Coach unable to propose anything at all, which is a worse failure than a
   // slightly larger payload.
   const noDumbbells = ownsNoDumbbells(S);
+  const machines = gymMachines(S);
+  const bench = benchKind(S);
   const filtered = (wanted.length ? LIBRARY.filter(e => equipmentAllows(wanted, e.id)) : LIBRARY)
-    .filter(e => !noDumbbells || !isDumbbellLift(e.id));
+    .filter(e => (!noDumbbells || !isDumbbellLift(e.id)) && machineAllows(machines, e.id) && benchAllows(bench, e.id));
   const equipped = filtered.length ? filtered : LIBRARY;
   // Same reasoning as the equipment fallback: a filter that removed everything is not a filter
   // worth honouring. Someone whose only kit reaches nothing but stretches gets the stretches.
@@ -223,7 +270,9 @@ export function swapSlice(S, equipment, exId, { keep = [], max = 36 } = {}) {
   const focus = LIB_BY_ID.get(exId);
   const wanted = (equipment || []).map(x => String(x).toLowerCase());
   const noDumbbells = ownsNoDumbbells(S);
-  const fits = e => equipmentAllows(wanted, e.id) && !(noDumbbells && isDumbbellLift(e.id)) && !isStretch(e) && e.id !== exId;
+  const machines = gymMachines(S);
+  const bench = benchKind(S);
+  const fits = e => equipmentAllows(wanted, e.id) && !(noDumbbells && isDumbbellLift(e.id)) && machineAllows(machines, e.id) && benchAllows(bench, e.id) && !isStretch(e) && e.id !== exId;
   const out = [];
   const taken = new Set();
   const add = e => { if (e && !taken.has(e.id) && out.length < max) { taken.add(e.id); out.push(e); } };

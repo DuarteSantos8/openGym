@@ -470,6 +470,12 @@ describe('CoachIntake — the answers themselves', () => {
     expect(mocks.S.coach.profile.sessionMin).toBe(150)
   })
 
+  // Full QA 146: the chips are capitalised by default (.chip), so they read "30 Min" in English.
+  it('keeps the unit of the quick length chips in lower case', () => {
+    mount(); walkTo('Session length')
+    for (const chip of all('.ob-quick .chip')) expect(chip.className).toContain('nocap')
+  })
+
   it('the free-text screens land in the profile as typed', () => {
     mount(); walkTo('Limits')
     typeIn(host.querySelector('.ob-field textarea'), 'dodgy left shoulder')

@@ -3,9 +3,8 @@
   "name": "resistance band pullapart (pronated at 90 degrees)",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "upper back",
     "trapezius"

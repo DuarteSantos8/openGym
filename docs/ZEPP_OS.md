@@ -141,8 +141,8 @@ them from the app's own locale packs), so run that first when they change, then 
 
 ### Versions
 
-`app.json` `version.name` is the release (1.4.4) and `version.code` is `major*10000 + minor*100 +
-patch` (10404), so each release's build is newer than the last. Bump both with each release.
+`app.json` `version.name` is the release (1.4.5) and `version.code` is `major*10000 + minor*100 +
+patch` (10405), so each release's build is newer than the last. Bump both with each release.
 `appId` 9990145 is a placeholder for development; the store needs the id the Zepp developer console
 assigns (below).
 
@@ -155,7 +155,7 @@ assigns (below).
    developer account), then `npx zeus preview` and pick your watch. It prints a QR code.
 3. In the Zepp app: Profile → your watch → Developer mode → Scan, and scan the code. The app installs
    on the watch.
-4. Pair it: in openGym, Settings → Zepp OS watch → Pair a watch. In the Zepp app, open the openGym
+4. Pair it: in openGym, Settings → Watches → Zepp OS watch → Pair a watch (in a browser: Settings → Zepp OS watch). In the Zepp app, open the openGym
    app's settings (Profile → your watch → App settings → openGym), type the server address and the
    code shown, and tap Pair. Open openGym on the watch.
 

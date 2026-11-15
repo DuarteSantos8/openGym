@@ -17,6 +17,8 @@ import { e1rmSeries, bestSetOf, formulaOf } from './onerm.js'
 import { isAssisted } from './exercises.js'
 import { weighInAt } from './bodyweight.js'
 import { isoOf, todayISO, weekKey, weekStartOf } from './format.js'
+import { activityTotals } from './activities.js'
+import { nutritionSummary } from './sister-nutrition.js'
 
 const DAY = 86400000
 
@@ -208,8 +210,12 @@ function longestDayRun(workouts) {
  * The whole report for `range` (reportRange's '7d' | '4w' | '3m' | 'custom' with from/to).
  * `prev` holds the same totals for the stretch of equal length just before, for the "vs before"
  * line under each number.
+ *
+ * `nutrition` (gm-hooks): openNutrition's days for the range when this device is linked
+ * (lib/sister-nutrition.js daysIn), summed up as `R.nutrition`; null leaves it out. Activities
+ * (lib/activities.js: runs, matches) are always counted, as `R.activities`.
  */
-export function reportData(S, { range = '4w', from, to, today = todayISO() } = {}) {
+export function reportData(S, { range = '4w', from, to, today = todayISO(), nutrition = null } = {}) {
   const r = reportRange(range, { from, to, today })
   const ws = weekStartOf(S)
   const workouts = inRange(S, r)
@@ -237,5 +243,7 @@ export function reportData(S, { range = '4w', from, to, today = todayISO() } = {
       restDays: r.days - totals.days,
     },
     weekStart: ws,
+    activities: activityTotals(S, r.from, r.to),
+    nutrition: nutrition ? nutritionSummary(nutrition.filter(d => d.date >= r.from && d.date <= r.to), r) : null,
   }
 }

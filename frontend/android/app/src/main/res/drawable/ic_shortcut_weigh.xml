@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The long-press shortcut Log weight (res/xml/shortcuts.xml): the app's own icon on a green disc. -->
+<!-- The long-press shortcut Log weight (res/xml/shortcuts.xml): the app's own icon on the brand's green disc (#a3e635, near-black glyph). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
     android:viewportWidth="48"
     android:viewportHeight="48">
     <path
-        android:fillColor="#FF30D158"
+        android:fillColor="#FFA3E635"
         android:pathData="M24,0a24,24 0,1 1,0 48a24,24 0,1 1,0 -48Z" />
     <group android:translateX="12" android:translateY="12">
         <path
             android:fillColor="#00000000"
-            android:strokeColor="#FFFFFFFF"
+            android:strokeColor="#FF0C0E12"
             android:strokeWidth="1.8"
             android:strokeLineCap="round"
             android:strokeLineJoin="round"

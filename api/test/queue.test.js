@@ -68,6 +68,48 @@ test('queue: a workout logged before "since" counts only when it is dated inside
   assert.equal(effectiveRoutineId(S2, '2026-09-07'), 'r1');
 });
 
+test('queue: a workout dated after the day asked about has not happened yet, so the name clause skips it', () => {
+  // Kept with the frontend's copy. The start predates `since`, so the name clause is the only one
+  // that could count this workout, and the reminder keeps offering the session until its date.
+  const q = { ids: ['r1', 'r2'], since: 5000, startsOn: '2026-09-07', label: 'W1' };
+  const ahead = { d: '2026-09-10', start: 1000, routineIds: ['r1'], name: 'Push' };
+  const S = { ...base, queue: q, workouts: [ahead] };
+  assert.equal(effectiveRoutineId(S, '2026-09-09'), 'r1');
+  assert.equal(effectiveRoutineId(S, '2026-09-10'), 'r2');   // on its own date it has happened
+  assert.equal(pinState(S, 'r1', '2026-09-09'), 'open');
+  assert.equal(pinState(S, 'r1', '2026-09-10'), 'done');
+  // a one-session week it completes is complete on that date, so the weekday plan shows through
+  const one = { ...S, queue: { ...q, ids: ['r1'] }, week: { 4: 'r1' } };   // Thursday
+  assert.equal(effectiveRoutineId(one, '2026-09-10'), 'r1');
+  // without a `today`, pinState takes the user's date in the reminder's zone: 2099 is still ahead
+  const far = { ...S, reminder: { tz: 'UTC' }, workouts: [{ ...ahead, d: '2099-01-01' }] };
+  assert.equal(pinState(far, 'r1'), 'open');
+});
+
+test('queue: a routine whose own name contains " + " is matched by its whole name', () => {
+  // Kept with the frontend's copy: splitting 'Push + Pull' gave ['Push', 'Pull'], neither of
+  // which is the routine, so that session's reminder went on firing after it was trained.
+  const rs = [{ id: 'pp', name: 'Push + Pull' }, { id: 'r2', name: 'Pull' }];
+  const q = { ids: ['pp', 'r2'], since: 5000, startsOn: '2026-09-07', label: 'W1' };
+  const S = name => ({ ...base, routines: rs, queue: q, workouts: [{ d: '2026-09-07', start: 1000, routineIds: ['pp'], name }] });
+  assert.equal(effectiveRoutineId(S('Push + Pull'), '2026-09-08'), 'r2');
+  assert.equal(effectiveRoutineId(S('Push + Pull + Core'), '2026-09-08'), 'r2');
+  assert.equal(effectiveRoutineId(S('Core + Push + Pull'), '2026-09-08'), 'r2');
+  assert.equal(effectiveRoutineId(S('Legs'), '2026-09-08'), 'pp');
+  assert.equal(effectiveRoutineId(S('Push + Pulling'), '2026-09-08'), 'pp');
+});
+
+test('queue: a null workout in a state file is skipped, not a throw that silences the reminder', () => {
+  // PUT /api/data drops null entries, but a file written before it did still reaches the tick.
+  const S = {
+    ...base,
+    queue: { ids: ['r1', 'r2'], since: 1000, startsOn: '2026-09-07', label: 'W1' },
+    workouts: [null, { d: '2026-09-07', start: 2000, routineIds: ['r1'], name: 'Push' }],
+  };
+  assert.equal(effectiveRoutineId(S, '2026-09-08'), 'r2');
+  assert.equal(pinState(S, 'r1'), 'done');
+});
+
 test('queue: keeps slot order even when a later session is logged out of order', () => {
   const S = {
     ...base,
@@ -224,6 +266,39 @@ test('a queue without startsOn starts on the day of the apply where the USER is 
   assert.equal(effectiveRoutineId({ ...base, queue: late, reminder: { tz: 'Asia/Tokyo' } }, '2026-09-09'), 'r1');
   // An explicit startsOn is never second-guessed.
   assert.equal(effectiveRoutineId({ ...base, queue: { ...q, startsOn: '2026-09-10' }, reminder: { tz: 'America/New_York' } }, '2026-09-09'), null);
+});
+
+test('queue: a since of zero is no clock, so a workout from years before the week credits nothing', () => {
+  // Kept with the frontend's copy: at 0 every workout ever logged started "after the apply", so
+  // the week read as finished on arrival and the reminder fell back to the weekday plan.
+  const week = { 1: 'r3' };
+  const ancient = { d: '2020-01-02', start: Date.parse('2020-01-02T08:00:00Z'), routineIds: ['r1', 'r2'], name: 'Full body' };
+  for (const since of [0, null]) {
+    const S = { ...base, week, workouts: [ancient], queue: { ids: ['r1', 'r2'], since, startsOn: '2026-09-07', label: 'W1' } };
+    assert.equal(effectiveRoutineId(S, '2026-09-14'), 'r1');   // the week's first session, not Monday's r3
+    assert.equal(pinState(S, 'r1'), 'open');
+    // the name clause still credits a workout dated inside the week
+    const named = { ...S, workouts: [ancient, { d: '2026-09-08', start: 1, routineIds: ['r1'], name: 'Push' }] };
+    assert.equal(effectiveRoutineId(named, '2026-09-14'), 'r2');
+  }
+  // a strict pass counts by its clock alone: with none it is no queue, not one stuck on r1
+  const strict = { ...base, week, queue: { ids: ['r1', 'r2'], since: 0, startsOn: '2026-09-07', label: 'R', strict: true } };
+  assert.equal(effectiveRoutineId(strict, '2026-09-14'), 'r3');
+});
+
+test('queue: neither startsOn nor an apply time is no queue, not a finished week', () => {
+  // Kept with the frontend's queueOf: dated from `since || 0` the week began in 1970, an old
+  // session under this week's name ticked its slot done, and the reminder skipped it.
+  const week = { 1: 'r3' };
+  const old = { d: '2020-01-06', start: Date.parse('2020-01-06T08:00:00Z'), routineIds: ['r1'], name: 'Push' };
+  const S = { ...base, week, workouts: [old], queue: { ids: ['r1', 'r2'], label: 'W1' } };
+  assert.equal(pinState(S, 'r1'), null);
+  assert.equal(effectiveRoutineId(S, '2026-09-14'), 'r3');   // Monday's own plan: there is no queue
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1'], since: 0 } }, '2026-09-14'), 'r3');
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1'], since: 'monday' } }, '2026-09-14'), 'r3');
+  // either bound on its own still dates the week
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1', 'r2'], startsOn: '2026-09-07' } }, '2026-09-14'), 'r1');
+  assert.equal(effectiveRoutineId({ ...S, queue: { ids: ['r1', 'r2'], since: Date.parse('2026-09-07T08:00:00Z') } }, '2026-09-14'), 'r1');
 });
 
 test('queue: a malformed queue falls back to the weekday plan for the reminder', () => {

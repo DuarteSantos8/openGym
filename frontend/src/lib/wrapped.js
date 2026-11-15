@@ -144,7 +144,7 @@ export function daypartOf(hour) {
 }
 
 const LEGS = ['quadriceps', 'hamstring', 'gluteal', 'calves', 'adductors']
-const UPPER = ['chest', 'deltoids', 'biceps', 'triceps', 'trapezius', 'upper-back', 'forearm']
+const UPPER = ['chest', 'front-delts', 'side-delts', 'rear-delts', 'biceps', 'triceps', 'trapezius', 'lats', 'upper-back', 'forearm']
 
 /**
  * Everything the cards say about `year`, or null when it has no workout. Weights in the profile's

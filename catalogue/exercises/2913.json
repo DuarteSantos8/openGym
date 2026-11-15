@@ -3,15 +3,17 @@
   "name": "dumbbell overhead carry",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "upper back",
     "trapezius",
-    "obliques"
+    "obliques",
+    "side delts"
   ],
   "category": "strength",
+  "track": "distance",
   "description": "Walking with a dumbbell held overhead. It builds shoulder stability and a strong, braced trunk.",
   "instructions": [
     "Press a dumbbell overhead and lock out your elbow with the biceps near your ear.",

@@ -7,7 +7,7 @@
 # QEMU — and QEMU-emulated npm installs are known to corrupt esbuild/rollup's platform-
 # specific native binaries, which is what breaks `vite build` with unrelated-looking
 # module-resolution errors.
-FROM --platform=$BUILDPLATFORM node:22.23.4-alpine AS build
+FROM --platform=$BUILDPLATFORM node:26-alpine AS build
 # The frontend sits at /app/frontend, not /app: the Coach's runtime-neutral core lives in
 # api/coach/core and is imported from frontend/src as ../../../api/coach/core/*, so the two
 # have to keep the same relative position they have in the repository. Copying frontend/ alone
@@ -26,7 +26,7 @@ COPY frontend/ ./
 ARG APP_BUILD=""
 RUN APP_BUILD="$APP_BUILD" npm run build
 
-FROM nginxinc/nginx-unprivileged:1.30.6-alpine
+FROM nginxinc/nginx-unprivileged:1-alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
 # The base's last instruction is USER 101, and apk then exits 99 — it cannot open its log as
 # that user. Upgrade as root, then switch back. 101 has to be the last USER in this file so
@@ -73,7 +73,13 @@ COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 # Stops the container at start-up on a BASE_PATH the config cannot serve ("/gym/", "gym"), instead
 # of a server that 404s under the prefix. nginx's entrypoint runs these scripts in order; 05 is
 # before the template rendering at 20.
+# Even from a checkout that turned it into CRLF (Windows without .gitattributes): strip the CRs, or
+# the #! line names "sh\r" and the container restarts with "not found" (#1025). As root: user 101
+# may not write in /docker-entrypoint.d, so the sed failed the build there.
+USER root
 COPY --chmod=755 web/05-check-base-path.sh /docker-entrypoint.d/
+RUN sed -i 's/\r$//' /docker-entrypoint.d/05-check-base-path.sh
+USER 101
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
 # catalogue/media/NOTICE.md. They ship inside the image; nothing is downloaded at start-up.
@@ -98,9 +104,12 @@ ENV CF_CONNECTING_IP=""
 # the prefix needs nothing here — the app derives the API address from its own URL.
 ENV BASE_PATH=""
 # The largest upload nginx lets through to the API's photo and video route (nginx size syntax).
-# Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 40 by default) so the API, which says why,
+# Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 100 by default) so the API, which says why,
 # is the one that refuses a file — raise both together.
-ENV MEDIA_UPLOAD_MAX=48m
+ENV MEDIA_UPLOAD_MAX=112m
+# Where /mcp goes, the optional mcp container (docs/MCP_REMOTE.md).
+ENV MCP_BACKEND=mcp
+ENV MCP_PORT=3100
 # Sent on every page and file. Scripts run only from this origin, plus the one inline script in
 # frontend/index.html by its hash (src/lib/csp.test.js keeps the two in step). The only frame
 # allowed is the privacy-enhanced YouTube player (youtube-nocookie.com) an exercise's video link
@@ -109,7 +118,7 @@ ENV MEDIA_UPLOAD_MAX=48m
 # device talks to the provider the person chose, an Ollama on their LAN included, and the update
 # check asks GitHub. Behind a proxy that injects a script of its own (analytics), set this to a
 # policy that allows it, or to "frame-ancestors 'none'" for the old header.
-ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-xUZtZS1nWJaAyUqA7ZKgkLhjdEisnY0MiRmax16aGFg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-G6hveK3W3qL6wotsg9mMbpCvPnzXurSHhi8Jb3TS2Vc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as

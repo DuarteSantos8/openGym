@@ -3,9 +3,8 @@
   "name": "cable incline rear delt fly with back support",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids",
     "trapezius"

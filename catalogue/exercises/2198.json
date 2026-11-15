@@ -3,9 +3,10 @@
   "name": "lever triceps extension v. 3",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "triceps-machine",
   "target": "triceps",
   "secondaryMuscles": [
-    "shoulders",
+    "front delts",
     "forearms"
   ],
   "category": "strength",

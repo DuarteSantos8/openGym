@@ -9,14 +9,15 @@ export const moduleCopy = () => ({
   plates: [t('Plates and warm-ups'), t('The plates to load under every set, and warm-ups that build themselves.')],
   strength: [t('Strength levels'), t('Beginner to Elite for your main lifts, measured against your body weight.')],
   videos: [t('Form videos'), t('Film a set and watch it back right under the row.')],
-  watch: [t('Watch'), t('Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.')],
+  watch: [t('Watch'), t('Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.')],
   checkin: [t('Gym check-in'), t('Your membership codes on Home, and NFC stickers that start a workout.')],
   body: [t('Body'), t('Weigh-ins, measurements, progress photos and your weight goal.')],
   health: [t('Health'), t('Apple Health or Health Connect, heart rate and recovery tips.')],
   motivation: [t('Motivation'), t('Streaks, challenges, badges, recaps and your year in openGym.')],
   coach: [t('AI Coach'), t('Reviews your training and suggests changes. You still say yes or no.')],
   integrations: [t('Integrations'), t('Webhooks for Home Assistant and friends, and the MCP server.')],
-  seasonal: [t('Seasonal themes'), t('Halloween, Christmas and the advent calendar. Spooky, festive, optional.')],
+  community: [t('Community'), t('Exercises, plans and sounds people on your server shared, and a way to share yours.')],
+  seasonal: [t('Seasonal themes'), t('Halloween and friends, little extras for the time of year. All optional.')],
 })
 
 export const groupCopy = () => ({

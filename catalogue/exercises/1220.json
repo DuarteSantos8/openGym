@@ -3,6 +3,7 @@
   "name": "lever calf raise (bench press machine)",
   "bodyPart": "lower legs",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "calves",
   "secondaryMuscles": [
     "soleus",

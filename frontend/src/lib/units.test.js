@@ -39,7 +39,7 @@ describe('convertStateUnit', () => {
     expect(out.exWeights['0025'].w).toBe(176.5)
     expect(out.exWeights.legacy).toBe(220.5)
     expect(out.barWeights['0025']).toBe(33)     // a custom 15 kg bar is the 33 lb bar
-    expect(out.routines[0].ex[0]).toMatchObject({ weight: 176.5, inc: 5.5, warmup: [{ weight: 88, reps: 8 }] })
+    expect(out.routines[0].ex[0]).toMatchObject({ weight: 176.5, inc: 5, warmup: [{ weight: 88, reps: 8 }] })
     expect(out.routines[0].ex[1]).toEqual({ id: 'plank', mode: 'time', sec: 30, inc: 5 })   // seconds stay seconds
     expect(out.workouts[0].entries[0]).toMatchObject({ topW: 176.5, target: { weight: 176.5 }, planned: { sets: 3, reps: 5, weight: 176.5 } })
     expect(out.workouts[0].entries[0].sets[0]).toMatchObject({ w: 176.5, done: true, drops: [{ w: 132.5, r: 5 }] })

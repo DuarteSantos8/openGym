@@ -51,7 +51,8 @@ export function buildCues(cues) {
 export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, cues = null, countdown = true, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
   // Settings → Sound (#306): one of lib/sound.js REST_SOUNDS; without one, `classic` decides, as before.
-  const kind = Object.hasOwn(REST_SOUNDS, tone) ? tone : classic === true ? 'classic' : 'chime'
+  // 'u:<hash>': a sound of one's own (lib/user-sounds.js), which the native side plays from its file.
+  const kind = Object.hasOwn(REST_SOUNDS, tone) || /^u:[0-9a-f]{64}$/.test(tone || '') ? tone : classic === true ? 'classic' : 'chime'
   const totalMs = Math.max(1000, Math.round((totalSec > 0 ? totalSec : (at - now) / 1000) * 1000))
   const colors = accentColors(accent)
   return {
@@ -179,10 +180,15 @@ export function buzzAsAlarm(pattern) {
 // to play the page's own chime instead. Never resolves with the plugin itself — see restPlugin.
 // `onSilent` is Settings → "Play even on silent": the iPhone then plays the tone through the
 // ring/silent switch, still mixing with the music and only turning it down (RestAlertPlugin.swift).
-export function toneNative(kind, { onSilent = false } = {}) {
+// `at`: the end this tone is for (a rest's or a hold's endsAt). The Android side rings each end
+// once, so a page that thawed late after the alarm already rang it stays quiet (#1007); it then
+// still resolves true, since the end was heard and the page's own chime must not stand in.
+export function toneNative(kind, { onSilent = false, at = 0 } = {}) {
   if (!MOBILE) return Promise.resolve(false)
+  const args = { kind: String(kind || 'chime'), onSilent: onSilent === true }
+  if (Number.isFinite(at) && at > 0) args.at = Math.round(at)
   return restPlugin()
-    .then(plugin => (plugin ? plugin.RestAlert.tone({ kind: String(kind || 'chime'), onSilent: onSilent === true }).then(() => true) : false))
+    .then(plugin => (plugin ? plugin.RestAlert.tone(args).then(() => true) : false))
     .catch(() => false)
 }
 
@@ -192,11 +198,26 @@ export function toneNative(kind, { onSilent = false } = {}) {
 // anywhere it cannot (the web, an app from before v1.4.5, a failed call), for lib/speech.js to
 // use the page's own speechSynthesis instead. Never resolves with the plugin itself.
 // `flush`: cut off what is still being said first (a countdown number).
-export function speakNative(text, { lang = '', rate = 1, onSilent = false, flush = false } = {}) {
+// `voice`: a voice's id from voicesNative (Settings → Timer alerts → Voice), '' for the default;
+// `pitch` 0.5 to 2. An app from before v1.4.5's voice picker ignores both.
+export function speakNative(text, { lang = '', rate = 1, pitch = 1, voice = '', onSilent = false, flush = false } = {}) {
   if (!MOBILE || !text) return Promise.resolve(false)
   return restPlugin()
-    .then(plugin => (plugin ? plugin.RestAlert.speak({ text: String(text), lang: String(lang || ''), rate: Number(rate) || 1, onSilent: onSilent === true, flush: flush === true }).then(() => true) : false))
+    .then(plugin => (plugin ? plugin.RestAlert.speak({ text: String(text), lang: String(lang || ''), rate: Number(rate) || 1, pitch: Number(pitch) || 1, voice: String(voice || ''), onSilent: onSilent === true, flush: flush === true }).then(() => true) : false))
     .catch(() => false)
+}
+
+/**
+ * The phone's own voices: [{ id, name, lang, online }] (Android TextToSpeech.getVoices, the
+ * iPhone's AVSpeechSynthesisVoice.speechVoices). null where there is no such call (the web, an
+ * app from before v1.4.5): lib/speech.js then asks the page's speechSynthesis.
+ */
+export function voicesNative() {
+  if (!MOBILE) return Promise.resolve(null)
+  return restPlugin()
+    .then(plugin => (plugin ? plugin.RestAlert.voices() : null))
+    .then(res => (res && Array.isArray(res.voices) ? res.voices.filter(v => v && typeof v.id === 'string') : null))
+    .catch(() => null)
 }
 
 /** Stops whatever the phone is saying. */

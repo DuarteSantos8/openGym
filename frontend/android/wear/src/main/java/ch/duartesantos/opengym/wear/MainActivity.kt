@@ -1,13 +1,27 @@
 package ch.duartesantos.opengym.wear
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.wear.ambient.AmbientLifecycleObserver
 import androidx.wear.compose.material3.AppScaffold
-import androidx.wear.compose.material3.TimeText
+import ch.duartesantos.opengym.wear.ui.Accent
+import ch.duartesantos.opengym.wear.ui.OgTimeText
 import ch.duartesantos.opengym.wear.ui.OpenGymTheme
 import ch.duartesantos.opengym.wear.ui.WearApp
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -16,16 +30,35 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
- * The watch app: one activity, the screen picked from the state (ui/Screens.kt). It speaks the
- * app's language (Lang), asks for the heart rate the first time a workout shows up, and keeps the
- * workout service running while one does.
+ * The watch app: one activity, the screen picked from the state (ui/Screens.kt), in the app's
+ * accent and language (Lang). With the wrist down it stays on screen in Always On, drawn as
+ * outlines (AmbientLifecycleObserver). It asks for the heart rate the first time a workout shows
+ * up and keeps the workout service running while one does.
  */
 class MainActivity : ComponentActivity() {
     private var askedHr = false
+    private var demoShown = false
+    private val reduceMotion = mutableStateOf(false)
 
     private val askHr = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         WorkoutService.sync(this)
     }
+
+    private var burnIn = false
+    private val minute = mutableIntStateOf(0)
+
+    private val ambient = AmbientLifecycleObserver(this, object : AmbientLifecycleObserver.AmbientLifecycleCallback {
+        override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
+            burnIn = ambientDetails.burnInProtectionRequired
+            // The grid walks on from where the last wrist-down left it: short Always On spells
+            // would otherwise all sit on the same spot (#1169 review). Only used while dim.
+            if (burnIn) minute.intValue++
+            WearStore.ambient.value = true
+        }
+        override fun onExitAmbient() { WearStore.ambient.value = false }
+        // Once a minute in Always On: a screen that can burn in moves a little (BurnIn).
+        override fun onUpdateAmbient() { if (burnIn) minute.intValue++ }
+    })
 
     override fun attachBaseContext(base: Context) {
         WearStore.init(base)
@@ -34,31 +67,110 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(ambient)
         // The app's language changed on the phone: drawn again in it.
         lifecycleScope.launch {
             WearStore.state.map { it.settings.lang }.distinctUntilChanged().drop(1).collect { recreate() }
         }
+        val round = resources.configuration.isScreenRound
         setContent {
-            OpenGymTheme {
-                AppScaffold(timeText = { TimeText() }) {
-                    WearApp(onWorkoutShown = { onWorkout() })
+            val s by WearStore.state.collectAsState()
+            val dim by WearStore.ambient.collectAsState()
+            OpenGymTheme(accent = Accent.of(s.settings), ambient = dim, reduceMotion = reduceMotion.value, round = round) {
+                Box(Modifier.offset { (if (dim) BurnIn.offset(minute.intValue) else 0 to 0).let { (x, y) -> IntOffset(x.dp.roundToPx(), y.dp.roundToPx()) } }) {
+                    AppScaffold(timeText = { OgTimeText() }) {
+                        WearApp(onWorkoutShown = { onWorkout() })
+                    }
                 }
             }
         }
+        demo(intent)
+        openPage(intent)
+    }
+
+    // Any touch is a reaction to "rest over", as on the Apple Watch: no second buzz.
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) WearStore.ackRestOver()
+        return super.dispatchTouchEvent(ev)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        demo(intent)
+        openPage(intent)
+    }
+
+    /** Finish on the "Still training?" notification: the Overview, where the hold finishes. */
+    private fun openPage(intent: Intent?) {
+        if (intent?.getStringExtra(IdleNotice.EXTRA_PAGE) != "overview") return
+        intent.removeExtra(IdleNotice.EXTRA_PAGE)
+        WearStore.keepGoing()
+        WearStore.page.value = Page.OVERVIEW
     }
 
     override fun onResume() {
         super.onResume()
-        PhoneLink.pull(this)
+        reduceMotion.value = WearStore.reduceMotion(this)
+        if (!demoShown) { PhoneLink.pull(this); WearStore.checkIn(BuildConfig.VERSION_NAME) }
         WorkoutService.sync(this)
     }
 
     /** A workout is on screen: heart rate asked for once (Health Services), then the service. */
     private fun onWorkout() {
-        if (!WorkoutService.hasHrPermission(this) && !askedHr) {
+        if (demoShown) return
+        // Either one missing: people updating from heart rate only are asked for physical activity too.
+        val actOk = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+        val prefs = getSharedPreferences("opengym-wear", MODE_PRIVATE)
+        // Heart rate missing: asked once per launch, as before. Only physical activity missing (someone
+        // who allowed heart rate before 1.4.5): asked once ever, not at every launch (#1171 review).
+        if (PermissionAsk.due(WorkoutService.hasHrPermission(this), actOk, askedHr, prefs.getBoolean("askedActivity", false))) {
             askedHr = true
-            // The heart rate, and the notification that keeps the workout on the watch face.
-            askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.POST_NOTIFICATIONS))
+            prefs.edit().putBoolean("askedActivity", true).apply()
+            // The heart rate, the calories (physical activity), and the notification that keeps the workout on the watch face.
+            askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.ACTIVITY_RECOGNITION, android.Manifest.permission.POST_NOTIFICATIONS))
         } else WorkoutService.sync(this)
     }
+
+    /**
+     * Debug builds only: `adb shell am start -n <pkg>/ch.duartesantos.opengym.wear.MainActivity --es demo rest`
+     * shows one screen with the demo workout in src/debug/assets (text and numbers, no media), for
+     * the screenshots in the docs and the store listing. `--es ambient 1` draws it as Always On,
+     * `--es lang de` in another of the app's languages.
+     */
+    private fun demo(intent: Intent?) {
+        if (!BuildConfig.DEBUG) return
+        val screen = intent?.getStringExtra("demo") ?: return
+        demoShown = true
+        val json = try { assets.open("demo-snapshot.json").bufferedReader().readText() } catch (_: Exception) { return }
+        val now = System.currentTimeMillis()
+        val filled = json.replace("\"__START__\"", "${now - 25 * 60_000}").replace("\"__AT1__\"", "${now - 20 * 60_000}")
+            .replace("\"__AT2__\"", "${now - 16 * 60_000}")
+            .replace("\"lang\": \"en\"", "\"lang\": \"${intent.getStringExtra("lang") ?: "en"}\"")
+            .let { if (intent.getStringExtra("names") == "long") longNames(it) else it }
+            .let { demoMuscleNames(it, intent.getStringExtra("lang")) }
+            // `--es age none`: no birth year from the phone, for the Zones page's "add your birth year" card.
+            .let { if (intent.getStringExtra("age") == "none") it.replace("\"birthYear\": 1988, ", "") else it }
+        WearStore.ambient.value = intent.getStringExtra("ambient") == "1"
+        WearStore.demo(screen, filled)
+    }
+
+    /** The Muscles page's names as the phone sends them in the app's language (debug only; de and ru have the longest). */
+    private fun demoMuscleNames(json: String, lang: String?): String {
+        val names = when (lang) {
+            "de" -> """{"chest":"Brust","front-delts":"Vordere Schulter","triceps":"Trizeps","abs":"Bauch","obliques":"Schräge Bauchmuskeln","lower-back":"Unterer Rücken","hip-flexors":"Hüftbeuger"}"""
+            "ru" -> """{"chest":"Грудь","front-delts":"Передние дельты","triceps":"Трицепс","abs":"Пресс","obliques":"Косые мышцы","lower-back":"Поясница","hip-flexors":"Сгибатели бедра"}"""
+            "ar" -> """{"chest":"الصدر","front-delts":"الكتف الأمامي","triceps":"الترايسبس","abs":"البطن","obliques":"العضلات المائلة","lower-back":"أسفل الظهر","hip-flexors":"مثنيات الورك"}"""
+            else -> return json
+        }
+        return json.replace(Regex("\"muscleNames\": \\{[^}]*\\}"), Regex.escapeReplacement("\"muscleNames\": $names"))
+    }
+
+    /** `--es names long`: the demo with the longest names a lifter types, for the clipping checks (debug only). */
+    private fun longNames(json: String) = json
+        .replace("\"Push day\"", "\"Upper body: push, pull and core\"")
+        .replace("\"Bench Press\"", "\"Single-Arm Landmine Shoulder Press to Overhead\"")
+        .replace("\"Incline Dumbbell Press\"", "\"Incline Dumbbell Press (neutral grip, slow)\"")
+        .replace("\"Cable Fly\"", "\"Kneeling High-to-Low Cable Crossover Fly\"")
+        .replace("\"Triceps Pushdown\"", "\"Overhead Rope Triceps Extension\"")
+        .replace("\"Plank\"", "\"Weighted Side Plank with Hip Dips\"")
 }

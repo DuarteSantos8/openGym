@@ -9,7 +9,7 @@
 //   crown        what the Digital Crown turns first on a set: 'reps' or 'weight' (older watch apps;
 //                the watch now edits a value on its own screen, the crown there is that value's)
 //   show         what a workout screen shows: clip (the animation), hr, last (last time's sets),
-//                elapsed (time so far), kcal, next (the next exercise during a rest), and rest:
+//                kcal (calories, default on), next (the next exercise during a rest), and rest:
 //                'ring' or 'plain' (the countdown alone)
 // Apple Health on the watch is not a choice of its own: it follows the phone's Apple Health switch
 // (Settings → Data, lib/health-sync.js), which the watch gets as `settings.health`. An older build's
@@ -19,13 +19,13 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
-export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, elapsed: false, kcal: false, next: true, rest: 'ring' })
+export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, zones: true, rest: 'ring' })
 export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
   const out = {}
-  for (const k of ['clip', 'hr', 'last', 'elapsed', 'kcal', 'next']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
+  for (const k of ['clip', 'hr', 'last', 'kcal', 'next', 'zones']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
   out.rest = o.rest === 'plain' ? 'plain' : 'ring'
   return out
 }
@@ -83,5 +83,46 @@ export function writeWatchStatus(ev, storage = globalThis.localStorage) {
   return next
 }
 
+// The newest thing a watch did that reached this phone (#1151): the time of its newest event that
+// was applied here, on the phone's clock (lib/watch-sync.js). Not when the page got round to it,
+// which can be much later than when it reached the phone: the time it happened at the wrist, so
+// "last heard" never says more recent than it was.
+const WATCH_HEARD_KEY = 'gym_watch_heard'
+export function readWatchHeard (storage = globalThis.localStorage) {
+  const v = Number(read(WATCH_HEARD_KEY, storage))
+  return Number.isFinite(v) && v > 0 ? v : 0
+}
+/** A watch's event made at `at` was applied here: remembered when it is the newest (never in the future). */
+export function noteWatchHeard (at, now = Date.now(), storage = globalThis.localStorage) {
+  const t = Math.min(Number(at) || 0, now)
+  if (!(t > 0) || t <= readWatchHeard(storage)) return
+  try { storage?.setItem(WATCH_HEARD_KEY, JSON.stringify(t)) } catch { /* shown again next time */ }
+  emit()
+}
+/** When the watch was last heard from: its status (sent at each launch) or its newest event, whichever is later. */
+export const lastHeardAt = (status = readWatchStatus(), storage = globalThis.localStorage) => Math.max(Number(status?.at) || 0, readWatchHeard(storage))
+
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
 export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show } })
+
+/**
+ * Where the phone and its Apple Watch stand, for Settings → Apple Watch, so every state can say
+ * what to do next. `link` is WatchBridge's status ({ activated, paired, installed, reachable }, null
+ * while asking), `status` what the watch last said about itself (readWatchStatus).
+ *
+ *   checking   still asking the phone
+ *   starting   the phone's link to the watch is not up yet (right after launch): nothing known
+ *   unpaired   no Apple Watch paired with this iPhone
+ *   missing    a watch is paired, openGym is not on it
+ *   silent     the app is on the watch but has never checked in: it was never opened
+ *   live       the watch app is there right now (open, or running a workout)
+ *   away       installed and heard from before, not there right now: closed, asleep or out of reach
+ */
+export function watchLinkState (link, status = null) {
+  if (!link) return 'checking'
+  if (link.activated === false) return 'starting'
+  if (!link.paired) return 'unpaired'
+  if (!link.installed) return 'missing'
+  if (link.reachable) return 'live'
+  return Number(status?.at) > 0 ? 'away' : 'silent'
+}

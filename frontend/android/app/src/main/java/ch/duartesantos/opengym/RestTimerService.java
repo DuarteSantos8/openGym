@@ -19,6 +19,9 @@ import android.os.PowerManager;
  * card is reposted every second only while the screen is on (for the bar), see RestCountdownPlan.
  */
 public class RestTimerService extends Service {
+    // Up between onCreate and onDestroy: the workout card (WorkoutNotification) shares this
+    // service's notification id and must not post over it while a rest is on.
+    private static volatile boolean alive;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private long endsAt;
     private long totalMs;
@@ -30,8 +33,8 @@ public class RestTimerService extends Service {
     private String minusLabel = "\u2212 15s";
     private String plusLabel = "+ 15s";
     private String skipLabel = "Skip";
-    private int accent = 0xFF30D158;
-    private int ink = 0xFF000000;
+    private int accent = 0xFFA3E635;
+    private int ink = 0xFF0C0E12;
     private PowerManager.WakeLock cpu;
     private PowerManager power;
     private BroadcastReceiver screenOn;
@@ -52,9 +55,14 @@ public class RestTimerService extends Service {
         }
     };
 
+    static boolean isRunning() {
+        return alive;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        alive = true;
         power = (PowerManager) getSystemService(POWER_SERVICE);
         screenOn = new BroadcastReceiver() {
             @Override
@@ -99,6 +107,11 @@ public class RestTimerService extends Service {
             ink = intent.getIntExtra("ink", ink);
             RestAlert.setAccentColor(accent, ink);
             show();
+            return START_NOT_STICKY;
+        }
+        if (RestAlert.ACTION_REFRESH.equals(action)) {
+            if (running) show();
+            else stopSelf(startId);
             return START_NOT_STICKY;
         }
         if (RestAlert.ACTION_HOLD.equals(action)) {
@@ -159,6 +172,9 @@ public class RestTimerService extends Service {
         }
         endsAt = 0;
         stopForegroundCompat();
+        alive = false;
+        // The rest is over (or skipped): the workout card takes the notification back.
+        WorkoutNotification.post(getApplicationContext());
         super.onDestroy();
     }
 
@@ -282,6 +298,8 @@ public class RestTimerService extends Service {
         long now = System.currentTimeMillis();
         RestAlert.cancelAlarmOnly(this, RestAlert.NOTIFICATION_ID);
         RestAlertPlugin.emit("skip", now, 0, 0, false);
+        // With the page away, the card's queue tells it later; on screen the event above did.
+        if (!RestAlertPlugin.appInFront()) WorkoutCardReceiver.skipFromRest(getApplicationContext(), now);
         if (chained) RestAlert.fireFromCountdown(getApplicationContext(), now);
         stopForegroundCompat();
         stopSelf();
@@ -295,8 +313,15 @@ public class RestTimerService extends Service {
     private void show() {
         try {
             long left = paused ? pausedLeft : Math.max(0, endsAt - System.currentTimeMillis());
-            Notification n = RestAlert.countdownNotification(
-                    this, left, totalMs, paused, pauseLabel, resumeLabel, minusLabel, plusLabel, skipLabel, accent, ink);
+            // A workout card is up: on Android 16 the rest is its Live Update, older phones keep
+            // the rest card with the set after it on top.
+            boolean card = WorkoutNotification.active(this);
+            Notification n = card && Build.VERSION.SDK_INT >= 36
+                    ? WorkoutNotification.rest(this, left, totalMs, paused, pauseLabel, resumeLabel, plusLabel, skipLabel)
+                    : null;
+            if (n == null) n = RestAlert.countdownNotification(
+                    this, left, totalMs, paused, pauseLabel, resumeLabel, minusLabel, plusLabel, skipLabel, accent, ink,
+                    card ? WorkoutNotification.upNext(this) : null);
             if (Build.VERSION.SDK_INT >= 34) {
                 startForeground(RestAlert.COUNTDOWN_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
             } else {

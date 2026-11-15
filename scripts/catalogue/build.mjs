@@ -43,7 +43,9 @@ const rows = exercises
       img: e.id + '.webp', gif: e.id + '.mp4',
     }
     if (e.category) row.cat = e.category
+    if (e.machineKind) row.mk = e.machineKind
     if (e.hold) row.hd = 1
+    if (e.track === 'distance') row.ds = 1
     if (e.needs) row.nd = e.needs
     if (e.femaleVariant) row.fv = e.femaleVariant
     if (e.maleVariant) row.mv = e.maleVariant
@@ -117,7 +119,8 @@ let stale = []
 for (const [rel, body] of Object.entries(files)) {
   const p = path.join(ROOT, rel)
   const cur = fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null
-  if (cur === body) continue
+  // Git may check out generated files with CRLF on Windows; that is not stale content.
+  if (cur?.replace(/\r\n/g, '\n') === body) continue
   stale.push(rel)
   if (!check) { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, body) }
 }
