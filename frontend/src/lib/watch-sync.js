@@ -33,7 +33,7 @@
 // arrives: the phone behaves exactly as before.
 import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
-import { isOn } from './modules.js'
+import { isOn, partOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
@@ -1229,7 +1229,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         const f = readForgottenState(snap.active.id)
         if (f.leftAt) snap.active.leftGymAt = f.leftAt
       }
-      if (prefs.enabled && isOn(S, 'motivation')) snap.streak = streakFor(S)
+      if (prefs.enabled && partOn(S, 'motivation', 'streak')) snap.streak = streakFor(S)
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
       const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded

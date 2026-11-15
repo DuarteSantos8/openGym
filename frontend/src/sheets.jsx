@@ -135,7 +135,7 @@ import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/St
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
-import { isOn } from './lib/modules.js'
+import { partOn } from './lib/modules.js'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
 import DailyCheckin from './components/DailyCheckin.jsx'
@@ -1590,17 +1590,20 @@ function ExerciseDetail({ ex, close }) {
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
     {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
+    {/* Exercise settings (Settings → Modules) can leave the unit and the plate loading out. */}
     {modeOf({ id: ex.id }) === 'reps' && <>
-      <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} /></div>
+      {partOn(st, 'exercise', 'units') && <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
+      <ExUnitRow ex={ex} /></div>}
       <GymSplitRow ex={ex} />
+      {partOn(st, 'exercise', 'plates') && <>
       <h4 className="sec">{t('Plate loading')}</h4>
       <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
       {canHaveStack(ex) && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
+      </>}
     </>}
     {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
         above. A routine can still pick its own on the exercise's settings. */}
-    {isBellEx(ex) && <>
+    {isBellEx(ex) && partOn(st, 'exercise', 'units') && <>
       <h4 className="sec">{t('Weight means')}</h4>
       <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
         onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
@@ -2639,6 +2642,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const warmApplies = warmAll !== null ? warmAll : ownExerciseRest(c) ?? st.restSec
   // Pyramid sets: one rep target per set, in place of the flat Sets × Reps (CONTEXT.md).
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
+  // Exercise settings (Settings → Modules): a category whose part is off is left out. A set type
+  // the exercise uses, now or when the sheet opened, stays so it can be turned off.
+  const part = id => partOn(live, 'exercise', id)
+  const shapes = part('intensity')
+  const setTypeShown = shapes || !!c.intensifier?.type || !!seed.intensifier?.type
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
   // Freestyle follows no rule unless one is picked on the exercise mid-workout (ProgressionFields, #910).
   const ruleless = !routine && (freestyle === 'add' || (freestyle === 'edit' && !c.prog))
@@ -3056,11 +3064,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       {/* The last work set of every session is marked as taken to failure, like Greyskull's
           final AMRAP set (workout-model isFailureSet, history.js applyFailurePlan). A pyramid
           already has its Max set for that. */}
-      {!pyramid && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
+      {!pyramid && (shapes || c.lastToFailure === true || seed.lastToFailure === true) && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
         subtitle={c.lastToFailure ? t('The last set goes until nothing is left, and counts as all-out effort unless you rate it.') : t('Plan the final set as an all-out one.')}>
         <Switch checked={c.lastToFailure === true} onChange={v => setC(x => ({ ...x, lastToFailure: v || undefined }))} />
       </Row>}
-      {mode === 'reps' && <Row icon="steps" iconTint="var(--acc)" title={t('Pyramid sets')}
+      {mode === 'reps' && (shapes || pyramid || isPyramid({ ...seed, mode })) && <Row icon="steps" iconTint="var(--acc)" title={t('Pyramid sets')}
         subtitle={t('A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.')}>
         <Switch checked={pyramid} onChange={v => setC(x => (v
           ? { ...x, pyramid: x.pyramidDraft || pyramidFromFlat(x), intensifier: undefined }
@@ -3096,7 +3104,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         : t('Reps climb by one whenever every set was clean. Set a ceiling to add sets instead of reps forever.')}
     </div>}
     {/* A pyramid already shapes every set; a drop-set or rest-pause would reshape them again. */}
-    {mode === 'reps' && !pyramid && <>
+    {mode === 'reps' && !pyramid && setTypeShown && <>
       <h4 className="sec">{t('Set type')}</h4>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Intensifier')} sheetTitle={t('Intensifier')} value={c.intensifier?.type || ''}
@@ -3155,7 +3163,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </>}
     {/* What a dumbbell weight means, for this routine's slot (cfg.dbLoad). Picking what the
         exercise already means drops the key, so the slot follows the exercise's default again. */}
-    {isBellEx(ex) && !bw && mode !== 'cardio' && <>
+    {isBellEx(ex) && !bw && mode !== 'cardio' && part('units') && <>
       <h4 className="sec">{t('Weight means')}</h4>
       <DbLoadPicker ex={ex} cfg={c} value={dbLoadFor(st, { ...c, id: ex.id })}
         onChange={v => setC(x => ({ ...x, dbLoad: v === dbLoadFor(st, ex.id) ? undefined : v }))} />
@@ -3164,16 +3172,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         it sits apart from the config fields above and writes straight to S.barWeights/S.loadKind. */}
     {/* What is typed above is held in the unit on screen; a switch converts it with the unit. */}
     {!cardio && <>
-      <h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} onChange={(before, after) => setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))} />
+      {part('units') && <><h4 className="sec">{t('Weight unit')}</h4>
+      <ExUnitRow ex={ex} onChange={(before, after) => setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))} /></>}
       <GymSplitRow ex={ex} />
     </>}
-    {mode === 'reps' && <>
+    {mode === 'reps' && part('plates') && <>
       <h4 className="sec">{t('Plate loading')}</h4>
       <BarWeightEditor ex={ex} cfg={c} extra={t('Applies to this exercise everywhere, not just this plan.')} />
       {canHaveStack(ex) && !bw && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
     </>}
-    {pyramid
+    {!part('progression') ? null : pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
       : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} freestyle={routine ? false : freestyle} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
@@ -3785,7 +3793,7 @@ function WorkoutDetail({ w, close }) {
         { title: t('Share'), items: [
           { icon: 'person', label: t('Share with a friend'), sub: t('As a routine they can do too'), onClick: shareWithFriend },
           // The share card is part of Motivation (Settings → Modules).
-          isOn(st, 'motivation') && { icon: 'share', label: t('Share as image'), onClick: shareAsImage },
+          partOn(st, 'motivation', 'share') && { icon: 'share', label: t('Share as image'), onClick: shareAsImage },
           { icon: 'copy', label: t('Copy as text'), onClick: copyAsText },
           { icon: 'note', label: t('Save as PDF'), onClick: saveAsPdf },
           { icon: 'download', label: t('Export as .fit file'), onClick: exportFit },
@@ -3880,7 +3888,7 @@ function Calendar({ start, close, help = false }) {
   const st = useStore(s => s.S)
   // The streak's week by week (components/StreakCalendar.jsx), with Motivation on and a workout
   // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
-  const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
+  const streakOn = partOn(st, 'motivation', 'streak') && st.workouts.length > 0
   const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule, st.recoverySessions, st.recoveryStreak, st.activities, st.activityStreak]) // eslint-disable-line react-hooks/exhaustive-deps
   // Days with a sauna, an ice bath, a massage (lib/recovery-sessions.js): a teal dot of their own.
   const recDays = useMemo(() => recoveryDays(st), [st.recoverySessions]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -4007,8 +4015,8 @@ export function startFlow(routineIds, opts = {}) {
   if (!opts.checked && checkinMode(S(), todayISO())) { dailyCheckinSheet(routineIds, opts); return }
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
-  // Off in Settings → Workout, or with the Body module (Settings → Modules): straight into the session.
-  if (S().weighIn === false || !isOn(S(), 'body')) { beginWorkout(routineIds, null, opts); return }
+  // Off in Settings → Workout, or with Body's weight (Settings → Modules): straight into the session.
+  if (S().weighIn === false || !partOn(S(), 'body', 'weight')) { beginWorkout(routineIds, null, opts); return }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, opts) })
 }
 function dailyCheckinSheet(routineIds, opts) {
@@ -4116,7 +4124,7 @@ export function startBuiltSession(cfgs, name, close) {
     if (close) closeThenNav(close, '/workout'); else navToWorkout()
     autoGymHere()
   }
-  if (st.weighIn === false || !isOn(st, 'body')) { go(null); return }
+  if (st.weighIn === false || !partOn(st, 'body', 'weight')) { go(null); return }
   if (close) close()
   bwSheet({ required: true, onDone: go })
 }
@@ -4712,7 +4720,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
       <Button variant="primary" onClick={() => closeThenNav(close, '/home')}>{t('Nice!')}</Button>
       {/* The workout as a picture for a Story or a chat (components/ShareCard.jsx), the same
           card History's Share as image makes. */}
-      {isOn(st, 'motivation') && <Button variant="tinted" icon="share" data-fin-share onClick={() => shareWorkoutSheet(S().workouts.find(x => x.id === w.id) || w)}>{t('Share')}</Button>}
+      {partOn(st, 'motivation', 'share') && <Button variant="tinted" icon="share" data-fin-share onClick={() => shareWorkoutSheet(S().workouts.find(x => x.id === w.id) || w)}>{t('Share')}</Button>}
     </div>
     <div style={{ height: 14 }} />
     <h4 className="sec" style={{ textAlign: 'start' }}>{t('What you just trained')}</h4>
