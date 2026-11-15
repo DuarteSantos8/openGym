@@ -1,8 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { checkForUpdate, sha256, resetUpdateCheck, fetchChecksum, pickApk, APK_VARIANT, apkKind } from './update.js'
+import { checkForUpdate, sha256, resetUpdateCheck, fetchChecksum, pickApk, APK_VARIANT, apkKind, updateRepo } from './update.js'
 
 // __APP_VERSION__ is defined at build time by vite.config.js (reads package.json).
 // In the test environment vitest applies the same define, so it's available here.
+
+describe('updateRepo', () => {
+  it('is openGym\'s own repository, or the one the build names (a fork\'s)', () => {
+    expect(updateRepo({})).toBe('DuarteSantos8/openGym')
+    expect(updateRepo({ VITE_UPDATE_REPO: 'someone/openGym' })).toBe('someone/openGym')
+  })
+})
 
 describe('sha256', () => {
   it('computes the correct hash for a known input', async () => {
