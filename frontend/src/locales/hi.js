@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "वज़न का लक्ष्य",
+  "Set a goal": "लक्ष्य तय करें",
+  "Target ({0})": "लक्ष्य ({0})",
+  "6 months": "6 महीने",
+  "1 year": "1 साल",
+  "Goal: {0} by {1}": "लक्ष्य: {1} तक {0}",
+  "Ahead of schedule": "योजना से आगे",
+  "On track": "सही रास्ते पर",
+  "Behind schedule": "योजना से पीछे",
+  "Past the due date": "तय तारीख़ निकल गई",
+  "Gain about {0} a week to get there": "वहाँ पहुँचने के लिए हर हफ़्ते लगभग {0} बढ़ाएँ",
 }

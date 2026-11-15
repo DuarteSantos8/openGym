@@ -5944,4 +5944,16 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Lyftmål",
+  "Set a goal": "Sätt ett mål",
+  "Target ({0})": "Mål ({0})",
+  "6 months": "6 månader",
+  "1 year": "1 år",
+  "Goal: {0} by {1}": "Mål: {0} till {1}",
+  "Ahead of schedule": "Före schemat",
+  "On track": "På rätt spår",
+  "Behind schedule": "Efter schemat",
+  "Past the due date": "Tiden har gått ut",
+  "Gain about {0} a week to get there": "Öka med ungefär {0} i veckan för att nå dit",
 }

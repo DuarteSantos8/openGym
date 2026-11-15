@@ -5894,4 +5894,16 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Ціль за вагою",
+  "Set a goal": "Поставити ціль",
+  "Target ({0})": "Ціль ({0})",
+  "6 months": "6 місяців",
+  "1 year": "1 рік",
+  "Goal: {0} by {1}": "Ціль: {0} до {1}",
+  "Ahead of schedule": "Випереджаєте план",
+  "On track": "За планом",
+  "Behind schedule": "Відстаєте від плану",
+  "Past the due date": "Термін минув",
+  "Gain about {0} a week to get there": "Додавайте приблизно {0} на тиждень, щоб дійти до цілі",
 }

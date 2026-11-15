@@ -5908,4 +5908,16 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "เป้าหมายน้ำหนัก",
+  "Set a goal": "ตั้งเป้าหมาย",
+  "Target ({0})": "เป้าหมาย ({0})",
+  "6 months": "6 เดือน",
+  "1 year": "1 ปี",
+  "Goal: {0} by {1}": "เป้าหมาย: {0} ภายใน {1}",
+  "Ahead of schedule": "เร็วกว่าแผน",
+  "On track": "เป็นไปตามแผน",
+  "Behind schedule": "ช้ากว่าแผน",
+  "Past the due date": "เลยกำหนดแล้ว",
+  "Gain about {0} a week to get there": "เพิ่มประมาณ {0} ต่อสัปดาห์เพื่อไปให้ถึง",
 }

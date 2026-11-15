@@ -5863,4 +5863,16 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Cíl zvedání",
+  "Set a goal": "Nastavit cíl",
+  "Target ({0})": "Cíl ({0})",
+  "6 months": "6 měsíců",
+  "1 year": "1 rok",
+  "Goal: {0} by {1}": "Cíl: {0} do {1}",
+  "Ahead of schedule": "Před plánem",
+  "On track": "Na dobré cestě",
+  "Behind schedule": "Za plánem",
+  "Past the due date": "Po termínu",
+  "Gain about {0} a week to get there": "Přidejte zhruba {0} týdně, ať cíle dosáhnete",
 }

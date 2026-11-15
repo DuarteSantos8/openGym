@@ -5863,4 +5863,16 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "هدف وزنه",
+  "Set a goal": "تعیین هدف",
+  "Target ({0})": "هدف ({0})",
+  "6 months": "۶ ماه",
+  "1 year": "۱ سال",
+  "Goal: {0} by {1}": "هدف: {0} تا {1}",
+  "Ahead of schedule": "جلوتر از برنامه",
+  "On track": "طبق برنامه",
+  "Behind schedule": "عقب‌تر از برنامه",
+  "Past the due date": "موعد گذشته است",
+  "Gain about {0} a week to get there": "برای رسیدن، هفته‌ای حدود {0} اضافه کنید",
 }

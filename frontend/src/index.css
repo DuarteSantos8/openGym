@@ -4661,3 +4661,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* Lift goal (components/LiftGoal.jsx): a target weight with a due day, in the exercise sheet. */
+.lgoal{margin:10px 0 6px}
+.lgoal-bar{height:6px;border-radius:3px;background:var(--fill, rgba(127,127,127,.2));overflow:hidden;margin:8px 0 6px}
+.lgoal-bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.lgoal-bar i.lgoal-behind,.lgoal-bar i.lgoal-overdue{background:var(--orange, var(--acc))}
+.lgoal-bar i.lgoal-done{background:var(--green, var(--acc))}
+.lgoal-st{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.lgoal-st .icn{font-size:14px}
+.lgoal-actions{gap:8px;margin-top:10px;flex-wrap:wrap}

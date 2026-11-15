@@ -5863,4 +5863,16 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Mục tiêu mức tạ",
+  "Set a goal": "Đặt mục tiêu",
+  "Target ({0})": "Mục tiêu ({0})",
+  "6 months": "6 tháng",
+  "1 year": "1 năm",
+  "Goal: {0} by {1}": "Mục tiêu: {0} trước {1}",
+  "Ahead of schedule": "Vượt kế hoạch",
+  "On track": "Đúng tiến độ",
+  "Behind schedule": "Chậm so với kế hoạch",
+  "Past the due date": "Đã quá hạn",
+  "Gain about {0} a week to get there": "Tăng khoảng {0} mỗi tuần để đạt được",
 };

@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Ağırlık hedefi",
+  "Set a goal": "Hedef belirle",
+  "Target ({0})": "Hedef ({0})",
+  "6 months": "6 ay",
+  "1 year": "1 yıl",
+  "Goal: {0} by {1}": "Hedef: {1} tarihine kadar {0}",
+  "Ahead of schedule": "Planın önündesin",
+  "On track": "Yolundasın",
+  "Behind schedule": "Planın gerisindesin",
+  "Past the due date": "Süre doldu",
+  "Gain about {0} a week to get there": "Hedefe varmak için haftada yaklaşık {0} artır",
 }

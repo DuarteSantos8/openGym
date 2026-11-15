@@ -5893,4 +5893,16 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Svorio tikslas",
+  "Set a goal": "Nustatyti tikslą",
+  "Target ({0})": "Tikslas ({0})",
+  "6 months": "6 mėnesių",
+  "1 year": "1 metai",
+  "Goal: {0} by {1}": "Tikslas: {0} iki {1}",
+  "Ahead of schedule": "Pirma grafiko",
+  "On track": "Laiku",
+  "Behind schedule": "Atsilieki nuo grafiko",
+  "Past the due date": "Terminas praėjo",
+  "Gain about {0} a week to get there": "Kad pasiektumėte, kiekvieną savaitę pridėkite apie {0}",
 }

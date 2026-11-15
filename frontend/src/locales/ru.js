@@ -5901,4 +5901,16 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Цель по весу",
+  "Set a goal": "Поставить цель",
+  "Target ({0})": "Цель ({0})",
+  "6 months": "6 месяцев",
+  "1 year": "1 год",
+  "Goal: {0} by {1}": "Цель: {0} к {1}",
+  "Ahead of schedule": "Опережаете план",
+  "On track": "По плану",
+  "Behind schedule": "Отстаёте от плана",
+  "Past the due date": "Срок прошёл",
+  "Gain about {0} a week to get there": "Добавляйте примерно {0} в неделю, чтобы дойти до цели",
 }

@@ -168,7 +168,7 @@ export const DEF = {
   // Standing per-exercise notes, keyed by exercise id: the gym-specific facts that are true
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
   // belongs to one exercise in one plan, and from a session note, which belongs to one day.
-  exNotes: {}, exAliases: {}, exShownName: {},
+  exNotes: {}, exAliases: {}, exShownName: {}, exGoals: {},
   // Favourite exercise ids (issue #6) — sorted to the top of the picker/Library. Personal, so
   // it syncs with the profile but is never part of a shared plan bundle (lib/favourites.js).
   favEx: [],
