@@ -88,8 +88,8 @@ const IT = {
   source_confirmed_weight: 'il peso di lavoro confermato per questo esercizio',
   source_last_session: 'ripreso dall’ultima sessione in cui era presente questo esercizio',
   source_routine_plan: 'l’obiettivo impostato nella scheda',
-  policy_names: { off: 'Progressione automatica disattivata', linear: 'Progressione lineare', greyskull: 'Greyskull LP', double: 'Doppia progressione', triple: 'Tripla progressione', time: 'Aggiunta di tempo' },
-  muscle_names: { trapezius: 'Trapezi', deltoids: 'Spalle', chest: 'Petto', 'upper-back': 'Parte alta della schiena', serratus: 'Dentato', biceps: 'Bicipiti', triceps: 'Tricipiti', forearm: 'Avambracci', abs: 'Addominali', obliques: 'Obliqui', 'lower-back': 'Parte bassa della schiena', gluteal: 'Glutei', quadriceps: 'Quadricipiti', hamstring: 'Ischiocrurali', adductors: 'Adduttori', 'hip-flexors': 'Flessori dell’anca', calves: 'Polpacci', tibialis: 'Tibiali' }
+  policy_names: { steady: 'Doppia progressione costante', undulating: 'Giorni ondulati', density: 'Recuperi più brevi', ladder: 'Scala di abilità', off: 'Progressione automatica disattivata', linear: 'Progressione lineare', greyskull: 'Greyskull LP', double: 'Doppia progressione', triple: 'Tripla progressione', time: 'Aggiunta di tempo' },
+  muscle_names: { 'front-delts': 'Deltoidi anteriori', 'side-delts': 'Deltoidi laterali', 'rear-delts': 'Deltoidi posteriori', lats: 'Gran dorsale', 'cardiovascular system': 'Sistema cardiovascolare', trapezius: 'Trapezi', deltoids: 'Spalle', chest: 'Petto', 'upper-back': 'Parte alta della schiena', serratus: 'Dentato', biceps: 'Bicipiti', triceps: 'Tricipiti', forearm: 'Avambracci', abs: 'Addominali', obliques: 'Obliqui', 'lower-back': 'Parte bassa della schiena', gluteal: 'Glutei', quadriceps: 'Quadricipiti', hamstring: 'Ischiocrurali', adductors: 'Adduttori', 'hip-flexors': 'Flessori dell’anca', calves: 'Polpacci', tibialis: 'Tibiali' }
 }
 
 export function localeCode(locale = process.env.OPENGYM_LOCALE) {

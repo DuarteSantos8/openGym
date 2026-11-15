@@ -33,6 +33,16 @@ describe('MCP localization', () => {
     expect(t('weekday_names')).toEqual(['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'])
     expect(policyName('linear')).toBe('Progressione lineare')
     expect(muscleName('quadriceps')).toBe('Quadricipiti')
+    for (const [key, label] of Object.entries({
+      'front-delts': 'Deltoidi anteriori', 'side-delts': 'Deltoidi laterali',
+      'rear-delts': 'Deltoidi posteriori', lats: 'Gran dorsale',
+      'cardiovascular system': 'Sistema cardiovascolare'
+    })) expect(muscleName(key)).toBe(label)
+    for (const [key, label] of Object.entries({
+      steady: 'Doppia progressione costante', undulating: 'Giorni ondulati',
+      density: 'Recuperi più brevi', ladder: 'Scala di abilità'
+    })) expect(policyName(key)).toBe(label)
+
     expect(t('no_state')).toContain('Non ci sono ancora dati sincronizzati')
 
     state._seedStateForTests(buildDemoState())
