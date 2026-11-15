@@ -281,7 +281,7 @@ const OWN = {
 const PLIST = {
   NSHealthShareUsageDescription: {
     ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة، ويستخدم تاريخ ميلادك لنطاقات النبض.',
-    bn: 'openGym ওয়ার্কআউটের সময় এবং প্রতিটি সেটের পাশে তোমার হার্ট রেট দেখায়, এবং হার্ট রেট জোনের জন্য তোমার জন্মতারিখ ব্যবহার করে।',
+    bn: 'openGym ওয়ার্কআউটের সময় এবং প্রতিটি সেটের পাশে আপনার হার্ট রেট দেখায়, এবং হার্ট রেট জোনের জন্য আপনার জন্মতারিখ ব্যবহার করে।',
     cs: 'openGym ukazuje tvůj tep během tréninku a u každé série a pro tepové zóny používá tvé datum narození.',
     de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz und nutzt dein Geburtsdatum für die Pulszonen.',
     es: 'openGym muestra tu pulso durante el entreno y junto a cada serie, y usa tu fecha de nacimiento para las zonas de pulso.',
