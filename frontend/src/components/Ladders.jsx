@@ -4,7 +4,8 @@ import { useUI } from '../store/useUI.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { uid, exerciseNameText } from '../lib/format.js'
-import { exOr, isHold } from '../lib/exercises.js'
+import { exOr } from '../lib/exercises.js'
+import { isHoldRung } from '../lib/skill-ladder.js'
 import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
 import { LADDER_TOP, LADDER_BOTTOM, LADDER_SEC_TOP, LADDER_SEC_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
@@ -32,7 +33,7 @@ export const ladderName = l => (l.own ? l.name : NAME[l.id]?.() || l.id)
 
 /** A rung as it starts in a routine: three sets climbing from 5 to 12 reps on the ladder rule,
  *  or for a hold (a lever, an L-sit) from 10 to 30 seconds. */
-export const rungEntry = id => (isHold(id)
+export const rungEntry = (id, S = null) => (isHoldRung(S, id)
   ? { id, sets: 3, sec: LADDER_SEC_BOTTOM, weight: 0, mode: 'time', bodyweight: true, prog: 'ladder' }
   : { id, sets: 3, reps: LADDER_TOP, repsMin: LADDER_BOTTOM, weight: 0, mode: 'reps', bodyweight: true, prog: 'ladder' })
 
@@ -48,8 +49,8 @@ export function TrainIt ({ ladder, rung, close }) {
       if (!r) { r = { id: uid(), name: ladderName(ladder), emoji: DEFAULT_GLYPH, ex: [] }; s.routines.push(r) }
       // A rung of this ladder already in the routine moves up instead of a second one joining.
       const at = r.ex.findIndex(e => ladder.steps.includes(e.id))
-      if (at >= 0) r.ex[at] = { ...r.ex[at], ...rungEntry(id), sets: r.ex[at].sets || 3 }
-      else r.ex.push(rungEntry(id))
+      if (at >= 0) r.ex[at] = { ...r.ex[at], ...rungEntry(id, s), sets: r.ex[at].sets || 3 }
+      else r.ex.push(rungEntry(id, s))
       name = r.name
     })
     close()
@@ -57,7 +58,7 @@ export function TrainIt ({ ladder, rung, close }) {
   }
   return <>
     <h3 className={exerciseNameClass(ex)}>{t('Train {0}', exerciseNameFor(ex))}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{isHold(id)
+    <div className="muted small" style={{ marginBottom: 12 }}>{isHoldRung(S, id)
       ? t('Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.', LADDER_SEC_BOTTOM, LADDER_SEC_TOP)
       : t('Three sets, from {0} up to {1} reps. Every set at {1} and the next rung is yours.', LADDER_BOTTOM, LADDER_TOP)}</div>
     <div className="list">

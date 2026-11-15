@@ -5934,4 +5934,6 @@ export default {
   "Train this branch": "इस शाखा का अभ्यास करें",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "तीन होल्ड, {0} से {1} सेकंड तक। सब {1} सेकंड पर और अगली सीढ़ी आपकी।",
   "See every skill as a tree": "सभी कौशल पेड़ के रूप में देखें",
+  "Tree view": "पेड़",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "आपके पास पहले से {0} अपनी सीढ़ियाँ हैं, यही अधिकतम है। यह शाखा जोड़ने के लिए एक हटाएँ।",
 }

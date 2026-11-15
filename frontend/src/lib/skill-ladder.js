@@ -5,12 +5,21 @@
 // custom exercise named after it, a hold when the skill is one, with its demo link.
 import { BRANCHES, SKILLS, haveOf, skillOfExercise } from './skill-tree.js'
 import { saveLadder, STEPS_MAX } from './ladders.js'
+import { isHold } from './exercises.js'
 
 // Static positions are held, everything that moves is counted: a Front Lever is a hold, a Front
 // Lever Row, a Planche PU or a Dragon Flag are reps.
 const HOLD = /\b(lever|l-sit|v-sit|planche|flag|hang|handstand|hs|manna|support|cross|maltese|hollow|stand|bridge|plank)\b/i
 const MOVES = /\b(pu|push[ -]?ups?|pull[ -]?ups?|pulls?|rows?|raises?|dips?|squats?|press|pullout|to|t2b|curls?|wheel|muscle[ -]?ups?|skin|negs?|walk|dragon|360°?)\b/i
 export const isHoldSkill = name => HOLD.test(String(name)) && !MOVES.test(String(name))
+
+/** Whether exercise `id` is trained as a hold: its own flag, or the skill it shows (lib/skill-tree.js),
+ *  so a custom exercise of yours reused for a hold skill keeps it in seconds without being changed. */
+export function isHoldRung(S, id) {
+  if (isHold(id)) return true
+  const skill = skillOfExercise(S, id)
+  return !!skill && isHoldSkill(SKILLS[skill].name)
+}
 
 const BODY_PART = { hpull: 'back', vpull: 'back', vpush: 'shoulders', hpush: 'chest', core: 'waist', legs: 'upper legs' }
 

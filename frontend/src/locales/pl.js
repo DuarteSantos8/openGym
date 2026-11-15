@@ -5934,4 +5934,6 @@ export default {
   "Train this branch": "Trenuj tę gałąź",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Trzy utrzymania, od {0} s do {1} s. Wszystkie po {1} s i kolejny szczebel jest twój.",
   "See every skill as a tree": "Zobacz wszystkie umiejętności jako drzewo",
+  "Tree view": "Drzewo",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Masz już {0} własnych drabin, to maksimum. Usuń jedną, by dodać tę gałąź.",
 }

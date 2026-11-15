@@ -5927,4 +5927,6 @@ export default {
   "Train this branch": "練這條分支",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "三次靜止，從 {0} 秒到 {1} 秒。每次都到 {1} 秒，下一級就是你的。",
   "See every skill as a tree": "以樹狀圖查看全部技能",
+  "Tree view": "樹狀圖",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "你已有 {0} 個自己的階梯，已達上限。刪除一個才能加入這條分支。",
 }

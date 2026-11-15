@@ -39,11 +39,11 @@ describe('status', () => {
 })
 
 describe('ticking and taking back', () => {
-  it('ticks the skills before it, on that day, and leaves the ones already had alone', () => {
+  it('ticks the skills before it on that day, and keeps the day of the ones already had', () => {
     const map = withSkill({ 'incline-push-up': { at: '2026-10-01', _ts: 1 } }, 'diamond-push-up', 5, '2026-11-04')
     expect(map['diamond-push-up']).toEqual({ at: '2026-11-04', _ts: 5 })
     expect(map['push-up']).toEqual({ at: '2026-11-04', _ts: 5 })
-    expect(map['incline-push-up']).toEqual({ at: '2026-10-01', _ts: 1 })
+    expect(map['incline-push-up']).toEqual({ at: '2026-10-01', _ts: 5 })
     expect(missingBefore(haveOf({ skills: map }), 'diamond-push-up')).toEqual([])
   })
   it('ticks across branches: a front lever brings the rows before it', () => {
@@ -65,6 +65,23 @@ describe('ticking and taking back', () => {
     expect(Object.keys(haveOf({ skills: merged }))).toEqual(expect.arrayContaining(['row', 'push-up', 'incline-push-up']))
     const back = withoutSkill(merged, 'row', 30)
     expect(haveOf({ skills: mergeStampedMap(phone, back) }).row).toBeUndefined()
+  })
+  // Two devices out of step: what each did last wins, and the tree stays whole.
+  it('a later tick on one device keeps what comes before it, taken back earlier on the other', () => {
+    const both = withSkill({}, 'push-up', 10, '2026-11-01')
+    const phone = withoutSkill(both, 'push-up', 20)
+    const laptop = withSkill(both, 'diamond-push-up', 30, '2026-11-03')
+    const h = haveOf({ skills: mergeStampedMap(phone, laptop) })
+    expect(h['diamond-push-up'] && h['push-up']).toBeTruthy()
+    expect(h['push-up']).toBe('2026-11-01')
+  })
+  it('a later take-back on one device wins over an earlier tick of a later skill on the other', () => {
+    const both = withSkill({}, 'push-up', 10, '2026-11-01')
+    const phone = withSkill(both, 'diamond-push-up', 20, '2026-11-02')
+    const laptop = withoutSkill(both, 'push-up', 30)
+    const h = haveOf({ skills: mergeStampedMap(phone, laptop) })
+    expect(h['push-up']).toBeUndefined()
+    expect(h['diamond-push-up']).toBeUndefined()
   })
 })
 

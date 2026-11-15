@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BRANCHES, SKILLS, skillId } from './skill-tree.js'
-import { isHoldSkill, branchRungs, addBranchLadder, branchLadderId } from './skill-ladder.js'
+import { isHoldSkill, isHoldRung, branchRungs, addBranchLadder, branchLadderId } from './skill-ladder.js'
+import { skillOfExercise } from './skill-tree.js'
 import { ownLadders, nextRung, reachedRung, STEPS_MAX } from './ladders.js'
 
 const bi = name => BRANCHES.findIndex(b => b.name === name)
@@ -50,5 +51,19 @@ describe('a branch as a ladder', () => {
     const { ladder } = addBranchLadder(s, bi('L-Sit'))
     const top = reachedRung(s, ladder)
     expect(SKILLS[ladder.steps[top].replace(/^sk-/, '')]?.name ?? ladder.steps[top]).toBe('Tuck L-Sit')
+  })
+
+  it('keeps a custom exercise of yours for a hold skill in seconds, without changing it', () => {
+    const mine = { id: 'mine1', n: 'Tuck L-Sit', custom: true }
+    const S = { skills: {}, customEx: [mine] }
+    expect(isHoldRung(S, 'mine1')).toBe(true)
+    expect(mine.hd).toBeUndefined()
+    expect(isHoldRung(S, 'mine2')).toBe(false)
+  })
+
+  it('reads an assisted pistol as the assisted skill, not the whole pistol', () => {
+    const S = { customEx: [{ id: 'a', n: 'Assisted Pistol Squat' }, { id: 'b', n: 'Pistol squat' }] }
+    expect(skillOfExercise(S, 'a')).toBe('assisted-pistol-squat')
+    expect(skillOfExercise(S, 'b')).toBe('pistol-squat')
   })
 })

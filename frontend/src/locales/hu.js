@@ -5937,4 +5937,6 @@ export default {
   "Train this branch": "Ennek az ágnak az edzése",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Három tartás, {0} mp-től {1} mp-ig. Mind {1} mp-ig, és a következő fok a tiéd.",
   "See every skill as a tree": "Minden képesség fában",
+  "Tree view": "Fa",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Már {0} saját létrád van, ez a maximum. Törölj egyet, hogy hozzáadd ezt az ágat.",
 }

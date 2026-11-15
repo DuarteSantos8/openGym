@@ -5900,4 +5900,6 @@ export default {
   "Train this branch": "Tập nhánh này",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Ba lần giữ, từ {0} giây đến {1} giây. Tất cả đạt {1} giây là bậc tiếp theo thuộc về bạn.",
   "See every skill as a tree": "Xem mọi kỹ năng dạng cây",
+  "Tree view": "Cây",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Bạn đã có {0} thang riêng, mức tối đa. Xóa một thang để thêm nhánh này.",
 };

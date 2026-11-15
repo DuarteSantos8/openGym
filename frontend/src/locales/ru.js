@@ -5938,4 +5938,6 @@ export default {
   "Train this branch": "Тренировать эту ветку",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Три удержания, от {0} с до {1} с. Все по {1} с — и следующая ступень твоя.",
   "See every skill as a tree": "Все навыки деревом",
+  "Tree view": "Дерево",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "У тебя уже {0} своих лестниц — это максимум. Удали одну, чтобы добавить эту ветку.",
 }
