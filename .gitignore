@@ -57,3 +57,6 @@ frontend/ios/App/WatchCore/.build/
 /dist/
 .wrangler/
 .taste-skill/
+
+# Movement Lab runtime and pose model, staged at build time (frontend/scripts/stage-mediapipe.mjs)
+frontend/public/mediapipe/

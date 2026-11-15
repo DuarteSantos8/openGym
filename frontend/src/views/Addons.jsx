@@ -11,6 +11,8 @@ import { previewActivityFile } from '../lib/addon-activity.js'
 import { MEALS, addFood, fromLookup } from '../lib/nutrition-diary.js'
 import FoodDiary, { MEAL_LABEL } from '../components/FoodDiary.jsx'
 import NutriTraceCard from '../components/NutriTraceCard.jsx'
+import ProgressionLab from '../components/ProgressionLab.jsx'
+import MovementLab from '../components/MovementLab.jsx'
 import AnatomyViewer from '../components/AnatomyViewer.jsx'
 import './addons.css'
 
@@ -163,7 +165,7 @@ const ROADS = [
   { name: 'Recipes and meal plans', status: 'Not connected', detail: 'Mealie can be connected as a separate recipe service.' },
   { name: 'Advanced progression', status: 'Simulation', detail: 'Liftosaur-style rules run in an isolated evaluator and are compared with openGym above; applying one to a routine comes later.' },
   { name: 'Endurance activities', status: 'Not connected', detail: 'FitTrackee is optional once activity previews prove useful.' },
-  { name: 'Camera / sensor coaching', status: 'Hardware validation needed', detail: 'MediaPipe and Bluetooth device support require permission, calibration, and physical testing.' },
+  { name: 'Camera coaching', status: 'Lab preview', detail: 'The Movement lab above counts squats on this device; other movements and real-device testing come next. Bluetooth sensors wait on a real gap (docs/next/adr/0003).' },
   { name: '3D anatomy explorer', status: 'Lab preview', detail: 'The 3D muscle map above uses a simplified Z-Anatomy model (CC BY-SA 4.0) and the same levels as the 2D map.' },
   { name: 'Automations and AI', status: 'Existing integrations first', detail: 'Use openGym webhooks and its coach before adding Node-RED or LangGraph.' },
 ]
@@ -210,6 +212,7 @@ export default function Addons() {
       {signedIn && config?.integrations?.providers?.includes('nutritrace') && <NutriTraceCard day={day} />}
       <ProgressionLab unit={S?.unit || 'kg'} />
       <ActivityPreview />
+      <MovementLab />
       <Roadmap />
     </div>
   </main>

@@ -88,6 +88,19 @@
 
 /* 3D muscle map (components/AnatomyViewer.jsx) */
 .addon-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--label-2)}
+.addon-prog-form textarea{width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;padding:8px;border-radius:8px}
+.addon-table-wrap{overflow-x:auto}
+.addon-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+.addon-table th,.addon-table td{padding:6px 8px;text-align:start;border-bottom:1px solid var(--sep,rgba(127,127,127,.25))}
+.addon-table tr[data-diverges] td{font-weight:600}
+.addon-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Movement lab (components/MovementLab.jsx): front camera, mirrored like a mirror (.addon-field above) */
+.addon-cam{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
+.addon-cam[hidden]{display:none}
+.addon-cam video,.addon-cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+
+/* 3D muscle map (components/AnatomyViewer.jsx) (.addon-field above) */
 .addon-3d{position:relative;width:100%;height:min(70vh,520px);border-radius:12px;overflow:hidden;background:var(--surface-2);touch-action:none}
 .addon-3d canvas{display:block;width:100%;height:100%}
 .addon-3d .addon-note{position:absolute;inset:auto 0 45% 0;text-align:center}
