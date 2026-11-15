@@ -25,6 +25,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Screen readers: a body map you cannot tap says which muscles it shows instead of reading out every shape (#1230, thanks @Creatgame).
 - Indonesian: more natural wording across the app, the watch and the trainer notifications (#1238, thanks @m-ridha).
 - Bengali: the newer strings say আপনি and use everyday wording like the rest (#1234, thanks @mrjohndoel).
+- Fixed: with a rotation and Workouts per week set, Planned sets in Stats follow your week instead of one turn of the loop. A loop of six sessions at four a week plans four sixths of its sets, and a routine the loop names twice counts twice (#1249, thanks @avikl).
 
 ## v1.4.5 (2026-11-14)
 
