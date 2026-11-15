@@ -105,7 +105,7 @@ describe('the live bar', () => {
   it('a tap goes to the workout', () => {
     seed(active()); render()
     act(() => { bar().click() })
-    expect(mocks.nav).toHaveBeenCalledWith('/workout')
+    expect(mocks.nav).toHaveBeenCalledWith('/workout', { state: { rise: 'rise' } })
   })
 
   it('puts has-livebar on the body while it shows and takes it off on unmount', () => {
