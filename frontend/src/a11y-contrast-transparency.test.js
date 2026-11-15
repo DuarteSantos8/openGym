@@ -135,3 +135,17 @@ describe('status colours as words use their ink shade (light theme, QA 1.4.5)', 
     expect(sb).not.toMatch(/balanced: 'var\(--green\)'/)
   })
 })
+
+// The rise and fold (App.jsx state.rise) are plain `animation`s, so the app's global reduced-motion
+// rule removes them. Only the CSS is read: the class is still set under reduced motion.
+describe('the rise and fold under reduced motion', () => {
+  const css = read('index.css')
+  it('the global rule stops every animation', () => {
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\{\*\{animation:none!important/)
+  })
+  it('.vrise and .vfold animate with `animation`, which that rule covers', () => {
+    expect(css).toMatch(/\.page\.vrise\{animation:viewrise/)
+    expect(css).toMatch(/\.page\.vfold\{animation:viewfold/)
+  })
+})
+

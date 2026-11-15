@@ -340,8 +340,9 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
    Reduced motion: the global rule above removes it. */
 @keyframes viewrise{from{transform:translateY(24px) scale(.98);opacity:0}to{transform:none;opacity:1}}
 @keyframes viewfold{from{transform:scale(1.02);opacity:0}to{transform:none;opacity:1}}
-#app > .page.vrise{animation:viewrise 280ms var(--ease);transform-origin:50% 100%}
-#app > .page.vfold{animation:viewfold 280ms var(--ease)}
+/* origin: the screen's edge, not the page's: the page is as tall as the whole workout and arrives at the top. */
+#app > .page.vrise{animation:viewrise 280ms var(--ease);transform-origin:50% 100vh}
+#app > .page.vfold{animation:viewfold 280ms var(--ease);transform-origin:50% 50vh}
 /* Drilling into a settings page and back (App.jsx pageMotion): the iPhone's own push and pop.
    The page slides, the window never scrolls sideways while it does. */
 /* Only the page moves: no background and no edge shadow, not even during the slide. The page sits

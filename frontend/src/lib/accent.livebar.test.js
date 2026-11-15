@@ -13,7 +13,7 @@ describe('liveBarAlpha', () => {
     expect(okOver('#a3e635', '#0c0e12', a)).toBe(true)
   })
   it('is 1 when only the solid fill passes', () => {
-    expect(okOver('#767676', '#000000', 0.72)).toBe(false)
+    expect(okOver('#767676', '#000000', LIVEBAR_ALPHA - 0.01)).toBe(false)
     expect(liveBarAlpha('#767676', '#000000')).toBe(1)
   })
   it('is the lowest passing step', () => {
