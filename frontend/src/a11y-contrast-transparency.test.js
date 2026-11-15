@@ -128,9 +128,6 @@ describe('small text that is read, not decoration', () => {
 
 describe('status colours as words use their ink shade (light theme, QA 1.4.5)', () => {
   const src = f => readFileSync(resolve(process.cwd(), 'src', f), 'utf8')
-  it('the running clock under the tab bar\'s Start button', () => {
-    expect(rule(read('index.css'), '#tabbar button.start.rec span')).toContain('color:var(--orange-ink)')
-  })
   it('Home\'s Resume tag and the balance check\'s verdicts', () => {
     expect(src('views/Home.jsx')).toMatch(/className="tag" style=\{\{ color: 'var\(--orange-ink\)'/)
     const sb = src('views/StructuralBalance.jsx')

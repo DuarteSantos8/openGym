@@ -6,7 +6,6 @@ import { todayISO } from '../lib/format.js'
 import { dayApart, nextSessionIds } from '../lib/day-sessions.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
-import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
 
@@ -49,7 +48,6 @@ export default function TabBar({ onStart, onPick }) {
     else retapTab(path)
   }
 
-  const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
     // The press was held: the picker is open already, and this click is its release.
     if (hold.current === 'fired') { hold.current = null; return }
@@ -83,20 +81,14 @@ export default function TabBar({ onStart, onPick }) {
     <nav id="tabbar">
       <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => switchTab('/home')} tour="tab-home" />
       <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} tour="tab-plan" />
-      {/* On the workout screen itself there is nothing to resume, so the button reads as the
-          tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
-          were on — the marker is kept in S.active.cur and never moves on its own (#21). The
-          glyph is always play: start and resume are one concept, and an exercise is a dumbbell.
-          A live session you stepped away from shows its running time instead of a word, the
-          button still named Resume; a past workout being edited or logged after the fact has no
-          clock to run. */}
-      <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
+      {/* A plain tab. The glyph is always play: start and resume are one concept. While a workout
+          runs, the live bar (LiveBar.jsx) carries its clock and state; this button just opens
+          the workout, lit while you are on it (#29), at the exercise you were on (#21). */}
+      <button data-tour="start" className={'start' + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
         onPointerDown={holdStart} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
-        onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}
-        aria-label={running ? t('Resume') : undefined}>
+        onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}>
         <span className="cir"><Icon name="play" /></span>
-        {running ? <span className="tab-time"><Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></span>
-          : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
+        <span>{S.active ? (S.active.editingWorkoutId ? t('Edit workout') : t('Workout')) : t('Start')}</span>
       </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} tour="tab-stats" />
       <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} tour="tab-library" />
