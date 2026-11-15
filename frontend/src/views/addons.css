@@ -99,3 +99,13 @@
 .addon-cam{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
 .addon-cam[hidden]{display:none}
 .addon-cam video,.addon-cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+
+/* 3D muscle map (components/AnatomyViewer.jsx) (.addon-field above) */
+.addon-3d{position:relative;width:100%;height:min(70vh,520px);border-radius:12px;overflow:hidden;background:var(--surface-2);touch-action:none}
+.addon-3d canvas{display:block;width:100%;height:100%}
+.addon-3d .addon-note{position:absolute;inset:auto 0 45% 0;text-align:center}
+.addon-muscles{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
+.addon-muscles button{width:100%;display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 10px;border-radius:10px;border:1px solid transparent;background:none;color:inherit;text-align:start}
+.addon-muscles button[aria-pressed="true"]{border-color:var(--acc)}
+.addon-muscles .hm-c{width:14px;height:14px;border-radius:4px;flex:none}
+.addon-muscles small{margin-inline-start:auto;color:var(--label-2)}
