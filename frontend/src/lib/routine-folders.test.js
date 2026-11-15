@@ -76,6 +76,14 @@ describe('routine folders', () => {
       expect(createFolder(s, 'a')).toEqual({ ok: false, reason: 'taken', name: 'A' })
       expect(createFolder(s, 'c')).toEqual({ ok: false, reason: 'taken', name: 'C' })
     })
+    it('writes the folders only routines name first, in their order, when a new one is added', () => {
+      const s = { routines: [r('1', 'A'), r('2', 'B'), r('3')] }
+      createFolder(s, 'C')
+      expect(s.routineFolders).toEqual([{ name: 'A' }, { name: 'B' }, { name: 'C' }])
+      const m = { routines: [r('1', 'A'), r('2', 'B'), r('3')] }
+      moveToFolder(m, ['3'], 'C')
+      expect(m.routineFolders).toEqual([{ name: 'A' }, { name: 'B' }, { name: 'C' }])
+    })
     it('renames on every routine and the entry, keeps current, refuses a taken name', () => {
       const s = { routineFolders: [{ name: 'A', current: true }, { name: 'B' }], routines: [r('1', 'A'), { ...r('2', 'a'), archived: true }] }
       expect(renameFolder(s, 'A', 'B')).toEqual({ ok: false, reason: 'taken' })
@@ -98,10 +106,10 @@ describe('routine folders', () => {
       const s = draft()
       moveToFolder(s, ['5', '1'], 'New')
       expect(s.routines.filter(x => x.folder === 'New').map(x => x.id)).toEqual(['1', '5'])
-      expect(s.routineFolders.map(x => x.name)).toEqual(['A', 'B', 'New'])
+      expect(s.routineFolders.map(x => x.name)).toEqual(['A', 'B', 'C', 'New'])
       moveToFolder(s, ['1'], 'b')
       expect(s.routines[0].folder).toBe('B')
-      expect(s.routineFolders).toHaveLength(3)
+      expect(s.routineFolders).toHaveLength(4)
       moveToFolder(s, ['1'], '')
       expect('folder' in s.routines[0]).toBe(false)
     })

@@ -36,7 +36,7 @@ describe('boot', () => {
 
 describe('pull', () => {
   it('moves Archive-folder routines that an older copy brings in after boot', async () => {
-    useStore.setState({ S: { ...clone(DEF), _ts: 0 }, user: { id: 'u' }, ready: true })
+    useStore.setState({ S: { ...clone(DEF), _ts: 0, archiveMoved: true }, user: { id: 'u' }, ready: true })   // moved once already
     const theirs = { ...clone(DEF), _ts: 500, _wid: 'w', routines: [routine('a', 'Archive')] }
     api.mockResolvedValue({ state: theirs, rev: 3 })
     await useStore.getState().pullState()
