@@ -4773,3 +4773,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* The rise and the fold (lib/rise.js): the live bar and the workout page share one name, only while
+   data-rise is set. The bar is hidden on /workout, so the two never exist together. 380 ms up, 320 ms
+   back, on --ease. The page's own arrival animation steps aside. */
+html[data-rise] #livebar,
+html[data-rise] .page[data-path="/workout"]:not(.under){view-transition-name:workout-rise}
+html[data-rise] .page{animation:none}
+html[data-rise] ::view-transition-group(workout-rise){animation-duration:380ms;animation-timing-function:var(--ease)}
+html[data-rise="fold"] ::view-transition-group(workout-rise){animation-duration:320ms}

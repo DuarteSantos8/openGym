@@ -6,6 +6,7 @@ import { t } from '../lib/i18n.js'
 import { liveBarShows, liveBarState } from '../lib/live-bar.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
+import { riseTo } from '../lib/rise.js'
 import Elapsed from './Elapsed.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
@@ -76,6 +77,11 @@ export default function LiveBar () {
   }, [show])
 
   if (!b) return null
+  // A light tap once, as the rise starts (no effect on iPhone, which has no web vibrate).
+  const rise = () => {
+    try { navigator.vibrate?.(10) } catch { /* no vibration here */ }
+    riseTo(nav, '/workout')
+  }
   const routine = b.routine || t('Workout')
   const exercise = b.allDone ? t('All sets done') : b.exercise
   const label = [
@@ -88,7 +94,7 @@ export default function LiveBar () {
   ].filter(Boolean).join(', ') + '. ' + t('Opens the workout')
 
   return (
-    <button ref={btn} id="livebar" className="livebar" type="button" aria-label={label} onClick={() => nav('/workout')}>
+    <button ref={btn} id="livebar" className="livebar" type="button" aria-label={label} onClick={rise}>
       <span className="livebar-hl" aria-hidden="true"><i style={{ transform: `scaleX(${b.progress})` }} /></span>
       {b.device && <DeviceMark device={b.device} />}
       <span className="livebar-txt" aria-hidden="true">
