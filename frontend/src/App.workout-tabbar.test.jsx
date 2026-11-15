@@ -73,18 +73,21 @@ it.each([{ editingWorkoutId: 'saved' }, { backfill: true }])('past workouts have
   expect(document.body.classList.contains('no-tabbar')).toBe(true)
 })
 
-// The live bar's rest line is the countdown for a plain rest; a timed hold, a count-in and a paused
-// rest keep the old rest bar, since the capsule has no Done, Pause or Resume.
+// The capsule is the countdown for a plain rest. A timed hold, a count-in, a paused rest and a rest that
+// starts a hold by itself need the old rest bar, so the capsule steps aside completely for them.
 it.each([
   ['a running rest', { timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0 } }, false],
   ['a timed hold', { work: { left: 30, total: 30, endsAt: Date.now() + 3e4, label: 'Plank' } }, true],
   ['a paused rest', { timer: { left: 60, total: 90, paused: true, forIdx: 0 } }, true],
-])('on Home with the bar showing, %s', async (_n, ui, shown) => {
+  ['a rest before an auto hold', { timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0, autoNext: { label: 'Plank' } } }, true],
+  ['a count-in', { countIn: { owner: { label: 'Plank' }, left: 3, total: 3, endsAt: Date.now() + 3e3 } }, true],
+])('on Home, %s', async (_n, ui, oldBar) => {
   window.location.hash = '#/home'
   useUI.setState({ timer: null, work: null, countIn: null, ...ui })
   await act(async () => root.render(<App />))
-  expect(host.querySelector('#livebar')).not.toBeNull()
-  expect(!!host.querySelector('#timer')).toBe(shown)
+  expect(!!host.querySelector('#timer')).toBe(oldBar)
+  expect(!!host.querySelector('#livebar')).toBe(!oldBar)
+  expect(document.body.classList.contains('has-livebar')).toBe(!oldBar)
 })
 
 // A stale running workout on the sign-in screen (the server just ended the session): no bar.

@@ -105,6 +105,10 @@ describe('liveBarHidesRest', () => {
     expect(liveBarHidesRest({ timer: null, work: { left: 30, total: 30 } })).toBe(false)
     expect(liveBarHidesRest({ timer: null, countIn: { left: 3, total: 3 } })).toBe(false)
   })
+  it('keeps it for a rest that starts a hold by itself, until it is ready', () => {
+    expect(liveBarHidesRest({ timer: rest({ autoNext: { label: 'Plank' } }) })).toBe(false)
+    expect(liveBarHidesRest({ timer: rest({ autoNext: { label: 'Plank' }, ready: true }) })).toBe(true)
+  })
 })
 
 it('marks the pause between the two sides of a timed set', () => {

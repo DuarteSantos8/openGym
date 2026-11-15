@@ -12,9 +12,10 @@ export const liveBarShows = (S, pathname) => {
   return !!A && pathname !== '/workout' && !A.editingWorkoutId && !A.backfill && A.start > 0
 }
 
-// Where the bar shows, the old rest bar goes only for a plain rest counting down (and the ready state
-// after it): a timed hold, a count-in and a paused rest need its Done, Pause and Resume.
-export const liveBarHidesRest = ({ timer, work, countIn }) => !work && !countIn && !timer?.paused
+// The capsule stands in for the old rest bar only for a plain rest counting down (and the ready state
+// after it). A timed hold, a count-in, a paused rest and a rest that starts a hold by itself keep the
+// old bar (Done, Pause, Resume, Stop auto), and the capsule steps aside while it is up.
+export const liveBarHidesRest = ({ timer, work, countIn }) => !work && !countIn && !timer?.paused && !(timer && !timer.ready && timer.autoNext)
 
 const nameOf = e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(e.target?.name || e.name || e.id || ''))
 // A watch row that is gone is none; one that answers is linked; delayed or not answering is still being looked for.
