@@ -62,7 +62,7 @@ import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
 import LiveBar from './components/LiveBar.jsx'
-import { liveBarShows } from './lib/live-bar.js'
+import { liveBarHidesRest, liveBarShows } from './lib/live-bar.js'
 import TimerFlash from './components/TimerFlash.jsx'
 import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
@@ -369,6 +369,7 @@ function Shell() {
   }, [inWorkout])
   // The chat owns the bottom of the screen as well: its composer sits where the tabs would be.
   // The first-launch card has no tabs either: they changed the route behind it.
+  const barHidesRest = useUI(liveBarHidesRest) // a boolean, so a rest ticking each second does not re-render the shell
   const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
@@ -459,9 +460,10 @@ function Shell() {
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
       {!noTabs && <LiveBar />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      {/* The live bar's rest line is the countdown wherever the bar shows. The rest keeps running in
-          the store (sounds, notifications, haptics are not RestTimer's), so unmounting only hides it. */}
-      {!(!noTabs && liveBarShows(S, loc.pathname)) && <RestTimer />}
+      {/* The live bar's rest line is the countdown for a plain rest wherever the bar shows. The rest keeps
+          running in the store (sounds, notifications, haptics are not RestTimer's), so unmounting only
+          hides it; a timed hold, a count-in and a paused rest keep the old bar (liveBarHidesRest). */}
+      {!(!noTabs && liveBarShows(S, loc.pathname) && barHidesRest) && <RestTimer />}
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />

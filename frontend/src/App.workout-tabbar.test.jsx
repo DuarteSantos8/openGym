@@ -72,3 +72,17 @@ it.each([{ editingWorkoutId: 'saved' }, { backfill: true }])('past workouts have
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(document.body.classList.contains('no-tabbar')).toBe(true)
 })
+
+// The live bar's rest line is the countdown for a plain rest; a timed hold, a count-in and a paused
+// rest keep the old rest bar, since the capsule has no Done, Pause or Resume.
+it.each([
+  ['a running rest', { timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0 } }, false],
+  ['a timed hold', { work: { left: 30, total: 30, endsAt: Date.now() + 3e4, label: 'Plank' } }, true],
+  ['a paused rest', { timer: { left: 60, total: 90, paused: true, forIdx: 0 } }, true],
+])('on Home with the bar showing, %s', async (_n, ui, shown) => {
+  window.location.hash = '#/home'
+  useUI.setState({ timer: null, work: null, countIn: null, ...ui })
+  await act(async () => root.render(<App />))
+  expect(host.querySelector('#livebar')).not.toBeNull()
+  expect(!!host.querySelector('#timer')).toBe(shown)
+})

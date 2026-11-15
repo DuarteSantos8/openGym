@@ -11,7 +11,7 @@ and cannot merge before it. Spec: `.claude/live-bar/DESIGN.md`.
 
 One rule, `liveBarShows(S, pathname)` in `lib/live-bar.js`: a workout is running (`S.active.start`
 is set), the route is not `/workout`, and it is not an edit or a backfill. `App.jsx` uses it to
-mount the bar and to unmount the rest timer.
+mount the bar and, with `liveBarHidesRest`, to unmount the rest timer.
 
 ## What it reads
 
@@ -23,10 +23,11 @@ shows "Workout". Every set done shows "All sets done".
 
 ## The rest bar
 
-`RestTimer` is not mounted where the bar shows. The bar's rest line is the only countdown there.
-The timer's work (count, end tone, haptics, notifications) lives in `store/useUI.js`, so
-unmounting only hides it. The cost: the count-in announcement and the timed-hold controls are
-only on the workout screen.
+Where the bar shows, `RestTimer` is not mounted for a plain rest counting down (and the ready state
+after it): the bar's rest line is the countdown. `liveBarHidesRest` in `lib/live-bar.js` keeps the old
+bar for a timed hold, a count-in and a paused rest, since the capsule has no Done, Pause or Resume.
+The timer's work (count, end tone, haptics, notifications) lives in `store/useUI.js`, so unmounting
+only hides it.
 
 ## The glass
 

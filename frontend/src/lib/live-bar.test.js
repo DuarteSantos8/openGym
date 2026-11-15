@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { liveBarShows, liveBarState } from './live-bar.js'
+import { liveBarHidesRest, liveBarShows, liveBarState } from './live-bar.js'
 
 // The live workout bar: when it shows and what it says, worked out from the session (lib/live-bar.js).
 const set = (over = {}) => ({ w: 60, r: 8, done: false, ...over })
@@ -90,5 +90,19 @@ describe('liveBarState', () => {
     it('checking with no watch row', () => {
       expect(liveBarState(S(lifting()), { checking: true }).device).toBe('checking')
     })
+  })
+})
+
+describe('liveBarHidesRest', () => {
+  const rest = over => ({ left: 60, total: 90, endsAt: Date.now() + 6e4, ...over })
+  it('hides the old rest bar for a running rest, a finished one, and no timer', () => {
+    expect(liveBarHidesRest({ timer: rest() })).toBe(true)
+    expect(liveBarHidesRest({ timer: rest({ ready: true }) })).toBe(true)
+    expect(liveBarHidesRest({ timer: null })).toBe(true)
+  })
+  it('keeps it for a paused rest, a timed hold and a count-in', () => {
+    expect(liveBarHidesRest({ timer: rest({ paused: true }) })).toBe(false)
+    expect(liveBarHidesRest({ timer: null, work: { left: 30, total: 30 } })).toBe(false)
+    expect(liveBarHidesRest({ timer: null, countIn: { left: 3, total: 3 } })).toBe(false)
   })
 })

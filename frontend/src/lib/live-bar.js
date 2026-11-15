@@ -12,6 +12,10 @@ export const liveBarShows = (S, pathname) => {
   return !!A && pathname !== '/workout' && !A.editingWorkoutId && !A.backfill && A.start > 0
 }
 
+// Where the bar shows, the old rest bar goes only for a plain rest counting down (and the ready state
+// after it): a timed hold, a count-in and a paused rest need its Done, Pause and Resume.
+export const liveBarHidesRest = ({ timer, work, countIn }) => !work && !countIn && !timer?.paused
+
 const nameOf = e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(e.target?.name || e.name || e.id || ''))
 // A watch row that is gone is none; one that answers is linked; delayed or not answering is still being looked for.
 const DEVICE = { live: 'linked', offline: 'none', notFound: 'none' }
