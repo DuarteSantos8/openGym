@@ -25,8 +25,10 @@ export function GroupStrip({ groups, value, onChange, anyLabel, gv, gidOf, kindG
       {groups.map(g => {
         if (g.kinds.length === 1) {
           const k = g.kinds[0]
-          return <button key={g.id} className={'chip' + (value === k ? ' on' : '')} aria-pressed={value === k}
-            onClick={() => onChange(value === k ? '' : k)}>{kindLabel(k)}</button>
+          // The whole group, chosen where it had more kinds, is this one kind here.
+          const on = value === k || value === gv(g.id)
+          return <button key={g.id} className={'chip' + (on ? ' on' : '')} aria-pressed={on}
+            onClick={() => onChange(on ? '' : k)}>{kindLabel(k)}</button>
         }
         const v = gv(g.id)
         const label = t(g.label)

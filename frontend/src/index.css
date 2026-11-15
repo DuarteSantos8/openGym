@@ -1011,6 +1011,7 @@ h4.sec{
   border-inline-start:1px solid var(--sep)}
 .chip.on .gchip-x{border-inline-start-color:color-mix(in srgb,var(--on-acc) 30%,transparent)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.chip.on .gchip-x{border-inline-start-color:var(--on-acc)}}
+.gchip-t:focus-visible,.gchip-x:focus-visible{outline-offset:-2px}   /* .gchip clips, so an outside ring was cut off */
 .gchip-strip{padding-inline-start:14px}
 .gchip-strip .chip{font-size:13px;padding:5px 11px}
 /* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you

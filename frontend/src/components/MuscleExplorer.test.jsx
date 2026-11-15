@@ -267,4 +267,21 @@ describe('MuscleExplorer equipment by group', () => {
     act(() => { cable.click() })
     expect(shown(host).every(ss => ss.endsWith('cable'))).toBe(true)
   })
+
+  it('a chosen group left with one kind shows that kind chosen, and a tap clears it', async () => {
+    const { GroupStrip } = await import('./GroupChips.jsx')
+    const { groupValue, groupIdOf, groupOf } = await import('../lib/equipment-groups.js')
+    const onChange = vi.fn()
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const root = createRoot(host)
+    mounted.push(root)
+    act(() => root.render(<GroupStrip groups={[{ id: 'free', label: 'Free weights', kinds: ['dumbbell'] }]}
+      value={groupValue('free')} onChange={onChange} anyLabel="Any equipment" gv={groupValue} gidOf={groupIdOf} kindGroup={groupOf} />))
+    const dumbbell = chipByText(host, 'dumbbell')
+    expect(isOn(dumbbell)).toBe(true)
+    expect(dumbbell.getAttribute('aria-pressed')).toBe('true')
+    act(() => { dumbbell.click() })
+    expect(onChange).toHaveBeenCalledWith('')
+  })
 })
