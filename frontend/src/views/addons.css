@@ -94,3 +94,8 @@
 .addon-table th,.addon-table td{padding:6px 8px;text-align:start;border-bottom:1px solid var(--sep,rgba(127,127,127,.25))}
 .addon-table tr[data-diverges] td{font-weight:600}
 .addon-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Movement lab (components/MovementLab.jsx): front camera, mirrored like a mirror (.addon-field above) */
+.addon-cam{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
+.addon-cam[hidden]{display:none}
+.addon-cam video,.addon-cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
