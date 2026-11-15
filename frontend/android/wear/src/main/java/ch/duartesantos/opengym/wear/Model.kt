@@ -166,6 +166,8 @@ data class WatchSettings(
     /** The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5). */
     val accent: String? = null,
     val onAccent: String? = null,
+    /** "face": wear the watch face's colours where the watch shares them (ui/Theme.kt accentFor). */
+    val accentFrom: String? = null,
     /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
     val forgotten: ForgottenSettings? = null,
     /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */

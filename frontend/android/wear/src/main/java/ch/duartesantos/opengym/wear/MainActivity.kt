@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.ambient.AmbientLifecycleObserver
 import androidx.wear.compose.material3.AppScaffold
-import ch.duartesantos.opengym.wear.ui.Accent
+import ch.duartesantos.opengym.wear.ui.accentFor
 import ch.duartesantos.opengym.wear.ui.OgTimeText
 import ch.duartesantos.opengym.wear.ui.OpenGymTheme
 import ch.duartesantos.opengym.wear.ui.WearApp
@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val s by WearStore.state.collectAsState()
             val dim by WearStore.ambient.collectAsState()
-            OpenGymTheme(accent = Accent.of(s.settings), ambient = dim, reduceMotion = reduceMotion.value, round = round) {
+            OpenGymTheme(accent = accentFor(s.settings), ambient = dim, reduceMotion = reduceMotion.value, round = round) {
                 Box(Modifier.offset { (if (dim) BurnIn.offset(minute.intValue) else 0 to 0).let { (x, y) -> IntOffset(x.dp.roundToPx(), y.dp.roundToPx()) } }) {
                     AppScaffold(timeText = { OgTimeText() }) {
                         WearApp(onWorkoutShown = { onWorkout() })

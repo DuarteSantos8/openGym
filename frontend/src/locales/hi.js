@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Wallpaper colors": "वॉलपेपर के रंग",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "एक्सेंट और बैकग्राउंड आपके वॉलपेपर के हिसाब से बदलते हैं। सिर्फ़ इस फ़ोन पर।",
+  "Wallpaper": "वॉलपेपर",
+  "Watch colors": "घड़ी के रंग",
+  "From the watch face": "वॉच फ़ेस से",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "वॉच फ़ेस से रंग के लिए ऐसी घड़ी पर Wear OS 6 चाहिए जो अपने रंग साझा करती हो, जैसे Pixel Watch। बाकी घड़ियाँ ऐप का रंग रखती हैं।",
 }

@@ -5900,4 +5900,10 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Wallpaper colors": "Háttérkép színei",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "A kiemelőszín és a hátterek a háttérképedhez igazodnak. Csak ezen a telefonon.",
+  "Wallpaper": "Háttérkép",
+  "Watch colors": "Óra színei",
+  "From the watch face": "Az óralapról",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Az óralap színeihez Wear OS 6 kell egy olyan órán, amely megosztja a színeit, például Pixel Watch-on. A többi az alkalmazás színét tartja meg.",
 }

@@ -5908,4 +5908,10 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Wallpaper colors": "สีจากวอลเปเปอร์",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "สีเน้นและพื้นหลังจะเปลี่ยนตามวอลเปเปอร์ของคุณ เฉพาะโทรศัพท์เครื่องนี้",
+  "Wallpaper": "วอลเปเปอร์",
+  "Watch colors": "สีของนาฬิกา",
+  "From the watch face": "จากหน้าปัดนาฬิกา",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "สีจากหน้าปัดต้องใช้ Wear OS 6 บนนาฬิกาที่แชร์สีของตัวเอง เช่น Pixel Watch นาฬิกาอื่นจะใช้สีของแอปต่อไป",
 }

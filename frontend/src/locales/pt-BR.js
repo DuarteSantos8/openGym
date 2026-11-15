@@ -4326,6 +4326,12 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  "Wallpaper colors": "Cores do papel de parede",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "A cor de destaque e os fundos acompanham seu papel de parede. Só neste celular.",
+  "Wallpaper": "Papel de parede",
+  "Watch colors": "Cores do relógio",
+  "From the watch face": "Do mostrador",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "As cores do mostrador precisam do Wear OS 6 em um relógio que compartilhe suas cores, como um Pixel Watch. Os outros mantêm a cor do app.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

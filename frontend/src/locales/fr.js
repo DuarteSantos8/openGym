@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "Aperçu sur",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
+  "Wallpaper colors": "Couleurs du fond d’écran",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "La couleur d’accent et les fonds suivent ton fond d’écran. Sur ce téléphone seulement.",
+  "Wallpaper": "Fond d’écran",
+  "Watch colors": "Couleurs de la montre",
+  "From the watch face": "Du cadran",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Les couleurs du cadran demandent Wear OS 6 sur une montre qui partage ses couleurs, comme une Pixel Watch. Les autres gardent la couleur de l’app.",
 }

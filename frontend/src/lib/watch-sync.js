@@ -54,7 +54,8 @@ import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
-import { accentValue, accentPair, customAccentVars } from './accent.js'
+import { accentPair, customAccentVars } from './accent.js'
+import { deviceAccentValue, subscribeDynamic } from './dynamic-color.js'
 import { circuitClock } from './circuit.js'
 
 // A circuit's clock (lib/circuit.js, store/useCircuit.js), when one runs: its rests and its get
@@ -1116,7 +1117,8 @@ function ageOk (y) {
 /** The app's accent for the watch's black screen: a preset as is, the user's own colour made readable on black. */
 export function watchAccent (S) {
   try {
-    const v = accentValue(S)
+    // While this phone follows its wallpaper (lib/dynamic-color.js), the watch wears that accent.
+    const v = deviceAccentValue(S)
     const own = customAccentVars(v, 'dark')
     const pair = accentPair(v)
     return { accent: own ? own['--acc'] : pair.accent, onAccent: own ? own['--on-acc'] : pair.ink }
@@ -1334,6 +1336,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     schedule()
   })
   const offPrefs = onWatchPrefs(() => schedule())
+  const offDynamic = subscribeDynamic(() => schedule())
   const offForgotten = onForgottenChange(() => schedule())
   ackListeners.add(onAcked)
   circuitListeners.add(schedule)
@@ -1370,7 +1373,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offDynamic(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

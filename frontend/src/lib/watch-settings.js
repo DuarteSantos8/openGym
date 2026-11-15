@@ -11,6 +11,9 @@
 //   show         what a workout screen shows: clip (the animation), hr, last (last time's sets),
 //                kcal (calories, default on), next (the next exercise during a rest), and rest:
 //                'ring' or 'plain' (the countdown alone)
+//   colors       where a Wear OS watch takes its accent: 'app' (the one the phone sends, the
+//                wallpaper's while the phone follows it) or 'face' (the watch face's own colours,
+//                Wear OS 6 where the watch shares them; the app's otherwise)
 // Apple Health on the watch is not a choice of its own: it follows the phone's Apple Health switch
 // (Settings → Data, lib/health-sync.js), which the watch gets as `settings.health`. An older build's
 // `health` field in the stored prefs is left alone and not read.
@@ -20,7 +23,7 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, zones: true, rest: 'ring' })
-export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
+export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS, colors: 'app' })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
@@ -44,6 +47,7 @@ export function readWatchPrefs(storage = globalThis.localStorage) {
     restHaptics: v.restHaptics !== false,
     crown: v.crown === 'weight' ? 'weight' : 'reps',
     show: showOf(v.show),
+    colors: v.colors === 'face' ? 'face' : 'app',
   }
 }
 
@@ -103,7 +107,7 @@ export function noteWatchHeard (at, now = Date.now(), storage = globalThis.local
 export const lastHeardAt = (status = readWatchStatus(), storage = globalThis.localStorage) => Math.max(Number(status?.at) || 0, readWatchHeard(storage))
 
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
-export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show } })
+export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show }, ...(p.colors === 'face' ? { accentFrom: 'face' } : {}) })
 
 /**
  * Where the phone and its Apple Watch stand, for Settings → Apple Watch, so every state can say

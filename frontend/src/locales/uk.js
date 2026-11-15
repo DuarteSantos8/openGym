@@ -5894,4 +5894,10 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Wallpaper colors": "Кольори шпалер",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Акцент і тла підлаштовуються під шпалери. Лише на цьому телефоні.",
+  "Wallpaper": "Шпалери",
+  "Watch colors": "Кольори годинника",
+  "From the watch face": "З циферблата",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Кольори з циферблата працюють на Wear OS 6 і лише на годинниках, які ними діляться, як-от Pixel Watch. Інші залишають колір застосунку.",
 }
