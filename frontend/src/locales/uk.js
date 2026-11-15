@@ -5964,4 +5964,6 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Nutrition totals": "Підсумки харчування",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Денні підсумки енергії, білків, вуглеводів і жирів із вашого щоденника харчування за останні два тижні. Ніколи назви продуктів. Вимкнено, доки ви не ввімкнете.",
 }

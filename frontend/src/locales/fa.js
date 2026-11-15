@@ -5933,4 +5933,6 @@ export default {
   "Unsupported entry": "ورودی پشتیبانی‌نشده",
   "Your foods": "خوراکی‌های شما",
   "{0} entries unknown": "{0} ورودی نامشخص",
+  "Nutrition totals": "جمع‌های تغذیه",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "جمع روزانهٔ انرژی، پروتئین، کربوهیدرات و چربی از دفترچهٔ تغذیهٔ شما در دو هفتهٔ اخیر. هرگز نام خوراکی‌ها. تا وقتی روشنش نکنید خاموش است.",
 }

@@ -5907,4 +5907,6 @@ export default {
   "Unsupported entry": "Ikke-understøttet post",
   "Your foods": "Dine fødevarer",
   "{0} entries unknown": "{0} poster ukendte",
+  "Nutrition totals": "Ernæringstotaler",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Daglige totaler for energi, protein, kulhydrat og fedt fra din kostdagbog de seneste to uger. Aldrig navne på fødevarer. Slået fra, indtil du slår det til.",
 }

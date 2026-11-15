@@ -5932,4 +5932,6 @@ export default {
   "Unsupported entry": "Entri tidak didukung",
   "Your foods": "Makanan Anda",
   "{0} entries unknown": "{0} entri tidak diketahui",
+  "Nutrition totals": "Total nutrisi",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Total harian energi, protein, karbohidrat, dan lemak dari buku harian nutrisi Anda selama dua minggu terakhir. Tidak pernah nama makanan. Mati sampai Anda menyalakannya.",
 };

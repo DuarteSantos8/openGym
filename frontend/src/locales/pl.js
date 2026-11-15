@@ -5967,4 +5967,6 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  "Nutrition totals": "Sumy odżywcze",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Dzienne sumy energii, białka, węglowodanów i tłuszczu z twojego dziennika żywienia z ostatnich dwóch tygodni. Nigdy nazwy produktów. Wyłączone, dopóki tego nie włączysz.",
 }

@@ -60,9 +60,9 @@ test('rotation: the loop and what is next, only when the plan runs as one', () =
 });
 
 test('the switches: records and measurements on, health off, until the person says otherwise', () => {
-  assert.deepEqual(OPTIONAL_CATEGORIES.map(c => [c.id, c.on]), [['records', true], ['measurements', true], ['health', false]]);
-  assert.deepEqual(shareOf({}), { records: true, measurements: true, health: false });
-  assert.deepEqual(shareOf({ coach: { share: { records: false, health: true, junk: 1 } } }), { records: false, measurements: true, health: true });
+  assert.deepEqual(OPTIONAL_CATEGORIES.map(c => [c.id, c.on]), [['records', true], ['measurements', true], ['health', false], ['nutrition', false]]);
+  assert.deepEqual(shareOf({}), { records: true, measurements: true, health: false, nutrition: false });
+  assert.deepEqual(shareOf({ coach: { share: { records: false, health: true, junk: 1 } } }), { records: false, measurements: true, health: true, nutrition: false });
 });
 
 test('the payload carries each block only when its switch is on, and never health by default', () => {
