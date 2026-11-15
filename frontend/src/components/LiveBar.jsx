@@ -84,9 +84,10 @@ export default function LiveBar () {
   }
   const routine = b.routine || t('Workout')
   const exercise = b.allDone ? t('All sets done') : b.exercise
+  const restWord = b.rest?.switch ? t('Switch sides') : t('Rest')
   const label = [
     t('Workout in progress'), routine,
-    b.rest ? t('Rest') : exercise,
+    b.rest ? restWord : exercise,
     b.rest ? (b.next ? t('Next: {0}', b.next) : '') : b.set ? t('Set {0} of {1}', b.set.n, b.set.of) : '',
     b.total ? t('{0} of {1} sets done', b.done, b.total) : '',
     b.bpm != null ? t('Heart rate') + ' ' + b.bpm : '',
@@ -104,7 +105,7 @@ export default function LiveBar () {
         </span>
         {b.rest
           ? <span className="livebar-l2">
-            <span className="livebar-rl">{t('Rest')}</span>
+            <span className="livebar-rl">{restWord}</span>
             <span className="livebar-cd livebar-num">{clock(b.rest.left)}</span>
             {b.next && <span className="livebar-nx">{t('Next: {0}', b.next)}</span>}
           </span>

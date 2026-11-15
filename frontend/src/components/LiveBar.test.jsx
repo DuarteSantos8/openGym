@@ -77,6 +77,15 @@ describe('the live bar', () => {
     expect(text()).not.toContain('Set 2 of 4')
   })
 
+  it('a switch-sides rest says so, in the text and the label', () => {
+    seed(active())
+    act(() => { useUI.setState({ timer: { left: 20, total: 30, endsAt: Date.now() + 20e3, kind: 'switch' } }) })
+    render()
+    expect(text()).toContain('Switch sides')
+    expect(text()).not.toContain('Rest')
+    expect(bar().getAttribute('aria-label')).toContain('Switch sides')
+  })
+
   it('an unnamed, empty workout reads "Workout" with no undefined or NaN', () => {
     seed(active({ name: '', entries: [] })); render()
     expect(text()).toContain('Workout')

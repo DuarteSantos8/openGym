@@ -30,7 +30,7 @@ describe('liveBarState', () => {
   })
   it('rest counting: the countdown, progress by time left, and what is next', () => {
     const b = liveBarState(S(lifting()), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0 } })
-    expect(b.rest).toEqual({ left: 72 })
+    expect(b.rest).toEqual({ left: 72, switch: false })
     expect(b.progress).toBe(0.8)
     expect(b.next).toBe('BENCH')
   })
@@ -105,4 +105,10 @@ describe('liveBarHidesRest', () => {
     expect(liveBarHidesRest({ timer: null, work: { left: 30, total: 30 } })).toBe(false)
     expect(liveBarHidesRest({ timer: null, countIn: { left: 3, total: 3 } })).toBe(false)
   })
+})
+
+it('marks the pause between the two sides of a timed set', () => {
+  const t = { left: 20, total: 30, endsAt: 5000, forIdx: 0 }
+  expect(liveBarState(S(lifting()), { timer: { ...t, kind: 'switch' } }).rest.switch).toBe(true)
+  expect(liveBarState(S(lifting()), { timer: t }).rest.switch).toBe(false)
 })

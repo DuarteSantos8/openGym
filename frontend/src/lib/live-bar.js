@@ -39,7 +39,7 @@ export function liveBarState (S, { timer = null, live = null, rows = [], checkin
     exercise: e ? nameOf(e) : '',
     set: e && !isWarmupRow(s) ? { n: work.indexOf(s) + 1, of: work.length } : null,
     allDone: entries.length > 0 && !up,
-    rest: resting ? { left: timer.left } : null,
+    rest: resting ? { left: timer.left, switch: timer.kind === 'switch' } : null,
     next: resting && e ? nameOf(e) : '',
     start: A.start,
     pausedAt: A.pausedAt || 0,
