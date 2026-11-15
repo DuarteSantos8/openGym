@@ -299,6 +299,10 @@ test('facet counts, quick picks, sorting, clearing and the address round-trip', 
   assert.deepEqual(F.sortRoutines(R, 'name').map(r => r.s), ['b', 'c', 'd', 'a'])
   assert.deepEqual(F.sortRoutines(R, 'short').map(r => r.s), ['c', 'a', 'd', 'b'])
   assert.deepEqual(F.sortRoutines(R, 'popular', { 'x/a': 9, 'x/c': 2 }).map(r => r.s), ['a', 'c', 'd', 'b'])
+  // a plan in a language the visitor does not read goes last, whatever the sort; a reader of it gets the plain order
+  assert.deepEqual(F.sortRoutines(R, 'new', {}, ['en']).map(r => r.s), ['d', 'b', 'a', 'c'])
+  assert.deepEqual(F.sortRoutines(R, 'short', {}, ['en']).map(r => r.s), ['a', 'd', 'b', 'c'])
+  assert.deepEqual(F.sortRoutines(R, 'new', {}, ['en', 'de']).map(r => r.s), ['d', 'b', 'c', 'a'])
   const s = st({ q: 'bar', goal: ['general', 'strength'], len: '45', kit: ['pull-up bar'], kitonly: true, home: true, sort: 'popular' })
   const q = F.queryFromState(s)
   assert.equal(q, '?q=bar&goal=general,strength&len=45&kit=pull-up+bar&have=only&home=1&sort=popular')
@@ -645,3 +649,25 @@ test('service: static files, no listings, media only for our pages, CORS on the 
     await page.text()
   } finally { await close(s) }
 })
+
+test('service: a submission whose Telegram message failed is sent again, once', async () => {
+  let fail = true
+  const sent = []
+  const s = await startApp({ deps: { telegram: async (method, payload) => { if (fail) throw new Error('fetch failed'); sent.push({ method, payload }); return {} } } })
+  try {
+    const r = await s.post('submit', form())
+    assert.equal(r.status, 200)
+    await new Promise(r => setTimeout(r, 50))
+    const pending = path.join(s.dataDir, 'pending')
+    const file = path.join(pending, fs.readdirSync(pending).find(f => f.endsWith('.json')))
+    assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).notified, undefined, 'not marked while the message did not go out')
+    assert.equal(await s.app.tellPending(), 0)
+    fail = false
+    assert.equal(await s.app.tellPending(), 1)
+    assert.equal(sent.filter(x => x.method === 'sendMessage').length, 1)
+    assert.ok(JSON.parse(fs.readFileSync(file, 'utf8')).notified)
+    await s.app.tellPending()
+    assert.equal(sent.filter(x => x.method === 'sendMessage').length, 1, 'never twice')
+  } finally { await close(s) }
+})
+

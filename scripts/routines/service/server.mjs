@@ -14,6 +14,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import dns from 'node:dns'
 import {
   catalogueFrom, checkRoutine, sessionsFromPlan, decodePayload, payloadFromLink, slugify, imageInfo,
   cleanHttpsUrl, LIMITS, ROUTINE_ID
@@ -392,7 +393,39 @@ export function createApp(cfg, deps = {}) {
     writeAtomic(path.join(dirs.pending, sid + '.json'), JSON.stringify(sub, null, 2))
     if (coverBuf) writeAtomic(path.join(dirs.pending, sid + '.webp'), coverBuf)
     send(res, 200, { ok: true })
-    notify(sub, coverBuf).catch(e => console.error('telegram notify failed:', e.message))
+    tell(sid)
+  }
+
+  // The Telegram message is the only way the owner hears about a submission, and one failed
+  // request used to lose it for good: on 2026-11-15 a mod's routine sat in pending/ unseen
+  // ("telegram notify failed: fetch failed", once, no second try). A submission is now marked
+  // `notified` only after the message went out, and everything unmarked is sent again when the
+  // service starts and every few minutes (tellPending), so a hiccup costs minutes, not the routine.
+  const telling = new Set()
+  async function tell(sid) {
+    if (!tg || telling.has(sid)) return false
+    const file = path.join(dirs.pending, sid + '.json')
+    telling.add(sid)
+    try {
+      const sub = JSON.parse(fs.readFileSync(file, 'utf8'))
+      if (sub.notified) return true
+      const coverFile = path.join(dirs.pending, sid + '.webp')
+      await notify(sub, fs.existsSync(coverFile) ? fs.readFileSync(coverFile) : null)
+      // Approved or rejected in the second it took to send: the file is gone, nothing to mark.
+      if (fs.existsSync(file)) writeAtomic(file, JSON.stringify({ ...sub, notified: new Date(now()).toISOString() }, null, 2))
+      return true
+    } catch (e) {
+      console.error(`telegram notify failed for ${sid}, will try again:`, e.message)
+      return false
+    } finally { telling.delete(sid) }
+  }
+  async function tellPending() {
+    let n = 0
+    for (const f of fs.readdirSync(dirs.pending)) {
+      const m = /^([0-9a-f]{12})\.json$/.exec(f)
+      if (m && await tell(m[1])) n++
+    }
+    return n
   }
 
   async function notify(sub, coverBuf) {
@@ -525,16 +558,21 @@ export function createApp(cfg, deps = {}) {
   })
 
   return {
-    server, moderate, onCallback, poll, stop: () => { polling = false; clearTimeout(saveTimer) },
+    server, moderate, onCallback, poll, tellPending, stop: () => { polling = false; clearTimeout(saveTimer) },
     counts: () => counts, flush: () => writeAtomic(countsFile, JSON.stringify(counts)), reloadKnown: loadKnown
   }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  // api.telegram.org has an IPv6 address too and the container has no IPv6 route: ask for IPv4
+  // first, so a request does not start on an address that cannot answer.
+  dns.setDefaultResultOrder('ipv4first')
   const cfg = configFromEnv()
   const app = createApp(cfg)
   app.server.listen(cfg.port, () => console.log(`routines service on :${cfg.port}${cfg.label ? ` [${cfg.label}]` : ''}, api ${cfg.api}, telegram ${cfg.tgToken ? 'on' : 'off'}, github ${cfg.ghToken ? 'on' : 'off'}`))
   if (cfg.poll) app.poll()
+  // Submissions whose Telegram message never went out (see tell): now, and every five minutes.
+  if (cfg.tgToken) { setTimeout(app.tellPending, 5000).unref(); setInterval(app.tellPending, 5 * 60000).unref() }
   // Re-read the published list when the site is redeployed (cheap, once a minute).
   setInterval(app.reloadKnown, 60000).unref()
   const bye = () => { app.flush(); process.exit(0) }
