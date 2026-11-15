@@ -29,12 +29,12 @@
 .addon-metric{background:var(--fill,#23252a);border-radius:11px;padding:11px;display:flex;flex-direction:column;gap:7px;min-width:0}
 .addon-metric-label{font-size:11px;color:var(--label-2,#a7aeb5)}
 .addon-metric strong{font-size:17px;letter-spacing:-.025em}
-.addon-footnote{font-size:11px!important;color:var(--label-3,#838d98)!important}
+.addon-footnote{font-size:11px!important;color:var(--label-2,#98a1aa)!important}
 .addon-empty{padding:18px;border:1px dashed var(--sep,rgba(255,255,255,.2));border-radius:12px}
 .addon-roadmap-row{padding:14px 0;border-top:1px solid var(--sep,rgba(255,255,255,.13));display:flex;justify-content:space-between;gap:14px}
 .addon-roadmap-row strong{font-size:13px}
 .addon-roadmap-row p{font-size:12px;margin:6px 0 0}
-.addon-roadmap-row small{color:var(--label-3,#86909a);font-size:10px;text-align:right;max-width:110px}
+.addon-roadmap-row small{color:var(--label-2,#98a1aa);font-size:11px;text-align:right;max-width:110px}
 .addon-chart{height:215px;width:100%;margin-top:14px}
 .addon-chart-fallback{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:740px){.addons-layout{grid-template-columns:1fr}.addons-page{padding-left:15px;padding-right:15px}.addon-headline{flex-wrap:wrap}}
@@ -56,7 +56,7 @@
 .diary-entry-main strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .diary-entry-main span{font-size:12px;color:var(--label-2,#98a1aa)}
 .diary-entry-kcal{font-size:13px;font-variant-numeric:tabular-nums;color:var(--label-2,#b6bec6)}
-.diary-remove{width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--label-3,#86909a);font-size:22px;cursor:pointer}
+.diary-remove{width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--label-2,#98a1aa);font-size:22px;cursor:pointer}
 .diary-remove:hover,.diary-remove:focus-visible{background:var(--fill,#23252a);color:var(--red,#e67e83)}
 .diary-form,.diary-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;align-items:end}
 .diary-quick{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;padding-top:14px;border-top:1px solid var(--sep,rgba(255,255,255,.1))}

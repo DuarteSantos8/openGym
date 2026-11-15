@@ -16,7 +16,7 @@ If this is your first time in the project, do the steps below in order before yo
 ## 2. Where the code is
 
 - **GitHub:** `sorensadrgit-art/openGym` (fork). Upstream is `DuarteSantos8/openGym`: read-only for you.
-- **Base branch:** `next/ready-20261114` until PR #18 is merged; after that, the fork's main line.
+- **Base branch:** `main` once PR #25 (integration) is merged; until then, `next/integration-20261115`.
 - **Local (WSL2 Ubuntu):** one git worktree per branch under `~/dev/og-<name>`; helper scripts in `~/dev/.ogtools/`.
 - **Node:** run `source ~/.nvm/nvm.sh` first (Node 22).
 
@@ -24,12 +24,12 @@ If this is your first time in the project, do the steps below in order before yo
 
 1. `git fetch origin`, then `gh pr list --repo sorensadrgit-art/openGym --state open` to confirm the PR map in NEXT-STEPS.md is current.
 2. Take the **first unfinished task** in `NEXT-STEPS.md` §3. Don't pick your own.
-3. Create a worktree from the base: `git worktree add ~/dev/og-<task> -b next/<EPxx-Tyy-slug> origin/next/ready-20261114`.
+3. Create a worktree from the base: `git worktree add ~/dev/og-<task> -b next/<EPxx-Tyy-slug> origin/main`.
 4. Install dependencies, then confirm you have a green baseline before changing anything: `cd frontend && npx vitest run --maxWorkers=8`.
 5. Work the loop from START-HERE.md A4:
    1. Write tests first, then the code.
    2. Run the full suite, `npm run build`, and `npx vitest run scripts/check-bundle-syntax.test.mjs`.
-   3. For UI changes, run a real-browser smoke test that asserts 0 external requests.
+   3. For UI changes, run `npm run test:e2e`: Playwright and axe, failing on any external request (see NEXT-STEPS §4 for running it from Windows).
 6. Scan the diff for personal paths, emails and secrets (the fork is public), then push and open a **draft** PR:
    `gh pr create --draft --repo sorensadrgit-art/openGym --base <base> --head <branch>`.
    In the PR body, list what was verified and what was **not**.

@@ -1,67 +1,72 @@
-# openGym Next: next development steps (as of 2026-11-14)
+# openGym Next: next development steps (as of 2026-11-15)
 
-Read this first when you resume. Before it: `START-HERE.md` (A1–A7 setup and the per-task loop) and `adr/`.
+Read this first when you resume. Before it: `AGENTS.md` (first-session checklist), `START-HERE.md` (setup and the per-task loop) and `adr/`.
 
 ## 1. State
 
 | PR | Branch | Base | Content | Status |
 |---|---|---|---|---|
-| #18 | `next/ready-20261114` | upstream 1.4.5 line | Fork merged onto upstream 1.4.5; conflicts resolved | draft, green |
-| #19 | `next/docs-plan-adrs-20261114` | #18 | Plan v2, `check_plan.py`, ADR 0001–0005, this file | draft |
-| #20 | `next/EP13-T02-coach-nutrition` | #18 | Coach nutrition context (opt-in, aggregates only) | draft, green |
-| #21 | `next/EP09-T02-liftoscript-eval` | #18 | Liftoscript evaluator, parity simulator, Progression lab | draft, green |
-| #22 | `next/EP10-T03-pose-core` | #18 | MediaPipe pose (bundled model, telemetry stripped), Movement lab, ADR 0006 | draft, green |
-| #23 | `next/EP12-anatomy-3d` | #18 | 3D muscle map, Z-Anatomy CC BY-SA, three pinned 0.178.0 | draft, green |
+| #18 | `next/ready-20261114` | main | Fork merged onto upstream 1.4.5 | **merged** |
+| #19 | `next/docs-plan-adrs-20261114` | ready | Plan v2, ADRs 0001–0005 | merged into `ready` only (never reached main) |
+| #20–#23 | EP13, EP09, EP10, EP12 | main | One epic each | draft, superseded by #25 |
+| #24 | `next/docs-plan-adrs-20261114` | main | All docs to main | draft, contained in #25 |
+| **#25** | `next/integration-20261115` | main | docs + EP13 + EP09 + EP10 + EP12, conflicts resolved | **draft, fully verified, merge this** |
+| **#26** | `next/EP16-e2e-a11y` | #25 | E2E + axe in CI, a11y fixes, rollback, ADR 0007, this file | **draft, verified** |
 
 Epic status:
-- **Done (draft):** EP09, EP10, EP12, EP13.
-- **NO-GO after spike:** EP08 (FitTrackee; existing import covers it) and EP11 (BLE; one gap recorded).
-- **Feasible, not built:** EP14 (local inference fits the RTX 4070, 8 GB).
+- **Done (draft):** EP09, EP10 (squat), EP12, EP13, EP16-T01/T02/T04.
+- **Closed by decision:**
+  - EP14-T01: upstream already has local inference (ADR 0007).
+  - EP08 and EP11: NO-GO after the spikes.
+- **Needs a person:** EP16-T03 (devices), the EP14 real-model run, translation review.
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
-- **Not started:** EP16.
 
-## 2. Merge order (only you merge)
+## 2. Merge (only you merge)
 
-1. #18 into the fork's main line.
-2. #19.
-3. Rebase each of #20, #21, #22 and #23 onto the merged #18, one at a time. Run the full suite after each one.
-   - Expected trivial conflicts: `views/Addons.jsx` (each epic adds one section) and `addons.css` (EP09 and EP10 both add `.addon-field`; keep one copy).
+1. **#25 with "Create a merge commit"**, not squash. That keeps one revert point per epic (`rollback.md`). GitHub then marks #20–#24 as merged.
+2. **#26**: change its base to `main` after #25 merges (`gh pr edit 26 --base main`), then merge.
+3. **Turn on GitHub Actions for the fork** (repo → Actions → enable). No check has run on any fork PR ("no checks reported"); until then, the local runs in each PR body are the only evidence.
 
 ## 3. Next tasks, in order
 
-| # | Task | Done when |
-|---|---|---|
-| 1 | **EP12-T05: coloured-levels check.** The seeding script `smoke12c.mjs` wrote nothing: `gym_state_v1` doesn't exist right after "Continue without account". Fix: wait for the key with `page.waitForFunction(() => localStorage.getItem('gym_state_v1'))`, or log one workout through the UI. Exercise ids: squat `3948`, bench `1254`, row `0010`, curl `4437`. Workout shape: `{id, d:'YYYY-MM-DD', entries:[{id, sets:[{w,r,done:true}]}]}`. | Screenshot shows quads/chest/back shaded; the text list shows non-zero levels |
-| 2 | **EP16-T01: E2E in CI.** Turn the Playwright smoke tests (guest → `#/addons` → each lab) into `e2e/` specs that run against `vite preview` + API on a temp `DATA_DIR`. Click through the tour overlay with `.evaluate(b => b.click())`. | CI job green; fails if any external request is made |
-| 3 | **EP16-T02: accessibility.** Add axe-core to the E2E specs for Addons, Stats and Workout. | 0 serious/critical violations |
-| 4 | **EP16-T03: devices.** Run the native builds on one iPhone (iOS 15.5+) and one mid-range Android. Check camera permission (EP10), WebGL context loss (EP12), and battery/heat over 10 minutes. | Matrix recorded in `docs/next/devices.md` |
-| 5 | **EP16-T04: rollback.** Each epic must be removable: a feature flag or one revert commit. Write the steps and test one revert. | `docs/next/rollback.md` + one tested revert |
-| 6 | **EP14-T01: local coach adapter (opt-in).** Ollama on `127.0.0.1` behind the existing coach interface, off by default, with no fallback to a cloud model. Write an ADR first. | ADR 0007 + adapter tests; 0 requests when off |
-| 7 | EP10-T04: second movement (hinge or lunge) plus a phone test. | Rep count within ±1 on 3 recorded clips |
-| 8 | EP09-T03: apply a Progression lab rule to a routine. Optional; only if users ask for it. | — |
-| 9 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels). | Reviewer named in PR |
-| 10 | EP15: start only after a licensed PT reviewer is named in writing. | — |
+| # | Task | Who | Done when |
+|---|---|---|---|
+| 1 | Enable Actions; confirm `Tests / tests-ok` (now including `e2e`) is green on #26 | owner | Green run linked in #26 |
+| 2 | **EP16-T03 devices:** native builds on one iPhone (iOS 15.5+) and one mid-range Android. Check camera permission and squat count (EP10), 3D map open/turn/close and WebGL context loss (EP12), battery and heat over 10 minutes. | owner + agent | Matrix in `docs/next/devices.md` |
+| 3 | **EP14 real-model run:** Ollama + a 7–8B Q4 model, coach provider "OpenAI-compatible endpoint" at `127.0.0.1:11434/v1`, nothing else configured (ADR 0007) | owner | Model, latency and whether the plan validated, recorded in `devices.md` |
+| 4 | **EP10-T04 second movement** (hinge or lunge). Record 3 short clips on a phone first, then tune thresholds against them. | agent, after clips exist | Rep count within ±1 on the 3 clips |
+| 5 | Report the upstream a11y baseline (`a11y.md`: label-in-name on /home, /plan, /stats) to DuarteSantos8/openGym. Drop each baseline entry once fixed upstream. | owner | Upstream issue linked in `a11y.md` |
+| 6 | Manual a11y: VoiceOver/TalkBack, 200 % text, keyboard through the 3D map list | owner | Notes in `a11y.md` |
+| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels) | reviewer | Reviewer named in a PR |
+| 8 | EP09-T03 (apply a progression rule to a routine). Only if users ask for it. | — | — |
+| 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
 
 ## 4. Environment (WSL2 Ubuntu)
 
 ```bash
-source ~/.nvm/nvm.sh                     # Node 22
-cd ~/dev/og-<epic>/frontend              # one git worktree per branch
+source ~/.nvm/nvm.sh                     # Node 22 locally; CI uses Node 26
+cd ~/dev/og-<name>/frontend              # one git worktree per branch
 npx vitest run --maxWorkers=8            # full suite; default workers flake under CPU load
-npm run build                            # also runs stage-mediapipe (prebuild)
+npm run build                            # also stages MediaPipe (prebuild)
 npx vitest run scripts/check-bundle-syntax.test.mjs   # Safari 15.5 guard: run before every push
+npm run test:e2e                         # Playwright + axe; starts API and preview itself (needs a build)
 ```
 
-- **Smoke tests** run on Windows Playwright with the installed Chrome (`channel: 'chrome'`), because WSL lacks the libs and `sudo` is blocked. Serve with API `PORT=3000 DATA_DIR=$(mktemp -d) node server.js` + `npx vite preview --port 4173 --host 0.0.0.0`.
+- **E2E in WSL:** WSL can't run browsers (missing libs, no `sudo`). Run the E2E specs from Windows against servers started in WSL:
+  ```
+  E2E_BASE_URL=http://localhost:4173 E2E_CHANNEL=chrome npx playwright test
+  ```
+- **Seeding a guest:** a guest's state is only written on its first change. `e2e/fixtures.mjs` → `enterAsGuest(page, workouts)` handles that.
 - **WSL restarts sometimes**, and that clears `/tmp`. Keep logs under `~/dev/.ogtools/`.
 
 ## 5. Rules (unchanged)
 
 - **PRs and merging:** draft PRs on the fork only, with `--repo sorensadrgit-art/openGym`; never upstream. Nothing is merged without the owner.
-- **Charter:** local-first; no telemetry; no third-party runtime calls (each smoke test asserts 0 external requests); AGPL; respect media licences (Z-Anatomy CC BY-SA attribution stays with the GLB).
+- **Charter:** local-first; no telemetry; no third-party runtime calls (every E2E test fails on an external request); AGPL; respect media licences.
 - **Before every push:** scan the diff for absolute personal paths, emails and secrets, because the fork is public.
-- **Dependencies:** a new one must pass `check-bundle-syntax` (Safari 15.5). If a library uses newer built-ins, pin the last compatible version, as with three 0.178.0, or strip the call with a build plugin that fails loudly, as with `vite-no-mediapipe-telemetry.mjs`.
+- **Dependencies:** a new one must pass `check-bundle-syntax` (Safari 15.5). Pin the last compatible version (three 0.178.0) or strip the call with a build plugin that fails loudly.
+- **Accessibility:** never add an a11y baseline entry for a screen this fork changed. Fix it instead.
 
 ## 6. Resume prompt for a coding agent
 
-> Repo: `sorensadrgit-art/openGym`. Read `docs/next/START-HERE.md`, then `docs/next/NEXT-STEPS.md`. Take the first unfinished task in section 3. Create a worktree from `next/ready-20261114`. Write the tests first, then run the full suite with `--maxWorkers=8`, the build, and `check-bundle-syntax`. Open a draft PR on the fork with a body that says what was verified and what wasn't. Follow section 5. Stop and ask before anything irreversible.
+> Repo: `sorensadrgit-art/openGym`. Read `AGENTS.md`, then `docs/next/NEXT-STEPS.md`. Take the first unfinished task in section 3 that an agent can do. Create a worktree from `main` (or from `next/integration-20261115` if #25 isn't merged yet). Write the tests first. Then run the full suite with `--maxWorkers=8`, the build, `check-bundle-syntax` and `test:e2e`. Open a draft PR on the fork with a body that says what was verified and what wasn't. Follow section 5. Stop and ask before anything irreversible.

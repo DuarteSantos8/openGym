@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "test:fatigue-probe": "node scripts/fatigue-monotonic-probe.mjs",
     "pdf:check": "node scripts/pdf/render-samples.mjs --out pdf-samples --langs en,de,ar --paper A4,Letter --check",
-    "check:native-localizations": "node scripts/check-native-localizations.mjs"
+    "check:native-localizations": "node scripts/check-native-localizations.mjs",
+    "test:e2e": "playwright test"
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
@@ -42,9 +43,11 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@capacitor/android": "^8.5.3",
     "@capacitor/cli": "^8.5.3",
     "@capacitor/ios": "^8.5.3",
+    "@playwright/test": "1.65.1",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/coverage-v8": "^4.1.12",
     "fast-check": "^4.10.2",
