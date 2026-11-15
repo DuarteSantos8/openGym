@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!-- Debug-only overrides so the test build shows a distinct name next to the real app.
-         Merged over src/main/res for the debug variant only; the release build keeps openGym. -->
+         Merged over src/main/res for the debug variant only; the release build keeps Ironvane. -->
     <string name="app_name">Ironvane Test</string>
-    <string name="title_activity_main">openGym Test</string>
+    <string name="title_activity_main">Ironvane Test</string>
 </resources>

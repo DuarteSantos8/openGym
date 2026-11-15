@@ -2,14 +2,14 @@
 "Start workout" = "운동 시작";
 "Starts today’s planned workout, or opens the one already running." = "오늘 계획된 운동을 시작하거나 진행 중인 운동을 엽니다.";
 "Log weight" = "체중 기록";
-"Logs your body weight without opening openGym." = "openGym을 열지 않고 체중을 기록합니다.";
+"Logs your body weight without opening Ironvane." = "Ironvane을 열지 않고 체중을 기록합니다.";
 "Weight" = "체중";
 "What’s your weight?" = "체중이 얼마예요?";
 "Today’s workout" = "오늘의 운동";
 "Tells you what’s planned for today." = "오늘 계획을 알려 줍니다.";
 "Week streak" = "주간 연속 기록";
 "Tells you how many weeks in a row you trained." = "몇 주 연속으로 운동했는지 알려 줍니다.";
-"Open openGym once, then ask me again." = "openGym을 한 번 연 다음 다시 물어봐 주세요.";
+"Open Ironvane once, then ask me again." = "Ironvane을 한 번 연 다음 다시 물어봐 주세요.";
 "You’re in the middle of %@." = "지금 %@ 하는 중이에요.";
 "You’re in the middle of a workout." = "지금 운동 중이에요.";
 "Your workout" = "오늘 운동";

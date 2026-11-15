@@ -69,7 +69,7 @@ describe('Settings → Apple Watch', () => {
   // (it does each time it starts), so "installed" alone no longer reads as "in touch".
   it('says whether the watch has checked in, and when it last did', async () => {
     let el = await mount()
-    expect(el.textContent).toContain('The watch hasn’t checked in yet. Open Ironvane on it once.')
+    expect(el.textContent).toContain('The watch hasn’t checked in yet. Open openGym on it once.')
     writeWatchStatus({ health: 'on', at: Date.now() - 5 * 60e3 })
     el = await mount()
     expect(el.textContent).toContain('Last heard from the watch: 5 minutes ago')
@@ -117,23 +117,23 @@ describe('Settings → Apple Watch', () => {
     mocks.link = { paired: false, installed: false }
     let el = await mount()
     expect(line(el).dataset.watchLink).toBe('unpaired')
-    expect(line(el).textContent).toBe('No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install Ironvane on it there.')
+    expect(line(el).textContent).toBe('No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.')
     mocks.link = { paired: true, installed: false }
     el = await mount()
     expect(line(el).dataset.watchLink).toBe('missing')
-    expect(line(el).textContent).toContain('find Ironvane under Available Apps and tap Install')
+    expect(line(el).textContent).toContain('find openGym under Available Apps and tap Install')
     mocks.link = { paired: true, installed: true, reachable: false }
     el = await mount()
     expect(line(el).dataset.watchLink).toBe('silent')
-    expect(line(el).textContent).toContain('Open Ironvane on it once.')
+    expect(line(el).textContent).toContain('Open openGym on it once.')
     writeWatchStatus({ health: 'on', at: Date.now() - 5 * 60e3 })
     el = await mount()
     expect(line(el).dataset.watchLink).toBe('away')
-    expect(line(el).textContent).toBe('Ironvane is on your Apple Watch. Last heard from the watch: 5 minutes ago. The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.')
+    expect(line(el).textContent).toBe('openGym is on your Apple Watch. Last heard from the watch: 5 minutes ago. The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.')
     mocks.link = { paired: true, installed: true, reachable: true }
     el = await mount()
     expect(line(el).dataset.watchLink).toBe('live')
-    expect(line(el).textContent).toBe('Ironvane is on your Apple Watch. Last heard from the watch: 5 minutes ago. Connected right now.')
+    expect(line(el).textContent).toBe('openGym is on your Apple Watch. Last heard from the watch: 5 minutes ago. Connected right now.')
   })
 
   it('follows the link while the page is open: the app installed on the watch shows without leaving the page', async () => {

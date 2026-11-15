@@ -11,7 +11,8 @@ import { normalizeMediaRef } from './media-refs.js'
 import { soundsOf, addSound, SOUNDS_MAX } from './user-sounds.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 import { iconChoice } from './streak-icons.js'
-import { accentValue } from './accent.js'
+import { accentValue, accentKey, HEX_PRESETS } from './accent.js'
+import { LOOKS, lookOf } from './look.js'
 import { dayPhotosOf } from './day-photos.js'
 
 /* The kinds, in the order of the Community tabs. `take` false: browse only (a profile picture is
@@ -89,7 +90,13 @@ export function ownItems(S, type) {
     case 'look': {
       const flame = iconChoice(S, 'flame'), freeze = iconChoice(S, 'freeze')
       const accent = accentValue(S)
-      const payload = { ...(flame ? { flame } : {}), ...(freeze ? { freeze } : {}), ...(accent ? { accent } : {}) }
+      // A preset drawn from its colour (Ironvane orange) travels as that colour, which any version
+      // can wear, and by name, so this version wears the preset and not a custom colour.
+      const preset = HEX_PRESETS.has(accentKey(S)) ? accentKey(S) : null
+      const payload = {
+        ...(flame ? { flame } : {}), ...(freeze ? { freeze } : {}), ...(accent ? { accent } : {}),
+        ...(preset ? { preset } : {}), look: lookOf(S),
+      }
       return Object.keys(payload).length ? [{ src: 'look:current', title: t('My look'), payload }] : []
     }
     case 'measures': {
@@ -210,10 +217,12 @@ export function applyImport(s, res, { exId } = {}) {
         // Only what this app knows how to draw: anything else stays as it was.
         if (iconChoice({ [kind === 'flame' ? 'flameIcon' : 'freezeIcon']: next }, kind)) s[kind === 'flame' ? 'flameIcon' : 'freezeIcon'] = next
       }
-      if (typeof p.accent === 'string') {
+      if (typeof p.preset === 'string' && HEX_PRESETS.has(p.preset)) s.accent = p.preset
+      else if (typeof p.accent === 'string') {
         if (/^#[0-9a-f]{6}$/i.test(p.accent)) { s.accent = 'custom'; s.accentCustom = p.accent.toLowerCase() }
         else if (/^[a-z]{3,12}$/.test(p.accent) && accentValue({ accent: p.accent }) === p.accent) s.accent = p.accent
       }
+      if (LOOKS.includes(p.look)) s.look = p.look
       return t('Got it. Wearing it now.')
     }
     case 'measures': {

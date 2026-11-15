@@ -6,7 +6,8 @@
 //
 // The translations keep saying "openGym"; brandText() swaps the name on the way out of t(), in
 // every language at once. It leaves alone the names that are not this app's to change:
-//   - apps openGym publishes on its own: openGym Offline, openGym for Garmin / Wear OS;
+//   - apps still published as openGym: openGym Offline and the watch apps (Garmin, Wear OS,
+//     Apple Watch, Zepp OS), so an instruction to find one names it as it is listed;
 //   - "openGym animation(s)": the exercise media are licensed to openGym (catalogue/media/NOTICE.md);
 //   - a path such as Documents/openGym/ or DOCUMENTS/openGym/;
 //   - "based on openGym", the credit;
@@ -24,7 +25,36 @@ export const KEEP_KEYS = new Set([
   'Rate openGym on the App Store',
   'Rate openGym on Google Play',
   'Update to openGym v{0}',
+  // The credit, in every language (the translation does not say "Based on").
+  'Based on openGym',
+  // The watch apps are still published as openGym, so instructions to find them say so.
+  'Get openGym for Garmin',
+  'openGym isn’t on it yet',
+  'openGym is on your Garmin. Sets you log on the wrist land here.',
+  'openGym is on your Garmin. It catches up as soon as the watch is in reach.',
+  'Your Garmin is here, openGym isn’t on it yet. Get it, then open it once on the watch.',
+  'Start a workout on the phone and your Garmin asks to open openGym.',
+  'Get openGym for Wear OS',
+  'Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.',
+  'openGym is on your watch and in reach. Sets you log on the wrist land here.',
+  'openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.',
+  'No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.',
+  'openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.',
+  'openGym is not on your Apple Watch yet. Install it in the Watch app.',
+  'openGym is on your Apple Watch',
+  'The watch hasn’t checked in yet. Open openGym on it once.',
+  'Start a workout on the phone and openGym pops up on your wrist.',
+  'In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.',
+  'openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.',
+  // The exercise media are licensed to openGym (catalogue/media/NOTICE.md).
+  'It is mine to share. I made it, recorded it or may pass it on, and it is not an openGym animation.',
+  'openGym animation or other licensed stuff',
+  // openNutrition's own button is labelled "Link openGym".
+  'In openNutrition: Settings, Connected apps, Link openGym. Type the code it shows, or paste a token with summary access. The token stays on this device.',
 ])
+
+/** openGym Offline is its own app, published under that name: every string about it keeps it. */
+export const keepsName = key => KEEP_KEYS.has(key) || (typeof key === 'string' && key.includes('openGym Offline'))
 
 // Where this build's source is (AGPL v3 §13: people using a modified version over a network are
 // offered its source). openGym's own repository is credited as "Based on openGym".

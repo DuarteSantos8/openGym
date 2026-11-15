@@ -37,13 +37,13 @@ describe('Settings → Wear OS watch', () => {
     const el = await mount({ ...none, paired: true, watches: [watch()] }, 'sideload')
     expect(el.textContent).toContain('the watch needs the Wear OS APK of the same release')
     expect(el.textContent).toContain('One from Google Play won’t pair with it.')
-    expect(row(el, 'Galaxy Watch4 (ABCD)').textContent).toContain('Ironvane isn’t on it yet')
+    expect(row(el, 'Galaxy Watch4 (ABCD)').textContent).toContain('openGym isn’t on it yet')
     expect(row(el, 'Get openGym for Wear OS')).toBeTruthy()
   })
 
   it('a watch without the app, next to the Play app: the Play Store on the watch, no APK talk', async () => {
     const el = await mount({ ...none, paired: true, watches: [watch()] }, 'play')
-    expect(el.textContent).toContain('open the Play Store and install Ironvane from “Apps on your phone”')
+    expect(el.textContent).toContain('open the Play Store and install openGym from “Apps on your phone”')
     expect(el.textContent).not.toContain('APK')
     expect(row(el, 'Get openGym for Wear OS')).toBeUndefined()
   })
@@ -51,8 +51,8 @@ describe('Settings → Wear OS watch', () => {
   it('the app on the watch and in reach: connected, and whether the watch has checked in', async () => {
     const wear = { supported: true, paired: true, installed: true, reachable: true, watches: [watch({ installed: true, reachable: true })] }
     let el = await mount(wear)
-    expect(el.textContent).toContain('Ironvane is on your watch and in reach.')
-    expect(el.textContent).toContain('The watch hasn’t checked in yet. Open Ironvane on it once.')
+    expect(el.textContent).toContain('openGym is on your watch and in reach.')
+    expect(el.textContent).toContain('The watch hasn’t checked in yet. Open openGym on it once.')
     expect(row(el, 'Galaxy Watch4 (ABCD)').textContent).toContain('Connected')
     writeWatchStatus({ version: '1.4.5', at: Date.now() - 5 * 60e3 })
     el = await mount(wear)
