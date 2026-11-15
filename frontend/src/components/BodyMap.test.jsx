@@ -104,15 +104,26 @@ describe('BodyMap interaction semantics', () => {
 // can miss a site, and it can excuse one that needs naming.
 
 // The element's own opening tag, ending at the first ">" outside braces so that a prop holding an
-// arrow function (onMuscle={() => pick(m)}) does not cut it short. A window of lines around the
-// call is not the same thing: it takes in a <button> that closed above the map and a sibling's
-// aria-hidden below it, neither of which says anything about the map between them.
+// arrow function (onMuscle={() => pick(m)}) does not cut it short. Quoted text is skipped, so a
+// brace inside a value does not move the boundary and swallow the next element -- which is what
+// happens to a template literal like aria-label={`${t('a')} ${t('b')}`} if braces are counted
+// wherever they appear. A window of lines around the call is not the same thing either: it takes
+// in a <button> that closed above the map and a sibling's aria-hidden below it, neither of which
+// says anything about the map between them.
 const openTag = (text, from) => {
   let depth = 0
+  let quote = ''
   for (let i = from; i < text.length; i++) {
-    if (text[i] === '{') depth++
-    else if (text[i] === '}') depth--
-    else if (text[i] === '>' && depth === 0) return text.slice(from, i + 1)
+    const c = text[i]
+    if (quote) {
+      if (c === '\\') i++                       // t('it\'s') must not end the string early
+      else if (c === quote) quote = ''
+      continue
+    }
+    if (c === '"' || c === "'" || c === '`') quote = c
+    else if (c === '{') depth++
+    else if (c === '}') depth--
+    else if (c === '>' && depth === 0) return text.slice(from, i + 1)
   }
   return text.slice(from)
 }
@@ -138,7 +149,10 @@ function unnamedMaps(text) {
   // <BodyMapLegend, which is a different component.
   for (const m of text.matchAll(/<BodyMap\b/g)) {
     const tag = openTag(text, m.index)
-    if (/onMuscle|aria-hidden|hits=/.test(tag)) continue
+    // Whole attribute names, each at the start of the tag or after whitespace: /hits=/ is also
+    // inside data-hits=, and a call site carrying that would be excused while still rendering a
+    // map that says nothing.
+    if (/(?:^|\s)(?:onMuscle|aria-hidden|hits)=/.test(tag)) continue
     if (DECORATION_BY_ANCESTOR.some(named => tag.startsWith(named))) continue
     const no = (text.slice(0, m.index).match(/\n/g) || []).length + 1
     out.push({ line: no, snippet: (lines[no - 1] || '').trim() })
@@ -245,6 +259,12 @@ describe('BodyMap as a read-only picture', () => {
     ['a button that closed above the map', '<button aria-label="Open">Open</button>\n<BodyMap load={{}} />'],
     ['a sibling aria-hidden below the map', '<BodyMap load={{}} />\n<div aria-hidden="true" />'],
     ['a call site written over several lines', '<BodyMap\n  load={{}}\n  body="male"\n/>'],
+    ['a data- attribute that only looks like the prop', '<BodyMap load={load} data-hits={hits} />'],
+    ['a brace in a value, with a named map after it', '<BodyMap className="{" />\n<BodyMap hits={["chest"]} />'],
+    // The escaped apostrophe ends the string only if the scanner knows a backslash escapes. If it
+    // does not, the tag runs on into the second element and its hits= excuses the first, so this
+    // reports one map instead of none.
+    ['an escaped apostrophe, with a named map after it', '<BodyMap aria-label={t(\'it\\\'s here\')} />\n<BodyMap hits={["chest"]} />'],
   ])('still reports %s', (_case, source) => {
     expect(unnamedMaps(source)).toHaveLength(1)
   })
@@ -253,6 +273,8 @@ describe('BodyMap as a read-only picture', () => {
     ['a prop holding an arrow function', '<BodyMap load={{}} onMuscle={() => pick("chest")} />'],
     ['hits= on a line of its own', '<BodyMap\n  load={{}}\n  hits={["chest"]}\n/>'],
     ['a legend beside the map', '<BodyMap load={{}} hits={["chest"]} />\n<BodyMapLegend />'],
+    // The app builds labels this way (BodyMapLegend does), so the scanner meets it for real.
+    ['a template literal in a label', '<BodyMap hits={["chest"]} aria-label={`${t("Less")} ${t("More")}`} />'],
   ])('does not report %s', (_case, source) => {
     expect(unnamedMaps(source)).toHaveLength(0)
   })
