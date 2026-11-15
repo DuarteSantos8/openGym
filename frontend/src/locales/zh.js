@@ -518,10 +518,8 @@ export default {
   'Rest-pause': '歇息暂停组',
   'Drops': '递减次数',
   'Weight drop (%)': '减重幅度（%）',
-  'Rest-pause reps': '歇息暂停次数',
   'Rest-pause rest': '歇息暂停休息',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': '每组都变成递减组：主组之后，无休息完成 {0} 次递减，每次约减轻 {1}%。',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': '每组都变成歇息暂停组：先做 {0} 次，再分成几个短爆发共 {1} 次，每次前休息 {2} 秒，每次数量大约减半。',
   'Cardio logged': '有氧已记录',
   'Discard workout?': '放弃训练？',
   'The sets you logged in this session will be lost.': '本次记录的组数将丢失。',
@@ -1351,7 +1349,6 @@ export default {
   'Add session note': '添加训练备注',
   'Edit session note': '编辑训练备注',
   'How the session went as a whole.': '这次训练整体感觉如何。',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'Rest-pause 始终按这个次数练一个热身组，再加一个 rest-pause 正式组。这里不使用“组数”。',
 
   // --- AI Coach on the phone ---
   '(saved)': '（已保存）',
@@ -5897,4 +5894,18 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "爆发组",
+  "Total reps": "总次数",
+  "Weight up at": "加重点",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "一组歇息暂停组：{0} 次，然后 {1} 个爆发组，每个之前休息 {2} 秒，共 {3} 次。",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "每次完整完成，总次数加 1。到 {0} 次时加重，总次数从 {1} 重新开始。",
+  "Reach that total and the weight goes up next time.": "完成这个总次数，下次就加重。",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "歇息暂停组按一组来练：先按这个次数做一组激活组，再做它的爆发组。这里不使用“组数”。",
+  "New rest-pause plan, so starting from {0} reps in total.": "新的歇息暂停组计划，所以从总共 {0} 次开始。",
+  "{0} reps in total last time. Go for {1} at the same weight.": "上次总共 {0} 次。这次用同样的重量冲 {1} 次。",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "总共 {0} 次，已到范围上限。该加重或换更难的变式了。",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "歇息暂停组目标达成。加重，总次数从 {0} 重新开始。",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "连续 {0} 次没达到歇息暂停组目标。减轻重量，总次数从 {1} 重新开始。",
+  "Short of {0} reps in total last time. Same target again.": "上次没达到总共 {0} 次。目标不变，再来一次。",
 }

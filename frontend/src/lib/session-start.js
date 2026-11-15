@@ -17,6 +17,8 @@ import { todayISO } from './format.js'
 import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-unit.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
 import { withSessionTarget } from './session-targets.js'
+import { restPauseAimUnderProgramme } from './rest-pause.js'
+import { gymSplitView } from './gym-split.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -73,7 +75,7 @@ function withCarriedWarmups(rows, carry, mode, cfg, step, floor) {
  * warm-up count would stop mattering. Rows from before the `edited` mark read as automatic.
  */
 function carriedWarmups(st, cfg, routine, noProg) {
-  if (!startsFromLast(st) || noProg || cfg.intensifier?.type === 'restpause') return null
+  if (!startsFromLast(st) || noProg) return null
   // A slot that chose its warm-ups (auto, its own saved rows, none) keeps that choice: today's
   // tweaks are today's, and the saved block is not overwritten by them (#525).
   if (warmupModeOf(cfg)) return null
@@ -135,7 +137,16 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // What the rows are built from: the routine's own, with a deload week's fewer sets.
   const rowCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
   const policyKind = plan.kind
-  if (slot) plan = programmePlan(st, cfg, plan, slot, step)
+  if (slot) {
+    // A programme sets the load and the effort; a rest-pause total is the routine's, like its reps,
+    // so it keeps climbing through the programme's weeks (lib/rest-pause.js).
+    // The weight last lifted is read the way the prescription read it: at this gym (#988).
+    const policyPlan = plan
+    plan = programmePlan(st, cfg, plan, slot, step)
+    const lastW = policyPlan.rpAim != null ? sessionsFor(gymSplitView(st, cfg.id), cfg.id, cfg, routine?.id).filter(x => x.mode === 'reps').at(-1)?.weight : null
+    const rpAim = restPauseAimUnderProgramme(cfg, policyPlan, plan, lastW, slot.deload)
+    if (rpAim != null) plan = { ...plan, rpAim }
+  }
   const planReps = !startsFromLast(st) || plan.kind === 'programme'
   const fromLast = !noProg && policyKind === 'off' && !slot && startsFromLast(st)
   // Warm-ups ramp over the dumbbells you own when the profile lists them (issue #376): a rung
@@ -156,12 +167,15 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined, why: undefined }
   const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
-  const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
+  // A rest-pause prescription aims at a total (lib/rest-pause.js): the row is built for it, and
+  // the session's target carries it, so reading the session back judges it by that total.
+  const aimed = plan.rpAim != null && cfg.intensifier ? { ...cfg, intensifier: { ...cfg.intensifier, aim: plan.rpAim } } : cfg
+  const shaped = applyIntensifierPlan(rows, aimed, dropGrid(st, cfg))
   const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
     : block ? withWarmupBlock(st, cfg, shaped, { grid: dropGrid(st, cfg), floor: barFloor(st, cfg.id), unit: st.unit })
       : shaped
   // `preType` is the routine editor's memory of the slot before a routine type (lib/circuit.js), not a target.
-  const { preType: _preType, ...target } = cfg
+  const { preType: _preType, ...target } = aimed
   // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
   if (meaning !== 'as') target.dbLoad = meaning
   if (plan.weight != null) target.weight = plan.weight

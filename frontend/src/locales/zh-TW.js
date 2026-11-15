@@ -514,10 +514,8 @@ export default {
   'Rest-pause': '休息暫停組',
   'Drops': '遞減次數',
   'Weight drop (%)': '降重幅度（%）',
-  'Rest-pause reps': '休息暫停次數',
   'Rest-pause rest': '休息暫停休息時間',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': '每組皆轉為遞減組：在主組完成後，不休息接著做 {0} 次遞減，每次重量減輕約 {1}%。',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': '每組皆轉為休息暫停組：先做 {0} 下，接著分為短組再做 {1} 下，每次短組前休息 {2} 秒，每次次數約減半。',
   'Cardio logged': '有氧運動已記錄',
   'Discard workout?': '捨棄本次訓練？',
   'The sets you logged in this session will be lost.': '本次訓練已記錄的組數將全數遺失。',
@@ -1343,7 +1341,6 @@ export default {
   'Add session note': '新增總結筆記',
   'Edit session note': '編輯總結筆記',
   'How the session went as a whole.': '這次訓練整體感受與狀況。',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': '休息暫停組（Rest-pause）固定先做一組此次數的熱身組，再做一組休息暫停正式組。這裡不使用「組數」。',
 
   // --- AI Coach on the phone ---
   '(saved)': '（已儲存）',
@@ -5890,4 +5887,18 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "爆發組",
+  "Total reps": "總次數",
+  "Weight up at": "加重點",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "一組休息暫停組：{0} 次，接著 {1} 個爆發組，每個之前休息 {2} 秒，共 {3} 次。",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "每次完整完成，總次數加 1。到 {0} 次時加重，總次數從 {1} 重新開始。",
+  "Reach that total and the weight goes up next time.": "完成這個總次數，下次就加重。",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "休息暫停組以一組來練：先以這個次數做一組啟動組，再做它的爆發組。這裡不使用「組數」。",
+  "New rest-pause plan, so starting from {0} reps in total.": "新的休息暫停組計畫，所以從總共 {0} 次開始。",
+  "{0} reps in total last time. Go for {1} at the same weight.": "上次總共 {0} 次。這次用同樣的重量挑戰 {1} 次。",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "總共 {0} 次，已到範圍上限。該加重或換更難的變化式了。",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "休息暫停組目標達成。加重，總次數從 {0} 重新開始。",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "連續 {0} 次未達休息暫停組目標。減輕重量，總次數從 {1} 重新開始。",
+  "Short of {0} reps in total last time. Same target again.": "上次未達總共 {0} 次。目標不變，再來一次。",
 }

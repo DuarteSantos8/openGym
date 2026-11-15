@@ -19,6 +19,13 @@ describe('policy-labelled progression guidance', () => {
       .toEqual({ policyLabel: 'Greyskull LP', why: deload })
   })
 
+  it('labels a rest-pause outcome as rest-pause, the rule that decided it', () => {
+    const why = ['{0} reps in total last time. Go for {1} at the same weight.', 20, 21]
+    expect(progressionGuidance({ policy: 'linear', kind: 'up', rpAim: 21, why }))
+      .toEqual({ policyLabel: 'Rest-pause', why })
+    expect(progressionGuidance({ policy: 'off', kind: 'off', rpAim: 20 })).toBeNull()
+  })
+
   it('labels a baseline outcome and omits policies with no visible outcome', () => {
     const baseline = ['Nothing logged yet, so this session sets the baseline.']
     expect(progressionGuidance({ policy: 'linear', kind: 'first', why: baseline }))

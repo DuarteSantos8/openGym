@@ -518,10 +518,8 @@ export default {
   'Rest-pause': 'Rest-pause',
   'Drops': 'Düşüşler',
   'Weight drop (%)': 'Ağırlık düşüşü (%)',
-  'Rest-pause reps': 'Rest-pause tekrarları',
   'Rest-pause rest': 'Rest-pause dinlenmesi',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'Her set düşüş setine dönüşür: ana setten sonra dinlenmeden {0} düşüş, her biri yaklaşık %{1} daha hafif.',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'Her set rest-pause olur: başlangıçta {0} tekrar, ardından kısa patlamalara bölünmüş {1} tekrar daha, her birinden önce {2} sn dinlenme, her seferinde yaklaşık yarıya inerek.',
   'Cardio logged': 'Kardiyo kaydedildi',
   'Discard workout?': 'Antrenman iptal edilsin mi?',
   'The sets you logged in this session will be lost.': 'Bu oturumda kaydettiğin setler kaybolacak.',
@@ -1351,7 +1349,6 @@ export default {
   'Add session note': 'Antrenman notu ekle',
   'Edit session note': 'Antrenman notunu düzenle',
   'How the session went as a whole.': 'Antrenmanın genel olarak nasıl geçtiği.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'Rest-pause her zaman bu tekrar sayısında bir ısınma seti, ardından bir rest-pause çalışma seti olarak çalışılır. “Setler” burada kullanılmaz.',
 
   // --- AI Coach on the phone ---
   '(saved)': '(kaydedildi)',
@@ -5897,4 +5894,18 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "Patlamalar",
+  "Total reps": "Toplam tekrar",
+  "Weight up at": "Ağırlık artışı",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "Bir rest-pause seti: {0} tekrar, ardından her birinden önce {2} sn dinlenmeyle {1} patlama, toplam {3} tekrar.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "Her temiz seans toplama bir tekrar ekler. {0} olunca ağırlık artar ve toplam yeniden {1} ile başlar.",
+  "Reach that total and the weight goes up next time.": "Bu toplama ulaş, bir sonraki sefer ağırlık artar.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "Rest-pause tek set olarak çalışılır: bu tekrar sayısında bir aktivasyon seti, ardından patlamaları. “Setler” burada kullanılmaz.",
+  "New rest-pause plan, so starting from {0} reps in total.": "Yeni rest-pause planı, bu yüzden toplam {0} tekrarla başlıyorsun.",
+  "{0} reps in total last time. Go for {1} at the same weight.": "Geçen sefer toplam {0} tekrar. Aynı ağırlıkla {1} için dene.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "Toplam {0} tekrar, aralığının en üstü. Ağırlık ekleme ya da daha zor bir varyasyon deneme zamanı.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "Rest-pause hedefine ulaşıldı. Ağırlık artıyor ve toplam yeniden {0} ile başlıyor.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "Art arda {0} kez rest-pause hedefinin altında. Daha hafif bir ağırlık, toplam yeniden {1} ile başlıyor.",
+  "Short of {0} reps in total last time. Same target again.": "Geçen sefer toplam {0} tekrara ulaşamadın. Aynı hedef yine.",
 }

@@ -22,6 +22,7 @@ import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workou
 import { normalizeRepRange } from './rep-range.js'
 import { nextRung } from './ladders.js'
 import { gymSplitView } from './gym-split.js'
+import { restPausePlan, judgeRestPause, restPausePrescription } from './rest-pause.js'
 import { isPyramid } from './pyramid.js'
 import { backoffAt } from './backoff.js'
 import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
@@ -305,7 +306,10 @@ export function readSession(entry, fallback) {
   // plan. Only a session built under triple carries it; every other one reads exactly as before.
   const rowGoals = mode === 'reps' && entry && entry.target && Array.isArray(target.rowReps) && target.rowReps.length
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null
-  const plannedRows = rowGoals ? rowGoals.length : (target.sets || logged.length)
+  // A rest-pause plan trains as one work row whatever its `sets` says (history.js shapeRows), so
+  // that one row is the session; reading it against three left every rest-pause session short.
+  const rp = mode === 'reps' && entry && entry.target ? restPausePlan(target) : null
+  const plannedRows = rp ? 1 : rowGoals ? rowGoals.length : (target.sets || logged.length)
   const planned = mode === 'time' && isPerSide(target) ? plannedRows * 2 : plannedRows
   const enough = logged.length >= planned
   // Only the sets the plan asked for decide what happens next (issue #233). A set added on top
@@ -340,6 +344,19 @@ export function readSession(entry, fallback) {
   const top = step > 0 && sets.length ? Number(sets[0].w) || 0 : 0
   const heavyEnough = (s, k) => !(top > 0) || k === 0 || (Number(s.w) || 0) >= backoffAt(top, k, step) - 0.05
   const reps = sets.map((s, k) => (s.done && heavyEnough(s, k) ? (s.r || 0) : 0))
+  // A rest-pause session is judged on its total and its activation set (lib/rest-pause.js).
+  if (rp) {
+    const judged = judgeRestPause(target, sets[0])
+    return {
+      mode, target, goal: judged.aim, reps,
+      weight: loadOf(entry, sets),
+      count: reps.length,
+      low: reps.length ? Math.min(...reps) : 0,
+      amrap: reps.length ? reps[reps.length - 1] : 0,
+      rp: judged,
+      ok: enough && judged.ok
+    }
+  }
   return {
     mode, target, goal, reps,
     weight: loadOf(entry, sets),
@@ -571,6 +588,17 @@ export function nextPrescription(S, cfg, routine) {
   // Steady double progression starts a range at its bottom, every set together.
   const steady = policy === 'steady' && mode === 'reps'
   const rangeS = steady ? normalizeRepRange(cfg.reps || last?.goal || 10, cfg.repsMin, repStep(cfg)) : null
+  // A planned rest-pause set has its own rule, whatever the policy (lib/rest-pause.js): the total
+  // climbs, then the weight. Its numbers are judged against the plan it was built with, so an
+  // edited plan starts over there too, and the plan-change check below is not needed for it.
+  if (mode === 'reps' && restPausePlan(cfg)) {
+    return restPausePrescription({
+      cfg, sessions, policy, step: repStep(cfg),
+      weightless: climbsReps(cfg) && !((last?.weight || 0) > 0),
+      harder: weight => (topped(weight) ? weight : harder(weight, inc)),
+      easier,
+    })
+  }
   if (policy === 'ladder' && mode === 'reps') return ladderPrescription(S, cfg, last, policy)
   if (policy === 'undulating' && mode === 'reps') {
     const out = undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted })

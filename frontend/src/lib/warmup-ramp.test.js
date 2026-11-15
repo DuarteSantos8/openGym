@@ -109,9 +109,9 @@ describe('where the warm-ups come from', () => {
   it('my own with no rows saved is no warm-ups, not the generator', () => {
     expect(warmupSource(state({ warmupAuto: 'all' }), cfg(SQUAT, { warmup: 'own' })).kind).toBe('none')
   })
-  it('cardio, timed holds and rest-pause never get a generated block', () => {
+  it('cardio and timed holds never get a generated block; rest-pause does, like any lift', () => {
     const S = state({ warmupAuto: 'all' })
-    expect(warmupSource(S, cfg(SQUAT, { intensifier: { type: 'restpause' } })).kind).toBe('none')
+    expect(warmupSource(S, cfg(SQUAT, { intensifier: { type: 'restpause' } })).kind).toBe(warmupSource(S, cfg(SQUAT)).kind)
     expect(warmupSource(S, { id: PULLUP, mode: 'time', sec: 30 }).kind).toBe('none')
   })
   it('bodyweight: none unloaded, the body alone first once loaded', () => {

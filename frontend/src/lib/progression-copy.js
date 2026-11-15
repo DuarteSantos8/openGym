@@ -11,6 +11,8 @@ export function progressionGuidance(plan) {
   // A deload week of your own (lib/deload-cycle.js) says so, whatever the policy.
   if (plan?.kind === 'deloadweek' && plan.why) return { policyLabel: 'Deload week', why: plan.why, prog: plan.prog || null }
   if (!plan?.why || plan.kind === 'off' || plan.policy === 'off') return null
+  // A planned rest-pause set progresses by its own rule whatever the policy (lib/rest-pause.js).
+  if (plan.rpAim != null) return { policyLabel: 'Rest-pause', why: plan.why }
   const policyLabel = POLICY_NAME[plan.policy]
   if (!policyLabel) return null
   return { policyLabel, why: plan.why }

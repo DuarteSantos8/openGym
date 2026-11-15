@@ -253,6 +253,8 @@ const sideOf = value => {
   // side. Reuses the row-level helpers below (addDrop/dropsOf/…), which read this very shape.
   if (v.type === 'dropset' || v.type === 'restpause') out.type = v.type
   if (v.cluster === true && v.type === 'restpause') out.cluster = true
+  // A planned rest-pause side carries its activation set in `r` (lib/rest-pause.js).
+  if (v.act === true && v.type === 'restpause') out.act = true
   if (Array.isArray(v.drops)) out.drops = v.drops
   if (Array.isArray(v.clusters)) out.clusters = v.clusters
   return out

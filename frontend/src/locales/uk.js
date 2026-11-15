@@ -500,10 +500,8 @@ export default {
   'Rest-pause': 'Рест-пауза',
   'Drops': 'Дроп-сети',
   'Weight drop (%)': 'Зниження ваги (%)',
-  'Rest-pause reps': 'Повторення рест-паузи',
   'Rest-pause rest': 'Відпочинок рест-паузи',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'Кожен підхід стає дроп-сетом: після основного підходу {0} зниження(нь) без відпочинку, кожне приблизно на {1}% легше.',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'Кожен підхід стає рест-паузою: спочатку {0} повторень, потім ще {1}, розбитих на короткі серії, з {2} с відпочинку перед кожною, щоразу приблизно вдвічі менше.',
   'Cardio logged': 'Кардіо записано',
   'Discard workout?': 'Скасувати тренування?',
   'The sets you logged in this session will be lost.': 'Підходи, записані в цій сесії, буде втрачено.',
@@ -1160,7 +1158,6 @@ export default {
   'Add session note': 'Додати нотатку',
   'Edit session note': 'Змінити нотатку',
   'How the session went as a whole.': 'Як пройшло тренування загалом.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'Rest-pause завжди виконується як один розминковий підхід із цим числом повторень і один робочий підхід rest-pause. «Підходи» тут не використовуються.',
 
   // --- AI Coach on the phone ---
   '(saved)': '(збережено)',
@@ -5894,4 +5891,18 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "Серії",
+  "Total reps": "Усього повторень",
+  "Weight up at": "Більша вага при",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "Один підхід рест-паузи: {0} повт., потім {1} серії з відпочинком {2} с перед кожною, усього {3} повт.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "Кожне чисте тренування додає до суми одне повторення. На {0} вага зростає, а сума знову починається з {1}.",
+  "Reach that total and the weight goes up next time.": "Набери цю суму, і наступного разу вага зросте.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "Рест-пауза виконується як один підхід: активувальний підхід із цим числом повторень, потім його серії. «Підходи» тут не використовуються.",
+  "New rest-pause plan, so starting from {0} reps in total.": "Новий план рест-паузи, тож починаємо з {0} повторень усього.",
+  "{0} reps in total last time. Go for {1} at the same weight.": "Минулого разу всього {0} повторень. Тепер {1} з тією самою вагою.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "Усього {0} повторень, верх твого діапазону. Час додати вагу або спробувати складніший варіант.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "Ціль рест-паузи досягнуто. Вага зростає, а сума знову починається з {0}.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "Ціль рест-паузи не досягнуто {0} рази поспіль. Менша вага, і сума знову починається з {1}.",
+  "Short of {0} reps in total last time. Same target again.": "Минулого разу бракувало до {0} повторень усього. Та сама ціль знову.",
 }

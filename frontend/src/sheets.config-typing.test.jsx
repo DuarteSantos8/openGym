@@ -65,9 +65,11 @@ describe('exercise settings: typing into a field with a minimum', () => {
     expect(rest.value).toBe('2')
     act(() => leave(rest))
     expect(rest.value).toBe('5')
-    act(() => type(field(host, 'Rest-pause reps'), ''))   // saved without leaving the field
+    act(() => type(field(host, 'Total reps'), ''))   // saved without leaving the field
     act(() => save(host))
-    expect(onSave.mock.calls[0][0].intensifier).toEqual({ type: 'restpause', totalReps: 1, restSec: 5 })
+    // A plan saved before 1.4.6 (8 reps past the activation set: four halving bursts) is saved in
+    // the new shape; the emptied total is held to the activation set plus a rep a burst.
+    expect(onSave.mock.calls[0][0].intensifier).toEqual({ type: 'restpause', bursts: 4, total: 14, totalMax: 18, restSec: 5 })
   })
 
   it('lets the deload percentage be retyped, held to 50–95 on leaving the field', () => {

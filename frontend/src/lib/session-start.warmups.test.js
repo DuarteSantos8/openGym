@@ -154,14 +154,18 @@ describe('planned warm-ups carried from last session', () => {
     expect(warmups(plannedEntryFor(st)).map(row => [row.w, row.r])).toEqual([[20, 12], [30, 8], [40, 5]])
   })
 
-  it('does not carry warm-ups for cardio or rest-pause exercises', () => {
+  it('does not carry warm-ups for cardio exercises, and carries them for rest-pause like any lift', () => {
     const cardioRoutine = routineWith({ id: 'custom-run', mode: 'cardio', sets: 1, min: 20, speed: 8, warmupSets: 2 })
     const cardioState = state(cardioRoutine, [loggedWarmup(20, 12), { min: 20, speed: 8, done: true }])
     expect(warmups(entryFor(cardioState))).toEqual(generatedWarmups(cardioState))
 
     const restPauseRoutine = routineWith(cfg({ warmupSets: 1, intensifier: { type: 'restpause', totalReps: 12 } }))
     const restPauseState = state(restPauseRoutine, [loggedWarmup(20, 12), loggedWork(), loggedWork(), loggedWork()])
-    expect(warmups(entryFor(restPauseState))).toEqual(generatedWarmups(restPauseState))
+    // The activation set is the work row now (lib/rest-pause.js), so the warm-ups in front of it
+    // are ordinary ones, carried from last time the way a straight lift's are.
+    const straightState = state(routineWith(cfg({ warmupSets: 1 })), [loggedWarmup(20, 12), loggedWork(), loggedWork(), loggedWork()])
+    expect(warmups(entryFor(restPauseState))).toEqual(warmups(entryFor(straightState)))
+    expect(work(entryFor(restPauseState))).toHaveLength(1)
   })
 
   // The auto-ramp freeze: a block nobody set up is the routine's ramp, built again for today's

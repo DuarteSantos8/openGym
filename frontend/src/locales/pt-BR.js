@@ -1398,7 +1398,6 @@ export const PT_BR_OVERRIDES = {
   'How do you want to use openGym?': 'Como você quer usar o openGym?',
   'Local keeps everything on this phone. Connecting syncs to your own openGym server instead. You can switch later in Settings.': 'Local mantém tudo neste celular. Conectar sincroniza com o seu próprio servidor openGym. Dá para mudar depois em Configurações.',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'Cada série vira um drop set: depois da série principal, {0} drop(s) sem descanso, cada um cerca de {1}% mais leve.',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'Cada série vira rest-pause: {0} repetições para começar, depois mais {1} divididas em mini-séries curtas, com {2}s de descanso antes de cada uma, caindo cerca de metade a cada vez.',
 
   // --- workout notes and planned warm-ups ---
   'Most reps in a set per workout': 'Mais reps em uma série por treino',
@@ -1409,7 +1408,6 @@ export const PT_BR_OVERRIDES = {
   'Brings it up again the next time you train this exercise.': 'Aparece de novo na próxima vez que você treinar este exercício.',
   'Seat height, pin position, a form cue. Shown every session.': 'Altura do banco, posição do pino, uma dica de execução. Aparece em todo treino.',
   'How the session went as a whole.': 'Como foi o treino como um todo.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'O rest-pause sempre treina como uma série de aquecimento com essas repetições e depois uma série de trabalho rest-pause. “Séries” não é usado aqui.',
 
   // --- AI Coach ---
   // pt-PT addresses the lifter as "tu"; Brazil says "você", and a few words differ outright
@@ -4174,7 +4172,6 @@ export const PT_BR_OVERRIDES = {
   'Drop-set': 'Drop set',
   'Drops': 'Drops',
   'Weight drop (%)': 'Redução de carga (%)',
-  'Rest-pause reps': 'Repetições do rest-pause',
   'Rest-pause rest': 'Descanso do rest-pause',
   'Push, pull and legs each get their own day.': 'Push, pull e pernas, cada um no seu dia.',
   'Upper body twice, lower body twice.': 'Parte de cima duas vezes, parte de baixo duas vezes.',
@@ -4326,6 +4323,18 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "Mini-séries",
+  "Weight up at": "Aumentar o peso em",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "Uma série rest-pause: {0} repetições, depois {1} mini-séries com {2} s de descanso antes de cada uma, {3} repetições no total.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "Cada sessão completa soma uma repetição ao total. Em {0} o peso aumenta e o total recomeça em {1}.",
+  "Reach that total and the weight goes up next time.": "Chegue a esse total e na próxima vez o peso aumenta.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "O rest-pause treina como uma série só: uma série de ativação com essas repetições e depois as mini-séries. “Séries” não é usado aqui.",
+  "New rest-pause plan, so starting from {0} reps in total.": "Novo plano de rest-pause, então começa com {0} repetições no total.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "{0} repetições no total, o topo da sua faixa. Hora de aumentar o peso ou tentar uma variação mais difícil.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "Meta do rest-pause atingida. O peso aumenta e o total recomeça em {0}.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "Abaixo da meta do rest-pause {0} vezes seguidas. Peso menor, e o total recomeça em {1}.",
+  "Short of {0} reps in total last time. Same target again.": "Ficou abaixo das {0} repetições no total da última vez. Mesma meta de novo.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

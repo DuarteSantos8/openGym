@@ -549,10 +549,8 @@ export default {
   'Rest-pause': 'রেস্ট-পজ',
   'Drops': 'ড্রপ',
   'Weight drop (%)': 'ওজন কমানো (%)',
-  'Rest-pause reps': 'রেস্ট-পজ রেপ',
   'Rest-pause rest': 'রেস্ট-পজ বিশ্রাম',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'প্রতিটি সেট ড্রপ সেট হবে: মূল সেটের পরে বিশ্রাম ছাড়াই {0}টি ড্রপ, প্রতিটি প্রায় {1}% হালকা।',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'প্রতিটি সেট রেস্ট-পজ হবে: শুরুতে {0} রেপ, তারপর আরও {1} রেপ ছোট ছোট বার্স্টে ভাগ করে, প্রতিটির আগে {2} সে. বিশ্রাম, প্রতিবার মোটামুটি অর্ধেক করে।',
   'Cardio logged': 'কার্ডিও লগ হয়েছে',
   'Discard workout?': 'ওয়ার্কআউট বাদ দেবেন?',
   'The sets you logged in this session will be lost.': 'এই সেশনে লগ করা সেটগুলো হারিয়ে যাবে।',
@@ -1428,7 +1426,6 @@ export default {
   'Add session note': 'সেশন নোট যোগ করুন',
   'Edit session note': 'সেশন নোট এডিট করুন',
   'How the session went as a whole.': 'পুরো সেশনটি কেমন গেল।',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'রেস্ট-পজ সবসময় এই রেপ সংখ্যায় একটি ওয়ার্ম-আপ সেট, তারপর একটি রেস্ট-পজ ওয়ার্কিং সেট হিসেবে চলে। এখানে "সেট" ব্যবহার হয় না।',
   // --- AI Coach on the phone ---
   '(saved)': '(সেভ করা)',
   'AI Coach': 'AI কোচ',
@@ -5976,4 +5973,18 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "বার্স্ট",
+  "Total reps": "মোট রেপ",
+  "Weight up at": "ওজন বাড়বে",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "একটি রেস্ট-পজ সেট: {0} রেপ, তারপর {1}টি বার্স্ট, প্রতিটির আগে {2} সে. বিশ্রাম, মোট {3} রেপ।",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "প্রতিটি সম্পূর্ণ সেশন মোটে একটি রেপ যোগ করে। {0}-এ ওজন বাড়ে এবং মোট আবার {1} থেকে শুরু হয়।",
+  "Reach that total and the weight goes up next time.": "এই মোট পূরণ করুন, পরের বার ওজন বাড়বে।",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "রেস্ট-পজ একটি সেট হিসেবে হয়: এই রেপ সংখ্যায় একটি অ্যাক্টিভেশন সেট, তারপর তার বার্স্ট। \"সেট\" এখানে ব্যবহার হয় না।",
+  "New rest-pause plan, so starting from {0} reps in total.": "নতুন রেস্ট-পজ পরিকল্পনা, তাই মোট {0} রেপ থেকে শুরু।",
+  "{0} reps in total last time. Go for {1} at the same weight.": "গতবার মোট {0} রেপ। একই ওজনে {1}-এর চেষ্টা করুন।",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "মোট {0} রেপ, আপনার রেঞ্জের শীর্ষ। এবার ওজন বাড়ানো বা কঠিন ভ্যারিয়েশন চেষ্টা করার সময়।",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "রেস্ট-পজ লক্ষ্য পূরণ হয়েছে। ওজন বাড়ে এবং মোট আবার {0} থেকে শুরু হয়।",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "পরপর {0} বার রেস্ট-পজ লক্ষ্যের নিচে। হালকা ওজন, এবং মোট আবার {1} থেকে শুরু হয়।",
+  "Short of {0} reps in total last time. Same target again.": "গতবার মোট {0} রেপ হয়নি। আবার একই লক্ষ্য।",
 }
