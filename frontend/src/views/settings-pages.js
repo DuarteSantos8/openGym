@@ -7,12 +7,13 @@
 // and checks that each entry below really is a row there.
 import { t } from '../lib/i18n.js'
 import { ACCENT_NAMES } from '../lib/format.js'
-import { MODULES } from '../lib/modules.js'
+import { MODULES, partsOf } from '../lib/modules.js'
 import { OFFLINE_OFF_MODULES } from '../lib/build-caps.js'
 import { available, shownThemes } from '../lib/seasonal.js'
 
 // `mod`: the module (lib/modules.js) a page belongs to; with it off the page and its rows are gone,
-// from the root and from the search alike (pageVisible, searchSettings).
+// from the root and from the search alike (pageVisible, searchSettings). A row of one part of a
+// module also names its `part`, which ctx.part answers.
 export const PAGES = {
   // Settings → Modules (v1.4.4): whole feature areas on and off (views/Modules.jsx).
   modules: { title: 'Modules', icon: 'grid', tint: 'var(--blue)', kw: 'modules features plugins extras enable disable turn on off hide simplify lean minimal clutter just training everything preset' },
@@ -131,6 +132,7 @@ const MODULE_KW = {
   effort: 'effort rir rpe reps in reserve rating difficulty hard',
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
+  exercise: 'exercise settings progression rule plate loading bar stack drop-set dropset rest-pause pyramid failure unit kg lb dumbbell',
   videos: 'form video film record camera technique set',
   watch: 'watch apple watch wear os zepp amazfit garmin wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',
@@ -153,6 +155,11 @@ export const SEARCH = [
     // Not built into openGym Offline at all (lib/build-caps.js).
     ...(OFFLINE_OFF_MODULES.includes(m.id) ? { net: true } : {}),
     get kw() { return MODULE_KW[m.id] + (m.id === 'seasonal' ? ' ' + seasonKw() : '') + ' module turn on off hide' } })),
+  // A module's parts (lib/modules.js PARTS): the Modules page unfolds the module that holds one.
+  ...MODULES.flatMap(m => partsOf(m.id).map(p => ({ page: 'modules', title: p.title, icon: m.icon, tint: m.tint,
+    ...(OFFLINE_OFF_MODULES.includes(m.id) ? { net: true } : {}),
+    // Not the description: "December" in Your year's must stay out of search outside the season.
+    kw: m.title.toLowerCase() + ' ' + p.title.toLowerCase() + ' module part turn on off hide' }))),
   { page: 'modules', title: 'Start from', icon: 'slider', tint: 'var(--blue)', kw: 'preset just training body everything custom modules' },
   // Workout
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },
@@ -177,7 +184,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Start button', icon: 'play', tint: 'var(--green)', kw: 'start button pick choose routine workout long press today plan which', opts: ['Today’s plan', 'Let me pick'] },
   { page: 'workout', title: 'Preview before starting', icon: 'list', tint: 'var(--blue)', kw: 'preview look first before start routine exercises weights confirm' },
   { page: 'workout', title: 'Daily check-in', icon: 'moon', tint: 'var(--indigo)', mod: 'health', kw: 'check in checkin daily form readiness sleep energy soreness sore stress mood lighter deload tired how do you feel' },
-  { page: 'workout', title: 'Weigh in before workouts', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'body weight weigh scale start' },
+  { page: 'workout', title: 'Weigh in before workouts', icon: 'scale', tint: 'var(--green)', mod: 'body', part: 'weight', kw: 'body weight weigh scale start' },
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
   { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
@@ -232,7 +239,7 @@ export const SEARCH = [
   { page: 'reminders', title: 'Nudge me when I skip a planned workout', icon: 'bell', tint: 'var(--red)', kw: 'nudge skip missed motivation', when: c => remind(c) && c.reminderOn, via: PUSH },
   { page: 'reminders', title: 'Nudge tone', icon: 'chat', tint: 'var(--blue)', kw: 'nudge tone friendly guilt drill sergeant', opts: ['Friendly', 'Guilt trip', 'Drill sergeant'], when: c => remind(c) && c.reminderOn && c.nudge, via: PUSH },
   { page: 'reminders', title: 'Check-in reminders', icon: 'ruler', tint: 'var(--teal)', kw: 'measurement measure tape photo progress picture weigh weight blood pressure remind every two weeks', when: remind, via: PUSH },
-  { page: 'reminders', title: 'Your year in openGym', icon: 'sparkles', tint: 'var(--acc)', mod: 'motivation', kw: 'year recap wrapped review december notification', when: remind, via: PUSH },
+  { page: 'reminders', title: 'Your year in openGym', icon: 'sparkles', tint: 'var(--acc)', mod: 'motivation', part: 'year', kw: 'year recap wrapped review december notification', when: remind, via: PUSH },
   { page: 'reminders', title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', kw: 'gym location arrive arrival geofence place map nearby', when: c => !!c.mobile && c.gymReminder !== false },
   { page: 'reminders', title: 'Send test notification', icon: 'bell', tint: 'var(--red)', kw: 'test push notification try', when: c => !c.mobile && c.pushOK, via: PUSH },
   // Plan & schedule
@@ -250,7 +257,7 @@ export const SEARCH = [
   { page: 'units', title: 'Weight step', icon: 'steps', tint: 'var(--teal)', kw: 'step increment microplates 0.1 0.25 every exercise all exercises at once' },
   { page: 'units', title: 'Speed unit', icon: 'figureRun', tint: 'var(--teal)', kw: 'speed mph kmh km/h miles cardio' },
   { page: 'units', title: '1RM formula', icon: 'chart', tint: 'var(--teal)', kw: '1rm one rep max epley brzycki lombardi formula estimate' },
-  { page: 'units', title: 'Daily weigh-in value', icon: 'scale', tint: 'var(--teal)', mod: 'body', kw: 'weigh-in body weight morning first average last several day trend chart', opts: ['Morning (first)', 'Average', 'Last'] },
+  { page: 'units', title: 'Daily weigh-in value', icon: 'scale', tint: 'var(--teal)', mod: 'body', part: 'weight', kw: 'weigh-in body weight morning first average last several day trend chart', opts: ['Morning (first)', 'Average', 'Last'] },
   { page: 'units', title: 'About you', icon: 'person', tint: 'var(--teal)', mod: 'strength', kw: 'sex gender age year of birth born strength level standards' },
   { page: 'units', title: 'Count warm-ups in volume', icon: 'sunrise', tint: 'var(--teal)', kw: 'warm-up warmup volume tonnage total gross work sets' },
   { page: 'units', title: 'Count body weight in bodyweight lifts', icon: 'scale', tint: 'var(--teal)', kw: 'body weight bodyweight volume pull-up pullup dip push-up tonnage total' },
@@ -267,21 +274,21 @@ export const SEARCH = [
   { page: 'look', title: 'Theme', icon: 'moon', tint: 'var(--indigo)', kw: 'dark mode light mode theme appearance night', opts: ['Dark', 'Light', 'System'] },
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },
-  { page: 'look', title: 'Streak flame', icon: 'flame', tint: 'var(--orange)', mod: 'motivation', kw: 'streak flame fire icon emoji custom own symbol colour color' },
-  { page: 'look', title: 'Sick and travel weeks', icon: 'cloud', tint: 'var(--indigo)', mod: 'motivation', kw: 'streak sick ill travel travelling holiday vacation injured excuse day note week' },
-  { page: 'look', title: 'Streak freezes', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze freezes rule strict gentle generous off missed week forgiving', opts: ['No freezes', 'Gentle', 'Generous'] },
-  { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', kw: 'recovery sauna ice bath cold massage mobility streak count' },
-  { page: 'look', title: 'Sport counts for the streak', icon: 'figureRun', tint: 'var(--blue)', mod: 'motivation', kw: 'sport activity run ride football tennis climbing match other streak count counts' },
-  { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },
+  { page: 'look', title: 'Streak flame', icon: 'flame', tint: 'var(--orange)', mod: 'motivation', part: 'streak', kw: 'streak flame fire icon emoji custom own symbol colour color' },
+  { page: 'look', title: 'Sick and travel weeks', icon: 'cloud', tint: 'var(--indigo)', mod: 'motivation', part: 'streak', kw: 'streak sick ill travel travelling holiday vacation injured excuse day note week' },
+  { page: 'look', title: 'Streak freezes', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', part: 'streak', kw: 'streak freeze freezes rule strict gentle generous off missed week forgiving', opts: ['No freezes', 'Gentle', 'Generous'] },
+  { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', part: 'streak', kw: 'recovery sauna ice bath cold massage mobility streak count' },
+  { page: 'look', title: 'Sport counts for the streak', icon: 'figureRun', tint: 'var(--blue)', mod: 'motivation', part: 'streak', kw: 'sport activity run ride football tennis climbing match other streak count counts' },
+  { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', part: 'streak', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },
   { page: 'look', title: 'App icon', icon: 'grid', tint: 'var(--indigo)', kw: 'app icon home screen launcher logo dark light', when: c => !!c.appIcons },
   { page: 'look', title: 'Body diagram', icon: 'figureStrength', tint: 'var(--teal)', kw: 'muscle map body male female', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Exercise drawings', icon: 'figureStrength', tint: 'var(--teal)', kw: 'figure male female woman man picture', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Set up an NFC sticker', icon: 'nfc', tint: 'var(--blue)', mod: 'checkin', kw: 'nfc sticker tag tap check in start workout locker machine', when: c => !!c.nfc },
-  { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'weight card home' },
+  { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', mod: 'body', part: 'weight', kw: 'weight card home' },
   { page: 'look', title: 'Recovery tips', icon: 'figureStrength', tint: 'var(--green)', mod: 'health', kw: 'recovery recovering rest muscle fatigue hint tip card home sore' },
-  { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', mod: 'motivation', kw: 'recap summary weekly monthly report your week your month card home share' },
+  { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', mod: 'motivation', part: 'recaps', kw: 'recap summary weekly monthly report your week your month card home share' },
   { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
-  { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', mod: 'motivation', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
+  { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', mod: 'motivation', part: 'challenges', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
   { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', mod: 'seasonal', get kw() { return 'seasonal season holiday halloween theme decoration ' + seasonKw() } },
   // Seasonal themes
   { page: 'themes', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)', kw: 'halloween seasonal theme spooky spider pumpkin bats witch october decoration', opts: ['Auto', 'On', 'Off'] },
@@ -436,6 +443,7 @@ export function searchSettings(query, ctx, tr = t) {
     // A row that needs the network is not there in openGym Offline (lib/build-caps.js).
     if (e.net && ctx.offline) continue
     if (e.mod && ctx.mod && !ctx.mod(e.mod)) continue
+    if (e.part && ctx.part && !ctx.part(e.mod, e.part)) continue
     consider(e, false)
   }
   // The root's "Use your subscription" row (Connections) opens a screen of its own (views/Assistants.jsx), not a

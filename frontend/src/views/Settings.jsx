@@ -100,7 +100,7 @@ import MyTrainerPage from './MyTrainer.jsx'
 import { libraryOn } from '../lib/shared-api.js'
 import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
-import { isOn, presetOf } from '../lib/modules.js'
+import { isOn, partOn, presetOf } from '../lib/modules.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -488,8 +488,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     spokenCues: S.spokenCues === true,
     // Settings → Modules: which feature areas are on (pageVisible and the search ask it).
     mod: id => isOn(S, id),
+    part: (id, p) => partOn(S, id, p),
   }
   const on = id => isOn(S, id)
+  const part = (id, p) => partOn(S, id, p)
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
   const layoutLabel = { cards: t('Cards'), list: t('List'), compact: t('Compact') }[layout]
@@ -584,7 +586,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     })} />
 
   const pages = {
-    modules: () => <ModulesPage />,
+    modules: () => <ModulesPage find={find} />,
     watches: () => <Section>{WATCH_PAGES.filter(id => pageVisible(id, ctx)).map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint}
       title={t(PAGES[id].title)} accessory="chevron" onClick={() => open(id)} />)}</Section>,
     watch: () => <WatchSettingsPage />,
@@ -711,7 +713,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
         {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips
             straight to the session. Home and Stats still log weight by hand. */}
-        {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
+        {part('body', 'weight') && <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
           subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
           <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
         </Row>}
@@ -1054,7 +1056,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* #859: a day can hold several weigh-ins. Which one is the day's number for the chart, the
             trend, the goal line, widgets, Wrapped and the Coach (lib/weigh-ins.js). Morning is the
             default: it is the weight worth comparing from one day to the next. */}
-        {on('body') && <SelectRow icon="scale" iconTint="var(--teal)" title={t('Daily weigh-in value')}
+        {part('body', 'weight') && <SelectRow icon="scale" iconTint="var(--teal)" title={t('Daily weigh-in value')}
           value={dailyModeOf(S)} onChange={v => update(s => { s.bwDaily = v; settleAll(s, v) })}
           options={[
             { value: 'first', label: t('Morning (first)'), subtitle: t('Before breakfast is the one to compare.') },
@@ -1096,18 +1098,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
         </Row>
         {/* Your own streak flame and freeze, over either choice above (components/StreakIconPicker.jsx). */}
-        {on('motivation') && <StreakIconRows />}
+        {part('motivation', 'streak') && <StreakIconRows />}
         {/* How forgiving the streak is (components/StreakRule.jsx), from the moment it is saved. */}
-        {on('motivation') && <StreakRuleRow />}
-        {on('motivation') && <StreakExcuseRow />}
+        {part('motivation', 'streak') && <StreakRuleRow />}
+        {part('motivation', 'streak') && <StreakExcuseRow />}
         {/* Sauna, ice bath, massage (lib/recovery-sessions.js): off, they leave the streak alone. */}
-        {on('motivation') && <Row icon="sparkles" iconTint="var(--teal)" title={t('Recovery counts for the streak')}
+        {part('motivation', 'streak') && <Row icon="sparkles" iconTint="var(--teal)" title={t('Recovery counts for the streak')}
           subtitle={t('A week with only a sauna or an ice bath keeps the streak going.')}>
           <Switch aria-label={t('Recovery counts for the streak')} checked={S.recoveryStreak === true}
             onChange={v => update(s => { if (v) s.recoveryStreak = true; else delete s.recoveryStreak })} />
         </Row>}
         {/* Runs, rides, matches (lib/activities.js): off, they leave the streak alone. */}
-        {on('motivation') && <Row icon="figureRun" iconTint="var(--blue)" title={t('Sport counts for the streak')}
+        {part('motivation', 'streak') && <Row icon="figureRun" iconTint="var(--blue)" title={t('Sport counts for the streak')}
           subtitle={t('A week with only a run or a padel match keeps the streak going.')}>
           <Switch aria-label={t('Sport counts for the streak')} checked={S.activityStreak === true}
             onChange={v => update(s => { if (v) s.activityStreak = true; else delete s.activityStreak })} />
@@ -1152,7 +1154,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
           subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
-        {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
+        {part('body', 'weight') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
           <Switch checked={S.showWeightCard !== false} onChange={v => update(s => { s.showWeightCard = v })} />
         </Row>}
@@ -1165,7 +1167,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
             no Stats progress; badges already earned stay on the shelf. */}
         {/* Monday's Your week and the 1st's Your month (lib/recap.js). On unless switched off. */}
-        {on('motivation') && <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
+        {part('motivation', 'recaps') && <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
           subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
           <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
         </Row>}
@@ -1174,7 +1176,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('The muscle with the most room left this week, under your streak.')}>
           <Switch aria-label={t('Weekly sets on Home')} checked={S.homeMuscleSets === true} onChange={v => update(s => { s.homeMuscleSets = v })} />
         </Row>
-        {on('motivation') && <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
+        {part('motivation', 'challenges') && <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
           <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />
         </Row>}
@@ -1728,8 +1730,8 @@ function MobileReminderCard({ S, update, toast }) {
 // Your year in openGym (lib/wrapped.js): one notification on Dec 1, on unless switched off here.
 // The phone plans it itself; a server sends it as a web push. Off takes back a planned one.
 function WrappedNotifyRow({ S, update }) {
-  // Part of the Motivation module (Settings → Modules): with it off there is nothing to notify.
-  if (!isOn(S, 'motivation')) return null
+  // Part of the Motivation module (Settings → Modules): with it or its year off there is nothing to notify.
+  if (!partOn(S, 'motivation', 'year')) return null
   const on = S.wrappedNotify !== false
   return <Row icon="sparkles" iconTint="var(--acc)" title={t('Your year in openGym')} subtitle={t('One notification on 1 December when your year is ready.')}>
     <Switch checked={on} onChange={() => update(s => { s.wrappedNotify = !on })} aria-label={t('Your year in openGym')} />

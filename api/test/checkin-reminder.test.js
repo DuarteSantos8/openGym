@@ -57,3 +57,19 @@ test('api/checkin-copy.js matches the frontend strings (node scripts/build-check
   assert.equal(fs.readFileSync(path.join(API, 'checkin-copy.js'), 'utf8'), await buildCheckinCopy(),
     'api/checkin-copy.js is out of date: run node scripts/build-checkin-copy.mjs in api/');
 });
+
+test('an item pauses while Body or its part is off, and is back with it', () => {
+  const S = {
+    checkinReminder: { on: true, time: '07:30', items: { weight: { every: 7 }, waist: { every: 14 }, 'pair:bp': { every: 7 }, photos: { every: 28 }, 'other:x': { every: 7 } } },
+    bodyweight: [{ d: '2026-11-01', w: 80 }],
+    measurements: [{ d: '2026-10-25', waist: 82, bpSys: 120, bpDia: 80, other: [{ id: 'x', value: 0 }] }],
+    workouts: [{ d: '2026-10-11', media: [photo] }],
+  };
+  const at = modules => dueKeys({ ...S, modules }, '2026-11-08').sort();
+  assert.deepEqual(at({ 'body.weight': false }), ['photos', 'waist']);
+  assert.deepEqual(at({ 'body.photos': false }), ['waist', 'weight']);
+  assert.deepEqual(at({ 'body.measurements': false }), ['photos', 'weight']);
+  assert.deepEqual(dueKeys({ ...S, modules: { 'body.measurements': false } }, '2026-11-10'), []);
+  assert.deepEqual(at({ body: false, 'body.weight': true }), []);
+  assert.deepEqual(at({ body: true, 'body.weight': true, 'body.photos': true }), ['photos', 'waist', 'weight']);
+});
