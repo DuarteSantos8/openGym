@@ -20,9 +20,8 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md), and so do
 [a Mac at home with Tailscale](SELF_HOSTING_MAC.md) and [Kubernetes](SELF_HOSTING_KUBERNETES.md). Short answers to common questions are in the [FAQ](FAQ.md).
 
-> **Rather not run a server?** [ElfHosted](https://store.elfhosted.com/product/opengym/?utm_source=opengym&utm_medium=docs&utm_campaign=opengym-sponsor) hosts openGym for you: a managed instance built from
-> our tagged releases, unmodified, with a 7-day trial. ElfHosted sponsors openGym. Everything below
-> is for running it yourself, which stays free and fully supported.
+> **Rather not run a server?** [ElfHosted](https://store.elfhosted.com/product/opengym/?utm_source=opengym&utm_medium=docs&utm_campaign=opengym-sponsor) runs your own private openGym for you, and your data stays yours. There's no Docker or HTTPS to set up, the AI coach is included with no API key needed, and updates and daily backups are handled for you. Try it with a $1, 7-day trial.
+> ElfHosted sponsors openGym. Everything below is for running it yourself, which stays free and fully supported.
 
 ## 1. Run it locally (5 minutes)
 

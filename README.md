@@ -357,10 +357,8 @@ the same way.
 
 ## Sponsors
 
-**[ElfHosted](https://store.elfhosted.com/product/opengym/?utm_source=opengym&utm_medium=github&utm_campaign=opengym-sponsor)** sponsors openGym and runs it for you if you'd rather not
-self-host: a managed openGym instance, built from our tagged releases with no code changes, with a
-7-day trial. Your own server stays the first-class way to run openGym, and other hosts are welcome
-to offer it too (it's AGPL).
+**[ElfHosted](https://store.elfhosted.com/product/opengym/?utm_source=opengym&utm_medium=github&utm_campaign=opengym-sponsor)** sponsors openGym. If you'd rather not run a server, ElfHosted
+runs your own private openGym for you, and your data stays yours. There's no Docker or HTTPS to set up, the AI coach is included with no API key needed, and updates and daily backups are handled for you. Try it with a $1, 7-day trial.
 
 Sponsoring keeps the lights on. It buys no say in what openGym does: nothing is held back for
 sponsors, and nothing ever will be.
