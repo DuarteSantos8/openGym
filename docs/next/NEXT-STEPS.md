@@ -20,7 +20,8 @@ Epic status:
 - **Closed by decision:**
   - EP14-T01: upstream already has local inference (ADR 0007).
   - EP08 and EP11: NO-GO after the spikes.
-- **Needs a person:** EP16-T03 (devices), the EP14 real-model run, translation review.
+- **Done (2026-11-15):** emulated devices (WebKit/Chromium phone profiles in CI) and the EP14 real-model run.
+- **Needs a person:** EP16-T03 on real phones, translation review.
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
 
 ## 2. Merging (only the owner merges)
@@ -34,8 +35,8 @@ Epic status:
 | # | Task | Who | Done when |
 |---|---|---|---|
 | 1 | ~~Enable Actions; confirm `Tests / tests-ok` (with `e2e`) is green~~ **Done 2026-11-15**: run 43719512582 on `main`, all jobs green | owner | ✅ |
-| 2 | **EP16-T03 devices:** native builds on one iPhone (iOS 15.5+) and one mid-range Android. Check camera permission and squat count (EP10), 3D map open/turn/close and WebGL context loss (EP12), battery and heat over 10 minutes. | owner + agent | Matrix in `docs/next/devices.md` |
-| 3 | **EP14 real-model run:** Ollama + a 7–8B Q4 model, coach provider "OpenAI-compatible endpoint" at `127.0.0.1:11434/v1`, nothing else configured (ADR 0007) | owner | Model, latency and whether the plan validated, recorded in `devices.md` |
+| 2 | **EP16-T03 devices.** **Emulated: done** (WebKit iPhone 13 + Pixel 7 projects in CI, `devices.md`). Still open: real phones, using the checklist in `devices.md` | owner | Real-phone table in `devices.md` filled |
+| 3 | ~~EP14 real-model run~~ **Done 2026-11-15**: qwen2.5:7b on the RTX 4070. Test ok, review validated in 8 s, ask in 2.8 s; reasoning quality weak (`devices.md`) | — | ✅ |
 | 4 | **EP10-T04 second movement** (hinge or lunge). Record 3 short clips on a phone first, then tune thresholds against them. | agent, after clips exist | Rep count within ±1 on the 3 clips |
 | 5 | Report the upstream a11y baseline (`a11y.md`: label-in-name on /home, /plan, /stats) to DuarteSantos8/openGym. Drop each baseline entry once fixed upstream. | owner | Upstream issue linked in `a11y.md` |
 | 6 | Manual a11y: VoiceOver/TalkBack, 200 % text, keyboard through the 3D map list | owner | Notes in `a11y.md` |

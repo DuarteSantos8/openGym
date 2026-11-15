@@ -20,7 +20,8 @@ test('Progression lab: Simulate produces a session table and writes nothing', as
   expect(await page.evaluate(() => localStorage.getItem('gym_state_v1'))).toBe(before)
 })
 
-test('Movement lab: the camera starts on this device and stops again', async ({ page }) => {
+test('Movement lab: the camera starts on this device and stops again', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit', 'WebKit has no fake camera; covered on a real iPhone (docs/next/devices.md)')
   await enterAsGuest(page)
   await openRoute(page, '/addons')
   const lab = page.locator('section[aria-labelledby="addon-move-title"]')
