@@ -8,9 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 
-const where = vi.hoisted(() => ({ loc: { pathname: '/home' } }))
+const where = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: () => {} }))
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => () => {},
+  useNavigate: () => where.nav,
   useLocation: () => where.loc,
 }))
 
@@ -102,19 +102,31 @@ describe('the tab icons and labels', () => {
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: Date.now() - 754_000 } }, false) })
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     const start = tabs()[2]
-    expect(start.className).toBe('start')
+    // The live bar shows here: the centre is as plain as the other four, no raised disc.
+    expect(start.className).toBe('')
+    expect(host.querySelector('.cir')).toBeNull()
+    expect(host.querySelector('#tabbar .start')).toBeNull()
+    expect(start.dataset.tour).toBe('start')
     expect(label(start)).toBe('Workout')
     expect(start.getAttribute('aria-label')).toBeNull()
     expect(host.querySelector('.tab-time')).toBeNull()
+    const go = vi.fn()
+    where.nav = go
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    act(() => { tabs()[2].click() })
+    expect(go).toHaveBeenCalledWith('/workout')
+    where.nav = () => {}
 
     // on the workout screen it is lit; a past workout being edited keeps its own name
     where.loc = { pathname: '/workout' }
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     expect(tabs()[2].className).toBe('start on')
+    expect(host.querySelector('.cir')).not.toBeNull()
     expect(label(tabs()[2])).toBe('Workout')
     where.loc = { pathname: '/home' }
     act(() => { useStore.getState().update(s => { s.active.editingWorkoutId = 'w1' }, false) })
     expect(label(tabs()[2])).toBe('Edit workout')
+    expect(tabs()[2].className).toBe('start')
   })
 })
 

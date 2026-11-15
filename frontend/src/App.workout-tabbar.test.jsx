@@ -51,14 +51,15 @@ it('a running workout has no tab bar and no bottom action; minimized, the tabs a
   await act(async () => host.querySelector('.whdr button[aria-label="Minimize"]').click())
   expect(host.querySelectorAll('#tabbar button')).toHaveLength(5)
   // The live bar carries the clock now; the centre tab is plain and just reads "Workout".
-  expect(host.querySelector('#tabbar .start').textContent).toBe('Workout')
+  expect(host.querySelector('#tabbar [data-tour="start"]').textContent).toBe('Workout')
+  expect(host.querySelector('#tabbar .start')).toBeNull()
   // The fold: the page it returns to plays the fold entrance (no view transition).
   expect(host.querySelector('.page[data-path="/home"]').classList.contains('vfold')).toBe(true)
   // The rise: the live bar opens the workout, whose page plays the rise entrance.
   await act(async () => host.querySelector('#livebar').click())
   expect(host.querySelector('.page[data-path="/workout"]').classList.contains('vrise')).toBe(true)
   await act(async () => host.querySelector('.whdr button[aria-label="Minimize"]').click())
-  await act(async () => host.querySelector('#tabbar .start').click())
+  await act(async () => host.querySelector('#tabbar [data-tour="start"]').click())
   // A plain tab tap: no rise entrance.
   expect(host.querySelector('.page[data-path="/workout"]').classList.contains('vrise')).toBe(false)
   expect(host.querySelector('#tabbar')).toBeNull()
