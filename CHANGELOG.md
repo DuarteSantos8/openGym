@@ -7,6 +7,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 ## Unreleased
 
 - Fixed: "Add several at once" for a weight stack or your dumbbells opens the full keyboard on the phone. The number pad had no Return and no space, so on an iPhone a list could not be typed, only pasted (#926, thanks @johannes1984).
+- Android: when pairing cannot reach your server, the message now ends with what the phone itself said (no such host, an untrusted certificate, connection refused), so "my browser opens it" has an answer (#870).
 
 ## v1.4.5 (2026-11-14)
 
