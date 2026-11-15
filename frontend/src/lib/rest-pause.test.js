@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   restPausePlan, restPauseAim, restPauseToSave, burstReps, restPauseRow, readRestPauseRow,
-  judgeRestPause, restPausePrescription, RP_BURSTS_MAX, RP_DELOAD_AFTER,
+  judgeRestPause, restPausePrescription, restPauseAimUnderProgramme, RP_BURSTS_MAX, RP_DELOAD_AFTER,
 } from './rest-pause.js'
 import { buildPlannedEntry } from './session-start.js'
 import { readSession, nextPrescription } from './progression.js'
@@ -179,6 +179,23 @@ describe('restPausePrescription: double progression on the total', () => {
     const out = restPausePrescription({ ...args([session(22, 22, 10, { weight: 0 })]), weightless: true })
     expect(out).toMatchObject({ kind: 'hold', rpAim: 22 })
     expect(out.why[0]).toMatch(/add weight or try a harder variation/)
+  })
+})
+
+describe('restPauseAimUnderProgramme', () => {
+  it('keeps the policy\'s total under a programme week', () => {
+    expect(restPauseAimUnderProgramme(rp(), { kind: 'up', weight: 60, rpAim: 21 }, { weight: 60 }, 60)).toBe(21)
+  })
+
+  it('a %1RM that keeps the weight where it was keeps the total at the top instead of starting over', () => {
+    expect(restPauseAimUnderProgramme(rp(), { kind: 'up', weight: 62.5, rpAim: 20 }, { weight: 60 }, 60)).toBe(22)
+    // the programme's weight went up after all: the total starts over
+    expect(restPauseAimUnderProgramme(rp(), { kind: 'up', weight: 62.5, rpAim: 20 }, { weight: 65 }, 60)).toBe(20)
+  })
+
+  it('a deload week, or a plan with no aim, starts from the plan', () => {
+    expect(restPauseAimUnderProgramme(rp(), { kind: 'up', weight: 60, rpAim: 21 }, { weight: 55 }, 60, true)).toBeNull()
+    expect(restPauseAimUnderProgramme(rp(), { kind: 'up', weight: 62.5 }, { weight: 60 }, 60)).toBeNull()
   })
 })
 

@@ -17,6 +17,7 @@ import { todayISO } from './format.js'
 import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-unit.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
 import { withSessionTarget } from './session-targets.js'
+import { restPauseAimUnderProgramme } from './rest-pause.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -137,10 +138,12 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   const policyKind = plan.kind
   if (slot) {
     // A programme sets the load and the effort; a rest-pause total is the routine's, like its reps,
-    // so it keeps climbing through the programme's weeks (a deload week starts it again).
-    const rpAim = plan.rpAim
+    // so it keeps climbing through the programme's weeks (lib/rest-pause.js).
+    const policyPlan = plan
     plan = programmePlan(st, cfg, plan, slot, step)
-    if (rpAim != null && !slot.deload) plan = { ...plan, rpAim }
+    const lastW = policyPlan.rpAim != null ? sessionsFor(st, cfg.id, cfg, routine?.id).filter(x => x.mode === 'reps').at(-1)?.weight : null
+    const rpAim = restPauseAimUnderProgramme(cfg, policyPlan, plan, lastW, slot.deload)
+    if (rpAim != null) plan = { ...plan, rpAim }
   }
   const planReps = !startsFromLast(st) || plan.kind === 'programme'
   const fromLast = !noProg && policyKind === 'off' && !slot && startsFromLast(st)

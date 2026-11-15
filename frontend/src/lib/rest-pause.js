@@ -200,3 +200,19 @@ export function restPausePrescription({ cfg, sessions = [], policy, harder, easi
   }
   return { policy, kind: 'hold', ...keepW, rpAim: aim, why: ['Short of {0} reps in total last time. Same target again.', aim] }
 }
+
+/**
+ * The total a session aims for when a programme (lib/programmes.js) takes over the prescription.
+ * The total is the routine's, like its reps, so the policy's aim stands, with one exception: the
+ * policy started the total over because the weight was to go up, and the programme's own weight
+ * (a %1RM) kept it where it was. Then nothing went up, and the total stays at the top.
+ * A deload week starts the total again (null: the row falls back to the plan's start).
+ */
+export function restPauseAimUnderProgramme(cfg, policyPlan, programmePlan, lastW, deload = false) {
+  if (deload || policyPlan?.rpAim == null) return null
+  const plan = restPausePlan(cfg)
+  if (!plan) return null
+  const raised = policyPlan.kind === 'up' && policyPlan.weight != null && policyPlan.weight !== lastW
+  if (raised && lastW > 0 && programmePlan?.weight === lastW) return plan.totalMax
+  return policyPlan.rpAim
+}
