@@ -891,6 +891,24 @@ h4.sec{
 .tag.sidepill>span,.tag.sidepill::before,.tag.sidepill::after{grid-area:1/1}
 .tag.sidepill::before{content:attr(data-l);visibility:hidden}
 .tag.sidepill::after{content:attr(data-r);visibility:hidden}
+/* On a phone the word has no room: a timed per-side row is number, pill, two steppers, play and
+   tick, and with "Sinistra" or "Esquerda" in the pill it ran 40 to 60 px off the screen at
+   360 px (#1239). There the pill is the one-letter badge a reps L/R row wears (.sidetag), and
+   the row takes that row's tighter gap. The word stays for a screen reader. */
+.tag.sidepill>.short{display:none}
+@media (max-width:480px){
+  .tag.sidepill{width:24px;height:24px;padding:0;align-items:center;border-radius:8px;font-size:var(--fs-caption2);font-weight:600}
+  .tag.sidepill::before,.tag.sidepill::after{display:none}
+  .tag.sidepill>.short{display:block}
+  .tag.sidepill>.full{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
+@media (max-width:400px){
+  .setrow.timed:has(>.sidepill){gap:4px}
+  .setrow.timed>.sidepill{width:20px}
+}
+@media (max-width:340px){
+  .setrow.timed:has(>.sidepill){gap:3px}
+}
 /* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
    the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
 .fav-star{color:var(--gold-ink);font-size:var(--fs-caption);display:inline-block;margin-inline-end:5px;vertical-align:-1px}
