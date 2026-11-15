@@ -251,7 +251,9 @@ jobs:
       # image places them.
       - name: Stage exercise pictures
         run: node scripts/catalogue/stage-photos.mjs frontend/dist
-      - name: Playwright Chromium
+      # Chromium for the default and Pixel 7 projects, WebKit for the iPhone 13 project
+      # (Safari's engine: the iOS app is a WKWebView).
+      - name: Playwright Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
         working-directory: frontend
       - name: End-to-end and accessibility tests
