@@ -20,6 +20,7 @@ import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeig
 import { isBackoff } from './backoff.js'
 import { dbLoadOf } from './dumbbells.js'
 import { MAX_TRIPLE_SETS } from './progression.js'
+import { RP_BURSTS_MAX } from './rest-pause.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount, routineCount } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
 import { convertStep, convertWeight } from './units.js'
@@ -218,7 +219,14 @@ function cleanIntensifier(x) {
     return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20), ...(x.on === 'last' ? { on: 'last' } : {}) }
   }
   if (type === 'restpause') {
-    return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec: Math.max(5, Math.round(Number(x.restSec)) || 15) }
+    const restSec = Math.max(5, Math.round(Number(x.restSec)) || 15)
+    // The shape since 1.4.6 (lib/rest-pause.js); a plan file from before keeps its `totalReps`,
+    // which the app still reads, rather than being guessed into the new one without its reps.
+    if (Number(x.total) > 0) {
+      const total = Math.max(1, Math.round(Number(x.total)))
+      return { type, bursts: Math.min(RP_BURSTS_MAX, Math.max(1, Math.round(Number(x.bursts)) || 1)), total, totalMax: Math.max(total, Math.round(Number(x.totalMax)) || 0), restSec }
+    }
+    return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec }
   }
   if (type === 'cluster') {
     return { type, size: Math.min(50, Math.max(1, Math.round(Number(x.size)) || 3)), restSec: Math.max(5, Math.round(Number(x.restSec)) || 20) }
@@ -483,7 +491,9 @@ function intensifierLine(x) {
     ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%` + (intens.on === 'last' ? ` (${t('last set')})` : '')
     : intens.type === 'cluster'
       ? `${t('Cluster')} ${intens.size} ${t('reps')} · ${intens.restSec}s`
-      : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`
+      : intens.total
+        ? `${t('Rest-pause')} ${intens.total}${intens.totalMax > intens.total ? '–' + intens.totalMax : ''} ${t('reps')} · ${intens.bursts}× ${intens.restSec}s`
+        : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`
 }
 
 // Group consecutive exercises sharing a superset id into rendered units.

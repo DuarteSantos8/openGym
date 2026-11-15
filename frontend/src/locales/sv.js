@@ -526,10 +526,8 @@ export default {
   'Rest-pause': 'Rest-pause',
   'Drops': 'Drops',
   'Weight drop (%)': 'Viktminskning (%)',
-  'Rest-pause reps': 'Rest-pause-reps',
   'Rest-pause rest': 'Rest-pause-vila',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'Varje set blir ett dropset: efter huvudsetet följer {0} drop utan vila, vart och ett cirka {1} % lättare.',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'Varje set blir rest-pause: {0} reps först, sedan {1} till uppdelade i korta burstar med {2} s vila före varje, ungefär halverat varje gång.',
   'Cardio logged': 'Konditionspass loggat',
   'Discard workout?': 'Släng passet?',
   'The sets you logged in this session will be lost.': 'De set du loggat under passet går förlorade.',
@@ -1370,7 +1368,6 @@ export default {
   'Add session note': 'Lägg till passanteckning',
   'Edit session note': 'Redigera passanteckning',
   'How the session went as a whole.': 'Hur passet gick som helhet.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'Rest-pause tränas alltid som ett uppvärmningsset med det här antalet reps, följt av ett arbetsset med rest-pause. ”Set” används inte här.',
 
   // --- AI Coach on the phone ---
   '(saved)': '(sparad)',
@@ -5944,4 +5941,18 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "Bursts",
+  "Total reps": "Reps totalt",
+  "Weight up at": "Mer vikt vid",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "Ett rest-pause-set: {0} reps, sedan {1} bursts med {2} s vila före varje, {3} reps totalt.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "Varje rent pass lägger till en rep i summan. Vid {0} går vikten upp och summan börjar om på {1}.",
+  "Reach that total and the weight goes up next time.": "Nå den summan så går vikten upp nästa gång.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "Rest-pause tränas som ett set: ett aktiveringsset med det här antalet reps, följt av dess bursts. ”Set” används inte här.",
+  "New rest-pause plan, so starting from {0} reps in total.": "Ny rest-pause-plan, så du börjar på {0} reps totalt.",
+  "{0} reps in total last time. Go for {1} at the same weight.": "{0} reps totalt förra gången. Sikta på {1} med samma vikt.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "{0} reps totalt, toppen av ditt intervall. Dags att lägga på vikt eller prova en svårare variant.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "Rest-pause-målet nått. Vikten går upp och summan börjar om på {0}.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "Under rest-pause-målet {0} gånger i rad. Lite lättare vikt, och summan börjar om på {1}.",
+  "Short of {0} reps in total last time. Same target again.": "Under {0} reps totalt förra gången. Samma mål igen.",
 }

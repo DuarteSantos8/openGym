@@ -9,8 +9,9 @@ import { setBandsOf, bandText, bandsOf, usesBands, withSetBands, nextBandsUp } f
 import { hasIncline, inclineFrom, hasLevel, levelFrom } from './incline.js'
 import { isCardio, isHold, isDistanceEx, isOneLimb, isBodyweightEq, isAssisted, betterWeight, exerciseOf } from './exercises.js'
 import { barWeightFor } from './bar.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, splitClusterReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitClusterReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
+import { restPausePlan, restPauseAim, restPauseRow } from './rest-pause.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
 import { isRungRow, rungWeight } from './warmup-snap.js'
 import { bodyLoadOf, bodyweightFor, countsBodyweight } from './bw-load.js'
@@ -203,7 +204,7 @@ function setLabelText(id, s, cfg, speedUnit) {
   // down. The row's own `r` is the total either way; a planned set's bursts already add up to it
   // (applyIntensifierPlan), while bursts added live sit on top of the activation set, which is
   // then whatever the total leaves over. Bursts that do not fit the total are not shown.
-  // A planned set has no activation set in front of its bursts, so when its total was raised by
+  // A planned set from before 1.4.6 has no activation set in front of its bursts, so when its total was raised by
   // hand the leftover is not one: "60×2+6+3+2+1" read as a two-rep set nobody did. Which burst
   // the extra reps belong to is not known, so such a set reads as its plain total. The target
   // says whether the exercise plans rest-pause; a row added to it and given bursts live can only
@@ -213,7 +214,9 @@ function setLabelText(id, s, cfg, speedUnit) {
     const reps = side.r || 0
     const bursts = clustersOf(side).map(b => Number(b?.r) || 0).filter(r => r > 0)
     const sum = bursts.reduce((a, b) => a + b, 0)
-    if (!bursts.length || sum > reps || (planned && sum !== reps)) return reps
+    // A row planned since 1.4.6 carries its activation set in `r` (`act`, lib/rest-pause.js), so
+    // what the bursts leave over is that set, however it was edited.
+    if (!bursts.length || sum > reps || (planned && side.act !== true && sum !== reps)) return reps
     return (reps > sum ? [reps - sum, ...bursts] : bursts).join('+')
   }
   // One side's "weight×reps" (or bodyweight "reps" / "+belt × reps"), the same shape a whole
@@ -902,33 +905,26 @@ function shapeRows(sets, cfg, grid) {
       return withDrops(s)
     })
   }
-  // Rest-pause trains as exactly two sets, not one per configured `sets` count: a warm-up at
-  // the exercise's own configured reps, then a single rest-pause work set. Doing the full
-  // activation+bursts protocol several times over isn't how rest-pause is actually trained, so
-  // planning it replaces whatever buildSets built rather than stamping each of those rows.
-  // The work row's own reps are the total — not "the total minus what the bursts carry" — and
-  // the bursts are the full breakdown of that same total, down to the last one. See
-  // extraVolumeOf/setTonnage: a rest-pause row's `clusters` are read-only display of how `r`
-  // breaks down, not extra volume on top of it, precisely so this doesn't double-count.
-  const restSec = Math.max(5, cfg.intensifier.restSec || 15)
-  const totalReps = Math.max(1, Math.round(cfg.intensifier.totalReps) || 1)
-  const w = (sets.find(s => !isWarmupRow(s)) || sets[0] || {}).w || 0
-  const warmup = { w, r: Math.max(1, Math.round(cfg.reps) || 1), done: false, phase: 'warmup' }
-  const work = { w, r: totalReps, done: false, type: 'restpause', clusters: splitBurstReps(totalReps).map(r => ({ r, restSec })) }
-  if (isPerSide(cfg)) {
-    const source = sets.find(s => !isWarmupRow(s))
-    // The configured total covers both limbs; preserve it even for an odd total.
-    const side = (key, reps) => ({
-      w: source?.sides?.[key]?.w ?? w, r: reps, done: false, type: 'restpause',
-      clusters: splitBurstReps(reps).map(r => ({ r, restSec })),
-    })
-    // The warm-up is per side too (issue #60): makeSideSet splits its combined reps the same
-    // way the work set's are, each side its own reps/weight/effort and done tick.
-    return [makeSideSet(warmup), syncSideAggregate({ ...work, sides: {
-      L: side('L', Math.ceil(totalReps / 2)), R: side('R', Math.floor(totalReps / 2)),
-    } })]
-  }
-  return [warmup, work]
+  // Rest-pause trains as one work set, not one per configured `sets` count: the activation set
+  // and its bursts, all on one row (lib/rest-pause.js). Doing the whole protocol several times
+  // over isn't how rest-pause is trained, so planning it replaces whatever buildSets built
+  // rather than stamping each of those rows. Warm-ups stay what they are (the generated or saved
+  // block goes in front later, session-start.js), so only the work rows are replaced.
+  // The row's own reps are the total, activation set included, and `clusters` are the bursts
+  // alone; see extraVolumeOf/setTonnage: the bursts are a breakdown of `r`, not volume on top.
+  // `cfg.intensifier.aim` is the total this session asks for (the progression's, stamped on the
+  // target); without one, where the plan starts.
+  const plan = restPausePlan(cfg)
+  const aim = restPauseAim(cfg)
+  const warm = sets.filter(isWarmupRow)
+  const source = sets.find(s => !isWarmupRow(s)) || {}
+  const w = source.w || 0
+  const row = restPauseRow(plan, aim, w, {
+    perSide: isPerSide(cfg),
+    sideW: isSideSet(source) ? { L: source.sides.L?.w, R: source.sides.R?.w } : null,
+    sides: (base, L, R) => syncSideAggregate({ ...base, sides: { L, R } }),
+  })
+  return [...warm, row]
 }
 export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
   let v = 0

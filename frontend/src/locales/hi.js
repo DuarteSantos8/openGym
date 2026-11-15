@@ -518,10 +518,8 @@ export default {
   'Rest-pause': 'रेस्ट-पॉज़',
   'Drops': 'ड्रॉप्स',
   'Weight drop (%)': 'वज़न में कमी (%)',
-  'Rest-pause reps': 'रेस्ट-पॉज़ रेप्स',
   'Rest-pause rest': 'रेस्ट-पॉज़ आराम',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'हर सेट ड्रॉप सेट बन जाता है: मुख्य सेट के बाद बिना आराम के {0} ड्रॉप, हर एक लगभग {1}% हल्का।',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'हर सेट रेस्ट-पॉज़ बन जाता है: शुरुआत में {0} रेप्स, फिर छोटे बर्स्ट में बंटे {1} और, हर एक से पहले {2} सेकंड आराम, हर बार लगभग आधा होते हुए।',
   'Cardio logged': 'कार्डियो दर्ज हुआ',
   'Discard workout?': 'वर्कआउट छोड़ें?',
   'The sets you logged in this session will be lost.': 'इस सत्र में दर्ज किए सेट खो जाएँगे।',
@@ -1351,7 +1349,6 @@ export default {
   'Add session note': 'सत्र का नोट जोड़ें',
   'Edit session note': 'सत्र का नोट बदलें',
   'How the session went as a whole.': 'पूरा सत्र कैसा रहा।',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'रेस्ट-पॉज़ हमेशा इसी रेप्स संख्या पर एक वार्म-अप सेट और फिर एक रेस्ट-पॉज़ वर्क सेट के रूप में होता है। “सेट” का यहाँ उपयोग नहीं होता।',
 
   // --- AI Coach on the phone ---
   '(saved)': '(सहेजी गई)',
@@ -5897,4 +5894,18 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "बर्स्ट",
+  "Total reps": "कुल रेप्स",
+  "Weight up at": "वज़न बढ़ेगा",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "एक रेस्ट-पॉज़ सेट: {0} रेप्स, फिर {1} बर्स्ट, हर एक से पहले {2} सेकंड आराम, कुल {3} रेप्स।",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "हर पूरा सेशन कुल में एक रेप जोड़ता है। {0} पर वज़न बढ़ता है और कुल फिर से {1} से शुरू होता है।",
+  "Reach that total and the weight goes up next time.": "यह कुल पूरा करें और अगली बार वज़न बढ़ेगा।",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "रेस्ट-पॉज़ एक सेट के रूप में होता है: इन्हीं रेप्स पर एक एक्टिवेशन सेट, फिर उसके बर्स्ट। \"सेट\" यहाँ इस्तेमाल नहीं होता।",
+  "New rest-pause plan, so starting from {0} reps in total.": "नया रेस्ट-पॉज़ प्लान, इसलिए कुल {0} रेप्स से शुरुआत।",
+  "{0} reps in total last time. Go for {1} at the same weight.": "पिछली बार कुल {0} रेप्स। उसी वज़न पर {1} का लक्ष्य रखें।",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "कुल {0} रेप्स, आपकी रेंज का सबसे ऊपर। अब वज़न बढ़ाने या कठिन वेरिएशन आज़माने का समय है।",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "रेस्ट-पॉज़ लक्ष्य पूरा हुआ। वज़न बढ़ता है और कुल फिर से {0} से शुरू होता है।",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "लगातार {0} बार रेस्ट-पॉज़ लक्ष्य से कम। हल्का वज़न, और कुल फिर से {1} से शुरू होता है।",
+  "Short of {0} reps in total last time. Same target again.": "पिछली बार कुल {0} रेप्स से कम रहे। वही लक्ष्य फिर से।",
 }

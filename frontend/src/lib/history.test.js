@@ -135,20 +135,28 @@ describe('setLabel', () => {
 
   // A planned rest-pause set has no activation set: its bursts are the whole total. Raising the
   // total by hand put the difference in front, "60×2+6+3+2+1", a two-rep set nobody did.
-  it('reads a planned rest-pause set whose total was raised by hand as its plain total', () => {
+  it('reads a pre-1.4.6 planned rest-pause set whose total was raised by hand as its plain total', () => {
+    // Rows planned before the activation set lived in the row: the bursts were the whole total.
     const cfg = { id: LIFT, reps: 8, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } }
-    const [, work] = applyIntensifierPlan([{ w: 60, r: 8, done: false }], cfg)
+    const work = { w: 60, r: 12, done: false, type: 'restpause', clusters: [6, 3, 2, 1].map(r => ({ r, restSec: 15 })) }
     expect(setLabel(LIFT, work, cfg)).toBe('60×6+3+2+1')
     expect(setLabel(LIFT, { ...work, r: 14 }, cfg)).toBe('60×14')
     // a burst added live on top keeps the breakdown, since the total follows it
     const added = { ...work, r: 13, clusters: [...work.clusters, { r: 1, restSec: 15 }] }
     expect(setLabel(LIFT, added, cfg)).toBe('60×6+3+2+1+1')
-    // per side, each side is read the same way
-    const sided = applyIntensifierPlan([makeSideSet({ w: 20, r: 8, done: false })], { ...cfg, side: true })[1]
-    sided.sides.L = { ...sided.sides.L, r: sided.sides.L.r + 2 }
-    expect(setLabel(LIFT, sided, { ...cfg, side: true })).toBe('L 20×8 · R 20×3+2+1')
     // an unplanned set with live bursts still shows its activation set first
     expect(setLabel(LIFT, { w: 60, r: 16, type: 'restpause', clusters: [{ r: 4 }, { r: 2 }] }, { id: LIFT, reps: 10 })).toBe('60×10+4+2')
+  })
+
+  it('reads a planned rest-pause set as its activation set and its bursts, however it was edited', () => {
+    const cfg = { id: LIFT, reps: 10, intensifier: { type: 'restpause', bursts: 3, total: 20, totalMax: 24, restSec: 15 } }
+    const [work] = applyIntensifierPlan([{ w: 60, r: 10, done: false }], cfg)
+    expect(setLabel(LIFT, work, cfg)).toBe('60×10+4+3+3')
+    // two more reps on the activation set raise the total, and it reads as such
+    expect(setLabel(LIFT, { ...work, r: 22 }, cfg)).toBe('60×12+4+3+3')
+    // per side, each side is read the same way
+    const [sided] = applyIntensifierPlan([makeSideSet({ w: 20, r: 10, done: false })], { ...cfg, side: true })
+    expect(setLabel(LIFT, sided, { ...cfg, side: true })).toBe('L 20×5+2+2+1 · R 20×5+2+2+1')
   })
 
   it('reads drops and bursts of a bodyweight exercise as reps and added weight', () => {
@@ -823,28 +831,40 @@ describe('applyIntensifierPlan', () => {
     ])
   })
 
-  it('collapses rest-pause to exactly two rows regardless of how many sets were configured: a warm-up at the exercise\'s own reps, then one work set whose own reps ARE the total', () => {
-    const sets = [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }]
-    const out = applyIntensifierPlan(sets, { reps: 8, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } })
+  it('plans rest-pause as one work row whatever the sets say: the activation set plus its bursts, the row\'s own reps the total', () => {
+    const sets = [{ w: 60, r: 10, done: false }, { w: 60, r: 10, done: false }, { w: 60, r: 10, done: false }]
+    const out = applyIntensifierPlan(sets, { reps: 10, intensifier: { type: 'restpause', bursts: 3, total: 20, restSec: 15 } })
     expect(out).toEqual([
-      { w: 60, r: 8, done: false, phase: 'warmup' },
-      { w: 60, r: 12, done: false, type: 'restpause', clusters: [{ r: 6, restSec: 15 }, { r: 3, restSec: 15 }, { r: 2, restSec: 15 }, { r: 1, restSec: 15 }] },
+      { w: 60, r: 20, done: false, type: 'restpause', act: true, clusters: [{ r: 4, restSec: 15 }, { r: 3, restSec: 15 }, { r: 3, restSec: 15 }] },
     ])
-    // the full breakdown always sums back to the row's own r — no reps missing, none double-counted
-    expect(out[1].clusters.reduce((sum, c) => sum + c.r, 0)).toBe(out[1].r)
+    // what the bursts leave over is the activation set, at the exercise's own reps
+    expect(out[0].r - out[0].clusters.reduce((sum, c) => sum + c.r, 0)).toBe(10)
   })
 
-  it('the warm-up reps come from the exercise\'s own configured reps, not the rest-pause total', () => {
-    const sets = [{ w: 60, r: 8, done: false }]
-    const out = applyIntensifierPlan(sets, { reps: 5, intensifier: { type: 'restpause', totalReps: 20, restSec: 15 } })
-    expect(out[0]).toEqual({ w: 60, r: 5, done: false, phase: 'warmup' })
+  it('keeps the warm-up rows in front, and the activation set is never one of them', () => {
+    const sets = [{ w: 30, r: 5, done: false, phase: 'warmup' }, { w: 60, r: 8, done: false }]
+    const out = applyIntensifierPlan(sets, { reps: 8, intensifier: { type: 'restpause', bursts: 2, total: 12, restSec: 15 } })
+    expect(out[0]).toEqual({ w: 30, r: 5, done: false, phase: 'warmup' })
+    expect(out).toHaveLength(2)
+    expect(out[1]).toMatchObject({ w: 60, r: 12, type: 'restpause', act: true })
   })
 
-  it('carries the prescribed weight from the built sets onto both new rows', () => {
+  it('reads a pre-1.4.6 plan (totalReps past the activation set) as that many halving bursts and that total', () => {
+    const out = applyIntensifierPlan([{ w: 60, r: 8, done: false }], { reps: 8, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } })
+    // 12 past the activation set halved into 6+3+2+1: four bursts, 20 in total
+    expect(out).toEqual([{ w: 60, r: 20, done: false, type: 'restpause', act: true, clusters: [3, 3, 3, 3].map(r => ({ r, restSec: 15 })) }])
+  })
+
+  it('builds the total a progression aimed for', () => {
+    const out = applyIntensifierPlan([{ w: 60, r: 8, done: false }], { reps: 8, intensifier: { type: 'restpause', bursts: 3, total: 14, totalMax: 18, aim: 16, restSec: 20 } })
+    expect(out[0].r).toBe(16)
+    expect(out[0].clusters).toEqual([{ r: 3, restSec: 20 }, { r: 3, restSec: 20 }, { r: 2, restSec: 20 }])
+  })
+
+  it('carries the prescribed weight from the built sets onto the work row', () => {
     const sets = [{ w: 82.5, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { reps: 8, intensifier: { type: 'restpause', totalReps: 4, restSec: 15 } })
     expect(out[0].w).toBe(82.5)
-    expect(out[1].w).toBe(82.5)
   })
 
   it('never touches a warm-up row', () => {

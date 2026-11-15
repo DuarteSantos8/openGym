@@ -140,21 +140,18 @@ describe('a unilateral warm-up is logged per side', () => {
   })
 })
 
-// Rest-pause builds its own two rows (one warm-up, one rest-pause work set). On a unilateral
-// exercise the warm-up is per side too, the same as the work set below it.
-describe('a unilateral rest-pause warm-up is per side', () => {
-  it('splits the activation warm-up across L and R', () => {
-    const sets = [{ w: 60, r: 8, done: false, sides: { L: { w: 60, r: 4, done: false }, R: { w: 60, r: 4, done: false } } }]
-    const out = applyIntensifierPlan(sets, { reps: 8, side: true, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } })
+// Rest-pause trains as one work row, the activation set and its bursts (lib/rest-pause.js). On a
+// unilateral exercise that row is per side, and a warm-up in front of it stays per side too.
+describe('a unilateral rest-pause set is per side', () => {
+  it('keeps a per-side warm-up in front and splits the work row across L and R', () => {
+    const warmRow = { w: 30, r: 8, done: false, phase: 'warmup', sides: { L: { w: 30, r: 4, done: false }, R: { w: 30, r: 4, done: false } } }
+    const sets = [warmRow, { w: 60, r: 8, done: false, sides: { L: { w: 60, r: 4, done: false }, R: { w: 60, r: 4, done: false } } }]
+    const out = applyIntensifierPlan(sets, { reps: 8, side: true, intensifier: { type: 'restpause', bursts: 2, total: 12, restSec: 15 } })
     expect(out).toHaveLength(2)
-    const warm = out[0]
-    expect(warm.phase).toBe('warmup')
-    expect(isSideSet(warm)).toBe(true)
-    expect(warm.sides.L.r + warm.sides.R.r).toBe(8)
-    expect(warm.sides.L.w).toBe(60)
-    expect(warm.sides.R.w).toBe(60)
-    // the work set stays per side with its bursts on each limb
+    expect(out[0]).toBe(warmRow)
     expect(isSideSet(out[1])).toBe(true)
     expect(out[1].type).toBe('restpause')
+    expect(out[1].sides.L).toMatchObject({ w: 60, r: 6, act: true, clusters: [{ r: 1, restSec: 15 }, { r: 1, restSec: 15 }] })
+    expect(out[1].sides.R.r).toBe(6)
   })
 })

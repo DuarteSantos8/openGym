@@ -91,6 +91,13 @@ describe('what survives a shared plan', () => {
       .toEqual({ type: 'restpause', totalReps: 12, restSec: 15 })
   })
 
+  it('carries a rest-pause plan with its bursts and total range, held to what trains', () => {
+    expect(roundTrip({ intensifier: { type: 'restpause', bursts: 3, total: 16, totalMax: 20, restSec: 20, aim: 18 } }).intensifier)
+      .toEqual({ type: 'restpause', bursts: 3, total: 16, totalMax: 20, restSec: 20 })
+    expect(roundTrip({ intensifier: { type: 'restpause', bursts: 99, total: 16, totalMax: 2, restSec: 1 } }).intensifier)
+      .toEqual({ type: 'restpause', bursts: 6, total: 16, totalMax: 16, restSec: 5 })
+  })
+
   it('carries planned warm-ups', () => {
     expect(roundTrip({ warmupSets: 3 }).warmupSets).toBe(3)
   })

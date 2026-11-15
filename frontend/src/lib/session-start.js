@@ -73,7 +73,7 @@ function withCarriedWarmups(rows, carry, mode, cfg, step, floor) {
  * warm-up count would stop mattering. Rows from before the `edited` mark read as automatic.
  */
 function carriedWarmups(st, cfg, routine, noProg) {
-  if (!startsFromLast(st) || noProg || cfg.intensifier?.type === 'restpause') return null
+  if (!startsFromLast(st) || noProg) return null
   // A slot that chose its warm-ups (auto, its own saved rows, none) keeps that choice: today's
   // tweaks are today's, and the saved block is not overwritten by them (#525).
   if (warmupModeOf(cfg)) return null
@@ -156,12 +156,15 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined, why: undefined }
   const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
-  const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
+  // A rest-pause prescription aims at a total (lib/rest-pause.js): the row is built for it, and
+  // the session's target carries it, so reading the session back judges it by that total.
+  const aimed = plan.rpAim != null && cfg.intensifier ? { ...cfg, intensifier: { ...cfg.intensifier, aim: plan.rpAim } } : cfg
+  const shaped = applyIntensifierPlan(rows, aimed, dropGrid(st, cfg))
   const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
     : block ? withWarmupBlock(st, cfg, shaped, { grid: dropGrid(st, cfg), floor: barFloor(st, cfg.id), unit: st.unit })
       : shaped
   // `preType` is the routine editor's memory of the slot before a routine type (lib/circuit.js), not a target.
-  const { preType: _preType, ...target } = cfg
+  const { preType: _preType, ...target } = aimed
   // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
   if (meaning !== 'as') target.dbLoad = meaning
   if (plan.weight != null) target.weight = plan.weight

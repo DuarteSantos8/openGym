@@ -97,6 +97,7 @@ import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-work
 import { reopenRecord, saveReopen, readReopen, canReopen, applyReopen } from './lib/forgotten-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork, isSideSet } from './lib/workout-model.js'
+import { restPausePlan, restPauseToSave, RP_BURSTS_MAX } from './lib/rest-pause.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
 import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine } from './lib/session-routines.js'
@@ -2506,13 +2507,22 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
 // The drop-set and rest-pause fields take what is typed and are held to their minimums once left
 // (Stepper `min`). A sheet saved from a field still being typed in is held to them here: an
 // emptied weight drop would otherwise plan drops at the same weight.
-const intensifierToSave = x => (x.type === 'dropset'
+// A rest-pause plan is saved in its current shape (lib/rest-pause.js), held against the activation
+// set's `reps`; one saved before 1.4.6 is upgraded here, a session's `aim` never kept.
+const intensifierToSave = (x, reps) => (x.type === 'dropset'
   ? (({ on, ...rest }) => ({ ...rest, count: Math.max(1, Math.round(x.count) || 0), pct: Math.max(5, Number(x.pct) || 0), ...(on === 'last' ? { on: 'last' } : {}) }))(x)
   : x.type === 'restpause'
-    ? { ...x, totalReps: Math.max(1, Math.round(x.totalReps) || 0), restSec: Math.max(5, Number(x.restSec) || 0) }
+    ? restPauseToSave({ reps, intensifier: x })
     : x.type === 'cluster'
       ? { ...x, size: Math.max(1, Math.round(x.size) || 0), restSec: Math.max(5, Number(x.restSec) || 0) }
       : x)
+
+// A new rest-pause plan for an exercise of `reps`: three bursts of two, four reps to climb before
+// the weight goes up, and the profile's rest-pause rest.
+const newRestPause = (reps, restSec) => {
+  const activation = Math.max(1, Math.round(reps) || 8)
+  return { type: 'restpause', bursts: 3, total: activation + 6, totalMax: activation + 10, restSec: Math.max(5, Math.round(restSec) || 15) }
+}
 
 // The slot's planned substitutes: listed, each removable, and added from the library (the same
 // picker a swap uses, opened on the same muscle). A tap on one sets its own plan (#978): sets,
@@ -2641,6 +2651,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // Freestyle follows no rule unless one is picked on the exercise mid-workout (ProgressionFields, #910).
   const ruleless = !routine && (freestyle === 'add' || (freestyle === 'edit' && !c.prog))
   const progressionPolicy = ruleless ? 'off' : policyFor({ ...c, id: ex.id }, routine, mode, profileRule(st))
+  // The rest-pause plan as it reads now (lib/rest-pause.js), and a change to one of its numbers:
+  // the others come along as they read, so a plan saved before 1.4.6 is upgraded on first touch.
+  const rpPlan = mode === 'reps' ? restPausePlan(c) : null
+  const setRestPause = patch => setC(x => ({ ...x, intensifier: { ...restPauseToSave(x), ...patch } }))
   const progressionStepInvalid = !progressionStepIsValid(progressionStepOf(c, mode, ex, st.unit), progressionPolicy, c.backoff === true && backoffOffered(c, mode, ex, bw), weightlessOf(c, mode, bw))
   const activePolicy = progressionPolicy
   // Both climb a range: the flat Reps stepper gives way to "Reps from" / "Reps up to".
@@ -2767,7 +2781,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       if (bw && !(out.weight > 0) && c.repsMax > 0) out.repsMax = Math.max(reps, Math.round(c.repsMax))
       // Every set in this exercise becomes a drop-set/rest-pause (buildSets stamps the rows) —
       // decided here, in the plan, not re-decided live each time you train it.
-      if (!list.length && c.intensifier && c.intensifier.type) out.intensifier = intensifierToSave(c.intensifier)
+      if (!list.length && c.intensifier && c.intensifier.type) out.intensifier = intensifierToSave(c.intensifier, out.reps)
       // Back-off sets: written only when on, and only where the sheet offered them.
       if (c.backoff === true && backoffOffered(out, 'reps', ex, bw) && isBackoff({ ...out, backoff: true })) out.backoff = true
       // A pyramid has its own Max set for this, so the flag is not offered (or kept) there.
@@ -2830,8 +2844,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             one value. */}
         {!bw && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </> : <>
-        {/* Rest-pause always trains as exactly two rows — a warm-up at this rep count, then one
-            rest-pause work set — so "Sets" has nothing left to mean and only invites a mismatch. */}
+        {/* Rest-pause trains as one set, the activation set and its bursts (lib/rest-pause.js), so
+            "Sets" has nothing left to mean and only invites a mismatch. */}
         {c.intensifier?.type !== 'restpause' && !pyramid &&
           <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
         {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} max={PLAN_MAX_REPS} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
@@ -2889,12 +2903,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       {!bw && <div className="small dim" style={{ marginTop: 4 }}>{t('A set left at 0 weight starts from that set’s weight last time.')}</div>}
     </div>}
     {c.intensifier?.type === 'restpause' && <div className="small dim" style={{ marginTop: -10, marginBottom: 18 }}>
-      {t('Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.')}
+      {t('Rest-pause trains as one set: an activation set at these reps, then its bursts. "Sets" isn’t used here.')}
     </div>}
     {/* Planned warm-ups: the session used to start at the work weight and you added every
-        warm-up by hand, every time. Rest-pause is excluded because it builds its own warm-up
-        row, and cardio because an interval plan has no load to ramp. */}
-    {!cardio && c.intensifier?.type !== 'restpause' && <WarmupConfig st={st} ex={ex} c={c} setC={setC} />}
+        warm-up by hand, every time. Cardio is excluded because an interval plan has no load to
+        ramp. A rest-pause set warms up like any lift: its activation set is the work set. */}
+    {!cardio && <WarmupConfig st={st} ex={ex} c={c} setC={setC} />}
     {mode === 'time' && !bw && <div className="small dim" style={{ marginBottom: 18 }}>
       {t('A timer runs while you hold the set. Leave the weight at 0 for bodyweight holds.')}
     </div>}
@@ -3102,13 +3116,14 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             ...x,
             intensifier: !v ? undefined : v === 'dropset'
               ? { type: 'dropset', count: x.intensifier?.count || 1, pct: x.intensifier?.pct || 20 }
-              // The activation set's own reps are whatever "Reps" above already says — a
-              // rest-pause plan only adds two new numbers: the total extra reps wanted past
-              // it, and the rest between the bursts that total gets split into.
+              // The activation set's own reps are whatever "Reps" above already says. A
+              // rest-pause plan adds how many bursts follow it, the total wanted from the whole
+              // set, the total at which the weight goes up, and the rest before each burst
+              // (lib/rest-pause.js). A new one starts at two reps a burst and four to climb.
               : v === 'cluster'
                 // A cluster set keeps the sets and reps above and cuts each set into mini-sets.
                 ? { type: 'cluster', size: x.intensifier?.size || Math.min(3, Math.max(1, Math.round((x.reps || 9) / 3))), restSec: x.intensifier?.type === 'cluster' ? x.intensifier.restSec : 20 }
-                : { type: 'restpause', totalReps: x.intensifier?.totalReps || x.reps || 8, restSec: x.intensifier?.restSec || st.restPauseSec || 15 },
+                : x.intensifier?.type === 'restpause' ? restPauseToSave(x) : newRestPause(x.reps, st.restPauseSec),
           }))}
           options={[
             { value: '', label: t('None') },
@@ -3129,12 +3144,20 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, pct: v } }))} />
         </div>
       </>}
-      {c.intensifier?.type === 'restpause' && <div className="row cfgrow" style={{ marginBottom: 8 }}>
-        <Stepper label={t('Rest-pause reps')} value={c.intensifier.totalReps} step={1} min={1} decimal={false}
-          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, totalReps: v } }))} />
-        <Stepper label={t('Rest (s)')} value={c.intensifier.restSec} step={5} min={5} decimal={false}
-          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, restSec: v } }))} />
-      </div>}
+      {rpPlan && <>
+        <div className="row cfgrow" style={{ marginBottom: 8 }}>
+          <Stepper label={t('Bursts')} value={c.intensifier.bursts ?? rpPlan.bursts} step={1} min={1} max={RP_BURSTS_MAX} decimal={false}
+            onChange={v => setRestPause({ bursts: v })} />
+          <Stepper label={t('Rest (s)')} value={c.intensifier.restSec ?? rpPlan.restSec} step={5} min={5} decimal={false}
+            onChange={v => setRestPause({ restSec: v })} />
+        </div>
+        <div className="row cfgrow" style={{ marginBottom: 8 }}>
+          <Stepper label={t('Total reps')} value={c.intensifier.total ?? rpPlan.total} step={perSide ? 2 : 1} min={rpPlan.activation + rpPlan.bursts} decimal={false}
+            onChange={v => setRestPause({ total: v, totalMax: Math.max(v, rpPlan.totalMax) })} />
+          <Stepper label={t('Weight up at')} value={c.intensifier.totalMax ?? rpPlan.totalMax} step={perSide ? 2 : 1} min={rpPlan.total} decimal={false}
+            onChange={v => setRestPause({ totalMax: v })} />
+        </div>
+      </>}
       {c.intensifier?.type === 'cluster' && <div className="row cfgrow" style={{ marginBottom: 8 }}>
         <Stepper label={t('Reps per mini-set')} value={c.intensifier.size} step={1} min={1} decimal={false}
           onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, size: v } }))} />
@@ -3148,7 +3171,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             : t('Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.', c.intensifier.count, c.intensifier.pct)
           : c.intensifier.type === 'cluster'
             ? t('Every set becomes a cluster: {0} reps in mini-sets of {1}, {2}s to breathe between them, same weight throughout. Heavy work with fewer ugly last reps.', c.reps || 0, c.intensifier.size, c.intensifier.restSec)
-          : t('Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.', c.reps || 0, c.intensifier.totalReps, c.intensifier.restSec)}
+          : <>
+            {t('One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.', rpPlan.activation, rpPlan.bursts, rpPlan.restSec, rpPlan.total)}
+            {progressionPolicy !== 'off' && ' ' + (rpPlan.totalMax > rpPlan.total
+              ? t('Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.', rpPlan.totalMax, rpPlan.total)
+              : t('Reach that total and the weight goes up next time.'))}
+          </>}
       </div>}
     </>}
     {/* What a dumbbell weight means, for this routine's slot (cfg.dbLoad). Picking what the

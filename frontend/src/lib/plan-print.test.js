@@ -96,6 +96,11 @@ describe('planPrintHTML prints the exercise as it is prescribed', () => {
     expect(body).toContain('1 × 8 · 40 kg · Rest-pause 20 reps')
   })
 
+  it('prints a rest-pause plan with its total range, bursts and rest', () => {
+    const S3 = { ...S2, routines: [{ ...S2.routines[0], ex: [{ id: '0027', sets: 1, mode: 'reps', reps: 8, weight: 40, intensifier: { type: 'restpause', bursts: 3, total: 14, totalMax: 18, restSec: 20 } }] }] }
+    expect(text(planPrintHTML(S3, '', { routineId: 'r' }))).toContain('Rest-pause 14–18 reps · 3× 20s')
+  })
+
   it('translates the body part and keeps it a separate word', () => {
     _setLangState('de', { chest: 'Brust', 'Drop-set': 'Dropsatz' }, null, null)
     const html = planPrintHTML(S2, '', { routineId: 'r' })

@@ -518,10 +518,8 @@ export default {
   'Rest-pause': 'Rest-pause',
   'Drops': 'Drop sets',
   'Weight drop (%)': 'Baisse de poids (%)',
-  'Rest-pause reps': 'Répétitions rest-pause',
   'Rest-pause rest': 'Repos rest-pause',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': 'Chaque série devient un drop-set : après la série principale, {0} baisse(s) sans repos, chacune environ {1}% plus légère.',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': 'Chaque série devient rest-pause : {0} répétitions pour commencer, puis {1} de plus réparties en courtes rafales, avec {2}s de repos avant chacune, en diminuant environ de moitié à chaque fois.',
   'Cardio logged': 'Cardio noté',
   'Discard workout?': 'Abandonner la séance ?',
   'The sets you logged in this session will be lost.': 'Les séries notées dans cette session seront perdues.',
@@ -1351,7 +1349,6 @@ export default {
   'Add session note': 'Ajouter une note de séance',
   'Edit session note': 'Modifier la note de séance',
   'How the session went as a whole.': 'Comment la séance s’est passée dans l’ensemble.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'Le rest-pause s’entraîne toujours comme une série d’échauffement à ce nombre de reps, puis une série de travail rest-pause. « Séries » n’est pas utilisé ici.',
 
   // --- AI Coach on the phone ---
   '(saved)': '(enregistrée)',
@@ -5897,4 +5894,18 @@ export default {
   "Preview on": "Aperçu sur",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "Rafales",
+  "Total reps": "Reps au total",
+  "Weight up at": "Poids en hausse à",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "Une série rest-pause : {0} reps, puis {1} rafales avec {2} s de repos avant chacune, {3} reps au total.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "Chaque séance réussie ajoute une rep au total. À {0}, le poids augmente et le total repart de {1}.",
+  "Reach that total and the weight goes up next time.": "Atteins ce total et le poids augmente la prochaine fois.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "Le rest-pause se fait en une seule série : une série d’activation à ce nombre de reps, puis ses rafales. « Séries » n’est pas utilisé ici.",
+  "New rest-pause plan, so starting from {0} reps in total.": "Nouveau plan rest-pause, donc départ à {0} reps au total.",
+  "{0} reps in total last time. Go for {1} at the same weight.": "{0} reps au total la dernière fois. Vise {1} au même poids.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "{0} reps au total, le haut de ta fourchette. Il est temps d’ajouter du poids ou d’essayer une variante plus dure.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "Objectif rest-pause atteint. Le poids augmente et le total repart de {0}.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "Objectif rest-pause manqué {0} fois de suite. Un poids plus léger, et le total repart de {1}.",
+  "Short of {0} reps in total last time. Same target again.": "Il manquait des reps pour atteindre {0} au total la dernière fois. Même objectif.",
 }

@@ -518,10 +518,8 @@ export default {
   'Rest-pause': 'Rest-pause',
   'Drops': 'Serie zniżkujące',
   'Weight drop (%)': 'Redukcja ciężaru (%)',
-  'Rest-pause reps': 'Powtórzenia rest-pause',
   'Rest-pause rest': 'Odpoczynek rest-pause',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': { one: 'Każda seria staje się serią zniżkującą: po serii głównej bez odpoczynku {0} redukcja ciężaru, każda o ok. {1}%.', few: 'Każda seria staje się serią zniżkującą: po serii głównej bez odpoczynku {0} redukcje ciężaru, każda o ok. {1}%.', many: 'Każda seria staje się serią zniżkującą: po serii głównej bez odpoczynku {0} redukcji ciężaru, każda o ok. {1}%.', other: 'Każda seria staje się serią zniżkującą: po serii głównej bez odpoczynku {0} redukcji ciężaru, każda o ok. {1}%.' },
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': { one: 'Każda seria staje się serią rest-pause: najpierw {0} powtórzenie, potem kolejne {1} w krótkich seriach, z {2} s odpoczynku przed każdą, za każdym razem mniej więcej o połowę mniej.', few: 'Każda seria staje się serią rest-pause: najpierw {0} powtórzenia, potem kolejne {1} w krótkich seriach, z {2} s odpoczynku przed każdą, za każdym razem mniej więcej o połowę mniej.', many: 'Każda seria staje się serią rest-pause: najpierw {0} powtórzeń, potem kolejne {1} w krótkich seriach, z {2} s odpoczynku przed każdą, za każdym razem mniej więcej o połowę mniej.', other: 'Każda seria staje się serią rest-pause: najpierw {0} powtórzeń, potem kolejne {1} w krótkich seriach, z {2} s odpoczynku przed każdą, za każdym razem mniej więcej o połowę mniej.' },
   'Cardio logged': 'Cardio zapisane',
   'Discard workout?': 'Odrzucić trening?',
   'The sets you logged in this session will be lost.': 'Serie zapisane w tej sesji zostaną utracone.',
@@ -1351,7 +1349,6 @@ export default {
   'Add session note': 'Dodaj notatkę do sesji',
   'Edit session note': 'Edytuj notatkę do sesji',
   'How the session went as a whole.': 'Jak przebiegła cała sesja.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': 'Rest-pause zawsze trenuje się jako jedną serię rozgrzewkową o tej liczbie powtórzeń i jedną serię roboczą rest-pause. „Serie” nie są tu używane.',
 
   // --- AI Coach on the phone ---
   '(saved)': '(zapisany)',
@@ -5897,4 +5894,18 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "Mini-serie",
+  "Total reps": "Powtórzenia łącznie",
+  "Weight up at": "Więcej ciężaru przy",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "Jedna seria rest-pause: {0} powt., potem {1} mini-serie z {2} s odpoczynku przed każdą, łącznie {3} powt.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "Każda czysta sesja dodaje jedno powtórzenie do sumy. Przy {0} ciężar rośnie, a suma zaczyna się znów od {1}.",
+  "Reach that total and the weight goes up next time.": "Zrób tę sumę, a następnym razem ciężar wzrośnie.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "Rest-pause trenuje się jako jedną serię: serię aktywacyjną o tej liczbie powtórzeń, a potem jej mini-serie. „Serie” nie są tu używane.",
+  "New rest-pause plan, so starting from {0} reps in total.": "Nowy plan rest-pause, więc start od {0} powtórzeń łącznie.",
+  "{0} reps in total last time. Go for {1} at the same weight.": "Ostatnio łącznie {0} powtórzeń. Teraz {1} z tym samym ciężarem.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "Łącznie {0} powtórzeń, górna granica zakresu. Czas dodać ciężar albo spróbować trudniejszej wersji.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "Cel rest-pause osiągnięty. Ciężar rośnie, a suma zaczyna się znów od {0}.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "Poniżej celu rest-pause {0} razy z rzędu. Mniejszy ciężar, a suma zaczyna się znów od {1}.",
+  "Short of {0} reps in total last time. Same target again.": "Ostatnio zabrakło do {0} powtórzeń łącznie. Ten sam cel jeszcze raz.",
 }

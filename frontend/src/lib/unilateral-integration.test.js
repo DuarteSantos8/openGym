@@ -84,19 +84,20 @@ describe('unilateral sets across session boundaries', () => {
     expect(workoutVolume({ entries: [entry({ ...s, phase: 'warmup' })] })).toBe(0)
   })
 
-  it.each([12, 13])('preserves L/R rows and total reps for a planned rest-pause of %i', totalReps => {
-    const [warmup, work] = applyIntensifierPlan([setSideField(row(), 'R', 'w', 30)], {
-      side: true, reps: 16, intensifier: { type: 'restpause', totalReps, restSec: 15 },
+  it.each([20, 21])('preserves L/R rows and total reps for a planned rest-pause of %i', total => {
+    const [work, ...rest] = applyIntensifierPlan([setSideField(row(), 'R', 'w', 30)], {
+      side: true, reps: 16, intensifier: { type: 'restpause', bursts: 2, total, restSec: 15 },
     })
-    expect(warmup.phase).toBe('warmup')
+    expect(rest).toEqual([])
     expect(isSideSet(work)).toBe(true)
-    expect(work.r).toBe(totalReps)
+    expect(work.r).toBe(total)
     for (const side of [work.sides.L, work.sides.R]) {
-      expect(side.clusters.reduce((n, c) => n + c.r, 0)).toBe(side.r)
+      // each side: half the activation set, then its bursts, all inside its own r
+      expect(side.r - side.clusters.reduce((n, c) => n + c.r, 0)).toBe(8)
       expect(side.clusters.every(c => c.restSec === 15)).toBe(true)
     }
     expect(work.sides.L.w).toBe(20)
     expect(work.sides.R.w).toBe(30)
-    expect(workoutVolume({ entries: [entry(done(work))] })).toBe(20 * Math.ceil(totalReps / 2) + 30 * Math.floor(totalReps / 2))
+    expect(workoutVolume({ entries: [entry(done(work))] })).toBe(20 * Math.ceil(total / 2) + 30 * Math.floor(total / 2))
   })
 })

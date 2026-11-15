@@ -83,11 +83,12 @@ export const ownRowsOf = cfg => (Array.isArray(cfg?.warmupRows) ? cfg.warmupRows
 /**
  * Where an exercise's warm-ups come from: `{ kind: 'auto' | 'own' | 'count' | 'none', rows? }`.
  * 'count' is the older ramp-set number (history.js buildSets builds it as it always has).
- * Cardio, rest-pause (it builds its own warm-up row) and a timed hold have no generated block.
+ * Cardio and a timed hold have no generated block. Rest-pause has one like any lift: its activation
+ * set is the work set now (lib/rest-pause.js), not a warm-up row of its own.
  */
 export function warmupSource(S, cfg) {
   const mode = modeOf(cfg)
-  if (mode === 'cardio' || cfg?.intensifier?.type === 'restpause') return { kind: 'none' }
+  if (mode === 'cardio') return { kind: 'none' }
   const own = warmupModeOf(cfg)
   if (own === 'none') return { kind: 'none' }
   if (own === 'own') {

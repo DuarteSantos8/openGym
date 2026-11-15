@@ -518,10 +518,8 @@ export default {
   'Rest-pause': '레스트포즈',
   'Drops': '드롭 횟수',
   'Weight drop (%)': '중량 감소(%)',
-  'Rest-pause reps': '레스트포즈 반복 수',
   'Rest-pause rest': '레스트포즈 휴식',
   'Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.': '모든 세트가 드롭세트가 됩니다: 메인 세트 후 휴식 없이 {0}회 드롭, 매번 약 {1}%씩 가벼워집니다.',
-  'Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.': '모든 세트가 레스트포즈가 됩니다: 처음 {0}회를 하고, 짧은 버스트로 나눠 {1}회를 더 하며, 매번 전에 {2}초씩 쉬고 매번 대략 절반으로 줄어듭니다.',
   'Cardio logged': '유산소 기록됨',
   'Discard workout?': '운동을 버릴까요?',
   'The sets you logged in this session will be lost.': '이 세션에서 기록한 세트가 사라집니다.',
@@ -1351,7 +1349,6 @@ export default {
   'Add session note': '운동 메모 추가',
   'Edit session note': '운동 메모 편집',
   'How the session went as a whole.': '이번 운동이 전체적으로 어땠는지.',
-  'Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.': '레스트포즈는 항상 이 횟수의 워밍업 세트 하나와 레스트포즈 작업 세트 하나로 진행돼요. 여기서는 ‘세트’를 사용하지 않아요.',
 
   // --- AI Coach on the phone ---
   '(saved)': '(저장됨)',
@@ -5897,4 +5894,18 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // --- rest-pause: bursts, a total that climbs, then the weight (1.4.6) ---
+  "Bursts": "버스트",
+  "Total reps": "총 횟수",
+  "Weight up at": "무게 올리는 기준",
+  "One rest-pause set: {0} reps, then {1} bursts with {2}s rest before each, {3} reps in total.": "레스트포즈 한 세트: {0}회, 이어서 버스트 {1}번, 각 버스트 전 {2}초 휴식, 총 {3}회.",
+  "Each clean session adds a rep to the total. At {0} the weight goes up and the total starts again at {1}.": "깔끔하게 끝낸 세션마다 총합에 1회가 더해져요. {0}회가 되면 무게가 오르고 총합은 다시 {1}회부터 시작해요.",
+  "Reach that total and the weight goes up next time.": "이 총합을 채우면 다음번에 무게가 올라가요.",
+  "Rest-pause trains as one set: an activation set at these reps, then its bursts. \"Sets\" isn’t used here.": "레스트포즈는 한 세트로 진행돼요: 이 횟수의 활성화 세트 하나, 그다음 버스트들. 여기서는 ‘세트’를 사용하지 않아요.",
+  "New rest-pause plan, so starting from {0} reps in total.": "새 레스트포즈 계획이라 총 {0}회부터 시작해요.",
+  "{0} reps in total last time. Go for {1} at the same weight.": "지난번 총 {0}회. 같은 무게로 {1}회에 도전해요.",
+  "{0} reps in total, the top of your range. Time to add weight or try a harder variation.": "총 {0}회, 범위의 최상단이에요. 무게를 올리거나 더 어려운 변형을 시도할 때예요.",
+  "Rest-pause target reached. The weight goes up and the total starts again at {0}.": "레스트포즈 목표 달성. 무게가 오르고 총합은 다시 {0}회부터 시작해요.",
+  "Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.": "레스트포즈 목표에 {0}번 연속 못 미쳤어요. 무게를 줄이고 총합은 다시 {1}회부터 시작해요.",
+  "Short of {0} reps in total last time. Same target again.": "지난번 총 {0}회에 못 미쳤어요. 같은 목표로 다시 해요.",
 }
