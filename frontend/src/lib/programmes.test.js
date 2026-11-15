@@ -149,6 +149,14 @@ describe('running a programme', () => {
     expect(programmeStatus(s, '2026-10-25').week).toBe(2)
   })
 
+  it('follows a Saturday week start', () => {
+    const s = state({ weekStart: 6 })
+    saveProgramme(s, block())
+    startProgramme(s, 'P', '2026-10-23')   // a Friday
+    expect(programmeStatus(s, '2026-10-23').week).toBe(1)
+    expect(programmeStatus(s, '2026-10-24').week).toBe(2)
+  })
+
   it('a pause holds the week, and resuming moves the start on by the weeks it lasted', () => {
     const s = state()
     saveProgramme(s, block())
@@ -159,6 +167,16 @@ describe('running a programme', () => {
     expect(s.programme.pausedOn).toBeUndefined()
     expect(programmeStatus(s, '2026-11-12')).toMatchObject({ week: 2, paused: false })
     expect(programmeStatus(s, '2026-11-16').week).toBe(3)
+  })
+
+  it('with a Saturday week start, a pause over the Friday-to-Saturday change holds the week', () => {
+    const s = state({ weekStart: 6 })
+    saveProgramme(s, block())
+    startProgramme(s, 'P', '2026-10-24')   // a Saturday
+    pauseProgramme(s, '2026-10-30')
+    resumeProgramme(s, '2026-10-31')
+    expect(s.programme.startedOn).toBe('2026-10-31')
+    expect(programmeStatus(s, '2026-10-31').week).toBe(1)
   })
 
   it('repeats from week 1 with a heavier %1RM, keeping your old plan to go back to', () => {

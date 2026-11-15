@@ -14,7 +14,7 @@ import { copyText } from '../lib/clipboard.js'
 import { useUI } from '../store/useUI.js'
 import { activeGym, gymLabel, switchGym } from '../lib/gym-inventory.js'
 import { startTour, TUTORIALS, TUTORIAL_COPY, tutorialDone } from '../lib/tour.js'
-import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
+import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, SATURDAY, DAYN, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
@@ -153,9 +153,9 @@ export function SettingsRoute() {
 // The tutorials' rows in About & updates.
 const TUTORIAL_ICON = { plan: 'calendar', custom: 'plusCircle', edit: 'pencil', backup: 'folder' }
 
-// "Mon" / "Sun" in the app's language, for the Plan & schedule row's preview.
+// "Mon" / "Sun" / "Sat" in the app's language, for the Plan & schedule row's preview.
 const shortWeekday = day => {
-  try { return new Intl.DateTimeFormat(dateLocale(), { weekday: 'short' }).format(new Date(2024, 0, day === 0 ? 7 : 1)) } catch { return day === 0 ? 'Sun' : 'Mon' }
+  try { return new Intl.DateTimeFormat(dateLocale(), { weekday: 'short' }).format(new Date(2024, 0, day || 7)) } catch { return DAYN[day].slice(0, 3) }
 }
 
 // Running as an installed app (home-screen web app or the phone app): no install tip then.
@@ -500,7 +500,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     workout: () => (S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer')) + ' · ' + layoutLabel,
     alerts: () => [S.sound ? t('Sound') : null, canVibrate && S.vibrate !== false ? t('Vibrate') : null, S.timerFlash ? t('Flash') : null].filter(Boolean).join(' · ') || t('Silent'),
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
-    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
+    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S)),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
@@ -934,11 +934,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           value={weekTargetOf(S) || 0} onChange={v => update(s => { s.weekTarget = v || null })}
           options={[{ value: 0, label: t('Off'), subtitle: t('No weekly countdown on Home.') },
             ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ value: n, label: String(n) }))]} />}
-        {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
-            week" total follow it. Stored as a getDay() index (see lib/format.js). */}
+        {/* Monday, Sunday or Saturday: the Plan list, the Home strip, the calendar grid and
+            every "this week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>
           <Segmented className="seg-inline"
-            options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }]}
+            options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }, { value: SATURDAY, label: t('Saturday') }]}
             value={weekStartOf(S)} onChange={v => update(s => { s.weekStart = v })} />
         </Row>
       </Section>

@@ -29,7 +29,7 @@
 // "Your last session" would have opened with, and the reps are the routine's. An RPE target is
 // shown with it and leaves the weight to the policy. A deload week without a %1RM takes the policy's
 // weight down by the usual deload factor, and none of its sessions count for progression.
-import { isoOf, todayISO, uid, weekKey, MONDAY, SUNDAY } from './format.js'
+import { isoOf, todayISO, uid, weekKey, weekStartOf } from './format.js'
 import { queueOf } from './queue.js'
 import { REST, saveRotation, startPass, stopPass, chooseFixedWeek } from './rotation.js'
 import { best1RM } from './onerm.js'
@@ -182,7 +182,6 @@ export function stepWeek(week, step = REPEAT_BUMP) {
 
 /* ------------------------------- the running programme ------------------------------- */
 
-const wsOf = S => (S?.weekStart === SUNDAY ? SUNDAY : MONDAY)
 const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000)
 const weeksBetween = (a, b, ws) => Math.round(daysBetween(weekKey(a, ws), weekKey(b, ws)) / 7)
 const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
@@ -198,7 +197,7 @@ export function programmeStatus(S, today = todayISO()) {
   if (!isMap(run) || !isISO(run.startedOn)) return null
   const p = programmeById(S, run.id)
   if (!p) return null
-  const ws = wsOf(S)
+  const ws = weekStartOf(S)
   const at = isISO(run.pausedOn) && run.pausedOn < today ? run.pausedOn : today
   const week = Math.max(1, weeksBetween(run.startedOn, at, ws) + 1)
   const weeks = p.weeks.length
@@ -265,7 +264,7 @@ export function pauseProgramme(s, today = todayISO()) {
 export function resumeProgramme(s, today = todayISO()) {
   const run = s.programme
   if (!isMap(run) || !isISO(run.pausedOn)) return
-  const gap = Math.max(0, weeksBetween(run.pausedOn, today, wsOf(s)))
+  const gap = Math.max(0, weeksBetween(run.pausedOn, today, weekStartOf(s)))
   const { pausedOn, ...rest } = run
   s.programme = { ...rest, startedOn: addDays(run.startedOn, gap * 7) }
 }

@@ -38,12 +38,13 @@ describe('streak parity: server and app', () => {
     expect(streakWeeks(S, '2026-11-05')).toBe(streakInfo(S, '2026-11-05').current)
   })
 
-  it('agrees on 400 random profiles (weeks, gaps, rule switches, Sunday starts, future dates)', () => {
+  it('agrees on 400 random profiles (weeks, gaps, rule switches, Sunday and Saturday starts, future dates)', () => {
     const rand = rng(146)
     const rules = ['off', 'gentle', 'generous']
     for (let n = 0; n < 400; n++) {
       const today = day('2026-11-05', -Math.floor(rand() * 400))
-      const S = { weekStart: rand() < 0.3 ? 0 : 1, workouts: [] }
+      const ws = rand()
+      const S = { weekStart: ws < 0.2 ? 0 : ws < 0.4 ? 6 : 1, workouts: [] }
       const span = 10 + Math.floor(rand() * 60)
       for (let i = 0; i < span * 3; i++) if (rand() < 0.45) S.workouts.push({ d: day(today, -Math.floor(rand() * span * 7) + (rand() < 0.05 ? 3 : 0)) })
       if (rand() < 0.8) {
@@ -58,11 +59,10 @@ describe('streak parity: server and app', () => {
     }
   })
 
-  it('the shared week key matches lib/format.js on every day of two years, both week starts', () => {
+  it('the shared week key matches lib/format.js on every day of two years, all three week starts', () => {
     for (let i = 0; i < 730; i++) {
       const d = day('2025-01-01', i)
-      expect(weekKeyOf(d, 1)).toBe(weekKey(d, 1))
-      expect(weekKeyOf(d, 0)).toBe(weekKey(d, 0))
+      for (const ws of [1, 0, 6]) expect(weekKeyOf(d, ws)).toBe(weekKey(d, ws))
     }
   })
 })

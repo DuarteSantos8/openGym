@@ -1,5 +1,6 @@
-// The week streak: weeks in a row with at least one workout, in the profile's own weeks (Monday or
-// Sunday first, lib/format.js weekKey), with the best run ever, freezes and milestone badges.
+// The week streak: weeks in a row with at least one workout, in the profile's own weeks (Monday,
+// Sunday or Saturday first, lib/format.js weekKey), with the best run ever, freezes and
+// milestone badges.
 //
 // Everything here is read back from the workouts, nothing of it is stored: two devices, a restored
 // backup or an import of old sessions all arrive at the same streak, and there is nothing for a sync

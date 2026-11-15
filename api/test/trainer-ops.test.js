@@ -161,6 +161,8 @@ test('projections show only the shared categories, without media or notes', () =
   assert.equal(p2.notes.days['2026-11-02'].text, 'sick');
   assert.equal(p2.photos.count, 1);
   assert.equal(p2.plans.routines[0].ex[0].video, undefined);
+  assert.equal(p2.plans.weekStart, 1);
+  assert.equal(project({ ...S, weekStart: 6 }, { plans: 'view' }, { today: '2026-11-05' }).plans.weekStart, 6);
   // Nothing shared, nothing there.
   assert.deepEqual(Object.keys(project(S, {}, { today: '2026-11-05' })).sort(), ['customEx', 'shared', 'unit']);
 });
@@ -202,6 +204,9 @@ test('streak weeks follow the freeze rule; missed days skip excused ones', () =>
   const S = { workouts: ['2026-09-28', '2026-10-05', '2026-10-12', '2026-10-19', '2026-11-02'].map(d => ({ d })) };
   assert.equal(weekOf('2026-11-05', S), '2026-11-02');
   assert.equal(weekOf('2026-11-05', { weekStart: 0 }), '2026-11-01');
+  assert.equal(weekOf('2026-11-05', { weekStart: 6 }), '2026-10-31');
+  assert.equal(weekOf('2026-11-07', { weekStart: 6 }), '2026-11-07');
+  assert.equal(weekOf('2026-11-05', { weekStart: 3 }), '2026-11-02');
   assert.equal(streakWeeks(S, '2026-11-05'), 5);                                    // the missed week used a freeze
   assert.equal(streakWeeks({ ...S, streakRule: { rule: 'off' } }, '2026-11-05'), 1);
   // Not retroactive: the missed week was judged by `generous`, in force then, so it stays covered.
