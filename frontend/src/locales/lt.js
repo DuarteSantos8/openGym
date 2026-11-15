@@ -5894,17 +5894,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "Progresija, svorio diskų parinkimas, serijų tipai ir vienetai pratimo nustatymuose.",
   "In an exercise’s details": "Pratimo informacijoje",
   "Your level on a main lift, beside its records.": "Jūsų lygis pagrindiniame pratime, šalia jo rekordų.",
   "Strength levels in Stats": "Jėgos lygiai Statistikoje",
   "Every main lift with its level, in one card.": "Kiekvienas pagrindinis pratimas su savo lygiu, vienoje kortelėje.",
-  "The rule that moves the weight or the reps up.": "Taisyklė, kuri didina svorį arba pakartojimus.",
-  "The bar, the plates and the weight stack of an exercise.": "Pratimo grifas, svorio diskai ir svorio stovas.",
-  "Drop-sets, rest-pause and pyramids": "Mažinamo svorio serijos, rest-pause ir piramidės",
-  "Sets that change shape, and the last set to failure.": "Formą keičiančios serijos ir paskutinė serija iki visiško išsekimo.",
-  "Weight unit and dumbbells": "Svorio vienetas ir hanteliai",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "Pratimo savas kg ar lb ir ką reiškia hantelio svoris.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Kortelė Pagrindiniame, svėrimasis prieš treniruotę, jūsų tikslas ir svorio grafikas.",
   "Circumferences and your own fields.": "Apimtys ir jūsų pačių laukai.",
   "Photos of you over time, side by side.": "Jūsų nuotraukos laikui bėgant, greta viena kitos.",

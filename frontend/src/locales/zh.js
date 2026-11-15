@@ -5898,17 +5898,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "动作设置里的进阶方式、配重、组类型和单位。",
   "In an exercise’s details": "在动作详情里",
   "Your level on a main lift, beside its records.": "你在主要动作上的等级，显示在记录旁。",
   "Strength levels in Stats": "统计中的力量等级",
   "Every main lift with its level, in one card.": "每个主要动作及其等级，放在一张卡片里。",
-  "The rule that moves the weight or the reps up.": "让重量或次数往上加的规则。",
-  "The bar, the plates and the weight stack of an exercise.": "一个动作的杠铃杆、杠铃片和配重片。",
-  "Drop-sets, rest-pause and pyramids": "递减组、歇息暂停组和金字塔组",
-  "Sets that change shape, and the last set to failure.": "会变化的组，以及最后一组做到力竭。",
-  "Weight unit and dumbbells": "重量单位和哑铃",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "动作自己的 kg 或 lb，以及哑铃重量的含义。",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "首页卡片、训练前称重、你的目标和体重曲线。",
   "Circumferences and your own fields.": "围度和你自己的项目。",
   "Photos of you over time, side by side.": "你随时间变化的照片，并排对比。",

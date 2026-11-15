@@ -5864,17 +5864,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "پیشرفت، چیدمان صفحه‌های وزنه، نوع ست‌ها و واحدها در تنظیمات تمرین.",
   "In an exercise’s details": "در جزئیات تمرین",
   "Your level on a main lift, beside its records.": "سطح شما در یک حرکت اصلی، کنار رکوردهایش.",
   "Strength levels in Stats": "سطوح قدرت در آمار",
   "Every main lift with its level, in one card.": "هر حرکت اصلی با سطحش، در یک کارت.",
-  "The rule that moves the weight or the reps up.": "قاعده‌ای که وزن یا تکرارها را بالا می‌برد.",
-  "The bar, the plates and the weight stack of an exercise.": "هالتر، صفحه‌ها و وزنه‌های دستگاه یک تمرین.",
-  "Drop-sets, rest-pause and pyramids": "دراپ‌ست، رست‌پاز و ست‌های هرمی",
-  "Sets that change shape, and the last set to failure.": "ست‌هایی که شکلشان عوض می‌شود، و ست آخر تا ناتوانی.",
-  "Weight unit and dumbbells": "واحد وزن و دمبل‌ها",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "کیلوگرم یا پوند خود تمرین، و معنای وزن دمبل.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "کارت خانه، وزن‌کشی پیش از تمرین، هدف شما و نمودار وزن.",
   "Circumferences and your own fields.": "دور اندام‌ها و فیلدهای خودتان.",
   "Photos of you over time, side by side.": "عکس‌های شما در گذر زمان، کنار هم.",

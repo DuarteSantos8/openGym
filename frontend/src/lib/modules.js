@@ -37,8 +37,6 @@ export const MODULES = [
     desc: 'Film a set and watch it back right under the row.' },
   { id: 'watch', group: 'training', icon: 'watch', tint: 'var(--grey)', title: 'Watch',
     desc: 'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.' },
-  { id: 'exercise', group: 'training', icon: 'dumbbell', tint: 'var(--acc)', title: 'Exercise settings',
-    desc: 'Progression, plate loading, set types and units in an exercise’s settings.' },
   { id: 'checkin', group: 'training', icon: 'qr', tint: 'var(--blue)', title: 'Gym check-in',
     desc: 'Your membership codes on Home, and NFC stickers that start a workout.' },
   { id: 'body', group: 'body', icon: 'scale', tint: 'var(--teal)', title: 'Body',
@@ -66,7 +64,7 @@ export const GROUPS = [
 ]
 
 /* The presets, smallest first. Each names the modules it turns on; every other one is off. */
-const TRAINING = ['effort', 'plates', 'exercise', 'watch']
+const TRAINING = ['effort', 'plates', 'watch']
 export const PRESETS = [
   { id: 'training', title: 'Just training', desc: 'Log, plan, progress. Nothing else on the screen.', on: TRAINING },
   { id: 'body', title: 'Training and body', desc: 'Plus weigh-ins, measurements, photos and your health apps.', on: [...TRAINING, 'strength', 'body', 'health'] },
@@ -137,18 +135,11 @@ export function setModule(s, id, on) {
 }
 
 /* The parts of a module, in the order its row lists them. `title` and `desc` are English keys,
-   translated where they are shown (lib/modules-copy.js partCopy). An exercise's sets, reps,
-   weight, rests and note are not a part: they always show. */
+   translated where they are shown (lib/modules-copy.js partCopy). */
 export const PARTS = {
   strength: [
     { id: 'details', title: 'In an exercise’s details', desc: 'Your level on a main lift, beside its records.' },
     { id: 'list', title: 'Strength levels in Stats', desc: 'Every main lift with its level, in one card.' },
-  ],
-  exercise: [
-    { id: 'progression', title: 'Progression', desc: 'The rule that moves the weight or the reps up.' },
-    { id: 'plates', title: 'Plate loading', desc: 'The bar, the plates and the weight stack of an exercise.' },
-    { id: 'intensity', title: 'Drop-sets, rest-pause and pyramids', desc: 'Sets that change shape, and the last set to failure.' },
-    { id: 'units', title: 'Weight unit and dumbbells', desc: 'An exercise’s own kg or lb, and what a dumbbell weight means.' },
   ],
   body: [
     { id: 'weight', title: 'Body weight', desc: 'The Home card, the weigh-in before a workout, your goal and the weight chart.' },

@@ -82,12 +82,6 @@ describe('the parts of a module (#1087)', () => {
     expect(turnedOff({}, { 'body.photos': false })).toEqual([])
   })
 
-  it('Just training keeps the whole exercise settings sheet', () => {
-    const s = {}
-    applyPreset(s, 'training')
-    for (const p of PARTS.exercise) expect(partOn(s, 'exercise', p.id)).toBe(true)
-  })
-
   it('two devices’ part choices both survive a sync', () => {
     const start = { _ts: 1, unit: 'kg', workouts: [], routines: [], modules: {} }
     const phone = stampEdits(start, { ...start, _ts: 10, modules: { 'body.photos': false } }, 10)

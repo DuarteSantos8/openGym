@@ -5945,17 +5945,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "Progression, viktskivor, settyper och enheter i en övnings inställningar.",
   "In an exercise’s details": "I en övnings detaljer",
   "Your level on a main lift, beside its records.": "Din nivå i en huvudövning, bredvid dess rekord.",
   "Strength levels in Stats": "Styrkenivåer i Statistik",
   "Every main lift with its level, in one card.": "Varje huvudövning med sin nivå, på ett kort.",
-  "The rule that moves the weight or the reps up.": "Regeln som höjer vikten eller repetitionerna.",
-  "The bar, the plates and the weight stack of an exercise.": "Stången, viktskivorna och viktstacken för en övning.",
-  "Drop-sets, rest-pause and pyramids": "Dropset, rest-pause och pyramider",
-  "Sets that change shape, and the last set to failure.": "Set som ändrar form, och sista setet till failure.",
-  "Weight unit and dumbbells": "Viktenhet och hantlar",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "En övnings egna kg eller lb, och vad en hantelvikt avser.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Kortet på Hem, vägningen före ett pass, ditt mål och viktkurvan.",
   "Circumferences and your own fields.": "Omkretsar och dina egna fält.",
   "Photos of you over time, side by side.": "Bilder av dig över tid, sida vid sida.",

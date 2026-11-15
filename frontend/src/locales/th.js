@@ -5909,17 +5909,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "การเพิ่มระดับ การใส่แผ่นน้ำหนัก ประเภทเซ็ต และหน่วย ในการตั้งค่าท่าออกกำลังกาย",
   "In an exercise’s details": "ในรายละเอียดของท่า",
   "Your level on a main lift, beside its records.": "ระดับของคุณในท่าหลัก ข้างสถิติสูงสุดของท่านั้น",
   "Strength levels in Stats": "ระดับความแข็งแรงในสถิติ",
   "Every main lift with its level, in one card.": "ท่าหลักทุกท่าพร้อมระดับ ในการ์ดเดียว",
-  "The rule that moves the weight or the reps up.": "กฎที่เพิ่มน้ำหนักหรือจำนวนครั้ง",
-  "The bar, the plates and the weight stack of an exercise.": "บาร์ แผ่นน้ำหนัก และสแต็กน้ำหนักของท่า",
-  "Drop-sets, rest-pause and pyramids": "ดรอปเซ็ต เรสต์-พอส และพีระมิด",
-  "Sets that change shape, and the last set to failure.": "เซ็ตที่เปลี่ยนรูปแบบ และเซ็ตสุดท้ายจนหมดแรง",
-  "Weight unit and dumbbells": "หน่วยน้ำหนักและดัมเบล",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "kg หรือ lb ของท่านั้นเอง และความหมายของน้ำหนักดัมเบล",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "การ์ดในหน้าหลัก การชั่งน้ำหนักก่อนออกกำลังกาย เป้าหมาย และกราฟน้ำหนัก",
   "Circumferences and your own fields.": "เส้นรอบวงและช่องที่คุณสร้างเอง",
   "Photos of you over time, side by side.": "รูปของคุณตามเวลา วางเทียบกัน",

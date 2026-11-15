@@ -1590,20 +1590,17 @@ function ExerciseDetail({ ex, close }) {
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
     {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
-    {/* Exercise settings (Settings → Modules) can leave the unit and the plate loading out. */}
     {modeOf({ id: ex.id }) === 'reps' && <>
-      {partOn(st, 'exercise', 'units') && <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} /></div>}
+      <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
+      <ExUnitRow ex={ex} /></div>
       <GymSplitRow ex={ex} />
-      {partOn(st, 'exercise', 'plates') && <>
       <h4 className="sec">{t('Plate loading')}</h4>
       <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
       {canHaveStack(ex) && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
-      </>}
     </>}
     {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
         above. A routine can still pick its own on the exercise's settings. */}
-    {isBellEx(ex) && partOn(st, 'exercise', 'units') && <>
+    {isBellEx(ex) && <>
       <h4 className="sec">{t('Weight means')}</h4>
       <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
         onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
@@ -2642,11 +2639,6 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const warmApplies = warmAll !== null ? warmAll : ownExerciseRest(c) ?? st.restSec
   // Pyramid sets: one rep target per set, in place of the flat Sets × Reps (CONTEXT.md).
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
-  // Exercise settings (Settings → Modules): a category whose part is off is left out. A set type
-  // the exercise uses, now or when the sheet opened, stays so it can be turned off.
-  const part = id => partOn(live, 'exercise', id)
-  const shapes = part('intensity')
-  const setTypeShown = shapes || !!c.intensifier?.type || !!seed.intensifier?.type
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
   // Freestyle follows no rule unless one is picked on the exercise mid-workout (ProgressionFields, #910).
   const ruleless = !routine && (freestyle === 'add' || (freestyle === 'edit' && !c.prog))
@@ -2845,13 +2837,6 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {c.intensifier?.type !== 'restpause' && !pyramid &&
           <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
         {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} max={PLAN_MAX_REPS} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
-        {/* With the Progression part off its fields are gone, but a ranged rule still climbs this range. */}
-        {ranged && !pyramid && !part('progression') && <>
-          <Stepper label={t('Reps from')} value={c.repsMin ?? normalizeRepRange(c.reps, c.repsMin, perSide ? 2 : 1).repsMin} step={perSide ? 2 : 1} decimal={false}
-            onChange={v => setC(x => ({ ...x, repsMin: v }))} />
-          <Stepper label={t('Reps up to')} value={c.reps ?? normalizeRepRange(c.reps, c.repsMin, perSide ? 2 : 1).reps} step={perSide ? 2 : 1} decimal={false}
-            onChange={v => setC(x => ({ ...x, reps: v }))} />
-        </>}
         {/* On bodyweight work the weight stepper is the click #32 is about, so it is not here
             until there is a belt to describe — see the added-weight row below. */}
         {!bw && !pyramid && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
@@ -3071,11 +3056,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       {/* The last work set of every session is marked as taken to failure, like Greyskull's
           final AMRAP set (workout-model isFailureSet, history.js applyFailurePlan). A pyramid
           already has its Max set for that. */}
-      {!pyramid && (shapes || c.lastToFailure === true || seed.lastToFailure === true) && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
+      {!pyramid && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
         subtitle={c.lastToFailure ? t('The last set goes until nothing is left, and counts as all-out effort unless you rate it.') : t('Plan the final set as an all-out one.')}>
         <Switch checked={c.lastToFailure === true} onChange={v => setC(x => ({ ...x, lastToFailure: v || undefined }))} />
       </Row>}
-      {mode === 'reps' && (shapes || pyramid || isPyramid({ ...seed, mode })) && <Row icon="steps" iconTint="var(--acc)" title={t('Pyramid sets')}
+      {mode === 'reps' && <Row icon="steps" iconTint="var(--acc)" title={t('Pyramid sets')}
         subtitle={t('A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.')}>
         <Switch checked={pyramid} onChange={v => setC(x => (v
           ? { ...x, pyramid: x.pyramidDraft || pyramidFromFlat(x), intensifier: undefined }
@@ -3111,7 +3096,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         : t('Reps climb by one whenever every set was clean. Set a ceiling to add sets instead of reps forever.')}
     </div>}
     {/* A pyramid already shapes every set; a drop-set or rest-pause would reshape them again. */}
-    {mode === 'reps' && !pyramid && setTypeShown && <>
+    {mode === 'reps' && !pyramid && <>
       <h4 className="sec">{t('Set type')}</h4>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Intensifier')} sheetTitle={t('Intensifier')} value={c.intensifier?.type || ''}
@@ -3170,7 +3155,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </>}
     {/* What a dumbbell weight means, for this routine's slot (cfg.dbLoad). Picking what the
         exercise already means drops the key, so the slot follows the exercise's default again. */}
-    {isBellEx(ex) && !bw && mode !== 'cardio' && part('units') && <>
+    {isBellEx(ex) && !bw && mode !== 'cardio' && <>
       <h4 className="sec">{t('Weight means')}</h4>
       <DbLoadPicker ex={ex} cfg={c} value={dbLoadFor(st, { ...c, id: ex.id })}
         onChange={v => setC(x => ({ ...x, dbLoad: v === dbLoadFor(st, ex.id) ? undefined : v }))} />
@@ -3179,16 +3164,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         it sits apart from the config fields above and writes straight to S.barWeights/S.loadKind. */}
     {/* What is typed above is held in the unit on screen; a switch converts it with the unit. */}
     {!cardio && <>
-      {part('units') && <><h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} onChange={(before, after) => setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))} /></>}
+      <h4 className="sec">{t('Weight unit')}</h4>
+      <ExUnitRow ex={ex} onChange={(before, after) => setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))} />
       <GymSplitRow ex={ex} />
     </>}
-    {mode === 'reps' && part('plates') && <>
+    {mode === 'reps' && <>
       <h4 className="sec">{t('Plate loading')}</h4>
       <BarWeightEditor ex={ex} cfg={c} extra={t('Applies to this exercise everywhere, not just this plan.')} />
       {canHaveStack(ex) && !bw && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
     </>}
-    {!part('progression') ? null : pyramid
+    {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
       : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} freestyle={routine ? false : freestyle} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
