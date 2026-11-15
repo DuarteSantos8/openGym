@@ -292,6 +292,7 @@ describe('the search lands on a row', () => {
 
   // Rows that are not settings, so the search leaves them out (#1105). One line each, with why.
   const NOT_SEARCHABLE = new Set([
+    'integrations: Extension lab',   // fork's dev surface (views/Addons.jsx), English-only until it is translated
     'account: All data stays on this phone', 'account: All synced', // the sync status line
     'account: gym.example', // the server's address, as the person typed it
     'account: Passkeys not supported in this browser.', 'reminders: Not supported in this browser.', // a note, not a row to change

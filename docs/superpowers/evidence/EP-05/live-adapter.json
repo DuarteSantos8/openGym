@@ -1,0 +1,28 @@
+{
+  "manualRequest": 3,
+  "totalManualRequests": 3,
+  "node": "v22.23.5",
+  "elapsedMs": 491,
+  "result": "success",
+  "product": {
+    "source": "open-food-facts",
+    "externalId": "3017620422003",
+    "label": "Nutella",
+    "brand": "Ferrero, Nutella",
+    "quantityText": "400 g e",
+    "per100": {
+      "basis": "g",
+      "energyKcal": 539,
+      "proteinG": 6.3,
+      "carbohydrateG": 57.5,
+      "fatG": 30.9
+    },
+    "fetchedAt": "2026-11-14T09:35:32.614Z",
+    "attribution": {
+      "text": "Contains information from Open Food Facts, available under the Open Database License (ODbL).",
+      "url": "https://world.openfoodfacts.org/product/3017620422003",
+      "license": "ODbL-1.0",
+      "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/"
+    }
+  }
+}

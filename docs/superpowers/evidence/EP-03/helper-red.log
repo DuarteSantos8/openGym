@@ -1,0 +1,420 @@
+
+ RUN  v4.1.12 /code/openGym-fork/frontend
+
+ ❯ src/lib/exercise-volume.test.js (23 tests | 21 failed) 30ms
+     × cuts 7 days at local midnight, including today and six earlier calendar days 9ms
+     × uses calendar days for a 7-day window, including across DST 2ms
+     × uses calendar days for a 30-day window, including across DST 1ms
+     × uses calendar days for a 90-day window, including across DST 1ms
+     × uses calendar days for a 365-day window, including across DST 1ms
+     × uses the canonical local day when start and day differ, and ignores invalid dates 1ms
+     × keeps two sessions on the same day and sorts by their real start 1ms
+     × reads d-only sessions at local noon and All includes old sessions 1ms
+     × converts a kg profile to its exercise pin lb 2ms
+     × converts a lb profile to its exercise pin kg 1ms
+     × counts warm-ups only when chosen, with the same rule for sets and volume 1ms
+     × counts bodyweight only when chosen and converts the session weight for a pin 2ms
+     × reuses nearest weigh-in for d-only bodyweight history 0ms
+     × uses completed sides at their own loads, including their drops 0ms
+     × adds drop volume and both entries of the exercise once, ignoring other exercises 1ms
+     × respects recorded dumbbell meaning instead of the current setting 0ms
+     × excludes time rows even if stale weight and reps remain 1ms
+     × excludes cardio rows even if stale weight and reps remain 1ms
+     × keeps only reps rows in a mixed session and does not count that session as excluded 1ms
+     × never plots unfinished or zero-rep work, or legacy whole-session volume as zero 1ms
+     × counts exclusions only in the selected window 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > cuts 7 days at local midnight, including today and six earlier calendar days
+AssertionError: expected [] to deeply equal [ '2026-11-08', '2026-11-14' ]
+
+- Expected
++ Received
+
+- [
+-   "2026-11-08",
+-   "2026-11-14",
+- ]
++ []
+
+ ❯ src/lib/exercise-volume.test.js:20:41
+     18|       workout('2026-11-14'), workout('2026-11-15'),
+     19|     ], { days: 7 })
+     20|     expect(result.points.map(p => p.d)).toEqual(['2026-11-08', '2026-1…
+       |                                         ^
+     21|     expect(result.included).toBe(2)
+     22|     expect(result.excluded).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > uses calendar days for a 7-day window, including across DST
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > uses calendar days for a 30-day window, including across DST
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > uses calendar days for a 90-day window, including across DST
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > uses calendar days for a 365-day window, including across DST
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/lib/exercise-volume.test.js:33:27
+     31|       { start: boundary.getTime(), entries: [entry()] },
+     32|     ], { days })
+     33|     expect(result.points).toHaveLength(1)
+       |                           ^
+     34|     expect(result.points[0].t).toBe(boundary.getTime())
+     35|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > uses the canonical local day when start and day differ, and ignores invalid dates
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/lib/exercise-volume.test.js:42:27
+     40|       { entries: [entry()] }, workout('2026-13-60'),
+     41|     ], { days: 7 })
+     42|     expect(result.points).toHaveLength(1)
+       |                           ^
+     43|     expect(result.points[0].d).toBe('2026-11-08')
+     44|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > keeps two sessions on the same day and sorts by their real start
+AssertionError: expected [] to deeply equal [ [ 1794643200000, 250 ], …(1) ]
+
+- Expected
++ Received
+
+- [
+-   [
+-     1794643200000,
+-     250,
+-   ],
+-   [
+-     1794679200000,
+-     300,
+-   ],
+- ]
++ []
+
+ ❯ src/lib/exercise-volume.test.js:52:48
+     50|       workout(undefined, [entry()], { start: morning }),
+     51|     ])
+     52|     expect(result.points.map(p => [p.t, p.y])).toEqual([[morning, 250]…
+       |                                                ^
+     53|     expect(result.included).toBe(2)
+     54|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > reads d-only sessions at local noon and All includes old sessions
+AssertionError: expected [] to deeply equal [ { t: 1577880000000, …(3) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "d": "2020-01-01",
+-     "sets": 1,
+-     "t": 1577880000000,
+-     "y": 250,
+-   },
+- ]
++ []
+
+ ❯ src/lib/exercise-volume.test.js:58:27
+     56|   it('reads d-only sessions at local noon and All includes old session…
+     57|     const result = series([workout('2020-01-01')])
+     58|     expect(result.points).toEqual([{ t: new Date(2020, 0, 1, 12).getTi…
+       |                           ^
+     59|   })
+     60|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > converts a kg profile to its exercise pin lb
+AssertionError: expected 'kg' to be 'lb' // Object.is equality
+
+Expected: "lb"
+Received: "kg"
+
+ ❯ src/lib/exercise-volume.test.js:66:25
+     64|   ])('converts a %s profile to its exercise pin %s', (unit, pin, load,…
+     65|     const result = series([workout(undefined, [entry([done(load)])])],…
+     66|     expect(result.unit).toBe(pin)
+       |                         ^
+     67|     expect(result.points[0].y).toBeCloseTo(expected, 2)
+     68|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > converts a lb profile to its exercise pin kg
+TypeError: Cannot read properties of undefined (reading 'y')
+ ❯ src/lib/exercise-volume.test.js:67:29
+     65|     const result = series([workout(undefined, [entry([done(load)])])],…
+     66|     expect(result.unit).toBe(pin)
+     67|     expect(result.points[0].y).toBeCloseTo(expected, 2)
+       |                             ^
+     68|   })
+     69|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > counts warm-ups only when chosen, with the same rule for sets and volume
+AssertionError: expected undefined to match object { y: 250, sets: 1 }
+
+- Expected:
+{
+  "sets": 1,
+  "y": 250,
+}
+
++ Received:
+undefined
+
+ ❯ src/lib/exercise-volume.test.js:72:35
+     70|   it('counts warm-ups only when chosen, with the same rule for sets an…
+     71|     const w = workout(undefined, [entry([done(), { ...done(20, 10), ph…
+     72|     expect(series([w]).points[0]).toMatchObject({ y: 250, sets: 1 })
+       |                                   ^
+     73|     expect(series([w], {}, { volumeWarmups: true }).points[0]).toMatch…
+     74|     expect(series([workout(undefined, [entry([{ ...done(), phase: 'war…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > counts bodyweight only when chosen and converts the session weight for a pin
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { points: [], included: +0, …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "excluded": 1,
++   "excluded": 0,
+    "included": 0,
+    "points": [],
+    "reasons": {
+-     "noVolume": 1,
++     "noVolume": 0,
+    },
+  }
+
+ ❯ src/lib/exercise-volume.test.js:79:41
+     77|   it('counts bodyweight only when chosen and converts the session weig…
+     78|     const w = workout(undefined, [entry([done(0, 5)], { id: PULLUP })]…
+     79|     expect(series([w], {}, {}, PULLUP)).toMatchObject({ points: [], in…
+       |                                         ^
+     80|     expect(series([w], {}, { volumeBodyweight: true }, PULLUP).points[…
+     81|     const pinned = series([w], {}, { volumeBodyweight: true, exUnit: {…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > reuses nearest weigh-in for d-only bodyweight history
+TypeError: Cannot read properties of undefined (reading 'y')
+ ❯ src/lib/exercise-volume.test.js:90:29
+     88|       volumeBodyweight: true, bodyweight: [{ d: '2026-11-13', w: 80 }],
+     89|     }, PULLUP)
+     90|     expect(result.points[0].y).toBe(400)
+       |                             ^
+     91|   })
+     92|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > uses completed sides at their own loads, including their drops
+AssertionError: expected undefined to match object { y: 385, sets: 3 }
+
+- Expected:
+{
+  "sets": 3,
+  "y": 385,
+}
+
++ Received:
+undefined
+
+ ❯ src/lib/exercise-volume.test.js:97:67
+     95|       L: { ...done(14, 10), drops: [{ w: 10, r: 3 }] }, R: { ...done(1…
+     96|     } }, { sides: { L: done(14, 10), R: done(12.5, 6) } }]
+     97|     expect(series([workout(undefined, [entry(sets)])]).points[0]).toMa…
+       |                                                                   ^
+     98|   })
+     99|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > adds drop volume and both entries of the exercise once, ignoring other exercises
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { included: 1, excluded: +0, …(1) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "excluded": 0,
+-   "included": 1,
+-   "points": [
+-     {
+-       "sets": 2,
+-       "y": 490,
+-     },
+-   ],
++   "included": 0,
++   "points": [],
+  }
+
+ ❯ src/lib/exercise-volume.test.js:105:25
+    103|       entry([done(30, 4)]), entry([done(1000, 100)], { id: PULLUP }),
+    104|     ])
+    105|     expect(series([w])).toMatchObject({ included: 1, excluded: 0, poin…
+       |                         ^
+    106|   })
+    107|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > respects recorded dumbbell meaning instead of the current setting
+TypeError: Cannot read properties of undefined (reading 'y')
+ ❯ src/lib/exercise-volume.test.js:110:81
+    108|   it('respects recorded dumbbell meaning instead of the current settin…
+    109|     const w = workout(undefined, [entry([done(20, 10)], { target: { db…
+    110|     expect(series([w], {}, { dbLoad: { [BENCH]: { mode: 'total' } } })…
+       |                                                                                 ^
+    111|     expect(series([workout(undefined, [entry([done(20, 10)], { target:…
+    112|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > excludes time rows even if stale weight and reps remain
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > excludes cardio rows even if stale weight and reps remain
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { points: [], included: +0, …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "excluded": 1,
++   "excluded": 0,
+    "included": 0,
+    "points": [],
+    "reasons": {
+-     "timedOrCardio": 1,
++     "timedOrCardio": 0,
+    },
+  }
+
+ ❯ src/lib/exercise-volume.test.js:116:25
+    114|   it.each(['time', 'cardio'])('excludes %s rows even if stale weight a…
+    115|     const w = workout(undefined, [entry([done()], { target: { mode } }…
+    116|     expect(series([w])).toMatchObject({ points: [], included: 0, exclu…
+       |                         ^
+    117|   })
+    118|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > keeps only reps rows in a mixed session and does not count that session as excluded
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { included: 1, excluded: +0, …(1) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "excluded": 0,
+-   "included": 1,
+-   "points": [
+-     {
+-       "sets": 1,
+-       "y": 250,
+-     },
+-   ],
++   "included": 0,
++   "points": [],
+  }
+
+ ❯ src/lib/exercise-volume.test.js:121:25
+    119|   it('keeps only reps rows in a mixed session and does not count that …
+    120|     const w = workout(undefined, [entry([done(), { ...done(1000), mode…
+    121|     expect(series([w])).toMatchObject({ included: 1, excluded: 0, poin…
+       |                         ^
+    122|   })
+    123|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > never plots unfinished or zero-rep work, or legacy whole-session volume as zero
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { points: [], included: +0, …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "excluded": 4,
++   "excluded": 0,
+    "included": 0,
+    "points": [],
+    "reasons": {
+-     "missingDetails": 2,
+-     "noVolume": 2,
++     "missingDetails": 0,
++     "noVolume": 0,
+      "timedOrCardio": 0,
+    },
+  }
+
+ ❯ src/lib/exercise-volume.test.js:132:20
+    130|       workout(undefined, [entry(undefined, { id: PULLUP })]),
+    131|     ])
+    132|     expect(result).toMatchObject({ points: [], included: 0, excluded: …
+       |                    ^
+    133|       reasons: { noVolume: 2, missingDetails: 2, timedOrCardio: 0 } })
+    134|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/21]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > counts exclusions only in the selected window
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { excluded: 1, reasons: { …(1) } }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "excluded": 1,
++   "excluded": 0,
+    "reasons": {
+-     "missingDetails": 1,
++     "missingDetails": 0,
+    },
+  }
+
+ ❯ src/lib/exercise-volume.test.js:138:8
+    136|   it('counts exclusions only in the selected window', () => {
+    137|     expect(series([{ d: '2026-11-07', vol: 99 }, { d: '2026-11-08', vo…
+    138|       .toMatchObject({ excluded: 1, reasons: { missingDetails: 1 } })
+       |        ^
+    139|   })
+    140|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/21]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  21 failed | 2 passed (23)
+   Start at  09:18:58
+   Duration  679ms (transform 71ms, setup 362ms, import 53ms, tests 30ms, environment 0ms)

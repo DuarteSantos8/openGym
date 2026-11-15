@@ -13,7 +13,7 @@ vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: moc
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {}, exerciseHistorySheet: () => {},
-  WorkoutRow: () => null, bwDeltaColor: () => 'inherit',
+  WorkoutRow: () => null, bwDeltaColor: () => 'inherit', weighInsSheet: () => {},
 }))
 vi.mock('../components/LineChart.jsx', () => ({ default: props => { mocks.charts.push(props); return null } }))
 vi.mock('../components/Heatmap.jsx', () => ({ default: () => null }))
@@ -46,6 +46,17 @@ const exCard = () => [...host.querySelectorAll('.card')].find(c => c.querySelect
 const press = (scope, label) => act(() => [...scope.querySelectorAll('.seg button')].find(b => b.textContent === label).click())
 
 describe('Stats: exercise progress date range', () => {
+  it('offers 1W on exercise and body charts without changing either default', () => {
+    mount([session(60, 70), session(5, 75), session(3, 80)])
+    const bwCard = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Body weight')
+    mocks.S.bodyweight = [session(60, 70), session(5, 75), session(3, 80)].map(w => ({ d: w.d, w: 80 }))
+    press(exCard(), '1W')
+    expect(exChart().points.map(p => p.y)).toEqual([75, 80])
+    expect(bwCard.querySelector('.seg button.on').textContent).toBe('3M')
+    press(bwCard, '1W')
+    expect(mocks.charts.filter(c => c.h === 160).at(-1).points).toHaveLength(2)
+  })
+
   it('starts on All and cuts the top-set line to the picked range, Best staying all-time', () => {
     mount([session(400, 100), session(200, 90), session(60, 70), session(10, 75), session(3, 80)])
     const card = exCard()

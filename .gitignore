@@ -34,6 +34,7 @@ frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+.worktrees/
 
 # Python and Kotlin build leftovers (scripts/, the Android build)
 __pycache__/

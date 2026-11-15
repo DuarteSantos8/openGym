@@ -16,7 +16,8 @@ concurrency:
 
 jobs:
   record:
-    if: github.event.issue.number == 554 && !github.event.issue.pull_request
+    # Upstream's own publishing/bot job: forks skip it (same guard as mirror.yml).
+    if: github.repository == 'DuarteSantos8/openGym' && (github.event.issue.number == 554 && !github.event.issue.pull_request)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

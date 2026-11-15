@@ -95,6 +95,7 @@ const Admin = lazyView(() => import('./views/Admin.jsx'))
 const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
 const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
+const Nutrition = lazyView(() => import('./views/Nutrition.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const Assistants = lazyView(() => import('./views/Assistants.jsx'))
@@ -117,6 +118,8 @@ const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
 const Community = lazyView(() => import('./views/Community.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
+// Large optional add-on libraries are not prefetched with the core application.
+const Addons = lazy(() => import('./views/Addons.jsx'))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
 const loadTour = () => import('./components/Tour.jsx')
 const Tour = lazy(loadTour)
@@ -415,6 +418,8 @@ function Shell() {
       <Route path="/journal" element={<Journal />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {isOn(S, 'nutrition') && <Route path="/nutrition" element={<Nutrition />} />}
+      <Route path="/addons" element={<Suspense fallback={null}><Addons /></Suspense>} />
       {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
       <Route path="/connect/:id" element={<Connect />} />
       {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}

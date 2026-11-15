@@ -123,15 +123,19 @@ describe('the first-run question', () => {
     expect(tourState()).toBe(null)
     expect(card()).toBe(null)
   })
-  it('also asks how much app this profile wants (Settings → Modules): Everything until a tap, a tap applies it', async () => {
+  it('asks how much app this profile wants: opt-in defaults match no preset, a tap applies it', async () => {
     useStore.setState(st => ({ S: { ...st.S, modules: undefined } }))
     await act(async () => { openTour({ kind: 'offer' }) })
     await render()
     const radios = [...card().querySelectorAll('[role="radio"]')]
     expect(radios.map(r => r.querySelector('.tour-tut-t').textContent)).toEqual(['Just training', 'Training and body', 'Everything'])
-    expect(radios.map(r => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true'])
+    // Everything explicitly enables opt-in modules; a new profile leaves Nutrition off.
+    expect(radios.map(r => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'false'])
     expect(card().textContent).toContain('Change it anytime in Settings → Modules.')
+    await click(radios[2])
+    expect(useStore.getState().S.modules.nutrition).toBe(true)
     await click(radios[0])
+    expect(useStore.getState().S.modules.nutrition).toBe(false)
     expect(useStore.getState().S.modules.body).toBe(false)
     expect(useStore.getState().S.modules.effort).toBe(true)
     expect(card().querySelector('[data-preset="training"]').getAttribute('aria-checked')).toBe('true')

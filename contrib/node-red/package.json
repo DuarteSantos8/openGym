@@ -1,0 +1,11 @@
+{
+  "name": "opengym-node-red-example",
+  "private": true,
+  "description": "An importable Node-RED flow that receives openGym webhooks and checks their signatures. No runtime dependencies.",
+  "scripts": {
+    "build": "node build-flow.mjs",
+    "check": "node build-flow.mjs --check",
+    "test": "node --test test/*.test.mjs",
+    "e2e": "npm --prefix e2e ci --no-audit --no-fund --ignore-scripts && node e2e/run.mjs"
+  }
+}
