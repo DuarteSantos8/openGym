@@ -20,6 +20,7 @@
  * A provider is described by a spec (see anthropic.js etc.); this file owns the transport.
  */
 import { HTTP_PROVIDERS, baseUrlFor, extraHeadersFor } from '../providers.js';
+import { effortFrom } from './effort.js';
 
 export const MAX_OUTPUT_TOKENS = 16000;
 const DEFAULT_TIMEOUT_MS = 5 * 60000;
@@ -117,12 +118,14 @@ export const modelSubstitute = (id, cfg, model) => substitutes.get(substituteKey
  * change to the request a server that refuses it is known to want, in the order that gives up
  * least: close the schema (#701), drop the schema for plain JSON mode, swap the output-limit
  * field (reasoning models want max_completion_tokens, older servers only know max_tokens), drop
- * temperature (reasoning models take only their default), and last ask for JSON in the prompt
- * alone. A 400 that names the parameter goes to its rung directly; a generic one takes the next
- * rung that changes anything, and only on a spec that opts in (`compatLadder`), since OpenAI and
- * the other hosted APIs always say what is wrong. The rungs that worked are remembered per
- * provider, endpoint and model, here for the server and in the device file on the phone. */
-export const COMPAT_STEPS = Object.freeze(['strict', 'json_object', 'tokens', 'temperature', 'plain']);
+ * temperature (reasoning models take only their default), drop the thinking level (#1240, a
+ * gateway that has never heard of `reasoning_effort` or a model that does not reason), and last
+ * ask for JSON in the prompt alone. A 400 that names the parameter goes to its rung directly; a
+ * generic one takes the next rung that changes anything, and only on a spec that opts in
+ * (`compatLadder`), since OpenAI and the other hosted APIs always say what is wrong. The rungs
+ * that worked are remembered per provider, endpoint and model, here for the server and in the
+ * device file on the phone. */
+export const COMPAT_STEPS = Object.freeze(['strict', 'json_object', 'tokens', 'temperature', 'effort', 'plain']);
 const compatProfiles = new Map();
 const compatKey = (id, base, model) => `${id} ${base} ${model}`;
 const cleanSteps = steps => (Array.isArray(steps) ? COMPAT_STEPS.filter(s => steps.includes(s)) : []);
@@ -140,12 +143,17 @@ function namedRungs(msg) {
   if (/additionalProperties|must be explicitly set/i.test(msg)) return ['strict', 'json_object', 'plain'];
   if (/max_(?:completion_)?tokens/i.test(msg)) return ['tokens'];
   if (/temperature/i.test(msg)) return ['temperature'];
+  // A server that has never heard of the thinking level, or a model that does not reason, names
+  // the field it refuses (#1240). Matching on the field names rather than on the word "effort"
+  // keeps a complaint about something else from being answered by giving up the level. Gemini
+  // 2.5 refuses `thinkingLevel` because it wants `thinkingBudget`; that lands here too.
+  if (/reasoning_effort|thinking[_ ]?level|thinkingconfig|thinkingbudget|output_config|reasoning\.effort/i.test(msg)) return ['effort'];
   // MiniMax refuses a union type in the schema with "invalid params, Mismatch type string with
   // value array" and never says "schema" (#928).
   if (/response_format|json_schema|json_object|json mode|structured|\bschema\b|mismatch(?:ed)? type/i.test(msg)) return ['json_object', 'plain'];
   return null;
 }
-const applySteps = (spec, base, steps) => steps.reduce((b, s) => spec.compat[s](b), base);
+const applySteps = (spec, base, steps) => steps.reduce((b, s) => (spec.compat[s] ? spec.compat[s](b) : b), base);
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
 async function call(fetchImpl, url, init, timeoutMs, signal) {
@@ -342,12 +350,19 @@ export function httpAdapter(spec) {
       if (!key && !meta.keyOptional) return { code: -1, text: '', stderr: `no API key configured for ${id}`, spawnError: true };
       const asked = model || meta.defaultModel;
       if (!asked) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
+      // The thinking level, from the job environment (config.js's jobEnv puts it there; on the
+      // phone it is simply absent until the BYOK card offers one). Read from `env` and never from
+      // process.env, because this file is part of the core that also runs in the phone build.
+      const effort = spec.withEffort ? effortFrom(env) : undefined;
       let chosen = substitutes.get(substituteKey(id, base, asked)) || asked;
 
       const streamKey = () => `${id} ${base} ${chosen}`;
       let useStream = !!spec.stream && opts.stream !== false && !noStream.has(streamKey());
       const build = () => {
-        const b = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base, ...(opts.web ? { web: true } : {}) });
+        let b = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base, ...(opts.web ? { web: true } : {}) });
+        // The level goes on the request here rather than inside body(), so the ladder above can
+        // take it away again the same way it takes away anything else an endpoint refuses.
+        if (effort && spec.withEffort) b = spec.withEffort(b, effort);
         return useStream ? spec.stream.body(b) : b;
       };
       // Drops the stream for this endpoint and model, remembered; true when that changed anything.
@@ -467,7 +482,13 @@ export function httpAdapter(spec) {
         let out;
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };
-        if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit; try a smaller plan or a bigger model' };
+        if (out.truncated) {
+          // A level was the one thing in this request that spends the output budget on thinking
+          // rather than on the answer, so name it when it is still on the request (#1240). If the
+          // endpoint refused it, it is not what cut the answer off.
+          const thinking = effort && !steps.includes('effort') ? ` while thinking at ${effort}: raise the output limit (maxOutputTokens) or choose a lower level` : '';
+          return { code: 1, text: '', stderr: `the answer was cut off at the output limit; try a smaller plan or a bigger model${thinking}` };
+        }
         if (spec.compat) rememberCompatProfile(id, cfg, chosen, steps);
         return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}), ...(Array.isArray(out.sources) && out.sources.length ? { sources: out.sources } : {}) };
       }

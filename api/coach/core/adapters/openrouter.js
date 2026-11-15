@@ -4,7 +4,9 @@
 import { httpAdapter } from './http.js';
 import { chatCompletionsSpec } from './openai.js';
 
-export const openrouterSpec = chatCompletionsSpec('openrouter', { maxTokensField: 'max_tokens' });
+// OpenRouter's own field: `reasoning: { effort }`, which it normalises for whichever model it
+// routes to, so the canonical level goes through unclamped (#1240).
+export const openrouterSpec = chatCompletionsSpec('openrouter', { maxTokensField: 'max_tokens', effort: { field: 'reasoning' } });
 const chatBody = openrouterSpec.body;
 openrouterSpec.body = args => ({
   ...chatBody(args),

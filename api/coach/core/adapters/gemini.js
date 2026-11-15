@@ -1,10 +1,15 @@
 /* Google Gemini (Generative Language API). The key travels as a header, never as `?key=` —
  * a query string ends up in proxy logs, error messages and browser history. */
 import { httpAdapter } from './http.js';
+import { clampEffort } from './effort.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
 import { addSource } from './openai.js';
 
 const versionOf = m => { const v = /^gemini-(\d+)(?:\.(\d+))?/.exec(m); return v ? Number(v[1]) * 100 + Number(v[2] || 0) : 0; };
+
+// The levels `thinkingLevel` takes on the generation that has it. There is no xhigh and no max,
+// so a canonical level above `high` is asked for as `high` (#1240).
+const GEMINI_EFFORTS = Object.freeze(['low', 'medium', 'high']);
 
 /* Keywords Gemini's `responseSchema` does not define.
  *
@@ -105,6 +110,27 @@ export const geminiSpec = {
     path: model => `/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`,
     body: b => b,
     fold: events => foldGenerateStream(events)
+  },
+  /* The thinking level (#1240): `generationConfig.thinkingConfig.thinkingLevel`.
+   *
+   * The 2.5 generation spells it `thinkingBudget` and takes a number, so a 2.5 model refuses
+   * this field — and its refusal names `thinkingLevel`, which is what the `effort` rung in
+   * http.js matches on. That model then pays one extra request per process and works. Choosing
+   * the field per model name is the discovery follow-up in #1240, not a guess made here. */
+  withEffort: (body, level) => {
+    const value = clampEffort(GEMINI_EFFORTS, level);
+    if (!value) return body;
+    const gc = body.generationConfig || {};
+    return { ...body, generationConfig: { ...gc, thinkingConfig: { thinkingLevel: value } } };
+  },
+  // Only `effort`: the other rungs are Chat Completions shapes this request does not have.
+  compat: {
+    effort: body => {
+      const gc = body.generationConfig;
+      if (!gc || !gc.thinkingConfig) return body;
+      const { thinkingConfig: _tc, ...rest } = gc;
+      return { ...body, generationConfig: rest };
+    }
   },
   // After a refused model (#758): the newest plain Flash the key lists, since that is the one a
   // free key can call; then the newest non-preview Gemini; then whatever text model is there.
