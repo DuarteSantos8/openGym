@@ -16,11 +16,12 @@ import { viewEntry, exUnitTag } from './ex-unit.js'
  * session note. `state`, when given, is the profile: an exercise in a weight unit of its own
  * (#657) is then written in it, its unit after its sets.
  */
-export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state = null }) {
+export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state = null, partials = false }) {
   const facts = [
     ...durPart((w.end || 0) - (w.start || 0)),
     // `warmups`: the profile counts warm-ups in volume (#719); the set list below stays work sets.
-    fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit),
+    // `partials`: it counts lengthened partials too (a fifth of a rep each).
+    fmtVol(warmups || partials ? workoutVolume(w, { warmups, partials }) : (w.vol ?? workoutVolume(w)), unit),
     ...(w.bw ? [t('Body weight') + ' ' + fmtNum(w.bw) + ' ' + unit] : []),
   ]
   const blocks = [[[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' · '), facts.join(' · ')].join('\n')]
