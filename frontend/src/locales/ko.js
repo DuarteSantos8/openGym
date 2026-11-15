@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Repeat last workout": "마지막 운동 반복",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "모든 운동이 지난번의 무게와 반복 횟수로 시작합니다. 어떤 점진적 증가 규칙도 이를 바꾸지 않습니다.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "이 루틴은 마지막 운동을 반복하므로 위의 점진적 증가가 적용되지 않습니다.",
 }

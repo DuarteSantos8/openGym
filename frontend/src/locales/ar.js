@@ -5952,4 +5952,7 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  "Repeat last workout": "كرّر آخر تمرين",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "يبدأ كل تمرين بالوزن والتكرارات التي أديتها في المرة الماضية. لا تغيّرها أي قاعدة تقدم.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "يكرّر هذا الروتين آخر تمرين لك، لذا لا ينطبق عليه التقدم أعلاه.",
 }

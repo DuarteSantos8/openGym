@@ -5900,4 +5900,7 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Repeat last workout": "Legutóbbi edzés megismétlése",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Minden gyakorlat a legutóbbi súllyal és ismétlésszámmal indul. Egyetlen progressziós szabály sem változtat rajtuk.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Ez a rutin a legutóbbi edzésedet ismétli, így a fenti progresszió nem vonatkozik rá.",
 }

@@ -20,7 +20,7 @@ import {
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
 import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
-import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
+import { buildSessionEntries, startsFromLast, opensFromLast } from '../../frontend/src/lib/session-start.js'
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
@@ -552,7 +552,7 @@ function sourceOf(S, cfg, plan, field, routine) {
     if (field === 'reps') return 'routine_plan'
   }
   if (plan.kind === 'off') {
-    const fromLast = startsFromLast(S) && routine?.excludeFromProgression !== true
+    const fromLast = opensFromLast(S, routine) && routine?.excludeFromProgression !== true
     return fromLast && lastEntryFor(S, cfg.id, routine && routine.id) ? 'last_session' : 'routine_plan'
   }
   const decided = plan.kind !== 'first' && plan[field] != null
@@ -560,7 +560,7 @@ function sourceOf(S, cfg, plan, field, routine) {
   // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.
   if (decided) return field !== 'weight' && plan[field] === cfg[field] ? 'routine_plan' : 'progression'
   const last = lastEntryFor(S, cfg.id, routine && routine.id)
-  if (field === 'reps') return startsFromLast(S) && last ? 'last_session' : 'routine_plan'
+  if (field === 'reps') return opensFromLast(S, routine) && last ? 'last_session' : 'routine_plan'
   if (last) return 'last_session'
   const conf = (S.exWeights || {})[cfg.id]
   return conf && conf.w > 0 ? 'confirmed_weight' : 'routine_plan'
@@ -682,7 +682,7 @@ export const previewSession = {
       unit,
       // The profile's "Planned sessions start from" setting: 'plan' opens at the routine's own
       // reps, 'last_session' carries them over from the last time.
-      starts_from: startsFromLast(S) ? 'last_session' : 'plan',
+      starts_from: opensFromLast(S, r) ? 'last_session' : 'plan',
       policy: policyFor(null, r, 'reps', profileRule(S)),
       policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exercises,

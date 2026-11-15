@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Repeat last workout": "تکرار آخرین تمرین",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "هر حرکت با همان وزن و تکراری شروع می‌شود که دفعه قبل انجام دادید. هیچ قانون پیشرفتی آن‌ها را تغییر نمی‌دهد.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "این روتین آخرین تمرین شما را تکرار می‌کند؛ بنابراین قانون پیشرفت بالا روی آن اعمال نمی‌شود.",
 }

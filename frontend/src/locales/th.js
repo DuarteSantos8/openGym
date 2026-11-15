@@ -5908,4 +5908,7 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Repeat last workout": "ทำซ้ำการฝึกล่าสุด",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "ทุกท่าเริ่มด้วยน้ำหนักและจำนวนครั้งที่คุณทำครั้งก่อน ไม่มีกฎการเพิ่มระดับใดเปลี่ยนค่าเหล่านี้",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "รูทีนนี้ทำซ้ำการฝึกล่าสุดของคุณ การเพิ่มระดับด้านบนจึงไม่มีผลกับรูทีนนี้",
 }

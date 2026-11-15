@@ -5976,4 +5976,7 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Repeat last workout": "শেষ ওয়ার্কআউট আবার করুন",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "প্রতিটি এক্সারসাইজ গতবার যে ওজন ও রেপ করেছিলেন তা দিয়েই শুরু হয়। কোনো প্রগ্রেশন নিয়ম সেগুলো বদলায় না।",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "এই রুটিন আপনার শেষ ওয়ার্কআউট আবার করে, তাই উপরের প্রগ্রেশন এতে প্রযোজ্য নয়।",
 }

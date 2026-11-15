@@ -5837,4 +5837,7 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Repeat last workout": "Gentag seneste træning",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Hver øvelse starter med den vægt og de gentagelser, du lavede sidst. Ingen progressionsregel ændrer dem.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Denne rutine gentager din seneste træning, så progressionen ovenfor gælder ikke for den.",
 }
