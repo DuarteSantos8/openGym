@@ -210,8 +210,9 @@ const P = {
   steps: <path d="M3.6 19.8h4.6v-4.6h4.6v-4.6h4.6V6h3" />,
   // a note pinned to show next time (flag is Finish workout)
   pin: <path d="M9.2 3.8h5.6M10.2 3.8v5.4l-3.4 3.8h10.4l-3.4-3.8V3.8M12 13v7.2" />,
-  // a push-pin: the current plan (a round tile; mapPin means a place)
-  pushpin: <path d="m14.4 3.8 5.8 5.8-2 .9-2.7 2.7.5 3.6-1.5 1.5-3.5-3.5-5.1 5.1M10 6.4l-1.4.2-1.6 1.6 8.8 8.8" />,
+  // a push-pin, tilted as if stuck in a board: the current plan (a round tile; mapPin means a
+  // place). Drawn upright, turned 45 degrees and nudged down-left so it sits centred in a circle.
+  pushpin: <g transform="translate(-.9 .9) rotate(45 12 12)"><path d="M8.6 3.4h6.8M10 3.4v4.3c-2.2 1-3.7 2.7-3.7 4.8h11.4c0-2.1-1.5-3.8-3.7-4.8V3.4M12 12.5v8" /></g>,
   // a folder crossed out: Move to No folder
   folderOff: <><path d="M3.6 7.4a2 2 0 0 1 2-2h3.1l2 2.4h6.7a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" /><path d="M4.4 4.4l15.2 15.2" /></>,
   // a place on a map (the gym reminder, #614)
