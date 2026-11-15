@@ -216,8 +216,8 @@ free-exercise-db (its maintainer does not know where its images come from, see
 | 0172 cable incline pushdown | `files/0163-tension.webp` | end | https://github.com/everkinetic/data/blob/main/dist/png/0163-tension.png |
 | 0173 cable incline triceps extension | `files/0164-relaxation.webp` | start | https://github.com/everkinetic/data/blob/main/dist/png/0164-relaxation.png |
 | 0173 cable incline triceps extension | `files/0164-tension.webp` | end | https://github.com/everkinetic/data/blob/main/dist/png/0164-tension.png |
-| 0176 cable kneeling triceps extension | `files/0176-relaxation.webp` | start | https://github.com/everkinetic/data/blob/main/dist/png/0176-relaxation.png |
-| 0176 cable kneeling triceps extension | `files/0176-tension.webp` | end | https://github.com/everkinetic/data/blob/main/dist/png/0176-tension.png |
+| 0176 cable kneeling triceps extension | `files/0177-relaxation.webp` | start | https://github.com/everkinetic/data/blob/main/dist/png/0177-relaxation.png |
+| 0176 cable kneeling triceps extension | `files/0177-tension.webp` | end | https://github.com/everkinetic/data/blob/main/dist/png/0177-tension.png |
 | 0181 cable lying close grip curl | `files/0233-relaxation.webp` | start | https://github.com/everkinetic/data/blob/main/dist/png/0233-relaxation.png |
 | 0181 cable lying close grip curl | `files/0233-tension.webp` | end | https://github.com/everkinetic/data/blob/main/dist/png/0233-tension.png |
 | 0185 cable lying fly | `files/0057-relaxation.webp` | start | https://github.com/everkinetic/data/blob/main/dist/png/0057-relaxation.png |
