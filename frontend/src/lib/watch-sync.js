@@ -1095,7 +1095,7 @@ export function watchExtras (S, show = {}) {
   const bw = Array.isArray(S?.bodyweight) && S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null
   return {
     lang,
-    weighIn: S?.weighIn !== false,
+    weighIn: S?.weighIn !== false && partOn(S, 'body', 'weight'),
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
