@@ -5952,4 +5952,7 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  "Count main muscles only": "احتساب العضلات الرئيسية فقط",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "تُحتسب المجموعة للعضلات التي يدرّبها التمرين أساسًا، لا للعضلات المساعدة.",
+  "Main muscles only": "العضلات الرئيسية فقط",
 }

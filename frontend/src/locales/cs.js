@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Count main muscles only": "Počítat jen hlavní svaly",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Série se počítá svalům, které cvik hlavně procvičuje, ne těm, které pomáhají.",
+  "Main muscles only": "Jen hlavní svaly",
 }

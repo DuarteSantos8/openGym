@@ -5894,4 +5894,7 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Count main muscles only": "Рахувати лише основні м’язи",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Підхід зараховується м’язам, які вправа переважно тренує, а не допоміжним.",
+  "Main muscles only": "Лише основні м’язи",
 }

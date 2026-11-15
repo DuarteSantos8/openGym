@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  "Count main muscles only": "只计主要肌肉",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "一组只算给动作主要锻炼的肌肉，不算给辅助肌肉。",
+  "Main muscles only": "仅主要肌肉",
 }

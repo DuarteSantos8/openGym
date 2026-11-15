@@ -7,7 +7,8 @@ import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { todayISO } from '../lib/format.js'
-import { WeeklySetsHomeLine, muscleTargetsSheet } from './WeeklySets.jsx'
+import { weeklyMuscleSets } from '../lib/muscle-targets.js'
+import { WeeklySetsHomeLine, MainMusclesCaption, muscleTargetsSheet } from './WeeklySets.jsx'
 
 const BENCH = '0025'
 const mounted = []
@@ -19,6 +20,7 @@ const render = el => {
   act(() => root.render(el))
   return host
 }
+const setsOf = () => Object.fromEntries(weeklyMuscleSets(useStore.getState().S).map(r => [r.slug, r.sets]))
 const bench = n => ({ id: 'w' + n, d: todayISO(), start: Date.now(), entries: [{ id: BENCH, sets: Array.from({ length: n }, () => ({ w: 60, r: 8, done: true })) }] })
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -49,5 +51,26 @@ describe('weekly sets per muscle', () => {
     const sheet = render(useUI.getState().sheets.at(-1).render(() => {}))
     const edit = sheet.querySelector('.wsets-edit')
     expect(edit.querySelectorAll('.wsets-edit-r .stp')).toHaveLength(2)
+  })
+
+  it('counting main muscles only is switched in the sheet, said under the bars, and off clears it', () => {
+    const caption = () => render(<MainMusclesCaption S={useStore.getState().S} />).textContent
+    expect(caption()).toBe('')
+    muscleTargetsSheet()
+    const host = render(useUI.getState().sheets.at(-1).render(() => {}))
+    const sw = () => host.querySelector('[role="switch"][aria-label="Count main muscles only"]')
+    expect(sw().getAttribute('aria-checked')).toBe('false')
+    // 12 sets of bench press: 4.8 triceps sets while supporting muscles count in part.
+    const triceps = () => setsOf().triceps
+    expect(triceps()).toBeCloseTo(4.8)
+    act(() => sw().click())
+    expect(useStore.getState().S.muscleSetsMain).toBe(true)
+    expect(sw().getAttribute('aria-checked')).toBe('true')
+    expect(caption()).toBe('Main muscles only')
+    expect(triceps()).toBe(0)
+    act(() => sw().click())
+    expect('muscleSetsMain' in useStore.getState().S).toBe(false)
+    expect(caption()).toBe('')
+    expect(triceps()).toBeCloseTo(4.8)
   })
 })

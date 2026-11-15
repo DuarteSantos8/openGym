@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Count main muscles only": "सिर्फ़ मुख्य मांसपेशियाँ गिनें",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "एक सेट उन्हीं मांसपेशियों के लिए गिना जाता है जिन्हें व्यायाम मुख्य रूप से ट्रेन करता है, मदद करने वाली मांसपेशियों के लिए नहीं।",
+  "Main muscles only": "सिर्फ़ मुख्य मांसपेशियाँ",
 }

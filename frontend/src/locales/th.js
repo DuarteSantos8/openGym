@@ -5908,4 +5908,7 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Count main muscles only": "นับเฉพาะกล้ามเนื้อหลัก",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "หนึ่งเซ็ตนับให้กล้ามเนื้อที่ท่านั้นฝึกเป็นหลัก ไม่นับกล้ามเนื้อที่ช่วย",
+  "Main muscles only": "เฉพาะกล้ามเนื้อหลัก",
 }

@@ -5976,4 +5976,7 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Count main muscles only": "শুধু প্রধান পেশি গুনুন",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "একটি সেট গোনা হয় ব্যায়ামটি মূলত যে পেশিগুলোকে কাজ করায় সেগুলোর জন্য, সহায়ক পেশির জন্য নয়।",
+  "Main muscles only": "শুধু প্রধান পেশি",
 }

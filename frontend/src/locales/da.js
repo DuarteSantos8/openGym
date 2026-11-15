@@ -5837,4 +5837,7 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Count main muscles only": "Tæl kun hovedmuskler",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Et sæt tæller for de muskler, øvelsen primært træner, ikke dem der hjælper.",
+  "Main muscles only": "Kun hovedmuskler",
 }

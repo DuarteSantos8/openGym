@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Count main muscles only": "فقط عضلات اصلی شمرده شوند",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "هر ست برای عضلاتی حساب می‌شود که حرکت عمدتاً تمرین می‌دهد، نه عضلات کمکی.",
+  "Main muscles only": "فقط عضلات اصلی",
 }

@@ -4,7 +4,7 @@ import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
 import {
   MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, levelsOf, loadOf,
   loadOfWorkouts, loadOfWeeklyPlan, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf,
-  musclesOf, muscleWeightsOf, rankOf
+  musclesOf, muscleWeightsOf, rankOf, mainMusclesOf, loadOfRoutine
 } from './muscles.js'
 
 describe('multi-muscle exercise metadata', () => {
@@ -346,5 +346,76 @@ describe('remembered catalogue muscles', () => {
     expect(Object.keys(musclesOf(own))).toEqual(['chest'])
     own.tg = 'biceps'
     expect(Object.keys(musclesOf(own))).toEqual(['biceps'])
+  })
+})
+
+// Weekly sets per muscle counted by main muscles only (muscle-targets.js, S.muscleSetsMain): the
+// muscles an exercise mainly trains keep their credit, the supporting ones get none.
+describe('main muscles only', () => {
+  const BENCH = '0025'
+
+  it('drops the supporting muscles, however the exercise names them', () => {
+    expect(mainMusclesOf({ tg: 'pectorals', mg: 'triceps', sm: ['triceps', 'chest'] })).toEqual({ chest: 1 })
+    expect(mainMusclesOf({ primaries: ['chest'], secondaries: ['triceps', 'biceps'] })).toEqual({ chest: 1 })
+    expect(mainMusclesOf({ primaries: ['chest', 'triceps'] })).toEqual({ chest: 1, triceps: 1 })
+  })
+
+  it('keeps a broad target whole: a generic shoulder is still all of its heads', () => {
+    const heads = musclesOf({ primaries: ['deltoids'] })
+    expect(Object.keys(heads).length).toBe(3)
+    expect(mainMusclesOf({ primaries: ['deltoids'], secondaries: ['triceps'] })).toEqual(heads)
+  })
+
+  it('a list of groups does not say which muscle only helps, so each counts', () => {
+    const ex = { muscleGroups: ['chest', 'triceps'] }
+    expect(mainMusclesOf(ex)).toEqual(musclesOf(ex))
+  })
+
+  it('falls back to the body part only when nothing at all is named', () => {
+    expect(mainMusclesOf({ bp: 'chest' })).toEqual(musclesOf({ bp: 'chest' }))
+    // Only a supporting muscle is named: nothing is mainly trained, and the body part is not guessed.
+    expect(musclesOf({ bp: 'chest', secondaries: ['triceps'] })).toEqual({ triceps: 0.4 })
+    expect(mainMusclesOf({ bp: 'chest', secondaries: ['triceps'] })).toEqual({})
+  })
+
+  it('reads a saved weights snapshot by its lists, else by full credit', () => {
+    const weights = { chest: 1, triceps: 0.4, biceps: 0.7 }
+    expect(mainMusclesOf({ muscleWeights: weights, primaries: ['chest'], secondaries: ['triceps'] })).toEqual({ chest: 1 })
+    expect(mainMusclesOf({ muscleWeights: weights, secondaries: ['triceps'] })).toEqual({ chest: 1, biceps: 0.7 })
+    expect(mainMusclesOf({ muscleWeights: { calves: 1, quadriceps: 0.4 } })).toEqual({ calves: 1 })
+    // Nothing at full credit and nothing named: a spread over a body part, kept as it is.
+    const spread = { quadriceps: 0.4, gluteal: 0.35 }
+    expect(mainMusclesOf({ muscleWeights: spread })).toEqual(spread)
+  })
+
+  it('counts a saved generic shoulder as it counts the planned one: all three heads', () => {
+    const custom = { id: 'c1', custom: true, n: 'Raise', tg: 'shoulders' }
+    const planned = mainMusclesOf(custom)
+    expect(Object.keys(planned).sort()).toEqual(['front-delts', 'rear-delts', 'side-delts'])
+    expect(mainMusclesOf(exerciseMuscleSnapshot(custom))).toEqual(planned)
+    // Heads at other weights were set one by one: only the one at full credit is main.
+    expect(mainMusclesOf({ muscleWeights: { 'front-delts': 1, 'side-delts': 0.5 } })).toEqual({ 'front-delts': 1 })
+  })
+
+  it('hands out a copy of a catalogue exercise, and leaves musclesOf as it was', () => {
+    const before = musclesOf(EXIDX[BENCH])
+    const main = mainMusclesOf(EXIDX[BENCH])
+    expect(main.chest).toBe(1)
+    expect(main.triceps).toBeUndefined()
+    main.chest = 99
+    expect(mainMusclesOf(EXIDX[BENCH]).chest).toBe(1)
+    expect(musclesOf(EXIDX[BENCH])).toEqual(before)
+    expect(before.triceps).toBeCloseTo(0.4)
+  })
+
+  it('is asked for with { main: true }, and nothing else, through the load helpers', () => {
+    const items = [{ id: BENCH, sets: 3 }]
+    const full = loadOf(items)
+    expect(full.triceps).toBeCloseTo(1.2)
+    expect(loadOf(items, { main: true })).toEqual({ chest: 3 })
+    for (const opts of [undefined, null, {}, { main: false }, { main: 'yes' }, { main: 1 }]) expect(loadOf(items, opts)).toEqual(full)
+    const workouts = [{ entries: [{ id: BENCH, sets: [{ done: true }, { done: true }, { done: false }] }] }]
+    expect(loadOfWorkouts(workouts, null, { main: true })).toEqual({ chest: 2 })
+    expect(loadOfRoutine({ ex: [{ id: BENCH, sets: 4 }] }, {}, { main: true })).toEqual({ chest: 4 })
   })
 })
