@@ -5976,4 +5976,6 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Timer wheels": "টাইমারের চাকা",
+  "Seconds in steps of 1 or 5": "সেকেন্ড 1 বা 5 করে",
 }

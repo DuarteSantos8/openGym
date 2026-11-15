@@ -28,6 +28,28 @@ export function joinDuration(m, s, min = 0, max = REST_MAX) {
   return clampDuration((Number(m) || 0) * 60 + (Number(s) || 0), min, max)
 }
 
+// The seconds wheel steps by 1 (00 to 59) or, when the profile says so (S.wheelStep, Settings ›
+// Workout), by 5 (00, 05 … 55). Anything else in the profile reads as 1, the default.
+export const WHEEL_STEPS = [1, 5]
+
+/** The seconds wheel's step for a profile: 5 when S.wheelStep is 5, else 1. */
+export const wheelStepOf = S => (S && S.wheelStep === 5 ? 5 : 1)
+
+/** How many rows the seconds wheel has: 60 at a 1-second step, 12 at 5. */
+export const secRows = step => 60 / (step || 1)
+
+/** The seconds a row stands for: row 3 is 15 s at a 5-second step. */
+export const secAt = (row, step) => row * (step || 1)
+
+/** The row a number of seconds sits on, rounded down to the grid: 6 s is row 1 (05) at a 5-second step. */
+export const secRow = (s, step) => Math.floor((Number(s) || 0) / (step || 1))
+
+/** A duration on the seconds wheel's grid, rounded down: 1:06 is 1:05 at a 5-second step. */
+export const snapDuration = (sec, step) => Math.floor((Number(sec) || 0) / (step || 1)) * (step || 1)
+
+/** Rows Page Up/Down jump on the seconds wheel: about 10 seconds, at least one row. */
+export const secPage = step => Math.max(1, Math.round(10 / (step || 1)))
+
 /**
  * The short form a row shows: "45s" under a minute, "1:30" from a minute up, "Off" for 0 when
  * the caller says 0 means off. Digits stay Western, like the rest of the app's numbers.

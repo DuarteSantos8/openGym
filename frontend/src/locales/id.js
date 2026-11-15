@@ -5862,4 +5862,6 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Timer wheels": "Roda timer",
+  "Seconds in steps of 1 or 5": "Detik dengan langkah 1 atau 5",
 };

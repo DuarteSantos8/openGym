@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Timer wheels": "چرخ‌های تایمر",
+  "Seconds in steps of 1 or 5": "ثانیه‌ها با گام 1 یا 5",
 }

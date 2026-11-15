@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Timer wheels": "Bánh xe bộ đếm giờ",
+  "Seconds in steps of 1 or 5": "Giây theo bước 1 hoặc 5",
 };

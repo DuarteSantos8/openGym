@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  "Timer wheels": "Kółka minutnika",
+  "Seconds in steps of 1 or 5": "Sekundy co 1 lub co 5",
 }

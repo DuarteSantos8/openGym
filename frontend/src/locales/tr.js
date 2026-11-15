@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Timer wheels": "Sayaç çarkları",
+  "Seconds in steps of 1 or 5": "Saniyeler 1’er ya da 5’er",
 }

@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Pré-visualizar em",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "um pouco mais curto",
+  "Timer wheels": "Rodas do temporizador",
+  "Seconds in steps of 1 or 5": "Segundos de 1 em 1 ou de 5 em 5",
 }

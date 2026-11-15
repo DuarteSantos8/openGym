@@ -5952,4 +5952,6 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  "Timer wheels": "عجلات المؤقت",
+  "Seconds in steps of 1 or 5": "الثواني بخطوات 1 أو 5",
 }

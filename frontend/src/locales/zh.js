@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  "Timer wheels": "计时滚轮",
+  "Seconds in steps of 1 or 5": "秒数按 1 或 5 递增",
 }
