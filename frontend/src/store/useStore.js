@@ -385,7 +385,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.routineFolders || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -2029,7 +2029,7 @@ export const useStore = create((set, get) => {
       // stays held, and the next check or "Sync now" runs it again; a bare call has nothing to
       // hold for and lets go.
       adopting = runAdopt(ask, opts, tok)
-        .then(r => { if (isCurrent(tok)) claimSaved(); return r })
+        .then(r => { if (isCurrent(tok)) { claimSaved(); if (get().ready) moveArchive() } return r })   // the account's copy may hold the old Archive folder
         .catch(e => { if (isCurrent(tok) && !adoptOwed()) releaseAdopt(); throw e })
         .finally(() => { if (tok === syncSession) adopting = null })
       return adopting
