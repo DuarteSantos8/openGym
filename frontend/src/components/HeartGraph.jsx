@@ -25,7 +25,7 @@ export default function HeartGraph ({ samples, max, zone = 0, span = 0, marks = 
   const width = span || Math.max(MIN_SPAN_MS, last?.t || 0)
   const x = ms => GUTTER + ms / width * (W - GUTTER - 6)
   return (
-    <svg className="heart-graph" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t('Heart rate')}>
+    <svg className="heart-graph" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t('Heart rate')} direction="ltr">
       {Array.from({ length: ZONES }, (_, i) => {
         const z = ZONES - i
         const top = i * (BAND + 2)

@@ -2,7 +2,7 @@ import Glyph from './Glyph.jsx'
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
-import { lastHeart } from '../lib/session-heart.js'
+import { lastHeart, watchCurve } from '../lib/session-heart.js'
 import { showHeartView, useSessionHeart } from './HeartBand.jsx'
 
 // " · ♥ 128" in the workout header while there is a fresh reading: from AirPods through the iPhone's
@@ -20,10 +20,13 @@ export default function LiveHeartRate({ wid, curve = true }) {
     return () => { off(); clearInterval(iv) }
   }, [])
   // The curve switched off (Settings → Workout) leaves the watch's reading to the watch.
-  const watch = curve && heart.wid === wid ? lastHeart(heart) : null
-  if (watch && view === 'pill') {
-    return <> · <button type="button" className="live-hr" aria-label={t('Heart rate') + ' ' + watch.bpm + ', ' + t('Show more')}
-      onClick={() => showHeartView('line')}><Glyph icon="heart" emoji="❤️" /> {watch.bpm}</button></>
+  // Folded into the header, the band comes back with a tap as long as the workout has a curve,
+  // the number only while the last reading is fresh.
+  const folded = curve && view === 'pill' && watchCurve(heart, wid)
+  const watch = curve && watchCurve(heart, wid) ? lastHeart(heart) : null
+  if (folded) {
+    return <> · <button type="button" className="live-hr" aria-label={t('Heart rate') + (watch ? ' ' + watch.bpm : '') + ', ' + t('Show more')}
+      onClick={() => showHeartView('line')}><Glyph icon="heart" emoji="❤️" />{watch ? ' ' + watch.bpm : ''}</button></>
   }
   if (!hr || watch) return null
   return <> · <span className="live-hr" aria-label={t('Heart rate') + ' ' + hr.bpm}><Glyph icon="heart" emoji="❤️" /> {hr.bpm}</span></>

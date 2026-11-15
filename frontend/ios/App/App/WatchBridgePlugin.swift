@@ -44,7 +44,7 @@ import WatchConnectivity
  *   await WatchBridge.sendClips({ wid, clips: [{ exId, path }] })   // the workout's animations
  *   await WatchBridge.openOnWatch()       // { ok }: a workout started here opens the watch app
  *   await WatchBridge.dropClips()         // the workout is over: clips still on their way are cancelled
- *   WatchBridge.addListener('watchHeart', ...)   // { samples: [[ms, bpm]] }: the workout's heart rate, each reading as it comes
+ *   WatchBridge.addListener('watchHeart', ...)   // { samples: [[ms, bpm]], off?, wid? }: the workout's heart rate, each reading as it comes
  *   WatchBridge.addListener('watchState', ...)   // activated, paired, installed changed: ask status again
  *
  * Animations: only the running workout's, only as files sent with transferFile (the watch keeps
@@ -430,7 +430,11 @@ final class WatchLink: NSObject, WCSessionDelegate {
     /// The workout's heart rate, each reading with its own time ([ms, bpm]): for the curve on the
     /// workout screen, right now, so never kept.
     public func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        if let heart = message["heart"] as? [[Double]] { tell("watchHeart", ["samples": heart]) }
+        guard let heart = message["heart"] as? [[Double]] else { return }
+        var data: [String: Any] = ["samples": heart]
+        if let off = message["off"] as? Double { data["off"] = off }
+        if let wid = message["wid"] as? String { data["wid"] = wid }
+        tell("watchHeart", data)
     }
 
     /* ---------- the watch's side ---------- */
