@@ -18,6 +18,7 @@ import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-u
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
 import { withSessionTarget } from './session-targets.js'
 import { restPauseAimUnderProgramme } from './rest-pause.js'
+import { gymSplitView } from './gym-split.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -139,9 +140,10 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   if (slot) {
     // A programme sets the load and the effort; a rest-pause total is the routine's, like its reps,
     // so it keeps climbing through the programme's weeks (lib/rest-pause.js).
+    // The weight last lifted is read the way the prescription read it: at this gym (#988).
     const policyPlan = plan
     plan = programmePlan(st, cfg, plan, slot, step)
-    const lastW = policyPlan.rpAim != null ? sessionsFor(st, cfg.id, cfg, routine?.id).filter(x => x.mode === 'reps').at(-1)?.weight : null
+    const lastW = policyPlan.rpAim != null ? sessionsFor(gymSplitView(st, cfg.id), cfg.id, cfg, routine?.id).filter(x => x.mode === 'reps').at(-1)?.weight : null
     const rpAim = restPauseAimUnderProgramme(cfg, policyPlan, plan, lastW, slot.deload)
     if (rpAim != null) plan = { ...plan, rpAim }
   }
