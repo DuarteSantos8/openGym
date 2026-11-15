@@ -57,7 +57,7 @@ export function parseCSV(text) {
     if (quoted) {
       if (c === '"') { if (s[i + 1] === '"') { field += '"'; i++ } else quoted = false }
       else field += c
-    } else if (c === '"') quoted = true
+    } else if (c === '"' && field === '') quoted = true // FitNotes writes `Step Ups 16"` unescaped (#1106)
     else if (c === sep) { row.push(field); field = '' }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && s[i + 1] === '\n') i++
