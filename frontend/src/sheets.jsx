@@ -1159,7 +1159,9 @@ function WeightListPaste({ unit, onAdd }) {
     toast(t('Added to the list'))
   }
   return <div style={{ marginBottom: 8 }}>
-    <textarea className="input" rows={4} autoFocus inputMode="decimal" value={text} onChange={e => setText(e.target.value)}
+    {/* The full keyboard, not the number pad: an iPhone's number pad has no Return, no space and
+        no second separator, so a list could not be typed on it at all (#926). */}
+    <textarea className="input" rows={4} autoFocus inputMode="text" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={text} onChange={e => setText(e.target.value)}
       aria-label={t('Weights ({0})', unit)} placeholder={t('One per line, or like this: 5, 11.3, 18.1')} style={{ marginBottom: 8 }} />
     <div className="row" style={{ gap: 8 }}>
       <Button variant="ghost" className="dim" onClick={() => { setOpen(false); setText('') }}>{t('Cancel')}</Button>
