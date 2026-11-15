@@ -6046,4 +6046,6 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Nutrition totals": "পুষ্টির মোট হিসাব",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "গত দুই সপ্তাহে আপনার খাদ্য ডায়েরি থেকে দৈনিক শক্তি, প্রোটিন, কার্বোহাইড্রেট ও চর্বির মোট পরিমাণ। কখনো খাবারের নাম নয়। আপনি চালু না করা পর্যন্ত বন্ধ থাকে।",
 }

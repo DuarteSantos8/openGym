@@ -5978,4 +5978,6 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Nutrition totals": "ยอดรวมโภชนาการ",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "ยอดรวมพลังงาน โปรตีน คาร์โบไฮเดรต และไขมันรายวันจากบันทึกอาหารของคุณในสองสัปดาห์ล่าสุด ไม่ส่งชื่ออาหารเด็ดขาด ปิดอยู่จนกว่าคุณจะเปิด",
 }

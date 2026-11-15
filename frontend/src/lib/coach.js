@@ -86,6 +86,8 @@ export const CATEGORY_TEXT = {
 export const OPTIONAL_TEXT = {
   records: () => [t('Strength trends'), t('Estimated one-rep maxes of your main lifts over the last twelve weeks.')],
   measurements: () => [t('Body measurements'), t('Your latest measurements and the ones from about eight weeks before.')],
+  // Fork (EP13-T02): totals only, never food names (api/coach/core/context.js nutritionOf).
+  nutrition: () => [t('Nutrition totals'), t('Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.')],
   health: () => [t('Health and how you feel'), t('Daily check-ins, sleep, resting heart rate, HRV and steps from your phone, and blood pressure. Off until you switch it on.')]
 }
 export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.version === CONSENT_VERSION

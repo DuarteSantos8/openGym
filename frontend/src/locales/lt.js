@@ -5963,4 +5963,6 @@ export default {
   "Unsupported entry": "Nepalaikomas įrašas",
   "Your foods": "Jūsų maisto produktai",
   "{0} entries unknown": "Nežinomi įrašai: {0}",
+  "Nutrition totals": "Mitybos sumos",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Paskutinių dviejų savaičių dienos energijos, baltymų, angliavandenių ir riebalų sumos iš jūsų mitybos dienoraščio. Niekada maisto pavadinimų. Išjungta, kol neįjungsite.",
 }

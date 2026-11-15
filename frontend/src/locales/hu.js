@@ -5970,4 +5970,6 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Nutrition totals": "Tápanyag-összesítők",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Az elmúlt két hét napi energia-, fehérje-, szénhidrát- és zsírösszesítői az étkezési naplódból. Ételnevek soha. Kikapcsolva, amíg be nem kapcsolod.",
 }

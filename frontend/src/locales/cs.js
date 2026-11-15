@@ -5933,4 +5933,6 @@ export default {
   "Unsupported entry": "Nepodporovaný záznam",
   "Your foods": "Vaše potraviny",
   "{0} entries unknown": "Neznámé záznamy: {0}",
+  "Nutrition totals": "Souhrny výživy",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Denní součty energie, bílkovin, sacharidů a tuků z vašeho deníku výživy za poslední dva týdny. Nikdy názvy potravin. Vypnuto, dokud to nezapnete.",
 }
