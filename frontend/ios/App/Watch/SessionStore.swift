@@ -954,19 +954,30 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Readings the phone has not had yet: with the wrist down watchOS holds messages back, and these
     /// go with the next one that can, so the curve on the phone has no hole where the arm was down.
     private var heartPending: [[Double]] = []
+    /// The workout those readings were measured for: another one starts the list again.
+    private var heartPendingFor: String?
 
     /// Each heart-rate reading of the workout, for the curve on the phone's workout screen: a
     /// message, not an event. A page asleep reads what it missed back from Apple Health.
     private func sendHeart(_ readings: [(Date, Double)]) {
         guard !isDemo, WCSession.isSupported() else { return }
+        let wid = state.workout?.id
+        if wid != heartPendingFor { heartPending = []; heartPendingFor = wid }
         heartPending += readings.map { [($0.0.timeIntervalSince1970 * 1000).rounded(), $0.1.rounded()] }
         // A quarter of an hour at most: the phone reads anything older back from Apple Health.
         if heartPending.count > 200 { heartPending.removeFirst(heartPending.count - 200) }
         guard WCSession.default.activationState == .activated, WCSession.default.isReachable else { return }
         let samples = heartPending
         heartPending = []
-        WCSession.default.sendMessage(["heart": samples], replyHandler: nil, errorHandler: { [weak self] _ in
-            DispatchQueue.main.async { self?.heartPending.insert(contentsOf: samples, at: 0) }
+        // The workout they belong to, and this watch's clock gap (the one its events carry), so the
+        // phone files them under the right workout and on its own clock.
+        var message: [String: Any] = ["heart": samples, "off": off]
+        if let wid = wid { message["wid"] = wid }
+        WCSession.default.sendMessage(message, replyHandler: nil, errorHandler: { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self = self, self.heartPendingFor == wid else { return }
+                self.heartPending.insert(contentsOf: samples, at: 0)
+            }
         })
     }
 

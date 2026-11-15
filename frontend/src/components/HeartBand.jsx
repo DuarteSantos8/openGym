@@ -5,7 +5,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { heartCurve } from '../lib/heart-rate.js'
 import { readWorkoutHeart } from '../lib/health-sync.js'
 import { hrMaxOf, hrZone, DEFAULT_HR_MAX } from '../lib/live-tiles.js'
-import { feedHeart, heartView, lastHeart, onSessionHeart, sessionHeart, setHeartView } from '../lib/session-heart.js'
+import { feedHeart, heartOrigin, heartView, lastHeart, onSessionHeart, sessionHeart, setHeartView, watchCurve } from '../lib/session-heart.js'
 import Icon from './Icon.jsx'
 import HeartGraph from './HeartGraph.jsx'
 
@@ -41,25 +41,30 @@ export default function HeartBand({ A }) {
     return () => clearInterval(tick)
   }, [])
   // What the page missed (asleep, or opened in the middle): read back from Apple Health.
+  // Only for the workout still running when the answer comes: a slow read never lands on the next one.
   useEffect(() => {
     if (!MOBILE || !A?.id || !A.start) return
     const fill = () => {
       if (document.visibilityState !== 'visible') return
-      readWorkoutHeart({ start: A.start, end: Date.now() }).then(r => feedHeart(A.id, r), () => {})
+      const wid = A.id
+      readWorkoutHeart({ start: heartOrigin(A), end: Date.now() }, useStore.getState().S).then(r => {
+        if (useStore.getState().S?.active?.id === wid) feedHeart(wid, r)
+      }, () => {})
     }
     fill()
     document.addEventListener('visibilitychange', fill)
     return () => document.removeEventListener('visibilitychange', fill)
-  }, [A?.id, A?.start])
+  }, [A?.id, A?.start, A?.pausedMs])
 
-  if (heart.wid !== A?.id || !heart.samples.length || view === 'pill') return null
-  const curve = heartCurve(heart.samples, A.start, Math.max(now, heart.samples[heart.samples.length - 1][0]))
+  if (!watchCurve(heart, A?.id) || view === 'pill') return null
+  const origin = heartOrigin(A)
+  const curve = heartCurve(heart.samples, origin, Math.max(now, heart.samples[heart.samples.length - 1][0]))
   const last = lastHeart(heart, now)
   const max = hrMaxOf(S) || DEFAULT_HR_MAX
   const zone = last ? hrZone(last.bpm, S) || 0 : 0
   const zoneStyle = zone ? { background: `var(--z${zone})`, color: '#000' } : undefined
   const big = view === 'big'
-  const marks = A.entries.flatMap(e => e.sets.filter(s => s.done && s.at > A.start).map(s => s.at - A.start))
+  const marks = A.entries.flatMap(e => e.sets.filter(s => s.done && s.at > origin).map(s => s.at - origin))
   return (
     <div className={'hband' + (big ? ' big' : '')}>
       <button type="button" className="hband-main" aria-expanded={big} aria-label={big ? t('Collapse') : t('Expand')}

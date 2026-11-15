@@ -11,16 +11,19 @@ const BPM_MAX = 250
 /** Readings closer than this are one: the same one from two ways in (live and read back). */
 const SAME_MS = 1000
 
-let cur = { wid: null, samples: [] }
+let cur = { wid: null, samples: [], watch: false }
 const listeners = new Set()
 
 /**
  * `state` with `readings` ([ms, bpm]) added for workout `wid`: in time order, one per moment,
- * nonsense left out. Another workout starts from nothing.
+ * nonsense left out. Another workout starts from nothing. `watch`: the readings came live from the
+ * Apple Watch, which is what the band waits for (Apple Health also holds other sources, AirPods).
  */
-export function addHeart(state, wid, readings) {
-  const samples = state && state.wid === wid ? [...state.samples] : []
-  let changed = !state || state.wid !== wid
+export function addHeart(state, wid, readings, { watch = false } = {}) {
+  const same = state && state.wid === wid
+  const samples = same ? [...state.samples] : []
+  const seen = (same && state.watch) || watch
+  let changed = !same || seen !== !!state?.watch
   for (const r of Array.isArray(readings) ? readings : []) {
     const at = Number(r?.[0])
     const bpm = Math.round(Number(r?.[1]))
@@ -32,7 +35,7 @@ export function addHeart(state, wid, readings) {
     samples.splice(lo, 0, [at, bpm])
     changed = true
   }
-  return changed ? { wid, samples } : state
+  return changed ? { wid, samples, watch: seen } : state
 }
 
 /** The last reading when it is recent enough to show as now: { bpm, at } or null. */
@@ -41,13 +44,28 @@ export function lastHeart(state, now = Date.now()) {
   return last && now - last[0] < 60e3 ? { bpm: last[1], at: last[0] } : null
 }
 
+/** Whether the band has a curve to show for workout `wid`: the watch has sent it readings. */
+export const watchCurve = (state, wid) => !!state && state.wid === wid && state.watch && state.samples.length > 0
+
+/** Where the curve starts: the workout's start on the clock. A resume moves A.start on by the pause
+ *  (lib/workout-pause.js), so the time paused is taken back off: the curve keeps the whole session. */
+export const heartOrigin = A => (Number(A?.start) || 0) - (Number(A?.pausedMs) || 0)
+
+/** The watch's readings on this phone's clock: `off` is the watch's clock minus the phone's
+ *  (lib/watch-sync.js phoneClock), the same gap its events carry. */
+export function onPhoneClock(readings, off) {
+  const o = Number(off)
+  if (!o || Math.abs(o) > 12 * 3600e3 || !Array.isArray(readings)) return readings
+  return readings.map(r => (Array.isArray(r) ? [Number(r[0]) - o, r[1]] : r))
+}
+
 export const sessionHeart = () => cur
 export function onSessionHeart(fn) { listeners.add(fn); return () => listeners.delete(fn) }
 
-/** Readings for workout `wid`, from the watch or read back from Apple Health. */
-export function feedHeart(wid, readings) {
+/** Readings for workout `wid`, live from the watch (`watch: true`) or read back from Apple Health. */
+export function feedHeart(wid, readings, opts) {
   if (wid == null) return
-  const next = addHeart(cur, wid, readings)
+  const next = addHeart(cur, wid, readings, opts)
   if (next === cur) return
   cur = next
   for (const fn of listeners) { try { fn(cur) } catch { /* a closed screen */ } }
