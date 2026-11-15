@@ -478,7 +478,7 @@ function EffortCard({ S }) {
         {/* Harder is up on either scale, and the axis says so in words: an RIR axis counts down
             as the sets get harder, so its 0 sits at the top. */}
         <div className="chart"><LineChart points={pts} h={140} unit={hd} color="var(--gold-ink)" invert={kind === 'rir'}
-          yHint={{ hi: t('Harder') }} tickPrefix={hd + ' '} /></div>
+          yHint={{ hi: t('Harder') }} tickPrefix={hd + ' '} ariaLabel={t('Week by week')} /></div>
       </>}
       <h4 className="sec">{t('Where the sets land')}</h4>
       <StackBar parts={parts} ariaLabel={t('Where the sets land')}
@@ -778,6 +778,10 @@ export default function Stats() {
   // where reps were lost. Reps instead for unloaded work, an assistance machine (where a 1RM
   // reads backwards), or a history of sets all past the estimate's rep cap.
   const oneRmFormula = formulaOf(S)
+  // The language, read here for the names the per-set series carry. The shell re-renders when the
+  // language changes (App's useLang), and the memo has to follow it: the legend under the chart
+  // renames itself on every render, so a name left in the old language disagrees with it.
+  const lang = getLang()
   const perSet = useMemo(() => {
     if (!curEx || curMode !== 'reps') return null
     const usable = list => list.length >= 2 && list.some(s => s.sets.length >= 2)
@@ -788,7 +792,7 @@ export default function Stats() {
     const { lines, hidden } = perSetLines(sessions)
     const shown = new Set(lines.map(l => l.n))
     return {
-      series: lines.map(l => ({ n: l.n, points: l.points, color: SET_COLORS[l.n - 1] })),
+      series: lines.map(l => ({ n: l.n, points: l.points, color: SET_COLORS[l.n - 1], label: t('Set {0}', l.n) })),
       anchors: sessions.map(s => ({
         t: s.t, d: s.d, y: Math.max(...s.sets.map(x => x.y)),
         note: s.sets.filter(x => shown.has(x.n)).map(x => x.n + ': ' + (repsOnly ? x.r : fmtNum(x.w) + '×' + x.r)).join(' · '),
@@ -798,7 +802,7 @@ export default function Stats() {
       metric,
       drop: dropOffSet(sessions),
     }
-  }, [xw, curEx, curMode, repsOnly, oneRmFormula])
+  }, [xw, curEx, curMode, repsOnly, oneRmFormula, lang])
   // The same sessions cut to the range; a set number with nothing left in it drops out of the legend.
   const perSetChart = useMemo(() => {
     if (!perSet) return null
@@ -847,6 +851,8 @@ export default function Stats() {
   if (relBoth) exOpts.push({ value: 'bw-e1rm', label: t('Bodyweight') + ' · ' + t('Est. 1RM') }, { value: 'bw-top', label: t('Bodyweight') + ' · ' + t('Top set') })
   else if (showRel) exOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
   const exMetricValue = onRel ? (relBoth ? 'bw-' + relUsed : 'bodyweight') : onMax ? 'max' : onEff ? 'effort' : onE1 ? 'e1rm' : onSets ? 'sets' : 'top'
+  // The chart is named for the curve the picker says it is, so the name and the choice cannot drift apart.
+  const exChartName = (exOpts.find(o => o.value === exMetricValue) || exOpts[0]).label
   const pickMetric = v => {
     if (v.startsWith('bw-')) { setRelBasis(v.slice(3)); setExMetric('bodyweight') } else setExMetric(v)
   }
@@ -979,7 +985,7 @@ export default function Stats() {
       </div>
       <Segmented className="seg-range" of={t('Body weight')} value={range} onChange={setRange}
         options={rangeOptions()} />
-      <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} /></div>
+      <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} ariaLabel={t('Body weight')} /></div>
       {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
       {S.bodyweight.length > 0 && <WeightRate S={S} />}
       {/* every weigh-in, week by week with its average (Discord 'Weight') */}
@@ -1014,14 +1020,14 @@ export default function Stats() {
           {rangeTooShort
             ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
             : onSets
-            ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : XS.unit} />
+            ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : XS.unit} ariaLabel={exChartName} />
             : onRel
-            ? <LineChart points={relChartPts} h={150} unit="% BW" />
+            ? <LineChart points={relChartPts} h={150} unit="% BW" ariaLabel={exChartName} />
             : onMax
-            ? <LineChart points={maxChartPts} h={150} unit={t('reps')} />
+            ? <LineChart points={maxChartPts} h={150} unit={t('reps')} ariaLabel={exChartName} />
             : onEff
-            ? <LineChart points={effPts} h={150} unit={hd} color="var(--gold-ink)" invert={kind === 'rir'} yHint={{ hi: t('Harder') }} tickPrefix={hd + ' '} />
-            : <LineChart points={chartPts} h={150} unit={exUnit} />}
+            ? <LineChart points={effPts} h={150} unit={hd} color="var(--gold-ink)" invert={kind === 'rir'} yHint={{ hi: t('Harder') }} tickPrefix={hd + ' '} ariaLabel={exChartName} />
+            : <LineChart points={chartPts} h={150} unit={exUnit} ariaLabel={exChartName} />}
         </div>
         {exLegend && <ChartLegend className="ex-legend" items={perSetChart.ns.map(n => ({ key: n, mark: 'dot', color: SET_COLORS[n - 1], label: t('Set {0}', n) }))} />}
         <div className="small ex-cap">
