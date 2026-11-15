@@ -230,12 +230,13 @@ describe('mergeImport adds and never overwrites', () => {
     expect(S.workouts[2].entries[0].sets[0]).toEqual({ min: 30, speed: 10, done: true })
   })
 
-  it('weigh-ins: existing days win and the list stays sorted', () => {
+  it('weigh-ins: a different weight joins its day, the day\'s own stays its value, the list sorted', () => {
     const S = state()
     const p = parseImport('Date,Weight (kg)\n2024-03-07,99\n2024-03-05,79\n2024-03-09,81', kg)
     expect(p.kind).toBe('bodyweight')
-    expect(mergeImport(S, p)).toEqual({ added: 2, skipped: 1 })
+    expect(mergeImport(S, p)).toEqual({ added: 3, skipped: 0 })
     expect(S.bodyweight.map(b => [b.d, b.w])).toEqual([['2024-03-05', 79], ['2024-03-07', 80], ['2024-03-09', 81]])
+    expect(S.bodyweight[1].ins.map(r => r.w)).toEqual([80, 99])
   })
 
 })

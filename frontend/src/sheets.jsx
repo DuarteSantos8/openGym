@@ -64,7 +64,7 @@ import { backupSuggestions } from './lib/backup-suggestions.js'
 import { refusalsFor, markUsed } from './lib/session-targets.js'
 import { isGymSplit, brandAt, withExGym, currentGymId, cleanBrand, BRAND_MAX, placesOf, onlyPlace } from './lib/gym-split.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle, MUSCLE_MODEL } from './lib/muscles.js'
-import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
+import { mergeImport, importHasWeighIn, measurementImportPlan } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
 import { importHevyData, parseHevyAccount, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
@@ -591,9 +591,11 @@ function ImportSummary({ parsed: initial, text, close }) {
     } catch { return initial }
   }, [text, choices, initial])
   const isBW = parsed.kind === 'bodyweight'
-  // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps it.
+  // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps its
+  // values, and only one the file cannot add anything to counts as already here (#1206).
   const checkIns = isBW ? parsed.measurements || [] : []
-  const haveM = checkIns.filter(m => (st.measurements || []).some(x => x.d === m.d)).length
+  const mPlan = isBW && checkIns.length ? measurementImportPlan(st, checkIns) : null
+  const haveM = mPlan ? [...mPlan].filter(([d, a]) => a === 'keep' && (st.measurements || []).some(x => x.d === d)).length : 0
   const have = (isBW
     ? parsed.bodyweight.filter(b => importHasWeighIn(st, b)).length
     : parsed.workouts.filter(w => st.workouts.some(x => x.d === w.d)).length) + haveM
