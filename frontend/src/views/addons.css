@@ -85,3 +85,12 @@
 .nt-cannot{max-width:180px;text-align:right;margin:0!important}
 .nt-tools{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:740px){.nt-result{grid-template-columns:1fr}.nt-add{justify-content:flex-end}.nt-cannot{max-width:none;text-align:left}}
+
+/* Progression rule lab (components/ProgressionLab.jsx) */
+.addon-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--label-2)}
+.addon-prog-form textarea{width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;padding:8px;border-radius:8px}
+.addon-table-wrap{overflow-x:auto}
+.addon-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+.addon-table th,.addon-table td{padding:6px 8px;text-align:start;border-bottom:1px solid var(--sep,rgba(127,127,127,.25))}
+.addon-table tr[data-diverges] td{font-weight:600}
+.addon-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
