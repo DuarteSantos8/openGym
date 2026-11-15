@@ -39,7 +39,12 @@ export function archiveRoutines(s, ids) {
     r.archived = true
     snap.archived.push({ id: r.id, week, dayPlan })
   }
-  if (snap.seq.length) s.rotation = { ...s.rotation, sequence: seq.filter(id => !hit.some(r => r.id === id)) }
+  if (snap.seq.length) {
+    s.rotation = { ...s.rotation, sequence: seq.filter(id => !hit.some(r => r.id === id)) }
+    // `at` indexes the sequence: it moves back by the entries removed before it, to name the same segment.
+    const at = s.rotation.at
+    if (Number.isInteger(at)) { s.rotation.at = at - snap.seq.filter(([i]) => i < at).length; snap.at = [at, s.rotation.at] }
+  }
   return snap
 }
 
@@ -91,7 +96,8 @@ export function deleteFolderWithRoutines(s, name) {
 export function undoSnapshot(s, snap) {
   let did = false
   const back = new Set()
-  for (const a of snap?.archived || []) {
+  // Backwards: each position was noted after the removals before it, so the inverse runs the other way.
+  for (const a of [...(snap?.archived || [])].reverse()) {
     const r = (s.routines || []).find(x => x.id === a.id)
     if (!r || r.archived !== true) continue
     delete r.archived
@@ -107,21 +113,27 @@ export function undoSnapshot(s, snap) {
     const seq = seqOf(s).slice()
     for (const [at, id] of snap.seq) if (back.has(id)) seq.splice(Math.min(at, seq.length), 0, id)
     s.rotation = { ...s.rotation, sequence: seq }
+    if (snap.at && s.rotation.at === snap.at[1] && snap.seq.every(([, id]) => back.has(id))) s.rotation.at = snap.at[0]
   }
   for (const d of [...(snap?.deleted || [])].reverse()) if (restoreRoutine(s, d)) did = true
-  const e = snap?.entry
-  if (e && !(s.routineFolders || []).some(x => same(x.name, e.name))) {
-    const list = (s.routineFolders || []).slice()
-    list.splice(Math.min(e.at, list.length), 0, e.current ? { name: e.name, current: true } : { name: e.name })
-    s.routineFolders = list
-    did = true
-  }
+  if (snap?.entry && putBackEntry(s, snap.entry)) did = true
   return did
+}
+
+/** Puts a taken folder entry back where it stood. Its current mark comes back only if no folder holds it now. */
+export function putBackEntry(s, e) {
+  if ((s.routineFolders || []).some(x => same(x.name, e.name))) return false
+  const list = (s.routineFolders || []).slice()
+  list.splice(Math.min(e.at, list.length), 0, e.current && !list.some(x => x.current) ? { name: e.name, current: true } : { name: e.name })
+  s.routineFolders = list
+  return true
 }
 
 /** Once per state: the old folder called Archive becomes the archive flag. True when it ran. */
 export function migrateArchiveFolder(s) {
   if (s.archiveMoved) return false
+  // Off the schedule first, as an ordinary archive does: a later Restore must not reactivate old assignments.
+  archiveRoutines(s, (s.routines || []).filter(r => isArchive(r.folder)).map(r => r.id))
   for (const r of s.routines || []) if (isArchive(r.folder)) { r.archived = true; delete r.folder }
   s.archiveMoved = true
   return true

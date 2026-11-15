@@ -101,6 +101,15 @@ describe('Archive screen', () => {
     expect(S().routines.find(r => r.id === 'e').folder).toBe('Block 2')
   })
 
+  it('folder menu: Restore folder un-archives its routines and keeps their folder', () => {
+    mount()
+    click(more('Block 2'))
+    act(() => pick('Restore folder').onClick())
+    for (const id of ['a', 'b']) expect(S().routines.find(r => r.id === id)).toMatchObject({ folder: 'Block 2' })
+    expect(S().routines.filter(r => r.id === 'a' || r.id === 'b').some(r => r.archived)).toBe(false)
+    expect(S().routines.find(r => r.id === 'e').archived).toBeUndefined()
+  })
+
   it('Delete all names the count, then undoes in one step', () => {
     mount()
     const btn = [...host.querySelectorAll('button')].find(b => b.textContent === 'Delete all 3 for good')

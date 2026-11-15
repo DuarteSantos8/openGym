@@ -85,6 +85,16 @@ describe('starter plan chooser', () => {
     expect(S().week).toEqual(week)
   })
 
+  it('does not reuse an archived copy of the plan: the weekdays get live routines', () => {
+    loadStarterPlan('upper-lower')
+    const old = S().routines.map(r => r.id)
+    useStore.setState(s => ({ S: { ...s.S, routines: s.S.routines.map(r => (old.includes(r.id) ? { ...r, archived: true } : r)), week: {} } }))
+    loadStarterPlan('upper-lower')
+    const on = Object.values(S().week).flat()
+    expect(on.length).toBe(4)
+    expect(on.every(id => S().routines.find(r => r.id === id).archived !== true)).toBe(true)
+  })
+
   it('asks first when a weekday the plan wants is already taken', () => {
     useStore.setState(s => ({ S: { ...s.S, week: { 3: ['mine'] } } }))
     choose('Full Body')

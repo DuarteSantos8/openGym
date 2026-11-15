@@ -15,7 +15,7 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { activeRoutines } from './lib/routine-folders.js'
+import { activeRoutines, isLive } from './lib/routine-folders.js'
 import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -294,7 +294,7 @@ export function loadStarterPlan(planId, profile) {
     const idOf = {}
     const sameLift = (a, b) => a.ex.length === b.ex.length && a.ex.every((e, i) => e.id === b.ex[i].id)
     plan.routines.forEach(r => {
-      const have = st.routines.find(x => x.name === r.name && sameLift(x, r))
+      const have = st.routines.find(x => isLive(x) && x.name === r.name && sameLift(x, r))
       if (have) idOf[r.id] = have.id
       else { st.routines.push(r); idOf[r.id] = r.id }
     })
@@ -4112,7 +4112,9 @@ const PLANNED_DAY = '__planned-day'
 function LogPastWorkout({ initial, close }) {
   const st = useStore(s => s.S)
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1)
-  const planned = [].concat(initial?.routineIds || []).map(id => st.routines.find(r => r.id === id)).filter(Boolean)
+  // Live only: buildCombinedEntries drops an archived routine, which would open an empty Freestyle.
+  const live = activeRoutines(st)
+  const planned = [].concat(initial?.routineIds || []).map(id => live.find(r => r.id === id)).filter(Boolean)
   const [date, setDate] = useState(initial?.iso || isoOf(yesterday))
   const [time, setTime] = useState('18:00')
   const [dur, setDur] = useState(60)
@@ -4121,7 +4123,7 @@ function LogPastWorkout({ initial, close }) {
   const options = [
     { value: '', label: t('Freestyle') },
     ...(planned.length > 1 ? [{ value: PLANNED_DAY, label: deriveSessionName(planned.map(r => r.name)) }] : []),
-    ...st.routines.map(r => ({ value: r.id, label: r.name })),
+    ...live.map(r => ({ value: r.id, label: r.name })),
   ]
 
   const go = replaceId => {

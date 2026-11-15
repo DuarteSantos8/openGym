@@ -2771,6 +2771,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   :root:not([data-theme="light"]){
     --on-blue:#000; --on-indigo:#000; --on-purple:#000; --on-pink:#000; --on-red:#000; --on-brown:#000; --on-grey:#000;
   }
+  /* the brand's lime stays #84cc16 here, which white cannot read on (more specific, so order is free) */
+  :root[data-theme="light"][data-accent="brand"]{--on-green:#0c0e12}
   :root[data-theme="light"]{
     --on-green:#fff; --on-orange:#fff; --on-yellow:#fff; --on-teal:#fff; --on-mint:#fff;
   }
@@ -4268,6 +4270,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-pill-star{color:var(--label)}
 .plan-pill-star[aria-pressed="true"]{background:var(--acc);color:var(--on-acc)}
 .plan-pill-new{color:var(--acc-ink)}
+/* above a running rest timer (#timer is full width at 88px), and opaque under Reduce Transparency;
+   this block must stay after the pill rules, which have the same specificity */
+body.resting .plan-pill{bottom:calc(166px + var(--sab))}
+@media (prefers-reduced-transparency: reduce){
+  .plan-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg-el)}
+}
 .plan-crumb{align-items:center;min-height:44px}
 .plan-crumb .plan-textbtn{display:flex;align-items:center;gap:4px;min-height:44px}
 .plan-crumb .plan-more{margin-inline-end:12px}
