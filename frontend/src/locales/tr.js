@@ -2445,7 +2445,6 @@ export default {
   'Enter both the Client ID and the Client Secret': 'Hem Client ID’yi hem Client Secret’ı gir',
   'Exercise drawings': 'Egzersiz çizimleri',
   'Tab bar': 'Sekme çubuğu',
-  'Automatic': 'Otomatik',
   'Bottom': 'Altta',
   'Automatic: on the right when the screen is wider than it is tall, like a phone on its side.': 'Otomatik: ekran yüksekliğinden genişse, yan çevrilmiş bir telefondaki gibi sağda.',
   'Only if your server is behind Cloudflare Access: the service token this phone sends with every request to it. Kept in this phone’s secure storage.': 'Yalnızca sunucun Cloudflare Access arkasındaysa: bu telefonun her isteğe eklediği servis jetonu. Telefonun güvenli depolamasında tutulur.',

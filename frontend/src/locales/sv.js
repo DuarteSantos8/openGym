@@ -2466,7 +2466,6 @@ export default {
   'Enter both the Client ID and the Client Secret': 'Ange både Client ID och Client Secret',
   'Exercise drawings': 'Övningsritningar',
   'Tab bar': 'Flikfält',
-  'Automatic': 'Automatiskt',
   'Bottom': 'Nederst',
   'Automatic: on the right when the screen is wider than it is tall, like a phone on its side.': 'Automatiskt: till höger när skärmen är bredare än den är hög, som en telefon på sidan.',
   'Only if your server is behind Cloudflare Access: the service token this phone sends with every request to it. Kept in this phone’s secure storage.': 'Bara om din server ligger bakom Cloudflare Access: tjänstetoken som telefonen skickar med varje förfrågan dit. Sparas i telefonens säkra lagring.',

@@ -2449,7 +2449,6 @@ export default {
   'Enter both the Client ID and the Client Secret': 'Введите и Client ID, и Client Secret',
   'Exercise drawings': 'Рисунки упражнений',
   'Tab bar': 'Панель вкладок',
-  'Automatic': 'Автоматически',
   'Bottom': 'Внизу',
   'Automatic: on the right when the screen is wider than it is tall, like a phone on its side.': 'Автоматически: справа, когда экран шире, чем выше, как у телефона в горизонтальном положении.',
   'Only if your server is behind Cloudflare Access: the service token this phone sends with every request to it. Kept in this phone’s secure storage.': 'Только если ваш сервер стоит за Cloudflare Access: сервисный токен, который этот телефон отправляет с каждым запросом. Хранится в защищённом хранилище телефона.',

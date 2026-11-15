@@ -2514,7 +2514,6 @@ export default {
   'Enter both the Client ID and the Client Secret': 'Client ID আর Client Secret দুটোই দিন',
   'Exercise drawings': 'ব্যায়ামের ছবি',
   'Tab bar': 'ট্যাব বার',
-  'Automatic': 'স্বয়ংক্রিয়',
   'Bottom': 'নিচে',
   'Automatic: on the right when the screen is wider than it is tall, like a phone on its side.': 'স্বয়ংক্রিয়: স্ক্রিন উচ্চতার চেয়ে চওড়া হলে ডানদিকে, যেমন আড়াআড়ি ধরা ফোনে।',
   'Only if your server is behind Cloudflare Access: the service token this phone sends with every request to it. Kept in this phone’s secure storage.': 'শুধু যদি আপনার সার্ভার Cloudflare Access-এর পেছনে থাকে: এই ফোন প্রতিটি অনুরোধের সাথে যে সার্ভিস টোকেন পাঠায়। ফোনের নিরাপদ স্টোরেজে রাখা হয়।',
