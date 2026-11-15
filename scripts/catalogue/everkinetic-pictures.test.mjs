@@ -1,7 +1,18 @@
 // node --test scripts/catalogue/everkinetic-pictures.test.mjs: the matcher maps only what it is sure of.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { words, catalogueIndex, matchOne, notice, AUTHOR, LICENSE } from './everkinetic-pictures.mjs'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { words, catalogueIndex, matchOne, notice, AUTHOR, LICENSE, ALIASES } from './everkinetic-pictures.mjs'
+
+test('every hand-checked alias points at a catalogue exercise that exists, and wins over the matcher', () => {
+  const dir = fileURLToPath(new URL('../../catalogue/exercises/', import.meta.url))
+  for (const [ek, id] of Object.entries(ALIASES)) {
+    assert.match(ek, /^\d{4}$/)
+    assert.ok(fs.existsSync(dir + id + '.json'), `${ek} -> ${id} is not in the catalogue`)
+  }
+  assert.equal(matchOne({ id_num: '0099', title: 'Barbell Dead Lifts', equipment: ['barbell'] }, new Map()), '0032')
+})
 
 const cat = [
   { id: '0025', name: 'barbell bench press', equipment: 'barbell' },
