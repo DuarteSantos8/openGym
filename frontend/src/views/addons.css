@@ -29,12 +29,12 @@
 .addon-metric{background:var(--fill,#23252a);border-radius:11px;padding:11px;display:flex;flex-direction:column;gap:7px;min-width:0}
 .addon-metric-label{font-size:11px;color:var(--label-2,#a7aeb5)}
 .addon-metric strong{font-size:17px;letter-spacing:-.025em}
-.addon-footnote{font-size:11px!important;color:var(--label-3,#838d98)!important}
+.addon-footnote{font-size:11px!important;color:var(--label-2,#98a1aa)!important}
 .addon-empty{padding:18px;border:1px dashed var(--sep,rgba(255,255,255,.2));border-radius:12px}
 .addon-roadmap-row{padding:14px 0;border-top:1px solid var(--sep,rgba(255,255,255,.13));display:flex;justify-content:space-between;gap:14px}
 .addon-roadmap-row strong{font-size:13px}
 .addon-roadmap-row p{font-size:12px;margin:6px 0 0}
-.addon-roadmap-row small{color:var(--label-3,#86909a);font-size:10px;text-align:right;max-width:110px}
+.addon-roadmap-row small{color:var(--label-2,#98a1aa);font-size:11px;text-align:right;max-width:110px}
 .addon-chart{height:215px;width:100%;margin-top:14px}
 .addon-chart-fallback{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:740px){.addons-layout{grid-template-columns:1fr}.addons-page{padding-left:15px;padding-right:15px}.addon-headline{flex-wrap:wrap}}
@@ -56,7 +56,7 @@
 .diary-entry-main strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .diary-entry-main span{font-size:12px;color:var(--label-2,#98a1aa)}
 .diary-entry-kcal{font-size:13px;font-variant-numeric:tabular-nums;color:var(--label-2,#b6bec6)}
-.diary-remove{width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--label-3,#86909a);font-size:22px;cursor:pointer}
+.diary-remove{width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--label-2,#98a1aa);font-size:22px;cursor:pointer}
 .diary-remove:hover,.diary-remove:focus-visible{background:var(--fill,#23252a);color:var(--red,#e67e83)}
 .diary-form,.diary-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;align-items:end}
 .diary-quick{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;padding-top:14px;border-top:1px solid var(--sep,rgba(255,255,255,.1))}
@@ -86,8 +86,26 @@
 .nt-tools{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:740px){.nt-result{grid-template-columns:1fr}.nt-add{justify-content:flex-end}.nt-cannot{max-width:none;text-align:left}}
 
-/* Movement lab (components/MovementLab.jsx): front camera, mirrored like a mirror */
+/* Progression rule lab (components/ProgressionLab.jsx) */
 .addon-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--label-2)}
+.addon-prog-form textarea{width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;padding:8px;border-radius:8px}
+.addon-table-wrap{overflow-x:auto}
+.addon-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+.addon-table th,.addon-table td{padding:6px 8px;text-align:start;border-bottom:1px solid var(--sep,rgba(127,127,127,.25))}
+.addon-table tr[data-diverges] td{font-weight:600}
+.addon-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Movement lab (components/MovementLab.jsx): front camera, mirrored like a mirror (.addon-field above) */
 .addon-cam{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#000}
 .addon-cam[hidden]{display:none}
 .addon-cam video,.addon-cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+
+/* 3D muscle map (components/AnatomyViewer.jsx) (.addon-field above) */
+.addon-3d{position:relative;width:100%;height:min(70vh,520px);border-radius:12px;overflow:hidden;background:var(--surface-2);touch-action:none}
+.addon-3d canvas{display:block;width:100%;height:100%}
+.addon-3d .addon-note{position:absolute;inset:auto 0 45% 0;text-align:center}
+.addon-muscles{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
+.addon-muscles button{width:100%;display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 10px;border-radius:10px;border:1px solid transparent;background:none;color:inherit;text-align:start}
+.addon-muscles button[aria-pressed="true"]{border-color:var(--acc)}
+.addon-muscles .hm-c{width:14px;height:14px;border-radius:4px;flex:none}
+.addon-muscles small{margin-inline-start:auto;color:var(--label-2)}

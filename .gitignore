@@ -60,3 +60,5 @@ frontend/ios/App/WatchCore/.build/
 
 # Movement Lab runtime and pose model, staged at build time (frontend/scripts/stage-mediapipe.mjs)
 frontend/public/mediapipe/
+frontend/e2e-results/
+frontend/e2e-report/
