@@ -14,6 +14,10 @@ export const compatibleSpec = chatCompletionsSpec('compatible', {
   maxTokensField: at => (wantsCompletionTokens(at) ? 'max_completion_tokens' : 'max_tokens'),
   // A reasoning model takes only its default temperature: not sent, rather than refused first.
   temperature: ({ model }) => (isReasoningModel(model) ? null : 0),
+  // The level goes out as `reasoning_effort` and unclamped: llama.cpp takes the whole ladder
+  // (measured: low, medium, high, xhigh and max all think), and a server that refuses a value
+  // answers with a 400 naming the field, which is the ladder's to handle (#1240).
+  effort: { field: 'reasoning_effort' },
   versionlessFallback: true,
   compatLadder: true
 });

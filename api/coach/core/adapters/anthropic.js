@@ -54,6 +54,16 @@ export const anthropicSpec = {
     body: b => ({ ...b, stream: true }),
     fold: events => foldMessageStream(events)
   },
+  // The thinking level (#1240). The Messages API names it `output_config.effort` and knows the
+  // whole canonical ladder, so nothing is clamped. Which levels a given model accepts varies,
+  // so the one rung below is what makes a wrong guess survivable: a 400 that names the field
+  // gets the same request without it instead of a failed job.
+  withEffort: (body, level) => (level ? { ...body, output_config: { effort: level } } : body),
+  // Only `effort`. The other rungs of the ladder are Chat Completions shapes this request does
+  // not have, and http.js skips a rung that would change nothing.
+  compat: {
+    effort: body => { const { output_config: _oc, ...rest } = body; return rest; }
+  },
   readModels: data => (data.data || []).map(m => m.id)
 };
 

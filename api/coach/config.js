@@ -360,6 +360,13 @@ export function jobEnv(jobDir, resolved) {
   // because HOME is a temp dir that dies with it. It is deliberately NOT under ./data — see
   // CREDENTIAL_HOME — so the documented backup of ./data cannot pick up a live refresh token.
   if (meta.credentialHomeEnv) env[meta.credentialHomeEnv] = CREDENTIAL_HOME;
+  // The thinking level travels the same way the key does. The core never reads process.env — it
+  // is the same code running in the phone build — so an instance's COACH_EFFORT has to arrive as
+  // data for the HTTP adapters to see it at all (#1240). A level name and nothing secret; an
+  // unrecognised value is ignored at the other end, and the Claude SDK adapter keeps reading the
+  // api's own environment because it runs in this process.
+  const effort = String(process.env.COACH_EFFORT ?? '').trim();
+  if (effort) env.COACH_EFFORT = effort;
   return env;
 }
 

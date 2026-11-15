@@ -287,12 +287,23 @@ here, under the same chip; the setup token is the route for a Claude subscriptio
 The card also states two things worth reading before anyone uses it: whether jobs actually run
 unprivileged, and which account is being spent.
 
-**Effort (optional).** `COACH_EFFORT` in `.env` sets how much effort the model puts into each
-job: `low`, `medium`, `high`, `xhigh` or `max`, the Agent SDK's `effort` levels. Unset, nothing
-is sent and the model's own default applies; a value that is not one of those levels is ignored
-the same way. A model that does not support the chosen level is downgraded by the runtime. Higher
-levels take longer and spend more of the account, so on a slow model raise
-`COACH_JOB_TIMEOUT_MS` with it. Restart with `docker compose up -d`.
+**Effort (optional).** `COACH_EFFORT` in `.env` sets how much thinking a job may use: `low`,
+`medium`, `high`, `xhigh` or `max`, the Agent SDK's `effort` levels. Unset, nothing is sent and
+the model's own default applies; a value that is not one of those levels is ignored the same way.
+Every provider is then asked in its own words, because they do not share a field name:
+`reasoning_effort` for OpenAI, a MiniMax endpoint and an OpenAI-compatible one, `thinkingLevel`
+for Gemini, `output_config.effort` for the Anthropic API, and `reasoning.effort` for OpenRouter.
+A level a provider does not define is asked for as its highest, so `xhigh` and `max` land on
+`high` for OpenAI and Gemini. A model that refuses the level anyway, because it does not reason
+or because the endpoint has never heard of the field, is asked again without it: one extra
+request, then the answer.
+
+Higher levels take longer and spend more of the account, so on a slow model raise
+`COACH_JOB_TIMEOUT_MS` with it. A level that thinks at length also spends the output limit on
+thinking rather than on the answer; if a job comes back "cut off at the output limit", raise
+*Maximum output tokens* on the same card. On the phone, where the Coach runs on your own key,
+the level is not offered yet: those jobs use the model's own default. Restart with
+`docker compose up -d`.
 
 **4. Use it** — as above.
 

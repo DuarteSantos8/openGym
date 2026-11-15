@@ -5,11 +5,22 @@
  * two providers. `compatible` reuses this spec with a different base URL and an optional key.
  */
 import { httpAdapter } from './http.js';
+import { clampEffort } from './effort.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
+
+// The levels the OpenAI API defines for `reasoning_effort`. It has no xhigh and no max, so a
+// canonical level above its highest is asked for as its highest (#1240).
+const OPENAI_EFFORTS = Object.freeze(['low', 'medium', 'high']);
 
 // `maxTokensField` and `temperature` may be functions of { model, base }: a compatible endpoint
 // learns from the model and host which request shape it is likely to want (#869).
-export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false, compatLadder = false } = {}) {
+// `effort` is how this provider says the thinking level: `field` is where it goes, `levels` the
+// levels that field knows (omitted: send the canonical level as it is, for a server that speaks
+// for models we cannot enumerate). Null turns the level off for a provider.
+export function chatCompletionsSpec(id, {
+  maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false,
+  compatLadder = false, effort = { field: 'reasoning_effort', levels: OPENAI_EFFORTS }
+} = {}) {
   const spec = {
     id,
     versionlessFallback,
@@ -57,6 +68,13 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
         return { ...rest, [from === 'max_tokens' ? 'max_completion_tokens' : 'max_tokens']: n };
       },
       temperature: body => { const { temperature: _t, ...rest } = body; return rest; },
+      // A server that has never heard of the level, or a model that does not reason, gets the
+      // same request without it (#1240). Both spellings are cleared so the rung is a no-op
+      // removal on whichever one this provider does not use.
+      effort: body => {
+        const { reasoning_effort: _re, reasoning: _r, ...rest } = body;
+        return rest;
+      },
       plain: body => { const { response_format: _rf, ...rest } = body; return rest; }
     },
     errorMessage: data => {
@@ -88,6 +106,16 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
     stream: {
       body: b => ({ ...b, stream: true }),
       fold: events => foldChatStream(events)
+    },
+    // The thinking level, in this provider's field. Applied by http.js after body(), so the
+    // ladder above can take it away again the same way it takes away anything else refused.
+    withEffort: (body, level) => {
+      if (!effort || !effort.field) return body;
+      const value = effort.levels ? clampEffort(effort.levels, level) : level;
+      if (!value) return body;
+      return effort.field === 'reasoning'
+        ? { ...body, reasoning: { effort: value } }
+        : { ...body, [effort.field]: value };
     },
     readModels: data => {
       const ids = (data.data || data.models || []).map(m => (typeof m === 'string' ? m : m.id || m.name)).filter(Boolean);
@@ -192,7 +220,20 @@ export const openaiSpec = chatCompletionsSpec('openai');
  * validator judge the answer as always. */
 export const openaiWebSpec = {
   ...openaiSpec,
-  compat: null,
+  /* The Responses API says the level as `reasoning: { effort }`, not as the Chat Completions
+   * `reasoning_effort` this spec's own hook writes, and the spread above would hand that hook to
+   * it. A wrong field here is not survivable the way it is elsewhere: this request shape has no
+   * ladder to fall back on, so it is overridden rather than inherited (#1240). */
+  withEffort: (body, level) => {
+    const value = clampEffort(OPENAI_EFFORTS, level);
+    return value ? { ...body, reasoning: { effort: value } } : body;
+  },
+  // Only `effort`, as on the other hosted specs: a model that takes no effort gets the same
+  // request without it instead of a failed job. `null` meant "no rungs at all", which was fine
+  // while this request carried nothing optional.
+  compat: {
+    effort: body => { const { reasoning: _r, ...rest } = body; return rest; }
+  },
   path: () => '/v1/responses',
   body: ({ model, prompt, system, maxTokens }) => ({
     model,

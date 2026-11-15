@@ -29,6 +29,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { unprivilegedIds } from './spawn.js';
 import { SYSTEM_PROMPT } from '../core/system-prompt.js';
+import { EFFORTS, effortFrom as levelOf } from '../core/adapters/effort.js';
 
 const PKG = '@anthropic-ai/claude-agent-sdk';
 const require_ = createRequire(import.meta.url);
@@ -54,12 +55,12 @@ export const LOCKDOWN = Object.freeze({
    option). Unset, or anything that is not one of the SDK's levels, sends nothing, so the model's
    own default applies exactly as before. Read from the api's environment, never handed to the
    model process: the job environment is still built from nothing (config.jobEnv). A model
-   without effort support is the runtime's to downgrade, not ours. */
-export const EFFORTS = Object.freeze(['low', 'medium', 'high', 'xhigh', 'max']);
-export function effortFrom(env = process.env) {
-  const v = String(env.COACH_EFFORT ?? '').trim().toLowerCase();
-  return EFFORTS.includes(v) ? v : undefined;
-}
+   without effort support is the runtime's to downgrade, not ours.
+
+   The level set lives in the core now, because every provider reads it (#1240); the SDK's own
+   vocabulary is the canonical one, so this adapter's levels are unchanged. */
+export { EFFORTS };
+export const effortFrom = (env = process.env) => levelOf(env);
 
 let cached;
 /** Resolve the SDK, or null when this image was built without it. Never throws. */
@@ -108,7 +109,7 @@ export default {
     if (!m) return { code: -1, text: '', stderr: `${PKG} is not installed`, timedOut: false, spawnError: true };
 
     let text = '', stderr = '', failure = '', timedOut = false;
-    const effort = effortFrom();
+    const effort = effortFrom(process.env);
     const abortController = new AbortController();
     const timer = setTimeout(() => { timedOut = true; abortController.abort(); }, timeoutMs);
 
