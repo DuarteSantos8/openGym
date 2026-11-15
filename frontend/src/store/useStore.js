@@ -774,7 +774,7 @@ export const useStore = create((set, get) => {
   }
   // Also after a pull: an older app's copy can still carry routines in the Archive folder.
   const moveArchive = () => {
-    if (!get().S.archiveMoved && get().S.routines.some(r => isArchive(r.folder))) get().update(migrateArchiveFolder)
+    if (get().S.routines.some(r => isArchive(r.folder))) get().update(migrateArchiveFolder)
   }
   // Boot's last step: from here on changes push, and one made during boot goes now.
   const finishBoot = (extra = {}) => {

@@ -16,14 +16,14 @@ export function MoreButton({ name, onClick }) {
 
 /** What RoutineRow's `drag` prop takes, from a useLongPressDrag: the row's handlers, whether it is the
  *  lifted one, how far it rides (`dy`), and the reorder cue: while the held row is over a row of its own
- *  list, the rows between shift by one row height (`shift`) and the dashed slot moves (`slot`). */
+ *  list, the rows between shift by one row height (`shift`) and the dashed slot moves (`slot`, the crossed rows' own heights). */
 export const dragOf = (d, id) => {
   const h = d.drag?.height ?? 0
   const from = d.rows.indexOf(d.lifted), to = d.over?.kind === 'row' ? d.rows.indexOf(d.over.key) : -1
   const i = d.rows.indexOf(id)
   const moving = from >= 0 && to >= 0 && from !== to
   const shift = !moving ? 0 : from < to && i > from && i <= to ? -h : from > to && i >= to && i < from ? h : 0
-  return { props: d.rowProps(id), lifted: d.lifted === id, dy: d.drag?.dy ?? 0, shift, slot: moving ? (to - from) * h : 0, held: d.held }
+  return { props: d.rowProps(id), lifted: d.lifted === id, dy: d.drag?.dy ?? 0, shift, slot: moving ? d.drag?.slot ?? 0 : 0, held: d.held }
 }
 
 /** One routine on Plan: colour tile, name (a gold star when starred), `sub`, muscle maps, "…".
