@@ -63,12 +63,9 @@ export function folderList(S) {
     return f
   }
   for (const e of S?.routineFolders || []) { const n = cleanFolder(e?.name); if (n && !out.some(x => same(x.name, n))) slot(n).current = !!e.current }
-  for (const r of S?.routines || []) {
-    const n = folderOf(r)
-    if (!n) continue
-    if (isLive(r)) slot(n).live++
-    else { const f = out.find(x => same(x.name, n)); if (f) f.archived++ }
-  }
+  for (const r of S?.routines || []) { const n = folderOf(r); if (n && isLive(r)) slot(n).live++ }
+  // After the live ones, so an archived routine counts whichever side of its live sibling it sits.
+  for (const r of S?.routines || []) { const n = folderOf(r); if (n && !isLive(r)) { const f = out.find(x => same(x.name, n)); if (f) f.archived++ } }
   return out
 }
 export const currentFolder = S => (S?.routineFolders || []).find(e => e?.current)?.name || null
