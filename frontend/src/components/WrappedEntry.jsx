@@ -5,13 +5,14 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { useWrappedUI, openWrapped } from '../lib/wrapped-ui.js'
+import { useWrappedUI, openWrapped, openMonthStory } from '../lib/wrapped-ui.js'
 import { homeCardYear, wrappedYears, wrappedNow, withYear, notifyOn } from '../lib/wrapped.js'
 import { syncWrappedNotification, onWrappedNotificationOpen } from '../lib/wrapped-notify.js'
 import { t } from '../lib/i18n.js'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 import CardHead from './CardHead.jsx'
+import { EmojiText } from './Glyph.jsx'
 
 const Wrapped = lazy(() => import('./Wrapped.jsx'))
 
@@ -21,7 +22,7 @@ export function WrappedHomeCard({ S }) {
   const year = homeCardYear(S, wrappedNow())
   if (!year) return null
   return <div className="card wr-home" data-wrapped-home>
-    <CardHead icon="sparkles" eyebrow={t('Your year in openGym')} title={t('Your {0} in openGym is ready 🎉', String(year))}
+    <CardHead icon="sparkles" eyebrow={t('Your year in openGym')} title={<EmojiText text={t('Your {0} in openGym is ready 🎉', String(year))} />}
       sub={t('Workouts, records and one very honest personality test. Tap to see your year.')}
       action={<button type="button" className="iconbtn wr-x" aria-label={t('Not now')} onClick={() => update(s => { s.wrapped = withYear(s, 'dismissed', year) })}><Icon name="xmark" /></button>} />
     <Button variant="primary" icon="sparkles" onClick={() => openWrapped(year)}>{t('Show me my year')}</Button>
@@ -34,6 +35,7 @@ export function WrappedHomeCard({ S }) {
  */
 export function WrappedLayer({ ready }) {
   const year = useWrappedUI(s => s.year)
+  const month = useWrappedUI(s => s.month)
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const loc = useLocation()
@@ -47,10 +49,12 @@ export function WrappedLayer({ ready }) {
   useEffect(() => {
     if (!ready) return
     const m = /[?&]wrapped=(\d{4})\b/.exec(loc.search || '')
-    if (!m) return
-    openWrapped(Number(m[1]))
+    // Your month (v1.4.5): #/stats?month=2026-10.
+    const mm = /[?&]month=(\d{4}-\d{2})\b/.exec(loc.search || '')
+    if (!m && !mm) return
+    if (m) openWrapped(Number(m[1])); else openMonthStory(mm[1])
     nav(loc.pathname, { replace: true })
   }, [ready, loc.search]) // eslint-disable-line react-hooks/exhaustive-deps
-  if (!year) return null
+  if (!year && !month) return null
   return <Suspense fallback={null}><Wrapped /></Suspense>
 }

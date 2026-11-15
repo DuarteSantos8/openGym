@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { routineFromSession, saveSessionAsRoutine } from './session-routines.js'
+import { routineFromSession, routineSources, saveSessionAsRoutine } from './session-routines.js'
 import { buildCompletedWorkout } from './finish-workout.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, isWarmupRow } from './workout-model.js'
@@ -214,5 +214,21 @@ describe('a routine saved from a planned session', () => {
     const st = stateOf([source])
     const saved = train(st, source, { r: 9 })
     expect(routineFromSession(saved, 'Copy', []).ex[0]).not.toHaveProperty('prog')
+  })
+})
+
+describe('routineSources (#1010)', () => {
+  const w = (id, name, d, n = 1, start) => ({ id, name, d, ...(start ? { start } : {}), entries: Array.from({ length: n }, (_, i) => ({ id: 'ex' + i, sets: [{ w: 50, r: 8, done: true }] })) })
+  it('offers the newest workout of each name, newest first', () => {
+    const got = routineSources([w('a', 'Push', '2026-10-01'), w('b', 'Pull', '2026-10-02', 3), w('c', 'push ', '2026-10-05', 2), w('d', 'Legs', '2026-09-01')])
+    expect(got.map(x => x.w.id)).toEqual(['c', 'b', 'd'])
+    expect(got.map(x => x.exercises)).toEqual([2, 3, 1])
+  })
+  it('keeps unnamed workouts apart, leaves out the empty ones and stops at the limit', () => {
+    const empty = { id: 'e', name: 'Empty', d: '2026-10-09', entries: [{ id: 'x', sets: [] }] }
+    const got = routineSources([w('a', '', '2026-10-01'), w('b', '', '2026-10-02'), empty, null, { id: 'z' }])
+    expect(got.map(x => x.w.id)).toEqual(['b', 'a'])
+    expect(routineSources([w('a', 'A', '2026-10-01'), w('b', 'B', '2026-10-02'), w('c', 'C', '2026-10-03')], 2).map(x => x.w.id)).toEqual(['c', 'b'])
+    expect(routineSources(undefined)).toEqual([])
   })
 })

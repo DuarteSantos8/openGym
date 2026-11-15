@@ -3,10 +3,11 @@
   "name": "resistance band seated shoulder press",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated shoulder press using a resistance band. Builds the shoulders and triceps.",

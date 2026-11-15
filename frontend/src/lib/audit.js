@@ -28,10 +28,28 @@ const LABELS = {
   'auth.pair.create': 'Created a pairing code',
   'auth.pair.ok': 'Paired a phone',
   'auth.pair.fail': 'Pairing failed',
+  // Sign-in with the identity provider (OIDC). `msg` on a failure is the check that refused it
+  // (state, nonce, expired, audience, issuer, signature, group, link-needed, ...).
+  'auth.oidc.ok': 'Signed in with the identity provider',
+  'auth.oidc.create': 'Created a profile through the identity provider',
+  'auth.oidc.app': 'Signed the phone app in through the identity provider',
+  'auth.oidc.link': 'Linked the identity provider',
+  'auth.oidc.unlink': 'Unlinked the identity provider',
+  'auth.oidc.reauth': 'Confirmed it is them at the identity provider',
+  'auth.oidc.fail': 'Identity provider sign-in failed',
+  'auth.oidc.denied': 'Identity provider sign-in refused',
+  'admin.oidc.check': 'Checked the identity provider',
   'auth.watch.pair': 'Created a watch pairing code',
   'auth.watch.ok': 'Paired a Zepp OS watch',
   'auth.watch.fail': 'Watch pairing failed',
   'auth.watch.unlink': 'Unpaired a watch',
+  // Scoped tokens (Settings → API tokens). `msg` is the token's name, never the token; on a write,
+  // also the categories it changed. A refused token is throttled like other anonymous failures.
+  'auth.token.create': 'Made an API token',
+  'auth.token.revoke': 'Revoked an API token',
+  'auth.token.fail': 'An API token was refused',
+  'token.write': 'An API token changed the profile',
+  'token.denied': 'An API token tried a change outside its scopes',
   // Password sign-in (#118), where the instance offers it.
   'auth.password.ok': 'Signed in with a password',
   'auth.password.fail': 'Password sign-in failed',
@@ -71,6 +89,16 @@ const LABELS = {
   'admin.role.revoke': 'Removed someone as admin',
   'admin.owner.transfer': 'Handed the owner role on',
   'admin.invite.create': 'Created an invite code',
+  // ADMIN_DATA_VIEW (1.4.5): an admin opened someone's workouts and weigh-ins, or the list with last-workout dates.
+  'admin.data-view': 'Looked at training data',
+  // Trainers and studios (docs/TRAINERS.md).
+  'admin.gym.create': 'Created a gym',
+  'admin.gym.update': 'Changed a gym',
+  'admin.gym.staff.add': 'Gave someone a gym role',
+  'admin.gym.staff.remove': 'Took a gym role away',
+  'admin.trainer.add': 'Made someone a free trainer',
+  'admin.trainer.remove': 'Took free trainer away',
+  'trainer.code': 'Made a trainer invite code',
   'admin.invite.revoke': 'Revoked an invite code',
   'admin.audit.clear': 'Cleared the activity log',
   // FIRST_USER_ADMIN=1: the first profile on a fresh instance is made admin as it signs up.
@@ -87,6 +115,9 @@ export const auditLabel = ev => LABELS[ev] || String(ev || 'Unknown event')
 
 const REASONS = {
   'challenge-expired': 'the sign-in took too long and expired',
+  // A scoped token or a calendar feed's address that is unknown, revoked or ended (api tokenAuth).
+  'token-invalid': 'an unknown, revoked or ended token',
+  'no-token': 'no token was sent',
   'unknown-credential': 'unknown passkey',
   'verify-error': 'the passkey could not be verified',
   'not-verified': 'the passkey was rejected',
@@ -113,6 +144,28 @@ const REASONS = {
   'signup': 'wrong invite codes on password signup',
   'link': 'wrong one-time device codes',
   'email': 'e-mail addresses already in use',
+  'oidc': 'wrong identity provider sign-ins',
+  // Identity provider sign-in (OIDC): the check that refused it, or why it was not let in.
+  'oidc-only': 'this server takes the identity provider only, and they are not an admin',
+  'state': 'the sign-in came back unknown, used, late or in another browser',
+  'nonce': 'the ID token was made for another sign-in (nonce)',
+  'expired': 'the ID token had expired or was not valid yet',
+  'audience': 'the ID token was issued for another client',
+  'issuer': 'the ID token came from another issuer',
+  'signature': 'the ID token signature did not verify',
+  'alg': 'the ID token used a signing algorithm that is not allowed',
+  'no-key': 'no usable provider key matched the ID token',
+  'malformed': 'the ID token could not be read',
+  'stale': 'the provider did not ask them to sign in again',
+  'provider': 'the identity provider could not be reached or refused',
+  'provider-down': 'the identity provider could not be reached',
+  'app-redeem': 'the phone app came back with a wrong or expired code',
+  'group': 'not in a group this server lets in',
+  'link-needed': 'a profile already has that e-mail; it has to be linked from Settings',
+  'invite': 'invite-only server, and no group setting lets them in',
+  'disabled': 'the account is disabled',
+  'taken': 'that provider account is linked to another profile',
+  'wrong-account': 'a different provider account than the linked one',
   // What a `media.throttled` pause was for.
   'upload': 'photo and video uploads',
   'sweep': 'clearing unused photos and videos'

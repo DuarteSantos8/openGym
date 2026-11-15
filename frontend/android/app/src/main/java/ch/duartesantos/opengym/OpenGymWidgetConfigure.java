@@ -65,6 +65,10 @@ public class OpenGymWidgetConfigure extends Activity {
         ScrollView scroll = new ScrollView(this);
         scroll.addView(col);
         setContentView(scroll);
+        // The dialog theme wraps its content, and two lists of short words made a narrow column
+        // with the labels cut short (#981): nine tenths of the screen, up to a comfortable 560 dp.
+        int screen = getResources().getDisplayMetrics().widthPixels;
+        getWindow().setLayout(Math.min(Math.round(screen * 0.9f), dp(560)), ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     private void save(String first, String second) {

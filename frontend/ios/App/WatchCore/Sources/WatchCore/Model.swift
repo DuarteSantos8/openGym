@@ -19,6 +19,12 @@ struct Snapshot: Codable, Equatable {
     /// Workouts discarded on the phone lately (their ids): one of these that leaves the snapshot
     /// was not finished, so the watch drops its Apple Health workout instead of saving it (#776).
     var discarded: [String]?
+    /// The ids of this watch's events the phone has applied lately (1.4.5): the outbox lets go of
+    /// them, and the watch's own copy of a set it ticked gives way to the phone's.
+    var acked: [String]?
+    /// The phone's clock when it made this snapshot (ms, protocol 2): from a snapshot that came as
+    /// a message, the watch works out how far its own clock is off the phone's (ClockOffset).
+    var now: Double? = nil
 }
 
 /// What the watch can start by itself: today's planned session and a few other routines.
@@ -33,6 +39,8 @@ struct ReadySession: Codable, Equatable {
     var entries: [Entry]
     /// Apple Health's workout type for it (lib/health-connect.js plannedType, #799); none from an older phone.
     var healthType: String?
+    /// Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it.
+    var muscleNames: [String: String]? = nil
 }
 
 struct ActiveWorkout: Codable, Equatable {
@@ -50,10 +58,28 @@ struct ActiveWorkout: Codable, Equatable {
     /// When it was last worked on on the phone (ms): a set ticked, an edit, the app opened with it
     /// (#904). The forgotten-workout check counts from it as from a set logged here.
     var activeAt: Double? = nil
+    /// Paused on the phone at this moment (ms, #976): the workout clock stands still until it
+    /// resumes, when `start` moves on by the pause. Older phones never send it.
+    var pausedAt: Double? = nil
+    /// The phone walked out of the gym at this moment (ms) during this workout (forgotten
+    /// workouts, 1.4.5): "Looks like you left the gym" at once. Older phones never send it.
+    var leftGymAt: Double? = nil
+    /// When the rest last changed on purpose, on either side (ms, the phone's clock, protocol 2):
+    /// a start, ±15, a pause or a Skip. The watch follows only a change newer than its own
+    /// (RestMath.follow). Older phones never send it, and the old rules hold then.
+    var restAt: Double? = nil
+    /// The phone's rest is paused (a circuit's, or the workout's): `restLeft` seconds are left (the
+    /// phone timer's `left`, whole seconds, not ms like every time in this snapshot).
+    var restPaused: Bool? = nil
+    var restLeft: Double? = nil
+    /// Each muscle's name in the app's language, for the Muscles page. Older phones never send it.
+    var muscleNames: [String: String]? = nil
 }
 
 struct RestInfo: Codable, Equatable {
     var endsAt: Double
+    /// The rest's whole length (seconds, the phone timer's `total`), when the phone says.
+    var total: Double? = nil
 }
 
 struct Entry: Codable, Equatable {
@@ -79,6 +105,8 @@ struct Entry: Codable, Equatable {
     /// Its own weight unit, "kg" or "lb", when it is not the workout's (#657): its weights, last
     /// time, best and step are in it, and so is what the watch sends back. None: the workout's.
     var unit: String?
+    /// What it trains, with the phone's weights (1 for a main muscle, less for a helper). Older phones never send it.
+    var muscles: [String: Double]? = nil
 
     var isTimed: Bool { mode == "time" }
     var isCardio: Bool { mode == "cardio" }
@@ -126,6 +154,11 @@ struct SetRow: Codable, Equatable {
     var at: Double?
     /// A per-side set's two sides; `done` is both of them.
     var sides: Sides?
+    /// The bands the set is done with, as the phone names them ("Red + Yellow"), shown only.
+    var band: String?
+    /// The set's id in the running workout (protocol 2, #1162): events name the set by it, so a set
+    /// added or taken out elsewhere never moves a tick onto another set's place.
+    var sid: String? = nil
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {
@@ -156,6 +189,21 @@ struct WatchSettings: Codable, Equatable {
     var effort: String?
     /// Timed holds start by themselves (the phone's Settings → Workout): rest over, 3-2-1, hold.
     var autoHolds: Bool?
+    /// The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5).
+    var accent: String?
+    var onAccent: String?
+    /// The phone's Settings → Workout → Forgotten workouts (1.4.5); nil from an older phone.
+    var forgotten: ForgottenSettings?
+}
+
+/// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).
+struct ForgottenSettings: Codable, Equatable {
+    /// Minutes without a set before asking; 0: never asks, never ends by itself.
+    var askMin: Double?
+    /// Minutes the question waits before the workout finishes by itself.
+    var graceMin: Double?
+    /// Leaving the gym asks at once (the phone's gym reminder, set up and switched on).
+    var leaveGym: Bool?
 }
 
 /// What a workout screen shows. Each nil means its default.
@@ -166,20 +214,20 @@ struct WatchShow: Codable, Equatable {
     var hr: Bool?
     /// What was lifted last time (on).
     var last: Bool?
-    /// The time since the start (off).
-    var elapsed: Bool?
-    /// Calories so far (off).
+    /// Calories so far (on).
     var kcal: Bool?
     /// The next exercise on the rest screen (on).
     var next: Bool?
+    /// The heart-rate zones page, from the age in Apple Health (on). Off: the age is not used.
+    var zones: Bool?
     /// The rest as a ring with the countdown ("ring", default) or the countdown alone ("plain").
     var rest: String?
 
     var showClip: Bool { clip ?? true }
     var showHr: Bool { hr ?? true }
     var showLast: Bool { last ?? true }
-    var showElapsed: Bool { elapsed ?? false }
-    var showKcal: Bool { kcal ?? false }
+    var showKcal: Bool { kcal ?? true }
     var showNext: Bool { next ?? true }
+    var showZones: Bool { zones ?? true }
     var restRing: Bool { rest != "plain" }
 }

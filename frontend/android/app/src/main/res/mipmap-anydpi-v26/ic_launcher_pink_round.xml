@@ -5,4 +5,5 @@
     <foreground>
         <inset android:drawable="@mipmap/ic_launcher_pink_foreground" android:inset="16.7%" />
     </foreground>
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>

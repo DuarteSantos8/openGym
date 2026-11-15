@@ -9,7 +9,7 @@ import Admin from './Admin.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-const mocks = vi.hoisted(() => ({ answers: {}, sheets: [] }))
+const mocks = vi.hoisted(() => ({ answers: {}, sheets: [], navs: [] }))
 vi.mock('../lib/api.js', () => ({
   api: path => {
     const key = path.split('?')[0]
@@ -28,7 +28,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = snap
   return { useUI }
 })
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ state: null }) }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.navs.push(a), useLocation: () => ({ state: null }) }))
 vi.mock('../sheets.jsx', () => ({ confirmSheet: vi.fn() }))
 vi.mock('./AdminCoach.jsx', () => ({ default: () => null }))
 
@@ -48,6 +48,7 @@ const good = { id: 'w1', name: 'Push day', d: '2026-09-10', start: 1000, end: 61
 beforeEach(() => {
   document.body.innerHTML = ''
   mocks.sheets.length = 0
+  mocks.navs.length = 0
   mocks.answers = {
     '/api/admin/users': { users: [{ id: 'u1', name: 'Mallory', workouts: 2, lastSync: null, disabled: false }], invite_only: false },
     '/api/admin/invites': { invites: [] },
@@ -148,5 +149,27 @@ describe('Admin roles', () => {
     expect(buttons).not.toContain('Make admin')
     expect(buttons).toContain('Disable account')
     expect(page.querySelector('[aria-label="clear log"]')).toBeNull()
+  })
+})
+
+// The phone opens the dashboard from Settings › Account, whose own back steps back in history.
+// A back here that pushed /settings/account sent that one straight to the dashboard again.
+describe('Admin back button', () => {
+  afterEach(() => window.history.replaceState(null, ''))
+
+  it('steps back the way it came', async () => {
+    window.history.replaceState({ idx: 2 }, '')
+    const page = render(<Admin />)
+    await settle()
+    act(() => page.querySelector('[aria-label="Back"]').click())
+    expect(mocks.navs).toEqual([[-1]])
+  })
+
+  it('opened with nothing behind it, goes up to Settings › Account', async () => {
+    window.history.replaceState({ idx: 0 }, '')
+    const page = render(<Admin />)
+    await settle()
+    act(() => page.querySelector('[aria-label="Back"]').click())
+    expect(mocks.navs).toEqual([['/settings/account', { replace: true }]])
   })
 })

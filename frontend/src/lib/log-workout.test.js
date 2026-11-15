@@ -378,3 +378,46 @@ describe('found in review, round 3', () => {
     expect(S.workouts[1].prs).toEqual([])
   })
 })
+
+describe('cardio (#942): minutes at a speed, as a cardio set finished on the phone', () => {
+  it('"20 min treadmill walk, 3.5 mph, incline 7": km/h stored, the grade on the half percent, no badge, no volume', () => {
+    const S = profile({ unit: 'lb' })
+    const r = build(S, { date: TODAY, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 20, speed: 3.5, incline: 7.2, rpe: 7 }] }] })
+    expect(r.problems).toBeUndefined()
+    const e = r.workout.entries[0]
+    expect(e.id).toBe('3666')
+    expect(e.target).toEqual({ id: '3666', mode: 'cardio' })
+    expect(e.sets).toEqual([{ min: 20, speed: 5.63, incline: 7, rpe: 7, done: true }])
+    expect(r.workout.vol).toBe(0)
+    expect(setLabel(e.id, e.sets[0], e.target, 'mph')).toMatch(/^20 min @ 3\.5 mph/)
+    const added = appendLoggedWorkout(S, r, { now: NOW })
+    expect(added.workout.prs).toEqual([])
+    expect(S.exWeights).toEqual({})
+  })
+  it('a distance stands in for the speed; km/h is the default for a kg profile; no speed reads as 0', () => {
+    const r = build(profile(), { date: TODAY, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 30, distance: 5 }, { minutes: 10 }] }] })
+    expect(r.workout.entries[0].sets).toEqual([{ min: 30, speed: 10, km: 5, done: true }, { min: 10, speed: 0, done: true }])
+  })
+  it('refuses what a cardio set is not, and minutes on a lift', () => {
+    const p = (sets, ex = 'treadmill') => build(profile(), { date: TODAY, exercises: [{ exercise: ex, sets }] }).problems?.[0]?.problem || ''
+    expect(p([{ minutes: 20, weight: 10 }])).toMatch(/not weight/)
+    expect(p([{ minutes: 20, reps: 10 }])).toMatch(/not reps/)
+    expect(p([{ minutes: 2.5 }])).toMatch(/whole minutes/)
+    expect(p([{ minutes: 20, speed: 8, distance: 3 }])).toMatch(/not both/)
+    expect(p([{ minutes: 20, speed: 80 }])).toMatch(/km\/h/)
+    expect(p([{ minutes: 20, failure: true }])).toMatch(/failure/)
+    expect(p([{ minutes: 20 }], 'bench press')).toMatch(/cardio exercises/)
+  })
+  it('the session holds its timed minutes, and a length too short for them is a question', () => {
+    const long = build(profile(), { date: '2026-10-18', exercises: [{ exercise: 'treadmill', sets: [{ minutes: 120, speed: 5 }] }] })
+    expect(long.workout.end - long.workout.start).toBe(120 * 60000)
+    const short = build(profile(), { date: '2026-10-18', durationMin: 30, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 45 }] }] })
+    expect(short.problems[0].field).toBe('durationMin')
+  })
+  it('a lifting description keeps the id it always had', () => {
+    expect(build(profile(), curls()).workout.id).toBe(build(profile(), curls()).workout.id)
+    const a = build(profile(), { date: TODAY, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 20 }] }] }).workout.id
+    const b = build(profile(), { date: TODAY, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 21 }] }] }).workout.id
+    expect(a).not.toBe(b)
+  })
+})

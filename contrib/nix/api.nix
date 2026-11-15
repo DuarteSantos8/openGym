@@ -1,7 +1,7 @@
 {
   lib,
   buildNpmPackage,
-  nodejs_22,
+  nodejs_26,
   makeWrapper,
   importNpmLock,
   version,
@@ -13,7 +13,7 @@ buildNpmPackage rec {
 
   src = ./../../api;
 
-  nodejs = nodejs_22;
+  nodejs = nodejs_26;
 
   npmDeps = importNpmLock { npmRoot = src; };
   npmConfigHook = importNpmLock.npmConfigHook;
@@ -34,7 +34,7 @@ buildNpmPackage rec {
     cp ./*.js $out/lib/opengym-api/
 
     mkdir -p $out/bin
-    makeWrapper ${nodejs_22}/bin/node $out/bin/opengym-api \
+    makeWrapper ${nodejs_26}/bin/node $out/bin/opengym-api \
       --add-flags "$out/lib/opengym-api/server.js" \
       --set NODE_ENV production
     runHook postInstall

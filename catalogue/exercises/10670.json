@@ -3,11 +3,12 @@
   "name": "lever stack seated incline single arm chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "upper chest",
     "triceps",
-    "shoulders",
+    "front delts",
     "core"
   ],
   "category": "strength",

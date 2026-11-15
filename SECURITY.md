@@ -215,6 +215,18 @@ Read this before hosting openGym for anyone other than yourself.
   dashboard. It is on by default (`AUDIT_LOG=0` disables it) and capped at `AUDIT_MAX` events /
   `AUDIT_DAYS` days. Clearing it from the dashboard is itself recorded and the event ids keep
   counting, so an erased stretch always leaves a visible gap.
+- **Scoped tokens reach one profile, and only what they were given** (`api/tokens.js`,
+  docs/API_TOKENS.md). A token (`ogt_` and 256 random bits) is stored only as a SHA-256 and found
+  with a constant-time compare over every stored row. It is never a session: only the
+  `/api/token/*` routes accept it, so no admin, trainer, account or sync route answers to it.
+  It reads the categories it holds at `view` (photos, the Coach's chat, linked services and the
+  live workout never), writes only keys of categories it holds at `apply`, over the exact revision
+  it read, and ends with revoke, expiry, "sign out everywhere", a new password, a disabled or a
+  deleted account. Reads and writes are counted per token; making, revoking, every write and
+  every refused change are in the activity log, without the token. The optional MCP container
+  (`mcp/src/http.js`, docs/MCP_REMOTE.md) holds no data and no secret: it takes only `ogt_`
+  tokens, checks each with the api on every request, and refuses browser origins other than
+  `ORIGIN`.
 
 ### What it does not do
 

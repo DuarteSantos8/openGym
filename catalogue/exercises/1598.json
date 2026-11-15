@@ -3,6 +3,7 @@
   "name": "smith zercher squat",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

@@ -15,6 +15,8 @@ import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, passkeyAssertion, passwordLogin, passwordRegister, passwordResetRedeem } from '../lib/api.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { Row, Button } from './ui.jsx'
+import { MOBILE } from '../lib/mobile.js'
+import { oidcOn, oidcLabel, startWebSignIn } from '../lib/oidc.js'
 
 // The server's floor (api/password.js MIN_LENGTH), checked here first so the common mistake is
 // answered without a round trip. The server still decides.
@@ -59,6 +61,7 @@ export function passwordError(e) {
     case 'invite': return t('That invite code is not valid.')
     case 'current-required': case 'current-wrong': return t('Your current password is not right.')
     case 'passkey': case 'passkey-required': return t('Your passkey could not be confirmed.')
+    case 'reauth-required': return t('Sign in with your provider again first, then try once more.')
     case 'last-way-in': return t('This password is the only way into your profile, so it cannot be removed.')
     case 'reset-invalid': return t('That reset code is wrong or has expired. Ask your admin for a new one.')
     case 'disabled': return t('This account has been disabled.')
@@ -235,6 +238,11 @@ export const openPasswordRegister = () => ui().openSheet(close => <PasswordRegis
    they no longer see. */
 export function ProveOwner({ passkey, password, onProof, explain = passwordError, danger = false, submitText }) {
   const name = useStore(s => s.user?.name) || ''
+  // A profile linked to the server's identity provider can answer with a fresh sign-in there
+  // (api/oidc/routes.js providerProof). In a browser only: the phone's token is its own proof.
+  const config = useStore(s => s.config)
+  const linked = useStore(s => !!s.user?.oidc)
+  const withProvider = !MOBILE && linked && oidcOn(config)
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
@@ -255,7 +263,11 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
       const body = await proof(ctl.signal)
       if (!live.current) return
       await onProof(body)
-    } catch (e) { if (live.current && !dismissed(e)) setErr(explain(e)) }
+    } catch (e) {
+      // Not signed in there recently enough: off to the provider, and back to Settings to try again.
+      if (e?.data?.code === 'reauth-required' && withProvider) { startWebSignIn('reauth'); return }
+      if (live.current && !dismissed(e)) setErr(explain(e))
+    }
     finally {
       if (prompt.current === ctl) prompt.current = null
       if (live.current) setBusy(false)
@@ -270,7 +282,11 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   // A removal's buttons are red whichever proof carries it: each of them removes.
   const main = danger ? 'danger' : 'primary'
   return <>
-    {withPasskey && <Button variant={main} icon="fingerprint" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
+    {withProvider && <>
+      <Button variant={main} icon="shield" disabled={busy} onClick={() => run(async () => ({ provider: true }))}>{t('Confirm with {0}', oidcLabel(config))}</Button>
+      {(withPasskey || password) && <div style={{ height: 10 }} />}
+    </>}
+    {withPasskey && <Button variant={withProvider ? undefined : main} icon="fingerprint" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
     {password && <form onSubmit={withPassword} noValidate>
       {withPasskey && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or with your password')}</div>}
       {/* Tells a password manager which account the password belongs to. */}
@@ -282,7 +298,7 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
     </form>}
     {/* A profile with no passkey whose password no longer counts — the instance switched
         passwords off — has nothing left to answer with (docs/SELF_HOSTING.md). */}
-    {!withPasskey && !password && <div className="dim small">{passkey
+    {!withPasskey && !password && !withProvider && <div className="dim small">{passkey
       ? t('This browser cannot confirm with your passkey. Do this on a device that holds one.')
       : t('This profile has no passkey, and this server does not take passwords, so nothing here can confirm that it is you. Ask your admin.')}</div>}
     {err && <div className="small" role="alert" style={errStyle}>{err}</div>}

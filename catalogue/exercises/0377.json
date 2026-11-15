@@ -3,7 +3,7 @@
   "name": "dumbbell rear delt row_shoulder",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "rhomboids"

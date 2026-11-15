@@ -5,20 +5,27 @@
 
 export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
-  it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
+  it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski', cs: 'Čeština', lt: 'Lietuvių',
   tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '简体中文', 'zh-TW': '繁體中文',
-  ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', sv: 'Svenska', ar: 'العربية'
+  ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', sv: 'Svenska', ar: 'العربية',
+  id: 'Bahasa Indonesia', vi: 'Tiếng Việt', fa: 'فارسی', da: 'Dansk'
 }
 // Languages with exercise instructions / names, generated from catalogue/i18n by
 // scripts/catalogue/build.mjs. A pack can be partial; what it lacks shows in English.
 import { INSTR_LANGS, EXERCISE_NAME_LANGS } from './catalogue-langs.js'
+// Other names an exercise may be shown by (#903).
+import { shownNameOf } from './exercise-aliases.js'
 export { INSTR_LANGS, EXERCISE_NAME_LANGS }
 // Languages rendered right-to-left; i18n.js setLang applies the direction from this.
-export const RTL_LANGS = new Set(['ar'])
+export const RTL_LANGS = new Set(['ar', 'fa'])
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE', ar: 'ar-u-nu-latn'
+  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW',
+  ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE',
+  ar: 'ar-u-nu-latn', id: 'id-ID', vi: 'vi-VN', cs: 'cs-CZ', lt: 'lt-LT', da: 'da-DK',
+  // The planner uses Gregorian months; keep its labels and numeric inputs on the same calendar and digits.
+  fa: 'fa-IR-u-ca-gregory-nu-latn'
 }
 
 // Locales derived from another language by a pure text transform rather than carried as their
@@ -213,7 +220,11 @@ export function _setDetails(newEnInstr, newEnDescs, newDescs, forLang = lang) {
 // be complete: German covers the equipment exercises and not the body-weight ones, and an
 // exercise the pack has no entry for keeps its English title, one exercise at a time.
 // User-created exercises have no entry in the pack and keep their exact chosen name.
-export const exerciseNameFor = ex => {
+// An exercise shown by one of its other names (#903) carries that name everywhere, as typed.
+export const exerciseNameFor = ex => shownNameOf(ex) || exerciseOwnName(ex)
+
+/** The exercise's own name in the active language, whatever other name it is shown by. */
+export const exerciseOwnName = ex => {
   // A language that chose "English names only" sees the canonical catalogue title, not the
   // translation — and never the parenthetical either. Custom exercises keep their exact name.
   if (enOnly) return ex?.n || ''
@@ -243,7 +254,7 @@ const englishInParens = n => (RTL_LANGS.has(baseLang(lang)) ? `\u2068(${n})\u206
 // the English names ("supino com barra"). Left without the title-casing English gets, those
 // read all lower-case in every list, card and history row. A new pack goes here only when it
 // carries real casing; i18n-core.test.js checks this list against the packs themselves.
-export const CASED_NAME_LANGS = ['de']
+export const CASED_NAME_LANGS = ['de', 'cs']
 
 // EXDB stores English names lower-case and the UI title-cases them with CSS. A pack in
 // CASED_NAME_LANGS carries its own casing and must not be cased again on top, so the class that
@@ -255,8 +266,20 @@ export const CASED_NAME_LANGS = ['de']
 // exercise while "English names only" is on, since exerciseNameFor then shows the English title.
 // Callers spread this onto the element that holds exerciseNameFor(ex)'s output, nothing else —
 // muscle and equipment labels next to it are t() strings and keep their own capitalize.
-export const exerciseNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
+export const exerciseNameClass = ex => (shownNameOf(ex) ? '' : exerciseOwnNameClass(ex))
+// One of your own exercises is shown exactly as you typed it, in every language: "am Turm" is
+// not "Am Turm", and "DB press" stays that too (app test 2026-11-11, P10). Title-casing is the
+// catalogue's rule (#290), for names stored lower-case. A name with no exercise behind it (an id
+// this build does not know) keeps the catalogue's rule: it is most likely a catalogue name.
+export const exerciseOwnNameClass = ex => (isOwnExercise(ex) ? '' : !enOnly && exerciseNames && ex && exerciseNames[ex.id]
   && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
+// lib/exercises.js knows which exercises are your own (isCustomEx, by where they live) and says
+// so here once it has loaded; this module stays free of the catalogue. Until then the flag decides.
+let isOwnExercise = ex => ex?.custom === true
+export const bindOwnExercise = fn => { isOwnExercise = fn }
+/** For an element whose own CSS title-cases (a chip, the circuit timer): 'nocap' where the name
+    carries its own casing (your own exercise, another name, a German or Czech pack name). */
+export const exerciseAsTypedClass = ex => (exerciseNameClass(ex) ? '' : 'nocap')
 
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {

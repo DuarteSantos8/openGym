@@ -131,7 +131,7 @@ function stepperButton(exidx, setRow, col, direction) {
   expect(row).toBeTruthy()
   const cell = row.querySelectorAll('.stp')[col]
   expect(cell).toBeTruthy()
-  return cell.querySelector(`button[aria-label="${direction}"]`)
+  return cell.querySelector(`button[aria-label*=": ${direction}"]`)
 }
 
 async function tap(button) {

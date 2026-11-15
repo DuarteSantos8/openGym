@@ -3,9 +3,8 @@
   "name": "roll ball deltoid posterior",
   "bodyPart": "shoulders",
   "equipment": "massage ball",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rotator cuff"
   ],
   "category": "mobility",
