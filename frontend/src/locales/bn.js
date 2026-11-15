@@ -5977,10 +5977,17 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
   // --- Modules: a switch for each part of a module (#1087) ---
+  "Progression, plate loading, set types and units in an exercise’s settings.": "ব্যায়ামের সেটিংসে প্রগ্রেশন, প্লেট লোডিং, সেটের ধরন আর ইউনিট।",
   "In an exercise’s details": "ব্যায়ামের বিবরণে",
   "Your level on a main lift, beside its records.": "কোনো প্রধান লিফটে আপনার লেভেল, তার রেকর্ডের পাশে।",
   "Strength levels in Stats": "স্ট্যাটসে স্ট্রেংথ লেভেল",
   "Every main lift with its level, in one card.": "প্রতিটি প্রধান লিফট তার লেভেলসহ, একটি কার্ডে।",
+  "The rule that moves the weight or the reps up.": "যে নিয়ম ওজন বা রেপ বাড়ায়।",
+  "The bar, the plates and the weight stack of an exercise.": "একটি ব্যায়ামের বার, প্লেট আর ওজনের স্ট্যাক।",
+  "Drop-sets, rest-pause and pyramids": "ড্রপ সেট, রেস্ট-পজ আর পিরামিড",
+  "Sets that change shape, and the last set to failure.": "যে সেটের আকার বদলায়, আর শেষ সেট ফেইলিউর পর্যন্ত।",
+  "Weight unit and dumbbells": "ওজনের ইউনিট আর ডাম্বেল",
+  "An exercise’s own kg or lb, and what a dumbbell weight means.": "ব্যায়ামের নিজস্ব kg বা lb, আর ডাম্বেলের ওজন বলতে কী বোঝায়।",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "হোমের কার্ড, ওয়ার্কআউটের আগে ওজন মাপা, আপনার লক্ষ্য আর ওজনের চার্ট।",
   "Circumferences and your own fields.": "পরিধির মাপ আর আপনার নিজের ঘর।",
   "Photos of you over time, side by side.": "সময়ের সঙ্গে আপনার ছবি, পাশাপাশি।",

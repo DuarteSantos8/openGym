@@ -20,6 +20,7 @@ cannot be switched off.
 | **Effort** | The RIR or RPE column in a workout, the Effort part of Stats, effort on the exercise chart and in its day list, the Effort per set setting. Ratings you already logged stay in your history. |
 | **Plates and warm-ups** | The plate line under each set (and the plate badge in Focus view), and automatic warm-ups. Warm-ups you planned yourself stay. Your plates, bars and dumbbells in Equipment stay, as they also round weights. |
 | **Strength levels** | The Strength levels card in Stats, the level in an exercise's detail, the About you row. |
+| **Exercise settings** | The progression rule, plate loading, set types (drop-sets, rest-pause, clusters, pyramids, last set to failure), and the weight unit and what a dumbbell weight means, in an exercise's settings. Sets, reps, weight, rests and the note always show. |
 | **Form videos** | Filming a set, the video badge on a set row, the form videos in an exercise's detail. Videos you filmed stay. |
 | **Watch** | The Apple Watch and Zepp OS pages. A paired Apple Watch, Wear OS, Zepp or Garmin watch is told there is nothing to show, as with the watch's own off switch. It stays paired. |
 | **Gym check-in** | The check-in card on Home, the check-in screen with your membership codes, NFC stickers. Your cards stay. Before 1.4.4 this had its own switch in Look & Home, which still counts until you set the module. |
@@ -43,6 +44,7 @@ and a line about what it holds. Folded, the row says how many are on: All, 2 of 
 | Module | Parts |
 |---|---|
 | **Strength levels** | In an exercise's details (the level under its records) · Strength levels in Stats (the card). The About you row stays with the module. |
+| **Exercise settings** | Progression (the rule fields) · Plate loading (the bar, the plates and the weight stack, also on the exercise's detail) · Drop-sets, rest-pause and pyramids (with last set to failure) · Weight unit and dumbbells (the exercise's own unit and Weight means, also on its detail). |
 | **Body** | Body weight (the Home card and its Look & Home switch, the weigh-in before a workout and its setting, the daily weigh-in value, the Stats chart, goal and Weight 30d figure, the widgets' weight) · Body measurements (the screen and its Stats row) · Progress photos (the screen and its Stats row). Stats → Body shows while any of the three is on. |
 | **Motivation** | Week streak (Home, Stats, the calendar's week marks, the streak settings in Look & Home, the watch) · Monthly challenges (the Home card, the Stats card with the trophy shelf, its switch) · Week and month recap (the Home card, its switch, Your month in Stats) · Your year in openGym (its Home card, its Stats rows, the December notification, on the phone and from the server) · Share as image (a finished workout, a recap). Your level and the badges on your profile stay with the module. |
 
@@ -52,6 +54,8 @@ The rules:
 - The presets set modules only and never touch the parts.
 - A part never set is on.
 - A part off hides its surfaces and pauses what it sends, like a module. Nothing is deleted.
+- In an exercise's settings, a drop-set, rest-pause, cluster, pyramid or last set to failure the
+  exercise already uses stays in view with its part off, so it can be turned off.
 
 Effort, Plates and warm-ups, Health, Integrations and the single-purpose modules (Form videos,
 Watch, Gym check-in, AI Coach, Community, Seasonal themes) stay one switch.
@@ -60,7 +64,7 @@ Watch, Gym check-in, AI Coach, Community, Seasonal themes) stay one switch.
 
 The row at the top picks a preset for every module at once:
 
-- **Just training**: Effort, Plates and warm-ups, Watch. Everything else off.
+- **Just training**: Effort, Plates and warm-ups, Exercise settings, Watch. Everything else off.
 - **Training and body**: Just training plus Strength levels, Body and Health.
 - **Everything**: every module on.
 - **Custom** is what the row says once you flip a switch away from a preset.

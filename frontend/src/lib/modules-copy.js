@@ -9,6 +9,7 @@ export const moduleCopy = () => ({
   plates: [t('Plates and warm-ups'), t('The plates to load under every set, and warm-ups that build themselves.')],
   strength: [t('Strength levels'), t('Beginner to Elite for your main lifts, measured against your body weight.')],
   videos: [t('Form videos'), t('Film a set and watch it back right under the row.')],
+  exercise: [t('Exercise settings'), t('Progression, plate loading, set types and units in an exercise’s settings.')],
   watch: [t('Watch'), t('Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.')],
   checkin: [t('Gym check-in'), t('Your membership codes on Home, and NFC stickers that start a workout.')],
   body: [t('Body'), t('Weigh-ins, measurements, progress photos and your weight goal.')],
@@ -36,6 +37,10 @@ export const presetCopy = () => ({
 export const partCopy = () => ({
   'strength.details': [t('In an exercise’s details'), t('Your level on a main lift, beside its records.')],
   'strength.list': [t('Strength levels in Stats'), t('Every main lift with its level, in one card.')],
+  'exercise.progression': [t('Progression'), t('The rule that moves the weight or the reps up.')],
+  'exercise.plates': [t('Plate loading'), t('The bar, the plates and the weight stack of an exercise.')],
+  'exercise.intensity': [t('Drop-sets, rest-pause and pyramids'), t('Sets that change shape, and the last set to failure.')],
+  'exercise.units': [t('Weight unit and dumbbells'), t('An exercise’s own kg or lb, and what a dumbbell weight means.')],
   'body.weight': [t('Body weight'), t('The Home card, the weigh-in before a workout, your goal and the weight chart.')],
   'body.measurements': [t('Body measurements'), t('Circumferences and your own fields.')],
   'body.photos': [t('Progress photos'), t('Photos of you over time, side by side.')],

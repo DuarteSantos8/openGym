@@ -5864,10 +5864,17 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
   // --- Modules: a switch for each part of a module (#1087) ---
+  "Progression, plate loading, set types and units in an exercise’s settings.": "Tăng tiến, cách lắp bánh tạ, kiểu hiệp và đơn vị trong cài đặt bài tập.",
   "In an exercise’s details": "Trong chi tiết bài tập",
   "Your level on a main lift, beside its records.": "Cấp độ của bạn ở một bài chính, cạnh các kỷ lục của nó.",
   "Strength levels in Stats": "Cấp độ sức mạnh trong Thống kê",
   "Every main lift with its level, in one card.": "Mỗi bài chính kèm cấp độ, trong một thẻ.",
+  "The rule that moves the weight or the reps up.": "Quy tắc tăng mức tạ hoặc số lần.",
+  "The bar, the plates and the weight stack of an exercise.": "Thanh đòn, bánh tạ và cột tạ của một bài tập.",
+  "Drop-sets, rest-pause and pyramids": "Drop-set, rest-pause và kim tự tháp",
+  "Sets that change shape, and the last set to failure.": "Các hiệp đổi dạng, và hiệp cuối tập đến thất bại.",
+  "Weight unit and dumbbells": "Đơn vị mức tạ và tạ đơn",
+  "An exercise’s own kg or lb, and what a dumbbell weight means.": "kg hoặc lb riêng của bài tập, và ý nghĩa mức tạ đơn.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Thẻ ở Trang chủ, cân trước buổi tập, mục tiêu và biểu đồ cân nặng.",
   "Circumferences and your own fields.": "Số đo vòng và các trường của riêng bạn.",
   "Photos of you over time, side by side.": "Ảnh của bạn theo thời gian, đặt cạnh nhau.",

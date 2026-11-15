@@ -132,6 +132,7 @@ const MODULE_KW = {
   effort: 'effort rir rpe reps in reserve rating difficulty hard',
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
+  exercise: 'exercise settings progression rule plate loading bar stack drop-set dropset rest-pause pyramid failure unit kg lb dumbbell',
   videos: 'form video film record camera technique set',
   watch: 'watch apple watch wear os zepp amazfit garmin wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',

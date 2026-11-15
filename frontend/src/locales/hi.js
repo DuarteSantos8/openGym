@@ -5898,10 +5898,17 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
   // --- Modules: a switch for each part of a module (#1087) ---
+  "Progression, plate loading, set types and units in an exercise’s settings.": "एक्सरसाइज़ की सेटिंग में प्रोग्रेशन, प्लेट लोडिंग, सेट के प्रकार और इकाइयाँ।",
   "In an exercise’s details": "एक्सरसाइज़ की जानकारी में",
   "Your level on a main lift, beside its records.": "किसी मुख्य लिफ़्ट में आपका स्तर, उसके रिकॉर्ड के पास।",
   "Strength levels in Stats": "आँकड़ों में ताक़त के स्तर",
   "Every main lift with its level, in one card.": "हर मुख्य लिफ़्ट अपने स्तर के साथ, एक कार्ड में।",
+  "The rule that moves the weight or the reps up.": "वह नियम जो वज़न या रेप्स बढ़ाता है।",
+  "The bar, the plates and the weight stack of an exercise.": "किसी एक्सरसाइज़ का बार, प्लेटें और वज़न स्टैक।",
+  "Drop-sets, rest-pause and pyramids": "ड्रॉप सेट, रेस्ट-पॉज़ और पिरामिड",
+  "Sets that change shape, and the last set to failure.": "आकार बदलने वाले सेट, और आख़िरी सेट फेलियर तक।",
+  "Weight unit and dumbbells": "वज़न की इकाई और डंबल",
+  "An exercise’s own kg or lb, and what a dumbbell weight means.": "किसी एक्सरसाइज़ का अपना kg या lb, और डंबल के वज़न का मतलब।",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "होम का कार्ड, वर्कआउट से पहले वज़न, आपका लक्ष्य और वज़न का चार्ट।",
   "Circumferences and your own fields.": "नाप और आपके अपने फ़ील्ड।",
   "Photos of you over time, side by side.": "समय के साथ आपकी तस्वीरें, साथ-साथ।",

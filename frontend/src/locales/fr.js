@@ -5898,10 +5898,17 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
   // --- Modules: a switch for each part of a module (#1087) ---
+  "Progression, plate loading, set types and units in an exercise’s settings.": "Progression, chargement des disques, types de séries et unités dans les réglages d’un exercice.",
   "In an exercise’s details": "Dans les détails d’un exercice",
   "Your level on a main lift, beside its records.": "Ton niveau sur un mouvement principal, à côté de ses records.",
   "Strength levels in Stats": "Niveaux de force dans Stats",
   "Every main lift with its level, in one card.": "Chaque mouvement principal avec son niveau, dans une seule carte.",
+  "The rule that moves the weight or the reps up.": "La règle qui fait monter le poids ou les répétitions.",
+  "The bar, the plates and the weight stack of an exercise.": "La barre, les disques et la pile de poids d’un exercice.",
+  "Drop-sets, rest-pause and pyramids": "Drop-sets, rest-pause et pyramides",
+  "Sets that change shape, and the last set to failure.": "Des séries qui changent de forme, et la dernière série jusqu’à l’échec.",
+  "Weight unit and dumbbells": "Unité de poids et haltères",
+  "An exercise’s own kg or lb, and what a dumbbell weight means.": "Les kg ou lb propres à un exercice, et ce que signifie un poids d’haltère.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "La carte sur l’Accueil, la pesée avant une séance, ton objectif et la courbe de poids.",
   "Circumferences and your own fields.": "Les tours de mesure et tes propres champs.",
   "Photos of you over time, side by side.": "Des photos de toi au fil du temps, côte à côte.",

@@ -5953,10 +5953,17 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
   // --- Modules: a switch for each part of a module (#1087) ---
+  "Progression, plate loading, set types and units in an exercise’s settings.": "التدرّج وتحميل الأقراص وأنواع المجموعات والوحدات في إعدادات التمرين.",
   "In an exercise’s details": "في تفاصيل التمرين",
   "Your level on a main lift, beside its records.": "مستواك في تمرين أساسي، بجانب أرقامه القياسية.",
   "Strength levels in Stats": "مستويات القوة في الإحصائيات",
   "Every main lift with its level, in one card.": "كل تمرين أساسي بمستواه، في بطاقة واحدة.",
+  "The rule that moves the weight or the reps up.": "القاعدة التي ترفع الوزن أو التكرارات.",
+  "The bar, the plates and the weight stack of an exercise.": "البار والأقراص ومجموعة الأوزان لتمرين ما.",
+  "Drop-sets, rest-pause and pyramids": "دروب سِت وريست بوز والمجموعات الهرمية",
+  "Sets that change shape, and the last set to failure.": "مجموعات يتغيّر شكلها، والمجموعة الأخيرة حتى الفشل.",
+  "Weight unit and dumbbells": "وحدة الوزن والدمبلز",
+  "An exercise’s own kg or lb, and what a dumbbell weight means.": "وحدة كغ أو رطل خاصة بالتمرين، وما يعنيه وزن الدمبل.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "بطاقة الرئيسية، والوزن قبل التمرين، وهدفك ومخطط الوزن.",
   "Circumferences and your own fields.": "المحيطات وحقولك الخاصة.",
   "Photos of you over time, side by side.": "صورك عبر الوقت، جنبًا إلى جنب.",

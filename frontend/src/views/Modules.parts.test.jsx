@@ -108,6 +108,7 @@ describe('the search and the parts', () => {
 
   it('finds a part on the Modules page, whatever its switch', () => {
     expect(has('photos', web, 'Progress photos', 'modules')).toBe(true)
+    expect(has('pyramids', web, 'Drop-sets, rest-pause and pyramids', 'modules')).toBe(true)
     expect(has('photos', { ...web, mod: id => id !== 'body' }, 'Progress photos', 'modules')).toBe(true)
   })
 

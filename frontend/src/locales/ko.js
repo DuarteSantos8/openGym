@@ -5898,10 +5898,17 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
   // --- Modules: a switch for each part of a module (#1087) ---
+  "Progression, plate loading, set types and units in an exercise’s settings.": "운동 설정의 점진적 증가, 플레이트 끼우기, 세트 유형, 단위.",
   "In an exercise’s details": "운동 상세 정보에서",
   "Your level on a main lift, beside its records.": "주요 리프트의 근력 수준, 기록 옆에.",
   "Strength levels in Stats": "통계의 근력 수준",
   "Every main lift with its level, in one card.": "주요 리프트마다 수준을 한 카드에.",
+  "The rule that moves the weight or the reps up.": "무게나 반복 횟수를 올리는 규칙.",
+  "The bar, the plates and the weight stack of an exercise.": "운동의 바, 플레이트, 웨이트 스택.",
+  "Drop-sets, rest-pause and pyramids": "드롭세트, 레스트포즈, 피라미드",
+  "Sets that change shape, and the last set to failure.": "형태가 바뀌는 세트와 실패 지점까지 하는 마지막 세트.",
+  "Weight unit and dumbbells": "무게 단위와 덤벨",
+  "An exercise’s own kg or lb, and what a dumbbell weight means.": "운동별 kg 또는 lb, 덤벨 무게가 뜻하는 것.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "홈 카드, 운동 전 체중 측정, 목표와 체중 그래프.",
   "Circumferences and your own fields.": "둘레 치수와 직접 만든 항목.",
   "Photos of you over time, side by side.": "시간에 따른 내 사진을 나란히.",
