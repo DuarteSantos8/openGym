@@ -3,7 +3,8 @@
   "name": "smith upright row",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
-  "target": "delts",
+  "machineKind": "smith",
+  "target": "side delts",
   "secondaryMuscles": [
     "traps",
     "biceps"

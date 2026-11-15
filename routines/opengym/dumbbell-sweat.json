@@ -1,0 +1,78 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Sweat with two dumbbells",
+  "goal": "fatloss",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 35,
+  "tags": [
+    "home",
+    "dumbbells",
+    "conditioning"
+  ],
+  "description": "Strength moves with short rests, so the heart rate never quite settles. Keep the weights moderate and the pace honest.",
+  "sessions": [
+    {
+      "name": "Dumbbell circuit",
+      "exercises": [
+        {
+          "id": "1760",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0293",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        },
+        {
+          "id": "0336",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45,
+          "note": "Each leg."
+        },
+        {
+          "id": "0426",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        },
+        {
+          "id": "1459",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        },
+        {
+          "id": "10182",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ]
+}

@@ -3,10 +3,9 @@
   "name": "cable incline y raise with back support",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
-    "rear deltoids",
     "upper back"
   ],
   "category": "strength",

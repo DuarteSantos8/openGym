@@ -15,16 +15,26 @@ const list = s => s.split(',').map(x => x.trim()).filter(Boolean)
 // the body map can draw, an equipment chip with a translation), so it is added here on purpose.
 export const BODY_PARTS = list('back, cardio, chest, lower arms, lower legs, neck, shoulders, upper arms, upper legs, waist, full body')
 export const EQUIPMENT = list('body weight, dumbbell, cable, barbell, leverage machine, band, smith machine, kettlebell, weighted, stability ball, ez barbell, assisted, sled machine, medicine ball, rope, roller, massage ball, resistance band, bosu ball, olympic barbell, wheel roller, upper body ergometer, skierg machine, hammer, stationary bike, tire, trap bar, elliptical machine, stepmill machine, suspension trainer, sandbag, landmine, weight plate, clubbell, macebell')
-export const TARGETS = list('abs, pectorals, biceps, glutes, delts, triceps, upper back, lats, calves, quads, forearms, cardiovascular system, hamstrings, spine, traps, adductors, serratus anterior, abductors, levator scapulae, obliques, hip flexors, shins')
-export const SECONDARY = list('shoulders, deltoids, rear deltoids, rotator cuff, chest, upper chest, triceps, biceps, brachialis, forearms, wrists, wrist flexors, wrist extensors, grip muscles, back, upper back, lats, latissimus dorsi, rhomboids, trapezius, traps, lower back, core, abdominals, obliques, lower abs, hip flexors, glutes, quadriceps, hamstrings, adductors, inner thighs, groin, calves, soleus, shins, ankles, ankle stabilizers, feet, hands, sternocleidomastoid')
+// The shoulder names its head since 1.4.5 (#638, split-delts.mjs); plain "delts" and "shoulders"
+// still read as the whole shoulder, for an exercise whose head nobody has decided yet.
+export const TARGETS = list('abs, pectorals, biceps, glutes, front delts, side delts, rear delts, delts, triceps, upper back, lats, calves, quads, forearms, cardiovascular system, hamstrings, spine, traps, adductors, serratus anterior, abductors, levator scapulae, obliques, hip flexors, shins')
+export const SECONDARY = list('front delts, side delts, rear delts, shoulders, deltoids, rear deltoids, rotator cuff, chest, upper chest, triceps, biceps, brachialis, forearms, wrists, wrist flexors, wrist extensors, grip muscles, back, upper back, lats, latissimus dorsi, rhomboids, trapezius, traps, lower back, core, abdominals, obliques, lower abs, hip flexors, glutes, quadriceps, hamstrings, adductors, inner thighs, groin, calves, soleus, shins, ankles, ankle stabilizers, feet, hands, sternocleidomastoid')
 export const CATEGORIES = list('strength, stretching, mobility, plyometrics, cardio, olympic, calisthenics, pilates, yoga, combat, isometric, rehab')
-export const MUSCLES = list('trapezius, deltoids, chest, upper-back, serratus, biceps, triceps, forearm, abs, obliques, lower-back, gluteal, quadriceps, hamstring, adductors, hip-flexors, calves, tibialis')
+export const MUSCLES = list('trapezius, front-delts, side-delts, rear-delts, deltoids, chest, lats, upper-back, serratus, biceps, triceps, forearm, abs, obliques, lower-back, gluteal, quadriceps, hamstring, adductors, hip-flexors, calves, tibialis')
 // Kit the equipment field cannot name because the exercise's own equipment is something else: a
 // dumbbell fly also needs a bench, an inverted row a bar. The app's profile checklist has these
 // two (frontend/src/lib/equipment.js ACCESSORIES), and reads most of them off the name.
 export const NEEDS = list('bench, pull-up bar')
-export const LANGS = list('ar, bn, de, es, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
-const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'target', 'secondaryMuscles', 'category', 'hold', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
+// The machine an exercise is done on (#923), for the four equipment values that are machines. An
+// equipment profile can then say "leg press yes, leg extension no". One kind per exercise: the
+// machine you need to do it, so a 45° sled leg press and a lever leg press are both "leg-press",
+// while a Smith leg press is "smith". "other" is the named fallback for a machine that has no card
+// of its own; "none" marks an "assisted" row that needs no machine (a partner, a band, a towel).
+// The app's cards (frontend/src/lib/machine-kinds.js) hold the same list, a test compares them.
+export const MACHINE_EQUIPMENT = list('leverage machine, sled machine, smith machine, assisted')
+export const MACHINE_KINDS = list('leg-press, hack-squat, squat-machine, belt-squat, leg-extension, leg-curl, calf-raise, hip-thrust, hip-abduction, glute-machine, chest-press, pec-deck, shoulder-press, lateral-raise, triceps-machine, lat-pulldown, seated-row, t-bar-row, biceps-curl, back-extension, smith, assisted-pullup, ab-machine, push-sled, cardio, pilates, other, none')
+export const LANGS = list('ar, bn, cs, da, de, es, fa, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
+const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'machineKind', 'target', 'secondaryMuscles', 'category', 'hold', 'track', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
 const I18N_KEYS = ['name', 'description', 'instructions']
 
 export function validateCatalogue(dir) {
@@ -45,11 +55,18 @@ export function validateCatalogue(dir) {
     if (!isText(e.name) || e.name !== e.name.toLowerCase()) say(file, '"name" must be lowercase text without surrounding spaces')
     if (!BODY_PARTS.includes(e.bodyPart)) say(file, `"bodyPart" must be one of: ${BODY_PARTS.join(', ')}`)
     if (!EQUIPMENT.includes(e.equipment)) say(file, `"equipment" must be one of: ${EQUIPMENT.join(', ')}`)
+    if (MACHINE_EQUIPMENT.includes(e.equipment) ? !MACHINE_KINDS.includes(e.machineKind) : e.machineKind != null)
+      say(file, MACHINE_EQUIPMENT.includes(e.equipment)
+        ? `"machineKind" must be one of: ${MACHINE_KINDS.join(', ')} (a machine exercise needs one; "other" when no card fits)`
+        : '"machineKind" is only for machine equipment (' + MACHINE_EQUIPMENT.join(', ') + ')')
     if (!TARGETS.includes(e.target)) say(file, `"target" must be one of: ${TARGETS.join(', ')}`)
     if (!Array.isArray(e.secondaryMuscles) || e.secondaryMuscles.some(m => !SECONDARY.includes(m)))
       say(file, `"secondaryMuscles" must be a list of: ${SECONDARY.join(', ')}`)
     if (e.category != null && !CATEGORIES.includes(e.category)) say(file, `"category" must be one of: ${CATEGORIES.join(', ')}`)
     if (e.hold != null && e.hold !== true) say(file, '"hold" is true (an exercise only ever held, logged by time) or left out')
+    // Carries, sleds and sprints planned in metres (Reddit, #1011/#1012): the app starts them by distance.
+    if (e.track != null && e.track !== 'distance') say(file, '"track" is "distance" (a carry, a sled or a sprint, logged in metres) or left out')
+    if (e.track != null && e.hold) say(file, '"track" and "hold" do not go together: a hold is logged by time')
     if (e.needs != null && (!Array.isArray(e.needs) || !e.needs.length || e.needs.some(x => !NEEDS.includes(x)) || new Set(e.needs).size !== e.needs.length))
       say(file, `"needs" is a list of: ${NEEDS.join(', ')} (kit the name does not mention), or left out`)
     if (typeof e.description !== 'string') say(file, '"description" must be text (may be empty)')

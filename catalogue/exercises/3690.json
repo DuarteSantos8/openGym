@@ -3,12 +3,13 @@
   "name": "dumbbell seated on exercise ball shoulder press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "core",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press on a stability ball. The unstable seat makes your core work along with the shoulders.",

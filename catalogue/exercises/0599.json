@@ -3,6 +3,7 @@
   "name": "lever seated leg curl",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-curl",
   "target": "hamstrings",
   "secondaryMuscles": [
     "calves"

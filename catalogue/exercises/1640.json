@@ -10,14 +10,11 @@
   "category": "strength",
   "description": "A one-arm hammer preacher curl with a rope on a cable. It targets the brachialis and the biceps on one side.",
   "instructions": [
-    "Attach a rope handle to a low pulley cable machine.",
-    "Stand facing the machine with your feet shoulder-width apart.",
-    "Grasp the rope handle with an underhand grip, palms facing up.",
-    "Position your upper arm against the preacher bench pad, keeping your elbow slightly bent.",
-    "Keep your back straight and your core engaged throughout the exercise.",
-    "Slowly curl the rope handle towards your shoulder, keeping your upper arm stationary.",
-    "Squeeze your biceps at the top of the movement, then slowly lower the rope handle back to the starting position.",
-    "Repeat for the desired number of repetitions, then switch arms."
+    "Attach a rope to a low pulley and place a preacher bench in front of it.",
+    "Sit at the bench with one upper arm on the pad and hold the rope with a neutral grip, thumb up.",
+    "Keep your upper arm on the pad and curl the rope toward your shoulder.",
+    "Squeeze at the top.",
+    "Lower slowly to a straight arm, finish the reps, then switch arms."
   ],
   "textSource": "exercisedb"
 }

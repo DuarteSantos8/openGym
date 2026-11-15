@@ -3,12 +3,13 @@
   "name": "lever low row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A plate-loaded machine row pulling from low to your torso. It builds the mid back and lats with a guided path.",

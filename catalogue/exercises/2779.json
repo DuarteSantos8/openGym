@@ -3,10 +3,9 @@
   "name": "shoulder lateral rotation (external rotation)",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "mobility",
   "description": "Rotating the upper arm outward, which works the rotator cuff muscles at the back of the shoulder.",

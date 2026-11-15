@@ -10,9 +10,23 @@ import { Button } from '../components/ui.jsx'
 // Errors are shown in place rather than thrown: a denied permission or a browser without
 // getUserMedia leaves the sheet up with a message, and the add-card form underneath still offers
 // photo import and typing.
-export default function CameraScan({ onFound, onCancel }) {
+export default function CameraScan({ onFound, onCancel, importPhoto = false, onImportError }) {
   const videoRef = useRef(null)
+  const fileRef = useRef(null)
   const [error, setError] = useState(null)
+  // `importPhoto`: with no camera, a screenshot of the code instead (Plan → Scan a QR code has no
+  // form underneath that offers it, as the gym check-in does; night QA 146).
+  const fromPhoto = async e => {
+    const file = e.target.files && e.target.files[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      const { importCodeFromImage } = await import('../lib/scan.js')
+      const code = await importCodeFromImage(file)
+      if (code) onFound(code)
+      else onImportError?.(t('No code found in that image'))
+    } catch { onImportError?.(t('Could not read that image')) }
+  }
 
   useEffect(() => {
     let stream = null, timer = null, done = false
@@ -64,6 +78,10 @@ export default function CameraScan({ onFound, onCancel }) {
           </div>
           <div className="muted small" style={{ textAlign: 'center', margin: '12px 0 16px' }}>{t('Point the camera at the QR code')}</div>
         </>}
+    {error && importPhoto && <>
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={fromPhoto} />
+      <Button variant="primary" icon="image" onClick={() => fileRef.current?.click()} style={{ marginBottom: 8 }}>{t('Import photo')}</Button>
+    </>}
     <Button variant="tinted" onClick={onCancel}>{t('Cancel')}</Button>
   </>
 }

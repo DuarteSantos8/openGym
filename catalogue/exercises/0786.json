@@ -27,14 +27,15 @@
       "quadriceps",
       "gluteal",
       "adductors",
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "hamstring",
       "calves",
       "triceps",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

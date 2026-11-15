@@ -5,12 +5,15 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
+import { getChannel } from '../lib/channel.js'
+import { platformNow } from '../lib/platform-now.js'
 import { gifSrc, figureOf } from '../lib/exercises.js'
 import { fmtMB } from '../lib/media-limits.js'
 import { BUILTIN_PX, packId, parsePackId, wantedQuality, clipSources } from '../lib/anim-quality.js'
-import { subscribe, getState, installedBases, deviceInfo, refresh, ensureWanted, writePrefs, download, remove, downloadBytes, diagnose, offeredQualities, targetPack, ALL_PACKS } from '../lib/anim-packs.js'
+import { subscribe, getState, installedBases, deviceInfo, refresh, ensureWanted, writePrefs, download, remove, downloadBytes, diagnose, offeredQualities, targetPack, ALL_PACKS, offerFor, networkInfo } from '../lib/anim-packs.js'
 import { Section, Row, Switch, Button } from './ui.jsx'
 import { useUI } from '../store/useUI.js'
+import { tourState } from '../lib/tour.js'
 
 const MB = 1024 * 1024
 export const useAnimPacks = () => useSyncExternalStore(subscribe, getState, getState)
@@ -32,6 +35,55 @@ export function useAnimPacksBoot() {
   const figure = useStore(s => figureOf(s.S))
   useEffect(() => { if (MOBILE) refresh().then(() => ensureWanted(figure)).catch(() => {}) }, [])
   useEffect(() => { if (MOBILE && getState().checked) ensureWanted(figure) }, [figure])
+}
+
+/**
+ * Google Play: the one-time offer of sharper animations (anim-packs.js offerFor), once the app is
+ * set up and no workout is running, on Wi-Fi with room to spare. Asked once: Later is an answer
+ * too, and Settings → Workout → Animation quality is where to change it afterwards.
+ */
+export function useAnimOffer(ready) {
+  const figure = useStore(s => figureOf(s.S))
+  const asked = useRef(false)
+  useEffect(() => {
+    if (!MOBILE || !ready || asked.current) return
+    let alive = true
+    const t0 = setTimeout(async () => {
+      try {
+        if ((await getChannel()) !== 'play') return
+        const s = getState().checked ? getState() : await refresh()
+        if (!s.available || !alive) return
+        const id = offerFor(figure, await networkInfo())
+        if (!id || !alive || asked.current) return
+        // Not under the first-run question or a running tour: it waits for that to go.
+        while (alive && tourState()) await new Promise(r => setTimeout(r, 1000))
+        if (!alive || asked.current) return
+        asked.current = true
+        // Asked is asked: a sheet swiped away counts as Later, Download overwrites it.
+        writePrefs({ offer: 'later' })
+        useUI.getState().openSheet(close => <AnimOfferSheet id={id} close={close} />)
+      } catch { /* no offer then; Settings has it */ }
+    }, 4000)
+    return () => { alive = false; clearTimeout(t0) }
+  }, [ready, figure])
+}
+
+export function AnimOfferSheet({ id, close }) {
+  const px = parsePackId(id)?.px
+  const bytes = downloadBytes(id)
+  const yes = () => { writePrefs({ offer: 'accepted' }); download(id); close() }
+  const later = () => { writePrefs({ offer: 'later' }); close() }
+  return <>
+    <h3>{t('Sharper animations?')}</h3>
+    <p className="small" style={{ marginTop: 0 }}>{t('Your exercises can move at {0} px instead of {1} px, crisp on this screen.', px, BUILTIN_PX)}</p>
+    <p className="small muted">{bytes
+      ? t('A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.', sizeText(bytes))
+      : t('A one-time download from Google Play, over Wi-Fi. It stays on this phone.')}</p>
+    <Button variant="primary" icon="download" onClick={yes}>{t('Download')}</Button>
+    <div style={{ height: 8 }} />
+    <Button onClick={later}>{t('Later')}</Button>
+    <p className="small dim" style={{ marginBottom: 0 }}>{t('Changed your mind? Settings has it, any time.')}</p>
+  </>
 }
 
 // "Auto (360 px)", "Still only", "Built in (180 px)", "720 px".
@@ -95,18 +147,25 @@ export function AnimationQualitySheet({ close }) {
   const packs = useAnimPacks()
   const figure = useStore(s => figureOf(s.S))
   const { choice, wifiOnly } = packs.prefs
-  const pick = c => { writePrefs({ choice: c }); ensureWanted(figure) }
+  // A pick here is a yes to downloading on a Play build too (anim-packs.js needsConsent).
+  const pick = c => { writePrefs({ choice: c, offer: 'accepted' }); ensureWanted(figure) }
   const retry = id => () => download(id)
   const qualities = packs.available ? offeredQualities(figure, packs) : []
   const ready = Object.entries(packs.packs).filter(([, p]) => p.state === 'ready')
   const taps = useRef(0)
   const [details, setDetails] = useState(false)
   const tapTitle = () => { taps.current += 1; if (taps.current >= 5) setDetails(true) }
+  // The APK from GitHub or opengym.ch never gets packs: only a store delivers them (the licence,
+  // lib/anim-quality.js). "Not on this device yet" read there as a wait for nothing (#863).
+  const [channel, setChannel] = useState(null)
+  useEffect(() => { getChannel().then(setChannel, () => {}) }, [])
   return <>
     <h3 onClick={tapTitle}>{t('Animation quality')}</h3>
     <Section footer={packs.available
       ? t('Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.')
-      : t('Sharper animations aren’t available on this device yet. The built-in ones work everywhere.')}>
+      : channel === 'sideload'
+        ? t('Sharper animations come only through the app stores. This APK keeps the ones built into it.')
+        : t('Sharper animations aren’t available on this device yet. The built-in ones work everywhere.')}>
       {packs.available && <Row title={choiceLabel('auto', packs, figure)} subtitle={t('A good size for this screen.')} accessory={choice === 'auto' ? 'check' : 'none'} onClick={() => pick('auto')} />}
       <Row title={t('Still only')} subtitle={t('No animation, just the picture. Easy on battery.')} accessory={choice === 'still' ? 'check' : 'none'} onClick={() => pick('still')} />
       <Row title={choiceLabel('builtin', packs, figure)} accessory={choice === 'builtin' || (!packs.available && choice !== 'still') ? 'check' : 'none'} onClick={() => pick('builtin')} />
@@ -118,6 +177,10 @@ export function AnimationQualitySheet({ close }) {
           onClick={failed && choice === px ? retry(id) : () => pick(px)} />
       })}
     </Section>
+    {/* iOS pauses every animated image when Settings › Accessibility › Motion › Auto-Play Animated
+        Images is off, in apps too, and the app cannot tell. Discord 11-09: that was the whole bug. */}
+    {platformNow() === 'ios' && choice !== 'still' &&
+      <p className="small dim ios-anim-hint">{t('Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.')}</p>}
     {packs.available && <Section>
       <Row icon="cloud" iconTint="var(--blue)" title={t('Download over Wi-Fi only')}>
         <Switch checked={wifiOnly} onChange={v => writePrefs({ wifiOnly: v })} />

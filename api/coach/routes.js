@@ -4,10 +4,13 @@
  * are closures over the db and the session secret, and passing them in keeps this module free
  * of a cycle (and trivially testable against fakes).
  */
+import { candidatesFor, discoverLocal } from './core/local-discovery.js';
 import * as cfgStore from './config.js';
 import * as jobs from './jobs.js';
 import { computeCohort } from './cohort.js';
 import { adapterFor } from './adapters/index.js';
+import * as chatgptPlan from './chatgpt-plan.js';
+import { PROVIDER as CHATGPT } from './adapters/chatgpt.js';
 import { canDropPrivileges, privilegeRefusal } from './adapters/spawn.js';
 import { DATA_CATEGORIES } from './core/payload.js';
 import { validateBaseUrl, validateHeaders, baseUrlFor } from './core/providers.js';
@@ -27,6 +30,8 @@ const USER_ERROR = {
 const hostOf = url => { try { return url ? new URL(url).host : null; } catch { return null; } };
 const HTTP_FOR = { off: 503, busy: 409, cap: 429, consent: 403, shared: 409, unprivileged: 503 };
 
+// The one Sign in with ChatGPT in flight (admin only, ten-minute window: chatgpt-plan.js).
+let chatgptPending = null;
 export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
   /** Every user route starts the same way: signed in, feature on, feature reachable. The class
    *  goes beside the words, as enqueue's refusal sends it: the app shows its own translated line
@@ -95,7 +100,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         const job = jobs.enqueue(user.id, {
           kind: 'review',
           lang: body.lang,
-          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null
+          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null,
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -123,7 +129,9 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           kind: 'ask',
           lang: body.lang,
           note: text.slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING),
-          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null
+          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null,
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null,
+          routines: Array.isArray(body.routines) ? body.routines.slice(0, 8) : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -212,6 +220,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           setupToken: !!p.setupToken, deviceLogin: !!p.deviceLogin, apiKey: !!p.apiKeyEnv,
           http: !!p.http, baseUrl: !!p.baseUrl, keyOptional: !!p.keyOptional, keyPlaceholder: p.keyPlaceholder || null,
           defaultModel: p.defaultModel || null,
+          keyUrl: p.keyUrl || null, signIn: p.signIn || null, web: !!p.web, oauth: !!p.oauthEnv && !p.setupToken,
           // Which providers already hold a key — so switching chips is visibly not a reset.
           connected: !!(cfgStore.authFor(cfg, id) && cfgStore.authFor(cfg, id).data)
         })),
@@ -227,6 +236,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         maxMessageLen: cfg.maxMessageLen,
         maxOutputTokens: cfg.maxOutputTokens,
         community: !!cfg.community,
+        web: !!cfg.web, routinesUrl: cfg.routinesUrl || null,
         runtime: { ok: !!check.ok, version: check.version || null, error: check.error || null, needsKey: !!check.needsKey },
         authMode: cfg.authMode,
         boundUid: cfgStore.boundUidFor(cfg),
@@ -295,6 +305,13 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         patch.providerOptions = { ...current.providerOptions, ...(patch.providerOptions || {}), [target]: next };
       }
       if (body.community !== undefined) patch.community = !!body.community;
+      if (body.web !== undefined) patch.web = !!body.web;
+      // The routines library's index (docs/ROUTINES_LIBRARY.md): an https address, 'off', or '' for the default.
+      if (body.routinesUrl !== undefined) {
+        const v = String(body.routinesUrl || '').trim();
+        if (v && v !== 'off' && !/^https:\/\/[^\s]{3,300}$/.test(v)) return json(res, 400, { error: 'the routines index needs an https:// address, or "off"' });
+        patch.routinesUrl = v || null;
+      }
       if (body.caps) {
         patch.caps = {
           perProfileDaily: Math.max(0, Math.min(200, +body.caps.perProfileDaily || 0)),
@@ -344,6 +361,15 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       json(res, 200, await adapter.models(cfg, env));
     },
 
+    /* Ollama, LM Studio or llama.cpp next to the api (same compose project, the Docker host, this
+       machine), found by asking a fixed list of addresses for their models. Admin only, and the
+       list never comes from the request, so it cannot be aimed anywhere else. */
+    'POST /api/admin/coach/discover': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const hosts = ['ollama', 'lmstudio', 'llama', 'host.docker.internal', '172.17.0.1', 'localhost'];
+      json(res, 200, { ok: true, found: await discoverLocal(candidatesFor(hosts)) });
+    },
+
     /* Connect the instance credential. Deferred while the fixture was the only provider — it
        has none, so there was nothing to connect. The real providers give it something to hold,
        which is the condition this route was waiting on.
@@ -375,11 +401,57 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       json(res, 200, { ok: true });
     },
 
+    /* Sign in with ChatGPT for plan usage (chatgpt-plan.js, preview, COACH_CHATGPT_PLAN=on). Start
+       hands back the address to open in the admin's own browser; that browser ends on a loopback
+       page that does not load, and Finish takes the address it shows. The verifier never leaves
+       this server. 404 without the switch, like a route that is not there. */
+    'POST /api/admin/coach/chatgpt/start': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      if (!chatgptPlan.on() || !cfgStore.PROVIDERS[CHATGPT]) return json(res, 404, { error: 'not found' });
+      const cfg = cfgStore.load();
+      let hostId = cfg.chatgptHost;
+      if (!hostId) { hostId = chatgptPlan.newHostId(); cfgStore.save({ chatgptHost: hostId }); }
+      const rec = cfgStore.authFor(cfg, CHATGPT);
+      const prev = rec && rec.data ? cfgStore.decrypt(rec.data) : null;
+      const s = chatgptPlan.startSignIn({ hostId, clientId: cfg.chatgptClient || prev?.clientId || null, idTokenHint: prev?.idToken || null });
+      chatgptPending = s.pending;
+      json(res, 200, { url: s.url, redirect: chatgptPlan.REDIRECT_URI });
+    },
+    'POST /api/admin/coach/chatgpt/finish': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      if (!chatgptPlan.on() || !cfgStore.PROVIDERS[CHATGPT]) return json(res, 404, { error: 'not found' });
+      const body = await readBody(req);
+      const cb = chatgptPlan.parseCallback(body.callback, chatgptPending);
+      if (!cb.ok) return json(res, 400, { error: cb.error });
+      const pending = chatgptPending;
+      chatgptPending = null;
+      const ex = await chatgptPlan.exchangeCode(fetch, pending, cb.code, cb.clientId).catch(e => ({ ok: false, error: 'could not reach auth.openai.com: ' + e.message }));
+      if (!ex.ok) return json(res, 502, { error: ex.error });
+      let jwks = null;
+      try { jwks = await (await fetch(chatgptPlan.JWKS_URL)).json(); } catch { /* checked below */ }
+      const idt = chatgptPlan.verifyIdToken(ex.tokens.id_token, jwks, { audience: cb.clientId, nonce: pending.nonce });
+      if (!idt.ok) return json(res, 502, { error: idt.error });
+      if (!chatgptPlan.planGranted(ex.tokens.scope)) return json(res, 400, { error: 'signed in, but ChatGPT plan use was not allowed; sign in again and allow it' });
+      cfgStore.save({ chatgptClient: cb.clientId });
+      cfgStore.saveAuth(CHATGPT, {
+        type: 'oauth', account: String(idt.claims.email || '').slice(0, 120),
+        data: cfgStore.encrypt(chatgptPlan.credentialOf(ex.tokens, { clientId: cb.clientId, hostId: pending.hostId, claims: idt.claims })),
+        connectedAt: new Date().toISOString()
+      });
+      json(res, 200, { ok: true, account: idt.claims.email || null, usage: chatgptPlan.USAGE_URL });
+    },
+
     'POST /api/admin/coach/disconnect': async (req, res) => {
       if (!requireAdmin(req, res)) return;
       const body = await readBody(req);
       const provider = body.provider !== undefined ? String(body.provider) : cfgStore.load().provider;
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
+      // A ChatGPT session is ended at OpenAI too, as its docs ask; the local copy goes either way.
+      if (provider === CHATGPT) {
+        const rec = cfgStore.authFor(cfgStore.load(), CHATGPT);
+        const cred = rec && rec.data ? cfgStore.decrypt(rec.data) : null;
+        if (cred) await chatgptPlan.revokeCredential(fetch, cred);
+      }
       cfgStore.saveAuth(provider, null);
       json(res, 200, { ok: true });
     },

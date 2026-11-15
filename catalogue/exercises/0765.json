@@ -3,10 +3,12 @@
   "name": "smith seated shoulder press",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
-  "target": "delts",
+  "machineKind": "smith",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press on the smith machine, with the back supported. It builds the shoulders and triceps along a fixed path.",
@@ -21,13 +23,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "femaleVariant": "3620",

@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from '../store/useStore.js'
 import { StreakFlame, Freezes, StreakCard, StreakParty, Medal } from './Streak.jsx'
 import { setNativeBuzzer } from '../lib/sound.js'
+import { streakInfo } from '../lib/streak.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 let root, host, matches = false
@@ -72,6 +73,38 @@ describe('Stats card', () => {
     expect(el.querySelector('[role="progressbar"]')).toBeNull()
     expect(el.querySelectorAll('.streak-badge .medal-legend')).toHaveLength(1)
     expect(el.textContent).toContain('Every badge collected. Legend.')
+  })
+})
+
+// Discord, dimarei (iOS, 1.4.4): "it was 6 weeks, now it says 11, and there is a gap in September".
+// Five weeks before the gap earned a freeze, the freeze covered the gap, and the six after it made
+// 11: the rule working. What was missing is the card saying so; now it names the week.
+describe('a streak that ran through a gap', () => {
+  const day = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10) }
+  // Mondays from 2026-08-17: weeks 0..4 trained, week 5 (14 Sep) missed, weeks 6..11 trained.
+  const workouts = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11].map(k => ({ d: day('2026-08-18', 7 * k), entries: [] }))
+  const S = { workouts, weekStart: 1 }
+
+  it('counts 11 with the missed week frozen, and 6 without the freeze', () => {
+    const got = streakInfo(S, '2026-11-03')
+    expect(got.current).toBe(11)
+    expect(got.frozen).toEqual(['2026-09-21'])
+    // A second missed week in a row has no freeze left: the streak starts over at the run after it.
+    const twoGaps = { ...S, workouts: workouts.filter(w => w.d !== day('2026-08-18', 7 * 6)) }
+    expect(streakInfo(twoGaps, '2026-11-03').current).toBe(5)
+  })
+
+  it('the Stats card names the week the freeze covered', () => {
+    const el = render(<StreakCard info={streakInfo(S, '2026-11-03')} />)
+    const line = el.querySelector('[data-streak-frozen]')
+    expect(line).toBeTruthy()
+    expect(line.lastElementChild.textContent).toMatch(/^A freeze covered the week of .*21.*, so the streak kept going\.$/)
+    expect(line.querySelector('[data-icon="snowflake"]')).toBeTruthy()
+  })
+
+  it('says nothing when no freeze was used', () => {
+    const el = render(<StreakCard info={info()} />)
+    expect(el.querySelector('[data-streak-frozen]')).toBeNull()
   })
 })
 

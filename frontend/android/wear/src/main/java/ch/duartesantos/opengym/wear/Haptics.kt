@@ -1,14 +1,27 @@
 package ch.duartesantos.opengym.wear
 
 import android.content.Context
+import android.os.Build
+import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.annotation.RequiresApi
 
 /** The wrist's taps: short for a logged set, a clear double-double when a rest is over. */
 object Haptics {
+    // VibratorManager only exists from Android 12 (API 31). A Wear OS 3 watch is API 30: naming the
+    // class there fails to load it and the app stops the moment a set is logged (#1168).
     private fun vibrator(ctx: Context): Vibrator? =
-        (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+        if (Build.VERSION.SDK_INT >= 31) Api31.vibrator(ctx)
+        else @Suppress("DEPRECATION") (ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator)
+
+    /** Kept apart so API 30 never has to load VibratorManager. */
+    @RequiresApi(31)
+    private object Api31 {
+        fun vibrator(ctx: Context): Vibrator? =
+            (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+    }
 
     /** A set logged: one crisp tick, enough to know it counted without looking. */
     fun tick(ctx: Context) {
@@ -28,5 +41,61 @@ object Haptics {
     fun restSoon(ctx: Context) {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createOneShot(60, 120)) } catch (_: Exception) {}
+    }
+
+    /** One side of a per-side set done, the other side next: lighter than a set. */
+    fun side(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_TICK)
+
+    /** The workout starts (Go!): one firm click. */
+    fun start(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_HEAVY_CLICK)
+
+    /** Finished and saved: a long one, then two short ones (the Apple Watch's stop, success, success). */
+    fun finished(ctx: Context) = waveform(ctx, longArrayOf(0, 220, 280, 70, 330, 70), intArrayOf(0, 200, 0, 255, 0, 255))
+
+    /** A set passed over: one soft drop. */
+    fun skip(ctx: Context) = waveform(ctx, longArrayOf(0, 45), intArrayOf(0, 90))
+
+    /** "Still training?" and "Left the gym?": two even taps, a question, not the rest's alarm. */
+    fun ask(ctx: Context) = waveform(ctx, longArrayOf(0, 120, 480, 120), intArrayOf(0, 200, 0, 200))
+
+    /** Discarded: one long, low pulse. */
+    fun discarded(ctx: Context) = waveform(ctx, longArrayOf(0, 260), intArrayOf(0, 140))
+
+    private fun predefined(ctx: Context, effect: Int) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createPredefined(effect)) } catch (_: Exception) {}
+    }
+
+    private fun waveform(ctx: Context, timings: LongArray, amps: IntArray) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createWaveform(timings, amps, -1)) } catch (_: Exception) {}
+    }
+
+    /** One beat of a 3-2-1 (and the last seconds of a hold): a light tick. */
+    fun count(ctx: Context) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)) } catch (_: Exception) {}
+    }
+}
+
+/**
+ * Awake for a countdown (AwakePlan): a partial wake lock per countdown ("rest", "hold"), with its
+ * own time limit, so one that is never released still ends. Nothing here throws.
+ */
+object Awake {
+    private val locks = mutableMapOf<String, PowerManager.WakeLock>()
+
+    @Synchronized fun until(ctx: Context, name: String, endsAt: Long) {
+        release(name)
+        val ms = AwakePlan.holdMs(endsAt, System.currentTimeMillis())
+        if (ms <= 0) return
+        try {
+            val pm = ctx.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+            locks[name] = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:$name").apply { setReferenceCounted(false); acquire(ms) }
+        } catch (_: Exception) {}
+    }
+
+    @Synchronized fun release(name: String) {
+        try { locks.remove(name)?.takeIf { it.isHeld }?.release() } catch (_: Exception) {}
     }
 }

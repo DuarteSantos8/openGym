@@ -3,10 +3,12 @@
   "name": "lever shoulder press",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "shoulder-press",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "chest"
+    "chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated at a lever machine, you press the handles overhead. Builds the shoulders and triceps.",
@@ -19,14 +21,15 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
       "serratus",
-      "biceps"
+      "biceps",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

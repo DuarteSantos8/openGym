@@ -46,6 +46,14 @@ async function startServer(t, { users: which = ['admin', 'user'], env = {} } = {
     invites: [{ code: 'CODE1', usedBy: USER, usedAt: new Date().toISOString() }],
   }));
   for (const uid of [USER, ADMIN]) fs.writeFileSync(path.join(dataDir, `state-${uid}.json`), JSON.stringify({ unit: 'kg', workouts: [], _rev: 3 }));
+  // The Coach's record of each: a plan waiting for a yes, and today's count.
+  fs.mkdirSync(path.join(dataDir, 'coach'));
+  for (const uid of [USER, ADMIN]) {
+    fs.writeFileSync(path.join(dataDir, 'coach', `${uid}.json`), JSON.stringify({
+      daily: { date: new Date().toISOString().slice(0, 10), n: 1 }, share: true, history: [],
+      pending: { id: 'j1', plan: { routines: [{ name: 'Secret plan' }] } },
+    }));
+  }
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', PASSWORD_LOGIN: '1', AUDIT_LOG: '1', ...env },
@@ -79,6 +87,8 @@ test('removes the account and everything attached to it, and ends the session', 
   assert.deepEqual(db.subs.map(s => s.userId), [ADMIN], 'their push subscriptions are gone');
   assert.equal(fs.existsSync(path.join(h.dataDir, `state-${USER}.json`)), false, 'their history is gone');
   assert.equal(fs.existsSync(path.join(h.dataDir, `state-${ADMIN}.json`)), true, 'nobody else’s is touched');
+  assert.equal(fs.existsSync(path.join(h.dataDir, 'coach', `${USER}.json`)), false, 'their Coach record is gone');
+  assert.equal(fs.existsSync(path.join(h.dataDir, 'coach', `${ADMIN}.json`)), true);
   assert.equal(db.invites[0].usedBy, USER, 'the code they joined with stays burned');
 
   const me = await fetch(`${h.api}/api/me`, { headers: as(USER) });

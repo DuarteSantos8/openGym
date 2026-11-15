@@ -3,6 +3,7 @@
   "name": "lever lateral wide pulldown",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

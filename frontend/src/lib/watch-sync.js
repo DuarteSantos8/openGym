@@ -19,14 +19,27 @@
 // id, and only then acknowledged, which takes it out of the native queue; until the workout screen
 // is there to apply it, it waits in that queue.
 //
+// Nothing gets lost, nothing runs twice (the 1.4.5 protocol, docs/WATCH_SYNC.md):
+//   - the watch keeps every event in an outbox of its own, numbered (`seq`), and sends it again
+//     until the phone says it has it: the snapshot names the ids applied here lately (`acked`);
+//   - here each id is applied once (the applied list survives restarts), the events of one drain
+//     go in the watch's order (seq), and an event of a workout started on the watch whose start
+//     has not arrived yet waits for it instead of being thrown away;
+//   - a start for a workout this phone already had (saved or discarded) never starts it again;
+//   - a set the watch logged after the phone saved the workout lands in the saved workout, even
+//     for an exercise the phone had left empty (and so out of what it saved).
+//
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { stripBidi } from './bidi.js'
+import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
-import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
-import { packId, packDrawingId } from './anim-quality.js'
+import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
+import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
-import { getLang, baseLang, onLangChange } from './i18n.js'
+import { getLang, baseLang, onLangChange, t } from './i18n.js'
+import { loadOf, MUSCLES, MUSCLE_NAME } from './muscles.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
@@ -35,15 +48,225 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
-import { garminSnapshot } from './garmin-snapshot.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
+import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
+import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
+import { accentValue, accentPair, customAccentVars } from './accent.js'
+import { circuitClock } from './circuit.js'
+
+// A circuit's clock (lib/circuit.js, store/useCircuit.js), when one runs: its rests and its get
+// ready go to the watch as the rest it already counts down; the station on now is the current
+// exercise (`cur`). The watch apps have no screen for a circuit's work interval or its round, so
+// those stay on the phone. The store tells this module, rather than this module importing it.
+let circuitRun = () => null
+const circuitListeners = new Set()
+export function bindCircuitSource (get) { circuitRun = typeof get === 'function' ? get : () => null }
+export function circuitChanged () { for (const fn of circuitListeners) { try { fn() } catch { /* the next change tries again */ } } }
+/** The rest the watch should count: a circuit's rest when its clock runs, else the rest timer. */
+export function watchRestTimer (timer, run = circuitRun()) {
+  const cc = circuitClock(run)
+  // A paused rest is said as paused (#1149, #1165): the watch then holds its countdown instead of
+  // taking the missing end for a Skip.
+  if (cc) return cc.kind === 'rest' ? { endsAt: cc.endsAt, total: cc.total, ...(cc.paused ? { paused: true, left: cc.left } : {}) } : null
+  return timer
+}
+
+/* ---------- one rest, wherever it is changed (watch-sync round, 1.4.5) ---------- */
+
+// Every change of the rest made on purpose (a start, +15 or −15, Skip, a pause, a resume; on the
+// phone, or on a watch, which says so with its `rest` event or the `restEnd` of its tick) has the
+// time it was made at, on the phone's clock. The phone keeps the time of the newest one it applied
+// (`restAt`, in the snapshot), and so does each watch: a side follows a change newer than its own
+// newest and ignores the rest. So a late snapshot, a late event or the phone app coming to the
+// front never restarts a rest, and a +15 or a Skip from either side reaches the other. The rest
+// running out by itself is not a change. Kept on disk with its workout: a phone app that is opened
+// again must not take the rest it restores for a new one.
+const REST_CLOCK_KEY = 'gym_watch_rest'
+// A rest whose end is this close is taken as run out, not skipped.
+const RAN_OUT_SLACK_MS = 1500
+let restClock = null
+const noRestClock = () => ({ wid: null, at: 0, shape: '' })
+function readRestClock () {
+  if (restClock) return restClock
+  try {
+    const v = JSON.parse(localStorage.getItem(REST_CLOCK_KEY))
+    restClock = v && typeof v.wid === 'string' && num(v.at) ? { wid: v.wid, at: num(v.at), shape: typeof v.shape === 'string' ? v.shape : '' } : noRestClock()
+  } catch { restClock = noRestClock() }
+  return restClock
+}
+function writeRestClock (c) {
+  restClock = c
+  try { localStorage.setItem(REST_CLOCK_KEY, JSON.stringify(c)) } catch { /* then a reopened app counts its restored rest as new once */ }
+}
+/** The rest as the watches see it: '' for none (or its Ready), `r<endsAt>` running, `p<left>` paused. */
+export function restShape (t) {
+  if (!t || t.ready) return ''
+  if (t.paused) return 'p' + Math.round(num(t.left) || 0)
+  return num(t.endsAt) ? 'r' + Math.round(t.endsAt) : ''
+}
+/** When the rest of workout `wid` was last changed on purpose (phone clock, ms), else 0. */
+export function restAtFor (wid) {
+  const c = readRestClock()
+  return wid && c.wid === wid ? c.at : 0
+}
+/**
+ * The rest timer changed on this phone (`next` is the timer now). A change made here is stamped
+ * with now; one a watch's event made is stamped by that event (applyRestStep), never here. A rest
+ * that ran out keeps the stamp of its last change.
+ */
+export function noteRestChange (wid, next, now = Date.now()) {
+  if (!wid || applyingWatch) return
+  const c = readRestClock()
+  const shape = restShape(next)
+  const own = c.wid === wid
+  if (own && shape === c.shape) return
+  const ranOut = own && !shape && c.shape.startsWith('r') && Number(c.shape.slice(1)) <= now + RAN_OUT_SLACK_MS
+  // Always after the change before it, whatever this phone's clock just did.
+  writeRestClock({ wid, at: ranOut ? c.at : Math.max(now, own ? c.at + 1 : 0), shape })
+}
+
+/**
+ * What the phone's rest does after a set from the watch was ticked here, by the workout screen's
+ * own tick, which started the phone's rest for it by the phone's rules. `before` is the timer from
+ * before that tick, `timer` the one now, `at` the tick's time and `restEnd` the end of the rest
+ * the watch started for it (both on the phone's clock: phoneClock), 0 for none, missing from a
+ * watch that does not say (it is then the lag rule: restLagSec).
+ *   { keep }   the rest was changed here (or by another watch) after this tick: that stands
+ *   { end }    the watch's rest for this set is over already, or the watch started none
+ *   { align }  the phone's rest ends when the watch's does
+ *   { lag }    seconds to take off (an older watch)
+ *   null       nothing to change
+ */
+export function watchTickRest ({ before = null, timer = null, at = null, restEnd, restAt = 0, now = Date.now() }) {
+  if (num(at) && restAt && at < restAt) return { keep: before }
+  if (restEnd === 0) return timer && !timer.ready ? { end: true } : null
+  if (num(restEnd)) return restEnd > now + 500 ? { align: restEnd } : timer && !timer.ready ? { end: true } : null
+  const lag = restLagSec(timer, at, now)
+  return lag > 0 ? (lag >= timer.left ? { end: true } : { lag }) : null
+}
+
+/**
+ * Does `step` (watchTickRest's, or a watch's `rest` event: { skip: at }, { align }, { end }) to
+ * the phone's rest through the timer's own actions (`ui`: the store/useUI.js store, or the
+ * simulator's), and, unless it kept what was there, stamps the rest with `at` for workout `wid`.
+ */
+export function applyRestStep (ui, step, { wid = null, at = Date.now() } = {}) {
+  if (!ui?.getState) return
+  const s = () => ui.getState()
+  if (step && 'keep' in step) {
+    // The tick started a rest of its own: what ran before it comes back as it was.
+    if (restShape(s().timer) !== restShape(step.keep)) { if (step.keep && !step.keep.ready) s().putRest(step.keep); else s().stopRest() }
+    return
+  }
+  if (step?.skip) s().skipRest(step.skip)
+  else if (step?.end) s().stopRest()
+  else if (num(step?.align)) s().alignRest(step.align)
+  else if (num(step?.lag)) s().addRest(-step.lag)
+  if (wid) writeRestClock({ wid, at: Math.max(num(at) || Date.now(), 1), shape: restShape(s().timer) })
+}
+
+/* ---------- the two clocks (watch-sync round) ---------- */
+
+// The watches' clocks are not the phone's. A snapshot says what the phone's clock read when it was
+// made (`now`); a watch keeps watchClock − phoneClock as the smallest gap it has seen between that
+// and its own clock on arrival (the transport's delay only ever adds to it) and sends it with each
+// event (`off`, ms). Here an event's times are moved onto this phone's clock by it, so a rest and
+// "the later tick wins" agree across a watch that runs a few seconds off. Beyond this it is a clock
+// that is simply wrong, not one that is off: left as it is.
+export const MAX_OFF_MS = 12 * 3600e3
+/** The event with its times on the phone's clock (`off` taken off `at`, `restEnd`, `endsAt`). */
+export function phoneClock (ev) {
+  const off = num(ev?.off)
+  if (!off || Math.abs(off) > MAX_OFF_MS) return ev
+  const out = { ...ev }
+  for (const k of ['at', 'restEnd', 'endsAt']) if (num(out[k]) && out[k] > 0) out[k] = out[k] - off
+  return out
+}
+
+/* ---------- a set's identity (#1162) ---------- */
+
+// Each set row of the running workout has an id of its own (`sid`), given here and sent with the
+// snapshot. A watch names a set by it in its events (and makes one up for a set it adds), so a set
+// keeps its identity when rows are added, removed or moved, and the same exercise twice in one
+// workout is two exercises. The position (entryIdx, setIdx) still goes along, for a watch or a
+// phone that has no ids yet. Saved with the workout like a set's `at`; nothing else reads it.
+const SID_RE = /^[A-Za-z0-9_-]{1,40}$/
+export const sidOk = v => typeof v === 'string' && SID_RE.test(v)
+let sidN = 0
+// Short: a Garmin's whole snapshot is 4 KB. Unique within a workout is all it needs to be.
+const newSid = () => 's' + Math.floor(Math.random() * 2176782336).toString(36).padStart(6, '0') + (++sidN).toString(36)
+/** Whether some row of `A` has no id, or one another row has too. */
+export function needsSetIds (A) {
+  if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || A.backfill) return false
+  const seen = new Set()
+  for (const e of A.entries) for (const s of e?.sets || []) {
+    if (!s || typeof s !== 'object') continue
+    if (!sidOk(s.sid) || seen.has(s.sid)) return true
+    seen.add(s.sid)
+  }
+  return false
+}
+/**
+ * Gives every row of the running workout `A` (a draft) an id, and a copied row a new one: of two
+ * rows with the same id the first keeps it (a copy goes in after what it copies). Returns whether
+ * anything changed.
+ */
+export function ensureSetIds (A) {
+  if (!needsSetIds(A)) return false
+  const seen = new Set()
+  for (const e of A.entries) for (const s of e?.sets || []) {
+    if (!s || typeof s !== 'object') continue
+    if (!sidOk(s.sid) || seen.has(s.sid)) s.sid = newSid()
+    seen.add(s.sid)
+  }
+  return true
+}
+/**
+ * When a set was last ticked or changed by hand: its tick (`at`), or a later edit of its numbers on
+ * the phone (`eat`). Of two changes of the same set, here or on a watch, the later wins by this: a
+ * weight corrected on the phone after the tick is not undone by an older correction from the wrist.
+ */
+export const setStamp = s => Math.max(num(s?.at) || 0, num(s?.eat) || 0)
+/**
+ * The rows of the running workout whose numbers were changed on the phone while they were done
+ * (`prev` → `next`, the same row by its id, else its place): [entry, set] each.
+ */
+export function editedDoneRows (prev, next) {
+  const out = []
+  if (!prev || !next || prev.id !== next.id || !Array.isArray(next.entries) || !Array.isArray(prev.entries)) return out
+  const nums = s => JSON.stringify([s.w, s.r, s.sec, s.sides?.L?.w, s.sides?.L?.r, s.sides?.R?.w, s.sides?.R?.r, s.rpe, s.rir])
+  next.entries.forEach((e, i) => (e?.sets || []).forEach((s, j) => {
+    if (!s?.done) return
+    const hit = sidOk(s.sid) ? rowBySid(prev, s.sid) : (prev.entries[i]?.id === e.id ? [i, j] : null)
+    const p = hit ? prev.entries[hit[0]]?.sets?.[hit[1]] : null
+    if (p?.done && p !== s && nums(p) !== nums(s)) out.push([i, j])
+  }))
+  return out
+}
+/** [entry index, set index] of the row with id `sid` in workout `w`, else null. */
+export function rowBySid (w, sid) {
+  if (!sidOk(sid) || !Array.isArray(w?.entries)) return null
+  for (let i = 0; i < w.entries.length; i++) {
+    const sets = w.entries[i]?.sets || []
+    for (let j = 0; j < sets.length; j++) if (sets[j]?.sid === sid) return [i, j]
+  }
+  return null
+}
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
-const APPLIED_MAX = 300
+const APPLIED_MAX = 1000
+// The workouts started on the watch that this phone has met (started, run or ended): a late copy
+// of their start is not a new workout, and their late events are not waited on.
+const SEEN_KEY = 'gym_watch_wids'
+const SEEN_MAX = 60
+// How many of the applied ids the snapshot carries back to the watch (its outbox lets go of them).
+export const ACKED_MAX = 80
+// How long an event of a watch-started workout waits for that workout's start to arrive.
+export const DEFER_MAX_MS = 48 * 3600e3
 const SEND_DEBOUNCE_MS = 400
 // Routines the watch can start besides today's: enough to choose from, small enough to send.
 const READY_MAX = 8
@@ -94,9 +317,15 @@ const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true })
 function watchSet (s) {
   return {
     w: num(s.w), r: num(s.r), sec: num(s.sec), done: !!s.done, warmup: !!isWarmupRow(s),
-    // when it was ticked: of two ticks of the same set (phone and watch), the later wins
-    ...(num(s.at) ? { at: num(s.at) } : {}),
+    // the row's own id (#1162): what the watch names it by in its events
+    ...(sidOk(s.sid) ? { sid: s.sid } : {}),
+    // when it was ticked (or its numbers changed here since): of two changes of the same set
+    // (phone and watch), the later wins
+    ...(setStamp(s) ? { at: setStamp(s) } : {}),
     ...(isSideSet(s) ? { sides: { L: sideRow(s.sides.L), R: sideRow(s.sides.R) } } : {}),
+    // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
+    ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
+    ...(num(s.m) > 0 ? { m: num(s.m) } : {}),
   }
 }
 
@@ -115,7 +344,7 @@ function watchEntry (stored, H, S) {
   let last = null
   try {
     const l = H ? lastEntryFor(H, e.id, e.rid) : null
-    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target)).join(', ')
+    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => stripBidi(setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target))).join(', ')
   } catch { last = null }
   const stBest = S ? bestFor(S, e.id, mode) : null
   const best = stBest && own && stBest.w != null ? { ...stBest, w: shownWeight(S, e.id, stBest.w) } : stBest
@@ -126,7 +355,10 @@ function watchEntry (stored, H, S) {
     id: String(e.id),
     // Title-cased as on the phone; the watch has no CSS to do it (lib/format.js exerciseNameText).
     name: ex ? exerciseNameText(ex) : String(target.name || e.name || e.id),
-    mode,
+    // A carry or a sled in metres (Reddit, #1011) goes to the watches as one logged on the phone,
+    // the way cardio does: no watch app knows metres yet, and none may log it as reps.
+    mode: mode === 'distance' ? 'cardio' : mode,
+    ...(mode === 'distance' ? { track: 'distance' } : {}),
     restSec: num(target.restSec),
     last,
     sets: (e.sets || []).map(watchSet),
@@ -159,7 +391,9 @@ export function buildReady (S, today = todayISO()) {
       return {
         routineIds: routineIds.map(String),
         name: String(deriveSessionName(routines.map(r => r.name)) || ''),
-        entries: entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
+        // with their muscles, so a workout the watch starts offline fills its Muscles page too
+        entries: entries.filter(e => e && e.id != null).map(e => ({ ...watchEntry(e, H, S), ...musclesFor(e) })),
+        ...muscleNames(entries),
         // Apple Health's workout type on the watch: a run is a run (#799)
         ...(healthType ? { healthType } : {}),
       }
@@ -172,8 +406,23 @@ export function buildReady (S, today = todayISO()) {
   return { today: planned, others }
 }
 
+// What one exercise trains, with the phone's own weights (helpers count 0.4): the watch adds up the
+// sets it logs into its Muscles page, offline too. loadOf of one set resolves the exercise as the phone's map does.
+// Only the muscles the phone's map draws: a burpee's "cardiovascular system" is no row on the watch either.
+const musclesFor = e => {
+  let m = {}
+  try { m = loadOf([{ id: e.id, ex: e.exercise || e, sets: 1 }]) } catch { m = {} }
+  const out = Object.fromEntries(Object.entries(m).filter(([k, w]) => w > 0 && (MUSCLES.includes(k) || k === 'deltoids')).map(([k, w]) => [k, Math.round(w * 100) / 100]))
+  return Object.keys(out).length ? { muscles: out } : {}
+}
+const muscleNames = entries => {
+  const names = {}
+  for (const e of entries || []) for (const slug in musclesFor(e).muscles || {}) names[slug] = t(MUSCLE_NAME[slug] || slug)
+  return Object.keys(names).length ? { muscleNames: names } : {}
+}
+
 /** What the watch needs to run the session: plain data, no media (licence: text only). */
-export function buildSnapshot(S, { timer = null, ready = null, activeAt = null } = {}) {
+export function buildSnapshot(S, { timer = null, ready = null, activeAt = null, restAt = 0 } = {}) {
   const A = S && S.active
   const unit = S && S.unit === 'lb' ? 'lb' : 'kg'
   const restSec = num(S && S.restSec) || 0
@@ -191,12 +440,22 @@ export function buildSnapshot(S, { timer = null, ready = null, activeAt = null }
       name: A.name || '',
       // when it started (ms), for the watch's summary at the finish
       ...(num(A.start) ? { start: num(A.start) } : {}),
+      // paused on the phone (#976): the watch's clock stands at this moment (ms) until it resumes
+      ...(num(A.pausedAt) ? { pausedAt: num(A.pausedAt) } : {}),
       unit,
       cur: Math.max(0, Math.min(A.entries.length - 1, A.cur || 0)),
       restSec: num(S.restSec) || 0,
       // a rest running on the phone, so the watch counts down the same one
-      rest: timer && !timer.paused && !timer.ready && num(timer.endsAt) ? { endsAt: timer.endsAt } : null,
-      entries: A.entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
+      rest: timer && !timer.paused && !timer.ready && num(timer.endsAt) ? { endsAt: timer.endsAt, ...(num(timer.total) > 0 ? { total: num(timer.total) } : {}) } : null,
+      // Paused, not over (#1149, #1165): `rest` is null then, and a watch must not take that for a
+      // Skip. The seconds it holds at, for a watch that shows the pause.
+      ...(timer && timer.paused && !timer.ready ? { restPaused: true, ...(num(timer.left) > 0 ? { restLeft: num(timer.left) } : {}) } : {}),
+      // When the rest was last changed on purpose (phone clock): a watch follows only a change
+      // newer than its own newest, so a Skip here (rest null, this newer) ends the watch's too.
+      ...(num(restAt) > 0 ? { restAt: num(restAt) } : {}),
+      entries: A.entries.filter(e => e && e.id != null).map(e => ({ ...watchEntry(e, H, S), ...musclesFor(e) })),
+      // The names of those muscles in the app's language, for the watch's Muscles page.
+      ...muscleNames(A.entries),
       // Apple Health's workout type on the watch: a run is a run (#799)
       ...(healthType ? { healthType } : {}),
       // The last thing done in it on the phone (#904): the watch's forgotten-workout clock
@@ -252,6 +511,11 @@ export function staleWatchFinish (A, ev, now = Date.now()) {
   if (!worked) return false
   const at = num(ev?.at)
   if (at && worked > at + CLOCK_SLACK_MS) return true
+  // Ended because the lifter left the gym, which this phone saw too, after the last work here: not stale.
+  if (ev?.idle === true && ev?.left === true && A.id) {
+    const left = num(readForgottenState(A.id)?.leftAt)
+    if (left && worked <= left) return false
+  }
   return ev?.idle === true && now - worked < IDLE_GUARD_MS
 }
 
@@ -261,9 +525,16 @@ export function staleWatchFinish (A, ev, now = Date.now()) {
  * through Background Assets on the phone) when there is one, else the app's built-in clip (`path` inside the app package:
  * the 180 px animated WebP of the store build, an MP4 loop in other builds). The native side makes
  * each into a small GIF and sends it as a file; the watch deletes them when the workout ends.
- * Nothing is ever fetched from anywhere.
+ * Each also names the exercise's 180 px still of the same figure in the app package (`still`): a
+ * Wear OS watch gets that for its Overview, and for its set page the built-in clip (`wear`) when
+ * it is a 180 px animated WebP: the Plus and HD APKs keep bigger ones at the same path, and only
+ * 180 px may leave the package (the media licence). Nothing is ever fetched.
  */
 export const WATCH_PACK_PX = 240
+// A file inside the app package: relative, no way out of it, and of the expected kind.
+const inPackage = (p, kind) => typeof p === 'string' && kind.test(p) && !/^[a-z]+:|^\//i.test(p) && !p.includes('..')
+// The built-in clip a Wear OS watch may get: an animated WebP of a 180 px build only.
+export const wearClip = (path, builtin = BUILTIN_PX) => builtin === 180 && inPackage(path, /\.webp$/i)
 export function clipsFor (S, packs = animPacks().packs || {}) {
   const A = S && S.active
   if (!A || !Array.isArray(A.entries)) return []
@@ -275,27 +546,123 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
     const ex = e && EXIDX[e.id]
     if (!ex || seen.has(e.id) || !ex.gif) continue
     seen.add(e.id)
+    const s = imgSrc(ex, figure)
+    const still = inPackage(s, /\.(webp|jpe?g|png)$/i) ? { still: s } : {}
     const drawing = packDrawingId(ex, figure)
-    // a pack's files are read through Background Assets on the phone, never by a path
-    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing }); continue }
     const path = gifSrc(ex, figure)
-    if (!/\.(webp|mp4|gif)$/i.test(path) || /^[a-z]+:|^\//i.test(path) || path.includes('..')) continue
-    out.push({ exId: e.id, path })
+    const wear = wearClip(path) ? { wear: path } : {}
+    // a pack's files are read through Background Assets on the phone, never by a path
+    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing, ...still, ...wear }); continue }
+    if (!inPackage(path, /\.(webp|mp4|gif)$/i)) continue
+    out.push({ exId: e.id, path, ...still, ...wear })
   }
   return out
 }
 
 /* ---------- applying the watch's events ---------- */
 
+// A run that stopped for something that settles by itself in a moment (an action that threw
+// because its screen was between two workouts): drainWatchEvents drains once more shortly (RERUN_MS).
+let rerunSoon = false
+export const RERUN_MS = 250
+// How often an event's action threw (this run of the page).
+const failedTries = new Map()
+export const POISON_TRIES = 3
 let handlers = null      // the workout screen's: setDone, finish, discard
 let appHandlers = null   // the app's: start
-const readApplied = () => { try { return JSON.parse(localStorage.getItem(APPLIED_KEY)) || [] } catch { return [] } }
+const readList = key => { try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [] } catch { return [] } }
+const readApplied = () => readList(APPLIED_KEY)
 const writeApplied = ids => { try { localStorage.setItem(APPLIED_KEY, JSON.stringify(ids.slice(-APPLIED_MAX))) } catch { /* the queue's ack is what counts */ } }
+const readSeen = () => readList(SEEN_KEY)
+const noteSeen = (seen, wid) => {
+  if (!wid || seen.includes(wid)) return
+  seen.push(wid)
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-SEEN_MAX))) } catch { /* only a guard */ }
+}
+/** The ids of the events applied here lately, newest last: the watch's outbox lets go of them. */
+export function ackedIds (max = ACKED_MAX) { return readApplied().slice(-max) }
+
+/**
+ * The events in the order the watch made them: those that carry the watch's `seq` are sorted by it
+ * among themselves (they can arrive out of order: a fast message overtaking a queued transfer), the
+ * others keep their places.
+ */
+export function inWatchOrder (events) {
+  const at = [], withSeq = []
+  events.forEach((ev, i) => { if (num(ev?.seq) != null) { at.push(i); withSeq.push(ev) } })
+  if (withSeq.length < 2) return events
+  withSeq.sort((a, b) => num(a.seq) - num(b.seq))
+  const out = events.slice()
+  at.forEach((i, k) => { out[i] = withSeq[k] })
+  return out
+}
+
+// A tick as the fields of a set, for a set that is written directly (a saved workout's, or a row
+// the running workout had to be given): what the workout screen's own tick would have put there.
+function tickFields (ev) {
+  const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
+  const hr = sanitizeHr(ev.hr)
+  if (hr) fields.hr = hr
+  return fields
+}
+const whereOf = (ev, wid = ev.wid) => ({ wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}), ...(sidOk(ev.sid) ? { sid: ev.sid } : {}) })
 
 /** The entry an event means: by position when it still holds that exercise, else by the exercise. */
 function entryIndexOf (A, ev) {
   if (A.entries[ev.entryIdx] && A.entries[ev.entryIdx].id === ev.exId) return ev.entryIdx
   return A.entries.findIndex(e => e.id === ev.exId)
+}
+
+/**
+ * The row an event means in the running workout: [entry, set], or null when it has none. By the
+ * set's id when the event has one (#1162: wherever the row is now, also in the second copy of an
+ * exercise that is in the workout twice); a row with that id that is gone is no other row. Else
+ * by position, as watches without ids name it.
+ */
+function rowOf (A, ev) {
+  if (sidOk(ev.sid)) return rowBySid(A, ev.sid)
+  const idx = entryIndexOf(A, ev)
+  return idx >= 0 && A.entries[idx].sets?.[ev.setIdx] ? [idx, ev.setIdx] : null
+}
+
+/**
+ * A set the watch added (#1139, #1185: its set menu), with the id the watch gave it: a row like the
+ * last one of that exercise, after the row named `after` (an id) or at the end, with the numbers
+ * the watch gave. Once only: a row with that id already there is left as it is. Returns whether
+ * the workout changed.
+ */
+export function addWatchSet (s, ev) {
+  const A = s?.active
+  if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || !sidOk(ev?.sid) || rowBySid(A, ev.sid)) return false
+  const after = rowBySid(A, ev.after)
+  const idx = after ? after[0] : entryIndexOf(A, ev)
+  const e = idx >= 0 ? A.entries[idx] : null
+  if (!e) return false
+  if (!Array.isArray(e.sets)) e.sets = []
+  const at = after ? after[1] + 1 : e.sets.length
+  if (e.sets.length >= 100) return false
+  const row = { ...rowLike(e.sets[Math.min(at, e.sets.length) - 1] || e.sets[e.sets.length - 1]), sid: ev.sid }
+  if (num(ev.w) != null) row.w = storedWeight(s, e.id, num(ev.w), row.w)
+  if (num(ev.r) != null) row.r = num(ev.r)
+  if (num(ev.sec) != null) row.sec = num(ev.sec)
+  e.sets.splice(at, 0, row)
+  return true
+}
+
+/**
+ * A set the watch took out (its set menu), by its id. A set that is done is never taken out from
+ * the wrist (what was logged stays), nor one that is gone already. Returns whether it changed.
+ */
+export function removeWatchSet (s, ev) {
+  const A = s?.active
+  if (!A || A.editingWorkoutId) return false
+  const hit = rowBySid(A, ev?.sid)
+  if (!hit) return false
+  const sets = A.entries[hit[0]].sets
+  const row = sets[hit[1]]
+  if (row.done || row.sides?.L?.done || row.sides?.R?.done || sets.length <= 1) return false
+  sets.splice(hit[1], 1)
+  return true
 }
 
 /* ---------- which workouts the watch has (lib/phone-workout.js) ---------- */
@@ -327,7 +694,10 @@ function claim (ev) {
  *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
  *   finish  { wid, at, idle? }       the workout screen's own Finish and save; not when it is stale
  *                                    (staleWatchFinish: the phone logged it after `at`, #904)
+ *            idle: ended as forgotten, saved ending at `at` (last set + rest) and offered for
+ *            Reopen; `left: true` when the watch ended it because the phone left the gym
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
+ *   stillHere { wid, at }            "Keep going" on the watch's "Still training?" (1.4.5)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
  * A tick for a workout already saved (finished on the phone while the watch was away) is written
@@ -335,90 +705,185 @@ function claim (ev) {
  * not open opens it (appHandlers.openWorkout), and the queue drains once it is there. Of two
  * changes of the same set, the later one (`at`) wins.
  */
-export function applyEvents (events, getState) {
+// The events about one workout: they wait for a watch-started workout's start, and they tell that
+// the watch runs that workout.
+const WORKOUT_EVENTS = ['setDone', 'setHr', 'finish', 'discard', 'rest', 'addSet', 'removeSet']
+export function applyEvents (events, getState, now) {
   if (!Array.isArray(events)) return []
   // What the watch's events change in the workout is the watch's activity, not the phone's.
   applyingWatch = true
-  try { return applyEach(events, getState) } finally { applyingWatch = false }
+  try { return applyEach(events, getState, now) } finally { applyingWatch = false }
 }
-function applyEach (events, getState) {
+function applyEach (events, getState, now = Date.now()) {
   const applied = readApplied()
+  const seen = readSeen()
   const done = []
-  for (const ev of events) {
-    if (!ev || typeof ev.id !== 'string') continue
-    if (applied.includes(ev.id)) { done.push(ev.id); continue }
-    if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
+  // The workouts whose start is in this very queue and not applied yet: what belongs to them
+  // waits for it, whatever its age. And those something waited for in this run: when their start
+  // is applied later in the same run (it came after them), one more drain follows by itself.
+  const startWaits = new Set(events.filter(e => e && e.type === 'start' && typeof e.id === 'string' && typeof e.wid === 'string' && e.wid && !applied.includes(e.id)).map(e => e.wid))
+  const waited = new Set()
+  for (const raw of inWatchOrder(events)) {
+    if (!raw || typeof raw.id !== 'string') continue
+    // Its times on this phone's clock (the watch says how far off its own is).
+    const ev = phoneClock(raw)
+    // Applied before and sent again (the watch had not heard yet): named as the newest again, so the
+    // next snapshot's `acked` carries it even when many came after it (a Garmin's list is short).
+    if (applied.includes(ev.id)) { applied.splice(applied.indexOf(ev.id), 1); applied.push(ev.id); done.push(ev.id); continue }
     const S = getState()?.S
     const A = S?.active
     const ours = A && Array.isArray(A.entries) && (!ev.wid || ev.wid === A.id)
     // A workout finished on the phone while the watch was away: its later ticks still count.
     const saved = !ours && ev.wid && Array.isArray(S?.workouts) ? S.workouts.find(w => w && w.id === ev.wid) : null
-    if (ev.type === 'start') {
-      if (!A) {
+    const wid = typeof ev.wid === 'string' && ev.wid ? ev.wid : null
+    if (ours && wid) noteSeen(seen, wid)
+    // A workout the watch started whose start has not got here yet (it overtook it, or the start is
+    // still on its way): the event waits in the queue, unacknowledged, until it has. Not forever:
+    // after two days (or for a workout this phone met and let go of) it is meaningless.
+    // While its start is here and waiting (below: another workout runs on the phone), it waits
+    // with it however old it is, a heart rate without a time of its own too.
+    if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && WORKOUT_EVENTS.includes(ev.type) &&
+        !seen.includes(wid) && !discardedFor(now).includes(wid) && (startWaits.has(wid) || (num(ev.at) && now - num(ev.at) < DEFER_MAX_MS))) { waited.add(wid); continue }
+    // A copy of a start for a workout this phone already had (saved, discarded, or running) is
+    // not a new workout: nothing starts again (no zombie session after a resend).
+    const had = ev.type === 'start' && wid && (seen.includes(wid) || saved || discardedFor(now).includes(wid))
+    // Started on the watch while another workout runs here: it waits (its sets with it) until that
+    // one is saved or discarded, then starts, so what was logged at the wrist is never thrown away.
+    // However long that takes: a workout left open on the phone for days (forgotten workouts
+    // switched off) used to cost every workout done at the wrist meanwhile once two days had passed.
+    if (ev.type === 'start' && !had && A && wid && A.id !== wid) continue
+    if (ev.type === 'start' || WORKOUT_EVENTS.includes(ev.type)) claim(ev)
+    // An action that throws (a screen caught between two workouts, a state nobody foresaw) must
+    // not stop the queue for good: the event is tried again on the next drains, and after
+    // POISON_TRIES it is let go of, so the sets behind it still get through.
+    try {
+      if (ev.type === 'start') {
+        if (!A && !had) {
+          if (!appHandlers) break
+          // Started at the wrist: the watch app is open already, nothing to open there (startWatchSync).
+          if (wid) startedOnWatch.add(wid)
+          if (wid && waited.has(wid)) rerunSoon = true
+          appHandlers.start(Array.isArray(ev.routineIds) ? ev.routineIds : [], { id: wid, start: num(ev.at), ...(okBw(ev.bw) ? { bw: num(ev.bw) } : {}) })
+        }
+        if (wid && (!A || A.id === wid)) noteSeen(seen, wid)
+        // A workout already running on the phone is kept; one with the watch's id is this one.
+      } else if (ev.type === 'setDone' && saved) {
         if (!appHandlers) break
-        // Started at the wrist: the watch app is open already, nothing to open there (startWatchSync).
-        if (ev.wid) startedOnWatch.add(ev.wid)
-        appHandlers.start(Array.isArray(ev.routineIds) ? ev.routineIds : [], { id: ev.wid || null, start: num(ev.at), ...(okBw(ev.bw) ? { bw: num(ev.bw) } : {}) })
+        appHandlers.patchSet(whereOf(ev), tickFields(ev), { ifNewer: num(ev.at) })
+      } else if (ev.type === 'setDone' && ours) {
+        if (!handlers) {
+          // The tick is the workout screen's to apply: open it, and the queue drains when it binds.
+          if (appHandlers?.openWorkout) appHandlers.openWorkout()
+          break
+        }
+        const hit = rowOf(A, ev)
+        // `restEnd`: the end of the rest the watch started for this set (0: none), for the phone's
+        // to end with it (watchTickRest).
+        if (hit) handlers.setDone(hit[0], hit[1], { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev), ...(ev.restEnd === 0 || num(ev.restEnd) ? { restEnd: num(ev.restEnd) } : {}) })
+        // The workout here has no such row: the exercise was taken out on the phone while the watch
+        // logged it, a row was removed, or the watch started a routine the phone has changed (or
+        // deleted) since the watch last heard. A set done at the wrist is never thrown away: the
+        // workout gets the row with the set in it, in one change (ensureWatchSet), as a set for a
+        // workout already saved does. Only an exercise this phone does not know is let go of.
+        else if (!A.editingWorkoutId && appHandlers?.ensureSet) {
+          appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
+          // The rest the watch started for it is the phone's too, as for a set the screen ticks.
+          if (uiRef && (ev.restEnd === 0 || num(ev.restEnd))) {
+            const t = uiRef.getState().timer
+            applyRestStep(uiRef, watchTickRest({ before: t, timer: t, at: num(ev.at), restEnd: num(ev.restEnd), restAt: restAtFor(A.id), now }), { wid: A.id, at: num(ev.at) || now })
+          }
+        }
+      } else if (ev.type === 'rest' && ours) {
+        // +15, −15 or Skip on the watch (`endsAt` the rest's new end, null for Skip): the phone's
+        // rest follows when this is newer than its own last change, through the timer's own
+        // actions (a Skip counts the next hold in, as the phone's own Skip does). Needs no screen.
+        if (!uiRef) break
+        const at = num(ev.at) || now
+        if (at > restAtFor(A.id) && !A.editingWorkoutId) {
+          const end = num(ev.endsAt)
+          applyRestStep(uiRef, end == null ? { skip: Math.min(at, now) } : end > now + 500 ? { align: end } : { end: true }, { wid: A.id, at })
+        }
+      } else if ((ev.type === 'addSet' || ev.type === 'removeSet') && ours) {
+        // The watch's set menu (#1139, #1185), by the set's id (#1162).
+        if (!appHandlers?.edit) break
+        if (!A.editingWorkoutId) appHandlers.edit(s => (ev.type === 'addSet' ? addWatchSet(s, ev) : removeWatchSet(s, ev)))
+      } else if (ev.type === 'weighIn') {
+        // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
+        // day, as the phone's own check-in makes one (today's replaces today's).
+        if (okBw(ev.w)) {
+          if (!appHandlers?.weighIn) break
+          appHandlers.weighIn({ w: num(ev.w), at: num(ev.at) || Date.now() })
+        }
+      } else if (ev.type === 'healthDeleted') {
+        // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
+        // (which kept retrying the ones it could not delete) runs again and now finds them gone.
+        if (appHandlers?.healthDeleted) appHandlers.healthDeleted(Array.isArray(ev.ids) ? ev.ids.filter(x => typeof x === 'string') : [])
+      } else if (ev.type === 'stillHere' && ours) {
+        // "Keep going" on the watch's "Still training?" (forgotten workouts): the phone stops asking too.
+        appHandlers?.stillHere?.(num(ev.at) || now)
+      } else if (ev.type === 'watchStatus') {
+        // What the watch says about itself, for Settings → Apple Watch. Never queued behind anything.
+        // An older one that arrives late (a transfer overtaken by a message) does not undo a newer one.
+        if (!(num(ev.at) && num(readWatchStatus()?.at) > num(ev.at))) writeWatchStatus(ev)
+      } else if (ev.type === 'setHr') {
+        // The rest's heart rate comes once the rest is over, maybe after the workout was saved:
+        // a field on that set, wherever the set is now. Nothing for a reading that does not hold up.
+        const fields = {}
+        const hr = sanitizeHr(ev.hr), restHr = sanitizeHr(ev.restHr)
+        if (hr) fields.hr = hr
+        if (restHr) fields.restHr = restHr
+        if (Object.keys(fields).length) {
+          if (!appHandlers) break
+          appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sidOk(ev.sid) ? { sid: ev.sid } : {}) }, fields)
+        }
+      } else if (ev.type === 'finish' && ours && staleWatchFinish(A, ev)) {
+        // The watch took the workout for forgotten while it was being logged here (#904): it keeps
+        // running, and the phone says why the watch has let go of it.
+        handlers?.idleKept?.()
+      } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
+        if (!handlers) {
+          if (appHandlers?.openWorkout) appHandlers.openWorkout()
+          break
+        }
+        // A workout the watch ended as forgotten ends where the watch says (its last set plus the
+        // rest), marked so the summary and History offer Reopen (lib/forgotten-workout.js).
+        if (ev.type === 'finish') {
+          if (ev.idle === true && num(ev.at)) handlers.finish({ end: num(ev.at), auto: ev.left === true ? 'left' : 'idle' })
+          // Finish tapped at the wrist: the workout ended then, not when the phone hears of it (a
+          // workout done with the phone in the locker, merged an hour later).
+          else if (num(ev.at) && num(ev.at) < now) handlers.finish({ end: num(ev.at) })
+          else handlers.finish()
+        } else handlers.discard?.()
       }
-      // A workout already running on the phone is kept; one with the watch's id is this one.
-    } else if (ev.type === 'setDone' && saved) {
-      if (!appHandlers) break
-      const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
-      const hr = sanitizeHr(ev.hr)
-      if (hr) fields.hr = hr
-      appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) }, fields, { ifNewer: num(ev.at) })
-    } else if (ev.type === 'setDone' && ours) {
-      if (!handlers) {
-        // The tick is the workout screen's to apply: open it, and the queue drains when it binds.
-        if (appHandlers?.openWorkout) appHandlers.openWorkout()
-        break
-      }
-      const idx = entryIndexOf(A, ev)
-      const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
-      if (set) handlers.setDone(idx, ev.setIdx, { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev) })
-    } else if (ev.type === 'weighIn') {
-      // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
-      // day, as the phone's own check-in makes one (today's replaces today's).
-      if (okBw(ev.w)) {
-        if (!appHandlers?.weighIn) break
-        appHandlers.weighIn({ w: num(ev.w), at: num(ev.at) || Date.now() })
-      }
-    } else if (ev.type === 'healthDeleted') {
-      // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
-      // (which kept retrying the ones it could not delete) runs again and now finds them gone.
-      if (appHandlers?.healthDeleted) appHandlers.healthDeleted(Array.isArray(ev.ids) ? ev.ids.filter(x => typeof x === 'string') : [])
-    } else if (ev.type === 'watchStatus') {
-      // What the watch says about itself, for Settings → Apple Watch. Never queued behind anything.
-      writeWatchStatus(ev)
-    } else if (ev.type === 'setHr') {
-      // The rest's heart rate comes once the rest is over, maybe after the workout was saved:
-      // a field on that set, wherever the set is now. Nothing for a reading that does not hold up.
-      const fields = {}
-      const hr = sanitizeHr(ev.hr), restHr = sanitizeHr(ev.restHr)
-      if (hr) fields.hr = hr
-      if (restHr) fields.restHr = restHr
-      if (Object.keys(fields).length) {
-        if (!appHandlers) break
-        appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx }, fields)
-      }
-    } else if (ev.type === 'finish' && ours && staleWatchFinish(A, ev)) {
-      // The watch took the workout for forgotten while it was being logged here (#904): it keeps
-      // running, and the phone says why the watch has let go of it.
-      handlers?.idleKept?.()
-    } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
-      if (!handlers) {
-        if (appHandlers?.openWorkout) appHandlers.openWorkout()
-        break
-      }
-      if (ev.type === 'finish') handlers.finish()
-      else handlers.discard?.()
+    } catch {
+      const n = (failedTries.get(ev.id) || 0) + 1
+      failedTries.set(ev.id, n)
+      if (n < POISON_TRIES) { rerunSoon = true; break }
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
     done.push(ev.id)
+    // The watch was heard from then (Settings → Apple Watch / Wear OS watch: "Last heard", #1151).
+    if (num(ev.at)) noteWatchHeard(num(ev.at), now)
   }
   writeApplied(applied)
   return done
+}
+
+/**
+ * How many seconds to take off a rest the phone just started for a set ticked on the watch: the
+ * time since that tick (`at`, the watch's). The watch started its rest at the tick; the phone hears
+ * of it a moment later, or minutes later when it was asleep in a pocket or out of reach, and used
+ * to count the whole rest from then: the wrist buzzed, and the phone rang "rest's over" long after,
+ * or ran a rest for a set done half an hour ago. 0 for a rest that is not this tick's own (it did
+ * not start just now), one that is paused or over, a tick heard within two seconds, or a tick
+ * from a clock ahead of this one. More than is left: the rest is over already.
+ */
+export function restLagSec (timer, at, now = Date.now()) {
+  if (!timer || timer.ready || timer.paused || !num(at) || !num(timer.endsAt) || !num(timer.total)) return 0
+  if (Math.abs(now - (timer.endsAt - timer.total * 1000)) > 1500) return 0
+  const lag = now - at
+  return lag >= 2000 ? Math.round(lag / 1000) : 0
 }
 
 /** The app's own actions, for what needs no screen (starting a session, a set's heart rate). */
@@ -442,7 +907,11 @@ const watchPlugin = () => pluginP || (pluginP = (async () => {
 })().catch(() => null))
 
 let getStateRef = null
+// The rest timer's store (store/useUI.js), for a watch's `rest` event, which needs no screen.
+let uiRef = null
 let draining = null
+let drainAgain = false
+let rerunTm = null
 // The store has its copy back (boot's finishBoot: the file mirror, the server's pull). Before that,
 // S can be the empty copy a WebView whose storage was evicted starts with: a tick would find no
 // workout, count as meaningless and be acknowledged away, and a "start" would begin a new session
@@ -454,7 +923,10 @@ const storeReady = () => getStateRef?.()?.ready !== false
  * only once the change is on disk (the store's saveNow): the queue is the event's last copy.
  */
 export function drainWatchEvents () {
-  if (draining) return draining
+  // Asked while a drain runs (a set from the watch landed meanwhile): one more drain right after,
+  // or that set would wait for the next event to be seen (REDDIT-146, "not always syncing").
+  if (draining) { drainAgain = true; return draining }
+  drainAgain = false
   draining = (async () => {
     try {
       const native = await watchPlugin()
@@ -472,11 +944,19 @@ export function drainWatchEvents () {
           all.push(...done)
         } catch { /* not now: the next drain tries again */ }
       }
+      // The watch hears what was applied (the snapshot's `acked`), also when nothing in the workout
+      // changed (an event that was meaningless by now): else it would keep sending it.
+      if (all.length) for (const fn of ackListeners) { try { fn(all) } catch { /* a link's problem */ } }
       return all
-    } catch { return [] } finally { draining = null }
+    } catch { return [] } finally {
+      draining = null
+      if (drainAgain) { drainAgain = false; rerunSoon = false; Promise.resolve().then(() => drainWatchEvents()) }
+      else if (rerunSoon) { rerunSoon = false; clearTimeout(rerunTm); rerunTm = setTimeout(() => { drainWatchEvents() }, RERUN_MS) }
+    }
   })()
   return draining
 }
+const ackListeners = new Set()
 
 /** The workout screen hands over its own actions while it is mounted. Returns the unbind. */
 export function bindWatchActions (h) {
@@ -522,6 +1002,12 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
   const out = JSON.parse(JSON.stringify(snap))
   const strip = (entries, ...keys) => { for (const e of entries || []) for (const k of keys) delete e[k] }
   const steps = [
+    // the muscles first: the Muscles page is extra, it never costs the workout what it had before.
+    // The other routines' go first, then today's, the running workout's last, so a lifter with many
+    // routines keeps the page of the workout in hand.
+    () => { for (const w of out.ready?.others || []) { strip(w.entries, 'muscles'); delete w.muscleNames } },
+    () => { const w = out.ready?.today; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
+    () => { const w = out.active; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
     () => { for (const r of out.ready?.others || []) strip(r.entries, 'last', 'best') },
     () => { if (out.ready) out.ready.others = (out.ready.others || []).slice(0, 3) },
     () => { if (out.ready) out.ready.others = [] },
@@ -603,7 +1089,7 @@ export function leftUnsaved (prev, next, { tour = false } = {}) {
  * its words in it, whatever the watch itself is set to), and whether a workout starts with the
  * weigh-in (Settings → During a workout) with the last body weight to start the crown from.
  */
-export function watchExtras (S) {
+export function watchExtras (S, show = {}) {
   let lang = 'en'
   try { lang = baseLang(getLang()) || 'en' } catch { lang = 'en' }
   const bw = Array.isArray(S?.bodyweight) && S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null
@@ -615,7 +1101,26 @@ export function watchExtras (S) {
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
     // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
     ...(S?.autoHolds === true ? { autoHolds: true } : {}),
+    // The age for the watch's heart-rate zones (10 to 100 like live-tiles hrZone), only with zones on.
+    ...(show?.zones !== false && ageOk(S?.birthYear) ? { birthYear: Math.round(Number(S.birthYear)) } : {}),
+    // The accent the app wears, as the dark theme draws it, and the ink on it: the watch wears it too.
+    ...watchAccent(S),
   }
+}
+
+function ageOk (y) {
+  const age = new Date().getFullYear() - Math.round(Number(y))
+  return age >= 10 && age <= 100
+}
+
+/** The app's accent for the watch's black screen: a preset as is, the user's own colour made readable on black. */
+export function watchAccent (S) {
+  try {
+    const v = accentValue(S)
+    const own = customAccentVars(v, 'dark')
+    const pair = accentPair(v)
+    return { accent: own ? own['--acc'] : pair.accent, onAccent: own ? own['--on-acc'] : pair.ink }
+  } catch { return {} }
 }
 
 /**
@@ -654,7 +1159,9 @@ export async function startLinkSync (plugin, { useStore, useUI }, opts = {}) {
 
 async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true, garmin: withGarmin = false } = {}) {
   getStateRef = () => useStore.getState()
-  let lastSent = null, lastClips = null, tm = null
+  uiRef = useUI
+  // `sentAt`: when the last snapshot went, for the next change to go at once (sendSoon).
+  let lastSent = null, lastClips = null, tm = null, sentAt = 0
   // The ready sessions only change with the plan, the log or the day: built again only then.
   let readyKey = null, ready = null
   const readyFor = S => {
@@ -670,6 +1177,18 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md): that watch gets
   // the cut-down snapshot (lib/garmin-snapshot.js) alongside, made here so Java and Swift don't.
   let linked = false, garmin = false
+  // A Garmin's `acked` list is short (GARMIN_ACKED_MAX, its messages are small), and a workout
+  // logged with the phone away comes back as dozens of events within a second or two. The ids
+  // applied since the last snapshot wait here and are named oldest first, a list per snapshot,
+  // or the first ones would only be named after the watch sent them a second time a minute later.
+  let unnamed = []
+  const onAcked = (ids = []) => {
+    if (garmin && Array.isArray(ids)) unnamed = [...unnamed.filter(id => !ids.includes(id)), ...ids].slice(-ACKED_MAX)
+    // Sent again even when nothing differs: an event that came a second time means the watch never
+    // got the snapshot that named it (the link dropped it), and the same one again is what it needs.
+    lastSent = null
+    schedule()
+  }
   const checkLink = async () => {
     const was = linked
     try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin } catch { linked = false; garmin = false }
@@ -698,15 +1217,26 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       const prefs = isOn(S, 'watch') ? readWatchPrefs() : { ...readWatchPrefs(), enabled: false }
       // Settings → Apple Watch: off, the watch is told there is nothing (no workout, nothing ready).
       const snap = prefs.enabled
-        ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S), activeAt: phoneActiveAt(S.active) })
+        ? buildSnapshot(S, { timer: watchRestTimer(useUI.getState().timer), ready: readyFor(S), activeAt: phoneActiveAt(S.active), restAt: restAtFor(S.active?.id) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
+      // The phone's clock as it made this: each watch works out how far off its own clock is.
+      snap.now = Date.now()
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
-      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S) }
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
+      // Forgotten workouts: the phone left the gym during this workout (the watch asks at once).
+      if (snap.active?.id) {
+        const f = readForgottenState(snap.active.id)
+        if (f.leftAt) snap.active.leftGymAt = f.leftAt
+      }
       if (prefs.enabled && isOn(S, 'motivation')) snap.streak = streakFor(S)
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
       const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded
+      // The events applied here lately: the watch's outbox lets go of them, and its own copy of a
+      // set it ticked gives way to the phone's from then on (an untick or edit here sticks).
+      const acked = ackedIds()
+      if (acked.length) snap.acked = acked
       // With Apple Health on: the deleted workouts, so the watch removes the copies it saved. The
       // discarded ones too: a copy saved before the watch heard (it was away, or ended the workout
       // itself as forgotten) is taken out once it does.
@@ -717,11 +1247,18 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       const json = JSON.stringify(fitSnapshot(snap))
       // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
       // Garmin pauses with the others.
-      const g = garmin ? JSON.stringify(garminSnapshot(snap)) : null
+      const naming = garmin && unnamed.length > GARMIN_ACKED_MAX ? unnamed.slice(0, GARMIN_ACKED_MAX) : null
+      const g = garmin ? JSON.stringify(garminSnapshot(naming ? { ...snap, acked: naming } : snap)) : null
       const sent = g ? json + '\n' + g : json
-      if (sent !== lastSent) {
+      // `now` changes every time: not a change worth sending by itself.
+      const same = sent.replace(/"now":\d+,?/g, '')
+      if (same !== lastSent) {
+        sentAt = Date.now()
         const r = await p.WatchBridge.sendSnapshot(g ? { json, garmin: g } : { json })
-        if (r && r.sent) lastSent = sent
+        if (r && r.sent) lastSent = same
+        // The next list of ids goes with the next snapshot (the newest ones are in every one).
+        unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
+        if (unnamed.length) schedule()
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []
@@ -737,26 +1274,69 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     } catch { /* no watch, or not now: the next change tries again */ }
   }
   // The tour's practice workout (useStore enterTourSandbox) never reaches the watch.
-  const schedule = () => { if (!linked || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
+  // A change goes at once (in the next turn, so a tick and the rest it starts go as one) when no
+  // snapshot went in the last SEND_DEBOUNCE_MS; inside that, once at its end. A tick on the phone
+  // used to wait 400 ms every time, which is what "the watch lags behind" was partly made of (#882).
+  const schedule = () => {
+    if (!linked || useStore.getState().tourSandbox) return
+    if (tm) return
+    // (a clock set back since the last one counts as long ago, or nothing would go for a day)
+    const since = Date.now() - sentAt
+    const wait = since >= 0 && since < SEND_DEBOUNCE_MS ? SEND_DEBOUNCE_MS - since : 0
+    tm = setTimeout(send, wait)
+  }
+  // The app is going to the background or being locked: what waits goes now, not on the next
+  // open (a Finish followed at once by the lock button).
+  const flush = () => { if (!tm) return; clearTimeout(tm); tm = null; send() }
+  let givingIds = false
   const offStore = useStore.subscribe((s, prev) => {
     // Boot done: what the watch sent meanwhile is applied now, and the watch hears the real state.
     if (s.ready && !prev.ready) { drainWatchEvents(); schedule() }
     if (s.S === prev.S) return
     // Not while the store boots (its first copy replaces an empty one).
-    if (s.ready !== false && prev.ready !== false) {
+    if (s.ready !== false && prev.ready !== false && !givingIds) {
       // The running workout changed here (a tick, an edit): the watch's idle clock starts again.
-      if (s.S?.active && s.S.active !== prev.S?.active && s.S.active.id === prev.S?.active?.id && !useStore.getState().tourSandbox) notePhoneEdit(s.S.active.id)
+      // Ids given to its rows are nobody's edit.
+      if (s.S?.active && s.S.active !== prev.S?.active && s.S.active.id === prev.S?.active?.id && !useStore.getState().tourSandbox) {
+        notePhoneEdit(s.S.active.id)
+        // A done set's numbers changed by hand here: stamped, so an older change from a watch
+        // that arrives later does not undo it (setStamp).
+        const edited = applyingWatch ? [] : editedDoneRows(prev.S.active, s.S.active)
+        if (edited.length && typeof s.update === 'function') {
+          const at = Date.now()
+          givingIds = true
+          try { s.update(x => { for (const [i, j] of edited) { const r = x.active?.entries?.[i]?.sets?.[j]; if (r) r.eat = Math.max(at, setStamp(r) + 1) } }, false) } catch { /* the tick's time stands */ } finally { givingIds = false }
+        }
+      }
       const gone = leftUnsaved(prev.S, s.S, { tour: !!(s.tourSandbox || prev.tourSandbox) })
       if (gone && !discardedFor().includes(gone)) markDiscarded(gone)
     }
     schedule()
+    // The running workout ended or changed here: a start from the watch that waited for it applies now.
+    if (prev.S?.active?.id && s.S?.active?.id !== prev.S.active.id) drainWatchEvents()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
     if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(s.S.active.entries) || undefined })).catch(() => {})
+    // Every row of the running workout gets its id before the watch hears of it (#1162), in a
+    // change of its own that nobody counts as an edit. Not the tour's practice workout.
+    const st = useStore.getState()
+    if (!givingIds && st.ready !== false && !st.tourSandbox && needsSetIds(st.S?.active) && typeof st.update === 'function') {
+      givingIds = true
+      try { st.update(x => { ensureSetIds(x.active) }, false) } catch { /* the snapshot goes without ids */ } finally { givingIds = false }
+    }
   })
   // The rest as the watch needs it changes when it starts, stops or is paused, not every second.
   const restOf = t => (t ? `${t.endsAt}|${!!t.paused}|${!!t.ready}` : '')
-  const offUI = useUI.subscribe((s, prev) => { if (s.timer !== prev.timer && restOf(s.timer) !== restOf(prev.timer)) schedule() })
+  const offUI = useUI.subscribe((s, prev) => {
+    if (s.timer === prev.timer || restOf(s.timer) === restOf(prev.timer)) return
+    // A change of the rest made here gets its time (a watch's event stamps its own: applyRestStep).
+    const A = useStore.getState().S?.active
+    if (A?.id && !useStore.getState().tourSandbox) noteRestChange(A.id, s.timer)
+    schedule()
+  })
   const offPrefs = onWatchPrefs(() => schedule())
+  const offForgotten = onForgottenChange(() => schedule())
+  ackListeners.add(onAcked)
+  circuitListeners.add(schedule)
   // The watch speaks the app's language, not its own system's: told again when it changes (the
   // exercise names in the snapshot change with it too).
   let offLang = () => {}
@@ -767,7 +1347,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // Sent again even when unchanged: a reinstalled watch app starts with nothing.
   const subLink = await Promise.resolve(p.WatchBridge.addListener('watchState', () => { checkLink().then(() => { lastSent = null; schedule() }) })).catch(() => null)
   const onVisible = () => {
-    if (document.visibilityState !== 'visible') return
+    if (document.visibilityState !== 'visible') { flush(); return }
     // The app in front with a workout running counts as using it, for the watch's idle clock.
     notePhoneOpen(useStore.getState().S?.active?.id)
     drainWatchEvents()
@@ -778,14 +1358,24 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // the first answer above was on its way, and that event had no one to hear it. Without this the
   // watch heard nothing until the app went to the background and came back.
   if (!linked) await checkLink()
+  // A workout and a rest that came back with the app: the rows get their ids, and a rest restored
+  // as it was is no new change (its stamp is on disk), one that differs is.
+  {
+    const st = useStore.getState()
+    if (st.ready !== false && !st.tourSandbox && needsSetIds(st.S?.active) && typeof st.update === 'function') {
+      givingIds = true
+      try { st.update(x => { ensureSetIds(x.active) }, false) } catch { /* without ids */ } finally { givingIds = false }
+    }
+    if (st.S?.active?.id && !st.tourSandbox) noteRestChange(st.S.active.id, useUI.getState().timer)
+  }
   schedule()
   drainWatchEvents()
-  return () => { offStore(); offUI(); offPrefs(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { extraLinks.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
+export function _resetWatchSync () { restClock = null; uiRef = null; extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; rerunSoon = false; clearTimeout(rerunTm); rerunTm = null; failedTries.clear(); editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
@@ -793,7 +1383,7 @@ export function _resetWatchSync () { extraLinks.clear(); startedOnWatch.clear();
  * (lib/sync-merge.js: of two copies of a workout the one edited last wins). Only these optional
  * fields are ever added; nothing is removed or renamed.
  */
-export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fields, stamp, { ifNewer = null, recount = null } = {}) {
+export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null, sid = null }, fields, stamp, { ifNewer = null, recount = null } = {}) {
   // One side of a per-side set: that side takes the numbers and the tick, the row's own w/r/done
   // follow from both sides (lib/workout-model.js syncSideAggregate).
   const write = (set, given) => {
@@ -819,6 +1409,8 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
   }
   const find = w => {
     if (!w || !Array.isArray(w.entries)) return null
+    // By the set's own id when the watch sent one (#1162): that row wherever it is, or none.
+    if (sidOk(sid)) { const hit = rowBySid(w, sid); return hit ? w.entries[hit[0]].sets[hit[1]] : null }
     const i = w.entries[entryIdx] && w.entries[entryIdx].id === exId ? entryIdx : w.entries.findIndex(e => e && e.id === exId)
     return i >= 0 ? w.entries[i].sets?.[setIdx] || null : null
   }
@@ -828,12 +1420,14 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     return !!set
   }
   const w = (s.workouts || []).find(x => x && x.id === wid)
-  const set = find(w)
+  // A set the watch logged after the phone saved the workout, of an exercise the phone had left
+  // without a set done (so not in what it saved), or past its last row: it gets its place there.
+  const set = find(w) || (w && Array.isArray(w.entries) && fields.done && exId != null && Number.isInteger(setIdx) && setIdx >= 0 && setIdx < 100 ? lateRow(w, exId, setIdx, sidOk(sid) ? sid : null) : null)
   if (!set) return false
   // Two changes of the same set: the later one wins (a tick from the watch older than an edit
   // made on the phone since keeps the phone's numbers; its heart rate still lands).
   let f = fields
-  if (ifNewer != null && set.done && Number(set.at) > ifNewer) {
+  if (ifNewer != null && set.done && setStamp(set) > ifNewer) {
     f = {}
     if (fields.hr) f.hr = fields.hr
     if (fields.restHr) f.restHr = fields.restHr
@@ -841,13 +1435,106 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     if (set.rpe == null && set.rir == null) Object.assign(f, effortFrom(fields))
     if (!Object.keys(f).length) return false
   }
+  const before = JSON.stringify(set)
   write(set, f)
+  // The same event again (the queue handed it over twice): nothing new, so the saved workout is
+  // not stamped as edited now, which would let it win over a later edit made on another device.
+  if (JSON.stringify(set) === before) return true
   if (recount) recount(w)
   if (stamp) stamp(w)
   return true
 }
 
+/**
+ * The running workout gets the row a set from the watch names when it has none: the rows up to
+ * `setIdx` in its exercise (each like the last one there, not done), and the exercise itself, at
+ * the end, when the workout does not have it (`build(exId)` makes it as adding it by hand would;
+ * null for an exercise this phone does not know). With `fields`, the set is written into the row
+ * in the same change. Returns whether the row is there now.
+ */
+export function ensureWatchSet (s, where, build, fields = null, stamp = null, opts = {}) {
+  const { exId, setIdx } = where || {}
+  const A = s?.active
+  if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || exId == null || !Number.isInteger(setIdx) || setIdx < 0 || setIdx >= 100) return false
+  // The exercise at the event's place when it is that one (the same exercise can be in twice).
+  let e = A.entries[where.entryIdx]?.id === exId ? A.entries[where.entryIdx] : A.entries.find(x => x && x.id === exId)
+  if (!e) {
+    let made = null
+    try { made = build ? build(exId) : null } catch { made = null }
+    if (!made || typeof made !== 'object') return false
+    e = { ...made, id: exId, sets: Array.isArray(made.sets) ? made.sets : [] }
+    A.entries.push(e)
+  }
+  if (!Array.isArray(e.sets)) e.sets = []
+  // A set named by an id this workout has no row for (#1162): a row of its own at the end of the
+  // exercise, with that id, never a place another set holds now.
+  if (sidOk(where.sid)) {
+    if (!rowBySid(A, where.sid)) {
+      if (e.sets.length >= 100) return false
+      while (e.sets.length < setIdx) e.sets.push(rowLike(e.sets[e.sets.length - 1]))
+      e.sets.push({ ...rowLike(e.sets[e.sets.length - 1]), sid: where.sid })
+    }
+  } else while (e.sets.length <= setIdx) e.sets.push(rowLike(e.sets[e.sets.length - 1]))
+  // The set itself, when given: written as a set from the watch is anywhere else (patchSetIn).
+  if (fields) patchSetIn(s, { ...where, wid: A.id }, fields, stamp, opts)
+  return true
+}
+
+// One more row after `l`, as the workout screen's "add set" makes one: the same plan, not done,
+// nothing of what was logged on `l` (its time, heart rate, effort, note).
+function rowLike (l) {
+  if (!l) return { w: null, r: null, done: false }
+  if (l.min != null) return { min: l.min, ...(l.speed != null ? { speed: l.speed } : {}), done: false }
+  if (isSideSet(l)) {
+    const side = v => ({ w: v?.w ?? null, r: v?.r ?? null, done: false })
+    return { w: l.w ?? null, r: l.r ?? null, done: false, sides: { L: side(l.sides.L), R: side(l.sides.R) } }
+  }
+  return { w: l.w ?? null, r: l.r ?? null, ...(l.sec != null ? { sec: l.sec } : {}), done: false }
+}
+
+/** The row for set `setIdx` of `exId` in saved workout `w`, made with its entry when missing. */
+function lateRow (w, exId, setIdx, sid = null) {
+  let e = w.entries.find(x => x && x.id === exId)
+  if (!e) { e = { id: exId, sets: [], topW: null, target: null }; w.entries.push(e) }
+  if (!Array.isArray(e.sets)) e.sets = []
+  // A set with an id that is not there gets its own place: its position when that is past the last
+  // row, else a row at the end, never a place another set holds.
+  if (sid && e.sets.length > setIdx) { e.sets.push({ w: null, r: null, done: false, sid }); return e.sets[e.sets.length - 1] }
+  if (sid) { while (e.sets.length < setIdx) e.sets.push({ w: null, r: null, done: false }); e.sets.push({ w: null, r: null, done: false, sid }); return e.sets[setIdx] }
+  while (e.sets.length <= setIdx) e.sets.push({ w: null, r: null, done: false })
+  return e.sets[setIdx]
+}
+
 /** Whether a watch is paired and has the app, for Settings → Apple Watch. */
+/**
+ * Settings → Garmin (views/GarminSettings.jsx): the native Garmin calls of WatchBridge
+ * (garminStatus, garminPick, garminStore; docs/GARMIN.md). No phone app, or a build without them:
+ * null.
+ */
+export async function garminCall (name, args = {}) {
+  if (!['garminStatus', 'garminPick', 'garminStore'].includes(name)) return null
+  const p = await watchPlugin()
+  if (!p) return null
+  try { return (await p.WatchBridge[name](args)) || null } catch { return null }
+}
+
+/**
+ * The Wear OS link by itself, for Settings → Wear OS watch (views/WearSettings.jsx, lib/wear-view.js):
+ * { supported, paired, installed, reachable, watches }. A phone app from before the plugin said it
+ * that way answers with the plain fields, which are the same thing where there is no Garmin.
+ */
+export async function wearStatus () {
+  const none = { supported: false, paired: false, installed: false, reachable: false, watches: [] }
+  const p = await watchPlugin()
+  if (!p) return none
+  try {
+    const st = await p.WatchBridge.status()
+    const w = st?.wear && typeof st.wear === 'object' ? st.wear : (st?.garmin ? null : st)
+    if (!w) return none
+    return { supported: !!w.supported, paired: !!w.paired, installed: !!w.installed, reachable: !!w.reachable, watches: Array.isArray(w.watches) ? w.watches : [] }
+  } catch { return none }
+}
+
 export async function watchStatus () {
   const p = await watchPlugin()
   if (!p) return { paired: false, installed: false }

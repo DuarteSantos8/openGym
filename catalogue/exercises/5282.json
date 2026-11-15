@@ -3,12 +3,13 @@
   "name": "landmine kneeling thruster press",
   "bodyPart": "shoulders",
   "equipment": "landmine",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "quadriceps",
     "triceps",
     "glutes",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "From a kneeling position, you drive the landmine bar up into a press. It builds shoulder power.",

@@ -3,10 +3,11 @@
   "name": "kettlebell seated press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated on a bench, you press a kettlebell in each hand overhead. Takes the legs out so your shoulders and triceps do the work.",

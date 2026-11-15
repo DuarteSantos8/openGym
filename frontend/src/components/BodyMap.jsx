@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { MUSCLES, INERT, MUSCLE_NAME, levelsOf } from '../lib/muscles.js'
 import { t } from '../lib/i18n.js'
+import { regionLevel } from '../lib/body-geometry-level.js'
 
 // Front and back views of a body, each muscle shaded by how hard it was worked.
 //
@@ -19,14 +20,20 @@ function useBodyPaths() {
   useEffect(() => {
     if (CACHE) return
     let alive = true
-    PENDING = PENDING || import('../lib/body-paths.js').then(m => (CACHE = m.default))
+    PENDING = PENDING || import('../lib/body-geometry.js').then(m => (CACHE = m.default))
     PENDING.then(p => { if (alive) setPaths(p) }).catch(() => {})
     return () => { alive = false }
   }, [])
   return paths
 }
 
-function View({ view, levels, onMuscle, selected }) {
+// `selected`: one muscle, or several (the explorer's filter, #885).
+const isSel = (selected, slug) => (Array.isArray(selected) ? selected.includes(slug) : selected === slug)
+// A muscle is drawn as several shapes (two forearms, six serratus slips, and again on the back):
+// every one takes a tap, but only one of them is the button a keyboard and a screen reader meet,
+// so the map has one "Forearms" and not fourteen (P4). `silent`: muscles the other view names.
+function View({ view, levels, onMuscle, selected, silent }) {
+  const heard = (slug, i) => !!onMuscle && i === 0 && !silent?.(slug)
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
     if (event.key === ' ') event.preventDefault()
@@ -39,14 +46,15 @@ function View({ view, levels, onMuscle, selected }) {
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
         <path
           key={slug + i}
-          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '')}
+          className={'bm-m l' + regionLevel(levels, slug, view) + (isSel(selected, slug) ? ' sel' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
-          onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
-          role={onMuscle ? 'button' : undefined}
-          tabIndex={onMuscle ? 0 : undefined}
-          aria-label={onMuscle ? t(MUSCLE_NAME[slug]) : undefined}
-          aria-pressed={onMuscle ? selected === slug : undefined}
+          onKeyDown={heard(slug, i) ? event => activate(event, slug) : undefined}
+          role={heard(slug, i) ? 'button' : undefined}
+          tabIndex={heard(slug, i) ? 0 : undefined}
+          aria-label={heard(slug, i) ? t(MUSCLE_NAME[slug]) : undefined}
+          aria-pressed={heard(slug, i) ? isSel(selected, slug) : undefined}
+          aria-hidden={onMuscle && !heard(slug, i) ? 'true' : undefined}
         >
           <title>{t(MUSCLE_NAME[slug])}</title>
         </path>))}
@@ -70,7 +78,7 @@ export default function BodyMap({ load = {}, thresholds, levels: given, body = '
     <div className={'bodymap ' + className}>
       {g ? <>
         <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} silent={slug => !!g.front.p[slug]?.length} />
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

@@ -1,0 +1,21 @@
+{
+  "title": "Resistance bands",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 35,
+  "tags": [
+    "home",
+    "travel",
+    "bands"
+  ],
+  "description": "A set of bands fits in a drawer and still works every muscle. Two sessions taken in turns, three days a week.",
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "builtin": "bands"
+}

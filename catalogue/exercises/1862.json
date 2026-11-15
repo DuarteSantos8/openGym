@@ -3,10 +3,12 @@
   "name": "lever cable shoulder press",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "shoulder-press",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated machine press that builds the shoulders and triceps along a guided path.",

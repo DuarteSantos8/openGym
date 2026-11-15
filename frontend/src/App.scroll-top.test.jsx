@@ -4,6 +4,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { cancelGlideCheck } from './lib/scroll-top.js'
 import App from './App.jsx'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -48,6 +49,7 @@ beforeEach(() => {
   })
 })
 afterEach(() => {
+  cancelGlideCheck()
   act(() => root.unmount())
   host.remove()
   useUI.getState().stopRest?.()
@@ -65,6 +67,21 @@ describe('on a long page', () => {
     await tap(document.querySelector('#totop'))
     expect(scrolls.at(-1)).toEqual({ top: 0, left: 0, behavior: 'smooth' })
     expect(document.querySelector('#totop.on')).toBeNull()
+  })
+
+  // TestFlight 11-08: from the very bottom the tap did nothing on the iPhone. Taking the bottom
+  // room away with the button shortened the page under the glide, and WebKit dropped it.
+  it('keeps the bottom room while the page glides up, and lets it go near the top', async () => {
+    window.scrollTo = vi.fn(x => { scrolls.push(x) })   // a glide: nothing moves yet
+    await start('#/stats')
+    await appear('#app .hdr button[aria-label="History"]')
+    await scrolledTo(2400)
+    expect(document.body.classList.contains('totop-on')).toBe(true)
+    await tap(document.querySelector('#totop'))
+    expect(document.querySelector('#totop.on')).toBeNull()
+    expect(document.body.classList.contains('totop-on')).toBe(true)
+    await scrolledTo(100)
+    expect(document.body.classList.contains('totop-on')).toBe(false)
   })
 
   it('the tab you are on, tapped again, glides to the top too', async () => {
