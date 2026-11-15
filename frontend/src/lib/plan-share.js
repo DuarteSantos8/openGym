@@ -559,7 +559,7 @@ function weekHTML(S, m) {
   // The printout is read by whoever exported it, so the week runs in their order.
   const rows = weekOrder(weekStartOf(S)).map(d => {
     const names = [].concat(S.week?.[d] || [])
-      .map(id => S.routines.find(x => x.id === id)?.name)
+      .map(id => S.routines.find(x => x.id === id && isLive(x))?.name)
       .filter(Boolean)
     const val = names.length ? esc(deriveSessionName(names)) : `<span class="rest">${esc(t('Rest'))}</span>`
     return `<tr><th scope="row">${esc(t(DAYN[d]))}</th><td>${val}</td></tr>`

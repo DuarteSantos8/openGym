@@ -98,6 +98,10 @@ describe('persistence — measurements survive the round trips', () => {
     expect(stripped.measurements[0].other).toEqual(before.measurements[0].other)
   })
 
+  it('counts a profile of only folders as data, so a device mirror cannot replace it', () => {
+    expect(hasData({ ...clone(DEF), routineFolders: [{ name: 'Travel' }] })).toBe(true)
+  })
+
   it('counts a measurements-only profile as data worth keeping', () => {
     // pullState overwrites local state when hasData() is false. Someone who has logged tape
     // readings but never a workout has a profile that is entirely measurements — if that reads

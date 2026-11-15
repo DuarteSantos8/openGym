@@ -46,3 +46,14 @@ describe('pull', () => {
     expect(S.archiveMoved).toBe(true)
   })
 })
+
+describe('sign-in adoption', () => {
+  it('moves Archive-folder routines of the account copy it just took', async () => {
+    useStore.setState({ S: { ...clone(DEF), _ts: 0 }, user: { id: 'u' }, ready: true })
+    api.mockResolvedValue({ state: { ...clone(DEF), _ts: 500, _wid: 'w', routines: [routine('a', 'Archive')] }, rev: 3 })
+    await useStore.getState().adoptProfile(() => false)
+    const S = useStore.getState().S
+    expect(S.routines[0].archived).toBe(true)
+    expect(S.archiveMoved).toBe(true)
+  })
+})

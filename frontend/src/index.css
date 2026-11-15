@@ -2771,6 +2771,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   :root:not([data-theme="light"]){
     --on-blue:#000; --on-indigo:#000; --on-purple:#000; --on-pink:#000; --on-red:#000; --on-brown:#000; --on-grey:#000;
   }
+  /* the brand's lime stays #84cc16 here, which white cannot read on (more specific, so order is free) */
+  :root[data-theme="light"][data-accent="brand"]{--on-green:#0c0e12}
   :root[data-theme="light"]{
     --on-green:#fff; --on-orange:#fff; --on-yellow:#fff; --on-teal:#fff; --on-mint:#fff;
   }
