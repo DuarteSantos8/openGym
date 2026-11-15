@@ -632,11 +632,17 @@ object AwakePlan {
 object CheckIn {
     const val EVERY_MS = 6 * 3600_000L
 
-    fun due(lastAt: Long, lastVersion: String?, version: String, now: Long) =
-        lastVersion != version || now - lastAt >= EVERY_MS || now < lastAt
+    /** `lastFace`/`face`: whether the watch shared its face's colours last time and now (a system update can change it). */
+    fun due(lastAt: Long, lastVersion: String?, version: String, now: Long, lastFace: Boolean? = null, face: Boolean = false) =
+        lastVersion != version || now - lastAt >= EVERY_MS || now < lastAt || (lastFace != null && lastFace != face)
 
-    fun event(version: String, at: Long, id: String): Event = buildJsonObject {
+    /**
+     * `faceColors`: this watch shares its watch face's colours (Wear OS 6, dynamicColorScheme), so the
+     * phone offers Settings → Wear OS → Watch colors → From the watch face. Sent only when it does.
+     */
+    fun event(version: String, at: Long, id: String, faceColors: Boolean = false): Event = buildJsonObject {
         put("id", id); put("type", "watchStatus"); put("version", version); put("platform", "wear"); put("at", at)
+        if (faceColors) put("faceColors", true)
     }
 }
 

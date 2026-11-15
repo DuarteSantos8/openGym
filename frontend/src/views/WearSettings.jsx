@@ -87,8 +87,10 @@ export default function WearSettingsPage ({ api = { status: wearStatus, channel:
         ))}
       </Section>
       {/* Where the watch takes its accent (lib/watch-settings.js `colors`): the app's, which is the
-          wallpaper's while this phone follows it, or the watch face's on a watch that shares it. */}
-      <Section footer={t('From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.')}>
+          wallpaper's while this phone follows it, or the watch face's. Offered only once the watch
+          has said it shares its face's colours (its check-in, `faceColors`); otherwise there is
+          nothing to choose and the watch wears the app's. */}
+      {heard?.faceColors === true && <Section footer={t('From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.')}>
         <Row icon="palette" iconTint="var(--purple)" title={t('Watch colors')}>
           <Segmented
             className="seg-inline"
@@ -97,7 +99,7 @@ export default function WearSettingsPage ({ api = { status: wearStatus, channel:
             onChange={v => set({ colors: v })}
           />
         </Row>
-      </Section>
+      </Section>}
       <Section>
         <Row icon="vibrate" iconTint="var(--indigo)" title={t('Tap the wrist when a rest is over')}>
           <Switch checked={prefs.restHaptics} onChange={v => set({ restHaptics: v })} aria-label={t('Tap the wrist when a rest is over')} />

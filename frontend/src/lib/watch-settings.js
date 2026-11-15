@@ -81,7 +81,7 @@ export function readWatchStatus(storage = globalThis.localStorage) {
 
 export function writeWatchStatus(ev, storage = globalThis.localStorage) {
   const health = ['on', 'off', 'denied'].includes(ev?.health) ? ev.health : null
-  const next = { health, version: typeof ev?.version === 'string' ? ev.version.slice(0, 20) : null, at: Number(ev?.at) || Date.now() }
+  const next = { health, version: typeof ev?.version === 'string' ? ev.version.slice(0, 20) : null, at: Number(ev?.at) || Date.now(), ...(ev?.faceColors === true ? { faceColors: true } : {}) }
   try { storage?.setItem(WATCH_STATUS_KEY, JSON.stringify(next)) } catch { /* shown again next time */ }
   emit()
   return next

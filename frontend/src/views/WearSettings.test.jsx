@@ -48,6 +48,20 @@ describe('Settings → Wear OS watch', () => {
     expect(row(el, 'Get openGym for Wear OS')).toBeUndefined()
   })
 
+  it('Watch colors only for a watch that said it shares its face colours', async () => {
+    const wear = { supported: true, paired: true, installed: true, reachable: true, watches: [watch({ installed: true, reachable: true })] }
+    writeWatchStatus({ version: '1.4.5', at: Date.now() })
+    let el = await mount(wear)
+    expect(row(el, 'Watch colors')).toBeUndefined()
+    writeWatchStatus({ version: '1.4.5', at: Date.now(), faceColors: true })
+    el = await mount(wear)
+    const r = row(el, 'Watch colors')
+    expect(r).toBeTruthy()
+    const face = [...r.querySelectorAll('button')].find(b => b.textContent === 'From the watch face')
+    await act(async () => { face.click() })
+    expect(readWatchPrefs().colors).toBe('face')
+  })
+
   it('the app on the watch and in reach: connected, and whether the watch has checked in', async () => {
     const wear = { supported: true, paired: true, installed: true, reachable: true, watches: [watch({ installed: true, reachable: true })] }
     let el = await mount(wear)

@@ -17,6 +17,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.roundToInt
+import androidx.wear.compose.material3.dynamicColorScheme
 
 /**
  * A rest running on the watch: until `endsAt` (ms), out of `total` seconds, started at `startedAt`.
@@ -167,9 +168,11 @@ object WearStore {
     fun checkIn(version: String) {
         if (!::app.isInitialized || demoOn) return
         val at = now()
-        if (!CheckIn.due(prefs.getLong("checkInAt", 0), prefs.getString("checkInVersion", null), version, at)) return
-        prefs.edit().putLong("checkInAt", at).putString("checkInVersion", version).apply()
-        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString()))
+        val face = try { dynamicColorScheme(app) != null } catch (e: Exception) { false }
+        val lastFace = if (prefs.contains("checkInFace")) prefs.getBoolean("checkInFace", false) else null
+        if (!CheckIn.due(prefs.getLong("checkInAt", 0), prefs.getString("checkInVersion", null), version, at, lastFace, face)) return
+        prefs.edit().putLong("checkInAt", at).putString("checkInVersion", version).putBoolean("checkInFace", face).apply()
+        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString(), face))
     }
 
     /** Android's "Remove animations": only short fades then (ui/Motion.kt). */
