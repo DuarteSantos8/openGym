@@ -25,13 +25,21 @@ buildNpmPackage rec {
   installPhase = ''
     runHook preInstall
     mkdir -p $out/lib/opengym-api
+
+    # Dependencies first
     cp -r node_modules $out/lib/opengym-api/
-    cp -r coach $out/lib/opengym-api/
-    # Every top-level module server.js imports: server.js, password.js, passkeys-store.js,
-    # rate-limit.js, media.js, device-link.js, push-messages.js, verify-error.js. Copy the
-    # glob rather than an explicit list — a hand-kept list silently ships an incomplete tree
-    # and the failure only shows up as ERR_MODULE_NOT_FOUND in the systemd journal.
+
+    # Root-level sources
     cp ./*.js $out/lib/opengym-api/
+
+    # Every source directory, minus node_modules (already copied) and the ones that are
+    # not runtime code (test/, scripts/) — the same two the Dockerfile's COPY line names.
+    for dir in ./*/; do
+      case $dir in
+        ./node_modules/|./test/|./scripts/) ;;
+        *) cp -r "$dir" $out/lib/opengym-api/ ;;
+      esac
+    done
 
     mkdir -p $out/bin
     makeWrapper ${nodejs_26}/bin/node $out/bin/opengym-api \
