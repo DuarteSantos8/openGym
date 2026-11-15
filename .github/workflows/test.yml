@@ -247,10 +247,11 @@ jobs:
       - name: Web build
         run: npm run build
         working-directory: frontend
-      # Chromium for the default and Pixel 7 projects, WebKit for the iPhone 13 project
-      # (Safari's engine: the iOS app is a WKWebView).
-      - name: Playwright Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
+      # The extra exercise pictures (catalogue/photos), placed as the web image places them.
+      - name: Stage exercise pictures
+        run: node scripts/catalogue/stage-photos.mjs frontend/dist
+      - name: Playwright Chromium
+        run: npx playwright install --with-deps chromium
         working-directory: frontend
       - name: End-to-end and accessibility tests
         run: npm run test:e2e
@@ -389,6 +390,8 @@ jobs:
         run: node scripts/catalogue/check-media.mjs
       - name: The community library blocks every catalogue file (licence, by checksum)
         run: node scripts/catalogue/media-hashes.mjs --check
+      - name: Everkinetic picture matcher (catalogue/photos)
+        run: node --test scripts/catalogue/everkinetic-pictures.test.mjs
 
   # The community routines (opengym.ch/routines): every file checked the way the submit service
   # checks a submission, the site built once, and the tests of the build, filters and service.

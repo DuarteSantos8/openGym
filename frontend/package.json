@@ -10,7 +10,7 @@
     "prebuild": "npm run stage:mediapipe",
     "build": "vite build",
     "prebuild:mobile": "npm run stage:mediapipe",
-    "build:mobile": "VITE_MOBILE=1 vite build && node scripts/check-season-clock.mjs dist && node ../scripts/catalogue/stage-media.mjs dist && cap sync && node scripts/check-mobile-bundle.mjs",
+    "build:mobile": "VITE_MOBILE=1 vite build && node scripts/check-season-clock.mjs dist && node ../scripts/catalogue/stage-media.mjs dist && node ../scripts/catalogue/stage-photos.mjs dist && cap sync && node scripts/check-mobile-bundle.mjs",
     "preview": "vite preview",
     "test": "vitest run && npm run check:native-localizations",
     "test:watch": "vitest",
