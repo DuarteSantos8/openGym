@@ -50,7 +50,7 @@ function props (rules, theme, accent) {
     if (sel.includes('@')) return
     for (const s of sel.split(',').map(x => x.trim())) {
       if (!s.startsWith(':root')) continue
-      const th = /\[data-theme="(\w+)"\]/.exec(s)?.[1]
+      const th = s.includes(':not(') ? 'dark' : /\[data-theme="(\w+)"\]/.exec(s)?.[1] // :not([data-theme="light"]) is dark
       const ac = /\[data-accent="(\w+)"\]/.exec(s)?.[1]
       if (th && th !== theme) continue
       if (ac && ac !== accent) continue
@@ -71,17 +71,27 @@ const val = (p, k) => {
 }
 const full = h => (h.length === 4 ? '#' + [...h.slice(1)].map(c => c + c).join('') : h)
 
+// The body of `@media (prefers-contrast: more)`, whose rules are layered on top when it applies.
+function moreRules (css) {
+  const at = css.indexOf('@media (prefers-contrast: more){') + '@media (prefers-contrast: more){'.length
+  let depth = 1, i = at
+  for (; depth; i++) depth += css[i] === '{' ? 1 : css[i] === '}' ? -1 : 0
+  return topRules(css.slice(at, i - 1))
+}
+
 describe('index.css --livebar-a', () => {
-  const rules = topRules(readFileSync(new URL('../index.css', import.meta.url), 'utf8'))
+  const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
+  const rules = topRules(css)
+  const more = [...rules, ...moreRules(css)]
   const presets = [...new Set([...rules.map(r => r[0]).join(' ').matchAll(/data-accent="(\w+)"/g)].map(m => m[1]))]
   it('finds the presets', () => expect(presets.length).toBe(9))
-  for (const theme of ['dark', 'light']) {
+  for (const [mode, rs] of [['', rules], [' (prefers-contrast: more)', more]]) for (const theme of ['dark', 'light']) {
     for (const name of presets) {
-      it(`${name}/${theme} is at least as opaque as its text needs`, () => {
-        const p = props(rules, theme, name)
+      it(`${name}/${theme}${mode} is at least as opaque as its text needs`, () => {
+        const p = props(rs, theme, name)
         const acc = full(val(p, '--acc')), ink = full(val(p, '--on-acc'))
         const css = Number(p['--livebar-a'] ?? '.72')
-        if (!KNOWN_SOLID.includes(`${name}/${theme}`)) {
+        if (!KNOWN_SOLID.includes(`${name}/${theme}`) && !mode) {
           expect(contrast(ink, acc), 'solid fill fails 4.5:1; add to KNOWN_SOLID').toBeGreaterThanOrEqual(4.5)
         }
         expect(css).toBeGreaterThanOrEqual(liveBarAlpha(acc, ink))

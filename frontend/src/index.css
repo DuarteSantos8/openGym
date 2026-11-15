@@ -215,6 +215,7 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --label-2:rgba(60,60,67,.82); --label-3:rgba(60,60,67,.6); --label-4:rgba(60,60,67,.4);
     --label-dim:var(--label-2);
     --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
+    --livebar-a:1; /* these deeper light colours reach 4.5:1 with their text only when the glass is solid */
   }
   /* The brand's green keeps its own shades; its words go one step deeper (7:1 on white). */
   :root[data-theme="light"][data-accent="brand"]{ --green-ink:#3f6212; --acc-ink:#3f6212; --win-ink:#3f6212 }
