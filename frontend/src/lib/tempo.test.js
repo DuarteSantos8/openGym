@@ -61,4 +61,12 @@ describe('guideReps', () => {
     expect(guideReps(null, { reps: 8 })).toBe(8)
     expect(guideReps(undefined, undefined)).toBe(8)
   })
+
+  it('the right side first when the exercise is done right first', async () => {
+    const { guideReps } = await import('./tempo.js')
+    const row = (L, R) => ({ r: 20, sides: { L: { r: 8, done: L }, R: { r: 12, done: R } } })
+    expect(guideReps(row(false, false), { sideOrder: 'RL' })).toBe(12)
+    expect(guideReps(row(false, true), { sideOrder: 'RL' })).toBe(8)
+    expect(guideReps(row(true, true), { sideOrder: 'RL' })).toBe(8)
+  })
 })

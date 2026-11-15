@@ -13,6 +13,8 @@
 //
 // Pure: the workout screen reads it, the tempo guide plays it (components/TempoGuide.jsx).
 
+import { nextSide } from './side-order.js'
+
 export const PHASES = ['down', 'bottom', 'up', 'top']
 // What a phase is called on screen and how it sounds: the lowering low, the lift high, the two
 // pauses in between, so a pocket can tell them apart without a look.
@@ -58,13 +60,13 @@ export function tempoOf(target, row) {
 
 /**
  * How many reps the guide counts for a set: one side's on a per-side set, since each side is lifted
- * on its own (the side up next, else the left), else the set's, else the plan's, else 8. The row's
+ * on its own (the side up next in the exercise's order, else the left), else the set's, else the plan's, else 8. The row's
  * own `r` on a per-side set is both sides together.
  */
 export function guideReps(row, target) {
   const sides = row?.sides
   if (sides?.L && sides?.R) {
-    const side = !sides.L.done ? sides.L : !sides.R.done ? sides.R : sides.L
+    const side = sides.L.done && sides.R.done ? sides.L : sides[nextSide(row, target)]
     if (Number(side.r) > 0) return Number(side.r)
   }
   return Number(row?.r) || Number(target?.reps) || 8
