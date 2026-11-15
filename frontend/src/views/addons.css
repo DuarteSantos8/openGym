@@ -86,7 +86,7 @@
 .nt-tools{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:740px){.nt-result{grid-template-columns:1fr}.nt-add{justify-content:flex-end}.nt-cannot{max-width:none;text-align:left}}
 
-/* Progression rule lab (components/ProgressionLab.jsx) */
+/* 3D muscle map (components/AnatomyViewer.jsx) */
 .addon-field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--label-2)}
 .addon-prog-form textarea{width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;padding:8px;border-radius:8px}
 .addon-table-wrap{overflow-x:auto}
