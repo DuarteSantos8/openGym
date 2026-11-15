@@ -5900,4 +5900,9 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Collapse": "Összecsukás",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Átlag {0} · Max. {1} bpm",
+  "Heart rate curve": "Pulzusgörbe",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Egy sor a folyamatjelző alatt, amíg az Apple Watch méri. Koppints rá az egész edzésért.",
 }

@@ -5890,4 +5890,9 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  "Collapse": "收合",
+  "bpm": "次/分",
+  "Average {0} · Max {1} bpm": "平均 {0} · 最高 {1} bpm",
+  "Heart rate curve": "心率曲線",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch 測量時，在進度條下方顯示一行。輕點查看整場訓練。",
 }

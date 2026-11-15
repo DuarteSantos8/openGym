@@ -5893,4 +5893,9 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  "Collapse": "Suskleisti",
+  "bpm": "k./min",
+  "Average {0} · Max {1} bpm": "Vid. {0} · daug. {1} k./min",
+  "Heart rate curve": "Pulso kreivė",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Eilutė po pažangos juosta, kol Apple Watch jį matuoja. Paliesk, kad matytum visą treniruotę.",
 }

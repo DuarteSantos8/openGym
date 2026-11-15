@@ -68,6 +68,18 @@ export function heartNow (A, live = null) {
   return best ? { bpm: best.bpm, src: best.src } : null
 }
 
+/** The five zones run from half the maximum up, a tenth each (hrZone). */
+export const ZONES = 5
+export const ZONE_FLOOR = 0.5
+/** What a heart-rate graph scales to without a birth year. */
+export const DEFAULT_HR_MAX = 190
+
+/** The age-predicted maximum hrZone works from (Tanaka), or null without a birth year. */
+export function hrMaxOf (S, now = Date.now()) {
+  const age = new Date(now).getFullYear() - Math.round(Number(S?.birthYear))
+  return age >= 10 && age <= 100 ? Math.round(208 - 0.7 * age) : null
+}
+
 /** Heart-rate zone 1 to 5 by share of the age-predicted maximum (Tanaka), or null without a birth year. */
 export function hrZone (bpm, S, now = Date.now()) {
   const year = Math.round(Number(S?.birthYear))

@@ -5863,4 +5863,9 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Collapse": "Sbalit",
+  "bpm": "tepů/min",
+  "Average {0} · Max {1} bpm": "Průměr {0} · max {1} tepů/min",
+  "Heart rate curve": "Křivka tepu",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Řádek pod ukazatelem postupu, dokud ho Apple Watch měří. Klepni pro celý trénink.",
 }

@@ -35,6 +35,7 @@ import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
+import { feedHeart } from './session-heart.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
@@ -1342,6 +1343,11 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   let offLang = () => {}
   try { offLang = onLangChange(() => schedule()) } catch { /* a test without i18n */ }
   const sub = await p.WatchBridge.addListener('watchEvent', () => { drainWatchEvents() })
+  // Each heart-rate reading of the watch's workout, with its own time, for the curve under the
+  // workout screen's progress bar (components/HeartBand.jsx).
+  const subHeart = await Promise.resolve(p.WatchBridge.addListener('watchHeart', e => {
+    feedHeart(useStore.getState().S?.active?.id, e?.samples)
+  })).catch(() => null)
   // The link itself changed (the session finished activating after launch, a watch was paired, the
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.
   // Sent again even when unchanged: a reinstalled watch app starts with nothing.
@@ -1370,7 +1376,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); subHeart?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.
