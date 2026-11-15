@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  'Right side first': 'اول سمت راست',
+  'Each set shows and ticks the right side, then the left.': 'هر ست اول سمت راست را نشان می‌دهد و تیک می‌زند، بعد سمت چپ.',
+  'Each set starts with the left side.': 'هر ست با سمت چپ شروع می‌شود.',
 }

@@ -5837,4 +5837,7 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  'Right side first': 'Højre side først',
+  'Each set shows and ticks the right side, then the left.': 'Hvert sæt viser og krydser højre side af først, så venstre.',
+  'Each set starts with the left side.': 'Hvert sæt starter med venstre side.',
 }
