@@ -5890,4 +5890,16 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "重量目標",
+  "Set a goal": "設定目標",
+  "Target ({0})": "目標（{0}）",
+  "6 months": "6 個月",
+  "1 year": "1 年",
+  "Goal: {0} by {1}": "目標：{1}前達到 {0}",
+  "Ahead of schedule": "領先進度",
+  "On track": "進度正常",
+  "Behind schedule": "落後進度",
+  "Past the due date": "已過期限",
+  "Gain about {0} a week to get there": "每週增加約 {0} 即可達成",
 }

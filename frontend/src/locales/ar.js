@@ -5952,4 +5952,16 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "هدف الرفع",
+  "Set a goal": "حدّد هدفًا",
+  "Target ({0})": "الهدف ({0})",
+  "6 months": "6 أشهر",
+  "1 year": "سنة واحدة",
+  "Goal: {0} by {1}": "الهدف: {0} بحلول {1}",
+  "Ahead of schedule": "متقدم عن الجدول",
+  "On track": "على المسار",
+  "Behind schedule": "متأخر عن الجدول",
+  "Past the due date": "تجاوزت الموعد",
+  "Gain about {0} a week to get there": "اكسب نحو {0} أسبوعيًا للوصول إليه",
 }

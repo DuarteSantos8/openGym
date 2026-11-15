@@ -5976,4 +5976,16 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "ওজন তোলার লক্ষ্য",
+  "Set a goal": "লক্ষ্য ঠিক করুন",
+  "Target ({0})": "লক্ষ্য ({0})",
+  "6 months": "৬ মাস",
+  "1 year": "১ বছর",
+  "Goal: {0} by {1}": "লক্ষ্য: {1}-এর মধ্যে {0}",
+  "Ahead of schedule": "সময়ের আগে আছেন",
+  "On track": "ঠিক পথে আছেন",
+  "Behind schedule": "সময়ের পেছনে আছেন",
+  "Past the due date": "নির্ধারিত দিন পেরিয়ে গেছে",
+  "Gain about {0} a week to get there": "পৌঁছাতে সপ্তাহে প্রায় {0} বাড়ান",
 }

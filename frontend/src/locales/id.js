@@ -5862,4 +5862,16 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Target beban",
+  "Set a goal": "Atur target",
+  "Target ({0})": "Target ({0})",
+  "6 months": "6 bulan",
+  "1 year": "1 tahun",
+  "Goal: {0} by {1}": "Target: {0} pada {1}",
+  "Ahead of schedule": "Lebih cepat dari jadwal",
+  "On track": "Sesuai jalur",
+  "Behind schedule": "Tertinggal dari jadwal",
+  "Past the due date": "Melewati tenggat",
+  "Gain about {0} a week to get there": "Naikkan sekitar {0} per minggu agar sampai",
 };

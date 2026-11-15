@@ -5900,4 +5900,16 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Emelési cél",
+  "Set a goal": "Cél kitűzése",
+  "Target ({0})": "Cél ({0})",
+  "6 months": "6 hónap",
+  "1 year": "1 év",
+  "Goal: {0} by {1}": "Cél: {0} eddig: {1}",
+  "Ahead of schedule": "Előbbre jársz a tervnél",
+  "On track": "Jó úton",
+  "Behind schedule": "Lemaradsz a tervtől",
+  "Past the due date": "Lejárt a határidő",
+  "Gain about {0} a week to get there": "Hetente kb. {0} növekedés kell a célhoz",
 }

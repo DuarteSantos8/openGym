@@ -93,6 +93,8 @@ if you want to try it before installing anything.
 - Body-weight chart against a goal line, with your weekly rate and an optional lose, gain or hold
   range, and progress photos on a timeline with a before/after slider.
 - Lifts as a percentage of body weight, and a running total of everything you've ever lifted.
+- A lift goal per exercise: a target weight in 3, 6 or 12 months, with a progress bar, whether you are
+  ahead or behind, and how much to add each week to get there. Syncs between your devices.
 - Edit any saved workout after the fact, log one you did on paper, or move it to the right date.
   Records are re-read from the corrected history.
 

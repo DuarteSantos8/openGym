@@ -47,7 +47,7 @@ export const KEY_CATEGORY = {
   scheduleMode: ['plans'], programmes: ['plans'], programme: ['plans'],
   bodyweight: ['bodyweight'], targetW: ['bodyweight'], rateGoal: ['bodyweight'],
   measurements: ['measurements'], customMeasurements: ['measurements'], measurementEnabled: ['measurements'],
-  dayNotes: ['notes'], exNotes: ['notes'], gymNotes: ['notes'], journalFolders: ['notes'],
+  dayNotes: ['notes'], exNotes: ['notes'], exGoals: ['plans'], gymNotes: ['notes'], journalFolders: ['notes'],
   recoverySessions: ['workouts'], activities: ['workouts'],
   // Body facts the Tools page and the strength levels read (v1.4.5): personal, so not a setting
   // that rides along with a plans-only token.

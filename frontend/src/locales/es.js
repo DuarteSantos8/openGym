@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "Vista previa en",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un poco más corto",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "Objetivo de peso",
+  "Set a goal": "Fijar un objetivo",
+  "Target ({0})": "Objetivo ({0})",
+  "6 months": "6 meses",
+  "1 year": "1 año",
+  "Goal: {0} by {1}": "Objetivo: {0} para el {1}",
+  "Ahead of schedule": "Por delante del plan",
+  "On track": "Vas bien",
+  "Behind schedule": "Por detrás del plan",
+  "Past the due date": "Fecha superada",
+  "Gain about {0} a week to get there": "Sube unos {0} por semana para llegar",
 }

@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // --- lift goals (exercise sheet) ---
+  "Lift goal": "중량 목표",
+  "Set a goal": "목표 설정",
+  "Target ({0})": "목표 ({0})",
+  "6 months": "6개월",
+  "1 year": "1년",
+  "Goal: {0} by {1}": "목표: {1}까지 {0}",
+  "Ahead of schedule": "계획보다 앞서 있어요",
+  "On track": "순조로워요",
+  "Behind schedule": "계획보다 늦어요",
+  "Past the due date": "기한이 지났어요",
+  "Gain about {0} a week to get there": "도달하려면 매주 약 {0}씩 늘리세요",
 }
