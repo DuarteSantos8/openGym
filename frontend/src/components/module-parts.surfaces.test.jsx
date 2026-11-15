@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-// Settings → Modules (#1087): the Streak and Body weight parts also reach the recap sheet, the
-// watch and the home-screen widget.
+// Settings → Modules (#1087): the Streak and Body weight parts also reach the recap sheet and the
+// watch's weigh-in.
 import React, { act } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
@@ -8,7 +8,6 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { RecapHomeCard } from './Recap.jsx'
 import { watchExtras } from '../lib/watch-sync.js'
-import { buildWidgetSnapshot } from '../lib/widgets.js'
 
 const BENCH = '0025'
 const mounted = []
@@ -47,11 +46,4 @@ it('the watch asks for no weigh-in with Body weight off', () => {
   expect(watchExtras({ weighIn: true }).weighIn).toBe(true)
   expect(watchExtras({ weighIn: true, modules: { 'body.weight': false } }).weighIn).toBe(false)
   expect(watchExtras({ weighIn: true, modules: { body: false } }).weighIn).toBe(false)
-})
-
-it('the widget sends no streak with the Streak part off', () => {
-  const on = buildWidgetSnapshot(profile({}), { today: '2026-10-26' })
-  expect(on.streakInfo).not.toBeNull()
-  const off = buildWidgetSnapshot(profile({ 'motivation.streak': false }), { today: '2026-10-26' })
-  expect(off).toMatchObject({ streak: 0, streakInfo: null })
 })

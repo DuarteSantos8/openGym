@@ -218,10 +218,8 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
   for (let i = 0; i < WIDGET_DAYS; i++) days.push(dayOf(st, shift(today, i), today))
   let week = { done: 0, planned: 0 }
   try { week = weekTally(st, today) } catch { /* the widget shows no fraction then */ }
-  // shortcut: with the Streak part off the native streak block reads 0 rather than hiding; hiding needs WidgetContent.java and the Swift widget.
-  const streakOn = partOn(st, 'motivation', 'streak')
-  const streakX = streakOn ? streakOf(st, today) : null
-  const streak = streakX ? streakX.current : 0
+  const streakX = streakOf(st, today)
+  const streak = streakX.current
   const ws = weekStartOf(st)
   const weekFrom = isoOf(startOfWeek(today, ws))
   const pair = accentPair(accentValue(st))
