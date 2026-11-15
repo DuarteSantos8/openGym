@@ -29,6 +29,20 @@ test('registration takes https and loopback redirects only, and caps the number 
   assert.equal(db.oauthClients.length, oauth.CLIENTS_MAX);
 });
 
+test('registration takes up to REDIRECTS_MAX redirects: Gemini sends six in one request', () => {
+  const db = {};
+  const uris = n => Array.from({ length: n }, (_, i) => `https://oauth-redirect.googleusercontent.com/r/surface-${i}`);
+  const six = oauth.registerClient(db, { client_name: 'Gemini', redirect_uris: uris(6) });
+  assert.equal(six.status, 201);
+  assert.equal(six.body.redirect_uris.length, 6);
+  assert.equal(oauth.registerClient(db, { redirect_uris: uris(oauth.REDIRECTS_MAX) }).status, 201);
+  const over = oauth.registerClient(db, { redirect_uris: uris(oauth.REDIRECTS_MAX + 1) });
+  assert.equal(over.status, 400);
+  assert.equal(over.body.error, 'invalid_redirect_uri');
+  // One bad address still sinks the whole request.
+  assert.equal(oauth.registerClient(db, { redirect_uris: [...uris(5), 'http://evil.example/cb'] }).status, 400);
+});
+
 test('authorize: unknown client or redirect is answered here, a missing S256 challenge goes back with an error', () => {
   const db = {};
   const id = oauth.registerClient(db, { client_name: 'Claude', redirect_uris: [CLAUDE] }).body.client_id;

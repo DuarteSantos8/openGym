@@ -33,6 +33,8 @@ import https from 'node:https';
 import { TOKEN_CATEGORIES, TOKEN_LEVELS, TOKEN_DAYS, cleanTokenScopes, rotateToken, sameHash } from './tokens.js';
 
 export const CLIENTS_MAX = 300;
+// Gemini's connector registers six redirect URIs in one request (one per Google surface).
+export const REDIRECTS_MAX = 10;
 export const REQUEST_TTL_MS = 10 * 60000;
 export const CODE_TTL_MS = 10 * 60000;
 /** How long a connector's access token lives when it has a refresh token. */
@@ -130,7 +132,7 @@ const cleanName = (v, fallback) => String(v || '').replace(/[\u0000-\u001f\u007f
 /** RFC 7591 registration. { status, body } */
 export function registerClient(db, body, now = Date.now()) {
   const uris = Array.isArray(body?.redirect_uris) ? body.redirect_uris.filter(u => typeof u === 'string') : [];
-  if (!uris.length || uris.length > 5 || !uris.every(redirectOk)) return { status: 400, body: { error: 'invalid_redirect_uri', error_description: 'redirect_uris: 1-5 https addresses (or http on localhost)' } };
+  if (!uris.length || uris.length > REDIRECTS_MAX || !uris.every(redirectOk)) return { status: 400, body: { error: 'invalid_redirect_uri', error_description: `redirect_uris: 1-${REDIRECTS_MAX} https addresses (or http on localhost)` } };
   const name = cleanName(body?.client_name, 'MCP client');
   const grants = Array.isArray(body?.grant_types) ? GRANTS.filter(g => body.grant_types.includes(g)) : ['authorization_code'];
   if (!grants.includes('authorization_code')) grants.unshift('authorization_code');
@@ -162,7 +164,7 @@ export function isCimdId(id) {
 export function cimdClient(id, doc) {
   if (!doc || typeof doc !== 'object' || doc.client_id !== id) return { ok: false, error: 'the client metadata document does not name itself as its client_id' };
   const uris = Array.isArray(doc.redirect_uris) ? doc.redirect_uris.filter(u => typeof u === 'string') : [];
-  if (!uris.length || uris.length > 10 || !uris.every(redirectOk)) return { ok: false, error: 'the client metadata document lists no usable redirect_uris' };
+  if (!uris.length || uris.length > REDIRECTS_MAX || !uris.every(redirectOk)) return { ok: false, error: 'the client metadata document lists no usable redirect_uris' };
   const method = doc.token_endpoint_auth_method || 'none';
   if (method !== 'none') return { ok: false, error: 'only public clients (token_endpoint_auth_method none) are supported' };
   const grants = Array.isArray(doc.grant_types) ? GRANTS.filter(g => doc.grant_types.includes(g)) : ['authorization_code'];
