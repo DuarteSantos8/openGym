@@ -2846,7 +2846,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
         {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} max={PLAN_MAX_REPS} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
         {/* With the Progression part off its fields are gone, but a ranged rule still climbs this range. */}
-        {ranged && !pyramid && !part('progression') && <>
+        {ranged && !pyramid && !part('progression') && !progressionStepInvalid && <>
           <Stepper label={t('Reps from')} value={c.repsMin ?? normalizeRepRange(c.reps, c.repsMin, perSide ? 2 : 1).repsMin} step={perSide ? 2 : 1} decimal={false}
             onChange={v => setC(x => ({ ...x, repsMin: v }))} />
           <Stepper label={t('Reps up to')} value={c.reps ?? normalizeRepRange(c.reps, c.repsMin, perSide ? 2 : 1).reps} step={perSide ? 2 : 1} decimal={false}
@@ -3188,7 +3188,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       <BarWeightEditor ex={ex} cfg={c} extra={t('Applies to this exercise everywhere, not just this plan.')} />
       {canHaveStack(ex) && !bw && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
     </>}
-    {!part('progression') ? null : pyramid
+    {/* An invalid step blocks Save, so its field shows even with the Progression part off. */}
+    {!part('progression') && !progressionStepInvalid ? null : pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
       : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} freestyle={routine ? false : freestyle} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}

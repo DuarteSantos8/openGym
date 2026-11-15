@@ -135,4 +135,11 @@ describe('exercise settings: the parts of the Exercise settings module', () => {
     for (const h of ['Set type', 'Weight means', 'Weight unit', 'Plate loading', 'Progression']) expect(heads(host)).not.toContain(h)
     expect(rowNamed(host, 'Rest for this exercise')).toBeTruthy()
   })
+  it('keeps an invalid step in view with Progression off, so Save can be unblocked', () => {
+    withParts({ 'exercise.progression': false })
+    const host = open(SQUAT, { prog: 'linear', inc: 0 })
+    const saveBtn = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
+    expect(saveBtn.disabled).toBe(true)
+    expect(host.textContent).toContain('Progression')
+  })
 })
