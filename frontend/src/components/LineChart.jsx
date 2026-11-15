@@ -133,7 +133,8 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   // and the points in between are still reachable by hover. Endpoints and the goal line, because
   // those are what the eye takes in; the goal is drawn, so it is said too.
   const withUnit = v => fmtNum(v) + (unit ? ' ' + unit : '')
-  const day = p => fmtDate(p.d || isoOf(new Date(p.t)), true, showYear)
+  const day = (p, withYear = showYear) => fmtDate(p.d || isoOf(new Date(p.t)), true, withYear)
+  const yearOf = p => new Date((p.d || isoOf(new Date(p.t))) + 'T12:00:00').getFullYear()
   const ends = (a, b, say) => (a === b ? say(a) : t('{0} to {1}', say(a), say(b)))
   // One line: date and value together, since nothing else anchors the value to a day.
   const lineRun = ps => {
@@ -159,7 +160,12 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   const spanOf = ps => {
     const a = ps.reduce((m, p) => (p.t < m.t ? p : m), ps[0])
     const b = ps.reduce((m, p) => (p.t > m.t ? p : m), ps[0])
-    const dFrom = day(a), dTo = day(b)
+    // showYear comes from the points the hover walks, which need not cover every series: a lone
+    // diastolic reading sits in one series and not in those points, and would be said inside the
+    // other year's range. These two ends are the earliest and the latest point there is, so when
+    // they share a year nothing on the chart is outside it, and only the span needs the year.
+    const withYear = showYear || yearOf(a) !== yearOf(b)
+    const dFrom = day(a, withYear), dTo = day(b, withYear)
     return dFrom === dTo ? dFrom : t('{0} to {1}', dFrom, dTo)
   }
   const spoken = multi ? drawn.map(s => valueRun(s.points, s.label)).join(', ') : lineRun(pts)

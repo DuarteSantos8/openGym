@@ -243,6 +243,22 @@ describe('LineChart accessible name', () => {
     expect(label().label).toBe('Blood pressure')
   })
 
+  // The year is said when the span crosses one. The flag comes from the points the hover walks,
+  // and a lone diastolic reading (the CSV import does not check the pair) sits in a series but not
+  // in those points, so the span can reach a year the flag has never seen: two dates a year apart
+  // then read as one day.
+  it('says the year when only a series reaches into another one', () => {
+    const sys = [{ t: Date.UTC(2026, 0, 5), y: 120, d: '2026-01-05' }, { t: Date.UTC(2026, 0, 20), y: 118, d: '2026-01-20' }]
+    const dia = [{ t: Date.UTC(2025, 0, 5), y: 80, d: '2025-01-05' }]
+    act(() => root.render(<LineChart points={sys} axes={false} unit="mmHg" ariaLabel="Blood pressure"
+      series={[{ points: sys, color: 'var(--red)', label: 'Systolic' }, { points: dia, color: 'var(--blue)', label: 'Diastolic' }]} />))
+    const { label: aria } = label()
+    expect(aria).toContain('2025')
+    expect(aria).toContain('2026')
+    // one day, not two dates a year apart collapsed into it
+    expect(aria).not.toContain('(5 Jan)')
+  })
+
   it('stays an ordinary svg when nothing names it, rather than an image with no name', () => {
     act(() => root.render(<LineChart points={firstPoints} axes={false} unit="kg" />))
     expect(label().role).toBeNull()
