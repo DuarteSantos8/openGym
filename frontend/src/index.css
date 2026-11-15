@@ -3452,7 +3452,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
   /* Back to top: at the end of the wide column, level with the floating tab bar and clear of it,
      so the page's own 128px at the bottom already keeps the last row out from under it. */
-  #totop,body.resting #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
+  #totop,body.resting #totop,body.has-livebar #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
   .livebar{bottom:83px}
   body.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
   body.totop-on #app{padding-bottom:calc(128px + var(--sab))}

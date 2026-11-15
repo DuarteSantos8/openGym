@@ -149,3 +149,10 @@ describe('the rise and fold under reduced motion', () => {
   })
 })
 
+// On a computer the back-to-top button sits level with the floating tab bar, with the live bar showing
+// too: the base `body.has-livebar #totop` (a phone offset) ties the desktop rule on specificity, so the
+// desktop group has to name it and come later.
+it('the desktop back-to-top place also holds while the live bar shows', () => {
+  expect(read('index.css')).toContain('#totop,body.resting #totop,body.has-livebar #totop{inset-inline-end')
+})
+
