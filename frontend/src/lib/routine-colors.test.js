@@ -56,3 +56,13 @@ describe('tile ink', () => {
     })
   }
 })
+
+describe('brand accent', () => {
+  it('keeps dark ink on its lime green in the light increased-contrast palette', () => {
+    const green = /:root\[data-theme="light"\]\[data-accent="brand"\]\s*\{[^}]*--green:\s*(#[0-9a-f]{6})/i.exec(css)?.[1]
+    const onGreen = /:root\[data-theme="light"\]\[data-accent="brand"\]\s*\{[^}]*--on-green:\s*(#[0-9a-f]{3,6})/i.exec(hc)?.[1]
+    expect(green).toBeTruthy()
+    expect(onGreen, 'a brand override inside prefers-contrast').toBeTruthy()
+    expect(contrast(green, onGreen)).toBeGreaterThanOrEqual(3)
+  })
+})
