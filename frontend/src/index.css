@@ -2128,6 +2128,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    number stops growing past Large and the buttons give back what the bigger text took. */
 .cfgrow .stp .num{font-size:min(var(--fs-body), calc(17px * 1.12))}
 .cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* A warm-up's load and the button with its unit (WarmupConfig) read as one control. */
+.cfgrow>.warmup-load-w{flex:1.6}
+.warmup-load{display:flex;gap:2px;min-width:0}
+.warmup-load>.stp{flex:1}
+.warmup-load>.stp:not(:last-child){border-start-end-radius:4px;border-end-end-radius:4px}
+.warmup-load>.btn{flex:none;height:44px;min-width:40px;padding-inline:4px;border-start-start-radius:4px;border-end-start-radius:4px}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
    368 — "1.25" showed as "1.2", "90" as "9(". Below 480px the row wraps into two pairs instead;

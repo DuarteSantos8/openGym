@@ -17,13 +17,17 @@
 //
 // A generated row remembers the rung it came from (`wp` percent, `wb` the bare bar), so when the
 // work weight moves the open rungs move with it (history.js rerampWarmups) and a block saved as
-// your own scales with your progress instead of freezing at the day you saved it.
+// your own scales with your progress instead of freezing at the day you saved it. A row of your
+// own can be a fixed weight instead (`wf`, in the profile's unit like the slot's `weight`): a
+// machine whose stack has 80 but not 85 keeps its 80 when the work set climbs. It carries the share
+// it came to as `wp` too, which is all an app from before fixed weights reads.
 import { isOn } from './modules.js'
 import { modeOf, isBw, isPerSide } from './history.js'
 import { isWarmupRow, makeSideSet } from './workout-model.js'
 import { exerciseOf, isAssisted } from './exercises.js'
-import { rungWeight } from './warmup-snap.js'
+import { rungWeight, fixedWeight, isFixedRow } from './warmup-snap.js'
 import { isoRun } from './bidi.js'
+import { fmtNum } from './format.js'
 
 export const WARMUP_AUTO = ['off', 'compounds', 'all']
 export const WARMUP_MODES = ['auto', 'own', 'none']
@@ -62,23 +66,77 @@ const clampInt = (v, lo, hi) => {
   return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : null
 }
 
-/** One saved row, cleaned: `{ wb: true, r }` for the bare bar, else `{ wp, r }`. Null for junk. */
+const clampPct = wp => Math.min(OWN_PCT_MAX, Math.max(OWN_PCT_MIN, Math.round(wp)))
+export { fixedWeight }
+
+/**
+ * One saved row, cleaned: `{ wb: true, r }` for the bare bar, `{ wf, wp?, r }` for a fixed weight
+ * (with the share an older app falls back to), else `{ wp, r }`. Null for junk.
+ */
 export function cleanOwnRow(row) {
   if (!row || typeof row !== 'object') return null
   const r = clampInt(row.r, 1, OWN_REPS_MAX)
   if (r == null) return null
   if (row.wb === true) return { wb: true, r }
   const wp = Number(row.wp)
+  const wf = fixedWeight(row.wf)
+  if (Number.isFinite(wf) && wf > 0) return { wf: Math.round(wf * 10000) / 10000, ...(Number.isFinite(wp) && wp > 0 ? { wp: clampPct(wp) } : {}), r }
   if (!Number.isFinite(wp)) return null
   // 0 is the body alone on a weighted bodyweight lift; anything else sits in the usual range.
   if (wp === 0) return { wp: 0, r }
-  const pct = Math.min(OWN_PCT_MAX, Math.max(OWN_PCT_MIN, Math.round(wp)))
-  return { wp: pct, r }
+  return { wp: clampPct(wp), r }
 }
 
 /** A slot's saved block, cleaned and in order. */
 export const ownRowsOf = cfg => (Array.isArray(cfg?.warmupRows) ? cfg.warmupRows : [])
   .map(cleanOwnRow).filter(Boolean).slice(0, MAX_OWN_WARMUPS)
+
+/** Whether a block of your own holds a fixed weight. */
+export const ownRowsFixed = rows => (rows || []).some(isFixedRow)
+
+/**
+ * The share of `work` that warms up at `w` today. With the gym's `grid`: `prefer` when it rounds
+ * onto `w`, else of the shares that do the one nearest the plain ratio (80 of 117.5 is 68.1%, but
+ * 68% rounds down to 77.5, so 69%), else the one that rounds nearest. Without a grid, the ratio.
+ */
+export function shareFor(w, work, { grid, floor = 0, prefer } = {}) {
+  if (!(work > 0) || !(w > 0)) return null
+  const want = Math.min(work, w)
+  const ratio = (want / work) * 100
+  if (grid == null) return clampPct(ratio)
+  const miss = wp => { const d = Math.abs(rungWeight({ wp }, work, grid, floor) - want); return d <= 1e-3 ? 0 : d }
+  if (prefer > 0 && miss(clampPct(prefer)) === 0) return clampPct(prefer)
+  let best = null
+  for (let wp = OWN_PCT_MIN; wp <= OWN_PCT_MAX; wp++) {
+    const m = miss(wp), off = Math.abs(wp - ratio)
+    if (best == null || m < best.m || (m === best.m && off < best.off)) best = { wp, m, off }
+  }
+  return best.wp
+}
+
+/** A fixed row with the share it is today kept beside it, for an app that reads shares only. */
+export const withShare = (row, work, opts) => {
+  if (!isFixedRow(row)) return row
+  const wp = shareFor(Number(row.wf), work, { ...opts, prefer: row.wp })
+  return wp ? { ...row, wp } : row
+}
+
+/**
+ * One row of your own as a share of the work weight or as a fixed weight, and on the weight it
+ * warms up at today either way: 50% that rounds to 55 becomes 55, and 80 becomes the share that
+ * still lands on 80. For a weight the gym can load, switching back and forth comes home. The bare
+ * bar and the body alone stay as they are; without a work weight a fixed row goes back to the
+ * share it carries.
+ */
+export function ownRowAs(row, fixed, { work, grid, floor = 0 } = {}) {
+  if (!row || row.wb || fixed === isFixedRow(row)) return row
+  if (fixed) {
+    if (row.wp === 0 || !(work > 0)) return row
+    return cleanOwnRow({ wf: rungWeight(row, work, grid, floor), wp: row.wp, r: row.r }) || row
+  }
+  if (!(work > 0)) return row.wp > 0 ? { wp: row.wp, r: row.r } : row
+  return cleanOwnRow({ wp: shareFor(Number(row.wf), work, { grid, floor, prefer: row.wp }), r: row.r }) || row
+}
 
 /**
  * Where an exercise's warm-ups come from: `{ kind: 'auto' | 'own' | 'count' | 'none', rows? }`.
@@ -131,24 +189,37 @@ export function autoRungs({ work, kg, bar = 0, compound = false, bw = false, ass
 }
 
 /**
- * The rungs turned into set rows on real weights, for a work weight of `work`. A rung that rounds
- * onto the one before it, or up to the work weight, is left out: two identical warm-ups are one
- * warm-up, and a warm-up at the work weight is a work set. A per-side lift gets L/R rows with the
- * rung's reps on each side. `grid` and `floor` as warmup-snap.js reads them.
+ * The rungs turned into set rows on real weights, for a work weight of `work`, lightest first. A
+ * rung that rounds onto another, or up to the work weight, is left out: two identical warm-ups are
+ * one warm-up (a fixed weight of your own wins over a share), and a warm-up at the work weight is
+ * a work set. A share can climb past a fixed row as the work weight grows, so the order is the
+ * weights'. A per-side lift gets L/R rows with the rung's reps on each side. `grid` and `floor` as
+ * warmup-snap.js reads them.
  */
 export function rungRows(rungs, { work, grid, floor = 0, perSide = false }) {
-  const out = []
-  let last = -1
+  const built = []
   for (const rung of rungs) {
     const w = rungWeight(rung, work, grid, floor)
-    const body = rung.wp === 0 && !rung.wb
+    const fixed = isFixedRow(rung)
+    const body = rung.wp === 0 && !rung.wb && !fixed
     if (!body && (!(w > 0) || w >= work)) continue
-    if (w <= last) continue
-    last = w
-    const row = { w, r: rung.r, done: false, phase: 'warmup', warmup: true, ...(rung.wb ? { wb: true } : { wp: rung.wp }) }
-    out.push(perSide ? makeSideSet({ ...row, r: rung.r * 2 }) : row)
+    built.push({ w, rung, fixed })
   }
-  return out
+  built.sort((a, b) => a.w - b.w)
+  const kept = []
+  for (const b of built) {
+    const prev = kept[kept.length - 1]
+    // One weight to the gram: a weight stored from another unit and one rounded here can part in the fourth place.
+    if (prev && b.w <= prev.w + 1e-3) {
+      if (b.fixed && !prev.fixed) kept[kept.length - 1] = b
+      continue
+    }
+    kept.push(b)
+  }
+  return kept.map(({ w, rung, fixed }) => {
+    const row = { w, r: rung.r, done: false, phase: 'warmup', warmup: true, ...(rung.wb ? { wb: true } : fixed ? { wf: Number(rung.wf) } : { wp: rung.wp }) }
+    return perSide ? makeSideSet({ ...row, r: rung.r * 2 }) : row
+  })
 }
 
 /** The first work row's load: the heavier side on a per-side row. */
@@ -189,25 +260,32 @@ export function withWarmupBlock(S, cfg, rows, opts) {
 
 /**
  * Today's warm-up rows as a block of your own: each row as a percent of the first work weight
- * (the bare bar stays the bar), so it scales when the work weight climbs. Null with nothing to
- * keep: no warm-ups, or no work weight to measure them against.
+ * (the bare bar stays the bar), so it scales when the work weight climbs. A row from a fixed
+ * weight stays one: at the weight you changed it to, else at its own (a lighter work set may have
+ * held it down today). Null with nothing to keep: no warm-ups, or no work weight to measure them
+ * against.
  */
-export function ownRowsFromSession(rows, floor = 0) {
+export function ownRowsFromSession(rows, floor = 0, grid) {
   const work = workLoadOf(rows)
   const warm = (rows || []).filter(isWarmupRow)
   if (!(work > 0) || !warm.length) return null
   const out = warm.slice(0, MAX_OWN_WARMUPS).map(row => {
     const r = isSideSetRow(row) ? Math.max(Number(row.sides.L?.r) || 0, Number(row.sides.R?.r) || 0) : Number(row.r) || 0
     const w = Number(row.w) || 0
+    if (isFixedRow(row) && w > 0) return withShare(cleanOwnRow({ wf: row.edited === true ? w : Number(row.wf), r }), work, { grid, floor })
+    // A share left as it was stays that share, also where today it rounds onto the bar.
+    if (grid != null && row.edited !== true && row.wb !== true && Number(row.wp) > 0 && Math.abs(rungWeight(row, work, grid, floor) - w) <= 1e-3) return cleanOwnRow({ wp: row.wp, r })
     if (floor > 0 && Math.abs(w - floor) < 1e-6) return cleanOwnRow({ wb: true, r })
-    return cleanOwnRow({ wp: Math.round((w / work) * 100), r })
+    // On the gym's grid, the share that lands on the weight done, its own one first.
+    return cleanOwnRow({ wp: grid != null ? shareFor(w, work, { grid, floor, prefer: row.wp }) : Math.round((w / work) * 100), r })
   }).filter(Boolean)
   return out.length ? out : null
 }
 const isSideSetRow = row => !!row?.sides && typeof row.sides === 'object'
 
-/** Two saved blocks hold the same rows. */
-export const sameOwnRows = (a, b) => JSON.stringify((a || []).map(cleanOwnRow)) === JSON.stringify((b || []).map(cleanOwnRow))
+/** Two saved blocks hold the same rows. A fixed row's share is only a fallback and does not count. */
+const rowKey = r => (isFixedRow(r) ? { wf: r.wf, r: r.r } : r)
+export const sameOwnRows = (a, b) => JSON.stringify((a || []).map(cleanOwnRow).map(rowKey)) === JSON.stringify((b || []).map(cleanOwnRow).map(rowKey))
 
-/** A block as one short line: "Bar × 10 · 40% × 5 · 60% × 3". `bar` is the translated word. */
-export const ownRowsLine = (rows, bar = 'Bar') => (rows || []).map(r => isoRun((r.wb ? bar : r.wp === 0 ? '0' : r.wp + '%') + ' × ' + r.r)).join(' · ')
+/** A block as one short line: "Bar × 10 · 40% × 5 · 60% × 3", a fixed row as "80 kg × 12". `bar` is the translated word. */
+export const ownRowsLine = (rows, bar = 'Bar', unit = '') => (rows || []).map(r => isoRun((r.wb ? bar : isFixedRow(r) ? fmtNum(r.wf) + (unit ? ' ' + unit : '') : r.wp === 0 ? '0' : r.wp + '%') + ' × ' + r.r)).join(' · ')

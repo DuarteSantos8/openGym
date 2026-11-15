@@ -54,7 +54,7 @@ import { progressionGuidance } from '../lib/progression-copy.js'
 import { rpeAs } from '../lib/programmes.js'
 import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
 import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups, replaceSlotExercise } from '../lib/routines.js'
-import { ownRowsLine } from '../lib/warmup-ramp.js'
+import { ownRowsLine, ownRowsFixed } from '../lib/warmup-ramp.js'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 // Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
 // opened a moment later (after a dynamic import) took the menu's history entry with it on close.
@@ -79,7 +79,7 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { gymNoteFor } from '../lib/journal.js'
-import { exView, viewEntry, inEntryUnit, shownWeight } from '../lib/ex-unit.js'
+import { exView, viewEntry, inEntryUnit, shownWeight, exUnitOf, viewTarget, storedWeight, gridInProfileUnit } from '../lib/ex-unit.js'
 import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
 import { formulaOf } from '../lib/onerm.js'
 import { cues } from '../lib/spoken-cues.js'
@@ -133,6 +133,14 @@ function StartChooser() {
 
 
 // The open warm-ups follow the first work set when its weight changes mid-workout (#156,
+// The rounding a session's warm-ups were built with (lib/session-start.js), in the profile's unit:
+// this gym's plates and bar, read in the exercise's own unit when it has one.
+function warmupRounding(S, e) {
+  const V = exView(sessionGymView(S), e.id)
+  const cfg = viewTarget(S, e.id, { ...(e.target || {}), id: e.id })
+  return { grid: gridInProfileUnit(S, e.id, dropGrid(V, cfg)), floor: storedWeight(S, e.id, barFloor(V, e.id)) }
+}
+
 // lib/history.js liveReramp): 100 → 110 and the rungs not done yet move with it, on this gym's
 // plates. A rung you typed yourself or already did stays. `e` is the entry in its own unit.
 function rerampOpen(s, e, i) {
@@ -607,7 +615,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
         ...(onSwapBackup ? backups.map(b => ({ icon: 'swap', label: t('Swap to {0}', exerciseNameText(b)), sub: entry.target?.subCfg?.[b.id] ? t('Planned backup, with its own plan') : t('Planned backup, same sets and reps'), onClick: () => onSwapBackup(b.id), disabled: busy })) : []),
         { icon: 'sunrise', label: t('Add warm-up set'), onClick: onAddWarmup },
         // Today's warm-ups as the routine's own from now on (#525, lib/warmup-ramp.js).
-        onKeepWarmups && { icon: 'sunrise', label: t('Keep these warm-ups'), sub: t('Saved in the routine, scaled to your work weight'), onClick: onKeepWarmups },
+        // A fixed weight of your own is kept as one (lib/warmup-ramp.js ownRowsFromSession).
+        onKeepWarmups && { icon: 'sunrise', label: t('Keep these warm-ups'), sub: (entry.sets || []).some(x => isWarmupRow(x) && Number(x.wf) > 0) ? t('Saved in the routine; fixed weights stay as they are') : t('Saved in the routine, scaled to your work weight'), onClick: onKeepWarmups },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
         { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
         // The Coach on this exercise, for the rest of this workout (components/WorkoutCoachSheet.jsx).
@@ -1708,14 +1717,15 @@ function ActiveWorkout() {
   const routineUpdateFor = idx => {
     const entry = A.entries[idx]
     const routine = !editing && entry?.rid ? S.routines.find(r => r.id === entry.rid) : null
-    const found = routine ? routineChangesFromEntry(routine, A.entries, idx, barFloor(S, entry.id)) : null
+    const rounding = routine ? warmupRounding(S, entry) : null
+    const found = routine ? routineChangesFromEntry(routine, A.entries, idx, rounding.floor, rounding.grid) : null
     if (!found) return null
     const activeId = A.id
     const entryId = entry.id
     return {
       // A rest reads as the wheel shows it: "3:00", and 0 (no rest of its own) as the default.
       sub: found.changes.map(c => c.key === 'note' ? t('Note')
-        : c.key === 'warmupRows' ? t('Warm-ups') + ' → ' + ownRowsLine(c.to, t('Bar'))
+        : c.key === 'warmupRows' ? t('Warm-ups') + ' → ' + ownRowsLine(c.to.map(r => (r.wf > 0 ? { ...r, wf: shownWeight(S, entryId, r.wf) } : r)), t('Bar'), exUnitOf(S, entryId))
         : c.key === 'warmupSets' ? t('Warm-up sets') + ' ' + c.from + ' → ' + c.to
         : t('Rest') + ' ' + restWord(c.from) + ' → ' + restWord(c.to)).join(' · '),
       run: () => confirmSheet({
@@ -1728,7 +1738,8 @@ function ActiveWorkout() {
             // The sheet can outlive the workout, or the exercise at this index: fail closed.
             const target = s.routines.find(r => r.id === routine.id)
             if (!target || s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entryId) return
-            applied = updateRoutineFromEntry(target, s.active.entries, idx, barFloor(s, entryId))
+            const rounding = warmupRounding(s, s.active.entries[idx])
+            applied = updateRoutineFromEntry(target, s.active.entries, idx, rounding.floor, rounding.grid)
           })
           if (applied) useUI.getState().toast(t('Routine updated'))
         },
@@ -1744,7 +1755,8 @@ function ActiveWorkout() {
     if (!routine || !(entry.sets || []).some(isWarmupRow)) return null
     const at = routineSlotIndex(routine, A.entries, idx)
     if (at < 0) return null
-    const rows = ownWarmupsChange(routine.ex[at], entry, barFloor(S, entry.id), { force: true })
+    const rounding = warmupRounding(S, entry)
+    const rows = ownWarmupsChange(routine.ex[at], entry, rounding.floor, { force: true, grid: rounding.grid })
     if (!rows) return null
     const activeId = A.id, entryId = entry.id
     return () => {
@@ -1757,7 +1769,7 @@ function ActiveWorkout() {
         keepOwnWarmups(slot, rows)
         kept = true
       })
-      if (kept) useUI.getState().toast(t('Kept. Same warm-ups next time, scaled to your work weight.'))
+      if (kept) useUI.getState().toast(ownRowsFixed(rows) ? t('Kept. Same warm-ups next time; fixed weights stay as they are.') : t('Kept. Same warm-ups next time, scaled to your work weight.'))
     }
   }
 

@@ -6,6 +6,14 @@ import { ownedFloor } from './dumbbells.js'
 const EPS = 1e-9
 const tidy = x => Math.round(x * 1000) / 1000
 
+/** A fixed warm-up weight of your own as a number, NaN for anything that is not one. units.js and the api's payload.js check it the same way. */
+export const fixedWeight = v => {
+  const n = typeof v === 'number' || typeof v === 'string' ? Number(v) : NaN
+  return Number.isFinite(n) ? n : NaN
+}
+/** Whether a row (saved or in a session) is a fixed weight of your own. */
+export const isFixedRow = row => fixedWeight(row?.wf) > 0
+
 /**
  * `x` rounded DOWN to something loadable. `grid` is what the rest of the app snaps to
  * (plates.js dropGrid): a number is the exercise's step, a list is the dumbbells or the machine
@@ -22,16 +30,18 @@ export function snapDown(x, grid) {
 
 /**
  * The weight of a generated rung: `pct` percent of the work weight (`wb` the bare bar, `pct` 0
- * the body alone on a weighted bodyweight lift), never under the bar (`floor`) and never above
- * the set it warms you up for.
+ * the body alone on a weighted bodyweight lift, `wf` a fixed weight of your own), never under the
+ * bar (`floor`) and never above the set it warms you up for.
  */
 export function rungWeight(rung, work, grid, floor = 0) {
   if (!(work > 0)) return 0
   if (rung.wb) return Math.min(work, Math.max(0, floor))
+  // A fixed weight is loaded as you typed it: it does not follow the work weight or the grid.
+  if (isFixedRow(rung)) return Math.min(work, Math.max(0, floor, fixedWeight(rung.wf)))
   const pct = Number(rung.wp)
   if (!(pct > 0)) return 0
   return Math.min(work, Math.max(0, floor, snapDown(work * pct / 100, grid)))
 }
 
 /** Whether a set row was made from a rung (a generated or a saved warm-up), not by halving. */
-export const isRungRow = row => !!row && (row.wb === true || Number.isFinite(row.wp))
+export const isRungRow = row => !!row && (row.wb === true || Number.isFinite(row.wp) || isFixedRow(row))

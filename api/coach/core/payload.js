@@ -230,8 +230,8 @@ function cleanEx(e) {
   if (typeof e.note === 'string' && e.note.trim()) o.note = text(e.note.trim(), EX_NOTE_MAX);
   if (Array.isArray(e.subs)) { const subs = e.subs.filter(x => typeof x === 'string' && x).slice(0, 5).map(ident); if (subs.length) o.subs = subs; }
   // How the slot warms up (frontend/src/lib/warmup-ramp.js), so the Coach can explain it or
-  // suggest another: its own choice, a block of its own as shares of the work weight, or the
-  // older number of ramp sets. Absent means it follows the app's setting (`prefs.warmups`).
+  // suggest another: its own choice, a block of its own as shares of the work weight or fixed
+  // weights, or the older number of ramp sets. Absent means it follows the app's setting (`prefs.warmups`).
   if (WARMUP_MODES.includes(e.warmup)) o.warmup = e.warmup;
   if (e.warmup === 'own') { const rows = warmupRowsOut(e.warmupRows); if (rows.length) o.warmupRows = rows; }
   else if (!o.warmup && Number(e.warmupSets) > 0) o.warmupSets = Math.min(5, Math.round(Number(e.warmupSets)));
@@ -240,12 +240,16 @@ function cleanEx(e) {
 
 export const WARMUP_MODES = ['auto', 'own', 'none'];
 /* A block of your own the way the model reads and writes it: `{ bar: true, reps }` for the bare
-   bar, `{ pct, reps }` for a share of the work weight (0 the body alone). Five rows at most. */
+   bar, `{ pct, reps }` for a share of the work weight (0 the body alone), and, read only,
+   `{ weight, reps }` for a fixed weight the lifter set. Five rows at most. */
 export function warmupRowsOut(rows) {
   return list(rows).filter(r => r && typeof r === 'object').slice(0, 5).map(r => {
     const reps = Math.round(Number(r.r));
     if (!(reps >= 1 && reps <= 30)) return null;
     if (r.wb === true) return { bar: true, reps };
+    // A fixed weight is a number or a numeric string, as frontend/src/lib/warmup-snap.js fixedWeight reads it.
+    const fixed = typeof r.wf === 'number' || typeof r.wf === 'string' ? Number(r.wf) : NaN;
+    if (Number.isFinite(fixed) && fixed > 0) return { weight: Math.round(fixed * 100) / 100, reps };
     const pct = Number(r.wp);
     return Number.isFinite(pct) && pct >= 0 && pct <= 95 ? { pct: Math.round(pct), reps } : null;
   }).filter(Boolean);

@@ -19,6 +19,7 @@
 // from every helper here: nothing changes for it. Older apps do not know the map and show the
 // stored numbers in the profile unit, which is what they are.
 import { convertExact, convertStep, exUnitPin, mapEntryWeights, mapSetWeights, mapTargetWeights, EXACT_STORE, EXACT_VIEW } from './units.js'
+import { snapDown } from './warmup-snap.js'
 
 export { exUnitPin }
 
@@ -54,6 +55,16 @@ const backIncOf = (from, to) => (v, old) => {
   if (!(Number(v) > 0)) return v
   if (old != null && convertStep(old, to, from, EXACT_VIEW) === Number(v)) return old
   return convertStep(v, from, to, EXACT_STORE)
+}
+
+/**
+ * A rounding grid (plates.js dropGrid) of the exercise's own unit as one in the profile's: what
+ * it loads, stored. A session builds its warm-ups in the exercise's unit, so reading them back
+ * against the stored rows needs the same grid.
+ */
+export function gridInProfileUnit(S, exId, grid) {
+  if (!exConverted(S, exId)) return grid
+  return x => storedWeight(S, exId, snapDown(shownWeight(S, exId, x), grid))
 }
 
 /** A weight typed or stepped in the exercise's unit, as it is stored (profile unit). */

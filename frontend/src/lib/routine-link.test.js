@@ -66,6 +66,20 @@ describe('routine links: encode and decode', () => {
     expect(cleanFrom('x'.repeat(80))).toHaveLength(40)
   })
 
+  it('without weights a fixed warm-up goes as its share, or as the share of the slot’s weight', () => {
+    const legs = { id: 'r3', name: 'Legs', ex: [
+      { id: '0585', sets: 2, reps: 12, weight: 110, warmup: 'own', warmupRows: [{ wf: 80, r: 12 }, { wp: 90, r: 4 }, { wf: 100, wp: 85, r: 2 }] },
+      { id: BENCH, sets: 3, reps: 5, warmup: 'own', warmupRows: [{ wb: true, r: 10 }, { wf: 40, r: 8 }] },
+      { id: RAISE, sets: 3, reps: 15, warmup: 'own', warmupRows: [{ wf: 4, r: 15 }] },
+    ] }
+    const [ext, bench, raise] = routineLinkBundle(state(), legs).routines[0].ex
+    expect(ext.warmupRows).toEqual([{ wp: 73, r: 12 }, { wp: 90, r: 4 }, { wp: 85, r: 2 }])
+    expect(bench.warmupRows).toEqual([{ wb: true, r: 10 }])
+    expect(raise.warmup).toBeUndefined()
+    expect(raise.warmupRows).toBeUndefined()
+    expect(routineLinkBundle(state(), legs, { weights: true }).routines[0].ex[0].warmupRows[0]).toEqual({ wf: 80, r: 12 })
+  })
+
   it('never carries the rest of the plan: other routines, the week, programmes', () => {
     const other = { id: 'r2', name: 'Legs', ex: [{ id: BENCH, sets: 1, reps: 1 }] }
     const S = state({ routines: [push, other], week: { 1: ['r1'], 3: ['r2'] }, programmes: { p: { id: 'p', name: 'Block' } } })

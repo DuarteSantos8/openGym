@@ -10,7 +10,7 @@
 
 import { cleanCircuit } from './circuit.js'
 import { normalizeTempo } from './tempo.js'
-import { warmupModeOf, ownRowsOf } from './warmup-ramp.js'
+import { warmupModeOf, ownRowsOf, fixedWeight } from './warmup-ramp.js'
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
 import { cleanBackups } from './routine-backups.js'
 import { cleanUrl } from './media-refs.js'
@@ -64,6 +64,7 @@ function convertedExercise(e, sourceUnit, destinationUnit) {
   // A timed increment is seconds, not a load. Rep-mode increments are load overrides.
   if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertStep(out.inc, sourceUnit, destinationUnit, 2)
   if (Array.isArray(out.pyramidWeight)) out.pyramidWeight = out.pyramidWeight.map(w => (w > 0 ? convertWeight(w, sourceUnit, destinationUnit) : w))
+  if (Array.isArray(out.warmupRows)) out.warmupRows = out.warmupRows.map(r => (r && fixedWeight(r.wf) > 0 ? { ...r, wf: convertWeight(r.wf, sourceUnit, destinationUnit) } : r))
   return out
 }
 
@@ -171,8 +172,9 @@ function cleanEx(e) {
   if (mode === 'reps' && normalizeTempo(e.tempo)) o.tempo = normalizeTempo(e.tempo)
   const warm = cleanWarmupSets(e.warmupSets)
   if (warm) o.warmupSets = warm
-  // The warm-up choice and a block of your own (lib/warmup-ramp.js) travel with the routine: the
-  // rows are shares of the work weight, so they mean the same in either unit.
+  // The warm-up choice and a block of your own (lib/warmup-ramp.js) travel with the routine: a
+  // share of the work weight means the same in either unit, a fixed weight converts with the
+  // other weights (convertedExercise).
   Object.assign(o, cleanWarmupChoice(e))
   // Drop-sets and rest-pause are part of how the exercise is prescribed, not a logging detail.
   // Without this a shared "3x5 with a double drop" arrived at the other end as a plain 3x5,

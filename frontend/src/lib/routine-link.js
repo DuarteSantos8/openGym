@@ -19,6 +19,7 @@
 import { EXIDX, isCustomEx } from './exercises.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 import { t } from './i18n-core.js'
+import { warmupModeOf, ownRowsOf, ownRowsFixed, shareFor } from './warmup-ramp.js'
 
 export const LINK_FMT = 1
 export const LINK_BASE = 'https://opengym.ch/r'
@@ -91,9 +92,19 @@ const inflate = bytes => pipe(new DecompressionStream('deflate-raw'), bytes, MAX
 
 export const cleanFrom = v => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, FROM_MAX) : '')
 
+// A fixed warm-up weight is the sender's load too: it goes as the share it carries (or the one it
+// is of the slot's weight). One with neither is left out, and a block left empty follows the
+// receiver's warm-up setting.
 const stripWeights = e => {
   const { weight, pyramidWeight, ...rest } = e
-  return rest
+  if (warmupModeOf(rest) !== 'own' || !ownRowsFixed(ownRowsOf(rest))) return rest
+  const rows = ownRowsOf(rest).map(r => {
+    if (!(r.wf > 0)) return r
+    const wp = r.wp > 0 ? r.wp : shareFor(r.wf, Number(weight) || 0)
+    return wp ? { wp, r: r.r } : null
+  }).filter(Boolean)
+  if (!rows.length) { const { warmup: _w, warmupRows: _r, ...plain } = rest; return plain }
+  return { ...rest, warmupRows: rows }
 }
 
 /**

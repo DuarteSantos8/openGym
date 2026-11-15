@@ -177,6 +177,11 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // (progression.js readSession) holds each set to its own weight even after the plan changes.
   if (backoffStep) target.backoffStep = backoffStep
   else delete target.backoffStep
+  // How many warm-ups a block of your own built: a re-ramp, a unit or gym switch never adds or
+  // drops one, so reading the session back (routines.js ownWarmupsChange) can tell a removed
+  // warm-up from one the block merged or left out.
+  if (block && warmupSource(st, cfg).kind === 'own') target.warmupCount = sets.filter(isWarmupRow).length
+  else delete target.warmupCount
   // Undulating's day (progression.js DUP_DAYS): the next session reads it to pick the day after.
   if (Number.isInteger(plan.dup)) target.dup = plan.dup
   else delete target.dup
