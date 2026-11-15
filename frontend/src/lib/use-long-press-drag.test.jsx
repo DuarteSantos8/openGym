@@ -178,6 +178,37 @@ describe('where the lifted row rides', () => {
   })
 })
 
+describe('the preview of the move', () => {
+  it('moves the dashed slot by the heights of the rows crossed, not by the lifted row\'s', () => {
+    $('b').getBoundingClientRect = () => rect(160, 100)   // a wrapped name
+    $('c').getBoundingClientRect = () => rect(270)
+    fire($('a'), 'pointerdown', 10, 120)
+    act(() => { vi.advanceTimersByTime(450) })
+    fire(window, 'pointermove', 10, 290)   // over c
+    expect(d.over).toEqual({ kind: 'row', key: 'c' })
+    expect(d.drag.slot).toBe(150)
+    fire(window, 'pointermove', 10, 180)   // over b
+    expect(d.drag.slot).toBe(100)
+  })
+  it('a row scrolled during the hold does not ride offset from the finger', () => {
+    fire($('a'), 'pointerdown', 10, 120)
+    $('list').scrollTop = 30
+    act(() => { vi.advanceTimersByTime(450) })
+    fire(window, 'pointermove', 10, 300)   // wanted top 300 - 20 - 50 = 230, the row stands at 100
+    expect(d.drag.dy).toBe(130)
+  })
+})
+
+describe('a second finger', () => {
+  it('does not start a drag while it is not the primary pointer', () => {
+    const e = pe('pointerdown', 10, 120, 2)
+    Object.defineProperty(e, 'isPrimary', { value: false })
+    act(() => { $('a').dispatchEvent(e) })
+    act(() => { vi.advanceTimersByTime(500) })
+    expect(d.lifted).toBe(null)
+  })
+})
+
 describe('edge scroll', () => {
   it('does not touch the page when there is nothing above to scroll to', () => {
     $('list').scrollTop = 0

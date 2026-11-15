@@ -52,7 +52,8 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
     'data-drag-row': id,
     onContextMenu: e => { if (g.current) e.preventDefault() }, // the iOS long-press menu
     onPointerDown: e => {
-      if (g.current || (e.button != null && e.button !== 0)) return
+      // A second finger is not a drag: two lists have two hooks, and this guard is per hook.
+      if (g.current || e.isPrimary === false || (e.button != null && e.button !== 0)) return
       const el = e.currentTarget
       const sp = scrollParent(el)
       const s = { id, pid: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, sp, sp0: sp.scrollTop, lifted: false, over: null }
@@ -71,12 +72,22 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         return area ? { kind: 'target', key: area.getAttribute('data-drop-area') } : null
       }
       const top = () => s.sp === document.scrollingElement || s.sp === document.documentElement ? 0 : s.sp.getBoundingClientRect().top
+      // How far the dashed slot moves: the heights of the rows crossed, which can differ from the lifted row's (wrapped names).
+      const slotOf = () => {
+        const { rows: ids } = latest.current
+        const from = ids.indexOf(id), to = s.over?.kind === 'row' ? ids.indexOf(s.over.key) : -1
+        if (from < 0 || to < 0 || from === to) return 0
+        const crossed = from < to ? ids.slice(from + 1, to + 1) : ids.slice(to, from)
+        const els = [...(listRef.current?.querySelectorAll('[data-drag-row]') || [])]
+        const sum = crossed.reduce((n, k) => n + (els.find(x => x.getAttribute('data-drag-row') === k)?.getBoundingClientRect().height ?? s.height), 0)
+        return from < to ? sum : -sum
+      }
       const refresh = () => {
         s.over = hit()
         setOver(s.over)
         const natural = s.top0 - (s.sp.scrollTop - s.sp0)
         const above = ride === 'above' && !s.byArea && s.y - GAP - s.height >= top()
-        setDrag({ id, dy: (above ? s.y - GAP - s.height : s.y + GAP) - natural, height: s.height })
+        setDrag({ id, dy: (above ? s.y - GAP - s.height : s.y + GAP) - natural, height: s.height, slot: slotOf() })
       }
       const end = () => { s.stop(); setLifted(null); setOver(null); setDrag(null) }
 
@@ -86,6 +97,7 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         s.lifted = true
         const b = el.getBoundingClientRect()
         s.height = b.height; s.top0 = b.top
+        s.sp0 = s.sp.scrollTop   // b.top already includes any scroll during the hold
         tick('lift')
         setLifted(id)
         refresh()
