@@ -132,7 +132,6 @@ function StartChooser() {
 }
 
 
-// The open warm-ups follow the first work set when its weight changes mid-workout (#156,
 // The rounding a session's warm-ups were built with (lib/session-start.js), in the profile's unit:
 // this gym's plates and bar, read in the exercise's own unit when it has one.
 function warmupRounding(S, e) {
@@ -141,6 +140,7 @@ function warmupRounding(S, e) {
   return { grid: gridInProfileUnit(S, e.id, dropGrid(V, cfg)), floor: storedWeight(S, e.id, barFloor(V, e.id)) }
 }
 
+// The open warm-ups follow the first work set when its weight changes mid-workout (#156,
 // lib/history.js liveReramp): 100 → 110 and the rungs not done yet move with it, on this gym's
 // plates. A rung you typed yourself or already did stays. `e` is the entry in its own unit.
 function rerampOpen(s, e, i) {

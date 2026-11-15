@@ -23,7 +23,7 @@
 // it came to as `wp` too, which is all an app from before fixed weights reads.
 import { isOn } from './modules.js'
 import { modeOf, isBw, isPerSide } from './history.js'
-import { isWarmupRow, makeSideSet } from './workout-model.js'
+import { isWarmupRow, makeSideSet, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { exerciseOf, isAssisted } from './exercises.js'
 import { rungWeight, fixedWeight, isFixedRow } from './warmup-snap.js'
 import { isoRun } from './bidi.js'
@@ -261,7 +261,7 @@ export function withWarmupBlock(S, cfg, rows, opts) {
 /**
  * Today's warm-up rows as a block of your own: each row as a percent of the first work weight
  * (the bare bar stays the bar), so it scales when the work weight climbs. A row from a fixed
- * weight stays one: at the weight you changed it to, else at its own (a lighter work set may have
+ * weight stays one: at the weight you typed on it, else at its own (a lighter work set may have
  * held it down today). Null with nothing to keep: no warm-ups, or no work weight to measure them
  * against.
  */
@@ -272,9 +272,14 @@ export function ownRowsFromSession(rows, floor = 0, grid) {
   const out = warm.slice(0, MAX_OWN_WARMUPS).map(row => {
     const r = isSideSetRow(row) ? Math.max(Number(row.sides.L?.r) || 0, Number(row.sides.R?.r) || 0) : Number(row.r) || 0
     const w = Number(row.w) || 0
-    if (isFixedRow(row) && w > 0) return withShare(cleanOwnRow({ wf: row.edited === true ? w : Number(row.wf), r }), work, { grid, floor })
-    // A share left as it was stays that share, also where today it rounds onto the bar.
-    if (grid != null && row.edited !== true && row.wb !== true && Number(row.wp) > 0 && Math.abs(rungWeight(row, work, grid, floor) - w) <= 1e-3) return cleanOwnRow({ wp: row.wp, r })
+    // Only a weight changed on the row moves it (`edited` covers its reps too): typed here, or an
+    // edited fixed row off what it is today (the watch marks no weight as typed). One done while a
+    // lighter work set held it down was not edited, and keeps its own.
+    const typed = row.weightOrigin === WEIGHT_ORIGIN_MANUAL || (isSideSetRow(row) && [row.sides.L, row.sides.R].some(x => x?.weightOrigin === WEIGHT_ORIGIN_MANUAL))
+      || (isFixedRow(row) && row.edited === true && Math.abs(w - rungWeight({ wf: row.wf }, work, grid, floor)) > 1e-3)
+    if (isFixedRow(row) && w > 0) return withShare(cleanOwnRow({ wf: typed ? w : Number(row.wf), r }), work, { grid, floor })
+    // A share whose weight you left as it was stays that share, also where today it rounds onto the bar.
+    if (grid != null && !typed && row.wb !== true && Number(row.wp) > 0 && Math.abs(rungWeight(row, work, grid, floor) - w) <= 1e-3) return cleanOwnRow({ wp: row.wp, r })
     if (floor > 0 && Math.abs(w - floor) < 1e-6) return cleanOwnRow({ wb: true, r })
     // On the gym's grid, the share that lands on the weight done, its own one first.
     return cleanOwnRow({ wp: grid != null ? shareFor(w, work, { grid, floor, prefer: row.wp }) : Math.round((w / work) * 100), r })
@@ -282,6 +287,31 @@ export function ownRowsFromSession(rows, floor = 0, grid) {
   return out.length ? out : null
 }
 const isSideSetRow = row => !!row?.sides && typeof row.sides === 'object'
+
+/**
+ * Today's block of your own (`own`, from ownRowsFromSession) with the saved rows the session never
+ * had put back in their places: a fixed weight at or over the work weight, or a row that landed on
+ * another. Only while every row the block built is still there (`built`, the session's
+ * target.warmupCount); after you removed one, any of the missing rows may be it.
+ */
+export function withRowsLeftOut(saved, sessionRows, own, built) {
+  const warm = (sessionRows || []).filter(isWarmupRow)
+  if (!Number.isInteger(built) || !own || own.length !== warm.length) return own
+  const used = new Set()
+  const same = (s, x) => (isFixedRow(s) ? isFixedRow(x) && Math.abs(fixedWeight(x.wf) - s.wf) <= 1e-3
+    : s.wb ? x.wb === true : !isFixedRow(x) && x.wb !== true && Number(x.wp) === s.wp)
+  const out = []
+  for (const s of saved || []) {
+    const at = warm.findIndex((x, i) => !used.has(i) && same(s, x))
+    if (at >= 0) used.add(at)
+    out.push(at >= 0 ? { row: own[at] } : { row: s, back: true })
+  }
+  if (used.size < built) return own
+  warm.forEach((_, i) => { if (!used.has(i)) out.push({ row: own[i] }) })
+  // Over the most a block holds, a row put back gives way to one you did today.
+  for (let k = out.length - 1; out.length > MAX_OWN_WARMUPS && k >= 0; k--) if (out[k].back) out.splice(k, 1)
+  return out.slice(0, MAX_OWN_WARMUPS).map(x => x.row)
+}
 
 /** Two saved blocks hold the same rows. A fixed row's share is only a fallback and does not count. */
 const rowKey = r => (isFixedRow(r) ? { wf: r.wf, r: r.r } : r)

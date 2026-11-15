@@ -1237,7 +1237,8 @@ export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false, kee
     if (keep(out[i])) { from = out[i].w || 0; continue }
     // A rung of a generated or saved block (lib/warmup-ramp.js) keeps its own share of the work
     // weight instead of halving the gap: 60% stays 60% of whatever the work set now weighs. A fixed
-    // weight of your own stays where it is, on an assistance machine too.
+    // weight of your own keeps its weight (held at the work weight while that is lighter), on an
+    // assistance machine too.
     const w = isFixedRow(out[i]) || (isRungRow(out[i]) && !assisted)
       ? rungWeight(out[i], target, step, floor)
       : assisted
@@ -1251,6 +1252,15 @@ export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false, kee
       ? syncSideAggregate({ ...out[i], sides: { L: { ...out[i].sides.L, w }, R: { ...out[i].sides.R, w } } })
       : { ...out[i], w }
     from = w
+  }
+  // A block mixing shares and fixed weights (lib/warmup-ramp.js) can have a share pass a fixed row
+  // when the work weight moves: its open rungs go back to lightest first, in their own places. An
+  // assistance machine's ramp runs from more help to less, so it stays as built.
+  const open = []
+  for (let i = 0; i < firstWork; i++) if (!keep(out[i])) open.push(i)
+  if (!assisted && open.some(i => isFixedRow(out[i]))) {
+    const sorted = open.map(i => out[i]).sort((a, b) => (a.w || 0) - (b.w || 0))
+    open.forEach((at, k) => { out[at] = sorted[k] })
   }
   return out
 }

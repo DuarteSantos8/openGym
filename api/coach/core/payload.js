@@ -248,8 +248,8 @@ export function warmupRowsOut(rows) {
     if (!(reps >= 1 && reps <= 30)) return null;
     if (r.wb === true) return { bar: true, reps };
     // A fixed weight is a number or a numeric string, as frontend/src/lib/warmup-snap.js fixedWeight reads it.
-    const fixed = typeof r.wf === 'number' || typeof r.wf === 'string' ? Number(r.wf) : NaN;
-    if (Number.isFinite(fixed) && fixed > 0) return { weight: Math.round(fixed * 100) / 100, reps };
+    const fixed = typeof r.wf === 'number' || typeof r.wf === 'string' ? Math.round(Number(r.wf) * 100) / 100 : NaN;
+    if (Number.isFinite(fixed) && fixed > 0) return { weight: fixed, reps };
     const pct = Number(r.wp);
     return Number.isFinite(pct) && pct >= 0 && pct <= 95 ? { pct: Math.round(pct), reps } : null;
   }).filter(Boolean);

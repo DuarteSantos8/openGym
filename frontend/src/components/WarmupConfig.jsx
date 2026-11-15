@@ -7,7 +7,6 @@ import { fmtNum } from '../lib/format.js'
 import { MAX_PLANNED_WARMUPS, barFloor, isBw, modeOf } from '../lib/history.js'
 import { dropGrid } from '../lib/plates.js'
 import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, ownRowAs, withShare, autoRungs, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
-import { snapDown } from '../lib/warmup-snap.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { isAssisted } from '../lib/exercises.js'
 import { isoRun } from '../lib/bidi.js'
@@ -71,7 +70,9 @@ export default function WarmupConfig({ st, ex, c, setC }) {
   }))
   const fixedOf = r => (r.wb ? Math.max(floor, 0) : r.wp === 0 ? 0 : Number(r.wf) || 0)
   // A warm-up at the work weight is a work set and is left out, so a fixed row stops a step short.
+  // One already over a lighter work weight keeps its weight: that session simply leaves it out.
   const fixedMax = work > FIXED_STEP ? work - FIXED_STEP : undefined
+  const fixedMaxOf = r => (fixedMax == null ? undefined : Math.max(fixedMax, fixedOf(r)))
   const setFixedAt = (i, v) => setRows(rows.map((x, j) => j !== i ? x
     : floor > 0 && v <= floor ? { wb: true, r: x.r }
       : v <= 0 ? (bw ? { wp: 0, r: x.r } : { wf: FIXED_STEP, r: x.r })
@@ -104,7 +105,7 @@ export default function WarmupConfig({ st, ex, c, setC }) {
           <span className="stp-l">{t('Warm-up {0}', i + 1)}</span>
           <div className="warmup-load">
             {isFixed(r)
-              ? <Stepper value={fixedOf(r)} step={FIXED_STEP} min={floor > 0 ? floor : bw ? 0 : FIXED_STEP} max={fixedMax}
+              ? <Stepper value={fixedOf(r)} step={FIXED_STEP} min={floor > 0 ? floor : bw ? 0 : FIXED_STEP} max={fixedMaxOf(r)}
                 ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
                 onChange={v => setFixedAt(i, v)} />
               : <Stepper value={r.wb ? 0 : r.wp} step={5} min={lowest} max={OWN_PCT_MAX} decimal={false}
@@ -123,7 +124,7 @@ export default function WarmupConfig({ st, ex, c, setC }) {
         const last = rows[rows.length - 1]
         const lastW = last ? fixedOf(last) : 0
         const next = last && isFixed(last)
-          ? { wf: Math.min(fixedMax ?? Infinity, lastW > 0 ? lastW + 4 * FIXED_STEP : Math.max(FIXED_STEP, snapDown(work / 2, FIXED_STEP))), r: last ? Math.max(1, last.r - 2) : 8 }
+          ? { wf: Math.min(fixedMax ?? Infinity, lastW + 4 * FIXED_STEP), r: Math.max(1, last.r - 2) }
           : last ? { wp: Math.min(OWN_PCT_MAX, (last.wb ? 40 : last.wp) + 20), r: Math.max(1, last.r - 2) } : { wp: 50, r: 8 }
         setRows([...rows, next])
       }}>{t('Add a warm-up')}</Button>}

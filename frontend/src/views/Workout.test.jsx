@@ -3703,7 +3703,7 @@ describe('Update routine, from the More menu of an exercise', () => {
   })
 
   it('names a fixed warm-up you changed in the exercise’s own unit', async () => {
-    const warmSet = { w: 42.5, r: 5, done: true, phase: 'warmup', warmup: true, wf: 40, edited: true }
+    const warmSet = { w: 42.5, r: 5, done: true, phase: 'warmup', warmup: true, wf: 40, edited: true, weightOrigin: 'manual' }
     const slot = { warmup: 'own', warmupRows: [{ wf: 40, r: 5 }] }
     await mount([ownEntry({ sets: [warmSet, { w: 60, r: 5, done: false }] })], 0, { routines: [routine(slot)] })
     await openMore()
@@ -3724,7 +3724,7 @@ describe('Update routine, from the More menu of an exercise', () => {
   })
 
   it('keeps fixed warm-ups as fixed weights, and says so', async () => {
-    const warmSet = { w: 42.5, r: 5, done: true, phase: 'warmup', warmup: true, wf: 40, edited: true }
+    const warmSet = { w: 42.5, r: 5, done: true, phase: 'warmup', warmup: true, wf: 40, edited: true, weightOrigin: 'manual' }
     await mount([ownEntry({ sets: [warmSet, { w: 60, r: 5, done: false }] })], 0, { routines: [routine({ warmup: 'own', warmupRows: [{ wf: 40, r: 5 }] })] })
     await openMore()
     const keep = item('Keep these warm-ups')

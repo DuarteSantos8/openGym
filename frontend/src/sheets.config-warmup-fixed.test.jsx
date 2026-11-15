@@ -75,6 +75,17 @@ describe('exercise settings: a warm-up in fixed weights', () => {
     expect(saved.warmupRows[0].wp).toBeGreaterThan(0)
   })
 
+  it('a fixed weight over a lighter work weight is not cut by touching its field', () => {
+    let saved = null
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg' } }))
+    exConfigSheet(ex, { id: ex.id, sets: 2, reps: 12, weight: 75, mode: 'reps', warmup: 'own', warmupRows: [{ wf: 80, r: 12 }] }, cfg => { saved = cfg })
+    const host = render(useUI.getState().sheets.at(-1))
+    const input = host.querySelector('.warmup-load .num')
+    act(() => { input.dispatchEvent(new FocusEvent('focusin', { bubbles: true })); input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    click(button(host, 'Save'))
+    expect(saved.warmupRows[0]).toMatchObject({ wf: 80, r: 12 })
+  })
+
   it('a new row after a fixed one is fixed too, a step of 10 heavier but short of the work weight', () => {
     const host = open([{ wf: 80, r: 12 }])
     click(button(host, 'Add a warm-up'))

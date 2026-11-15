@@ -36,7 +36,8 @@ export function snapDown(x, grid) {
 export function rungWeight(rung, work, grid, floor = 0) {
   if (!(work > 0)) return 0
   if (rung.wb) return Math.min(work, Math.max(0, floor))
-  // A fixed weight is loaded as you typed it: it does not follow the work weight or the grid.
+  // A fixed weight is loaded as you typed it, not as a share or on the grid; only the bar under it
+  // and the work set over it bound it.
   if (isFixedRow(rung)) return Math.min(work, Math.max(0, floor, fixedWeight(rung.wf)))
   const pct = Number(rung.wp)
   if (!(pct > 0)) return 0

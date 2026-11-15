@@ -4,7 +4,7 @@ import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
 import { ownExerciseRest } from './supersetFlow.js'
-import { warmupModeOf, ownRowsOf, ownRowsFromSession, sameOwnRows, rungRows, fixedWeight } from './warmup-ramp.js'
+import { warmupModeOf, ownRowsOf, ownRowsFromSession, withRowsLeftOut, sameOwnRows, rungRows, fixedWeight } from './warmup-ramp.js'
 import { isRungRow } from './warmup-snap.js'
 
 /**
@@ -244,7 +244,7 @@ export function ownWarmupsChange(slot, entry, floor = 0, { force = false, grid }
   const built = Number.isInteger(count) ? [count] : [...works].filter(w => w > 0).map(work => rungRows(saved, { work, grid, floor }).length)
   const touched = warm.some(r => r.edited === true) || (chose === 'own' && !(built.length ? built : [saved.length]).includes(warm.length))
   if (!force && !touched) return null
-  const own = ownRowsFromSession(entry?.sets || [], floor, grid)
+  const own = withRowsLeftOut(saved, entry?.sets, ownRowsFromSession(entry?.sets || [], floor, grid), chose === 'own' ? count : null)
   if (!own) return null
   if (chose === 'own' && sameOwnRows(saved, own)) return null
   return own

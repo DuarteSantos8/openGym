@@ -230,6 +230,13 @@ describe('mid-workout', () => {
     expect(S.active.gym).toEqual({ id: 'home', name: 'Home gym' })
   })
 
+  it('leaves a fixed warm-up of your own at its weight', () => {
+    const S = { unit: 'kg', exWeights: {}, routines: [], workouts: [], week: {}, dayPlan: {}, plates: { kg: { 20: 2, 10: 2, 5: 2, _ts: 1 } },
+      active: { id: 'a', entries: [{ id: BENCH, target: { sets: 3, reps: 5, weight: 60 }, sets: [{ w: 31, r: 8, done: false, phase: 'warmup', warmup: true, wf: 31 }, { w: 60, r: 5, done: false }] }] } }
+    reRoundOpenSets(S)
+    expect(S.active.entries[0].sets[0].w).toBe(31)
+  })
+
   it('the watch is handed the moved weights', () => {
     let S = migrated()
     S = session(S)

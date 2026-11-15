@@ -208,7 +208,7 @@ describe('fixed weights of your own', () => {
     rows[2] = { ...rows[2], w: 117.5 }
     expect(pairs(liveReramp(rows, 2.5))).toEqual([[80, 12], [105, 4]])
     rows[2] = { ...rows[2], w: 75 }
-    expect(pairs(liveReramp(rows, 2.5))[0]).toEqual([75, 12])
+    expect(pairs(liveReramp(rows, 2.5))).toEqual([[67.5, 4], [75, 12]])
   })
   it('a session row with a stray non-number wf is no fixed row', () => {
     const rows = [{ w: 30, r: 8, done: false, phase: 'warmup', warmup: true, wf: true }, { w: 60, r: 8, done: false }]
@@ -216,6 +216,23 @@ describe('fixed weights of your own', () => {
     expect(rungWeight({ wf: [80] }, 100, 2.5)).toBe(0)
     expect(rungWeight({ wf: 'Infinity' }, 100, 2.5)).toBe(0)
     expect(cleanOwnRow({ wf: Infinity, wp: 50, r: 5 })).toEqual({ wp: 50, r: 5 })
+  })
+  it('after the work weight moves, the open warm-ups of a mixed block run lightest first again', () => {
+    const rows = withWarmupBlock(state(), leg(140, [{ wf: 80, r: 10 }, { wp: 75, r: 5 }]), [{ w: 140, r: 12, done: false }, { w: 140, r: 12, done: false }], { grid: 2.5 })
+    expect(pairs(rows)).toEqual([[80, 10], [105, 5]])
+    rows[2] = { ...rows[2], w: 100 }
+    expect(pairs(liveReramp(rows, 2.5))).toEqual([[75, 5], [80, 10]])
+    const done = [{ ...rows[0], done: true }, rows[1], rows[2], rows[3]]
+    expect(pairs(liveReramp(done, 2.5))).toEqual([[80, 10], [75, 5]])
+  })
+  it('a ramp without fixed rows keeps its order around a warm-up you typed, as before', () => {
+    const w = (x, r, extra = {}) => ({ w: x, r, done: false, phase: 'warmup', warmup: true, ...extra })
+    const rows = [w(50, 10), w(75, 5), w(20, 8, { edited: true }), w(92.5, 3), { w: 110, r: 5, done: false }]
+    expect(liveReramp(rows, 2.5).slice(0, 4).map(x => [x.w, x.r])).toEqual([[55, 10], [82.5, 5], [20, 8], [65, 3]])
+  })
+  it('a fixed row whose reps you changed is kept at its own weight, not at what a lighter set held it to', () => {
+    const rows = [{ w: 75, r: 10, done: true, warmup: true, phase: 'warmup', wf: 80, edited: true }, { w: 75, r: 12, done: true }]
+    expect(ownRowsFromSession(rows, 0, 2.5)[0]).toMatchObject({ wf: 80, r: 10 })
   })
   it('on an assistance machine the re-ramp leaves a fixed row where it is too', () => {
     const rows = [{ w: 20, r: 8, done: false, phase: 'warmup', warmup: true, wf: 20 }, { w: 30, r: 8, done: false }]
@@ -240,7 +257,7 @@ describe('fixed weights of your own', () => {
   })
   it('saving today’s warm-ups keeps a fixed row at the weight you changed it to', () => {
     const rows = [
-      { w: 82.5, r: 12, done: true, warmup: true, phase: 'warmup', wf: 80, edited: true },
+      { w: 82.5, r: 12, done: true, warmup: true, phase: 'warmup', wf: 80, edited: true, weightOrigin: 'manual' },
       { w: 105, r: 4, done: true, warmup: true, phase: 'warmup', wp: 90 },
       { w: 117.5, r: 12, done: true },
     ]
@@ -257,7 +274,8 @@ describe('fixed weights of your own', () => {
   it('a share left as it was stays that share where today it rounds onto the bar', () => {
     const rows = [{ w: 20, r: 3, done: true, warmup: true, phase: 'warmup', wp: 55 }, { w: 36, r: 5, done: true }]
     expect(ownRowsFromSession(rows, 20, 2.5)).toEqual([{ wp: 55, r: 3 }])
-    expect(ownRowsFromSession([{ ...rows[0], edited: true }, rows[1]], 20, 2.5)).toEqual([{ wb: true, r: 3 }])
+    expect(ownRowsFromSession([{ ...rows[0], edited: true }, rows[1]], 20, 2.5)).toEqual([{ wp: 55, r: 3 }])
+    expect(ownRowsFromSession([{ ...rows[0], edited: true, weightOrigin: 'manual' }, rows[1]], 20, 2.5)).toEqual([{ wb: true, r: 3 }])
   })
   it('a fixed row on the bar’s weight is kept as a fixed row, not as the bar', () => {
     const rows = [{ w: 20, r: 10, done: true, warmup: true, phase: 'warmup', wf: 20 }, { w: 60, r: 5, done: true }]
