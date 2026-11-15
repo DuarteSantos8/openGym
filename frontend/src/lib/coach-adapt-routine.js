@@ -60,9 +60,9 @@ export function routineChangesFor(changes, routines, before, after) {
       if (!routine || routine.ex.some(ex => ex.id === c.to) ||
         out.some(x => x.type === 'add-exercise' && x.target.routineId === routine.id && x.after.id === c.to)) continue
       const amount = c.sec ? { mode: 'time', sec: c.sec } : { mode: 'reps', reps: c.reps || 10 }
-      // Next to its slot; at the end of a routine also being reordered, wherever that order lands.
-      const position = out.some(x => x.type === 'reorder' && x.target.routineId === routine.id)
-        ? routine.ex.length : routine.ex.findIndex(ex => ex.id === slot.id) + 1 || routine.ex.length
+      // Next to its slot. Ticked together with the routine's reorder, chosenRoutineChanges moves it
+      // to the end, wherever that order lands.
+      const position = routine.ex.findIndex(ex => ex.id === slot.id) + 1 || routine.ex.length
       out.push({ id: `${c.id}-add`, type: 'add-exercise', target: { routineId: routine.id }, before: null,
         after: { id: c.to, sets: c.sets || 3, ...amount, position }, why: c.why })
       continue
@@ -78,4 +78,20 @@ export function routineChangesFor(changes, routines, before, after) {
     out.push({ id: `${c.id}-swap-exercise`, type: 'swap-exercise', target: { routineId: routine.id, exId: ex.id }, before: null, after: { id: c.to }, why: c.why })
   }
   return out
+}
+
+/**
+ * The offered changes someone ticked, as the change-set should get them now: a reorder only while
+ * the routine still stands as the offer saw it (another device may have reordered it since, and
+ * the change-set's own check counts the exercises, not their order), and an addition at the end
+ * of a routine whose reorder was ticked too, wherever that order lands. Throws when the routine
+ * has moved on, the way applyChangeSet does, so the sheet shows the same changed-since-then toast.
+ */
+export function chosenRoutineChanges(chosen, routines) {
+  return chosen.map(c => {
+    const r = routines.find(x => x.id === c.target?.routineId)
+    if (c.type === 'reorder' && (!r || r.ex.map(e => e.id).join() !== (c.before || []).join())) throw new Error('routine order changed')
+    if (c.type === 'add-exercise' && r && chosen.some(x => x.type === 'reorder' && x.target.routineId === r.id)) return { ...c, after: { ...c.after, position: r.ex.length } }
+    return c
+  })
 }

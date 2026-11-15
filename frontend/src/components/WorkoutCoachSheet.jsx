@@ -15,7 +15,7 @@ import { fmtRest } from '../lib/duration.js'
 import { exTitle, appendLog, applyChangeSet, changeTitle } from '../lib/coach.js'
 import { useCoachStatus, requestAdapt, resolvePending, jobErrorText, isDeclined } from '../lib/coach-api.js'
 import { adaptFor, markAdaptStale, applyAdapt, adaptLogEntry } from '../lib/coach-adapt.js'
-import { routineChangesFor, sessionBefore } from '../lib/coach-adapt-routine.js'
+import { chosenRoutineChanges, routineChangesFor, sessionBefore } from '../lib/coach-adapt-routine.js'
 import Icon from './Icon.jsx'
 import { Button, Check, TextField } from './ui.jsx'
 import '../coach.css'
@@ -132,7 +132,10 @@ export function RoutineOffer({ offer, close }) {
     try {
       update(s => {
         const lastReview = s.coach?.lastReview ?? null
-        applyChangeSet(s, { id: offer.proposalId, summary: t('Routine changes from today’s workout.'), changes: chosen }, chosen.map(c => c.id))
+        // As the routine stands now: a reorder it has moved past throws, an addition goes to the end
+        // only with its routine's reorder (lib/coach-adapt-routine.js chosenRoutineChanges).
+        const changes = chosenRoutineChanges(chosen, s.routines || [])
+        applyChangeSet(s, { id: offer.proposalId, summary: t('Routine changes from today’s workout.'), changes }, changes.map(c => c.id))
         // Not a review: the next one still reads everything trained since the last.
         s.coach.lastReview = lastReview
       })

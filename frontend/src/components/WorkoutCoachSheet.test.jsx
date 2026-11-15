@@ -109,6 +109,24 @@ describe('Ask the Coach mid-workout', () => {
     expect(close).toHaveBeenCalled()
   })
 
+  it('says so and changes nothing when the routine was reordered elsewhere since the offer', () => {
+    const close = vi.fn()
+    mocks.pending = adapt({ changes: [{ id: 'a0', type: 'move', entry: 0, exId: BENCH, place: 'last', why: 'The bench is taken.' }] })
+    mocks.S.active.entries[0].sets[0].done = false   // nothing logged yet, so the bench may move
+    render(<WorkoutCoachSheet entryIdx={0} close={close} />)
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Apply 1 change')).click() })
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual([CURL, BENCH])
+    expect(host.textContent).toContain('Update your routine too?')
+    // Another device put the curls first meanwhile: the offer's order no longer applies.
+    mocks.S.routines[0].ex.reverse()
+    act(() => { host.querySelector('.pcard-chg [role="checkbox"]').click() })
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Update routine')).click() })
+    expect(mocks.toast).toHaveBeenLastCalledWith('Your routine changed since then, so nothing was updated.')
+    expect(mocks.S.routines[0].ex.map(e => e.id)).toEqual([CURL, BENCH])
+    expect(mocks.S.coach.snapshots).toHaveLength(0)
+    expect(close).toHaveBeenCalled()
+  })
+
   it('closes as before when the changes mean nothing for the routine', () => {
     const close = vi.fn()
     mocks.pending = adapt({ changes: [{ id: 'a0', type: 'sets', entry: 1, exId: CURL, sets: 1, before: 2, why: 'One set is enough.' }] })

@@ -2,7 +2,7 @@
 // offered in the Coach's change-set shape, applied and undone with the ordinary engine.
 import { describe, expect, it } from 'vitest'
 import { applyAdapt } from './coach-adapt.js'
-import { routineChangesFor, sessionBefore } from './coach-adapt-routine.js'
+import { chosenRoutineChanges, routineChangesFor, sessionBefore } from './coach-adapt-routine.js'
 import { applyChangeSet, revertLast } from './coach.js'
 
 const BENCH = '0025', CURL = '0294', SQUAT = '0043', DBPRESS = '0289', ROW = '0027'
@@ -42,14 +42,34 @@ describe('routine changes offered after the Coach changed the workout', () => {
     expect(changes.map(c => [c.type, c.after])).toEqual([
       ['reorder', [BENCH, SQUAT, CURL]],
       ['swap-exercise', { id: ROW }],
-      ['add-exercise', { id: DBPRESS, sets: 2, mode: 'reps', reps: 12, position: 3 }],
+      ['add-exercise', { id: DBPRESS, sets: 2, mode: 'reps', reps: 12, position: 1 }],
     ])
     expect(changes[1].target).toEqual({ routineId: 'push', exId: SQUAT })
 
-    applyChangeSet(S, { id: 'p1', summary: '', changes }, changes.map(c => c.id))
+    // Ticked together with the reorder, the addition goes to the end of the new order.
+    const picked = chosenRoutineChanges(changes, S.routines)
+    expect(picked[2].after.position).toBe(3)
+    applyChangeSet(S, { id: 'p1', summary: '', changes: picked }, picked.map(c => c.id))
     expect(S.routines[0].ex.map(e => [e.id, e.sets, e.reps])).toEqual([[BENCH, 3, 5], [ROW, 3, 5], [CURL, 3, 10], [DBPRESS, 2, 12]])
     expect(revertLast(S)).toBe(true)
     expect(S.routines[0]).toEqual(routine())
+  })
+
+  it('an addition ticked on its own lands beside its slot; a reorder is refused once the routine has moved on', () => {
+    const S = session(inOrder())
+    const p = proposal([{ type: 'move', entry: 1, exId: CURL, place: 'last' }, { type: 'add', to: DBPRESS, sets: 2, reps: 12, entry: 0 }])
+    const changes = run(S, p)
+    expect(changes.map(c => c.type)).toEqual(['reorder', 'add-exercise'])
+    // Only the addition: beside the bench, where it was added today.
+    const addOnly = chosenRoutineChanges([changes[1]], S.routines)
+    applyChangeSet(S, { id: 'p1', summary: '', changes: addOnly }, addOnly.map(c => c.id))
+    expect(S.routines[0].ex.map(e => e.id)).toEqual([BENCH, DBPRESS, CURL, SQUAT])
+    expect(revertLast(S)).toBe(true)
+    // Someone reordered the routine on another device meanwhile: the offer's order is no longer
+    // the session's order over the routine, so nothing is applied.
+    S.routines[0].ex.reverse()
+    expect(() => chosenRoutineChanges(changes, S.routines)).toThrow()
+    expect(S.routines[0].ex.map(e => e.id)).toEqual([SQUAT, CURL, BENCH])
   })
 
   it('offers no swap that changes how the slot is logged, and no reorder of a session already out of routine order', () => {
