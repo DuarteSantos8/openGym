@@ -114,10 +114,22 @@ sunlight) or, on the Instinct, black and white. So, like the other watches but f
 
 ### Watches
 
-`manifest.xml` lists 82 products, everything from Connect IQ 3.2 up that is a watch people lift
-with: Forerunner 165 / 245 / 255 / 265 / 55 / 570 / 745 / 945 / 955 / 965 / 970, fēnix 6 / 7 / 8 / E,
-epix (Gen 2) and epix Pro, enduro / enduro 3, Venu 1 / 2 / 3 / 4 / Sq / Sq 2 / X1, vívoactive 4 / 5 / 6,
-Instinct 2 / 2S / 2X / 3 / Crossover / E, MARQ (Gen 2), Descent Mk2 / Mk3 / G2, D2 Mach, Approach S70.
+`manifest.xml` lists 118 products, everything from Connect IQ 3.2 up that is a watch people lift
+with: Forerunner 165 / 170 / 245 / 255 / 265 / 55 / 570 / 645 Music / 70 / 745 / 945 / 955 / 965 / 970,
+fēnix 5 Plus / 6 / 7 / 8 / 9 / E, epix (Gen 2) and epix Pro, enduro / enduro 3 / Enduro 4,
+Venu 1 / 2 / 3 / 4 / Sq / Sq 2 / X1, vívoactive 4 / 5 / 6, the Legacy Hero and Legacy Saga watches,
+Instinct 2 / 2S / 2X / 3 / Crossover / E, MARQ (all three generations), Descent Mk2 / Mk3 / G1 / G2,
+D2 Air / Air X10 / Mach, Approach S50 / S70 / S72.
+The fēnix 9 line, Forerunner 70 and 170, Enduro 4, MARQ (Gen 3) and Approach S72 came as device
+files while the SDK was still 9.2.0: they build with it, and `check.mjs` takes the device files'
+ids as well as the SDK's. The fēnix 9 Pro 51mm is the first 466 × 466 screen; the layouts are
+fractions of the screen, and its every screen was looked at in the simulator, as were the fēnix 9
+Pro Solar 47mm, the Descent G1 (an Instinct 2 inside, with its line in `monkey.jungle`), the
+Approach S72 43mm, the Venu Sq Music and, for the lowest Connect IQ levels here (3.2.1 and 3.2.3),
+the D2 Air and the Forerunner 645 Music. The other new ones have the screen, the buttons and the
+memory of a watch already listed and were compiled only.
+Left out: the vívoactive 3 Music (one button and no BACK, a kind of watch nobody tried here) and
+everything below Connect IQ 3.2.
 Adding one is a line in `manifest.xml` (and, for a black-and-white screen, one in `monkey.jungle`).
 The oldest watches here (Forerunner 55 and 245, fēnix 6) give a watch app the least memory; the app
 keeps its state small for them (see "How it talks to the phone"), but they are the first to try in
