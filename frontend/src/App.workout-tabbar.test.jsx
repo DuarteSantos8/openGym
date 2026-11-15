@@ -86,3 +86,13 @@ it.each([
   expect(host.querySelector('#livebar')).not.toBeNull()
   expect(!!host.querySelector('#timer')).toBe(shown)
 })
+
+// A stale running workout on the sign-in screen (the server just ended the session): no bar.
+it('shows no live bar when nobody is signed in', async () => {
+  localStorage.removeItem('gym_guest')
+  window.location.hash = '#/home'
+  useUI.setState({ timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0 } })
+  await act(async () => root.render(<App />))
+  expect(host.querySelector('#livebar')).toBeNull()
+  expect(host.querySelector('#tabbar')).toBeNull()
+})

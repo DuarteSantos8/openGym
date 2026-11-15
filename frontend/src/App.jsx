@@ -373,6 +373,7 @@ function Shell() {
   const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
+  const barOn = !noTabs && !!authed && liveBarShows(S, loc.pathname)
   // The first setup is through (sign-in or "Use on this device", and the phone's permission
   // steps): "Want a 1-minute tour?" once, on a profile with nothing logged yet, or "Finish the
   // tour?" once after one was closed halfway (lib/tour.js). In the first idle moment after the
@@ -458,12 +459,12 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
-      {!noTabs && <LiveBar />}
+      {barOn && <LiveBar />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
       {/* The live bar's rest line is the countdown for a plain rest wherever the bar shows. The rest keeps
           running in the store (sounds, notifications, haptics are not RestTimer's), so unmounting only
           hides it; a timed hold, a count-in and a paused rest keep the old bar (liveBarHidesRest). */}
-      {!(!noTabs && liveBarShows(S, loc.pathname) && barHidesRest) && <RestTimer />}
+      {!(barOn && barHidesRest) && <RestTimer />}
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />
