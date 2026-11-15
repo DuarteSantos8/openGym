@@ -17,7 +17,7 @@ import { bestWeightForEntry, defaultConfig } from '../lib/history.js'
 import { buildSessionEntry } from '../lib/session-start.js'
 import { joinSessionNoProg } from '../lib/session-noprog.js'
 import { closeThenNav } from '../lib/nav.js'
-import { isOn } from '../lib/modules.js'
+import { partOn } from '../lib/modules.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { FESTIVE_FLAME } from '../lib/streak-icons.js'
 import { EXIDX } from '../lib/exercises.js'
@@ -1055,7 +1055,7 @@ function SpecialDoor({ S, year, close, did }) {
     <div className="xm-actions">
       {worn ? <div className="xm-badge"><Glyph icon="check" emoji="✅" /> {t('Wearing it. Very merry.')}</div>
         : <Button variant="primary" icon="gift" onClick={wear}>{t('Put it on')}</Button>}
-      {st && isOn(S, 'motivation') && <Button variant="ghost" icon="sparkles" onClick={() => { close(); openWrapped(year) }}>{t('Show me my year')}</Button>}
+      {st && partOn(S, 'motivation', 'year') && <Button variant="ghost" icon="sparkles" onClick={() => { close(); openWrapped(year) }}>{t('Show me my year')}</Button>}
     </div>
     {canIcon && <>
       <p className="xm-reveal-text muted small">{t('One more surprise: the barbell has a festive outfit for your home screen.')}</p>

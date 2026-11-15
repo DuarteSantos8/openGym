@@ -36,7 +36,7 @@ import { DeloadCard } from '../components/DeloadCard.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
-import { isOn } from '../lib/modules.js'
+import { isOn, partOn } from '../lib/modules.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -227,7 +227,7 @@ export default function Home() {
     <SeasonDeco spot="home-advent" />
 
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
-    {on('motivation') && <WrappedHomeCard S={S} />}
+    {partOn(S, 'motivation', 'year') && <WrappedHomeCard S={S} />}
 
     {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). */}
     {on('health') && <RecoveryHint S={S} />}
@@ -257,9 +257,9 @@ export default function Home() {
 
     {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
         (components/StreakRule.jsx). */}
-    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
+    {partOn(S, 'motivation', 'streak') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
 
-    {on('body') && S.showWeightCard !== false && <div className="card">
+    {partOn(S, 'body', 'weight') && S.showWeightCard !== false && <div className="card">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
       <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
@@ -299,7 +299,7 @@ export default function Home() {
 
     {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
         party banner are buttons of their own beside it, not inside a card that is a button. */}
-    {on('motivation') ? <div className="card tap-host streak-card">
+    {partOn(S, 'motivation', 'streak') ? <div className="card tap-host streak-card">
       <SeasonDeco spot="home-streak" />
       {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
       <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /><SeasonDeco spot="streak-flame" /></span>}
@@ -313,7 +313,7 @@ export default function Home() {
       {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
       {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
     </div>
-      // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
+      // The streak off: no streak card, but the weekly sets line it carried keeps a card of its own.
       : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
   </div>
 }

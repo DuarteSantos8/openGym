@@ -5,7 +5,7 @@ import { todayISO } from '../lib/format.js'
 import { MOBILE, syncReminder } from '../lib/mobile.js'
 import { enabledMeasurementFields, BP_KEY } from '../lib/measurements.js'
 import { reminderOf, withReminder, checkinLabel, EVERY_CHOICES } from '../lib/checkin-reminder.js'
-import { isOn } from '../lib/modules.js'
+import { partOn } from '../lib/modules.js'
 import { Button, Row, Section, SelectRow, Switch } from './ui.jsx'
 
 // Check-in reminders (lib/checkin-reminder.js): one interval per thing you track, one time of day,
@@ -17,7 +17,7 @@ const zone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZo
 /** The things one can be reminded of here, in the order the sheet lists them. */
 export function reminderKeys(S) {
   const keys = []
-  if (isOn(S, 'body')) keys.push('weight')
+  if (partOn(S, 'body', 'weight')) keys.push('weight')
   for (const f of enabledMeasurementFields(S)) {
     if (f.pair) { if (!keys.includes(BP_KEY)) keys.push(BP_KEY); continue }
     keys.push(f.key)
@@ -53,7 +53,7 @@ function CheckinReminder({ close }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick how often for each one. On a day something is due you get one notification for all of it, not a pile of pings.')}</div>
     <div className="sect-b" style={{ marginBottom: 14 }}>
       <Row icon="bell" iconTint="var(--orange)" title={t('Remind me')}>
-        <Switch checked={r.on} onChange={on => save({ on, ...(on && !anySet ? { items: { photos: { every: 28, since: todayISO() }, ...(isOn(S, 'body') ? { weight: { every: 7, since: todayISO() } } : {}) } } : {}) })} aria-label={t('Remind me')} />
+        <Switch checked={r.on} onChange={on => save({ on, ...(on && !anySet ? { items: { photos: { every: 28, since: todayISO() }, ...(partOn(S, 'body', 'weight') ? { weight: { every: 7, since: todayISO() } } : {}) } } : {}) })} aria-label={t('Remind me')} />
       </Row>
       {r.on && <Row icon="clock" iconTint="var(--purple)" title={t('Time')} subtitle={t('Mornings work best: same time, before breakfast.')}>
         <input type="time" className="timef" value={r.time} aria-label={t('Time')} onChange={e => e.target.value && save({ time: e.target.value })} />

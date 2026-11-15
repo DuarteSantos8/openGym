@@ -13,7 +13,7 @@ import Icon from './Icon.jsx'
 import CardHead from './CardHead.jsx'
 import { Button } from './ui.jsx'
 import { openMonthStory } from '../lib/wrapped-ui.js'
-import { isOn } from '../lib/modules.js'
+import { isOn, partOn } from '../lib/modules.js'
 
 const titleOf = r => (r.kind === 'month' ? t('Your month') : t('Your week'))
 const datesOf = r => fmtDateRange(r.from, r.to, true)
@@ -69,8 +69,10 @@ function RecapSheet({ period, close }) {
       <Button variant="primary" icon="sparkles" onClick={() => { close(); openMonthStory(r.from.slice(0, 7)) }}>{t('Play your month')}</Button>
       <div style={{ height: 8 }} />
     </>}
-    <Button variant={r.kind === 'month' ? 'plain' : 'primary'} icon="share" onClick={shareImage}>{t('Share as image')}</Button>
-    <div style={{ height: 8 }} />
+    {partOn(S, 'motivation', 'share') && <>
+      <Button variant={r.kind === 'month' ? 'plain' : 'primary'} icon="share" onClick={shareImage}>{t('Share as image')}</Button>
+      <div style={{ height: 8 }} />
+    </>}
     <Button icon="note" onClick={pdf}>{t('Save as PDF')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Done')}</Button>

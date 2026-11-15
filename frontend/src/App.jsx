@@ -48,7 +48,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
-import { isOn } from './lib/modules.js'
+import { isOn, partOn } from './lib/modules.js'
 import { useTour } from './lib/tour.js'
 import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
@@ -413,8 +413,8 @@ function Shell() {
       <Route path="/structural-balance" element={<StructuralBalance />} />
       <Route path="/tools" element={<Tools />} />
       <Route path="/journal" element={<Journal />} />
-      {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
-      {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {partOn(S, 'body', 'photos') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
+      {partOn(S, 'body', 'measurements') && <Route path="/measurements" element={<Measurements />} />}
       {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
       <Route path="/connect/:id" element={<Connect />} />
       {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}

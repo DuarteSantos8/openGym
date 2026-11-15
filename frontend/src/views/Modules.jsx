@@ -2,9 +2,11 @@
 //
 // A preset row on top (Just training, Training and body, Everything, or Custom once the switches
 // below make a mix of their own), then one row per module in three groups, each with its switch.
+// A module with parts (#1087) has a chevron beside its switch: the row unfolds the parts under it,
+// each with its own switch, and folds them again. Folded at first; the fold is not stored.
 // Off hides; it never deletes. A module that is connected to something (the phone's health app,
 // a watch, webhooks, scheduled Coach reviews) says what pauses and asks once before it goes off.
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -12,11 +14,12 @@ import { DEMO } from '../lib/demo.js'
 import { platformNow } from '../lib/platform-now.js'
 import { api } from '../lib/api.js'
 import { libraryOn } from '../lib/shared-api.js'
-import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, moduleBuilt } from '../lib/modules.js'
+import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, moduleBuilt, partsOf, partSwitch, partsOnCount, setPart } from '../lib/modules.js'
 import { readWatchStatus, readGarminLink } from '../lib/watch-settings.js'
-import { moduleCopy, groupCopy, presetCopy } from '../lib/modules-copy.js'
+import { moduleCopy, groupCopy, presetCopy, partCopy } from '../lib/modules-copy.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, SelectRow, Switch } from '../components/ui.jsx'
+import Icon from '../components/Icon.jsx'
 
 /* What is connected right now, read once when the page opens. Each answer is a promise that never
    rejects: a check that fails counts as nothing connected, and the switch simply goes off. */
@@ -63,7 +66,41 @@ export function connectionNotes(ids, conn) {
   return out
 }
 
-export default function ModulesPage() {
+/* A module with parts: its row, whose switch is the module's and whose rest is one button that
+   unfolds the parts under it (a button cannot hold the switch, so it is laid over the row). Folded,
+   the parts are hidden, not left out, so a search hit's row is there to find. With the module off
+   the parts show as they are, disabled: back on, each is as it was left. */
+function ModuleWithParts({ m, title, subtitle, flip, startOpen }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  const [open, setOpen] = useState(!!startOpen)
+  const id = useId()
+  const on = isOn(S, m.id)
+  const parts = partsOf(m.id), pc = partCopy()
+  const n = partsOnCount(S, m.id)
+  return <>
+    <Row icon={m.icon} iconTint={m.tint} title={title} subtitle={subtitle} className="module-row" tour={'module-' + m.id}>
+      <button type="button" className="module-open" aria-expanded={open} aria-controls={id}
+        aria-label={t('Parts of {0}', title)} onClick={() => setOpen(o => !o)} />
+      {!open && <span className="lrow-v">{!on ? t('Off') : n === parts.length ? t('All') : t('{0} of {1}', n, parts.length)}</span>}
+      <Icon name={open ? 'chevronDown' : 'chevronRight'} className="lrow-c" />
+      <Switch aria-label={title} checked={on} onChange={v => flip(m.id, v)} />
+    </Row>
+    <div id={id} className="module-parts" role="group" aria-label={t('Parts of {0}', title)} hidden={!open}>
+      {parts.map(p => {
+        const [pt, pd] = pc[m.id + '.' + p.id]
+        return <Row key={p.id} title={pt} subtitle={pd} className={on ? '' : 'dis'}>
+          <Switch aria-label={pt} checked={partSwitch(S, m.id, p.id)} disabled={!on}
+            onChange={v => update(s => { setPart(s, m.id, p.id, v) })} />
+        </Row>
+      })}
+      {!on && <p className="module-parts-off">{t('{0} is off, so all of it is hidden.', title)}</p>}
+    </div>
+  </>
+}
+
+// `find`: a search hit's title (views/Settings.jsx). A part's title unfolds the module that holds it.
+export default function ModulesPage({ find = null } = {}) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const conn = useConnections()
@@ -108,11 +145,13 @@ export default function ModulesPage() {
     </Section>
     {GROUPS.map((g, gi) => <Section key={g.id} title={gc[g.id]}
       footer={gi === GROUPS.length - 1 ? t('Logging, plans, history, the exercise library and the basic stats are always on.') : null}>
-      {shown.filter(m => m.group === g.id).map(m => (
-        <Row key={m.id} icon={m.icon} iconTint={m.tint} title={mc[m.id][0]} subtitle={mc[m.id][1]} className="module-row" tour={'module-' + m.id}>
+      {shown.filter(m => m.group === g.id).map(m => partsOf(m.id).length
+        ? <ModuleWithParts key={m.id} m={m} title={mc[m.id][0]} subtitle={mc[m.id][1]} flip={flip}
+          startOpen={!!find && partsOf(m.id).some(p => p.title === find)} />
+        : <Row key={m.id} icon={m.icon} iconTint={m.tint} title={mc[m.id][0]} subtitle={mc[m.id][1]} className="module-row" tour={'module-' + m.id}>
           <Switch aria-label={mc[m.id][0]} checked={isOn(S, m.id)} onChange={v => flip(m.id, v)} />
         </Row>
-      ))}
+      )}
     </Section>)}
   </div>
 }
