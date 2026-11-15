@@ -6001,4 +6001,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Det er dit. Vælg det i appen på din telefon: Indstillinger, Udseende og Hjem, App-ikon.",
   "Yours. Settings, Look & Home, App icon.": "Det er dit. Indstillinger, Udseende og Hjem, App-ikon.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym har fået en lillesøster. Mad, kosttilskud og kropsvægt, på din egen server ligesom openGym, uden reklamer og uden nogen der kigger med. Den er i privat beta, og du er tidligt ude.",
+  "Collapse": "Fold sammen",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Gns. {0} · maks. {1} bpm",
+  "Heart rate curve": "Pulskurve",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "En linje under statuslinjen, mens dit Apple Watch måler den. Tryk for hele træningen.",
 }

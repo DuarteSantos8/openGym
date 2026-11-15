@@ -311,6 +311,9 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         store.execute(q)
     }
 
+    /// Told each reading as it comes, with its own time: the phone draws the session's curve from them.
+    var onReadings: (([(Date, Double)]) -> Void)?
+
     /// When the badge last changed: it follows the readings at most every few seconds (a redraw of
     /// the page each time costs battery), sooner when the number really moves.
     private var shownAt = Date.distantPast
@@ -319,13 +322,16 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         // Kept in time order by inserting each reading where it belongs: a duplicate (the same reading
         // from the query and from the builder) can then only be the neighbour on either side, instead
         // of a scan of the whole workout's readings and a full sort for every new one.
+        var fresh: [(Date, Double)] = []
         for r in readings {
             var lo = 0, hi = samples.count
             while lo < hi { let mid = (lo + hi) / 2; if samples[mid].0 < r.0 { lo = mid + 1 } else { hi = mid } }
             if lo < samples.count && abs(samples[lo].0.timeIntervalSince(r.0)) < 0.5 { continue }
             if lo > 0 && abs(samples[lo - 1].0.timeIntervalSince(r.0)) < 0.5 { continue }
             samples.insert(r, at: lo)
+            fresh.append(r)
         }
+        if !fresh.isEmpty { onReadings?(fresh) }
         guard let last = samples.last?.1 else { return }
         let now = Date()
         if heartRate == nil || abs((heartRate ?? 0) - last) >= 5 || now.timeIntervalSince(shownAt) >= 4 {

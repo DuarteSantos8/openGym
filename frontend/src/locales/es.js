@@ -6061,4 +6061,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Es tuyo. Elígelo en la app de tu móvil: Ajustes, Aspecto e Inicio, Icono de la app.",
   "Yours. Settings, Look & Home, App icon.": "Es tuyo. Ajustes, Aspecto e Inicio, Icono de la app.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym tiene una hermana pequeña. Comida, suplementos y peso corporal, en tu propio servidor como openGym, sin anuncios y sin nadie mirando. Está en beta privada, y llegas pronto.",
+  "Collapse": "Plegar",
+  "bpm": "ppm",
+  "Average {0} · Max {1} bpm": "Media {0} · Máx. {1} ppm",
+  "Heart rate curve": "Curva del pulso",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Una línea bajo la barra de progreso mientras tu Apple Watch lo mide. Tócala para ver toda la sesión.",
 }

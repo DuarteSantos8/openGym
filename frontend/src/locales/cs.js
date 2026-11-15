@@ -6027,4 +6027,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Je tvoje. Vyber si ji v aplikaci v telefonu: Nastavení, Vzhled a obrazovka Domů, Ikona aplikace.",
   "Yours. Settings, Look & Home, App icon.": "Je tvoje. Nastavení, Vzhled a obrazovka Domů, Ikona aplikace.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym má mladší sestru. Jídlo, doplňky a tělesná váha, na tvém vlastním serveru jako openGym, bez reklam a bez šmírování. Je v soukromé betě a ty jsi tu brzy.",
+  "Collapse": "Sbalit",
+  "bpm": "tepů/min",
+  "Average {0} · Max {1} bpm": "Průměr {0} · max {1} tepů/min",
+  "Heart rate curve": "Křivka tepu",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Řádek pod ukazatelem postupu, dokud ho Apple Watch měří. Klepni pro celý trénink.",
 }

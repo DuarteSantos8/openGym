@@ -6057,4 +6057,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Ji tavo. Pasirink ją programėlėje telefone: Nustatymai, Išvaizda ir namai, Programėlės piktograma.",
   "Yours. Settings, Look & Home, App icon.": "Ji tavo. Nustatymai, Išvaizda ir namai, Programėlės piktograma.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym turi mažąją sesę. Maistas, papildai ir kūno svoris, tavo paties serveryje kaip openGym, be reklamų ir be smalsių akių. Ji privačioje beta versijoje, o tu čia anksti.",
+  "Collapse": "Suskleisti",
+  "bpm": "k./min",
+  "Average {0} · Max {1} bpm": "Vid. {0} · daug. {1} k./min",
+  "Heart rate curve": "Pulso kreivė",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Eilutė po pažangos juosta, kol Apple Watch jį matuoja. Paliesk, kad matytum visą treniruotę.",
 }

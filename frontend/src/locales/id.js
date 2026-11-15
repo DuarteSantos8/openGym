@@ -6026,4 +6026,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Milikmu. Pilih di aplikasi di ponselmu: Pengaturan, Tampilan & Beranda, Ikon aplikasi.",
   "Yours. Settings, Look & Home, App icon.": "Milikmu. Pengaturan, Tampilan & Beranda, Ikon aplikasi.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym punya adik perempuan. Makanan, suplemen, dan berat badan, di servermu sendiri seperti openGym, tanpa iklan dan tanpa ada yang mengintip. Masih beta privat, dan kamu datang lebih awal.",
+  "Collapse": "Ciutkan",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Rata-rata {0} · Maks {1} bpm",
+  "Heart rate curve": "Kurva detak jantung",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Satu baris di bawah bilah kemajuan selama Apple Watch-mu mengukurnya. Ketuk untuk seluruh sesi.",
 };

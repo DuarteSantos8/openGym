@@ -6027,4 +6027,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Của bạn. Chọn nó trong ứng dụng trên điện thoại: Cài đặt, Giao diện & Trang chủ, Biểu tượng ứng dụng.",
   "Yours. Settings, Look & Home, App icon.": "Của bạn. Cài đặt, Giao diện & Trang chủ, Biểu tượng ứng dụng.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym có một cô em gái. Ăn uống, thực phẩm bổ sung và cân nặng, trên máy chủ của riêng bạn như openGym, không quảng cáo và không ai nhòm ngó. Đang trong bản beta riêng, và bạn đến sớm đấy.",
+  "Collapse": "Thu gọn",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Trung bình {0} · Tối đa {1} bpm",
+  "Heart rate curve": "Đường nhịp tim",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Một dòng dưới thanh tiến trình khi Apple Watch đo. Chạm để xem cả buổi tập.",
 };

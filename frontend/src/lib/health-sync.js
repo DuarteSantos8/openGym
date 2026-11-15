@@ -460,3 +460,14 @@ async function readOnce(getState, force, now, applyFn) {
   }
   return h
 }
+
+/**
+ * The heart rate of a workout (finished or still running) as the hub has it, [[ms, bpm]], to draw and not to keep.
+ * Empty without a hub, with the read switched off, or when it fails: the graph just does not show.
+ */
+export async function readWorkoutHeart(w) {
+  const p = await plugin()
+  if (!p || !(await loadHealth()).readHr) return []
+  const res = await p.HC.readHeartRate({ from: w.start, to: w.end }).catch(() => null)
+  return Array.isArray(res?.samples) ? res.samples : []
+}

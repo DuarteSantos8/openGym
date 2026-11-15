@@ -6058,4 +6058,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Він твій. Вибери його в застосунку на телефоні: Налаштування, Вигляд і Головна, Значок застосунку.",
   "Yours. Settings, Look & Home, App icon.": "Він твій. Налаштування, Вигляд і Головна, Значок застосунку.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "У openGym з’явилася молодша сестра. Їжа, добавки й вага тіла, на твоєму власному сервері, як openGym, без реклами й без сторонніх очей. Вона в закритій беті, і ти тут серед перших.",
+  "Collapse": "Згорнути",
+  "bpm": "уд/хв",
+  "Average {0} · Max {1} bpm": "Середнє {0} · Макс. {1} уд/хв",
+  "Heart rate curve": "Крива пульсу",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Рядок під смугою прогресу, поки Apple Watch його вимірює. Торкнися — і побачиш усе тренування.",
 }

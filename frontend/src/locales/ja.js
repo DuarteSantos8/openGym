@@ -5993,4 +5993,10 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "あなたのものです。スマホのアプリで選んでください：設定、表示とホーム、アプリアイコン。",
   "Yours. Settings, Look & Home, App icon.": "あなたのものです。設定、表示とホーム、アプリアイコン。",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGymに妹ができました。食事、サプリ、体重を、openGymと同じく自分のサーバーで。広告なし、誰にも見られません。いまはプライベートベータで、あなたは一足早い参加者です。",
+  // Heart rate curve (#1243)
+  "Collapse": "折りたたむ",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "平均 {0} · 最大 {1} bpm",
+  "Heart rate curve": "心拍数カーブ",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch が計測している間、進行バーの下に線を表示します。タップするとセッション全体を表示します。",
 }

@@ -6061,4 +6061,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "당신의 것이에요. 휴대폰 앱에서 고르세요: 설정, 화면과 홈, 앱 아이콘.",
   "Yours. Settings, Look & Home, App icon.": "당신의 것이에요. 설정, 화면과 홈, 앱 아이콘.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym에 여동생이 생겼어요. 식단, 보충제, 체중을 openGym처럼 내 서버에서, 광고도 엿보는 사람도 없이. 지금은 비공개 베타이고, 당신은 남들보다 빨라요.",
+  "Collapse": "접기",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "평균 {0} · 최대 {1} bpm",
+  "Heart rate curve": "심박수 곡선",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch가 측정하는 동안 진행 막대 아래에 한 줄로 표시돼요. 탭하면 운동 전체를 볼 수 있어요.",
 }

@@ -6027,4 +6027,9 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "مال توست. در برنامهٔ گوشی‌ات انتخابش کن: تنظیمات، ظاهر و خانه، نماد برنامه.",
   "Yours. Settings, Look & Home, App icon.": "مال توست. تنظیمات، ظاهر و خانه، نماد برنامه.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym یک خواهر کوچک دارد. غذا، مکمل‌ها و وزن بدن، روی سرور خودت مثل openGym، بدون تبلیغ و بدون اینکه کسی سرک بکشد. در بتای خصوصی است و تو زود آمده‌ای.",
+  "Collapse": "جمع کردن",
+  "bpm": "ضربان در دقیقه",
+  "Average {0} · Max {1} bpm": "میانگین {0} · بیشینه {1} ضربان در دقیقه",
+  "Heart rate curve": "منحنی ضربان قلب",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "یک خط زیر نوار پیشرفت تا وقتی Apple Watch آن را اندازه می‌گیرد. برای کل جلسه رویش بزن.",
 }
