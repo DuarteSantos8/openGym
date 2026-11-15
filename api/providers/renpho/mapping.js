@@ -1,4 +1,4 @@
-/* A RENPHO reading → openGym readings (api/health/fold.js mergeReadings). The one place that knows
+/* A RENPHO reading → openGym readings (service.js keeps and sums them up). The one place that knows
  * RENPHO's field names and units; the rest of openGym sees `{ type, v, t, d, src, sid, g }` like
  * any other source's.
  *
@@ -15,7 +15,7 @@
  *
  * Every reading is also kept whole (raw), unknown fields included: see service.js.
  */
-import { SEGMENTS, segType } from '../../health/composition.js';
+import { SEGMENTS, segType } from './composition.js';
 
 export const PROVIDER = 'renpho';
 const LB = 0.45359237, ST = 6.35029318;

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { uid } from '../lib/format.js'
 import { beep, chime, vibrate, alertBuzz } from '../lib/sound.js'
 import { restSoundOf } from '../lib/rest-sounds.js'
+import { toneFor, REST_KINDS } from '../lib/user-sounds.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
@@ -12,6 +13,7 @@ import { REST_MAX } from '../lib/duration.js'
 import { accentValue } from '../lib/accent.js'
 import { COUNT_IN_SEC, chainCues, heldSec, phaseLeft, resumedEnd, shouldWait } from '../lib/auto-holds.js'
 import { cues, bindCueState } from '../lib/spoken-cues.js'
+import { restNextLine, restOverTitle } from '../lib/rest-next.js'
 
 // Timed holds that run themselves (lib/auto-holds.js): the workout screen hands in what comes
 // next and how to start it (bindAuto, views/Workout.jsx), this store runs the clocks. Without the
@@ -42,7 +44,11 @@ const autoMustWait = () => {
 // before the local timer completes. No-ops for guests / offline. The device id keeps the
 // timer this browser's own: a desktop tab finishing its rest on screen used to cancel the
 // alert the phone in the gym was waiting for, because the server held one timer per account.
-const pushRestTimer = sec => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId() }) }).catch(() => {}) }
+// `next` names the set waiting ("Bench press, 80 kg × 8"), which the push carries as its body.
+const pushRestTimer = (sec, next = '') => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId(), ...(next ? { next } : {}) }) }).catch(() => {}) }
+// The set this rest is for, in a line (lib/rest-next.js): read when the end is booked or shown,
+// so a set edited during the rest is named as it now stands.
+const nextLine = () => { try { return restNextLine(useStore.getState().S, useUI.getState().timer?.forIdx) } catch { return '' } }
 const cancelPushRestTimer = () => { if (useStore.getState().user && !useStore.getState().tourSandbox) api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }).catch(() => {}) }
 
 // Books the end of a rest with whatever can announce it while the app is not looking: in the
@@ -54,21 +60,24 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   // The tour's practice workout (useStore enterTourSandbox) rests on screen only.
   if (useStore.getState().tourSandbox) return
   const switching = kind === 'switch'
-  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000))); return }
+  const line = switching ? '' : nextLine()
+  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line); return }
   const { S } = useStore.getState()
   // The rest before a hold that starts by itself: its end is the count-in, and the alerts after
   // it (go, hold done, the next ones) are booked with it, for a phone that stays locked.
   const next = autoPeek()
   const chain = next ? chainCues({ start: 'rest', at: endsAt, name: next.label, plan: next.plan, forecast: autoForecast(next), words: autoWords }) : null
-  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : t('Rest’s over. Next set!'), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S), ...(chain ? { cues: chain.cues } : {}) })
+  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
-      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)))
+      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line)
     })
 }
 
-const alertPrefs = S => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: restSoundOf(S), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
+// `tone`: the rest's sound, a built-in one or one of one's own (lib/user-sounds.js toneFor).
+// `rk`: the kind of rest (#165), whose own sound the native alarm plays when it was given one.
+const alertPrefs = (S, rk = null) => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: toneFor(S, 'rest', rk), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
 const autoForecast = owner => { try { return autoHooks?.forecast?.(owner) || [] } catch { return [] } }
 // The count-in and the hold of a chain, booked with the phone the same way (no countdown card:
 // that one is the rest's, with the rest's buttons). Only the phone app, and not the tour.
@@ -116,8 +125,9 @@ const maybeRestNotification = async () => {
     // iOS ignores the tag replacement (issue #172): close the previous one by hand, as the
     // worker does on a push, or the end of a rest leaves two banners stacked there.
     try { for (const n of (await reg?.getNotifications?.({ tag: 'rest-timer' })) || []) n.close() } catch { /* no getNotifications: the tag is all there is */ }
-    if (reg?.showNotification) { reg.showNotification(t('Rest’s over. Next set!'), opts); return }
-    new Notification(t('Rest’s over. Next set!'), opts)
+    const title = restOverTitle(nextLine())
+    if (reg?.showNotification) { reg.showNotification(title, opts); return }
+    new Notification(title, opts)
   } catch {
     // Intentionally ignore: notification APIs vary by browser and policy in edge cases.
   }
@@ -145,10 +155,19 @@ const MAX_WORK_OVERTIME_SEC = 15 * 60
 // A tick that finds its end this far behind it did not see it happen (see seenLive below).
 const LATE_END_MS = 2500
 
+// When the hold's next whole second is, counted back from its end, so the digits, the 3-2-1 and the
+// end itself land on the second (Discord "Problem With Timed holds": a 7 s front lever ran about 9 s).
+// A tick every 1000 ms from when it started drifted off the end by up to half a second by design
+// (the end rounds), and a main thread busy for a moment pushed every later tick back with it.
+export const nextBeatMs = (endsAt, now = Date.now()) => {
+  let r = (endsAt - now) % 1000
+  if (r <= 0) r += 1000
+  return r
+}
 // The hold's countdown tick, from a start or from a restore after a reload.
 const runWork = (set, get) => {
   stopWorkTicking()
-  workTick = () => {
+  const tick = workTick = () => {
     const wk = get().work
     if (!wk || wk.paused) return
     const left = Math.max(wk.overtime ? -MAX_WORK_OVERTIME_SEC : 0, Math.round((wk.endsAt - Date.now()) / 1000))
@@ -158,10 +177,10 @@ const runWork = (set, get) => {
     if (!document.hidden) pageHiddenAt = null
     if (left === wk.left) return
     const { S: st } = useStore.getState()
-    const snd = st.sound, endSound = restSoundOf(st)
+    const snd = st.sound, endSound = toneFor(st, 'hold')   // a timed hold's own slot (lib/user-sounds.js)
     if (left <= 0) {
       if (seenLive && !wk.alerted) {
-        endTone(snd, endSound)
+        endTone(snd, endSound, wk.endsAt)
         alertBuzz([200, 100, 200]); get().flashTimer()
       }
       if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
@@ -176,11 +195,21 @@ const runWork = (set, get) => {
     if (left <= 3) { beep(snd, 660, 0.1); if (seenLive) cues.count(left) }
     set({ work: { ...wk, left } })
   }
-  workInt = setInterval(workTick, 1000)
+  // Each tick aims at the next whole second before the end, from where the clock is now: a late
+  // tick never makes the next one late too.
+  const beat = () => {
+    workInt = null
+    tick()
+    if (workTick !== tick) return   // stopped, or replaced by another hold, inside the tick
+    const wk = get().work
+    if (!wk) return
+    workInt = setTimeout(beat, wk.paused ? 1000 : nextBeatMs(wk.endsAt))
+  }
+  workInt = setTimeout(beat, nextBeatMs(get().work?.endsAt ?? Date.now()))
   document.addEventListener('visibilitychange', workTick)
 }
 const stopWorkTicking = () => {
-  if (workInt) clearInterval(workInt); workInt = null
+  if (workInt) clearTimeout(workInt); workInt = null
   if (workTick) document.removeEventListener('visibilitychange', workTick); workTick = null
 }
 // The set a hold belongs to, while it still is that one: the same exercise at that place in the
@@ -222,14 +251,14 @@ const runRest = (set, get) => {
     if (!document.hidden) pageHiddenAt = null
     if (left === tm.left) return
     const { S: st } = useStore.getState()
-    const snd = st.sound, endSound = restSoundOf(st)
+    const snd = st.sound, endSound = toneFor(st, 'rest', tm.kind === 'switch' ? null : tm.rk)
     // The rest before a hold that starts by itself: no Ready, no chime, the count-in is next and
     // says so itself. From the rest's own end, so a phone that was locked catches up from there.
     if (left <= 0 && get().autoAfterRest(tm.endsAt)) return
     if (left <= 0 && tm.kind === 'switch') {
       // Over like a hold is: the chime and its buzz, then the bar goes. No "Ready", no toast:
       // the other side is the next thing, one tap away.
-      if (seenLive) { endTone(snd, endSound); alertBuzz([200, 100, 200]); get().flashTimer() }
+      if (seenLive) { endTone(snd, endSound, tm.endsAt); alertBuzz([200, 100, 200]); get().flashTimer() }
       stopRestTicking()
       set({ timer: null })
       return
@@ -237,8 +266,9 @@ const runRest = (set, get) => {
     if (left <= 0) {
       if (seenLive) {
         // The Android alarm for this end stays quiet while the app is on screen, so this chime is
-        // the only one. Locked, this branch never runs and the alarm's tone does.
-        endTone(snd, endSound)
+        // the only one. Locked, this branch never runs and the alarm's tone does. `endsAt` lets the
+        // phone ring this end once when both think they saw it (#1007).
+        endTone(snd, endSound, tm.endsAt)
         alertBuzz([200, 100, 200]); get().flashTimer()
         cues.restOver()
       }
@@ -264,11 +294,11 @@ const runRest = (set, get) => {
 
 // The end of a rest or a hold, on screen. In the Android app the native side plays it, so music
 // ducks for it; anywhere else, or if that fails, the page's own chime.
-function endTone(enabled, kind) {
+function endTone(enabled, kind, at = 0) {
   if (!enabled) return
   if (!MOBILE) { chime(enabled, kind); return }
   const onSilent = useStore.getState().S.soundOnSilent === true
-  toneNative(kind === true ? 'classic' : kind, { onSilent }).then(ok => { if (!ok) chime(enabled, kind) })
+  toneNative(kind === true ? 'classic' : kind, { onSilent, at }).then(ok => { if (!ok) chime(enabled, kind) })
 }
 
 export const useUI = create((set, get) => ({
@@ -339,7 +369,9 @@ export const useUI = create((set, get) => ({
     if (get().toastMsg) runToast(set)
   },
 
-  startRest(sec, forIdx, { kind, forSet } = {}) {
+  // `rest`: what kind of rest this is (#165: 'warmup' | 'work' | 'superset' | 'exercise', from
+  // lib/supersetFlow.js restKindAfter), kept on the timer as `rk` for the sound at its end.
+  startRest(sec, forIdx, { kind, forSet, rest } = {}) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
@@ -362,7 +394,7 @@ export const useUI = create((set, get) => ({
     // `autoNext`: the hold that counts in once this rest is over (lib/auto-holds.js), for the bar.
     const next = get().countIn ? null : autoPeek()
     get().stopCountIn()
-    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}), ...(next ? { autoNext: next.label } : {}) } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}), ...(kind !== 'switch' && REST_KINDS.includes(rest) ? { rk: rest } : {}), ...(next ? { autoNext: next.label } : {}) } })
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
     // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js).
@@ -399,7 +431,7 @@ export const useUI = create((set, get) => ({
   addRest(sec) {
     const tm = get().timer
     if (!tm) return
-    if (tm.ready) { if (sec > 0) get().startRest(Math.min(sec, REST_MAX), tm.forIdx, { forSet: tm.forSet }); else get().stopRest(); return }
+    if (tm.ready) { if (sec > 0) get().startRest(Math.min(sec, REST_MAX), tm.forIdx, { forSet: tm.forSet, rest: tm.rk }); else get().stopRest(); return }
     // +15 s stops where the wheel does (15:00), so the two never disagree about a rest's length.
     if (sec > 0) sec = Math.min(sec, Math.max(0, REST_MAX - tm.left))
     if (!sec) return
@@ -452,6 +484,42 @@ export const useUI = create((set, get) => ({
     set({ timer: { ...tm, endsAt } })
     if (endsAt > Date.now()) bookRestEnd(endsAt, tm.total, tm.kind)
     timerTick?.()
+  },
+  // A watch moved the rest (+15 or −15 there, or the rest it started for a set it ticked): the
+  // phone's ends when the watch's does (lib/watch-sync.js applyRestStep). Running or paused, it runs
+  // to `endsAt` from here; with none running (or its Ready), one starts for the exercise on screen.
+  // One that would end now is over.
+  alignRest(endsAt) {
+    const now = Date.now()
+    if (!(endsAt > now + 500)) { get().stopRest(); return }
+    const left = Math.max(1, Math.round((endsAt - now) / 1000))
+    const tm = get().timer
+    if (!tm || tm.ready) {
+      get().startRest(Math.min(left, REST_MAX), tm ? tm.forIdx : useStore.getState().S.active?.cur, tm ? { forSet: tm.forSet, rest: tm.rk } : {})
+      const t = get().timer
+      if (!t) return
+      set({ timer: { ...t, endsAt, left } })
+      bookRestEnd(endsAt, t.total, t.kind)
+      return
+    }
+    const { paused, ...rest } = tm
+    const total = Math.max(tm.total || left, left)
+    pageHiddenAt = document.hidden ? Date.now() : null
+    set({ timer: { ...rest, left, total, endsAt } })
+    bookRestEnd(endsAt, total, tm.kind)
+    runRest(set, get)
+  },
+  // A rest put back as it was (lib/watch-sync.js: a late tick from a watch started one over a rest
+  // changed here since): its own end, its own alarm.
+  putRest(tm) {
+    if (!tm || tm.ready) { get().stopRest(); return }
+    stopRestTicking()
+    pageHiddenAt = document.hidden ? Date.now() : null
+    if (tm.paused) { set({ timer: { ...tm } }); holdRestAlert(tm.left, tm.total); return }
+    if (!(tm.endsAt > Date.now())) { get().stopRest(); return }
+    set({ timer: { ...tm, left: Math.max(1, Math.round((tm.endsAt - Date.now()) / 1000)) } })
+    bookRestEnd(tm.endsAt, tm.total, tm.kind)
+    runRest(set, get)
   },
   stopRest() {
     stopRestTicking()
@@ -739,7 +807,7 @@ const saveRest = tm => {
   if (!ss) return
   try {
     if (!tm || tm.ready) { savedRestKey = null; ss.removeItem(REST_KEY); return }
-    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, paused: !!tm.paused, left: tm.left }
+    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, ...(tm.rk ? { rk: tm.rk } : {}), paused: !!tm.paused, left: tm.left }
     const key = JSON.stringify({ ...v, left: v.paused ? v.left : null })
     if (key === savedRestKey && ss.getItem(REST_KEY) !== null) return
     ss.setItem(REST_KEY, JSON.stringify(v))
@@ -754,7 +822,7 @@ export function restoreRest(now = Date.now()) {
   const total = Math.round(Number(saved.total))
   const ok = useStore.getState().S?.active && total > 0 && (saved.paused ? saved.left > 0 : saved.endsAt > now)
   if (!ok) { try { ss.removeItem(REST_KEY) } catch { /* nothing to drop */ } return false }
-  const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(saved.kind === 'switch' ? { kind: 'switch' } : {}) }
+  const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(saved.kind === 'switch' ? { kind: 'switch' } : {}), ...(REST_KINDS.includes(saved.rk) ? { rk: saved.rk } : {}) }
   if (saved.paused) {
     useUI.setState({ timer: { ...base, left: Math.round(saved.left), endsAt: saved.endsAt, paused: true } })
     if (MOBILE) holdRestAlert(Math.round(saved.left), total)

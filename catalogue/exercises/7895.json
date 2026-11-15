@@ -3,10 +3,9 @@
   "name": "kneeling rotation torso rear fly to thread through",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rhomboids",
-    "rear deltoids",
     "obliques"
   ],
   "category": "mobility",

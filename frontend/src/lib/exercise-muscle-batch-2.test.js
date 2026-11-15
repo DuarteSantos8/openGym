@@ -36,13 +36,13 @@ describe('machine muscle metadata batch 2', () => {
 
   it('maps the pec-deck family from the lever seated-fly template', () => {
     expectMapping('0596', {
-      bp: 'chest', primaries: ['chest'], secondaries: ['deltoids', 'biceps', 'serratus']
+      bp: 'chest', primaries: ['chest'], secondaries: ['front-delts', 'biceps', 'serratus']
     })
   })
 
   it('maps chest-press machines to chest with pressing assistants', () => {
     expectMapping('0577', {
-      bp: 'chest', primaries: ['chest'], secondaries: ['deltoids', 'triceps', 'biceps']
+      bp: 'chest', primaries: ['chest'], secondaries: ['front-delts', 'triceps', 'biceps']
     })
   })
 
@@ -52,11 +52,11 @@ describe('machine muscle metadata batch 2', () => {
     })
   })
 
-  it('maps machine/cable lat pulldowns to upper back with arm-and-shoulder synergy', () => {
+  it('maps machine/cable lat pulldowns to the lats with arm-and-shoulder synergy', () => {
     expectMapping('0579', {
       bp: 'back',
-      primaries: ['upper-back'],
-      secondaries: ['biceps', 'deltoids', 'forearm', 'trapezius', 'triceps']
+      primaries: ['lats'],
+      secondaries: ['biceps', 'rear-delts', 'forearm', 'trapezius', 'triceps']
     })
   })
 
@@ -64,7 +64,7 @@ describe('machine muscle metadata batch 2', () => {
     expectMapping('1350', {
       bp: 'back',
       primaries: ['upper-back'],
-      secondaries: ['biceps', 'deltoids', 'forearm', 'trapezius', 'chest', 'triceps']
+      secondaries: ['biceps', 'rear-delts', 'forearm', 'trapezius', 'chest', 'triceps', 'lats']
     })
   })
 
@@ -72,12 +72,12 @@ describe('machine muscle metadata batch 2', () => {
     expectMapping('0019', {
       bp: 'upper arms',
       primaries: ['triceps'],
-      secondaries: ['deltoids', 'chest', 'upper-back', 'trapezius', 'biceps']
+      secondaries: ['front-delts', 'chest', 'upper-back', 'trapezius', 'biceps']
     })
     expectMapping('1451', {
       bp: 'upper arms',
       primaries: ['triceps'],
-      secondaries: ['deltoids', 'chest', 'upper-back', 'trapezius', 'biceps']
+      secondaries: ['front-delts', 'chest', 'upper-back', 'trapezius', 'biceps']
     })
   })
 
@@ -105,10 +105,10 @@ describe('machine muscle metadata batch 2', () => {
     })
   })
 
-  it('maps machine shoulder presses to deltoids with direct press support', () => {
+  it('maps machine shoulder presses to the front delts with direct press support', () => {
     expectMapping('0603', {
-      bp: 'shoulders', primaries: ['deltoids'],
-      secondaries: ['chest', 'triceps', 'trapezius', 'serratus', 'biceps']
+      bp: 'shoulders', primaries: ['front-delts'],
+      secondaries: ['chest', 'triceps', 'trapezius', 'serratus', 'biceps', 'side-delts']
     })
   })
 
@@ -117,9 +117,9 @@ describe('machine muscle metadata batch 2', () => {
     expect(raw).toMatchObject({ id: '0577', n: 'lever chest press', tg: 'pectorals', mg: 'triceps' })
     expect(raw).not.toHaveProperty('primaries')
     expect(raw).not.toHaveProperty('secondaries')
-    expect(musclesOf(raw)).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4 })
-    expect(muscleWeightsOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0 })
-    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4 })
+    expect(musclesOf(raw)).toEqual({ chest: 1, 'front-delts': 0.4, triceps: 0.4 })
+    expect(muscleWeightsOf(EXIDX['0577'])).toEqual({ chest: 1, 'front-delts': 0.4, triceps: 0.4, biceps: 0 })
+    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, 'front-delts': 0.4, triceps: 0.4 })
   })
 
   it('gives an explicit custom collision precedence and restores the machine overlay', () => {
@@ -131,7 +131,7 @@ describe('machine muscle metadata batch 2', () => {
     expect(musclesOf(EXIDX['0577'])).toEqual({ triceps: 1 })
     registerCustom([])
     expect(EXIDX['0577']).toMatchObject(MACHINE_BATCH_2['0577'])
-    expect(muscleWeightsOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0 })
-    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4 })
+    expect(muscleWeightsOf(EXIDX['0577'])).toEqual({ chest: 1, 'front-delts': 0.4, triceps: 0.4, biceps: 0 })
+    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, 'front-delts': 0.4, triceps: 0.4 })
   })
 })

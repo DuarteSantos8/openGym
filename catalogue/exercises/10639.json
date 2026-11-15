@@ -3,6 +3,7 @@
   "name": "glute ham developer full sit up",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "back-extension",
   "target": "abs",
   "secondaryMuscles": [
     "hip flexors",

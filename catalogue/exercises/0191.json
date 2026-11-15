@@ -3,10 +3,10 @@
   "name": "cable one arm lateral bent-over",
   "bodyPart": "chest",
   "equipment": "cable",
-  "target": "delts",
+  "target": "side delts",
   "secondaryMuscles": [
     "chest",
-    "deltoids",
+    "front delts",
     "trapezius"
   ],
   "category": "strength",

@@ -3,10 +3,11 @@
   "name": "lever one arm side chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A single-arm press on a chest press machine. Training one side at a time helps balance strength between arms.",

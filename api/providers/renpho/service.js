@@ -1,6 +1,6 @@
-/* RENPHO Health on a profile: connect, sync, disconnect (routes in server.js, Settings → Health in
- * the app). The client (client.js) talks to RENPHO, the mapping (mapping.js) turns its readings
- * into openGym's; this file holds the account and runs a sync.
+/* RENPHO Health on a profile: connect, sync, disconnect (routes in server.js, Settings →
+ * Integrations → RENPHO Health in the app). The client (client.js) talks to RENPHO, the mapping
+ * (mapping.js) turns its readings into openGym's; this file holds the account and runs a sync.
  *
  * The account lives on the user row (db.json) as `renpho`: the e-mail (shown in Settings), the
  * sign-in and the RENPHO session, both sealed with the instance's at-rest encryption (the Coach's,
@@ -14,14 +14,17 @@
  * pages, and the app stays signed in. One value per day then (the day's last weigh-in) and no
  * segmental values: RENPHO's friend pages have none.
  *
- * Readings go into the profile's own state through `merge` (api/health/fold.js mergeReadings):
- * src 'renpho', sid `<RENPHO id>:<type>`, so a reading already there is updated, never added twice,
- * whichever device or how many times "Sync now" was pressed. RENPHO's whole reading, unknown fields
- * included, is kept per reading beside the state (`rawFile`): provider, external_id,
- * external_timestamp, synced_at and raw_provider_data.
+ * The readings stay on the server, never in the profile's own state: RENPHO's whole reading, unknown
+ * fields included, is kept per reading in a file of the profile's own beside the state (`readRaw` /
+ * `writeRaw`): provider, external_id, external_timestamp, synced_at and raw_provider_data, keyed by
+ * RENPHO's id, so a reading already there is updated, never added twice, however many times "Sync
+ * now" was pressed. The app reads them back as a summary (`summary`, GET /api/renpho/summary): the
+ * latest value of each kind and its change over about a month, shown under Body measurements beside
+ * what Apple Health or Health Connect has (components/HealthBodyCard.jsx), read-only like it.
  */
 import { createRenphoClient, RenphoError, FRIEND_PARAMS, newDeviceId, zoneOf } from './client.js';
 import { mapMeasurement, mapFriendDay, belongsTo, PROVIDER } from './mapping.js';
+import { COMPOSITION } from './composition.js';
 
 const MESSAGES = {
   auth: 'RENPHO did not accept this e-mail and password',
@@ -44,12 +47,61 @@ const problem = e => {
   return { code, message: MESSAGES[code] || MESSAGES.failed, ...(reason ? { reason } : {}) };
 };
 
+// The readings of one kept measurement: its own (mapMeasurement) or a friend's day (mapFriendDay,
+// external id `day:<friend>:<day>`).
+function mappedOf(m) {
+  const id = String(m?.external_id || '');
+  if (id.startsWith('day:')) return mapFriendDay(id.split(':')[1], m.raw_provider_data);
+  return mapMeasurement(m?.raw_provider_data);
+}
+
+const DAY = 24 * 3600e3;
 /**
- * `seal`/`unseal` encrypt for the user row, `save` writes db.json, `merge(uid, readings)` folds
- * readings into the profile and answers { added, updated }, `readRaw(uid)`/`writeRaw(uid, obj)`
- * keep the raw readings, `log` is told what happened (never a secret).
+ * What the app shows of the kept readings: per kind, the latest value and its change against the
+ * reading closest to a month before it (at least a week older, as lib/health-read.js bodyCompSummary
+ * does for Apple Health), `t` the latest one's time. `kinds` limits it to the body composition
+ * values (composition.js) and the plain ones the card shows; the weight stays with the weigh-ins.
  */
-export function createRenphoService({ seal, unseal, save, merge, readRaw, writeRaw, removeRaw, client = createRenphoClient(), now = Date.now, log = () => {} }) {
+export function summarize(store, kinds = null) {
+  const byType = new Map();
+  for (const m of Object.values(store?.measurements || {})) {
+    const got = mappedOf(m);
+    if (!got || got.invalid) continue;
+    for (const r of got.readings) {
+      if (kinds && !kinds.has(r.type)) continue;
+      if (!inRange(r)) continue;
+      if (!byType.has(r.type)) byType.set(r.type, []);
+      byType.get(r.type).push({ t: r.t, v: r.v });
+    }
+  }
+  const items = [];
+  for (const [type, list] of byType) {
+    list.sort((a, b) => a.t - b.t);
+    const latest = list.at(-1);
+    const want = latest.t - 30 * DAY;
+    const older = list.filter(x => x.t <= latest.t - 7 * DAY);
+    const base = older.reduce((best, x) => (!best || Math.abs(x.t - want) < Math.abs(best.t - want) ? x : best), null);
+    items.push({ type, v: latest.v, t: latest.t, change: base ? Math.round((latest.v - base.v) * 1000) / 1000 : null });
+  }
+  items.sort((a, b) => a.type.localeCompare(b.type));
+  return { items, t: items.reduce((m, x) => Math.max(m, x.t), 0) || null };
+}
+// The kinds the summary carries: the scale's body composition values (composition.js) and the
+// plain ones of a scale that Apple Health also names (body fat, lean mass).
+export const SUMMARY_KINDS = new Set([...Object.keys(COMPOSITION), 'bodyFat', 'leanMass']);
+// What a value may be (composition.js min..max, and the two plain ones): anything outside is a
+// misread and left out.
+const RANGE = { bodyFat: [1, 75], leanMass: [1, 300] };
+const inRange = r => {
+  const [min, max] = RANGE[r.type] || [COMPOSITION[r.type]?.min ?? -Infinity, COMPOSITION[r.type]?.max ?? Infinity];
+  return Number.isFinite(r.v) && r.v >= min && r.v <= max;
+};
+
+/**
+ * `seal`/`unseal` encrypt for the user row, `save` writes db.json, `readRaw(uid)`/`writeRaw(uid,
+ * obj)` keep the readings, `log` is told what happened (never a secret).
+ */
+export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, removeRaw, client = createRenphoClient(), now = Date.now, log = () => {} }) {
   const running = new Map();   // uid → the sync in flight
 
   function status(user) {
@@ -183,25 +235,24 @@ export function createRenphoService({ seal, unseal, save, merge, readRaw, writeR
         if (d) ownDays.add(d);
       }
     }
-    const readings = [];
     const fields = new Set(), unknown = new Set();
-    let segmental = false, count = 0;
+    let segmental = false, count = 0, added = 0, updated = 0;
     for (const [m, raw] of items) {
       if (!m || ownDays.has(m.d)) continue;
       count++;
       const prev = store.measurements[m.externalId];
       const same = prev && JSON.stringify(prev.raw_provider_data) === JSON.stringify(raw);
+      if (!prev) added++;
+      else if (!same) updated++;
       store.measurements[m.externalId] = {
         provider: PROVIDER, external_id: m.externalId, external_timestamp: m.t,
         synced_at: same ? prev.synced_at : at, raw_provider_data: raw,
       };
-      readings.push(...m.readings);
       m.fields.forEach(f => fields.add(f));
       m.unknown.forEach(f => unknown.add(f));
       if (m.fields.some(f => /^(segFat|segMuscle|imp20|imp100)/.test(f))) segmental = true;
     }
     writeRaw(user.id, store);
-    const { added, updated } = readings.length ? merge(user.id, readings) : { added: 0, updated: 0 };
     return { measurements: count, added, updated, complete, fields: [...fields].sort(), unknown: [...unknown].sort(), segmental };
   }
 
@@ -246,5 +297,8 @@ export function createRenphoService({ seal, unseal, save, merge, readRaw, writeR
     });
   }
 
-  return { status, connect, disconnect, sync, due };
+  /** The summary of a profile's kept readings (summarize), for Body measurements. */
+  const summary = user => (user.renpho ? summarize(readRaw(user.id), SUMMARY_KINDS) : { items: [], t: null });
+
+  return { status, connect, disconnect, sync, due, summary };
 }

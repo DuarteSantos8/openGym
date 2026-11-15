@@ -5,11 +5,11 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const m = vi.hoisted(() => ({ api: vi.fn(), toast: vi.fn(), user: { id: 'u1' }, pull: vi.fn() }))
+const m = vi.hoisted(() => ({ api: vi.fn(), toast: vi.fn(), user: { id: 'u1' } }))
 vi.mock('../lib/api.js', () => ({ api: m.api }))
 vi.mock('../lib/mobile.js', () => ({ MOBILE: false, shareExport: vi.fn() }))
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: m.toast }) } }))
-vi.mock('../store/useStore.js', () => ({ useStore: sel => sel({ user: m.user, pullState: m.pull }) }))
+vi.mock('../store/useStore.js', () => ({ useStore: sel => sel({ user: m.user }) }))
 
 import RenphoSource from './RenphoSource.jsx'
 

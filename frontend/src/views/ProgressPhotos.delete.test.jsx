@@ -77,26 +77,50 @@ describe('photos filed under a day (#557)', () => {
   })
 })
 
-describe('adding photos for a day', () => {
-  const item = exif => ({ file: new Blob(['x']), exif })
-  it('one photo: the day it was taken, changeable; several: their own days, the rest on the picked one', async () => {
+describe('adding photos, each with its own day (#940)', () => {
+  const item = (d, source = d ? 'photo' : null) => ({ file: new Blob(['x']), d, source })
+  it('one photo: the day it was taken, changeable, never a day to come', async () => {
     const save = vi.fn(async () => {})
     act(() => root.render(<AddPhotosSheet items={[item('2026-09-14')]} close={() => {}} save={save} />))
     expect(host.querySelector('h3').textContent).toBe('Add 1 photo')
     expect(host.querySelector('[data-datefield]').value).toBe('2026-09-14')
+    expect(host.textContent).toContain('Date from the photo itself.')
+    expect(host.querySelector('.pp-step')).toBeNull()
     const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
     expect(pickDate(host.querySelector('[data-datefield]'), tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0'))).toBe(false)
     await act(async () => { button('Add').click() })
-    expect(save).toHaveBeenCalledWith([item('2026-09-14')], '2026-09-14')
-
-    act(() => root.render(null))
-    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item(null), item(null)]} close={() => {}} save={save} />))
-    expect(host.textContent).toContain('1 photo knows its day and goes there. The others go on the day below.')
-    expect(host.querySelector('[data-datefield]').value).toBe(todayISO())
-    act(() => root.render(null))
-    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item('2026-09-15')]} close={() => {}} save={save} />))
-    expect(host.querySelector('[data-datefield]')).toBeNull()
-    expect(host.textContent).toContain('Each photo goes on the day it was taken.')
+    expect(save).toHaveBeenCalledWith([expect.objectContaining({ d: '2026-09-14' })])
+  })
+  it('several: one at a time, each its own day, and a photo without a day is shown instead of saving', async () => {
+    const save = vi.fn(async () => {})
+    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item(null), item('2026-08-01', 'file')]} close={() => {}} save={save} />))
+    expect(host.textContent).toContain('1 of 3')
+    act(() => button('Next').click())
+    expect(host.textContent).toContain('2 of 3')
+    expect(host.textContent).toContain('No date found. Which day was it?')
+    expect(host.querySelector('[data-datefield]').value).toBe('')   // "Pick a day", not a silent today
+    act(() => button('Next').click())
+    expect(host.textContent).toContain('A guess from the file date. Worth a look.')
+    expect(host.querySelector('[data-datefield]').value).toBe('2026-08-01')
+    await act(async () => { button('Add').click() })
+    expect(save).not.toHaveBeenCalled()
+    expect(host.textContent).toContain('2 of 3')                 // jumped to the one without a day
+    expect(pickDate(host.querySelector('[data-datefield]'), '2026-09-01')).toBe(true)
+    expect(host.textContent).toContain('Your pick.')
+    await act(async () => { button('Add').click() })
+    expect(save.mock.calls[0][0].map(x => x.d)).toEqual(['2026-09-14', '2026-09-01', '2026-08-01'])
   })
 })
 
+describe('changing the day of a photo (#940)', () => {
+  it('moves a workout photo to a quiet day, under that day', () => {
+    const p = progressPhotosOf(useStore.getState().S).find(x => x.w?.id === 'w2')
+    let closed = 0
+    act(() => root.render(<PhotoView p={p} close={() => { closed++ }} />))
+    expect(pickDate(button('Change the day'), '2026-09-20')).toBe(true)
+    expect(closed).toBe(1)
+    expect(media('w2') || []).toEqual([])
+    expect(useStore.getState().S.dayPhotos[ref(2).hash]).toMatchObject({ d: '2026-09-20', m: ref(2) })
+    expect(useUI.getState().toastMsg).toMatch(/^Moved to /)
+  })
+})

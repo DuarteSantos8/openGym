@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => ({
-  user: null, config: null, MOBILE: false, health: null, sources: null, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
+  user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
 }))
 vi.mock('../store/useStore.js', () => {
   const snap = () => ({ S: {}, user: mocks.user, config: mocks.config, coachLocal: null })
@@ -22,7 +22,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = snap
   return { useUI }
 })
-vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.navs.push(a) }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.navs.push(a), useLocation: () => ({ pathname: '/settings/integrations', search: mocks.search || '' }) }))
 vi.mock('../lib/api.js', () => ({
   api: vi.fn(async (path, opts) => {
     const body = opts?.body ? JSON.parse(opts.body) : null
@@ -31,6 +31,7 @@ vi.mock('../lib/api.js', () => ({
     if (a instanceof Error) throw a
     return typeof a === 'function' ? a(body) : a ?? {}
   }),
+  appBase: () => '/',
 }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 vi.mock('../lib/demo.js', () => ({ DEMO: false }))
@@ -40,10 +41,6 @@ vi.mock('../lib/health-sync.js', () => ({
   onHealthChange: () => () => {},
   disableHealth: vi.fn(async () => ({})),
   disableRead: vi.fn(async () => ({})),
-}))
-vi.mock('../lib/health/sync.js', () => ({
-  loadSources: () => Promise.resolve(mocks.sources || { providers: {} }),
-  onSourcesChange: () => () => {},
 }))
 vi.mock('../lib/clipboard.js', () => ({ copyText: vi.fn(async () => true) }))
 vi.mock('../sheets.jsx', () => ({
@@ -59,7 +56,7 @@ import { searchSettings } from './settings-pages.js'
 
 let host, root, sheetHost, sheetRoot
 beforeEach(() => {
-  Object.assign(mocks, { user: null, config: null, MOBILE: false, health: null, sources: null, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
+  Object.assign(mocks, { search: '', user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   sheetHost = document.createElement('div'); document.body.appendChild(sheetHost); sheetRoot = createRoot(sheetHost)
 })
@@ -89,13 +86,10 @@ const type = (input, v) => act(() => {
 describe('the cards', () => {
   it('a guest in a browser: the health stores live in the phone app, webhooks need a server, nothing fake to connect', async () => {
     await mount()
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Automation', 'AI & API'])
-    // Apple Health opens its export and the Shortcut in a browser.
-    expect(pill('apple-health')).toBeUndefined()
-    expect(action('apple-health').textContent).toBe('Open')
-    act(() => action('apple-health').click())
-    expect(mocks.navs).toEqual([['/settings/apple-health']])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Backups & calendar', 'Automation', 'AI & API', 'Sister apps'])
+    expect(pill('apple-health')).toBe('Not available on this device')
     expect(pill('health-connect')).toBe('Not available on this device')
+    expect(action('apple-health')).toBeNull()
     expect(card('renpho')).toBeNull()
     expect(pill('webhook')).toBe('Needs your server')
     expect(action('webhook')).toBeNull()
@@ -152,6 +146,14 @@ describe('the cards', () => {
     await showSheet()
     expect(sheetHost.textContent).toContain('INTEGRATIONS=webhook')
   })
+})
+
+describe('webhooks', () => {
+  const conn = over => ({ id: 'c_1', provider: 'webhook', label: 'Home Assistant', events: ['workout.finished'], paused: false, status: 'connected', info: { url: 'https://ha.example.com/api/webhook/…7f3a' }, lastOk: Date.now() - 3600_000, lastError: null, failed: 0, ...over })
+  beforeEach(() => {
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mocks.config = { integrations: { providers: ['webhook'] } }
+  })
 
   it('RENPHO is a card of its own for a signed-in profile, and its chip connects there', async () => {
     mocks.user = { id: 'u1' }
@@ -169,22 +171,6 @@ describe('the cards', () => {
     act(() => root.render(null))
     await mount()
     expect(card('renpho')).toBeNull()
-  })
-
-  it('on iPhone, the Health area reading Apple Health counts as connected', async () => {
-    mocks.MOBILE = true
-    mocks.health = { status: 'available', platform: 'ios', on: false }
-    mocks.sources = { providers: { 'apple-health': { on: true } } }
-    await mount({ ios: true })
-    expect(pill('apple-health')).toBe('Connected')
-  })
-})
-
-describe('webhooks', () => {
-  const conn = over => ({ id: 'c_1', provider: 'webhook', label: 'Home Assistant', events: ['workout.finished'], paused: false, status: 'connected', info: { url: 'https://ha.example.com/api/webhook/…7f3a' }, lastOk: Date.now() - 3600_000, lastError: null, failed: 0, ...over })
-  beforeEach(() => {
-    mocks.user = { id: 'u1', name: 'Dana' }
-    mocks.config = { integrations: { providers: ['webhook'] } }
   })
 
   it('connect: the URL is checked here first, then the server answers with the secret, shown once', async () => {
@@ -284,5 +270,33 @@ describe('the Settings search', () => {
     // On a phone the health store is its own page, found under Integrations.
     const phone = searchSettings('healthkit', { mobile: true, ios: true }, tr)
     expect(phone[0]).toMatchObject({ page: 'apple-health', trail: 'Settings' })
+  })
+
+  it('Strava (#478): connect goes to the sign-in, the sheet switches strength on, the way back says how it went', async () => {
+    mocks.user = { id: 'u1' }
+    mocks.config = { integrations: { providers: ['strava'] } }
+    mocks.answers['/api/integrations'] = { providers: [{ id: 'strava', kind: 'oauth', max: 1 }], connections: [] }
+    const assign = vi.fn()
+    const orig = window.location
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...orig, assign } })
+    await mount()
+    expect(pill('strava')).toBe('Off')
+    act(() => action('strava').click())
+    expect(assign).toHaveBeenCalledWith('/api/integrations/oauth/start?provider=strava')
+    Object.defineProperty(window, 'location', { configurable: true, value: orig })
+    act(() => root.unmount()); root = createRoot(host)
+    const strava = { id: 'c_s', provider: 'strava', label: 'Ana Lift', info: { athlete: 'Ana Lift', strength: 'off' }, events: ['workout.finished'], status: 'connected', paused: false }
+    mocks.answers['/api/integrations'] = { providers: [{ id: 'strava', kind: 'oauth', max: 1 }], connections: [strava] }
+    mocks.answers['/api/integrations/update'] = b => ({ connection: { ...strava, info: { ...strava.info, strength: b.strength ? 'on' : 'off' } } })
+    mocks.search = '?intg=strava&connected=1'
+    await mount()
+    expect(mocks.toast).toHaveBeenCalledWith('Strava connected. Your next workout goes up by itself.')
+    expect(mocks.navs.at(-1)).toEqual(['/settings/integrations', { replace: true }])
+    expect(pill('strava')).toBe('Connected')
+    act(() => action('strava').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('Ana Lift')
+    await act(async () => { sheetHost.querySelector('[aria-label="Strength workouts too"]').click() })
+    expect(mocks.calls.find(c => c[0] === '/api/integrations/update')[1]).toEqual({ id: 'c_s', strength: true })
   })
 })

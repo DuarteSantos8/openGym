@@ -23,4 +23,11 @@ describe("Home's Today row on a narrow phone", () => {
     expect(rule).toMatch(/line-clamp:2/)
     expect(rule).toMatch(/text-overflow:ellipsis/)
   })
+
+  // A routine name is the user's own text and "Rest day" comes translated: CSS title case made
+  // "Beine und Po (erledigt)" read "Beine Und Po (Erledigt)" (QA 1.4.5).
+  it('shows the name as typed, without CSS capitalisation', () => {
+    const rule = css.match(/\.today-row \.ttl\{([^}]*)\}/)?.[1] || ''
+    expect(rule).not.toMatch(/text-transform/)
+  })
 })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { FATIGUE_STATES, fatigueHalfLifeOf, fatigueOf, strengthOf } from './recovery.js'
-import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn } from './recovery-view.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn, recoveryEtas, fmtRecoveryShort, fmtReadyAt } from './recovery-view.js'
 import { MUSCLES, levelsOf } from './muscles.js'
 
 const FATIGUE_BANDS = [
@@ -89,5 +89,35 @@ describe('fatigue recovery forecast', () => {
     expect(fmtRecoveryIn(null)).toBe(null)
     expect(fmtRecoveryIn(30 * 60000)).toMatch(/30/)
     expect(fmtRecoveryIn(30 * 3600000)).toMatch(/6|hour/)
+  })
+})
+
+describe('recovery in hours per muscle', () => {
+  const now = Date.parse('2026-11-05T09:00:00')
+  it('lists the tired muscles, soonest ready first, with the moment they are ready', () => {
+    const etas = recoveryEtas({ chest: 0.7, quadriceps: 0.7, biceps: 0.1, 'front-delts': 0.4 }, now)
+    expect(etas.map(e => e.slug)).toEqual(['front-delts', 'chest', 'quadriceps'])
+    for (const e of etas) {
+      expect(e.ms).toBeCloseTo(fatigueRecoveryMs({ chest: 0.7, quadriceps: 0.7, 'front-delts': 0.4 }[e.slug], e.slug).toReadyMs, 6)
+      expect(e.at).toBe(now + e.ms)
+    }
+    // Lower body has the 48 h half-life, the chest 30 h: same fatigue, later ready.
+    expect(etas[2].ms / etas[1].ms).toBeCloseTo(48 / 30, 6)
+  })
+  it('knows the split shoulder and the lats', () => {
+    const etas = recoveryEtas({ 'side-delts': 0.6, 'rear-delts': 0.6, lats: 0.6 }, now)
+    expect(etas.map(e => e.slug).sort()).toEqual(['lats', 'rear-delts', 'side-delts'])
+    expect(etas.find(e => e.slug === 'lats').ms / etas.find(e => e.slug === 'side-delts').ms).toBeCloseTo(30 / 24, 6)
+  })
+  it('is empty when everything is rested', () => {
+    expect(recoveryEtas({ chest: 0.1, lats: 0 }, now)).toEqual([])
+    expect(recoveryEtas(null, now)).toEqual([])
+  })
+  it('says the wait short and the moment as a weekday and a time', () => {
+    expect(fmtRecoveryShort(18 * 3600000)).toMatch(/^~18\s?h/)
+    expect(fmtRecoveryShort(30 * 60000)).toMatch(/^~30/)
+    expect(fmtRecoveryShort(72 * 3600000)).toMatch(/^~3\s?d/)
+    expect(fmtReadyAt(Date.parse('2026-11-05T15:07:00'), now)).toBe('15:00')
+    expect(fmtReadyAt(Date.parse('2026-11-06T07:02:00'), now)).toMatch(/^Fri\w* 0?7:00$/)
   })
 })

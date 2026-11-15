@@ -83,6 +83,34 @@ describe('active exercise swap sheet flow', () => {
   })
 })
 
+// Discord, tharun_01: swapping an exercise while resting took the countdown and its Skip away
+// until the next set. The rest is not the swap's business: it keeps running, pointing at its set.
+describe('a rest running through a swap', () => {
+  it('keeps running when the next exercise is replaced in place', () => {
+    useUI.getState().startRest(90, 0, { forSet: 0 })
+    submitSwap(1, EXDB[2], { mode: 'reps', sets: 2, reps: 8, weight: 30 })
+    const rest = useUI.getState().timer
+    expect(rest).not.toBeNull()
+    expect(rest.ready).toBeFalsy()
+    expect(rest.forIdx).toBe(0)
+    expect(rest.forSet).toBe(0)
+  })
+
+  it('follows its set when the replacement is inserted before it', () => {
+    const S = useStore.getState().S
+    useStore.setState({ S: { ...S, active: { ...S.active, entries: [entry(ids[0], true), entry(ids[1], true), entry(ids[2])] } } })
+    useUI.getState().startRest(90, 1, { forSet: 0 })
+    submitSwap(0, EXDB[2], { mode: 'reps', sets: 1, reps: 8, weight: 30 })
+    const confirm = useUI.getState().sheets.at(-1)
+    act(() => confirm.render(confirm.close).props.onConfirm())
+    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual([ids[0], ids[2], ids[1], ids[2]])
+    const rest = useUI.getState().timer
+    expect(rest).not.toBeNull()
+    expect(rest.forIdx).toBe(2)
+    expect(rest.forSet).toBe(0)
+  })
+})
+
 // A slot of a routine kept out of progression (rehab, deload) stays out when it is swapped,
 // whether the replacement takes its place or, beside logged sets, goes in after it.
 describe('swapping an exercise kept out of progression', () => {

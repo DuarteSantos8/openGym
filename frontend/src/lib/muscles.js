@@ -1,11 +1,17 @@
 // Which muscles an exercise trains, and how hard — the data behind every muscle map.
 //
 // The exercise dataset names muscles in free text and is not consistent about it:
-// "shoulders", "deltoids" and "delts" are the same thing, so are "quads" and
-// "quadriceps", "lats" and "latissimus dorsi", "core" and "abdominals". Nineteen
-// primary and forty secondary spellings collapse onto the eighteen muscles the body
-// map can actually draw, via ALIAS below. Anything genuinely undrawable (hands,
-// ankles, "cardiovascular system") maps to null and is dropped rather than guessed at.
+// "quads" and "quadriceps" are the same thing, so are "lats" and "latissimus dorsi", "core"
+// and "abdominals". Every spelling collapses onto the muscles the body map can draw, via
+// ALIAS below. Anything genuinely undrawable (hands, ankles, "cardiovascular system") maps
+// to null and is dropped rather than guessed at.
+//
+// Since 1.4.5 the shoulder is three heads (front, side, rear delts, #638) and the lats are
+// their own muscle, apart from the upper back. The catalogue names the head of every exercise.
+// A plain "shoulders" (a custom exercise, an older plan, a muscle snapshot from before) is still
+// a shoulder: it is the generic `deltoids`, shown as "Shoulders" and credited to all three
+// heads, the front most (GENERIC). And "Lats & upper back" was one muscle before: a custom
+// exercise or snapshot saved before the split (no `mv: 2`) that names it gets both (LEGACY).
 
 import { isWarmupRow } from './workout-model.js'
 import { EXIDX, smOf, isBuiltinEx } from './exercises.js'
@@ -16,7 +22,7 @@ import { workoutAt } from './history.js'
 // The muscles a map can shade, in head-to-toe order — also the order of any list
 // built from them, so "what am I neglecting" reads top-down like a body.
 export const MUSCLES = [
-  'trapezius', 'deltoids', 'chest', 'upper-back', 'serratus',
+  'trapezius', 'front-delts', 'side-delts', 'rear-delts', 'chest', 'lats', 'upper-back', 'serratus',
   'biceps', 'triceps', 'forearm',
   'abs', 'obliques', 'lower-back',
   'gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors',
@@ -26,8 +32,31 @@ export const MUSCLES = [
 // A picked list in the map's own order rather than the order the chips were tapped in — two
 // people building the same exercise get the same exercise. Unknown names keep their place at the end.
 export const inMuscleOrder = list => {
-  const at = m => { const i = MUSCLES.indexOf(m); return i < 0 ? MUSCLES.length : i }
+  // A generic shoulder sorts where its first head does.
+  const at = m => { const i = MUSCLES.indexOf(GENERIC[m] ? Object.keys(GENERIC[m])[0] : m); return i < 0 ? MUSCLES.length : i }
   return [...(list || [])].sort((a, b) => at(a) - at(b))
+}
+
+// A muscle name that stands for several of the map's muscles, with each one's share. Only the
+// shoulder: a generic shoulder exercise is mostly pressing, so the front head leads.
+export const GENERIC = Object.freeze({
+  deltoids: Object.freeze({ 'front-delts': 1, 'side-delts': 0.6, 'rear-delts': 0.4 }),
+})
+/** The map's muscles a slug stands for: itself, or a generic one's heads. */
+export const expandSlug = slug => (GENERIC[slug] ? Object.keys(GENERIC[slug]) : slug ? [slug] : [])
+// What a slug meant before the 1.4.5 split, for data saved before it (no `mv: 2`).
+const LEGACY = { 'upper-back': ['lats', 'upper-back'] }
+/** The muscle-model version written on custom exercises and snapshots since the split. */
+export const MUSCLE_MODEL = 2
+// A catalogue exercise is always the current model, also as a copy of its row (a spread of
+// EXIDX[id]); only a custom exercise, a plan file's or a history snapshot can be older.
+const isCatalogueCopy = ex => !ex.custom && !ex.muscleWeights && !!ex.id && !!EXIDX[ex.id] && isBuiltinEx(EXIDX[ex.id])
+const isLegacy = ex => !!ex && typeof ex === 'object' && ex.mv !== MUSCLE_MODEL && !isBuiltinEx(ex) && !isCatalogueCopy(ex)
+/** A slug's weight in a weights map: a generic one counts as its strongest head. */
+export function slugWeight(weights, slug) {
+  if (!weights) return 0
+  if (GENERIC[slug]) return Math.max(0, ...Object.keys(GENERIC[slug]).map(h => weights[h] || 0))
+  return weights[slug] || 0
 }
 
 // Drawn as the silhouette, never shaded: they carry no training load.
@@ -37,7 +66,8 @@ export const INERT = ['head', 'hair', 'neck', 'hands', 'feet', 'knees', 'ankles'
 // the cardio pseudo-muscle only under the dataset's own lowercase spelling, and every place
 // that shows it capitalises with CSS — a capitalised key here rendered English everywhere.
 export const MUSCLE_NAME = {
-  trapezius: 'Traps', deltoids: 'Shoulders', chest: 'Chest', 'upper-back': 'Lats & upper back',
+  trapezius: 'Traps', deltoids: 'Shoulders', 'front-delts': 'Front delts', 'side-delts': 'Side delts', 'rear-delts': 'Rear delts',
+  chest: 'Chest', lats: 'Lats', 'upper-back': 'Upper back',
   serratus: 'Serratus', biceps: 'Biceps', triceps: 'Triceps', forearm: 'Forearms',
   abs: 'Abs', obliques: 'Obliques', 'lower-back': 'Lower back', gluteal: 'Glutes',
   quadriceps: 'Quads', hamstring: 'Hamstrings', adductors: 'Adductors',
@@ -48,16 +78,18 @@ export const MUSCLE_NAME = {
 const ALIAS = {
   // primaries
   abs: 'abs', pectorals: 'chest', biceps: 'biceps', glutes: 'gluteal', delts: 'deltoids',
-  triceps: 'triceps', 'upper back': 'upper-back', lats: 'upper-back', calves: 'calves',
+  'front delts': 'front-delts', 'side delts': 'side-delts', 'rear delts': 'rear-delts',
+  triceps: 'triceps', 'upper back': 'upper-back', lats: 'lats', calves: 'calves',
   quads: 'quadriceps', forearms: 'forearm', hamstrings: 'hamstring', spine: 'lower-back',
   traps: 'trapezius', adductors: 'adductors', 'serratus anterior': 'serratus',
   abductors: 'gluteal', 'levator scapulae': 'trapezius', 'cardiovascular system': 'cardiovascular system',
   // secondaries
-  shoulders: 'deltoids', deltoids: 'deltoids', 'rear deltoids': 'deltoids',
-  'rotator cuff': 'deltoids', quadriceps: 'quadriceps', core: 'abs', abdominals: 'abs',
+  shoulders: 'deltoids', deltoids: 'deltoids', 'rear deltoids': 'rear-delts',
+  // The cuff's visible, trainable part is at the back of the shoulder (external rotation).
+  'rotator cuff': 'rear-delts', quadriceps: 'quadriceps', core: 'abs', abdominals: 'abs',
   'lower abs': 'abs', chest: 'chest', 'upper chest': 'chest', 'hip flexors': 'hip-flexors',
   obliques: 'obliques', 'lower back': 'lower-back', rhomboids: 'upper-back',
-  trapezius: 'trapezius', back: 'upper-back', 'latissimus dorsi': 'upper-back',
+  trapezius: 'trapezius', back: 'upper-back', 'latissimus dorsi': 'lats',
   brachialis: 'biceps', soleus: 'calves', shins: 'tibialis', wrists: 'forearm',
   'wrist flexors': 'forearm', 'wrist extensors': 'forearm', 'grip muscles': 'forearm',
   groin: 'adductors', 'inner thighs': 'adductors',
@@ -69,15 +101,15 @@ const ALIAS = {
 // group sum to 1 — "upper legs" spreads over three muscles rather than counting triple.
 const BY_BODYPART = {
   chest: { chest: 1 },
-  back: { 'upper-back': 0.75, 'lower-back': 0.25 },
-  shoulders: { deltoids: 1 },
+  back: { lats: 0.4, 'upper-back': 0.4, 'lower-back': 0.2 },
+  shoulders: { 'front-delts': 0.4, 'side-delts': 0.4, 'rear-delts': 0.2 },
   'upper arms': { biceps: 0.5, triceps: 0.5 },
   'lower arms': { forearm: 1 },
   waist: { abs: 0.7, obliques: 0.3 },
   'upper legs': { quadriceps: 0.4, hamstring: 0.35, gluteal: 0.25 },
   'lower legs': { calves: 0.8, tibialis: 0.2 },
   neck: { trapezius: 1 },
-  'full body': { chest: 0.2, 'upper-back': 0.2, gluteal: 0.2, quadriceps: 0.2, hamstring: 0.1, abs: 0.1 },
+  'full body': { chest: 0.2, lats: 0.1, 'upper-back': 0.1, gluteal: 0.2, quadriceps: 0.2, hamstring: 0.1, abs: 0.1 },
   cardio: {},
 }
 
@@ -147,17 +179,18 @@ export function hasExplicitMuscleMetadata(entry) {
   return [ex.tg, ex.mg, ...arrayOf(smOf(ex))].some(value => canonicalMuscle(value))
 }
 
-function canonicalMuscle(value) {
+export function canonicalMuscle(value) {
   const name = String(value || '').toLowerCase().trim()
-  if (MUSCLES.includes(name)) return name
+  if (MUSCLES.includes(name) || GENERIC[name]) return name
   return ALIAS[name] || null
 }
 
-function canonicalUnique(values) {
+// `legacy`: the values come from before the split, so "Lats & upper back" is both again.
+function canonicalUnique(values, legacy = false) {
   const out = []
   for (const value of values || []) {
     const slug = canonicalMuscle(value)
-    if (slug && !out.includes(slug)) out.push(slug)
+    for (const s of legacy && LEGACY[slug] ? LEGACY[slug] : [slug]) if (s && !out.includes(s)) out.push(s)
   }
   return out
 }
@@ -171,7 +204,7 @@ export function muscleGroupsOf(entry) {
   const source = useParts
     ? [...parts.primary, ...parts.secondary]
     : explicit || [ex?.tg, ex?.mg, ...arrayOf(smOf(ex))]
-  const out = canonicalUnique(source)
+  const out = canonicalUnique(source, isLegacy(ex))
   if (!out.length && !useParts) {
     canonicalUnique(Object.keys(BY_BODYPART[ex?.bp] || {})).forEach(slug => out.push(slug))
   }
@@ -182,8 +215,9 @@ export function muscleGroupsOf(entry) {
 export function matchesMuscleGroups(ex, requested) {
   const wanted = arrayOf(requested).map(canonicalMuscle).filter(Boolean)
   if (!wanted.length) return true
-  const groups = new Set(muscleGroupsOf(ex))
-  return wanted.some(group => groups.has(group))
+  // A generic shoulder matches every head and each head matches a generic shoulder.
+  const groups = new Set(muscleGroupsOf(ex).flatMap(g => [g, ...expandSlug(g)]))
+  return wanted.some(group => expandSlug(group).some(g => groups.has(g)) || groups.has(group))
 }
 
 // Fatigue, strength and the balance map ask for the muscles of every entry of every workout on
@@ -206,18 +240,27 @@ export function muscleWeightsOf(ex) {
 function weightsOf(ex) {
   const sourceEx = metadataOf(ex)
   if (sourceEx !== ex) return muscleWeightsOf(sourceEx)
+  const legacy = isLegacy(ex)
   if (ex.muscleWeights && typeof ex.muscleWeights === 'object' && !Array.isArray(ex.muscleWeights)) {
     const snapshot = {}
-    MUSCLES.forEach(slug => {
-      const weight = Number(ex.muscleWeights[slug])
-      if (Number.isFinite(weight) && weight >= 0 && weight <= 1) snapshot[slug] = weight
-    })
+    const put = (slug, weight) => { snapshot[slug] = Math.max(snapshot[slug] ?? 0, weight) }
+    for (const [key, value] of Object.entries(ex.muscleWeights)) {
+      const weight = Number(value)
+      if (!Number.isFinite(weight) || weight < 0 || weight > 1) continue
+      if (GENERIC[key]) for (const [head, f] of Object.entries(GENERIC[key])) put(head, Math.round(weight * f * 100) / 100)
+      else if (legacy && LEGACY[key]) LEGACY[key].forEach(slug => put(slug, weight))
+      else if (MUSCLES.includes(key)) put(key, weight)
+    }
     if (Object.keys(snapshot).length) return snapshot
   }
   const out = {}
+  const put = (slug, w) => { out[slug] = Math.max(out[slug] || 0, w) }
   const add = (name, w) => {
     const slug = canonicalMuscle(name)
-    if (slug) out[slug] = Math.max(out[slug] || 0, w)
+    if (!slug) return
+    if (GENERIC[slug]) for (const [head, f] of Object.entries(GENERIC[slug])) put(head, Math.round(w * f * 100) / 100)
+    else if (legacy && LEGACY[slug]) LEGACY[slug].forEach(s => put(s, w))
+    else put(slug, w)
   }
   const parts = explicitPartsOf(ex)
   const explicit = explicitGroupsOf(ex)
@@ -250,20 +293,21 @@ const positiveOf = weights => Object.fromEntries(Object.entries(weights).filter(
 /** Snapshot display and weighted muscle metadata into a completed history entry. */
 export function exerciseMuscleSnapshot(ex) {
   if (!ex || typeof ex !== 'object') return {}
-  const out = {}
+  const out = { mv: MUSCLE_MODEL }
   if (ex.n != null) out.n = ex.n
   if (ex.bp != null) out.bp = ex.bp
   const weights = muscleWeightsOf(ex)
   if (Object.keys(weights).length) out.muscleWeights = { ...weights }
   const parts = explicitPartsOf(ex)
   if (parts) {
-    const primaries = canonicalUnique(parts.primary)
-    const secondaries = canonicalUnique(parts.secondary).filter(slug => !primaries.includes(slug))
+    const primaries = canonicalUnique(parts.primary, isLegacy(ex))
+    const secondaries = canonicalUnique(parts.secondary, isLegacy(ex)).filter(slug => !primaries.includes(slug))
     if (primaries.length) out.primaries = primaries
     if (secondaries.length) out.secondaries = secondaries
   }
   if (hasExplicitMuscleMetadata(ex)) out.muscleGroups = [...muscleGroupsOf(ex)]
-  return out
+  // The model version only says something next to something it describes.
+  return Object.keys(out).length > 1 ? out : {}
 }
 
 /**

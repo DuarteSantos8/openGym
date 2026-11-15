@@ -3,9 +3,10 @@
   "name": "lever gripless shrug v. 2",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "traps",
   "secondaryMuscles": [
-    "shoulders",
+    "rear delts",
     "forearms"
   ],
   "category": "strength",

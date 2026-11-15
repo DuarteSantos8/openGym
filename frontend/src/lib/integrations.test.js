@@ -7,13 +7,25 @@ const ids = ctx => directory(ctx).flatMap(c => c.cards.map(x => x.id))
 
 describe('the directory', () => {
   it('a guest in a browser sees the phone-only stores as such, and webhooks as needing a server', () => {
-    // Apple Health opens its export and the Shortcut in a browser; Health Connect stays phone-only.
-    expect(cardState('apple-health', web)).toEqual({ status: null, action: 'open' })
+    expect(cardState('apple-health', web)).toEqual({ status: 'device', action: null })
     expect(cardState('health-connect', web)).toEqual({ status: 'device', action: null })
     expect(cardState('webhook', web)).toEqual({ status: 'server', action: null })
     expect(cardState('mcp', web)).toEqual({ status: 'server', action: null })
     expect(ids(web)).not.toContain('coach')   // the server's Coach, not offered here
-    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'automation', 'ai'])
+    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai', 'sister'])
+  })
+
+  it('openNutrition (gm-hooks): this device links itself, no server needed; off until linked, never in the demo', () => {
+    expect(cardState('opennutrition', web)).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('opennutrition', { ...web, nutrition: { url: 'https://n.example', at: 1 } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('opennutrition', { ...web, nutrition: { url: 'https://n.example', error: 'revoked' } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('opennutrition', { ...web, demo: true })).toBeNull()
+    expect(ids({ ...web, mod: id => id !== 'integrations' })).not.toContain('opennutrition')
+  })
+
+  it('a phone reading only vitals or sport counts as connected, not off', () => {
+    const android = { ...web, mobile: true, platform: 'android' }
+    for (const k of ['readBody', 'readVitals', 'readSport']) expect(cardState('health-connect', { ...android, health: { status: 'available', [k]: true } }).status).toBe('connected')
   })
 
   it('a phone shows its own store only, by what the store says', () => {
@@ -31,12 +43,6 @@ describe('the directory', () => {
     expect(cardState('webhook', ios).status).toBe('server')
     expect(cardState('coach', { ...ios, coachMode: 'byok' })).toEqual({ status: 'connected', action: 'manage' })
     expect(cardState('coach', ios)).toEqual({ status: 'off', action: 'connect' })
-  })
-
-  it('Apple Health counts as connected when the Health area reads it, with the store’s switches off', () => {
-    const ios = { ...web, mobile: true, platform: 'ios', health: { status: 'available', on: false } }
-    expect(cardState('apple-health', ios)).toEqual({ status: 'off', action: 'connect' })
-    expect(cardState('apple-health', { ...ios, reads: { 'apple-health': true } })).toEqual({ status: 'connected', action: 'manage' })
   })
 
   it('RENPHO, read by the server, shows only to a profile signed in to one', () => {
@@ -73,7 +79,7 @@ describe('the directory', () => {
   it('every card says what it does, and the "works with" list has no Connect of its own', () => {
     for (const c of CARDS) { expect(c.desc).toBeTruthy(); expect(c.syncs.length).toBeGreaterThan(0) }
     expect(WORKS_WITH.map(w => w.name)).toEqual(['Garmin', 'COROS', 'Polar', 'Fitbit', 'Samsung Health', 'Oura', 'Withings', 'Renpho'])
-    // RENPHO alone also has a line of its own to the server (Settings → Health).
+    // RENPHO alone also has a line of its own to the server (Settings → Integrations → RENPHO Health).
     expect(WORKS_WITH.filter(w => w.direct).map(w => [w.name, w.direct])).toEqual([['Renpho', 'renpho']])
     expect(WORKS_WITH.every(w => ['hr', 'weight', 'both'].includes(w.reads))).toBe(true)
     expect(Object.keys(PILL)).toEqual(['connected', 'off', 'attention', 'device', 'server'])
@@ -99,5 +105,39 @@ describe('normalizeWebhookUrl', () => {
     expect(normalizeWebhookUrl('ftp://nas/x')).toBe('ftp://nas/x')
     expect(normalizeWebhookUrl('not a url')).toBe('not a url')
     expect(normalizeWebhookUrl('')).toBe('')
+  })
+})
+
+describe('the WebDAV card (#582)', () => {
+  it('needs no server, says when the last backup failed, and stays out of the demo', async () => {
+    const { cardState } = await import('./integrations.js')
+    expect(cardState('webdav', { user: null })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1 } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', last: { ok: false } } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1, foreign: true } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('webdav', { demo: true })).toBeNull()
+  })
+})
+
+describe('the calendar card', () => {
+  it('needs the server and its tokens, and says when it is on', async () => {
+    const { cardState } = await import('./integrations.js')
+    expect(cardState('calendar', { user: null })).toEqual({ status: 'server', action: null })
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: false })).toBeNull()
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: false } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: true } })).toEqual({ status: 'connected', action: 'manage' })
+  })
+})
+
+describe('the Strava card (#478)', () => {
+  it('only where the server offers it, an admin is told how; then connect, connected or attention', async () => {
+    const { cardState } = await import('./integrations.js')
+    const u = { user: { id: 'u' } }
+    expect(cardState('strava', { user: null })).toEqual({ status: 'server', action: null })
+    expect(cardState('strava', { ...u, offered: ['webhook'] })).toBeNull()
+    expect(cardState('strava', { ...u, admin: true, offered: [] })).toEqual({ status: 'off', action: 'open' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [] } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [{ provider: 'strava', status: 'connected' }] } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [{ provider: 'strava', status: 'attention' }] } })).toEqual({ status: 'attention', action: 'manage' })
   })
 })

@@ -3,10 +3,11 @@
   "name": "bodyweight standing military press (wall supported)",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "mobility",
   "description": "An unloaded overhead press against a wall to groove a clean path and open the shoulders.",

@@ -41,7 +41,7 @@ afterEach(() => {
 
 describe('a set ticked on the watch', () => {
   it('takes the watch\'s numbers, is ticked by the screen\'s own tick, and starts the rest', () => {
-    const ev = { id: 'e1', type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 0, w: 62.5, r: 7, at: 1 }
+    const ev = { id: 'e1', type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 0, w: 62.5, r: 7, at: Date.now() }
     act(() => { applyEvents([ev, ev], () => useStore.getState()) })
     const set = useStore.getState().S.active.entries[0].sets[0]
     expect(set).toMatchObject({ w: 62.5, r: 7, done: true })
@@ -84,6 +84,43 @@ describe('a set ticked on the watch', () => {
     const S = useStore.getState().S
     expect(S.active).toBeNull()
     expect(S.workouts.length).toBe(before)
+  })
+})
+
+// The watch starts its rest when Done is pressed; the phone hears of the set a moment later, or
+// much later when it slept in a pocket or was out of reach. Its rest counts from the tick too.
+describe('the rest after a set ticked on the watch', () => {
+  const tick = (at, over = {}) => ({ id: 'r' + at, type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at, ...over })
+
+  it('heard at once: the whole rest', () => {
+    act(() => { applyEvents([tick(Date.now() - 400)], () => useStore.getState()) })
+    expect(useUI.getState().timer.left).toBe(90)
+  })
+
+  it('heard half a minute late: ends when the watch\'s does', () => {
+    const at = Date.now() - 30_000
+    act(() => { applyEvents([tick(at)], () => useStore.getState()) })
+    const tm = useUI.getState().timer
+    expect(tm.left).toBe(60)
+    expect(tm.endsAt).toBe(at + 90_000)
+  })
+
+  it('a set done twenty minutes ago (the phone was away) starts no rest now', () => {
+    act(() => { applyEvents([tick(Date.now() - 20 * 60_000)], () => useStore.getState()) })
+    expect(useUI.getState().timer).toBeNull()
+    expect(useStore.getState().S.active.entries[0].sets[0].done).toBe(true)
+  })
+
+  it('a watch whose clock runs ahead leaves the phone\'s rest as it is', () => {
+    act(() => { applyEvents([tick(Date.now() + 45_000)], () => useStore.getState()) })
+    expect(useUI.getState().timer.left).toBe(90)
+  })
+
+  it('a whole backlog drained at once leaves no rest running and every set done', () => {
+    const t = Date.now() - 15 * 60_000
+    act(() => { applyEvents([tick(t), tick(t + 120_000, { setIdx: 1 })], () => useStore.getState()) })
+    expect(useUI.getState().timer).toBeNull()
+    expect(useStore.getState().S.active.entries[0].sets.map(s => s.done)).toEqual([true, true])
   })
 })
 

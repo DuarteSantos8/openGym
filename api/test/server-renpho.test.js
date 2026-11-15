@@ -15,6 +15,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { boundPort } from './helpers.mjs';
 import { encrypt, decrypt } from '../providers/renpho/client.js';
+import { mapMeasurement, mapFriendDay } from '../providers/renpho/mapping.js';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -139,7 +140,19 @@ async function synced(h, uid, after = 0) {
   }
   throw new Error('sync did not finish');
 }
-const renphoRecords = (S, uid) => (S.health || []).filter(r => r.src === 'renpho');
+// The readings the server keeps for a profile (data/providers/renpho-<id>.json), mapped the way
+// the summary reads them.
+function kept(h, uid) {
+  let raw = null;
+  try { raw = JSON.parse(fs.readFileSync(h.rawFile(uid), 'utf8')); } catch { return []; }
+  return Object.values(raw.measurements).flatMap(m => {
+    const id = String(m.external_id);
+    const got = id.startsWith('day:') ? mapFriendDay(id.split(':')[1], m.raw_provider_data) : mapMeasurement(m.raw_provider_data);
+    return got ? got.readings : [];
+  });
+}
+// The profile's own data, which RENPHO never writes to.
+const untouched = (h, uid) => { const S = h.state(uid); return S._rev === 1 && S.health.length === 0 && S.bodyweight.length === 0; };
 
 test('RENPHO Health end to end', async t => {
   const f = fakeRenpho();
@@ -175,16 +188,27 @@ test('RENPHO Health end to end', async t => {
   assert.equal(st.segmental, true);
   assert.ok(st.fields.includes('imp20LeftArm') && st.fields.includes('muscleMass'));
   assert.deepEqual(st.unknown, ['mysteryField']);
-  let S = h.state(A);
-  let mine = renphoRecords(S, A);
+  let mine = kept(h, A);
   const first = mine.length;
   assert.ok(first >= 8);
   assert.ok(mine.every(r => r.g === 'renpho:9100000000000000101' || r.g === 'renpho:9100000000000000102'));
   assert.equal(mine.find(r => r.type === 'weight' && r.g.endsWith('101')).v, 80);
   assert.equal(mine.find(r => r.type === 'muscleMass' && r.g.endsWith('101')).v, 36);
   assert.ok(!mine.some(r => r.sid.startsWith('9100000000000000103')), 'a family member\'s reading came in');
-  // The weigh-ins land in the body weight log too.
-  assert.equal(S.bodyweight.length, 2);
+  // The profile's own data stays as it was: the readings are the server's, shown read-only.
+  assert.ok(untouched(h, A), 'RENPHO wrote into the profile');
+
+  // The summary Body measurements shows: per kind the latest value, no weight (that is a weigh-in).
+  let sum = (await call(h, A, 'GET', '/api/renpho/summary')).body;
+  assert.equal(sum.connected, true);
+  const item = type => sum.items.find(x => x.type === type);
+  assert.equal(item('weight'), undefined);
+  assert.equal(item('muscleMass').v, 35.775, '45 % of the latest 79.5 kg');
+  assert.equal(item('muscleMass').t, (ta + 86400) * 1000);
+  assert.equal(item('bodyFat').v, 20);
+  assert.equal(item('imp20LeftArm').v, 300, 'a segmental value, from the reading that had it');
+  assert.equal(item('muscleMass').change, null, 'no reading a week or more before the latest');
+  assert.equal(sum.t, (ta + 86400) * 1000);
 
   // Secrets: sealed on the row, never in an answer.
   const dbText = h.dbText();
@@ -198,7 +222,7 @@ test('RENPHO Health end to end', async t => {
   st = await synced(h, A, before);
   assert.equal(st.lastResult.added, 0);
   assert.equal(st.lastResult.updated, 0);
-  assert.equal(renphoRecords(h.state(A), A).length, first);
+  assert.equal(kept(h, A).length, first);
 
   // A reading changed in RENPHO: updated where it is.
   f.accounts['a@example.com'].rows[1].weight = 79.1;
@@ -209,9 +233,11 @@ test('RENPHO Health end to end', async t => {
   assert.equal(st.error, null);
   assert.equal(f.logins, logins + 1, 'it did not sign in again with the kept password');
   assert.ok(st.lastResult.updated >= 1);
-  mine = renphoRecords(h.state(A), A);
+  mine = kept(h, A);
   assert.equal(mine.length, first);
   assert.equal(mine.find(r => r.type === 'weight' && r.g.endsWith('102')).v, 79.1);
+  sum = (await call(h, A, 'GET', '/api/renpho/summary')).body;
+  assert.equal(item('muscleMass').v, 35.595, 'the summary follows the changed reading');
 
   // The raw copy keeps every field, the unknown one included, with the provider's facts.
   const raw = (await call(h, A, 'GET', '/api/renpho/raw')).body;
@@ -226,9 +252,9 @@ test('RENPHO Health end to end', async t => {
   // A second profile with its own RENPHO account: only its own readings, on either side.
   assert.equal((await call(h, B, 'POST', '/api/renpho/connect', { email: 'b@example.com', password: 'b-password' })).status, 200);
   await synced(h, B);
-  const bRecords = renphoRecords(h.state(B), B);
+  const bRecords = kept(h, B);
   assert.ok(bRecords.length > 0 && bRecords.every(r => r.g === 'renpho:9200000000000000201'));
-  assert.ok(renphoRecords(h.state(A), A).every(r => !r.g.endsWith('201')));
+  assert.ok(kept(h, A).every(r => !r.g.endsWith('201')));
   assert.ok(!JSON.stringify((await call(h, A, 'GET', '/api/renpho/raw')).body).includes('9200000000000000201'));
 
   // The password changed in RENPHO: the next sync says so, and keeps what came before.
@@ -238,13 +264,15 @@ test('RENPHO Health end to end', async t => {
   const sb = await synced(h, B, Date.now() - 1);
   assert.equal(sb.error.code, 'auth');
   assert.equal(sb.error.reason, '30001: fail');
-  assert.ok(renphoRecords(h.state(B), B).length > 0);
+  assert.ok(kept(h, B).length > 0);
+  assert.ok((await call(h, B, 'GET', '/api/renpho/summary')).body.items.length > 0);
 
-  // Disconnect: the account and the raw copy are gone; the readings stay in the profile.
+  // Disconnect: the account and the readings kept for it are gone; the profile is as it was.
   assert.equal((await call(h, A, 'DELETE', '/api/renpho')).status, 200);
   assert.deepEqual((await call(h, A, 'GET', '/api/renpho')).body, { connected: false });
   assert.equal(fs.existsSync(h.rawFile(A)), false);
-  assert.equal(renphoRecords(h.state(A), A).length, first);
+  assert.deepEqual((await call(h, A, 'GET', '/api/renpho/summary')).body, { connected: false, items: [], t: null });
+  assert.ok(untouched(h, A));
   assert.ok(!h.dbText().includes('a@example.com'));
 });
 
@@ -287,7 +315,7 @@ test('RENPHO through a second account: the friend\'s daily values, and the app s
   assert.equal(st.error, null);
   assert.equal(st.lastResult.measurements, 4, 'one per day with a weigh-in, the whole history');
   assert.equal(st.segmental, false);
-  const mine = renphoRecords(h.state(A), A);
+  const mine = kept(h, A);
   const at = (type, d) => mine.find(x => x.type === type && x.d === d)?.v;
   const dayOf = ts => new Date(ts * 1000).toISOString().slice(0, 10);
   assert.equal(at('weight', dayOf(now - day)), 80.4, 'the day\'s last weigh-in');
@@ -306,5 +334,6 @@ test('RENPHO through a second account: the friend\'s daily values, and the app s
   assert.equal(st.lastResult.added, 0);
   assert.equal(st.lastResult.updated, 0);
   assert.ok(f.trendCalls - calls <= 8, `asked ${f.trendCalls - calls} windows for a few days`);
-  assert.equal(renphoRecords(h.state(A), A).length, mine.length);
+  assert.equal(kept(h, A).length, mine.length);
+  assert.ok(untouched(h, A));
 });

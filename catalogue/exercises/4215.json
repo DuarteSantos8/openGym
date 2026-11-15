@@ -3,12 +3,13 @@
   "name": "lever one arm low row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A one-arm version of the plate-loaded low row. Working one side at a time helps fix strength differences in your back.",

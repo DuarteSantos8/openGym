@@ -1,26 +1,13 @@
 import { t } from '../lib/i18n.js'
-import { fmtDate } from '../lib/format.js'
-import { SEGMENTS, segType } from '../../../api/health/composition.js'
-import { sourceLabel } from '../lib/health/providers.js'
+import { fmtDate, isoOf } from '../lib/format.js'
+import { SEGMENTS, segType } from '../lib/renpho-body.js'
 
-// Segmental analysis (an eight-electrode scale, RENPHO): the latest weigh-in that has segment
-// values, muscle and fat apart, left against right for the arms and the legs, the trunk on its own,
+// Segmental analysis (an eight-electrode scale, RENPHO, under Body measurements): the latest segment
+// values the server has (lib/renpho-body.js renphoSegments), muscle and fat apart, left against right for the arms and the legs, the trunk on its own,
 // and the impedances at 20 and 100 kHz. The values are in the scale's own unit, shown as they came:
 // what matters here is one side against the other.
 const PAIRS = [['leftArm', 'rightArm', 'Arms'], ['leftLeg', 'rightLeg', 'Legs']]
 const fmt = (v, dec = 1) => (v == null ? '–' : Number(v).toFixed(dec))
-
-/** The latest group of records with segmental values, as { t, d, src, values }; null when none. */
-export function latestSegmental(health) {
-  const byG = new Map()
-  for (const r of Array.isArray(health) ? health : []) {
-    if (!r?.g || !/^(segFat|segMuscle|imp20|imp100)/.test(r.type)) continue
-    let m = byG.get(r.g)
-    if (!m) byG.set(r.g, m = { g: r.g, t: r.t, d: r.d, src: r.src, values: {} })
-    m.values[r.type] = r.v
-  }
-  return [...byG.values()].sort((a, b) => b.t - a.t)[0] || null
-}
 
 function Pair({ title, left, right }) {
   const max = Math.max(left ?? 0, right ?? 0) || 1
@@ -45,14 +32,13 @@ function Block({ kind, title, values, color }) {
   </div>
 }
 
-export default function SegmentalAnalysis({ health }) {
-  const m = latestSegmental(health)
+export default function SegmentalAnalysis({ seg: m }) {
   if (!m) return null
   const imp = SEGMENTS.filter(p => m.values[segType('imp20', p)] != null || m.values[segType('imp100', p)] != null)
   const PART = { leftArm: 'Left arm', rightArm: 'Right arm', trunk: 'Trunk', leftLeg: 'Left leg', rightLeg: 'Right leg' }
   return <section className="seg-analysis">
     <h4 className="sec" style={{ margin: '18px 2px 4px' }}>{t('Segmental analysis')}</h4>
-    <div className="small dim" style={{ margin: '0 2px 10px' }}>{fmtDate(m.d, true)} · {t(sourceLabel(m.src))} · {t('in the scale’s own units')}</div>
+    <div className="small dim" style={{ margin: '0 2px 10px' }}>{fmtDate(isoOf(new Date(m.t)), true)} · RENPHO · {t('in the scale’s own units')}</div>
     <Block kind="segMuscle" title={t('Muscle')} values={m.values} color="var(--green)" />
     <Block kind="segFat" title={t('Fat')} values={m.values} color="var(--orange)" />
     {imp.length > 0 && <div className="card seg-card">

@@ -4,12 +4,13 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
 import { MOBILE, shareExport } from '../lib/mobile.js'
-import { metricOf } from '../lib/health/metrics.js'
+import { renphoFieldLabel } from '../lib/renpho-body.js'
 import { Section, Row, Button, TextField, Switch } from './ui.jsx'
 
 // Settings → Integrations → RENPHO Health. The server holds the connection (api/providers/renpho): it
-// signs in to RENPHO, keeps the sign-in sealed, and syncs the scale's readings into the profile on
-// its own every few hours. This card connects, says how the last sync went, syncs now and
+// signs in to RENPHO, keeps the sign-in sealed, and reads the scale's readings on its own every few
+// hours, kept on the server and shown under Body measurements (RenphoBodyCard.jsx), never written
+// into the profile. This card connects, says how the last sync went, syncs now and
 // disconnects. The password goes to the server once and is never kept on the device.
 //
 // RENPHO keeps one sign-in per account, so the account the RENPHO app uses, signed in here, signs
@@ -44,22 +45,17 @@ const ago = ms => {
 
 export default function RenphoSource() {
   const user = useStore(s => s.user)
-  const pullState = useStore(s => s.pullState)
   const toast = m => useUI.getState().toast(m)
   const [st, setSt] = useState(null)
   const [form, setForm] = useState({ email: '', password: '', areaCode: 'US', friend: false, friendEmail: '' })
   const [busy, setBusy] = useState(false)
   const [again, setAgain] = useState(false)
   const timer = useRef(null)
-  const wasSyncing = useRef(false)
 
   const load = () => api('/api/renpho').then(s => {
     setSt(s)
     clearTimeout(timer.current)
     if (s.syncing) timer.current = setTimeout(load, 2000)
-    // A sync that just ended: bring its readings into this device's copy now.
-    if (wasSyncing.current && !s.syncing && typeof pullState === 'function') Promise.resolve().then(pullState).catch(() => {})
-    wasSyncing.current = !!s.syncing
   }).catch(e => {
     // No RENPHO here at all (signed out, no server for this phone): nothing shows. The server
     // only out of reach for now (restarting, the phone offline): the card says so and asks again.
@@ -86,7 +82,7 @@ export default function RenphoSource() {
       const s = await api('/api/renpho/connect', { method: 'POST', body: JSON.stringify(body), timeout: 45000 })
       setForm(f => ({ ...f, password: '' }))
       setAgain(false)
-      setSt(s); wasSyncing.current = true
+      setSt(s)
       timer.current = setTimeout(load, 1500)
       toast(t('RENPHO connected. Importing your measurements…'))
     } catch (e) {
@@ -95,7 +91,7 @@ export default function RenphoSource() {
     } finally { setBusy(false) }
   }
   const syncNow = async () => {
-    try { setSt(await api('/api/renpho/sync', { method: 'POST', body: '{}' })); wasSyncing.current = true; timer.current = setTimeout(load, 1500) }
+    try { setSt(await api('/api/renpho/sync', { method: 'POST', body: '{}' })); timer.current = setTimeout(load, 1500) }
     catch (e) { toast(errorText(e.data?.code)) }
   }
   const disconnect = async () => {
@@ -118,9 +114,9 @@ export default function RenphoSource() {
   }
 
   const showForm = !st.connected || again
-  const fields = (st.fields || []).filter(f => metricOf(f) && !metricOf(f).seg).map(f => t(metricOf(f).label))
+  const fields = (st.fields || []).map(renphoFieldLabel).filter(Boolean).map(l => t(l))
   return <Section title="RENPHO Health" footer={!showForm
-    ? t('Your scale’s readings come in every few hours on their own, next to the ones you log yourself.')
+    ? t('Your scale’s readings come in every few hours on their own. Body measurements shows the latest of each.')
     : form.friend
       ? t('Sign in with a second RENPHO account that is your friend in the RENPHO app. The server reads your values through it, so the RENPHO app stays signed in on your phone: one value per day, the day’s last weigh-in, without segmental values.')
       : t('Sign in with your RENPHO Health account. The server keeps the sign-in encrypted and imports every reading of your scale, also the ones RENPHO does not pass to Apple Health. RENPHO has no public API: this uses the one its app uses, and may stop working if RENPHO changes it.')}>
@@ -145,7 +141,7 @@ export default function RenphoSource() {
         subtitle={st.mode !== 'friend' ? t('With a second account, the RENPHO app stays signed in on your phone.') : null}>
         <Button size="sm" onClick={() => { setForm(f => ({ ...f, friend: true })); setAgain(true) }}>{t('Connect')}</Button>
       </Row>}
-      <Row icon="xmark" iconTint="var(--red)" title={t('Disconnect RENPHO')} subtitle={t('The readings already imported stay.')}>
+      <Row icon="xmark" iconTint="var(--red)" title={t('Disconnect RENPHO')} subtitle={t('The readings kept on your server go with it.')}>
         <Button size="sm" onClick={disconnect}>{t('Disconnect')}</Button>
       </Row>
     </>}

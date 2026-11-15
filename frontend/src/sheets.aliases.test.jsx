@@ -83,3 +83,18 @@ it('leaves unsaved edits out of state', () => {
   type(field(), 'Unsaved name')
   expect(useStore.getState().S.exAliases).toEqual({})
 })
+it('picks which name the exercise is shown by, and back to its own (#903)', () => {
+  const ex = CATALOGUE.find(e => e.id === '1162')
+  exerciseDetailSheet(ex); render()
+  expect(host.querySelector('[aria-label="Shown as"]')).toBeNull()   // nothing to pick from yet
+  openNames()
+  type(field(), 'OHP, Military press'); click('Save names')
+  const chips = () => [...host.querySelectorAll('[aria-label="Shown as"] button')]
+  expect(chips().map(b => b.textContent)).toEqual([ex.n, 'OHP', 'Military press'])
+  expect(chips()[0].getAttribute('aria-pressed')).toBe('true')
+  click('OHP')
+  expect(useStore.getState().S.exShownName[ex.id]).toBe('OHP')
+  expect(chips()[1].getAttribute('aria-pressed')).toBe('true')
+  click(ex.n)
+  expect(useStore.getState().S.exShownName[ex.id]).toBeNull()
+})

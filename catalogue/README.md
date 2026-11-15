@@ -50,10 +50,19 @@ Open `exercises/<id>.json` (the browse pages link straight to it) and press the 
 - **hold** (optional): `true` for an exercise that is only ever held, never repeated: a plank, a
   wall sit, a lever, a hang. Added to a workout or a routine, it starts as a timed hold. Leave it
   out when the exercise moves (a plank with taps, a Pallof press).
+- **track** (optional): `"distance"` for a carry, a sled push or drag, or a sprint: done over a
+  distance, so it starts as metres per set with a load (the lifter can still switch it to reps or
+  time). Never together with `hold`.
 - **needs** (optional): `["bench"]` and/or `["pull-up bar"]` when the exercise needs one but its
   name doesn't say so: a dumbbell fly lies on a bench, an inverted row hangs under a bar. A name
   with "bench", "incline", "pull-up" or "chin-up" already counts, so leave it out there. An
   equipment profile without that kit hides the exercise.
+- **machineKind**: required when the equipment is a machine (leverage machine, sled machine, smith
+  machine, assisted), and only then. It names the machine you need, so an equipment profile can say
+  "leg press yes, leg extension no": `leg-press` covers the lever and the 45° sled ones alike, a
+  Smith leg press is `smith`. The list is `MACHINE_KINDS` in
+  [`scripts/catalogue/validate.mjs`](../scripts/catalogue/validate.mjs); `other` is for a machine
+  no card fits, `none` for an "assisted" exercise that needs no machine (a partner, a band).
 - **muscleMap** (optional): a more precise muscle-map drawing with the body map's own muscle names
   and weights from 0 to 1. Only needed when target and secondaryMuscles don't draw it right.
 - **femaleVariant / variantOf**: links the same exercise drawn on a female figure. Leave as is.
@@ -75,7 +84,7 @@ partial work is welcome. Translate the name and as much of the steps as you like
 }
 ```
 
-Languages: `ar bn de es fr hi hu it ko pl pt pt-BR ru sv th tr uk zh zh-TW` (the app's languages).
+Languages: `ar bn cs da de es fa fr hi hu it ko pl pt pt-BR ru sv th tr uk zh zh-TW` (the app's languages).
 Names follow the language's own conventions. German capitalises nouns; the others are stored
 lowercase like English.
 

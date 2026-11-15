@@ -3,10 +3,11 @@
   "name": "lever decline chest press v. 2",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A decline-angle machine press that emphasises the lower part of the chest.",

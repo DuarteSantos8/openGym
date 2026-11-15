@@ -11,8 +11,10 @@
  * and appearance settings, and every other profile's everything.
  */
 import { glyphStr } from './glyphs.js';
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells } from './library.js';
-import { muscleLoad, gymOf, challengesOf } from './context.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
+import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, rotationOf } from './context.js';
+import { shareOf } from './categories.js';
+import { asksForBodyweight, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -26,7 +28,7 @@ export const MIN_REVIEW_SESSIONS = 12;
 // by api/test/payload-parity.test.js), so a note the athlete wrote arrives whole and the bound only
 // holds for a document edited outside the app. It was 300 here, and a 500-character note reached
 // the model cut off mid-sentence.
-export const NOTE_MAX = 500;
+export const NOTE_MAX = 2000;
 // Last-resort ceiling for a free-text note/refine (issue #267). The real limit is the admin's
 // `maxMessageLen`, enforced in jobs.js before a message ever reaches this module — this module
 // stays a pure allowlist with no config import of its own, so it keeps its own constant instead.
@@ -49,6 +51,8 @@ export const MAX_PAYLOAD_CHARS = 300_000;
    payload, to the limits the intake screen shows (CoachIntake.jsx). The system prompt already
    reads this text as data rather than instruction (common rule 3); the bound is about size.
    A field of the wrong type reads as absent rather than as "[object Object]". */
+// A routine exercise's plan note as the model reads it: enough for a cue or two.
+export const EX_NOTE_MAX = 300;
 export const PROFILE_TEXT_MAX = { limitations: 600, likes: 300, dislikes: 300, notes: 600 };
 // Goal and experience are enum words today (strength, returning, ...); 40 leaves room for new
 // ones without letting either carry a paragraph.
@@ -82,7 +86,7 @@ const weekday = d => (typeof d === 'number' ? d : typeof d === 'string' && /^\d$
 // any id an import or an older build ever wrote, and no room for a paragraph.
 export const ID_MAX = 64;
 // The progression engine's policies (frontend/src/lib/progression.js POLICIES, validate.js).
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'ladder', 'time'];
 const ident = v => (typeof v === 'string' ? v.slice(0, ID_MAX) : typeof v === 'number' && Number.isFinite(v) ? v : null);
 const policy = v => (POLICIES.includes(v) ? v : null);
 // A finite number, or a number written as a short string (the app writes numbers, but a
@@ -221,6 +225,10 @@ function cleanEx(e) {
   if (e.side) o.side = true;
   // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
   if (e.sg) o.sg = ident(e.sg);
+  // The plan's own note on the exercise and its backups (#1003), so a review or a revision
+  // keeps what the person (or an earlier plan) wrote instead of starting it over.
+  if (typeof e.note === 'string' && e.note.trim()) o.note = text(e.note.trim(), EX_NOTE_MAX);
+  if (Array.isArray(e.subs)) { const subs = e.subs.filter(x => typeof x === 'string' && x).slice(0, 5).map(ident); if (subs.length) o.subs = subs; }
   // How the slot warms up (frontend/src/lib/warmup-ramp.js), so the Coach can explain it or
   // suggest another: its own choice, a block of its own as shares of the work weight, or the
   // older number of ramp sets. Absent means it follows the app's setting (`prefs.warmups`).
@@ -445,6 +453,8 @@ function trainedIds(S, workouts) {
 export const FULL_DETAIL_SESSIONS = 3;
 // The sessions a question in the chat sees: enough for "last week", not a review's whole window.
 export const ASK_SESSIONS = 8;
+// The library slice a chat question gets, for actions that name exercises (coach-146).
+export const ASK_LIBRARY = 90;
 
 // A set taken to failure (the app's "F", `failure: true`) is RIR 0 when nothing was rated.
 const fmtSet = s => {
@@ -621,7 +631,9 @@ export function build(S, opts = {}) {
       effortScale: effortOf(S),
       // Settings → Workout → Automatic warm-ups, what a slot without a choice of its own follows.
       warmups: S.warmupAuto === 'compounds' || S.warmupAuto === 'all' ? S.warmupAuto : 'off',
-      today: iso(new Date(now))
+      today: iso(new Date(now)),
+      // The provider can search the web for this answer (a chat question with research on).
+      ...(opts.web === true && opts.kind === 'ask' ? { web: true } : {})
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
     plan: cleanPlan(S, now)
@@ -637,6 +649,17 @@ export function build(S, opts = {}) {
     const challenges = opts.kind === 'review' || opts.kind === 'ask' ? challengesOf(S, now) : null;
     if (challenges) p.challenges = challenges;
   }
+  // The switchable categories (core/categories.js OPTIONAL_CATEGORIES): strength trends, body
+  // measurements and, only when switched on, health. A review and a question read them; the loop
+  // order goes along with the plan.
+  if (opts.kind === 'review' || opts.kind === 'ask') {
+    const share = shareOf(S);
+    if (share.records) { const r = recordsOf(S, now); if (r.length) p.records = r; }
+    if (share.measurements) { const m = measurementsOf(S, now); if (m.length) p.measurements = m; }
+    if (share.health) { const h = healthOf(S, now, opts.vitals); if (h) p.health = h; }
+    const rot = rotationOf(S);
+    if (rot) p.rotation = rot;
+  }
   // Someone who set up a home gym under Settings → Equipment and left the Coach's own equipment
   // question empty was handed the whole catalogue, leverage machines and all. The profile they
   // are filtering the app with is the better answer than "everything".
@@ -645,6 +668,10 @@ export function build(S, opts = {}) {
   }
   // Owning no dumbbells (the app's switch) wins over an equipment answer that lists them: they go
   // from what the model is told it has, and the validator turns a dumbbell lift away (noDumbbells).
+  // The gym's machine list (#923) narrows the machine exercises the same way, in the library slice
+  // and in the validator: a leg extension the gym does not have is not proposed.
+  const machines = gymMachines(S);
+  if (machines) p.machines = machines;
   if (ownsNoDumbbells(S)) {
     p.noDumbbells = true;
     if (p.coachProfile) p.coachProfile.equipment = p.coachProfile.equipment.filter(e => e.toLowerCase() !== 'dumbbell');
@@ -700,6 +727,20 @@ export function build(S, opts = {}) {
     p.aggregates = aggregates(S, workouts);
     const today = cleanToday(opts.today);
     if (today) p.today = today;
+    // Four weeks of weigh-ins, typed in or synced from Apple Health / Health Connect (they land in
+    // the same S.bodyweight). Without them "what do I weigh?" got "I don't know your weight" while
+    // Home showed it (Discord, becory, a smart scale through Apple Health).
+    const since = new Date(now);
+    since.setDate(since.getDate() - 28);
+    p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, iso(since), null) };
+    // What the Coach may do from the chat (core/ask-actions.js) names exercises by id, so the
+    // question gets a library slice, leaning to what the question names. "Only bodyweight" narrows
+    // it to exercises that need nothing.
+    const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
+    p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    // Routines from the library (core/routine-library.js) the app found for this question.
+    const hits = cleanHits(opts.routines);
+    if (hits.length) p.routineLibrary = hits;
   } else if (opts.kind === 'adapt') {
     // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
     // short day, feeling great. The session as it stands (each entry with its index, so a change

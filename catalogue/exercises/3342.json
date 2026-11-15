@@ -3,9 +3,8 @@
   "name": "cable y raise",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "trapezius",
     "upper back",
     "rotator cuff"

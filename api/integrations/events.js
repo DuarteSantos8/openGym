@@ -75,6 +75,8 @@ function setOut(s) {
   if (num(s.sec) != null) o.seconds = s.sec;
   if (num(s.min) != null) o.minutes = s.min;
   if (num(s.speed) != null) o.speedKmh = s.speed;
+  // A cardio set logged by distance (#887): that distance, as typed.
+  if (num(s.km) != null && s.km > 0) o.distanceKm = s.km;
   if (num(s.incline) != null) o.incline = s.incline;
   if (num(s.rpe) != null) o.rpe = s.rpe;
   if (num(s.rir) != null) o.rir = s.rir;

@@ -4,9 +4,7 @@
   "bodyPart": "lower arms",
   "equipment": "band",
   "target": "forearms",
-  "secondaryMuscles": [
-    "forearms"
-  ],
+  "secondaryMuscles": [],
   "category": "strength",
   "description": "A reverse wrist curl with a band, lifting the back of the hands. It strengthens the forearms.",
   "instructions": [

@@ -12,6 +12,7 @@
 // The screens that call it arrive in PR 4. Nothing in this file needs one to be tested, which
 // is the point of it being separate from them.
 
+import { offlineBuild } from './build-caps.js'
 import { EXIDX, canonicalExId } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
 import { uid, todayISO, DAYN } from './format.js'
@@ -27,8 +28,9 @@ import { queueOf } from './queue.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
-// mentioned.
-export const CONSENT_VERSION = 2
+// mentioned. 3 (coach-146): strength trends and body measurements join, each switchable, and
+// health is offered, off until switched on.
+export const CONSENT_VERSION = 3
 
 // Bounds. The whole state has to stay inside the server's 5 MB body limit, and a Coach log
 // that grows forever is exactly the kind of thing that eats it invisibly. Worst case here is
@@ -63,8 +65,9 @@ const coachOf = s => (s.coach = s.coach || emptyCoach())
 // paired to a self-hosted server is an ordinary signed-in profile and takes the web rule; a
 // phone that brought its own API key runs the Coach itself (lib/coach-local.js). Nothing
 // chosen means nothing shown — the same "invisible unless configured" promise the web keeps.
+// openGym Offline (lib/build-caps.js) has no network, so no Coach in any form.
 export const coachAvailable = (config, user, { demo, mobile, coachMode } = {}) =>
-  mobile ? (coachMode === 'byok' || !!(config?.coach?.enabled && user))
+  offlineBuild() ? false : mobile ? (coachMode === 'byok' || !!(config?.coach?.enabled && user))
     : demo ? true : !!(config?.coach?.enabled && user)
 
 // What each data category means, in the user's words. Rendered from the same list the payload
@@ -78,6 +81,12 @@ export const CATEGORY_TEXT = {
   bodyweight: () => [t('Body weight'), t('Weigh-ins from the same window, and your goal weight if you set one.')],
   profile: () => [t('What you tell the Coach'), t('Your intake answers, including any limitations or injuries you describe.')],
   prefs: () => [t('A few preferences'), t('Your unit, your language and which effort scale you log.')]
+}
+// The categories each person switches on or off (api/coach/core/categories.js OPTIONAL_CATEGORIES).
+export const OPTIONAL_TEXT = {
+  records: () => [t('Strength trends'), t('Estimated one-rep maxes of your main lifts over the last twelve weeks.')],
+  measurements: () => [t('Body measurements'), t('Your latest measurements and the ones from about eight weeks before.')],
+  health: () => [t('Health and how you feel'), t('Daily check-ins, sleep, resting heart rate, HRV and steps from your phone, and blood pressure. Off until you switch it on.')]
 }
 export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.version === CONSENT_VERSION
 
@@ -333,7 +342,10 @@ export function lightBundle(b) {
         id: e.id, sets: e.sets, mode: e.mode || 'reps',
         ...(e.reps != null ? { reps: e.reps } : {}), ...(e.sec != null ? { sec: e.sec } : {}),
         ...(e.min != null ? { min: e.min } : {}), ...(e.weight ? { weight: e.weight } : {}),
-        ...(e.why ? { why: String(e.why).slice(0, 200) } : {})
+        ...(e.why ? { why: String(e.why).slice(0, 200) } : {}),
+        // The cue and the backups the routine kept (#1003), so an old proposal still shows them.
+        ...(e.note ? { note: String(e.note).slice(0, 300) } : {}),
+        ...(Array.isArray(e.subs) && e.subs.length ? { subs: e.subs.filter(x => typeof x === 'string').slice(0, 3) } : {})
       }))
     }))
   }

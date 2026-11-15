@@ -1,4 +1,5 @@
 import Icon from './Icon.jsx'
+import { SeasonDeco } from './Seasonal.jsx'
 
 // An empty list's place (redesign 1.4.5, P9): the sentence and the first action together, centred
 // where the list will appear, in a quiet frame the size of a first row or two. Before, the history's
@@ -10,5 +11,7 @@ export default function EmptyState({ icon, title, text, children, className = ''
     {title && <div className="empty-t">{title}</div>}
     {text && <div className="empty-x">{text}</div>}
     {children && <div className="empty-acts">{children}</div>}
+    {/* in season, a little company for an empty list (components/Seasonal.jsx) */}
+    <SeasonDeco spot="empty" />
   </div>
 }

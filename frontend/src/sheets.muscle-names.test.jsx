@@ -78,10 +78,10 @@ describe('muscle names in the rows and tags (QA C9)', () => {
     seed(custom())
     exConfigSheet(EXIDX.cqa1, null, vi.fn())
     const tags = h => [...h.querySelectorAll('.tag')].map(e => e.textContent.trim())
-    expect(tags(renderTop())).toEqual(['Glutes', 'barbell', 'Forearms', 'Hip flexors'])
+    expect(tags(renderTop())).toEqual(['barbell', 'upper legs', 'Glutes 56%', 'Forearms 22%', 'Hip flexors 22%'])
     // #207 Olympic lifts list their secondaries as map ids ('forearm', 'deltoids').
     exConfigSheet(EXIDX['0648'], null, vi.fn())
-    expect(tags(renderTop())).toEqual(['hamstrings', 'barbell', 'Calves', 'Forearms', 'Shoulders'])
+    expect(tags(renderTop())).toEqual(['barbell', 'full body', 'Quads 16%', 'Glutes 16%', 'Other 69%'])
   })
 
   it('translates them in German too — "forearm" was staying English', () => {
@@ -89,7 +89,7 @@ describe('muscle names in the rows and tags (QA C9)', () => {
     seed(custom())
     exConfigSheet(EXIDX['0648'], null, vi.fn())
     const tags = [...renderTop().querySelectorAll('.tag')].map(e => e.textContent.trim())
-    expect(tags).toEqual(['Beinbeuger', 'Langhantel', 'Waden', 'Unterarme', 'Schultern'])
+    expect(tags).toEqual(['Langhantel', 'Ganzkörper', 'Quadrizeps 16%', 'Gesäß 16%', 'Sonstiges 69%'])
     exercisePicker(vi.fn())
     const host = renderTop()
     act(() => type(host.querySelector('input.input'), 'QA Custom'))
@@ -108,7 +108,7 @@ describe('muscle names in the rows and tags (QA C9)', () => {
     expect(rowFor(host, 'marching on spot').querySelector('.ss').textContent).toBe('Herz-Kreislauf · Körpergewicht')
     exConfigSheet(EXIDX['4420'], null, vi.fn())
     const tags = [...renderTop().querySelectorAll('.tag')].map(e => e.textContent.trim())
-    expect(tags).toEqual(['Cardio', 'Herz-Kreislauf', 'Körpergewicht'])
+    expect(tags).toEqual(['Körpergewicht', 'Cardio', 'Herz-Kreislauf 38%', 'Hüftbeuger 15%', 'Sonstiges 46%'])
   })
 
   it('Muscles explorer row names the target the same way', () => {
