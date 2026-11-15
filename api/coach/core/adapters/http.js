@@ -137,6 +137,15 @@ export function rememberCompatProfile(id, cfg, model, steps) {
   const clean = cleanSteps(steps);
   if (clean.length) compatProfiles.set(key, clean); else compatProfiles.delete(key);
 }
+/* Which (provider, endpoint, model, level) turned a thinking level down, kept apart from the
+ * profiles above on purpose. The other rungs describe what an endpoint's request shape wants,
+ * which stays true whatever we ask for; an effort refusal only says this model will not take
+ * this level. Measured on llama.cpp: low, medium, high, xhigh and max all think while an unknown
+ * value is refused outright, so remembering it as "never send a level here" would silence a
+ * level the model does support after one job at a level it does not (#1240). In memory only, and
+ * not part of the phone's device file, which carries the shape rungs alone. */
+const effortRefusals = new Set();
+const effortKey = (id, base, model, level) => `${id} ${base} ${model} ${level}`;
 // What a 400 says about the request, matched on the provider's words. Order matters: a schema
 // complaint usually also says "response_format".
 function namedRungs(msg) {
@@ -377,7 +386,13 @@ export function httpAdapter(spec) {
         body = spec.compat ? applySteps(spec, build(), steps) : build();
         return true;
       };
-      let steps = spec.compat ? (compatProfiles.get(compatKey(id, base, chosen)) || []) : [];
+      // What this model needed last time, with the level it turned down added back when that is
+      // the level being asked for now (#1240).
+      const stepsFor = m => {
+        const remembered = compatProfiles.get(compatKey(id, base, m)) || [];
+        return effort && effortRefusals.has(effortKey(id, base, m, effort)) ? [...remembered, 'effort'] : remembered;
+      };
+      let steps = spec.compat ? stepsFor(chosen) : [];
       let body = spec.compat ? applySteps(spec, build(), steps) : build();
       let triedOtherModel = false;
       let transientRetries = 0;
@@ -469,7 +484,7 @@ export function httpAdapter(spec) {
               chosen = next;
               if ('model' in body) body = { ...body, model: next };
               // What the refused model needed says nothing about this one.
-              if (spec.compat) { steps = compatProfiles.get(compatKey(id, base, next)) || []; body = applySteps(spec, build(), steps); }
+              if (spec.compat) { steps = stepsFor(next); body = applySteps(spec, build(), steps); }
               transientRetries = 0;
               continue;
             }
@@ -498,7 +513,12 @@ export function httpAdapter(spec) {
           const thinking = effort && !steps.includes('effort') ? ` while thinking at ${effort}: raise the output limit (maxOutputTokens) or choose a lower level` : '';
           return { code: 1, text: '', stderr: `the answer was cut off at the output limit; try a smaller plan or a bigger model${thinking}` };
         }
-        if (spec.compat) rememberCompatProfile(id, cfg, chosen, steps);
+        if (spec.compat) {
+          // The level is filed with the level it was refused at, and kept out of the shape
+          // profile, which would otherwise apply it to every level from here on (#1240).
+          if (effort && steps.includes('effort')) effortRefusals.add(effortKey(id, base, chosen, effort));
+          rememberCompatProfile(id, cfg, chosen, steps.filter(s => s !== 'effort'));
+        }
         return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}), ...(Array.isArray(out.sources) && out.sources.length ? { sources: out.sources } : {}) };
       }
     }

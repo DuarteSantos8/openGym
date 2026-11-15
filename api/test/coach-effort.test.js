@@ -254,8 +254,8 @@ test('a level refused by the replacement model is still given up on, not dedupli
   // Gemini names the model in the URL, not in the body. So when a remembered fallback for the
   // first model makes the opening request look exactly like what the `effort` rung would build
   // for the replacement, a dedup that keys on the body alone refuses the retry and the job dies
-  // on a model that would have answered. Reproduced with a remembered `effort` profile, which is
-  // what the first job on a 2.5 endpoint leaves behind.
+  // on a model that would have answered. Seeded through rememberCompatProfile, which is how the
+  // phone's device file hands a profile back to a fresh process.
   const cfg = { provider: 'gemini' };
   const gone = 'gemini-2.5-pro-dedup';
   const replacement = 'gemini-3-flash-dedup';
@@ -306,6 +306,50 @@ test('a refusal is recognised in whichever spelling the endpoint uses', async ()
     assert.equal(r.code, 0, `"${words}" was not recognised as a refusal: ${r.stderr}`);
     assert.equal(calls.length, 2, `"${words}": asked, refused, asked again`);
   }
+});
+
+test('a level one model refuses does not silence the levels it does take', async () => {
+  // What a refusal says is "this model will not take this level", not "this endpoint never wants
+  // a level": measured on llama.cpp, low, medium, high, xhigh and max all think while an unknown
+  // value is refused outright. So remembering the refusal has to remember the level with it, or
+  // one job at a level the model turns down quietly disables thinking for a level it supports.
+  const cfg = at();
+  const seen = [];
+  const f = async (url, init) => {
+    const body = JSON.parse(init.body);
+    seen.push(body.reasoning_effort ?? null);
+    if (body.reasoning_effort === 'high') {
+      return reply(400, { error: { message: "Unsupported value: 'high' is not supported for 'reasoning_effort' with this model." } });
+    }
+    return reply(200, { choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+  };
+  const compat = (await import('../coach/core/adapters/compatible.js')).default;
+  const high = await ask(compat, cfg, f, { env: { COACH_EFFORT: 'high' } });
+  assert.equal(high.code, 0, high.stderr);
+  const low = await ask(compat, cfg, f, { env: { COACH_EFFORT: 'low' } });
+  assert.equal(low.code, 0, low.stderr);
+  assert.deepEqual(seen, ['high', null, 'low'],
+    'asked high, refused, retried without; then low is still asked for');
+});
+
+test('the level one model refused is not asked for again on the next job', async () => {
+  // The other half: the ladder exists so an endpoint is not asked the same refused thing per job.
+  // The same level, the same model, the same endpoint, and the second job goes straight to the
+  // request that worked.
+  const cfg = at();
+  const seen = [];
+  const f = async (url, init) => {
+    const body = JSON.parse(init.body);
+    seen.push(body.reasoning_effort ?? null);
+    if ('reasoning_effort' in body) {
+      return reply(400, { error: { message: "Unsupported parameter: 'reasoning_effort' is not supported" } });
+    }
+    return reply(200, { choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+  };
+  const compat = (await import('../coach/core/adapters/compatible.js')).default;
+  assert.equal((await ask(compat, cfg, f, { env: { COACH_EFFORT: 'medium' } })).code, 0);
+  assert.equal((await ask(compat, cfg, f, { env: { COACH_EFFORT: 'medium' } })).code, 0);
+  assert.deepEqual(seen, ['medium', null, null], 'the second job starts without the refused level');
 });
 
 test('a cut-off answer says which level was thinking, so the fix is obvious', async () => {
