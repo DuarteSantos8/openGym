@@ -487,6 +487,7 @@ in
                 User = "opengym";
                 Group = "opengym";
                 Restart = "on-failure";
+                ReadWritePaths = [ cfg.dataDir ];
               }
               serviceHardening
             ];

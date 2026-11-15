@@ -14,7 +14,7 @@ buildNpmPackage rec {
   src = ./../../mcp;
 
   # The MCP server reads shared domain helpers from the sibling frontend/src/lib; include them.
-  frontendSrc = ./../../frontend;
+  frontendSrc = lib.cleanSource ./../../frontend;
 
   nodejs = nodejs_26;
 
@@ -39,7 +39,8 @@ buildNpmPackage rec {
 
     mkdir -p $out/bin
     makeWrapper ${nodejs_26}/bin/node $out/bin/opengym-mcp \
-      --add-flags "$out/lib/opengym-mcp/src/index.js"
+      --add-flags "$out/lib/opengym-mcp/src/index.js" \
+      --set NODE_ENV production
     runHook postInstall
   '';
 
