@@ -33,6 +33,7 @@ import { t } from './i18n-core.js'
 import { dropGrid } from './plates.js'
 import { exConverted } from './ex-unit.js'
 import { modeOf } from './history.js'
+import { isFixedRow } from './warmup-snap.js'
 
 export const INV_KEYS = ['plates', 'dumbbells', 'barDefaults', 'stackWeights']
 // The fields whose entries carry their own `_ts` (per unit, per exercise).
@@ -238,6 +239,8 @@ export function reRoundOpenSets(S) {
     let touched = false
     const sets = e.sets.map(s => {
       if (!isMap(s)) return s
+      // A fixed warm-up of your own is loaded as you set it (lib/warmup-ramp.js), not on the plates.
+      if (isFixedRow(s)) return s
       if (s.sides && isMap(s.sides.L) && isMap(s.sides.R)) {
         if (s.sides.L.done || s.sides.R.done || s.done) return s
         const L = snap(s.sides.L.w), R = snap(s.sides.R.w), w = snap(s.w)

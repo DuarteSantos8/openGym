@@ -6,12 +6,14 @@ import { SelectRow, Stepper, Button } from './ui.jsx'
 import { fmtNum } from '../lib/format.js'
 import { MAX_PLANNED_WARMUPS, barFloor, isBw, modeOf } from '../lib/history.js'
 import { dropGrid } from '../lib/plates.js'
-import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, autoRungs, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
+import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, ownRowAs, withShare, autoRungs, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { isAssisted } from '../lib/exercises.js'
 import { isoRun } from '../lib/bidi.js'
 
 const LB_KG = 0.45359237
+// The step the slot's own weight field takes (ExConfig), so a fixed warm-up moves the same way.
+const FIXED_STEP = 2.5
 
 /** Which of the five choices the sheet shows for a config. */
 export const warmupChoiceOf = c => warmupModeOf(c) || ((Math.round(c?.warmupSets) || 0) > 0 ? 'count' : 'default')
@@ -54,11 +56,31 @@ export default function WarmupConfig({ st, ex, c, setC }) {
   }
   const pick = v => setC(x => withWarmupChoice(x, v, seed()))
   const rows = ownRowsOf(c)
-  const setRows = next => setC(x => ({ ...x, warmup: 'own', warmupRows: next }))
+  const grid = dropGrid(st, cfg)
+  // A fixed row keeps the share it is today beside it, for an app that reads shares only.
+  const setRows = next => setC(x => ({ ...x, warmup: 'own', warmupRows: work > 0 ? next.map(r => withShare(r, work, { grid, floor })) : next }))
+  // A row is a share of the work weight, or a fixed weight for a machine whose stack the shares
+  // miss. Tapping its unit keeps what it weighs today; with no work weight yet a fixed row starts
+  // at the lightest step, and a share at half.
+  const isFixed = r => Number(r.wf) > 0
+  const switchAt = i => setRows(rows.map((x, j) => {
+    if (j !== i) return x
+    const next = ownRowAs(x, !isFixed(x), { work, grid, floor })
+    return next !== x ? next : isFixed(x) ? { wp: 50, r: x.r } : { wf: FIXED_STEP, r: x.r }
+  }))
+  const fixedOf = r => (r.wb ? Math.max(floor, 0) : r.wp === 0 ? 0 : Number(r.wf) || 0)
+  // A warm-up at the work weight is a work set and is left out, so a fixed row stops a step short.
+  // One already over a lighter work weight keeps its weight: that session simply leaves it out.
+  const fixedMax = work > FIXED_STEP ? work - FIXED_STEP : undefined
+  const fixedMaxOf = r => (fixedMax == null ? undefined : Math.max(fixedMax, fixedOf(r)))
+  const setFixedAt = (i, v) => setRows(rows.map((x, j) => j !== i ? x
+    : floor > 0 && v <= floor ? { wb: true, r: x.r }
+      : v <= 0 ? (bw ? { wp: 0, r: x.r } : { wf: FIXED_STEP, r: x.r })
+        : { wf: v, r: x.r }))
   const options = [
     { value: 'default', label: defaultLabel, subtitle: t('Follows Settings → Workout → Automatic warm-ups.') },
     { value: 'auto', label: t('Auto'), subtitle: t('Ramped from the work weight: more rungs when it is heavy, fewer when it is light.') },
-    { value: 'own', label: t('My own'), subtitle: t('Your rows, as a share of the work weight, so they grow with it.') },
+    { value: 'own', label: t('My own'), subtitle: t('Your rows, as a share of the work weight or as fixed weights.') },
     { value: 'count', label: t('A number of ramp sets'), subtitle: t('Each one closes half the gap to the work weight.') },
     { value: 'none', label: t('None'), subtitle: t('Straight into the work sets.') },
   ]
@@ -66,7 +88,7 @@ export default function WarmupConfig({ st, ex, c, setC }) {
   const preview = shown && mode === 'reps' ? previewLine(st, cfg, work, unit) : null
   // The lightest a rung can be: the bar on a barbell lift, the body alone on a bodyweight one.
   const lowest = floor > 0 || bw ? 0 : 5
-  const pctLabel = r => (r.wb ? t('Bar') : r.wp === 0 ? t('Body') : r.wp + '%')
+  const pctLabel = r => (r.wb ? t('Bar') : r.wp === 0 ? t('Body') : Number(r.wf) > 0 ? fmtNum(r.wf) + ' ' + unit : r.wp + '%')
   return <div className="warmup-cfg" style={{ marginBottom: 18 }}>
     <div className="sect-b" style={{ marginBottom: 6 }}>
       <SelectRow icon="sunrise" iconTint="var(--orange)" title={t('Warm-ups')} value={choice} onChange={pick} options={options} />
@@ -77,17 +99,33 @@ export default function WarmupConfig({ st, ex, c, setC }) {
     </div>}
     {choice === 'own' && <div className="warmup-rows">
       {rows.map((r, i) => <div className="row cfgrow warmup-row" key={i} style={{ marginBottom: 6, alignItems: 'flex-end' }}>
-        <Stepper label={t('Warm-up {0}', i + 1)} value={r.wb ? 0 : r.wp} step={5} min={lowest} max={OWN_PCT_MAX} decimal={false}
-          ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
-          unit="%" display={r.wb ? t('Bar') : r.wp === 0 ? t('Body') : undefined}
-          onChange={v => setRows(rows.map((x, j) => j !== i ? x : v <= 0 ? (floor > 0 ? { wb: true, r: x.r } : { wp: 0, r: x.r }) : { wp: Math.max(5, v), r: x.r }))} />
+        {/* The load and its unit read as one control under one label; a tap on the unit switches
+            the row. The bare bar and the body alone are neither, so they have no unit to switch. */}
+        <div className="stp-w warmup-load-w">
+          <span className="stp-l">{t('Warm-up {0}', i + 1)}</span>
+          <div className="warmup-load">
+            {isFixed(r)
+              ? <Stepper value={fixedOf(r)} step={FIXED_STEP} min={floor > 0 ? floor : bw ? 0 : FIXED_STEP} max={fixedMaxOf(r)}
+                ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
+                onChange={v => setFixedAt(i, v)} />
+              : <Stepper value={r.wb ? 0 : r.wp} step={5} min={lowest} max={OWN_PCT_MAX} decimal={false}
+                ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
+                display={r.wb ? t('Bar') : r.wp === 0 ? t('Body') : undefined}
+                onChange={v => setRows(rows.map((x, j) => j !== i ? x : v <= 0 ? (floor > 0 ? { wb: true, r: x.r } : { wp: 0, r: x.r }) : { wp: Math.max(5, v), r: x.r }))} />}
+            {!r.wb && r.wp !== 0 && <Button size="sm" variant="tinted" onClick={() => switchAt(i)}
+              aria-label={(isFixed(r) ? unit : '%') + ': ' + t('Switch to {0}', isFixed(r) ? '%' : unit)}>{isFixed(r) ? unit : '%'}</Button>}
+          </div>
+        </div>
         <Stepper label={t('Reps')} value={r.r} step={1} min={1} max={30} decimal={false}
           onChange={v => setRows(rows.map((x, j) => j !== i ? x : { ...x, r: Math.max(1, Math.round(v) || 1) }))} />
         <Button size="sm" icon="trash" aria-label={t('Remove warm-up {0}', i + 1)} onClick={() => setRows(rows.filter((_, j) => j !== i))} />
       </div>)}
       {rows.length < MAX_OWN_WARMUPS && <Button size="sm" icon="plus" onClick={() => {
         const last = rows[rows.length - 1]
-        const next = last ? { wp: Math.min(OWN_PCT_MAX, (last.wb ? 40 : last.wp) + 20), r: Math.max(1, last.r - 2) } : { wp: 50, r: 8 }
+        const lastW = last ? fixedOf(last) : 0
+        const next = last && isFixed(last)
+          ? { wf: Math.min(fixedMax ?? Infinity, lastW + 4 * FIXED_STEP), r: Math.max(1, last.r - 2) }
+          : last ? { wp: Math.min(OWN_PCT_MAX, (last.wb ? 40 : last.wp) + 20), r: Math.max(1, last.r - 2) } : { wp: 50, r: 8 }
         setRows([...rows, next])
       }}>{t('Add a warm-up')}</Button>}
     </div>}

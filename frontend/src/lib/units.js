@@ -6,6 +6,7 @@ import { isSideSet, syncSideAggregate } from './workout-model.js'
 import { workoutVolume } from './history.js'
 import { EXIDX } from './exercises.js'
 import { defaultBarWeight, barTypeWeight } from './bar.js'
+import { fixedWeight } from './warmup-snap.js'
 
 const LB_PER_KG = 2.2046226218
 
@@ -61,11 +62,14 @@ export function convertBodyWeight(value, from, to) {
 // hands `c` the same field of `prev` (the copy the value was made from) so a number that was not
 // touched can be kept as it was stored. `cInc` is the converter for an increment, which a
 // per-exercise unit snaps to the other unit's usual step rather than converting to the gram.
+const isFixedW = v => fixedWeight(v) > 0
 export const mapSetWeights = (set, c, prev) => {
   if (!set || typeof set !== 'object') return set
   const p = prev && typeof prev === 'object' ? prev : null
   const out = { ...set }
-  if (isSideSet(set)) return syncSideAggregate({ ...set, sides: {
+  // A warm-up from a fixed weight of your own (lib/warmup-ramp.js) remembers that weight.
+  if (isFixedW(out.wf)) out.wf = c(out.wf, p?.wf)
+  if (isSideSet(set)) return syncSideAggregate({ ...out, sides: {
     L: mapSetWeights(set.sides.L, c, p?.sides?.L), R: mapSetWeights(set.sides.R, c, p?.sides?.R),
   } })
   if (out.w != null) out.w = c(out.w, p?.w)
@@ -84,6 +88,8 @@ export const mapTargetWeights = (cfg, c, prev, cInc = c) => {
   if (Array.isArray(out.warmup)) out.warmup = out.warmup.map((w, i) => (w && w.weight != null ? { ...w, weight: c(w.weight, p.warmup?.[i]?.weight) } : w))
   // A pyramid's own weight per set; 0 ("no plan for this set") stays 0.
   if (Array.isArray(out.pyramidWeight)) out.pyramidWeight = out.pyramidWeight.map((w, i) => (w > 0 ? c(w, p.pyramidWeight?.[i]) : w))
+  // A block of your own warm-ups in fixed weights; shares of the work weight need nothing.
+  if (Array.isArray(out.warmupRows)) out.warmupRows = out.warmupRows.map((r, i) => (r && isFixedW(r.wf) ? { ...r, wf: c(r.wf, p.warmupRows?.[i]?.wf) } : r))
   return out
 }
 export const mapEntryWeights = (e, c, prev, cInc = c) => {
@@ -134,8 +140,15 @@ export function convertStateUnit(S, to) {
   // A step is not a load on the bar: its usual counterpart, else exact to the hundredth. The plate
   // grid made a 0.1 kg step 0 lb (and so the default again) and a 2.5 kg one 5.5 lb.
   const incOf = id => (exUnitPin(S, id) ? v => convertStep(v, from, to) : v => convertStep(v, from, to, 2))
-  const convEntry = e => mapEntryWeights(e, convOf(e?.id), null, incOf(e?.id))
-  const convTarget = cfg => mapTargetWeights(cfg, convOf(cfg?.id), null, incOf(cfg?.id))
+  // A slot's planned backups (lib/routine-backups.js) carry plans of their own, weights included.
+  const convBackups = cfg => (cfg?.subCfg && typeof cfg.subCfg === 'object'
+    ? { ...cfg, subCfg: Object.fromEntries(Object.entries(cfg.subCfg).map(([id, c]) => [id, mapTargetWeights(c, convOf(id), null, incOf(id))])) }
+    : cfg)
+  const convEntry = e => {
+    const out = mapEntryWeights(e, convOf(e?.id), null, incOf(e?.id))
+    return out?.target?.subCfg ? { ...out, target: convBackups(out.target) } : out
+  }
+  const convTarget = cfg => convBackups(mapTargetWeights(cfg, convOf(cfg?.id), null, incOf(cfg?.id)))
   const bw = v => convertBodyWeight(v, from, to)
   // A session carries its body weight of the day and a cached total volume; History rows, the
   // detail header, the month calendar and the heatmap tooltips read those rather than summing

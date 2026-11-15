@@ -21,6 +21,13 @@ describe('routineFromSession', () => {
     expect(rebuild(cfg).sets).toHaveLength(4)
   })
 
+  it('leaves the number of warm-ups a session’s own block built with the session', () => {
+    const w = { id: 'w-own', entries: [entry('0585', { mode: 'reps', sets: 2, reps: 12, weight: 110, warmup: 'own', warmupRows: [{ wf: 80, r: 12 }], warmupCount: 1 }, [{ w: 80, r: 12, done: true, phase: 'warmup', warmup: true, wf: 80 }, { w: 110, r: 12, done: true }])] }
+    const cfg = routineFromSession(w, 'Legs').ex[0]
+    expect(cfg.warmupCount).toBeUndefined()
+    expect(cfg.warmupRows).toEqual([{ wf: 80, r: 12 }])
+  })
+
   it('copies the saved setup and derives current reps, weight, warm-ups, and per-side state', () => {
     const session = {
       name: 'Evening push',

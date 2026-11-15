@@ -3702,6 +3702,38 @@ describe('Update routine, from the More menu of an exercise', () => {
     expect(mocks.S.routines[0].ex[0]).toMatchObject({ restSec: 150, note: 'pause on the chest' })
   })
 
+  it('names a fixed warm-up you changed in the exercise’s own unit', async () => {
+    const warmSet = { w: 42.5, r: 5, done: true, phase: 'warmup', warmup: true, wf: 40, edited: true, weightOrigin: 'manual' }
+    const slot = { warmup: 'own', warmupRows: [{ wf: 40, r: 5 }] }
+    await mount([ownEntry({ sets: [warmSet, { w: 60, r: 5, done: false }] })], 0, { routines: [routine(slot)] })
+    await openMore()
+    expect(item('Update routine').sub).toBe('Warm-ups → 42.5 kg × 5')
+    await unmount()
+    await mount([ownEntry({ sets: [warmSet, { w: 60, r: 5, done: false }] })], 0, { routines: [routine(slot)], exUnit: { 'plain-bench': { unit: 'lb', _ts: 1 } } })
+    await openMore()
+    expect(item('Update routine').sub.replace(/[\u2066-\u2069]/g, '')).toBe('Warm-ups → 93.7 lb × 5')
+  })
+
+  it('an untouched session of an exercise in lb on a kg profile offers nothing', async () => {
+    // 70 % of 145 lb rounds to 100 lb on the lb plates and meets the fixed 100 lb row: one warm-up.
+    const slot = { weight: 65.7709, sets: 1, reps: 8, warmup: 'own', warmupRows: [{ wf: 45.3592, r: 10 }, { wp: 70, r: 5 }] }
+    const sets = [{ w: 45.3592, r: 10, done: true, phase: 'warmup', warmup: true, wf: 45.3592 }, { w: 65.7709, r: 8, done: false }]
+    await mount([ownEntry({ target: { mode: 'reps', reps: 8, weight: 65.7709 }, sets })], 0, { routines: [routine(slot)], exUnit: { 'plain-bench': { unit: 'lb', _ts: 1 } } })
+    await openMore()
+    expect(item('Update routine')).toBeUndefined()
+  })
+
+  it('keeps fixed warm-ups as fixed weights, and says so', async () => {
+    const warmSet = { w: 42.5, r: 5, done: true, phase: 'warmup', warmup: true, wf: 40, edited: true, weightOrigin: 'manual' }
+    await mount([ownEntry({ sets: [warmSet, { w: 60, r: 5, done: false }] })], 0, { routines: [routine({ warmup: 'own', warmupRows: [{ wf: 40, r: 5 }] })] })
+    await openMore()
+    const keep = item('Keep these warm-ups')
+    expect(keep.sub).toBe('Saved in the routine; fixed weights stay as they are')
+    await act(async () => { keep.onClick() })
+    expect(mocks.toast).toHaveBeenCalledWith('Kept. Same warm-ups next time; fixed weights stay as they are.')
+    expect(mocks.S.routines[0].ex[0].warmupRows[0]).toMatchObject({ wf: 42.5, r: 5 })
+  })
+
   it('names a slot with no rest of its own as the default, as the wheel does', async () => {
     await mount([ownEntry({ target: { mode: 'reps', reps: 5, weight: 60, restSec: 180 } })], 0, { routines: [routine()] })
     await openMore()

@@ -1,7 +1,7 @@
 // A weight unit per exercise (#657): shown and typed in its own unit, stored in the profile's.
 import { describe, expect, it } from 'vitest'
 import {
-  exUnitOf, exConverted, withExUnit, shownWeight, storedWeight, exView, viewTarget, storedTarget,
+  exUnitOf, exConverted, withExUnit, shownWeight, storedWeight, exView, viewTarget, storedTarget, gridInProfileUnit,
   viewRow, storedRow, viewEntry, storedEntry, storedBar,
 } from './ex-unit.js'
 import { convertStateUnit, convertExact, convertStep } from './units.js'
@@ -17,6 +17,7 @@ import { workoutText } from './workout-text.js'
 import { cleanNum } from './format.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 import { exUnitTag } from './ex-unit.js'
+import { ownRowsFromSession, rungRows } from './warmup-ramp.js'
 
 const BENCH = '0025'   // barbell bench press
 const CURL = '0294'    // dumbbell curl
@@ -114,6 +115,24 @@ describe('converting at the edge', () => {
     expect(storedTarget(S, BENCH, vt, cfg)).toEqual(cfg)
     expect(storedTarget(S, BENCH, { ...vt, inc: 10 }, cfg).inc).toBe(5)
     expect(storedTarget(S, BENCH, { ...vt, inc: 7.5 }, cfg).inc).toBe(3.4019)
+  })
+  it('a grid of the exercise’s unit rounds stored weights the way the session built them', () => {
+    const S = pin('kg', BENCH, 'lb')
+    const g = gridInProfileUnit(S, BENCH, 10)
+    expect(g(46.0396)).toBe(45.3592)
+    expect(gridInProfileUnit(pin('kg', BENCH, 'kg'), BENCH, 2.5)).toBe(2.5)
+    // Keeping a fixed 180 lb row at 300 lb saves the share an app reading shares only builds at 180 lb.
+    const sets = [{ w: storedWeight(S, BENCH, 180), r: 10, done: true, phase: 'warmup', warmup: true, wf: storedWeight(S, BENCH, 180) }, { w: storedWeight(S, BENCH, 300), r: 8, done: true }]
+    const [kept] = ownRowsFromSession(sets, 0, g)
+    expect(rungRows([{ wp: kept.wp, r: 10 }], { work: 300, grid: 10 }).map(x => x.w)).toEqual([180])
+  })
+  it('a fixed warm-up of your own reads in the exercise’s unit and comes back to the last place', () => {
+    const S = pin('kg', BENCH, 'lb')
+    const cfg = { id: BENCH, sets: 3, reps: 5, weight: 61.25, warmup: 'own', warmupRows: [{ wf: 37.5, wp: 61, r: 8 }, { wp: 80, r: 3 }] }
+    const vt = viewTarget(S, BENCH, cfg)
+    expect(vt.warmupRows).toEqual([{ wf: 82.673, wp: 61, r: 8 }, { wp: 80, r: 3 }])
+    expect(storedTarget(S, BENCH, vt, cfg)).toEqual(cfg)
+    expect(storedTarget(S, BENCH, { ...vt, warmupRows: [{ wf: 85, r: 8 }] }, cfg).warmupRows[0].wf).toBe(38.5554)
   })
 
   it('an entry goes there and back whole', () => {

@@ -51,6 +51,26 @@ describe('convertStateUnit', () => {
   it('is a no-op for the unit already in use', () => {
     expect(convertStateUnit(S, 'kg')).toBe(S)
   })
+  it('converts a fixed warm-up weight of your own and the marker on its set, shares stay shares', () => {
+    const state = { ...S,
+      routines: [{ id: 'r', ex: [{ id: '0585', sets: 2, reps: 12, weight: 110, warmup: 'own', warmupRows: [{ wf: 80, r: 12 }, { wp: 90, r: 4 }] }] }],
+      workouts: [{ id: 'w', entries: [{ id: '0585', sets: [{ w: 80, r: 12, done: true, phase: 'warmup', warmup: true, wf: 80 }, { w: 110, r: 12, done: true }] }] }],
+    }
+    const out = convertStateUnit(state, 'lb')
+    expect(out.routines[0].ex[0].warmupRows).toEqual([{ wf: 176.5, r: 12 }, { wp: 90, r: 4 }])
+    expect(out.workouts[0].entries[0].sets[0]).toMatchObject({ w: 176.5, wf: 176.5 })
+    expect(convertStateUnit(out, 'kg').routines[0].ex[0].warmupRows[0].wf).toBe(80)
+  })
+  it('converts a per-side warm-up’s fixed weight and a planned backup’s plan', () => {
+    const side = { w: 20, r: 16, done: true, phase: 'warmup', warmup: true, wf: 20, sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: true } } }
+    const state = { ...S,
+      routines: [{ id: 'r', ex: [{ id: '0585', sets: 2, reps: 12, weight: 110, subs: ['0025'], subCfg: { '0025': { sets: 3, reps: 5, weight: 60, warmup: 'own', warmupRows: [{ wf: 40, r: 8 }] } } }] }],
+      workouts: [{ id: 'w', entries: [{ id: '0336', sets: [side, { w: 40, r: 16, done: true }] }] }],
+    }
+    const out = convertStateUnit(state, 'lb')
+    expect(out.workouts[0].entries[0].sets[0]).toMatchObject({ wf: 44, sides: { L: { w: 44 }, R: { w: 44 } } })
+    expect(out.routines[0].ex[0].subCfg['0025']).toMatchObject({ weight: 132.5, warmupRows: [{ wf: 88, r: 8 }] })
+  })
   it('converts a pyramid’s weight per set, leaving a set at 0 at 0 (#445)', () => {
     const state = { ...S, routines: [{ id: 'r', ex: [{ id: '0025', sets: 3, reps: 12, weight: 0, pyramid: [12, 10, 8], pyramidWeight: [60, 0, 80] }] }] }
     expect(convertStateUnit(state, 'lb').routines[0].ex[0].pyramidWeight).toEqual([132.5, 0, 176.5])

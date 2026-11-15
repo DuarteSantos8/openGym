@@ -439,3 +439,14 @@ test('the plan the Coach reads carries each exercise note and its backups (#1003
   assert.equal('note' in p.routines[0].ex[1], false);
   assert.equal('subs' in p.routines[0].ex[1], false);
 });
+
+test('a block of your own reaches the Coach with its fixed weights, read only', () => {
+  assert.deepEqual(
+    payload.warmupRowsOut([{ wb: true, r: 10 }, { wf: 80, wp: 69, r: 12 }, { wp: 90, r: 4 }, { wf: 0, r: 3 }, { wf: 0, wp: 40, r: 5 }]),
+    [{ bar: true, reps: 10 }, { weight: 80, reps: 12 }, { pct: 90, reps: 4 }, { pct: 40, reps: 5 }]
+  );
+  // A weight that rounds to nothing or past a number is no fixed weight either.
+  assert.deepEqual(payload.warmupRowsOut([{ wf: 1e307, wp: 50, r: 5 }, { wf: 0.001, r: 5 }]), [{ pct: 50, reps: 5 }]);
+  // Only a number or a numeric string is a fixed weight; anything else is the share beside it.
+  assert.deepEqual(payload.warmupRowsOut([{ wf: true, wp: 50, r: 5 }, { wf: [80], wp: 60, r: 5 }]), [{ pct: 50, reps: 5 }, { pct: 60, reps: 5 }]);
+});
