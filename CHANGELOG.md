@@ -10,6 +10,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Android: when pairing cannot reach your server, the message now ends with what the phone itself said (no such host, an untrusted certificate, connection refused), so "my browser opens it" has an answer (#870).
 - Fixed: a timed exercise done per side no longer runs off the right edge of the phone. Left and Right are the short L and R badge there, as on a reps exercise (#1239, thanks @DomHeadroom).
 - F-Droid build: the app's own code is shrunk with R8 now (about 12 MB down to 2.4 MB), as F-Droid asked. The other Android builds are unchanged.
+- Android updater: when a release has no checksum file next to its APK, the app reads the hash from the release's combined SHA256SUMS instead of stopping with "Checksum not available" (#1223, thanks @dagov42; #1256). That is what blocked the in-app update to 1.4.5 for a day. The release itself is checked for its checksum files before and after publishing now.
 
 ## v1.4.5 (2026-11-14)
 

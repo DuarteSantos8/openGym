@@ -59,6 +59,12 @@ scripts/android/build-release.sh $K/opengym-release.keystore $K/keystore.pass $K
 #    openGym-X.Y.Z.aab for Google Play
 ```
 
+Put them on the GitHub release with `scripts/android/upload-release.sh vX.Y.Z ~/release`, never
+with a hand-typed file list: it uploads every APK with its `.sha256` and `SHA256SUMS`, then checks
+the release (`scripts/ci/release-assets-check.mjs`). The in-app updater refuses an APK without its
+`.sha256`, which is what happened to v1.4.5. Publish the draft only after it says ok; the
+"Release files" workflow checks once more when the release is published.
+
 Each is built from its own phone build: the **Standard** APK with the box-free 180 px animations
 built in (`quality/180`, about 315 MB), the **Plus** APK with 240 px (`quality/240`, about
 424 MB; `PLUS_PX=0` none), the **HD** APK with 360 px (`quality/360`, about 760 MB; `HD_PX=0`
