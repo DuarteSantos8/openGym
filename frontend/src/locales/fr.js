@@ -5897,4 +5897,9 @@ export default {
   "Preview on": "Aperçu sur",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
+  "Workouts to link to their routine: {0}": "Séances à rattacher à leur routine : {0}",
+  "Workouts linked to their routine: {0}": "Séances rattachées à leur routine : {0}",
+  "Import body measurements": "Importer les mensurations",
+  "Body measurements imported: {0}": "Mensurations importées : {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Ton compte Hevy affiche les poids en {0}, cette appli en {1} : ils arrivent en {1}.",
 }

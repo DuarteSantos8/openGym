@@ -5897,4 +5897,9 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Workouts to link to their routine: {0}": "अपने रूटीन से जोड़े जाने वाले वर्कआउट: {0}",
+  "Workouts linked to their routine: {0}": "अपने रूटीन से जोड़े गए वर्कआउट: {0}",
+  "Import body measurements": "शरीर के माप आयात करें",
+  "Body measurements imported: {0}": "आयात किए गए शरीर के माप: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "आपका Hevy खाता वज़न {0} में दिखाता है, यह ऐप {1} में: वे {1} में आएँगे।",
 }

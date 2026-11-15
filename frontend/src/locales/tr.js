@@ -5897,4 +5897,9 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Workouts to link to their routine: {0}": "Rutinine bağlanacak antrenmanlar: {0}",
+  "Workouts linked to their routine: {0}": "Rutinine bağlanan antrenmanlar: {0}",
+  "Import body measurements": "Vücut ölçülerini içe aktar",
+  "Body measurements imported: {0}": "İçe aktarılan vücut ölçüleri: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Hevy hesabın ağırlıkları {0} olarak gösteriyor, bu uygulama {1} olarak: {1} olarak gelecekler.",
 }

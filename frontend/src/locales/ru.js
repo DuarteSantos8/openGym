@@ -5901,4 +5901,9 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  "Workouts to link to their routine: {0}": "Тренировки, которые будут привязаны к своей программе: {0}",
+  "Workouts linked to their routine: {0}": "Тренировки, привязанные к своей программе: {0}",
+  "Import body measurements": "Импортировать замеры тела",
+  "Body measurements imported: {0}": "Импортировано замеров тела: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Ваш аккаунт Hevy показывает вес в {0}, это приложение в {1}: вес придёт в {1}.",
 }

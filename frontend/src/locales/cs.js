@@ -5863,4 +5863,9 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Workouts to link to their routine: {0}": "Tréninky k propojení s jejich sestavou: {0}",
+  "Workouts linked to their routine: {0}": "Tréninky propojené s jejich sestavou: {0}",
+  "Import body measurements": "Importovat tělesné míry",
+  "Body measurements imported: {0}": "Importované tělesné míry: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Tvůj účet Hevy ukazuje váhy v {0}, tahle aplikace v {1}: přijdou v {1}.",
 }
