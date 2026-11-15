@@ -175,9 +175,10 @@ describe('BodyMap as a read-only picture', () => {
   //
   // One site is decoration without an `aria-hidden` of its own: the session's header button, a
   // <button> whose aria-label names it. Read in Chrome's accessibility tree it is a leaf, the
-  // 116 shapes under it not exposed, so it needs nothing. A guard that demanded a marker here
-  // would only teach the next reader to distrust the guard.
-  const NAMED_BY_ANCESTOR = ['components/SessionMuscles.jsx:33']
+  // 116 shapes under it not exposed, so it needs nothing. Recognised by that button rather than
+  // by a line number, which any unrelated edit above would move. A guard that demanded a marker
+  // here would only teach the next reader to distrust the guard.
+  const insideNamedButton = lines => lines.slice(Math.max(0, lines.length - 5)).some(l => /<button[\s>]/.test(l) && /aria-label=/.test(l))
 
   it('gives every call site one of the three treatments', async () => {
     const fs = await import('node:fs')
@@ -192,12 +193,18 @@ describe('BodyMap as a read-only picture', () => {
     const offenders = []
     for (const f of files) {
       if (f.endsWith('BodyMap.jsx') || f.endsWith('MiniBodyMap.jsx')) continue
-      fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
-        if (!/<BodyMap[\s>]/.test(line)) return
-        if (/onMuscle/.test(line) || /aria-hidden/.test(line) || /hits=/.test(line)) return
-        const rel = path.relative(src, f).split(path.sep).join('/') + ':' + (i + 1)
-        if (NAMED_BY_ANCESTOR.includes(rel)) return
-        offenders.push(rel + '  ' + line.trim().slice(0, 70))
+      const lines = fs.readFileSync(f, 'utf8').split('\n')
+      lines.forEach((line, i) => {
+        // \b, not a space: a call site written over several lines starts with "<BodyMap" alone,
+        // and a guard that quietly stopped seeing it would be worse than no guard. Still excludes
+        // <BodyMapLegend, which is a different component.
+        if (!/<BodyMap\b/.test(line)) return
+        // The props of a multi-line element are on the lines after it, so read a window rather
+        // than the one line, or a correctly named site would be accused of being unnamed.
+        const el = lines.slice(i, i + 6).join('\n')
+        if (/onMuscle|aria-hidden|hits=/.test(el)) return
+        if (insideNamedButton(lines.slice(0, i + 1))) return
+        offenders.push(path.relative(src, f).split(path.sep).join('/') + ':' + (i + 1) + '  ' + line.trim().slice(0, 70))
       })
     }
     expect(offenders).toEqual([])
