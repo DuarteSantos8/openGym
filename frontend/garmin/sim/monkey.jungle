@@ -32,6 +32,7 @@ base.excludeAnnotations = mono;live;small;notouch;nofixui
 instinct2.excludeAnnotations = color;live;big;touch;fixui
 instinct2s.excludeAnnotations = color;live;big;touch;fixui
 instinct2x.excludeAnnotations = color;live;big;touch;fixui
+descentg1.excludeAnnotations = color;live;big;touch;fixui
 instinctcrossover.excludeAnnotations = color;live;big;touch;fixui
 instinct3solar45mm.excludeAnnotations = color;live;big;touch;nofixui
 instincte40mm.excludeAnnotations = color;live;big;touch;nofixui
