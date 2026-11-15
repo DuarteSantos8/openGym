@@ -1,6 +1,6 @@
 import { uid } from './format.js'
 import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows } from './history.js'
-import { isSideSet, isWarmupRow, hasCompletedWork, modeForEntry } from './workout-model.js'
+import { isSideSet, isWarmupRow, hasCompletedWork, modeForEntry, dropsOf } from './workout-model.js'
 
 // A saved workout is evidence of what was logged, not a live routine. Copy only its flat
 // exercise setup on this explicit action; finishing a workout never calls this helper.
@@ -61,23 +61,59 @@ function perSideWeight(row) {
   return weights.length ? Math.max(...weights) : null
 }
 
+// The half of a per-side row that carries the drops (a unilateral drop-set is logged per limb),
+// or the row itself.
+const dropSource = row => (isSideSet(row) ? [row.sides.L, row.sides.R].find(s => dropsOf(s).length) || row : row)
+
+// A drop-set that was logged but never planned: a freestyle session, or a history imported from
+// another app, where every drop sits on its set and no target says so. The copy plans what the
+// rows show, so the routine opens with the drops already there instead of a set to fix by hand
+// in every exercise. Drops on the last work set become a last-set-only drop-set, drops on every
+// set an every-set one; the count is the last set's, and the step is the average drop it took,
+// on the 5 % grid the routine editor steps in. Drops that skip the last set fit neither, and
+// nothing is planned.
+function loggedDropset(done) {
+  const last = done.at(-1)
+  if (!last) return null
+  const src = dropSource(last)
+  const drops = dropsOf(src)
+  if (!drops.length) return null
+  const chain = [src.w, ...drops.map(d => d.w)].map(Number)
+  const steps = chain.slice(1).map((w, i) => chain[i] > 0 && w < chain[i] ? (1 - w / chain[i]) * 100 : null).filter(p => p != null)
+  // Float noise trimmed first: 100 down to 92.5 is 7.4999… and would round to 5, not 10.
+  const avg = steps.length ? Math.round(steps.reduce((a, b) => a + b, 0) / steps.length * 1e6) / 1e6 : null
+  const pct = avg != null ? Math.min(90, Math.max(5, Math.round(avg / 5) * 5)) : 20
+  const every = done.every(r => dropsOf(dropSource(r)).length)
+  return { type: 'dropset', count: drops.length, pct, ...(every ? {} : { on: 'last' }) }
+}
+
 function copiedEntry(entry, source) {
   const rows = Array.isArray(entry?.sets) ? entry.sets : []
   const work = rows.filter(row => !isWarmupRow(row))
   // A saved entry can retain planned rows after an early finish. Match history.js lastEntryFor:
   // only a fully completed work row may seed the copied target. A partially checked per-side row
   // is still retained by buildCompletedWorkout, but its two-limb state cannot fit a flat routine.
-  const row = work.filter(candidate => candidate?.done === true).at(-1) || null
-  const target = entry?.target && typeof entry.target === 'object'
-    ? structuredClone(entry.target)
-    : {}
+  const done = work.filter(candidate => candidate?.done === true)
+  const row = done.at(-1) || null
+  const hasTarget = !!entry?.target && typeof entry.target === 'object'
+  const target = hasTarget ? structuredClone(entry.target) : {}
   // Copy the mode that was logged, even if the catalogue's default has since changed (#678).
   const defaults = defaultConfig(entry?.id, modeForEntry(entry, modeOf({ ...target, id: entry?.id })))
   const cfg = { ...defaults, ...target, id: entry?.id, sets: Math.max(1, setsFromRows({ ...defaults, ...target }, work.length) || 1), warmupSets: rows.filter(isWarmupRow).length }
   const mode = modeOf(cfg)
+  // An entry with no saved setup at all (an imported history) can only say it was per side
+  // through its rows. Every done work set logged per side makes the copy per side, the way
+  // lastLoggedShape starts an exercise picked from the library. With a setup, its flag decides:
+  // a lift switched off per side is stored without it and must not get it back (#736).
+  if (!hasTarget && mode === 'reps' && done.length && done.every(isSideSet)) cfg.side = true
   if (mode === 'time' && row) Object.assign(cfg, { sec: row.sec ?? cfg.sec, weight: row.w ?? cfg.weight ?? 0 })
   else if (mode === 'cardio' && row) Object.assign(cfg, { min: row.min ?? cfg.min, speed: row.speed ?? cfg.speed })
   else if (mode === 'reps') {
+    // A planned session's intensifier comes with its target; the plan owns it (see below).
+    if (!cfg.intensifier && !entry?.planned) {
+      const drop = loggedDropset(done)
+      if (drop) cfg.intensifier = drop
+    }
     const reps = row && isPerSide(cfg) ? perSideReps(row, cfg) : positive(row?.r)
     if (reps != null) cfg.reps = reps
     if (row) {
