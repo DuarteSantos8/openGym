@@ -87,7 +87,7 @@ Total output lines: 111
 END {"index":8,"cwd":"api","command":"npm test","attempt":1,"exit_code":1,"signal":null,"duration_seconds":42.28,"log":"08-1.log"}
   -   '};\n'
 
-      at TestContext.<anonymous> (file:///C:/Users/soren/.gui-cloudroom/plugins/environment-git-worktree/host-data/worktrees/thr_awkgemvwfh-1/openGym-fork/api/test/wrapped.test.js:65:10)
+      at TestContext.<anonymous> (file:///<repo>/api/test/wrapped.test.js:65:10)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,

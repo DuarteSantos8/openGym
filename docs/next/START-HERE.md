@@ -1,9 +1,9 @@
 # START HERE — openGym Next v2 (instructions + plan in one file)
 
-**Folder:** `C:\Users\soren\OneDrive\Desktop\openGym-Next-v2\`
+**Folder:** `%USERPROFILE%\OneDrive\Desktop\openGym-Next-v2\`
 - `START-HERE.md`: this file. Part A is instructions, Part B is the full v2 plan.
 - `check_plan.py`: checks the plan's consistency.
-- Original v1 (left as is): `C:\Users\soren\OneDrive\Desktop\openGym_Next_Complete_Build_Plan_Reconstructed.md`
+- Original v1 (left as is): `%USERPROFILE%\OneDrive\Desktop\openGym_Next_Complete_Build_Plan_Reconstructed.md`
 
 The plan docs can stay in OneDrive. **The code repo must not** (see A2).
 
@@ -68,7 +68,7 @@ Known state on 2026-11-14: `origin/main` 661d2c295 · `origin/next/integration` 
 Then:
 ```bash
 git switch <chosen-base>
-mkdir -p docs/next && cp "/mnt/c/Users/soren/OneDrive/Desktop/openGym-Next-v2/"* docs/next/
+mkdir -p docs/next && cp "/mnt/c/Users/<you>/OneDrive/Desktop/openGym-Next-v2/"* docs/next/
 git worktree add ../openGym-EP00-T01 -b next/EP00-T01-baseline
 ```
 Nothing gets pushed yet. Pushing and merging are always your call. An off-machine backup of the salvage branch (a private `backup/*` branch on origin) is recommended, but only once you approve it.
