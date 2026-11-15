@@ -671,3 +671,50 @@ test('service: a submission whose Telegram message failed is sent again, once', 
   } finally { await close(s) }
 })
 
+test('service: review from Discord (api/mod) needs the key, lists what waits, remembers the message and decides', async () => {
+  const s = await startApp({ cfg: { modKey: 'k'.repeat(40) }, github: null })
+  const mod = (p, { method = 'GET', body, key = 'k'.repeat(40) } = {}) => fetch(s.base + 'mod/' + p, {
+    method, headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.9', ...(key ? { 'x-mod-key': key } : {}) }, body: body ? JSON.stringify(body) : undefined })
+  try {
+    assert.equal((await s.post('submit', form())).status, 200)
+    await new Promise(r => setTimeout(r, 50))
+    // Telegram only gets the nudge, without buttons
+    const note = s.sent.find(x => x.method === 'sendMessage')
+    assert.match(note.payload.text, /Review it in #routine-review/)
+    assert.equal(note.payload.reply_markup, undefined)
+    assert.equal((await mod('pending', { key: '' })).status, 403)
+    assert.equal((await mod('pending', { key: 'x'.repeat(40) })).status, 403)
+    const list = (await (await mod('pending')).json()).pending
+    assert.equal(list.length, 1)
+    const one = list[0]
+    assert.equal(one.title, 'Doorway strength')
+    assert.equal(one.author.name, 'Ana')
+    assert.equal(one.posted, null)
+    assert.equal(one.sessions[0].exercises[0].name, 'Pull-up')
+    assert.match(one.sessions[0].exercises[0].line, /^\d+×/)
+    assert.equal((await mod('posted', { method: 'POST', body: { sid: one.sid, message: 'nope' } })).status, 422)
+    assert.equal((await mod('posted', { method: 'POST', body: { sid: one.sid, message: '1571607685219090493' } })).status, 200)
+    assert.equal((await (await mod('pending')).json()).pending[0].posted, '1571607685219090493')
+    assert.equal((await mod('cover/' + one.sid)).status, 404)
+    assert.equal((await mod('decide', { method: 'POST', body: { sid: '../../etc', ok: true } })).status, 422)
+    const done = await (await mod('decide', { method: 'POST', body: { sid: one.sid, ok: true, by: 'seals187' } })).json()
+    assert.match(done.result, /Approved/)
+    assert.equal((await (await mod('pending')).json()).pending.length, 0)
+    assert.ok(fs.existsSync(path.join(s.dataDir, 'approved', one.slug + '.json')))
+    const again = await (await mod('decide', { method: 'POST', body: { sid: one.sid, ok: false } })).json()
+    assert.equal(again.result, 'Already handled.')
+  } finally { await close(s) }
+})
+
+test('service: without a key the review routes do not exist, and wrong keys run out', async () => {
+  const off = await startApp()
+  try { assert.equal((await fetch(off.base + 'mod/pending', { headers: { 'x-mod-key': '' } })).status, 404) } finally { await close(off) }
+  const s = await startApp({ cfg: { modKey: 'k'.repeat(40) } })
+  try {
+    let last = 0
+    for (let i = 0; i < 12; i++) last = (await fetch(s.base + 'mod/pending', { headers: { 'x-mod-key': 'wrong', 'cf-connecting-ip': '198.51.100.7' } })).status
+    assert.equal(last, 429)
+    assert.equal((await fetch(s.base + 'mod/pending', { headers: { 'x-mod-key': 'k'.repeat(40), 'cf-connecting-ip': '198.51.100.7' } })).status, 200, 'the right key still works')
+  } finally { await close(s) }
+})
+

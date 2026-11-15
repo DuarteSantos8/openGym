@@ -41,7 +41,10 @@ export function configFromEnv(env = process.env) {
     ghBranch: env.GITHUB_BRANCH || 'routines-inbox',
     ghBase: env.GITHUB_BASE || 'main',
     cwebp: env.CWEBP || 'cwebp',
-    poll: env.TELEGRAM_POLL !== '0'
+    poll: env.TELEGRAM_POLL !== '0',
+    // Review on Discord (the mods' #routine-review, ServiceBot's review.js): with a key set the
+    // bot may read what is waiting and send a decision, and Telegram only says "there is one".
+    modKey: env.MOD_KEY || ''
   }
 }
 
@@ -177,6 +180,25 @@ export function moderationText(sub, { label = '', cat } = {}) {
   let text = lines.filter(l => l !== null).join('\n').replace(/\n{3,}/g, '\n\n')
   if (text.length > 4000) text = text.slice(0, 3990) + '…'
   return text
+}
+
+/** A submission the way a reviewer needs it, as data: Discord (and anything else) lays it out itself. */
+export function reviewData(sub, { cat, cover = false } = {}) {
+  const r = sub.routine
+  return {
+    sid: sub.sid, slug: sub.slug, at: sub.at, posted: sub.discord || null, cover,
+    title: r.title, author: r.author, language: r.language, goal: r.goal, level: r.level, split: r.split,
+    days: r.days, duration: r.duration, tags: r.tags || [], description: r.description, about: r.about || '',
+    sessions: r.sessions.map((s, i) => ({
+      name: s.name,
+      when: (r.schedule || []).filter(p => p[1] === i).map(p => DAY[p[0]]).join(' '),
+      exercises: s.exercises.map(x => ({
+        name: (n => n.charAt(0).toUpperCase() + n.slice(1))(String(cat?.get(x.id)?.n || x.id)),
+        line: `${x.sets}×${x.sec ? clock(x.sec) : x.repsMin ? `${x.repsMin}-${x.reps}` : x.reps}${x.rest ? `, rest ${clock(x.rest)}` : ''}`,
+        note: x.note || ''
+      }))
+    }))
+  }
 }
 
 export const keyboard = (sid, tag) => ({ inline_keyboard: [[{ text: '✅ Approve', callback_data: `rt:${tag}:ok:${sid}` }, { text: '❌ Reject', callback_data: `rt:${tag}:no:${sid}` }]] })
@@ -428,8 +450,66 @@ export function createApp(cfg, deps = {}) {
     return n
   }
 
+  /* ------------------------------- review from Discord ------------------------------- */
+  // api/mod/*: for ServiceBot only, with the shared key in x-mod-key (MOD_KEY on both sides).
+  // Without a key configured the routes do not exist. The bot ASKS what is waiting instead of
+  // being told, so a message that fails to post is simply posted on the next round.
+  //   GET  mod/pending         what waits, with `posted` (the Discord message) once it is up
+  //   GET  mod/cover/<sid>     the cover photo (webp)
+  //   POST mod/posted          { sid, message }  remember the Discord message of a submission
+  //   POST mod/decide          { sid, ok, by }   approve or reject; answers with the sentence
+  const modLimit = new Limiter(10, 10 * 60000, now)
+  function modAllowed(req) {
+    if (!cfg.modKey) return false
+    const got = Buffer.from(String(req.headers['x-mod-key'] || '')), want = Buffer.from(cfg.modKey)
+    return got.length === want.length && crypto.timingSafeEqual(got, want)
+  }
+  async function handleMod(req, res, what) {
+    if (!cfg.modKey) return send(res, 404, { ok: false, error: 'No such thing.' })
+    // Wrong keys are counted per visitor, so guessing is slow and cannot lock the bot out.
+    if (!modAllowed(req)) return modLimit.take(visitor(req)) ? send(res, 403, { ok: false, error: 'No.' }) : send(res, 429, { ok: false, error: 'Slow down.' })
+    const pendingFile = sid => (/^[0-9a-f]{12}$/.test(String(sid)) ? path.join(dirs.pending, sid + '.json') : null)
+    if (req.method === 'GET' && what === 'pending') {
+      const list = fs.readdirSync(dirs.pending).filter(f => /^[0-9a-f]{12}\.json$/.test(f)).map(f => {
+        const sub = JSON.parse(fs.readFileSync(path.join(dirs.pending, f), 'utf8'))
+        return reviewData(sub, { cat, cover: fs.existsSync(path.join(dirs.pending, sub.sid + '.webp')) })
+      }).sort((a, b) => (a.at < b.at ? -1 : 1))
+      return send(res, 200, { ok: true, pending: list })
+    }
+    if (req.method === 'GET' && what.startsWith('cover/')) {
+      const f = pendingFile(what.slice(6))
+      const img = f && f.replace(/\.json$/, '.webp')
+      if (!img || !fs.existsSync(img)) return send(res, 404, { ok: false, error: 'No cover.' })
+      res.writeHead(200, { 'content-type': 'image/webp', 'cache-control': 'no-store' })
+      return res.end(fs.readFileSync(img))
+    }
+    if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Method not allowed.' })
+    const body = await readJSON(req, 2048)
+    const f = pendingFile(body.sid)
+    if (what === 'posted') {
+      if (!f || !fs.existsSync(f)) return send(res, 404, { ok: false, error: 'Already handled.' })
+      if (!/^[0-9]{5,25}$/.test(String(body.message || ''))) return send(res, 422, { ok: false, error: 'message is a Discord id.' })
+      writeAtomic(f, JSON.stringify({ ...JSON.parse(fs.readFileSync(f, 'utf8')), discord: String(body.message) }, null, 2))
+      return send(res, 200, { ok: true })
+    }
+    if (what === 'decide') {
+      if (!f) return send(res, 422, { ok: false, error: 'Unknown submission.' })
+      if (typeof body.ok !== 'boolean') return send(res, 422, { ok: false, error: 'ok is true or false.' })
+      const result = await moderate(body.sid, body.ok)
+      console.log(`routine ${body.sid} ${body.ok ? 'approved' : 'rejected'} on Discord by ${String(body.by || '?').slice(0, 60)}`)
+      return send(res, 200, { ok: true, result })
+    }
+    return send(res, 404, { ok: false, error: 'No such thing.' })
+  }
+
   async function notify(sub, coverBuf) {
     if (!tg) { console.log(`routine ${sub.sid} (${sub.slug}) waiting, Telegram not configured`); return }
+    if (cfg.modKey) {
+      // The mods decide on Discord; this is only the nudge, without buttons.
+      const r = sub.routine
+      await tg('sendMessage', { chat_id: cfg.tgChat, text: `${cfg.label ? `[${cfg.label}] ` : ''}New routine submission: "${r.title}" by ${r.author.name}. Review it in #routine-review on Discord.` })
+      return
+    }
     const text = moderationText(sub, { label: cfg.label, cat })
     if (coverBuf) {
       await tg('sendPhoto', { chat_id: cfg.tgChat, caption: `${cfg.label ? `[${cfg.label}] ` : ''}Cover for "${sub.routine.title}"`.slice(0, 1000) }, { field: 'photo', buf: coverBuf, type: 'image/webp', name: 'cover.webp' })
@@ -543,6 +623,7 @@ export function createApp(cfg, deps = {}) {
         const route = urlPath.slice(cfg.api.length)
         if (route === 'health' && req.method === 'GET') return send(res, 200, { ok: true })
         if (route === 'stats' && req.method === 'GET') return send(res, 200, { ok: true, copies: counts }, { 'cache-control': 'public, max-age=300' })
+        if (route === 'mod' || route.startsWith('mod/')) return await handleMod(req, res, route.slice(4))
         if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Method not allowed.' }, { allow: 'POST' })
         if (route === 'copy') return await handleCopy(req, res)
         if (route === 'preview') return await handlePreview(req, res)
