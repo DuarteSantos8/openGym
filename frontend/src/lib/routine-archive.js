@@ -129,12 +129,14 @@ export function putBackEntry(s, e) {
   return true
 }
 
-/** Once per state: the old folder called Archive becomes the archive flag. True when it ran. */
+/** The old folder called Archive becomes the archive flag. Safe to run again: a routine an older app
+ *  later puts in "Archive" (a reserved name) moves on arrival. True when it moved something. */
 export function migrateArchiveFolder(s) {
-  if (s.archiveMoved) return false
+  const old = (s.routines || []).filter(r => isArchive(r.folder))
+  if (!old.length) return false
   // Off the schedule first, as an ordinary archive does: a later Restore must not reactivate old assignments.
-  archiveRoutines(s, (s.routines || []).filter(r => isArchive(r.folder)).map(r => r.id))
-  for (const r of s.routines || []) if (isArchive(r.folder)) { r.archived = true; delete r.folder }
+  archiveRoutines(s, old.map(r => r.id))
+  for (const r of old) { r.archived = true; delete r.folder }
   s.archiveMoved = true
   return true
 }

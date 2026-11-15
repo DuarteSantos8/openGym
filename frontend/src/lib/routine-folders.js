@@ -76,6 +76,9 @@ export function setCurrent(s, name) {
   for (const e of s.routineFolders || []) { if (name != null && same(e.name, name)) e.current = true; else delete e.current }
 }
 
+/** The folder list as stored entries: folders only named on routines get theirs, in the order Plan shows. */
+const entriesOf = s => folderList(s).map(f => (f.current ? { name: f.name, current: true } : { name: f.name }))
+
 function nameProblem(s, name, except) {
   const n = cleanFolder(name)
   if (!n) return { reason: 'empty' }
@@ -87,7 +90,7 @@ function nameProblem(s, name, except) {
 export function createFolder(s, name) {
   const { n, ...bad } = nameProblem(s, name)
   if (!n) return { ok: false, ...bad }
-  s.routineFolders = [...(s.routineFolders || []), { name: n }]
+  s.routineFolders = [...entriesOf(s), { name: n }]
   return { ok: true, name: n }
 }
 
@@ -107,20 +110,21 @@ export function removeFolder(s, name) {
   return { ids }
 }
 
-/** '' makes them loose. A folder that is not listed yet gets its entry. */
+/** '' makes them loose. A folder that is not listed yet gets its entry, after the ones already shown. */
 export function moveToFolder(s, ids, name) {
   const n = cleanFolder(name)
   const known = n && folderList(s).find(f => same(f.name, n))?.name
+  const list = n && !(s.routineFolders || []).some(e => same(e.name, n)) ? entriesOf(s) : null   // before the move names the folder on a routine
   for (const r of s.routines || []) {
     if (!ids.includes(r.id)) continue
     if (n) r.folder = known || n; else delete r.folder
   }
-  if (n && !(s.routineFolders || []).some(e => same(e.name, n))) s.routineFolders = [...(s.routineFolders || []), { name: known || n }]
+  if (list) s.routineFolders = list.some(e => same(e.name, n)) ? list : [...list, { name: n }]
 }
 
 /** Moves a folder in the list as Plan shows it; folders only named on routines get their entry. */
 export function reorderFolders(s, from, to) {
-  const list = folderList(s).map(f => (f.current ? { name: f.name, current: true } : { name: f.name }))
+  const list = entriesOf(s)
   if (!list[from] || to < 0 || to >= list.length) return
   list.splice(to, 0, ...list.splice(from, 1))
   s.routineFolders = list
