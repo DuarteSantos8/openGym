@@ -4779,6 +4779,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    back, on --ease. The page's own arrival animation steps aside. */
 html[data-rise] #livebar,
 html[data-rise] .page[data-path="/workout"]:not(.under){view-transition-name:workout-rise}
-html[data-rise] .page{animation:none}
+html[data-rise] #app > .page{animation:none}
 html[data-rise] ::view-transition-group(workout-rise){animation-duration:380ms;animation-timing-function:var(--ease)}
 html[data-rise="fold"] ::view-transition-group(workout-rise){animation-duration:320ms}
