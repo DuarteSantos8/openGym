@@ -1,0 +1,28 @@
+# Optional add-on: a local Ollama model for the AI Coach, so workout data never leaves your network.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d
+#   docker compose exec ollama ollama pull qwen2.5:3b
+#
+# The service is called `ollama` on purpose: the Coach's "Find Ollama or LM Studio" button
+# checks that name first, so the admin card finds it without typing an address
+# (or enter http://ollama:11434 by hand). docs/MY_FORK.md has the full walkthrough.
+services:
+  ollama:
+    image: ollama/ollama:0.12.6
+    restart: unless-stopped
+    environment:
+      # Keep the model and its prompt cache loaded; one slot so the cache is not split
+      # (docs/AI_COACH.md, "Performance on a small box").
+      - OLLAMA_KEEP_ALIVE=-1
+      - OLLAMA_NUM_PARALLEL=1
+    volumes:
+      - ./ollama:/root/.ollama   # downloaded models; large, not part of the ./data backup
+    # No `ports:` on purpose: only the api container needs to reach it.
+    # GPU (NVIDIA + nvidia-container-toolkit): uncomment the block below.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
