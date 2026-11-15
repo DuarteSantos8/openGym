@@ -219,7 +219,8 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-  # openGym Next (EP16): the production build in a real browser, as a guest, against a real API
+  # openGym Next (EP16): the production build in real browsers (a phone-sized Chromium, an
+  # iPhone 13 profile on WebKit, a Pixel 7 profile on Chromium), as a guest, against a real API
   # on a throwaway data folder (frontend/playwright.config.mjs). Fails on any request that leaves
   # the machine, on an uncaught page error, and on a serious or critical axe (WCAG 2.1 AA)
   # violation on the main screens.
