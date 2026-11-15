@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { imgSrc, gifSrc, isVideoSrc, isCustomEx, figureOf } from '../lib/exercises.js'
 import { MOBILE } from '../lib/mobile.js'
 import { useStore } from '../store/useStore.js'
@@ -41,7 +41,8 @@ export default function Media(p) {
   </>
 }
 
-// Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).
+// Big autoplaying animation; tap pauses video clips on the current frame or toggles GIFs to the
+// still frame. `compact` shrinks it (superset cards).
 // `minimizable` (workout view) adds a persistent minimize/expand control so the animation stops
 // eating the screen; the chosen size is saved to settings and carries across exercises and
 // future workouts (issue #12). Settings can also turn workout media off entirely
@@ -70,14 +71,35 @@ function BuiltinMedia({ ex, id, compact, minimizable, sayAs }) {
   const gif = anim.sources[Math.min(at, Math.max(0, anim.sources.length - 1))] || gifSrc(ex, body)
   const clip = ex.gif && isVideoSrc(gif) ? gif : null
   const clipSrc = useClipInMemory(clip)
-  if (!ex.gif) return null
-  if (minimizable && gifSize === 'off') return null
   const mini = minimizable && gifSize === 'mini'
+  const hidden = !ex.gif || (minimizable && gifSize === 'off')
+  const hasClip = !hidden && failed == null && !anim.still && Boolean(clip && clipSrc)
+  const videoRef = useRef(null)
+  useEffect(() => {
+    const el = videoRef.current
+    if (!hasClip || !el) return
+    if (playing) {
+      delete el.dataset.paused
+      autoplayMuted(el)
+    } else {
+      el.dataset.paused = '1'
+      el.pause?.()
+    }
+  }, [hasClip, playing, clipSrc])
+  useEffect(() => {
+    const el = videoRef.current
+    if (!hasClip || !el || typeof IntersectionObserver === 'undefined') return
+    const io = clipsInView()
+    io.observe(el)
+    return () => io.unobserve(el)
+  }, [hasClip, clipSrc])
+  if (hidden) return null
   const toggleSize = e => { e.stopPropagation(); update(s => { s.gifSize = mini ? 'full' : 'mini' }) }
   const showGif = playing && failed == null && !anim.still
+  const showingAnim = failed == null && !anim.still && (hasClip || playing)
   const onError = () => {
-    if (showGif && at < anim.sources.length - 1) { setTried({ key: sourcesKey, i: at + 1 }); return }
-    setFailed(showGif ? 'gif' : 'all')
+    if (showingAnim && at < anim.sources.length - 1) { setTried({ key: sourcesKey, i: at + 1 }); return }
+    setFailed(showingAnim ? 'gif' : 'all')
   }
   const onTap = () => {
     if (failed) { setFailed(null); setPlaying(true); setTried({ key: sourcesKey, i: 0 }); return }
@@ -88,10 +110,10 @@ function BuiltinMedia({ ex, id, compact, minimizable, sayAs }) {
     <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '') + (failed === 'all' ? ' broken' : '')} id={id} onClick={onTap}>
       {failed === 'all'
         ? <div className="exmedia-x"><Icon name="dumbbell" /></div>
-        : showGif && clip && clipSrc
+        : hasClip
           // No poster: Android's WebView went back to it at every loop and stalled there (the
-          // still above stands in while the clip loads, so nothing is lost without it).
-          ? <video ref={autoplayClip} className="catvid" src={clipSrc} autoPlay muted loop playsInline disablePictureInPicture
+          // still below stands in while the clip loads, so nothing is lost without it).
+          ? <video ref={videoRef} className="catvid" src={clipSrc} autoPlay muted loop playsInline disablePictureInPicture
               aria-label={exerciseNameFor(ex)} onError={onError} />
           : showGif && clip
             // the phone app is still reading the clip into memory: the still holds its place
@@ -181,7 +203,10 @@ let clipObserver = null
 const clipsInView = () => clipObserver || (clipObserver = new IntersectionObserver(entries => {
   for (const e of entries) {
     const v = e.target
-    if (e.isIntersecting) { const p = v.play?.(); if (p && typeof p.catch === 'function') p.catch(() => {}) }
+    if (e.isIntersecting) {
+      if (v.dataset?.paused) continue
+      const p = v.play?.(); if (p && typeof p.catch === 'function') p.catch(() => {})
+    }
     else v.pause?.()
   }
 }, { rootMargin: '100px 0px' }))
