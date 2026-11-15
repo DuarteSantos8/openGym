@@ -3770,7 +3770,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     finishWorkoutSheet.mock.calls[0][0].onDiscard()
     expect(mocks.confirmSheet.mock.calls.at(-1)[0].title).toBe('Discard workout?')
     await click(container.querySelector('button[aria-label="Minimize"]'))
-    expect(mocks.nav).toHaveBeenCalledWith('/home')
+    expect(mocks.nav).toHaveBeenCalledWith('/home', { state: { rise: 'fold' } })
     expect(mocks.S.active).not.toBeNull()
   })
 
