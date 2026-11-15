@@ -102,7 +102,6 @@ export const ALIASES = {
   '0172': '0814', // Tricep Dips using Body Weight -> triceps dip
   '0174': '4344', // Incline Triceps Extension with Barbell -> barbell incline triceps extension skull crusher
   '0175': '0052', // JM Press -> barbell jm bench press
-  '0176': '0176', // Kneeling Triceps Concentration Extension with Cable -> cable kneeling triceps extension
   '0179': '1720', // Lying Close-Grip Triceps Extension Behind the Head -> barbell lying back of the head tricep extension
   '0182': '0337', // Lying Triceps Extension Across Face with Dumbbell -> dumbbell lying extension (across face)
   '0183': '0061', // Lying Triceps Press with Barbell -> barbell lying triceps extension
@@ -201,7 +200,9 @@ async function main() {
   let missing = 0
   fs.rmSync(OUT, { recursive: true, force: true })
   fs.mkdirSync(path.join(OUT, 'files'), { recursive: true })
-  for (const e of ek) {
+  // Exact matches claim their catalogue exercise first; an alias only fills an exercise left open.
+  const viaAlias = e => Boolean(e.id_num && ALIASES[e.id_num])
+  for (const e of [...ek.filter(x => !viaAlias(x)), ...ek.filter(viaAlias)]) {
     const id = matchOne(e, byKey)
     if (!id || index[id]) continue
     const pics = []
