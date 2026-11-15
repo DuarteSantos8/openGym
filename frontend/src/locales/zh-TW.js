@@ -5904,4 +5904,10 @@ export default {
   "Add a watch or connect a server in Settings": "在設定中新增手錶或連接伺服器",
   "Open Settings": "開啟設定",
 
+  "Workout in progress": "訓練進行中",
+  "Opens the workout": "開啟訓練",
+  "{0} of {1} sets done": "已完成 {0}/{1} 組",
+  "Watch connected": "手錶已連線",
+  "Watch reconnecting": "手錶重新連線中",
+  "No watch linked": "未連線手錶",
 }

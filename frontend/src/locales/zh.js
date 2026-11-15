@@ -5911,4 +5911,10 @@ export default {
   "Add a watch or connect a server in Settings": "在设置中添加手表或连接服务器",
   "Open Settings": "打开设置",
 
+  "Workout in progress": "训练进行中",
+  "Opens the workout": "打开训练",
+  "{0} of {1} sets done": "已完成 {0}/{1} 组",
+  "Watch connected": "手表已连接",
+  "Watch reconnecting": "手表正在重新连接",
+  "No watch linked": "未连接手表",
 }

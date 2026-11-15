@@ -5914,4 +5914,10 @@ export default {
   "Add a watch or connect a server in Settings": "Adj hozzá órát vagy csatlakoztass szervert a Beállításokban",
   "Open Settings": "Beállítások megnyitása",
 
+  "Workout in progress": "Edzés folyamatban",
+  "Opens the workout": "Megnyitja az edzést",
+  "{0} of {1} sets done": "{0}/{1} sorozat kész",
+  "Watch connected": "Óra csatlakoztatva",
+  "Watch reconnecting": "Óra újracsatlakozik",
+  "No watch linked": "Nincs csatlakoztatott óra",
 }

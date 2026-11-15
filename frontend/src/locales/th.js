@@ -5922,4 +5922,10 @@ export default {
   "Add a watch or connect a server in Settings": "เพิ่มนาฬิกาหรือเชื่อมต่อเซิร์ฟเวอร์ในการตั้งค่า",
   "Open Settings": "เปิดการตั้งค่า",
 
+  "Workout in progress": "กำลังออกกำลังกาย",
+  "Opens the workout": "เปิดการออกกำลังกาย",
+  "{0} of {1} sets done": "เสร็จแล้ว {0} จาก {1} เซ็ต",
+  "Watch connected": "เชื่อมต่อนาฬิกาแล้ว",
+  "Watch reconnecting": "กำลังเชื่อมต่อนาฬิกาอีกครั้ง",
+  "No watch linked": "ไม่มีนาฬิกาเชื่อมต่อ",
 }

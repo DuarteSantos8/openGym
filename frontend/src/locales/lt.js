@@ -5907,4 +5907,10 @@ export default {
   "No devices connected": "Nėra prijungtų įrenginių",
   "Add a watch or connect a server in Settings": "Nustatymuose pridėk laikrodį arba prijunk serverį",
   "Open Settings": "Atidaryti nustatymus",
+  "Workout in progress": "Treniruotė vyksta",
+  "Opens the workout": "Atidaro treniruotę",
+  "{0} of {1} sets done": "Atlikta {0} iš {1} serijų",
+  "Watch connected": "Laikrodis prijungtas",
+  "Watch reconnecting": "Laikrodis jungiasi iš naujo",
+  "No watch linked": "Nėra prijungto laikrodžio",
 }

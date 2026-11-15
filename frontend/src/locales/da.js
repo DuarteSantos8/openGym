@@ -5851,4 +5851,10 @@ export default {
   "No devices connected": "Ingen enheder forbundet",
   "Add a watch or connect a server in Settings": "Tilføj et ur eller forbind en server i Indstillinger",
   "Open Settings": "Åbn Indstillinger",
+  "Workout in progress": "Træning i gang",
+  "Opens the workout": "Åbner træningen",
+  "{0} of {1} sets done": "{0} af {1} sæt færdige",
+  "Watch connected": "Ur forbundet",
+  "Watch reconnecting": "Ur forbinder igen",
+  "No watch linked": "Intet ur forbundet",
 }

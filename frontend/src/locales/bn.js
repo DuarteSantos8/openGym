@@ -5990,4 +5990,10 @@ export default {
   "Add a watch or connect a server in Settings": "সেটিংসে একটি ঘড়ি যোগ করুন বা সার্ভার সংযুক্ত করুন",
   "Open Settings": "সেটিংস খুলুন",
 
+  "Workout in progress": "ওয়ার্কআউট চলছে",
+  "Opens the workout": "ওয়ার্কআউট খোলে",
+  "{0} of {1} sets done": "{1}-এর মধ্যে {0} সেট শেষ",
+  "Watch connected": "ঘড়ি সংযুক্ত",
+  "Watch reconnecting": "ঘড়ি আবার সংযুক্ত হচ্ছে",
+  "No watch linked": "কোনো ঘড়ি সংযুক্ত নেই",
 }

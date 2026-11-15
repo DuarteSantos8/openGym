@@ -5908,4 +5908,10 @@ export default {
   "Add a watch or connect a server in Settings": "Додайте годинник або підключіть сервер у Налаштуваннях",
   "Open Settings": "Відкрити Налаштування",
 
+  "Workout in progress": "Тренування триває",
+  "Opens the workout": "Відкриває тренування",
+  "{0} of {1} sets done": "Виконано підходів: {0} з {1}",
+  "Watch connected": "Годинник підключено",
+  "Watch reconnecting": "Годинник перепідключається",
+  "No watch linked": "Годинник не підключено",
 }

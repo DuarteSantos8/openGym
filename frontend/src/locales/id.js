@@ -5876,4 +5876,10 @@ export default {
   "No devices connected": "Tidak ada perangkat terhubung",
   "Add a watch or connect a server in Settings": "Tambahkan jam tangan atau hubungkan server di Pengaturan",
   "Open Settings": "Buka Pengaturan",
+  "Workout in progress": "Latihan berlangsung",
+  "Opens the workout": "Membuka latihan",
+  "{0} of {1} sets done": "{0} dari {1} set selesai",
+  "Watch connected": "Jam tangan terhubung",
+  "Watch reconnecting": "Jam tangan menyambung ulang",
+  "No watch linked": "Tidak ada jam tangan terhubung",
 };

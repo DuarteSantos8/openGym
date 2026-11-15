@@ -5958,4 +5958,10 @@ export default {
   "Add a watch or connect a server in Settings": "Lägg till en klocka eller anslut en server i Inställningar",
   "Open Settings": "Öppna Inställningar",
 
+  "Workout in progress": "Pass pågår",
+  "Opens the workout": "Öppnar passet",
+  "{0} of {1} sets done": "{0} av {1} set klara",
+  "Watch connected": "Klockan är ansluten",
+  "Watch reconnecting": "Klockan återansluter",
+  "No watch linked": "Ingen klocka ansluten",
 }

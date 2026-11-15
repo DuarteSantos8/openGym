@@ -5877,4 +5877,10 @@ export default {
   "No devices connected": "Žádná připojená zařízení",
   "Add a watch or connect a server in Settings": "V nastavení přidej hodinky nebo připoj server",
   "Open Settings": "Otevřít nastavení",
+  "Workout in progress": "Trénink probíhá",
+  "Opens the workout": "Otevře trénink",
+  "{0} of {1} sets done": "{0} z {1} sérií hotovo",
+  "Watch connected": "Hodinky připojeny",
+  "Watch reconnecting": "Hodinky se znovu připojují",
+  "No watch linked": "Žádné připojené hodinky",
 }

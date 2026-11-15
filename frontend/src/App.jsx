@@ -61,6 +61,8 @@ import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
+import LiveBar from './components/LiveBar.jsx'
+import { liveBarShows } from './lib/live-bar.js'
 import TimerFlash from './components/TimerFlash.jsx'
 import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
@@ -455,8 +457,11 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {!noTabs && <LiveBar />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      {/* The live bar's rest line is the countdown wherever the bar shows. The rest keeps running in
+          the store (sounds, notifications, haptics are not RestTimer's), so unmounting only hides it. */}
+      {!(!noTabs && liveBarShows(S, loc.pathname)) && <RestTimer />}
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />

@@ -5877,4 +5877,10 @@ export default {
   "No devices connected": "Chưa kết nối thiết bị nào",
   "Add a watch or connect a server in Settings": "Thêm đồng hồ hoặc kết nối máy chủ trong Cài đặt",
   "Open Settings": "Mở Cài đặt",
+  "Workout in progress": "Buổi tập đang diễn ra",
+  "Opens the workout": "Mở buổi tập",
+  "{0} of {1} sets done": "Đã xong {0}/{1} hiệp",
+  "Watch connected": "Đã kết nối đồng hồ",
+  "Watch reconnecting": "Đang kết nối lại đồng hồ",
+  "No watch linked": "Chưa kết nối đồng hồ",
 };

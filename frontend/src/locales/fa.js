@@ -5877,4 +5877,10 @@ export default {
   "No devices connected": "دستگاهی وصل نیست",
   "Add a watch or connect a server in Settings": "در تنظیمات یک ساعت اضافه کن یا یک سرور وصل کن",
   "Open Settings": "باز کردن تنظیمات",
+  "Workout in progress": "تمرین در جریان است",
+  "Opens the workout": "تمرین را باز می‌کند",
+  "{0} of {1} sets done": "{0} از {1} ست انجام شده",
+  "Watch connected": "ساعت متصل است",
+  "Watch reconnecting": "ساعت دوباره متصل می‌شود",
+  "No watch linked": "ساعتی متصل نیست",
 }

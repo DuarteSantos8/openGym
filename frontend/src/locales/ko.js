@@ -5911,4 +5911,10 @@ export default {
   "Add a watch or connect a server in Settings": "설정에서 워치를 추가하거나 서버를 연결하세요",
   "Open Settings": "설정 열기",
 
+  "Workout in progress": "운동 진행 중",
+  "Opens the workout": "운동 열기",
+  "{0} of {1} sets done": "{1}세트 중 {0}세트 완료",
+  "Watch connected": "워치 연결됨",
+  "Watch reconnecting": "워치 다시 연결 중",
+  "No watch linked": "연결된 워치 없음",
 }

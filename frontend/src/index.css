@@ -3037,6 +3037,65 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 #totop:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 #totop .icn{font-size:1.3125rem;--icon-stroke:2.1}
 body.resting #totop{bottom:calc(172px + var(--sab))}
+/* --- live workout bar (components/LiveBar.jsx): the running workout above the tab bar --- */
+/* A capsule of translucent accent glass, 8px over the tab bar inside the same side margins. --livebar-a
+   is how see-through the fill may be (accent.js sets it per accent so the ink keeps its contrast).
+   All text is full ink; the second line differs by size and weight, never by fading. Digits sit in
+   fixed-width slots so nothing moves as clocks tick or a pulse arrives. */
+.livebar{
+  position:fixed;z-index:51;inset-inline:12px;bottom:calc(66px + var(--sab));max-width:520px;margin-inline:auto;
+  container-type:inline-size;container-name:livebar;
+  min-height:58px;box-sizing:border-box;border-radius:29px;padding-block:10px 8px;padding-inline:12px 16px;
+  display:flex;align-items:center;gap:12px;text-align:start;color:var(--on-acc);
+  font-size:min(1rem,28px); /* follows the root text size, up to 1.75 times */
+  background:var(--acc);background:color-mix(in srgb,var(--acc) calc(var(--livebar-a) * 100%),transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 26px -8px rgba(0,0,0,.45);
+  transition:transform var(--fast) var(--ease);
+}
+.livebar:active{transform:scale(.985)}
+.livebar:focus-visible{outline:2px solid var(--on-acc);outline-offset:2px}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
+@media (prefers-reduced-transparency:reduce){.livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}}
+.livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
+.livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform var(--fast) linear}
+:root[dir="rtl"] .livebar-hl i{transform-origin:right}
+.livebar-dev{flex:none;display:flex;line-height:0}
+.livebar-dev svg{overflow:visible}
+.livebar-dev .w{fill:none;stroke:var(--on-acc);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.livebar-dev.none .w{opacity:.8}
+.livebar-dev .bd{fill:var(--on-acc)}
+.livebar-dev .gl{fill:none;stroke:var(--acc);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.livebar-dev .sp{transform-origin:21.5px 21.5px;animation:livebar-spin 1.4s linear infinite}
+@keyframes livebar-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.livebar-dev .sp{animation:none}}
+.livebar-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.livebar-l1,.livebar-l2{display:flex;align-items:baseline;gap:.5em;min-width:0;white-space:nowrap}
+.livebar-l1{font-size:.75em;font-weight:500;line-height:1.35}
+.livebar-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.livebar-num{font-variant-numeric:tabular-nums;unicode-bidi:isolate;direction:ltr}
+.livebar-el{flex:none;min-width:3.6em;text-align:end} /* room for three-digit minutes */
+.livebar-l2{font-size:.9375em;font-weight:600;letter-spacing:-.01em;line-height:1.5;align-items:center}
+.livebar-ex{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.livebar-st,.livebar-rl,.livebar-nx{flex:none;font-size:.8125em;font-variant-numeric:tabular-nums}
+.livebar-st{font-weight:400}
+.livebar-rl{font-weight:500;margin-inline-end:-2px}
+.livebar-cd{flex:none;font-size:1.4em;font-weight:800;letter-spacing:-.02em;line-height:1;min-width:4.4ch;text-align:start}
+.livebar-nx{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.livebar-hr{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;width:calc(13px + 4px + 3ch);font-size:.9375em;font-weight:600}
+.livebar-hr svg{width:13px;height:13px;fill:var(--on-acc);flex:none}
+/* Largest text: line 1 goes and the exercise may take two lines. */
+@container livebar (max-width:17em){
+  .livebar-l1{display:none}
+  .livebar-ex{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .livebar-dev svg{width:36px;height:36px}
+}
+body.has-livebar #app{padding-bottom:calc(154px + var(--sab))} /* the tab bar's 88, the capsule's 58, and 8 */
+body.has-livebar #totop{bottom:calc(146px + var(--sab))}
+@media (min-width:1000px){
+  .livebar{bottom:83px}
+  body.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
+}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}

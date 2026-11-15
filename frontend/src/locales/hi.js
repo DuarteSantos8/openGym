@@ -5911,4 +5911,10 @@ export default {
   "Add a watch or connect a server in Settings": "सेटिंग में घड़ी जोड़ें या सर्वर कनेक्ट करें",
   "Open Settings": "सेटिंग खोलें",
 
+  "Workout in progress": "वर्कआउट जारी है",
+  "Opens the workout": "वर्कआउट खोलता है",
+  "{0} of {1} sets done": "{1} में से {0} सेट पूरे",
+  "Watch connected": "घड़ी जुड़ी है",
+  "Watch reconnecting": "घड़ी फिर से जुड़ रही है",
+  "No watch linked": "कोई घड़ी नहीं जुड़ी",
 }

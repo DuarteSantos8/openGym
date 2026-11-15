@@ -5911,4 +5911,10 @@ export default {
   "Add a watch or connect a server in Settings": "Adiciona um relógio ou liga um servidor nas Definições",
   "Open Settings": "Abrir Definições",
 
+  "Workout in progress": "Treino em curso",
+  "Opens the workout": "Abre o treino",
+  "{0} of {1} sets done": "{0} de {1} séries feitas",
+  "Watch connected": "Relógio ligado",
+  "Watch reconnecting": "A religar o relógio",
+  "No watch linked": "Sem relógio ligado",
 }

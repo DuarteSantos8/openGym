@@ -5915,4 +5915,10 @@ export default {
   "Add a watch or connect a server in Settings": "Добавьте часы или подключите сервер в Настройках",
   "Open Settings": "Открыть Настройки",
 
+  "Workout in progress": "Тренировка идёт",
+  "Opens the workout": "Открывает тренировку",
+  "{0} of {1} sets done": "Выполнено подходов: {0} из {1}",
+  "Watch connected": "Часы подключены",
+  "Watch reconnecting": "Часы переподключаются",
+  "No watch linked": "Часы не подключены",
 }

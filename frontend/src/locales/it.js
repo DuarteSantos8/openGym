@@ -5921,4 +5921,10 @@ export default {
   "Add a watch or connect a server in Settings": "Aggiungi un orologio o collega un server nelle Impostazioni",
   "Open Settings": "Apri Impostazioni",
 
+  "Workout in progress": "Allenamento in corso",
+  "Opens the workout": "Apre l'allenamento",
+  "{0} of {1} sets done": "{0} di {1} serie completate",
+  "Watch connected": "Orologio connesso",
+  "Watch reconnecting": "Orologio in riconnessione",
+  "No watch linked": "Nessun orologio connesso",
 }

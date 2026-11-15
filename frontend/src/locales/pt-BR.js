@@ -4337,6 +4337,12 @@ export const PT_BR_OVERRIDES = {
   "Add a watch or connect a server in Settings": "Adicione um relógio ou conecte um servidor em Configurações",
   "Open Settings": "Abrir Configurações",
 
+  "Workout in progress": "Treino em andamento",
+  "Opens the workout": "Abre o treino",
+  "{0} of {1} sets done": "{0} de {1} séries feitas",
+  "Watch connected": "Relógio conectado",
+  "Watch reconnecting": "Reconectando o relógio",
+  "No watch linked": "Nenhum relógio conectado",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

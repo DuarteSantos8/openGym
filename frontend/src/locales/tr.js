@@ -5911,4 +5911,10 @@ export default {
   "Add a watch or connect a server in Settings": "Ayarlar’dan bir saat ekle veya bir sunucuya bağlan",
   "Open Settings": "Ayarlar’ı aç",
 
+  "Workout in progress": "Antrenman sürüyor",
+  "Opens the workout": "Antrenmanı açar",
+  "{0} of {1} sets done": "{1} setin {0} tanesi bitti",
+  "Watch connected": "Saat bağlı",
+  "Watch reconnecting": "Saat yeniden bağlanıyor",
+  "No watch linked": "Bağlı saat yok",
 }
