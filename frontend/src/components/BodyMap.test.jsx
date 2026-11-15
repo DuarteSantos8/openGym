@@ -173,12 +173,32 @@ describe('BodyMap as a read-only picture', () => {
   // Right for decoration, a hole for content, so every call site has to say which it is. This
   // walks the tree rather than a list of files so a new one cannot slip in unnamed.
   //
-  // One site is decoration without an `aria-hidden` of its own: the session's header button, a
-  // <button> whose aria-label names it. Read in Chrome's accessibility tree it is a leaf, the
-  // 116 shapes under it not exposed, so it needs nothing. Recognised by that button rather than
-  // by a line number, which any unrelated edit above would move. A guard that demanded a marker
-  // here would only teach the next reader to distrust the guard.
-  const insideNamedButton = lines => lines.slice(Math.max(0, lines.length - 5)).some(l => /<button[\s>]/.test(l) && /aria-label=/.test(l))
+  // Only the element's own opening tag counts. A window of lines around it accepts a map next to
+  // an aria-hidden that belongs to something else -- a closed <button> above it, a <div> below.
+  // The tag ends at the first ">" outside braces, so a prop holding an arrow function
+  // (onMuscle={() => pick(m)}) does not cut it short.
+  const openTag = (text, from) => {
+    let depth = 0
+    for (let i = from; i < text.length; i++) {
+      if (text[i] === '{') depth++
+      else if (text[i] === '}') depth--
+      else if (text[i] === '>' && depth === 0) return text.slice(from, i + 1)
+    }
+    return text.slice(from)
+  }
+
+  // Two sites are decoration without a marker on the map itself, because the element wrapped
+  // around them carries it. Both were read in Chrome's accessibility tree, not assumed:
+  //  - the session's header button, whose aria-label names it. A <button aria-label> hides its
+  //    subtree where role="img" does not, so the 116 shapes under it are not exposed;
+  //  - the Wrapped card, whose wrapper is aria-hidden, the way MiniBodyMap hides itself.
+  // Matched on the text of the call, not on a line number (any unrelated edit above would move
+  // it) and not on neighbouring lines (a closed button does not name the map, and a sibling's
+  // aria-hidden is not the map's). Reformat one and this test fails and points at it.
+  const DECORATION_BY_ANCESTOR = [
+    '<BodyMap className="bm-mini bm-session"',
+    '<BodyMap load={st.load} body={body} />',
+  ]
 
   it('gives every call site one of the three treatments', async () => {
     const fs = await import('node:fs')
@@ -193,19 +213,20 @@ describe('BodyMap as a read-only picture', () => {
     const offenders = []
     for (const f of files) {
       if (f.endsWith('BodyMap.jsx') || f.endsWith('MiniBodyMap.jsx')) continue
-      const lines = fs.readFileSync(f, 'utf8').split('\n')
-      lines.forEach((line, i) => {
-        // \b, not a space: a call site written over several lines starts with "<BodyMap" alone,
-        // and a guard that quietly stopped seeing it would be worse than no guard. Still excludes
-        // <BodyMapLegend, which is a different component.
-        if (!/<BodyMap\b/.test(line)) return
-        // The props of a multi-line element are on the lines after it, so read a window rather
-        // than the one line, or a correctly named site would be accused of being unnamed.
-        const el = lines.slice(i, i + 6).join('\n')
-        if (/onMuscle|aria-hidden|hits=/.test(el)) return
-        if (insideNamedButton(lines.slice(0, i + 1))) return
-        offenders.push(path.relative(src, f).split(path.sep).join('/') + ':' + (i + 1) + '  ' + line.trim().slice(0, 70))
-      })
+      const text = fs.readFileSync(f, 'utf8')
+      // \b, not a space: a call site written over several lines starts with "<BodyMap" alone, and
+      // a guard that quietly stopped seeing it would be worse than no guard. Still excludes
+      // <BodyMapLegend, which is a different component.
+      for (const m of text.matchAll(/<BodyMap\b/g)) {
+        const tag = openTag(text, m.index)
+        if (/onMuscle|aria-hidden|hits=/.test(tag)) continue
+        if (DECORATION_BY_ANCESTOR.some(named => tag.startsWith(named))) continue
+        // The whole line, not what precedes the match: a call site at the start of a line would
+        // otherwise be reported with an empty snippet, and the report is the only lead a reader
+        // who breaks this gets.
+        const no = (text.slice(0, m.index).match(/\n/g) || []).length + 1
+        offenders.push(path.relative(src, f).split(path.sep).join('/') + ':' + no + '  ' + (text.split('\n')[no - 1] || '').trim().slice(0, 70))
+      }
     }
     expect(offenders).toEqual([])
   })
