@@ -26,6 +26,7 @@ import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, AWAY_PLANS } from './lib/starter.js'
 import OwnExerciseMedia from './components/OwnExerciseMedia.jsx'
 import Media, { Thumb } from './components/Media.jsx'
+import ExercisePictures from './components/ExercisePictures.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { FormVideosSection } from './components/SetVideo.jsx'
@@ -1560,6 +1561,7 @@ function ExerciseDetail({ ex, close }) {
       <FavButton id={ex.id} />
     </div>
     <Media ex={ex} />
+    <ExercisePictures ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
       {detailTags(ex).map(tg => {
         if (tg.other) {

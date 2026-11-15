@@ -1,0 +1,2034 @@
+{
+ "1228": [
+  {
+   "f": "files/0246-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0246-relaxation.png"
+  },
+  {
+   "f": "files/0246-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0246-tension.png"
+  }
+ ],
+ "1316": [
+  {
+   "f": "files/0045-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0045-relaxation.png"
+  },
+  {
+   "f": "files/0045-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0045-tension.png"
+  }
+ ],
+ "1368": [
+  {
+   "f": "files/0270-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0270-relaxation.png"
+  },
+  {
+   "f": "files/0270-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0270-tension.png"
+  }
+ ],
+ "1372": [
+  {
+   "f": "files/0281-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0281-relaxation.png"
+  },
+  {
+   "f": "files/0281-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0281-tension.png"
+  }
+ ],
+ "1460": [
+  {
+   "f": "files/0121-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0121-relaxation.png"
+  },
+  {
+   "f": "files/0121-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0121-tension.png"
+  }
+ ],
+ "1553": [
+  {
+   "f": "files/0264-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0264-relaxation.png"
+  },
+  {
+   "f": "files/0264-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0264-tension.png"
+  }
+ ],
+ "1629": [
+  {
+   "f": "files/0250-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0250-relaxation.png"
+  },
+  {
+   "f": "files/0250-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0250-tension.png"
+  }
+ ],
+ "1634": [
+  {
+   "f": "files/0232-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0232-relaxation.png"
+  },
+  {
+   "f": "files/0232-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0232-tension.png"
+  }
+ ],
+ "1636": [
+  {
+   "f": "files/0238-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0238-relaxation.png"
+  },
+  {
+   "f": "files/0238-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0238-tension.png"
+  }
+ ],
+ "1653": [
+  {
+   "f": "files/0268-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0268-relaxation.png"
+  },
+  {
+   "f": "files/0268-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0268-tension.png"
+  }
+ ],
+ "1654": [
+  {
+   "f": "files/0257-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0257-relaxation.png"
+  },
+  {
+   "f": "files/0257-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0257-tension.png"
+  }
+ ],
+ "1655": [
+  {
+   "f": "files/0256-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0256-relaxation.png"
+  },
+  {
+   "f": "files/0256-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0256-tension.png"
+  }
+ ],
+ "1661": [
+  {
+   "f": "files/0235-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0235-relaxation.png"
+  },
+  {
+   "f": "files/0235-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0235-tension.png"
+  }
+ ],
+ "1677": [
+  {
+   "f": "files/0243-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0243-relaxation.png"
+  },
+  {
+   "f": "files/0243-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0243-tension.png"
+  }
+ ],
+ "1684": [
+  {
+   "f": "files/0266-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0266-relaxation.png"
+  },
+  {
+   "f": "files/0266-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0266-tension.png"
+  }
+ ],
+ "2294": [
+  {
+   "f": "files/0252-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0252-relaxation.png"
+  },
+  {
+   "f": "files/0252-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0252-tension.png"
+  }
+ ],
+ "2768": [
+  {
+   "f": "files/0135-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0135-relaxation.png"
+  },
+  {
+   "f": "files/0135-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0135-tension.png"
+  }
+ ],
+ "3436": [
+  {
+   "f": "files/0105-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0105-relaxation.png"
+  },
+  {
+   "f": "files/0105-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0105-tension.png"
+  }
+ ],
+ "3593": [
+  {
+   "f": "files/0122-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0122-relaxation.png"
+  },
+  {
+   "f": "files/0122-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0122-tension.png"
+  }
+ ],
+ "4326": [
+  {
+   "f": "files/0046-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0046-relaxation.png"
+  },
+  {
+   "f": "files/0046-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0046-tension.png"
+  }
+ ],
+ "4338": [
+  {
+   "f": "files/0245-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0245-relaxation.png"
+  },
+  {
+   "f": "files/0245-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0245-tension.png"
+  }
+ ],
+ "4343": [
+  {
+   "f": "files/0173-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0173-relaxation.png"
+  },
+  {
+   "f": "files/0173-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0173-tension.png"
+  }
+ ],
+ "4349": [
+  {
+   "f": "files/0132-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0132-relaxation.png"
+  },
+  {
+   "f": "files/0132-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0132-tension.png"
+  }
+ ],
+ "4544": [
+  {
+   "f": "files/0044-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0044-relaxation.png"
+  },
+  {
+   "f": "files/0044-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0044-tension.png"
+  }
+ ],
+ "4832": [
+  {
+   "f": "files/0023-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0023-relaxation.png"
+  },
+  {
+   "f": "files/0023-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0023-tension.png"
+  }
+ ],
+ "5239": [
+  {
+   "f": "files/0260-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0260-relaxation.png"
+  },
+  {
+   "f": "files/0260-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0260-tension.png"
+  }
+ ],
+ "5241": [
+  {
+   "f": "files/0185-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0185-relaxation.png"
+  },
+  {
+   "f": "files/0185-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0185-tension.png"
+  }
+ ],
+ "5261": [
+  {
+   "f": "files/0031-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0031-relaxation.png"
+  },
+  {
+   "f": "files/0031-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0031-tension.png"
+  }
+ ],
+ "5516": [
+  {
+   "f": "files/0123-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0123-relaxation.png"
+  },
+  {
+   "f": "files/0123-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0123-tension.png"
+  }
+ ],
+ "5921": [
+  {
+   "f": "files/0240-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0240-relaxation.png"
+  },
+  {
+   "f": "files/0240-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0240-tension.png"
+  }
+ ],
+ "0003": [
+  {
+   "f": "files/0284-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0284-relaxation.png"
+  },
+  {
+   "f": "files/0284-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0284-tension.png"
+  }
+ ],
+ "0025": [
+  {
+   "f": "files/0042-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0042-relaxation.png"
+  },
+  {
+   "f": "files/0042-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0042-tension.png"
+  }
+ ],
+ "0026": [
+  {
+   "f": "files/0133-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0133-relaxation.png"
+  },
+  {
+   "f": "files/0133-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0133-tension.png"
+  }
+ ],
+ "0030": [
+  {
+   "f": "files/0049-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0049-relaxation.png"
+  },
+  {
+   "f": "files/0049-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0049-tension.png"
+  }
+ ],
+ "0033": [
+  {
+   "f": "files/0051-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0051-relaxation.png"
+  },
+  {
+   "f": "files/0051-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0051-tension.png"
+  }
+ ],
+ "0037": [
+  {
+   "f": "files/0064-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0064-relaxation.png"
+  },
+  {
+   "f": "files/0064-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0064-tension.png"
+  }
+ ],
+ "0038": [
+  {
+   "f": "files/0222-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0222-relaxation.png"
+  },
+  {
+   "f": "files/0222-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0222-tension.png"
+  }
+ ],
+ "0040": [
+  {
+   "f": "files/0058-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0058-relaxation.png"
+  },
+  {
+   "f": "files/0058-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0058-tension.png"
+  }
+ ],
+ "0042": [
+  {
+   "f": "files/0138-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0138-relaxation.png"
+  },
+  {
+   "f": "files/0138-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0138-tension.png"
+  }
+ ],
+ "0044": [
+  {
+   "f": "files/0101-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0101-relaxation.png"
+  },
+  {
+   "f": "files/0101-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0101-tension.png"
+  }
+ ],
+ "0046": [
+  {
+   "f": "files/0125-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0125-relaxation.png"
+  },
+  {
+   "f": "files/0125-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0125-tension.png"
+  }
+ ],
+ "0047": [
+  {
+   "f": "files/0043-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0043-relaxation.png"
+  },
+  {
+   "f": "files/0043-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0043-tension.png"
+  }
+ ],
+ "0051": [
+  {
+   "f": "files/0141-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0141-relaxation.png"
+  },
+  {
+   "f": "files/0141-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0141-tension.png"
+  }
+ ],
+ "0054": [
+  {
+   "f": "files/0114-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0114-relaxation.png"
+  },
+  {
+   "f": "files/0114-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0114-tension.png"
+  }
+ ],
+ "0063": [
+  {
+   "f": "files/0146-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0146-relaxation.png"
+  },
+  {
+   "f": "files/0146-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0146-tension.png"
+  }
+ ],
+ "0065": [
+  {
+   "f": "files/0070-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0070-relaxation.png"
+  },
+  {
+   "f": "files/0070-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0070-tension.png"
+  }
+ ],
+ "0066": [
+  {
+   "f": "files/0150-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0150-relaxation.png"
+  },
+  {
+   "f": "files/0150-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0150-tension.png"
+  }
+ ],
+ "0067": [
+  {
+   "f": "files/0148-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0148-relaxation.png"
+  },
+  {
+   "f": "files/0148-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0148-tension.png"
+  }
+ ],
+ "0068": [
+  {
+   "f": "files/0147-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0147-relaxation.png"
+  },
+  {
+   "f": "files/0147-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0147-tension.png"
+  }
+ ],
+ "0069": [
+  {
+   "f": "files/0151-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0151-relaxation.png"
+  },
+  {
+   "f": "files/0151-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0151-tension.png"
+  }
+ ],
+ "0070": [
+  {
+   "f": "files/0239-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0239-relaxation.png"
+  },
+  {
+   "f": "files/0239-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0239-tension.png"
+  }
+ ],
+ "0078": [
+  {
+   "f": "files/0128-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0128-relaxation.png"
+  },
+  {
+   "f": "files/0128-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0128-tension.png"
+  }
+ ],
+ "0089": [
+  {
+   "f": "files/0242-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0242-relaxation.png"
+  },
+  {
+   "f": "files/0242-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0242-tension.png"
+  }
+ ],
+ "0092": [
+  {
+   "f": "files/0193-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0193-relaxation.png"
+  },
+  {
+   "f": "files/0193-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0193-tension.png"
+  }
+ ],
+ "0095": [
+  {
+   "f": "files/0030-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0030-relaxation.png"
+  },
+  {
+   "f": "files/0030-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0030-tension.png"
+  }
+ ],
+ "0101": [
+  {
+   "f": "files/0154-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0154-relaxation.png"
+  },
+  {
+   "f": "files/0154-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0154-tension.png"
+  }
+ ],
+ "0109": [
+  {
+   "f": "files/0201-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0201-relaxation.png"
+  },
+  {
+   "f": "files/0201-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0201-tension.png"
+  }
+ ],
+ "0114": [
+  {
+   "f": "files/0134-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0134-relaxation.png"
+  },
+  {
+   "f": "files/0134-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0134-tension.png"
+  }
+ ],
+ "0118": [
+  {
+   "f": "files/0026-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0026-relaxation.png"
+  },
+  {
+   "f": "files/0026-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0026-tension.png"
+  }
+ ],
+ "0120": [
+  {
+   "f": "files/0014-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0014-relaxation.png"
+  },
+  {
+   "f": "files/0014-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0014-tension.png"
+  }
+ ],
+ "0162": [
+  {
+   "f": "files/0008-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0008-relaxation.png"
+  },
+  {
+   "f": "files/0008-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0008-tension.png"
+  }
+ ],
+ "0165": [
+  {
+   "f": "files/0216-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0216-relaxation.png"
+  },
+  {
+   "f": "files/0216-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0216-tension.png"
+  }
+ ],
+ "0172": [
+  {
+   "f": "files/0163-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0163-relaxation.png"
+  },
+  {
+   "f": "files/0163-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0163-tension.png"
+  }
+ ],
+ "0173": [
+  {
+   "f": "files/0164-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0164-relaxation.png"
+  },
+  {
+   "f": "files/0164-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0164-tension.png"
+  }
+ ],
+ "0176": [
+  {
+   "f": "files/0177-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0177-relaxation.png"
+  },
+  {
+   "f": "files/0177-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0177-tension.png"
+  }
+ ],
+ "0187": [
+  {
+   "f": "files/0165-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0165-relaxation.png"
+  },
+  {
+   "f": "files/0165-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0165-tension.png"
+  }
+ ],
+ "0195": [
+  {
+   "f": "files/0217-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0217-relaxation.png"
+  },
+  {
+   "f": "files/0217-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0217-tension.png"
+  }
+ ],
+ "0215": [
+  {
+   "f": "files/0035-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0035-relaxation.png"
+  },
+  {
+   "f": "files/0035-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0035-tension.png"
+  }
+ ],
+ "0246": [
+  {
+   "f": "files/0015-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0015-relaxation.png"
+  },
+  {
+   "f": "files/0015-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0015-tension.png"
+  }
+ ],
+ "0251": [
+  {
+   "f": "files/0054-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0054-relaxation.png"
+  },
+  {
+   "f": "files/0054-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0054-tension.png"
+  }
+ ],
+ "0253": [
+  {
+   "f": "files/0090-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0090-relaxation.png"
+  },
+  {
+   "f": "files/0090-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0090-tension.png"
+  }
+ ],
+ "0255": [
+  {
+   "f": "files/0019-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0019-relaxation.png"
+  },
+  {
+   "f": "files/0019-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0019-tension.png"
+  }
+ ],
+ "0262": [
+  {
+   "f": "files/0289-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0289-relaxation.png"
+  },
+  {
+   "f": "files/0289-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0289-tension.png"
+  }
+ ],
+ "0269": [
+  {
+   "f": "files/0290-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0290-relaxation.png"
+  },
+  {
+   "f": "files/0290-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0290-tension.png"
+  }
+ ],
+ "0277": [
+  {
+   "f": "files/0292-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0292-relaxation.png"
+  },
+  {
+   "f": "files/0292-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0292-tension.png"
+  }
+ ],
+ "0284": [
+  {
+   "f": "files/0275-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0275-relaxation.png"
+  },
+  {
+   "f": "files/0275-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0275-tension.png"
+  }
+ ],
+ "0289": [
+  {
+   "f": "files/0055-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0055-relaxation.png"
+  },
+  {
+   "f": "files/0055-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0055-tension.png"
+  }
+ ],
+ "0291": [
+  {
+   "f": "files/0136-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0136-relaxation.png"
+  },
+  {
+   "f": "files/0136-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0136-tension.png"
+  }
+ ],
+ "0294": [
+  {
+   "f": "files/0224-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0224-relaxation.png"
+  },
+  {
+   "f": "files/0224-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0224-tension.png"
+  }
+ ],
+ "0297": [
+  {
+   "f": "files/0220-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0220-relaxation.png"
+  },
+  {
+   "f": "files/0220-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0220-tension.png"
+  }
+ ],
+ "0298": [
+  {
+   "f": "files/0221-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0221-relaxation.png"
+  },
+  {
+   "f": "files/0221-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0221-tension.png"
+  }
+ ],
+ "0301": [
+  {
+   "f": "files/0052-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0052-relaxation.png"
+  },
+  {
+   "f": "files/0052-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0052-tension.png"
+  }
+ ],
+ "0306": [
+  {
+   "f": "files/0169-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0169-relaxation.png"
+  },
+  {
+   "f": "files/0169-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0169-tension.png"
+  }
+ ],
+ "0308": [
+  {
+   "f": "files/0056-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0056-relaxation.png"
+  },
+  {
+   "f": "files/0056-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0056-tension.png"
+  }
+ ],
+ "0310": [
+  {
+   "f": "files/0033-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0033-relaxation.png"
+  },
+  {
+   "f": "files/0033-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0033-tension.png"
+  }
+ ],
+ "0314": [
+  {
+   "f": "files/0061-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0061-relaxation.png"
+  },
+  {
+   "f": "files/0061-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0061-tension.png"
+  }
+ ],
+ "0322": [
+  {
+   "f": "files/0231-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0231-relaxation.png"
+  },
+  {
+   "f": "files/0231-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0231-tension.png"
+  }
+ ],
+ "0330": [
+  {
+   "f": "files/0209-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0209-relaxation.png"
+  },
+  {
+   "f": "files/0209-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0209-tension.png"
+  }
+ ],
+ "0332": [
+  {
+   "f": "files/0140-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0140-relaxation.png"
+  },
+  {
+   "f": "files/0140-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0140-tension.png"
+  }
+ ],
+ "0334": [
+  {
+   "f": "files/0018-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0018-relaxation.png"
+  },
+  {
+   "f": "files/0018-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0018-tension.png"
+  }
+ ],
+ "0336": [
+  {
+   "f": "files/0115-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0115-relaxation.png"
+  },
+  {
+   "f": "files/0115-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0115-tension.png"
+  }
+ ],
+ "0345": [
+  {
+   "f": "files/0037-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0037-relaxation.png"
+  },
+  {
+   "f": "files/0037-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0037-tension.png"
+  }
+ ],
+ "0351": [
+  {
+   "f": "files/0181-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0181-relaxation.png"
+  },
+  {
+   "f": "files/0181-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0181-tension.png"
+  }
+ ],
+ "0361": [
+  {
+   "f": "files/0038-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0038-relaxation.png"
+  },
+  {
+   "f": "files/0038-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0038-tension.png"
+  }
+ ],
+ "0363": [
+  {
+   "f": "files/0039-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0039-relaxation.png"
+  },
+  {
+   "f": "files/0039-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0039-tension.png"
+  }
+ ],
+ "0381": [
+  {
+   "f": "files/0129-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0129-relaxation.png"
+  },
+  {
+   "f": "files/0129-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0129-tension.png"
+  }
+ ],
+ "0390": [
+  {
+   "f": "files/0255-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0255-relaxation.png"
+  },
+  {
+   "f": "files/0255-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0255-tension.png"
+  }
+ ],
+ "0393": [
+  {
+   "f": "files/0244-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0244-relaxation.png"
+  },
+  {
+   "f": "files/0244-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0244-tension.png"
+  }
+ ],
+ "0400": [
+  {
+   "f": "files/0276-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0276-relaxation.png"
+  },
+  {
+   "f": "files/0276-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0276-tension.png"
+  }
+ ],
+ "0407": [
+  {
+   "f": "files/0294-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0294-relaxation.png"
+  },
+  {
+   "f": "files/0294-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0294-tension.png"
+  }
+ ],
+ "0413": [
+  {
+   "f": "files/0130-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0130-relaxation.png"
+  },
+  {
+   "f": "files/0130-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0130-tension.png"
+  }
+ ],
+ "0430": [
+  {
+   "f": "files/0198-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0198-relaxation.png"
+  },
+  {
+   "f": "files/0198-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0198-tension.png"
+  }
+ ],
+ "0431": [
+  {
+   "f": "files/0137-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0137-relaxation.png"
+  },
+  {
+   "f": "files/0137-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0137-tension.png"
+  }
+ ],
+ "0433": [
+  {
+   "f": "files/0079-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0079-relaxation.png"
+  },
+  {
+   "f": "files/0079-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0079-tension.png"
+  }
+ ],
+ "0436": [
+  {
+   "f": "files/0020-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0020-relaxation.png"
+  },
+  {
+   "f": "files/0020-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0020-tension.png"
+  }
+ ],
+ "0437": [
+  {
+   "f": "files/0016-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0016-relaxation.png"
+  },
+  {
+   "f": "files/0016-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0016-tension.png"
+  }
+ ],
+ "0439": [
+  {
+   "f": "files/0251-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0251-relaxation.png"
+  },
+  {
+   "f": "files/0251-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0251-tension.png"
+  }
+ ],
+ "0459": [
+  {
+   "f": "files/0116-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0116-relaxation.png"
+  },
+  {
+   "f": "files/0116-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0116-tension.png"
+  }
+ ],
+ "0484": [
+  {
+   "f": "files/0287-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0287-relaxation.png"
+  },
+  {
+   "f": "files/0287-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0287-tension.png"
+  }
+ ],
+ "0489": [
+  {
+   "f": "files/0103-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0103-relaxation.png"
+  },
+  {
+   "f": "files/0103-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0103-tension.png"
+  }
+ ],
+ "0586": [
+  {
+   "f": "files/0117-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0117-relaxation.png"
+  },
+  {
+   "f": "files/0117-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0117-tension.png"
+  }
+ ],
+ "0592": [
+  {
+   "f": "files/0236-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0236-relaxation.png"
+  },
+  {
+   "f": "files/0236-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0236-tension.png"
+  }
+ ],
+ "0594": [
+  {
+   "f": "files/0279-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0279-relaxation.png"
+  },
+  {
+   "f": "files/0279-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0279-tension.png"
+  }
+ ],
+ "0605": [
+  {
+   "f": "files/0282-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0282-relaxation.png"
+  },
+  {
+   "f": "files/0282-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0282-tension.png"
+  }
+ ],
+ "0607": [
+  {
+   "f": "files/0210-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0210-relaxation.png"
+  },
+  {
+   "f": "files/0210-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0210-tension.png"
+  }
+ ],
+ "0652": [
+  {
+   "f": "files/0087-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0087-relaxation.png"
+  },
+  {
+   "f": "files/0087-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0087-tension.png"
+  }
+ ],
+ "0662": [
+  {
+   "f": "files/0077-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0077-relaxation.png"
+  },
+  {
+   "f": "files/0077-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0077-tension.png"
+  }
+ ],
+ "0715": [
+  {
+   "f": "files/0113-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0113-relaxation.png"
+  },
+  {
+   "f": "files/0113-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0113-tension.png"
+  }
+ ],
+ "0748": [
+  {
+   "f": "files/0078-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0078-relaxation.png"
+  },
+  {
+   "f": "files/0078-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0078-tension.png"
+  }
+ ],
+ "0751": [
+  {
+   "f": "files/0195-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0195-relaxation.png"
+  },
+  {
+   "f": "files/0195-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0195-tension.png"
+  }
+ ],
+ "0755": [
+  {
+   "f": "files/0126-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0126-relaxation.png"
+  },
+  {
+   "f": "files/0126-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0126-tension.png"
+  }
+ ],
+ "0757": [
+  {
+   "f": "files/0081-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0081-relaxation.png"
+  },
+  {
+   "f": "files/0081-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0081-tension.png"
+  }
+ ],
+ "0770": [
+  {
+   "f": "files/0124-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0124-relaxation.png"
+  },
+  {
+   "f": "files/0124-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0124-tension.png"
+  }
+ ],
+ "0775": [
+  {
+   "f": "files/0013-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0013-relaxation.png"
+  },
+  {
+   "f": "files/0013-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0013-tension.png"
+  }
+ ],
+ "0861": [
+  {
+   "f": "files/0025-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0025-relaxation.png"
+  },
+  {
+   "f": "files/0025-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0025-tension.png"
+  }
+ ],
+ "0894": [
+  {
+   "f": "files/0274-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0274-relaxation.png"
+  },
+  {
+   "f": "files/0274-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0274-tension.png"
+  }
+ ],
+ "0934": [
+  {
+   "f": "files/0094-relaxation.webp",
+   "pose": "start",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0094-relaxation.png"
+  },
+  {
+   "f": "files/0094-tension.webp",
+   "pose": "end",
+   "license": "CC-BY-SA-4.0",
+   "author": "Greg Priday (Everkinetic)",
+   "source": "https://github.com/everkinetic/data/blob/main/dist/png/0094-tension.png"
+  }
+ ]
+}

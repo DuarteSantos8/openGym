@@ -84,6 +84,8 @@ COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
 # catalogue/media/NOTICE.md. They ship inside the image; nothing is downloaded at start-up.
 COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
+# Start/end drawings by Greg Priday (Everkinetic), CC BY-SA 4.0: see catalogue/photos/NOTICE.md.
+COPY catalogue/photos/ /usr/share/nginx/html/exercise-photos/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
