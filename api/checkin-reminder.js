@@ -59,10 +59,16 @@ export function itemDue(item, last, iso) {
   return (days - item.every) % Math.min(item.every, OVERDUE_EVERY) === 0;
 }
 
+// Settings → Modules (frontend lib/modules.js partOn): an item pauses while Body or its part is off.
+const partOn = (S, key) => {
+  const part = key === 'weight' ? 'weight' : key === 'photos' ? 'photos' : 'measurements';
+  return S?.modules?.body !== false && S?.modules?.['body.' + part] !== false;
+};
+
 export function dueKeys(S, iso) {
   const r = reminderOf(S);
   if (!r.on) return [];
-  return Object.entries(r.items).filter(([k, item]) => itemDue(item, lastLogged(S, k, iso), iso)).map(([k]) => k);
+  return Object.entries(r.items).filter(([k, item]) => partOn(S, k) && itemDue(item, lastLogged(S, k, iso), iso)).map(([k]) => k);
 }
 
 export function dueKind(keys) {

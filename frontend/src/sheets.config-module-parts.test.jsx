@@ -56,6 +56,24 @@ describe('exercise settings: the parts of the Exercise settings module', () => {
     expect(onSave.mock.calls[0][0]).toMatchObject({ sets: 3, reps: 5, weight: 40 })
   })
 
+  it('Progression off keeps a ranged rule’s rep range editable, once', () => {
+    const labels = host => [...host.querySelectorAll('.stp-l')].map(l => l.textContent)
+    const stepperOf = (host, label) => [...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l')?.textContent === label)
+    withParts({})
+    const on = open(SQUAT, { prog: 'double', reps: 12, repsMin: 8 })
+    expect(labels(on).filter(l => l === 'Reps from')).toHaveLength(1)
+    withParts({ 'exercise.progression': false })
+    const onSave = vi.fn()
+    const host = open(SQUAT, { prog: 'double', reps: 12, repsMin: 8 }, onSave)
+    expect(rowNamed(host, 'Rule')).toBeUndefined()
+    expect(labels(host).filter(l => l === 'Reps from' || l === 'Reps up to')).toEqual(['Reps from', 'Reps up to'])
+    expect(labels(host)).not.toContain('Reps')
+    expect(stepperOf(host, 'Reps from').querySelector('input').value).toBe('8')
+    act(() => stepperOf(host, 'Reps up to').querySelector('[aria-label*=": Increase"]').click())
+    save(host)
+    expect(onSave.mock.calls[0][0]).toMatchObject({ prog: 'double', reps: 13, repsMin: 8 })
+  })
+
   it('Plate loading off leaves the bar, plates and stack out, here and in the exercise’s details', () => {
     withParts({ 'exercise.plates': false })
     const host = open(SQUAT)

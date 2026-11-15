@@ -2845,6 +2845,13 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {c.intensifier?.type !== 'restpause' && !pyramid &&
           <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
         {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} max={PLAN_MAX_REPS} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
+        {/* With the Progression part off its fields are gone, but a ranged rule still climbs this range. */}
+        {ranged && !pyramid && !part('progression') && <>
+          <Stepper label={t('Reps from')} value={c.repsMin ?? normalizeRepRange(c.reps, c.repsMin, perSide ? 2 : 1).repsMin} step={perSide ? 2 : 1} decimal={false}
+            onChange={v => setC(x => ({ ...x, repsMin: v }))} />
+          <Stepper label={t('Reps up to')} value={c.reps ?? normalizeRepRange(c.reps, c.repsMin, perSide ? 2 : 1).reps} step={perSide ? 2 : 1} decimal={false}
+            onChange={v => setC(x => ({ ...x, reps: v }))} />
+        </>}
         {/* On bodyweight work the weight stepper is the click #32 is about, so it is not here
             until there is a belt to describe — see the added-weight row below. */}
         {!bw && !pyramid && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
