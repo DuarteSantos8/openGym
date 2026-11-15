@@ -30,13 +30,13 @@ describe('liveBarState', () => {
   })
   it('rest counting: the countdown, progress by time left, and what is next', () => {
     const b = liveBarState(S(lifting()), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0 } })
-    expect(b.rest).toEqual({ left: 72, total: 90, endsAt: 5000, paused: false })
+    expect(b.rest).toEqual({ left: 72 })
     expect(b.progress).toBe(0.8)
     expect(b.next).toBe('BENCH')
   })
-  it('a paused rest and a paused workout stand still', () => {
+  it('a paused workout keeps its stop time, and a paused rest keeps its time left', () => {
     const b = liveBarState(S(lifting({ pausedAt: 4000 })), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0, paused: true } })
-    expect(b.rest.paused).toBe(true)
+    expect(b.rest.left).toBe(72)
     expect(b.pausedAt).toBe(4000)
   })
   it('no exercises and no name: fallbacks, never NaN', () => {
