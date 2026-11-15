@@ -86,6 +86,9 @@ COPY --from=build /app/frontend/dist /usr/share/nginx/html
 COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
 # Start/end drawings by Greg Priday (Everkinetic), CC BY-SA 4.0: see catalogue/photos/NOTICE.md.
 COPY catalogue/photos/ /usr/share/nginx/html/exercise-photos/
+# Demonstration videos (Wikimedia Commons, CC BY / CC BY-SA) and step-by-step photos (U.S. Army
+# ATP 7-22.02, public domain): see catalogue/demos/NOTICE.md.
+COPY catalogue/demos/ /usr/share/nginx/html/exercise-demos/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80

@@ -42,3 +42,58 @@ describe('catalogue/photos (Everkinetic drawings)', () => {
     expect(notice).toMatch(/resized to fit 480×480 px and re-encoded as WebP/)
   })
 })
+
+// catalogue/demos (scripts/catalogue/exercise-demos.mjs): Commons videos and U.S. Army photo sequences.
+const demoDir = fileURLToPath(new URL('../../../catalogue/demos/', import.meta.url))
+const demos = JSON.parse(fs.readFileSync(demoDir + 'index.json', 'utf8'))
+const demoNotice = fs.readFileSync(demoDir + 'NOTICE.md', 'utf8')
+const demoEntries = Object.entries(demos)
+
+describe('catalogue/demos (videos and step-by-step photos)', () => {
+  it('covers catalogue exercises that exist, each with something to show', () => {
+    expect(demoEntries.length).toBeGreaterThan(30)
+    for (const [id, ps] of demoEntries) {
+      expect(fs.existsSync(catDir + id + '.json'), id).toBe(true)
+      expect(picturesFor(demos, id), id).toHaveLength(ps.length)
+    }
+  })
+
+  it('videos are small muted-ready MP4s with a poster, from Wikimedia Commons under CC BY or CC BY-SA', () => {
+    const videos = demoEntries.flatMap(([, ps]) => ps.filter(p => p.kind === 'video'))
+    expect(videos.length).toBeGreaterThan(4)
+    for (const v of videos) {
+      expect(v.f).toMatch(/^files\/video-\d{4,5}\.mp4$/)
+      expect(v.poster).toBe(v.f.replace(/\.mp4$/, '.webp'))
+      expect(fs.statSync(demoDir + v.f).size).toBeLessThan(3_000_000)
+      expect(fs.statSync(demoDir + v.poster).size).toBeLessThan(150_000)
+      expect(Math.max(v.w, v.h)).toBeLessThanOrEqual(1280)
+      expect(['CC-BY-SA-4.0', 'CC-BY-SA-3.0', 'CC-BY-3.0', 'CC-BY-4.0']).toContain(v.license)
+      expect(v.author.length).toBeGreaterThan(1)
+      expect(v.source).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/)
+    }
+  })
+
+  it('photo sequences are U.S. Army ATP 7-22.02 figures (public domain), each pointing at its page', () => {
+    const photos = demoEntries.flatMap(([, ps]) => ps.filter(p => p.kind !== 'video'))
+    expect(photos.length).toBeGreaterThan(30)
+    for (const p of photos) {
+      expect(p.pose).toBe('sequence')
+      expect(p.f).toMatch(/^files\/atp-\d+-\d+\.webp$/)
+      expect(fs.statSync(demoDir + p.f).size).toBeLessThan(250_000)
+      expect(p.license).toBe('PD-USGov')
+      expect(p.caption).toMatch(/^Figure \d+-\d+\. /)
+      expect(p.source).toMatch(/^https:\/\/armypubs\.army\.mil\/epubs\/.+\.pdf#page=\d+$/)
+    }
+  })
+
+  it('has no file the index does not name, and NOTICE.md credits every file', () => {
+    const named = new Set(demoEntries.flatMap(([, ps]) => ps.flatMap(p => [p.f, p.poster].filter(Boolean))))
+    for (const f of fs.readdirSync(demoDir + 'files')) expect(named.has('files/' + f), f).toBe(true)
+    for (const f of named) {
+      expect(fs.existsSync(demoDir + f), f).toBe(true)
+      expect(demoNotice).toContain(f)
+    }
+    expect(demoNotice).toMatch(/public domain/i)
+    expect(demoNotice).toMatch(/re-encoded as H\.264 MP4/)
+  })
+})
