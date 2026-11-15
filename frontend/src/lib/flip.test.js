@@ -67,6 +67,17 @@ describe('flip', () => {
     expect(animated).toBe(FLIP_MAX)
   })
 
+  it('the 12-row budget covers fades too: 20 rows reversed with `far` start 12 animations in all', () => {
+    const { root, rows, place } = setup(20)
+    let fades = 0
+    rows.forEach(r => { r.animate = () => { fades++; return {} } })
+    const before = flipMeasure(root)
+    rows.reverse().forEach(r => root.appendChild(r)); place()
+    flipPlay(root, before, { far: 160 })
+    const flights = rows.filter(r => r.style.transition.startsWith('transform')).length
+    expect(fades + flights).toBe(FLIP_MAX)
+  })
+
   it('does nothing under html.reduce-motion: no transform, no transition', () => {
     const { root, rows, place } = setup(3)
     document.documentElement.classList.add('reduce-motion')

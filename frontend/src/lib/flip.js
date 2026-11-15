@@ -45,9 +45,10 @@ export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = '
   }
   for (const el of rows) if (!moved.some(([e]) => e === el)) el.style.transition = ''
   if (still()) { for (const [el] of moved) el.style.transition = ''; return }
-  const fade = far ? moved.filter(([, , dy]) => Math.abs(dy) > far) : []
+  const shown = moved.slice(0, FLIP_MAX)   // one budget for fades and flights; the rest switch
+  const fade = far ? shown.filter(([, , dy]) => Math.abs(dy) > far) : []
   for (const [el] of fade) { el.style.transition = ''; el.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 160, delay: fadeDelay, easing: EASE, fill: 'backwards' }) }
-  const go = moved.filter(m => !fade.includes(m)).slice(0, FLIP_MAX)
+  const go = shown.filter(m => !fade.includes(m))
   for (const [el] of moved) if (!go.some(([e]) => e === el)) el.style.transition = ''
   for (const [el, dx, dy] of go) el.style.transform = `translate(${dx}px,${dy}px)`
   go[0]?.[0].getBoundingClientRect()   // commit the start position once, then let go
