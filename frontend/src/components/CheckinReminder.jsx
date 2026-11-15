@@ -18,11 +18,11 @@ const zone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZo
 export function reminderKeys(S) {
   const keys = []
   if (partOn(S, 'body', 'weight')) keys.push('weight')
-  for (const f of enabledMeasurementFields(S)) {
+  if (partOn(S, 'body', 'measurements')) for (const f of enabledMeasurementFields(S)) {
     if (f.pair) { if (!keys.includes(BP_KEY)) keys.push(BP_KEY); continue }
     keys.push(f.key)
   }
-  keys.push('photos')
+  if (partOn(S, 'body', 'photos')) keys.push('photos')
   // One set for something you no longer show stays listed, so it can be switched off.
   for (const k of Object.keys(reminderOf(S).items)) if (!keys.includes(k)) keys.push(k)
   return keys
@@ -53,7 +53,7 @@ function CheckinReminder({ close }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick how often for each one. On a day something is due you get one notification for all of it, not a pile of pings.')}</div>
     <div className="sect-b" style={{ marginBottom: 14 }}>
       <Row icon="bell" iconTint="var(--orange)" title={t('Remind me')}>
-        <Switch checked={r.on} onChange={on => save({ on, ...(on && !anySet ? { items: { photos: { every: 28, since: todayISO() }, ...(partOn(S, 'body', 'weight') ? { weight: { every: 7, since: todayISO() } } : {}) } } : {}) })} aria-label={t('Remind me')} />
+        <Switch checked={r.on} onChange={on => save({ on, ...(on && !anySet ? { items: { ...(partOn(S, 'body', 'photos') ? { photos: { every: 28, since: todayISO() } } : {}), ...(partOn(S, 'body', 'weight') ? { weight: { every: 7, since: todayISO() } } : {}) } } : {}) })} aria-label={t('Remind me')} />
       </Row>
       {r.on && <Row icon="clock" iconTint="var(--purple)" title={t('Time')} subtitle={t('Mornings work best: same time, before breakfast.')}>
         <input type="time" className="timef" value={r.time} aria-label={t('Time')} onChange={e => e.target.value && save({ time: e.target.value })} />

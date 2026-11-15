@@ -33,6 +33,15 @@ describe('check-in reminder', () => {
     expect(dueKind(['waist', 'photos'])).toBe('both')
     expect(dueKind([])).toBe(null)
   })
+  it('an item pauses while Body or its part is off, and is back with it', () => {
+    const at = modules => dueKeys({ ...S, modules }, '2026-11-08').sort()
+    expect(at({ 'body.weight': false })).toEqual(['photos', 'waist'])
+    expect(at({ 'body.photos': false })).toEqual(['waist', 'weight'])
+    expect(at({ 'body.measurements': false })).toEqual(['photos', 'weight'])
+    expect(dueKeys({ ...S, modules: { 'body.measurements': false } }, '2026-11-10')).toEqual([])
+    expect(at({ body: false, 'body.weight': true })).toEqual([])
+    expect(at({ body: true, 'body.weight': true, 'body.photos': true })).toEqual(['photos', 'waist', 'weight'])
+  })
   it('a photo filed under a day counts, a cleared one does not', () => {
     expect(lastLogged({ dayPhotos: { h: { d: '2026-10-30', m: photo, _ts: 1 }, g: { _ts: 2 } } }, 'photos')).toBe('2026-10-30')
   })
