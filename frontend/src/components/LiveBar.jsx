@@ -114,7 +114,7 @@ function LiveBarOn () {
             <span className="livebar-cd livebar-num">{clock(b.rest.left)}</span>
             {b.next && <span className="livebar-nx">{t('Next: {0}', b.next)}</span>}
           </span>
-          : <span className="livebar-l2">
+          : exercise && <span className="livebar-l2">
             <span className="livebar-ex" ref={ex}>{exercise}</span>
             {b.set && step < 2 && <span className="livebar-st">{step ? setKey : t('Set {0} of {1}', b.set.n, b.set.of)}</span>}
           </span>}

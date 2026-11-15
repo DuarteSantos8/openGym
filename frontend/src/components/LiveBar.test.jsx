@@ -104,6 +104,7 @@ describe('the live bar', () => {
   it('an unnamed, empty workout reads "Workout" with no undefined or NaN', () => {
     seed(active({ name: '', entries: [] })); render()
     expect(text()).toContain('Workout')
+    expect(bar().querySelector('.livebar-l2')).toBeNull() // one line, no empty second line
     expect(text() + bar().getAttribute('aria-label')).not.toMatch(/undefined|NaN/)
   })
 
