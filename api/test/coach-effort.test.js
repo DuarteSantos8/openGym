@@ -219,6 +219,37 @@ test('a spec with only some rungs survives a 400 naming one it does not have', a
   assert.match(r.stderr, /temperature/, 'the provider\'s own words, not a crash');
 });
 
+test('OpenAI web research asks the Responses API in its own field, not the chat one', async () => {
+  // openaiWebSpec spreads openaiSpec, so it would inherit the Chat Completions hook and put a
+  // top-level reasoning_effort on a /v1/responses request that only knows reasoning.effort.
+  const calls = [];
+  const urls = [];
+  const f = async (url, init) => {
+    urls.push(url.replace(/^https:\/\/[^/]+/, ''));
+    calls.push(JSON.parse(init.body));
+    return reply(200, { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: ANSWER }] }] });
+  };
+  const r = await openai.invoke({ cfg: { provider: 'openai' }, prompt: 'P', env: { OPENAI_API_KEY: 'k', COACH_EFFORT: 'max' }, model: 'gpt-5', fetch: f, stream: false, web: true });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(urls, ['/v1/responses'], 'this is the Responses API, not chat completions');
+  assert.deepEqual(calls[0].reasoning, { effort: 'high' });
+  assert.ok(!('reasoning_effort' in calls[0]), 'the chat field, which this endpoint refuses');
+});
+
+test('a web request that refuses the level still gets an answer', async () => {
+  const calls = [];
+  const f = async (url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push(body);
+    if ('reasoning' in body) return reply(400, { error: { message: "Invalid value: 'high' is not supported for 'reasoning.effort' with this model." } });
+    return reply(200, { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: ANSWER }] }] });
+  };
+  const r = await openai.invoke({ cfg: { provider: 'openai' }, prompt: 'P', env: { OPENAI_API_KEY: 'k', COACH_EFFORT: 'high' }, model: 'gpt-5', fetch: f, stream: false, web: true });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(calls.length, 2, 'asked, refused, asked again');
+  assert.ok(!('reasoning' in calls[1]), 'the level was given up rather than failing the job');
+});
+
 test('a cut-off answer says which level was thinking, so the fix is obvious', async () => {
   const f = async () => reply(200, { choices: [{ message: { content: '{"coach_contract":1' }, finish_reason: 'length' }] });
   const r = await ask((await import('../coach/core/adapters/compatible.js')).default, at(), f);
@@ -231,11 +262,18 @@ test('a cut-off answer says which level was thinking, so the fix is obvious', as
 
 test('the job environment carries the level, since the core never reads process.env', async () => {
   const cfgStore = await import('../coach/config.js');
-  const env = cfgStore.jobEnv('/tmp/job-1', null);
-  process.env.COACH_EFFORT = 'medium';
+  // Whatever this process happens to carry is not the test's business: the unset case has to be
+  // unset on purpose, and the original value has to be back when the test is done.
+  const had = Object.prototype.hasOwnProperty.call(process.env, 'COACH_EFFORT');
+  const was = process.env.COACH_EFFORT;
+  if (had) delete process.env.COACH_EFFORT;
   try {
-    const withLevel = cfgStore.jobEnv('/tmp/job-2', null);
-    assert.equal(withLevel.COACH_EFFORT, 'medium');
-  } finally { delete process.env.COACH_EFFORT; }
-  assert.ok(!('COACH_EFFORT' in env), 'unset stays out of the environment');
+    assert.ok(!('COACH_EFFORT' in cfgStore.jobEnv('/tmp/job-1', null)), 'unset stays out of the environment');
+    process.env.COACH_EFFORT = 'medium';
+    assert.equal(cfgStore.jobEnv('/tmp/job-2', null).COACH_EFFORT, 'medium');
+    process.env.COACH_EFFORT = '  High  ';
+    assert.equal(cfgStore.jobEnv('/tmp/job-3', null).COACH_EFFORT, 'High', 'passed through as typed; the adapter judges it');
+  } finally {
+    if (had) process.env.COACH_EFFORT = was; else delete process.env.COACH_EFFORT;
+  }
 });

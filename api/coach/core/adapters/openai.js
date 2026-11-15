@@ -220,7 +220,20 @@ export const openaiSpec = chatCompletionsSpec('openai');
  * validator judge the answer as always. */
 export const openaiWebSpec = {
   ...openaiSpec,
-  compat: null,
+  /* The Responses API says the level as `reasoning: { effort }`, not as the Chat Completions
+   * `reasoning_effort` this spec's own hook writes, and the spread above would hand that hook to
+   * it. A wrong field here is not survivable the way it is elsewhere: this request shape has no
+   * ladder to fall back on, so it is overridden rather than inherited (#1240). */
+  withEffort: (body, level) => {
+    const value = clampEffort(OPENAI_EFFORTS, level);
+    return value ? { ...body, reasoning: { effort: value } } : body;
+  },
+  // Only `effort`, as on the other hosted specs: a model that takes no effort gets the same
+  // request without it instead of a failed job. `null` meant "no rungs at all", which was fine
+  // while this request carried nothing optional.
+  compat: {
+    effort: body => { const { reasoning: _r, ...rest } = body; return rest; }
+  },
   path: () => '/v1/responses',
   body: ({ model, prompt, system, maxTokens }) => ({
     model,
