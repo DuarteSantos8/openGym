@@ -165,6 +165,12 @@ describe('a routine saved from a session nobody planned', () => {
     expect(routineFromSession(w).ex[0].intensifier).toEqual({ type: 'dropset', count: 2, pct: 20 })
   })
 
+  it('rounds a step halfway between two grid points up, float noise or not', () => {
+    const dropped = row({ w: 100, r: 8, type: 'dropset', drops: [{ w: 92.5, r: 6 }] })
+    const cfg = routineFromSession({ entries: [entry('bench', { reps: 8 }, [dropped])] }).ex[0]
+    expect(cfg.intensifier.pct).toBe(10)
+  })
+
   it('plans nothing for drops that skipped the last set', () => {
     const w = imported([`${curl},1,normal,,32,kg,8`, `${curl},1,drop,,24,kg,6`, `${curl},2,normal,,32,kg,8`])
     expect(routineFromSession(w).ex[0].intensifier).toBeUndefined()

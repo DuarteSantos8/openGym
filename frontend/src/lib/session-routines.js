@@ -80,9 +80,9 @@ function loggedDropset(done) {
   if (!drops.length) return null
   const chain = [src.w, ...drops.map(d => d.w)].map(Number)
   const steps = chain.slice(1).map((w, i) => chain[i] > 0 && w < chain[i] ? (1 - w / chain[i]) * 100 : null).filter(p => p != null)
-  const pct = steps.length
-    ? Math.min(90, Math.max(5, Math.round(steps.reduce((a, b) => a + b, 0) / steps.length / 5) * 5))
-    : 20
+  // Float noise trimmed first: 100 down to 92.5 is 7.4999… and would round to 5, not 10.
+  const avg = steps.length ? Math.round(steps.reduce((a, b) => a + b, 0) / steps.length * 1e6) / 1e6 : null
+  const pct = avg != null ? Math.min(90, Math.max(5, Math.round(avg / 5) * 5)) : 20
   const every = done.every(r => dropsOf(dropSource(r)).length)
   return { type: 'dropset', count: drops.length, pct, ...(every ? {} : { on: 'last' }) }
 }
