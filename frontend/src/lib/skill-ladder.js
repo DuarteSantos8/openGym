@@ -4,7 +4,7 @@
 // one, else the custom exercise of yours that already shows it (skillOfExercise), else a new
 // custom exercise named after it, a hold when the skill is one, with its demo link.
 import { BRANCHES, SKILLS, haveOf, skillOfExercise } from './skill-tree.js'
-import { saveLadder, STEPS_MAX } from './ladders.js'
+import { ownLadders, saveLadder, OWN_MAX, STEPS_MAX } from './ladders.js'
 import { isHold } from './exercises.js'
 
 // Static positions are held, everything that moves is counted: a Front Lever is a hold, a Front
@@ -62,8 +62,11 @@ export function branchRungs(S, bi) {
 /** In a state draft: the custom exercises branch `bi` needs, and its ladder. { ladder, rung } or null. */
 export function addBranchLadder(s, bi) {
   const { rungs, rung } = branchRungs(s, bi)
+  // No room for another ladder: nothing changes, the exercises it would bring included.
+  const id = branchLadderId(bi), own = ownLadders(s)
+  if (own.length >= OWN_MAX && !own.some(l => l.id === id)) return null
   if (!Array.isArray(s.customEx)) s.customEx = []
   for (const r of rungs) if (r.create && !s.customEx.some(c => c?.id === r.create.id)) s.customEx.push(r.create)
-  const ladder = saveLadder(s, { id: branchLadderId(bi), name: BRANCHES[bi].name, steps: rungs.map(r => r.ex) })
+  const ladder = saveLadder(s, { id, name: BRANCHES[bi].name, steps: rungs.map(r => r.ex) })
   return ladder ? { ladder: { ...ladder, own: true }, rung } : null
 }

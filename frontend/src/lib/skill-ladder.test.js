@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BRANCHES, SKILLS, skillId } from './skill-tree.js'
 import { isHoldSkill, isHoldRung, branchRungs, addBranchLadder, branchLadderId } from './skill-ladder.js'
 import { skillOfExercise } from './skill-tree.js'
-import { ownLadders, nextRung, reachedRung, STEPS_MAX } from './ladders.js'
+import { ownLadders, nextRung, reachedRung, saveLadder, OWN_MAX, STEPS_MAX } from './ladders.js'
 
 const bi = name => BRANCHES.findIndex(b => b.name === name)
 const had = names => Object.fromEntries(names.map(n => [skillId(n), { at: 1 }]))
@@ -38,6 +38,14 @@ describe('a branch as a ladder', () => {
     expect(ownLadders(s).filter(l => l.id === branchLadderId(bi('Front Lever'))).length).toBe(1)
     const steps = a.ladder.steps
     expect(nextRung(s, steps[0])).toBe(steps[1])
+  })
+
+  it('adds nothing, not even its exercises, with no room for another ladder', () => {
+    const s = { skills: {}, customEx: [] }
+    for (let i = 0; i < OWN_MAX; i++) saveLadder(s, { id: 'mine' + i, name: 'Mine ' + i, steps: ['a', 'b'] })
+    expect(addBranchLadder(s, bi('Front Lever'))).toBeNull()
+    expect(s.customEx).toEqual([])
+    expect(ownLadders(s).length).toBe(OWN_MAX)
   })
 
   it('reuses a custom exercise of yours that already shows the skill', () => {
