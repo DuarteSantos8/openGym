@@ -28,7 +28,7 @@ import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
 import { activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
 import {
-  MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
+  MEASUREMENT_FIELDS, MEASUREMENT_KEYS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
 } from './measurements.js'
 import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-model.js'
@@ -1174,37 +1174,100 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = [], a
 /** A weigh-in a person could have: above zero and below MAX_BODY_KG in the given unit. */
 const bodyOk = (w, u) => w > 0 && w <= (u === 'lb' ? MAX_BODY_KG / LB_TO_KG : MAX_BODY_KG)
 
+// The custom fields the imported days need, by lower-cased name: the profile's own first, then
+// one made for each column that has none yet (with the column's unit).
+function measurementFieldsFor(S, days) {
+  const byName = new Map((S.customMeasurements || []).map(c => [String(c.name).toLowerCase(), c]))
+  const made = []
+  for (const m of days) for (const o of m.other) {
+    if (byName.has(o.name.toLowerCase())) continue
+    const field = { id: uid(), name: o.name.slice(0, 60), enabled: true, unit: o.unit }
+    byName.set(o.name.toLowerCase(), field)
+    made.push(field)
+  }
+  return { byName, made }
+}
+
+// One record per date: rows that share one are halves of the same check-in, and the first
+// non-empty value of a field wins (the way measurements.js mergeMeasurementEntries folds them).
+function groupMeasurementDays(days) {
+  const byDay = new Map()
+  for (const m of days) {
+    const cur = byDay.get(m.d)
+    if (!cur) { byDay.set(m.d, { d: m.d, values: { ...m.values }, other: [...m.other] }); continue }
+    for (const [key, v] of Object.entries(m.values)) if (cur.values[key] == null) cur.values[key] = v
+    const seen = new Set(cur.other.map(o => o.name.toLowerCase()))
+    for (const o of m.other) if (!seen.has(o.name.toLowerCase())) { seen.add(o.name.toLowerCase()); cur.other.push(o) }
+  }
+  return [...byDay.values()]
+}
+
+// What the file's rows for one date amount to as a check-in against the given custom fields.
+// Normalizing drops what no field could hold (a 140 % or a negative).
+function measurementEntryFrom(m, custom, byName) {
+  const entry = emptyMeasurement(m.d, custom)
+  for (const [key, v] of Object.entries(m.values)) entry[key] = v
+  for (const o of m.other) {
+    const field = byName.get(o.name.toLowerCase())
+    if (!sameMeasurementKind(field.unit, o.unit)) continue
+    const item = entry.other.find(x => x.id === field.id)
+    if (item) item.value = fromCsvUnit(o.value, o.unit)
+  }
+  return normalizeMeasurementEntry(entry, custom)
+}
+
+// A check-in that is already here keeps every value it has; the file's go only where it has
+// none (#1206). The entries are normalized against the same custom fields, so `other` ids line up.
+function fillCheckIn(have, entry) {
+  const out = { ...have, other: have.other.map(o => ({ ...o })) }
+  for (const key of MEASUREMENT_KEYS) if (out[key] == null && entry[key] != null) out[key] = entry[key]
+  for (const o of entry.other) {
+    if (o.value == null) continue
+    const item = out.other.find(x => x.id === o.id)
+    if (!item) { out.other.push({ ...o }); continue }
+    if (item.value == null) { item.value = o.value; if (o.unit) item.unit = o.unit }
+  }
+  if (!out.note && entry.note) out.note = entry.note
+  return out
+}
+
+// Whether filling brought the day anything at all: same values, field by field.
+function sameCheckIn(a, b) {
+  for (const key of MEASUREMENT_KEYS) if ((a[key] ?? null) !== (b[key] ?? null)) return false
+  if ((a.note || '') !== (b.note || '')) return false
+  const vals = x => new Map((x.other || []).map(o => [o.id, o.value ?? null]))
+  const A = vals(a), B = vals(b)
+  for (const [id, v] of A) if ((B.has(id) ? B.get(id) : null) !== v) return false
+  for (const [id, v] of B) if ((A.has(id) ? A.get(id) : null) !== v) return false
+  return true
+}
+
 /**
  * Measurements read from our own body CSV (bodyCsvMeasurements), into state the way weigh-ins
- * go: a day that already has a check-in keeps it. A custom column goes to the field of the same
- * name, made with the column's unit if there is none; one whose unit is another kind than that
- * field's (kg into a % field) is left out rather than relabelled. Returns how many days came in.
+ * go: a check-in keeps the values it has, and the file fills the ones it has not (#1206) — a day
+ * with some measurements no longer swallows the rest of its row. A custom column goes to the
+ * field of the same name, made with the column's unit if there is none; one whose unit is
+ * another kind than that field's (kg into a % field) is left out rather than relabelled.
+ * Returns how many days came in or gained a value.
  */
 function mergeMeasurements(S, days) {
   normalizeMeasurementsState(S)
-  const have = new Set(S.measurements.map(e => e.d))
-  const fresh = days.filter(m => !have.has(m.d))
-  const byName = new Map(S.customMeasurements.map(c => [c.name.toLowerCase(), c]))
-  for (const m of fresh) for (const o of m.other) {
-    if (byName.has(o.name.toLowerCase())) continue
-    const field = { id: uid(), name: o.name.slice(0, 60), enabled: true, unit: o.unit }
-    S.customMeasurements.push(field)
-    byName.set(o.name.toLowerCase(), field)
-  }
+  const { byName, made } = measurementFieldsFor(S, days)
+  if (made.length) { S.customMeasurements.push(...made); normalizeMeasurementsState(S) }
   let n = 0
-  for (const m of fresh) {
-    const entry = emptyMeasurement(m.d, S.customMeasurements)
-    for (const [key, v] of Object.entries(m.values)) entry[key] = v
-    for (const o of m.other) {
-      const field = byName.get(o.name.toLowerCase())
-      if (!sameMeasurementKind(field.unit, o.unit)) continue
-      const item = entry.other.find(x => x.id === field.id)
-      if (item) item.value = fromCsvUnit(o.value, o.unit)
+  for (const m of groupMeasurementDays(days)) {
+    const entry = measurementEntryFrom(m, S.customMeasurements, byName)
+    const i = S.measurements.findIndex(e => e.d === m.d)
+    if (i < 0) {
+      if (!measurementEntryHasValues(entry)) continue
+      S.measurements.push(entry)
+      n++
+      continue
     }
-    // Normalizing drops what no field could hold (a 140 % or a negative); nothing left, no day.
-    const clean = normalizeMeasurementEntry(entry, S.customMeasurements)
-    if (!measurementEntryHasValues(clean)) continue
-    S.measurements.push(clean)
+    const filled = normalizeMeasurementEntry(fillCheckIn(S.measurements[i], entry), S.customMeasurements)
+    if (sameCheckIn(filled, S.measurements[i])) continue
+    filled.t = Date.now() // an edit of the day, stamped so the sync carries it (lib/sync-merge.js)
+    S.measurements[i] = filled
     n++
   }
   normalizeMeasurementsState(S)
@@ -1212,14 +1275,36 @@ function mergeMeasurements(S, days) {
 }
 
 /**
- * Whether the profile already has an imported weigh-in: one at the same time on its day, or, for
- * one without a time, any weigh-in on its day (the day keeps its own, as it always did).
+ * What importing the measurement `days` would do to each of their dates, without touching the
+ * state: 'add' a check-in where the day has none, 'fill' one where the day's check-in is empty,
+ * or 'keep' the day as it is (the file brings it nothing). The import summary counts the days
+ * that are kept as already here (#1206).
+ */
+export function measurementImportPlan(S, days) {
+  const st = normalizeMeasurementsState({ measurements: S?.measurements || [], customMeasurements: S?.customMeasurements || [] })
+  const { byName, made } = measurementFieldsFor(st, days)
+  const custom = [...st.customMeasurements, ...made]
+  const plan = new Map()
+  for (const m of groupMeasurementDays(days)) {
+    const entry = measurementEntryFrom(m, custom, byName)
+    const have = st.measurements.find(e => e.d === m.d)
+    if (!have) { plan.set(m.d, measurementEntryHasValues(entry) ? 'add' : 'keep'); continue }
+    const filled = normalizeMeasurementEntry(fillCheckIn(have, entry), custom)
+    plan.set(m.d, sameCheckIn(filled, have) ? 'keep' : 'fill')
+  }
+  return plan
+}
+
+/**
+ * Whether the profile already has an imported weigh-in: the same import again (its id), one at
+ * the same time on its day, or — for one without a time — one of the same weight on its day.
+ * A different weight that day is another weigh-in, not a duplicate (#1206).
  */
 export function importHasWeighIn(S, b) {
   const day = (S?.bodyweight || []).find(x => x && x.d === b?.d)
   if (!day) return false
-  if (!b.at) return true
-  return readingsOf(day).some(r => r.id === importReadingId(b) || r.at === b.at)
+  return readingsOf(day).some(r =>
+    r.id === importReadingId(b) || (b.at ? r.at === b.at : Number(r.w) === Number(b.w)))
 }
 // The same imported weigh-in gets the same id on every device that imports the file.
 const importReadingId = b => 'i' + hashId(`${b.d}|${b.at || ''}|${b.w}`)
