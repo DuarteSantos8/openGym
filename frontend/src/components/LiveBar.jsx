@@ -6,6 +6,7 @@ import { t } from '../lib/i18n.js'
 import { liveBarShows, liveBarState } from '../lib/live-bar.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
+import { vibrate } from '../lib/sound.js'
 import { riseTo } from '../lib/rise.js'
 import Elapsed from './Elapsed.jsx'
 
@@ -77,9 +78,9 @@ export default function LiveBar () {
   }, [show])
 
   if (!b) return null
-  // A light tap once, as the rise starts (no effect on iPhone, which has no web vibrate).
+  // One buzz as the rise starts (the app's own helper: the native pulse on the phones).
   const rise = () => {
-    try { navigator.vibrate?.(10) } catch { /* no vibration here */ }
+    vibrate(10)
     riseTo(nav, '/workout')
   }
   const routine = b.routine || t('Workout')
@@ -87,7 +88,7 @@ export default function LiveBar () {
   const label = [
     t('Workout in progress'), routine,
     b.rest ? t('Rest') : exercise,
-    b.rest ? (b.next ? t('Next') + ' ' + b.next : '') : b.set ? t('Set {0} of {1}', b.set.n, b.set.of) : '',
+    b.rest ? (b.next ? t('Next: {0}', b.next) : '') : b.set ? t('Set {0} of {1}', b.set.n, b.set.of) : '',
     b.total ? t('{0} of {1} sets done', b.done, b.total) : '',
     b.bpm != null ? t('Heart rate') + ' ' + b.bpm : '',
     WATCH_WORDS[b.device] ? t(WATCH_WORDS[b.device]) : '',
@@ -106,7 +107,7 @@ export default function LiveBar () {
           ? <span className="livebar-l2">
             <span className="livebar-rl">{t('Rest')}</span>
             <span className="livebar-cd livebar-num">{clock(b.rest.left)}</span>
-            {b.next && <span className="livebar-nx">{t('Next')} {b.next}</span>}
+            {b.next && <span className="livebar-nx">{t('Next: {0}', b.next)}</span>}
           </span>
           : <span className="livebar-l2">
             <span className="livebar-ex" ref={ex}>{exercise}</span>

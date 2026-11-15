@@ -5,6 +5,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import LiveBar from './LiveBar.jsx'
+import * as sound from '../lib/sound.js'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
@@ -71,8 +72,8 @@ describe('the live bar', () => {
     render()
     expect(text()).toContain('Rest')
     expect(text()).toContain('1:12')
-    expect(text()).toContain('Next')
-    expect(text()).toContain('BENCH')
+    expect(text()).toContain('Next: BENCH')
+    expect(bar().getAttribute('aria-label')).toContain('Next: BENCH')
     expect(text()).not.toContain('Set 2 of 4')
   })
 
@@ -141,7 +142,7 @@ describe('the rise', () => {
     seed(active()); render()
     act(() => { bar().click() })
     expect(svt).toHaveBeenCalledTimes(1)
-    expect(mocks.nav).toHaveBeenCalledWith('/workout')
+    expect(mocks.nav).toHaveBeenCalledWith('/workout', { state: { rise: true } })
     expect(document.documentElement.dataset.rise).toBe('rise')
     return act(async () => { done(); await Promise.resolve(); await Promise.resolve() }).then(() => {
       expect(document.documentElement.dataset.rise).toBeUndefined()
@@ -168,8 +169,7 @@ describe('the rise', () => {
   })
 
   it('gives a light tap on the way up', () => {
-    const vib = vi.fn()
-    vi.stubGlobal('navigator', { ...navigator, vibrate: vib })
+    const vib = vi.spyOn(sound, 'vibrate').mockImplementation(() => {})
     reduced(false)
     seed(active()); render()
     act(() => { bar().click() })

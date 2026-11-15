@@ -3041,9 +3041,7 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
   background:var(--acc);background:color-mix(in srgb,var(--acc) calc(var(--livebar-a) * 100%),transparent);
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 26px -8px rgba(0,0,0,.45);
-  transition:transform var(--fast) var(--ease);
 }
-.livebar:active{transform:scale(.985)}
 .livebar:focus-visible{outline:2px solid var(--on-acc);outline-offset:2px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
 .livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
@@ -3052,7 +3050,6 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar-dev{flex:none;display:flex;line-height:0}
 .livebar-dev svg{overflow:visible}
 .livebar-dev .w{fill:none;stroke:var(--on-acc);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.livebar-dev.none .w{opacity:.8}
 .livebar-dev .bd{fill:var(--on-acc)}
 .livebar-dev .gl{fill:none;stroke:var(--acc);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .livebar-dev .sp{transform-origin:21.5px 21.5px;animation:livebar-spin 1.4s linear infinite}
@@ -3073,10 +3070,8 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar-nx{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:400}
 .livebar-hr{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;width:calc(13px + 4px + 3ch);font-size:.9375em;font-weight:600}
 .livebar-hr svg{width:13px;height:13px;fill:var(--on-acc);flex:none}
-/* Largest text: line 1 goes and the exercise may take two lines. */
+/* Largest text: both lines stay (the time too); only the mark grows. */
 @container livebar (max-width:17em){
-  .livebar-l1{display:none}
-  .livebar-ex{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .livebar-dev svg{width:36px;height:36px}
 }
 body.has-livebar #app{padding-bottom:calc(154px + var(--sab))} /* the tab bar's 88, the capsule's 58, and 8 */
@@ -3089,6 +3084,7 @@ body.has-livebar #totop{bottom:calc(146px + var(--sab))}
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
 body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
+body.totop-on.has-livebar #app{padding-bottom:calc(210px + var(--sab))} /* 144 + the capsule's 58 + 8 */
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
@@ -3455,6 +3451,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #totop,body.resting #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
   body.totop-on #app{padding-bottom:calc(128px + var(--sab))}
   body.totop-on.resting #app{padding-bottom:calc(220px + var(--sab))}
+  body.totop-on.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
@@ -4776,9 +4773,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* The rise and the fold (lib/rise.js): the live bar and the workout page share one name, only while
    data-rise is set. The bar is hidden on /workout, so the two never exist together. 380 ms up, 320 ms
-   back, on --ease. The page's own arrival animation steps aside. */
+   back, on --ease. (The page's own arrival animation is skipped in App.jsx.) */
 html[data-rise] #livebar,
 html[data-rise] .page[data-path="/workout"]:not(.under){view-transition-name:workout-rise}
-html[data-rise] #app > .page{animation:none}
 html[data-rise] ::view-transition-group(workout-rise){animation-duration:380ms;animation-timing-function:var(--ease)}
 html[data-rise="fold"] ::view-transition-group(workout-rise){animation-duration:320ms}

@@ -40,12 +40,13 @@ violet, pink and red are solid, so are the deeper light colours, and so is high 
 The bar grows into the workout screen as one view transition, and the chevron folds it back
 (`lib/rise.js`). It is done by hand with `document.startViewTransition`, because the router's own
 `viewTransition` option only works with data routers and the app uses HashRouter. No support or
-reduced motion: a plain route change.
+reduced motion: a plain route change. The navigation carries `state.rise`, so the page skips its
+own arrival animation. Tapping the bar buzzes once through the app's `vibrate()` (lib/sound.js), which
+is the native pulse on the phones; on iPhone it may feel medium rather than light, tune it on the phone.
 
 ## Left out on purpose
 
 - No buttons on the bar (no done, skip or pause). Tapping opens the workout.
 - No setting to turn it off.
 - No swipe to open or dismiss.
-- No haptic on iPhone: `navigator.vibrate` does nothing there.
 - No fill, fade or tab bar slide driven from the workout board.

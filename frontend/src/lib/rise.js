@@ -16,13 +16,16 @@ const rendered = path => new Promise(resolve => {
   wait()
 })
 
+let run = 0
 export function riseTo (navigate, path) {
   const root = document.documentElement
   if (!document.startViewTransition || window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return navigate(path)
-  const clear = () => { delete root.dataset.rise }
+  const id = ++run
+  // Only the newest transition clears the name: a fast second tap would lose it otherwise.
+  const clear = () => { if (id === run) delete root.dataset.rise }
   root.dataset.rise = path === '/workout' ? 'rise' : 'fold'
   try {
-    const vt = document.startViewTransition(() => { navigate(path); return rendered(path) })
+    const vt = document.startViewTransition(() => { navigate(path, { state: { rise: true } }); return rendered(path) })
     Promise.resolve(vt?.finished).then(clear, clear)
   } catch {
     clear()

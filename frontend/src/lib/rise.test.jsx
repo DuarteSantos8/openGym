@@ -41,6 +41,18 @@ describe('riseTo', () => {
     expect(root().dataset.rise).toBeUndefined()
   })
 
+  it('a fast second tap keeps its name when the first transition ends', async () => {
+    reduced(false)
+    const fins = []
+    document.startViewTransition = cb => { cb(); return { finished: new Promise(r => fins.push(r)) } }
+    const nav = vi.fn()
+    riseTo(nav, '/workout'); riseTo(nav, '/home')
+    fins[0](); await new Promise(r => setTimeout(r, 0))
+    expect(root().dataset.rise).toBe('fold')
+    fins[1](); await new Promise(r => setTimeout(r, 0))
+    expect(root().dataset.rise).toBeUndefined()
+  })
+
   it('falls back to a plain navigate when startViewTransition throws', () => {
     reduced(false)
     const nav = vi.fn()
