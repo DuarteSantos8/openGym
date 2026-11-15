@@ -496,6 +496,16 @@ describe('the combined SHA256SUMS file (v1.4.5)', () => {
     expect(await fetchChecksum(null, null, null, null, 'openGym-1.4.5.apk')).toBe(null)
   })
 
+  it('an error page from the browser link does not hide the API link\'s real file', async () => {
+    const API = 'https://api.github.com/repos/o/r/releases/assets/9'
+    globalThis.fetch = vi.fn(async url => url === API
+      ? { ok: true, text: async () => SUMS }
+      : { ok: true, text: async () => '<html>504 Gateway Time-out</html>' })
+    expect(await fetchChecksum(null, null, 'https://x/SHA256SUMS', API, 'openGym-HD-1.4.5.apk')).toBe(HEX_B)
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2)
+    expect(globalThis.fetch).toHaveBeenLastCalledWith(API, { headers: { Accept: 'application/octet-stream' } })
+  })
+
   it('on the phone the combined file comes down natively and gives the APK\'s line', async () => {
     vi.resetModules()
     const files = {}
@@ -511,6 +521,28 @@ describe('the combined SHA256SUMS file (v1.4.5)', () => {
     try {
       const mod = await import('./update.js')
       expect(await mod.fetchChecksum(null, null, 'https://x/SHA256SUMS', null, 'openGym-1.4.5.apk')).toBe(HEX_A)
+    } finally {
+      vi.doUnmock('./mobile.js'); vi.doUnmock('@capacitor/filesystem')
+      vi.resetModules()
+    }
+  })
+
+  it('on the phone an error page written to the file falls through to the API link', async () => {
+    vi.resetModules()
+    const API = 'https://api.github.com/repos/o/r/releases/assets/9'
+    const files = {}
+    vi.doMock('./mobile.js', () => ({ MOBILE: true }))
+    vi.doMock('@capacitor/filesystem', () => ({
+      Directory: { Cache: 'CACHE' },
+      Encoding: { UTF8: 'utf8' },
+      Filesystem: {
+        downloadFile: async a => { files[a.path] = a.url === API ? SUMS : '<html>504 Gateway Time-out</html>' },
+        readFile: async a => ({ data: files[a.path] }),
+      },
+    }))
+    try {
+      const mod = await import('./update.js')
+      expect(await mod.fetchChecksum(null, null, 'https://x/SHA256SUMS', API, 'openGym-1.4.5.apk')).toBe(HEX_A)
     } finally {
       vi.doUnmock('./mobile.js'); vi.doUnmock('@capacitor/filesystem')
       vi.resetModules()

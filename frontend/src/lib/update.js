@@ -117,9 +117,14 @@ export async function fetchChecksum(hashUrl, hashApiUrl = null, sumsUrl = null, 
   const hex = (hashUrl ? await readChecksum(hashUrl).catch(() => null) : null)
     || (hashApiUrl ? await readChecksum(hashApiUrl, API_ASSET).catch(() => null) : null)
   if (hex || !apkName) return hex
-  const text = (sumsUrl ? await downloadText(sumsUrl).catch(() => null) : null)
-    || (sumsApiUrl ? await downloadText(sumsApiUrl, API_ASSET).catch(() => null) : null)
-  return text ? hashFromSums(text, apkName) : null
+  // Each response is parsed before the next link is tried: an error page is text too (a 504 the
+  // native download wrote to the file), and the API link may still hold the real file.
+  for (const [url, headers] of [[sumsUrl], [sumsApiUrl, API_ASSET]]) {
+    const text = url ? await downloadText(url, headers).catch(() => null) : null
+    const found = text && hashFromSums(text, apkName)
+    if (found) return found
+  }
+  return null
 }
 
 // The combined file has one "<hash>  <name>" line per asset (coreutils sha256sum format, a "*"
