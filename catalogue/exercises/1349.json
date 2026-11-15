@@ -3,6 +3,7 @@
   "name": "lever reverse t-bar row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",
@@ -25,16 +26,18 @@
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm",
       "trapezius",
       "chest",
-      "triceps"
+      "triceps",
+      "lats"
     ],
     "weights": {
+      "lats": 0.4,
       "upper-back": 1,
       "biceps": 0.4,
-      "deltoids": 0.4,
+      "rear-delts": 0.4,
       "forearm": 0.4,
       "trapezius": 0.4,
       "chest": 0,

@@ -6,18 +6,16 @@
   "target": "biceps",
   "secondaryMuscles": [
     "forearms",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A seated curl at a high cable stack with your arms overhead. It stresses the biceps in a different way.",
   "instructions": [
-    "Sit on a bench facing the cable machine with your feet flat on the ground.",
-    "Grasp the cable attachment with an underhand grip, palms facing up, and your hands shoulder-width apart.",
-    "Keep your upper arms stationary and your elbows close to your sides.",
-    "Exhale and curl the cable attachment towards your shoulders, contracting your biceps.",
-    "Pause for a moment at the top of the movement, squeezing your biceps.",
-    "Inhale and slowly lower the cable attachment back to the starting position, fully extending your arms.",
-    "Repeat for the desired number of repetitions."
+    "Set both pulleys high with a handle on each and place a bench in the middle.",
+    "Sit tall and hold a handle in each hand, palms up, arms out to the sides at shoulder height.",
+    "Keep your upper arms still and curl the handles toward your head.",
+    "Squeeze your biceps.",
+    "Straighten your arms slowly back out to the sides."
   ],
   "femaleVariant": "3065",
   "textSource": "exercisedb"

@@ -63,6 +63,24 @@ describe('BodyMap interaction semantics', () => {
     expect(event.defaultPrevented).toBe(key === ' ')
   })
 
+  // P4: a muscle is several shapes (and on both views); one of them is its button, every one
+  // still takes the tap. Fourteen "Forearms" in a row was what a screen reader got before.
+  it('has one button per muscle, however many shapes draw it', async () => {
+    const onMuscle = vi.fn()
+    await renderMap({ onMuscle })
+    const buttons = [...container.querySelectorAll('[role="button"]')]
+    const names = buttons.map(b => b.getAttribute('aria-label'))
+    expect(names.length).toBeGreaterThan(10)
+    expect(new Set(names).size).toBe(names.length)
+    const shapes = [...container.querySelectorAll('.bm-m')]
+    expect(shapes.length).toBeGreaterThan(buttons.length)
+    const extra = shapes.find(p => !p.hasAttribute('role'))
+    expect(extra.getAttribute('aria-hidden')).toBe('true')
+    expect(extra.hasAttribute('tabindex')).toBe(false)
+    act(() => extra.dispatchEvent(new MouseEvent('click', { bubbles: true })))
+    expect(onMuscle).toHaveBeenCalledTimes(1)
+  })
+
   it('labels the existing legend direction for assistive technology', () => {
     act(() => root.render(<BodyMapLegend />))
     expect(container.querySelector('.hm-legend').getAttribute('aria-label')).toBe('Less More')

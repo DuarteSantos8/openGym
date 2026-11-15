@@ -7,24 +7,34 @@
    the client turns what was said into exercises and sets, and this builds, checks and files them.
    What the lib will not guess at — a name the library spells twice, an exercise the user has not
    made yet — comes back as `problems` with candidates, for the LLM to put to the user. */
+import crypto from 'node:crypto'
 import { z } from 'zod'
 import { isoDate, entryView, withCustomsIndexed } from './tools.js'
 import { localUid, invalidate } from './state.js'
-import { apiConfig, apiFetch } from './api-client.js'
+import { apiConfig, apiFetch, profilePaths } from './api-client.js'
 import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
 import { friendlyDuration } from './labels.js'
+import { toSpeed, speedUnitOf, KMH_PER_MPH } from '../../frontend/src/lib/speed.js'
 
 const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 const hhmm = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }
 // Two writers racing the same profile resolve in a round or two; past that something keeps
 // writing, and the user is better told than retried at.
 const MAX_ATTEMPTS = 3
-// Saves per hour, per MCP process. Logging a week someone forgot is a handful; a client looping on
-// the tool is not, and each save is a full profile write on the server that every device pulls.
+// Saves per hour, per profile (one process may serve several over HTTP). Logging a week someone
+// forgot is a handful; a client looping on the tool is not, and each save is a full profile write
+// on the server that every device pulls. The server counts a scoped token's writes too.
 export const WRITE_LIMIT = 20
 const WINDOW_MS = 60 * 60000
-let saves = []
-export const _resetWriteWindow = () => { saves = [] }
+const savesBy = new Map()
+export const _resetWriteWindow = () => { savesBy.clear() }
+/** This hour's saves for the profile `key` (a token's or the configured one). */
+export function savesOf(key, now) {
+  const list = (savesBy.get(key) || []).filter(t => now - t < WINDOW_MS)
+  if (savesBy.size > 1000 && !savesBy.has(key)) savesBy.clear()
+  savesBy.set(key, list)
+  return list
+}
 
 function fail(code, message) {
   const err = new Error(message)
@@ -40,18 +50,19 @@ const inputOf = p => ({
   name: p.name,
   note: p.note,
   unit: p.unit,
+  speedUnit: p.speed_unit,
   exercises: (p.exercises || []).map(ex => ({
     exercise: ex.exercise,
     createCustom: ex.create_custom,
     bodyPart: ex.body_part,
     note: ex.note,
-    sets: (ex.sets || []).map(s => ({ reps: s.reps, seconds: s.seconds, weight: s.weight, warmup: s.warmup, failure: s.failure, rir: s.rir, rpe: s.rpe })),
+    sets: (ex.sets || []).map(s => ({ reps: s.reps, seconds: s.seconds, weight: s.weight, warmup: s.warmup, failure: s.failure, rir: s.rir, rpe: s.rpe, minutes: s.minutes, speed: s.speed, distance: s.distance, incline: s.incline })),
   })),
 })
 
 // What was (or would be) saved, read back the way get_workout reads a session, so the user can
 // check it in the words the app uses ("12 × 12 kg", "1:00").
-function viewOf(w, S, resolved) {
+function viewOf(w, S, resolved, speedUnit = speedUnitOf(S)) {
   const withCustoms = { ...S, customEx: [...(S.customEx || []), ...resolved.customEx] }
   return {
     workout_id: w.id,
@@ -64,7 +75,7 @@ function viewOf(w, S, resolved) {
     ...(w.note ? { note: w.note } : {}),
     prs: (w.prs || []).map(id => resolved.resolved.find(r => r.id === id)?.name || id),
     exercises: w.entries.map(e => {
-      const v = entryView(e, withCustoms)
+      const v = entryView(e, withCustoms, speedUnit)
       const r = resolved.resolved.find(x => x.id === e.id)
       return {
         id: e.id,
@@ -74,7 +85,16 @@ function viewOf(w, S, resolved) {
         ...(r?.weightMeans ? { weight_means: r.weightMeans === 'each' ? 'per dumbbell' : 'both dumbbells together' } : {}),
         // The numbers spelled out next to the app's own label ("12×10 F": 12 kg, 10 reps, to
         // failure), so reading it back to the user cannot swap the weight and the reps.
-        sets: e.sets.map((row, i) => ({
+        sets: e.sets.map((row, i) => row.min != null ? {
+          // A cardio set: its minutes, the speed in the unit the call used (or the profile's), the
+          // distance that follows, and the grade.
+          label: v.sets[i].label,
+          minutes: row.min,
+          speed: Math.round(toSpeed(row.speed || 0, speedUnit) * 100) / 100, speed_unit: speedUnit,
+          ...(speedUnit === 'mph' ? { distance_mi: Math.round((row.km ?? row.speed * row.min / 60) / KMH_PER_MPH * 100) / 100 } : { distance_km: Math.round((row.km ?? row.speed * row.min / 60) * 100) / 100 }),
+          ...(row.incline ? { incline: row.incline } : {}),
+          ...(row.rpe != null ? { rpe: row.rpe } : {}),
+        } : ({
           label: v.sets[i].label,
           weight: Number(row.w) || 0,
           ...(row.sec != null ? { seconds: row.sec } : { reps: row.r }),
@@ -96,7 +116,11 @@ const setSchema = z.object({
   warmup: z.boolean().optional().describe('A warm-up set: kept out of volume, PRs and the next suggested weight.'),
   failure: z.boolean().optional().describe('Taken to failure.'),
   rir: z.number().min(0).max(10).optional().describe('Reps in reserve, if the user said it. Not with rpe.'),
-  rpe: z.number().min(6).max(10).optional().describe('RPE, if the user said it. Not with rir.'),
+  rpe: z.number().min(6).max(10).optional().describe('RPE, if the user said it. Not with rir. The only effort a cardio set takes.'),
+  minutes: z.number().int().min(1).max(LOG_LIMITS.maxCardioMin).optional().describe('Cardio only (treadmill, bike, rower…): whole minutes of this interval. A cardio set is minutes plus speed or distance, never reps or weight.'),
+  speed: z.number().min(0).optional().describe('Cardio: average speed in speed_unit. Omit when nobody said it.'),
+  distance: z.number().positive().optional().describe('Cardio: distance covered, km (or miles with speed_unit mph), instead of the speed. Not with speed.'),
+  incline: z.number().min(0).max(LOG_LIMITS.maxIncline).optional().describe('Cardio on foot (treadmill, stairs): grade in percent. Refused on a bike or rower.'),
 })
 
 export const logWorkout = {
@@ -108,7 +132,8 @@ export const logWorkout = {
     'Exercises are matched against the user\'s library by name or id. A common name resolves to the library\'s default variant ("shoulder press" is the barbell one): when the reply\'s `name` differs from `you_said` and the variant matters (dumbbell vs barbell, machine vs cable), confirm with the user, or pass an id. If a name matches several exercises, or none, nothing is saved and `problems` lists candidates: ask the user which one, then call again with its id.',
     'Only set create_custom for an exercise the user confirms is not in the library.',
     'Call with dry_run: true first when you had to interpret anything, show the user the preview, and log it once they agree.',
-    'Calling again with the same description does not log it twice. Cardio (time and speed) and supersets are not supported here.',
+    'Cardio is minutes per set plus speed or distance and an optional incline: "20 min treadmill walk at 3.5 mph, incline 7" is {exercise: "treadmill", sets: [{minutes: 20, speed: 3.5, incline: 7}]} with speed_unit "mph".',
+    'Calling again with the same description does not log it twice. Supersets are not supported here.',
   ].join(' '),
   schema: {
     date: isoDate().optional().describe('YYYY-MM-DD the session was done; defaults to today. Not in the future.'),
@@ -117,8 +142,9 @@ export const logWorkout = {
     name: z.string().max(80).optional().describe('A name for the session, e.g. "Arms" or "Push day". Defaults to "Workout".'),
     note: z.string().max(500).optional().describe('A note on the whole session.'),
     unit: z.enum(['kg', 'lb']).optional().describe('The unit the user gave weights in; defaults to the profile\'s. Converted when it differs.'),
+    speed_unit: z.enum(['kmh', 'mph']).optional().describe('The unit cardio speeds (and distances: km or mi) are given in; defaults to the profile\'s.'),
     exercises: z.array(z.object({
-      exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("dumbbell curl"), or an exercise id from an earlier answer.'),
+      exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("dumbbell curl"), or an exercise id from search_exercises or an earlier answer.'),
       create_custom: z.boolean().optional().describe('Create this as the user\'s own exercise when the library has nothing matching. Only after the user confirms.'),
       body_part: z.enum(BODY_PARTS).optional().describe('Body part of a new custom exercise, when its name does not say.'),
       note: z.string().max(280).optional().describe('A note on this exercise today.'),
@@ -132,16 +158,17 @@ export const logWorkout = {
     const opts = fetchImpl ? { fetchImpl } : {}
     // One clock for every attempt: a retry after a conflict files the same workout, not a later one.
     const now = Date.now()
-    saves = saves.filter(t => now - t < WINDOW_MS)
+    const paths = profilePaths(cfg)
+    const saves = savesOf(crypto.createHash('sha256').update(cfg.token).digest('hex'), now)
     if (!params.dry_run && saves.length >= WRITE_LIMIT) {
       throw fail('ERATE', `log_workout already saved ${WRITE_LIMIT} workouts in the last hour, the most it takes in one go; nothing was saved. Wait a bit, or log the rest in the app.`)
     }
     const input = inputOf({ ...params, date: params.date || localIso(new Date(now)) })
 
-    const me = await apiFetch(cfg, '/api/me', opts)
+    const me = await apiFetch(cfg, paths.me, opts)
     const uid = me.body?.user?.id
     // A guard that cannot read whose token this is refuses rather than steps aside.
-    if (typeof uid !== 'string' || !uid) throw fail('EAPI', 'the openGym server did not say which profile OPENGYM_TOKEN belongs to (GET /api/me); nothing was saved')
+    if (typeof uid !== 'string' || !uid) throw fail('EAPI', `the openGym server did not say which profile the token belongs to (GET ${paths.me}); nothing was saved`)
     const local = localUid()
     if (local && local !== uid) {
       // The ids go to the operator on stderr, not into the model's context (state.js ambiguousUid).
@@ -149,7 +176,7 @@ export const logWorkout = {
       throw fail('EPROFILE', 'OPENGYM_TOKEN belongs to another profile than the one this server reads: pair again from the right profile, or set OPENGYM_UID to match (the ids are on the server\'s stderr)')
     }
 
-    let got = await apiFetch(cfg, '/api/data', opts)
+    let got = await apiFetch(cfg, paths.data, opts)
     // A description without a unit is in the profile's, as the profile was when first read: a
     // retry after another device switched kg ↔ lb reads the same numbers the same way.
     let unit = null, meanings = null
@@ -170,17 +197,27 @@ export const logWorkout = {
       }
       // What each dumbbell weight meant on the first read stays what it means on a retry.
       meanings = meanings || Object.fromEntries(built.workout.entries.map(e => [e.id, e.target?.dbLoad || 'as']))
-      const preview = viewOf(built.workout, S, built)
+      const su = params.speed_unit || speedUnitOf(S)
       if (params.dry_run) {
+        // Filed into a throw-away copy, so the preview carries the PR badges the save will give
+        // (they are decided against the history around it); a duplicate previews the description.
         const dup = findDuplicate(S, built.workout)
-        return { logged: false, dry_run: true, would_log: preview, ...(dup && (dup.sameRequest || !params.allow_duplicate) ? { duplicate_of: dup.workout.id } : {}) }
+        const refused = dup && (dup.sameRequest || !params.allow_duplicate)
+        let shown = built.workout, against = S
+        if (!refused) {
+          const copy = structuredClone(S)
+          const tried = withCustomsIndexed({ customEx: [...(copy.customEx || []), ...built.customEx] }, () =>
+            appendLoggedWorkout(copy, built, { now, allowDuplicate: params.allow_duplicate === true }))
+          if (tried.added) { shown = tried.workout; against = copy }
+        }
+        return { logged: false, dry_run: true, would_log: viewOf(shown, against, built, su), ...(refused ? { duplicate_of: dup.workout.id } : {}) }
       }
       const added = withCustomsIndexed({ customEx: [...(S.customEx || []), ...built.customEx] }, () =>
         appendLoggedWorkout(S, built, { now, allowDuplicate: params.allow_duplicate === true }))
       if (!added.added) {
         return { logged: false, duplicate: true, workout_id: added.workout.id, date: added.workout.d, message: 'This session is already in the history; nothing was added. If it really was a second session, call again with allow_duplicate: true and a different start or name.' }
       }
-      const put = await apiFetch(cfg, '/api/data', { ...opts, method: 'PUT', body: { state: S, baseRev: got.body.rev ?? 0, ...(typeof doc._wid === 'string' ? { baseWid: doc._wid } : {}) } })
+      const put = await apiFetch(cfg, paths.data, { ...opts, method: 'PUT', body: { state: S, baseRev: got.body.rev ?? 0, ...(typeof doc._wid === 'string' ? { baseWid: doc._wid } : {}) } })
       if (put.status !== 409) {
         invalidate()
         saves.push(now)
@@ -188,7 +225,7 @@ export const logWorkout = {
         // day and at which revision. Never the token, and nothing the model sees.
         const sets = added.workout.entries.reduce((n, e) => n + e.sets.length, 0)
         console.error(`[opengym-mcp] log_workout saved ${added.workout.id} for ${added.workout.d} (${added.workout.entries.length} exercises, ${sets} sets), rev ${put.body?.rev ?? '?'}`)
-        return { logged: true, ...viewOf(added.workout, S, built), revision: put.body?.rev ?? null }
+        return { logged: true, ...viewOf(added.workout, S, built, su), revision: put.body?.rev ?? null }
       }
       // Another device wrote in between: the server sent its current document back with the 409,
       // so the workout is built again on top of that one. A 409 without one (a proxy's page) is

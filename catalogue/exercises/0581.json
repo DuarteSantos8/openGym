@@ -3,11 +3,12 @@
   "name": "lever high row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "upper back",
     "biceps",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "On a machine, you pull the handles down and back from a high position. Targets the lats and upper back.",

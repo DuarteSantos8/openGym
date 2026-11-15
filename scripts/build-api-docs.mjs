@@ -15,6 +15,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import yaml from 'js-yaml'
+import { applyRef } from './site/ref-template.mjs'
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const specPath = path.join(root, 'api', 'openapi.yaml')
@@ -131,6 +132,7 @@ const TAGS = {
   meta: { title: 'Meta', side: 'Health &amp; public config' },
   auth: { title: 'Auth', side: 'Passkeys &amp; sessions' },
   pairing: { title: 'Pairing', side: 'Connect the mobile app' },
+  oidc: { title: 'OIDC', side: 'Sign in with your identity provider' },
   watch: { title: 'Watch relay', side: 'Zepp OS watches' },
   password: { title: 'Password', side: 'Optional name &amp; password (PASSWORD_LOGIN)' },
   passkeys: { title: 'Passkeys', side: 'More passkeys &amp; device links' },
@@ -142,6 +144,10 @@ const TAGS = {
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
+  tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
+  mcp: { title: 'MCP connector', side: 'OAuth sign-in for Claude &amp; ChatGPT (MCP)' },
+  trainers: { title: 'Trainers', side: 'Studios, sharing &amp; consent (TRAINERS)' },
+  shared: { title: 'Community', side: 'The shared library (LIBRARY)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 
@@ -472,7 +478,7 @@ document.querySelectorAll('[data-xall]').forEach(b => b.addEventListener('click'
 }))
 `
 
-const html = `<!DOCTYPE html>
+const page = `<!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
      Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v${spec.info.version}).
      Regenerate with: node scripts/build-api-docs.mjs -->
@@ -513,14 +519,14 @@ const html = `<!DOCTYPE html>
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
-  <a class="brand" href="/">
-    <img src="icon-180.png" alt="" width="24" height="24">
-    openGym
+  <a class="brand" href="/" aria-label="openGym">
+    <svg class="brand-mark" viewBox="80 169 352 174" aria-hidden="true"><path d="M80 242h352v28H80zM80 199h36v114H80zM131 169h47v174h-47zM334 169h47v174h-47zM396 199h36v114h-36z"/></svg><span class="brand-word">open<span>Gym</span></span>
   </a>
   <div class="nav-quick">
     <a class="ql site" href="/#features">Features</a>
     <a class="ql site" href="/#screens">Screenshots</a>
     <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/routines/">Routines</a>
     <a class="ql site" href="/docs.html">Docs</a>
     <a class="ql site" href="/api.html">API</a>
     <a class="ql site" href="/about.html">About</a>
@@ -542,6 +548,7 @@ const html = `<!DOCTYPE html>
     <a class="nl" href="/#features">Features</a>
     <a class="nl" href="/#screens">Screenshots</a>
     <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/routines/">Routines</a>
     <a class="nl" href="/docs.html">Docs</a>
     <a class="nl" href="/api.html">API</a>
     <a class="nl" href="/about.html">About</a>
@@ -639,6 +646,10 @@ ${schemaCards}
 </body>
 </html>
 `
+
+// The reference-page template every page but home shares (scripts/site/ref-template.mjs): the
+// contents column from the tag headings, the phone drawer, the shared footer.
+const html = applyRef(page, { extraClass: 'api-main' })
 
 const rel = path.relative(root, outPath)
 const summary = `${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`

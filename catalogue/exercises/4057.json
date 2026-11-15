@@ -3,12 +3,11 @@
   "name": "kettlebell turkish get up to hand",
   "bodyPart": "full body",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "core",
     "glutes",
     "quadriceps",
-    "shoulders",
     "obliques"
   ],
   "category": "strength",

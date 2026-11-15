@@ -3,9 +3,9 @@
   "name": "bottle weighted armpit row",
   "bodyPart": "shoulders",
   "equipment": "weighted",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
-    "rear deltoids",
+    "rear delts",
     "trapezius",
     "upper back",
     "biceps"

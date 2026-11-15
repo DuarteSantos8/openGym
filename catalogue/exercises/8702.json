@@ -3,6 +3,7 @@
   "name": "torque tank push",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

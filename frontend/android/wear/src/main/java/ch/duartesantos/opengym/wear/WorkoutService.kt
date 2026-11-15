@@ -1,5 +1,7 @@
 package ch.duartesantos.opengym.wear
 
+import android.annotation.SuppressLint
+
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -16,6 +18,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
+import androidx.health.services.client.MeasureCallback
+import androidx.health.services.client.data.DataPointContainer
+import androidx.health.services.client.data.DeltaDataType
+import androidx.health.services.client.data.ExerciseTrackedStatus
 import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.ExerciseConfig
@@ -46,7 +52,12 @@ class WorkoutService : Service() {
 
     private val hrCallback = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+            // A late update from the exercise just ended must not land in the next workout.
+            if (update.exerciseStateInfo.state.isEnded) return
+            update.latestMetrics.getData(DataType.CALORIES_TOTAL)?.total?.let { if (it.isFinite()) WearStore.onCalories(it) }
             val bpm = update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
+            // roundToInt() throws for NaN: a reading that is not a number is no reading.
+            if (!bpm.isFinite()) return
             WearStore.onHeartRate(bpm.roundToInt())
         }
         override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
@@ -55,11 +66,22 @@ class WorkoutService : Service() {
         override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {}
     }
 
+    /** The heart rate alone, while another app (Samsung Health, Fitbit…) records the exercise. */
+    private var measuring = false
+    private val measureCallback = object : MeasureCallback {
+        override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {}
+        override fun onDataReceived(data: DataPointContainer) {
+            val bpm = data.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
+            if (bpm.isFinite()) WearStore.onHeartRate(bpm.roundToInt())
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         alive = true
+        starting = false
         WearStore.init(this)
         val n = notification(this, WearStore.state.value, WearStore.rest.value)
         try {
@@ -70,6 +92,8 @@ class WorkoutService : Service() {
             stopSelf()
             return
         }
+        // Restarted by Android for a workout idle for hours (SensorPlan): no sensor, the plain notification.
+        if (WearStore.sensorsResting) { stopSelf(); return }
         scope.launch { startHeartRate() }
         scope.launch {
             WearStore.state.combine(WearStore.rest) { s, r -> s to r }.collect { (s, r) ->
@@ -85,17 +109,47 @@ class WorkoutService : Service() {
         if (!hasHrPermission(this)) return
         try {
             val client = HealthServices.getClient(this).exerciseClient
+            // Health Services runs one exercise at a time: starting ours would end the workout
+            // another app is recording (Samsung Health next to openGym is common). Then the heart
+            // rate is only measured, and that app's workout is left alone (HrPlan).
+            val tracked = try { client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus } catch (_: Exception) { null }
+            // The documented way to tell another app's exercise (ExerciseInfo.exerciseTrackedStatus); the
+            // library marks the constants' holder restricted, so lint flags the read itself.
+            @SuppressLint("RestrictedApi", "WrongConstant")
+            val otherApp = ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
+            if (HrPlan.measureOnly(tracked, otherApp)) {
+                HealthServices.getClient(this).measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
+                measuring = true
+                return
+            }
             val caps = client.getCapabilitiesAsync().await()
-            val type = listOf(ExerciseType.STRENGTH_TRAINING, ExerciseType.WEIGHTLIFTING, ExerciseType.WORKOUT)
+            // The workout's own type first (a run, a ride, yoga: the phone's healthType), then strength.
+            val own = TYPES[WearStore.state.value.workout?.healthType]
+            val type = (listOfNotNull(own) + listOf(ExerciseType.STRENGTH_TRAINING, ExerciseType.WEIGHTLIFTING, ExerciseType.WORKOUT))
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
                 ?: return
             client.setUpdateCallback(hrCallback)
-            val config = ExerciseConfig.builder(type)
-                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+            WearStore.startCalories()
+            // The calories too where this type has them and physical activity is allowed: asking for
+            // one it lacks, or without the permission, fails the start, and the heart rate with it.
+            val kcal = DataType.CALORIES_TOTAL.takeIf {
+                it in caps.getExerciseTypeCapabilities(type).supportedDataTypes &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+            }
+            fun config(types: Set<DataType<*, *>>) = ExerciseConfig.builder(type)
+                .setDataTypes(types)
                 .setIsAutoPauseAndResumeEnabled(false)
                 .setIsGpsEnabled(false)
                 .build()
-            client.startExerciseAsync(config).await()
+            try {
+                client.startExerciseAsync(config(setOfNotNull(DataType.HEART_RATE_BPM, kcal))).await()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Refused with the calories: the heart rate alone, as before calories came.
+                if (kcal == null) throw e
+                client.startExerciseAsync(config(setOf(DataType.HEART_RATE_BPM))).await()
+            }
             exerciseOn = true
         } catch (_: Exception) { /* another app's exercise, or no sensor: the workout goes on without */ }
     }
@@ -107,17 +161,37 @@ class WorkoutService : Service() {
             try { client.clearUpdateCallbackAsync(hrCallback) } catch (_: Exception) {}
             exerciseOn = false
         }
+        if (measuring) {
+            try { HealthServices.getClient(this).measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, measureCallback) } catch (_: Exception) {}
+            measuring = false
+        }
         alive = false
         WearStore.clearHeartRate()
         scope.cancel()
-        if (WearStore.state.value.workout == null) getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
+        val running = WearStore.state.value.workout != null
+        if (!running) getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
         super.onDestroy()
+        // Stopped with the workout still on (the sensor resting): the system took the service's
+        // notification with it, so the plain one comes back.
+        if (running) post(this)
     }
 
     companion object {
         const val NOTIF_ID = 7
+
+        /** The phone's names for a workout's type (lib/health-connect.js, #799), as the Apple Watch's WorkoutManager.activityTypes. */
+        private val TYPES = mapOf(
+            "strength_training" to ExerciseType.STRENGTH_TRAINING, "walking" to ExerciseType.WALKING, "running" to ExerciseType.RUNNING,
+            "biking_stationary" to ExerciseType.BIKING_STATIONARY, "biking" to ExerciseType.BIKING, "elliptical" to ExerciseType.ELLIPTICAL,
+            "stair_climbing_machine" to ExerciseType.STAIR_CLIMBING_MACHINE, "rowing" to ExerciseType.ROWING_MACHINE,
+            "jump_rope" to ExerciseType.JUMP_ROPE, "hiit" to ExerciseType.HIGH_INTENSITY_INTERVAL_TRAINING,
+            "mixed_cardio" to ExerciseType.WORKOUT, "yoga" to ExerciseType.YOGA, "flexibility" to ExerciseType.STRETCHING,
+            "other_workout" to ExerciseType.WORKOUT,
+        )
         private const val CHANNEL = "workout"
         @Volatile private var alive = false
+        /** Asked to start, onCreate not run yet: Android kills the app if it is stopped before startForeground. */
+        @Volatile private var starting = false
 
         fun hasHrPermission(ctx: Context): Boolean {
             val perm = if (Build.VERSION.SDK_INT >= 36) "android.permission.health.READ_HEART_RATE" else Manifest.permission.BODY_SENSORS
@@ -136,13 +210,22 @@ class WorkoutService : Service() {
             val app = ctx.applicationContext
             val active = WearStore.state.value.workout != null
             if (!active) {
-                app.stopService(Intent(app, WorkoutService::class.java))
+                // A start still on its way stops itself in onCreate, once it is in the foreground.
+                if (!starting) app.stopService(Intent(app, WorkoutService::class.java))
                 app.getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
                 return
             }
-            if (alive) return
+            // Nothing happened in the workout for three hours (SensorPlan): the sensor rests, the
+            // workout stays on the watch face, and the next set or phone change starts it again.
+            if (WearStore.sensorsResting) {
+                if (!starting) app.stopService(Intent(app, WorkoutService::class.java))
+                post(app)
+                return
+            }
+            if (alive || starting) return
             if (hasHrPermission(app) && !fromPhone) {
-                try { ContextCompat.startForegroundService(app, Intent(app, WorkoutService::class.java)); return } catch (_: Exception) {}
+                starting = true
+                try { ContextCompat.startForegroundService(app, Intent(app, WorkoutService::class.java)); return } catch (_: Exception) { starting = false }
             }
             post(app)
         }
@@ -177,7 +260,7 @@ class WorkoutService : Service() {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(touch)
             // On the watch face: the rest counting down, else the sets so far.
-            val status = if (rest != null && rest.endsAt > System.currentTimeMillis()) {
+            val status = if (rest != null && rest.pausedLeft == null && rest.endsAt > System.currentTimeMillis()) {
                 val end = SystemClock.elapsedRealtime() + (rest.endsAt - System.currentTimeMillis())
                 Status.Builder().addTemplate("#rest#").addPart("rest", Status.TimerPart(end)).build()
             } else Status.Builder().addTemplate(line).build()

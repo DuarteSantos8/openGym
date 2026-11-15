@@ -41,7 +41,7 @@ describe('deleting a weigh-in can be undone (#756)', () => {
   it('the log sheet\'s one-tap delete offers Undo, and Undo puts the weigh-in back', () => {
     bwSheet()
     const log = mountTopSheet()
-    act(() => { log.querySelector('button[aria-label="Delete weigh-in"]').click() })
+    act(() => { log.querySelector('button[aria-label^="Delete weigh-in, "]').click() })
     expect(days()).not.toContain('2026-09-13')
     const ui = useUI.getState()
     expect(ui.toastMsg).toBe('Weigh-in deleted')
@@ -54,7 +54,7 @@ describe('deleting a weigh-in can be undone (#756)', () => {
   it('the full list asks first, then offers Undo too', () => {
     weighInsSheet()
     const host = mountTopSheet()
-    act(() => { host.querySelector('[data-week="2026-08-31"] button[aria-label="Delete weigh-in"]').click() })
+    act(() => { host.querySelector('[data-week="2026-08-31"] button[aria-label^="Delete weigh-in, "]').click() })
     const ask = mountTopSheet()
     act(() => { button(ask, 'Delete').click() })
     expect(days()).not.toContain('2026-09-03')
@@ -68,7 +68,7 @@ describe('deleting a weigh-in can be undone (#756)', () => {
   it('survives a merge with a copy that only saw the removal', () => {
     bwSheet()
     const log = mountTopSheet()
-    act(() => { log.querySelector('button[aria-label="Delete weigh-in"]').click() })
+    act(() => { log.querySelector('button[aria-label^="Delete weigh-in, "]').click() })
     const server = clone(useStore.getState().S)
     expect(server.deleted.bodyweight['2026-09-13']).toBeGreaterThan(0)
     act(() => { useUI.getState().runToastAction() })
@@ -81,7 +81,7 @@ describe('deleting a weigh-in can be undone (#756)', () => {
   it('does not overwrite a weigh-in logged for that day since', () => {
     bwSheet()
     const log = mountTopSheet()
-    act(() => { log.querySelector('button[aria-label="Delete weigh-in"]').click() })
+    act(() => { log.querySelector('button[aria-label^="Delete weigh-in, "]').click() })
     const run = useUI.getState().toastAction.run
     useStore.getState().update(s => { s.bodyweight.push({ d: '2026-09-13', w: 78.4, t: Date.now() }) })
     act(() => { run() })

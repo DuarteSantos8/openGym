@@ -2,7 +2,7 @@
 // history instead of one per routine. The default keeps each routine's own last session (#216),
 // for the lifter whose Monday is heavy and Thursday light. Sessions are started and finished the
 // way the app does it, so the history has the shape the app saves.
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, it, expect } from 'vitest'
 import { buildCombinedEntries } from './session-merge.js'
 import { buildCompletedWorkout } from './finish-workout.js'
 import { lastEntryFor, lastAcrossRoutines } from './history.js'
@@ -15,6 +15,7 @@ const state = (routines, extra = {}) => ({ unit: 'kg', exWeights: {}, routines: 
 const start = (st, rids) => buildCombinedEntries(st, rids).entries
 
 let day = 1
+beforeEach(() => { day = 1 })   // each test's dates start on 1 August, whatever ran before
 function train(st, rids, typed) {
   const entries = start(st, rids).map(e => ({ ...e, sets: e.sets.map(s => (isWarmupRow(s) ? { ...s, done: true } : { ...s, ...(typed || {}), done: true })) }))
   const d = `2026-08-${String(day).padStart(2, '0')}`

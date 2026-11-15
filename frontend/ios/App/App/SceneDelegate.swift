@@ -14,7 +14,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // in openURLContexts: handed on the same way, Capacitor keeps it as the launch URL the page
     // asks for (lib/widget-links.js, App.getLaunchUrl).
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        if let url = connectionOptions.urlContexts.first?.url {
+        // For the Live Activity's timing log (WorkoutActivity.swift LiveLog): a scene connecting on
+        // a launch iOS made for a button means the whole page boots beside that tap.
+        LiveLog.sceneConnected()
+        // Garmin Connect Mobile coming back with the watches picked for openGym (GarminLink).
+        if let url = connectionOptions.urlContexts.first?.url, GarminLink.shared.handle(url) {
+            // handled: not a link for the page
+        } else if let url = connectionOptions.urlContexts.first?.url {
             _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: url, options: [:])
         }
         // A Universal Link (opengym.ch/nfc from a sticker, opengym.ch/r from a friend) that
@@ -26,6 +32,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         guard let url = URLContexts.first?.url else { return }
+        if GarminLink.shared.handle(url) { return }
         _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: url, options: [:])
     }
 

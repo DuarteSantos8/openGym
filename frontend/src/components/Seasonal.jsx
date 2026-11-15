@@ -59,8 +59,9 @@ export function SeasonDeco({ spot, workout = false }) {
 }
 
 /** Opens something of a theme's from outside it (Settings → Seasonal themes → Advent calendar):
-    fetches the theme's module first. Only offered while that theme shows. */
+    fetches the theme's module first. Only while that theme shows: a theme out of season, or not
+    there yet (Christmas before 1 December 2026), loads nothing and opens nothing. */
 export function openSeasonal(id, what) {
-  if (!LOADERS[id]) return Promise.resolve(false)
+  if (!LOADERS[id] || activeSeason(useStore.getState().S) !== id) return Promise.resolve(false)
   return LOADERS[id]().then(m => (m.open ? m.open(what) : false))
 }

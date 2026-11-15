@@ -3,9 +3,8 @@
   "name": "suspender reverse fly wake up",
   "bodyPart": "back",
   "equipment": "suspension trainer",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "trapezius"
   ],

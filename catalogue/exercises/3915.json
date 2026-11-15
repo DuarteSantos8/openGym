@@ -3,12 +3,13 @@
   "name": "decline pike press (between benches)",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "trapezius",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "A harder pike push-up with the feet raised, hands on benches, loading the shoulders strongly.",

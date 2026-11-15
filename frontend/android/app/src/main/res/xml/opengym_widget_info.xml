@@ -14,7 +14,7 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="10800000"
     android:initialLayout="@layout/widget_small"
-    android:previewLayout="@layout/widget_small"
+    android:previewLayout="@layout/widget_preview"
     android:previewImage="@mipmap/ic_launcher"
     android:description="@string/widget_desc"
     android:configure="ch.duartesantos.opengym.OpenGymWidgetConfigure"

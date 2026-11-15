@@ -83,6 +83,8 @@ export function sniffKind(bytes) {
   const sig = ascii(b, 0, 6)
   if (sig === 'GIF87a' || sig === 'GIF89a') return { mime: 'image/gif', kind: 'gif', category: 'still' }
   if (ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 4) === 'WEBP') return { mime: 'image/webp', kind: 'image', category: 'still' }
+  // A sound of one's own (lib/sound-ingest.js writes it): a 16-bit PCM WAV, as api/media.js sniffMedia takes it.
+  if (ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 4) === 'WAVE') return ascii(b, 12, 4) === 'fmt ' && b.length >= 22 && (b[20] | (b[21] << 8)) === 1 ? { mime: 'audio/wav', kind: 'audio', category: 'audio' } : null
   if (ascii(b, 4, 4) === 'ftyp') {
     const brand = ascii(b, 8, 4)
     if (brand === 'qt  ') return { mime: 'video/quicktime', kind: 'video', category: 'video' }

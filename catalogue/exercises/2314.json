@@ -3,6 +3,7 @@
   "name": "lever lying crunch v. 2",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "abs",
   "secondaryMuscles": [
     "lower abs",

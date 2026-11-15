@@ -9,6 +9,7 @@ import { MOBILE } from './mobile.js'
 import { notificationPlan, wrappedOf, wrappedNow, NOTIFY_ID } from './wrapped.js'
 import { t } from './i18n-core.js'
 import { WRAPPED_PUSH } from './wrapped-copy.js'
+import { withoutAlarmPrompt } from './exact-alarm.js'
 
 /** The notification itself, for `year`, at `at`. */
 export function wrappedNotification(year, at) {
@@ -37,7 +38,7 @@ export async function syncWrappedNotification(S, update, now = wrappedNow()) {
       return 'cancel'
     }
     if (plan.action !== 'schedule') return 'none'
-    await LocalNotifications.schedule({ notifications: [wrappedNotification(plan.year, plan.at)] })
+    await LocalNotifications.schedule({ notifications: await withoutAlarmPrompt(LocalNotifications, [wrappedNotification(plan.year, plan.at)]) })
     if (wrappedOf(S).phone !== plan.year) update?.(s => { s.wrapped = { ...wrappedOf(s), phone: plan.year } })
     return 'schedule'
   } catch (e) { return 'none' }

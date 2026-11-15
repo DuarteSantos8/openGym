@@ -3,11 +3,12 @@
   "name": "handstand hold on wall",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper back",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "isometric",
   "hold": true,

@@ -9,7 +9,8 @@
       "hr": true,
       "last": true,
       "next": true
-    }
+    },
+    "crown": "reps"
   },
   "streak": {
     "weeks": 1,

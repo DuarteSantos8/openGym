@@ -146,6 +146,21 @@ describe('the Coach chat', () => {
     expect(mocks.S.routines.length).toBe(2)
   })
 
+  // Full QA 146: "make me 3 routines" in the chat comes back as a plan with no week. The switch
+  // was on by default, and importing replaced the whole week with rest days.
+  it('keeps the week when the routines asked for in the chat come without one', async () => {
+    const S = state()
+    S.routines = [{ id: 'old', name: 'Old', ex: [{ id: '0001', sets: 3, reps: 5 }] }]
+    S.week = { 1: ['old'], 4: ['old'] }
+    await mount({ id: 'p1', kind: 'create', bundle: bundle({}) }, null, { S })
+    expect(container.querySelector('[role="switch"]')).toBeNull()
+    expect(container.textContent).not.toContain('Use this weekly schedule')
+    await click(byText(/Import this plan/))
+    expect(mocks.S.week).toEqual({ 1: ['old'], 4: ['old'] })
+    expect(mocks.S.routines.length).toBe(3)
+    expect(mocks.S.coach.chat.at(-1).text).toContain('Your week is unchanged')
+  })
+
   it('shows the typing bubble with an estimate while a job runs, and disables the composer', async () => {
     await mount(null, { id: 'j1', kind: 'create', state: 'running', startedAt: Date.now() })
     expect(container.querySelector('.typing')).toBeTruthy()

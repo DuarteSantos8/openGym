@@ -3,6 +3,7 @@
   "name": "lever high row (plate loaded) v. 3",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "upper back",

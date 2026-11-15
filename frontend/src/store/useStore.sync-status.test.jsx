@@ -167,6 +167,68 @@ describe('the web boot', () => {
     expect(useStore.getState().user).toEqual(USER)
     expect(useStore.getState().sync).toMatchObject({ status: 'error', lastError: { status: 200, code: 'bad-response' } })
   })
+
+  // Every guest start printed "GET /api/me 401" in the browser console (round 1.4.5, P5): the
+  // session cookie is HttpOnly, so the app had to ask to learn nobody is signed in. A server from
+  // v1.4.5 says so in /api/config (`signed_in`), the request boot makes first anyway.
+  describe('with a server that says whether anyone is signed in', () => {
+    const bootWith = async (config, me, user = null) => {
+      api.mockReset()
+      api.mockImplementation(async path => {
+        if (path === '/api/config') return config
+        if (path === '/api/me') return me()
+        if (path === '/api/data') return { state: null, rev: 0 }
+        throw new Error('unexpected ' + path)
+      })
+      useStore.setState({ user, ready: false, config: null })
+      await useStore.getState().boot()
+    }
+    const never = () => { throw new Error('/api/me must not be asked') }
+
+    it('a guest start does not ask /api/me at all', async () => {
+      useStore.getState().setGuest(true)
+      await bootWith({ allow_guest: true, signed_in: false }, never)
+      expect(paths()).toEqual(['GET /api/config'])
+      expect(useStore.getState()).toMatchObject({ user: null, ready: true })
+      expect(useStore.getState().sync.status).toBe('local')
+    })
+
+    it('nobody signed in and no guest either: the sign-in screen, with no request refused', async () => {
+      await bootWith({ allow_guest: true, signed_in: false }, never)
+      expect(paths()).toEqual(['GET /api/config'])
+      expect(useStore.getState()).toMatchObject({ user: null, ready: true })
+    })
+
+    it('a session that ended is still told as one: the copy stays with its owner and the screen says why', async () => {
+      useStore.setState({ S: { ...clone(DEF), _ts: 100, workouts: [workout('w1')] } })
+      await bootWith({ allow_guest: true, signed_in: false }, never, USER)
+      expect(paths()).toEqual(['GET /api/config'])
+      expect(useStore.getState().user).toBeNull()
+      expect(ids(useStore.getState().S.workouts)).toEqual(['w1'])
+      expect(localStorage.getItem('gym_owner')).toBe(USER.id)
+      expect(useStore.getState().sync).toMatchObject({ status: 'auth', lastError: { status: 401 } })
+    })
+
+    it('signed in: /api/me is asked as always', async () => {
+      await bootWith({ allow_guest: true, signed_in: true, coach: null }, () => ({ user: USER }))
+      expect(paths().slice(0, 2)).toEqual(['GET /api/config', 'GET /api/me'])
+      expect(useStore.getState().user).toEqual(USER)
+    })
+
+    // The other direction: this app against a server from before the flag, or one that did not
+    // answer /api/config. Only a plain `false` skips the question.
+    it.each([
+      ['a server from before the flag', { allow_guest: true }],
+      ['a flag that is not a boolean', { allow_guest: true, signed_in: null }],
+      ['a config that could not be read', null]
+    ])('%s is asked as before, and its 401 still signs out', async (_, config) => {
+      await bootWith(config, () => { throw httpError(401) }, USER)
+      expect(paths()).toEqual(['GET /api/config', 'GET /api/me'])
+      expect(useStore.getState().user).toBeNull()
+      await bootWith(config, () => ({ user: USER }))
+      expect(useStore.getState().user).toEqual(USER)
+    })
+  })
 })
 
 describe('signing out never loses a change silently', () => {

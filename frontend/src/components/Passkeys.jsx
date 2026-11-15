@@ -242,7 +242,7 @@ export function DeviceLinkSheet({ close }) {
       </div>
       <div className="ci-qr-plate" style={{ width: 'fit-content', margin: '0 auto 14px' }}><QrCanvas value={url} size={200} /></div>
       {/* Read out or typed character by character: left to right in every language. */}
-      <div className="card" dir="ltr" style={{ textAlign: 'center', fontSize: 24, fontWeight: 700, letterSpacing: '.12em', padding: '14px 0' }}>{link.code}</div>
+      <div className="card" dir="ltr" style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '.12em', padding: '14px 0' }}>{link.code}</div>
       <div style={{ height: 12 }} />
       <Button icon="copy" onClick={copy}>{t('Copy link')}</Button>
     </>}
@@ -287,7 +287,7 @@ export function PairSheet({ close }) {
         {t('On the openGym app, choose “Connect to my server”, then enter this address and the code below. It expires in 5 minutes.')}
       </div>
       {/* Read out or typed character by character: left to right in every language. */}
-      <div className="card" dir="ltr" style={{ textAlign: 'center', fontSize: 30, fontWeight: 700, letterSpacing: '.16em', padding: '18px 0' }}>{pair.code}</div>
+      <div className="card" dir="ltr" style={{ textAlign: 'center', fontSize: '1.875rem', fontWeight: 700, letterSpacing: '.16em', padding: '18px 0' }}>{pair.code}</div>
     </>}
     <div style={{ height: 12 }} />
     <Button onClick={close}>{t('Done')}</Button>

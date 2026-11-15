@@ -59,6 +59,9 @@ android {
     lint {
         // The strings are written by wear-strings.mjs from the app's own translations.
         disable 'MissingTranslation'
+        // An API 31+ class on a Wear OS 3 watch (API 30) stops the app the moment it is touched
+        // (VibratorManager, #1168): fatal, so lintVitalRelease fails assembleRelease on it.
+        fatal 'NewApi'
     }
 }
 
@@ -75,6 +78,8 @@ dependencies {
     implementation "androidx.fragment:fragment:$androidxFragmentVersion"
     implementation "androidx.wear.compose:compose-material3:$wearComposeVersion"
     implementation "androidx.wear.compose:compose-foundation:$wearComposeVersion"
+    // Always On: the workout stays on screen with the wrist down, drawn as outlines (MainActivity).
+    implementation "androidx.wear:wear:1.3.0"
     // Heart rate during a workout (WorkoutService).
     implementation "androidx.health:health-services-client:$wearHealthServicesVersion"
     // The workout on the watch face and in the recents while the app is away.

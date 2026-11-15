@@ -116,4 +116,23 @@ describe('exercise settings: a timed bodyweight hold', () => {
     expect(labels(host)).toContain('Weight (kg)')
     expect(labels(host)).not.toContain('Added (kg)')
   })
+  // QA 1.4.5: 999 typed into Sets saved as 999 and the next workout drew 999 rows.
+  it('holds Sets to 1..50 and Reps to 1000: on leaving the field, and on saving straight from it', () => {
+    const { host, onSave } = renderConfig({})
+    const sets = field(host, 'Sets')
+    act(() => type(sets, '999'))
+    expect(sets.value).toBe('999')
+    act(() => leave(sets))
+    expect(sets.value).toBe('50')
+    act(() => type(sets, '0'))
+    act(() => leave(sets))
+    expect(sets.value).toBe('1')
+    const reps = field(host, 'Reps')
+    act(() => type(reps, '100000'))
+    act(() => leave(reps))
+    expect(reps.value).toBe('1000')
+    act(() => type(sets, '777'))   // saved without leaving the field
+    act(() => save(host))
+    expect(onSave.mock.calls[0][0].sets).toBe(50)
+  })
 })

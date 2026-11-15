@@ -3,9 +3,8 @@
   "name": "dumbbell bent over y raise",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "trapezius",
     "rhomboids"
   ],
