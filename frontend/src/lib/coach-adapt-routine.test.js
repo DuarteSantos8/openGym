@@ -1,0 +1,117 @@
+// What the Coach's mid-workout changes would mean for the routine (lib/coach-adapt-routine.js):
+// offered in the Coach's change-set shape, applied and undone with the ordinary engine.
+import { describe, expect, it } from 'vitest'
+import { applyAdapt } from './coach-adapt.js'
+import { chosenRoutineChanges, routineChangesFor, sessionBefore } from './coach-adapt-routine.js'
+import { applyChangeSet, revertLast } from './coach.js'
+
+const BENCH = '0025', CURL = '0294', SQUAT = '0043', DBPRESS = '0289', ROW = '0027'
+const row = (w, r, done = false) => ({ w, r, done })
+const routine = () => ({ id: 'push', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }, { id: CURL, sets: 3, reps: 10, weight: 14 }, { id: SQUAT, sets: 3, reps: 5, weight: 100 }] })
+const session = (entries, routines = [routine()]) => ({
+  unit: 'kg', exWeights: {}, workouts: [], week: {}, dayPlan: {}, routines,
+  active: { id: 'act-1', d: '2026-10-29', cur: 0, entries },
+  coach: { consent: { agreedAt: 1, version: 2 }, log: [], snapshots: [], lastReview: { at: 1 } },
+})
+const inOrder = () => [
+  { id: BENCH, rid: 'push', target: { sets: 3, reps: 5, weight: 80 }, sets: [row(80, 5, true), row(80, 5), row(80, 5)] },
+  { id: CURL, rid: 'push', target: { sets: 3, reps: 10, weight: 14 }, sets: [row(14, 10), row(14, 10), row(14, 10)] },
+  { id: SQUAT, rid: 'push', target: { sets: 3, reps: 5, weight: 100 }, sets: [row(100, 5), row(100, 5), row(100, 5)] },
+]
+const proposal = changes => ({ id: 'p1', kind: 'adapt', activeId: 'act-1', summary: 'For today.', changes: changes.map((c, i) => ({ id: 'a' + i, why: 'Because.', ...c })) })
+const run = (S, p) => {
+  const before = sessionBefore(S.active)
+  const { applied } = applyAdapt(S, p, p.changes.map(c => c.id))
+  return routineChangesFor(p.changes.filter(c => applied.includes(c.id)), S.routines, before, S.active)
+}
+
+describe('routine changes offered after the Coach changed the workout', () => {
+  it('offers swaps, order and additions in the Coach change-set shape, and nothing for today-only work', () => {
+    const S = session(inOrder())
+    const p = proposal([
+      { type: 'swap', entry: 2, exId: SQUAT, to: ROW },
+      { type: 'sets', entry: 0, exId: BENCH, sets: 1 },
+      { type: 'move', entry: 1, exId: CURL, place: 'last' },
+      { type: 'add', to: DBPRESS, sets: 2, reps: 12, entry: 0 },
+      { type: 'rest', entry: 1, exId: CURL, rest: 180 },
+    ])
+    const changes = run(S, p)
+    const ids = S.active.entries.map(e => e.id)
+    expect(new Set(ids)).toEqual(new Set([BENCH, DBPRESS, ROW, CURL]))
+    expect(ids.at(-1)).toBe(CURL)
+    expect(changes.map(c => [c.type, c.after])).toEqual([
+      ['reorder', [BENCH, SQUAT, CURL]],
+      ['swap-exercise', { id: ROW }],
+      ['add-exercise', { id: DBPRESS, sets: 2, mode: 'reps', reps: 12, position: 1, beside: BENCH }],
+    ])
+    expect(changes[1].target).toEqual({ routineId: 'push', exId: SQUAT })
+
+    // Ticked together with the reorder, the addition goes to the end of the new order.
+    const picked = chosenRoutineChanges(changes, S.routines)
+    expect(picked[2].after.position).toBe(3)
+    applyChangeSet(S, { id: 'p1', summary: '', changes: picked }, picked.map(c => c.id))
+    expect(S.routines[0].ex.map(e => [e.id, e.sets, e.reps])).toEqual([[BENCH, 3, 5], [ROW, 3, 5], [CURL, 3, 10], [DBPRESS, 2, 12]])
+    expect(revertLast(S)).toBe(true)
+    expect(S.routines[0]).toEqual(routine())
+  })
+
+  it('an addition ticked on its own lands beside its slot; a reorder is refused once the routine has moved on', () => {
+    const S = session(inOrder())
+    const p = proposal([{ type: 'move', entry: 1, exId: CURL, place: 'last' }, { type: 'add', to: DBPRESS, sets: 2, reps: 12, entry: 0 }])
+    const changes = run(S, p)
+    expect(changes.map(c => c.type)).toEqual(['reorder', 'add-exercise'])
+    // Only the addition: beside the bench, where it was added today.
+    const addOnly = chosenRoutineChanges([changes[1]], S.routines)
+    applyChangeSet(S, { id: 'p1', summary: '', changes: addOnly }, addOnly.map(c => c.id))
+    expect(S.routines[0].ex.map(e => e.id)).toEqual([BENCH, DBPRESS, CURL, SQUAT])
+    expect(revertLast(S)).toBe(true)
+    // Someone reordered the routine on another device meanwhile: the offer's order is no longer
+    // the session's order over the routine, so nothing is applied.
+    S.routines[0].ex.reverse()
+    expect(() => chosenRoutineChanges(changes, S.routines)).toThrow()
+    expect(S.routines[0].ex.map(e => e.id)).toEqual([SQUAT, CURL, BENCH])
+    // The addition alone still finds its slot in the new order.
+    const moved = chosenRoutineChanges([changes[1]], S.routines)
+    expect(moved[0].after.position).toBe(3)
+    applyChangeSet(S, { id: 'p2', summary: '', changes: moved }, moved.map(c => c.id))
+    expect(S.routines[0].ex.map(e => e.id)).toEqual([SQUAT, CURL, BENCH, DBPRESS])
+  })
+
+  it('refuses what the routine no longer has room for: a slot gone, an exercise already added or swapped in elsewhere', () => {
+    const S = session(inOrder())
+    const p = proposal([{ type: 'swap', entry: 2, exId: SQUAT, to: ROW }, { type: 'add', to: DBPRESS, sets: 2, reps: 12, entry: 0 }])
+    const changes = run(S, p)
+    expect(changes.map(c => c.type)).toEqual(['swap-exercise', 'add-exercise'])
+    const fresh = () => routine()
+    // Someone removed the bench from the routine: the addition has no slot to sit beside.
+    expect(() => chosenRoutineChanges([changes[1]], [{ ...fresh(), ex: fresh().ex.filter(e => e.id !== BENCH) }])).toThrow()
+    // Someone added the dumbbell press already: not a second time.
+    expect(() => chosenRoutineChanges([changes[1]], [{ ...fresh(), ex: [...fresh().ex, { id: DBPRESS, sets: 3, reps: 10 }] }])).toThrow()
+    // Someone swapped a row in already: the swap would leave two rows.
+    expect(() => chosenRoutineChanges([changes[0]], [{ ...fresh(), ex: [...fresh().ex, { id: ROW, sets: 3, reps: 5 }] }])).toThrow()
+    // Untouched, both still go through.
+    expect(chosenRoutineChanges(changes, [fresh()]).map(c => c.type)).toEqual(['swap-exercise', 'add-exercise'])
+  })
+
+  it('offers no swap that changes how the slot is logged, and no reorder of a session already out of routine order', () => {
+    const S = session([inOrder()[1], inOrder()[0], inOrder()[2]])
+    S.routines[0].ex[1] = { id: CURL, sets: 3, mode: 'time', sec: 40 }
+    const p = proposal([{ type: 'swap', entry: 0, exId: CURL, to: ROW, reps: 10 }, { type: 'move', entry: 2, exId: SQUAT, place: 'next' }])
+    expect(run(S, p)).toEqual([])
+  })
+
+  it('offers nothing for an exercise the routine does not have, or a session with no routine behind it', () => {
+    const S = session([{ id: DBPRESS, target: { sets: 2, reps: 10, weight: 20 }, sets: [row(20, 10), row(20, 10)] }])
+    expect(run(S, proposal([{ type: 'swap', entry: 0, exId: DBPRESS, to: ROW }]))).toEqual([])
+    const T = session(inOrder())
+    T.active.entries[1].id = ROW   // the session moved off the routine already
+    expect(run(T, proposal([{ type: 'swap', entry: 1, exId: ROW, to: DBPRESS }]))).toEqual([])
+  })
+
+  it('an exercise swapped while under way keeps the session out of the order offer, but the swap is still offered', () => {
+    const S = session(inOrder())
+    S.active.entries[1].sets[0].done = true
+    const changes = run(S, proposal([{ type: 'swap', entry: 1, exId: CURL, to: ROW }, { type: 'move', entry: 2, exId: SQUAT, place: 'next' }]))
+    expect(changes.map(c => c.type)).toEqual(['swap-exercise'])
+  })
+})
