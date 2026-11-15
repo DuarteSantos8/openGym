@@ -2361,7 +2361,11 @@ function ActiveWorkout() {
         if (nextUnit?.length) startRest(restAfter, idx, { forSet: i, rest: 'exercise' })
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
+        // A round's rest announces what comes after it; between members there is no rest, so
+        // the member that is next gets said here instead, or a circuit says only its first
+        // exercise (#1210).
         if (step.roundDone) startRest(restAfter, idx, { forSet: i, rest: 'superset' })
+        else if (step.nextIdx != null) cues.movedOn(idx)
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
     }

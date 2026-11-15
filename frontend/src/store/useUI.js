@@ -897,3 +897,14 @@ bindNativeRest(ev => {
 
 // Spoken cues read the profile (on or off, the rate, the running workout) from the store.
 bindCueState(() => useStore.getState?.()?.S)
+
+// A workout that begins gets its first set announced (#1210): only a rest announced anything
+// before, so the first exercise went unsaid until its first set was done. The id already running
+// when this module loads is not announced — an app restart mid-workout is not a beginning.
+let heardWorkout = useStore.getState?.()?.S?.active?.id ?? null
+useStore.subscribe?.(st => {
+  const id = st?.S?.active?.id ?? null
+  if (id === heardWorkout) return
+  heardWorkout = id
+  if (id) cues.began()
+})
