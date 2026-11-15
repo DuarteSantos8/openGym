@@ -5897,4 +5897,12 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Serbest ağırlıklar",
+  "Barbells": "Barlar",
+  "Cables": "Kablolar",
+  "Balls & rollers": "Toplar ve rulolar",
+  "Bench & bar": "Sehpa ve bar",
+  "Show {0}": "{0} göster",
+  "Hide {0}": "{0} gizle",
 }

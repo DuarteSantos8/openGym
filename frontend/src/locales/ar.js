@@ -5952,4 +5952,12 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "أوزان حرة",
+  "Barbells": "بارات",
+  "Cables": "كيبلات",
+  "Balls & rollers": "كرات وأسطوانات",
+  "Bench & bar": "مقعد وبار",
+  "Show {0}": "إظهار {0}",
+  "Hide {0}": "إخفاء {0}",
 }

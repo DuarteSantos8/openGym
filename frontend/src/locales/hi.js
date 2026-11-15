@@ -5897,4 +5897,12 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "फ़्री वेट",
+  "Barbells": "बारबेल",
+  "Cables": "केबल",
+  "Balls & rollers": "बॉल और रोलर",
+  "Bench & bar": "बेंच और बार",
+  "Show {0}": "{0} दिखाएँ",
+  "Hide {0}": "{0} छिपाएँ",
 }

@@ -5901,4 +5901,12 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Свободные веса",
+  "Barbells": "Штанги",
+  "Cables": "Блоки",
+  "Balls & rollers": "Мячи и ролики",
+  "Bench & bar": "Скамья и турник",
+  "Show {0}": "Показать: {0}",
+  "Hide {0}": "Скрыть: {0}",
 }
