@@ -1,0 +1,140 @@
+/* views/Skills.jsx: the bodyweight skill trees. Every colour is a token: a family's or a tier's
+   colour arrives as --c, the accent as --acc. */
+
+.skt-open-count{color:var(--acc-ink);font-weight:600}
+.skt-modes{margin-bottom:12px}
+.skt-fams{margin:0 0 12px}
+.skt-hint{text-align:center;margin:8px 0 12px}
+.skt-credit{margin:22px 2px 8px;text-align:center}
+.skt-center{text-align:center;margin-top:6px}
+.skt-sub{margin:16px 0 6px}
+
+/* --- summary: the body in a ring, the families around it ---------------------------------- */
+.skt-orbit{position:relative;width:100%;max-width:380px;aspect-ratio:1;margin:0 auto}
+.skt-ring{position:absolute;inset:10%;border-radius:50%;border:1.5px dashed var(--sep)}
+.skt-core{position:absolute;inset:23%;border-radius:50%;border:2px solid var(--surface-3);
+  background:radial-gradient(circle at 50% 40%,var(--surface),var(--bg-el));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+  transition:border-color var(--med) var(--ease),box-shadow var(--med) var(--ease)}
+.skt-core .bodymap{width:82%;gap:2px}
+.skt-core .bm-v{max-height:none;height:auto}
+.skt-core-cap{font-size:var(--fs-caption2);font-weight:600;color:var(--label-2);margin-top:2px}
+.skt-bubble{position:absolute;width:20%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  padding:0;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(var(--c) var(--p),var(--surface-2) 0);
+  box-shadow:0 0 14px var(--c);box-shadow:0 0 14px color-mix(in srgb,var(--c) 30%,transparent);
+  transition:transform var(--med) var(--ease),opacity var(--med) var(--ease),box-shadow var(--med) var(--ease);
+  animation:skt-pop .45s var(--ease) backwards}
+.skt-bubble.on{transform:translate(-50%,-50%) scale(1.14);box-shadow:0 0 26px var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 28%,transparent),0 0 26px var(--c)}
+.skt-bubble.dim{opacity:.42}
+.skt-bubble-in{width:86%;height:86%;border-radius:50%;background:var(--bg-el);color:var(--label);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center}
+.skt-bubble-in b{font-size:var(--fs-callout);letter-spacing:-.02em}
+.skt-bubble-in span{font-size:9px;line-height:1.1;font-weight:600;color:var(--label-2);padding:0 4px}
+@keyframes skt-pop{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}}
+
+.skt-panel{animation:skt-unfold .32s var(--ease)}
+@keyframes skt-unfold{from{opacity:0;transform:translateY(-8px)}}
+.skt-branch{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:var(--hair) solid var(--sep)}
+.skt-branch:first-of-type{margin-top:10px}
+.skt-dots{display:flex;gap:2px;height:6px}
+.skt-dot{flex:1;max-width:14px;border-radius:3px;background:var(--surface-3)}
+.skt-dot.done{background:var(--green)}
+.skt-dot.open{background:var(--c);box-shadow:0 0 5px var(--c)}
+.skt-cur{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 10px;border-radius:var(--r);cursor:pointer;
+  border:1.5px solid var(--c);background:transparent;background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--c);font-weight:600;text-align:start}
+.skt-cur>span:nth-child(2){flex:1;color:var(--label)}
+.skt-done-note{color:var(--green)}
+
+/* --- list ------------------------------------------------------------------------------- */
+.skt-list-sec{margin-bottom:16px}
+.skt-list-sec>.row{margin:0 4px 8px}
+.skt-rows{padding:0;overflow:hidden}
+.skt-row{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:8px 14px;border:0;cursor:pointer;
+  background:transparent;color:var(--label);text-align:start;border-top:var(--hair) solid var(--sep-op)}
+.skt-row:first-child{border-top:0}
+.skt-row-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.skt-row.open .skt-row-name>span:first-child{font-weight:600}
+.skt-row.locked .skt-row-name>span:first-child{color:var(--label-dim)}
+.skt-state{width:26px;height:26px;flex:none;border-radius:50%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:13px}
+.skt-state.done{background:var(--green);color:#000}
+.skt-state.open{border:2px solid var(--c);color:var(--c);box-shadow:none;box-shadow:0 0 10px color-mix(in srgb,var(--c) 50%,transparent)}
+.skt-state.locked{border:1.5px solid var(--surface-3);color:var(--label-3)}
+.skt-tier{flex:none;font-size:var(--fs-caption2);font-weight:700;padding:3px 7px;border-radius:6px;
+  color:var(--c);background:var(--surface-2);background:color-mix(in srgb,var(--c) 15%,transparent)}
+.skt-row.locked .skt-tier{color:var(--label-dim);background:var(--surface-2)}
+.skt-had{display:flex;flex-wrap:wrap;gap:6px}
+.skt-had-chip{background:var(--surface-2);background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--label)}
+
+/* --- tree ------------------------------------------------------------------------------- */
+.skt-tree-bar{margin:0 2px 8px;gap:8px}
+.skt-tree{overflow:auto;margin:0 calc(-1 * var(--pad));border-block:var(--hair) solid var(--sep);
+  max-height:min(70vh,760px);overscroll-behavior:contain;
+  background-color:var(--bg);background-image:radial-gradient(var(--surface-2) 1px,transparent 1px);background-image:radial-gradient(color-mix(in srgb,var(--label) 9%,transparent) 1px,transparent 1px);background-size:24px 24px}
+.skt-seg{position:absolute;border-radius:2px;background:var(--surface-2)}
+.skt-seg.done{background:var(--green);box-shadow:0 0 6px var(--green);box-shadow:0 0 6px color-mix(in srgb,var(--green) 50%,transparent)}
+.skt-seg.open{background:var(--c);box-shadow:0 0 10px var(--c)}
+.skt-hub{position:absolute;width:100px;display:flex;flex-direction:column-reverse;align-items:center;gap:4px;z-index:2;
+  font-size:var(--fs-caption2);font-weight:700;text-align:center}
+.skt-hub-c{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:var(--fs-subhead);font-weight:800;color:#000;background:var(--c);
+  box-shadow:0 0 24px var(--c);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 25%,transparent),0 0 24px color-mix(in srgb,var(--c) 60%,transparent)}
+.skt-node{position:absolute;width:74px;border:0;background:transparent;padding:0;cursor:pointer;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--label)}
+.skt-node-c{width:38px;height:38px;box-sizing:border-box;border-radius:50%;position:relative;
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-caption);font-weight:800}
+.skt-node.skill.done .skt-node-c{background:var(--bg);background:color-mix(in srgb,var(--green) 22%,var(--bg));border:2px solid var(--green);color:var(--green)}
+.skt-node.skill.open .skt-node-c{background:var(--surface);border:2px solid var(--c);color:var(--c);
+  box-shadow:0 0 18px var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 20%,transparent),0 0 18px color-mix(in srgb,var(--c) 60%,transparent);
+  animation:skt-pulse 2.4s ease-in-out infinite}
+.skt-node.skill.locked .skt-node-c{background:var(--bg-el);border:1.5px solid var(--surface-2);color:var(--label-3)}
+.skt-node.done:not(.skill) .skt-node-c{background:var(--green);color:#000;box-shadow:0 0 12px var(--green);box-shadow:0 0 12px color-mix(in srgb,var(--green) 40%,transparent)}
+.skt-node.more .skt-node-c{background:var(--bg-el);border:1.5px dashed var(--surface-3);color:var(--label-2)}
+.skt-node-img{position:absolute;inset:2px;border-radius:50%;overflow:hidden;display:flex}
+.skt-node-img .thumb{width:100%;height:100%;border-radius:50%}
+.skt-node.locked .skt-node-img{filter:grayscale(1);opacity:.45}
+.skt-badge{position:absolute;top:-5px;right:-9px;min-width:17px;height:14px;padding:0 3px;box-sizing:border-box;border-radius:7px;
+  font-size:8px;font-weight:800;line-height:14px;text-align:center;color:#000;background:var(--c);z-index:1}
+.skt-node.locked .skt-badge{background:var(--surface-3)}
+.skt-node-name{font-size:10px;line-height:1.15;font-weight:600;text-align:center;max-width:74px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.skt-node.skill.locked .skt-node-name{color:var(--label-dim)}
+.skt-node:not(.skill) .skt-node-name{color:var(--label-2)}
+@keyframes skt-pulse{50%{opacity:.6}}
+
+/* --- the sheet -------------------------------------------------------------------------- */
+.skt-sheet{display:flex;flex-direction:column;gap:12px}
+.skt-sheet-nav{justify-content:space-between}
+.skt-sheet-ex{display:flex;align-items:center;gap:12px;padding:8px;border-radius:var(--r);border:0;cursor:pointer;
+  background:var(--surface-2);color:var(--label);text-align:start}
+.skt-sheet-ex .thumb{width:64px;height:64px}
+.skt-sheet-ex>span{flex:1}
+.skt-sheet-name{margin:0}
+.skt-sheet-state{font-weight:600;color:var(--label-2)}
+.skt-sheet-state.done{color:var(--green)}
+.skt-sheet-state.open{color:var(--c)}
+.skt-facts{display:flex;flex-direction:column;gap:10px;margin:0}
+.skt-facts .row>span:last-child{text-align:end}
+.skt-demo{text-decoration:none;justify-content:center}
+
+.skt-hub-c>span{display:contents}
+
+/* --- the summary's tree: grown up out of its seed --------------------------------------- */
+.skt-grow-title{flex:1;text-align:center;font-weight:700}
+/* The seed stays in sight above the tab bar: the box fits what is left of the screen. */
+.skt-tree.up{height:max(300px,calc(100vh - 340px));height:max(300px,calc(100dvh - 340px));max-height:none;display:flex;flex-direction:column}
+.skt-tree.up>div{flex:none;margin-top:auto}  /* a short tree still grows from the bottom */
+.skt-tree.up .skt-hub{flex-direction:column}
+.skt-tree.up .skt-hub-c{width:64px;height:64px;color:var(--label);background:var(--surface-2);background:conic-gradient(var(--c) var(--p),var(--surface-2) 0)}
+.skt-tree.up .skt-hub-c>span{display:flex;width:54px;height:54px;border-radius:50%;background:var(--bg-el);align-items:center;justify-content:center}
+.skt-tree.up .skt-node-name{background:var(--bg);border-radius:4px;padding:0 3px}
+.skt-tree.growing .skt-node,.skt-tree.growing .skt-seg{animation:skt-grow .4s var(--ease) var(--d) backwards}
+.skt-tree.growing .skt-seg.v{transform-origin:bottom;animation-name:skt-grow-v}
+.skt-tree.growing .skt-seg.hz{animation-name:skt-grow-h}
+@keyframes skt-grow{from{opacity:0;transform:scale(.4)}}
+@keyframes skt-grow-v{from{transform:scaleY(0)}}
+@keyframes skt-grow-h{from{transform:scaleX(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .skt-bubble,.skt-panel,.skt-node.skill.open .skt-node-c,.skt-tree.growing .skt-node,.skt-tree.growing .skt-seg{animation:none}
+}
