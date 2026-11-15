@@ -162,14 +162,22 @@ export function moveIds(ids, name, held = true, drop = false) {
     s.routines = [...s.routines.filter(r => !ids.includes(r.id)), ...s.routines.filter(r => ids.includes(r.id))]
     return { undo: s2 => {
       let did = false
+      const back = []
       for (const [id, folder] of was) {
         const r = s2.routines.find(x => x.id === id)
         if (!r || !same(folderOf(r), to)) continue   // moved on since: its newer place stands
         if (folder) r.folder = folder; else delete r.folder
-        did = true
+        did = true; back.push(id)
       }
-      const at = id => { const i = order.indexOf(id); return i < 0 ? order.length : i }
-      if (did) s2.routines = s2.routines.map((r, i) => [r, i]).sort((a, b) => at(a[0].id) - at(b[0].id) || a[1] - b[1]).map(x => x[0])
+      if (did) {
+        // Only the routines that went back are placed again (each before the next one of the old order that is still there); a newer order of the others stands.
+        const rest = s2.routines.filter(r => !back.includes(r.id))
+        for (const r of back.map(id => s2.routines.find(x => x.id === id)).sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))) {
+          const next = order.slice(order.indexOf(r.id) + 1).map(id => rest.findIndex(x => x.id === id)).find(i => i >= 0)
+          rest.splice(next ?? rest.length, 0, r)
+        }
+        s2.routines = rest
+      }
       return did
     } }
   }, drop ? { hold, leave: false } : { hold, tick: name ? { key: 'f' + name, at: hold + 100 } : undefined })

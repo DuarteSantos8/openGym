@@ -17,7 +17,7 @@ vi.mock('../sheets.jsx', async orig => ({
   confirmSheet: o => { shown.confirm = o },
 }))
 
-import { routineMenu, folderMenu, moveSheet, archiveRoutineWithUndo } from './RoutineMenus.jsx'
+import { routineMenu, folderMenu, moveSheet, moveIds, archiveRoutineWithUndo } from './RoutineMenus.jsx'
 import { folderNameSheet } from './RoutineFolder.jsx'
 
 const S = () => useStore.getState().S
@@ -173,6 +173,15 @@ describe('move to folder', () => {
     const list = shown.menu.sections[0].items
     expect(list[1].sub).toBe('Here now')
     expect(list.find(i => i.label === 'No folder').sub).toBe('Takes it out of its folder')
+  })
+
+  it('Undo puts back only the moved routine: a newer order of the others stands', () => {
+    moveIds(['a'], 'Travel', false)
+    expect(S().routines.map(r => r.id)).toEqual(['b', 'c', 'd', 'a'])
+    useStore.getState().update(s => { s.routines = ['c', 'b', 'd', 'a'].map(id => s.routines.find(r => r.id === id)) })
+    undo()
+    expect(S().routines.find(r => r.id === 'a').folder).toBe('Block 3')
+    expect(S().routines.map(r => r.id)).toEqual(['c', 'a', 'b', 'd'])
   })
 
   it('No folder makes it loose', () => {
