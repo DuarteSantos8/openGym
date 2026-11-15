@@ -33,6 +33,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4",
+    "three": "0.178.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
