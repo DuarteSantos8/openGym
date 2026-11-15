@@ -47,6 +47,7 @@ function Screens({ skip = [] }) {
     {ANCHORS.filter(a => !skip.includes(a)).map(a => <button key={a} data-tour={a} aria-label={'the ' + a}
       onClick={() => { tapped = a; if (TABS[a]) nav(TABS[a], { replace: true }) }}>{a}</button>)}
     {where === '/plan' && <button data-tour="plan-new" onClick={newRoutine}>new routine</button>}
+    {where === '/plan' && <button data-tour="open-mine" onClick={() => nav('/plan/r/mine')}>open mine</button>}
     {where === '/library' && <button data-tour="lib-new" onClick={() => useUI.getState().openSheet(() => <ExForm />)}>create</button>}
     {r && <>
       <input data-tour="routine-name" aria-label="Routine name" />
@@ -420,6 +421,19 @@ describe('Build your first plan', () => {
     await click(anchor('tab-plan'))
     expect(step()).toBe('p-new')
     expect(btn('Next')).toBeUndefined()
+    await click(anchor('plan-new'))
+    expect(step()).toBe('p-name')
+    expect(where).toBe('/plan/r/r1')
+  })
+  it('opening a routine that already exists does not count as making one: back to Plan, still on New routine', async () => {
+    useStore.getState().update(s => { s.routines = [{ id: 'mine', name: 'Mine', ex: [] }] }, false)
+    await run(null, 'plan')
+    await click(btn('Next'))
+    await click(anchor('tab-plan'))
+    expect(step()).toBe('p-new')
+    await click(anchor('open-mine'))
+    expect(step()).toBe('p-new')
+    expect(where).toBe('/plan')
     await click(anchor('plan-new'))
     expect(step()).toBe('p-name')
     expect(where).toBe('/plan/r/r1')
