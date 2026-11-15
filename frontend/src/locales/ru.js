@@ -5902,17 +5902,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "Прогрессия, загрузка блинов, типы подходов и единицы в настройках упражнения.",
   "In an exercise’s details": "В деталях упражнения",
   "Your level on a main lift, beside its records.": "Ваш уровень в основном упражнении, рядом с его рекордами.",
   "Strength levels in Stats": "Уровни силы в Статистике",
   "Every main lift with its level, in one card.": "Каждое основное упражнение с его уровнем, в одной карточке.",
-  "The rule that moves the weight or the reps up.": "Правило, которое повышает вес или повторения.",
-  "The bar, the plates and the weight stack of an exercise.": "Гриф, блины и стек грузов упражнения.",
-  "Drop-sets, rest-pause and pyramids": "Дроп-сеты, рест-пауза и пирамиды",
-  "Sets that change shape, and the last set to failure.": "Подходы, которые меняют форму, и последний подход до отказа.",
-  "Weight unit and dumbbells": "Единица веса и гантели",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "Собственные кг или lb упражнения и что означает вес гантели.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Карточка на Главной, взвешивание перед тренировкой, ваша цель и график веса.",
   "Circumferences and your own fields.": "Обхваты и ваши собственные поля.",
   "Photos of you over time, side by side.": "Ваши фото со временем, рядом друг с другом.",

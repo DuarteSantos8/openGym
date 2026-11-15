@@ -5864,17 +5864,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "Progrese, nakládání kotoučů, typy sérií a jednotky v nastavení cviku.",
   "In an exercise’s details": "V detailu cviku",
   "Your level on a main lift, beside its records.": "Tvoje úroveň v hlavním cviku, vedle jeho rekordů.",
   "Strength levels in Stats": "Úrovně síly ve Statistikách",
   "Every main lift with its level, in one card.": "Každý hlavní cvik s jeho úrovní, na jedné kartě.",
-  "The rule that moves the weight or the reps up.": "Pravidlo, které zvyšuje váhu nebo opakování.",
-  "The bar, the plates and the weight stack of an exercise.": "Osa, kotouče a blok závaží cviku.",
-  "Drop-sets, rest-pause and pyramids": "Dropsety, rest-pause a pyramidy",
-  "Sets that change shape, and the last set to failure.": "Série, které mění tvar, a poslední série do selhání.",
-  "Weight unit and dumbbells": "Jednotka váhy a jednoručky",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "Vlastní kg nebo lb cviku a co znamená váha jednoručky.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Karta na Domů, vážení před tréninkem, tvůj cíl a graf váhy.",
   "Circumferences and your own fields.": "Obvody a tvoje vlastní pole.",
   "Photos of you over time, side by side.": "Tvoje fotky v čase, vedle sebe.",

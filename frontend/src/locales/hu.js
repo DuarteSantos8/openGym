@@ -5901,17 +5901,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "Progresszió, tárcsák felhelyezése, sorozattípusok és mértékegységek egy gyakorlat beállításaiban.",
   "In an exercise’s details": "Egy gyakorlat részleteiben",
   "Your level on a main lift, beside its records.": "A szinted egy fő gyakorlatban, a rekordjai mellett.",
   "Strength levels in Stats": "Erőszintek a Statisztikában",
   "Every main lift with its level, in one card.": "Minden fő gyakorlat a szintjével, egy kártyán.",
-  "The rule that moves the weight or the reps up.": "A szabály, amely emeli a súlyt vagy az ismétléseket.",
-  "The bar, the plates and the weight stack of an exercise.": "Egy gyakorlat rúdja, tárcsái és súlyoszlopa.",
-  "Drop-sets, rest-pause and pyramids": "Dropszettek, rest-pause és piramisok",
-  "Sets that change shape, and the last set to failure.": "Alakot váltó sorozatok, és az utolsó sorozat bukásig.",
-  "Weight unit and dumbbells": "Súlymértékegység és kézisúlyzók",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "Egy gyakorlat saját kg vagy lb egysége, és mit jelent egy kézisúlyzó súlya.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "A kártya a Kezdőlapon, a mérlegelés edzés előtt, a célod és a súlygörbe.",
   "Circumferences and your own fields.": "Körméretek és a saját mezőid.",
   "Photos of you over time, side by side.": "Fotók rólad az idő során, egymás mellett.",

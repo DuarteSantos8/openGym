@@ -5863,17 +5863,10 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
   // --- Modules: a switch for each part of a module (#1087) ---
-  "Progression, plate loading, set types and units in an exercise’s settings.": "Progresi, beban plat, jenis set, dan satuan di pengaturan latihan.",
   "In an exercise’s details": "Di detail latihan",
   "Your level on a main lift, beside its records.": "Levelmu di gerakan utama, di samping rekornya.",
   "Strength levels in Stats": "Level kekuatan di Statistik",
   "Every main lift with its level, in one card.": "Setiap gerakan utama dengan levelnya, dalam satu kartu.",
-  "The rule that moves the weight or the reps up.": "Aturan yang menaikkan beban atau repetisi.",
-  "The bar, the plates and the weight stack of an exercise.": "Barbel, plat, dan tumpukan beban sebuah latihan.",
-  "Drop-sets, rest-pause and pyramids": "Drop-set, rest-pause, dan piramida",
-  "Sets that change shape, and the last set to failure.": "Set yang berubah bentuk, dan set terakhir hingga tak kuat lagi.",
-  "Weight unit and dumbbells": "Satuan berat dan dumbel",
-  "An exercise’s own kg or lb, and what a dumbbell weight means.": "kg atau lb milik latihan itu sendiri, dan arti berat dumbel.",
   "The Home card, the weigh-in before a workout, your goal and the weight chart.": "Kartu di Beranda, timbang sebelum latihan, targetmu, dan grafik berat.",
   "Circumferences and your own fields.": "Lingkar tubuh dan kolommu sendiri.",
   "Photos of you over time, side by side.": "Foto dirimu dari waktu ke waktu, berdampingan.",
