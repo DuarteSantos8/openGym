@@ -4090,7 +4090,7 @@ export function repeatWorkout(w, close) {
     autoGymHere()
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
   }
-  if (st.weighIn === false) { go(null); return }
+  if (st.weighIn === false || !partOn(st, 'body', 'weight')) { go(null); return }
   if (close) close()
   bwSheet({ required: true, onDone: go })
 }
