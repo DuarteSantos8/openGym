@@ -161,7 +161,7 @@ function TrainingInsights({ S, workouts, unit }) {
 const ROADS = [
   { name: 'NutriTrace food library', status: 'Server opt-in', detail: 'Log from your own NutriTrace foods once the server admin adds nutritrace to INTEGRATIONS. Sending workouts to NutriTrace waits on measured calories.' },
   { name: 'Recipes and meal plans', status: 'Not connected', detail: 'Mealie can be connected as a separate recipe service.' },
-  { name: 'Advanced progression', status: 'Research', detail: 'Liftosaur rules require an isolated evaluator and verified program behavior.' },
+  { name: 'Advanced progression', status: 'Simulation', detail: 'Liftosaur-style rules run in an isolated evaluator and are compared with openGym above; applying one to a routine comes later.' },
   { name: 'Endurance activities', status: 'Not connected', detail: 'FitTrackee is optional once activity previews prove useful.' },
   { name: 'Camera / sensor coaching', status: 'Hardware validation needed', detail: 'MediaPipe and Bluetooth device support require permission, calibration, and physical testing.' },
   { name: '3D anatomy explorer', status: 'Lab preview', detail: 'The 3D muscle map above uses a simplified Z-Anatomy model (CC BY-SA 4.0) and the same levels as the 2D map.' },
@@ -208,6 +208,7 @@ export default function Addons() {
       <AnatomyViewer />
       <FoodLookup enabled={signedIn && config?.addons?.nutrition === true} day={day} />
       {signedIn && config?.integrations?.providers?.includes('nutritrace') && <NutriTraceCard day={day} />}
+      <ProgressionLab unit={S?.unit || 'kg'} />
       <ActivityPreview />
       <Roadmap />
     </div>

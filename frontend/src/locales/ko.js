@@ -5967,4 +5967,6 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Nutrition totals": "영양 합계",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "최근 2주간 식단 일지의 하루 에너지, 단백질, 탄수화물, 지방 합계입니다. 음식 이름은 절대 보내지 않습니다. 직접 켜기 전까지 꺼져 있습니다.",
 }

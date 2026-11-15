@@ -221,6 +221,49 @@ export function healthOf(S, now, vitals) {
   return Object.keys(out).length ? out : null;
 }
 
+export const MAX_NUTRITION_DAYS = 14;
+const NUTRIENTS = ['kcal', 'proteinG', 'carbohydrateG', 'fatG'];
+// Per 100 g or ml no food holds more of a macro than 100 g, nor more energy than pure fat
+// (frontend lib/nutrition-diary.js LIMIT). A value past that is unknown, not added.
+const PER100_MAX = { kcal: 900, proteinG: 100, carbohydrateG: 100, fatG: 100 };
+const AMOUNT_MAX = 5000;
+const realDay = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d + 'T00:00:00Z')) &&
+  new Date(d + 'T00:00:00Z').toISOString().slice(0, 10) === d;
+
+/**
+ * What the person ate, only when they switched `nutrition` on (core/categories.js): the food
+ * diary (S.foodLog, frontend lib/nutrition-diary.js) as one row per day for the last two weeks,
+ * { d, kcal, proteinG, carbohydrateG, fatG, entries, unknown? }. Aggregates only: food names,
+ * brands and sources are free text, typed or fetched from Open Food Facts, and the easiest way to
+ * smuggle instructions into a prompt, so none of them leaves. `unknown` counts entries with at
+ * least one nutrient the label did not give; those nutrients are left out of the sum.
+ */
+export function nutritionOf(S, now) {
+  const t = Number.isFinite(now) ? now : Date.now();
+  const from = iso(t - (MAX_NUTRITION_DAYS - 1) * DAY), to = iso(t);
+  const days = new Map();
+  for (const e of Object.values(isMap(S?.foodLog) ? S.foodLog : {})) {
+    if (!isMap(e) || !realDay(e.d) || e.d < from || e.d > to || !isMap(e.per100)) continue;
+    const amount = typeof e.amount === 'number' ? e.amount : Number(e.amount);
+    if (!Number.isFinite(amount) || !(amount > 0) || amount > AMOUNT_MAX) continue;
+    const row = days.get(e.d) || { d: e.d, kcal: 0, proteinG: 0, carbohydrateG: 0, fatG: 0, entries: 0, unknown: 0 };
+    let gap = false;
+    for (const k of NUTRIENTS) {
+      const raw = e.per100[k];
+      const v = raw == null || raw === '' ? NaN : fin(raw);
+      if (!Number.isFinite(v) || v < 0 || v > PER100_MAX[k]) { gap = true; continue; }
+      row[k] += v * amount / 100;
+    }
+    row.entries++;
+    if (gap) row.unknown++;
+    days.set(e.d, row);
+  }
+  const out = [...days.values()].sort((a, b) => (a.d < b.d ? -1 : 1)).slice(-MAX_NUTRITION_DAYS)
+    .map(({ unknown, ...r }) => ({ ...r, kcal: Math.round(r.kcal), proteinG: r1(r.proteinG),
+      carbohydrateG: r1(r.carbohydrateG), fatG: r1(r.fatG), ...(unknown ? { unknown } : {}) }));
+  return out.length ? out : null;
+}
+
 /** The phone's vitals summary (frontend lib/vitals.js vitalsSummary), bounded field by field. */
 export function cleanVitals(v) {
   if (!isMap(v)) return null;

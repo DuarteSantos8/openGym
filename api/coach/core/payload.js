@@ -12,7 +12,7 @@
  */
 import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
-import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, rotationOf } from './context.js';
+import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, nutritionOf, rotationOf } from './context.js';
 import { shareOf } from './categories.js';
 import { asksForBodyweight, cleanHits } from './routine-library.js';
 
@@ -657,6 +657,7 @@ export function build(S, opts = {}) {
     if (share.records) { const r = recordsOf(S, now); if (r.length) p.records = r; }
     if (share.measurements) { const m = measurementsOf(S, now); if (m.length) p.measurements = m; }
     if (share.health) { const h = healthOf(S, now, opts.vitals); if (h) p.health = h; }
+    if (share.nutrition) { const n = nutritionOf(S, now); if (n) p.nutrition = n; }
     const rot = rotationOf(S);
     if (rot) p.rotation = rot;
   }
