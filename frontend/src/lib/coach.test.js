@@ -348,6 +348,13 @@ describe('applying changes', () => {
     expect(changeValues({ type: 'week', target: { weekday: 3 }, before: null, after: 'r2' }, S).before).toBe('Rest')
   })
 
+  it('changeValues never shows raw JSON for superset or cardio changes', () => {
+    const S = state()
+    expect(changeValues({ type: 'superset', target: { exId: '0001' }, before: null, after: { link: true, with: '0009' } }, S)).toBeNull()
+    expect(changeValues({ type: 'cardio', target: { exId: '0001' }, before: { min: 20, speed: 8 }, after: { min: 25 } }, S))
+      .toEqual({ before: '20 min @ 8 km/h', after: '25 min' })
+  })
+
   it('never touches history, weigh-ins or settings', () => {
     const S = state({
       workouts: [{ id: 'w1', d: '2026-07-20', entries: [] }],
