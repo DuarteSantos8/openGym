@@ -19,13 +19,13 @@ const titleOf = r => (r.kind === 'month' ? t('Your month') : t('Your week'))
 const datesOf = r => fmtDateRange(r.from, r.to, true)
 
 /** The four headline tiles, translated, for the sheet and the picture. */
-function tilesOf(r, unit) {
+function tilesOf(r, unit, streakOn = true) {
   return [
     { label: tn('workout', 'workouts', r.workouts), value: fmtNum(r.workouts) },
     { label: t('Volume'), value: fmtVol(r.volume, unit) },
     { label: tn('new best', 'new bests', r.prs), value: fmtNum(r.prs) },
-    { label: tn('week in a row', 'weeks in a row', r.streak), value: fmtNum(r.streak) },
-  ]
+    streakOn && { label: tn('week in a row', 'weeks in a row', r.streak), value: fmtNum(r.streak) },
+  ].filter(Boolean)
 }
 const topOf = r => (r.top ? t('Most work: {0}, {1} sets', t(r.top.name), fmtNum(r.top.sets)) : null)
 
@@ -52,7 +52,7 @@ function RecapSheet({ period, close }) {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const r = recapOf(S, period)
-  const tiles = tilesOf(r, S.unit)
+  const tiles = tilesOf(r, S.unit, partOn(S, 'motivation', 'streak'))
   const words = { title: titleOf(r), dates: datesOf(r), tiles, top: topOf(r) }
   const shareImage = () => useUI.getState().openSheet(c => <ShareCardSheet title={titleOf(r)} close={c} toast={m => useUI.getState().toast(m)}
     name={`opengym-${r.kind}-${r.from}.png`} shareTitle={titleOf(r)} render={pref => recapCardImage(words, pref)} />)
