@@ -145,9 +145,13 @@ function namedRungs(msg) {
   if (/temperature/i.test(msg)) return ['temperature'];
   // A server that has never heard of the thinking level, or a model that does not reason, names
   // the field it refuses (#1240). Matching on the field names rather than on the word "effort"
-  // keeps a complaint about something else from being answered by giving up the level. Gemini
-  // 2.5 refuses `thinkingLevel` because it wants `thinkingBudget`; that lands here too.
-  if (/reasoning_effort|thinking[_ ]?level|thinkingconfig|thinkingbudget|output_config|reasoning\.effort/i.test(msg)) return ['effort'];
+  // keeps a complaint about something else from being answered by giving up the level. The
+  // separators are optional because the same field is spelled three ways in the wild: a request
+  // body in camelCase (`thinkingConfig`, `outputConfig`) and an error path in snake_case
+  // (`generation_config.thinking_config`, as gemini.js's own comments show), plus OpenAI's
+  // `reasoning_effort` and OpenRouter's nested `reasoning.effort`. Gemini 2.5 refuses the level
+  // because it wants `thinkingBudget`; that lands here too.
+  if (/reasoning[\s_.]*effort|thinking[\s_.]*(?:level|config|budget)|output[\s_.]*config/i.test(msg)) return ['effort'];
   // MiniMax refuses a union type in the schema with "invalid params, Mismatch type string with
   // value array" and never says "schema" (#928).
   if (/response_format|json_schema|json_object|json mode|structured|\bschema\b|mismatch(?:ed)? type/i.test(msg)) return ['json_object', 'plain'];
@@ -378,25 +382,30 @@ export function httpAdapter(spec) {
       let triedOtherModel = false;
       let transientRetries = 0;
       let firstRefusal = null;
-      // Every request shape sent in this call, so no rung ever asks the same thing twice.
+      // Every request shape sent in this call, so no rung ever asks the same thing twice. The
+      // model is part of that identity: Gemini names it in the URL rather than the body, so the
+      // same body sent to a refused model is not the same request sent to its replacement, and a
+      // rung that lands on it must still be tried (#1240). For the Chat Completions specs the
+      // model is already in the body, so this changes nothing there.
       const sent = new Set();
+      const sentKey = b => `${chosen} ${JSON.stringify(b)}`;
       // The next rung out of `rungs` that changes the request at all, or null. A 400 that names a
       // token field already swapped (`undo`) swaps it back: a remembered "tokens" step that the
       // first guess of the field (#869) has made the wrong way round.
       const nextRung = (rungs, undo = false) => {
         if (!spec.compat) return null;
-        const now = JSON.stringify(body);
+        const now = sentKey(body);
         for (const r of rungs) {
           if (steps.includes(r) && !(undo && r === 'tokens')) continue;
           const next = steps.includes(r) ? steps.filter(x => x !== r) : cleanSteps([...steps, r]);
           const tried = applySteps(spec, build(), next);
-          const key = JSON.stringify(tried);
+          const key = sentKey(tried);
           if (key !== now && !sent.has(key)) return { steps: next, body: tried };
         }
         return null;
       };
       for (;;) {
-        sent.add(JSON.stringify(body));
+        sent.add(sentKey(body));
         let res;
         const sentAt = Date.now();
         const streaming = useStream;

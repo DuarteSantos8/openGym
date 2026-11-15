@@ -250,6 +250,64 @@ test('a web request that refuses the level still gets an answer', async () => {
   assert.ok(!('reasoning' in calls[1]), 'the level was given up rather than failing the job');
 });
 
+test('a level refused by the replacement model is still given up on, not deduplicated away', async () => {
+  // Gemini names the model in the URL, not in the body. So when a remembered fallback for the
+  // first model makes the opening request look exactly like what the `effort` rung would build
+  // for the replacement, a dedup that keys on the body alone refuses the retry and the job dies
+  // on a model that would have answered. Reproduced with a remembered `effort` profile, which is
+  // what the first job on a 2.5 endpoint leaves behind.
+  const cfg = { provider: 'gemini' };
+  const gone = 'gemini-2.5-pro-dedup';
+  const replacement = 'gemini-3-flash-dedup';
+  const { rememberCompatProfile } = await import('../coach/core/adapters/http.js');
+  rememberCompatProfile('gemini', cfg, gone, ['effort']);
+
+  const calls = [];
+  const f = async (url, init) => {
+    if (init?.method === 'GET') return reply(200, { models: [{ name: `models/${replacement}`, supportedGenerationMethods: ['generateContent'] }] });
+    const body = JSON.parse(init.body);
+    calls.push({ url: url.replace(/^https:\/\/[^/]+/, ''), hasLevel: !!(body.generationConfig || {}).thinkingConfig });
+    if (/gemini-2\.5-pro-dedup/.test(url)) return reply(404, { error: { message: 'models/gemini-2.5-pro-dedup is not found for API version v1beta' } });
+    if (body.generationConfig && body.generationConfig.thinkingConfig) {
+      return reply(400, { error: { message: 'Field `generation_config.thinking_config` is not supported for model `gemini-3-flash-dedup`' } });
+    }
+    return reply(200, { candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] });
+  };
+  const r = await gemini.invoke({ cfg, prompt: 'P', env: { GEMINI_API_KEY: 'k', COACH_EFFORT: 'high' }, model: gone, fetch: f, stream: false });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(calls.map(c => c.hasLevel), [false, true, false],
+    'no level (remembered), then the replacement asked, then asked again without it');
+  assert.ok(calls[1].url.includes(replacement), 'the second request went to the replacement model');
+});
+
+test('a refusal is recognised in whichever spelling the endpoint uses', async () => {
+  // The same field is written three ways: a request body in camelCase, an error path in snake_case
+  // (Gemini reports `generation_config.thinking_config`, the way it reports
+  // `generation_config.response_schema`), and OpenAI's flat reasoning_effort. A spelling the
+  // matcher misses is a job that fails on a refusal the ladder was built to answer.
+  const WORDS = [
+    'Field `generation_config.thinking_config` is not supported for this model',
+    'Unsupported parameter: reasoning_effort',
+    "Unsupported value: 'high' does not support 'reasoning_effort' with this model",
+    'thinkingLevel is not a supported thinking level for this model',
+    'output_config.effort is not supported by this model',
+    'this model takes thinkingBudget, not thinking_config'
+  ];
+  for (const words of WORDS) {
+    const calls = [];
+    const f = async (url, init) => {
+      const body = JSON.parse(init.body);
+      calls.push(body);
+      if ('reasoning_effort' in body || 'output_config' in body || 'reasoning' in body
+        || (body.generationConfig || {}).thinkingConfig) return reply(400, { error: { message: words } });
+      return reply(200, { choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+    };
+    const r = await ask((await import('../coach/core/adapters/compatible.js')).default, at(), f);
+    assert.equal(r.code, 0, `"${words}" was not recognised as a refusal: ${r.stderr}`);
+    assert.equal(calls.length, 2, `"${words}": asked, refused, asked again`);
+  }
+});
+
 test('a cut-off answer says which level was thinking, so the fix is obvious', async () => {
   const f = async () => reply(200, { choices: [{ message: { content: '{"coach_contract":1' }, finish_reason: 'length' }] });
   const r = await ask((await import('../coach/core/adapters/compatible.js')).default, at(), f);
