@@ -33,7 +33,7 @@ function renderWorkout(entries) {
 }
 
 const startHold = () => {
-  const go = container.querySelector('button[aria-label="Start set"]')
+  const go = container.querySelector('button[aria-label*=": Start set"]')
   expect(go).toBeTruthy()
   act(() => go.click())
   expect(useUI.getState().work).not.toBeNull()
@@ -92,7 +92,7 @@ describe('a per-side hold', () => {
     { sec: 10, w: 0, done: false, side: 'L' }, { sec: 10, w: 0, done: false, side: 'R' },
   ] })
   const holdRow = n => {
-    const go = container.querySelectorAll('button[aria-label="Start set"]')[n]
+    const go = container.querySelectorAll('button[aria-label*=": Start set"]')[n]
     act(() => go.click())
     act(() => { vi.advanceTimersByTime(11_000) })
   }

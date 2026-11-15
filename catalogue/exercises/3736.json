@@ -3,12 +3,13 @@
   "name": "kettlebell standing bottoms up one arm shoulder press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "forearms",
     "grip muscles",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm overhead press holding the kettlebell upside down, which demands wrist and shoulder control.",

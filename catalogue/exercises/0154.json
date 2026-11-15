@@ -3,7 +3,7 @@
   "name": "cable cross-over revers fly",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rhomboids",
     "trapezius"
@@ -20,7 +20,7 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "rear-delts"
     ],
     "secondaries": [
       "trapezius",

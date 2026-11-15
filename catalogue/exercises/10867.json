@@ -3,12 +3,13 @@
   "name": "lever incline prone neutral grip row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "rhomboids",
     "biceps",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A chest-supported machine row on an incline with a neutral grip. It builds the mid back without loading the lower back.",

@@ -3,11 +3,12 @@
   "name": "handstand push-up",
   "bodyPart": "upper arms",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "You press your body upward while inverted against a wall. It builds the shoulders and triceps.",

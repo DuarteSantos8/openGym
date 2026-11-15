@@ -3,12 +3,13 @@
   "name": "bottle weighted shoulder press",
   "bodyPart": "shoulders",
   "equipment": "weighted",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "trapezius",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press with a bottle in each hand. It builds shoulders and triceps.",

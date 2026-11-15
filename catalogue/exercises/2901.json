@@ -3,6 +3,7 @@
   "name": "power sled biceps curl",
   "bodyPart": "upper arms",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "biceps",
   "secondaryMuscles": [
     "brachialis",

@@ -1,0 +1,7 @@
+# Shell scripts and container files keep Unix line endings on every checkout, Windows included:
+# a CRLF in a script's #! line makes the container report "not found" at start-up (#1025).
+*.sh text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf
+**/Dockerfile text eol=lf
+frontend/android/gradlew text eol=lf

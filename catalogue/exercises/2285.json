@@ -3,10 +3,11 @@
   "name": "lever pullover",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "lats",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A machine pullover that sweeps the handles toward you. Works the lats with a long range of motion.",

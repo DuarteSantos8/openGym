@@ -11,10 +11,14 @@
 //
 // Only the subset the adapters use is implemented: method, headers, a JSON body, an abort
 // signal, and a response with ok/status/text()/json().
+import { logRequest } from './net-log.js'
+
 export async function nativeFetch(url, init = {}) {
   let cap = null
   try { cap = await import('@capacitor/core') } catch { /* not a Capacitor build */ }
   if (!cap || !cap.Capacitor || !cap.Capacitor.isNativePlatform()) return fetch(url, init)
+  // Past the WebView, so the page's own wrappers never see it: Settings → Network log (lib/net-log.js).
+  logRequest(url, { method: init.method || 'GET', via: 'native' })
 
   const headers = { ...(init.headers || {}) }
   let data = init.body
@@ -48,4 +52,12 @@ function abortOf(signal) {
     if (signal.aborted) return err()
     signal.addEventListener('abort', err, { once: true })
   })
+}
+
+/** Whether this is the Android app, where the WebView and the app's own network stack differ. */
+export async function inAndroidApp() {
+  try {
+    const cap = await import('@capacitor/core')
+    return !!(cap?.Capacitor?.isNativePlatform?.() && cap.Capacitor.getPlatform() === 'android')
+  } catch { return false }
 }

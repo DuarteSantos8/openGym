@@ -9,7 +9,7 @@
 import { best1RM } from './onerm.js'
 import { entriesForExercise, workoutAt } from './history.js'
 import { STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS, STRENGTH_FLOOR, halfLifeDecay } from './recovery.js'
-import { musclesOf } from './muscles.js'
+import { musclesOf, muscleWeightsOf } from './muscles.js'
 import { EXIDX } from './exercises.js'
 import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { exerciseNameFor } from './i18n-core.js'
@@ -43,6 +43,11 @@ function snapshotWeights(entry) {
     ? (entry.muscleWeights || entry.muscleSnapshot?.muscleWeights)
     : null
   if (direct && typeof direct === 'object' && !Array.isArray(direct) && Object.keys(direct).length) {
+    // Read through the muscle model, so a snapshot from before the 1.4.5 split (#638) names the
+    // shoulder heads and the lats like everything else.
+    const model = entry.muscleSnapshot?.muscleWeights === direct ? entry.muscleSnapshot : { mv: entry.mv, muscleWeights: direct }
+    const read = muscleWeightsOf(model)
+    if (Object.keys(read).length) return Object.fromEntries(Object.entries(read).filter(([, w]) => w > 0))
     return Object.fromEntries(Object.entries(direct).filter(([, value]) => {
       const weight = Number(value)
       return Number.isFinite(weight) && weight > 0

@@ -75,6 +75,10 @@ describe('HEVY_ID_MAP', () => {
     '914F3A96': '0327', // Chest Supported Incline Row (Dumbbell)
     '98237BA2': '0826', // Knee Raise Parallel Bars
     '4E5257DE': '6392', // Lat Pulldown - Close Grip (Cable)
+    C315DC2A: '0225', // Rear Delt Reverse Fly (Cable): its artwork is 0225, 0602's a lever machine
+    '3D1CDC75': '2950', // Belt Squat (Machine): its artwork, an exercise added to the catalogue after the map
+    E3EDA509: '0715', // Side Plank: its artwork, not the hip adduction its title matched
+    CC35A01F: '1875', // Squat (Machine): a plate-loaded lever squat, as its artwork, not the barbell squat
     FFDA283B: '0381', // Reverse Lunge (Dumbbell)
     '8BAB2735': '0318', // Seated Incline Curl (Dumbbell)
     '9237BAD1': '1454', // Seated Shoulder Press (Machine): its artwork is 1454, 0603's a landmine press
@@ -89,13 +93,8 @@ describe('HEVY_ID_MAP', () => {
     })
   }
 
-  it('leaves the never-by-title lifts out of the id map as well', () => {
-    // Side Plank, Squat (Machine), Rear Delt Reverse Fly (Cable)
-    for (const id of ['E3EDA509', 'CC35A01F', 'C315DC2A']) expect(HEVY_ID_MAP[id]).toBeUndefined()
-  })
-
   it('leaves catalogue gaps unmapped (import as custom)', () => {
-    for (const id of ['68CE0B9B', '0222DB42', 'D1CD146F']) {
+    for (const id of ['E23F1F2B', '6D54A050', '911A58D3']) {
       expect(HEVY_ID_MAP[id]).toBeUndefined()
       expect(matchHevyTemplate({ id, title: 'whatever' })).toBeNull()
     }
@@ -293,6 +292,15 @@ describe('parseHevyRoutines', () => {
     expect(row.id).toBe('0327')
     expect(pull.sg).toBeTruthy()
     expect(pull.sg).toBe(row.sg)
+  })
+
+  // D#876: a long Hevy note (form cues, a whole warm-up) came over cut at 280 characters.
+  it('keeps a long exercise note whole', () => {
+    const long = 'Keep the elbows tucked and squeeze at the top. '.repeat(20).trim()
+    expect(long.length).toBeGreaterThan(900)
+    const routine = { ...ROUTINE, exercises: ROUTINE.exercises.map((e, i) => (i === 1 ? { ...e, notes: long } : e)) }
+    const parsed = parseHevyRoutines([routine], TEMPLATES, { unit: 'kg' })
+    expect(parsed.routines[0].ex[1].note).toBe(long)
   })
 
   it('mergeHevyRoutines replaces a routine it imported before instead of duplicating it', () => {

@@ -1,0 +1,20 @@
+{
+  "title": "Hotel room",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 30,
+  "tags": [
+    "travel",
+    "no equipment"
+  ],
+  "description": "One session for a hotel room between the bed and the desk. Quiet enough that the neighbours never find out.",
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "builtin": "hotel"
+}

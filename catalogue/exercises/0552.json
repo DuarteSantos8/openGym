@@ -3,7 +3,7 @@
   "name": "kettlebell two arm clean",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "traps",
     "forearms"
@@ -28,7 +28,7 @@
     "secondaries": [
       "calves",
       "forearm",
-      "deltoids",
+      "front-delts",
       "lower-back",
       "abs",
       "obliques"

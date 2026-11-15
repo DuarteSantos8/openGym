@@ -82,10 +82,50 @@ server {
         proxy_send_timeout 300s;
     }
 
+    # MCP over HTTPS (docs/MCP_REMOTE.md): the optional mcp container. Same per-request resolve
+    # as /api, so a stack without it starts and runs as before; then /mcp answers with a JSON
+    # 503 saying so (an MCP client shows that, where nginx's HTML 502 page would read as junk).
+    # Only POST is forwarded with a body; the endpoint is stateless and answers JSON, so nothing
+    # streams and buffering stays on. The token travels in the Authorization header, untouched.
+    location = ${BASE_PATH}/mcp {
+        client_max_body_size 1m;
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $mcp_upstream http://${MCP_BACKEND}:${MCP_PORT};
+        proxy_pass $mcp_upstream/mcp;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        # nginx's own 502/504 (nothing listening, a name that does not resolve); answers the mcp
+        # container itself sends pass through as they are (no proxy_intercept_errors).
+        error_page 502 504 = @mcp_off;
+    }
+    # The MCP connector's OAuth discovery (api/oauth.js): Claude and ChatGPT look for these at the
+    # host's root, under BASE_PATH also with the prefix inserted after the document's name
+    # (/.well-known/oauth-authorization-server/gym) or below the prefix (/gym/.well-known/...,
+    # which the map takes the prefix off). Only these documents, proxied to the api, which answers
+    # 404 unless MCP=on.
+    location ~ ^(\Q${BASE_PATH}\E)?/\.well-known/(oauth-authorization-server|oauth-protected-resource|openid-configuration)(\Q${BASE_PATH}\E)?(/mcp)?$ {
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $api_upstream http://${BACKEND}:${PORT};
+        proxy_pass $api_upstream$api_request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location @mcp_off {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        return 503 '{"jsonrpc":"2.0","error":{"code":-32000,"message":"MCP is not running on this openGym server (docs/MCP_REMOTE.md)"},"id":null}';
+    }
+
     # Photos and videos of custom exercises (PUT and GET under api/media/). Nginx picks the
     # longest matching prefix, so this block takes those requests from the one above wherever it
     # sits. Same upstream, resolver and headers; what differs is the body. A video may be tens of
-    # MB, so the cap is MEDIA_UPLOAD_MAX (48m by default; keep it above MEDIA_VIDEO_MAX_MB)
+    # MB, so the cap is MEDIA_UPLOAD_MAX (112m by default; keep it above MEDIA_VIDEO_MAX_MB)
     # instead of 5m. The upload is passed to the API as it arrives rather than spooled to a temp
     # file here first: the API checks size, hash and type while it streams and answers a refusal
     # before the rest is sent, and spooling would double the disk writes and hide the progress.

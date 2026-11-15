@@ -110,6 +110,15 @@ describe('StructuralBalance view', () => {
     expect(host.querySelector('[data-role-id="narrowBench"] [data-exercise-name]').textContent).toBe('barbell close-grip bench press')
   })
 
+  it('every lift\'s Change exercise says which lift it is for (P4)', () => {
+    const host = render()
+    const btns = [...host.querySelectorAll('[data-role-id] button')].filter(b => b.textContent.includes('Change exercise'))
+    expect(btns.length).toBeGreaterThan(3)
+    const names = btns.map(b => b.getAttribute('aria-label'))
+    expect(new Set(names).size).toBe(names.length)
+    expect(names.every(n => /\S: Change exercise$/.test(n))).toBe(true)
+  })
+
   it('picking a role\'s own default exercise does not mark it custom', () => {
     const host = render()
     const row = host.querySelector('[data-role-id="inclineBench"]')

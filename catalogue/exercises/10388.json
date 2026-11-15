@@ -3,12 +3,13 @@
   "name": "weighted sandbag military press",
   "bodyPart": "shoulders",
   "equipment": "sandbag",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "core",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing overhead press using a sandbag, which shifts as you push, so your shoulders and core must stay tight.",

@@ -3,6 +3,7 @@
   "name": "lever hip thrust",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hip-thrust",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

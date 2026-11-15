@@ -3,10 +3,12 @@
   "name": "lever one arm shoulder press",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "shoulder-press",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated on a machine, you press one handle overhead at a time. Trains each shoulder separately with help from the triceps.",
@@ -19,13 +21,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

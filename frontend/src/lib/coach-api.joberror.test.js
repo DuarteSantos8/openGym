@@ -21,7 +21,7 @@ vi.mock('./coach-local.js', () => ({ setNotifier: vi.fn() }))
 vi.mock('../store/useStore.js', () => ({ useStore: { getState: () => ({ S: { unit: 'kg' }, coachLocal: mocks.coachLocal }) } }))
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: mocks.toast }) } }))
 
-const { jobErrorText, JOB_ERRORS } = await import('./coach-api.js')
+const { jobErrorText, JOB_ERRORS, BYOK_ERRORS } = await import('./coach-api.js')
 
 beforeEach(() => { mocks.MOBILE = false; mocks.coachLocal = null })
 
@@ -40,5 +40,29 @@ describe('jobErrorText for a job refused at start for safety', () => {
     const atEnqueue = routes.match(/^\s*unprivileged: '([^']+)'/m)?.[1]
     expect(atEnqueue).toBeTruthy()
     expect(JOB_ERRORS.unprivileged.toLowerCase()).toBe(atEnqueue.toLowerCase() + '.')
+  })
+})
+
+describe('jobErrorText for the provider causes the server sorts out (api/coach/core/failure.js)', () => {
+  it('has a translated line of its own for each cause, not the generic one', () => {
+    for (const cls of ['quota', 'schema', 'outage', 'unreachable']) {
+      expect(jobErrorText(cls)).toBe(JOB_ERRORS[cls])
+      expect(jobErrorText(cls)).not.toBe(JOB_ERRORS.provider)
+    }
+  })
+
+  it('falls back on the server’s own words only for a class this build has never heard of', () => {
+    expect(jobErrorText('quota', null, 'server words')).toBe(JOB_ERRORS.quota)
+    expect(jobErrorText('brand-new', null, 'server words')).toBe('server words')
+    expect(jobErrorText('brand-new')).toBe(JOB_ERRORS.internal)
+  })
+
+  it('on a phone with its own key, every provider cause reads as the provider line with its words', () => {
+    mocks.coachLocal = { mode: 'byok' }
+    mocks.MOBILE = true
+    for (const cls of ['quota', 'schema', 'outage', 'unreachable']) {
+      expect(jobErrorText(cls, '503 overloaded')).toBe(`${BYOK_ERRORS.provider}\n503 overloaded`)
+    }
+    expect(jobErrorText('timeout')).toBe(JOB_ERRORS.timeout)
   })
 })

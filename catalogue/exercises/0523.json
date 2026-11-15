@@ -3,10 +3,11 @@
   "name": "kettlebell arnold press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "You press kettlebells overhead while rotating your palms. It trains all three parts of the shoulder.",

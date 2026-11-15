@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds of the sideload flavour only: the e2e rig's way in (WatchRigReceiver), so a script
+     can carry Data Layer items between a phone emulator and a watch emulator, which cannot be
+     paired without a Google account. Never in a release build. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <receiver
+            android:name=".WatchRigReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="ch.duartesantos.opengym.WATCH_RIG" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

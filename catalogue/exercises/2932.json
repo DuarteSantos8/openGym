@@ -3,12 +3,13 @@
   "name": "kettlebell kneeling one arm shoulder press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "upper chest",
-    "glutes"
+    "glutes",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm kettlebell press from a kneeling position. Kneeling takes the legs out of it and challenges your trunk.",

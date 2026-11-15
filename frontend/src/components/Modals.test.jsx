@@ -320,7 +320,7 @@ describe('Modals scroll restore on close', () => {
   // The second, delayed restore exists for one reason — iOS scrolling the page again while the
   // keyboard dismisses — so it must only be armed when the keyboard is actually up (QA C1).
   async function openAndClose() {
-    dom.scrollY = 320
+    Object.defineProperty(dom, 'scrollY', { configurable: true, value: 320 })   // a plain write fails once another test defined it read-only
     await setSheets([sheet('menu')])
     expect(document.body.style.position).toBe('fixed')
     dom.scrollTo.mockClear()
@@ -329,6 +329,9 @@ describe('Modals scroll restore on close', () => {
 
   it('restores the position once and leaves a scroll the page made afterwards alone', async () => {
     vi.useFakeTimers()
+    // no keyboard: linkedom's window is the shared global, so another test's keyboard would still be up
+    dom.innerHeight = 800
+    dom.visualViewport = { height: 800 }
     await openAndClose()
     expect(dom.scrollTo).toHaveBeenCalledTimes(1)
     expect(dom.scrollTo).toHaveBeenCalledWith(0, 320)

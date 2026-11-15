@@ -3,6 +3,7 @@
   "name": "lever seated crunch (chest pad)",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "abs",
   "secondaryMuscles": [
     "obliques"

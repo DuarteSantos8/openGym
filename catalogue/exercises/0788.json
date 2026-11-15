@@ -3,10 +3,11 @@
   "name": "standing behind neck press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing barbell press from behind the neck to overhead. It builds the shoulders and triceps and calls for good shoulder mobility.",
