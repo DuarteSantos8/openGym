@@ -205,6 +205,7 @@ export default function Addons() {
     <div className="addons-layout">
       <FoodDiary day={day} setDay={setDay} />
       <TrainingInsights S={S} workouts={workouts} unit={S?.unit || 'kg'} />
+      <AnatomyViewer />
       <FoodLookup enabled={signedIn && config?.addons?.nutrition === true} day={day} />
       {signedIn && config?.integrations?.providers?.includes('nutritrace') && <NutriTraceCard day={day} />}
       <ProgressionLab unit={S?.unit || 'kg'} />
