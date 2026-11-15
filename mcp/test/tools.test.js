@@ -851,6 +851,60 @@ describe('estimate_1rm', () => {
   })
 })
 
+/* ---------- muscle_balance: from / to ---------- */
+
+describe('muscle_balance with from/to', () => {
+  const core = r => ({ workouts_in_period: r.workouts_in_period, worked: r.worked, neglected: r.neglected })
+
+  test('a from/to window over the last 7 dates matches period "week"', () => {
+    // FAKE_TODAY_ISO is 2026-07-27: the week is the 7 dates 2026-07-21 … 2026-07-27.
+    const week = call('muscle_balance', { period: 'week' })
+    const range = call('muscle_balance', { from: '2026-07-21', to: '2026-07-27' })
+    expect(core(range)).toEqual(core(week))
+    expect(range.from).toBe('2026-07-21')
+    expect(range.to).toBe('2026-07-27')
+  })
+
+  test('to defaults to today', () => {
+    expect(core(call('muscle_balance', { from: '2026-07-21' })))
+      .toEqual(core(call('muscle_balance', { from: '2026-07-21', to: '2026-07-27' })))
+  })
+
+  test('a past window counts only the workouts dated inside it', () => {
+    const day = S.workouts.map(w => w.d).filter(Boolean).sort()[0]
+    const onThatDay = S.workouts.filter(w => w.d === day).length
+    const r = call('muscle_balance', { from: day, to: day })
+    expect(r.workouts_in_period).toBe(onThatDay)
+    expect(r.worked.length).toBeGreaterThan(0)
+  })
+
+  test('a window with no workouts reports every muscle as neglected', () => {
+    const r = call('muscle_balance', { from: '2001-01-01', to: '2001-01-07' })
+    expect(r.workouts_in_period).toBe(0)
+    expect(r.worked).toEqual([])
+    expect(r.neglected.length).toBe(r.muscle_order_head_to_toe.length)
+  })
+
+  test('from after to is an EINVAL tool error', () => {
+    expect(() => call('muscle_balance', { from: '2026-07-27', to: '2026-07-21' })).toThrow(/from/)
+    try { call('muscle_balance', { from: '2026-07-27', to: '2026-07-21' }) } catch (e) { expect(e.code).toBe('EINVAL') }
+  })
+
+  test('to without from, or neither period nor from, is an EINVAL tool error', () => {
+    for (const params of [{ to: '2026-07-27' }, {}]) {
+      let err = null
+      try { call('muscle_balance', params) } catch (e) { err = e }
+      expect(err?.code).toBe('EINVAL')
+    }
+  })
+
+  test('period still works on its own, unchanged', () => {
+    const r = call('muscle_balance', { period: 'month' })
+    expect(r.period).toBe('month')
+    expect(r.cutoff_iso).toBe('2026-06-28')
+  })
+})
+
 /* ---------- muscle_balance ---------- */
 
 describe('muscle_balance', () => {
