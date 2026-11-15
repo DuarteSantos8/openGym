@@ -168,13 +168,15 @@ describe('routine archive', () => {
       migrateArchiveFolder(s)
       expect(s.routines[0]).toEqual(r('a', 'Archiv'))
     })
-    it('changes nothing the second time, even for a folder an old app later called Archive', () => {
+    it('changes nothing when no routine is left in Archive, and moves a late arrival on the next run', () => {
       const s = { routines: [r('a', 'Archive')] }
-      migrateArchiveFolder(s)
-      s.routines.push(r('b', 'Archive'))
+      expect(migrateArchiveFolder(s)).toBe(true)
       const copy = structuredClone(s)
       expect(migrateArchiveFolder(s)).toBe(false)
       expect(s).toEqual(copy)
+      s.routines.push(r('b', 'Archive'))
+      expect(migrateArchiveFolder(s)).toBe(true)
+      expect(s.routines.map(x => [!!x.archived, x.folder])).toEqual([[true, undefined], [true, undefined]])
     })
   })
 })
