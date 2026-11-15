@@ -131,46 +131,20 @@ describe('the live bar', () => {
 })
 
 describe('the rise', () => {
-  const reduced = on => vi.stubGlobal('matchMedia', () => ({ matches: on }))
-  afterEach(() => { delete document.startViewTransition; vi.unstubAllGlobals(); delete document.documentElement.dataset.rise })
+  afterEach(() => { delete document.startViewTransition; vi.restoreAllMocks() })
 
-  it('navigates inside one view transition and names it only while it runs', () => {
-    let done
-    const svt = vi.fn(cb => { cb(); return { finished: new Promise(r => { done = r }) } })
-    document.startViewTransition = svt
-    reduced(false)
-    seed(active()); render()
-    act(() => { bar().click() })
-    expect(svt).toHaveBeenCalledTimes(1)
-    expect(mocks.nav).toHaveBeenCalledWith('/workout', { state: { rise: true } })
-    expect(document.documentElement.dataset.rise).toBe('rise')
-    return act(async () => { done(); await Promise.resolve(); await Promise.resolve() }).then(() => {
-      expect(document.documentElement.dataset.rise).toBeUndefined()
-    })
-  })
-
-  it('navigates directly when view transitions are missing', () => {
-    reduced(false)
-    seed(active()); render()
-    act(() => { bar().click() })
-    expect(mocks.nav).toHaveBeenCalledWith('/workout')
-    expect(document.documentElement.dataset.rise).toBeUndefined()
-  })
-
-  it('navigates directly, adding nothing, when reduced motion is asked for', () => {
+  it('navigates at once with the rise motion, and never starts a view transition', () => {
     const svt = vi.fn()
     document.startViewTransition = svt
-    reduced(true)
     seed(active()); render()
     act(() => { bar().click() })
+    expect(mocks.nav).toHaveBeenCalledTimes(1)
+    expect(mocks.nav).toHaveBeenCalledWith('/workout', { state: { rise: 'rise' } })
     expect(svt).not.toHaveBeenCalled()
-    expect(mocks.nav).toHaveBeenCalledWith('/workout')
-    expect(document.documentElement.dataset.rise).toBeUndefined()
   })
 
-  it('gives a light tap on the way up', () => {
+  it('gives one buzz on the way up', () => {
     const vib = vi.spyOn(sound, 'vibrate').mockImplementation(() => {})
-    reduced(false)
     seed(active()); render()
     act(() => { bar().click() })
     expect(vib).toHaveBeenCalledWith(10)

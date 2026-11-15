@@ -7,7 +7,6 @@ import { liveBarShows, liveBarState } from '../lib/live-bar.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
 import { vibrate } from '../lib/sound.js'
-import { riseTo } from '../lib/rise.js'
 import Elapsed from './Elapsed.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
@@ -81,7 +80,7 @@ export default function LiveBar () {
   // One buzz as the rise starts (the app's own helper: the native pulse on the phones).
   const rise = () => {
     vibrate(10)
-    riseTo(nav, '/workout')
+    nav('/workout', { state: { rise: 'rise' } }) // the page's entrance, App.jsx
   }
   const routine = b.routine || t('Workout')
   const exercise = b.allDone ? t('All sets done') : b.exercise

@@ -4,7 +4,6 @@ import SwipeRow from '../components/SwipeRow.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
-import { riseTo } from '../lib/rise.js'
 import { useUI } from '../store/useUI.js'
 import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
 import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
@@ -2715,7 +2714,7 @@ function ActiveWorkout() {
     <div className="hdr whdr-bar">
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
-        : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => riseTo(nav, '/home')}><Icon name="chevronDown" /></button>}
+        : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home', { state: { rise: 'fold' } })}><Icon name="chevronDown" /></button>}
       <div className="whdr-mid"><div className="whdr-name"><span className="whdr-title">{A.name}</span></div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>

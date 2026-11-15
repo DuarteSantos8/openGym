@@ -37,12 +37,17 @@ violet, pink and red are solid, so are the deeper light colours, and so is high 
 
 ## The rise
 
-The bar grows into the workout screen as one view transition, and the chevron folds it back
-(`lib/rise.js`). It is done by hand with `document.startViewTransition`, because the router's own
-`viewTransition` option only works with data routers and the app uses HashRouter. No support or
-reduced motion: a plain route change. The navigation carries `state.rise`, so the page skips its
-own arrival animation. Tapping the bar buzzes once through the app's `vibrate()` (lib/sound.js), which
-is the native pulse on the phones; on iPhone it may feel medium rather than light, tune it on the phone.
+Tapping the bar navigates at once with `state: { rise: 'rise' }`; the workout's chevron does the same
+with `'fold'`. App.jsx hands that to the page as its arrival motion (`vrise`, `vfold` in index.css):
+one 280 ms keyframe, transform and opacity only, on `--ease`. The workout page grows up from the bottom
+edge; the page it folds back to settles down from a touch larger. Reduced motion: the app's global rule
+removes the animation.
+
+A view transition was tried and dropped: on iPhone it snapshotted the whole workout page and froze the
+app for seconds. The router's own `viewTransition` option does not apply either (HashRouter).
+
+Tapping the bar buzzes once through the app's `vibrate()` (lib/sound.js), the native pulse on the
+phones; on iPhone it may feel medium rather than light, tune it on the phone.
 
 ## Left out on purpose
 

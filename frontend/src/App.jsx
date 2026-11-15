@@ -449,7 +449,7 @@ function Shell() {
           lands it simply stays: same key, same parent, so React keeps it instead of mounting
           the route again. */}
       <div id="app">
-        <Page key={loc.pathname} loc={loc} render={view} motion={loc.state?.rise ? 'none' : pageMotion(pathRef.current, loc.pathname, navType)} />
+        <Page key={loc.pathname} loc={loc} render={view} motion={loc.state?.rise || pageMotion(pathRef.current, loc.pathname, navType)} />
         {showPreview && <Page key={preview} loc={previewLoc(preview)} render={view} under scrollY={scrollPositions.get(preview) || 0} />}
       </div>
       {/* Outside #app: the view's fade-in animates a transform, and a fixed element inside it
@@ -496,7 +496,7 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
     const el = ref.current
     if (el) { el.style.transform = ''; el.style.transition = ''; el.style.visibility = '' }
   }, [under])
-  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'none' ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
+  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'rise' ? ' vrise' : arrival.current === 'fold' ? ' vfold' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
     data-path={loc.pathname} data-promoted={promoted ? '' : undefined}
     aria-hidden={under || undefined} inert={under || undefined}>
     <div className="page-in" style={under && scrollY ? { transform: `translateY(${-scrollY}px)` } : undefined}>
