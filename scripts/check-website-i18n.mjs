@@ -49,12 +49,18 @@ const italianDocs = read('website/it/docs.html')
 assert.match(italianDocs, /Documentazione non ancora tradotta/)
 assert.match(italianDocs, /API.*solo in inglese/)
 assert.match(italianDocs, /href="\/docs\.html" lang="en"/)
-const englishPages = ['website/index.html', 'website/docs.html', 'website/about.html', 'website/api.html']
-for (const file of englishPages) assert.match(read(file), /href="(?:https:\/\/opengym\.ch)?\/it\//, `${file}: no Italian navigation path or fallback`)
+// Metadata links do not provide navigation. Match an actual anchor and its full URL.
+const hasAnchor = (html, destination) => [...html.matchAll(/<a\b[^>]*>/gi)].some(([anchor]) => {
+  const href = /\shref\s*=\s*(["'])(.*?)\1/i.exec(anchor)?.[2]
+  return href === destination || href === origin + destination
+})
+for (const route of routes.filter(route => route.lang === 'en')) {
+  const destination = route.translated ? `/it${route.url === '/' ? '/' : route.url}` : '/it/'
+  assert.ok(hasAnchor(read(route.file), destination), `${route.file}: no Italian navigation anchor to ${destination}`)
+}
 for (const file of ['website/it/index.html', 'website/it/docs.html', 'website/it/about.html']) {
-  const html = read(file)
   for (const href of ['/it/', '/it/docs.html', '/it/about.html', '/api.html']) {
-    assert.ok(html.includes(`href=\"${href}`), `${file}: navigation missing ${href}`)
+    assert.ok(hasAnchor(read(file), href), `${file}: navigation missing ${href}`)
   }
 }
 const localeFallbacks = [
