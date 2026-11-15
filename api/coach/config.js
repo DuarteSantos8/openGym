@@ -9,8 +9,8 @@
 
    Credentials have two shapes, and the difference is the whole reason this file is careful:
 
-     instance  — one account, stored here, encrypted. The convenient default for the
-                 single-profile instance most people run.
+     instance  — one encrypted account, the default for single-profile instances. ChatGPT
+                 keeps its session outside DATA_DIR.
      profile   — one account per profile, stored in its own coach-auth-<uid>.json. What a
                  multi-profile instance must use, because an instance-level credential means
                  somebody's personal subscription is being spent by people who are not the
@@ -26,12 +26,15 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { atomicWrite as durableWrite, syncDir } from '../durable.js';
 import { HTTP_PROVIDERS, baseUrlFor } from './core/providers.js';
 import { on as chatgptPlanOn } from './chatgpt-plan.js';
 import { MAX_OUTPUT_TOKENS } from './core/adapters/http.js';
 
 const DATA = process.env.DATA_DIR || '/data';
 const FILE = path.join(DATA, 'coach.json');
+const CHATGPT_DIR = path.resolve(process.env.COACH_CHATGPT_CREDENTIAL_DIR || `${path.resolve(DATA)}-coach-auth`, 'chatgpt');
+const CHATGPT_FILE = path.join(CHATGPT_DIR, 'connection.json');
 
 /* Where a provider runtime that manages its own credential cache is allowed to keep it.
  *
@@ -146,45 +149,187 @@ export function decrypt(blob) {
 /* ---------- load / save ---------- */
 
 let cache = null;
+let storedChatGPT = null; // The disk marker, or the inline copy until migration can finish.
 function atomicWrite(file, content, mode) {
   const tmp = file + '.tmp';
   fs.writeFileSync(tmp, content, mode ? { mode } : undefined);
   fs.renameSync(tmp, file);
 }
+
+function inside(dir, parent) {
+  const relative = path.relative(parent, dir);
+  return relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative);
+}
+
+function checkChatGPTDirectory(create = false) {
+  if (inside(CHATGPT_DIR, path.resolve(DATA))) throw new Error('ChatGPT credential storage must be outside DATA_DIR');
+  const created = create ? fs.mkdirSync(CHATGPT_DIR, { recursive: true, mode: 0o700 }) : undefined;
+  const dir = fs.lstatSync(CHATGPT_DIR);
+  if (!dir.isDirectory() || (process.platform !== 'win32' && (dir.mode & 0o077))) {
+    throw new Error('ChatGPT credential storage needs a private directory');
+  }
+  if (inside(fs.realpathSync(CHATGPT_DIR), fs.realpathSync(DATA))) {
+    throw new Error('ChatGPT credential storage must be outside DATA_DIR');
+  }
+  return created;
+}
+
+function readChatGPTConnection() {
+  try {
+    checkChatGPTDirectory();
+    const file = fs.lstatSync(CHATGPT_FILE);
+    if (!file.isFile() || (process.platform !== 'win32' && (file.mode & 0o077))) {
+      throw new Error('ChatGPT credential storage needs a private file');
+    }
+    const saved = JSON.parse(fs.readFileSync(CHATGPT_FILE, 'utf8'));
+    if (!isPlainObj(saved) || (saved.auth !== null && !saved.auth?.data)) {
+      throw new Error('ChatGPT credential storage is unreadable');
+    }
+    return saved;
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function writeChatGPTConnection(connection) {
+  const created = checkChatGPTDirectory(true);
+  // A disconnected record prevents an old inline credential from becoming active after restore.
+  durableWrite(CHATGPT_FILE, JSON.stringify(connection, null, 2), 0o600);
+  for (let dir = CHATGPT_DIR; created && inside(dir, created); dir = path.dirname(dir)) syncDir(path.dirname(dir));
+}
+
+function withoutChatGPT(map) {
+  if (!isPlainObj(map) || !Object.hasOwn(map, 'chatgpt')) return map;
+  const { chatgpt, ...rest } = map;
+  return rest;
+}
+
+function trainingSettings(cfg, chatgpt = null) {
+  const auth = withoutChatGPT(cfg.auth);
+  const boundUid = withoutChatGPT(cfg.boundUid);
+  return {
+    ...cfg,
+    auth: chatgpt?.auth ? { ...auth, chatgpt: chatgpt.auth } : auth,
+    boundUid: chatgpt?.boundUid ? { ...boundUid, chatgpt: chatgpt.boundUid } : boundUid
+  };
+}
+
+function chatGPTConnection(cfg) {
+  return { auth: cfg.auth?.chatgpt || null, boundUid: cfg.boundUid?.chatgpt || null };
+}
+
+function withChatGPTConnection(cfg, connection) {
+  if (!connection?.auth) return cfg;
+  const auth = { ...cfg.auth, chatgpt: connection.auth };
+  const boundUid = connection.boundUid ? { ...cfg.boundUid, chatgpt: connection.boundUid } : cfg.boundUid;
+  return { ...cfg, auth, boundUid };
+}
+
+function chatGPTMarker(id) {
+  // A legacy server sees no credential data and removes or replaces this slot on disconnect
+  // or sign-in. The ID also prevents unrelated training and credential backups from pairing.
+  return { auth: { type: 'external', id }, boundUid: null };
+}
+
+function loadChatGPTConnection(stored, cfg, inline) {
+  const marker = inline.auth?.type === 'external' && !inline.auth.data && typeof inline.auth.id === 'string'
+    ? inline.auth.id : null;
+  storedChatGPT = marker ? chatGPTMarker(marker) : inline.auth?.data ? inline : null;
+  if (!stored) return null;
+
+  const separate = readChatGPTConnection();
+  if (!inline.auth?.data) {
+    if (marker && separate?.id === marker) return separate;
+    // The old server removed the marker. Record the disconnect before an older training
+    // backup can restore the marker and make the separate connection visible again.
+    if (!marker && separate?.auth) writeChatGPTConnection({ auth: null, boundUid: null });
+    return null;
+  }
+
+  let connection = null;
+  if (!separate || (separate.auth?.data === inline.auth.data && separate.boundUid === inline.boundUid)) {
+    // The same copy may already exist if the previous upgrade stopped before replacing coach.json.
+    connection = separate?.id ? separate : { ...inline, id: crypto.randomUUID() };
+    if (connection !== separate) writeChatGPTConnection(connection);
+  } else if (separate.auth) {
+    // An inline sign-in and a different separate session have ambiguous ordering.
+    writeChatGPTConnection({ auth: null, boundUid: null });
+  }
+  const settings = connection ? chatGPTMarker(connection.id) : null;
+  durableWrite(FILE, JSON.stringify(trainingSettings(stored.auth?.data ? cfg : stored, settings), null, 2), 0o600);
+  storedChatGPT = settings;
+  return connection;
+}
+
 export function load() {
   if (cache) return cache;
-  let stored = {};
+  let stored;
   try { stored = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch { /* absent = feature off */ }
-  cache = { ...DEFAULTS, ...stored, caps: { ...DEFAULTS.caps, ...(stored.caps || {}) } };
+  const hasSettings = isPlainObj(stored);
+  if (!hasSettings) stored = {};
+  const cfg = { ...DEFAULTS, ...stored, caps: { ...DEFAULTS.caps, ...(stored.caps || {}) } };
 
   // Until v1.2.11 this file held ONE credential, ONE model and ONE binding — for whichever
   // provider was selected at the time. Lift each onto that provider. One-way on purpose: a
   // downgrade will not read the maps back, which costs the owner one paste of the key.
   const legacy = PROVIDERS[stored.provider] ? stored.provider : null;
-  if (stored.auth && stored.auth.data) cache.auth = legacy ? { [legacy]: stored.auth } : {};
+  if (stored.auth && stored.auth.data) cfg.auth = legacy ? { [legacy]: stored.auth } : {};
   if (typeof stored.model === 'string' && stored.model) {
-    cache.models = { ...(legacy ? { [legacy]: stored.model } : {}), ...(isPlainObj(stored.models) ? stored.models : {}) };
+    cfg.models = { ...(legacy ? { [legacy]: stored.model } : {}), ...(isPlainObj(stored.models) ? stored.models : {}) };
   }
-  if (typeof stored.boundUid === 'string') cache.boundUid = legacy ? { [legacy]: stored.boundUid } : {};
-  delete cache.model;
+  if (typeof stored.boundUid === 'string') cfg.boundUid = legacy ? { [legacy]: stored.boundUid } : {};
+  delete cfg.model;
+  const inline = chatGPTConnection(cfg);
   // Every per-provider map holds only providers this build knows. That drops a retired
   // provider's leftovers and, because the keys are checked against the table, anything a
   // hand-edited file might smuggle in as a key.
   for (const k of PER_PROVIDER) {
-    const src = isPlainObj(cache[k]) ? cache[k] : {};
+    const src = isPlainObj(cfg[k]) ? cfg[k] : {};
     const clean = {};
     for (const p of Object.keys(src)) if (Object.prototype.hasOwnProperty.call(PROVIDERS, p)) clean[p] = src[p];
-    cache[k] = clean;
+    cfg[k] = clean;
   }
   // A retired provider must not leave the admin page with no chip selected.
-  if (!PROVIDERS[cache.provider]) cache.provider = DEFAULTS.provider;
-  if (cache.authMode !== 'profile') cache.authMode = 'instance';
+  if (!PROVIDERS[cfg.provider]) cfg.provider = DEFAULTS.provider;
+  if (cfg.authMode !== 'profile') cfg.authMode = 'instance';
+
+  let connection = null;
+  try {
+    connection = loadChatGPTConnection(hasSettings ? stored : null, cfg, inline);
+  } catch {
+    // Keep normal settings available and retry any interrupted migration or disconnect.
+    return trainingSettings(cfg);
+  }
+  cache = withChatGPTConnection(trainingSettings(cfg), PROVIDERS.chatgpt ? connection : null);
   return cache;
 }
-export function save(patch) {
-  const next = { ...load(), ...patch };
-  cache = next;
-  atomicWrite(FILE, JSON.stringify(next, null, 2), 0o600);
+export function save(patch, { replaceChatGPT = false } = {}) {
+  const previous = load();
+  const retryChatGPTLoad = !cache;
+  const next = { ...previous, ...patch };
+  const previousConnection = chatGPTConnection(previous);
+  const nextConnection = chatGPTConnection(next);
+  const saveConnection = replaceChatGPT || nextConnection.auth !== previousConnection.auth
+    || nextConnection.boundUid !== previousConnection.boundUid;
+  let settings = storedChatGPT;
+  if (saveConnection) {
+    // An older credential snapshot must not undo a profile binding while its marker still matches.
+    const existingId = replaceChatGPT || nextConnection.boundUid !== previousConnection.boundUid
+      ? null : settings?.auth.id;
+    const id = nextConnection.auth ? existingId || crypto.randomUUID() : null;
+    writeChatGPTConnection(id ? { ...nextConnection, id } : nextConnection);
+    settings = id ? chatGPTMarker(id) : null;
+    // If publishing the marker fails, reload the two files instead of using the old cache.
+    cache = null;
+  }
+  const contents = JSON.stringify(trainingSettings(next, settings), null, 2);
+  if (contents !== JSON.stringify(trainingSettings(previous, storedChatGPT), null, 2) || !fs.existsSync(FILE)) {
+    const write = saveConnection ? durableWrite : atomicWrite;
+    write(FILE, contents, 0o600);
+  }
+  storedChatGPT = settings;
+  cache = retryChatGPTLoad && !saveConnection ? null : next;
   return next;
 }
 // Test seam: forget the in-memory copy so the next load() re-reads from disk.
@@ -202,7 +347,9 @@ export function saveAuth(provider, auth) {
   if (auth) next[provider] = auth; else delete next[provider];
   // boundUid resets with the credential: a new account has not been spent by anyone yet.
   const bound = { ...cfg.boundUid }; delete bound[provider];
-  return save({ auth: next, boundUid: bound });
+  // An unreadable ChatGPT file appears disconnected in memory. An explicit disconnect
+  // must still replace it with a durable disconnected record.
+  return save({ auth: next, boundUid: bound }, { replaceChatGPT: provider === 'chatgpt' });
 }
 export function saveModel(provider, model) {
   const next = { ...load().models };
