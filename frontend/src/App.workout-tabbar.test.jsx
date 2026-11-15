@@ -44,13 +44,14 @@ afterEach(() => {
 
 // The owner, 2026-10-14: no extra bottom button to complete or finish during a workout (#563 is
 // undone). The running workout has the whole screen again; Finish lives in its header.
-it('a running workout has no tab bar and no bottom action; minimized, the tabs and Resume are back', async () => {
+it('a running workout has no tab bar and no bottom action; minimized, the tabs and the Workout tab are back', async () => {
   await act(async () => root.render(<App />))
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(document.body.classList.contains('no-tabbar')).toBe(true)
   await act(async () => host.querySelector('.whdr button[aria-label="Minimize"]').click())
   expect(host.querySelectorAll('#tabbar button')).toHaveLength(5)
-  expect(host.querySelector('#tabbar .start').getAttribute('aria-label')).toBe('Resume')
+  // The live bar carries the clock now; the centre tab is plain and just reads "Workout".
+  expect(host.querySelector('#tabbar .start').textContent).toBe('Workout')
   await act(async () => host.querySelector('#tabbar .start').click())
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(useStore.getState().S.active.entries[0].sets.map(s => s.done)).toEqual([false, false])

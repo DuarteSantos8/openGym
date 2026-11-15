@@ -3044,7 +3044,7 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 }
 .livebar:focus-visible{outline:2px solid var(--on-acc);outline-offset:2px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
-.livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
+.livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:rgba(128,128,128,.55);background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
 .livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform 1s linear}
 :root[dir="rtl"] .livebar-hl i{transform-origin:right}
 .livebar-dev{flex:none;display:flex;line-height:0}
@@ -3076,10 +3076,6 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 }
 body.has-livebar #app{padding-bottom:calc(154px + var(--sab))} /* the tab bar's 88, the capsule's 58, and 8 */
 body.has-livebar #totop{bottom:calc(146px + var(--sab))}
-@media (min-width:1000px){
-  .livebar{bottom:83px}
-  body.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
-}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
@@ -3449,6 +3445,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   /* Back to top: at the end of the wide column, level with the floating tab bar and clear of it,
      so the page's own 128px at the bottom already keeps the last row out from under it. */
   #totop,body.resting #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
+  .livebar{bottom:83px}
+  body.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
   body.totop-on #app{padding-bottom:calc(128px + var(--sab))}
   body.totop-on.resting #app{padding-bottom:calc(220px + var(--sab))}
   body.totop-on.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
