@@ -6,13 +6,14 @@
   "target": "abs",
   "secondaryMuscles": [
     "glutes",
-    "shoulders",
+    "front delts",
     "core",
     "obliques",
     "forearms",
     "grip muscles"
   ],
   "category": "strength",
+  "track": "distance",
   "description": "A walking carry with one dumbbell overhead and one at your side. The mismatch trains shoulder stability and trunk control.",
   "instructions": [
     "Hold one dumbbell overhead with a locked, stable arm and the other at your side.",

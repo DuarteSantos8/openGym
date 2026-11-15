@@ -3,6 +3,7 @@
   "name": "assisted one leg extension",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "quads",
   "secondaryMuscles": [
     "hip flexors",

@@ -3,13 +3,14 @@
   "name": "dumbbell push jerk",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "quadriceps",
     "glutes",
     "core",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "olympic",
   "description": "An explosive overhead lift that uses a leg drive to send dumbbells overhead. It builds power and shoulder strength.",

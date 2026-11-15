@@ -3,11 +3,12 @@
   "name": "bodyweight standing military press",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "A standing overhead press without weight, good for learning the pressing path or warming up.",

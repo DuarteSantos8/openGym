@@ -18,8 +18,9 @@ struct Entry: TimelineEntry {
         switch state.mode {
         case "rest": return TimelineEntryRelevance(score: 100)
         case "set": return TimelineEntryRelevance(score: 60)
-        case "today": return TimelineEntryRelevance(score: 30)
-        default: return TimelineEntryRelevance(score: 0)
+        case "today": return TimelineEntryRelevance(score: (state.unsent ?? 0) > 0 ? 40 : 30)
+        // Sets that never reached the phone are worth a look, even with nothing running.
+        default: return TimelineEntryRelevance(score: (state.unsent ?? 0) > 0 ? 20 : 0)
         }
     }
 }
@@ -46,9 +47,43 @@ struct Provider: TimelineProvider {
         // Not touched by the watch app for 45 minutes: quiet (WidgetState.read says why).
         if state.mode == "set" || state.mode == "rest" {
             let quiet = max(Date(), state.updatedAt.addingTimeInterval(45 * 60))
-            entries.append(Entry(date: quiet, state: .idle))
+            entries.append(Entry(date: quiet, state: state.quiet))
         }
         completion(Timeline(entries: entries, policy: .never))
+    }
+}
+
+/// Sets logged on the watch that have not reached the iPhone: an arrow and how many.
+struct UnsentBadge: View {
+    let count: Int
+
+    var body: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            VStack(spacing: -1) {
+                Image(systemName: "arrow.up.circle").font(.system(size: 15, weight: .semibold))
+                Text(verbatim: "\(count)").font(.system(.body, design: .rounded).weight(.semibold).monospacedDigit())
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Waiting to sync"))
+        .accessibilityValue(Text(verbatim: "\(count)"))
+    }
+}
+
+/// "Waiting to sync 3", the words first so no language needs a plural.
+struct UnsentLine: View {
+    let count: Int
+
+    var body: some View {
+        Label {
+            Text("Waiting to sync") + Text(verbatim: " \(count)")
+        } icon: {
+            Image(systemName: "arrow.up.circle")
+        }
+        .font(.caption2)
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
     }
 }
 
@@ -83,6 +118,8 @@ struct WidgetView: View {
                     Text(timerInterval: entry.date...end, countsDown: true).monospacedDigit()
                 }
                 .progressViewStyle(.circular)
+            } else if let n = s.unsent, n > 0, s.mode != "set" {
+                UnsentBadge(count: n)
             } else if s.mode == "today" {
                 ZStack {
                     AccessoryWidgetBackground()
@@ -93,14 +130,18 @@ struct WidgetView: View {
             } else {
                 ZStack {
                     AccessoryWidgetBackground()
-                    OpenGymLogo().padding(10)
+                    OpenGymLogo().fill(OpenGymLogo.green).padding(10)
                 }
             }
         case .accessoryInline:
             if resting, let end = s.restEndsAt {
                 Text(timerInterval: entry.date...end, countsDown: true)
+            } else if let n = s.unsent, n > 0, s.mode != "set" {
+                Text(Image(systemName: "arrow.up.circle")) + Text(verbatim: " \(n) · ") + Text("Waiting to sync")
             } else if s.mode == "today" {
                 Text("Start workout")
+            } else if let n = s.unsent, n > 0 {
+                Text(Image(systemName: "arrow.up.circle")) + Text(verbatim: " \(n) · " + (s.detail.isEmpty ? s.title : "\(s.setLabel) · \(s.detail)"))
             } else {
                 Text(verbatim: s.detail.isEmpty ? s.title : "\(s.setLabel) · \(s.detail)")
             }
@@ -116,6 +157,8 @@ struct WidgetView: View {
             .widgetLabel {
                 if resting, let end = s.restEndsAt {
                     Text(timerInterval: entry.date...end, countsDown: true)
+                } else if let n = s.unsent, n > 0, s.mode != "set" {
+                    Text("Waiting to sync") + Text(verbatim: " \(n)")
                 } else if s.total > 0 && s.mode != "today" {
                     Gauge(value: Double(s.done), in: 0...Double(max(s.total, 1))) { Text(verbatim: "") }
                 } else {
@@ -138,16 +181,17 @@ struct WidgetView: View {
                         Text(verbatim: s.setLabel.isEmpty ? s.detail : "\(s.setLabel) · \(s.detail)")
                             .font(.system(.body, design: .rounded).monospacedDigit()).lineLimit(1)
                     }
-                    if s.total > 0 {
+                    if s.total > 0 && (s.unsent ?? 0) == 0 {
                         Gauge(value: Double(s.done), in: 0...Double(s.total)) { Text(verbatim: "") }
                             .gaugeStyle(.accessoryLinearCapacity)
                     }
                 } else {
                     HStack(spacing: 6) {
-                        OpenGymLogo().frame(width: 26, height: 16)
-                        Text(verbatim: "openGym").font(.headline)
+                        OpenGymLogo().fill(OpenGymLogo.green).frame(width: 26, height: 13)
+                        BrandWord().font(.headline)
                     }
                 }
+                if let n = s.unsent, n > 0, !resting { UnsentLine(count: n) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -198,19 +242,20 @@ struct LauncherView: View {
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
-                OpenGymLogo().padding(9)
+                OpenGymLogo().fill(OpenGymLogo.green).padding(9)
             }
         case .accessoryCorner:
             OpenGymLogo()
+                .fill(OpenGymLogo.green)
                 .padding(4)
                 .widgetLabel { Text(verbatim: "openGym") }
         case .accessoryInline:
             Text(verbatim: "openGym")
         default:
             HStack(spacing: 8) {
-                OpenGymLogo().frame(width: 30, height: 20)
+                OpenGymLogo().fill(OpenGymLogo.green).frame(width: 30, height: 15)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(verbatim: "openGym").font(.headline)
+                    BrandWord().font(.headline)
                     if entry.state.mode == "today" {
                         Text(verbatim: entry.state.title).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
@@ -235,3 +280,10 @@ struct OpenGymLauncher: Widget {
     }
 }
 
+
+/// "open" plus "Gym" in brand green, the wordmark of the logo (assets/logo).
+struct BrandWord: View {
+    var body: some View {
+        Text(verbatim: "open") + Text(verbatim: "Gym").foregroundColor(OpenGymLogo.green)
+    }
+}

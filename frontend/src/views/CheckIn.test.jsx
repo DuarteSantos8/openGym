@@ -62,6 +62,7 @@ vi.mock('../lib/scan.js', () => ({
   scanCode: (...a) => mocks.scanCode(...a),
   importCodeFromImage: (...a) => mocks.importCodeFromImage(...a),
   webScanner: async () => !mocks.MOBILE || mocks.fdroid,
+  MODULE_MISSING: 'module-missing',
 }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 // The browser camera sheet is a device surface; capture its props so a test can answer as the
@@ -72,6 +73,8 @@ vi.mock('../components/CameraScan.jsx', () => ({ default: props => { mocks.camer
 vi.mock('../components/QrCanvas.jsx', () => ({ default: ({ value, fmt }) => <i data-qr={value} data-fmt={fmt} /> }))
 
 import CheckIn, { openAddCard, openEditCard } from './CheckIn.jsx'
+import { bindUI } from '../components/ui.jsx'
+import { useUI as mockedUI } from '../store/useUI.js'
 
 /* ------------------------------- harness ------------------------------- */
 
@@ -115,7 +118,8 @@ const rail = () => host.querySelector('.ci-rail')
 const faces = () => [...host.querySelectorAll('.ci-card')]
 const dots = () => [...host.querySelectorAll('.ci-dot')]
 const litDots = () => dots().map(d => d.className.includes('on'))
-const byLabel = (scope, label) => [...scope.querySelectorAll('[aria-label="' + label + '"]')]
+// P4: a card's buttons carry the card's name ("A: Edit", "Remove A"), so two cards are two sets of names.
+const byLabel = (scope, label) => [...scope.querySelectorAll('[aria-label]')].filter(el => { const a = el.getAttribute('aria-label'); return a === label || a.endsWith(': ' + label) || a.startsWith(label + ' ') })
 
 const scrollTo = px => act(() => {
   rail().scrollLeft = px
@@ -288,6 +292,15 @@ describe('CheckIn — reordering the rail', () => {
     expect(host.querySelector('.ci-reorder')).toBeFalsy()
   })
 
+  it('names each card’s buttons after the card, so a screen reader does not hear "Edit" three times (P4)', () => {
+    mocks.S = { gymCards: [card('a'), card('b'), card('c')], lastGymCardId: 'a' }
+    mount()
+    const all = [...host.querySelectorAll('.ci-card-btn')].map(el => el.getAttribute('aria-label'))
+    expect(all).toHaveLength(12)
+    expect(new Set(all).size).toBe(12)
+    expect(all.slice(0, 4)).toEqual(['A: Edit', 'Remove A', 'A: Move left', 'A: Move right'])
+  })
+
   it('the ends are inert: ◀ on the first card and ▶ on the last are disabled', () => {
     mocks.S = { gymCards: [card('a'), card('b'), card('c')], lastGymCardId: 'a' }
     mount()
@@ -412,6 +425,16 @@ describe('CheckIn — adding a card', () => {
     await openAdd()
     await tap(sheetBtn('Scan'))
     expect(mocks.toast).toHaveBeenCalledWith(message)
+    expect(sheetBtn('Scan').disabled).toBe(false)
+  })
+
+  it('Google\'s scanner not on the phone yet: our own camera sheet, the Scan button usable again (QA66)', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockRejectedValue(new Error('module-missing'))
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    expect(mocks.toast).not.toHaveBeenCalled()
+    expect(mocks.sheets).toHaveLength(2)
     expect(sheetBtn('Scan').disabled).toBe(false)
   })
 
@@ -653,5 +676,95 @@ describe('CheckIn — the sheet openers', () => {
     expect(sheetHost.querySelector('h3').textContent).toBe('Edit card')
     expect(labelField().value).toBe('Zenith')
     expect(sheetHost.querySelector('[data-qr]').getAttribute('data-qr')).toBe('Z-1')
+  })
+})
+
+describe('CheckIn — typing the number, only after a scan or photo found nothing', () => {
+  const pickFile = async () => {
+    const input = fileInput()
+    Object.defineProperty(input, 'files', { configurable: true, value: [new File(['bytes'], 'card.jpg', { type: 'image/jpeg' })] })
+    await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise(r => setTimeout(r, 0)) })
+  }
+  const openAdd = async () => { mount(); await tap(host.querySelector('.ci-add')); return openSheet() }
+  const number = () => sheetHost.querySelector('input[aria-label="The number on your card"]')
+  const again = () => sheetHost.querySelector('input[aria-label="Once more, to be sure"]')
+  const hint = () => sheetHost.querySelector('.ci-typed-hint').textContent
+  const pickFmt = async label => {
+    const before = mocks.sheets.length
+    await tap(sheetHost.querySelector('.menu-btn'))
+    expect(mocks.sheets.length).toBe(before + 1)          // the type list opens as its own sheet
+    const sel = mocks.sheets.pop()
+    const tmpHost = document.createElement('div'); document.body.appendChild(tmpHost); const tmp = createRoot(tmpHost)
+    act(() => tmp.render(sel(() => {})))
+    await tap([...tmpHost.querySelectorAll('button')].find(b => b.textContent.includes(label)))
+    act(() => tmp.unmount()); tmpHost.remove()
+  }
+
+  beforeEach(() => bindUI(mockedUI))
+
+  it('is not offered up front: no typing until something failed', async () => {
+    await openAdd()
+    expect(sheetBtn('Type it in')).toBeUndefined()
+    expect(number()).toBeNull()
+  })
+
+  it('an EAN-13 has to pass its check digit, then shows big, and saves as typed', async () => {
+    mocks.importCodeFromImage.mockResolvedValue(null)
+    await openAdd()
+    await pickFile()
+    expect(sheetHost.textContent).toContain('No luck reading it? Type the number instead.')
+    await tap(sheetBtn('Type it in'))
+    expect(again()).toBeNull()                            // a check digit needs no second entry
+    expect(number().getAttribute('inputmode')).toBe('numeric')
+    typeInto(number(), '4006381333932')
+    expect(hint()).toContain('one of them is off')
+    expect(sheetBtn('Use this code').disabled).toBe(true)
+    expect(sheetHost.querySelector('.ci-typed-big')).toBeNull()
+    typeInto(number(), '4006 3813 3393 1')
+    expect(sheetHost.querySelector('.ci-typed-big [data-qr]').getAttribute('data-qr')).toBe('4006381333931')
+    expect(sheetHost.querySelector('.ci-typed-big [data-qr]').getAttribute('data-fmt')).toBe('ean13')
+    await tap(sheetBtn('Use this code'))
+    expect(number()).toBeNull()
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[0]).toMatchObject({ value: '4006381333931', fmt: 'ean13', typed: true })
+  })
+
+  it('a Code 128 is typed twice; a mismatch is called out and refused', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockRejectedValue(new Error('unsupported'))
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    await tap(sheetBtn('Type it in'))
+    await pickFmt('Code 128')
+    typeInto(number(), 'M-10442')
+    expect(hint()).toBe('Once more below, to be sure.')
+    typeInto(again(), 'M-10424')
+    expect(hint()).toBe('The two don’t match. One of them has a typo.')
+    expect(sheetBtn('Use this code').disabled).toBe(true)
+    typeInto(again(), 'M-10442')
+    await tap(sheetBtn('Use this code'))
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[0]).toMatchObject({ value: 'M-10442', fmt: 'code128', typed: true })
+  })
+
+  it('a typed card asks for one test at the turnstile until you say it works', async () => {
+    mocks.S = { gymCards: [card('a', { typed: true })], lastGymCardId: 'a' }
+    mount()
+    expect(host.textContent).toContain('Typed in by hand.')
+    await tap([...host.querySelectorAll('button')].find(b => b.textContent === 'It works'))
+    expect(mocks.S.gymCards[0].typed).toBeUndefined()
+  })
+
+  it('a later scan replaces a typed code and drops the flag', async () => {
+    mocks.MOBILE = true
+    mocks.S = { gymCards: [card('a', { typed: true, value: '96385074', fmt: 'ean8' })], lastGymCardId: 'a' }
+    mocks.scanCode.mockResolvedValue({ value: 'SCANNED-1', fmt: 'qrcode' })
+    mount()
+    openEditCard(mocks.S.gymCards[0])
+    await openSheet()
+    await tap(sheetBtn('Re-scan'))
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[0]).toMatchObject({ value: 'SCANNED-1', fmt: 'qrcode' })
+    expect('typed' in mocks.S.gymCards[0]).toBe(false)
   })
 })

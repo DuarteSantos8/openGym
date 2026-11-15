@@ -3,6 +3,7 @@
   "name": "lever seated hip adduction",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hip-abduction",
   "target": "adductors",
   "secondaryMuscles": [
     "hamstrings",

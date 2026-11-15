@@ -3,6 +3,7 @@
   "name": "sled wide hack squat",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "hack-squat",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

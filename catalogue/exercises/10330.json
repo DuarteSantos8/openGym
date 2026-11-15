@@ -3,9 +3,9 @@
   "name": "dumbbell powell raise",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
-    "rear deltoids",
+    "rear delts",
     "upper back",
     "rhomboids"
   ],

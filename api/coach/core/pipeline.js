@@ -14,6 +14,7 @@ import { CONTRACT } from './payload.js';
 import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
+import { classifyFailure, redact } from './failure.js';
 import { validatePlan, validateReview, validateDebrief, validateAsk, validateAdapt } from './validate.js';
 import { isChangeList, changesOntoPlan } from './refine-changes.js';
 
@@ -35,17 +36,21 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     model: model || null, timeoutMs, ...invokeOpts
   });
 
-  if (r.timedOut) return { ok: false, errorClass: 'timeout' };
-  if (r.spawnError) return { ok: false, errorClass: 'missing', detail: r.stderr?.slice(0, 300) };
+  if (r.timedOut) {
+    return {
+      ok: false, errorClass: 'timeout',
+      detail: timeoutMs ? `no answer within ${Math.round(timeoutMs / 1000)}s` : 'no answer within the job budget'
+    };
+  }
+  if (r.spawnError) return { ok: false, errorClass: 'missing', detail: redact(r.stderr) };
   if (r.code !== 0) {
-    const err = (r.stderr || r.text || '').toLowerCase();
-    // An HTTP adapter's stderr starts with the status, and the status is the answer: once a
-    // provider's own words ride along ("the input token count exceeds…"), a word match would
-    // call a budget error a rejected key. The CLIs have no status, so they keep the words.
-    const status = /^(\d{3})\b/.exec(err);
-    const authish = status ? status[1] === '401' || status[1] === '403'
-      : /auth|unauthor|api key|credential|token|401|403|login/.test(err);
-    return { ok: false, errorClass: authish ? 'auth' : 'provider', detail: (r.stderr || r.text || '').slice(0, 300) };
+    // Why this is the provider's own words and not ours: the class is only as good as the status
+    // it is read from, and core/failure.js sorts auth, quota, schema, outage, unreachable and
+    // everything else out of the status and the message together. The detail rides along to the
+    // job log and the admin card, redacted — a provider that echoes the key it refused must not
+    // put it there.
+    const text = r.stderr || r.text || '';
+    return { ok: false, errorClass: classifyFailure({ text }), detail: redact(text) };
   }
 
   const parsed = extractJSON(r.text);
@@ -68,28 +73,33 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   const equipment = payload.coachProfile?.equipment || [];
   const offered = new Set((payload.library || []).map(e => e && e.id));
   const noDumbbells = payload.noDumbbells === true;
+  const machines = Array.isArray(payload.machines) ? payload.machines.filter(k => typeof k === 'string') : null;
   // A revision answered as a review-style change list (#471) is laid onto the plan it revises
   // when every change can be placed exactly, and then judged as the plan it now is.
   const answer = kind === 'create' && isChangeList(parsed.value)
     ? changesOntoPlan(payload.refine?.previous, parsed.value) || parsed.value
     : parsed.value;
   const checked = kind === 'review'
-    ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered, noDumbbells })
+    ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered, noDumbbells, machines })
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
       : kind === 'ask'
-      ? validateAsk(parsed.value)
+      ? validateAsk(parsed.value, payload, { customIds, equipment, offered, noDumbbells, machines })
       : kind === 'adapt'
-      ? validateAdapt(parsed.value, payload.today, { customIds, equipment, offered, noDumbbells })
+      ? validateAdapt(parsed.value, payload.today, { customIds, equipment, offered, noDumbbells, machines })
       : validatePlan(answer, {
-      customIds, equipment, offered, noDumbbells,
+      customIds, equipment, offered, noDumbbells, machines,
       workingWeights: payload.history?.workingWeights,
       daysPerWeek: payload.coachProfile?.daysPerWeek
     });
 
   if (!checked.ok) return { ok: false, repairable: !repair, errors: checked.errors, raw: r.text, errorClass: 'unusable' };
   if (checked.nochange) return { ok: true, nochange: true, reading: checked.reading };
-  return { ok: true, result: checked.proposal || { bundle: checked.bundle, summary: checked.bundle.summary } };
+  const result = checked.proposal || { bundle: checked.bundle, summary: checked.bundle.summary };
+  // The pages a web-researched answer read, shown under it as links (coach-146).
+  const sources = kind === 'ask' && Array.isArray(r.sources) && r.sources.length ? { sources: r.sources.slice(0, 8) } : {};
+  // An answer that turned into a plan or a change-set is pending as that kind, with its own card.
+  return { ok: true, result: { ...result, ...sources }, ...(checked.kind && checked.kind !== kind ? { kind: checked.kind } : {}) };
 }
 
 /** The whole loop: one attempt, then one repair round if the answer was fixable (FR-48). */

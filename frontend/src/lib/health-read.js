@@ -117,3 +117,62 @@ export function mergeWeighIns(S, records, { src, seen = {} } = {}) {
   }
   return [...days].sort()
 }
+
+/* ---------- body composition (body fat, lean mass, bone mass, body water, BMR) ---------- */
+//
+// What a smart scale saves to the hub besides the weight (idea by @baron-de-ropp (#197) and
+// @TheBlackSide243 (#589), body water from @elmillgoa (#1014)). Health Connect has all five, Apple
+// Health body fat and lean mass. It
+// is shown under Body measurements as the hub has it, read-only: kept in this phone's health file
+// (lib/health-sync.js), not in the log, so it never syncs, never rides in a backup and never
+// competes with a measurement you typed in. The hub stays the place it lives.
+
+export const BODY_KINDS = ['fat', 'lean', 'bone', 'water', 'bmr']
+// Plausible bounds per kind: anything outside is another person's profile or a scale's hiccup.
+const BODY_RANGE = { fat: [2, 75], lean: [15, 200], bone: [0.3, 10], water: [10, 120], bmr: [500, 5000] }
+// Readings kept per kind: a weigh-in a day for well over half a year.
+export const BODY_KEEP = 240
+
+/**
+ * Body-composition records from the hub (`records`: [{ kind, t, v, id, origin, clientId }], fat in
+ * percent, masses in kg, BMR in kcal a day) merged into `store` ({ fat: [{ t, v, id }], ... }),
+ * returning the new store, or null when nothing new came in. One reading per id (and per time, a
+ * second scale app copying the first), newest last, the oldest let go past BODY_KEEP.
+ */
+export function mergeBodyComp(store, records) {
+  const out = {}
+  let changed = false
+  for (const k of BODY_KINDS) out[k] = Array.isArray(store?.[k]) ? [...store[k]] : []
+  for (const r of Array.isArray(records) ? records : []) {
+    if (!r || isOwnRecord(r) || !BODY_RANGE[r.kind]) continue
+    const t = Number(r.t), v = Number(r.v)
+    const [lo, hi] = BODY_RANGE[r.kind]
+    if (!(t > 0) || !(v >= lo && v <= hi)) continue
+    const list = out[r.kind]
+    const id = String(r.id || '')
+    if (list.some(x => (id && x.id === id) || x.t === t)) continue
+    list.push({ t, v: Math.round(v * 100) / 100, ...(id ? { id } : {}) })
+    changed = true
+  }
+  if (!changed) return null
+  for (const k of BODY_KINDS) out[k] = out[k].sort((a, b) => a.t - b.t).slice(-BODY_KEEP)
+  return out
+}
+
+/**
+ * What the Body measurements screen shows of it: per kind with any reading, the latest one and the
+ * change since the reading closest to 30 days before it (null without one at least a week older).
+ */
+export function bodyCompSummary(store) {
+  const out = []
+  for (const kind of BODY_KINDS) {
+    const list = Array.isArray(store?.[kind]) ? store[kind] : []
+    const latest = list.at(-1)
+    if (!latest) continue
+    const want = latest.t - 30 * 24 * 3600e3
+    const older = list.filter(x => x.t <= latest.t - 7 * 24 * 3600e3)
+    const base = older.reduce((best, x) => (!best || Math.abs(x.t - want) < Math.abs(best.t - want) ? x : best), null)
+    out.push({ kind, t: latest.t, v: latest.v, change: base ? Math.round((latest.v - base.v) * 10) / 10 : null })
+  }
+  return out
+}

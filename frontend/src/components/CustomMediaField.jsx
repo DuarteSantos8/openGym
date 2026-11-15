@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { mediaOf, fmtClip } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -36,7 +37,9 @@ export function mediaErrorText(e) {
   if (noRoom(e)) return t('There is no room left on this device for that file.')
   switch (e?.code) {
     case 'type': return t('That file type isn’t supported. Use a photo, a GIF, or an MP4, MOV or WebM video.')
-    case 'too-large': return t('That file is too big. Max {0} MB.', fmtMB(e.mb))
+    case 'too-large': return e.shrunk
+      ? t('That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.', fmtMB(e.mb))
+      : t('That file is too big. Max {0} MB.', fmtMB(e.mb))
     case 'too-long': return t('That video is too long. Max {0} seconds.', e.sec)
     case 'photo-too-big': return t('That photo is too large to process on this device.')
     case 'offline': return t('You’re offline. Try again once you’re back online.')
@@ -49,6 +52,11 @@ export function mediaErrorText(e) {
 const loadIngest = () => import('../lib/media-ingest.js').catch(() => {
   throw Object.assign(new Error('media ingest did not load'), { code: 'offline' })
 })
+/** A busy picker's button: how far a video's shrinking is (0 to 1), or that a file is being read. */
+export const busyText = shrinking => (shrinking != null ? t('Shrinking the video… {0}%', Math.round(shrinking * 100)) : t('Loading…'))
+
+// The video shrinker too (lib/video-shrink.js), only for a video worth shrinking.
+const loadShrink = () => import('../lib/video-shrink.js').catch(() => null)
 
 const KIND_ICON = { image: 'image', gif: 'play', video: 'play' }
 
@@ -66,6 +74,8 @@ export function useMediaPicker() {
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
   const [busy, setBusy] = useState(false)
+  // 0 to 1 while a video is being made smaller before it is kept (lib/video-shrink.js), else null.
+  const [shrinking, setShrinking] = useState(null)
   const [warning, setWarning] = useState(null)
   // Whether files picked here outlive the tab: false when IndexedDB is blocked and the store runs
   // in memory — then nothing is offered, since a saved exercise would point at nothing tomorrow.
@@ -83,7 +93,8 @@ export function useMediaPicker() {
   // says nothing about it).
   const serverLacks = (!!user || !MOBILE) && !!config && !config.media
 
-  const pick = async file => {
+  const pick = async picked => {
+    let file = picked
     if (!file) return null
     setBusy(true)
     setWarning(null)
@@ -91,7 +102,20 @@ export function useMediaPicker() {
       // The ingest (decoders, canvas, the MP4 walk) only loads when someone picks a file.
       // Offline before that code was ever cached, the load fails: that is no fault of the file.
       const { ingestMediaFile } = await loadIngest()
-      const out = await ingestMediaFile(file, limitsFrom(config))
+      const limits = limitsFrom(config)
+      // A big video is made smaller here first, with its progress on the button. Whatever goes
+      // wrong there, the clip as it was is what the ingest gets.
+      let shrunk = false
+      const vs = await loadShrink()
+      if (vs && vs.shouldShrink(file, limits)) {
+        setShrinking(0)
+        let last = 0
+        const small = await vs.shrinkVideo(file, { limits, onProgress: p => { const r = Math.floor(p * 100); if (r !== last) { last = r; setShrinking(p) } } }).catch(() => null)
+        setShrinking(null)
+        if (small) { file = small; shrunk = true }
+      }
+      let out
+      try { out = await ingestMediaFile(file, limits) } catch (e) { if (shrunk && e) e.shrunk = true; throw e }
       for (const b of out.blobs) await mediaStore.put(b.hash, b.blob, { mime: b.mime, pending: true })
       // A guest's or a local phone's copy is the only one: ask the browser not to evict it under
       // storage pressure. Best effort, and absent on plain http.
@@ -103,17 +127,20 @@ export function useMediaPicker() {
       return null
     } finally {
       setBusy(false)
+      setShrinking(null)
     }
   }
+  // What a busy button says: how far the shrinking is, or that the file is being read.
+  const busyLabel = busyText(shrinking)
   const note = !storable ? t('This browser cannot store photos or videos here.')
     : serverLacks ? t('Your server does not store photos and videos yet.')
       : !user ? t('Kept on this device only. Export with photos & videos keeps a copy.')
         : null
-  return { pick, busy, warning, setWarning, note, storable, showAdd: !serverLacks, canAdd: !busy && storable && !serverLacks }
+  return { pick, busy, busyLabel, shrinking, warning, setWarning, note, storable, showAdd: !serverLacks, canAdd: !busy && storable && !serverLacks }
 }
 
 export default function CustomMediaField({ media, url, onChange }) {
-  const { pick, busy, warning, setWarning, note, showAdd, canAdd } = useMediaPicker()
+  const { pick, busy, busyLabel, warning, setWarning, note, showAdd, canAdd } = useMediaPicker()
   const fileRef = useRef(null)
   const m = mediaOf({ media })
   // The draft's files stay out of the local clean-up for as long as this form is open: its
@@ -146,10 +173,10 @@ export default function CustomMediaField({ media, url, onChange }) {
         {m && <span className="cmf-thumb"><CustomThumb ex={{ custom: true, media: m }} /></span>}
         {/* Hidden on a server that will never take a file; shown but off where this browser
             cannot keep one, with the note below saying why. */}
-        {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'image'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
-          {busy ? t('Loading…') : m ? t('Change') : t('Add')}
+        {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'image'} disabled={!canAdd} aria-label={busy ? undefined : nameIn(t('Photo, GIF or video'), m ? t('Change') : t('Add'))} onClick={() => fileRef.current?.click()}>
+          {busy ? busyLabel : m ? t('Change') : t('Add')}
         </Button>}
-        {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={t('Remove')} title={t('Remove')} disabled={busy} onClick={() => { setWarning(null); onChange({ media: null }) }} />}
+        {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={nameIn(t('Photo, GIF or video'), t('Remove'))} title={t('Remove')} disabled={busy} onClick={() => { setWarning(null); onChange({ media: null }) }} />}
       </div>
     </Row>
     <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={onFile} />

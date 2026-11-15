@@ -3,9 +3,8 @@
   "name": "ring face pull",
   "bodyPart": "shoulders",
   "equipment": "suspension trainer",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rotator cuff"
   ],

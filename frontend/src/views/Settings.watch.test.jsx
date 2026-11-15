@@ -110,9 +110,13 @@ describe('Settings → Apple Watch', () => {
     expect(host.querySelector('#root-page')).toBeTruthy()
   })
 
-  it('has its row on the root at once on the iPhone app', async () => {
+  // #1105: the root has one Watches row on the phones; Apple Watch is the first row on its page.
+  it('has its row at once on the iPhone app: Watches on the root, Apple Watch inside', async () => {
     globalThis.Capacitor = { getPlatform: () => 'ios' }
+    const rowWith = text => [...host.querySelectorAll('.lrow')].some(r => r.textContent.includes(text))
     await act(async () => { root.render(<MemoryRouter><Settings /></MemoryRouter>) })
-    expect([...host.querySelectorAll('.lrow')].some(r => r.textContent.includes('Apple Watch'))).toBe(true)
+    expect(rowWith('Watches')).toBe(true)
+    await act(async () => { root.render(<MemoryRouter><Settings page="watches" /></MemoryRouter>) })
+    expect(rowWith('Apple Watch')).toBe(true)
   })
 })

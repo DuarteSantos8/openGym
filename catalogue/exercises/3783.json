@@ -3,11 +3,10 @@
   "name": "dumbbell archer",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "triceps",
     "upper back",
-    "rear deltoids",
     "core"
   ],
   "category": "strength",

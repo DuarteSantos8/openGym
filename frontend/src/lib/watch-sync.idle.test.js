@@ -3,6 +3,7 @@
 // watch's copy had stopped at 20:28:32, it ended the workout at 21:13:45 as forgotten, and the
 // phone saved it, although 20 sets had been ticked on the phone since, the last 24 s earlier.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { writeForgottenState } from './forgotten-workout.js'
 import { applyEvents, bindWatchActions, buildSnapshot, staleWatchFinish, phoneActiveAt, phoneWorkedAt, notePhoneEdit, notePhoneOpen, lastTickIn, IDLE_GUARD_MS, _resetWatchSync } from './watch-sync.js'
 
 const T = Date.parse('2026-10-27T20:25:09+01:00')
@@ -98,5 +99,20 @@ describe('what the watch hears', () => {
     const A = workout([null])
     A.entries[0].sets[0] = { w: 20, r: 8, done: false, at: T + 7 * min, sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 0, done: false } } }
     expect(lastTickIn(A)).toBe(T + 7 * min)
+  })
+})
+
+describe('a watch that ended the workout because the lifter left the gym', () => {
+  it('is believed when this phone saw the walk out too, after the last set', () => {
+    const last = T + 5 * min
+    const A = workout([T, last])
+    const ev = { type: 'finish', wid: 'w-904', at: last + 90e3, idle: true, left: true }
+    // Without the phone's own leftAt: inside the 20 minute guard, kept running as before.
+    expect(staleWatchFinish(A, ev, last + 8 * min)).toBe(true)
+    writeForgottenState('w-904', { leftAt: last + 2 * min })
+    expect(staleWatchFinish(A, ev, last + 8 * min)).toBe(false)
+    // A set ticked here after the walk out still keeps it going.
+    notePhoneEdit('w-904', last + 4 * min)
+    expect(staleWatchFinish(A, ev, last + 8 * min)).toBe(true)
   })
 })

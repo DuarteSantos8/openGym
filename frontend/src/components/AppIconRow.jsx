@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { appIconState, setAppIcon } from '../lib/app-icon.js'
-import { APP_ICON_VARIANTS } from '../lib/app-icon-variants.js'
+import { APP_ICON_VARIANTS, offeredIcons } from '../lib/app-icon-variants.js'
+import { seasonNow } from '../lib/season-clock.js'
 import { useUI } from '../store/useUI.js'
 import Icon from './Icon.jsx'
 
@@ -39,7 +40,7 @@ export default function AppIconRow() {
     </span>
     <span className="lrow-v">{t(current.name)}</span>
     <div className="app-icons" role="radiogroup" aria-label={t('App icon')}>
-      {APP_ICON_VARIANTS.map(v => (
+      {offeredIcons(seasonNow(), state.name).map(v => (
         <button key={v.id} type="button" role="radio" aria-checked={v.id === state.name} disabled={busy}
           className={'app-icon' + (v.id === state.name ? ' on' : '')} onClick={() => pick(v.id)} aria-label={t(v.name)}>
           <img src={`app-icons/${v.id}.png`} alt="" width="56" height="56" draggable="false" />

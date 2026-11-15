@@ -1,16 +1,18 @@
+import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
+import { tempoOf, guideReps } from '../lib/tempo.js'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
-import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
+import { clampIncline, INCLINE_MAX, INCLINE_STEP, clampLevel, LEVEL_MAX, cardioCol } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
-import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
+import { fmtDate, fmtNum, fmtPlate, exerciseNameText } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import {
-  addCluster, addDrop, addSideCluster, addSideDrop, clustersOf, dropsOf,
+  addCluster, addDrop, addSideCluster, addSideDrop, clustersOf, dropsOf, isClusterSet,
   isFailureSet, isSideSet, isWarmupRow, nextBurstReps, toggleFailure, nextDropWeight, setClusterAt,
   setDropAt, setSideClusterAt, setSideDropAt, setSideField,
 } from '../lib/workout-model.js'
@@ -18,15 +20,21 @@ import { weightIncrement, stepWeight } from '../lib/progression.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
 import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
+import { usesBar } from '../lib/bar.js'
+import { plateText } from '../lib/plate-text.js'
 import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView } from '../lib/gym-inventory.js'
 import { exView } from '../lib/ex-unit.js'
 import Icon from '../components/Icon.jsx'
+import { BandChips } from '../components/Bands.jsx'
+import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
+import Glyph from '../components/Glyph.jsx'
 import { Button, Stepper } from '../components/ui.jsx'
 import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { isOn } from '../lib/modules.js'
+import CardioEffortChip from '../components/CardioEffortChip.jsx'
 
 const firstIncomplete = entry => {
   const index = entry.sets.findIndex(set => !set.done)
@@ -106,11 +114,11 @@ function PlanBadge({ entry, mode }) {
 function PlateBadge({ S, entry, set }) {
   if (!isOn(S, 'plates')) return null   // Settings → Modules: Plates and warm-ups off
   if (modeOf({ ...(entry.target || {}), id: entry.id }) !== 'reps') return null
-  const load = rowLoad(loadKindFor(S, { ...(entry.target || {}), id: entry.id }), set.w, baseWeightFor(S, entry.id), inventoryFor(S))
+  const base = baseWeightFor(S, entry.id)
+  const load = rowLoad(loadKindFor(S, { ...(entry.target || {}), id: entry.id }), set.w, base, inventoryFor(S))
   if (!load) return null
-  const stack = load.plates.map(fmtPlate).join(' + ')
-  const text = load.barOnly ? t('Bar only')
-    : load.kind === 'pairs' ? t('{0} per side', stack || '–') : t('Load {0}', stack || '–')
+  // One set at a time here, so the bar it counts with is always named (lib/plate-text.js).
+  const text = plateText(load, { unit: S.unit, base, first: true, bar: usesBar(entry.id) })
   return <span className="focus-badge plate"><Icon name="plate" />{text}{load.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(load.missing) + ' ' + S.unit)}</span></>}</span>
 }
 
@@ -207,7 +215,7 @@ export default function FocusView({
             onChange={value => onMutateSet(setIdx, row => setSideDropAt(row, side, index, { r: value }))} />
         </div>)}
         {sideBursts.map((burst, index) => <div className="focus-extra" key={`burst-${index}`}>
-          <span>{t('Burst {0}', index + 1)}</span>
+          <span>{set.cluster === true ? t('Mini-set {0}', index + 1) : t('Burst {0}', index + 1)}</span>
           <Stepper label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
             onChange={value => onMutateSet(setIdx, row => setSideClusterAt(row, side, index, value))} />
           <span className="dim small">{burst.restSec}s</span>
@@ -284,7 +292,7 @@ export default function FocusView({
         // Cardio rates in RPE from here, as in the list's set menu (Workout.jsx): no column to spare.
         !isWarmupRow(set) && mode === 'cardio' && { icon: 'gauge', label: t('How hard it felt'), sub: set.rpe != null ? t(EFFORT.rpe.hd) + ' ' + fmtNum(set.rpe) : t('Not rated yet'), onClick: () => effortPickerSheet('rpe', set.rpe ?? null, value => onField(setIdx, 'rpe', value), { cardio: true }) },
         { icon: 'arrowDown', label: t('Add drop set'), onClick: () => onMutateSet(setIdx, row => addDropTo(row, entry.target)) },
-        { icon: 'bolt', label: t('Add burst'), onClick: () => onMutateSet(setIdx, row => addBurstTo(row, entry.target?.intensifier?.type === 'restpause' ? entry.target.intensifier.restSec : (S.restPauseSec || 15))) },
+        { icon: 'bolt', label: t('Add burst'), onClick: () => onMutateSet(setIdx, row => addBurstTo(row, ['restpause', 'cluster'].includes(entry.target?.intensifier?.type) ? entry.target.intensifier.restSec : (S.restPauseSec || 15))) },
       ] },
       { more: [{ items: [
         { icon: 'flame', label: isWarmupRow(set) ? t('Mark as work set') : t('Mark as warm-up'), onClick: () => onMutateSet(setIdx, toggleWarmup) },
@@ -308,9 +316,9 @@ export default function FocusView({
         </div>
       </div>}
       <header className="focus-card-header">
-        <h2>{exerciseNameFor(ex)}</h2>
+        <h2 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h2>
         <button className="iconbtn" aria-label={t('Details')} onClick={() => exerciseDetailSheet(ex)}><Icon name="info" /></button>
-        {isWarmupRow(set) && <span className="focus-warmup" aria-label={t('Warm-up')}>🔥</span>}
+        {isWarmupRow(set) && <Glyph icon="flame" emoji="🔥" className="focus-warmup" label={t('Warm-up')} />}
         {isFailureSet(set) && <span className="focus-failure" role="img" aria-label={t('Taken to failure')}>{t('F')}</span>}
         <button className="iconbtn" aria-label={t('More')} onClick={openExerciseMenu}><Icon name="more" /></button>
       </header>
@@ -319,6 +327,7 @@ export default function FocusView({
         <div className="focus-tags">
           {mode === 'cardio' && <span className="tag acc">{t('Cardio')}</span>}
           {isSideSet(set) && <span className="tag acc">{t('Per side')}</span>}
+          {mode === 'reps' && <TempoTag tempo={tempoOf(entry.target, set)} onClick={() => tempoGuideSheet({ tempo: tempoOf(entry.target, set), reps: guideReps(set, entry.target), name: exerciseNameText(ex) })} />}
           {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
           {ex.eq && <span className="tag">{t(ex.eq)}</span>}
         </div>
@@ -345,8 +354,11 @@ export default function FocusView({
             <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} ariaLabel="speed" value={toSpeed(set.speed || 0, speedUnit)} step={0.5} disabled={readOnly}
               onChange={value => onField(setIdx, 'speed', fromSpeed(value, speedUnit))} />
             {/* The treadmill's grade, where the exercise has one (lib/incline.js). */}
-            {(inclineFits(ex) || entry.sets.some(hasIncline)) && <Stepper label={t('Incline (%)')} ariaLabel="incline" value={set.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX} disabled={readOnly}
+            {cardioCol(ex, entry.sets) === 'incline' && <Stepper label={t('Incline (%)')} ariaLabel="incline" value={set.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX} disabled={readOnly}
               onChange={value => onField(setIdx, 'incline', clampIncline(value))} />}
+            {/* A bike's, a rower's or a cross trainer's resistance level instead. */}
+            {cardioCol(ex, entry.sets) === 'level' && <Stepper label={t('Level')} ariaLabel="level" value={set.level || 0} step={1} decimal={false} max={LEVEL_MAX} disabled={readOnly}
+              onChange={value => onField(setIdx, 'level', clampLevel(value))} />}
           </> : <>
             <Stepper label={t('Load ({0})', S.unit)} ariaLabel="load" value={set.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
               onChange={value => onField(setIdx, 'w', value)} />
@@ -354,7 +366,9 @@ export default function FocusView({
             <strong>{t('{0}s hold', set.sec || entry.target?.sec || 45)}</strong>
             <Button icon="play" aria-label={t('Start set')} disabled={readOnly || busy}
               onClick={() => onStartTimed(setIdx, onProgress)}>{t('Start')}</Button>
-          </div> : <Stepper label={t('Reps')} ariaLabel="reps" value={set.r || 0} step={1} decimal={false} disabled={readOnly}
+          </div> : mode === 'distance' ? <Stepper label={t('Metres')} ariaLabel="metres" value={set.m || 0} step={5} decimal={false} disabled={readOnly}
+            onChange={value => onField(setIdx, 'm', value)} />
+            : <Stepper label={t('Reps')} ariaLabel="reps" value={set.r || 0} step={1} decimal={false} disabled={readOnly}
             onChange={value => onField(setIdx, 'r', value)} />}</>}
         </>}
         <div className="focus-extras">
@@ -366,7 +380,7 @@ export default function FocusView({
               onChange={value => onMutateSet(setIdx, row => setDropAt(row, index, { r: value }))} />
           </div>)}
           {bursts.map((burst, index) => <div className="focus-extra" key={`burst-${index}`}>
-            <span>{t('Burst {0}', index + 1)}</span>
+            <span>{isClusterSet(set) ? t('Mini-set {0}', index + 1) : t('Burst {0}', index + 1)}</span>
             <Stepper label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly}
               onChange={value => onMutateSet(setIdx, row => {
                 const delta = (Number(value) || 0) - (clustersOf(row)[index]?.r ?? row.clusters?.[index]?.r ?? 0)
@@ -375,9 +389,18 @@ export default function FocusView({
             <span className="dim small">{burst.restSec}s</span>
           </div>)}
         </div>
+        {/* The bands this set is done with, as on the list (TestFlight 11-08: missing here). */}
+        {mode === 'reps' && usesBands(S, entry.id, entry.target) && <BandChips className="focus-bands" value={setBandsOf(set)}
+          label={t('Bands for set {0}', setIdx + 1)} onToggle={id => { if (!locked) onMutateSet(setIdx, row => toggleSetBand(row, id)) }} />}
         {mode === 'reps' && effortField && <button className={'effcell focus-effort' + (effortValue == null ? ' is-empty' : '')}
           style={effortTint ? { color: effortTint, borderColor: effortTint, background: `color-mix(in srgb, ${effortTint} 20%, var(--surface-2))` } : undefined}
           aria-label={t(EFFORT[effort].hd)} disabled={readOnly} onClick={openEffort}>{effortValue == null ? t(EFFORT[effort].hd) : fmtNum(effortValue)}</button>}
+        {/* Cardio: how hard it felt, on the card (Q5). Rated after the fact too, so a done set
+            still takes it; only a set further down the list waits its turn. */}
+        {mode === 'cardio' && isOn(S, 'effort') && !isWarmupRow(set) && <div className="focus-cardio-eff">
+          <CardioEffortChip value={set.rpe ?? null} disabled={locked}
+            onOpen={() => effortPickerSheet('rpe', set.rpe ?? null, value => onField(setIdx, 'rpe', value), { cardio: true })} />
+        </div>}
       </div>
       <Button variant="primary" icon="check" data-tour="tick" aria-label={t('Complete set')} onClick={complete}>{set.done ? t('Completed') : t('Complete')}</Button>
       <div className="focus-secondary">
