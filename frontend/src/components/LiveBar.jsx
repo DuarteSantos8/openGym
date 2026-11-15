@@ -61,6 +61,10 @@ export default function LiveBar () {
   const ex = useRef(null)
   const b = show ? liveBarState(S, { timer, live: hr, rows: link.rows, checking: link.checking }) : null
   const setKey = b?.set ? b.set.n + '/' + b.set.of : ''
+  // A different exercise, set or rest starts again at the long label (set during render, so the measure below sees step 0).
+  const key = (b?.exercise || '') + '|' + setKey + '|' + !!b?.rest
+  const [seen, setSeen] = useState(key)
+  if (seen !== key) { setSeen(key); setStep(0) }
   useLayoutEffect(() => {
     if (ex.current && step < 2 && ex.current.scrollWidth > ex.current.clientWidth) setStep(step + 1)
   }, [step, width, b?.exercise, setKey, !!b?.rest])

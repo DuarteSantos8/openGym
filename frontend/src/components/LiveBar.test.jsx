@@ -114,4 +114,17 @@ describe('the live bar', () => {
     expect(document.body.classList.contains('has-livebar')).toBe(false)
     root = createRoot(host)
   })
+
+  it('brings the set label back when a shorter exercise replaces a long one', () => {
+    // happy-dom does no layout: say a name with LONG in it is clipped.
+    const sw = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function () { return this.textContent.includes('LONG') ? 200 : 0 })
+    const cw = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100)
+    try {
+      seed(active({ entries: [entry('longname', [set(), set()])] })); render()
+      expect(text()).toContain('LONGNAME')
+      expect(text()).not.toMatch(/Set 1 of 2|1\/2/)
+      seed(active({ entries: [entry('bench', [set(), set()])] }))
+      expect(text()).toContain('Set 1 of 2')
+    } finally { sw.mockRestore(); cw.mockRestore() }
+  })
 })

@@ -3058,7 +3058,7 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
 @media (prefers-reduced-transparency:reduce){.livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}}
 .livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
-.livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform var(--fast) linear}
+.livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform 1s linear}
 :root[dir="rtl"] .livebar-hl i{transform-origin:right}
 .livebar-dev{flex:none;display:flex;line-height:0}
 .livebar-dev svg{overflow:visible}
