@@ -6014,4 +6014,6 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  "Nutrition totals": "Näringssummor",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Dagliga summor för energi, protein, kolhydrater och fett från din matdagbok de senaste två veckorna. Aldrig namn på livsmedel. Av tills du slår på det.",
 }

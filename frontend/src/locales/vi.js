@@ -5933,4 +5933,6 @@ export default {
   "Unsupported entry": "Mục không được hỗ trợ",
   "Your foods": "Thực phẩm của bạn",
   "{0} entries unknown": "{0} mục không rõ",
+  "Nutrition totals": "Tổng dinh dưỡng",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Tổng năng lượng, protein, carbohydrate và chất béo mỗi ngày từ nhật ký dinh dưỡng của bạn trong hai tuần gần nhất. Không bao giờ gửi tên thực phẩm. Tắt cho đến khi bạn bật.",
 };
