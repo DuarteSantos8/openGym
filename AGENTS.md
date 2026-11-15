@@ -16,7 +16,7 @@ If this is your first time in the project, do the steps below in order before yo
 ## 2. Where the code is
 
 - **GitHub:** `sorensadrgit-art/openGym` (fork). Upstream is `DuarteSantos8/openGym`: read-only for you.
-- **Base branch:** `main` once PR #25 (integration) is merged; until then, `next/integration-20261115`.
+- **Base branch:** `main`. Every openGym Next PR so far (#18–#27) is merged, and CI (`Tests`, including `e2e`) is green on it.
 - **Local (WSL2 Ubuntu):** one git worktree per branch under `~/dev/og-<name>`; helper scripts in `~/dev/.ogtools/`.
 - **Node:** run `source ~/.nvm/nvm.sh` first (Node 22).
 
