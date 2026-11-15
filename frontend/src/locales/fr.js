@@ -5931,4 +5931,7 @@ export default {
   "Also ticks the {0} skills before it": "Coche aussi les {0} skills d’avant",
   "Also takes back the skill after it": "Retire aussi le skill qui suit",
   "Also takes back the {0} after it": "Retire aussi les {0} skills qui suivent",
+  "Train this branch": "S'entraîner avec une échelle",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Trois maintiens, de {0} s à {1} s. Tous à {1} s et le palier suivant est à toi.",
+  "See every skill as a tree": "Voir tous les skills en arbre",
 }

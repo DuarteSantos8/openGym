@@ -31,7 +31,7 @@ export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'trip
 // Which policies can sensibly drive which logging mode.
 export const POLICIES_FOR = {
   reps: ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'ladder'],
-  time: ['off', 'time'],
+  time: ['off', 'time', 'ladder'],
   cardio: ['off']
 }
 
@@ -572,6 +572,7 @@ export function nextPrescription(S, cfg, routine) {
   const steady = policy === 'steady' && mode === 'reps'
   const rangeS = steady ? normalizeRepRange(cfg.reps || last?.goal || 10, cfg.repsMin, repStep(cfg)) : null
   if (policy === 'ladder' && mode === 'reps') return ladderPrescription(S, cfg, last, policy)
+  if (policy === 'ladder' && mode === 'time') return ladderHoldPrescription(S, cfg, last, policy, inc)
   if (policy === 'undulating' && mode === 'reps') {
     const out = undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted })
     if (out) return out
@@ -938,6 +939,27 @@ function ladderPrescription(S, cfg, last, policy) {
       : { policy, kind: 'hold', ...weight, reps: range.reps, why: ['Top of the ladder. Add weight, slow the tempo or make your own next rung.'] }
   }
   return { policy, kind: 'up', ...weight, reps: goal + 1, why: ['Every set hit {0}. One more rep each.', goal] }
+}
+
+// The same ladder for a hold (a lever, an L-sit, a planche): the seconds climb by the exercise's
+// step while every set is held, and at the top every set has to make it before the plan names
+// the next rung, which starts at the bottom again.
+export const LADDER_SEC_TOP = 30
+export const LADDER_SEC_BOTTOM = 10
+function ladderHoldPrescription(S, cfg, last, policy, inc) {
+  const top = Math.max(LADDER_SEC_BOTTOM, cfg.secTop > 0 ? cfg.secTop : LADDER_SEC_TOP)
+  const weight = last && last.weight > 0 ? { weight: last.weight } : {}
+  if (!last) return { policy, kind: 'first', sec: Math.min(top, cfg.sec || LADDER_SEC_BOTTOM), why: ['Nothing logged yet, so this session sets the baseline.'] }
+  const goal = Math.max(1, Math.min(top, last.goal || cfg.sec || LADDER_SEC_BOTTOM))
+  if (!last.ok) return { policy, kind: 'hold', ...weight, sec: goal, why: ['Came up short last time. Same target again.'] }
+  if (goal >= top) {
+    const next = nextRung(S, cfg.id)
+    return next
+      ? { policy, kind: 'ladder', ...weight, sec: top, next, why: ['Every set at {0}. You’re ready for the next rung.', top + ' s'] }
+      : { policy, kind: 'hold', ...weight, sec: top, why: ['Top of the ladder. Add weight, slow the tempo or make your own next rung.'] }
+  }
+  const step = Math.min(inc, top - goal)
+  return { policy, kind: 'up', ...weight, sec: goal + step, why: ['Held every set for the full time. Target goes up by {0}s.', step] }
 }
 
 function undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted }) {

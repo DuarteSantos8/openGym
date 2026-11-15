@@ -5924,4 +5924,7 @@ export default {
   "Also ticks the {0} skills before it": "也會勾選前面的 {0} 個技能",
   "Also takes back the skill after it": "也會取消後一個技能",
   "Also takes back the {0} after it": "也會取消後面的 {0} 個",
+  "Train this branch": "練這條分支",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "三次靜止，從 {0} 秒到 {1} 秒。每次都到 {1} 秒，下一級就是你的。",
+  "See every skill as a tree": "以樹狀圖查看全部技能",
 }

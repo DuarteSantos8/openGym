@@ -5931,4 +5931,7 @@ export default {
   "Also ticks the {0} skills before it": "También marca las {0} habilidades anteriores",
   "Also takes back the skill after it": "También desmarca la habilidad siguiente",
   "Also takes back the {0} after it": "También desmarca las {0} siguientes",
+  "Train this branch": "Entrenar esta rama",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tres aguantes, de {0} s a {1} s. Todos a {1} s y el siguiente peldaño es tuyo.",
+  "See every skill as a tree": "Ver todas las habilidades en árbol",
 }

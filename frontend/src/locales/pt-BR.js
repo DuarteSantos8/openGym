@@ -4360,6 +4360,9 @@ export const PT_BR_OVERRIDES = {
   "Also ticks the {0} skills before it": "Também marca as {0} habilidades anteriores",
   "Also takes back the skill after it": "Também desmarca a habilidade seguinte",
   "Also takes back the {0} after it": "Também desmarca as {0} seguintes",
+  "Train this branch": "Treinar este ramo",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Três sustentações, de {0} s a {1} s. Todas a {1} s e o próximo degrau é seu.",
+  "See every skill as a tree": "Ver todas as habilidades em árvore",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

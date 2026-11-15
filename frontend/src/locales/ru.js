@@ -5935,4 +5935,7 @@ export default {
   "Also ticks the {0} skills before it": {"one": "Отмечает и {0} предыдущий навык", "few": "Отмечает и {0} предыдущих навыка", "many": "Отмечает и {0} предыдущих навыков", "other": "Отмечает и {0} предыдущих навыка"},
   "Also takes back the skill after it": "Снимает и следующий навык",
   "Also takes back the {0} after it": {"one": "Снимает и {0} следующий", "few": "Снимает и {0} следующих", "many": "Снимает и {0} следующих", "other": "Снимает и {0} следующих"},
+  "Train this branch": "Тренировать эту ветку",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Три удержания, от {0} с до {1} с. Все по {1} с — и следующая ступень твоя.",
+  "See every skill as a tree": "Все навыки деревом",
 }

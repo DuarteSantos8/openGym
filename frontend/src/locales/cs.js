@@ -5897,4 +5897,7 @@ export default {
   "Also ticks the {0} skills before it": "Zaškrtne i {0} dovedností před ní",
   "Also takes back the skill after it": "Odebere i dovednost po ní",
   "Also takes back the {0} after it": "Odebere i {0} po ní",
+  "Train this branch": "Trénovat tuto větev",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tři výdrže, od {0} s do {1} s. Všechny na {1} s a další příčka je tvoje.",
+  "See every skill as a tree": "Zobrazit všechny dovednosti jako strom",
 }

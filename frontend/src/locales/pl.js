@@ -5931,4 +5931,7 @@ export default {
   "Also ticks the {0} skills before it": {"one": "Zaznacza też {0} poprzednią umiejętność", "few": "Zaznacza też {0} poprzednie umiejętności", "many": "Zaznacza też {0} poprzednich umiejętności", "other": "Zaznacza też {0} poprzedniej umiejętności"},
   "Also takes back the skill after it": "Cofa też następną umiejętność",
   "Also takes back the {0} after it": {"one": "Cofa też {0} kolejną", "few": "Cofa też {0} kolejne", "many": "Cofa też {0} kolejnych", "other": "Cofa też {0} kolejnej"},
+  "Train this branch": "Trenuj tę gałąź",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Trzy utrzymania, od {0} s do {1} s. Wszystkie po {1} s i kolejny szczebel jest twój.",
+  "See every skill as a tree": "Zobacz wszystkie umiejętności jako drzewo",
 }

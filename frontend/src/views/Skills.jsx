@@ -15,6 +15,8 @@ import { Thumb } from '../components/Media.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { exerciseDetailSheet } from '../sheets.jsx'
+import { TrainIt } from '../components/Ladders.jsx'
+import { addBranchLadder } from '../lib/skill-ladder.js'
 import './Skills.css'
 
 // Bodyweight skill trees, the way a game draws them (lib/skill-tree.js). Four looks at the same
@@ -275,6 +277,12 @@ function SkillSheet({ id: first, close }) {
       <div className="row between"><span className="muted">{t('Opens')}</span><span>{s.kids.length ? s.kids.map(k => SKILLS[k].name).join(', ') : t('End of the branch')}</span></div>
     </div>
     {s.url && <a className="btn tinted skt-demo" href={s.url} target="_blank" rel="noopener noreferrer"><Icon name="play" />{t('Watch the demo')}</a>}
+    {/* The branch as one of your ladders (lib/skill-ladder.js), trained on the Skill ladder rule. */}
+    <Button variant="tinted" icon="stairs" onClick={() => {
+      let made = null
+      update(x => { made = addBranchLadder(x, s.bi) })
+      if (made) useUI.getState().openSheet(c => <TrainIt ladder={made.ladder} rung={made.rung} close={c} />)
+    }}>{t('Train this branch')}</Button>
     {st !== 'done' ? <>
       <Button variant="primary" onClick={() => {
         update(x => { x.skills = withSkill(x.skills, id) })

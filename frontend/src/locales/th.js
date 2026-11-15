@@ -5942,4 +5942,7 @@ export default {
   "Also ticks the {0} skills before it": "ติ๊กอีก {0} สกิลก่อนหน้าด้วย",
   "Also takes back the skill after it": "ยกเลิกสกิลถัดไปด้วย",
   "Also takes back the {0} after it": "ยกเลิกอีก {0} สกิลถัดไปด้วย",
+  "Train this branch": "ฝึกสายนี้",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "ค้างสามครั้ง จาก {0} วิ ถึง {1} วิ ทุกครั้งได้ {1} วิ ขั้นถัดไปก็เป็นของคุณ",
+  "See every skill as a tree": "ดูทักษะทั้งหมดเป็นแผนผังต้นไม้",
 }
