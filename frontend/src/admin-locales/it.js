@@ -260,4 +260,6 @@ export default {
   "Pause {0}?": "Mettere in pausa {0}?",
   "On a trusted computer where you use Claude Code, run": "Su un computer fidato dove usi Claude Code, esegui",
   ", complete its normal browser sign-in, then paste the token it prints here. This app never opens or handles Claude’s authorization flow.": ", completa il normale accesso nel browser e incolla qui il token stampato. Questa app non apre né gestisce il flusso di autorizzazione di Claude.",
+  '{0} users · {1} active this week': '{0} utenti · {1} attivi questa settimana',
+  'unknown caller': 'richiedente sconosciuto',
 }

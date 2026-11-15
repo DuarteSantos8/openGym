@@ -429,7 +429,7 @@ export default function AdminCoach() {
           <div className="adm-group-t">{adminT('Recent jobs')}</div>
           {d.recent?.length ? <div className="adm-log">
             {d.recent.slice(0, 10).map((e, i) => <div key={i} className="adm-log-row">
-              <span>{e.kind === 'create' ? adminT("Plan") : adminT("Review")}{e.trigger === 'scheduled' ? ' · ' + adminT('scheduled') : ''} · <span style={{ color: e.outcome === 'failed' ? "var(--red)" : e.outcome === 'ready' ? "var(--acc-ink)" : "var(--label-2)" }}>{adminT(e.outcome === 'failed' ? 'failed' : e.outcome === 'ready' ? 'ready' : e.outcome)}</span>{e.ms ? ' · ' + Math.round(e.ms / 1000) + ' s' : ''}</span>
+              <span>{e.kind === 'create' ? adminT("Plan") : adminT("Review")}{e.trigger === 'scheduled' ? ' · ' + adminT('scheduled') : ''} · <span style={{ color: e.outcome === 'failed' ? "var(--red)" : e.outcome === 'ready' ? "var(--acc-ink)" : "var(--label-2)" }}>{adminT(e.outcome === 'failed' ? 'failed' : e.outcome === 'ready' ? 'ready' : e.outcome)}</span>{e.ms ? ' · ' + adminT('{0} s', Math.round(e.ms / 1000)) : ''}</span>
               <span className="when">{rel(e.at)}</span>
             </div>)}
           </div> : <div className="adm-empty">{adminT('No jobs yet.')}</div>}

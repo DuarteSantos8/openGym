@@ -192,7 +192,7 @@ export function auditLine(e) {
   const parts = []
   if (e.name) parts.push(e.name)
   else if (e.uid) parts.push(e.uid)
-  else if (!e.ok) parts.push('unknown caller')
+  else if (!e.ok) parts.push(adminT('unknown caller'))
   if (e.tname) parts.push('→ ' + e.tname)
   if (e.act) parts.push(auditAct(e.act))
   // The reason codes and the invite codes share the msg field; only failures read as a reason.

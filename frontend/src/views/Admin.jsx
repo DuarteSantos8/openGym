@@ -446,7 +446,7 @@ export default function Admin() {
   // trying; a list that did load stays up, marked as the last one that came through.
   const loadUsers = () => api('/api/admin/users')
     .then(d => {
-      if (!Array.isArray(d?.users)) throw new Error('The server answered without a list of users.')
+      if (!Array.isArray(d?.users)) throw new Error(adminT('The server answered without a list of users.'))
       setUsers(d.users); setInviteOnly(!!d.invite_only); setDataView(!!d.data_view); setTrainersOn(!!d.trainers); setUsersErr(null)
     })
     .catch(e => setUsersErr(e.message || adminT('Failed to load')))
@@ -469,7 +469,7 @@ export default function Admin() {
       <button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || '/settings/account'}
         onClick={() => hasBack ? nav(-1) : nav('/settings/account', { replace: true })} aria-label={adminT("Back")}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1 style={{ margin: 0 }}>{adminT("Admin")}</h1>
-        <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? adminT("Could not load") : adminT("Loading…")}</div></div>
+        <div className="sub">{users ? adminT('{0} users · {1} active this week', users.length, activeCount) : usersErr ? adminT("Could not load") : adminT("Loading…")}</div></div>
       <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label={adminT("refresh")}><Icon name="reset" /></button>
     </div>
     <div className="adm-intro">{adminT("Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it.")}{dataView
@@ -497,7 +497,7 @@ export default function Admin() {
       <div className="adm-lead">{adminT('Sessions running at this moment. Tap a name for details.')}</div>
       {liveUsers.map(u => <div key={u.id} className="row between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }} onClick={() => openUser(u.id)}>
         <div><div className="small" style={{ fontWeight: 600 }}>{u.name}</div>
-          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{u.live.name ? `${u.live.name} · exercise ${u.live.exIdx} of ${u.live.exTotal} · ${u.live.setsDone}/${u.live.setsTotal} sets` : adminT("a session is running")}</div></div>
+          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{u.live.name ? u.live.name + ' · ' + adminT('exercise {0} of {1}', u.live.exIdx, u.live.exTotal) + ' · ' + adminT('{0}/{1} sets', u.live.setsDone, u.live.setsTotal) : adminT("a session is running")}</div></div>
         <span className="adm-pill acc">{dur(Date.now() - u.live.startedAt)}</span>
       </div>)}
     </div>}
@@ -522,7 +522,7 @@ export default function Admin() {
       <div className="list">
         {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
           <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? adminT("owner") : adminT("admin")}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>{adminT("disabled")}</span>}</div>
-            <div className="ss">{u.live ? 'training now' + (u.live.name ? ' · ' + u.live.name : '') : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
+            <div className="ss">{u.live ? adminT('training now') + (u.live.name ? ' · ' + u.live.name : '') : adminT('{0} workouts', u.workouts) + (u.lastWorkout ? ' · ' + adminT('last') + ' ' + fmtDate(u.lastWorkout) : '') + ' · ' + adminT('last sync') + ' ' + rel(u.lastSync)}</div>
             {u.email && <div className="ss" title={adminT("sign-in e-mail")}>{u.email}</div>}</div>
           {u.hasPush && <Icon name="bell" title={adminT("push notifications on")} style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}
