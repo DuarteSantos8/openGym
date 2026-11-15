@@ -6094,4 +6094,6 @@ export default {
   "Train this branch": "Treniruoti šią šaką",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Trys išlaikymai, nuo {0} s iki {1} s. Visi po {1} s – ir kitas laiptelis tavo.",
   "See every skill as a tree": "Visi įgūdžiai medžiu",
+  "Tree view": "Medis",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Jau turi {0} savo kopėčias, daugiau negalima. Ištrink vienas, kad pridėtum šią šaką.",
 }

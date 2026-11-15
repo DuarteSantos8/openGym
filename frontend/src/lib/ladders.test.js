@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
-import { nextPrescription, POLICIES_FOR, LADDER_TOP, LADDER_SEC_TOP, LADDER_SEC_BOTTOM } from './progression.js'
+import { nextPrescription, POLICIES_FOR, LADDER_TOP, LADDER_SEC_TOP, LADDER_SEC_BOTTOM, plannedOf } from './progression.js'
 import { EXIDX } from './exercises.js'
 import { buildPlannedEntry } from './session-start.js'
 
@@ -113,5 +113,14 @@ describe('the Skill ladder rule on holds', () => {
     const last = nextPrescription(S([held('2026-11-01', '0283', LADDER_SEC_TOP)]), { ...cfg, id: '0283' })
     expect(last.kind).toBe('hold')
     expect(last.next).toBeUndefined()
+  })
+
+  it('starts again from an edited plan before it climbs', () => {
+    const edited = { ...cfg, sec: 20 }
+    const w = held('2026-11-01', '0662', 10)
+    w.entries[0].planned = plannedOf(cfg)
+    const p = nextPrescription(S([w]), edited)
+    expect(p.sec).toBe(20)
+    expect(p.kind).toBe('hold')
   })
 })

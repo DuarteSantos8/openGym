@@ -6177,4 +6177,6 @@ export default {
   "Train this branch": "এই শাখা অনুশীলন করুন",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "তিনটি হোল্ড, {0} থেকে {1} সেকেন্ড। সবগুলো {1} সেকেন্ডে হলে পরের ধাপ আপনার।",
   "See every skill as a tree": "সব দক্ষতা গাছ হিসেবে দেখুন",
+  "Tree view": "গাছ",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "আপনার ইতিমধ্যে {0}টি নিজের সিঁড়ি আছে, এটাই সর্বোচ্চ। এই শাখা যোগ করতে একটি মুছুন।",
 }

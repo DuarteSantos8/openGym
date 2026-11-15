@@ -6118,4 +6118,6 @@ export default {
   "Train this branch": "Diesen Zweig trainieren",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Drei Halteübungen, von {0} s bis {1} s. Alle bei {1} s und die nächste Stufe gehört dir.",
   "See every skill as a tree": "Alle Skills als Baum ansehen",
+  "Tree view": "Baum",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Du hast schon {0} eigene Leitern, mehr geht nicht. Lösche eine, um diesen Zweig hinzuzufügen.",
 }

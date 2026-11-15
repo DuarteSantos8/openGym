@@ -6095,4 +6095,6 @@ export default {
   "Train this branch": "Тренувати цю гілку",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Три утримання, від {0} с до {1} с. Усі по {1} с — і наступний щабель твій.",
   "See every skill as a tree": "Усі навички деревом",
+  "Tree view": "Дерево",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "У тебе вже {0} власних драбин — це максимум. Видали одну, щоб додати цю гілку.",
 }

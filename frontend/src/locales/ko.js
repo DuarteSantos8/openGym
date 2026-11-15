@@ -6098,4 +6098,6 @@ export default {
   "Train this branch": "이 가지 훈련하기",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "버티기 세 번, {0}초에서 {1}초까지. 모두 {1}초가 되면 다음 단계는 당신 거예요.",
   "See every skill as a tree": "모든 기술을 트리로 보기",
+  "Tree view": "트리",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "이미 내 사다리가 {0}개로 최대예요. 이 가지를 추가하려면 하나를 지우세요.",
 }

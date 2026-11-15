@@ -75,21 +75,24 @@ export function skillsAfter(id) {
   return out
 }
 
-/** S.skills with `id` and the skills before it ticked on `day`, each stamped `now`. */
+/** S.skills with `id` and the skills before it ticked on `day`, each stamped `now`. A skill before
+ *  it already had keeps its day but takes the new stamp: a take-back of it from another device,
+ *  older than this tick, must not leave this skill without what comes before it after the merge. */
 export function withSkill(map, id, now = Date.now(), day = todayISO()) {
   if (!SKILLS[id]) return map
   const out = { ...(isMap(map) ? map : {}) }
   const have = haveOf({ skills: out })
-  for (const x of [id, ...missingBefore(have, id)]) if (!have[x]) out[x] = { at: day, _ts: now }
+  for (let x = id; x; x = SKILLS[x].req) out[x] = { at: have[x] || day, _ts: now }
   return out
 }
 
-/** S.skills with `id` and everything after it taken back, as stamped empty entries. */
+/** S.skills with `id` and everything after it taken back, as stamped empty entries: every one of
+ *  them, had here or not, so a tick of a later skill on another device, older than this, stays
+ *  taken back after the merge. */
 export function withoutSkill(map, id, now = Date.now()) {
   if (!SKILLS[id]) return map
   const out = { ...(isMap(map) ? map : {}) }
-  const have = haveOf({ skills: out })
-  for (const x of [id, ...skillsAfter(id)]) if (have[x]) out[x] = { _ts: now }
+  for (const x of [id, ...skillsAfter(id)]) out[x] = { _ts: now }
   return out
 }
 

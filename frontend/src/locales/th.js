@@ -6109,4 +6109,6 @@ export default {
   "Train this branch": "ฝึกสายนี้",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "ค้างสามครั้ง จาก {0} วิ ถึง {1} วิ ทุกครั้งได้ {1} วิ ขั้นถัดไปก็เป็นของคุณ",
   "See every skill as a tree": "ดูทักษะทั้งหมดเป็นแผนผังต้นไม้",
+  "Tree view": "แผนผังต้นไม้",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "คุณมีบันไดของตัวเอง {0} อันแล้ว ซึ่งเป็นจำนวนสูงสุด ลบหนึ่งอันเพื่อเพิ่มสายนี้",
 }

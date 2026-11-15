@@ -6064,4 +6064,6 @@ export default {
   "Train this branch": "Trénovat tuto větev",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tři výdrže, od {0} s do {1} s. Všechny na {1} s a další příčka je tvoje.",
   "See every skill as a tree": "Zobrazit všechny dovednosti jako strom",
+  "Tree view": "Strom",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Už máš {0} vlastních žebříků, víc nejde. Smaž jeden, abys přidal tuto větev.",
 }

@@ -6063,4 +6063,6 @@ export default {
   "Train this branch": "Latih cabang ini",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tiga tahanan, dari {0} dtk sampai {1} dtk. Semua di {1} dtk dan anak tangga berikutnya milikmu.",
   "See every skill as a tree": "Lihat semua keahlian sebagai pohon",
+  "Tree view": "Pohon",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Kamu sudah punya {0} tangga sendiri, itu batasnya. Hapus satu untuk menambahkan cabang ini.",
 };

@@ -6108,4 +6108,6 @@ export default {
   "Train this branch": "Allena questo ramo",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tre tenute, da {0} s a {1} s. Tutte a {1} s e il gradino successivo è tuo.",
   "See every skill as a tree": "Vedi tutte le abilità ad albero",
+  "Tree view": "Albero",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Hai già {0} scale tue, il massimo. Eliminane una per aggiungere questo ramo.",
 }

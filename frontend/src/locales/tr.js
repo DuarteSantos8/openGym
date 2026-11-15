@@ -6098,4 +6098,6 @@ export default {
   "Train this branch": "Bu dalı çalış",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Üç tutuş, {0} sn'den {1} sn'ye. Hepsi {1} sn olunca bir sonraki basamak senin.",
   "See every skill as a tree": "Tüm becerileri ağaç olarak gör",
+  "Tree view": "Ağaç",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Zaten {0} kendi merdivenin var, en fazlası bu. Bu dalı eklemek için birini sil.",
 }

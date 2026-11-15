@@ -600,7 +600,7 @@ export function nextPrescription(S, cfg, routine) {
   const steady = policy === 'steady' && mode === 'reps'
   const rangeS = steady ? normalizeRepRange(cfg.reps || last?.goal || 10, cfg.repsMin, repStep(cfg)) : null
   if (policy === 'ladder' && mode === 'reps') return ladderPrescription(S, cfg, last, policy)
-  if (policy === 'ladder' && mode === 'time') return ladderHoldPrescription(S, cfg, last, policy, inc)
+  if (policy === 'ladder' && mode === 'time' && !last) return ladderHoldPrescription(S, cfg, last, policy, inc)
   if (policy === 'undulating' && mode === 'reps') {
     const out = undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted })
     if (out) return out
@@ -657,6 +657,7 @@ export function nextPrescription(S, cfg, routine) {
     return { policy, kind: 'hold', ...held, reps: cfg.reps || undefined, why }
   }
 
+  if (policy === 'ladder' && mode === 'time') return ladderHoldPrescription(S, cfg, last, policy, inc)
   const stalls = stallCount(sessions, policy)
   const deloadAt = DELOAD_AFTER[policy] || 3
 

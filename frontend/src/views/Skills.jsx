@@ -17,6 +17,7 @@ import { Button, Segmented } from '../components/ui.jsx'
 import { exerciseDetailSheet } from '../sheets.jsx'
 import { TrainIt } from '../components/Ladders.jsx'
 import { addBranchLadder } from '../lib/skill-ladder.js'
+import { OWN_MAX } from '../lib/ladders.js'
 import './Skills.css'
 
 // Bodyweight skill trees, the way a game draws them (lib/skill-tree.js). Four looks at the same
@@ -50,7 +51,7 @@ export default function Skills() {
         <div className="sub">{t('{0} of {1} skills', all.done, all.total)} · <span className="skt-open-count">{t('{0} to go for', all.open)}</span></div></div></div>
     <Segmented className="skt-modes" value={mode} onChange={setMode} options={[
       { value: 'summary', label: t('Summary') }, { value: 'list', label: t('List') },
-      { value: 'body', label: t('Body') }, { value: 'tree', label: t('Tree') },
+      { value: 'body', label: t('Body') }, { value: 'tree', label: t('Tree view') },
     ]} />
     {(mode === 'list' || mode === 'tree') && <FamilyChips fam={fam} setFam={setFam} />}
     {mode === 'summary' && <Summary have={have} body={S.body} onTree={f => { setFam(f); setMode('tree') }} />}
@@ -112,12 +113,16 @@ function SkillList({ have, fam }) {
 
 function SkillRow({ have, id, where }) {
   const s = SKILLS[id], st = skillStatus(have, id)
-  return <button className={'skt-row ' + st} style={{ '--c': TIER_COLOR[s.tier] }} onClick={() => skillSheet(id)}>
+  return <button className={'skt-row ' + st} style={{ '--c': TIER_COLOR[s.tier] }} onClick={() => skillSheet(id)}
+    aria-label={`${s.name}, ${stateWord(st)}, ${t(TIER_NAME[s.tier])}`}>
     <StateIcon st={st} />
     <span className="skt-row-name"><span>{s.name}</span>{where && <span className="small muted">{t(FAM[s.fam].name)} · {s.branch}</span>}</span>
     <span className="skt-tier">{t(TIER_NAME[s.tier])}</span>
   </button>
 }
+
+// What a screen reader says for a skill's state: the icon beside it is only drawn.
+const stateWord = st => (st === 'done' ? t('Already yours') : st === 'open' ? t('You can go for') : t('Locked'))
 
 const StateIcon = ({ st }) => <span className={'skt-state ' + st}><Icon name={st === 'done' ? 'check' : st === 'open' ? 'star' : 'lock'} /></span>
 
@@ -214,7 +219,7 @@ function Tree({ have, fam, up = false, seed = null, onBack, onFull }) {
     {up ? <div className="row skt-tree-bar">
       <Button size="sm" variant="plain" icon="chevronLeft" onClick={onBack}>{t('Back')}</Button>
       <span className="skt-grow-title" style={{ color: f.color }}>{t(f.name)}</span>
-      <Button size="sm" variant="tinted" onClick={onFull}>{t('Tree')}</Button>
+      <Button size="sm" variant="tinted" onClick={onFull}>{t('Tree view')}</Button>
     </div> : <div className="row skt-tree-bar">
       <span className="small muted" style={{ flex: 1 }}>{t('{0} of {1} skills', c.done, c.total)}</span>
       {!all && Object.keys(open).length > 0 && <Button size="sm" variant="plain" onClick={() => setOpen({})}>{t('Collapse')}</Button>}
@@ -232,7 +237,7 @@ function Tree({ have, fam, up = false, seed = null, onBack, onFull }) {
           const unfold = () => setOpen(o => ({ ...o, [it.branch]: true }))
           const name = it.kind === 'skill' ? sk.name : it.kind === 'done' ? t('{0} had', it.ids.length) : t('{0} more', it.ids.length)
           return <button key={it.key} className={'skt-node ' + it.kind + ' ' + s} style={{ left: p.x - 37, top: p.y - R, '--c': TIER_COLOR[sk.tier], ...grow(g.pos[it.key].row) }}
-            aria-label={it.kind === 'skill' ? `${sk.name}, ${t(TIER_NAME[sk.tier])}` : `${name}, ${it.branch}`}
+            aria-label={it.kind === 'skill' ? `${sk.name}, ${stateWord(s)}, ${t(TIER_NAME[sk.tier])}` : `${name}, ${it.branch}`}
             onClick={it.kind === 'skill' ? () => skillSheet(sk.id) : unfold}>
             <span className="skt-node-c">
               {it.kind === 'skill' ? (ex ? <span className="skt-node-img"><Thumb ex={ex} /></span> : <Icon name={s === 'done' ? 'check' : s === 'open' ? 'star' : 'lock'} />)
@@ -282,6 +287,7 @@ function SkillSheet({ id: first, close }) {
       let made = null
       update(x => { made = addBranchLadder(x, s.bi) })
       if (made) useUI.getState().openSheet(c => <TrainIt ladder={made.ladder} rung={made.rung} close={c} />)
+      else toast(t('You have {0} ladders of your own, the most there can be. Remove one to add this branch.', OWN_MAX))
     }}>{t('Train this branch')}</Button>
     {st !== 'done' ? <>
       <Button variant="primary" onClick={() => {

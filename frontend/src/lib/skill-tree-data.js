@@ -455,6 +455,7 @@ export const SKILL_NAMED = [
   [/(pompes?|push[\s-]?ups?)\s*(en\s*)?archer|archer\s*push/i, 'Archer Push Up'],
   [/(pompes?|push[\s-]?ups?)\s*(en\s*)?pike|pike\s*push/i, 'Pike Push Up'],
   [/rows?\s*(à|a)\s*un\s*bras|one[\s-]?arm\s*rows?/i, 'One Arm Row'],
+  [/assist\w*\s*pistol|pistol\s*(assist|aid)/i, 'Assisted Pistol Squat'],
   [/pistol/i, 'Pistol Squat'],
   [/squats?\s*(en\s*)?archer/i, 'Cossack Squat'],
 ]

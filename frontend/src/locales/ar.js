@@ -6153,4 +6153,6 @@ export default {
   "Train this branch": "تدرّب على هذا الفرع",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "ثلاث ثباتات، من {0} ث إلى {1} ث. كلها عند {1} ث والدرجة التالية لك.",
   "See every skill as a tree": "عرض كل المهارات كشجرة",
+  "Tree view": "شجرة",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "لديك بالفعل {0} سلالم خاصة بك، وهذا الحد الأقصى. احذف واحدًا لإضافة هذا الفرع.",
 }

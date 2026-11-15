@@ -6038,4 +6038,6 @@ export default {
   "Train this branch": "Træn denne gren",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tre hold, fra {0} s op til {1} s. Alle på {1} s, og næste trin er dit.",
   "See every skill as a tree": "Se alle færdigheder som et træ",
+  "Tree view": "Træ",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Du har allerede {0} egne stiger, det er max. Slet en for at tilføje denne gren.",
 }

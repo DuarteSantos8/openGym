@@ -6098,4 +6098,6 @@ export default {
   "Train this branch": "S'entraîner avec une échelle",
   "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Trois maintiens, de {0} s à {1} s. Tous à {1} s et le palier suivant est à toi.",
   "See every skill as a tree": "Voir tous les skills en arbre",
+  "Tree view": "Arbre",
+  "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Tu as déjà {0} échelles à toi, le maximum. Supprimes-en une pour ajouter cette branche.",
 }
