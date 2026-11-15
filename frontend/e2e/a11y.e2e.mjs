@@ -16,10 +16,14 @@ const UPSTREAM_BASELINE = {
 
 for (const route of SCREENS) {
   test(`axe: no serious or critical violations on ${route}`, async ({ page }) => {
+    // axe reads colours as they are at that instant: a card mid fade-in measures as low contrast
+    // (seen once on /home). Reduce motion, then wait until no animation is running.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await enterAsGuest(page, [workout(1, EX.squat, 6), workout(2, EX.bench, 6)])
     await openRoute(page, route)
     if (route === '/addons') await click(page.getByRole('button', { name: 'Show in 3D' }))
-    await page.waitForTimeout(500)
+    await page.waitForFunction(() => document.getAnimations().every(a => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity), null, { timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(300)
     const { violations } = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze()
