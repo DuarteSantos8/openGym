@@ -90,7 +90,7 @@ describe('index.css --livebar-a', () => {
       it(`${name}/${theme}${mode} is at least as opaque as its text needs`, () => {
         const p = props(rs, theme, name)
         const acc = full(val(p, '--acc')), ink = full(val(p, '--on-acc'))
-        const css = Number(p['--livebar-a'] ?? '.72')
+        const css = Number(p['--livebar-a'] ?? '.86')
         if (!KNOWN_SOLID.includes(`${name}/${theme}`) && !mode) {
           expect(contrast(ink, acc), 'solid fill fails 4.5:1; add to KNOWN_SOLID').toBeGreaterThanOrEqual(4.5)
         }

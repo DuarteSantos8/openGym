@@ -52,7 +52,7 @@
   --acc:  var(--green);
   --acc-2:#248a3d;
   --on-acc:#000000;
-  --livebar-a:.72; /* the most see-through the live workout bar's fill may be; presets whose text needs more override it */
+  --livebar-a:.86; /* the most see-through the live workout bar's fill may be; presets whose text needs more override it */
   --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
   --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
   /* The accent as text, an icon or a focus ring: the accent itself in the dark theme. In the light

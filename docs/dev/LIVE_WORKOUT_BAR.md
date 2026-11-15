@@ -30,7 +30,7 @@ only on the workout screen.
 
 ## The glass
 
-The fill is the accent at `--livebar-a`, over a blur. `liveBarAlpha` in `lib/accent.js` picks the
+The fill is the accent at `--livebar-a` (86% or more, as in the approved picture), over a blur. `liveBarAlpha` in `lib/accent.js` picks the
 most see-through value that keeps the text at 4.5:1 over a black and a white backdrop. Sky,
 violet, pink and red are solid, so are the deeper light colours, and so is high contrast. Without
 `backdrop-filter` the fill is solid too. A test checks every preset in both themes.

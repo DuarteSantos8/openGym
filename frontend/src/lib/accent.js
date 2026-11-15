@@ -91,7 +91,7 @@ export function mix(hex, to, t) {
   return toHex(a.map((v, i) => v + (b[i] - v) * t))
 }
 
-export const LIVEBAR_ALPHA = 0.72 // the most see-through the live bar's fill may be
+export const LIVEBAR_ALPHA = 0.86 // the most see-through the live bar's fill may be
 
 /**
  * The lowest alpha from LIVEBAR_ALPHA up to 1, in steps of 0.04, at which `ink` on the fill reaches
