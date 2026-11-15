@@ -135,7 +135,13 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // What the rows are built from: the routine's own, with a deload week's fewer sets.
   const rowCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
   const policyKind = plan.kind
-  if (slot) plan = programmePlan(st, cfg, plan, slot, step)
+  if (slot) {
+    // A programme sets the load and the effort; a rest-pause total is the routine's, like its reps,
+    // so it keeps climbing through the programme's weeks (a deload week starts it again).
+    const rpAim = plan.rpAim
+    plan = programmePlan(st, cfg, plan, slot, step)
+    if (rpAim != null && !slot.deload) plan = { ...plan, rpAim }
+  }
   const planReps = !startsFromLast(st) || plan.kind === 'programme'
   const fromLast = !noProg && policyKind === 'off' && !slot && startsFromLast(st)
   // Warm-ups ramp over the dumbbells you own when the profile lists them (issue #376): a rung

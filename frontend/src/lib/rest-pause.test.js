@@ -7,6 +7,8 @@ import { buildPlannedEntry } from './session-start.js'
 import { readSession, nextPrescription } from './progression.js'
 import { isWarmupRow, syncSideAggregate } from './workout-model.js'
 import { setLabel } from './history.js'
+import { saveProgramme, startProgramme } from './programmes.js'
+import { todayISO } from './format.js'
 
 const BENCH = '0025'
 const rp = (extra = {}, cfg = {}) => ({ id: BENCH, reps: 10, sets: 1, weight: 60, mode: 'reps', prog: 'linear', intensifier: { type: 'restpause', bursts: 3, total: 20, totalMax: 22, restSec: 15, ...extra }, ...cfg })
@@ -35,6 +37,13 @@ describe('restPausePlan', () => {
     expect(plan.total).toBe(10 + RP_BURSTS_MAX)
     expect(plan.totalMax).toBe(plan.total)
     expect(plan.restSec).toBe(5)
+  })
+
+  it('a per-side plan leaves room for every burst on both sides', () => {
+    // 10 + 3 would leave the right side one burst: each side needs its three
+    const plan = restPausePlan(rp({ total: 13, totalMax: 13 }, { side: true }))
+    expect(plan.total).toBe(16)
+    expect(restPauseRow(plan, plan.total, 20, { perSide: true, sides: (base, L, R) => ({ ...base, sides: { L, R } }) }).sides.R.clusters).toHaveLength(3)
   })
 
   it('saves the new fields only, a session\'s aim and the old total left behind', () => {
@@ -70,7 +79,7 @@ describe('reading a rest-pause row back', () => {
   })
 
   it('reads the activation set as what the bursts leave over', () => {
-    expect(readRestPauseRow({ ...row, done: true })).toEqual({ done: true, planned: true, act: 10, total: 20, bursts: 3 })
+    expect(readRestPauseRow({ ...row, done: true })).toEqual({ done: true, complete: true, planned: true, act: 10, total: 20, bursts: 3 })
     // one fewer rep on the last burst: the total drops, the activation set is what it was
     const short = { ...row, done: true, r: 19, clusters: [{ r: 4 }, { r: 3 }, { r: 2 }] }
     expect(readRestPauseRow(short)).toMatchObject({ act: 10, total: 19 })
@@ -81,7 +90,16 @@ describe('reading a rest-pause row back', () => {
     const sided = restPauseRow(plan, 20, 20, { perSide: true, sides: (base, L, R) => syncSideAggregate({ ...base, sides: { L, R } }) })
     expect(sided.r).toBe(20)
     const both = syncSideAggregate({ ...sided, sides: { L: { ...sided.sides.L, done: true }, R: { ...sided.sides.R, done: true } } })
-    expect(readRestPauseRow(both)).toEqual({ done: true, planned: true, act: 10, total: 20, bursts: 3 })
+    expect(readRestPauseRow(both)).toEqual({ done: true, complete: true, planned: true, act: 10, total: 20, bursts: 3 })
+  })
+
+  it('a per-side row with one side left is not the plan done, whatever its numbers', () => {
+    const plan = restPausePlan(rp({}, { side: true }))
+    const sided = restPauseRow(plan, 20, 20, { perSide: true, sides: (base, L, R) => syncSideAggregate({ ...base, sides: { L, R } }) })
+    // the left side alone, logged with the whole set's reps
+    const left = syncSideAggregate({ ...sided, sides: { L: { ...sided.sides.L, r: 20, done: true }, R: sided.sides.R } })
+    expect(readRestPauseRow(left)).toMatchObject({ done: true, complete: false, total: 20 })
+    expect(judgeRestPause(rp({}, { side: true }), left).ok).toBe(false)
   })
 
   it('cannot judge a row from before the activation set lived in it', () => {
@@ -124,10 +142,37 @@ describe('restPausePrescription: double progression on the total', () => {
     expect(restPausePrescription(args(misses))).toMatchObject({ kind: 'deload', weight: 55, rpAim: 20 })
   })
 
+  it('a deload starts its own count: a miss at the lighter weight is not a fourth one', () => {
+    const misses = Array.from({ length: RP_DELOAD_AFTER }, () => session(21, 19))
+    expect(restPausePrescription(args([...misses, session(20, 18, 10, { weight: 55 })]))).toMatchObject({ kind: 'hold', weight: 55, rpAim: 20 })
+  })
+
+  it('never steps past the top of the range: it is reached, then the weight goes up', () => {
+    const odd = rp({ totalMax: 21 })
+    const per = s => ({ ...s, rp: { ...s.rp, key: '10/3/20/21' } })
+    expect(restPausePrescription({ ...args([per(session(20, 20))], odd), step: 2 })).toMatchObject({ kind: 'up', weight: 60, rpAim: 21 })
+    expect(restPausePrescription({ ...args([per(session(20, 20)), per(session(21, 21))], odd), step: 2 })).toMatchObject({ kind: 'up', weight: 62.5, rpAim: 20 })
+  })
+
+  it('with nothing heavier to go to, the total stays at the top instead of starting over', () => {
+    const out = restPausePrescription({ ...args([session(20, 20), session(21, 21), session(22, 22)]), harder: w => w })
+    expect(out).toMatchObject({ kind: 'hold', weight: 60, rpAim: 22 })
+  })
+
   it('starts over from the plan\'s total when the plan changed, or the history is from before', () => {
     const edited = rp({ total: 18 })
     expect(restPausePrescription(args([session(20, 20)], edited))).toMatchObject({ kind: 'hold', weight: 60, rpAim: 18 })
     expect(restPausePrescription(args([{ weight: 60, rp: { planned: false, key: '10/3/20/22' } }]))).toMatchObject({ kind: 'hold', weight: 60, rpAim: 20 })
+  })
+
+  it('a new plan edited along with its weight starts at that weight', () => {
+    // 10 reps at 60 became 8 at 40: the 60 last lifted is not the weight asked for
+    const edited = rp({}, { reps: 8, weight: 40 })
+    expect(restPausePrescription(args([session(20, 20, 10, { planned: { sets: 1, reps: 10, weight: 60 } })], edited)))
+      .toMatchObject({ kind: 'hold', weight: 40, rpAim: 20 })
+    // the plan alone edited: the weight last lifted
+    expect(restPausePrescription(args([session(20, 20, 10, { planned: { sets: 1, reps: 10, weight: 60 } })], rp({}, { reps: 8 }))))
+      .toMatchObject({ kind: 'hold', weight: 60 })
   })
 
   it('work with no load to add stays at the top and says so', () => {
@@ -211,6 +256,20 @@ describe('a rest-pause routine over several weeks', () => {
     const first = build(st)
     st = finish(st, log(first), 0)
     expect(workRow(build(st)).r).toBe(22)
+  })
+
+  it('keeps climbing the total through a programme week that only sets the effort', () => {
+    let st = start(rp())
+    saveProgramme(st, { id: 'P', name: 'Block', at: 1, days: { 1: ['A'], 2: ['A'], 3: ['A'], 4: ['A'], 5: ['A'], 6: ['A'], 7: ['A'] }, weeks: [{ rpe: 8 }, { rpe: 8 }] })
+    startProgramme(st, 'P', todayISO())
+    const totals = []
+    for (let i = 0; i < 3; i++) {
+      const entry = build(st)
+      expect(entry.plan.kind).toBe('programme')
+      totals.push(workRow(entry).r)
+      st = finish(st, log(entry), i)
+    }
+    expect(totals).toEqual([20, 21, 22])
   })
 
   it('with progression off it trains the plan\'s total every time', () => {

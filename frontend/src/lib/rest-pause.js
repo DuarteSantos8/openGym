@@ -51,7 +51,8 @@ export function restPausePlan(cfg) {
   const extra = legacy ? whole(x.totalReps, 1, 1) : 0
   const bursts = Math.min(RP_BURSTS_MAX, whole(x.bursts, 1, legacy ? Math.max(1, splitBurstReps(extra).length) : 3))
   // Every burst gets a rep at least, so the total is never below the activation plus the bursts.
-  const total = Math.max(activation + bursts, legacy ? activation + extra : whole(x.total, 1, 1))
+  // A per-side plan (cfg.side) trains the bursts on each side, so it needs them twice over.
+  const total = Math.max(activation + bursts * (cfg.side ? 2 : 1), legacy ? activation + extra : whole(x.total, 1, 1))
   const totalMax = Math.max(total, whole(x.totalMax, 0, 0))
   return { activation, bursts, total, totalMax, restSec, legacy }
 }
@@ -106,15 +107,17 @@ export function restPauseRow(plan, aim, w, { perSide = false, sideW = null, side
 
 /**
  * What a logged rest-pause row did: the activation set's reps, the total and the bursts, a per-side
- * row added up over the sides that were ticked. `planned` is false for a row from before the
- * activation set lived in it (no `act`), whose numbers cannot be judged against a total.
+ * row added up over the sides that were ticked. `complete` is whether every side was ticked (a
+ * per-side row with one side left is done, but not finished). `planned` is false for a row from
+ * before the activation set lived in it (no `act`), whose numbers cannot be judged against a total.
  */
 export function readRestPauseRow(row) {
-  const empty = { done: false, planned: false, act: 0, total: 0, bursts: 0 }
+  const empty = { done: false, complete: false, planned: false, act: 0, total: 0, bursts: 0 }
   if (!row || !isRestPauseSet(row)) return empty
   const parts = isSideSet(row) ? [row.sides.L, row.sides.R].filter(s => s && s.done) : (row.done ? [row] : [])
   const planned = isSideSet(row) ? row.sides.L?.act === true || row.sides.R?.act === true || row.act === true : row.act === true
   if (!parts.length) return { ...empty, planned }
+  const complete = isSideSet(row) ? parts.length === 2 : true
   let act = 0, total = 0, bursts = 0
   parts.forEach(p => {
     const r = Math.max(0, Number(p.r) || 0)
@@ -124,34 +127,37 @@ export function readRestPauseRow(row) {
     act += Math.max(0, r - sum)
     bursts = Math.max(bursts, own.length)
   })
-  return { done: true, planned, act, total, bursts }
+  return { done: true, complete, planned, act, total, bursts }
 }
 
 /** A plan's numbers as one comparable key: a session judged against another plan says nothing about this one. */
 export const restPauseKey = plan => (plan ? [plan.activation, plan.bursts, plan.total, plan.totalMax].join('/') : '')
 
 /**
- * Judge one session's rest-pause row against what it aimed for. Done means the activation set
- * reached its reps and the whole set reached the total; the bursts may share it out any way.
+ * Judge one session's rest-pause row against what it aimed for. Done means every side was
+ * finished, the activation set reached its reps and the whole set reached the total; the bursts
+ * may share it out any way.
  */
 export function judgeRestPause(target, row) {
   const plan = restPausePlan(target)
   if (!plan) return null
   const aim = restPauseAim(target)
   const read = readRestPauseRow(row)
-  return { ...read, aim, key: restPauseKey(plan), ok: read.done && read.planned && read.total >= aim && read.act >= plan.activation }
+  return { ...read, aim, key: restPauseKey(plan), ok: read.complete && read.planned && read.total >= aim && read.act >= plan.activation }
 }
 
 /**
  * The next rest-pause session: double progression on the total. A clean session raises the total
- * by `step` (one rep, two for a per-side lift) at the same weight; past `totalMax` the weight goes
- * up and the total starts over. A miss keeps the target, and RP_DELOAD_AFTER misses in a row take
- * the weight down and start the total over. Work with no load to add stops at the top and says so.
+ * by `step` (one rep, two for a per-side lift) at the same weight, never past `totalMax`; a clean
+ * session at `totalMax` makes the weight go up and the total start over. A miss keeps the target,
+ * and RP_DELOAD_AFTER misses in a row at the same weight take it down and start the total over.
+ * Work with no load to add, or a weight with nothing heavier to go to, stops at the top and says so.
  *
  * `sessions` are readSession's reads, oldest first, each with `rp` (judgeRestPause) when its
  * target planned rest-pause. Only the sessions at the end that were planned with these same
  * numbers count: anything older, or a session from before the activation set was part of the row,
- * starts the plan again from its first total, at the weight last lifted.
+ * starts the plan again from its first total, at the weight last lifted (or the routine's own,
+ * when it was edited along with the plan, as progression.js does for any other plan change).
  * `harder(w)` / `easier(w)` are the progression engine's own next and deload weights.
  */
 export function restPausePrescription({ cfg, sessions = [], policy, harder, easier, step = 1, weightless = false }) {
@@ -168,18 +174,27 @@ export function restPausePrescription({ cfg, sessions = [], policy, harder, easi
     run.unshift(sessions[i])
   }
   if (!last) return { policy, kind: 'first', rpAim: plan.total, why: ['Nothing logged yet, so this session sets the baseline.'] }
-  if (!run.length) return { policy, kind: 'hold', ...keepW, rpAim: plan.total, why: ['New rest-pause plan, so starting from {0} reps in total.', plan.total] }
+  if (!run.length) {
+    const edited = cfg.weight > 0 && last.planned && (last.planned.weight ?? null) !== cfg.weight
+    return { policy, kind: 'hold', ...(edited ? { weight: cfg.weight } : keepW), rpAim: plan.total, why: ['New rest-pause plan, so starting from {0} reps in total.', plan.total] }
+  }
   const prev = run[run.length - 1]
   const aim = prev.rp.aim
   if (prev.rp.ok) {
-    const next = aim + step
-    if (next <= plan.totalMax) return { policy, kind: 'up', ...keepW, rpAim: next, why: ['{0} reps in total last time. Go for {1} at the same weight.', prev.rp.total, next] }
-    if (weightless || !(lastW > 0)) return { policy, kind: 'hold', ...keepW, rpAim: plan.totalMax, why: ['{0} reps in total, the top of your range. Time to add weight or try a harder variation.', prev.rp.total] }
+    if (aim < plan.totalMax) {
+      const next = Math.min(plan.totalMax, aim + step)
+      return { policy, kind: 'up', ...keepW, rpAim: next, why: ['{0} reps in total last time. Go for {1} at the same weight.', prev.rp.total, next] }
+    }
+    const atTop = { policy, kind: 'hold', ...keepW, rpAim: plan.totalMax, why: ['{0} reps in total, the top of your range. Time to add weight or try a harder variation.', prev.rp.total] }
+    if (weightless || !(lastW > 0)) return atTop
     const up = harder(lastW)
+    // Nothing heavier to go to (the heaviest dumbbell, the whole stack): the total stays at the top.
+    if (up === lastW) return atTop
     return { policy, kind: 'up', weight: up, rpAim: plan.total, why: ['Rest-pause target reached. The weight goes up and the total starts again at {0}.', plan.total] }
   }
   let misses = 0
-  for (let i = run.length - 1; i >= 0 && !run[i].rp.ok; i--) misses++
+  // Only misses at this weight: a deload starts its own count.
+  for (let i = run.length - 1; i >= 0 && !run[i].rp.ok && run[i].weight === lastW; i--) misses++
   if (misses >= RP_DELOAD_AFTER && lastW > 0 && !weightless) {
     return { policy, kind: 'deload', weight: easier(lastW), rpAim: plan.total, why: ['Short of the rest-pause target {0} times in a row. A lighter weight, and the total starts again at {1}.', misses, plan.total] }
   }
