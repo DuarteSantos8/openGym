@@ -33,15 +33,20 @@ function DeviceMark ({ device }) {
 }
 
 // The running workout above the tab bar on every tab: one button back to it (lib/live-bar.js decides
-// what it says). No actions on it by design.
+// what it says). No actions on it by design. The listeners, the refresh and the measuring only run
+// while it shows (LiveBarOn); this outer part just watches for it.
 export default function LiveBar () {
-  const nav = useNavigate()
   const loc = useLocation()
+  const show = useStore(s => liveBarShows(s.S, loc.pathname))
+  return show ? <LiveBarOn /> : null
+}
+
+function LiveBarOn () {
+  const nav = useNavigate()
   const S = useStore(s => s.S)
   const timer = useUI(s => s.timer)
   const [hr, setHr] = useState(() => liveHeartRate())
   const [link, setLink] = useState(() => linkSnapshot())
-  const show = liveBarShows(S, loc.pathname)
   useEffect(() => {
     const off = onLiveHeartRate(() => setHr(liveHeartRate()))
     // Same 15 s refresh as LiveHeartRate: a reading over a minute old goes away on its own.
@@ -50,9 +55,9 @@ export default function LiveBar () {
     return () => { off(); offLink(); clearInterval(iv) }
   }, [])
   useEffect(() => {
-    document.body.classList.toggle('has-livebar', show)
+    document.body.classList.add('has-livebar')
     return () => document.body.classList.remove('has-livebar')
-  }, [show])
+  }, [])
 
   // "Set 2 of 4" gives way to "2/4", then to nothing, before the exercise name is cut. Measured:
   // the name's box is clipped (scrollWidth > clientWidth) at this step, so take the next one.
@@ -60,7 +65,7 @@ export default function LiveBar () {
   const [width, setWidth] = useState(0)
   const btn = useRef(null)
   const ex = useRef(null)
-  const b = show ? liveBarState(S, { timer, live: hr, rows: link.rows, checking: link.checking }) : null
+  const b = liveBarState(S, { timer, live: hr, rows: link.rows, checking: link.checking })
   const setKey = b?.set ? b.set.n + '/' + b.set.of : ''
   // A different exercise, set or rest starts again at the long label (set during render, so the measure below sees step 0).
   const key = (b?.exercise || '') + '|' + setKey + '|' + !!b?.rest
@@ -74,7 +79,7 @@ export default function LiveBar () {
     const ro = new ResizeObserver(() => { setStep(0); setWidth(btn.current.clientWidth) })
     ro.observe(btn.current)
     return () => ro.disconnect()
-  }, [show])
+  }, [])
 
   if (!b) return null
   // One buzz as the rise starts (the app's own helper: the native pulse on the phones).

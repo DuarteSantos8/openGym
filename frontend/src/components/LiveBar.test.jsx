@@ -9,9 +9,10 @@ import * as sound from '../lib/sound.js'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
-const mocks = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: vi.fn(), snap: { rows: [], checking: false } }))
+const mocks = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: vi.fn(), snap: { rows: [], checking: false }, onLink: vi.fn(() => () => {}), onHr: vi.fn(() => () => {}) }))
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav, useLocation: () => mocks.loc }))
-vi.mock('../lib/device-link-live.js', () => ({ linkSnapshot: () => mocks.snap, onLinkChange: () => () => {} }))
+vi.mock('../lib/device-link-live.js', () => ({ linkSnapshot: () => mocks.snap, onLinkChange: (...a) => mocks.onLink(...a) }))
+vi.mock('../lib/phone-workout.js', async importOriginal => ({ ...await importOriginal(), onLiveHeartRate: (...a) => mocks.onHr(...a) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -84,6 +85,20 @@ describe('the live bar', () => {
     expect(text()).toContain('Switch sides')
     expect(text()).not.toContain('Rest')
     expect(bar().getAttribute('aria-label')).toContain('Switch sides')
+  })
+
+  it('runs nothing while there is no bar: no heart-rate or link listener, no interval', () => {
+    const iv = vi.spyOn(globalThis, 'setInterval')
+    mocks.onLink.mockClear(); mocks.onHr.mockClear()
+    try {
+      render()
+      expect(mocks.onHr).not.toHaveBeenCalled()
+      expect(mocks.onLink).not.toHaveBeenCalled()
+      expect(iv.mock.calls.filter(c => c[1] === 15000)).toHaveLength(0)
+      seed(active())
+      expect(mocks.onHr).toHaveBeenCalledTimes(1)
+      expect(mocks.onLink).toHaveBeenCalledTimes(1)
+    } finally { iv.mockRestore() }
   })
 
   it('an unnamed, empty workout reads "Workout" with no undefined or NaN', () => {
