@@ -42,6 +42,12 @@ describe('routine folders', () => {
       const s = { routineFolders: [{ name: 'D' }], routines: [{ ...r('4', 'D'), archived: true }] }
       expect(folderList(s)).toEqual([{ name: 'D', current: false, live: 0, archived: 1 }])
     })
+    it('counts an archived routine of a visible folder whichever side of its live sibling it sits', () => {
+      const old = { ...r('4', 'X'), archived: true }
+      for (const routines of [[old, r('5', 'X')], [r('5', 'X'), old]]) {
+        expect(folderList({ routines })).toEqual([{ name: 'X', current: false, live: 1, archived: 1 }])
+      }
+    })
     it('knows live routines', () => {
       expect(isLive(r('a'))).toBe(true)
       expect(isLive({ archived: true })).toBe(false)

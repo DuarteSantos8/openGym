@@ -11,7 +11,7 @@ import { toggleFavRoutine, isFavRoutine } from '../lib/routine-favs.js'
 import {
   cleanFolder, currentFolder, folderList, folderOf, isLive, moveToFolder, removeFolder, setCurrent,
 } from '../lib/routine-folders.js'
-import { archiveFolder, archiveRoutines, deleteFolderWithRoutines, scheduledDays, undoSnapshot } from '../lib/routine-archive.js'
+import { archiveFolder, archiveRoutines, deleteFolderWithRoutines, putBackEntry, scheduledDays, undoSnapshot } from '../lib/routine-archive.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
 import { listMove, afterSheet, SHEET_EXIT } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
@@ -87,12 +87,7 @@ function removeFolderWithUndo(name) {
     return { undo: s2 => {
       let did = false
       for (const r of s2.routines) if (ids.includes(r.id) && !folderOf(r)) { r.folder = name; did = true }
-      if (entry && !(s2.routineFolders || []).some(e => same(e.name, name))) {
-        const list = (s2.routineFolders || []).slice()
-        list.splice(Math.min(entry.at, list.length), 0, entry.current ? { name: entry.name, current: true } : { name: entry.name })
-        s2.routineFolders = list
-        did = true
-      }
+      if (entry && putBackEntry(s2, entry)) did = true
       return did
     } }
   })
