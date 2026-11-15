@@ -758,6 +758,7 @@ h4.sec{
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
+  .livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}
   .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
@@ -3045,7 +3046,6 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar:active{transform:scale(.985)}
 .livebar:focus-visible{outline:2px solid var(--on-acc);outline-offset:2px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
-@media (prefers-reduced-transparency:reduce){.livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}}
 .livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
 .livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform 1s linear}
 :root[dir="rtl"] .livebar-hl i{transform-origin:right}
