@@ -13,7 +13,10 @@ import { logRequest } from './net-log.js'
 import { MOBILE } from './mobile.js'
 import { APK_VARIANTS, APK_VARIANT } from './apk-variant.js'
 
-const REPO = 'DuarteSantos8/openGym'
+// Which repository's releases update this build: openGym's own, unless the build names another —
+// a fork passes VITE_UPDATE_REPO=someone/openGym so its phones update from its own releases.
+export const updateRepo = (env = import.meta.env || {}) => env.VITE_UPDATE_REPO || 'DuarteSantos8/openGym'
+const REPO = updateRepo()
 const LATEST_URL = `https://api.github.com/repos/${REPO}/releases/latest`
 export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`
 
