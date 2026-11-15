@@ -199,7 +199,7 @@ describe('DeleteAccountSheet', () => {
     expect(password(host)).toBeNull()
     await act(async () => { button(host, 'Delete forever').click() })
     await settle()
-    expect(mocks.confirmDeviceOwner).toHaveBeenCalledWith('Confirm it’s you to delete your openGym account')
+    expect(mocks.confirmDeviceOwner).toHaveBeenCalledWith('Confirm it’s you to delete your Ironvane account')
     expect(mocks.deleteAccount).toHaveBeenCalledWith('Mallory', {})
     expect(mocks.confirmDeviceOwner.mock.invocationCallOrder[0]).toBeLessThan(mocks.deleteAccount.mock.invocationCallOrder[0])
     expect(p.done).toHaveBeenCalled()

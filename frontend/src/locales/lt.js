@@ -5714,6 +5714,12 @@ export default {
   "Your own code for this set": "Tavo paties kodas šiai serijai",
   "openGym dark": "openGym tamsi",
   "openGym green": "openGym žalia",
+  "Ironvane orange": "Ironvane oranžinė",
+  "Based on openGym": "Sukurta pagal openGym",
+  "Bold": "Ryškus",
+  "Refined": "Subtilus",
+  "Sharp corners, bold titles and numbers.": "Aštrūs kampai, paryškinti pavadinimai ir skaičiai.",
+  "Soft corners, quieter type.": "Švelnūs kampai, ramesnis šriftas.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "Modelis jūsų tinkle",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "Mokamas ChatGPT planas, naršyklėje. Business ir Enterprise darbo erdvėse pati erdvė sprendžia, ar nariai gali pridėti savo.",

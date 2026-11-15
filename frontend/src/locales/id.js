@@ -5683,6 +5683,12 @@ export default {
   "Your own code for this set": "Kode milikmu untuk set ini",
   "openGym dark": "Gelap openGym",
   "openGym green": "Hijau openGym",
+  "Ironvane orange": "Oranye Ironvane",
+  "Based on openGym": "Berdasarkan openGym",
+  "Bold": "Tegas",
+  "Refined": "Halus",
+  "Sharp corners, bold titles and numbers.": "Sudut tajam, judul dan angka tebal.",
+  "Soft corners, quieter type.": "Sudut lembut, huruf lebih tenang.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "Model di jaringanmu",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "Paket ChatGPT berbayar, di web. Di workspace Business dan Enterprise, workspace-nya yang menentukan apakah anggota boleh menambahkan milik sendiri.",

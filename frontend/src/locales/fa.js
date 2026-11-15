@@ -5684,6 +5684,12 @@ export default {
   "Your own code for this set": "کد خودت برای این ست",
   "openGym dark": "تیره openGym",
   "openGym green": "سبز openGym",
+  "Ironvane orange": "نارنجی Ironvane",
+  "Based on openGym": "بر پایه openGym",
+  "Bold": "پررنگ",
+  "Refined": "ظریف",
+  "Sharp corners, bold titles and numbers.": "گوشه‌های تیز، عنوان‌ها و اعداد پررنگ.",
+  "Soft corners, quieter type.": "گوشه‌های نرم، قلم آرام‌تر.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "مدلی روی شبکه‌ی شما",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "یک اشتراک پولی ChatGPT، روی وب. در فضاهای کاری Business و Enterprise خود فضای کاری تصمیم می‌گیرد که اعضا می‌توانند رابط خودشان را اضافه کنند یا نه.",

@@ -5773,6 +5773,12 @@ export default {
   "Your own code for this set": "رمزك الخاص لهذه المجموعة",
   "openGym dark": "openGym الداكن",
   "openGym green": "openGym الأخضر",
+  "Ironvane orange": "Ironvane برتقالي",
+  "Based on openGym": "مبني على openGym",
+  "Bold": "جريء",
+  "Refined": "أنيق",
+  "Sharp corners, bold titles and numbers.": "زوايا حادة وعناوين وأرقام بارزة.",
+  "Soft corners, quieter type.": "زوايا ناعمة وخط أهدأ.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "نموذج على شبكتك",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "خطة ChatGPT مدفوعة، على الويب. في مساحات عمل Business وEnterprise، المساحة هي التي تقرر إن كان يحق للأعضاء إضافة موصِّلات خاصة بهم.",

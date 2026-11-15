@@ -5718,6 +5718,12 @@ export default {
   "Your own code for this set": "你给这组定的记号",
   "openGym dark": "openGym 深色",
   "openGym green": "openGym 绿色",
+  "Ironvane orange": "Ironvane 橙色",
+  "Based on openGym": "基于 openGym",
+  "Bold": "醒目",
+  "Refined": "精致",
+  "Sharp corners, bold titles and numbers.": "锐利边角、粗体标题和数字。",
+  "Soft corners, quieter type.": "柔和边角、更低调的字体。",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "你网络里的模型",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "付费的 ChatGPT 方案，网页版。Business 和 Enterprise 工作区由工作区决定成员能否自行添加。",

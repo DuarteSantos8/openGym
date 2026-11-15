@@ -41,7 +41,7 @@ describe('without a server', () => {
     const api = fakeApi()
     await mount({ api, signedIn: false })
     expect(titles()).toContain('Connect to my server')
-    expect(host.textContent).toContain('through your own openGym server')
+    expect(host.textContent).toContain('through your own Ironvane server')
     expect(api.relayLinks).not.toHaveBeenCalled()
     const row = [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Connect to my server'))
     act(() => row.click())
