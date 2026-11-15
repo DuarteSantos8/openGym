@@ -6061,4 +6061,7 @@ export default {
   "Also ticks the {0} skills before it": "{0} مهارت قبلی را هم تیک می‌زند",
   "Also takes back the skill after it": "مهارت بعدی را هم برمی‌گرداند",
   "Also takes back the {0} after it": "{0} بعدی را هم برمی‌گرداند",
+  "Train this branch": "تمرین این شاخه",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "سه نگه‌داشتن، از {0} تا {1} ثانیه. همه به {1} ثانیه برسند و پله بعدی مال توست.",
+  "See every skill as a tree": "دیدن همه مهارت‌ها به شکل درخت",
 }

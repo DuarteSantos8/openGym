@@ -108,6 +108,8 @@ export const secondsToHave = tier => (tier === 1 ? 20 : 10)
 /** The skill a logged exercise shows, if any: a catalogue id, or one of `S.customEx` by its name (`n`). */
 export function skillOfExercise(S, exId) {
   if (SKILL_OF_EXERCISE[exId]) return SKILL_OF_EXERCISE[exId]
+  // The custom exercise a branch made for its skill (lib/skill-ladder.js): 'sk-' and the skill's id.
+  if (typeof exId === 'string' && exId.startsWith('sk-') && SKILLS[exId.slice(3)]) return exId.slice(3)
   const own = (Array.isArray(S?.customEx) ? S.customEx : []).find(c => c?.id === exId)
   const hit = own && SKILL_NAMED.find(([re]) => re.test(String(own.n || own.name || '')))
   return hit ? skillId(hit[1]) : null

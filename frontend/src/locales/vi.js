@@ -6061,4 +6061,7 @@ export default {
   "Also ticks the {0} skills before it": "Cũng đánh dấu {0} kỹ năng trước nó",
   "Also takes back the skill after it": "Cũng gỡ kỹ năng sau nó",
   "Also takes back the {0} after it": "Cũng gỡ {0} sau nó",
+  "Train this branch": "Tập nhánh này",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Ba lần giữ, từ {0} giây đến {1} giây. Tất cả đạt {1} giây là bậc tiếp theo thuộc về bạn.",
+  "See every skill as a tree": "Xem mọi kỹ năng dạng cây",
 };

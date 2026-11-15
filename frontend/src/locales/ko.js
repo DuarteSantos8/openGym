@@ -6095,4 +6095,7 @@ export default {
   "Also ticks the {0} skills before it": "앞의 스킬 {0}개도 체크합니다",
   "Also takes back the skill after it": "뒤의 스킬도 취소합니다",
   "Also takes back the {0} after it": "뒤의 {0}개도 취소합니다",
+  "Train this branch": "이 가지 훈련하기",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "버티기 세 번, {0}초에서 {1}초까지. 모두 {1}초가 되면 다음 단계는 당신 거예요.",
+  "See every skill as a tree": "모든 기술을 트리로 보기",
 }

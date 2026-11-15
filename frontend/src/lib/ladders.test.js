@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
-import { nextPrescription, POLICIES_FOR, LADDER_TOP } from './progression.js'
+import { nextPrescription, POLICIES_FOR, LADDER_TOP, LADDER_SEC_TOP, LADDER_SEC_BOTTOM } from './progression.js'
 import { EXIDX } from './exercises.js'
 import { buildPlannedEntry } from './session-start.js'
 
@@ -42,7 +42,7 @@ describe('ladders', () => {
 
 describe('the Skill ladder rule', () => {
   const cfg = { id: '0662', sets: 3, reps: 12, repsMin: 5, weight: 0, bodyweight: true, prog: 'ladder', mode: 'reps' }
-  it('is a reps rule', () => { expect(POLICIES_FOR.reps).toContain('ladder'); expect(POLICIES_FOR.time).not.toContain('ladder') })
+  it('is a reps rule, and a hold rule too', () => { expect(POLICIES_FOR.reps).toContain('ladder'); expect(POLICIES_FOR.time).toContain('ladder') })
 
   it('starts at the bottom, climbs a rep per clean session, repeats a miss', () => {
     expect(nextPrescription({ workouts: [] }, cfg)).toMatchObject({ kind: 'first', reps: 5 })
@@ -90,5 +90,28 @@ describe('the Skill ladder rule', () => {
     const plan = buildPlannedEntry(S, side, null)
     expect(plan.sets).toHaveLength(3)
     for (const s of plan.sets) for (const k of ['L', 'R']) expect(s.sides[k].r).toBe(4)
+  })
+})
+
+// A hold on the same ladder (a lever, an L-sit): the seconds climb, then the next rung.
+describe('the Skill ladder rule on holds', () => {
+  const held = (d, id, sec, sets = 3) => ({ d, entries: [{ id, target: { id, sets, sec, mode: 'time', prog: 'ladder', weight: 0 }, sets: Array.from({ length: sets }, () => ({ w: 0, sec, done: true })) }] })
+  const cfg = { id: '0662', sets: 3, sec: LADDER_SEC_BOTTOM, weight: 0, bodyweight: true, prog: 'ladder', mode: 'time', inc: 5 }
+  const S = workouts => ({ workouts, ladders: [{ id: 'fl', name: 'Front lever', steps: ['0662', '0283'] }] })
+
+  it('starts at the bottom, adds the step per clean session, repeats a short one', () => {
+    expect(nextPrescription(S([]), cfg)).toMatchObject({ kind: 'first', sec: LADDER_SEC_BOTTOM })
+    expect(nextPrescription(S([held('2026-11-01', '0662', 15)]), cfg)).toMatchObject({ kind: 'up', sec: 20 })
+    const short = held('2026-11-01', '0662', 15)
+    short.entries[0].sets[1].sec = 9
+    expect(nextPrescription(S([short]), cfg)).toMatchObject({ kind: 'hold', sec: 15 })
+  })
+
+  it('never steps past the top, then names the next rung', () => {
+    expect(nextPrescription(S([held('2026-11-01', '0662', LADDER_SEC_TOP - 2)]), cfg)).toMatchObject({ kind: 'up', sec: LADDER_SEC_TOP })
+    expect(nextPrescription(S([held('2026-11-01', '0662', LADDER_SEC_TOP)]), cfg)).toMatchObject({ kind: 'ladder', next: '0283', sec: LADDER_SEC_TOP })
+    const last = nextPrescription(S([held('2026-11-01', '0283', LADDER_SEC_TOP)]), { ...cfg, id: '0283' })
+    expect(last.kind).toBe('hold')
+    expect(last.next).toBeUndefined()
   })
 })

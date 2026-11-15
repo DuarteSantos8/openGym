@@ -4,14 +4,15 @@ import { useUI } from '../store/useUI.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { uid, exerciseNameText } from '../lib/format.js'
-import { exOr } from '../lib/exercises.js'
+import { exOr, isHold } from '../lib/exercises.js'
 import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
-import { LADDER_TOP, LADDER_BOTTOM } from '../lib/progression.js'
+import { LADDER_TOP, LADDER_BOTTOM, LADDER_SEC_TOP, LADDER_SEC_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { DEFAULT_GLYPH, glyphOf } from '../lib/glyphs.js'
 import Icon from './Icon.jsx'
 import { Button, TextField } from './ui.jsx'
+import { closeThenNav } from '../lib/nav.js'
 
 /* Skill ladders (lib/ladders.js): bodyweight chains from easier to harder. Exercises → Ladders
    lists each one with the rungs you reached, and Train it puts the next rung into a routine on
@@ -30,10 +31,13 @@ const NAME = {
 }
 export const ladderName = l => (l.own ? l.name : NAME[l.id]?.() || l.id)
 
-/** A rung as it starts in a routine: three sets climbing from 5 to 12 reps on the ladder rule. */
-export const rungEntry = id => ({ id, sets: 3, reps: LADDER_TOP, repsMin: LADDER_BOTTOM, weight: 0, mode: 'reps', bodyweight: true, prog: 'ladder' })
+/** A rung as it starts in a routine: three sets climbing from 5 to 12 reps on the ladder rule,
+ *  or for a hold (a lever, an L-sit) from 10 to 30 seconds. */
+export const rungEntry = id => (isHold(id)
+  ? { id, sets: 3, sec: LADDER_SEC_BOTTOM, weight: 0, mode: 'time', bodyweight: true, prog: 'ladder' }
+  : { id, sets: 3, reps: LADDER_TOP, repsMin: LADDER_BOTTOM, weight: 0, mode: 'reps', bodyweight: true, prog: 'ladder' })
 
-function TrainIt ({ ladder, rung, close }) {
+export function TrainIt ({ ladder, rung, close }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const id = ladder.steps[rung]
@@ -54,7 +58,9 @@ function TrainIt ({ ladder, rung, close }) {
   }
   return <>
     <h3 className={exerciseNameClass(ex)}>{t('Train {0}', exerciseNameFor(ex))}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Three sets, from {0} up to {1} reps. Every set at {1} and the next rung is yours.', LADDER_BOTTOM, LADDER_TOP)}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{isHold(id)
+      ? t('Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.', LADDER_SEC_BOTTOM, LADDER_SEC_TOP)
+      : t('Three sets, from {0} up to {1} reps. Every set at {1} and the next rung is yours.', LADDER_BOTTOM, LADDER_TOP)}</div>
     <div className="list">
       {S.routines.map(r => <button type="button" key={r.id} className="item" onClick={() => put(r.id)}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
@@ -142,16 +148,18 @@ export function LadderEditor ({ ladder, close }) {
   </div>
 }
 
-export function LaddersSheet () {
+export function LaddersSheet ({ close }) {
   const S = useStore(s => s.S)
   const ui = useUI.getState()
   const edit = l => ui.openSheet(close => <LadderEditor ladder={l} close={close} />)
   return <div className="ladders">
     <h3 style={{ marginBottom: 2 }}>{t('Skill ladders')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('Bodyweight moves from easier to harder. Own every set at the top of the range and the next rung is yours.')}</div>
+    {/* Every progression at once, as trees (views/Skills.jsx): a branch there becomes a ladder here. */}
+    <Button variant="plain" icon="trophy" onClick={() => closeThenNav(close, '/skills')}>{t('See every skill as a tree')}</Button>
     {allLadders(S).map(l => <LadderCard key={(l.own ? 'own:' : '') + l.id} S={S} ladder={l} onEdit={edit} />)}
     <Button variant="tinted" icon="plus" onClick={() => edit(null)}>{t('Make your own ladder')}</Button>
   </div>
 }
 
-export const laddersSheet = () => useUI.getState().openSheet(() => <LaddersSheet />)
+export const laddersSheet = () => useUI.getState().openSheet(close => <LaddersSheet close={close} />)

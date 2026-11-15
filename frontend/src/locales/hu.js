@@ -6098,4 +6098,7 @@ export default {
   "Also ticks the {0} skills before it": "Az előtte lévő {0} skillt is kipipálja",
   "Also takes back the skill after it": "Az utána lévő skillt is visszaveszi",
   "Also takes back the {0} after it": "A következő {0} skillt is visszaveszi",
+  "Train this branch": "Ennek az ágnak az edzése",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Három tartás, {0} mp-től {1} mp-ig. Mind {1} mp-ig, és a következő fok a tiéd.",
+  "See every skill as a tree": "Minden képesség fában",
 }

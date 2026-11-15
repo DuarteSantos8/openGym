@@ -6060,4 +6060,7 @@ export default {
   "Also ticks the {0} skills before it": "Juga mencentang {0} keahlian sebelumnya",
   "Also takes back the skill after it": "Juga membatalkan keahlian setelahnya",
   "Also takes back the {0} after it": "Juga membatalkan {0} setelahnya",
+  "Train this branch": "Latih cabang ini",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tiga tahanan, dari {0} dtk sampai {1} dtk. Semua di {1} dtk dan anak tangga berikutnya milikmu.",
+  "See every skill as a tree": "Lihat semua keahlian sebagai pohon",
 };

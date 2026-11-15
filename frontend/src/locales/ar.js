@@ -6150,4 +6150,7 @@ export default {
   "Also ticks the {0} skills before it": "يحدد أيضًا المهارات الـ{0} السابقة",
   "Also takes back the skill after it": "يلغي أيضًا المهارة التالية",
   "Also takes back the {0} after it": "يلغي أيضًا المهارات الـ{0} التالية",
+  "Train this branch": "تدرّب على هذا الفرع",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "ثلاث ثباتات، من {0} ث إلى {1} ث. كلها عند {1} ث والدرجة التالية لك.",
+  "See every skill as a tree": "عرض كل المهارات كشجرة",
 }

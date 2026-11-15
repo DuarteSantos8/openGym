@@ -6095,4 +6095,7 @@ export default {
   "Also ticks the {0} skills before it": "Önceki {0} beceriyi de işaretler",
   "Also takes back the skill after it": "Sonraki beceriyi de geri alır",
   "Also takes back the {0} after it": "Sonraki {0} beceriyi de geri alır",
+  "Train this branch": "Bu dalı çalış",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Üç tutuş, {0} sn'den {1} sn'ye. Hepsi {1} sn olunca bir sonraki basamak senin.",
+  "See every skill as a tree": "Tüm becerileri ağaç olarak gör",
 }

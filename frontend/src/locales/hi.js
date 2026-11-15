@@ -6095,4 +6095,7 @@ export default {
   "Also ticks the {0} skills before it": "पहले की {0} स्किल्स भी टिक करता है",
   "Also takes back the skill after it": "बाद वाली स्किल भी हटाता है",
   "Also takes back the {0} after it": "बाद की {0} स्किल्स भी हटाता है",
+  "Train this branch": "इस शाखा का अभ्यास करें",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "तीन होल्ड, {0} से {1} सेकंड तक। सब {1} सेकंड पर और अगली सीढ़ी आपकी।",
+  "See every skill as a tree": "सभी कौशल पेड़ के रूप में देखें",
 }

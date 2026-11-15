@@ -6092,4 +6092,7 @@ export default {
   "Also ticks the {0} skills before it": {"one": "Позначає й {0} попередню навичку", "few": "Позначає й {0} попередні навички", "many": "Позначає й {0} попередніх навичок", "other": "Позначає й {0} попередньої навички"},
   "Also takes back the skill after it": "Знімає й наступну навичку",
   "Also takes back the {0} after it": {"one": "Знімає й {0} наступну", "few": "Знімає й {0} наступні", "many": "Знімає й {0} наступних", "other": "Знімає й {0} наступних"},
+  "Train this branch": "Тренувати цю гілку",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Три утримання, від {0} с до {1} с. Усі по {1} с — і наступний щабель твій.",
+  "See every skill as a tree": "Усі навички деревом",
 }

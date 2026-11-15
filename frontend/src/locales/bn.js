@@ -6174,4 +6174,7 @@ export default {
   "Also ticks the {0} skills before it": "আগের {0}টি স্কিলও টিক দেয়",
   "Also takes back the skill after it": "পরের স্কিলটিও সরিয়ে দেয়",
   "Also takes back the {0} after it": "পরের {0}টিও সরিয়ে দেয়",
+  "Train this branch": "এই শাখা অনুশীলন করুন",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "তিনটি হোল্ড, {0} থেকে {1} সেকেন্ড। সবগুলো {1} সেকেন্ডে হলে পরের ধাপ আপনার।",
+  "See every skill as a tree": "সব দক্ষতা গাছ হিসেবে দেখুন",
 }

@@ -6091,4 +6091,7 @@ export default {
   "Also ticks the {0} skills before it": {"one": "Taip pat pažymi {0} įgūdį prieš jį", "few": "Taip pat pažymi {0} įgūdžius prieš jį", "many": "Taip pat pažymi {0} įgūdžių prieš jį", "other": "Taip pat pažymi {0} įgūdžio prieš jį"},
   "Also takes back the skill after it": "Taip pat atšaukia po jos einantį įgūdį",
   "Also takes back the {0} after it": {"one": "Taip pat atšaukia {0} po jo einantį", "few": "Taip pat atšaukia {0} po jo einančius", "many": "Taip pat atšaukia {0} po jo einančių", "other": "Taip pat atšaukia {0} po jo einančio"},
+  "Train this branch": "Treniruoti šią šaką",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Trys išlaikymai, nuo {0} s iki {1} s. Visi po {1} s – ir kitas laiptelis tavo.",
+  "See every skill as a tree": "Visi įgūdžiai medžiu",
 }

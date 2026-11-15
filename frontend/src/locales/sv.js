@@ -6142,4 +6142,7 @@ export default {
   "Also ticks the {0} skills before it": "Bockar också av de {0} färdigheterna före",
   "Also takes back the skill after it": "Tar också bort färdigheten efter",
   "Also takes back the {0} after it": "Tar också bort de {0} efter",
+  "Train this branch": "Träna den här grenen",
+  "Three holds, from {0}s up to {1}s. Every one at {1}s and the next rung is yours.": "Tre håll, från {0} s upp till {1} s. Alla på {1} s och nästa steg är ditt.",
+  "See every skill as a tree": "Se alla färdigheter som ett träd",
 }
