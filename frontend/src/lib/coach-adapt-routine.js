@@ -60,11 +60,12 @@ export function routineChangesFor(changes, routines, before, after) {
       if (!routine || routine.ex.some(ex => ex.id === c.to) ||
         out.some(x => x.type === 'add-exercise' && x.target.routineId === routine.id && x.after.id === c.to)) continue
       const amount = c.sec ? { mode: 'time', sec: c.sec } : { mode: 'reps', reps: c.reps || 10 }
-      // Next to its slot. Ticked together with the routine's reorder, chosenRoutineChanges moves it
-      // to the end, wherever that order lands.
+      // Next to its slot, found again as the routine stands when applied (`beside` names the slot's
+      // exercise); ticked together with the routine's reorder it goes to the end, wherever that
+      // order lands (chosenRoutineChanges).
       const position = routine.ex.findIndex(ex => ex.id === slot.id) + 1 || routine.ex.length
       out.push({ id: `${c.id}-add`, type: 'add-exercise', target: { routineId: routine.id }, before: null,
-        after: { id: c.to, sets: c.sets || 3, ...amount, position }, why: c.why })
+        after: { id: c.to, sets: c.sets || 3, ...amount, position, beside: slot.id }, why: c.why })
       continue
     }
     if (c.type !== 'swap') continue
@@ -81,17 +82,27 @@ export function routineChangesFor(changes, routines, before, after) {
 }
 
 /**
- * The offered changes someone ticked, as the change-set should get them now: a reorder only while
- * the routine still stands as the offer saw it (another device may have reordered it since, and
- * the change-set's own check counts the exercises, not their order), and an addition at the end
- * of a routine whose reorder was ticked too, wherever that order lands. Throws when the routine
- * has moved on, the way applyChangeSet does, so the sheet shows the same changed-since-then toast.
+ * The offered changes someone ticked, as the change-set should get them now, against the routine
+ * as it stands (another device may have changed it since the offer opened): a reorder only while
+ * the routine is still in the order the offer saw (the change-set's own check counts the
+ * exercises, not their order); an addition beside its slot's exercise wherever that is now, or at
+ * the end of a routine whose reorder was ticked too; and nothing added or swapped in a second
+ * time. Throws when the routine has moved on, the way applyChangeSet does for a missing exercise,
+ * so the sheet shows the same changed-since-then toast.
  */
 export function chosenRoutineChanges(chosen, routines) {
   return chosen.map(c => {
     const r = routines.find(x => x.id === c.target?.routineId)
-    if (c.type === 'reorder' && (!r || r.ex.map(e => e.id).join() !== (c.before || []).join())) throw new Error('routine order changed')
-    if (c.type === 'add-exercise' && r && chosen.some(x => x.type === 'reorder' && x.target.routineId === r.id)) return { ...c, after: { ...c.after, position: r.ex.length } }
+    if (!r) throw new Error('routine gone')
+    const has = id => r.ex.some(e => e.id === id)
+    if (c.type === 'reorder' && r.ex.map(e => e.id).join() !== (c.before || []).join()) throw new Error('routine order changed')
+    if ((c.type === 'add-exercise' || c.type === 'swap-exercise') && has(c.after?.id)) throw new Error('already in the routine')
+    if (c.type === 'add-exercise') {
+      const reordered = chosen.some(x => x.type === 'reorder' && x.target.routineId === r.id)
+      const at = r.ex.findIndex(e => e.id === c.after?.beside)
+      if (!reordered && at < 0) throw new Error('slot gone')
+      return { ...c, after: { ...c.after, position: reordered ? r.ex.length : at + 1 } }
+    }
     return c
   })
 }

@@ -42,7 +42,7 @@ describe('routine changes offered after the Coach changed the workout', () => {
     expect(changes.map(c => [c.type, c.after])).toEqual([
       ['reorder', [BENCH, SQUAT, CURL]],
       ['swap-exercise', { id: ROW }],
-      ['add-exercise', { id: DBPRESS, sets: 2, mode: 'reps', reps: 12, position: 1 }],
+      ['add-exercise', { id: DBPRESS, sets: 2, mode: 'reps', reps: 12, position: 1, beside: BENCH }],
     ])
     expect(changes[1].target).toEqual({ routineId: 'push', exId: SQUAT })
 
@@ -70,6 +70,27 @@ describe('routine changes offered after the Coach changed the workout', () => {
     S.routines[0].ex.reverse()
     expect(() => chosenRoutineChanges(changes, S.routines)).toThrow()
     expect(S.routines[0].ex.map(e => e.id)).toEqual([SQUAT, CURL, BENCH])
+    // The addition alone still finds its slot in the new order.
+    const moved = chosenRoutineChanges([changes[1]], S.routines)
+    expect(moved[0].after.position).toBe(3)
+    applyChangeSet(S, { id: 'p2', summary: '', changes: moved }, moved.map(c => c.id))
+    expect(S.routines[0].ex.map(e => e.id)).toEqual([SQUAT, CURL, BENCH, DBPRESS])
+  })
+
+  it('refuses what the routine no longer has room for: a slot gone, an exercise already added or swapped in elsewhere', () => {
+    const S = session(inOrder())
+    const p = proposal([{ type: 'swap', entry: 2, exId: SQUAT, to: ROW }, { type: 'add', to: DBPRESS, sets: 2, reps: 12, entry: 0 }])
+    const changes = run(S, p)
+    expect(changes.map(c => c.type)).toEqual(['swap-exercise', 'add-exercise'])
+    const fresh = () => routine()
+    // Someone removed the bench from the routine: the addition has no slot to sit beside.
+    expect(() => chosenRoutineChanges([changes[1]], [{ ...fresh(), ex: fresh().ex.filter(e => e.id !== BENCH) }])).toThrow()
+    // Someone added the dumbbell press already: not a second time.
+    expect(() => chosenRoutineChanges([changes[1]], [{ ...fresh(), ex: [...fresh().ex, { id: DBPRESS, sets: 3, reps: 10 }] }])).toThrow()
+    // Someone swapped a row in already: the swap would leave two rows.
+    expect(() => chosenRoutineChanges([changes[0]], [{ ...fresh(), ex: [...fresh().ex, { id: ROW, sets: 3, reps: 5 }] }])).toThrow()
+    // Untouched, both still go through.
+    expect(chosenRoutineChanges(changes, [fresh()]).map(c => c.type)).toEqual(['swap-exercise', 'add-exercise'])
   })
 
   it('offers no swap that changes how the slot is logged, and no reorder of a session already out of routine order', () => {
