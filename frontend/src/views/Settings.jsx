@@ -889,9 +889,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
         </Section>
-        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
-            over" and the count of a hold, in the app's language. The phone's own voice in the
-            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
+        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
+            workout begins and each superset member the focus moves to without a rest (#1210),
+            "10 seconds", "Rest is over" and the count of a hold, in the app's language. The
+            phone's own voice in the apps (music ducks and comes back), the browser's elsewhere.
+            Off by default. */}
         {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
         <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
