@@ -143,7 +143,8 @@ describe('routine long-press reorder', () => {
   it('moves across measured slots and persists one complete changed order', () => {
     const layout = mount([configured('a'), configured('b'), configured('c'), configured('d')])
     const before = localStorage.getItem('gym_state_v1')
-    const writes = vi.spyOn(Storage.prototype, 'setItem')
+    // On the instance: happy-dom binds Storage methods on first use, so a prototype spy misses once any test wrote first
+    const writes = vi.spyOn(localStorage, 'setItem')
     const row = rows()[0], item = row.querySelector('.item')
     lift(row, layout.centers[0])
     pointer(item, 'pointermove', { y: layout.centers[2] + 1 })
@@ -256,7 +257,7 @@ describe('routine long-press reorder', () => {
 
   it('ignores non-primary/control pointers and leaves accessible move buttons working', () => {
     const layout = mount([configured('a'), configured('b')])
-    const down = host.querySelector('button[aria-label="Move down"]')
+    const down = host.querySelector('button.re-down')
     pointer(down, 'pointerdown', { y: layout.centers[0] })
     act(() => vi.advanceTimersByTime(380))
     expect(host.querySelector('.is-dragging')).toBeNull()
@@ -402,8 +403,8 @@ describe('routine long-press reorder', () => {
     const layout = mount([configured('a'), configured('b')])
     const controls = [
       rows()[1].querySelector('button[title]'),
-      rows()[1].querySelector('button[aria-label="Move up"]'),
-      rows()[1].querySelector('button[aria-label="Move down"]'),
+      rows()[1].querySelector('button.re-up'),
+      rows()[1].querySelector('button.re-down'),
     ]
     for (const control of controls) {
       pointer(control, 'pointerdown', { y: layout.centers[1] })
