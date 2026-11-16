@@ -86,11 +86,15 @@ async function planNow(wid, at) {
     if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); return }
     await registerActions(L)
     const c = forgottenCopy()
-    await L.schedule({ notifications: await withoutAlarmPrompt(L, [{
+    const list = await withoutAlarmPrompt(L, [{
       id: ASK_NOTIFICATION_ID, title: c.askTitle, body: c.askBody,
       schedule: { at: new Date(at), allowWhileIdle: true },
       actionTypeId: ASK_ACTIONS, extra: { forgotten: wid },
-    }]) })
+    }])
+    // Planned for a workout that has ended since (the watch's start, sets and finish read in one go
+    // as the page woke): its finish found nothing planned to take back, so this one must not go out.
+    if (deps?.useStore.getState().S?.active?.id !== wid) { planned = ''; return }
+    await L.schedule({ notifications: list })
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
   } catch { planned = null }

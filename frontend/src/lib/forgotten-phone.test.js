@@ -172,6 +172,19 @@ describe('forgotten workouts on the phone', () => {
     expect(ln.pending).toEqual([])
   })
 
+  // The owner's wrist (2026-11-16): started on the watch, finished on the watch with the phone open,
+  // and "Still training?" still came. A finish that lands before the workout's own plan has run
+  // must not leave that plan to schedule a question for a workout already saved.
+  it('a workout finished before its plan ran leaves no notification planned', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st } = start(null)
+    await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+    st.useStore.set({ ...st.useStore.getState().S, active: workout() })
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    for (let i = 0; i < 20; i++) await flush()
+    expect(ln.pending).toEqual([])
+  })
+
   it('no workout at launch: a notification the last run left planned is taken back', async () => {
     start(null)
     await vi.waitFor(() => expect(ln.cancelled).toBe(1))
