@@ -6,8 +6,8 @@ import { t } from '../lib/i18n.js'
 import { sequenceOf, isSimpleSequence } from '../lib/rotation.js'
 import Icon from './Icon.jsx'
 
-// The day the Calendar shows next: the first from today on with nothing logged and something to
-// train, `{ iso, ids }`, or null. A day planned for a session the pass already did trains it
+// The day the Calendar shows next: the first from today on with something planned it has not
+// trained yet, `{ iso, ids }` (those routines), or null. A day planned for a session the pass already did trains it
 // (pinState, queue.js), which the chips cannot show, so the status line reads the days themselves.
 // shortcut: looks four weeks ahead, past that the chips' answer stands; widen if plans go further out.
 function nextPlannedDay(S, today) {
@@ -15,8 +15,8 @@ function nextPlannedDay(S, today) {
     const d = new Date(today + 'T12:00:00')
     d.setDate(d.getDate() + i)
     const iso = isoOf(d)
-    if (workoutsOn(S, iso).length) continue
-    const ids = effectiveRoutineIds(S, iso, today)
+    const trained = workoutsOn(S, iso).flatMap(w => (Array.isArray(w.routineIds) ? w.routineIds : [w.routineId]))
+    const ids = effectiveRoutineIds(S, iso, today).filter(id => !trained.includes(id))
     if (ids.length) return { iso, ids }
   }
   return null

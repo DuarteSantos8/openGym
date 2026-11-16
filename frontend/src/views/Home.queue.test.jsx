@@ -292,13 +292,21 @@ describe('Home — a session pinned to a day', () => {
     expect(todayTitle()).toBe('US W1 D1 · rescheduled')
   })
 
-  it('with today trained, the line names the next day the calendar plans, not the chip still lit today', () => {
+  it('with today\'s plan trained, the line names the next day the calendar plans', () => {
     const on = daysFromToday(8)
     const now = Date.now() - 60000
-    const today = { id: 'w-today', d: todayISO(), start: now, end: now + 1000, routineIds: ['d2'], routineId: 'd2', name: 'US W1 D2', entries: [] }
-    setS({ dayPlan: { [on]: 'd1' }, workouts: [logged('d1'), today] })
+    const today = { id: 'w-today', d: todayISO(), start: now, end: now + 1000, routineIds: ['own'], routineId: 'own', name: 'Core', entries: [] }
+    setS({ dayPlan: { [todayISO()]: 'own', [on]: 'd1' }, workouts: [today] })
     mount()
     expect(status()).toBe('Next: US W1 D1 · ' + fmtDate(on, true))
+  })
+
+  it('a session done today leaves today named while the next one is still due today', () => {
+    const now = Date.now() - 60000
+    const today = { id: 'w-today', d: todayISO(), start: now, end: now + 1000, routineIds: ['d1'], routineId: 'd1', name: 'US W1 D1', entries: [] }
+    setS({ dayPlan: { [daysFromToday(8)]: 'd3' }, workouts: [today] })
+    mount()
+    expect(status()).toBe('Next: US W1 D2, today')
   })
 
   it('tapping a pinned chip starts that routine alone, today', () => {
