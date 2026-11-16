@@ -64,6 +64,8 @@ describe('weight stack editor', () => {
     const host = mountTopSheet()
     act(() => button(host, 'Add several at once').click())
     const area = host.querySelector('textarea[aria-label="Weights (kg)"]')
+    // Not the number pad: on an iPhone it has no Return and no space, so no list could be typed.
+    expect(area.getAttribute('inputmode')).toBe('text')
     act(() => {
       const set = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
       set.call(area, '5\n11.3\n18.1, 25')

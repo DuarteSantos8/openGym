@@ -324,8 +324,9 @@ export default function Measurements() {
       <Segmented className="seg-range" value={range} onChange={setRange}
         options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
       <div className="chart">{isBp
-        ? <LineChart points={bpLines.sys} h={170} unit={unit} series={[{ points: bpLines.sys, color: 'var(--red)' }, { points: bpLines.dia, color: 'var(--blue)' }]} />
-        : <LineChart points={points} h={170} unit={unit} color="var(--teal)" />}</div>
+        ? <LineChart points={bpLines.sys} h={170} unit={unit} ariaLabel={t('Blood pressure')}
+          series={[{ points: bpLines.sys, color: 'var(--red)', label: t('Systolic') }, { points: bpLines.dia, color: 'var(--blue)', label: t('Diastolic') }]} />
+        : <LineChart points={points} h={170} unit={unit} color="var(--teal)" ariaLabel={field ? t(field.label) : t('Body measurements')} />}</div>
       {isBp && <div className="cal-legend" style={{ justifyContent: 'center' }}>
         <span><i style={{ background: 'var(--red)' }} />{t('Systolic')}</span>
         <span><i style={{ background: 'var(--blue)' }} />{t('Diastolic')}</span>

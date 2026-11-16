@@ -1,5 +1,6 @@
 // The HTML of opengym.ch/routines: the list, one page per routine, the submit page. Plain
 // template strings, every value through esc(). build.mjs writes the files; this only returns text.
+import { FOOTER as SITE_FOOTER } from '../site/ref-template.mjs'
 import {
   GOALS, LEVELS, SPLITS, KIT, GROUPS, LANG_NAMES, GOAL_NAMES, LEVEL_NAMES, SPLIT_NAMES, KIT_NAMES, GROUP_NAMES,
   weeklyCounts, LIMITS, LICENSES
@@ -77,16 +78,8 @@ ${ctx.staging ? '<div class="rt-staging" role="note">Staging preview. Submission
 <main id="main">
 ${body}
 </main>
-<footer><div class="wrap foot">
-  <span class="c">Routine texts are their authors', shared under the licence named on each page. ${esc(MEDIA_NOTICE)} <a href="${ctx.base}media/NOTICE.md">NOTICE.md</a>.</span>
-  <div class="links">
-    <a href="${ctx.base}">All routines</a>
-    <a href="${ctx.base}submit/">Share yours</a>
-    <a href="/docs.html">Docs</a>
-    <a href="/privacy.html">Privacy</a>
-    <a href="https://github.com/DuarteSantos8/openGym/tree/main/routines" rel="noopener">Routines on GitHub</a>
-  </div>
-</div></footer>
+<aside class="wrap rt-notice"><p>Routine texts are their authors', shared under the licence named on each page. ${esc(MEDIA_NOTICE)} <a href="${ctx.base}media/NOTICE.md">NOTICE.md</a>. <a href="${ctx.base}">All routines</a> · <a href="${ctx.base}submit/">Share yours</a> · <a href="https://github.com/DuarteSantos8/openGym/tree/main/routines" rel="noopener">Routines on GitHub</a></p></aside>
+${SITE_FOOTER}
 <script src="/site.js?v=${ctx.siteV}" defer></script>
 ${script ? `<script type="module" src="${ctx.base}assets/${script}?v=${ctx.v}"></script>` : ''}
 </body>
