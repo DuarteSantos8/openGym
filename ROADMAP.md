@@ -12,7 +12,8 @@ published one plus one patch (1.4.2 → 1.4.3), and a minor bump is saved for a 
 new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones
-- Next, in order: Google Play for everyone, F-Droid, Garmin's store & Wear OS out of beta (v1.4.6) →
+- Next, in order: Google Play for everyone, F-Droid, Wear OS out of beta, the set menu on the watches
+  and routine folders (v1.4.6) →
   the rest of the progression engine → the list after that
 
 ---
@@ -203,12 +204,16 @@ Also in it: the bug fixes from TestFlight and Discord (rest after the last set
 #853, a discarded workout that still reached Apple Health, the Coach shortlist #829, music pausing on
 the rest sound), and two security fixes.
 
-## v1.4.5: Watches, circuits & a Coach that acts  (released November 2026)
+## v1.4.5: Watches, circuits & a Coach that acts  (released 2026-11-14)
 
 The biggest release so far. Everything is in [CHANGELOG.md](CHANGELOG.md); the headlines:
 
-- **The watch redesign on every wrist**: Apple Watch, Wear OS and, new, Garmin, idea and first
-  versions by @cubetes, and a watch sync rebuilt so no set gets lost (#882)
+- **The watch redesign on every wrist**: Apple Watch, Wear OS and, new, Garmin (in the
+  [Connect IQ Store](https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08)), idea and
+  first versions by @cubetes, and a watch sync rebuilt so no set gets lost (#882)
+- **One rest for phone and watch**: Skip and +15 s count on both sides, a pause on the phone holds
+  the watch too, a set ticked on the phone moves the watch along, and every set has an id all three watches use (#1149, #1101, #1162,
+  #1165); Zones and Muscles pages on the Apple Watch and Wear OS (#1108, #1187, #1188, #1189)
 - **Circuits, AMRAP, EMOM, Tabata and run/walk** with a full-screen player (#560, #725, #765),
   cluster sets and three new progression rules by @giulioleuci (#823, #824, #825)
 - **The live widget**: the Lock Screen, Dynamic Island, the Android notification (a Live Update on
@@ -233,9 +238,21 @@ The biggest release so far. Everything is in [CHANGELOG.md](CHANGELOG.md); the h
   https://play.google.com/apps/testing/ch.duartesantos.opengym). Production access opens once
   12 testers have had it for 14 days; until then the signed APK on GitHub is the Android app
 - **F-Droid** (#325): the recipe goes in after the v1.4.5 tag, and their review can take a few weeks
-- **Garmin**: the watch app in the Connect IQ store, with the store link in the app
 - **The Wear OS app out of beta**, fixing what real wrists find (#673), and the rest timer in
   Xiaomi's HyperIsland (#727)
+- **The watches, next step**: mark warm-up, failure and drop sets and add or remove sets from the
+  wrist, rebuilt on the 1.4.5 set ids (#1139, #1185); the watch's measured calories kept in Apple
+  Health and written to Health Connect (#1143, #1173); a sign in the workout bar for which links
+  are live (#1160) and the phone mark on the watch start screens (#1198, #1199); Double Tap and
+  the Action Button on the Apple Watch (#1071); watch changes reaching the iPhone while its app is
+  in the background (#882, the native part)
+- **Routines**: a colour per routine, folders and an archive, and a Routines tab (#1207: #1212,
+  #1218, #1219)
+- **Small fixes waiting in review**: a typed value no longer rewrites the whole profile file
+  (#1201), the calendar feed (#1203), the picker finding an exercise by its machine brand (#1211),
+  exercise settings that keep their changes (#1213), body weight in the equipment profile (#1214),
+  an assisted leg curl marked as assisted (#1222); imports that drop several records on one date
+  (#1206) and missing voice announcements (#1210)
 - Candidates: the top three mistakes per exercise, routine variants (#1022), markers in exercise
   videos (#1015), the Liquid Glass look on iPhone (#1028), distance progression and yards,
   distance sets on the watches, weigh-ins on the right day (#682)
