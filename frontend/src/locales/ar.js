@@ -5952,4 +5952,10 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "تخصيص",
+  "Collapsed": "مطوية",
+  "Hide": "إخفاء",
+  "Totals": "الإجماليات",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
 }

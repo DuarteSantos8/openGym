@@ -70,7 +70,9 @@ export function build(opts, root = ROOT) {
   const write = (p, text) => { fs.mkdirSync(path.dirname(path.join(out, p)), { recursive: true }); fs.writeFileSync(path.join(out, p), text) }
 
   // Newest first: what the list shows without script.
-  routines.sort((a, b) => (a.added < b.added ? 1 : a.added > b.added ? -1 : a.source === b.source ? (a.title < b.title ? -1 : 1) : SOURCE_ORDER[a.source] - SOURCE_ORDER[b.source]))
+  // English first: the list page is English, and list.js puts the visitor's own language up too.
+  const far = r => (r.language === 'en' ? 0 : 1)
+  routines.sort((a, b) => far(a) - far(b) || (a.added < b.added ? 1 : a.added > b.added ? -1 : a.source === b.source ? (a.title < b.title ? -1 : 1) : SOURCE_ORDER[a.source] - SOURCE_ORDER[b.source]))
   const allIds = new Set()
   for (const r of routines) {
     r.facts = factsOf(r, cat)

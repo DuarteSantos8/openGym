@@ -5893,4 +5893,10 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tinkinti",
+  "Collapsed": "Suskleista",
+  "Hide": "Slėpti",
+  "Totals": "Sumos",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
 }
