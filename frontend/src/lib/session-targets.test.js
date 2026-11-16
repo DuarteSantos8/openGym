@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { targetsFor, checkTarget, withSessionTarget, refusalsFor, markUsed, REST_MAX } from './session-targets.js'
+import { targetsFor, checkTarget, withSessionTarget, withSessionTargets, refusalsFor, markUsed, REST_MAX } from './session-targets.js'
 import { REST_MAX as APP_REST_MAX } from './duration.js'
-import { buildSessionEntries } from './session-start.js'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { buildCompletedSession } from './finish-session.js'
+import { migratedFixture } from './test-fixtures.js'
 import { modeOf, isPerSide } from './history.js'
 import { mergeStates, STAMPED_MAPS } from './sync-merge.js'
 import { STAMPED_MAPS as API_STAMPED_MAPS } from '../../../api/sync-stamps.js'
@@ -24,13 +26,22 @@ const target = over => ({
   ...over,
 })
 const state = (targets, over) => ({ unit: 'kg', routines: [routine], workouts: [], week: {}, sessionTargets: targets, active: { d: DAY }, ...over })
+// The session Start opens on the state's day (v2): the routine's exposures as the workout's rows,
+// today's target over them (sheets.jsx startSession).
+const buildSessionEntries = S => {
+  const P = migratedFixture({ unit: S.unit, routines: S.routines, workouts: S.workouts })
+  const s = { ...P, prescriptions: { ...P.prescriptions }, sessionTargets: S.sessionTargets }
+  const d = S.active.d
+  const xs = buildSessionExposures(s, s.routines[0], { now: Date.parse(d + 'T12:00:00Z'), date: d, newId: x => x })
+  return withSessionTargets(s, [s.routines[0]], xs, entriesForExposures(xs, s.prescriptions, s), d, helpers)
+}
 
 describe('session targets (#972)', () => {
   it('rest cap matches the app', () => expect(REST_MAX).toBe(APP_REST_MAX))
 
   it('opens the named exercise at the target rows: warm-ups typed, rests per row', () => {
     const S = state({ t1: target() })
-    const entries = buildSessionEntries(S, routine)
+    const entries = buildSessionEntries(S)
     const bench = entries[0]
     expect(bench.sets).toHaveLength(6)
     expect(bench.sets.slice(0, 3).every(s => s.warmup === true && s.phase === 'warmup')).toBe(true)
@@ -38,7 +49,7 @@ describe('session targets (#972)', () => {
     expect(bench.sets.slice(3).map(s => [s.w, s.r, s.restSec, !!s.warmup])).toEqual([[60, 8, 180, false], [60, 8, 180, false], [60, 8, 180, false]])
     expect(bench.sessionTarget).toEqual({ id: 't1', by: 'Coach Ana' })
     // The routine's band is untouched: its target still holds the 6-10 range.
-    expect(bench.target.repsMin).toBe(6)
+    expect(bench.planned.repsMin).toBe(6)
     expect(bench.planned.reps).toBe(10)
     expect(routine.ex[0].reps).toBe(10)
     // The other exercise builds as the routine says.
@@ -47,14 +58,14 @@ describe('session targets (#972)', () => {
   })
 
   it('does nothing on another day, for another routine or once used', () => {
-    expect(buildSessionEntries(state({ t1: target({ d: '2026-11-10' }) }), routine)[0].sessionTarget).toBeUndefined()
-    expect(buildSessionEntries(state({ t1: target({ rid: 'r2' }) }), routine)[0].sessionTarget).toBeUndefined()
-    expect(buildSessionEntries(state({ t1: target({ used: 'w9' }) }), routine)[0].sessionTarget).toBeUndefined()
+    expect(buildSessionEntries(state({ t1: target({ d: '2026-11-10' }) }))[0].sessionTarget).toBeUndefined()
+    expect(buildSessionEntries(state({ t1: target({ rid: 'r2' }) }))[0].sessionTarget).toBeUndefined()
+    expect(buildSessionEntries(state({ t1: target({ used: 'w9' }) }))[0].sessionTarget).toBeUndefined()
   })
 
   it('converts a target in lb into the profile unit', () => {
     const S = state({ t1: target({ unit: 'lb', ex: [{ id: '0025', rows: [{ w: 135, r: 5 }] }] }) })
-    const row = buildSessionEntries(S, routine)[0].sets[0]
+    const row = buildSessionEntries(S)[0].sets[0]
     expect(row.w).toBeCloseTo(61.235, 2)
   })
 
@@ -75,7 +86,7 @@ describe('session targets (#972)', () => {
     }
     // Refused whole: not even the rows that were fine are applied.
     const S = state({ t1: target({ ex: [...target().ex, { id: '9999', rows: [{ w: 1, r: 1 }] }] }) })
-    expect(buildSessionEntries(S, routine)[0].sessionTarget).toBeUndefined()
+    expect(buildSessionEntries(S)[0].sessionTarget).toBeUndefined()
     expect(refusalsFor(S, [routine], DAY, helpers)).toEqual([{ id: 't1', routine: 'Upper', errors: ['9999 is not in this routine'] }])
     expect(refusalsFor(S, [routine], '2026-11-10', helpers)).toEqual([])
   })
@@ -103,8 +114,9 @@ describe('session targets (#972)', () => {
     expect(out.t2.used).toBeUndefined()
     expect(map.t1.used).toBeUndefined()
     expect(markUsed(map, [{ id: 'x' }], 'w1')).toBe(map)
-    const w = buildCompletedWorkout({ id: 'w1', d: DAY, start: 1, entries }, { end: 2 })
-    expect('sessionTarget' in w.entries[0]).toBe(false)
+    const live = { id: 'w1', d: DAY, start: 1, exposures: [{ exposureId: 'x', exerciseId: '0025', mode: 'reps' }], entries: [{ ...entries[0], exposureId: 'x' }] }
+    const w = buildCompletedSession(live, { prescriptions: {} }, { end: 2, newId: x => x, unit: 'kg' }).session
+    expect('sessionTarget' in w.exposures[0]).toBe(false)
   })
 
   it('syncs per target on both sides', () => {

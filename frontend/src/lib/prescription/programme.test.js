@@ -3,7 +3,7 @@
 // work reads back as one outcome. Rounding is nearest 0.5 kg unless a test says otherwise.
 import { describe, expect, it } from 'vitest'
 import { OPTION_CLASSES, advanceProgression, cardioParameters, defaultPlanRule, generatePrescription, resolveProgressionContext, slotOutcome, stageRule, summarizeActual, validateProgramme, verdictOf, weeklyTemplate } from './index.js'
-import { migrateProfileV1ToV2 } from '../../../../api/migration/profile-migration.js'
+import { readFileSync } from 'node:fs'
 
 const NOW = '2026-11-04T10:00:00.000Z'
 const OID = 'rA:o0'
@@ -421,20 +421,16 @@ describe('slotOutcome', () => {
 })
 
 describe('OPTION_CLASSES', () => {
-  it('every key the profile migration writes on an occurrence has an OPTION_CLASSES entry', () => {
-    // On this branch the v1 → v2 migration is what writes v2 occurrences: a v1 routine with every
-    // option set shows which keys an occurrence can carry.
-    const v1 = {
-      unit: 'kg', workouts: [], routines: [{ id: 'r1', name: 'A', ex: [
-        { id: 'bench', sets: 3, reps: 8, weight: 60, restSec: 90, warmupRestSec: 30, warmupSets: 2, excludeFromProgression: true, assisted: false, side: true, bodyweight: false, dbLoad: 'each', lastToFailure: true, backoff: true, intensifier: { type: 'dropset', count: 1, pct: 20 }, sg: 'a', note: 'Pause' },
-        { id: 'run', mode: 'cardio', sets: 2, min: 5, speed: 8, incline: 1 }
-      ] }]
-    }
-    const catalogue = new Map([['bench', { id: 'bench', eq: 'barbell' }], ['run', { id: 'run', mode: 'cardio' }]])
-    const keys = new Set(migrateProfileV1ToV2(v1, catalogue).profile.routines[0].ex.flatMap(o => Object.keys(o)))
+  it('every occurrence key session-start.js reads or copies onto an exposure has an OPTION_CLASSES entry', () => {
+    // The session builder is where an occurrence's keys take effect: read its source, so a key it
+    // starts to use without a class (and so without a rule for a week's options) fails here.
+    const src = readFileSync(new URL('../session-start.js', import.meta.url), 'utf8')
+    const copied = /\[((?:'\w+',?\s*)+)\]\.filter\(k => occ\[k\]/.exec(src)[1].match(/\w+/g)
+    const keys = new Set([...src.matchAll(/\b(?:occ|base|original)\.(\w+)/g)].map(m => m[1]).concat(copied))
     for (const id of ['occurrenceId', 'exerciseId']) keys.delete(id)   // identity, not options
-    expect(keys.size).toBeGreaterThan(15)
+    expect(keys.size).toBeGreaterThan(20)
+    for (const k of ['repeatLast', 'legacyWarmupSets', 'ref', 'restFromProfile', 'sgRest']) expect(keys).toContain(k)
     expect([...keys].filter(k => !OPTION_CLASSES[k])).toEqual([])
-    expect(OPTION_CLASSES).toMatchObject({ rule: 'target', sets: 'target', incline: 'execution', intensifier: 'execution', warmup: 'execution', sgRest: 'execution', note: 'display', exerciseName: 'display' })
+    expect(OPTION_CLASSES).toMatchObject({ rule: 'target', sets: 'target', repeatLast: 'target', ref: 'target', incline: 'execution', intensifier: 'execution', warmup: 'execution', legacyWarmupSets: 'execution', sgRest: 'execution', note: 'display', exerciseName: 'display' })
   })
 })

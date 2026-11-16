@@ -88,6 +88,22 @@ test('a reset keeps its own records; a replace without baseRev keeps the stored 
   assert.equal(replace.edited.restSec, NOW - 4000);
 });
 
+test('a canonical planner reorder keeps omitted metadata on its own occurrence', () => {
+  const cur = stored();
+  cur.engineSchemaVersion = 2;
+  cur.routines[0].ex = [
+    { occurrenceId: 'a', exerciseId: 'bench', rule: { id: 'rule-a' }, warmup: 'own', warmupRows: [{ wp: 50, r: 5 }] },
+    { occurrenceId: 'b', exerciseId: 'curl', rule: { id: 'rule-b' }, warmup: 'none' }
+  ];
+  const next = clone(cur);
+  next.routines[0].ex.reverse();
+  delete next.routines[0].ex[0].warmup;
+  delete next.routines[0].ex[1].warmupRows;
+  stampPut(cur, next, { overRead: true, stamped: false, now: NOW });
+  assert.equal(next.routines[0].ex[0].warmup, 'none');
+  assert.deepEqual(next.routines[0].ex[1].warmupRows, [{ wp: 50, r: 5 }]);
+});
+
 // ---- the real server -------------------------------------------------------------------------
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');

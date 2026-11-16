@@ -11,6 +11,22 @@
 import { effectiveRoutineId } from '../queue.js';
 import { excusedOn } from '../nudge.js';
 import { streakWalk } from '../coach/core/streak.js';
+import { legacyEntriesOf } from '../engine/performance.js';
+
+// A v2 member (engine schema 2) is read in the v1 shapes these projections and the trainer views
+// speak: a workout's exposures as entries, a routine slot's exercise as `id`. Read-only.
+const memo = new WeakMap();
+export function v1View(S) {
+  if (!S || typeof S !== 'object' || !(records(S.workouts).some(w => Array.isArray(w.exposures)) || records(S.routines).some(r => records(r.ex).some(e => e.exerciseId != null)))) return S;
+  if (memo.has(S)) return memo.get(S);
+  const out = {
+    ...S,
+    workouts: records(S.workouts).map(w => (Array.isArray(w.exposures) ? { ...w, entries: legacyEntriesOf(w, S.prescriptions || {}) } : w)),
+    routines: records(S.routines).map(r => ({ ...r, ex: records(r.ex).map(e => (e.id == null && e.exerciseId != null ? { ...e, id: e.exerciseId } : e)) })),
+  };
+  memo.set(S, out);
+  return out;
+}
 
 const DAY = 86400000;
 const records = v => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []);
@@ -52,6 +68,7 @@ export const streakWeeks = (S, today) => streakWalk(S, today).current;
 
 /** Planned days in the last `days` (today left out: it is not over) without a workout or a note. */
 export function missedDays(S, today, days = 7) {
+  S = v1View(S);
   const doc = { ...S, workouts: records(S?.workouts), routines: records(S?.routines) };
   const out = [];
   for (let i = 1; i <= days; i++) {
@@ -86,6 +103,7 @@ function weightTrend(S, today, days = 14) {
 /** Last workout, streak, this week and the flags, each only where its category is shared.
  *  `pending` is how many suggestions the member has not answered yet. */
 export function summarize(S, levels, { today, inactiveDays = 7, pending = 0 } = {}) {
+  S = v1View(S);
   const out = { shares: Object.keys(levels || {}).filter(c => on(levels, c)), flags: [] };
   if (!S || typeof S !== 'object') return out;
   if (on(levels, 'metrics')) {
@@ -210,6 +228,7 @@ const dims = m => ({ ...(num(m.width) > 0 ? { width: num(m.width) } : {}), ...(n
  * profile picture: those are not progress photos and stay the member's own.
  */
 export function progressPhotos(S) {
+  S = v1View(S);
   const out = [], seen = new Set();
   const add = (m, d, extra) => { if (!seen.has(m.hash)) { seen.add(m.hash); out.push({ hash: m.hash, d, ...dims(m), ...extra }); } };
   const map = S?.dayPhotos && typeof S.dayPhotos === 'object' && !Array.isArray(S.dayPhotos) ? S.dayPhotos : {};
@@ -226,6 +245,7 @@ export function progressPhotos(S) {
  * them (default 20). Every key in the answer is one category; `shared` lists them.
  */
 export function project(S, levels, { today, before = null, limit = 20, nutrition = null } = {}) {
+  S = v1View(S);
   const out = { shared: Object.keys(levels || {}).filter(c => on(levels, c)), unit: S?.unit === 'lb' ? 'lb' : 'kg' };
   if (!S || typeof S !== 'object') return out;
   const exIds = new Set();

@@ -182,11 +182,12 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // `of` names the card a segmented control belongs to, for a screen reader: Stats has a "1M / 3M /
 // 1Y / All" on five cards, and each button then says whose it is, "Body weight: 1M" (P4).
 export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby, of }) {
-  const i = Math.max(0, options.findIndex(o => o.value === value))
+  const i = options.findIndex(o => o.value === value)
+  // Nothing chosen yet (a choice the person has to make, lib/programmes.js): no segment raised.
   return (
-    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
+    <div className={'seg ' + className} style={{ '--n': options.length, '--i': Math.max(0, i) }} data-tour={tour}
       role={ariaLabelledby ? 'group' : undefined} aria-labelledby={ariaLabelledby}>
-      <span className="seg-sel" aria-hidden="true" />
+      {i >= 0 && <span className="seg-sel" aria-hidden="true" />}
       {options.map(o => (
         <button
           key={o.value}
@@ -452,6 +453,13 @@ export function MenuButton({ title, value, options, onChange, className = '' }) 
   return <Button size="sm" trailingIcon="chevronDown" className={'menu-btn' + (className ? ' ' + className : '')}
     aria-haspopup="dialog" aria-label={title + ': ' + (cur?.label ?? '')}
     onClick={() => openSelectSheet({ title, value, options, onChange })}>{cur?.label}</Button>
+}
+
+// A compact button showing the current option's label; tapping opens the same picker sheet.
+export function SelectButton({ title, value, options, onChange, className = '' }) {
+  const cur = options.find(o => o.value === value)
+  const open = () => require_ui().openSheet(close => <SelectSheet title={title} value={value} options={options} onChange={onChange} close={close} />)
+  return <button type="button" className={'iconbtn ' + className} aria-label={title} onClick={open}>{cur ? cur.label : value}</button>
 }
 
 function SelectSheet({ title, value, options, onChange, search, close }) {

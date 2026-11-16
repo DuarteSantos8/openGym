@@ -13,6 +13,8 @@ import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 import { iconChoice } from './streak-icons.js'
 import { accentValue } from './accent.js'
 import { dayPhotosOf } from './day-photos.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 /* The kinds, in the order of the Community tabs. `take` false: browse only (a profile picture is
    someone's face; a progress photo is someone's body). */
@@ -108,7 +110,7 @@ export function ownItems(S, type) {
     }
     case 'formvideo': {
       const out = []
-      for (const w of (S.workouts || []).slice(-60).reverse()) for (const e of Array.isArray(w?.entries) ? w.entries : []) for (const st of Array.isArray(e?.sets) ? e.sets : []) {
+      for (const w of (S.workouts || []).slice(-60).reverse()) for (const e of legacyEntriesOf(w)) for (const st of Array.isArray(e?.sets) ? e.sets : []) {
         for (const m of Array.isArray(st?.media) ? st.media : []) {
           const r = normalizeMediaRef(m)
           if (r && !r.local && r.kind === 'video') out.push({ src: 'formvideo:' + r.hash, title: w.d, payload: { media: [r], exId: String(e.id || ''), caption: '' }, media: [r] })

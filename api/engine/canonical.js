@@ -5,6 +5,9 @@
 // Non-cryptographic by design — these are deduplication keys, not a security boundary.
 // Nothing trusts a snapshot because of its key.
 
+// Code-point order: the same on every runtime, whatever its locale.
+export const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
+
 /** JSON with object keys in ascending code-unit order at every depth, undefined dropped, no whitespace. */
 export function canonicalJSON(v) {
   if (v === null || typeof v !== 'object') {

@@ -35,7 +35,7 @@ import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
-import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
+import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted, weightIncrement } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange, t } from './i18n.js'
@@ -43,9 +43,10 @@ import { loadOf, MUSCLES, MUSCLE_NAME } from './muscles.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
-import { weightIncrement } from './progression.js'
 import { sessionHistory } from './backfill.js'
-import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
+import { buildCombinedExposures, deriveSessionName } from './session-merge.js'
+import { bypassOf } from './programmes.js'
+import { entriesForExposures, rowsOfPerformance, exposuresWithPerformance } from './session-ui-adapter.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
@@ -303,7 +304,7 @@ function bestFor (S, id, mode) {
   if (!bestCache.map.has(key)) {
     let b = null
     try { b = bestSetFor(S, id, mode)?.set || null } catch { b = null }
-    bestCache.map.set(key, b ? (mode === 'time' ? { sec: num(b.sec), w: num(b.w) } : { w: num(b.w), r: num(b.r) }) : null)
+    bestCache.map.set(key, b ? (mode === 'time' ? { sec: num(b.sec), w: b.w > 0 ? num(b.w) : null } : { w: num(b.w), r: num(b.r) }) : null)
   }
   return bestCache.map.get(key)
 }
@@ -377,7 +378,8 @@ function watchEntry (stored, H, S) {
 /**
  * What the watch can start by itself, the phone asleep: today's planned session and a few other
  * routines, each with its exercises built exactly as starting it on the phone builds them
- * (buildCombinedEntries, as sheets.jsx beginWorkout does).
+ * (buildCombinedExposures, as sheets.jsx startSession does) — on a copy of the prescriptions, so
+ * the profile itself is not written to.
  */
 export function buildReady (S, today = todayISO()) {
   let H = null
@@ -385,8 +387,14 @@ export function buildReady (S, today = todayISO()) {
   // One routine that cannot be built is left out, not the whole list with it.
   const session = ids => {
     try {
-      const { entries, routineIds, routines } = buildCombinedEntries(S, ids)
+      const draft = { ...S, prescriptions: { ...(S.prescriptions || {}) } }
+      // A start that would pass earlier sessions of an ordered week or a rotation is logged as extra,
+      // as sheets.jsx startSession logs a start the watch made: its exercises are built all the same.
+      const now = Date.now()
+      const extra = ids.some(rid => bypassOf(draft, rid, now).length > 0)
+      const { exposures, routineIds, routines } = buildCombinedExposures(draft, ids, { now, newId: seed => seed, unit: S.unit, extra })
       if (!routines.length) return null
+      const entries = entriesForExposures(exposures, draft.prescriptions)
       const healthType = plannedType(entries)
       return {
         routineIds: routineIds.map(String),
@@ -730,8 +738,10 @@ function applyEach (events, getState, now = Date.now()) {
     // Applied before and sent again (the watch had not heard yet): named as the newest again, so the
     // next snapshot's `acked` carries it even when many came after it (a Garmin's list is short).
     if (applied.includes(ev.id)) { applied.splice(applied.indexOf(ev.id), 1); applied.push(ev.id); done.push(ev.id); continue }
-    const S = getState()?.S
-    const A = S?.active
+    const st = getState()
+    const S = st?.S
+    // The store's own `A`; a caller with no `A` at all (a test's plain state) keeps it in `S.active`.
+    const A = st?.A !== undefined ? st.A : S?.active
     const ours = A && Array.isArray(A.entries) && (!ev.wid || ev.wid === A.id)
     // A workout finished on the phone while the watch was away: its later ticks still count.
     const saved = !ours && ev.wid && Array.isArray(S?.workouts) ? S.workouts.find(w => w && w.id === ev.wid) : null
@@ -1212,7 +1222,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     // Not before the store has its copy: an empty one would tell the watch its workout is over.
     if (!linked || !storeReady()) return
     try {
-      const S = useStore.getState().S
+      const st = useStore.getState()
+      const S = { ...st.S, active: st.A === undefined ? st.S?.active : st.A }
       // Settings → Modules: the Watch module off pauses the watch the same way as its own switch.
       const prefs = isOn(S, 'watch') ? readWatchPrefs() : { ...readWatchPrefs(), enabled: false }
       // Settings → Apple Watch: off, the watch is told there is nothing (no workout, nothing ready).
@@ -1289,39 +1300,44 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // open (a Finish followed at once by the lock button).
   const flush = () => { if (!tm) return; clearTimeout(tm); tm = null; send() }
   let givingIds = false
+  // The running workout of a store state, and a change to it alone: the app's store keeps it as
+  // `A` (updateActive); a plain state without one (a test's) keeps it in `S.active`.
+  const activeOf = st => (st?.A !== undefined ? st.A : st?.S?.active)
+  const editActive = (st, fn) => (st.A !== undefined && typeof st.updateActive === 'function' ? st.updateActive(fn) : st.update(x => { if (x.active) fn(x.active) }, false))
   const offStore = useStore.subscribe((s, prev) => {
     // Boot done: what the watch sent meanwhile is applied now, and the watch hears the real state.
     if (s.ready && !prev.ready) { drainWatchEvents(); schedule() }
-    if (s.S === prev.S) return
+    if (s.S === prev.S && activeOf(s) === activeOf(prev)) return
     // Not while the store boots (its first copy replaces an empty one).
     if (s.ready !== false && prev.ready !== false && !givingIds) {
       // The running workout changed here (a tick, an edit): the watch's idle clock starts again.
       // Ids given to its rows are nobody's edit.
-      if (s.S?.active && s.S.active !== prev.S?.active && s.S.active.id === prev.S?.active?.id && !useStore.getState().tourSandbox) {
-        notePhoneEdit(s.S.active.id)
+      const sA = activeOf(s), pA = activeOf(prev)
+      if (sA && sA !== pA && sA.id === pA?.id && !useStore.getState().tourSandbox) {
+        notePhoneEdit(sA.id)
         // A done set's numbers changed by hand here: stamped, so an older change from a watch
         // that arrives later does not undo it (setStamp).
-        const edited = applyingWatch ? [] : editedDoneRows(prev.S.active, s.S.active)
+        const edited = applyingWatch ? [] : editedDoneRows(pA, sA)
         if (edited.length && typeof s.update === 'function') {
           const at = Date.now()
           givingIds = true
-          try { s.update(x => { for (const [i, j] of edited) { const r = x.active?.entries?.[i]?.sets?.[j]; if (r) r.eat = Math.max(at, setStamp(r) + 1) } }, false) } catch { /* the tick's time stands */ } finally { givingIds = false }
+          try { editActive(s, x => { for (const [i, j] of edited) { const r = x.entries?.[i]?.sets?.[j]; if (r) r.eat = Math.max(at, setStamp(r) + 1) } }) } catch { /* the tick's time stands */ } finally { givingIds = false }
         }
       }
-      const gone = leftUnsaved(prev.S, s.S, { tour: !!(s.tourSandbox || prev.tourSandbox) })
+      const gone = leftUnsaved({ ...prev.S, active: activeOf(prev) }, { ...s.S, active: activeOf(s) }, { tour: !!(s.tourSandbox || prev.tourSandbox) })
       if (gone && !discardedFor().includes(gone)) markDiscarded(gone)
     }
     schedule()
     // The running workout ended or changed here: a start from the watch that waited for it applies now.
-    if (prev.S?.active?.id && s.S?.active?.id !== prev.S.active.id) drainWatchEvents()
+    if (activeOf(prev)?.id && activeOf(s)?.id !== activeOf(prev).id) drainWatchEvents()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
-    if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(s.S.active.entries) || undefined })).catch(() => {})
+    if (linked && shouldOpenOnWatch(activeOf(prev), activeOf(s))) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(activeOf(s).entries) || undefined })).catch(() => {})
     // Every row of the running workout gets its id before the watch hears of it (#1162), in a
     // change of its own that nobody counts as an edit. Not the tour's practice workout.
     const st = useStore.getState()
-    if (!givingIds && st.ready !== false && !st.tourSandbox && needsSetIds(st.S?.active) && typeof st.update === 'function') {
+    if (!givingIds && st.ready !== false && !st.tourSandbox && needsSetIds(activeOf(st)) && typeof st.update === 'function') {
       givingIds = true
-      try { st.update(x => { ensureSetIds(x.active) }, false) } catch { /* the snapshot goes without ids */ } finally { givingIds = false }
+      try { editActive(st, x => { ensureSetIds(x) }) } catch { /* the snapshot goes without ids */ } finally { givingIds = false }
     }
   })
   // The rest as the watch needs it changes when it starts, stops or is paused, not every second.
@@ -1329,7 +1345,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const offUI = useUI.subscribe((s, prev) => {
     if (s.timer === prev.timer || restOf(s.timer) === restOf(prev.timer)) return
     // A change of the rest made here gets its time (a watch's event stamps its own: applyRestStep).
-    const A = useStore.getState().S?.active
+    const A = activeOf(useStore.getState())
     if (A?.id && !useStore.getState().tourSandbox) noteRestChange(A.id, s.timer)
     schedule()
   })
@@ -1349,7 +1365,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const onVisible = () => {
     if (document.visibilityState !== 'visible') { flush(); return }
     // The app in front with a workout running counts as using it, for the watch's idle clock.
-    notePhoneOpen(useStore.getState().S?.active?.id)
+    notePhoneOpen(activeOf(useStore.getState())?.id)
     drainWatchEvents()
     checkLink().then(() => schedule())
   }
@@ -1362,11 +1378,11 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // as it was is no new change (its stamp is on disk), one that differs is.
   {
     const st = useStore.getState()
-    if (st.ready !== false && !st.tourSandbox && needsSetIds(st.S?.active) && typeof st.update === 'function') {
+    if (st.ready !== false && !st.tourSandbox && needsSetIds(activeOf(st)) && typeof st.update === 'function') {
       givingIds = true
-      try { st.update(x => { ensureSetIds(x.active) }, false) } catch { /* without ids */ } finally { givingIds = false }
+      try { editActive(st, x => { ensureSetIds(x) }) } catch { /* without ids */ } finally { givingIds = false }
     }
-    if (st.S?.active?.id && !st.tourSandbox) noteRestChange(st.S.active.id, useUI.getState().timer)
+    if (activeOf(st)?.id && !st.tourSandbox) noteRestChange(activeOf(st).id, useUI.getState().timer)
   }
   schedule()
   drainWatchEvents()
@@ -1420,14 +1436,27 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null, sid =
     return !!set
   }
   const w = (s.workouts || []).find(x => x && x.id === wid)
+  // A saved workout keeps its sets as the exposure's performance rows: read them back as the rows
+  // the screen edits, write the watch's numbers there, and save them as performance again.
+  const xs = Array.isArray(w?.exposures) ? w.exposures : null
+  // A workout saved before the v2 engine (or by an older device) still has its rows as entries.
+  if (!xs) return w && Array.isArray(w.entries) ? patchLegacyWorkout(w, find, write, { exId, setIdx, sid, fields, stamp, ifNewer, recount }) : false
+  const view = { entries: xs.map(x => ({ id: x.exerciseId, sets: rowsOfPerformance(x.performance?.sets, x.mode) })) }
   // A set the watch logged after the phone saved the workout, of an exercise the phone had left
   // without a set done (so not in what it saved), or past its last row: it gets its place there.
-  const set = find(w) || (w && Array.isArray(w.entries) && fields.done && exId != null && Number.isInteger(setIdx) && setIdx >= 0 && setIdx < 100 ? lateRow(w, exId, setIdx, sidOk(sid) ? sid : null) : null)
+  // An exercise the workout has no exposure for gets one of its own, logged out of any plan.
+  const late = !find(view) && fields.done && exId != null && Number.isInteger(setIdx) && setIdx >= 0 && setIdx < 100
+  const set = find(view) || (late ? lateRow(view, exId, setIdx, sidOk(sid) ? sid : null) : null)
   if (!set) return false
+  const xi = view.entries.findIndex(e => e.sets.includes(set))
+  if (xi >= xs.length) xs.push({ exposureId: `${w.id}:late:${exId}:${xi}`, exerciseId: exId, routineId: null, prescriptionId: null, mode: modeOf({ id: exId }), excludedFromProgression: true, performance: { sets: [] } })
   // Two changes of the same set: the later one wins (a tick from the watch older than an edit
   // made on the phone since keeps the phone's numbers; its heart rate still lands).
   let f = fields
-  if (ifNewer != null && set.done && setStamp(set) > ifNewer) {
+  // A saved row with no time of its own (from before rows kept theirs) counts as the newer one: it
+  // keeps its numbers, and only the heart rate and a missing rating land.
+  const ticked = side && isSideSet(set) ? set.sides[side]?.done : set.done
+  if (ifNewer != null && ticked && (setStamp(set) > ifNewer || !setStamp(set))) {
     f = {}
     if (fields.hr) f.hr = fields.hr
     if (fields.restHr) f.restHr = fields.restHr
@@ -1439,6 +1468,27 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null, sid =
   write(set, f)
   // The same event again (the queue handed it over twice): nothing new, so the saved workout is
   // not stamped as edited now, which would let it win over a later edit made on another device.
+  if (JSON.stringify(set) === before && !late) return true
+  const x = xs[xi]
+  const note = x.performance?.note
+  xs[xi] = exposuresWithPerformance([x], [{ exposureId: x.exposureId, sets: view.entries[xi].sets, ...(note ? { note, notePin: x.performance.notePin } : {}) }], s.unit === 'lb' ? 'lb' : 'kg')[0]
+  if (recount) recount(w)
+  if (stamp) stamp(w)
+  return true
+}
+
+// v1's own path for a saved workout of entries: the set by its id or place, or a late row for it.
+function patchLegacyWorkout (w, find, write, { exId, setIdx, sid, fields, stamp, ifNewer, recount }) {
+  const set = find(w) || (fields.done && exId != null && Number.isInteger(setIdx) && setIdx >= 0 && setIdx < 100 ? lateRow(w, exId, setIdx, sidOk(sid) ? sid : null) : null)
+  if (!set) return false
+  let f = fields
+  if (ifNewer != null && set.done && setStamp(set) > ifNewer) {
+    f = Object.fromEntries(['hr', 'restHr'].filter(k => fields[k]).map(k => [k, fields[k]]))
+    if (set.rpe == null && set.rir == null) Object.assign(f, effortFrom(fields))
+    if (!Object.keys(f).length) return false
+  }
+  const before = JSON.stringify(set)
+  write(set, f)
   if (JSON.stringify(set) === before) return true
   if (recount) recount(w)
   if (stamp) stamp(w)
@@ -1462,8 +1512,11 @@ export function ensureWatchSet (s, where, build, fields = null, stamp = null, op
     let made = null
     try { made = build ? build(exId) : null } catch { made = null }
     if (!made || typeof made !== 'object') return false
-    e = { ...made, id: exId, sets: Array.isArray(made.sets) ? made.sets : [] }
+    // `{ entry, exposures }`: the running workout keeps its exposures beside its entries, in step.
+    const entry = made.entry || made
+    e = { ...entry, id: exId, sets: Array.isArray(entry.sets) ? entry.sets : [] }
     A.entries.push(e)
+    if (Array.isArray(made.exposures)) { A.exposures ||= []; A.exposures.push(...made.exposures) }
   }
   if (!Array.isArray(e.sets)) e.sets = []
   // A set named by an id this workout has no row for (#1162): a row of its own at the end of the

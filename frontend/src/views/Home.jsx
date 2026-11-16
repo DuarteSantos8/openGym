@@ -6,9 +6,9 @@ import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDo
 import { streakInfo } from '../lib/streak.js'
 import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { StreakRuleWelcome } from '../components/StreakRule.jsx'
-import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
+import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, exerciseNameText, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet, referenceSheet } from '../sheets.jsx'
 import { startOrPreview, startPickerSheet } from '../components/StartSheets.jsx'
 import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
@@ -29,7 +29,8 @@ import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
 import { weighInAt } from '../lib/bodyweight.js'
 import WeightRate from '../components/WeightRate.jsx'
-import { programmeChip } from '../lib/programmes.js'
+import { programmeChip, referenceOffers } from '../lib/programmes.js'
+import { exOr } from '../lib/exercises.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { WrappedHomeCard } from '../components/WrappedEntry.jsx'
 import { DeloadCard } from '../components/DeloadCard.jsx'
@@ -42,6 +43,7 @@ import { isOn } from '../lib/modules.js'
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const A = useStore(s => s.A)
   const user = useStore(s => s.user)
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
@@ -55,9 +57,9 @@ export default function Home() {
   const todayName = todayRoutines.map(r => r.name).join(' + ')
   // A fulfilled pin (a coach session pinned to today and since done) reads as no override.
   const todayOvr = S.dayPlan[todayISO()] !== undefined && pinState(S, S.dayPlan[todayISO()]) !== 'done'
-  // An open editor on a saved workout (lib/session-edit.js) holds S.active too, but it is not a
+  // An open editor on a saved workout (lib/session-edit.js) holds A too, but it is not a
   // session in progress: the row takes you back to it as an edit, the way the tab bar does.
-  const editingSaved = !!S.active?.editingWorkoutId
+  const editingSaved = !!A?.editingWorkoutId
   const bw = lastBW(S)
   const prevBW = S.bodyweight.length > 1 ? S.bodyweight[S.bodyweight.length - 2] : null
   const delta = bw && prevBW ? bw.w - prevBW.w : null
@@ -110,7 +112,7 @@ export default function Home() {
   // would otherwise still read as "this app manages it" (lib/rotation.js).
   const managedQueue = !!liveQ && !!S.rotation && liveQ.rotationId === S.rotation.id
   // On a rest day, saying when you train next beats leaving the row as a full stop.
-  const next = !S.active && !todayRoutines.length && !(rotating && !plannerQueue) ? nextTrainingDay(S, todayISO()) : null
+  const next = !A && !todayRoutines.length && !(rotating && !plannerQueue) ? nextTrainingDay(S, todayISO()) : null
   // The streak card's fraction: this calendar week's workouts over the weekdays with a plan, or,
   // in a coach week, the queue's sessions and your own days together (lib/queue.js weekTally).
   const tally = weekTally(S, todayISO())
@@ -124,14 +126,17 @@ export default function Home() {
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
-  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
+  const onToday = () => { if (A) nav('/workout'); else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
   // A chip on the coach week's progress row starts that one routine, in any order. A session
   // already in progress wins, as on the today row — starting another would overwrite it.
   const progChip = programmeChip(S)
-  const onQueueStart = id => { if (S.active) nav('/workout'); else startOrPreview([id]) }
+  // A newer 1RM a routine or the running programme could take, until it is reviewed or put off
+  // (lib/programmes.js referenceOffers; the sheet is sheets.jsx referenceSheet).
+  const offer = useMemo(() => referenceOffers(S).find(o => !o.later) || null, [S])
+  const onQueueStart = id => { if (A) nav('/workout'); else startOrPreview([id]) }
   // A weekday trained separately (#908): each of its sessions gets a row of its own below, with
   // its own Start and its own Done. Only while nothing runs; a running one is the row above.
-  const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
+  const apartSessions = A ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
 
   return <div className="narrow">
@@ -185,21 +190,21 @@ export default function Home() {
         </div>
       }) : <div className="today-row" data-tour="today" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
-          <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)',
+          <span className="lrow-i" style={{ background: A ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)',
             // the rest day's moon on the grey square: white on #e3e3e8 vanished in the light theme
-            ...(!S.active && !doneToday && !routine ? { color: 'var(--label-2)' } : {}) }}>
-            <Icon name={S.active ? (editingSaved ? 'pencil' : 'play') : doneToday ? 'checkCircle' : routine ? glyphOf(routine.emoji) : 'moon'}
-              style={doneToday && !S.active ? { color: 'var(--green)' } : undefined} />
+            ...(!A && !doneToday && !routine ? { color: 'var(--label-2)' } : {}) }}>
+            <Icon name={A ? (editingSaved ? 'pencil' : 'play') : doneToday ? 'checkCircle' : routine ? glyphOf(routine.emoji) : 'moon'}
+              style={doneToday && !A ? { color: 'var(--green)' } : undefined} />
           </span>
           <div style={{ minWidth: 0 }}>
             <div className="lbl2">{t('Today')}</div>
-            <div className="ttl">{S.active ? (editingSaved ? S.active.name : t('{0} (in progress)', S.active.name))
+            <div className="ttl">{A ? (editingSaved ? A.name : t('{0} (in progress)', A.name))
               : doneToday ? (doneToday.name ? t('{0} (done)', doneToday.name) : t('Workout done'))
               : routine ? todayName : t('Rest day')}{todayOvr && routine && !doneToday ? ' · ' + t('rescheduled') : ''}</div>
             {next && !doneToday && <div className="ss">{t('Next session: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
           </div>
         </div>
-        {S.active ? <span className="tag" style={{ color: 'var(--orange-ink)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
+        {A ? <span className="tag" style={{ color: 'var(--orange-ink)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
           : routine ? <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={todayRoutines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>
           : <Icon name="plus" className="chev" />}
@@ -212,13 +217,18 @@ export default function Home() {
           and your other routines) is only reachable on a day with nothing planned. The one other
           way in, "Choose a different workout" on the weigh-in sheet, does not exist when the
           weigh-in is switched off. This is that door, and it starts nothing on its own. */}
-      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+      {!A && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
         <Button size="sm" variant="ghost" className="dim" icon="swap" onClick={startPickerSheet}>
           {t('Choose a different workout')}
         </Button>
       </div>}
       <SeasonDeco spot="home-hero" />
     </div>
+
+    {offer && <div className="card tap-host">
+      <CardHead icon="chartLine" tint="var(--teal)" title={t('New 1RM for {0}', exerciseNameText(exOr(offer.exerciseId)))} sub={t('Update future sessions?')}
+        open={{ onClick: () => referenceSheet(offer), haspopup: 'dialog' }} action={<Icon name="chevronRight" className="chev" />} />
+    </div>}
 
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />
@@ -247,7 +257,7 @@ export default function Home() {
       </div>
     )}
 
-    {!S.routines.length && !S.active && (
+    {!S.routines.length && !A && (
       <div className="card">
         <CardHead icon="calendar" title={t('Welcome!')} sub={t('Set up your weekly routine to get going, or grab a ready-made starter plan.')} />
         <Button variant="primary" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>

@@ -19,7 +19,7 @@ import { ENGINE_SCHEMA, migrationStatus } from './profile-version.js';
 import { validOneRepMax, validateCanonicalProfile } from './profile-validation.js';
 import { upgradeEngineContract } from './programme-upgrade.js';
 import {
-  PRESETS, REPS_MAX, SET_REPS_MAX, currentOneRm, defaultPlanRule, estimate1RM,
+  PRESETS, REPS_MAX, SET_REPS_MAX, cmp, currentOneRm, defaultPlanRule, estimate1RM,
   generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, planOptions, planPhase, presetForPolicy, replayProgression, summarizeActual, validateIntensifier, validatePlanRule
 } from '../engine/index.js';
 
@@ -225,7 +225,7 @@ function pyramidOf(v, mode) {
 }
 // v1 never progressed pyramid sets (policyFor was 'off'): they migrate as the pyramid_reps preset.
 const presetOf = (cfg, policy, mode, bodyweight) => (pyramidOf(cfg, mode).setReps.length ? 'pyramid_reps' : presetForPolicy(policy, mode, bodyweight));
-const policyOf = (cfg, routine, mode) => (pyramidOf(cfg, mode).setReps.length ? 'off' : cfg.prog || routine.prog || (mode === 'reps' ? 'linear' : 'off'));
+const policyOf = (cfg, routine, mode, state) => (pyramidOf(cfg, mode).setReps.length ? 'off' : cfg.prog || routine.prog || (mode === 'reps' && ['off', 'linear', 'greyskull', 'double', 'triple'].includes(state.progDefault) ? state.progDefault : mode === 'reps' ? 'linear' : 'off'));
 
 function draftRoutines(state, ctx) {
   const routineId = uniqueIds();
@@ -241,7 +241,7 @@ function draftRoutines(state, ctx) {
         routineId: id, occurrenceId: `${id}:o${j}`, exerciseId, cfg, info, mode,
         // An assistance machine's load is the help given (v1 issue #232); a routine entry can override the catalogue.
         assisted: typeof cfg.assisted === 'boolean' ? cfg.assisted : isAssisted(info),
-        policy: policyOf(cfg, routine, mode), preset: presetOf(cfg, policyOf(cfg, routine, mode), mode, isBodyweight(cfg, info)),
+        policy: policyOf(cfg, routine, mode, ctx.state), preset: presetOf(cfg, policyOf(cfg, routine, mode, ctx.state), mode, isBodyweight(cfg, info)),
         excluded: routine.excludeFromProgression === true || cfg.excludeFromProgression === true,
         links: []
       };
@@ -273,9 +273,11 @@ function backupPlansOf(d, ctx) {
 }
 const occurrenceOf = (d, ctx) => ({
   occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, mode: d.mode, rule: d.rule,
-  ...(d.cfg.restSec == null && d.cfg.rest == null ? { restFromProfile: true } : {}),
+  ...(!d.cfg.restOff && d.cfg.restSec == null && d.cfg.rest == null ? { restFromProfile: true } : {}),
   ...(d.warmup ? { warmup: d.warmup } : {}),
-  ...(d.cfg.sg ? { sg: d.cfg.sg } : {}),
+  ...(whole(d.cfg.warmupSets) ? { legacyWarmupSets: whole(d.cfg.warmupSets) } : {}),
+  ...(Array.isArray(d.cfg.warmupRows) ? { warmupRows: clone(d.cfg.warmupRows) } : {}),
+  ...(d.cfg.sg ? { sg: d.cfg.sg, ...Object.fromEntries(['sgName', 'sgRest'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])) } : {}),
   ...(typeof d.cfg.note === 'string' && d.cfg.note ? { note: d.cfg.note } : {}),
   ...(whole(d.cfg.restSec) ? { restSec: whole(d.cfg.restSec) } : {}),
   ...(whole(d.cfg.warmupRestSec) ? { warmupRestSec: whole(d.cfg.warmupRestSec) } : {}),
@@ -285,7 +287,7 @@ const occurrenceOf = (d, ctx) => ({
   ...(d.cfg.side === true && d.mode !== 'cardio' ? { side: true } : {}),
   // Only where it overrides the catalogue, the way v1 wrote it.
   ...(d.mode !== 'cardio' && d.cfg.bodyweight != null ? { bodyweight: !!d.cfg.bodyweight } : {}),
-  ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])),
+  ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff', 'restOff', 'warmupRestOff', 'sideRestOff', 'sideRestSec', 'autoHold', 'subs'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])),
   ...(d.intensifier ? { intensifier: d.intensifier } : {}),
   // A carry's or a sled's metres per set (v1.4.5 distance mode, #1011).
   ...(d.mode === 'distance' ? { distance: { m: whole(d.cfg.m) ?? 20 } } : {}),
@@ -353,7 +355,8 @@ function finalizeDraft(d, ctx) {
   const climbs = d.mode === 'reps' && ['linear', 'double', 'steady', 'greyskull', 'undulating', 'density'].includes(d.policy) && (d.assisted || isBodyweight(d.cfg, d.info) || !LOADED_EQ.has(d.info?.eq));
   d.preset = climbs && !(num(d.cfg.weight) > 0) ? 'bodyweight_ladder' : presetOf(d.cfg, d.policy, d.mode, false);
   // The rounding step is a load step; a timed hold's `inc` is seconds.
-  d.step = stepFor(loads, d.mode === 'reps' ? d.inc : null, ctx.unit, climbs || PRESETS[d.preset].steps === 'load');
+  const pinned = ctx.state.exUnit?.[d.exerciseId]?.unit;
+  d.step = ['kg', 'lb'].includes(pinned) && pinned !== ctx.unit ? 0.0001 : stepFor(loads, d.mode === 'reps' ? d.inc : null, ctx.unit, climbs || PRESETS[d.preset].steps === 'load');
   d.ruleFor = (values, step = d.step) => ruleFrom({ ...d.cfg, ...values }, {
     id: `rule:${d.occurrenceId}`, routineId: d.routineId, exerciseId: d.exerciseId,
     preset: climbs ? (num(values.weight ?? d.cfg.weight) > 0 ? presetForPolicy(d.policy, d.mode, false) : 'bodyweight_ladder') : d.preset,
@@ -386,7 +389,7 @@ function finalizeDraft(d, ctx) {
   });
   const check = validatePlanRule(d.rule);
   if (!check.ok) throw new Error(`invalid-rule ${d.occurrenceId}: ${check.errors[0]}`);
-  d.warmup = migrateOccurrence({ warmupSets: d.cfg.warmupSets }).warmup;
+  d.warmup = ['auto', 'own', 'none'].includes(d.cfg.warmup) ? d.cfg.warmup : migrateOccurrence({ warmupSets: d.cfg.warmupSets }).warmup;
   // A factor set on an exercise whose rule cannot back off (no progression, or a ladder) has nothing to act on.
   if (d.cfg.deloadFactor != null && d.cfg.deloadFactor !== false && !planPhase(d.rule).stall) {
     ctx.unsupported.push({ routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, field: 'deloadFactor', value: clone(d.cfg.deloadFactor) });
@@ -439,6 +442,9 @@ function performanceRow(row, unit, mode) {
     status: row.done ? 'completed' : 'skipped',
     ...(row.max === true && mode === 'reps' ? { max: true } : {}),
     ...(row.failure === true ? { failure: true } : {}),
+    ...(typeof row.note === 'string' ? { note: row.note } : {}),
+    ...Object.fromEntries(['edited', 'wp', 'wb', 'at', 'restSec', 'restOff', 'hr', 'restHr'].filter(k => row[k] != null).map(k => [k, clone(row[k])])),
+    ...(Array.isArray(row.media) ? { media: clone(row.media) } : {}),
     ...((row.side === 'L' || row.side === 'R') && !isObj(row.sides) ? { side: row.side } : {}),
     observations,
     resistance: w > 0 ? { kind: 'external-load', value: w, unit } : { kind: mode === 'cardio' ? 'none' : 'bodyweight' },
@@ -503,7 +509,7 @@ const volumeOf = exposures => exposures.reduce((total, x) => total + x.performan
 function executionOf(entry, d) {
   const target = isObj(entry.target) ? entry.target : {};
   const out = {};
-  for (const key of ['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec', 'dbLoad', 'lastToFailure', 'backoff', 'sgCircuit', 'tempo', 'nextRestSec', 'nextRestOff']) {
+  for (const key of ['side', 'bodyweight', 'assisted', 'intensifier', 'sgName', 'sgRest', 'restOff', 'warmupRestOff', 'sideRestOff', 'sideRestSec', 'autoHold', 'subs', 'warmupRestSec', 'dbLoad', 'lastToFailure', 'backoff', 'sgCircuit', 'tempo', 'nextRestSec', 'nextRestOff']) {
     const value = target[key] ?? entry[key] ?? d?.cfg[key];
     if (value != null) out[key] = clone(value);
   }
@@ -546,7 +552,7 @@ function migrateWorkout(w, i, ctx) {
           ...(isObj(entry.target) ? { legacyTarget: clone(entry.target) } : {}),
           ...(isObj(entry.planned) ? { legacyPlanned: clone(entry.planned) } : {})
         }),
-      ...(entry.sg ? { sg: entry.sg } : {}),
+      ...(entry.sg ? { sg: entry.sg, ...Object.fromEntries(['sgName', 'sgRest'].filter(k => entry.target?.[k] != null).map(k => [k, clone(entry.target[k])])) } : {}),
       ...(isObj(entry.muscleSnapshot) ? { muscleSnapshot: clone(entry.muscleSnapshot) } : {}),
       // The machine brand a lift kept per gym was done on (v1.4.5 #988, lib/gym-split.js).
       ...(typeof entry.brand === 'string' && entry.brand ? { brand: entry.brand } : {}),
@@ -554,7 +560,7 @@ function migrateWorkout(w, i, ctx) {
       ...(Number.isInteger(entry.target?.dup) && entry.target.dup >= 0 && entry.target.dup <= 2 ? { dup: entry.target.dup } : {}),
       performance: {
         sets: performanceRows.flatMap(row => isObj(row.sides?.L) && isObj(row.sides?.R)
-          ? ['L', 'R'].map(side => ({ ...performanceRow({ rir: row.rir, rpe: row.rpe, ...row.sides[side], setId: row.setId, phase: row.phase, warmup: row.warmup, failure: row.failure }, ctx.unit, mode), side }))
+          ? ['L', 'R'].map(side => ({ ...performanceRow({ ...Object.fromEntries(['rir', 'rpe', 'edited', 'wp', 'wb', 'at', 'restSec', 'restOff', 'hr', 'restHr'].filter(k => row[k] != null).map(k => [k, row[k]])), ...row.sides[side], ...(side === 'L' ? { note: row.note, media: row.media } : {}), setId: row.setId, phase: row.phase, warmup: row.warmup, failure: row.failure }, ctx.unit, mode), side }))
           : [performanceRow(row, ctx.unit, mode)]),
         ...(note ? { note, ...(entry.notePin ? { notePin: true } : {}) } : {})
       },
@@ -663,7 +669,7 @@ function migrateActive(active, ctx) {
       ...(target.side === true || d?.cfg.side === true ? { side: true } : {}),
       ...(d?.warmup ? { warmup: clone(d.warmup) } : {}),
       routineId: d ? d.routineId : idOf(entry.rid, null), ...(d ? { occurrenceId: d.occurrenceId } : {}), trackId,
-      excludedFromProgression: !d, prescriptionId: prescription.id, ...(entry.sg ? { sg: entry.sg } : {}),
+      excludedFromProgression: !d, prescriptionId: prescription.id, ...(entry.sg ? { sg: entry.sg, ...Object.fromEntries(['sgName', 'sgRest'].filter(k => entry.target?.[k] != null).map(k => [k, clone(entry.target[k])])) } : {}),
       performance: { sets: [] }
     });
     const setOf = setIndexer();
@@ -684,8 +690,9 @@ function migrateActive(active, ctx) {
 }
 
 /* ---------- public ---------- */
-/** `catalogue`: Map of built-in exercise id → catalogue entry (LIB_BY_ID). */
-export function migrateProfileV1ToV2(state, catalogue) {
+/** `catalogue`: Map of built-in exercise id → catalogue entry (LIB_BY_ID). `tz`: the device's timezone,
+ *  for a running programme (upgradeEngineContract). */
+export function migrateProfileV1ToV2(state, catalogue, { tz } = {}) {
   // Without it every built-in exercise would silently migrate as a plain reps/external-load one.
   if (typeof catalogue?.get !== 'function') throw new Error('migration-needs-catalogue');
   if (!migrationStatus(state).required) return { profile: state, activeSession: null };
@@ -719,7 +726,7 @@ export function migrateProfileV1ToV2(state, catalogue) {
   const routines = draftRoutines(state, ctx);
   const drafts = routines.flatMap(r => r.drafts);
   // Which logged entries belong, beyond doubt, to which occurrence — oldest first.
-  const oldestFirst = workouts.map((_, i) => i).sort((a, b) => dayOf(workouts[a]) - dayOf(workouts[b]) || whenOf(workouts[a]) - whenOf(workouts[b]) || ctx.workoutIds[a].localeCompare(ctx.workoutIds[b]) || a - b);
+  const oldestFirst = workouts.map((_, i) => i).sort((a, b) => dayOf(workouts[a]) - dayOf(workouts[b]) || whenOf(workouts[a]) - whenOf(workouts[b]) || cmp(ctx.workoutIds[a], ctx.workoutIds[b]) || a - b);
   for (const i of oldestFirst) list(workouts[i].entries).forEach((entry, j) => {
     const d = isObj(entry) ? linkOf(workouts[i], entry, ctx.byRoutine) : null;
     if (d) d.links.push({ i, j, workoutId: ctx.workoutIds[i], at: iso(whenOf(workouts[i])), values: targetValues(entry.target), restSec: entry.target?.restSec ?? null, planned: isObj(entry.planned) ? entry.planned : null, intensifier: entry.target?.intensifier ?? entry.intensifier, assisted: entry.target?.assisted ?? entry.assisted, skipped: !hasDoneWork(entry) });
@@ -770,7 +777,7 @@ export function migrateProfileV1ToV2(state, catalogue) {
     return { ...snap, routines: converted.routines, migrationAudit: converted.migrationAudit };
   });
   // In the same pass, programmes become engine definitions (contract 1); `summary` is for the adoption notice.
-  const upgraded = upgradeEngineContract(profile, catalogue);
+  const upgraded = upgradeEngineContract(profile, catalogue, { tz });
   const activeCheck = validateCanonicalActive(upgraded.state, activeSession);
   if (!activeCheck.ok) throw new Error(`invalid-active ${activeCheck.errors[0]}`);
   return { profile: upgraded.state, activeSession, summary: upgraded.summary };

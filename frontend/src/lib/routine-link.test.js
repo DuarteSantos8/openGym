@@ -1,3 +1,6 @@
+import { migratedFixture } from './test-fixtures.js'
+import { planPhase, validatePlanRule } from './prescription/index.js'
+import { occurrenceFor } from './session-start.js'
 import { describe, it, expect, afterEach } from 'vitest'
 import {
   routineLinkBundle, encodePayload, decodePayload, routineLink, routinePayloadFromUrl, readRoutineBundle,
@@ -12,7 +15,7 @@ const custom = { id: 'cx1', n: 'Zercher carry ü 💪', bp: 'upper legs', eq: 'b
 const state = (over = {}) => ({
   unit: 'kg', week: {}, customEx: [custom], routines: [], ...over,
 })
-const push = {
+const legacyPush = {
   id: 'r1', name: 'Push Day 💪 Ärger', emoji: 'dumbbell',
   ex: [
     { id: BENCH, sets: 3, reps: 8, weight: 80, restSec: 120, note: 'Pausé au torse, 2 s ⏸' },
@@ -22,6 +25,8 @@ const push = {
     { id: 'cx1', sets: 2, reps: 20, weight: 40 },
   ],
 }
+
+const push = migratedFixture({ unit: 'kg', routines: [legacyPush], customEx: [custom], workouts: [] }).routines[0]
 
 afterEach(() => registerCustom([]))
 
@@ -36,16 +41,16 @@ describe('routine links: encode and decode', () => {
     expect(payload.startsWith(LINK_FMT + '.d.')).toBe(true)
     const back = await decodePayload(payload)
     expect(back).toEqual(bundle)
-    expect(back.opengym_plan).toBe(1)
+    expect(back.opengym_plan).toBe(3)
     expect(back.from).toBe('Alex')
     expect(back.names[BENCH]).toBe(EXIDX[BENCH].n)
     expect(back.names.cx1).toBeUndefined()
     const [b, c, r, p, x] = back.routines[0].ex
-    expect(b).toMatchObject({ id: BENCH, sets: 3, reps: 8, weight: 80, restSec: 120, note: 'Pausé au torse, 2 s ⏸' })
+    expect(b).toMatchObject({ exerciseId: BENCH, restSec: 120, note: 'Pausé au torse, 2 s ⏸' })
     expect(c).toMatchObject({ side: true, sg: 'sgA', sgName: 'Arms', sgRest: 90 })
     expect(r.sg).toBe('sgA')
-    expect(p).toMatchObject({ mode: 'time', sec: 45 })
-    expect(x.id).toBe('cx1')
+    expect(planPhase(p.rule).parameters.durationSeconds.min).toBe(45)
+    expect(x.exerciseId).toBe('cx1')
     expect(back.customEx[0]).toMatchObject({ id: 'cx1', n: 'Zercher carry ü 💪', bp: 'upper legs' })
     expect(back.routines[0].name).toBe('Push Day 💪 Ärger')
   })
@@ -60,7 +65,8 @@ describe('routine links: encode and decode', () => {
   it('leaves the weights out unless asked, and the name unless given', async () => {
     const bundle = routineLinkBundle(state(), push)
     expect(bundle.routines[0].ex.every(e => e.weight == null)).toBe(true)
-    expect(bundle.routines[0].ex[0].reps).toBe(8)
+    expect(planPhase(bundle.routines[0].ex[0].rule).parameters.reps.max).toBe(8)
+    for (const e of bundle.routines[0].ex) { expect(validatePlanRule(e.rule).ok).toBe(true); expect(planPhase(e.rule).parameters.load.value || 0).toBe(0) }
     expect(bundle.from).toBeUndefined()
     expect(routineLinkBundle(state(), push, { from: '  \u0007  ' }).from).toBeUndefined()
     expect(cleanFrom('x'.repeat(80))).toHaveLength(40)
@@ -119,7 +125,7 @@ describe('routine links: size fallback', () => {
   })
 
   it('one too big for a link says so, so the caller can send a plan file', async () => {
-    const many = { id: 'big', name: 'Everything', ex: Object.keys(EXIDX).slice(0, 120).map((id, i) => ({ id, sets: 3, reps: 8 + (i % 5), note: 'note ' + i + ' ' + id.repeat(3) })) }
+    const many = { id: 'big', name: 'Everything', ex: Object.keys(EXIDX).slice(0, 120).map((id, i) => ({ ...occurrenceFor(id, { sets: 3, reps: 8 + (i % 5) }, { id: 'occ-'+i }), note: 'note ' + i + ' ' + id.repeat(3) })) }
     const link = await routineLink(state(), many)
     expect(link.tooLong).toBe(true)
     expect(link.length).toBeGreaterThan(MAX_LINK)
@@ -164,12 +170,12 @@ describe('routine links: importing', () => {
     expect(parsed.routines).toHaveLength(1)
     const id = importRoutineLink(friend, parsed)
     const r = friend.routines.find(x => x.id === id)
-    expect(r.ex.map(e => e.id).slice(0, 4)).toEqual([BENCH, CURL, RAISE, PLANK])
+    expect(r.ex.map(e => e.exerciseId).slice(0, 4)).toEqual([BENCH, CURL, RAISE, PLANK])
     expect(friend.customEx).toHaveLength(1)
     expect(friend.customEx[0]).toMatchObject({ n: 'Zercher carry ü 💪', bp: 'upper legs', custom: true })
-    expect(r.ex[4].id).toBe(friend.customEx[0].id)
+    expect(r.ex[4].exerciseId).toBe(friend.customEx[0].id)
     expect(r.ex[1]).toMatchObject({ side: true, sg: 'sgA', sgName: 'Arms' })
-    expect(r.ex[3]).toMatchObject({ mode: 'time', sec: 45 })
+    expect(planPhase(r.ex[3].rule).parameters.durationSeconds.min).toBe(45)
     expect(friend.week).toEqual({})
   })
 
@@ -179,13 +185,13 @@ describe('routine links: importing', () => {
     registerCustom(friend.customEx)
     const id = importRoutineLink(friend, readRoutineBundle(data, 'kg'))
     expect(friend.customEx).toHaveLength(1)
-    expect(friend.routines.find(x => x.id === id).ex[4].id).toBe('mine')
+    expect(friend.routines.find(x => x.id === id).ex[4].exerciseId).toBe('mine')
   })
 
   it('converts the weights to the friend’s unit', async () => {
     const data = await decoded(state(), push, { weights: true })
     const parsed = readRoutineBundle(data, 'lb')
-    expect(parsed.routines[0].ex[0].weight).toBeGreaterThan(170)
+    expect(planPhase(parsed.routines[0].ex[0].rule).parameters.load.value).toBeGreaterThan(170)
   })
 
   it('never overwrites: a new routine with a fresh id, "(from Alex)" when named, a number when taken', async () => {

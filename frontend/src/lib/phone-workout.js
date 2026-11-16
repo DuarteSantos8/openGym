@@ -24,6 +24,7 @@
 // crash, whose workout is gone by then). AirPods taken out only pause readings.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { sanitizeHr, cleanSamples } from './heart-rate.js'
+import { rowsOfPerformance } from './session-ui-adapter.js'
 import { isSideSet } from './workout-model.js'
 import { plannedType } from './health-connect.js'
 
@@ -77,7 +78,8 @@ const stampOf = v => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : 
 // The sets done and ticked, oldest tick first: { key, entryIdx, setIdx, exId, set, tick }.
 function ticked(w) {
   const out = []
-  ;(w?.entries || []).forEach((entry, ei) => {
+  const entries = Array.isArray(w?.exposures) ? w.exposures.map(x => ({ id: x.exerciseId, sets: rowsOfPerformance(x.performance?.sets, x.mode) })) : w?.entries || []
+  entries.forEach((entry, ei) => {
     ;(entry?.sets || []).forEach((s, si) => {
       if (!s) return
       let tick = null
@@ -227,7 +229,7 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
   let waitTm = null, settleTm = null, busy = Promise.resolve()
   let recovered = false
 
-  const getS = () => useStore.getState().S
+  const getS = () => { const st = useStore.getState(); return { ...st.S, active: st.A === undefined ? st.S?.active : st.A } }
   const ready = () => useStore.getState().ready !== false
 
   const watchInfo = async () => {
@@ -319,8 +321,8 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
   const countDone = A => { let n = 0; for (const e of A?.entries || []) for (const s of e?.sets || []) if (s?.done || (s?.sides && (s.sides.L?.done || s.sides.R?.done))) n++; return n }
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { evaluate(); return }
-    if (s.S === prev.S && s.tourSandbox === prev.tourSandbox) return
-    const A = s.S?.active, B = prev.S?.active
+    if (s.S === prev.S && s.A === prev.A && s.tourSandbox === prev.tourSandbox) return
+    const A = s.A === undefined ? s.S?.active : s.A, B = prev.A === undefined ? prev.S?.active : prev.A
     if (A?.id !== B?.id || !!A?.backfill !== !!B?.backfill || s.tourSandbox !== prev.tourSandbox) { doneCount = -1; evaluate() }
     if (running && A?.id === running.wid) {
       const n = countDone(A)

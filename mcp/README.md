@@ -81,7 +81,7 @@ Eleven read-only tools, and four that write:
 | `get_bodyweight` | Weigh-ins, one value per day (the profile's "Daily weigh-in value": morning, average or last), each day's readings with their times, the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
-| `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
+| `get_programme` | My programmes (each exercise's weeks: a %1RM, weight, sets and reps, or its own progression, and whether a missed week is repeated), and where the running one stands for each exercise. |
 | `search_exercises` | Which exercise ids match "romanian deadlift" or "rear delt, dumbbell"? The library (built in plus your own) with body part, target and equipment, so a routine the assistant writes uses the exact exercise. |
 | `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Cardio too: "20 min treadmill at 3.5 mph, incline 7". Needs pairing or a token: [Logging workouts](#logging-workouts). |
 | `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. |
@@ -90,11 +90,10 @@ Eleven read-only tools, and four that write:
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
-`preview_session` reports what the athlete will actually *see*: a routine holding "squat 3×8 @
-60 kg" opens at 75 kg if the policy progressed or deloaded from that routine's last logged
-session. The routine's own weight is the last fallback the session builder consults, not the
-first; its reps hold unless a policy that moves reps moved them, or the profile starts planned
-sessions from the last session (`starts_from`). Ask `preview_session` before naming a weight.
+`preview_session` reports what the athlete will actually *see*: a routine holding "squat 3×5 @
+60 kg" can open at 62.5 kg because its rule advanced after the last logged session, and a
+pyramid or 5/3/1 rule sets different numbers per set. The routine's rule is the input to the
+session builder, not what ends up on screen. Ask `preview_session` before naming a weight.
 
 An exercise merged into another in the app (an exercise's details → Merge into…) reads as the one
 it went into everywhere, also in a workout another device logged against it before it synced.

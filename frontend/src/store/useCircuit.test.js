@@ -3,7 +3,10 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useStore } from './useStore.js'
 import { useCircuit, circuitUnitAt, restoreCircuit } from './useCircuit.js'
 import { useUI } from './useUI.js'
-import { buildCompletedWorkout } from '../lib/finish-workout.js'
+import { buildCompletedSession } from '../lib/finish-session.js'
+
+// The saved workout (v2 finish-session.js) from a live one.
+const buildCompletedWorkout = (A, { end }) => buildCompletedSession({ exposures: [], ...A }, { prescriptions: {} }, { end, newId: x => x, unit: 'kg' }).session
 import { buildLiveActivity } from '../lib/live-activity.js'
 import { watchRestTimer } from '../lib/watch-sync.js'
 import { PREP_SEC } from '../lib/circuit.js'
@@ -13,18 +16,19 @@ const entry = (id, sg, cfg, sets, target = {}) => ({ id, sg, target: { mode: 're
 const rows = (n, extra = {}) => Array.from({ length: n }, () => ({ w: 0, r: 10, done: false, ...extra }))
 
 function seed(cfg, entries) {
-  useStore.setState({ S: { ...original.S, sound: false, spokenCues: false, workouts: [], active: { id: 'w1', name: 'Burner', start: Date.now(), d: '2026-11-06', cur: 0, entries } } })
+  // The running workout is the store's own A, its rows each on an exposure of their own.
+  useStore.setState({ S: { ...original.S, sound: false, spokenCues: false, workouts: [] }, A: { id: 'w1', name: 'Burner', start: Date.now(), d: '2026-11-06', cur: 0, entries: entries.map((e, i) => ({ ...e, exposureId: 'x' + i })), exposures: entries.map((e, i) => ({ exposureId: 'x' + i, exerciseId: e.id, mode: 'reps' })) } })
 }
 
 describe('the circuit player\'s clock', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(1_000_000); useCircuit.getState().reset() })
-  afterEach(() => { useCircuit.getState().reset(); useUI.getState().stopRest(); vi.useRealTimers(); useStore.setState({ S: original.S }) })
+  afterEach(() => { useCircuit.getState().reset(); useUI.getState().stopRest(); vi.useRealTimers(); useStore.setState({ S: original.S, A: null }) })
 
   it('finds the circuit around an entry, and nothing for a plain superset', () => {
     const cfg = { mode: 'emom', every: 60, count: 4 }
     seed(cfg, [entry('a', 'g', cfg, rows(2)), entry('b', 'g', cfg, rows(2)), { id: 'c', sg: 'h', target: { sg: 'h' }, sets: rows(1) }, { id: 'd', sg: 'h', target: { sg: 'h' }, sets: rows(1) }])
-    expect(circuitUnitAt(useStore.getState().S.active, 1)).toMatchObject({ unit: [0, 1], sg: 'g', cfg })
-    expect(circuitUnitAt(useStore.getState().S.active, 2)).toBe(null)
+    expect(circuitUnitAt(useStore.getState().A, 1)).toMatchObject({ unit: [0, 1], sg: 'g', cfg })
+    expect(circuitUnitAt(useStore.getState().A, 2)).toBe(null)
   })
 
   it('writes each station into the session as the clock runs, and the result at the end', () => {
@@ -41,12 +45,12 @@ describe('the circuit player\'s clock', () => {
     useCircuit.getState().done()          // the split of interval 1
     vi.setSystemTime(1_000_000 + PREP_SEC * 1000 + 61_000)
     useCircuit.getState().tick()
-    let A = useStore.getState().S.active
+    let A = useStore.getState().A
     expect(A.entries[0].sets[0]).toMatchObject({ done: true, r: 10 })
     expect(A.cur).toBe(1)
     vi.setSystemTime(1_000_000 + PREP_SEC * 1000 + 121_000)
     useCircuit.getState().tick()
-    A = useStore.getState().S.active
+    A = useStore.getState().A
     expect(A.entries[1].sets[0].done).toBe(true)
     expect(A.circuits).toHaveLength(1)
     expect(A.circuits[0]).toMatchObject({ mode: 'emom', rounds: 1, ids: ['a', 'b'], ended: 'done' })
@@ -68,7 +72,7 @@ describe('the circuit player\'s clock', () => {
     useCircuit.getState().tick()
     expect(useCircuit.getState().ask).toEqual({ m: 1 })
     useCircuit.getState().finish(3)
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.circuits[0]).toMatchObject({ rounds: 1, extra: 5 + 3 })
     expect(A.entries[1].sets.map(s => s.r)).toEqual([5, 3])
     // nothing owed: unticked rows are gone
@@ -84,7 +88,7 @@ describe('the circuit player\'s clock', () => {
     localStorage.setItem('gym_circuit_v1', saved)
     vi.setSystemTime(1_000_000 + PREP_SEC * 1000 + 45_000)
     expect(restoreCircuit()).toBe(true)
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     // two work intervals ran while the page was gone (0-20, 30-50 s: the second still runs)
     expect(A.entries[0].sets.filter(s => s.done).length).toBe(1)
     expect(A.entries[0].sets[0].sec).toBe(20)
@@ -101,12 +105,12 @@ describe('the circuit player\'s clock', () => {
     useCircuit.getState().pause()
     expect(watchRestTimer(null, useCircuit.getState().run)).toMatchObject({ paused: true, left: PREP_SEC })
     useCircuit.getState().resume()
-    let live = buildLiveActivity(useStore.getState().S, null, { circuit: run })
+    let live = buildLiveActivity({ ...useStore.getState().S, active: useStore.getState().A }, null, { circuit: run })
     expect(live.state.restEndsAt).toBe(1_000_000 + PREP_SEC * 1000)
     vi.setSystemTime(1_000_000 + PREP_SEC * 1000 + 1000)
     useCircuit.getState().tick()
     const work = useCircuit.getState().run
-    live = buildLiveActivity(useStore.getState().S, null, { circuit: work })
+    live = buildLiveActivity({ ...useStore.getState().S, active: useStore.getState().A }, null, { circuit: work })
     expect(live.state).toMatchObject({ holdKind: 'hold', holdEndsAt: 1_000_000 + PREP_SEC * 1000 + 20_000, restEndsAt: null })
     // a work interval is not a rest on the watch
     expect(watchRestTimer({ endsAt: 5 }, work)).toBe(null)
@@ -120,7 +124,7 @@ describe('the circuit player\'s clock', () => {
     useCircuit.getState().done()                    // go now
     vi.setSystemTime(1_000_030); useCircuit.getState().done()   // round 1 done
     useCircuit.getState().wrapUp()
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.circuits[0]).toMatchObject({ rounds: 1, ended: 'stopped' })
     expect(A.entries[0].sets.length).toBe(1)
   })

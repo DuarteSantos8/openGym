@@ -11,7 +11,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
   const state = { S: null, navs: [], toasts: [], sheets: [] }
-  state.snapshot = () => ({ S: state.S, update: mut => { const next = structuredClone(state.S); mut(next); state.S = next } })
+  state.snapshot = () => ({ S: state.S, A: state.S?.active ?? null, update: mut => { const next = structuredClone(state.S); mut(next); state.S = next } })
   return state
 })
 vi.mock('../store/useStore.js', () => {

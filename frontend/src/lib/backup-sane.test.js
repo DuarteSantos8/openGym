@@ -67,3 +67,13 @@ describe('dropBrokenRows', () => {
     expect('customEx' in dropBrokenRows({ ...s, workouts: [null] }).state).toBe(false)
   })
 })
+
+describe('a v2 backup', () => {
+  it('keeps its exposures and rule occurrences, dropping only the broken ones', () => {
+    const x = { exposureId: 'x', exerciseId: '0025', performance: { sets: [{ status: 'completed' }, 'junk'] } }
+    const state = { workouts: [{ id: 'w', exposures: [x, { nope: 1 }] }], routines: [{ id: 'r', ex: [{ occurrenceId: 'o', exerciseId: '0025', rule: {} }, 5] }] }
+    const { state: out } = dropBrokenRows(state)
+    expect(out.workouts[0].exposures).toEqual([{ ...x, performance: { sets: [{ status: 'completed' }] } }])
+    expect(out.routines[0].ex.map(e => e.exerciseId)).toEqual(['0025'])
+  })
+})

@@ -9,7 +9,7 @@
 // For effort, -1 stands for "not rated" (the lists are numbers only, for Swift and Java).
 import { fmtNum, cleanNum } from './format.js'
 import { modeOf, repStep, EFFORT, effortOf } from './history.js'
-import { weightIncrement, stepWeight } from './progression.js'
+import { weightIncrement, stepWeight } from './exercises.js'
 import { ownedWeightsFor, stepOwned } from './dumbbells.js'
 import { shownWeight, exUnitOf } from './ex-unit.js'
 import { isSideSet, syncSideAggregate } from './workout-model.js'

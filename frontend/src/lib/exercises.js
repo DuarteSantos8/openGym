@@ -690,3 +690,36 @@ export function similarExercises(list, query, exclude = [], limit = 30) {
   out.sort((a, b) => b.score - a.score || a.len - b.len || a.i - b.i)
   return out.slice(0, limit).map(x => x.e)
 }
+
+export const weightIncrement = (cfg, unit) => (cfg && cfg.inc > 0 ? cfg.inc : defaultIncrement(cfg?.id, unit))
+
+const round1 = v => Math.round(v * 10) / 10
+// The places a step needs: one at least, three at most. A 0.25 kg step lands on .25 and .75,
+// which one place stored as .3 and .8; a 0.1 step multiplied out leaves float dust
+// (52.300000000000004) that this rounds away.
+export const stepPlaces = step => {
+  const s = String(Number(step) || 0)
+  const i = s.indexOf('.')
+  return i < 0 || /e/i.test(s) ? 1 : Math.min(3, Math.max(1, s.length - i - 1))
+}
+export const roundToStep = (v, step) => { const p = 10 ** stepPlaces(step); return Math.round(v * p) / p + 0 }
+// Snap to a loadable multiple of the step, as the engine's progression does.
+export function snapWeight(v, step) {
+  if (!(step > 0)) return round1(v)
+  return roundToStep(Math.round(v / step) * step, step)
+}
+// Add `step` to a weight the way a stepper tap does: from a weight that sits on the increment's
+// grid the sum is snapped to it, from one off the grid the step is simply added (issue #175).
+export function addStep(w, step, inc) {
+  const v = +w || 0
+  // "On the grid" within a tenth (61.3 is 61.25 as one place stored it), or within a quarter of a
+  // step finer than 0.4: with a 0.1 step everything is within a tenth of the grid.
+  const onGrid = inc > 0 && Math.abs(v - Math.round(v / inc) * inc) <= Math.min(0.1, inc / 4) + 1e-9
+  const next = v + step
+  return Math.max(0, onGrid ? snapWeight(next, inc) : roundToStep(next, Math.abs(step) || inc))
+}
+// A load already off its increment's grid keeps that offset when the user taps a stepper.
+export function stepWeight(value, step, direction) {
+  const v = Number(value) || 0
+  return addStep(v, direction * step, step)
+}

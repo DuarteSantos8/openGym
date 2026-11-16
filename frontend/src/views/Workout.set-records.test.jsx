@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 // gm-live (1.4.5): a set that beats a record wears a trophy line the moment it is ticked, with a
 // buzz and two notes; the next open set says how close it is. Both have their own switch.
+import { storeFromV1 } from '../lib/test-fixtures.js'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -31,7 +32,7 @@ function mount(patch = {}) {
       { w: 80, r: 8, done: true }, { w: 82.5, r: 8, done: false }, { w: 70, r: 6, done: false },
     ] },
   ] }
-  useStore.setState({ S, user: null })
+  useStore.setState({ ...storeFromV1(S), user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)

@@ -25,6 +25,8 @@
 // so the rules they follow are written down here a second time and run against the real page under
 // every kind of bad link. When a watch changes, this changes with it (docs/WATCH_SYNC.md).
 import { bindWatchActions, bindWatchAppActions, startWatchSync, patchSetIn, markDiscarded, ensureWatchSet, watchTickRest, applyRestStep, restAtFor, setStamp, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { exposuresWithPerformance, rowsOfPerformance } from './session-ui-adapter.js'
+import { modeOf } from './history.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 
@@ -215,13 +217,23 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
   // "kill" by itself).
   const phone = W.phone = { app: 'front', S: { unit: 'kg', restSec: 90, workouts: [], routines: [], week: {}, dayPlan: {}, active: null }, queueFile: [], page: null, timer: null }
   const subs = new Set(), uiSubs = new Set()
-  const storeState = () => ({ S: phone.S, ready: true, tourSandbox: false, saveNow: async () => {}, update })
+  // The store as the app has it (store/useStore.js): the profile `S` and, apart, the running
+  // workout `A`. The phone's "disk" here keeps both in `phone.S` (`active`), as the tests read it.
+  const storeState = () => {
+    const { active, ...S } = phone.S
+    return { S, A: active ?? null, ready: true, tourSandbox: false, saveNow: async () => {}, update: updateProfile, updateActive }
+  }
   let last = storeState()
-  function update (fn) {
-    const S = clone(phone.S); fn(S); phone.S = S
+  const commit = S => {
+    phone.S = S
     const prev = last; last = storeState()
     for (const f of [...subs]) f(last, prev)
   }
+  function update (fn) { const S = clone(phone.S); fn(S); commit(S) }
+  // What the app's own `update` and `updateActive` do: the profile alone (the workout stays the
+  // same object), or the workout alone.
+  function updateProfile (fn) { const { active, ...rest } = phone.S; const S = clone(rest); fn(S); commit({ ...S, active }) }
+  function updateActive (fn) { if (!phone.S.active) return; const A = clone(phone.S.active); fn(A); commit({ ...phone.S, active: A }) }
   const useStore = { getState: () => last, subscribe: fn => { subs.add(fn); return () => subs.delete(fn) } }
 
   // The rest timer, by store/useUI.js's rules (the parts the watch link touches).
@@ -393,7 +405,10 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
       update(S => {
         const A = S.active
         if (!A) return
-        S.workouts.push({ id: A.id, start: A.start, end: end || Date.now(), name: A.name, entries: A.entries.filter(e => e.sets.some(s => s.done)) })
+        // Saved as the app saves it (lib/finish-session.js): each exercise an exposure, its sets the performance.
+        const entries = A.entries.filter(e => e.sets.some(s => s.done)).map((e, i) => ({ ...e, exposureId: `${A.id}:x${i}` }))
+        const exposures = exposuresWithPerformance(entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, routineId: null, prescriptionId: null, mode: modeOf({ ...(e.target || {}), id: e.id }) })), entries, S.unit === 'lb' ? 'lb' : 'kg')
+        S.workouts.push({ id: A.id, start: A.start, end: end || Date.now(), name: A.name, exposures })
         S.active = null
       })
       setTimer(null)
@@ -706,6 +721,9 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
 
   return W
 }
+
+/** A saved workout's exercises as rows again (`{ id, sets }`), for the tests to read: v2 keeps them as exposures. */
+export const savedEntries = w => (Array.isArray(w?.exposures) ? w.exposures.map(x => ({ id: x.exerciseId, sets: rowsOfPerformance(x.performance?.sets, x.mode) })) : w?.entries || [])
 
 /** The phone's routines as sessions the watch can start. */
 export function readyOf (routines) {

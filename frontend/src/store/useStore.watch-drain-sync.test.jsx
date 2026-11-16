@@ -18,12 +18,19 @@ import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
 import { stampWorkout } from '../lib/sync-merge.js'
 import { applyEvents, bindWatchActions, bindWatchAppActions, patchSetIn, _resetWatchSync } from '../lib/watch-sync.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { savedEntries } from '../lib/watch-sim.js'
+import { unpackProfile } from '../../../api/migration/profile-pack.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const A = { id: 'acct-a', name: 'anna' }
 const flush = async (n = 20) => { for (let i = 0; i < n; i++) await Promise.resolve() }
 const entry = (done = [true, false]) => ({ id: '0025', target: { sets: 2, reps: 8 }, sets: done.map(d => ({ w: 60, r: 8, done: d, ...(d ? { at: 1000 } : {}) })) })
 const workout = (id, over = {}) => ({ id, d: '2026-11-10', start: 1, end: 2, entries: [entry()], ...over })
+// A profile as the server keeps it for this app (v2): these workouts migrated the way an upgrade does.
+const v2doc = (workouts, over = {}) => ({ ...clone(DEF), ...migratedFixture({ ...clone(DEF), unit: 'kg', workouts }), ...over })
+const rowsIn = w => w && { ...w, entries: savedEntries(w) }
+const sent = c => unpackProfile(c.body.state)
 
 let calls = []
 const pending = () => calls.filter(c => !c.done)
@@ -38,20 +45,25 @@ async function settle () {
   }
 }
 
-const SERVER = { ...clone(DEF), _ts: 100, unit: 'kg', workouts: [workout('w-1')], _rev: 4 }
-const S = () => useStore.getState().S
-const saved = id => S().workouts.find(w => w.id === id)
+const SERVER = v2doc([workout('w-1')], { _ts: 100, _rev: 4 })
+const S = () => ({ ...useStore.getState().S, active: useStore.getState().A })
+const saved = id => rowsIn(S().workouts.find(w => w.id === id))
 
 function signedIn (over = {}) {
   localStorage.setItem('gym_sync', JSON.stringify({ rev: 4, ts: 100 }))
-  useStore.setState({ S: { ...clone(SERVER), ...over }, user: null, ready: true })
+  const { active = null, ...rest } = over
+  useStore.setState({ S: { ...clone(SERVER), ...rest }, A: active, user: null, ready: true, config: { engineContract: 1, coach: null } })
   useStore.getState().setUser(A)
   bindWatchAppActions({
     start: vi.fn(),
-    patchSet: (where, fields, opts = {}) => useStore.getState().update(s => { patchSetIn(s, where, fields, stampWorkout, opts) }),
+    patchSet: (where, fields, opts = {}) => {
+      const st = useStore.getState()
+      if (st.A && st.A.id === where.wid) { st.updateActive(A => { patchSetIn({ active: A }, where, fields, null, opts) }); return }
+      st.update(s => { patchSetIn(s, where, fields, stampWorkout, opts) })
+    },
   })
   bindWatchActions({
-    setDone: (ei, si, { w, r, at }) => useStore.getState().update(s => { Object.assign(s.active.entries[ei].sets[si], { w, r, at, done: true }) }),
+    setDone: (ei, si, { w, r, at }) => useStore.getState().updateActive(A => { Object.assign(A.entries[ei].sets[si], { w, r, at, done: true }) }),
     finish: vi.fn(), discard: vi.fn(),
   })
 }
@@ -74,7 +86,7 @@ afterEach(async () => {
   await settle()
   _resetWatchSync()
   localStorage.clear()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 
 describe('the watch\'s queue drained while a push is on its way', () => {
@@ -91,13 +103,13 @@ describe('the watch\'s queue drained while a push is on its way', () => {
     expect(saved('w-1').entries[0].sets[1]).toMatchObject({ w: 62.5, r: 6, done: true })
 
     // another device wrote meanwhile: its copy has w-1 as it was, and a workout of its own
-    refuse(put, conflict({ ...clone(SERVER), workouts: [workout('w-1'), workout('x-1', { d: '2026-11-09' })], _ts: 150, _rev: 5 }, 5))
+    refuse(put, conflict(v2doc([workout('w-1'), workout('x-1', { d: '2026-11-09' })], { _ts: 150, _rev: 5 }), 5))
     await flush()
     expect(saved('w-1').entries[0].sets[1]).toMatchObject({ w: 62.5, r: 6, done: true })
     expect(S().workouts.map(w => w.id).sort()).toEqual(['w-1', 'x-1'])
     const again = call('PUT')
     expect(again.body.baseRev).toBe(5)
-    expect(again.body.state.workouts.find(w => w.id === 'w-1').entries[0].sets[1]).toMatchObject({ w: 62.5, r: 6, done: true })
+    expect(rowsIn(sent(again).workouts.find(w => w.id === 'w-1')).entries[0].sets[1]).toMatchObject({ w: 62.5, r: 6, done: true })
     answer(again, { ok: true, rev: 6 })
     await flush()
   })
@@ -110,14 +122,14 @@ describe('the watch\'s queue drained while a push is on its way', () => {
       useStore.getState().pushState()
       await vi.advanceTimersByTimeAsync(0)
       const put = call('PUT')
-      expect(put.body.state.workouts[0].entries[0].sets[1].done).toBe(false)
+      expect(rowsIn(sent(put).workouts[0]).entries[0].sets[1].done).toBe(false)
 
       drainWatch([late()])
       answer(put, { ok: true, rev: 5 })
       await vi.advanceTimersByTimeAsync(5000)
       const next = calls.filter(c => c.method === 'PUT').at(-1)
       expect(next).not.toBe(put)
-      expect(next.body.state.workouts[0].entries[0].sets[1]).toMatchObject({ w: 62.5, r: 6, done: true })
+      expect(rowsIn(sent(next).workouts[0]).entries[0].sets[1]).toMatchObject({ w: 62.5, r: 6, done: true })
       expect(next.body.baseRev).toBe(5)
       answer(next, { ok: true, rev: 6 })
       await vi.advanceTimersByTimeAsync(0)
@@ -133,7 +145,7 @@ describe('the watch\'s queue drained while a push is on its way', () => {
     const put = call('PUT')
 
     drainWatch([{ id: 'ev-2', seq: 1, type: 'setDone', wid: 'w-live', exId: '0025', entryIdx: 0, setIdx: 0, w: 65, r: 5, at: Date.now() }])
-    refuse(put, conflict({ ...clone(SERVER), workouts: [workout('w-1'), workout('x-1')], _ts: 150, _rev: 5 }, 5))
+    refuse(put, conflict(v2doc([workout('w-1'), workout('x-1')], { _ts: 150, _rev: 5 }), 5))
     await flush()
     expect(S().active.id).toBe('w-live')
     expect(S().active.entries[0].sets[0]).toMatchObject({ w: 65, r: 5, done: true })
@@ -147,7 +159,7 @@ describe('the watch\'s queue drained while a push is on its way', () => {
     const first = clone(saved('w-1'))
     useStore.getState().pushState()
     await flush()
-    refuse(call('PUT'), conflict({ ...clone(SERVER), workouts: [workout('w-1'), workout('x-1')], _ts: 150, _rev: 5 }, 5))
+    refuse(call('PUT'), conflict(v2doc([workout('w-1'), workout('x-1')], { _ts: 150, _rev: 5 }), 5))
     await flush()
     expect(drainWatch([late()])).toEqual(['ev-1'])
     expect(saved('w-1').entries[0].sets).toEqual(first.entries[0].sets)

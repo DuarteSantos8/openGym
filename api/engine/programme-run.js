@@ -4,7 +4,7 @@
 // Beside it: where a new session goes (slotFor), what it is generated from (slotInputs) and which
 // adopted 1RMs a newer one could replace (referenceProposals). Pure: `today` and every record are
 // arguments; nothing is read from a clock or written anywhere.
-import { contentHash } from './canonical.js'
+import { cmp, contentHash } from './canonical.js'
 import { advanceProgression } from './advance.js'
 import { roundLoad } from './load.js'
 import { currentOneRm } from './one-rm.js'
@@ -17,8 +17,7 @@ const MAX_PERIODS = 520
 const DAY = 86400000
 const REPEAT = { onFailure: 'repeat', onSkipped: 'repeat' }
 const ms = at => (typeof at === 'number' ? at : Date.parse(at))
-// Code-point order: the same on every runtime, whatever its locale.
-export const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
+export { cmp }
 const byTime = (a, b) => a.t - b.t || cmp(a.id, b.id)
 const apptOf = slot => slot.split(':').slice(0, 2).join(':')
 const oidOf = slot => slot.split(':').slice(2).join(':')
@@ -103,9 +102,16 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
 
   // Saved exposures of this run, earliest first; an assign event moves one to another slot. Work
   // saved before the run existed (a converted legacy run, spec 15.3) counts only through an assign
-  // event naming it onto a slot of its own occurrence, in an appointment of its own routine.
+  // event naming it onto a slot of its own occurrence, in an appointment of its own routine, logged
+  // in that slot's week: two conversions of one run from copies whose newest workout differs share
+  // the run's id, never its weeks. The day is the one the conversion credited by (programme-upgrade.js
+  // convertRun): the workout's own `d`, else its time in the run's zone.
   const moved = new Map(of('assign').map(e => [e.exposureId, e.slot]))
-  const legacy = (x, slot) => {
+  const legacy = (x, slot, w) => {
+    const at = x.completedAt ?? w.end ?? w.start
+    const on = /^\d{4}-\d{2}-\d{2}$/.test(w.d) ? w.d : Number.isFinite(ms(at)) ? dateIn(at, tz) : null
+    // ponytail: a converted run is always calendar weeks (convertRun); a rotation's rounds are not dated, so none is checked.
+    if (weekly && (!on || periodOfDate(run, pauses, on) !== Number(slot.split(':')[0].slice(1)))) return null
     const a = Number(apptOf(slot).split(':')[1]?.slice(1)), oid = oidOf(slot)
     const d = x.occurrenceId === oid ? [run.def, latest].find(d => apptsOf(d)[a] === x.routineId) : null
     const track = d?.tracks.find(t => t.slots.some(s => s.oid === oid && s.rid === x.routineId))
@@ -114,7 +120,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
   const saved = []
   for (const w of workouts) {
     for (const x of w.exposures || []) {
-      const g = x.programme ?? (moved.has(x.exposureId) ? legacy(x, moved.get(x.exposureId)) : null)
+      const g = x.programme ?? (moved.has(x.exposureId) ? legacy(x, moved.get(x.exposureId), w) : null)
       if (g?.runId !== run.id) continue
       const t = ms(x.completedAt ?? w.end ?? w.start), p = prescriptions[x.prescriptionId] ?? null
       saved.push({ x, g, id: x.exposureId, track: g.trackId, slot: moved.get(x.exposureId) ?? g.slot, role: g.role ?? 'work', moved: moved.has(x.exposureId), t, gen: p ? ms(p.generatedAt) : t, p })
@@ -368,9 +374,11 @@ const attainedOf = credits => Object.fromEntries([...credits].sort(byTime).filte
  * Where a session of occurrence `oid` in routine `rid` on local `date` goes: its slot in the run,
  * as work, maintenance or extra (logged, earning nothing), or null when the run gives it none. In a
  * rotation or an ordered week, continuing past earlier unresolved appointments of the same period
- * lists them in `bypass`; only a recorded bypass event skips them.
+ * lists them in `bypass`; only a recorded bypass event skips them. `appt` (an appointment index)
+ * is the one the person picked when the routine has several open in the period (spec 7.2); without
+ * it, or when it is not open, the earliest open one is taken.
  */
-export function slotFor({ view, run, rid, oid, date }) {
+export function slotFor({ view, run, rid, oid, date, appt = null }) {
   const none = { assignment: null, bypass: [] }
   if (view.status !== 'running' || date < run.startedOn) return none
   const found = Object.entries(view.tracks).find(([id, tv]) => tv.def?.tracks.find(t => t.id === id)?.slots.some(s => s.rid === rid && s.oid === oid))
@@ -383,7 +391,7 @@ export function slotFor({ view, run, rid, oid, date }) {
   const mark = i => view.taken[`p${period}:a${i}`]
   const open = i => mark(i) !== true && !mark(i)?.includes(oid)
   const mine = appts.map((r, i) => i).filter(i => appts[i] === rid && owed(i))
-  const a = mine.find(open) ?? mine[0] ?? appts.indexOf(rid)
+  const a = (mine.includes(appt) && open(appt) ? appt : null) ?? mine.find(open) ?? mine[0] ?? appts.indexOf(rid)
   if (a < 0) return none
   const slot = `p${period}:a${a}:${oid}`
   const listed = open(a) && tv.period === period && tv.slots.some(s => s.id === slot)

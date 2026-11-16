@@ -134,12 +134,13 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     ...(!fresh && last.rir != null ? { rir: last.rir } : {}),
     // A v1 policy that steps the load is already where its last finish left it (advance.js holds
     // what was lifted). One that names no weight (a timed hold) opens at what was lifted last time;
-    // a bodyweight climb at none. A phase with no progression opens at its own declared load, or at
-    // what was lifted when it declares none (v1 'off'); any other at what was done last time.
+    // a bodyweight climb at none. A phase with no progression opens at its own declared load (an
+    // absolute one, or a %1RM that resolved: a programme's fixed week), or at what was lifted when it
+    // declares none (v1 'off'); any other at what was done last time.
     load: perRowLoads(phase) || (reset && !unprogressed) || !lastLog || (p.load.mode === 'empty' && phase.progression.length) ? null
       : owns('load') ? (fresh || operatorFor(phase, 'load').basis === 'last_actual' || !last.load ? null : copy(last.load))
       // ponytail: one load for the session, the best lifted; per-row loads if a copied session ever needs them
-      : owns('durationSeconds') || unprogressed || !(p.load.mode === 'absolute' && p.load.value > 0) ? bestLoadOf(lastLog, assisted, values.load.unit) : null
+      : owns('durationSeconds') || unprogressed || !((p.load.mode === 'absolute' && p.load.value > 0) || (p.load.mode === 'percent_1rm' && load.resolved)) ? bestLoadOf(lastLog, assisted, values.load.unit) : null
   }
   if (duration && p.speed && lastLog?.performance?.sets?.length) {
     const observed = (row, metric) => row.observations?.find(o => o.metric === metric)?.value

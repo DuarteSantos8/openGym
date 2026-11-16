@@ -14,6 +14,7 @@
 // UNITS: every weight in a profile is in its unit (S.unit). Totals are reported in it; the fun
 // comparisons work in kg underneath, so a lb profile gets the same blue whales.
 import { workoutDay, workoutDuration, sessionVolume, doneUnits } from './history.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { isWarmupRow } from './workout-model.js'
 import { isAssisted, isCardio } from './exercises.js'
 import { MUSCLES, loadOfWorkouts } from './muscles.js'
@@ -189,7 +190,7 @@ export function yearStats(S, year) {
       if (h >= 20 || h < 4) late++
     }
     prs += new Set(Array.isArray(w.prs) ? w.prs.filter(id => typeof id === 'string') : []).size
-    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+    for (const e of legacyEntriesOf(w, S.prescriptions)) {
       if (!e || typeof e.id !== 'string') continue
       const done = workSets(e)
       const n = done.reduce((m, s) => m + doneUnits(s), 0)
@@ -292,7 +293,7 @@ export function biggestPr(S, year, ws = workoutsOfYear(S, year)) {
   for (const w of ws) {
     for (const id of Array.isArray(w.prs) ? w.prs : []) {
       if (typeof id !== 'string' || isAssisted(id)) continue
-      const top = Math.max(0, ...(w.entries || []).filter(e => e?.id === id).flatMap(e => workSets(e).map(setWeight)))
+      const top = Math.max(0, ...legacyEntriesOf(w, S.prescriptions).filter(e => e?.id === id).flatMap(e => workSets(e).map(setWeight)))
       if (top > 0 && top >= (recorded.get(id)?.w || 0)) recorded.set(id, { w: top, d: workoutDay(w) })
     }
   }
@@ -302,7 +303,7 @@ export function biggestPr(S, year, ws = workoutsOfYear(S, year)) {
   for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
     const day = w && workoutDay(w)
     if (!day || day >= start) continue
-    for (const e of w.entries || []) {
+    for (const e of legacyEntriesOf(w, S.prescriptions)) {
       if (!recorded.has(e?.id)) continue
       const top = Math.max(0, ...workSets(e).map(setWeight))
       if (top > (before.get(e.id) || 0)) before.set(e.id, top)

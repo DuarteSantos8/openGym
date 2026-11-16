@@ -13,7 +13,7 @@
 import { sessionSections, workoutVolume, workoutDuration, doneUnits, modeOf, isBw, setLabel } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow, hasCompletedWork, isSideSet } from './workout-model.js'
-import { bestSetOf } from './onerm.js'
+import { estimate1RM } from './onerm.js'
 import { sanitizeHr } from './heart-rate.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
 import { fmtDur, fmtNum, fmtVol, capWords } from './format.js'
@@ -21,6 +21,8 @@ import { t, tn, exerciseNameClass } from './i18n-core.js'
 import { parseColor, mixColor, drawBrand, roundRect, BRAND, accTextOnLight } from './card-draw.js'
 import { isoRun } from './bidi.js'
 import { workoutCardModel, wrapText, fitSize, mapColors, drawView, drawIcon, TROPHY, FLAME, FLAME_COLOR, CARD_FONT } from './workout-card.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const SHARE_TEMPLATES = ['classic', 'photo', 'lifts', 'sticker']
 export const SHARE_LOOKS = ['dark', 'light', 'accent']
@@ -49,7 +51,7 @@ export function workoutHr(w) {
   const own = sanitizeHr(w?.hr)
   if (own) return own
   let sum = 0, n = 0, max = 0
-  for (const e of w?.entries || []) {
+  for (const e of legacyEntriesOf(w)) {
     for (const s of e?.sets || []) {
       const hr = sanitizeHr(s?.hr)
       if (!hr || isWarmupRow(s)) continue
@@ -77,7 +79,8 @@ function bestSetText(entry, { unit = 'kg', speedUnit } = {}) {
   const mode = modeOf(cfg)
   if (mode === 'reps') {
     const bw = isBw(cfg)
-    const best = bw ? null : bestSetOf(entry)
+    // The set with the best estimated 1RM, as v1's bestSetOf picked it from the entry's rows.
+    const best = bw ? null : flatSets(sets).filter(s => s.w > 0 && s.r > 0).reduce((a, s) => (!a || estimate1RM(s.w, s.r) > estimate1RM(a.w, a.r) ? s : a), null)
     if (best && best.w > 0) return `${fmtNum(best.w)} ${unit} × ${best.r}`
     // Added weight beats more reps on a body-weight lift: "+10 × 6" says more than "12 reps".
     const score = s => (Number(s.w) > 0 ? 1e6 + Number(s.w) * 1000 : 0) + (Number(s.r) || 0)
@@ -100,7 +103,7 @@ function bestSetText(entry, { unit = 'kg', speedUnit } = {}) {
 export function shareCardModel(w, { unit = 'kg', nameOf, warmups = false, streak = 0, state = null, speedUnit } = {}) {
   const base = workoutCardModel(w, { unit, nameOf, warmups, streak })
   const prs = new Set(w.prs || [])
-  const entries = w.entries || []
+  const entries = legacyEntriesOf(w)
   const lifts = []
   for (const i of sessionSections(entries).flatMap(section => section.units).flat()) {
     const stored = entries[i]

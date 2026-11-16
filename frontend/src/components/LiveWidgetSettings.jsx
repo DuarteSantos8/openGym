@@ -261,7 +261,10 @@ function Opt ({ id, icon, tint, title, name = title, sub, note, checked, onChang
 }
 
 export default function LiveWidgetSettings () {
-  const S = useStore(s => s.S)
+  const profile = useStore(s => s.S)
+  const A = useStore(s => s.A)
+  // The running workout is the store's own `A`: the preview and Try it read it as part of the profile.
+  const S = useMemo(() => ({ ...profile, active: A }), [profile, A])
   const update = useStore(s => s.update)
   const G = useMemo(() => glanceOf(S), [S.liveWidget, S.liveLayout])
   const [status, recheck] = useLiveStatusFresh()
@@ -433,7 +436,9 @@ function Pick ({ id, title, note, checked, onChange }) {
 
 /** Settings > Workout > Live widget > Per exercise type. */
 export function LiveWidgetCustomise () {
-  const S = useStore(s => s.S)
+  const profile = useStore(s => s.S)
+  const A = useStore(s => s.A)
+  const S = useMemo(() => ({ ...profile, active: A }), [profile, A])
   const update = useStore(s => s.update)
   const G = useMemo(() => glanceOf(S), [S.liveWidget, S.liveLayout])
   const [kind, setKind] = useState('lift')

@@ -52,6 +52,7 @@ import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
+import { legacyEntriesOf } from '../lib/prescription/index.js'
 import { isOn } from '../lib/modules.js'
 import { activityStimuli } from '../lib/activities.js'
 import { isoRun } from '../lib/bidi.js'
@@ -215,7 +216,7 @@ function MusclesCard({ S, planFocus = false }) {
   const [missOpen, setMissOpen] = useState(false)
   const now = useNow(S)
   const lang = getLang()
-  const workouts = S.workouts
+  const workouts = useMemo(() => S.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, S.prescriptions) })), [S.workouts, S.prescriptions])
   const bodyweightKg = useMemo(() => profileBodyweightKg(S), [S.bodyweight, S.unit])
   // Runs and matches (lib/activities.js) load the muscles they use, next to the workouts.
   const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit, activities: activityStimuli(S, now) }), [workouts, now, bodyweightKg, S.unit, S.activities, S.activityRecovery]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -612,7 +613,7 @@ export default function Stats() {
     .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
   const bw30 = S.bodyweight.filter(b => weighInAt(b) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
-  const workouts = S.workouts
+  const workouts = useMemo(() => S.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, S.prescriptions) })), [S.workouts, S.prescriptions])
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
   const lifetime = lifetimeVolume(S)
   const totals = useMemo(() => lifetimeTotals(S), [S.workouts]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -698,7 +699,7 @@ export default function Stats() {
   // The chosen exercise is charted in its own weight unit when it has one (#657, lib/ex-unit.js):
   // its history read as it sees it. The tiles and totals above stay in the profile's unit.
   const XS = exView(S, curEx)
-  const xw = XS.workouts
+  const xw = useMemo(() => XS.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, XS.prescriptions) })), [XS.workouts, XS.prescriptions])
   const curMode = curEx ? (() => {
     for (let i = xw.length - 1; i >= 0; i--) {
       const data = metricDataOf(xw[i], curEx)

@@ -32,12 +32,11 @@ it('uses the local session day and canonical completed volume', () => {
   const day = isoOf(start)
   const workout = {
     d: 'not-a-day', start: +start, end: +start + 15 * 60000, vol: 999,
-    entries: [{ sets: [
-      { w: 100, r: 10, done: true, phase: 'warmup' },
-      { w: 14, r: 16, done: true, sides: {
-        L: { w: 14, r: 10, done: true }, R: { w: 12.5, r: 6, done: true },
-      } },
-    ] }],
+    exposures: [{ performance: { sets: [
+      { role: 'warmup', status: 'completed', observations: [{ metric: 'repetitions', value: 10 }], resistance: { kind: 'external-load', value: 100 } },
+      { role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 10 }], resistance: { kind: 'external-load', value: 14 } },
+      { role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 6 }], resistance: { kind: 'external-load', value: 12.5 } },
+    ] } }],
   }
   expect(workoutDay(workout)).toBe(day)
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)

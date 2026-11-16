@@ -20,6 +20,8 @@ import { dayNoteOf, DAY_NOTE_LABEL } from './day-notes.js'
 import { recoverySessionsOf, RECOVERY_LABEL } from './recovery-sessions.js'
 import { workoutMediaOf } from './media-refs.js'
 import { gymsOf, activeGym } from './gym-inventory.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 // In the order the filter offers them. Labels are English source strings.
 export const NOTE_KINDS = ['workout', 'exercise', 'set', 'standing', 'tip', 'gym', 'body', 'day', 'recovery']
@@ -60,7 +62,7 @@ export function collectNotes(S) {
     const media = workoutMediaOf(w, Infinity).length > 0
     const base = { d: w.d, wid, title: w.name || '', ...(media ? { media: true } : {}) }
     if (txt(w.note)) out.push({ key: 'w:' + wid, kind: 'workout', text: txt(w.note), ...base })
-    ;(Array.isArray(w.entries) ? w.entries : []).forEach((en, ei) => {
+    ;(legacyEntriesOf(w)).forEach((en, ei) => {
       if (!en) return
       if (txt(en.note)) out.push({ key: `e:${wid}:${ei}`, kind: 'exercise', text: txt(en.note), exId: en.id, ...(en.notePin ? { pinned: true } : {}), ...base })
       ;(Array.isArray(en.sets) ? en.sets : []).forEach((s, si) => {

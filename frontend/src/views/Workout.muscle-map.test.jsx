@@ -35,8 +35,8 @@ function setActive(entries, { wc, workoutView } = {}) {
   const S = JSON.parse(JSON.stringify(DEF))
   if (wc) S.wc = { ...S.wc, ...wc }
   S.hints = { swipeSets: true }
-  S.active = { id: 'mm', d: '2026-10-19', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, entries, ...(workoutView ? { workoutView } : {}) }
-  useStore.setState({ S, user: null })
+  const A = { id: 'mm', d: '2026-10-19', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, entries, ...(workoutView ? { workoutView } : {}) }
+  useStore.setState({ S, A, user: null })
 }
 function render(node = <MemoryRouter><Workout /></MemoryRouter>) {
   container = document.createElement('div')
@@ -46,7 +46,7 @@ function render(node = <MemoryRouter><Workout /></MemoryRouter>) {
 }
 const headerMap = () => container.querySelector('[data-session-map]')
 const lastHeaderLevels = () => maps.filter(p => /bm-mini/.test(p.className)).at(-1)?.levels
-const edit = fn => act(() => useStore.getState().update(fn))
+const edit = fn => act(() => useStore.getState().updateActive(a => fn({ active: a })))
 
 afterEach(() => {
   act(() => root?.unmount()); container?.remove(); root = null
@@ -88,7 +88,7 @@ describe('Workout muscle map (#670)', () => {
     render()
     const before = lastHeaderLevels()
     edit(s => { s.active.entries[0].sets[1].w = 25 })
-    expect(useStore.getState().S.active.entries[0].sets[1].w).toBe(25)
+    expect(useStore.getState().A.entries[0].sets[1].w).toBe(25)
     expect(lastHeaderLevels()).toBe(before)
   })
 

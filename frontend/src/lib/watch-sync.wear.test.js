@@ -6,6 +6,7 @@
 //   events.json    what the watch sends: built by the watch's SessionCore (SessionCoreTest compares),
 //                  applied here through the page's own applyEvents.
 // And Android counts as a phone with a watch link, the iPhone still does, the web does not.
+import { migratedFixture } from './test-fixtures.js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -20,7 +21,8 @@ vi.mock('./mobile.js', async (orig) => ({ ...(await orig()), MOBILE: true, nativ
 const ws = await import('./watch-sync.js')
 const { buildSnapshot, applyEvents, bindWatchActions, bindWatchAppActions, streakFor, watchStatus, _setWatchPluginForTest, _resetWatchSync } = ws
 
-const state = () => ({
+const state = () => {
+  const raw = {
   unit: 'kg', restSec: 90, routines: [], weekStart: 1,
   workouts: [
     { id: 'old', d: '2026-10-19', entries: [{ id: '0025', target: { sets: 2, reps: 8 }, sets: [{ w: 55, r: 8, done: true }, { w: 57.5, r: 6, done: true }] }] },
@@ -32,7 +34,9 @@ const state = () => ({
       { id: '0001', target: { sets: 1, reps: 10 }, sets: [{ w: 20, r: 10, done: false, phase: 'warmup' }, { w: 30, r: 10, done: false }] },
     ],
   },
-})
+  }
+  return { ...raw, workouts: migratedFixture(raw).workouts }
+}
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync(); mobile.platform = 'android' })
 afterEach(() => _resetWatchSync())
@@ -62,7 +66,7 @@ describe('the events the Wear OS watch sends', () => {
     const setDone = vi.fn(), finish = vi.fn()
     bindWatchActions({ setDone, finish })
     const evs = events().filter(e => e.wid === 'w-1')
-    expect(applyEvents(evs, () => ({ S }))).toEqual(evs.map(e => e.id))
+    expect(applyEvents(evs, () => ({ S, A: S.active }))).toEqual(evs.map(e => e.id))
     // the second set of the bench press, with its heart rate
     expect(setDone).toHaveBeenCalledWith(0, 1, { w: 62.5, r: 7, at: 1761743100000, hr: { avg: 128, max: 141 } })
     // the second exercise's work set, no heart rate measured
@@ -74,7 +78,7 @@ describe('the events the Wear OS watch sends', () => {
     const start = vi.fn()
     bindWatchAppActions({ start })
     const ev = events().find(e => e.type === 'start')
-    expect(applyEvents([ev], () => ({ S: { ...state(), active: null } }))).toEqual([ev.id])
+    expect(applyEvents([ev], () => ({ S: state(), A: null }))).toEqual([ev.id])
     expect(start).toHaveBeenCalledWith(['r-push'], { id: ev.wid, start: ev.at })
   })
 })

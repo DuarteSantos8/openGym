@@ -28,27 +28,73 @@ const half = (v, lo, hi) => (typeof v === 'number' && v >= lo && v <= hi ? Math.
 const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 // The first day of a date's calendar week, on engine/programme-run.js's day numbers.
 const weekStartOf = (date, ws) => weekOf(dayOf(date), ws);
-// The zone the reminder fires by is the profile's own (api/queue.js reads it the same way); UTC without one.
-function zoneOf(tz) {
-  if (typeof tz !== 'string' || !tz) return 'UTC';
-  try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return tz; } catch { return 'UTC'; }
+// The zone the reminder fires by is the profile's own (api/queue.js reads it the same way), else the
+// one the caller names for this device; UTC without either. The first of `zones` Intl knows.
+function zoneOf(...zones) {
+  for (const tz of zones) {
+    if (typeof tz !== 'string' || !tz) continue;
+    try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return tz; } catch { /* the next one */ }
+  }
+  return 'UTC';
 }
+
+// The Coach's leaf edits on a week's target (api/coach/core/validate.js, spec 13): whole numbers in
+// these bounds, a weight in kg. A legacy week never carries them, so the upgrade reads none.
+const LEAVES = { sets: [1, 10], reps: [1, 100], sec: [5, 3600], rest: [0, 600] };
+const KG_PER_LB = 0.45359237;
+const CHOICES = ['advance', 'repeat'];
+function leavesOf(x) {
+  const fix = {};
+  for (const [k, [lo, hi]] of Object.entries(LEAVES)) if (Number.isInteger(x?.[k]) && x[k] >= lo && x[k] <= hi) fix[k] = x[k];
+  if (typeof x?.weight === 'number' && x.weight > 0 && x.weight <= 1000) fix.weight = x.weight;
+  return Object.keys(fix).length ? fix : null;
+}
+/** Reps work against an external load: not the body alone, a band or an assistance machine. The
+ *  only work a %1RM (or a deload factor) ever reached (lib/session-start.js programmePlan). */
+export const loadedWork = (cfg, ex, mode) => mode === 'reps' && !isBodyweight(cfg, ex) && !(typeof cfg?.assisted === 'boolean' ? cfg.assisted : isAssisted(ex));
+
+/**
+ * Why a week's target does not fit an exercise (spec 5.3: refused, never dropped), or null. The one
+ * rule for the Coach's validator (api/coach/core/validate.js) and for this conversion, so what one
+ * accepts the other never refuses. `loaded`: loadedWork. `pct` and `fix` (the leaves) as given.
+ */
+export function leafMisfit({ mode, loaded, pct = null, fix = null }) {
+  if (pct != null && !loaded) return 'a %1RM is only for work lifted with a weight';
+  if (!fix) return null;
+  if (mode === 'cardio') return 'cardio takes none of sets, reps, sec, weight or rest';
+  if ((fix.reps != null || fix.weight != null) && mode !== 'reps') return 'reps and weight are for exercises done for reps';
+  if (fix.weight != null && !loaded) return 'weight is only for work lifted with a weight, not bodyweight, band or assisted work';
+  if (fix.weight != null && pct != null) return 'a week\'s load is pct or weight, never both';
+  if (fix.sec != null && mode !== 'time') return 'sec is only for timed exercises';
+  if (loaded && pct == null && fix.weight == null) return 'a week that fixes sets, reps or rest on a lift needs its load too, as pct or weight';
+  return null;
+}
+
+const policyOf = x => (CHOICES.includes(x?.policy?.onFailure) && CHOICES.includes(x?.policy?.onSkipped) ? { onFailure: x.policy.onFailure, onSkipped: x.policy.onSkipped } : null);
 
 /** A legacy week as lib/programmes.js cleanWeek reads it: a target with neither number is none. */
 function cleanWeek(w) {
   const t = {};
   for (const [k, x] of Object.entries(isObj(w?.t) ? w.t : {})) {
-    const pct = half(x?.pct, 30, PCT_MAX), rpe = half(x?.rpe, 6, 10);
-    if (pct != null || rpe != null) t[k] = { pct, rpe };
+    const pct = half(x?.pct, 30, PCT_MAX), rpe = half(x?.rpe, 6, 10), fix = leavesOf(x), policy = policyOf(x);
+    if (pct != null || rpe != null || fix || policy) t[k] = { pct, rpe, ...(fix ? { fix } : {}), ...(policy ? { policy } : {}) };
   }
   return { deload: w?.deload === true, rpe: half(w?.rpe, 6, 10), t };
 }
 
-// The occurrence's phase at a %1RM: the same groups and their anchor ratios, its steps removed.
-function percentPhase(ph, percent) {
+// The occurrence's phase with that week's numbers fixed: a %1RM or a weight (kg, in the
+// occurrence's own unit) for its anchor, and any of the leaves; the same groups and their anchor
+// ratios, its steps removed.
+function fixedPhase(ph, percent, fix = null, unit = 'kg') {
   const { stall, ...rest } = copy(ph);
   const { loadTo, ...parameters } = rest.parameters;
-  return { ...rest, parameters: { ...parameters, load: { mode: 'percent_1rm', percent } }, target: { mode: 'none' }, progression: [], exit: null };
+  if (percent != null) parameters.load = { mode: 'percent_1rm', percent };
+  else if (fix?.weight != null) parameters.load = { mode: 'absolute', value: unit === 'lb' ? Math.round(fix.weight / KG_PER_LB * 100) / 100 : fix.weight, unit };
+  if (fix?.sets != null) parameters.sets = { min: fix.sets, max: fix.sets };
+  if (fix?.reps != null) parameters.reps = { min: fix.reps, max: fix.reps };
+  if (fix?.sec != null) parameters.durationSeconds = { min: fix.sec, max: fix.sec };
+  if (fix?.rest != null) parameters.restSeconds = fix.rest;
+  return { ...rest, parameters, target: { mode: 'none' }, progression: [], exit: null };
 }
 
 /** One track per occurrence: a stage per legacy week, the occurrence's own rule unless a %1RM fixes it. */
@@ -58,16 +104,27 @@ function trackOf(p, rid, occ, weeks, ctx) {
   const st = ctx.progression[oid];
   const ph = rule.program.phases.find(x => x.id === st?.phaseId) ?? rule.program.phases[0];
   // lib/session-start.js programmePlan: a %1RM and the deload factor only ever reached reps work under an external load.
-  const external = occ.mode === 'reps' && !isBodyweight(occ, info) && !(typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(info));
+  // An occurrence made in the app may store no mode: read it as the session does (a duration is a hold, else the catalogue's).
+  const mode = occ.mode ?? (rule.program.phases[0].parameters.durationSeconds ? 'time' : info?.bp === 'cardio' ? 'cardio' : 'reps');
+  const external = loadedWork(occ, info, mode);
   // A flat %1RM is a load for the anchor; groups of their own (a training max, explicit per-set loads) are never guessed (spec 15.2).
   const anchored = ph.groups.every(g => g.load.basis === 'anchor');
+  const unit = [ph.parameters.load?.unit, ...ph.progression.map(op => op.step?.unit)].find(u => u === 'kg' || u === 'lb') ?? 'kg';
   let repair = null;
+  const policies = new Set();
   const stages = weeks.map((w, i) => {
     // lib/programmes.js programmeSlot: the routine's own entry, whole, else the exercise's.
     const own = w.t[`${rid}:${occ.exerciseId}`] || w.t[occ.exerciseId] || {};
     const pct = external ? own.pct : null;
-    if (pct != null && !anchored) repair = ph.groups.some(g => g.load.basis === 'training_max') ? 'training-max' : 'group-loads';
-    const target = pct != null && anchored ? { own: 'set', phase: percentPhase(ph, pct) }
+    const fix = own.fix ?? null;
+    if (own.policy) policies.add(JSON.stringify(own.policy));
+    if ((pct != null || fix) && !anchored) repair = ph.groups.some(g => g.load.basis === 'training_max') ? 'training-max' : 'group-loads';
+    // What this exercise cannot take is refused (leafMisfit). A legacy week's %1RM on unloaded work
+    // never reached it and is left out as it was; an edit (`strict`, the Coach's) is refused instead.
+    // Sets, reps and seconds only reach groups that read them from the phase.
+    if (leafMisfit({ mode, loaded: external, pct: ctx.strict ? own.pct ?? null : pct, fix })
+      || (fix?.sets != null && !ph.groups.some(g => g.count === 'parameters')) || ((fix?.reps ?? fix?.sec) != null && !ph.groups.some(g => g.reps === 'parameters'))) repair = 'leaf';
+    const target = (pct != null || fix) && anchored ? { own: 'set', phase: fixedPhase(ph, pct, fix, unit) }
       : { own: 'inherit', ...(w.deload && external && scalable(rule) ? { deload: { factor: DELOAD_FACTOR } } : {}) };
     const rpe = own.rpe ?? w.rpe;
     if (rpe != null) target.effort = { mode: 'advisory', rpe };
@@ -84,8 +141,10 @@ function trackOf(p, rid, occ, weeks, ctx) {
     if (t.own === 'inherit' && prev?.own === 'set' && metrics.length) t.seed = Object.fromEntries(metrics.map(m => [m, m === 'load' ? load : 'copy']));
     if (s.kind === 'work') prev = t;
   }
+  // One advance/repeat choice per exercise: two different ones for it are a contradiction, not a pick.
+  if (policies.size > 1) repair = 'policy';
   if (repair) ctx.summary.push({ kind: 'repair', programmeId: p.id, trackId: id, reason: repair });
-  return { id, exerciseId: occ.exerciseId, slots: [{ rid, oid }], stages, refs: 'inherit', repair };
+  return { id, exerciseId: occ.exerciseId, slots: [{ rid, oid }], stages, refs: 'inherit', ...(policies.size === 1 ? { policy: JSON.parse([...policies][0]) } : {}), repair };
 }
 
 /**
@@ -95,8 +154,8 @@ function trackOf(p, rid, occ, weeks, ctx) {
  * Notes for the adoption summary go to `summary`. A loop is bound to calendar weeks and marked
  * `needs: ['binding']`; what cannot be converted faithfully is kept, marked `needs: ['repair']`.
  */
-export function convertLegacyProgramme(p, { routines = [], catalogue, customEx = [], progression = {}, weekStart = 1, summary = [] } = {}) {
-  const ctx = { catalogue, customEx: list(customEx), progression: isObj(progression) ? progression : {}, summary };
+export function convertLegacyProgramme(p, { routines = [], catalogue, customEx = [], progression = {}, weekStart = 1, summary = [], strict = false } = {}) {
+  const ctx = { catalogue, customEx: list(customEx), progression: isObj(progression) ? progression : {}, summary, strict };
   const weeks = list(p.weeks).slice(0, MAX_WEEKS).map(cleanWeek);
   if (!weeks.length) weeks.push(cleanWeek({}));
   const have = new Map(list(routines).map(r => [r.id, r]));
@@ -134,8 +193,9 @@ const bumped = (def, bump) => ({
     x.own === 'set' ? { ...x, phase: { ...x.phase, parameters: { ...x.phase.parameters, load: { ...x.phase.parameters.load, percent: Math.min(PCT_MAX, x.phase.parameters.load.percent + bump) } } } } : x])) })) }))
 });
 
-/** The ordinary track's values its steps would carry on from: the run's captured seed. */
-function seedOf(rule, st) {
+/** The ordinary track's values its steps would carry on from: the run's captured seed (an upgraded
+ *  run's and a run started in the app, lib/programmes.js). Null when the track has none to give. */
+export function seedOf(rule, st) {
   const ph = rule.program.phases[0];
   // ponytail: an ordinary track in a later phase (a ladder's loaded regime) seeds nothing; its stage opens at its own start.
   if (!st?.values || st.phaseId !== ph.id) return null;
@@ -205,10 +265,11 @@ function convertRun(s, legacyRun, def, ctx) {
 /**
  * Upgrade a canonical (v2) profile to contract 1: `S.programmes` as engine definitions, a running
  * `S.programme` as `S.programmeRuns[runId]` with `S.programme = { runId, saved }`, occurrences whose
- * own rule needs a 1RM given their adopted reference. `summary` feeds the adoption notice.
+ * own rule needs a 1RM given their adopted reference. `summary` feeds the adoption notice. `tz`: the
+ * device's timezone, which a running programme keeps its weeks in when the reminder names none.
  * A contract-1 profile comes back as it is; an output that does not validate throws, the input untouched.
  */
-export function upgradeEngineContract(state, catalogue) {
+export function upgradeEngineContract(state, catalogue, { tz } = {}) {
   if (contractOf(state) >= ENGINE_CONTRACT) return { state, summary: [] };
   if (state?.engineSchemaVersion !== ENGINE_SCHEMA) throw new Error('upgrade-needs-v2');
   if (typeof catalogue?.get !== 'function') throw new Error('upgrade-needs-catalogue');
@@ -235,7 +296,7 @@ export function upgradeEngineContract(state, catalogue) {
     // A run whose programme is gone keeps only the plan to put back, as lib/programmes.js did.
     if (!def || !isDate(selector.startedOn)) selector = { runId: null, saved };
     else {
-      const run = convertRun(s, selector, def, { ws, tz: zoneOf(state.reminder?.tz), summary, events });
+      const run = convertRun(s, selector, def, { ws, tz: zoneOf(state.reminder?.tz, tz), summary, events });
       runs[run.id] = run;
       selector = { runId: run.id, saved };
     }

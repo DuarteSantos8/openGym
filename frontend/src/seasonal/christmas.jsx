@@ -294,7 +294,7 @@ export function Layer({ hidden, fresh, workout }) {
    shows at that tap. Never with reduced motion; never anything to tap itself. */
 const doneSets = A => (A && Array.isArray(A.entries) ? A.entries.reduce((n, e) => n + (Array.isArray(e?.sets) ? e.sets.filter(x => x?.done).length : 0), 0) : 0)
 function useSetSparkle(on) {
-  const done = useStore(s => doneSets(s.S?.active))
+  const done = useStore(s => doneSets(s.A))
   const prev = useRef(done)
   const tap = useRef(null)
   const [spark, setSpark] = useState(null)
@@ -878,15 +878,20 @@ const exName = id => (EXIDX[id] ? exerciseNameText(EXIDX[id]) : id)
 function startOrAdd(update, name, cfgs, close) {
   const sg = cfgs.length > 1 ? 'xm' + uid() : null
   let added = false
+  let A = useStore.getState().A ? JSON.parse(JSON.stringify(useStore.getState().A)) : null
   update(s => {
-    const entries = cfgs.map(cfg => ({ id: cfg.id, ...buildSessionEntry(s, cfg.id, cfg, null, null), ...(sg ? { sg } : {}) }))
-    if (s.active) {
+    const built = cfgs.map(cfg => buildSessionEntry(s, cfg.id, cfg, null, { active: A, newId: uid }))
+    const entries = built.map(b => ({ ...b.entry, ...(sg ? { sg } : {}) }))
+    const exposures = built.flatMap(b => b.exposures)
+    if (A) {
       added = true
-      s.active.entries.push(...entries.map(e => joinSessionNoProg(s.active, e)))
+      A.entries.push(...entries.map(e => joinSessionNoProg(A, e)))
+      A.exposures = [...(A.exposures || []), ...exposures]
     } else {
-      s.active = { id: uid(), d: todayISO(), start: Date.now(), routineIds: [], name, bw: null, cur: 0, entries, workoutView: s.workoutView || 'cards' }
+      A = { id: uid(), d: todayISO(), start: Date.now(), routineIds: [], name, bw: null, cur: 0, status: 'in-progress', entries, exposures, workoutView: s.workoutView || 'cards' }
     }
   })
+  useStore.getState().setActive(A)
   if (added) { useUI.getState().toast(t('Added to this workout. Finish strong!')); return }
   useUI.getState().stopRest?.()
   closeThenNav(close, '/workout')
@@ -894,6 +899,8 @@ function startOrAdd(update, name, cfgs, close) {
 
 function FinisherDoor({ door, close, did }) {
   const S = useStore(s => s.S)
+  // The running workout is the store's own `A`.
+  const running = !!useStore(s => s.A)
   const update = useStore(s => s.update)
   const moves = door.moves.filter(([id]) => EXIDX[id])
   const go = e => {
@@ -904,12 +911,14 @@ function FinisherDoor({ door, close, did }) {
     <div className="xm-big-name">{t(door.name)}</div>
     <div className="muted small">{tn('About {0} minute, two moves back to back', 'About {0} minutes, two moves back to back', finisherMinutes(door))}</div>
     <ul className="xm-moves">{moves.map(([id, sets, sec]) => <li key={id}><span>{exName(id)}</span><span className="xm-dose">{sets} × {clock(sec)}</span></li>)}</ul>
-    <Button variant="primary" icon={S.active ? 'plus' : 'play'} onClick={go}>{S.active ? t('Add to this workout') : t('Start the finisher')}</Button>
+    <Button variant="primary" icon={running ? 'plus' : 'play'} onClick={go}>{running ? t('Add to this workout') : t('Start the finisher')}</Button>
   </>
 }
 
 function ExerciseDoor({ door, close, did }) {
   const S = useStore(s => s.S)
+  // The running workout is the store's own `A`.
+  const running = !!useStore(s => s.A)
   const update = useStore(s => s.update)
   if (!EXIDX[door.id]) return null
   const timed = door.sec > 0
@@ -918,7 +927,7 @@ function ExerciseDoor({ door, close, did }) {
   return <>
     <div className="xm-big-name">{exName(door.id)}</div>
     <div className="xm-dose-big">{door.sets} × {timed ? clock(door.sec) : door.reps}</div>
-    <Button variant="primary" icon={S.active ? 'plus' : 'play'} onClick={go}>{S.active ? t('Add to this workout') : t('Start a workout with it')}</Button>
+    <Button variant="primary" icon={running ? 'plus' : 'play'} onClick={go}>{running ? t('Add to this workout') : t('Start a workout with it')}</Button>
   </>
 }
 

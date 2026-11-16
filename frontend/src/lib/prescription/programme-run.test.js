@@ -819,6 +819,16 @@ test('a converted legacy run starts past its spent weeks, credits old work only 
   // Old work of another exercise (routine B's squat) is never credited to bench, whatever an assign event says.
   const squat = { ...plain, exposureId: 'squat1', exerciseId: 'squat', routineId: 'rB', occurrenceId: 'rB:o0' }
   expect(derive(r, [squat], [ev('assign', { exposureId: 'squat1', slot: 'p1:a0:rA:o0' })], date(1, 2)).tracks.bench.slots[0].exposureId).toBeUndefined()
+  // Only work logged in the slot's own week: two conversions of one run from copies whose newest
+  // workout differs share the run's id, never its weeks, and the other copy's assigns credit nothing.
+  const dated = (id, at) => ({ ...old, exposureId: id, completedAt: at })
+  const credited = x => derive(r, [x], [ev('assign', { exposureId: x.exposureId, slot: 'p1:a0:rA:o0' })], date(1, 2)).tracks.bench.slots.find(s => s.id === 'p1:a0:rA:o0')?.exposureId
+  expect(credited(dated('lastWeek', iso(plus(date(1), -3), 18)))).toBeUndefined()
+  expect(credited(dated('nextWeek', iso(date(2, 1), 18)))).toBeUndefined()
+  expect(credited(dated('sunday', iso(date(1, 6), 23)))).toBe('sunday')
+  // The day the workout was logged on, as the conversion credited it, before its time in the run's zone.
+  expect(derive(r, [], [ev('assign', { exposureId: 'tz', slot: 'p1:a0:rA:o0' })], date(1, 2), { workouts: [{ id: 'w', d: date(1, 6), exposures: [dated('tz', iso(date(2), 1))] }] })
+    .tracks.bench.slots.find(s => s.id === 'p1:a0:rA:o0')?.exposureId).toBe('tz')
   // The fixed 70 kg week stands over the seed; the adaptive w4 of a run one week further opens at it.
   expect(rows(perform(r, world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([70, 70, 70])
   expect(rows(perform(legacy(3), world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([90, 90, 90])
@@ -830,4 +840,14 @@ test('dateIn gives the zone\'s local calendar day as YYYY-MM-DD', () => {
   expect(dateIn('2026-03-01T23:30:00.000Z', 'Pacific/Kiritimati')).toBe('2026-03-02')
   expect(dateIn('2026-03-01T23:30:00.000Z', 'America/Los_Angeles')).toBe('2026-03-01')
   expect(dateIn('2026-03-09', 'Asia/Tokyo')).toBe('2026-03-09')
+})
+
+test('a routine planned twice in a week takes the appointment picked, while it is open; else the earliest open one', () => {
+  const d = def([trackOf('bench', ['rA:o0'])], { schedule: { mode: 'weeks', appts: [{ rid: 'rA', day: 1 }, { rid: 'rA', day: 4 }] } })
+  const r = run(d)
+  const at = (xs, appt) => slotFor({ view: derive(r, xs, [], date(1)), run: r, rid: 'rA', oid: 'rA:o0', date: date(1), appt }).assignment
+  expect(at([], null)).toMatchObject({ slot: 'p1:a0:rA:o0', role: 'work' })
+  expect(at([], 1)).toMatchObject({ slot: 'p1:a1:rA:o0', role: 'work' })
+  // Thursday's is taken: picking it again gives the one still open.
+  expect(at([ex('p1:a1:rA:o0')], 1)).toMatchObject({ slot: 'p1:a0:rA:o0', role: 'work' })
 })

@@ -2,7 +2,7 @@
 // 0.25 for every exercise in my routines or can I apply it to every exercise at once?"
 import { afterEach, describe, expect, it } from 'vitest'
 import { STEPS, profileStep, nextStep, applyProfileSteps, stepOverrides, applyStepToAll, fmtStepLabel } from './weight-step.js'
-import { defaultIncrement, weightIncrement, addStep, snapWeight, stepWeight, roundToStep, stepPlaces, deloadTo } from './progression.js'
+import { defaultIncrement, weightIncrement, addStep, snapWeight, stepWeight, roundToStep, stepPlaces } from './exercises.js'
 import { rerampWarmups } from './history.js'
 import { convertStateUnit, convertStep } from './units.js'
 
@@ -99,7 +99,8 @@ describe('fine steps do not leave float dust', () => {
   })
 
   it('deloads and ramps warm-ups on the fine grid', () => {
-    const d = deloadTo(52.3, 0.1)
+    // v2's deload lands on the rule's grid (api/engine/deload.js); the grid's own snap is this.
+    const d = snapWeight(52.3 * 0.9, 0.1)
     expect(String(d)).toMatch(/^\d+(\.\d)?$/)
     const rows = rerampWarmups([{ w: 0, r: 5, warmup: true }, { w: 0, r: 3, warmup: true }, { w: 52.3, r: 5 }], 0.1)
     for (const r of rows) expect(String(r.w)).toMatch(/^\d+(\.\d{1,3})?$/)

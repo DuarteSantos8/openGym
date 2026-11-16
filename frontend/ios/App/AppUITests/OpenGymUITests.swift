@@ -83,6 +83,25 @@ final class OpenGymUITests: XCTestCase {
         XCTFail("home never showed after the onboarding choice")
     }
 
+    /**
+     * Home, with the first start's tour question answered. The app offers a 1-minute tour 1.2 s
+     * after the setup (App.jsx); the offer covers home, Log and all, until it is answered, and a
+     * slow simulator reaches it before the next tap does. Skip is tapped, so the tour never
+     * stands in front of what a test taps next.
+     */
+    private func homeShown(within seconds: TimeInterval) -> Bool {
+        let until = Date().addingTimeInterval(seconds)
+        while Date() < until {
+            if app.buttons["Show me"].exists { app.buttons["Skip"].tap(); continue }
+            if app.buttons["Log"].exists {
+                if app.buttons["Show me"].waitForExistence(timeout: 3) { app.buttons["Skip"].tap(); continue }
+                return true
+            }
+            usleep(300_000)
+        }
+        return false
+    }
+
     private func systemAlertUp() -> Bool { springboard.alerts.firstMatch.exists }
 
     /**

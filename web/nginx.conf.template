@@ -45,7 +45,7 @@ server {
         # Match the API's own body limit (MAX_BODY in api/server.js): the whole workout history
         # travels in one PUT /api/data, and nginx's 1 MiB default would answer 413 here before the
         # API ever saw it — a sync that silently stops once the history grows past 1 MiB.
-        client_max_body_size 5m;
+        client_max_body_size 16m;
         # Resolved per request through the container runtime's DNS, not once at start-up: nginx
         # otherwise pins the api container's IP when it boots, and a recreated api (new IP) means
         # 502 on every /api call until web is restarted too (issue #16). The variable is what makes

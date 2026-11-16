@@ -6,6 +6,7 @@ import {
 } from './challenges.js'
 import { mergeStates } from './sync-merge.js'
 import { convertStateUnit } from './units.js'
+import { migratedFixture } from './test-fixtures.js'
 import * as api from '../../../api/sync-stamps.js'
 
 // Catalogue ids: barbell bench press, full squat, curl, cable row, floor crunch, band shoulder
@@ -317,4 +318,17 @@ describe('settings', () => {
   it('has a unique id per challenge', () => {
     expect(new Set(CHALLENGE_IDS).size).toBe(CHALLENGE_IDS.length)
   })
+})
+
+it('reads monthly exercise challenges from canonical history', () => {
+  const input = state({ workouts: [wo('2026-11-03', [
+    { id: PULLUP, target: { mode: 'reps' }, sets: sets(1, 0, 8) },
+    { id: PUSHUP, target: { mode: 'reps' }, sets: sets(1, 0, 12) },
+    { id: RUN, target: { mode: 'cardio' }, sets: [{ min: 20, done: true }] },
+    { id: BENCH, target: { mode: 'reps' }, sets: sets(1, 60, 5) }
+  ])] })
+  const canonical = migratedFixture(input)
+  const facts = factsFor(canonical, ['2026-11'])['2026-11']
+  expect(facts).toMatchObject({ workouts: 1, pullups: 8, pushups: 12, cardioMin: 20, newEx: 4 })
+  expect(facts.groups).toBeGreaterThan(0)
 })

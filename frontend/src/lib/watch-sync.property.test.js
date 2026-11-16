@@ -19,7 +19,7 @@
 // A failing seed prints what happened, in order, so it can be replayed (RUN_SEED=<n>).
 // WATCH_SIM_RUNS=<n> runs n seeds, SEED_FROM=<k> starting at seed k (for thousands, in batches).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeWorld, seeded } from './watch-sim.js'
+import { makeWorld, seeded, savedEntries } from './watch-sim.js'
 import { _resetWatchSync } from './watch-sync.js'
 
 const T0 = 1_800_000_000_000
@@ -295,7 +295,8 @@ async function play (seed) {
   const ids = phone.S.workouts.map(w => w.id)
   if (new Set(ids).size !== ids.length) problems.push(`a workout saved twice: ${ids}`)
   const seen = new Set()
-  for (const w of phone.S.workouts) {
+  for (const saved of phone.S.workouts) {
+    const w = { ...saved, entries: savedEntries(saved) }
     const count = {}
     for (const e of w.entries) count[e.id] = (count[e.id] || 0) + 1
     if (Object.values(count).some(c => c > MAX_SAME)) problems.push(`${w.id}: an exercise too often: ${w.entries.map(e => e.id)}`)

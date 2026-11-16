@@ -1,3 +1,4 @@
+import { legacyEntriesOf } from './prescription/index.js'
 import { describe, expect, it } from 'vitest'
 import { workoutsCSV, WORKOUT_COLUMNS } from './export-csv.js'
 import { parseWorkoutCSV, parseCSV, mergeImport } from './import-csv.js'
@@ -28,6 +29,6 @@ describe('bands in the CSV', () => {
     const into = { unit: 'kg', workouts: [], customEx: [], exWeights: {}, bands: [] }
     mergeImport(into, back)
     expect(into.bands.map(b => b.name)).toEqual(['Red', 'Yellow'])
-    expect(into.workouts[0].entries[0].sets[0].bands).toEqual(into.bands.map(b => b.id))
+    expect(legacyEntriesOf(into.workouts[0], into.prescriptions)[0].sets[0].bands).toEqual(into.bands.map(b => b.id))
   })
 })

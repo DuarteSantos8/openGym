@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 // Tempo in the workout (#572): the exercise's tempo shows as a tag that opens the guide, and a
 // set can be given its own from its menu, which the tag then follows.
+import { storeFromV1 } from '../lib/test-fixtures.js'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -25,7 +26,7 @@ function mount(sets, target = { mode: 'reps', sets: 2, reps: 8, tempo: '3-1-1-0'
   const S = clone(DEF)
   Object.assign(S, { unit: 'kg', workoutView: 'list' })
   S.active = { id: 'a', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, workoutView: 'list', entries: [{ id: BENCH, target, sets }] }
-  useStore.setState({ S, user: null })
+  useStore.setState({ ...storeFromV1(S), user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -77,7 +78,7 @@ describe('tempo in the workout', () => {
     const sheet = renderTop()
     act(() => [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === '5-0-X-0').click())
     act(() => [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save').click())
-    expect(useStore.getState().S.active.entries[0].sets[1].tempo).toBe('5-0-X-0')
+    expect(useStore.getState().A.entries[0].sets[1].tempo).toBe('5-0-X-0')
     expect(container.querySelector('.tempo-tag').textContent).toContain('5-0-X-0')
   })
 })

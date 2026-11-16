@@ -8,7 +8,10 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
-vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn() }))
+vi.mock('../sheets.jsx', async () => {
+  const { ruleOccurrence } = await import('../lib/test-fixtures.js')
+  return { exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), occurrenceSummary: () => '', quickOccurrence: (ex, routine) => ruleOccurrence(ex.id, { routineId: routine.id }) }
+})
 vi.mock('../components/Media.jsx', () => ({ Thumb: () => null }))
 vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 
@@ -16,6 +19,7 @@ import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { exercisePicker, exConfigSheet } from '../sheets.jsx'
 import { EXIDX } from '../lib/exercises.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, host
@@ -37,7 +41,7 @@ afterEach(() => { act(() => root.unmount()); host.remove() })
 
 describe('RoutineEdit — Add exercise at the top', () => {
   it('sits above the first exercise, with the list heading', () => {
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }, { id: '0025', sets: 3, mode: 'reps', reps: 8, weight: 60 }])
+    mount([ruleOccurrence('0025'), ruleOccurrence('0025', { occurrenceId: 'occ-b' })])
     const add = addButton()
     const firstRow = host.querySelector('[data-routine-row]')
     expect(add.compareDocumentPosition(firstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -58,12 +62,12 @@ describe('RoutineEdit — Add exercise at the top', () => {
     const onPick = exercisePicker.mock.calls[0][0]
     const ex = EXIDX['0025']
     act(() => onPick(ex, true))
-    expect(stored().map(e => e.id)).toEqual(['0025'])
+    expect(stored().map(e => e.exerciseId)).toEqual(['0025'])
     act(() => onPick(ex, false))
     expect(exConfigSheet).toHaveBeenCalledOnce()
     const save = exConfigSheet.mock.calls[0][2]
-    act(() => save({ sets: 4, reps: 6, mode: 'reps', weight: 50 }))
+    act(() => save(ruleOccurrence('0025', { occurrenceId: 'occ-new' })))
     expect(stored()).toHaveLength(2)
-    expect(stored()[1]).toMatchObject({ id: '0025', sets: 4, reps: 6 })
+    expect(stored()[1]).toMatchObject({ exerciseId: '0025', occurrenceId: 'occ-new' })
   })
 })

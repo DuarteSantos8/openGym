@@ -34,7 +34,7 @@ export function runAction(a) {
   const toast = useUI.getState().toast
   switch (a.type) {
     case 'workout':
-      if (S.active) return toast(t('Finish the current workout first.'))
+      if (st.A) return toast(t('Finish the current workout first.'))
       return confirmSheet({
         title: t('Start “{0}” now?', a.name),
         message: a.items.map(itemLine).join('\n'),
@@ -44,7 +44,7 @@ export function runAction(a) {
     case 'start': {
       const r = (S.routines || []).find(x => x.id === a.routineId)
       if (!r) return toast(t('That routine is gone.'))
-      if (S.active) return toast(t('Finish the current workout first.'))
+      if (st.A) return toast(t('Finish the current workout first.'))
       return confirmSheet({ title: t('Start “{0}” now?', r.name), confirmText: t('Start'), onConfirm: () => startFlow([r.id]) })
     }
     case 'note':

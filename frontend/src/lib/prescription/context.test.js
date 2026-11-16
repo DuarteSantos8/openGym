@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defaultPlanRule, planPhase } from '../../../../api/engine/rules.js'
 import { generatePrescription, ruleOfPrescription } from '../../../../api/engine/generate.js'
-import { planFingerprint, replayProgression, resolveProgressionContext } from '../../../../api/engine/context.js'
+import { chronologicalWorkouts, planFingerprint, replayProgression, resolveProgressionContext } from '../../../../api/engine/context.js'
 import { advanceProgression } from '../../../../api/engine/advance.js'
 
 const NOW = '2026-09-24T10:00:00.000Z'
@@ -192,6 +192,9 @@ describe('replayProgression', () => {
     // Up to a log: what the track was after it, not after the ones that followed.
     expect(replayProgression({ workouts, trackId: 't', prescriptions, upTo: workouts[1].exposures[0] })).toMatchObject({ lastCompletedLogId: 'x1', cyclesCompleted: 0, phaseId: 'w3' })
     expect(replayProgression({ workouts, trackId: 'other', prescriptions })).toBeNull()
+    // Programme work is its run's (programme-run.js): never replayed into a track, ordinary or run-scoped.
+    const stamped = workouts.map(w => ({ exposures: w.exposures.map(x => ({ ...x, programme: { runId: 'r', slot: 'p1:a0:o' } })) }))
+    expect(replayProgression({ workouts: stamped, trackId: 't', prescriptions })).toBeNull()
   })
 })
 
@@ -224,4 +227,10 @@ describe('replaying a rung regression', () => {
     expect(state).toMatchObject({ rungMisses: 2, values: { difficulty: 1 } })
     expect(replayProgression({ workouts, trackId: 't', prescriptions })).toEqual(state)
   })
+})
+
+// Same inputs, same order on every runtime: two workouts at one instant go by code point, never by locale.
+it('two workouts at the same time are ordered by id in code-point order (B before a)', () => {
+  const at = id => ({ id, d: '2026-09-24', start: 1000 })
+  expect(chronologicalWorkouts([at('a1'), at('B1'), at('é'), at('z')]).map(w => w.id)).toEqual(['B1', 'a1', 'z', 'é'])
 })

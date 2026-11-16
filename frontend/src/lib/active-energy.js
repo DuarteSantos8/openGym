@@ -8,6 +8,8 @@
 import { exerciseType, sessionType } from './health-connect.js'
 import { hasCompletedWork, isWarmupRow, modeForEntry } from './workout-model.js'
 import { bodyweightAt } from './relative-strength.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 const LB_PER_KG = 2.2046226218
 
@@ -59,7 +61,7 @@ export function activeKcal(w, kg) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!(start > 0) || !(end > start) || !(kg > 0)) return null
   const hours = Math.min(MAX_HOURS, (end - start) / 3600e3)
-  const done = (w.entries || []).filter(e => (e.sets || []).some(hasCompletedWork))
+  const done = legacyEntriesOf(w).filter(e => (e.sets || []).some(hasCompletedWork))
   let cardioHours = 0, kcal = 0
   for (const e of done) {
     if (modeForEntry(e) !== 'cardio') continue

@@ -1,7 +1,7 @@
 // Which logged session a prescription starts from, and whether the plan was edited since
 // (openGym v1.3.9, issues #216 and #275). Pure: the caller passes the profile's workouts,
 // prescriptions and progression; generatePrescription consumes the result.
-import { canonicalJSON } from './canonical.js'
+import { canonicalJSON, cmp } from './canonical.js'
 import { advanceProgression } from './advance.js'
 import { bestLoadOf, isWork, sameStart } from './program.js'
 
@@ -25,7 +25,7 @@ const liftedLoad = (x, assisted) => bestLoadOf(x, assisted, x.performance?.sets?
 
 export function chronologicalWorkouts(workouts = []) {
   const day = w => Number.isFinite(Date.parse(w.d)) ? Date.parse(w.d) : Math.floor((w.start ?? 0) / 86400000) * 86400000
-  return [...workouts].sort((a, b) => day(a) - day(b) || (a.start ?? 0) - (b.start ?? 0) || String(a.id ?? '').localeCompare(String(b.id ?? '')))
+  return [...workouts].sort((a, b) => day(a) - day(b) || (a.start ?? 0) - (b.start ?? 0) || cmp(String(a.id ?? ''), String(b.id ?? '')))
 }
 
 function newest(workouts, match) {
@@ -43,7 +43,8 @@ function newest(workouts, match) {
  */
 export function replayProgression({ workouts = [], trackId, prescriptions = {}, upTo = null }) {
   let state = null
-  const counted = x => x.trackId === trackId && x.prescriptionId && !x.excludedFromProgression && x.actual && prescriptions[x.prescriptionId]
+  // Programme work is replayed by its run (programme-run.js), never into an ordinary track.
+  const counted = x => x.trackId === trackId && !x.programme && x.prescriptionId && !x.excludedFromProgression && x.actual && prescriptions[x.prescriptionId]
   for (const w of chronologicalWorkouts(workouts)) {
     // A track twice in one workout (a combined session) advances once, from its last counted
     // exposure — what finish-session.js does.

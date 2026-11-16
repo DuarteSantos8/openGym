@@ -10,6 +10,10 @@ import path from 'node:path'
 import http from 'node:http'
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
+import { unpackProfile } from '../../api/migration/profile-pack.js'
+import { planPhase } from '../../api/engine/index.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 
@@ -24,7 +28,9 @@ const cookie = (uid, sv = 0) => {
   return 'gymsid=' + payload + '.' + crypto.createHmac('sha256', SECRET).update(payload).digest('base64url')
 }
 const session = uid => { const c = cookie(uid); return c.slice('gymsid='.length) }
-const DOC = name => ({
+// The server serves the MCP only the engine schema: the profile as a migrated device holds it.
+const DOC = name => { const { coach, _rev, _wid, _ts, ...v1 } = V1(name); return { ...migrateProfileV1ToV2(v1, LIB_BY_ID).profile, coach, _rev, _wid, _ts } }
+const V1 = name => ({
   unit: 'kg', restSec: 120,
   routines: [{ id: 'r1', name: name + ' push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100, mode: 'reps', restSec: 180 }], _ts: 1000 }],
   week: { 1: ['r1'] },
@@ -34,7 +40,9 @@ const DOC = name => ({
 })
 
 let child, dataDir, apiBase, mcp, mcpUrl, log = ''
-const stored = uid => JSON.parse(fs.readFileSync(path.join(dataDir, `state-${uid}.json`), 'utf8'))
+// The file keeps the packed form (api/migration/profile-pack.js); read it unpacked.
+const stored = uid => { const raw = JSON.parse(fs.readFileSync(path.join(dataDir, `state-${uid}.json`), 'utf8')); return { ...unpackProfile(raw), _rev: raw._rev, _wid: raw._wid } }
+const planOf = o => planPhase(o.rule).parameters
 async function makeToken(uid, scopes) {
   const r = await fetch(apiBase + '/api/tokens', { method: 'POST', headers: { Cookie: cookie(uid), 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'test', scopes }) })
   return r.json()
@@ -146,15 +154,16 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     const got = await call(client, 'get_routine', { routine_id: 'r1' })
     expect(got.revision).toBe(S._rev)
     // Something else writes in between: the confirmed edit is refused, not retried.
-    const put = await fetch(apiBase + '/api/data', { method: 'PUT', headers: { Cookie: cookie(A), 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json' }, body: JSON.stringify({ state: { ...S, restSec: 90 }, baseRev: S._rev }) })
+    const put = await fetch(apiBase + '/api/data', { method: 'PUT', headers: { Cookie: cookie(A), 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json', 'X-OpenGym-Engine-Schema': '2', 'X-OpenGym-Engine-Contract': '1' }, body: JSON.stringify({ state: { ...S, restSec: 90 }, baseRev: S._rev }) })
     expect(put.status).toBe(200)
     const stale = await call(client, 'update_routine', { routine_id: 'r1', exercises: [{ exercise: '0025', sets: 5 }], expected_revision: got.revision })
     expect(stale).toMatchObject({ saved: false, conflict: true })
-    expect(stored(A).routines[0].ex[0].sets).toBe(3)
+    expect(planOf(stored(A).routines[0].ex[0]).sets.min).toBe(3)
     const fresh = await call(client, 'get_routine', { routine_id: 'r1' })
     const ok = await call(client, 'update_routine', { routine_id: 'r1', exercises: [{ exercise: '0025', sets: 5 }], expected_revision: fresh.revision })
     expect(ok.saved).toBe(true)
-    expect(stored(A).routines[0].ex[0]).toMatchObject({ id: '0025', sets: 5, reps: 5, weight: 100, restSec: 180 })
+    expect(stored(A).routines[0].ex[0].exerciseId).toBe('0025')
+    expect(planOf(stored(A).routines[0].ex[0])).toMatchObject({ sets: { min: 5 }, reps: { max: 5 }, load: { value: 100 }, restSeconds: 180 })
 
     const del = await call(client, 'delete_routine', { routine_id: id, confirm: true, expected_revision: ok.revision })
     expect(del.saved).toBe(true)

@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 // gm-tools (1.4.5): Stats → More → Tools, filled in from the log.
+import { storeFromV1 } from '../lib/test-fixtures.js'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -22,7 +23,7 @@ function mount(patch = {}) {
   const wo = (d, id, w, r) => ({ id: d + id, d, start: new Date(d + 'T17:00:00').getTime(), entries: [{ id, target: { mode: 'reps', sets: 1, reps: r }, sets: [{ w, r, done: true }] }] })
   S.workouts = [wo('2026-10-01', '0043', 140, 5), wo('2026-10-02', '0025', 100, 5), wo('2026-10-03', '0032', 180, 5), wo('2026-10-04', '0025', 100, 3)]
   S.bodyweight = [{ d: '2026-10-04', w: 90 }]
-  useStore.setState({ S, user: null })
+  useStore.setState({ ...storeFromV1(S), user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)

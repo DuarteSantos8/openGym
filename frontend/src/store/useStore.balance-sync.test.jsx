@@ -6,12 +6,14 @@
    instead of handing the whole map to the copy that happened to be newer. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
+// A server that reads this build's engine contract (GET /api/config), as boot learns it.
+beforeEach(() => { useStore.setState({ config: { engineContract: 1, coach: null } }) })
 import { withOverride } from '../lib/structuralBalance.js'
 
 const DIPS = 'poliquin:dips'

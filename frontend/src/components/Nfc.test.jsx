@@ -10,7 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const m = vi.hoisted(() => {
   const state = { S: null, sheets: [], toasts: [], navs: [], write: null, onLink: null }
   state.store = () => ({
-    S: state.S,
+    S: state.S, A: state.A, setActive: a => { state.A = a }, updateActive: mut => { mut(state.A) },
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
   })
   return state
@@ -54,6 +54,7 @@ const EX_A = Object.keys(EXIDX)[0]
 const EX_B = Object.keys(EXIDX)[1]
 
 beforeEach(() => {
+  m.A = null
   m.S = { routines: [{ id: 'r1', name: 'Push', ex: [{ id: EX_A }] }], week: { [today()]: ['r1'] }, dayPlan: {}, workouts: [], queue: { ids: [] }, gymCards: [], customEx: [] }
   m.sheets = []; m.toasts = []; m.navs = []
   m.write = () => Promise.resolve(true)
@@ -115,7 +116,7 @@ describe('a tapped sticker', () => {
   })
 
   it('opens the running workout instead of starting another', () => {
-    m.S.active = { start: 1, cur: 0, entries: [{ id: EX_A }] }
+    m.A = { start: 1, cur: 0, entries: [{ id: EX_A }] }
     handleTagLink('opengym://nfc?do=start', 1000)
     expect(startFlow).not.toHaveBeenCalled()
     expect(m.navs).toEqual(['/workout'])
@@ -145,21 +146,21 @@ describe('a tapped sticker', () => {
   })
 
   it('a machine sticker jumps to its exercise in the session', () => {
-    m.S.active = { start: 1, cur: 0, entries: [{ id: EX_A, sets: [] }, { id: EX_B, sets: [] }] }
+    m.A = { start: 1, cur: 0, entries: [{ id: EX_A, sets: [] }, { id: EX_B, sets: [] }] }
     handleTagLink('https://opengym.ch/nfc?ex=' + EX_B, 1000)
-    expect(m.S.active.cur).toBe(1)
+    expect(m.A.cur).toBe(1)
     expect(m.navs).toEqual(['/workout'])
     expect(m.toasts).toHaveLength(1)
   })
 
   it('asks before adding an exercise the session does not have', () => {
-    m.S.active = { start: 1, cur: 0, routineIds: [], entries: [{ id: EX_A, sets: [{ w: 20, r: 5 }] }] }
+    m.A = { start: 1, cur: 0, routineIds: [], entries: [{ id: EX_A, sets: [{ w: 20, r: 5 }] }] }
     handleTagLink('https://opengym.ch/nfc?ex=' + EX_B, 1000)
     expect(confirmSheet).toHaveBeenCalledTimes(1)
-    expect(m.S.active.entries).toHaveLength(1)
+    expect(m.A.entries).toHaveLength(1)
     confirmSheet.mock.calls[0][0].onConfirm()
-    expect(m.S.active.entries.map(e => e.id)).toEqual([EX_A, EX_B])
-    expect(m.S.active.cur).toBe(1)
+    expect(m.A.entries.map(e => e.id)).toEqual([EX_A, EX_B])
+    expect(m.A.cur).toBe(1)
   })
 
   it('outside a workout a machine sticker opens the exercise', () => {
@@ -194,7 +195,7 @@ describe('a tapped sticker', () => {
 
 describe('addExerciseToSession', () => {
   it('does nothing without a session', () => {
-    m.S.active = null
+    m.A = null
     expect(addExerciseToSession(EX_B)).toBe(-1)
   })
 })

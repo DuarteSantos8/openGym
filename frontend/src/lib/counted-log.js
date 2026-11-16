@@ -11,6 +11,8 @@
 // it starts (session-start.js), but its switch promises they still show in the statistics, and
 // a deload week is training done. An entry whose routine is still a deload routine is counted.
 import { entryExcluded, entryRoutineId, workoutVolume } from './history.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 const byS = new WeakMap()
 
@@ -25,7 +27,7 @@ export function countedWorkouts(workouts, routines = []) {
   let changed = false
   const out = []
   for (const w of workouts) {
-    const entries = Array.isArray(w?.entries) ? w.entries : []
+    const entries = legacyEntriesOf(w)
     const left = entries.filter(e => kept(w, e))
     if (left.length === entries.length) { out.push(w); continue }
     changed = true

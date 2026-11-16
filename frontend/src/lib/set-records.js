@@ -21,6 +21,8 @@ import { metricRowsForEntry, workoutAt, bestWeightFor } from './history.js'
 import { isAssisted, beatsWeight } from './exercises.js'
 import { estimate1RM, best1RM, weightedEstimate, FORMULAS, DEFAULT_FORMULA, REP_CAP } from './onerm.js'
 import { historyAs } from './dumbbells.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 import { t, tn } from './i18n.js'
 
 export const RECORD_KINDS = ['weight', 'reps', 'e1rm', 'volume']
@@ -64,7 +66,7 @@ export function recordBaseline(H, exId, { as = 'as', formula = DEFAULT_FORMULA }
   const view = historyAs(H, exId, as)
   const points = []
   for (const w of view.workouts || []) {
-    for (const en of w.entries || []) if (en?.id === exId) points.push(...doneSets(en))
+    for (const en of legacyEntriesOf(w, view.prescriptions ?? H.prescriptions)) if (en?.id === exId) points.push(...doneSets(en))
   }
   const assisted = isAssisted(exId)
   const base = {
@@ -227,7 +229,7 @@ export function repRecordTable(S, exId, { as = 'as', formula = DEFAULT_FORMULA, 
   const assisted = isAssisted(exId)
   const sets = []
   for (const w of view?.workouts || []) {
-    for (const en of w.entries || []) {
+    for (const en of legacyEntriesOf(w, view.prescriptions ?? S?.prescriptions)) {
       if (en?.id !== exId) continue
       for (const s of doneSets(en)) if (s.w > 0) sets.push({ ...s, d: w.d, t: workoutAt(w) })
     }

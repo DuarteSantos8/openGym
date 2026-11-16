@@ -23,7 +23,7 @@ const EVENTS = ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'tou
 
 /** Which question is due for this profile, { kind: 'resume', at } or { kind: 'offer' }, or null. */
 export function offerDue(st = useStore.getState()) {
-  if (!st.S || st.S.active) return null
+  if (!st.S || st.A) return null
   const rec = readTour()
   const at = resumeAt(rec)
   if (at) return { kind: 'resume', at }
@@ -45,7 +45,7 @@ const dialogOpen = () => typeof document !== 'undefined' && !!document.querySele
  */
 export function offerBlocked(touch, now = Date.now()) {
   if (tourState()) return 'tour'
-  if (useStore.getState().S?.active || /^#\/workout/.test(globalThis.location?.hash || '')) return 'workout'
+  if (useStore.getState().A || /^#\/workout/.test(globalThis.location?.hash || '')) return 'workout'
   if (useUI.getState().sheets.length) return 'sheet'
   if (dialogOpen()) return 'dialog'
   if (inField()) return 'field'

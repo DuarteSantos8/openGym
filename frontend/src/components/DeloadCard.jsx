@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { todayISO, fmtDate, weekKey, weekStartOf } from '../lib/format.js'
-import { programmeStatus } from '../lib/programmes.js'
+import { programmeView } from '../lib/programmes.js'
 import {
   deloadCycleOf, deloadWhy, nextDeloadWeek, deloadSuggestion, plusWeeks, pushBack, skipDeload, addDeload,
   dismissSuggestion, setDeloadEvery, setDeloadAuto, EVERY_CHOICES, DELOAD_SET_SHARE,
@@ -22,7 +22,7 @@ export function DeloadCard ({ S }) {
   const today = todayISO()
   const update = useStore(s => s.update)
   const view = useMemo(() => {
-    if (programmeStatus(S, today)?.current) return null
+    if (programmeView(S)) return null
     const cur = weekKey(today, weekStartOf(S))
     if (deloadWhy(S, cur)) return { kind: 'now', wk: cur }
     const next = plusWeeks(cur, 1)

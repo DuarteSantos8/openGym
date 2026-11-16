@@ -13,6 +13,8 @@
 // session's start. Sets without a stamp (older workouts, imports) give no segment.
 import { EXIDX } from './exercises.js'
 import { hasCompletedWork, isSideSet, dropsOf, modeForEntry } from './workout-model.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const SEC_PER_REP = 3.5
 const MIN_MS = 10_000
@@ -86,7 +88,7 @@ export function workoutSegments(w, customEx = []) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!Number.isFinite(start) || !Number.isFinite(end) || !(start > 0) || !(end > start)) return []
   const rows = []
-  for (const e of w.entries || []) {
+  for (const e of legacyEntriesOf(w)) {
     if (modeForEntry(e) === 'cardio') continue
     const type = segmentType(e.id, customEx)
     for (const s of e.sets || []) {

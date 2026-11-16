@@ -12,7 +12,7 @@ import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
 
 export default function CircuitCard({ unit }) {
-  const A = useStore(s => s.S.active)
+  const A = useStore(s => s.A)
   const run = useCircuit(s => s.run)
   if (!A || !unit?.length) return null
   const cfg = circuitOf(A.entries, unit, { onTarget: true })
