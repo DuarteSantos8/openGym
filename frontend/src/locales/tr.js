@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Wallpaper colors": "Duvar kâğıdı renkleri",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Vurgu rengi ve arka planlar duvar kâğıdına uyar. Yalnızca bu telefonda.",
+  "Wallpaper": "Duvar kâğıdı",
+  "Watch colors": "Saat renkleri",
+  "From the watch face": "Saat kadranından",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Saat kadranından renkler, renklerini paylaşan bir saatte Wear OS 6 gerektirir, örneğin Pixel Watch. Diğerleri uygulamanın rengini korur.",
 }

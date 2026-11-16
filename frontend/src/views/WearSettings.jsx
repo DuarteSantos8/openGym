@@ -6,7 +6,7 @@
 // CheckIn): "Last heard from the watch" is the one sign that the two really talk, both ways.
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
-import { Section, Row, Switch } from '../components/ui.jsx'
+import { Section, Row, Switch, Segmented } from '../components/ui.jsx'
 import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, lastHeardAt } from '../lib/watch-settings.js'
 import { wearStatus } from '../lib/watch-sync.js'
 import { getChannel } from '../lib/channel.js'
@@ -86,6 +86,20 @@ export default function WearSettingsPage ({ api = { status: wearStatus, channel:
           </Row>
         ))}
       </Section>
+      {/* Where the watch takes its accent (lib/watch-settings.js `colors`): the app's, which is the
+          wallpaper's while this phone follows it, or the watch face's. Offered only once the watch
+          has said it shares its face's colours (its check-in, `faceColors`); otherwise there is
+          nothing to choose and the watch wears the app's. */}
+      {heard?.faceColors === true && <Section footer={t('From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.')}>
+        <Row icon="palette" iconTint="var(--purple)" title={t('Watch colors')}>
+          <Segmented
+            className="seg-inline"
+            options={[{ value: 'app', label: t('From the app') }, { value: 'face', label: t('From the watch face') }]}
+            value={prefs.colors}
+            onChange={v => set({ colors: v })}
+          />
+        </Row>
+      </Section>}
       <Section>
         <Row icon="vibrate" iconTint="var(--indigo)" title={t('Tap the wrist when a rest is over')}>
           <Switch checked={prefs.restHaptics} onChange={v => set({ restHaptics: v })} aria-label={t('Tap the wrist when a rest is over')} />

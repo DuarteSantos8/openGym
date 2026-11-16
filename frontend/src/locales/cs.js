@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Wallpaper colors": "Barvy tapety",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Barva zvýraznění a pozadí se řídí tvou tapetou. Jen na tomto telefonu.",
+  "Wallpaper": "Tapeta",
+  "Watch colors": "Barvy hodinek",
+  "From the watch face": "Z ciferníku",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Barvy z ciferníku potřebují Wear OS 6 na hodinkách, které své barvy sdílejí, třeba Pixel Watch. Ostatní si nechají barvu aplikace.",
 }

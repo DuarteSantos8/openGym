@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Wallpaper colors": "배경화면 색상",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "강조 색상과 배경이 배경화면을 따라갑니다. 이 휴대폰에만 적용돼요.",
+  "Wallpaper": "배경화면",
+  "Watch colors": "워치 색상",
+  "From the watch face": "워치 페이스에서",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "워치 페이스 색상은 색상을 공유하는 워치(예: Pixel Watch)의 Wear OS 6이 필요해요. 다른 워치는 앱 색상을 유지해요.",
 }

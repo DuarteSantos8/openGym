@@ -5862,4 +5862,10 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Wallpaper colors": "Warna wallpaper",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Warna aksen dan latar mengikuti wallpaper kamu. Hanya di ponsel ini.",
+  "Wallpaper": "Wallpaper",
+  "Watch colors": "Warna jam",
+  "From the watch face": "Dari tampilan jam",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Warna dari tampilan jam butuh Wear OS 6 di jam yang membagikan warnanya, seperti Pixel Watch. Jam lain tetap memakai warna aplikasi.",
 };

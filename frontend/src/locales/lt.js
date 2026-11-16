@@ -5893,4 +5893,10 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  "Wallpaper colors": "Ekrano fono spalvos",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Akcento spalva ir fonai seka tavo ekrano foną. Tik šiame telefone.",
+  "Wallpaper": "Ekrano fonas",
+  "Watch colors": "Laikrodžio spalvos",
+  "From the watch face": "Iš ciferblato",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Spalvoms iš ciferblato reikia Wear OS 6 laikrodyje, kuris dalijasi savo spalvomis, pvz., Pixel Watch. Kiti lieka su programėlės spalva.",
 }

@@ -301,6 +301,11 @@ class OfflineSyncTest {
         assertTrue(CheckIn.due(1000, "1.4.5", "1.4.5", 1000 + CheckIn.EVERY_MS))
         assertTrue(CheckIn.due(1000, "1.4.4", "1.4.5", 2000))
         assertTrue(CheckIn.due(5000, "1.4.5", "1.4.5", 1000))
+        // the watch face's colours appearing (or going) with a system update is worth telling at once
+        assertTrue(CheckIn.due(1000, "1.4.5", "1.4.5", 2000, lastFace = false, face = true))
+        assertFalse(CheckIn.due(1000, "1.4.5", "1.4.5", 2000, lastFace = true, face = true))
+        assertTrue(CheckIn.event("1.4.5", 1, "f1", faceColors = true)["faceColors"]!!.jsonPrimitive.content == "true")
+        assertNull(CheckIn.event("1.4.5", 1, "f2")["faceColors"])
         val e = CheckIn.event("1.4.5", 1234, "c1")
         assertEquals("watchStatus", e["type"]!!.jsonPrimitive.content)
         assertEquals("1.4.5", e["version"]!!.jsonPrimitive.content)

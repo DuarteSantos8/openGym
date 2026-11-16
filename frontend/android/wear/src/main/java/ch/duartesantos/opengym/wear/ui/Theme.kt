@@ -15,6 +15,9 @@ import androidx.wear.compose.material3.ColorScheme
 import androidx.wear.compose.material3.MaterialTheme
 import ch.duartesantos.opengym.wear.Hex
 import ch.duartesantos.opengym.wear.WatchSettings
+import androidx.wear.compose.material3.dynamicColorScheme
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
 
 /*
  * openGym on the wrist, the same look as the Apple Watch (ios/App/Watch/Theme.swift): the app's
@@ -62,6 +65,18 @@ data class Accent(val accent: Color = Og.Green, val on: Color = Og.OnGreen) {
             return Accent(Color(a), on)
         }
     }
+}
+
+/**
+ * The accent to wear: the phone's (Accent.of), or with settings.accentFrom "face" (the phone's
+ * Settings → Wear OS → Watch colors) the watch face's own, as Wear OS 6 shares them through
+ * dynamicColorScheme. A watch that does not share them (null there) keeps the phone's.
+ */
+@Composable
+fun accentFor(s: WatchSettings): Accent {
+    val context = LocalContext.current
+    val face = remember(s.accentFrom, context) { if (s.accentFrom == "face") dynamicColorScheme(context) else null }
+    return face?.let { Accent(it.primary, it.onPrimary) } ?: Accent.of(s)
 }
 
 val LocalAccent = compositionLocalOf { Accent() }

@@ -11,7 +11,7 @@ describe('the choices', () => {
     expect(readWatchPrefs()).toEqual({ ...WATCH_DEFAULTS })
     const seen = vi.fn()
     onWatchPrefs(seen)
-    expect(writeWatchPrefs({ autoShow: false, crown: 'weight', junk: 1, health: true })).toEqual({ enabled: true, autoShow: false, restHaptics: true, crown: 'weight', show: { ...SHOW_DEFAULTS } })
+    expect(writeWatchPrefs({ autoShow: false, crown: 'weight', junk: 1, health: true })).toEqual({ enabled: true, autoShow: false, restHaptics: true, crown: 'weight', show: { ...SHOW_DEFAULTS }, colors: 'app' })
     expect(readWatchPrefs().crown).toBe('weight')
     expect(seen).toHaveBeenCalled()
     localStorage.setItem('gym_watch_v1', '{broken')
@@ -24,6 +24,12 @@ describe('the choices', () => {
     // Apple Health on the watch is the phone's Apple Health switch, whatever an older build stored.
     localStorage.setItem('gym_watch_v1', JSON.stringify({ health: true }))
     expect(settingsForWatch().health).toBe(false)
+    // Where a Wear OS watch takes its accent: told only when it is the watch face, junk is the app's.
+    expect(settingsForWatch()).not.toHaveProperty('accentFrom')
+    writeWatchPrefs({ colors: 'face' })
+    expect(settingsForWatch().accentFrom).toBe('face')
+    writeWatchPrefs({ colors: 'rainbow' })
+    expect(readWatchPrefs().colors).toBe('app')
     expect(settingsForWatch(readWatchPrefs(), true).health).toBe(true)
     expect(localStorage.getItem('gym_state_v1')).toBeNull()
   })

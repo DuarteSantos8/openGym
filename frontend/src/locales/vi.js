@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Wallpaper colors": "Màu hình nền",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Màu nhấn và nền theo hình nền của bạn. Chỉ trên điện thoại này.",
+  "Wallpaper": "Hình nền",
+  "Watch colors": "Màu đồng hồ",
+  "From the watch face": "Từ mặt đồng hồ",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Màu từ mặt đồng hồ cần Wear OS 6 trên đồng hồ chia sẻ màu của nó, như Pixel Watch. Các đồng hồ khác giữ màu của ứng dụng.",
 };

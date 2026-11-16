@@ -5837,4 +5837,10 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Wallpaper colors": "Farver fra baggrund",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Accentfarven og baggrundene følger din baggrund. Kun på denne telefon.",
+  "Wallpaper": "Baggrund",
+  "Watch colors": "Urets farver",
+  "From the watch face": "Fra urskiven",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "Farver fra urskiven kræver Wear OS 6 på et ur, der deler sine farver, fx et Pixel Watch. Andre beholder appens farve.",
 }

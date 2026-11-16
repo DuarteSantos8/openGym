@@ -5890,4 +5890,10 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  "Wallpaper colors": "桌布配色",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "強調色和背景會跟著你的桌布變化。僅限這支手機。",
+  "Wallpaper": "桌布",
+  "Watch colors": "手錶配色",
+  "From the watch face": "來自錶面",
+  "From the watch face needs Wear OS 6 on a watch that shares its colors, like a Pixel Watch. Others keep the app’s color.": "錶面配色需要 Wear OS 6，且手錶要能分享其顏色，例如 Pixel Watch。其他手錶保留應用程式的顏色。",
 }

@@ -34,6 +34,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(LiveActivityPlugin.class);
         registerPlugin(BackupFolderPlugin.class);
         registerPlugin(BarIconsPlugin.class);
+        registerPlugin(DynamicColorPlugin.class);
         registerPlugin(DeviceAuthPlugin.class);
         registerPlugin(OidcBrowserPlugin.class);
         registerPlugin(AnimationPacksPlugin.class);
