@@ -4837,7 +4837,7 @@ export default {
   "Change the day": "Змінити день",
   "Date from the file name.": "Дата з назви файлу.",
   "Date from the photo itself.": "Дата із самого фото.",
-  "Drag a photo to move what shows.": "Потягни фото, щоб зсунути видиму частину.",
+  "Drag a photo to move what shows, pinch to zoom.": "Потягни фото, щоб зсунути видиму частину, і розведи пальці, щоб збільшити.",
   "Fewer": "Менше",
   "Keep this one?": "Залишити це?",
   "Last photo: yesterday.": "Останнє фото: учора.",
@@ -5894,4 +5894,10 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Змінити камеру",
+  "Opacity": "Непрозорість",
+  "Self-timer": "Таймер",
+  "Overlay: {0}": "Накладання: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Камера недоступна. Додайте фото з галереї.",
 }

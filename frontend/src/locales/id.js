@@ -4805,7 +4805,7 @@ export default {
   "Change the day": "Ubah hari",
   "Date from the file name.": "Tanggal dari nama file.",
   "Date from the photo itself.": "Tanggal dari fotonya sendiri.",
-  "Drag a photo to move what shows.": "Seret foto untuk menggeser bagian yang tampak.",
+  "Drag a photo to move what shows, pinch to zoom.": "Seret foto untuk menggeser bagian yang tampak, cubit untuk memperbesar.",
   "Fewer": "Lebih sedikit",
   "Keep this one?": "Simpan yang ini?",
   "Last photo: yesterday.": "Foto terakhir: kemarin.",
@@ -5862,4 +5862,10 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Ganti kamera",
+  "Opacity": "Opasitas",
+  "Self-timer": "Timer otomatis",
+  "Overlay: {0}": "Lapisan: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Tidak ada kamera di sini. Tambahkan foto dari galeri.",
 };

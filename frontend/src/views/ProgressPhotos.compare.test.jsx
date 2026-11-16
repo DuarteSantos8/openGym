@@ -53,6 +53,9 @@ describe('comparing more than two (#950)', () => {
     expect(host.textContent).toContain('Slider')
     expect(host.textContent).toContain('Side by side')
     expect(host.textContent).toContain('59 days apart')
+    expect(host.textContent).not.toContain('pinch to zoom')          // the slider has no zoom
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent === 'Side by side').click())
+    expect(host.textContent).toContain('pinch to zoom')
   })
   it('one photo opens nothing', () => {
     const before = useUI.getState().sheets.length

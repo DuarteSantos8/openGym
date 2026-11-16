@@ -4851,7 +4851,7 @@ export default {
   "Change the day": "เปลี่ยนวัน",
   "Date from the file name.": "วันที่จากชื่อไฟล์",
   "Date from the photo itself.": "วันที่จากตัวรูปเอง",
-  "Drag a photo to move what shows.": "ลากรูปเพื่อเลื่อนส่วนที่แสดง",
+  "Drag a photo to move what shows, pinch to zoom.": "ลากรูปเพื่อเลื่อนส่วนที่แสดง และถ่างนิ้วเพื่อซูม",
   "Fewer": "น้อยกว่า",
   "Keep this one?": "เก็บรูปนี้ไหม?",
   "Last photo: yesterday.": "รูปล่าสุด: เมื่อวาน",
@@ -5908,4 +5908,10 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "สลับกล้อง",
+  "Opacity": "ความทึบ",
+  "Self-timer": "ตั้งเวลาถ่าย",
+  "Overlay: {0}": "ซ้อนทับ: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "ไม่มีกล้องให้ใช้ที่นี่ เพิ่มรูปจากแกลเลอรีแทน",
 }

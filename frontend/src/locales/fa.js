@@ -4806,7 +4806,7 @@ export default {
   "Change the day": "تغییر روز",
   "Date from the file name.": "تاریخ از نام فایل.",
   "Date from the photo itself.": "تاریخ از خود عکس.",
-  "Drag a photo to move what shows.": "عکس را بکش تا بخش دیده‌شده جابه‌جا شود.",
+  "Drag a photo to move what shows, pinch to zoom.": "عکس را بکش تا بخش دیده‌شده جابه‌جا شود و با دو انگشت بزرگ‌نمایی کن.",
   "Fewer": "کمتر",
   "Keep this one?": "همین را نگه داریم؟",
   "Last photo: yesterday.": "آخرین عکس: دیروز.",
@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "تعویض دوربین",
+  "Opacity": "شفافیت",
+  "Self-timer": "تایمر عکاسی",
+  "Overlay: {0}": "روی‌هم‌گذاری: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "اینجا دوربینی در دسترس نیست. عکس را از گالری اضافه کن.",
 }

@@ -4860,7 +4860,7 @@ export default {
   "Change the day": "Tag ändern",
   "Date from the file name.": "Datum aus dem Dateinamen.",
   "Date from the photo itself.": "Datum aus dem Foto selbst.",
-  "Drag a photo to move what shows.": "Zieh ein Foto, um den Ausschnitt zu verschieben.",
+  "Drag a photo to move what shows, pinch to zoom.": "Zieh ein Foto, um den Ausschnitt zu verschieben, und zoome mit zwei Fingern.",
   "Fewer": "Weniger",
   "Keep this one?": "Das hier behalten?",
   "Last photo: yesterday.": "Letztes Foto: gestern.",
@@ -5917,4 +5917,10 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Kamera wechseln",
+  "Opacity": "Deckkraft",
+  "Self-timer": "Selbstauslöser",
+  "Overlay: {0}": "Überlagerung: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Hier ist keine Kamera verfügbar. Füge das Foto stattdessen aus deiner Galerie hinzu.",
 }

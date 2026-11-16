@@ -4806,7 +4806,7 @@ export default {
   "Change the day": "Změnit den",
   "Date from the file name.": "Datum z názvu souboru.",
   "Date from the photo itself.": "Datum přímo z fotky.",
-  "Drag a photo to move what shows.": "Táhni fotkou, abys posunul viditelnou část.",
+  "Drag a photo to move what shows, pinch to zoom.": "Táhni fotkou, abys posunul viditelnou část, a roztažením prstů přibliž.",
   "Fewer": "Méně",
   "Keep this one?": "Nechat tuhle?",
   "Last photo: yesterday.": "Poslední fotka: včera.",
@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Přepnout kameru",
+  "Opacity": "Průhlednost",
+  "Self-timer": "Samospoušť",
+  "Overlay: {0}": "Překrytí: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Kamera tu není k dispozici. Přidej fotku z galerie.",
 }

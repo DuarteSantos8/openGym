@@ -9,7 +9,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { t, tn } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
-import { compareRows, cellAspect, panBy, daysApart } from '../lib/photo-compare.js'
+import { compareRows, cellAspect, panBy, pinchZoom, clampZoom, daysApart } from '../lib/photo-compare.js'
 import { useMediaUrl } from './CustomMedia.jsx'
 import { Segmented } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -26,20 +26,59 @@ export function fitCells(rows, aspect, w, h) {
   return { w: cw, h: cw / aspect }
 }
 
+/** The photo at its cover size times the zoom, placed by `pos` the way object-position would. */
+function zoomedStyle(p, size, pos) {
+  const z = clampZoom(pos?.z ?? 1)
+  const w = p.m.width || 0, h = p.m.height || 0
+  if (z <= 1 || !w || !h) return { objectPosition: posCss(pos) }
+  const s = Math.max(size.w / w, size.h / h) * z
+  return {
+    position: 'absolute', width: w * s, height: h * s, maxWidth: 'none', objectFit: 'fill',
+    left: (size.w - w * s) * (pos?.x ?? 0.5), top: (size.h - h * s) * (pos?.y ?? 0.5),
+  }
+}
+
+// One finger drags the photo, two fingers pinch it bigger or smaller (the wheel does the same with
+// a mouse or a trackpad). Pointers are tracked by hand: touch-action is none on the cell.
 function Cell({ p, size, pos, onPos, urls }) {
   const { url } = useMediaUrl(p.m)
   urls.current[p.key] = url
-  const drag = useRef(null)
-  const down = e => { drag.current = { x: e.clientX, y: e.clientY, pos }; e.currentTarget.setPointerCapture?.(e.pointerId) }
-  const move = e => {
-    const d = drag.current
-    if (!d) return
-    onPos(panBy(d.pos, e.clientX - d.x, e.clientY - d.y, p.m.width || 1, p.m.height || 1, size.w, size.h))
+  const fingers = useRef(new Map())
+  const gesture = useRef(null)
+  const at = pos || {}
+  const sw = p.m.width || 1, sh = p.m.height || 1
+  const begin = () => {
+    const pts = [...fingers.current.values()]
+    gesture.current = pts.length >= 2
+      ? { d: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y), pos: { x: 0.5, y: 0.5, ...at } }
+      : pts.length === 1 ? { x: pts[0].x, y: pts[0].y, pos: { x: 0.5, y: 0.5, ...at } } : null
   }
-  const up = () => { drag.current = null }
+  const down = e => {
+    fingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    begin()
+  }
+  const move = e => {
+    if (!fingers.current.has(e.pointerId)) return
+    fingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const g = gesture.current
+    if (!g) return
+    const pts = [...fingers.current.values()]
+    if (pts.length >= 2 && g.d != null) {
+      const z = pinchZoom(g.pos.z, g.d, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y))
+      onPos(panBy({ ...g.pos, z }, 0, 0, sw, sh, size.w, size.h))
+    } else if (pts.length === 1 && g.x != null) {
+      onPos(panBy(g.pos, pts[0].x - g.x, pts[0].y - g.y, sw, sh, size.w, size.h))
+    }
+  }
+  const up = e => { fingers.current.delete(e.pointerId); begin() }
+  const wheel = e => {
+    const z = clampZoom((at.z ?? 1) * Math.exp(-e.deltaY / 300))
+    onPos(panBy({ x: 0.5, y: 0.5, ...at, z }, 0, 0, sw, sh, size.w, size.h))
+  }
   return <div className="pcmp-cell" style={{ width: size.w, height: size.h }}
-    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-    {url && <img src={url} alt="" draggable={false} style={{ objectPosition: posCss(pos) }} />}
+    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
+    {url && <img src={url} alt="" draggable={false} style={zoomedStyle(p, size, pos)} />}
     <span className="pp-pill">{fmtDate(p.d, true)}</span>
   </div>
 }
@@ -107,7 +146,8 @@ export default function PhotoCompare({ photos, close, toast }) {
     setSharing(true)
     try {
       const [{ renderCompare }, { shareImage, saveImage }] = await Promise.all([import('../lib/compare-image.js'), import('../lib/share-image.js')])
-      const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: pos[p.key] }))
+      // The slider shows each photo without its zoom, so the picture does too: it is what is on the screen.
+      const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: slider && pos[p.key] ? { ...pos[p.key], z: 1 } : pos[p.key] }))
       if (items.some(it => !it.url)) { toast?.(t('Still loading the photos. Try again in a second.')); return }
       const blob = await renderCompare({ items, rows: slider ? [1] : rows, aspect, mode: slider ? 'slider' : 'side', pct, caption: span })
       if (!blob) { toast?.(t('This device could not draw the picture.')); return }
@@ -137,10 +177,10 @@ export default function PhotoCompare({ photos, close, toast }) {
           </div>)}
     </div>
     <div className="pcmp-foot">
-      {two
-        ? <Segmented value={mode} onChange={setMode}
-            options={[{ value: 'slider', label: t('Slider') }, { value: 'side', label: t('Side by side') }]} />
-        : <div className="small" style={{ opacity: 0.7, textAlign: 'center' }}>{t('Drag a photo to move what shows.')}</div>}
+      {two && <Segmented value={mode} onChange={setMode}
+        options={[{ value: 'slider', label: t('Slider') }, { value: 'side', label: t('Side by side') }]} />}
+      {/* The slider has no zoom, so no hint there. */}
+      {!slider && <div className="small" style={{ opacity: 0.7, textAlign: 'center' }}>{t('Drag a photo to move what shows, pinch to zoom.')}</div>}
     </div>
   </div>
 }

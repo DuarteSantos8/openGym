@@ -4806,7 +4806,7 @@ export default {
   "Change the day": "Đổi ngày",
   "Date from the file name.": "Ngày lấy từ tên tệp.",
   "Date from the photo itself.": "Ngày lấy từ chính ảnh.",
-  "Drag a photo to move what shows.": "Kéo ảnh để dời phần hiển thị.",
+  "Drag a photo to move what shows, pinch to zoom.": "Kéo ảnh để dời phần hiển thị, chụm hai ngón để thu phóng.",
   "Fewer": "Ít hơn",
   "Keep this one?": "Giữ ảnh này?",
   "Last photo: yesterday.": "Ảnh gần nhất: hôm qua.",
@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Đổi camera",
+  "Opacity": "Độ mờ",
+  "Self-timer": "Hẹn giờ chụp",
+  "Overlay: {0}": "Lớp phủ: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Không có camera ở đây. Hãy thêm ảnh từ thư viện.",
 };

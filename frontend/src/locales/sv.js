@@ -4887,7 +4887,7 @@ export default {
   "Change the day": "Ändra dag",
   "Date from the file name.": "Datum från filnamnet.",
   "Date from the photo itself.": "Datum från själva fotot.",
-  "Drag a photo to move what shows.": "Dra ett foto för att flytta det som syns.",
+  "Drag a photo to move what shows, pinch to zoom.": "Dra ett foto för att flytta det som syns och nyp för att zooma.",
   "Fewer": "Färre",
   "Keep this one?": "Behålla den här?",
   "Last photo: yesterday.": "Senaste fotot: igår.",
@@ -5944,4 +5944,10 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Byt kamera",
+  "Opacity": "Opacitet",
+  "Self-timer": "Självutlösare",
+  "Overlay: {0}": "Överlagring: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Ingen kamera tillgänglig här. Lägg till fotot från ditt galleri.",
 }

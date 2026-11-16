@@ -4836,7 +4836,7 @@ export default {
   "Change the day": "Keisti dieną",
   "Date from the file name.": "Data iš failo pavadinimo.",
   "Date from the photo itself.": "Data iš pačios nuotraukos.",
-  "Drag a photo to move what shows.": "Vilk nuotrauką, kad pastumtum matomą dalį.",
+  "Drag a photo to move what shows, pinch to zoom.": "Vilk nuotrauką, kad pastumtum matomą dalį, o suspaudęs pirštais priartink.",
   "Fewer": "Mažiau",
   "Keep this one?": "Palikti šią?",
   "Last photo: yesterday.": "Paskutinė nuotrauka: vakar.",
@@ -5893,4 +5893,10 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Perjungti kamerą",
+  "Opacity": "Permatomumas",
+  "Self-timer": "Laikmatis",
+  "Overlay: {0}": "Perdanga: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Čia nėra kameros. Pridėk nuotrauką iš galerijos.",
 }
