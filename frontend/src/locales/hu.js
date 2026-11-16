@@ -6,6 +6,10 @@ export default {
   // --- Liquid Glass G2: CodeRabbit review ---
   "−15 s": "−15 mp",
   "{0} past zero": "{0} a nullán túl",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Órák",
+  "Set once": "Egyszer beállítandó",
+  "Connections": "Kapcsolatok",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Utolsó sorozat: {0}",
   "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",
@@ -188,6 +192,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Csak ezen az eszközön olvassuk. Az openNutritionbe semmi nem íródik, és semmi, amit küld, nem kerül a biztonsági mentésbe vagy a szinkronba.",
   "Runs, rides and matches": "Futások, bringázások és meccsek",
   "Runs, rides and matches from other apps": "Futások, bringázások és meccsek más alkalmazásokból",
+  "Birth date, for heart-rate zones": "Születési dátum a pulzuszónákhoz",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Az Apple Watch a korodból számolja a pulzuszónáidat. Engedélyezd a születési dátumot, vagy később módosítsd az Apple Health alkalmazásban.",
   "Show it in": "Megjelenítés itt",
   "Some days had foods without numbers, so their totals are a little low.": "Néhány napon voltak érték nélküli ételek, így az összegek kicsit alacsonyak.",
   "Sport": "Sport",
@@ -5907,4 +5913,10 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Testreszabás",
+  "Collapsed": "Összecsukva",
+  "Hide": "Elrejtés",
+  "Totals": "Összesítők",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
 }

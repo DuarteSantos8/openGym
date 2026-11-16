@@ -6,6 +6,10 @@ export default {
   // --- Liquid Glass G2: CodeRabbit review ---
   "−15 s": "−15 s",
   "{0} past zero": "{0} après zéro",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Montres",
+  "Set once": "À régler une fois",
+  "Connections": "Connexions",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Dernière série : {0}",
   "Your note for this exercise": "Ta note pour cet exercice",
@@ -188,6 +192,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Lu sur cet appareil uniquement. Rien n’est écrit dans openNutrition, et rien de ce qu’il envoie ne va dans ta sauvegarde ou ta synchro.",
   "Runs, rides and matches": "Courses, sorties et matchs",
   "Runs, rides and matches from other apps": "Courses, sorties et matchs d’autres apps",
+  "Birth date, for heart-rate zones": "Date de naissance, pour les zones cardiaques",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Ton Apple Watch calcule tes zones cardiaques à partir de ton âge. Autorise la date de naissance, ou change-le plus tard dans Apple Health.",
   "Show it in": "L’afficher dans",
   "Some days had foods without numbers, so their totals are a little low.": "Certains jours avaient des aliments sans valeurs, leurs totaux sont donc un peu bas.",
   "Sport": "Sport",
@@ -5904,4 +5910,10 @@ export default {
   "Preview on": "Aperçu sur",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Personnaliser",
+  "Collapsed": "Repliée",
+  "Hide": "Masquer",
+  "Totals": "Totaux",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Les flèches changent l’ordre.",
 }

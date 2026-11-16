@@ -5,6 +5,10 @@ export default {
   // --- Liquid Glass G2: CodeRabbit review ---
   "−15 s": "−15 秒",
   "{0} past zero": "超過零 {0}",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手錶",
+  "Set once": "設定一次",
+  "Connections": "連線",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",
@@ -187,6 +191,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "只在這台裝置上讀取。不會寫入 openNutrition，它傳來的任何內容也不會進入你的備份或同步。",
   "Runs, rides and matches": "跑步、騎車和比賽",
   "Runs, rides and matches from other apps": "來自其他 App 的跑步、騎車和比賽",
+  "Birth date, for heart-rate zones": "出生日期，用於心率區間",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "你的 Apple Watch 會依你的年齡算出心率區間。允許「出生日期」，或之後在 Apple Health 中更改。",
   "Show it in": "顯示在",
   "Some days had foods without numbers, so their totals are a little low.": "有些天的食物沒有數值，所以合計略低。",
   "Sport": "運動",
@@ -5897,4 +5903,10 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自訂",
+  "Collapsed": "已摺疊",
+  "Hide": "隱藏",
+  "Totals": "總計",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
 }
