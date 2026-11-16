@@ -84,12 +84,22 @@ describe('the Garmin snapshot', () => {
       today: { routineIds: ['r1'], name: 'Legs', entries: [ex('a', [row(false)], { best: { w: 60, r: 5 } })] },
       others: Array.from({ length: 12 }, (_, k) => ({ routineIds: ['o' + k], name: 'Routine ' + k, entries: [ex('x', [row(false)])] })),
     }
-    const out = garminSnapshot(snap)
+    // (with a workout running today goes by name only, below)
+    const out = garminSnapshot({ ...snap, active: null })
     expect(out.ready.today.entries[0].last).toBeUndefined()
     expect(out.ready.today.entries[0].best).toBeUndefined()
     expect(out.ready.today.entries[0].sets).toHaveLength(1)
     expect(out.ready.others).toHaveLength(8)
     expect(out.ready.others[0]).toEqual({ routineIds: ['o0'], name: 'Routine 0', entries: [] })
+  })
+
+  it('sends today by name only while a workout runs (the snapshot with every set stays small)', () => {
+    const snap = wearSnap()
+    snap.ready = { today: { routineIds: ['r1'], name: 'Legs', entries: [ex('a', [row(false)])] }, others: [] }
+    expect(garminSnapshot(snap).ready.today).toEqual({ routineIds: ['r1'], name: 'Legs', entries: [] })
+    expect(garminSnapshot({ ...snap, active: null }).ready.today.entries).toHaveLength(1)
+    // 3 KB: the Instinct 2 parses 3.2 KB in the simulator and runs out of memory at 3.5 KB
+    expect(GARMIN_MAX_BYTES).toBe(3072)
   })
 
   it('stays under the size limit for a big workout and a long plan', () => {
