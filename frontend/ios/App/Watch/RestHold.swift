@@ -50,6 +50,7 @@ struct RestView: View {
                 }
                 .offset(y: roomy ? 9 : 4) // the clock sits lower the bigger the case
                 .frame(height: 36)
+                RestCaption(shift: store.restShift)
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
                     countdown
@@ -169,6 +170,45 @@ struct RestView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 4)
         }
+    }
+}
+
+/// "Rest" and, after it, a chip with the net change made with −15 and +15 in this rest ("+30 s", "−15 s",
+/// "+1:15"). The row is always 18 pt, so the chip coming and going moves nothing.
+struct RestCaption: View {
+    let shift: TimeInterval
+    @Environment(\.accent) private var accent
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
+
+    var body: some View {
+        HStack(spacing: 6) { // the word stays centred, the chip hangs off its right
+            Color.clear.frame(maxWidth: .infinity, maxHeight: 1)
+            Text("Rest").font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundStyle(Theme.label2)
+                .accessibilityHidden(true) // the timer already says "Rest"
+            ZStack(alignment: .leading) {
+                if let label = RestMath.shift(shift) {
+                    let added = shift > 0
+                    let fill: Color = dimmed ? .clear : added ? accent.opacity(0.24) : Color.white.opacity(0.10)
+                    let stroke: Color = dimmed ? Color.white.opacity(0.55) : added ? accent.opacity(0.8) : Color.white.opacity(0.34)
+                    Text(verbatim: label)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded).monospacedDigit())
+                        .foregroundStyle(Color.white.opacity(dimmed ? 0.88 : 1))
+                        .contentTransition(.numericText())
+                        .padding(.horizontal, 7)
+                        .frame(height: 18)
+                        .background(Capsule().fill(fill))
+                        .overlay(Capsule().strokeBorder(stroke, lineWidth: 1))
+                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.9)))
+                        .accessibilityLabel(Text(verbatim: label))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .lineLimit(1)
+        .frame(height: 18)
+        .animation(dimmed ? nil : .easeOut(duration: reduceMotion ? 0.15 : 0.25), value: shift)
     }
 }
 

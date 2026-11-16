@@ -1,6 +1,10 @@
 package ch.duartesantos.opengym.wear.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.scaleIn
 import ch.duartesantos.opengym.wear.RestMath
 import ch.duartesantos.opengym.wear.Stills
 import androidx.compose.foundation.layout.offset
@@ -820,15 +824,6 @@ fun RestView(rest: Rest) {
     // Paused on the phone, the countdown stands (Rest.pausedLeft).
     val left = (rest.leftMs(now) / 1000.0).coerceAtLeast(0.0)
     val round = LocalRound.current
-    // The ±15 pill adds up quick taps for a moment; a rest's own first end is not a change.
-    var sum by remember(rest.startedAt) { mutableIntStateOf(0) }
-    var lastEnd by remember(rest.startedAt) { mutableLongStateOf(rest.endsAt) }
-    LaunchedEffect(rest.endsAt) {
-        if (rest.pausedLeft == null) sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
-        lastEnd = rest.endsAt
-        kotlinx.coroutines.delay(1_100)
-        sum = 0
-    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Round watches lose their corners: the bottom row sits higher, the extra lines go first.
         val roomy = maxHeight.value >= (if (round) 260 else 200)
@@ -842,6 +837,7 @@ fun RestView(rest: Rest) {
         // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            RestCaption(rest.shift)
             // The time left, the screen's one number (#1100): in the accent, as big as the room the rest leaves.
             // Never shorter than ‹, and on a round screen ‹ steps in from the curve (seen on a 40 mm watch: it
             // was cut at its corner under the clock once Up next took the chips' place).
@@ -859,13 +855,6 @@ fun RestView(rest: Rest) {
                         // Always On: grey, not a big lit accent (burn-in, battery), as everywhere else (#1174 review)
                         color = if (dim) Og.Text.copy(alpha = 0.75f) else tint,
                         modifier = Modifier.semantics { contentDescription = text })
-                    RestMath.pillText(sum)?.takeIf { !dim }?.let { pill ->
-                        val c = if (sum > 0) a.accent else Og.Orange
-                        Box(Modifier.align(Alignment.TopCenter).heightIn(min = 20.dp).clip(CircleShape).background(Color.Black).background(c.copy(alpha = 0.18f))
-                            .padding(horizontal = 8.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
-                            Text(pill, color = c, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
-                        }
-                    }
                 }
                 Spacer(Modifier.width(32.dp + inset))
             }
@@ -887,6 +876,39 @@ fun RestView(rest: Rest) {
                 if (!dim) EffortChips(roomy)
             }
             if (next) UpNext(roomy)
+        }
+    }
+}
+
+/** "Rest" and, after it, a chip with the net change made with −15 and +15 in this rest. The row is always 18 dp (6 more on a round screen, off the rim), so the chip coming and going moves nothing. */
+@Composable
+private fun RestCaption(shift: Int) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val reduce = LocalReduceMotion.current
+    val shown = RestMath.shiftText(shift)
+    var last by remember { mutableStateOf("") }
+    if (shown != null) last = shown // the chip fades out with its last words, not an empty capsule
+    val add = shift > 0
+    val c = if (add) a.accent else Og.Text
+    Box(Modifier.fillMaxWidth().height(if (LocalRound.current) 24.dp else 18.dp), contentAlignment = Alignment.BottomCenter) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) { // the word stays centred, the chip hangs off its right
+            Spacer(Modifier.weight(1f))
+            Text(stringResource(R.string.rest), color = Og.Label2, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.clearAndSetSemantics {})
+            Box(Modifier.weight(1f).padding(start = 6.dp), contentAlignment = Alignment.CenterStart) {
+            AnimatedVisibility(shown != null,
+                enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.9f)),
+                exit = if (dim) ExitTransition.None else fadeOut(tween(if (reduce) 150 else 200))) {
+                Box(Modifier.height(18.dp).clip(CircleShape)
+                    .background(if (dim) Color.Transparent else if (add) c.copy(alpha = 0.24f) else Color.White.copy(alpha = 0.10f))
+                    .border(1.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.34f), CircleShape)
+                    .padding(horizontal = 7.dp).semantics { contentDescription = last }, contentAlignment = Alignment.Center) {
+                    AnimatedContent(last, transitionSpec = { fadeIn(tween(if (dim) 0 else 250)) togetherWith fadeOut(tween(if (dim) 0 else 250)) }, label = "shift") { t ->
+                        Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number)
+                    }
+                }
+            }
+            }
         }
     }
 }

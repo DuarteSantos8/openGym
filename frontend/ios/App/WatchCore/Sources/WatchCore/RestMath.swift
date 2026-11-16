@@ -8,6 +8,7 @@ import Foundation
  *             end sent again (with an unrelated change) no longer undoes a ±15 or brings a skipped
  *             rest back
  *   left      how much of the rest is left, 1 at its start, 0 at its end (the bar under the time)
+ *   shift     the net change of this rest made with −15 and +15, as the chip after "Rest" reads it
  *   chips     the four quick effort ratings during the rest: RIR 0, 1, 2, 3+ or RPE 10, 9, 8, ≤7
  */
 enum RestMath {
@@ -73,6 +74,14 @@ enum RestMath {
     static func clock(_ seconds: TimeInterval) -> String {
         let total = SafeNum.int(max(0, SafeNum.finite(seconds, or: 0)).rounded(.up))
         return String(format: "%d:%02d", total / 60, total % 60)
+    }
+
+    /// "+30 s" or "−15 s" under a minute, "+1:15" from a minute up; nil when nothing changed (no chip).
+    static func shift(_ net: TimeInterval) -> String? {
+        let s = SafeNum.int(SafeNum.finite(net, or: 0).rounded())
+        guard s != 0 else { return nil }
+        let mag = abs(s)
+        return (s > 0 ? "+" : "−") + (mag < 60 ? "\(mag) s" : String(format: "%d:%02d", mag / 60, mag % 60))
     }
 
     static func left(start: Date, end: Date, now: Date) -> Double {
