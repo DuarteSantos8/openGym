@@ -1,194 +1,163 @@
-// The progress-photo camera (#951): a live view with an earlier photo laid over it, faint, so the
-// new one can be framed the same way (same distance, same height, same pose). The overlay sits
-// exactly on the camera's frame, which is also the picture that is kept (lib/camera-frame.js),
-// and none of it ends up in the saved photo.
+// The progress-photo camera (#951): the live view full screen with an earlier photo drawn
+// semi-transparent over it, so a new photo can be framed like an old one. The overlay is fixed and
+// sits exactly on the frame of the video, which is the frame that is saved: it has the proportions
+// of the photo that will be kept, so the pose is matched by standing and holding the phone the way
+// the earlier photo was taken. Its opacity has a slider; it starts as the latest photo and can be
+// changed or turned off. Nothing of the overlay is in the saved picture, only the video frame.
+// The front camera's preview is shown mirrored, the way every camera app does, and the picture that
+// is kept is mirrored the same way: what is on the screen is what is saved. The overlay is the earlier
+// photo as it looks in the gallery, never mirrored.
 //
-// Camera access is getUserMedia, as the QR scan already does (CameraScan.jsx): it works in the
-// browser on HTTPS or localhost, in the iPhone app's WebView and in the Android one (Capacitor's
-// WebView asks for the CAMERA permission the app already declares). Where it is not there or was
-// refused, the screen says so and offers the phone's own camera through a file input instead;
-// that photo comes back without an overlay, but it still lands on today.
-//
-// The front camera's live view is mirrored like every camera app's, and the picture kept is
-// mirrored the same way: what was on the screen is what is saved. Nothing leaves the device
-// here: the picture goes through the same ingest as an added photo (re-encoded, no EXIF).
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { t } from '../lib/i18n.js'
+// The front camera opens first. Until the video plays the screen is black and the shutter waits.
+// Needs getUserMedia, which a browser only gives on HTTPS or localhost. Where it is not there, or
+// the camera is refused, the screen says so in place and the add-photos flow stays the way in.
+// `onTaken(file)` gets the JPEG of the frame once "Use photo" is pressed.
+import { useEffect, useRef, useState } from 'react'
+import { t, tn } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
-import { containRect, captureSize, overlayOpacity, captureName } from '../lib/camera-frame.js'
-import { CustomThumb, useMediaUrl } from './CustomMedia.jsx'
-import { Button } from './ui.jsx'
+import { frameToBlob } from '../lib/camera-capture.js'
+import { defaultOverlay, DEFAULT_OPACITY, frameRatio, isMirrored, photoFileName } from '../lib/camera-overlay.js'
+import { useMediaUrl, CustomThumb } from './CustomMedia.jsx'
 import Icon from './Icon.jsx'
+import { Button } from './ui.jsx'
 
-const OVERLAY_KEY = 'gym_photo_overlay'
-const readOpacity = () => { try { return overlayOpacity(localStorage.getItem(OVERLAY_KEY) ?? undefined) } catch { return 0.4 } }
-const keepOpacity = v => { try { localStorage.setItem(OVERLAY_KEY, String(v)) } catch { /* private mode */ } }
+// How many recent photos the overlay choice offers.
+const CHOICES = 24
+// The self-timer's steps, in seconds: off, then the delays the shutter can wait.
+const TIMERS = [0, 5, 10, 20]
 
-/** How a getUserMedia failure reads: 'denied' (the person or the browser said no) or 'unavailable'. */
-export const cameraError = e => (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'denied' : 'unavailable')
-
-function Overlay({ m, rect, opacity }) {
-  const { url } = useMediaUrl(m)
-  if (!url || !rect.w) return null
-  return <img className="pc-ghost" src={url} alt="" draggable={false}
-    style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h, opacity }} />
-}
-
-/**
- * `photos`: the gallery's photos, newest first (the overlay starts on the first). `onUse(file)`
- * gets the picture kept, as a JPEG File; the camera closes after.
- */
-export default function PhotoCamera({ photos = [], onUse, close }) {
+export default function PhotoCamera({ photos, onTaken, close, capture = frameToBlob }) {
   const videoRef = useRef(null)
-  const stageRef = useRef(null)
-  const fileRef = useRef(null)
-  const [facing, setFacing] = useState('user')
-  const [status, setStatus] = useState('starting')   // starting | live | denied | unavailable
-  const [shot, setShot] = useState(null)             // { file, url } once the shutter was pressed
-  const [ghost, setGhost] = useState(photos.length ? 0 : -1)
-  const [opacity, setOpacity] = useState(readOpacity)
-  const [picking, setPicking] = useState(false)
-  const [rect, setRect] = useState({ x: 0, y: 0, w: 0, h: 0 })
+  const [facing, setFacing] = useState('user')                // the front camera first, the way a progress photo is usually taken
+  const [error, setError] = useState(null)               // null, 'denied' or 'unavailable'
+  const [live, setLive] = useState(false)               // the video is playing: until then nothing but black
+  const [mirror, setMirror] = useState(false)             // the front camera's preview is shown mirrored, as in any camera app
+  const [ratio, setRatio] = useState(null)                // width / height of the video frame, which is the frame that is saved
+  const [overlay, setOverlay] = useState(() => defaultOverlay(photos))
+  const [choosing, setChoosing] = useState(false)
+  const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
+  const [shot, setShot] = useState(null)                 // { blob, url } once the shutter is pressed
   const [busy, setBusy] = useState(false)
+  const [timer, setTimer] = useState(0)                 // seconds the shutter waits before it takes the photo; 0 is off
+  const [count, setCount] = useState(null)               // seconds left while the timer runs, else null
+  const overlayUrl = useMediaUrl(overlay ? overlay.m : null).url
 
-  // The camera, opened again on a flip; stopped on unmount, a flip, or a taken picture.
+  // The camera, again when it is flipped; the stream is stopped whenever it goes.
   useEffect(() => {
-    if (shot) return undefined
     let stream = null, done = false
-    setStatus('starting')
+    const v = videoRef.current
+    const measure = () => { const r = frameRatio(v && v.videoWidth, v && v.videoHeight); if (r) setRatio(r) }
+    setError(null)
+    setLive(false)
+    setMirror(false)
     ;(async () => {
-      const md = globalThis.navigator?.mediaDevices
-      if (!md || typeof md.getUserMedia !== 'function') { setStatus('unavailable'); return }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setError('unavailable'); return }
       try {
-        stream = await md.getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1920 } }, audio: false })
-      } catch (e) { if (!done) setStatus(cameraError(e)); return }
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } }, audio: false })
+      } catch (e) {
+        if (!done) setError(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'denied' : 'unavailable')
+        return
+      }
       if (done) { stream.getTracks().forEach(tr => tr.stop()); return }
-      const v = videoRef.current
       if (!v) return
+      const track = stream.getVideoTracks ? stream.getVideoTracks()[0] : stream.getTracks()[0]
+      const reported = track && track.getSettings ? track.getSettings().facingMode : undefined
+      setMirror(isMirrored(reported, facing))
       v.srcObject = stream
-      try { await v.play() } catch { /* autoplay rules: 'playing' below still fires once it runs */ }
+      try { await v.play(); if (!done) { measure(); setLive(true) } } catch (e) { /* autoplay rules; onPlaying says when the frames come */ }
     })()
+    if (v) { v.addEventListener('loadedmetadata', measure); v.addEventListener('resize', measure) }
     return () => {
       done = true
+      if (v) { v.removeEventListener('loadedmetadata', measure); v.removeEventListener('resize', measure) }
       if (stream) stream.getTracks().forEach(tr => tr.stop())
-      const v = videoRef.current
-      if (v) v.srcObject = null
     }
-  }, [facing, shot])
+  }, [facing])
 
-  // Where the camera's frame sits on the stage, kept up to date as the stage or the frame changes.
-  const measure = useCallback(() => {
-    const v = videoRef.current, st = stageRef.current
-    if (!v || !st) return
-    setRect(containRect(v.videoWidth, v.videoHeight, st.clientWidth, st.clientHeight))
-  }, [])
-  useLayoutEffect(() => {
-    const st = stageRef.current
-    if (!st || typeof ResizeObserver !== 'function') return undefined
-    const ro = new ResizeObserver(measure)
-    ro.observe(st)
-    return () => ro.disconnect()
-  }, [measure])
+  useEffect(() => () => { if (shot) URL.revokeObjectURL(shot.url) }, [shot])
 
-  useEffect(() => () => { if (shot?.url) URL.revokeObjectURL(shot.url) }, [shot])
-
-  const onPlaying = () => { measure(); setStatus('live') }
-
+  const choose = photo => { setOverlay(photo); setChoosing(false) }
   const snap = async () => {
     const v = videoRef.current
-    if (!v || status !== 'live' || busy) return
-    const size = captureSize(v.videoWidth, v.videoHeight)
-    if (!size) return
+    if (!v || busy) return
     setBusy(true)
     try {
-      const canvas = document.createElement('canvas')
-      canvas.width = size.w
-      canvas.height = size.h
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      if (facing === 'user') { ctx.translate(size.w, 0); ctx.scale(-1, 1) }
-      ctx.drawImage(v, 0, 0, size.w, size.h)
-      const blob = await new Promise(res => { try { canvas.toBlob(res, 'image/jpeg', 0.92) } catch { res(null) } })
-      canvas.width = 0; canvas.height = 0
-      if (!blob) return
-      const name = captureName(todayISO())
-      const file = typeof File === 'function' ? new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() }) : blob
-      setShot({ file, url: URL.createObjectURL(blob) })
+      const blob = await capture(v, { mirror })
+      if (blob) setShot({ blob, url: URL.createObjectURL(blob) })
     } finally { setBusy(false) }
   }
-
-  const use = async file => {
-    if (!file || busy) return
-    setBusy(true)
-    try { await onUse?.(file) } finally { setBusy(false); close() }
+  // The shutter with the timer on counts down on the screen and takes the photo at zero; pressed
+  // again, or on closing, flipping or retaking, it stops. A second goes by per render of `count`.
+  useEffect(() => {
+    if (count === null) return undefined
+    if (count === 0) { setCount(null); snap(); return undefined }
+    const id = setTimeout(() => setCount(count - 1), 1000)
+    return () => clearTimeout(id)
+  }, [count])
+  const press = () => {
+    if (count !== null) setCount(null)
+    else if (timer) setCount(timer)
+    else snap()
   }
-  const onNativeFile = ev => {
-    const f = ev.target.files?.[0]
-    ev.target.value = ''
-    if (f) use(f)
+  const use = () => {
+    if (!shot) return
+    const file = new File([shot.blob], photoFileName(todayISO()), { type: 'image/jpeg', lastModified: Date.now() })
+    onTaken(file)
+    close()
   }
-  const changeOpacity = v => { const o = overlayOpacity(v); setOpacity(o); keepOpacity(o) }
 
-  const ghostPhoto = ghost >= 0 ? photos[ghost] : null
-  const failed = status === 'denied' || status === 'unavailable'
-
-  return <div className="mviewer pc" role="dialog" aria-modal="true" aria-label={t('Take photo')}>
+  const label = overlay ? fmtDate(overlay.d) : t('None')
+  return <div className="mviewer pp-cam" role="dialog" aria-modal="true" aria-label={t('Take photo')}>
     <div className="mviewer-bar">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
-      <span className="mviewer-count">{shot ? t('Keep this one?') : ghostPhoto ? t('Line up with {0}', fmtDate(ghostPhoto.d, true)) : t('Progress photo')}</span>
-      {!shot && !failed
-        ? <button type="button" className="iconbtn" aria-label={t('Switch camera')} onClick={() => setFacing(f => (f === 'user' ? 'environment' : 'user'))}><Icon name="repeat" /></button>
-        : <span style={{ width: 36 }} />}
+      <span className="mviewer-count">{t('Take photo')}</span>
+      <button type="button" className="iconbtn" aria-label={t('Flip camera')} disabled={!!shot || count !== null} onClick={() => setFacing(f => (f === 'environment' ? 'user' : 'environment'))}><Icon name="repeat" /></button>
     </div>
-
-    <div className="pc-stage" ref={stageRef} data-swipe-ignore>
-      {shot
-        ? <img className="pc-shot" src={shot.url} alt={t('The photo you just took')} />
-        : failed
-          ? <div className="pc-msg">
-              <Icon name="camera" />
-              <p>{status === 'denied'
-                ? t('The camera is switched off for openGym. Allow it in your settings, or use the camera app instead.')
-                : t('No live camera here (a browser only offers one on HTTPS). The camera app still works.')}</p>
-              <Button variant="tinted" icon="camera" onClick={() => fileRef.current?.click()}>{t('Use the camera app')}</Button>
-            </div>
-          : <>
-              <video ref={videoRef} className={'pc-video' + (facing === 'user' ? ' mirror' : '')} playsInline muted autoPlay
-                onLoadedMetadata={measure} onPlaying={onPlaying} />
-              {ghostPhoto && status === 'live' && <Overlay m={ghostPhoto.m} rect={rect} opacity={opacity} />}
-              {status === 'starting' && <div className="pc-wait" aria-live="polite">{t('Waking up the camera…')}</div>}
-            </>}
-      <input ref={fileRef} type="file" accept="image/*" capture="user" hidden onChange={onNativeFile} />
+    {/* The frame has the shape of the video, which is the shape of the photo that is kept; the video,
+        the overlay and the picture taken all fill it. A photo has no reading direction, so it stays ltr. */}
+    <div className="pp-cam-stage" dir="ltr">
+      <div className="pp-cam-frame" style={ratio ? { '--r': ratio } : undefined}>
+        <video ref={videoRef} playsInline muted autoPlay onPlaying={() => setLive(true)} style={mirror ? { transform: 'scaleX(-1)' } : undefined} />
+        {overlayUrl && live && !error && !shot && <img className="pp-cam-overlay" src={overlayUrl} alt="" draggable={false} style={{ opacity }} />}
+        {shot && <img className="pp-cam-shot" src={shot.url} alt="" draggable={false} />}
+        {count !== null && count > 0 && <div className="pp-cam-count" aria-live="assertive">{count}</div>}
+      </div>
+      {error && <div className="pp-cam-error">
+        {error === 'denied'
+          ? t('Camera access was denied. Allow it in your browser and try again.')
+          : t('No camera available here. Add the photo from your gallery instead.')}
+      </div>}
     </div>
-
-    {shot
-      ? <div className="pc-controls pc-review">
-          <Button variant="ghost" className="pc-dark" disabled={busy} onClick={() => setShot(null)}>{t('Retake')}</Button>
-          <Button variant="primary" disabled={busy} onClick={() => use(shot.file)}>{busy ? t('Loading…') : t('Use photo')}</Button>
+    {choosing && !shot && <div className="pp-cam-choose" dir="ltr" data-swipe-ignore>
+      <button type="button" className={'pp-cam-none' + (!overlay ? ' on' : '')} onClick={() => choose(null)}>{t('None')}</button>
+      {photos.slice(0, CHOICES).map(p => <button key={p.key} type="button" className={'pp-cam-pick' + (overlay && overlay.key === p.key ? ' on' : '')}
+        aria-label={fmtDate(p.d, true, true)} onClick={() => choose(p)}>
+        <CustomThumb ex={{ custom: true, media: p.m }} />
+        <span className="pp-cam-date" aria-hidden="true">{fmtDate(p.d)}</span>
+      </button>)}
+    </div>}
+    {/* The live controls keep their place after the shot (hidden) and Retake / Use photo sit over
+        them, so the bar never changes height and the frame does not move when the shutter is pressed. */}
+    <div className="pp-cam-controls">
+      <div style={shot ? { visibility: 'hidden' } : undefined}>
+        <label className="pp-cam-op" dir="ltr">
+          <span>{t('Opacity')}</span>
+          <input type="range" min="0" max="100" value={Math.round(opacity * 100)} data-swipe-ignore onChange={e => setOpacity(+e.target.value / 100)} />
+        </label>
+        <div className="pp-cam-row">
+          <Button variant="tinted" size="sm" onClick={() => setChoosing(c => !c)}>{t('Overlay: {0}', label)}</Button>
+          <button type="button" className={'pp-shutter' + (count !== null ? ' timing' : '')} aria-label={count !== null ? t('Cancel') : t('Take photo')} disabled={!!error || !live || busy} onClick={press}><span /></button>
+          <button type="button" className={'pp-cam-timer' + (timer ? ' on' : '')} disabled={count !== null}
+            aria-label={t('Self-timer') + (timer ? ': ' + tn('{0} second', '{0} seconds', timer) : '')}
+            onClick={() => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])}>
+            <Icon name="timer" />{timer > 0 && <span>{timer}</span>}
+          </button>
         </div>
-      : !failed && <div className="pc-controls">
-          {picking && photos.length > 0 && <div className="pc-picks" role="listbox" aria-label={t('Overlay')}>
-            <button type="button" role="option" aria-selected={ghost < 0} className={'pc-pick pc-off' + (ghost < 0 ? ' on' : '')}
-              onClick={() => { setGhost(-1); setPicking(false) }}>{t('Off')}</button>
-            {photos.slice(0, 24).map((p, i) => (
-              <button key={p.key} type="button" role="option" aria-selected={ghost === i} aria-label={fmtDate(p.d, true, true)}
-                className={'pc-pick' + (ghost === i ? ' on' : '')} onClick={() => { setGhost(i); setPicking(false) }}>
-                <CustomThumb ex={{ custom: true, media: p.m }} />
-              </button>
-            ))}
-          </div>}
-          {ghostPhoto && !picking && <label className="pc-opacity">
-            <Icon name="image" />
-            <input type="range" min="0.1" max="0.9" step="0.05" value={opacity} onChange={e => changeOpacity(e.target.value)} aria-label={t('Overlay strength')} />
-          </label>}
-          <div className="pc-row">
-            <button type="button" className={'pc-side' + (picking ? ' on' : '')} disabled={!photos.length}
-              aria-expanded={picking} onClick={() => setPicking(x => !x)}>
-              <Icon name="sides" /><span>{ghostPhoto ? t('Overlay') : t('No overlay')}</span>
-            </button>
-            <button type="button" className="pc-shutter" aria-label={t('Take photo')} disabled={status !== 'live' || busy} onClick={snap} />
-            <span className="pc-side pc-spacer" aria-hidden="true" />
-          </div>
-        </div>}
+      </div>
+      {shot && <div className="pp-cam-actions">
+        <Button variant="tinted" onClick={() => { setCount(null); setShot(null) }}>{t('Retake')}</Button>
+        <Button variant="primary" onClick={use}>{t('Use photo')}</Button>
+      </div>}
+    </div>
   </div>
 }

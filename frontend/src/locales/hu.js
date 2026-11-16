@@ -4843,7 +4843,7 @@ export default {
   "Change the day": "Nap módosítása",
   "Date from the file name.": "Dátum a fájlnévből.",
   "Date from the photo itself.": "Dátum magából a fotóból.",
-  "Drag a photo to move what shows.": "Húzz egy fotót, hogy más rész látsszon.",
+  "Drag a photo to move what shows, pinch to zoom.": "Húzz egy fotót, hogy más rész látsszon, és csippentéssel nagyíts.",
   "Fewer": "Kevesebb",
   "Keep this one?": "Ezt megtartod?",
   "Last photo: yesterday.": "Utolsó fotó: tegnap.",
@@ -5900,4 +5900,10 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Kamera váltása",
+  "Opacity": "Átlátszatlanság",
+  "Self-timer": "Önkioldó",
+  "Overlay: {0}": "Átfedés: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Itt nincs elérhető kamera. Add hozzá a fotót a galériádból.",
 }

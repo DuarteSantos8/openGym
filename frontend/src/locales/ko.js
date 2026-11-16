@@ -4840,7 +4840,7 @@ export default {
   "Change the day": "날짜 바꾸기",
   "Date from the file name.": "파일 이름에서 가져온 날짜.",
   "Date from the photo itself.": "사진 자체에서 가져온 날짜.",
-  "Drag a photo to move what shows.": "사진을 드래그해서 보이는 부분을 옮기세요.",
+  "Drag a photo to move what shows, pinch to zoom.": "사진을 드래그해서 보이는 부분을 옮기고, 두 손가락으로 확대하세요.",
   "Fewer": "적음",
   "Keep this one?": "이걸로 할까요?",
   "Last photo: yesterday.": "마지막 사진: 어제.",
@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "카메라 전환",
+  "Opacity": "불투명도",
+  "Self-timer": "셀프 타이머",
+  "Overlay: {0}": "겹쳐 보기: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "여기서는 카메라를 사용할 수 없어요. 갤러리에서 사진을 추가하세요.",
 }

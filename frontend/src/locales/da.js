@@ -4793,7 +4793,7 @@ export default {
   "Change the day": "Skift dag",
   "Date from the file name.": "Dato fra filnavnet.",
   "Date from the photo itself.": "Dato fra selve fotoet.",
-  "Drag a photo to move what shows.": "Træk i et foto for at flytte det, der vises.",
+  "Drag a photo to move what shows, pinch to zoom.": "Træk i et foto for at flytte det, der vises, og knib for at zoome.",
   "Fewer": "Færre",
   "Keep this one?": "Behold denne?",
   "Last photo: yesterday.": "Sidste foto: i går.",
@@ -5837,4 +5837,10 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Skift kamera",
+  "Opacity": "Gennemsigtighed",
+  "Self-timer": "Selvudløser",
+  "Overlay: {0}": "Overlæg: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Intet kamera her. Tilføj billedet fra dit galleri i stedet.",
 }

@@ -15,7 +15,6 @@
 // own "photos" grant (api/permissions.js), the community library only when the person shares one
 // themselves on a server that allows personal media (api/library/config.js), and the comparison
 // picture only goes where the person sends it from the share sheet.
-import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -286,7 +285,7 @@ export default function ProgressPhotos() {
     if (n.noRoom) toast(t('Your server keeps photos only on days with a workout. An update lets it keep them for any day.'))
   }
   const openCamera = () => useUI.getState().openSheet(close => <PhotoCamera photos={photos} close={close}
-    onUse={file => save([{ file, d: todayISO() }])} />, { kind: 'viewer' })
+    onTaken={file => save([{ file, d: todayISO() }])} />, { kind: 'viewer' })
   const jumpTo = iso => {
     const el = listRef.current?.querySelector(`[data-day="${iso}"]`)
     if (!el) return
@@ -300,33 +299,40 @@ export default function ProgressPhotos() {
     <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
         <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
-      {photos.length >= 2 && (comparing
-        ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
-        : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)}
     </div>
 
-    {!comparing && showAdd && <div className="pp-actions">
-      <Button variant="primary" icon="camera" disabled={!canAdd || busy} onClick={openCamera}>{t('Take photo')}</Button>
-      <Button variant="tinted" icon="image" disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
-        {busy ? t('Loading…') : t('Add photos')}
-      </Button>
-      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
-    </div>}
-
-    {!comparing && nudge && <div className={'pp-nudge' + (nudge.kind === 'today' ? ' done' : '')}>
+    {nudge && <div className={'pp-nudge' + (nudge.kind === 'today' ? ' done' : '')}>
       <Icon name={nudge.kind === 'today' ? 'checkCircle' : 'camera'} /><span>{nudgeLine(nudge)}</span>
     </div>}
 
-    {/* A reminder for the next one (components/CheckinReminder.jsx), bundled with the measurements. */}
-    {!comparing && <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow /></div>}
-    {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
-      {picked.length < 2 ? t('Pick two or more photos, up to {0}.', COMPARE_MAX) : tn('{0} photo picked.', '{0} photos picked.', picked.length)}
-    </div>}
-
-    {!comparing && photos.length > 0 && <div className="card pp-activity">
+    {photos.length > 0 && <div className="card pp-activity">
       <h2>{t('Photo days (last 12 months)')}</h2>
       <Heatmap S={S} counts={counts} onDay={jumpTo}
         legend={[t('Fewer'), t('More')]} countLabel={c => tn('{0} photo', '{0} photos', c)} />
+    </div>}
+
+    {/* Add photos and Take photo, Compare under them. While picking, Confirm and Cancel take their
+        place and stay pinned under the top edge, so Confirm is in reach however far down the grid
+        you have scrolled; .pp-cap covers the strip above them, under the status bar. */}
+    {comparing && <div className="pp-cap" aria-hidden="true" />}
+    {comparing
+      ? <div className="pp-actions stick">
+          <Button variant="primary" disabled={picked.length < 2} onClick={runCompare}>{t('Confirm')}</Button>
+          <Button variant="tinted" onClick={cancelCompare}>{t('Cancel')}</Button>
+        </div>
+      : (showAdd || photos.length >= 2) && <div className="pp-actions">
+          {showAdd && <>
+            <Button variant="primary" icon="image" disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
+              {busy ? t('Loading…') : t('Add photos')}
+            </Button>
+            <Button variant="primary" icon="camera" disabled={!canAdd || busy} onClick={openCamera}>{t('Take photo')}</Button>
+            <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
+          </>}
+          {photos.length >= 2 && <Button variant="tinted" icon="sides" className="pp-wide" onClick={() => setComparing(true)}>{t('Compare')}</Button>}
+        </div>}
+
+    {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
+      {picked.length < 2 ? t('Pick two or more photos, up to {0}.', COMPARE_MAX) : tn('{0} photo picked.', '{0} photos picked.', picked.length)}
     </div>}
 
     {!photos.length
@@ -356,8 +362,5 @@ export default function ProgressPhotos() {
         </section>
       ))}</div>}
 
-    {comparing && picked.length >= 2 && <div className="pp-cta">
-      <Button variant="primary" onClick={runCompare}>{tn('Compare {0} photo', 'Compare {0} photos', picked.length)}</Button>
-    </div>}
   </>
 }

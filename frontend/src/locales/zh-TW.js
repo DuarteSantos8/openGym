@@ -4833,7 +4833,7 @@ export default {
   "Change the day": "更改日期",
   "Date from the file name.": "日期來自檔名。",
   "Date from the photo itself.": "日期來自照片本身。",
-  "Drag a photo to move what shows.": "拖曳照片以調整顯示的部分。",
+  "Drag a photo to move what shows, pinch to zoom.": "拖曳照片以調整顯示的部分，雙指縮放。",
   "Fewer": "較少",
   "Keep this one?": "保留這張？",
   "Last photo: yesterday.": "上一張照片：昨天。",
@@ -5890,4 +5890,10 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "切換鏡頭",
+  "Opacity": "不透明度",
+  "Self-timer": "自拍計時",
+  "Overlay: {0}": "疊加：{0}",
+  "No camera available here. Add the photo from your gallery instead.": "此處沒有可用的鏡頭。請改為從相簿新增照片。",
 }

@@ -4895,7 +4895,7 @@ export default {
   "Change the day": "تغيير اليوم",
   "Date from the file name.": "التاريخ من اسم الملف.",
   "Date from the photo itself.": "التاريخ من الصورة نفسها.",
-  "Drag a photo to move what shows.": "اسحب صورة لتحريك الجزء الظاهر.",
+  "Drag a photo to move what shows, pinch to zoom.": "اسحب صورة لتحريك الجزء الظاهر، واضغط بإصبعين للتكبير.",
   "Fewer": "أقل",
   "Keep this one?": "هل نحتفظ بهذه؟",
   "Last photo: yesterday.": "آخر صورة: أمس.",
@@ -5952,4 +5952,10 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "تبديل الكاميرا",
+  "Opacity": "العتامة",
+  "Self-timer": "مؤقّت ذاتي",
+  "Overlay: {0}": "تراكب: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "لا توجد كاميرا متاحة هنا. أضف الصورة من معرضك.",
 }

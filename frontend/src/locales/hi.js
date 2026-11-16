@@ -4840,7 +4840,7 @@ export default {
   "Change the day": "दिन बदलें",
   "Date from the file name.": "तारीख फ़ाइल के नाम से।",
   "Date from the photo itself.": "तारीख फ़ोटो से ही।",
-  "Drag a photo to move what shows.": "जो दिखे उसे खिसकाने के लिए फ़ोटो खींचें।",
+  "Drag a photo to move what shows, pinch to zoom.": "जो दिखे उसे खिसकाने के लिए फ़ोटो खींचें, ज़ूम के लिए दो उँगलियों से पिंच करें।",
   "Fewer": "कम",
   "Keep this one?": "यही रखें?",
   "Last photo: yesterday.": "पिछली फ़ोटो: कल।",
@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "कैमरा बदलें",
+  "Opacity": "अपारदर्शिता",
+  "Self-timer": "सेल्फ़-टाइमर",
+  "Overlay: {0}": "ओवरले: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "यहाँ कोई कैमरा उपलब्ध नहीं है। अपनी गैलरी से फ़ोटो जोड़ें।",
 }

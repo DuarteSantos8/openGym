@@ -4919,7 +4919,7 @@ export default {
   "Change the day": "দিন বদলান",
   "Date from the file name.": "তারিখ ফাইলের নাম থেকে।",
   "Date from the photo itself.": "তারিখ ছবি থেকেই।",
-  "Drag a photo to move what shows.": "যা দেখা যায় তা সরাতে ছবি টানুন।",
+  "Drag a photo to move what shows, pinch to zoom.": "যা দেখা যায় তা সরাতে ছবি টানুন, জুম করতে দুই আঙুলে চাপ দিন।",
   "Fewer": "কম",
   "Keep this one?": "এটাই রাখবেন?",
   "Last photo: yesterday.": "শেষ ছবি: গতকাল।",
@@ -5976,4 +5976,10 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "ক্যামেরা বদলান",
+  "Opacity": "অস্বচ্ছতা",
+  "Self-timer": "সেলফ-টাইমার",
+  "Overlay: {0}": "ওভারলে: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "এখানে কোনো ক্যামেরা নেই। গ্যালারি থেকে ছবি যোগ করুন।",
 }

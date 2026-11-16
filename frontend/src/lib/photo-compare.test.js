@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareRows, cellAspect, coverCrop, panBy, daysApart, byDate, COMPARE_MAX } from './photo-compare.js'
+import { compareRows, cellAspect, coverCrop, panBy, pinchZoom, ZOOM_MAX, daysApart, byDate, COMPARE_MAX } from './photo-compare.js'
 
 describe('compareRows', () => {
   it('rows of at most three, as even as they go, the fuller first', () => {
@@ -37,7 +37,22 @@ describe('coverCrop and panBy', () => {
     expect(p.x).toBeCloseTo(0.5 + 100 / (1600 * (400 / 900) - 300))
     expect(p.y).toBe(0.5)
     expect(panBy({ x: 0.9, y: 0.5 }, -1000, 0, 1600, 900, 300, 400).x).toBe(1)
-    expect(panBy(undefined, 0, 0, 300, 400, 300, 400)).toEqual({ x: 0.5, y: 0.5 })
+    expect(panBy(undefined, 0, 0, 300, 400, 300, 400)).toEqual({ x: 0.5, y: 0.5, z: 1 })
+  })
+  it('zooming shrinks the part shown and lets a square photo move in its cell', () => {
+    expect(coverCrop(1600, 900, 0.75, { x: 0.5, z: 2 })).toMatchObject({ sw: 337.5, sh: 450, sx: (1600 - 337.5) / 2 })
+    expect(coverCrop(900, 1600, 9 / 16, { x: 1, y: 1, z: 4 })).toMatchObject({ sw: 225, sh: 400, sx: 675, sy: 1200 })
+    // A 300x400 photo in a 300x400 cell has nothing to drag; at 2x it has 300 px across and 400 down.
+    expect(panBy({ x: 0.5, y: 0.5 }, 0, 0, 300, 400, 300, 400)).toEqual({ x: 0.5, y: 0.5, z: 1 })
+    const p = panBy({ x: 0.5, y: 0.5, z: 2 }, -150, 100, 300, 400, 300, 400)
+    expect(p).toEqual({ x: 1, y: 0.25, z: 2 })
+  })
+  it('a pinch scales the zoom by how far the fingers moved, held between 1 and the maximum', () => {
+    expect(pinchZoom(1, 100, 200)).toBe(2)
+    expect(pinchZoom(2, 200, 100)).toBe(1)
+    expect(pinchZoom(2, 100, 10)).toBe(1)
+    expect(pinchZoom(2, 10, 1000)).toBe(ZOOM_MAX)
+    expect(pinchZoom(undefined, 0, 50)).toBe(1)
   })
 })
 

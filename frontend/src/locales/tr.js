@@ -4840,7 +4840,7 @@ export default {
   "Change the day": "Günü değiştir",
   "Date from the file name.": "Tarih dosya adından.",
   "Date from the photo itself.": "Tarih fotoğrafın kendisinden.",
-  "Drag a photo to move what shows.": "Görünen kısmı kaydırmak için bir fotoğrafı sürükle.",
+  "Drag a photo to move what shows, pinch to zoom.": "Görünen kısmı kaydırmak için bir fotoğrafı sürükle, yakınlaştırmak için iki parmakla büyüt.",
   "Fewer": "Daha az",
   "Keep this one?": "Bu kalsın mı?",
   "Last photo: yesterday.": "Son fotoğraf: dün.",
@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Kamerayı değiştir",
+  "Opacity": "Opaklık",
+  "Self-timer": "Zamanlayıcı",
+  "Overlay: {0}": "Bindirme: {0}",
+  "No camera available here. Add the photo from your gallery instead.": "Burada kamera yok. Fotoğrafı galerinden ekle.",
 }

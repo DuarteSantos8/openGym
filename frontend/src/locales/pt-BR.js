@@ -850,7 +850,7 @@ export const PT_BR_OVERRIDES = {
   // --- progress photos: own day, gallery, camera, comparison (#940, #949, #950, #951) ---
   "A guess from the file date. Worth a look.": "Um palpite pela data do arquivo. Vale conferir.",
   "Date from the file name.": "Data do nome do arquivo.",
-  "Drag a photo to move what shows.": "Arraste uma foto para mudar o que aparece.",
+  "Drag a photo to move what shows, pinch to zoom.": "Arraste uma foto para mudar o que aparece e use o gesto de pinça para dar zoom.",
   "Line up with {0}": "Alinhe com {0}",
   "No live camera here (a browser only offers one on HTTPS). The camera app still works.": "Sem câmera ao vivo aqui (um navegador só oferece em HTTPS). O app da câmera continua funcionando.",
   "No progress photos yet. Take one now, or add one for any day before.": "Ainda não há fotos de progresso. Tire uma agora ou adicione uma de um dia anterior.",
@@ -4326,6 +4326,9 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // Progress-photo camera (#951, restored in #1315)
+  "Flip camera": "Trocar de câmera",
+  "No camera available here. Add the photo from your gallery instead.": "Não há câmera disponível aqui. Adicione a foto da sua galeria.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
