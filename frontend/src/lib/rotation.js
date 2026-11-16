@@ -148,6 +148,7 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
   if (!ids.length) return
   if (!isSimpleSequence(ids)) { saveLoop(s, ids, label, today, now); return }
   const prev = queueOf(s)
+  const owned = prev ? ownedIds(s, prev) : []
   s.rotation = { id: s.rotation?.id ?? uid(), sequence: ids, label }
   s.queue = {
     ids,
@@ -160,6 +161,8 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
   // A session dropped from the rotation leaves its future pin behind otherwise — dayPlan then
   // still resolves that date to a session the queue no longer has (pinState/queue.js).
   sweepPins(s, (prev?.ids || []).filter(id => !ids.includes(id)), today)
+  // Refills keep plans, so a routine of another segment of the old loop can still have one.
+  sweepPins(s, owned.filter(id => !ids.includes(id)), today)
   // An edit (e.g. removing the last session still to do) can leave the pass complete on the
   // spot — without this it would sit idle until a workout happened to reach refillAfter. Only an
   // edit that removed or reordered sessions of a pass that already existed: a pass this save just
@@ -184,6 +187,7 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
 function saveLoop(s, seq, label, today, now) {
   const prev = queueOf(s)
   const ownPrev = !!prev && !!s.rotation && prev.rotationId === s.rotation.id
+  const owned = prev ? ownedIds(s, prev) : []
   const at = Number.isInteger(s.rotation?.at) && s.rotation.at < seq.length && seq[s.rotation.at] !== REST ? s.rotation.at : 0
   s.rotation = { id: s.rotation?.id ?? uid(), sequence: seq, label, at }
   const seg = segmentAt(seq, at)
@@ -197,6 +201,8 @@ function saveLoop(s, seq, label, today, now) {
     ...(prev?.strict === true ? { strict: true } : {}),
   }
   sweepPins(s, (prev?.ids || []).filter(id => !seg.ids.includes(id)), today)
+  // Refills keep plans, so a routine of another segment of the old loop can still have one.
+  sweepPins(s, owned.filter(id => !seq.includes(id)), today)
   if (prev && ownPrev && queueView(s, today)?.complete) {
     const q = queueOf(s)
     const last = lastCreditDay(s)
