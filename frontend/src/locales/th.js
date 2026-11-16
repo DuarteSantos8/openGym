@@ -5908,4 +5908,6 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "ติดอยู่ {0} ครั้งแล้ว คงน้ำหนัก {1} {2} และทำ {3} ครั้ง",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "ติดอยู่ {0} ครั้งแล้ว ลดน้ำหนักตามสูตร Epley เป็น {1} {2} ทำ {3} ครั้ง",
 }

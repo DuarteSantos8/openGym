@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} सत्रों से अटके हैं। {1} {2} पर रहें और {3} रेप्स करें।",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} सत्रों से अटके हैं। एप्ली के अनुसार {1} {2} तक डीलोड, {3} रेप्स।",
 }

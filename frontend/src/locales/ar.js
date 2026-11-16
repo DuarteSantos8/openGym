@@ -5952,4 +5952,6 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "متوقف منذ {0} جلسات. ابقَ على {1} {2} وأدِّ {3} تكرارات.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "متوقف منذ {0} جلسات. تخفيف حسب إيبلي إلى {1} {2} لـ {3} تكرارات.",
 }

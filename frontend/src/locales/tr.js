@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} antrenmandır yerinde sayıyorsun. {1} {2} ile kal ve {3} tekrar yap.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} antrenmandır yerinde sayıyorsun. Epley’e göre {1} {2}’ye deload, {3} tekrar.",
 }

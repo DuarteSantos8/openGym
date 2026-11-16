@@ -5837,4 +5837,6 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Gået i stå i {0} pas. Bliv på {1} {2} og tag {3} gentagelser.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Gået i stå i {0} pas. Epley-deload til {1} {2} med {3} gentagelser.",
 }

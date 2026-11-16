@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} جلسه درجا زده‌اید. روی {1} {2} بمانید و {3} تکرار بزنید.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} جلسه درجا زده‌اید. کاهش بار به روش اپلی تا {1} {2} برای {3} تکرار.",
 }

@@ -5917,4 +5917,6 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} Einheiten festgefahren. Bleib bei {1} {2} und mach {3} Wiederholungen.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} Einheiten festgefahren. Deload nach Epley auf {1} {2} für {3} Wiederholungen.",
 }

@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0}회 동안 정체 중이에요. {1} {2}을(를) 유지하고 {3}회로 하세요.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0}회 동안 정체 중이에요. Epley 기준으로 {1} {2}까지 디로드, {3}회.",
 }
