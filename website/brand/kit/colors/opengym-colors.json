@@ -1,0 +1,40 @@
+{
+  "name": "openGym",
+  "colors": {
+    "openGym green": {
+      "hex": "#A3E635",
+      "rgb": "163 230 53",
+      "use": "Buttons, highlights, the word Gym."
+    },
+    "Ink": {
+      "hex": "#0C0E12",
+      "rgb": "12 14 18",
+      "use": "Backgrounds, text on green."
+    },
+    "Light": {
+      "hex": "#EEF1F6",
+      "rgb": "238 241 246",
+      "use": "Text on dark."
+    },
+    "Dark text": {
+      "hex": "#12151B",
+      "rgb": "18 21 27",
+      "use": "Text on light."
+    },
+    "Green on light": {
+      "hex": "#4D7C0F",
+      "rgb": "77 124 15",
+      "use": "Green text on white (5:1)."
+    },
+    "Surface": {
+      "hex": "#1B1F26",
+      "rgb": "27 31 38",
+      "use": "Cards on ink."
+    },
+    "Muted": {
+      "hex": "#8B919C",
+      "rgb": "139 145 156",
+      "use": "Captions, secondary text."
+    }
+  }
+}

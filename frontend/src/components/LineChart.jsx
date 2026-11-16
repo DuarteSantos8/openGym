@@ -15,10 +15,14 @@ const W = 340   // viewBox width; the svg stretches to its container, height com
 //   yHint names the direction of the y axis in words ({ hi: 'Harder' }), drawn over the axis, for a
 //   scale whose numbers alone read the wrong way round (RIR, where 0 is the hardest set).
 //   tickPrefix goes in front of every y tick ("RIR 0"), so the axis says which scale it counts.
-//   series draws several lines instead of one: [{ points, color }] (issue #145, one per set
+//   series draws several lines instead of one: [{ points, color, label? }] (issue #145, one per set
 //   number). `points` then only anchors the hover — one per date, its `note` the tooltip — and
-//   the y axis spans every series.
-export default function LineChart({ points, h = 150, unit = '', color = 'var(--acc)', axes = true, goal = null, invert = false, series = null, yHint = null, tickPrefix = '' }) {
+//   the y axis spans every series. A `label` names that line to a screen reader.
+//   ariaLabel names the whole chart out loud (role="img"), the way StackBar names its bar. Without
+//   it the chart is shapes and axis ticks: the numbers only come out of a hover, which needs a
+//   pointer. Same prop name and same reading as StackBar, so the two chart kinds say themselves
+//   the same way.
+export default function LineChart({ points, h = 150, unit = '', color = 'var(--acc)', axes = true, goal = null, invert = false, series = null, yHint = null, tickPrefix = '', ariaLabel = null }) {
   const svgRef = useRef(null)
   const wrapRef = useRef(null)
   const tipRef = useRef(null)
@@ -124,6 +128,54 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   const hoverPts = hoverSource.map((p, i) => ({ x: X(p.t), y: Y(p.y), t: p.t, iso: hoverDates[i], v: p.y, note: p.note }))
   const marked = points.some(p => p.m != null)
 
+  // Spoken for a screen reader: the two ends of the line, not every point. A year of weigh-ins
+  // read point by point is a minute of numbers that says what the curve already said in a second,
+  // and the points in between are still reachable by hover. Endpoints and the goal line, because
+  // those are what the eye takes in; the goal is drawn, so it is said too.
+  const withUnit = v => fmtNum(v) + (unit ? ' ' + unit : '')
+  const day = (p, withYear = showYear) => fmtDate(p.d || isoOf(new Date(p.t)), true, withYear)
+  const yearOf = p => new Date((p.d || isoOf(new Date(p.t))) + 'T12:00:00').getFullYear()
+  const ends = (a, b, say) => (a === b ? say(a) : t('{0} to {1}', say(a), say(b)))
+  // One line: date and value together, since nothing else anchors the value to a day.
+  const lineRun = ps => {
+    const a = ps[0], b = ps[ps.length - 1]
+    return ends(a, b, p => day(p) + ' ' + withUnit(p.y))
+  }
+  // Several lines share one x axis, so the days are said once for all of them and each line brings
+  // only its own two values. Repeating them per line, the five sets of a 5×5 read as ten dates and
+  // no shape, and two sessions on one day say that day twice per line. The span is the axis's own,
+  // so it is the widest of the lines, not whichever happens to come first, and the days are compared
+  // as written rather than as timestamps: two sessions on one day are two points but one day, and
+  // "Saturday to Saturday" is noise. Same rule the axis ticks follow for the same reason.
+  //
+  // Only the lines that carry points are described. A blood-pressure entry may hold the top number
+  // without the bottom one (the pair is checked in the form, not in the stored entry), and
+  // measurementSeries drops the missing key, so a series can arrive empty: nothing drawn, nothing
+  // to say, and no value to reach for.
+  const drawn = multi ? series.filter(s => s.points && s.points.length) : []
+  const valueRun = (ps, name) => {
+    const a = ps[0], b = ps[ps.length - 1]
+    return (name ? name + ' ' : '') + ends(a, b, p => withUnit(p.y))
+  }
+  const spanOf = ps => {
+    const a = ps.reduce((m, p) => (p.t < m.t ? p : m), ps[0])
+    const b = ps.reduce((m, p) => (p.t > m.t ? p : m), ps[0])
+    // showYear comes from the points the hover walks, which need not cover every series: a lone
+    // diastolic reading sits in one series and not in those points, and would be said inside the
+    // other year's range. These two ends are the earliest and the latest point there is, so when
+    // they share a year nothing on the chart is outside it, and only the span needs the year.
+    const withYear = showYear || yearOf(a) !== yearOf(b)
+    const dFrom = day(a, withYear), dTo = day(b, withYear)
+    return dFrom === dTo ? dFrom : t('{0} to {1}', dFrom, dTo)
+  }
+  const spoken = multi ? drawn.map(s => valueRun(s.points, s.label)).join(', ') : lineRun(pts)
+  const span = multi && drawn.length ? ' (' + spanOf(drawn.flatMap(s => s.points)) + ')' : ''
+  const said = [spoken, goal != null && isFinite(goal) ? t('Goal') + ' ' + withUnit(goal) : '']
+    .filter(Boolean).join(', ')
+  // A name with nothing to report stays the bare label: "Blood pressure:" and then silence reads
+  // as a broken chart.
+  const aria = ariaLabel ? ariaLabel + span + (said ? ': ' + said : '') : null
+
   const onMove = e => {
     const c = e.touches ? e.touches[0] : e
     if (!c || c.clientX === undefined) return
@@ -140,7 +192,10 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
       onMouseMove={onMove} onMouseDown={onMove}
       onMouseLeave={() => setHover(null)}
       onTouchStart={onMove} onTouchMove={onMove}>
-      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ aspectRatio: `${W}/${H}` }}>
+      {/* Named, so the subtree is presentational and the axis ticks are not read out a second
+          time as loose numbers next to the name. Unnamed charts stay a plain svg. */}
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role={aria ? 'img' : undefined}
+        aria-label={aria || undefined} style={{ aspectRatio: `${W}/${H}` }}>
         <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={color} stopOpacity=".18" />
           <stop offset="1" stopColor={color} stopOpacity="0" />

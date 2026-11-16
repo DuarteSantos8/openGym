@@ -12,7 +12,9 @@
 
 ## Try & get it
 - [Live demo](https://opengym.ch/demo/): the real app with example data, in the browser
-- [Android APK](https://github.com/DuarteSantos8/openGym/releases/latest): signed, sideloadable, in three sizes (Standard with 180 px animations, Plus with 240 px, HD with 360 px); each has its SHA-256 beside it on the GitHub release
+- [Android APK](https://github.com/DuarteSantos8/openGym/releases/latest): signed, sideloadable, in three sizes (Standard with 180 px animations, Plus with 240 px, HD with 360 px), plus openGym Offline (no internet permission) and the Wear OS watch APK, with SHA-256 checksums on the GitHub release
+- [iPhone and Apple Watch](https://apps.apple.com/app/id6822275400): the App Store app
+- [Garmin watch app](https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08): in the Connect IQ Store, needs openGym 1.4.5 or later on the phone
 - [About](https://opengym.ch/about.html): the story and every release
 
 ## How it is built

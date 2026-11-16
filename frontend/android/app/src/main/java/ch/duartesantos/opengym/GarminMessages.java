@@ -108,6 +108,20 @@ public final class GarminMessages {
         return String.valueOf(v);
     }
 
+    /**
+     * The snapshot as it leaves for a watch, its `now` (the phone's clock: the watch works out how
+     * far off its own is from it, docs/WATCH_SYNC.md "Clocks") the moment it goes. The bridge keeps
+     * the last snapshot and sends it again to a watch that says hello or comes back in reach, maybe
+     * minutes after the page made it: with the page's time the watch would take those minutes for
+     * its clock being off. A copy; a snapshot without `now` (an older page) goes as it is.
+     */
+    public static Map<String, Object> stamped(Map<String, Object> snap, long now) {
+        if (snap == null || !snap.containsKey("now")) return snap;
+        Map<String, Object> out = new LinkedHashMap<>(snap);
+        out.put("now", now);
+        return out;
+    }
+
     /** "Send me the latest" (App.mc Link.hello): for the bridge only, never queued for the page. */
     public static boolean isHello(String eventJson) {
         try { return "hello".equals(new JSONObject(eventJson).optString("type")); } catch (JSONException | NullPointerException e) { return false; }
