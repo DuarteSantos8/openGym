@@ -80,6 +80,13 @@ const step = () => document.querySelector('.tour')?.getAttribute('data-step')
 const btn = label => [...document.querySelectorAll('.tour-card button')].find(b => b.textContent === label)
 const anchor = name => document.querySelector(`[data-tour="${name}"]`)
 const click = async el => { await act(async () => { el.click() }); await settle() }
+// Next, then wait for the step to move on: a busy machine can take longer than one settle() to
+// reach the next anchor, and a second Next pressed before then is lost.
+const next = async () => {
+  const was = step()
+  await click(btn('Next'))
+  for (let i = 0; i < 40 && step() === was; i++) await settle(50)
+}
 const key = async (k, opts = {}) => { await act(async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, ...opts })) }); await settle(30) }
 const run = async (at, flow, path) => {
   await act(async () => { openTour(flow ? { kind: 'run', at, flow } : { kind: 'run', at }) })
@@ -510,7 +517,7 @@ describe('Create your own exercise', () => {
   })
   it('the form’s own Create makes it, and the tour follows', async () => {
     await toForm()
-    for (let k = 0; k < 3; k++) await click(btn('Next'))
+    for (let k = 0; k < 3; k++) await next()
     expect(step()).toBe('c-save')
     await click(anchor('cx-save'))
     await settle(300)
