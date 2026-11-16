@@ -82,6 +82,8 @@
 /* Reduce Motion: no sliding, no drifting, nothing counting. (index.css also stops every animation.) */
 .wrapped.still, .wrapped.still *{animation:none!important;transition:none!important}
 @media (prefers-reduced-motion: reduce){.wrapped, .wrapped *{animation:none!important}}
+/* Under a sheet: everything holds still where it is (paused, not removed, so nothing replays after). */
+.wrapped.covered, .wrapped.covered *{animation-play-state:paused!important}
 
 
 /* On light paper the bright accent is too faint for text: the darker step of it (index.css --acc-2). */

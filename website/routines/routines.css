@@ -9,7 +9,7 @@
 
 .rt-page {
   --tile: #e3e5e9;
-  --rt-max: 1320px;
+  --rt-max: var(--max); /* the site column, so the header sits where it sits on every page */
   --chip: var(--surface-2);
   --chip-hover: #222327;
   --nav-h: calc(54px + env(safe-area-inset-top));
@@ -476,3 +476,8 @@ html:not(.js) .rt-steps { display: none; }
 .rt-done { background: var(--surface); border-radius: var(--r-l); padding: 28px 22px; margin-top: 24px; }
 .rt-done h2 { margin-bottom: 10px; }
 .rt-done:focus { outline: none; }
+
+/* The routines' own fine print, above the site footer every page shares. */
+.rt-notice { padding-top: 48px; padding-bottom: 8px; }
+.rt-notice p { color: var(--fg-3); font-size: 13.5px; line-height: 1.6; max-width: 80ch; margin: 0; }
+.rt-notice a { color: var(--fg-2); }
