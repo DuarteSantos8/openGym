@@ -220,6 +220,34 @@ test('CIMD: the document must name itself, list usable redirects and be a public
   assert.equal(oauth.describeRequest(new Map([[a.request.id, a.request]]), a.request.id).loopback, true);
 });
 
+test('CIMD: a client that prefers a key but also supports none signs in as a public client (#1251)', async () => {
+  oauth._clearCimdCache();
+  // ChatGPT's document, as served at this address in 2026-11.
+  const CHATGPT = 'https://chatgpt.com/oauth/client.json';
+  const REDIRECT = 'https://chatgpt.com/connector_platform_oauth_redirect';
+  const docs = {
+    [CHATGPT]: {
+      client_id: CHATGPT, redirect_uris: [REDIRECT],
+      token_endpoint_auth_method: 'private_key_jwt', token_endpoint_auth_methods_supported: ['none', 'private_key_jwt'],
+      grant_types: ['authorization_code', 'refresh_token', 'urn:ietf:params:oauth:grant-type:jwt-bearer'],
+      token_endpoint_auth_signing_alg: 'RS256', jwks_uri: 'https://chatgpt.com/oauth/jwks.json',
+    },
+    // Key only: still refused, there is nothing here that could check its assertion.
+    'https://keyonly.example/meta': { client_id: 'https://keyonly.example/meta', redirect_uris: [REDIRECT], token_endpoint_auth_method: 'private_key_jwt', token_endpoint_auth_methods_supported: ['private_key_jwt'] },
+    'https://notalist.example/meta': { client_id: 'https://notalist.example/meta', redirect_uris: [REDIRECT], token_endpoint_auth_method: 'private_key_jwt', token_endpoint_auth_methods_supported: 'none' },
+  };
+  const fetchDoc = async u => { if (!docs[u]) throw new Error('HTTP 404'); return docs[u]; };
+  const r = await oauth.resolveCimd(CHATGPT, { fetchDoc });
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.client.grants, ['authorization_code', 'refresh_token'], 'the jwt-bearer grant is not taken over');
+  assert.equal((await oauth.resolveCimd('https://keyonly.example/meta', { fetchDoc })).ok, false);
+  assert.equal((await oauth.resolveCimd('https://notalist.example/meta', { fetchDoc })).ok, false);
+  const { c } = pkce();
+  const a = oauth.startAuthorize({}, q({ client_id: CHATGPT, redirect_uri: REDIRECT, response_type: 'code', code_challenge: c, code_challenge_method: 'S256' }), new Map(), Date.now(), { client: r.client });
+  assert.equal(a.ok, true);
+  assert.equal(a.request.assistant, 'chatgpt');
+});
+
 test('which assistant: Claude, ChatGPT, Gemini by where they send you back', () => {
   assert.equal(oauth.assistantOf('https://claude.com/api/mcp/auth_callback'), 'claude');
   assert.equal(oauth.assistantOf('https://chatgpt.com/connector_platform_oauth_redirect'), 'chatgpt');
