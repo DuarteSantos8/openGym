@@ -5730,6 +5730,8 @@ export default {
   "They’re on Today. Tap it.": "'오늘'에 있어요. 눌러 보세요.",
   "They live under Progress. Tap it.": "'진행' 아래에 있어요. 눌러 보세요.",
   "Back to Progress": "진행으로 돌아가기",
+  "Video, steps and form cues": "영상, 단계, 자세 팁",
+  "Exercise options": "운동 옵션",
   "Based on openGym": "openGym 기반",
   "Bold": "굵게",
   "Refined": "세련되게",

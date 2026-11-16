@@ -5723,6 +5723,8 @@ export default {
   "They’re on Today. Tap it.": "它們在「今天」。點它。",
   "They live under Progress. Tap it.": "它們在「進展」裡。點它。",
   "Back to Progress": "回到進展",
+  "Video, steps and form cues": "影片、步驟與動作要點",
+  "Exercise options": "動作選項",
   "Based on openGym": "以 openGym 為基礎",
   "Bold": "醒目",
   "Refined": "精緻",

@@ -5750,6 +5750,8 @@ export default {
   "They’re on Today. Tap it.": "Die sind auf Heute. Tipp drauf.",
   "They live under Progress. Tap it.": "Die wohnen unter Fortschritt. Tipp drauf.",
   "Back to Progress": "Zurück zu Fortschritt",
+  "Video, steps and form cues": "Video, Schritte und Technik-Tipps",
+  "Exercise options": "Übungsoptionen",
   "Based on openGym": "Basiert auf openGym",
   "Bold": "Markant",
   "Refined": "Dezent",

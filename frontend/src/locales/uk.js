@@ -5727,6 +5727,8 @@ export default {
   "They’re on Today. Tap it.": "Вони на вкладці «Сьогодні». Торкніться.",
   "They live under Progress. Tap it.": "Вони в «Прогресі». Торкніться.",
   "Back to Progress": "Назад до прогресу",
+  "Video, steps and form cues": "Відео, кроки та підказки з техніки",
+  "Exercise options": "Параметри вправи",
   "Based on openGym": "На основі openGym",
   "Bold": "Виразний",
   "Refined": "Стриманий",

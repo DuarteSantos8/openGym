@@ -5730,6 +5730,8 @@ export default {
   "They’re on Today. Tap it.": "Bugün'deler. Dokun.",
   "They live under Progress. Tap it.": "İlerleme'nin altındalar. Dokun.",
   "Back to Progress": "İlerleme'ye dön",
+  "Video, steps and form cues": "Video, adımlar ve form ipuçları",
+  "Exercise options": "Egzersiz seçenekleri",
   "Based on openGym": "openGym tabanlı",
   "Bold": "Belirgin",
   "Refined": "Zarif",

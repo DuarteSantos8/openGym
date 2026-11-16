@@ -5741,6 +5741,8 @@ export default {
   "They’re on Today. Tap it.": "อยู่ที่ “วันนี้” แตะเลย",
   "They live under Progress. Tap it.": "อยู่ใน “ความก้าวหน้า” แตะเลย",
   "Back to Progress": "กลับไปความก้าวหน้า",
+  "Video, steps and form cues": "วิดีโอ ขั้นตอน และคำแนะนำท่าทาง",
+  "Exercise options": "ตัวเลือกท่า",
   "Based on openGym": "พัฒนาต่อจาก openGym",
   "Bold": "เข้ม",
   "Refined": "ประณีต",

@@ -5695,6 +5695,8 @@ export default {
   "They’re on Today. Tap it.": "Semuanya ada di Hari ini. Ketuk Hari ini.",
   "They live under Progress. Tap it.": "Semuanya ada di tab Progres. Ketuk Progres.",
   "Back to Progress": "Kembali ke Progres",
+  "Video, steps and form cues": "Video, langkah, dan petunjuk teknik",
+  "Exercise options": "Opsi latihan",
   "Based on openGym": "Berdasarkan openGym",
   "Bold": "Tegas",
   "Refined": "Halus",

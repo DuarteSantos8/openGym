@@ -4690,3 +4690,50 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-look="bold"] .card .big,
 :root[data-look="bold"] .stat-v{font-family:var(--font-display);font-variant-numeric:tabular-nums}
 :root[data-look="bold"] .sheet h3{font-family:var(--font-display);letter-spacing:0}
+
+/* ---------- Ironvane redesign, step 3: workout logging ---------- */
+/* How to do it: one card above the sets, opening the exercise sheet (video, steps, cues). */
+.howto{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;
+  margin-top:10px;padding:10px 12px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep);min-height:56px}
+.howto:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.howto:active{transform:scale(var(--press-scale-sm))}
+.howto-play{flex:none;width:52px;height:36px;border-radius:var(--r-sm, 8px);background:#000;color:#fff;
+  display:flex;align-items:center;justify-content:center}
+.howto-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.howto-t{font-weight:600;font-size:var(--fs-callout)}
+.howto-s{font-size:var(--fs-footnote);color:var(--label-2)}
+.howto-c{flex:none;color:var(--label-3)}
+/* Last time's set, lined up with the row it is for. The card measures itself: below 300 px of
+   row width the steppers need the room, so the column steps aside (the "Last time" line above
+   the card still says it). */
+.setcard.roomy{container-type:inline-size}
+.setrow .last,.sethead .last-sp{flex:none;width:44px;text-align:center;font-size:var(--fs-footnote);
+  color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sethead .last-sp{font-size:var(--fs-caption)}
+@container (max-width: 299px){.setrow .last,.sethead .last-sp{display:none}}
+/* Done: a square on the thumb side, filled when ticked; the tap area stays 44 px (::before). */
+.setrow .chk{width:36px;height:36px;border-radius:var(--r-sm, 10px)}
+.sethead .ck-sp{width:36px}
+/* Add set: the whole width under the sets, dashed, so it reads as "one more row". */
+.wk-add.wk-add-wide{display:flex;width:100%;justify-content:center;margin-inline-start:0;margin-top:4px;
+  border-radius:var(--r, 12px);outline:1.5px dashed var(--sep);outline-offset:-1.5px}
+/* Note · Plates · Swap · More: one row of equal buttons under the card. */
+.wk-acts{display:grid;grid-template-columns:repeat(var(--n, 4), minmax(0, 1fr));gap:8px;margin-top:10px}
+.wk-acts button{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:6px 4px;
+  display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r, 12px);
+  background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep);
+  font-size:var(--fs-footnote);font-weight:600;color:var(--label)}
+.wk-acts button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-acts button:disabled{opacity:.45;cursor:default}
+.wk-acts button:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.wk-acts button:not(:disabled):active{transform:scale(var(--press-scale-sm))}
+/* Up next: the next page's exercise and its sets, one tap to it. */
+.upnext{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;
+  margin-bottom:10px;padding:12px 14px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.upnext:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.upnext-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.upnext-k{font-size:var(--fs-caption);color:var(--label-2)}
+.upnext-t{font-weight:600;font-size:var(--fs-callout);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upnext-c{flex:none;color:var(--label-3)}

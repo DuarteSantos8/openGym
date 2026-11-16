@@ -5730,6 +5730,8 @@ export default {
   "They’re on Today. Tap it.": "ये \"आज\" पर हैं। टैप कीजिए।",
   "They live under Progress. Tap it.": "ये \"प्रगति\" में हैं। टैप कीजिए।",
   "Back to Progress": "वापस प्रगति पर",
+  "Video, steps and form cues": "वीडियो, स्टेप और फ़ॉर्म टिप्स",
+  "Exercise options": "व्यायाम के विकल्प",
   "Based on openGym": "openGym पर आधारित",
   "Bold": "बोल्ड",
   "Refined": "परिष्कृत",

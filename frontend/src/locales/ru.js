@@ -5734,6 +5734,8 @@ export default {
   "They’re on Today. Tap it.": "Они на вкладке «Сегодня». Нажмите.",
   "They live under Progress. Tap it.": "Они в «Прогрессе». Нажмите.",
   "Back to Progress": "Назад к прогрессу",
+  "Video, steps and form cues": "Видео, шаги и подсказки по технике",
+  "Exercise options": "Параметры упражнения",
   "Based on openGym": "На основе openGym",
   "Bold": "Яркий",
   "Refined": "Сдержанный",

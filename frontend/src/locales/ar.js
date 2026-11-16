@@ -5785,6 +5785,8 @@ export default {
   "They’re on Today. Tap it.": "إنها في صفحة اليوم. المسها.",
   "They live under Progress. Tap it.": "إنها تحت التقدم. المسه.",
   "Back to Progress": "رجوع إلى التقدم",
+  "Video, steps and form cues": "فيديو وخطوات ونصائح الأداء",
+  "Exercise options": "خيارات التمرين",
   "Based on openGym": "مبني على openGym",
   "Bold": "جريء",
   "Refined": "أنيق",
