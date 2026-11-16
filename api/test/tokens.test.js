@@ -120,6 +120,20 @@ test('scopedState: own sounds never, body facts only with body weight or measure
   assert.throws(() => mergeScoped(S, { sounds: [] }, { workouts: 'apply' }), e => e.code === 'scope');
 });
 
+// A gym card's value is the code that opens the turnstile. It has no category, and it must not
+// ride along as a setting either: no program needs it to read the training.
+test('scopedState: gym check-in cards never, whatever the token holds', () => {
+  const S = { ...doc(), gymCards: [{ id: 'g1', label: 'My gym', value: 'MEMBER-0001234', fmt: 'code128' }], lastGymCardId: 'g1', checkIn: true };
+  const all = { workouts: 'apply', plans: 'apply', bodyweight: 'apply', measurements: 'apply', notes: 'view' };
+  for (const scopes of [{ notes: 'view' }, { workouts: 'view' }, all]) {
+    const got = scopedState(S, scopes);
+    for (const k of ['gymCards', 'lastGymCardId']) assert.equal(k in got, false, k);
+    assert.equal(got.checkIn, true, 'the switch is a setting like any other');
+    assert.equal(JSON.stringify(got).includes('MEMBER-0001234'), false);
+  }
+  assert.throws(() => mergeScoped(S, { gymCards: [] }, all), e => e.code === 'scope');
+});
+
 test('mergeScoped: writes what it may, ignores what it read back unchanged, refuses the rest', () => {
   const S = doc();
   const scopes = { workouts: 'apply', plans: 'view' };
@@ -152,4 +166,32 @@ test('mergeScoped: writes what it may, ignores what it read back unchanged, refu
   }
   assert.equal({}.polluted, undefined);
   assert.equal('constructor' in scopedState({ constructor: 1, workouts: [] }, scopes), true, 'an own key named constructor is a setting');
+});
+
+test('at the limit an evictable token makes room (the least recently used), others never', async () => {
+  const { createToken, TOKENS_MAX } = await import('../tokens.js');
+  const db = { apiTokens: [] };
+  const user = { id: 'u1', sv: 0 };
+  for (let i = 0; i < TOKENS_MAX; i++) {
+    const { row } = createToken(db, user, { name: 'n' + i, scopes: { workouts: 'view' } }, 1000 + i);
+    if (i < 3) { row.connector = { assistant: 'claude' }; row.used = 5000 - i; }
+  }
+  assert.throws(() => createToken(db, user, { name: 'x', scopes: { workouts: 'view' } }, 9000), /at most/);
+  createToken(db, user, { name: 'x', scopes: { workouts: 'view' }, evict: r => !!r.connector }, 9000);
+  assert.equal(db.apiTokens.length, TOKENS_MAX);
+  assert.ok(!db.apiTokens.some(r => r.name === 'n2'), 'the connector used longest ago went');
+});
+
+test('a connector access token past aexp is not found; rotateToken changes the value on the same row', async () => {
+  const { createToken, findToken, rotateToken } = await import('../tokens.js');
+  const db = { apiTokens: [] };
+  const user = { id: 'u1', sv: 0 };
+  const { token, row } = createToken(db, user, { name: 'c', scopes: { workouts: 'view' } }, 1000);
+  row.aexp = 5000;
+  assert.equal(findToken(db, token, () => user, 4000), row);
+  assert.equal(findToken(db, token, () => user, 6000), null);
+  row.aexp = null;
+  const next = rotateToken(row);
+  assert.equal(findToken(db, token, () => user, 6000), null);
+  assert.equal(findToken(db, next, () => user, 6000), row);
 });

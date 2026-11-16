@@ -518,9 +518,17 @@ describe('AdminCoach — daily caps (what bounds the spend on the operator\'s ac
   it('the community-medians switch is a separate write and does not carry the caps with it', async () => {
     await mount()
     const switches = [...host.querySelectorAll('[role="switch"]')]
-    expect(switches).toHaveLength(2)
+    // the card's on/off, community medians, web research (coach-146)
+    expect(switches).toHaveLength(3)
     await tap(switches[1])
     expect(sent('/api/admin/coach/config')[0].body).toEqual({ community: true })
+  })
+
+  it('web research is its own switch and write (coach-146)', async () => {
+    await mount()
+    const switches = [...host.querySelectorAll('[role="switch"]')]
+    await tap(switches[2])
+    expect(sent('/api/admin/coach/config')[0].body).toEqual({ web: true })
   })
 })
 

@@ -22,6 +22,7 @@
 // (lib/widget-logger.js).
 //
 // Phone app only. Nothing here runs on the web.
+import { stripBidi } from './bidi.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
 import { t, tn, dateLocale } from './i18n.js'
@@ -75,7 +76,7 @@ function dayOf (S, iso, today) {
     day.exercises = routines.flatMap(r => r.ex || []).slice(0, WIDGET_EXERCISES_MAX).map(cfg => {
       let line = ''
       // In the exercise's own weight unit when it has one (#657).
-      try { line = exLine(viewTarget(S, cfg.id, cfg), exUnitOf(S, cfg.id), speed) } catch { line = '' }
+      try { line = stripBidi(exLine(viewTarget(S, cfg.id, cfg), exUnitOf(S, cfg.id), speed)) } catch { line = '' }
       return { name: nameOfCfg(cfg), line }
     })
     // Logged already (as the Home screen's today row says it): every routine of the day covered
@@ -228,8 +229,8 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     weekFrom,
     weekUntil: shift(weekFrom, 7),
     unit: st.unit === 'lb' ? 'lb' : 'kg',
-    accent: pair?.accent || '#30d158',
-    ink: pair?.ink || '#000000',
+    accent: pair?.accent || '#a3e635',
+    ink: pair?.ink || '#0c0e12',
     days,
     week: { done: week.done || 0, planned: week.planned || 0 },
     // v1.4.5 (#753): what is left of the week's plan, { left, of }, or null with no plan (a

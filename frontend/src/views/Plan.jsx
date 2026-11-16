@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { DAYN, DAYS, weekOrder, weekStartOf, uid, exCount, routineCount, todayISO, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import {
   dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet,
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
@@ -166,6 +167,7 @@ export default function Plan() {
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
+        { icon: 'qr', label: t('Scan a QR code'), sub: t('A routine from a friend’s phone, the website or the poster by the squat rack.'), onClick: () => import('../components/ScanCode.jsx').then(m => m.scanQrCode()) },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
         { icon: 'history', label: t('Routine from a past workout'), disabled: !routineSources(S.workouts, 1).length, onClick: () => routineFromWorkoutSheet(id => nav('/plan/r/' + id)) },
         { icon: 'calendar', label: t('Programmes'), sub: t('Your routines as a block of weeks, with starter programmes to try.'), onClick: () => nav('/plan/programmes') },
@@ -200,6 +202,14 @@ export default function Plan() {
 }
 
 /* ================================ Schedule ================================ */
+
+// An empty routine, opened in its editor. From the Routines tab's header, and from the Schedule's
+// empty state: "Build my own plan" on Home lands there, and it said "Make one" without a way to.
+function newRoutine(update, nav) {
+  const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
+  update(s => { s.routines.push(r) })
+  nav('/plan/r/' + r.id)
+}
 
 function Schedule({ S, update, nav, mode }) {
   const [editLoop, setEditLoop] = useState(false)
@@ -325,6 +335,7 @@ function Schedule({ S, update, nav, mode }) {
 
     {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+      <Button variant="plain" icon="plus" onClick={() => newRoutine(update, nav)}>{t('New routine')}</Button>
       {/* Workouts but no routines, an imported history mostly (#1010): start from those. */}
       {routineSources(S.workouts, 1).length > 0 && <Button variant="plain" icon="history" onClick={() => routineFromWorkoutSheet(id => nav('/plan/r/' + id))}>{t('From a past workout')}</Button>}
     </EmptyState>}
@@ -365,8 +376,10 @@ function Schedule({ S, update, nav, mode }) {
           // nothing to copy. The row the reorder measures is the swipe's outer element.
           const reorderProps = { 'data-reorder-row': '', style: loopReorder.rowStyle(i) }
           const name = rest ? t('Rest day') : r?.name ?? id
+          // A loop may hold a routine or a rest day more than once: its place tells them apart (P4).
+          const sayName = seq.filter(x => x === id).length > 1 ? `${i + 1}. ${name}` : name
           const row = <div key={swipe ? undefined : key} {...(swipe ? {} : reorderProps)} className={'item rotation-row' + (item?.state === 'done' ? ' is-done' : '') + (rest ? ' is-rest' : '')}>
-            {editing && <button className="plan-minus" aria-label={t('Remove {0}', name)} title={t('Remove')}
+            {editing && <button className="plan-minus" aria-label={t('Remove {0}', said(sayName))} title={t('Remove')}
               onClick={() => takeOut(i)}><Icon name="minus" /></button>}
             <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
             <span className={'lrow-i' + (rest ? ' rest' : '')}><Icon name={rest ? 'moon' : glyphOf(r?.emoji)} /></span>
@@ -375,11 +388,11 @@ function Schedule({ S, update, nav, mode }) {
               <div className="ss">{item ? stateWord(item) : rest ? t('A day off before the next one') : r ? exCount(r.ex.length) : ''}</div>
             </div>
             {r && !rest && !editing && <MiniBodyMap routines={[r]} body={S.body} />}
-            {editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', name)} title={t('Drag to reorder')}
+            {editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', said(sayName))} title={t('Drag to reorder')}
               {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>
           return swipe
-            ? <SwipeRow key={key} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus"
+            ? <SwipeRow key={key} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteName={t('Remove {0}', said(sayName))} deleteIcon="minus"
               onDelete={() => takeOut(i)}>{row}</SwipeRow>
             : row
         })}
@@ -436,11 +449,7 @@ function Routines({ S, update, nav }) {
     s.routines.splice(to, 0, m)
   }))
 
-  const addRoutine = () => {
-    const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
-    update(s => { s.routines.push(r) })
-    nav('/plan/r/' + r.id)
-  }
+  const addRoutine = () => newRoutine(update, nav)
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
   // place of its confirm (v1.3.11): the swipe and the edit-mode minus both land here.
   const remove = r => deleteRoutineWithUndo(r.id)
@@ -498,7 +507,7 @@ function Routines({ S, update, nav }) {
           // toward the end duplicates. Edit's minus and the routine's own page stay the way in
           // for a keyboard and a screen reader.
           return swipe
-            ? <SwipeRow key={r.id} className="swrow-item" copyLabel={t('Duplicate')}
+            ? <SwipeRow key={r.id} className="swrow-item" copyLabel={t('Duplicate')} deleteName={t('Delete {0}', said(r.name))} copyName={nameIn(r.name, t('Duplicate'))}
               onDelete={() => remove(r)} onCopy={() => duplicate(r)}
               flash={flash?.id === r.id ? flash.n : 0}>{row}</SwipeRow>
             : row

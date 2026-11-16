@@ -1,6 +1,6 @@
 // Drawing helpers shared by the screens. Garmin screens are small and many are memory-in-pixel
 // (MIP: 64 colours, read in sunlight) or, on the Instinct, black and white: big numbers, white on
-// black, the lime accent only where it means something (the value you are changing, Done, a
+// black, the accent (the brand's green by default) only where it means something (the value you are changing, Done, a
 // streak kept). The monochrome watches build with the (:mono) functions (monkey.jungle).
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -54,7 +54,8 @@ module Ui {
         return ((c >> 16) & 0xFF) * 3 + ((c >> 8) & 0xFF) * 6 + (c & 0xFF) > 1100;
     }
 
-    //! The phone's accent (settings.accent), else openGym's green; and the ink on it.
+    //! The phone's accent (settings.accent), else the brand's green (#a3e635; 0xAAFF55 on the MIP
+    //! palette's grid, where the old 0x55FF55 was the iOS green's); and the ink on it, black on both.
     (:color)
     function accent() {
         var st = G.state == null ? null : G.state["set"];
@@ -64,7 +65,7 @@ module Ui {
             var c = hex(a);
             // the phone makes the user's own colour readable on black; a very dark one is not
             if (c == null || (((c >> 16) & 0xFF) < 0x50 && ((c >> 8) & 0xFF) < 0x50 && (c & 0xFF) < 0x50)) {
-                c = amoled() ? 0x30D158 : 0x55FF55;
+                c = amoled() ? 0xA3E635 : 0xAAFF55;
             }
             accV = onScreen(c);
             var ink = amoled() ? hex(st instanceof Lang.Dictionary ? st["onAccent"] : null) : null;
@@ -271,7 +272,7 @@ module Ui {
         var bpm = G.bpm;
         var st = Core.dictOf(G.state["set"]);
         var show = st == null ? null : Core.dictOf(st["show"]);
-        if (bpm != null && (show == null || show["hr"] != false)) {
+        if (bpm != null && (show == null || !Core.isOff(show["hr"]))) {
             total += 8 + 14 + dc.getTextWidthInPixels(bpm.toString(), f);
         } else {
             bpm = null;

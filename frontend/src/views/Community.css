@@ -90,7 +90,14 @@
 .com-own-row .tt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .com-own-empty{padding:8px 2px}
 .com-server{display:flex;align-items:center;gap:6px;margin:-4px 0 0;color:var(--label-2);font-weight:600}
-.com-field{display:grid;gap:4px;font-size:var(--fs-footnote);color:var(--label-2)}
+/* Title and "a few words" (TestFlight 11-08: "title and description input need space"): the
+   label sits clear of its field like the app's other forms (measure-date), the fields get room
+   between them and the description is tall enough to write in. */
+.com-field{display:grid;gap:6px;font-size:var(--fs-footnote);color:var(--label-2)}
+.com-field>span{padding-inline:2px}
+.com-consent{gap:14px}
+.com-field .field{background:var(--surface);min-height:48px}
+.com-field .field.area{min-height:104px}
 .com-consent-text{margin:0;padding:12px;background:var(--surface-2);border-radius:var(--r-sm);line-height:var(--lh-body);font-size:var(--fs-subhead)}
 .com-own-check{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--acc-soft);color:var(--label);font-size:var(--fs-subhead);font-weight:500;cursor:pointer}
 .com-own-check .chk{flex:none}

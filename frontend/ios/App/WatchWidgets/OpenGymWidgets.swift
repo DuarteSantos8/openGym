@@ -130,7 +130,7 @@ struct WidgetView: View {
             } else {
                 ZStack {
                     AccessoryWidgetBackground()
-                    OpenGymLogo().padding(10)
+                    OpenGymLogo().fill(OpenGymLogo.green).padding(10)
                 }
             }
         case .accessoryInline:
@@ -187,8 +187,8 @@ struct WidgetView: View {
                     }
                 } else {
                     HStack(spacing: 6) {
-                        OpenGymLogo().frame(width: 26, height: 16)
-                        Text(verbatim: "openGym").font(.headline)
+                        OpenGymLogo().fill(OpenGymLogo.green).frame(width: 26, height: 13)
+                        BrandWord().font(.headline)
                     }
                 }
                 if let n = s.unsent, n > 0, !resting { UnsentLine(count: n) }
@@ -242,19 +242,20 @@ struct LauncherView: View {
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
-                OpenGymLogo().padding(9)
+                OpenGymLogo().fill(OpenGymLogo.green).padding(9)
             }
         case .accessoryCorner:
             OpenGymLogo()
+                .fill(OpenGymLogo.green)
                 .padding(4)
                 .widgetLabel { Text(verbatim: "openGym") }
         case .accessoryInline:
             Text(verbatim: "openGym")
         default:
             HStack(spacing: 8) {
-                OpenGymLogo().frame(width: 30, height: 20)
+                OpenGymLogo().fill(OpenGymLogo.green).frame(width: 30, height: 15)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(verbatim: "openGym").font(.headline)
+                    BrandWord().font(.headline)
                     if entry.state.mode == "today" {
                         Text(verbatim: entry.state.title).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
@@ -279,3 +280,10 @@ struct OpenGymLauncher: Widget {
     }
 }
 
+
+/// "open" plus "Gym" in brand green, the wordmark of the logo (assets/logo).
+struct BrandWord: View {
+    var body: some View {
+        Text(verbatim: "open") + Text(verbatim: "Gym").foregroundColor(OpenGymLogo.green)
+    }
+}

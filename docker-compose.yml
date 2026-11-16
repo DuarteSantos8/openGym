@@ -90,3 +90,5 @@ services:
       - OPENGYM_API_URL=http://${BACKEND:-api}:${PORT:-3000}
       # The app's address, so a browser page from anywhere else is turned away (DNS rebinding).
       - ORIGIN=${ORIGIN:-}
+      # The prefix under a subpath deployment, for the sign-in pointer its 401 carries.
+      - BASE_PATH=${BASE_PATH:-}

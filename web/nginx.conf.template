@@ -102,6 +102,20 @@ server {
         # container itself sends pass through as they are (no proxy_intercept_errors).
         error_page 502 504 = @mcp_off;
     }
+    # The MCP connector's OAuth discovery (api/oauth.js): Claude and ChatGPT look for these at the
+    # host's root, under BASE_PATH also with the prefix inserted after the document's name
+    # (/.well-known/oauth-authorization-server/gym) or below the prefix (/gym/.well-known/...,
+    # which the map takes the prefix off). Only these documents, proxied to the api, which answers
+    # 404 unless MCP=on.
+    location ~ ^(\Q${BASE_PATH}\E)?/\.well-known/(oauth-authorization-server|oauth-protected-resource|openid-configuration)(\Q${BASE_PATH}\E)?(/mcp)?$ {
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $api_upstream http://${BACKEND}:${PORT};
+        proxy_pass $api_upstream$api_request_uri;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
     location @mcp_off {
         default_type application/json;
         add_header Cache-Control "no-store" always;

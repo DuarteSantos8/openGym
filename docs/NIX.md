@@ -88,7 +88,7 @@ nix build .#opengym-frontend         # static site + exercise media → result/s
 nix build .#opengym-api              # API → result/bin/opengym-api
 nix build .#opengym-mcp
 nix run .#opengym                    # full local stack on http://localhost:8080 (see below)
-nix develop                          # dev shell: nodejs_22, git, coreutils
+nix develop                          # dev shell: nodejs_26, git, coreutils
 nix flake check                      # eval check + (on Linux) the VM integration test
 nix build .#nixosTests.opengym       # run just the VM integration test
 ```

@@ -247,6 +247,9 @@ export function plannedOf(cfg) {
   if (mode === 'reps' && c.reps > 0) out.reps = c.reps
   if (mode === 'reps' && c.repsMin > 0) out.repsMin = c.repsMin
   if (mode === 'time' && c.sec > 0) out.sec = c.sec
+  // A carry or a sled is planned by its distance: without it the workout's plan line fell back to
+  // "2 × 20 m" for a routine asking for 40 (QA 1.4.5).
+  if (mode === 'distance' && c.m > 0) out.m = c.m
   // Triple progression's set ceiling is part of the plan: raising it changes where a cycle ends.
   if (mode === 'reps' && c.setsMax > 0) out.setsMax = c.setsMax
   if (c.weight != null) out.weight = c.weight
@@ -259,8 +262,10 @@ export function plannedOf(cfg) {
 // progression leads (issue #232), and from there the work is a plain pull-up or dip.
 const climbsReps = cfg => isBw(cfg) || !isLoadedEq(cfg.id) || isAssisted(cfg)
 
-const PLAN_KEYS = ['sets', 'reps', 'repsMin', 'sec', 'setsMax']
-const samePlan = (a, b) => PLAN_KEYS.every(k => (a[k] ?? null) === (b[k] ?? null))
+const PLAN_KEYS = ['sets', 'reps', 'repsMin', 'sec', 'm', 'setsMax']
+// A carry's distance joined the plan in 1.4.5: a session stamped before that has no `m`, and is not
+// a changed plan for lacking it.
+const samePlan = (a, b) => PLAN_KEYS.every(k => (k === 'm' && (a.m == null || b.m == null)) || (a[k] ?? null) === (b[k] ?? null))
 /** Did the routine's sets or reps change since the session that stamped `planned`? */
 export function planChanged(planned, cfg) {
   return !!planned && !samePlan(planned, plannedOf(cfg))

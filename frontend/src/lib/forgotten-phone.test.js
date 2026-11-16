@@ -66,6 +66,8 @@ describe('forgotten workouts on the phone', () => {
     expect(ln.scheduled[0].actionTypeId).toBe('og-forgotten')
     expect(ln.types.map(x => x.id)).toEqual(['og-forgotten', 'og-left'])
     expect(readForgottenState('w1').notifyAt).toBe(last + 45 * MIN)
+    // Android 14 without "Alarms & reminders": inexact, so the plugin opens no settings screen (QA66).
+    expect(ln.scheduled[0].isExactNotification).toBe(false)
   })
 
   it('asks on screen, then ends at the last set plus its rest when nobody answers', () => {

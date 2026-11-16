@@ -145,7 +145,7 @@ test('a working call is untouched by any of this', async () => {
 
 test('every provider class has one short line, and no two classes say the same thing', () => {
   const classes = Object.keys(USER_MESSAGE);
-  assert.deepEqual(classes.sort(), ['auth', 'missing', 'outage', 'provider', 'quota', 'schema', 'timeout', 'unreachable']);
+  assert.deepEqual(classes.sort(), ['auth', 'cutoff', 'missing', 'outage', 'provider', 'quota', 'schema', 'timeout', 'unreachable']);
   const seen = new Map();
   for (const cls of classes) {
     const line = USER_MESSAGE[cls];

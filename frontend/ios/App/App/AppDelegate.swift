@@ -7,6 +7,9 @@ import HealthKitUI
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // The Live Activity's timing log (WorkoutActivity.swift LiveLog): when the process came up,
+        // and whether iOS started it in the background (for a button, the watch, a region).
+        LiveLog.launched(background: application.applicationState == .background)
         // The background check before a nudge (NudgeCheckPlugin): iOS hands the task only to a
         // handler registered before launching ends.
         NudgeCheckPlugin.registerTask()

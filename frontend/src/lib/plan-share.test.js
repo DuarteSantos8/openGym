@@ -79,6 +79,13 @@ describe('what survives a shared plan', () => {
       .toEqual({ type: 'dropset', count: 2, pct: 20 })
   })
 
+  it("carries a last-set-only drop-set, and drops an unknown 'on'", () => {
+    expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20, on: 'last' } }).intensifier)
+      .toEqual({ type: 'dropset', count: 2, pct: 20, on: 'last' })
+    expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20, on: 'odd' } }).intensifier)
+      .toEqual({ type: 'dropset', count: 2, pct: 20 })
+  })
+
   it('carries a rest-pause prescription', () => {
     expect(roundTrip({ intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } }).intensifier)
       .toEqual({ type: 'restpause', totalReps: 12, restSec: 15 })
@@ -392,5 +399,17 @@ describe('parsePlan refuses a file that is not a plan in words', () => {
   it('text that is not JSON says it is not a plan file, not the parser message', () => {
     expect(() => parsePlan('hello there')).toThrow('this isn’t an openGym plan file')
     try { parsePlan('{oops') } catch (e) { expect(e.code).toBe('not-plan') }
+  })
+})
+
+describe('distance work in a shared plan (night QA 146)', () => {
+  it('a carry keeps its metres and load, a lift switched to distance stays distance', () => {
+    const carry = parsePlan(JSON.stringify(buildPlanBundle({ routines: [{ id: 'r1', name: 'Carry', ex: [
+      { id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 },
+      { id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 },
+    ] }], week: {}, customEx: [] }, 'Plan'))).routines[0].ex
+    expect(carry[0]).toMatchObject({ id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 })
+    expect(carry[1]).toMatchObject({ id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 })
+    expect(carry[1].reps).toBeUndefined()
   })
 })

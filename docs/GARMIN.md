@@ -10,13 +10,18 @@ can start today's routine by itself. Source: `frontend/garmin` (Monkey C).
 warning beyond the launcher icon's scaling, and **runs in Garmin's simulator** on all six: the
 unit tests pass there (fr265, fr55, instinct2), and Start, Set, Rest, the menu, Finish and the
 summary were driven with the watch's own buttons (and touch on the Venu Sq 2), with screenshots
-of each. Memory in use stays under 60 KB, also on the Instinct 2 (92 KB for the app) and the
-Forerunner 55 (124 KB). **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the
+of each. On the Instinct 2 family (92 KB for the app) the redesign runs close to the limit: it
+keeps today's routine to its first 16 sets and at most 6 sets in the outbox while the phone is away
+(the rest wait as pending ticks and all go out at Finish), and `sim/run.sh long <dev> [sets]`
+measures a watch-only workout's memory peak. **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the
 Android app (APK and Play builds, `android/app/src/ciq`) and in the iPhone app
 (`ios/App/App/GarminLink.swift`, the Swift package added at build time by `ios/ci/add-garmin.rb`),
 behind the same `WatchBridge` plugin as the other watches, with Settings → Garmin for pairing and
-status. Both compile in CI; none of it has met a real Garmin yet. That and the Connect IQ Store
-submission are the owner's (see "What the owner does" and `/root/uploads/opengym-146/garmin-store/`).
+status. Both compile in CI; none of it has met a real Garmin yet. The watch app is in the
+[Connect IQ Store](https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08) since
+November 2026; each release's `openGym.iq` goes up there by hand, together with the phone release
+(see "What the owner does" and `/root/uploads/opengym-146/garmin-store/`). It needs openGym 1.4.5
+or later on the phone, and the F-Droid build has no Garmin link at all.
 
 ## What it does
 
@@ -40,9 +45,20 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 
 - A buzz ten seconds before the rest ends and a clear double buzz at the end (the phone's
   "rest haptics" setting turns them off), a tick for each number of a 3-2-1 and each of a hold's
-  last three seconds. A rest started on the phone runs on the watch too, but only a new one: a
-  snapshot that sends the same rest end again no longer undoes a ±15 or a Skip pressed on the watch
-  (`Core.restFollows`, state `pre`).
+  last three seconds. **One rest** for the phone and the watch (protocol 2, `docs/WATCH_SYNC.md`
+  "One rest"): a rest started, moved, paused or skipped on the phone is followed when its stamp
+  (`active.restAt`) is newer than the newest change the watch has made or followed (state `ra`,
+  `Core.followRest`); a pause there holds the countdown here ("Paused", state `rh`); a Skip there
+  ends it here as a Skip here does (the next hold counted in). A Done here tells the phone where
+  its rest ends (`restEnd`), +15, −15 and Skip here send a `rest` event; the rest running out sends
+  nothing. Only the newest change of the rest waits in the outbox (`Core.supersede`). Every phone
+  with a Garmin link has protocol 2, so the other watches' first rules (a rest end followed once,
+  the echo of the watch's own) are not on the Garmin.
+- A set ticked on the phone moves the watch on as its own Done would, on whichever exercise
+  (`Core.ptick`, `Actions.followTick`, #1149), and the phone moving to another exercise with every
+  set from the watch in moves the watch too (#1066). A workout logged here with the phone away
+  drains a few sets at a time: until the phone has them all, the watch keeps its own exercises
+  rather than jumping back to the phone's window.
 - BACK never ends a running workout by accident: on a set it switches weight and reps, and where
   there is only one number it opens the menu; elsewhere it goes back to the set. Finish and Discard
   ask first (or Finish is a touch and hold on the Overview).
@@ -51,7 +67,9 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 - Fixing a set (Previous set, ‹ ›) and the effort send the `setDone` the phone already knows, a
   moment later than the set's own tick and without `hr`, so the phone takes the new numbers and
   keeps the set's heart rate (`Core.fix`, as `SetFix.correct` on Wear OS and iOS).
-- "Timed holds start by themselves" on the phone: after a rest the hold's 3-2-1 comes up by itself.
+- "Timed holds start by themselves" on the phone: after a rest (run out or skipped, here or on the
+  phone) the hold's 3-2-1 comes up by itself. Not on the watches without a hold timer ((:small)):
+  there Done logs the seconds, and an automatic one would have logged a set nobody did.
 - Cardio is logged on the phone (the watch says so and moves on).
 - No exercise media goes to the watch, text and numbers only (and the licence would not allow it).
 - Heart rate: the watch's optical sensor (`Toybox.Sensor` / `Activity.Info.currentHeartRate`)
@@ -96,10 +114,22 @@ sunlight) or, on the Instinct, black and white. So, like the other watches but f
 
 ### Watches
 
-`manifest.xml` lists 82 products, everything from Connect IQ 3.2 up that is a watch people lift
-with: Forerunner 165 / 245 / 255 / 265 / 55 / 570 / 745 / 945 / 955 / 965 / 970, fēnix 6 / 7 / 8 / E,
-epix (Gen 2) and epix Pro, enduro / enduro 3, Venu 1 / 2 / 3 / 4 / Sq / Sq 2 / X1, vívoactive 4 / 5 / 6,
-Instinct 2 / 2S / 2X / 3 / Crossover / E, MARQ (Gen 2), Descent Mk2 / Mk3 / G2, D2 Mach, Approach S70.
+`manifest.xml` lists 118 products, everything from Connect IQ 3.2 up that is a watch people lift
+with: Forerunner 165 / 170 / 245 / 255 / 265 / 55 / 570 / 645 Music / 70 / 745 / 945 / 955 / 965 / 970,
+fēnix 5 Plus / 6 / 7 / 8 / 9 / E, epix (Gen 2) and epix Pro, enduro / enduro 3 / Enduro 4,
+Venu 1 / 2 / 3 / 4 / Sq / Sq 2 / X1, vívoactive 4 / 5 / 6, the Legacy Hero and Legacy Saga watches,
+Instinct 2 / 2S / 2X / 3 / Crossover / E, MARQ (all three generations), Descent Mk2 / Mk3 / G1 / G2,
+D2 Air / Air X10 / Mach, Approach S50 / S70 / S72.
+The fēnix 9 line, Forerunner 70 and 170, Enduro 4, MARQ (Gen 3) and Approach S72 came as device
+files while the SDK was still 9.2.0: they build with it, and `check.mjs` takes the device files'
+ids as well as the SDK's. The fēnix 9 Pro 51mm is the first 466 × 466 screen; the layouts are
+fractions of the screen, and its every screen was looked at in the simulator, as were the fēnix 9
+Pro Solar 47mm, the Descent G1 (an Instinct 2 inside, with its line in `monkey.jungle`), the
+Approach S72 43mm, the Venu Sq Music and, for the lowest Connect IQ levels here (3.2.1 and 3.2.3),
+the D2 Air and the Forerunner 645 Music. The other new ones have the screen, the buttons and the
+memory of a watch already listed and were compiled only.
+Left out: the vívoactive 3 Music (one button and no BACK, a kind of watch nobody tried here) and
+everything below Connect IQ 3.2.
 Adding one is a line in `manifest.xml` (and, for a black-and-white screen, one in `monkey.jungle`).
 The oldest watches here (Forerunner 55 and 245, fēnix 6) give a watch app the least memory; the app
 keeps its state small for them (see "How it talks to the phone"), but they are the first to try in
@@ -124,7 +154,11 @@ settings, streak and discarded) down to what a Connect IQ message carries:
 - settings (`restHaptics`, `lang`, `show`, and since v1.4.5 `accent` / `onAccent`, `crown`,
   `effort`, `autoHolds`, each only when the phone has it: `garminLook`), the streak, the last few
   discarded ids;
-- at most **4 KB as JSON** (`GARMIN_MAX_BYTES`), cutting the least useful parts first.
+- at most **3 KB as JSON** (`GARMIN_MAX_BYTES`; 4 KB until the 1.4.5 watch round: in the
+  simulator an Instinct 2 runs out of memory parsing 3.5 KB), cutting the least useful parts first.
+  Today's rows go without their nulls and noes (a missing key reads as null or no on the watch),
+  and while a workout runs today goes by name only, so the snapshot that goes with every set stays
+  small.
 
 Same field names as the other watches' snapshot. The fixture `frontend/garmin/test/snapshot.json`
 is what the watch is written against; `garmin-snapshot.test.js` builds it from the Wear OS fixture
@@ -139,7 +173,8 @@ booleans on its own.
 
 | type | fields |
 | --- | --- |
-| `setDone` | `id, wid, exId, entryIdx, setIdx, at, w?, r?, sec?, side?, hr? { avg, max }` |
+| `setDone` | `id, wid, exId, entryIdx, setIdx, sid?, at, w?, r?, sec?, side?, hr? { avg, max }, restEnd?, off?` |
+| `rest` | `id, wid, at, endsAt?, off?`: +15, −15 or Skip pressed on the watch (no `endsAt`: Skip) |
 | `start` | `id, routineIds, wid, at` |
 | `finish` / `discard` | `id, wid, at` |
 | `stillHere` | `id, wid, at`: "Keep going" on "Still training?" (1.4.5) |
@@ -151,8 +186,49 @@ delivered only means Garmin Connect took it, and with openGym on the phone not r
 nowhere. So `obn` counts the events at the front already sent; what is not confirmed a minute later
 goes again (`Link.retry`), what was never sent after 30 s. One sent twice is applied once (the page
 keeps the ids, and names a resent one again as the newest, so the short `acked` list of a Garmin,
-`GARMIN_ACKED_MAX` = 16, still gets to it). The outbox keeps at most 60, dropping the oldest sent
-ones first. Times are ms since 1970 as `Long`.
+`GARMIN_ACKED_MAX` = 16, still gets to it). A workout logged with the phone away comes back as
+dozens of events within a second or two: the page names those oldest first, 16 per snapshot
+(`unnamed` in `runLink`), so the watch lets go of all of them at once and not only of the newest
+16. An event that arrives a second time means the watch never got the snapshot that named it, so
+that snapshot goes again even when nothing in it changed. The outbox keeps at most 60, dropping
+the oldest sent ones first; with nothing sent at all (the phone out of reach for days) it grows to
+90 and then drops the oldest, a workout's `start` last (`Core.room`): it is loaded at every start
+of the app, and one without end would run a small watch out of memory for good. Times are ms
+since 1970 as `Long`.
+
+**Protocol 2** (`docs/WATCH_SYNC.md`): every row of the snapshot has its id (`sid`) and the watch
+names the set by it (pending ticks are kept as `s:<sid>`, else `e<entryIdx>:<exId>#<set>`, so one
+exercise twice is two exercises). The snapshot carries the phone's clock (`now`); the watch keeps
+the gap to its own clock for the last 8 snapshots and sends the smallest of the last five minutes
+as `off` with every event (`Core.noteClock`, `Core.off`). Both bridges stamp `now` as the snapshot
+leaves (`GarminMessages.stamped`, `GarminLink.stamped`), because they send the kept one again at a
+hello or a reconnect, maybe minutes later. A set ticked here keeps its time on the phone's clock
+(`at − off`), as the phone will. The watch's own clock has milliseconds (`Core.nowMs`: Time.now()'s
+seconds refined by `System.getTimer()`), so two presses within a second are two changes.
+
+**Memory, the watches with 128 KB or less** ((:small) in `monkey.jungle`): protocol 2 costs about
+4 KB of code. To keep a long workout with the phone away within their memory they leave out the
+clock offset (a Garmin sets its clock from the phone; their events carry no `off`), following a set
+ticked on the phone or the phone's next exercise, the hold counted in after a rest, and the outbox's
+pairs packing; and once less than 30 KB is free a new set past 6 waiting is held back as a pending
+tick and goes out when there is room (`Core.full` / `refill`, the Instinct 2 family's rule since
+1.4.5, now on all of them; such a set goes without its heart rate).
+
+Three more things keep the link from stopping (`Link.retry`, once a second): a `transmit` that
+never calls back at all is given up on after 45 s (`busy` used to stay true until the app was
+restarted); the `hello` of the start is asked again once a minute until the phone has answered
+once; and the callback of a transmit that was given up on is ignored (`gen`). "Waiting to sync 3"
+counts sets (`Core.waiting`): a set rated or fixed after its tick is two events and one set.
+
+**Tested end to end without a watch.** `frontend/garmin/test/watch-model.mjs` is the watch's sync
+as JavaScript (a port of `Core.mc`'s state, outbox and `applySnapshot` and of `App.mc`'s `Link`);
+`src/lib/garmin-link.e2e.test.js` runs it against the page's real sync with the bridge modelled
+on `GarminLink.java` (the queue file, the last snapshot, hello) and switches on what goes wrong:
+the watch out of range, openGym killed on the phone, an answer lost, a restart mid-queue, a
+transmit that never calls back. `src/lib/garmin-contract.test.js` reads the Monkey C, Java, Swift
+and JavaScript sources and fails when a field name, an event type, a constant, the app id, the
+store id or an Info.plist entry stops matching between them (and so keeps the model honest).
+The real Monkey C runs the same cases in the simulator (`source/CoreTest.mc`).
 
 ### The phone side
 
@@ -170,17 +246,38 @@ asks once before Watch goes off while one is there (it remembers the last `statu
 phone apps (module Watch): the Garmins the phone knows (connected or not, openGym on them or not),
 "Choose watches" on the iPhone (Garmin Connect opens with its list and comes back) or "Look again"
 on Android (Garmin Connect's pairing is the list), "Get openGym for Garmin" while a watch lacks the
-app (the Connect IQ Store page once `STORE_ID` / `storeId` are filled in, this guide until then), and
+app (Garmin Connect opens the Connect IQ Store page; when it cannot, the page on the web,
+`GARMIN_STORE`), and
 the two switches every watch shares: send workouts, open on the watch. In a build without the link
 (F-Droid, or an iPhone build without the package) it says why. It asks the native side through
 `garminCall` in lib/watch-sync.js: `garminStatus`, `garminPick`, `garminStore`.
+
+Every state says what to do next (`garminView`, each with a test):
+
+| state | the line | button |
+| --- | --- | --- |
+| this build has no link (F-Droid) | says so, and which builds have it | none |
+| Garmin Connect not installed | install it, pair the watch there, come back (the page notices by itself) | Choose watches (iPhone) |
+| Garmin Connect too old | it needs an update (noticed by itself on Android once updated) | Look again |
+| the link did not come up | could not reach Garmin Connect | Look again (starts it over) |
+| no watch in Garmin Connect / none picked | pair yours there first / pick it | Look again / Choose watches |
+| a watch, out of reach, never heard from | not in reach, bring it close with Bluetooth on | Look again |
+| a watch in reach without openGym | get it, then open it once on the watch | Get openGym for Garmin |
+| openGym on the watch, in reach / away | sets land here / it catches up when in reach | Look again |
+
+A watch that is out of reach cannot say whether it has the app: it is never told "openGym isn't on
+it yet" on a guess. The watch itself, before it ever heard from the phone, says "Not synced yet.
+In openGym on your phone, open Settings, then Garmin." (opening the app alone is not enough on
+Android: the link only starts once that page was opened).
 
 **The native half (done in v1.4.5).**
 
 1. **Android** (`android/app/src/ciq/.../GarminLink.java`, pure parts in `main/.../GarminMessages.java`
    with `GarminMessagesTest`): `com.garmin.connectiq:ciq-companion-app-sdk:2.4.0` (Maven Central),
-   in the `sideload` and `play` flavours only. One `GarminLink` per process, started by
-   `WatchBridgePlugin.load`: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
+   in the `sideload` and `play` flavours only. One `GarminLink` per process. Nothing of Garmin's
+   runs until the user opens Settings → Garmin once (remembered in the `opengym-garmin` prefs; the
+   iPhone waits for "Choose watches" the same way), and only with Garmin Connect Mobile installed
+   (else `state: "no-gcm"` without touching the SDK). Then: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
    then for each `getKnownDevices()` `registerForDeviceEvents`, `registerForAppEvents` for
    `IQApp("3c533c63754d40189c000ad529e400b9")` and `getApplicationInfo` (installed or not). Incoming
    `events` go into the same queue file as the Wear OS watch's (`WatchBridgePlugin.storeEvent`, by
@@ -192,6 +289,15 @@ the two switches every watch shares: send workouts, open on the watch. In a buil
    (`openApplication`: "open openGym?" on the watch, Settings → Garmin "Open on the watch").
    Garmin Connect Mobile delivers messages while the app's process lives (the page may sleep); with
    the process gone they are lost on the phone, which is why the watch now keeps them until `acked`.
+   When Garmin Connect itself goes away (updated by the Play Store, stopped, crashed), the SDK's
+   link to it ends (`onSdkShutDown`) and Garmin Connect forgets which app wanted which watch's
+   messages: `revive` then brings the SDK up from scratch and `refresh` registers every watch
+   again after each `onSdkReady` (before, sets from the wrist stopped arriving until openGym was
+   restarted, and Settings → Garmin stood on "Checking…"). A start that does not come up within
+   15 s is tried three times, then the state is `error` and "Look again" starts over
+   (`GarminUse`, with JVM tests). `onApplicationNotInstalled` only counts from a connected watch,
+   the watches that have the app are remembered (`has` in the `opengym-garmin` prefs) so the page
+   makes the Garmin snapshot from its first send, and a snapshot lost in transfer goes once more.
 2. **iPhone** (`ios/App/App/GarminLink.swift`): the Swift package
    `github.com/garmin/connectiq-companion-app-sdk-ios` 1.8.0 (a binary `ConnectIQ.xcframework`),
    added to the App target at build time by `ios/ci/add-garmin.rb` (ios.yml runs it in all three
@@ -204,7 +310,11 @@ the two switches every watch shares: send workouts, open on the watch. In a buil
    opens Bluetooth, and iOS asks): at launch when one is saved (`garmin-devices.plist`, the picked
    `IQDevice`s), else on "Choose watches". Then `register(forDeviceEvents:)`,
    `register(forAppMessages:)`, `getAppStatus`, `sendMessage`, `openAppRequest` as on Android. The
-   Apple Watch keeps its own snapshot; both can be linked at once.
+   Apple Watch keeps its own snapshot; both can be linked at once. A watch that is "connected" is
+   not ready to be talked to yet (Garmin's header): the app status is asked and the snapshot sent
+   again at `deviceCharacteristicsDiscovered`. No answer from `getAppStatus` is "unknown", not
+   "not installed". The picked watches are read back with the strict coding rules first and
+   plainly if Garmin's `IQDevice` does not pass them, so they cannot silently be gone at launch.
 3. **Licence and builds.** The Connect IQ Mobile SDK is not open source (Garmin's Connect IQ SDK
    License Agreement and Application Developer Agreement; the Maven POM says so too). It is in the
    builds that already carry closed platform code: the GitHub APK and Play build (beside Google Play
@@ -328,7 +438,8 @@ You need the Connect IQ SDK and the device files:
    `Sim.begin()` applies the snapshot `sim/gen.mjs` makes from `test/snapshot.json` (today's
    routine ready, two more by name, a streak), fresh on every load. It also prints the memory in
    use every 2 s (`mem <used> <peak> <total>` in `bin/sim/logs/monkeydo-<dev>.log`). The real
-   builds leave `(:sim)` out (`monkey.jungle`).
+   builds leave `(:sim)` out (`monkey.jungle`). `SIM_NONE=1 sim/run.sh build <dev>` builds a watch
+   that has never heard from the phone (the "Not synced yet" screen).
 
    What `setup` works around (paths in the script's variables): the simulator is built for Ubuntu
    22.04; on Debian 13 it lacks GTK 3 (taken from Debian's packages into a private folder),
@@ -357,7 +468,7 @@ You need the Connect IQ SDK and the device files:
 
 The strings come from the Wear OS watch's (which come from the app's packs and the Apple Watch's
 translations): `node frontend/garmin/garmin-strings.mjs` writes `resources*/strings/strings.xml`;
-run it after changing them there. 21 languages (each listed in `manifest.xml`); Connect IQ has no
+run it after changing them there. 22 languages (each listed in `manifest.xml`); Connect IQ has no
 Hindi, Bengali or Persian, and one Portuguese (pt).
 
 ## What the owner does
@@ -370,14 +481,15 @@ Hindi, Bengali or Persian, and one Portuguese (pt).
    tests pass, each screen was looked at. Still worth a look on a desktop with the real font pack:
    fr255, fr55, instinct2 and venusq2 with Garmin's own bitmap fonts.
 5. Test the phone side (done in v1.4.5) with a real Garmin: sideload the `.prg`, install the APK
-   or a TestFlight build, Settings → Garmin. Borrow one or ask a Garmin owner from Discord.
+   or a TestFlight build, Settings → Watches → Garmin. Borrow one or ask a Garmin owner from Discord.
 6. Publish: apps.garmin.com/developer → Upload an app → `openGym.iq`, with the store listing
    (name, description, at least one screenshot per screen shape, the icon, category Health &
    Fitness), the privacy policy URL (the app sends heart rate only to the user's own phone app),
    and "requires a companion app" pointing at the Play Store and App Store listings. Garmin reviews
-   it, usually within a few days. The app id in `manifest.xml` stays the same forever.
-   Once it is live, put its store id into `GarminLink.STORE_ID` (Android) and `GarminLink.storeId`
-   (iPhone) so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
+   it, usually within a few days (done: approved in November 2026). The app id in `manifest.xml`
+   stays the same forever.
+   Its store id (62e66310-66de-4bdd-8e40-5d2c0d853a08, https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08)
+   is in `GarminLink.STORE_ID` (Android) and `GarminLink.storeId` (iPhone), so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
    `/root/uploads/opengym-146/garmin-store/` on the release machine.
 7. Each release after that: `monkeyc … -e` with the same key and the new `version` in
    `manifest.xml`, uploaded as a new version of the same app.
@@ -385,7 +497,7 @@ Hindi, Bengali or Persian, and one Portuguese (pt).
 ### Versions
 
 `manifest.xml` `version` is the release, the same as the phone app's `versionName` and Zepp OS's
-`version.name` (1.4.4 now). Connect IQ has no separate build number to bump (Wear OS derives its
+`version.name` (1.4.5 now). Connect IQ has no separate build number to bump (Wear OS derives its
 `versionCode` from the phone's, Zepp OS counts `major*10000 + minor*100 + patch`): the store only
 wants each upload's version higher than the last, which the release number already is.
 `node frontend/garmin/check.mjs` fails when it is not `frontend/package.json`'s, so the release

@@ -17,6 +17,10 @@ export const WRAPPED_COPY = {
     "title": "Tvůj rok {0} v openGym je hotový 🎉",
     "body": "Tréninky, rekordy a jeden hodně upřímný test osobnosti. Klepni a podívej se na svůj rok."
   },
+  "da": {
+    "title": "Dit {0} i openGym er klar 🎉",
+    "body": "Træninger, rekorder og én meget ærlig personlighedstest. Tryk for at se dit år."
+  },
   "de": {
     "title": "Dein {0} in openGym ist fertig 🎉",
     "body": "Trainings, Rekorde und ein sehr ehrlicher Persönlichkeitstest. Tipp, um dein Jahr zu sehen."

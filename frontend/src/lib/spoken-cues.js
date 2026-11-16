@@ -133,12 +133,18 @@ const live = () => {
 // About how long a line takes to say, in ms: enough for a clip not to start over it.
 export const speechMs = (text, rate = 1) => Math.round((350 + String(text || '').length * 65) / (rate > 0 ? rate : 1))
 const GAP = 150
+// The voice is heard whatever the end-of-rest sound and the ring/silent switch say (TestFlight
+// 11-08: "the voice can only be heard if I have the notification sound activated"). Spoken cues
+// are their own opt-in, so a lifter who switched them on wants to hear them, the iPhone on silent
+// included. On the iPhone that is the .playback session with mixWithOthers and duckOthers
+// (CueAudioLedger): music still only turns down for a line, it never stops.
+export const VOICE_ON_SILENT = true
 let freeAt = 0      // when everything handed over so far should be done
 let clipUntil = 0   // until when a clip is playing: a line waits for it
 
 const sayNow = (S, text, opts = {}) => {
   const o = voiceOpts(S)
-  speak(text, { ...o, onSilent: S.soundOnSilent === true, ...opts }).catch?.(() => {})
+  speak(text, { ...o, onSilent: VOICE_ON_SILENT, ...opts }).catch?.(() => {})
   freeAt = Math.max(freeAt, Date.now()) + speechMs(text, o.rate)
 }
 const say = (S, text, opts = {}) => {
@@ -147,7 +153,7 @@ const say = (S, text, opts = {}) => {
   const wait = clipUntil - Date.now()
   if (wait > 0) {
     freeAt = Math.max(freeAt, clipUntil) + speechMs(text, voiceOpts(S).rate)
-    setTimeout(() => { const now = readStore?.() || S; speak(text, { ...voiceOpts(now), onSilent: now.soundOnSilent === true, ...opts }).catch?.(() => {}) }, wait)
+    setTimeout(() => { const now = readStore?.() || S; speak(text, { ...voiceOpts(now), onSilent: VOICE_ON_SILENT, ...opts }).catch?.(() => {}) }, wait)
     return
   }
   sayNow(S, text, opts)
@@ -161,8 +167,7 @@ let clipPlayer = async clip => {
   const tone = 'u:' + clip.m.hash
   if (MOBILE) {
     const { toneNative } = await import('./rest-alert.js')
-    const S = readStore?.()
-    if (await toneNative(tone, { onSilent: S?.soundOnSilent === true })) return true
+    if (await toneNative(tone, { onSilent: VOICE_ON_SILENT })) return true
   }
   const { playUserTone, unlock } = await import('./sound.js')
   unlock(true)
@@ -212,6 +217,28 @@ export const cues = {
   restOver() { const S = live(); if (S) moment(S, 'restOver') },
   /** A set just earned a record trophy (views/Workout.jsx cheerRecord). */
   record() { const S = live(); if (S) moment(S, 'record') },
+  /** A workout begins: the first exercise's first set, named. Only a rest announced anything
+   *  before, so the first exercise went unsaid until its first set was done — worked around with
+   *  a dummy rest before it (#1210). */
+  began() {
+    const S = live()
+    const entry = S?.active?.entries?.[Number.isInteger(S?.active?.cur) ? S.active.cur : 0]
+    const i = (entry?.sets || []).findIndex(notDone)
+    if (!entry || i < 0) return
+    const ex = EXIDX[entry.id]
+    const name = (ex ? exerciseNameFor(ex) : (entry.n || '')) || null
+    say(S, setCueText(S, entry, i, { name }))
+  },
+  /** The focus moved to another exercise with no rest between (a superset's next member,
+   *  views/Workout.jsx): its next set, named. A rest is what announced the next set before, and
+   *  a circuit has none between its members, so only the round's first exercise was ever said
+   *  (#1210). No style line here: it is not a rest, and every member would shout one. */
+  movedOn(forIdx) {
+    const S = live()
+    if (!S) return
+    const text = restStartText(S, forIdx)
+    if (text) say(S, text)
+  },
   /** A count-in or the end of a hold: a number, cutting off whatever is still being said. */
   count(n) { if (n >= 1 && n <= 3) { const S = live(); if (S) say(S, String(n), { queue: false }) } },
   /** The count-in is over and the hold begins. */

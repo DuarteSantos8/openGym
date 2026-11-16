@@ -178,3 +178,11 @@ Google Play build (beside Google Play services' Wearable Data Layer) and the App
 F-Droid build leaves it out (`app/build.gradle`, checked by `scripts/android/check-fdroid.sh`), and
 there the Garmin page says the link is not in that build. openGym's own Garmin code
 (`frontend/garmin`, `GarminLink`, `GarminMessages`) stays AGPL.
+
+As an additional permission under section 7 of the AGPL v3.0, the copyright holder permits
+conveying the openGym mobile application, and works based on it, combined or linked with the
+Garmin Connect IQ Mobile SDK and with closed platform libraries the operating system or its app
+store requires for a feature (such as Google Play services' Wearable Data Layer or Apple's
+system frameworks), without the Corresponding Source of those libraries. Everything else stays
+under the AGPL: openGym's own source, including the code that talks to these libraries, must
+remain available as the license requires.

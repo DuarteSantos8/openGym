@@ -87,6 +87,20 @@ final class WorkoutCard {
         return new JSONObject(o.toString());
     }
 
+    /**
+     * A tap for workout `wid` waits in `events` that the page did not have when it built the state
+     * it is sending (`seen`: the ids of its last drain). The card already moved on for that tap, so
+     * the page's state is the older one and must not replace it (LiveActivityPlugin.update).
+     */
+    static boolean hasUnseen(JSONArray events, String wid, java.util.Collection<String> seen) {
+        if (events == null || wid == null || seen == null) return false;
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject ev = events.optJSONObject(i);
+            if (ev != null && wid.equals(ev.optString("wid")) && !seen.contains(ev.optString("id"))) return true;
+        }
+        return false;
+    }
+
     private static JSONObject event(String type, String wid, long now) throws JSONException {
         JSONObject e = new JSONObject();
         e.put("id", UUID.randomUUID().toString());
@@ -181,6 +195,283 @@ final class WorkoutCard {
             JSONObject next = copy(state);
             clearRest(next);
             return new Move(next, event("restSkip", wid, now), 0);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /* ---------- the glance (lib/live-glance.js, LIVE_VERSION 4) ---------- */
+
+    /** The glance's choices from Settings, or null for a card from before them (the classic card). */
+    static JSONObject glance(JSONObject state) {
+        return state == null ? null : state.optJSONObject("g");
+    }
+
+    private static String tv(JSONObject set, String k) {
+        JSONObject tv = set == null ? null : set.optJSONObject("tv");
+        return tv == null ? "" : tv.optString(k, "");
+    }
+
+    /** The set's big line: weight × reps for a plain lift (− and + rewrite both), else its own. */
+    static String big(JSONObject set) {
+        if (set == null) return "";
+        String w = tv(set, "weight"), r = tv(set, "reps");
+        if (!set.has("kd") && !set.has("bg") && !w.isEmpty() && !r.isEmpty()) return w + " \u00d7 " + r;
+        String bg = set.optString("bg", "");
+        return bg.isEmpty() ? set.optString("target", "") : bg;
+    }
+
+    /** A few letters for the status-bar chip: "80×8", "45 s"; "" when there are none. */
+    static String shortText(JSONObject set) {
+        if (set == null) return "";
+        String w = tv(set, "weight"), r = tv(set, "reps");
+        if (!set.has("kd") && !set.has("sh") && !w.isEmpty() && !r.isEmpty()) {
+            int sp = w.indexOf(' ');
+            return (sp > 0 ? w.substring(0, sp) : w) + "\u00d7" + r;
+        }
+        return set.optString("sh", "");
+    }
+
+    /** The moment: "done", "hold", "between" (a rest before a new exercise), "rest" or "work". */
+    static String phase(JSONObject state, long now) {
+        JSONObject cur = cur(state);
+        if (cur == null) return "done";
+        boolean holding = (state.has("holdLeft") && !state.isNull("holdLeft")) || state.optLong("holdEndsAt", 0) > now;
+        if (holding) return "hold";
+        if (resting(state, now)) return cur.optBoolean("fr", false) ? "between" : "rest";
+        return "work";
+    }
+
+    /** The details beside the set, at most two (clean) or four (detailed): "RIR 2", "132 bpm". */
+    static java.util.List<String> chips(JSONObject state, boolean withSet) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        JSONObject g = glance(state);
+        if (g == null) return out;
+        int room = "clean".equals(g.optString("lk")) ? 2 : 4;
+        JSONObject cur = cur(state);
+        JSONArray ck = withSet && cur != null ? cur.optJSONArray("ck") : null;
+        for (int i = 0; ck != null && i < ck.length(); i++) {
+            String v = tv(cur, ck.optString(i, ""));
+            if (!v.isEmpty()) out.add(v);
+        }
+        JSONArray sx = g.optJSONArray("sx");
+        JSONObject stv = state.optJSONObject("tv");
+        for (int i = 0; sx != null && stv != null && i < sx.length(); i++) {
+            String v = stv.optString(sx.optString(i, ""), "");
+            if (!v.isEmpty()) out.add(v);
+        }
+        return out.size() > room ? new java.util.ArrayList<>(out.subList(0, room)) : out;
+    }
+
+    private static final String[] PRIORITY = {"log", "wDown", "wUp", "rDown", "rUp", "effort", "restAdd", "restSkip", "next", "pause", "warm", "addSet", "finish"};
+
+    private static int rank(String k) {
+        for (int i = 0; i < PRIORITY.length; i++) if (PRIORITY[i].equals(k)) return i;
+        return PRIORITY.length;
+    }
+
+    /**
+     * The buttons now, those that mean something, most important first, at most `room`: the set's
+     * own while it is up next, the rest's while one runs, Log set during a hold, Finish at the end.
+     */
+    static java.util.List<String> buttons(JSONObject state, long now, int room) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        JSONObject g = glance(state);
+        JSONObject cur = cur(state);
+        String ph = phase(state, now);
+        JSONArray list;
+        try {
+            if ("done".equals(ph)) list = new JSONArray("[\"finish\"]");
+            else if ("hold".equals(ph)) list = new JSONArray("[\"log\"]");
+            else if ("rest".equals(ph) || "between".equals(ph)) list = g != null && g.optJSONArray("rb") != null ? g.optJSONArray("rb") : new JSONArray("[\"log\",\"restSkip\"]");
+            else list = cur.optJSONArray("b") != null ? cur.optJSONArray("b") : new JSONArray("[\"log\"]");
+        } catch (JSONException e) {
+            return out;
+        }
+        JSONObject adj = cur == null ? null : cur.optJSONObject("adj");
+        boolean rest = resting(state, now);
+        for (int i = 0; i < list.length(); i++) {
+            String k = list.optString(i, "");
+            if (k.isEmpty() || out.contains(k)) continue;
+            if ("next".equals(k) && nextUnitStart(state) == null) continue;
+            if (("restAdd".equals(k) || "restSkip".equals(k)) && !rest) continue;
+            String f = "wDown".equals(k) || "wUp".equals(k) ? "w" : "rDown".equals(k) || "rUp".equals(k) ? "r" : "effort".equals(k) ? "e" : null;
+            if (f != null && (adj == null || adj.optJSONObject(f) == null)) continue;
+            out.add(k);
+        }
+        java.util.Collections.sort(out, (x, y) -> Integer.compare(rank(x), rank(y)));
+        return out.size() > room ? new java.util.ArrayList<>(out.subList(0, Math.max(1, room))) : out;
+    }
+
+    /**
+     * The notification's words for the moment: [title, text]. The text joins the set's line, its
+     * big line and its details ("Set 3 of 4 · 80 kg × 8 · RIR 2"); during a rest, what is next.
+     */
+    static String[] words(JSONObject attrs, JSONObject state, long now) {
+        JSONObject cur = cur(state);
+        JSONObject g = glance(state);
+        String ph = phase(state, now);
+        String name = state.optString("name", "");
+        if ("done".equals(ph)) {
+            int done = state.optInt("done", 0), total = state.optInt("total", 0);
+            return new String[] {done < total ? label(attrs, "openApp", "Open openGym for the next set") : label(attrs, "allDone", "All sets done"), name};
+        }
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        if ("rest".equals(ph) || "between".equals(ph)) {
+            String rest = label(attrs, "rest", "Rest");
+            if (g != null && !g.optBoolean("nx", true)) return new String[] {rest, name};
+            String head = "between".equals(ph) ? tileLabel(state, "nextEx") : "";
+            if (head.isEmpty()) head = "between".equals(ph) ? label(attrs, "nextExercise", "Next exercise") : label(attrs, "next", "Up next");
+            parts.add(cur.optString("setLine", ""));
+            parts.add(big(cur));
+            return new String[] {rest + " \u00b7 " + cur.optString("exName", ""), head + ": " + join(parts)};
+        }
+        if ("hold".equals(ph)) {
+            String word = "countin".equals(state.optString("holdKind")) ? label(attrs, "getReady", "Get ready") : label(attrs, "hold", "Hold");
+            parts.add(cur.optString("setLine", ""));
+            parts.add(big(cur));
+            return new String[] {word + " \u00b7 " + cur.optString("exName", ""), join(parts)};
+        }
+        parts.add(cur.optString("setLine", ""));
+        parts.add(big(cur));
+        parts.addAll(chips(state, true));
+        return new String[] {cur.optString("exName", name), join(parts)};
+    }
+
+    /** The record line under the set on the detailed look, or "". */
+    static String note(JSONObject state) {
+        JSONObject g = glance(state);
+        if (g == null || !"detailed".equals(g.optString("lk"))) return "";
+        return tv(cur(state), "pr");
+    }
+
+    private static String join(java.util.List<String> parts) {
+        StringBuilder b = new StringBuilder();
+        for (String p : parts) {
+            if (p == null || p.isEmpty()) continue;
+            if (b.length() > 0) b.append(" \u00b7 ");
+            b.append(p);
+        }
+        return b.toString();
+    }
+
+    /** A tile's text now: the set's own fields, the set's tile texts, then the session's; "" for none. */
+    static String text(JSONObject state, String k) {
+        JSONObject cur = cur(state);
+        if (cur != null) {
+            switch (k) {
+                case "ex": return cur.optString("exName", "");
+                case "setOf": return cur.optString("setLine", "");
+                case "target": return cur.optString("target", "");
+                default:
+                    JSONObject tv = cur.optJSONObject("tv");
+                    String v = tv == null ? "" : tv.optString(k, "");
+                    if (!v.isEmpty()) return v;
+            }
+        }
+        JSONObject tv = state == null ? null : state.optJSONObject("tv");
+        return tv == null ? "" : tv.optString(k, "");
+    }
+
+    /** The page's label of a tile ("weight") or a button ("a.log"), or "". */
+    static String tileLabel(JSONObject state, String k) {
+        JSONObject tl = state == null ? null : state.optJSONObject("tl");
+        return tl == null ? "" : tl.optString(k, "");
+    }
+
+    /** A still inside the app package (assets/public/...): relative, a picture, no way out. */
+    static String stillPath(JSONObject state) {
+        JSONObject cur = cur(state);
+        String p = cur == null ? "" : cur.optString("img", "");
+        if (p.isEmpty() || p.length() > 120 || p.startsWith("/") || p.contains("..") || p.contains(":")) return null;
+        String low = p.toLowerCase(java.util.Locale.ROOT);
+        return low.endsWith(".webp") || low.endsWith(".png") || low.endsWith(".jpg") || low.endsWith(".jpeg") ? p : null;
+    }
+
+    static String tileKey(String field) {
+        return "w".equals(field) ? "weight" : "r".equals(field) ? "reps" : "effort";
+    }
+
+    /**
+     * − or + (or the effort button) on the set shown: one step along its list (`adj`), shown at
+     * once, the value queued for the page. Null at the end of the list or from a card that moved on.
+     */
+    static Move adjust(JSONObject state, String wid, String setKey, String field, int dir, long now) {
+        JSONObject cur = cur(state);
+        if (cur == null || !key(cur).equals(setKey)) return null;
+        JSONObject adj = cur.optJSONObject("adj");
+        JSONObject list = adj == null ? null : adj.optJSONObject(field);
+        JSONArray v = list == null ? null : list.optJSONArray("v");
+        JSONArray t = list == null ? null : list.optJSONArray("t");
+        if (v == null || t == null || v.length() == 0 || v.length() != t.length()) return null;
+        int n = v.length();
+        int at = Math.max(0, Math.min(n - 1, list.optInt("i", 0)));
+        int j;
+        if ("e".equals(field)) j = (at + (dir > 0 ? 1 : n - 1)) % n;
+        else {
+            j = at + (dir > 0 ? 1 : -1);
+            if (j < 0 || j >= n) return null;
+        }
+        double value = v.optDouble(j, Double.NaN);
+        if (Double.isNaN(value) || Double.isInfinite(value)) return null;
+        try {
+            JSONObject ev = event("adjust", wid, now);
+            ev.put("exId", cur.optString("exId"));
+            ev.put("entryIdx", cur.optInt("entryIdx"));
+            ev.put("setIdx", cur.optInt("setIdx"));
+            ev.put("field", field);
+            ev.put("value", value);
+            JSONObject next = copy(state);
+            JSONObject c = next.getJSONObject("cur");
+            c.getJSONObject("adj").getJSONObject(field).put("i", j);
+            JSONObject tv = c.optJSONObject("tv");
+            if (tv == null) { tv = new JSONObject(); c.put("tv", tv); }
+            tv.put(tileKey(field), t.optString(j, ""));
+            return new Move(next, ev, 0);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /** +15 s on the rest running: its end moves on, and so does its alert (restMs is the new length). */
+    static Move addRest(JSONObject state, String wid, int sec, long now) {
+        if (!resting(state, now)) return null;
+        try {
+            JSONObject ev = event("restAdd", wid, now);
+            ev.put("sec", sec);
+            JSONObject next = copy(state);
+            long more = sec * 1000L;
+            if (state.has("restLeft") && !state.isNull("restLeft")) {
+                next.put("restLeft", state.optDouble("restLeft", 0) + sec);
+                return new Move(next, ev, 0);
+            }
+            long end = state.optLong("restEndsAt", 0) + more;
+            next.put("restEndsAt", end);
+            next.put("restTotal", state.optDouble("restTotal", 0) + sec);
+            return new Move(next, ev, Math.max(0, end - now));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /** A tap the page does all of (Previous exercise, Warm-up, Add set, Pause): queued only; Pause shows at once. */
+    static Move queueOnly(JSONObject state, String wid, String kind, long now) {
+        if (!"prev".equals(kind) && !"warm".equals(kind) && !"addSet".equals(kind) && !"pause".equals(kind)) return null;
+        JSONObject cur = cur(state);
+        if (cur == null && !"pause".equals(kind)) return null;
+        try {
+            JSONObject ev = event(kind, wid, now);
+            JSONObject next = copy(state);
+            switch (kind) {
+                case "prev": ev.put("fromEntryIdx", cur.optInt("entryIdx")); break;
+                case "warm": ev.put("exId", cur.optString("exId")); ev.put("entryIdx", cur.optInt("entryIdx")); ev.put("setIdx", cur.optInt("setIdx")); break;
+                case "addSet": ev.put("exId", cur.optString("exId")); ev.put("entryIdx", cur.optInt("entryIdx")); break;
+                default:
+                    boolean on = !state.optBoolean("paused", false);
+                    ev.put("on", on);
+                    next.put("paused", on);
+            }
+            return new Move(next, ev, 0);
         } catch (JSONException e) {
             return null;
         }

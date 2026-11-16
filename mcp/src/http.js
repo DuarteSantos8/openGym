@@ -21,6 +21,8 @@ import { withProfile } from './state.js'
 import { createRemoteProfile } from './remote.js'
 
 export const MAX_BODY = 1024 * 1024
+// api/oauth.js DEFAULT_SCOPE (the api is not a dependency of this package), plus a refresh token.
+export const DEFAULT_SCOPE = 'workouts:view plans:apply bodyweight:view offline_access'
 const TOKEN_RE = /^ogt_[A-Za-z0-9_-]{43}$/
 
 /** A tiny fixed-window counter: take(key) → seconds to wait, 0 within budget. */
@@ -44,6 +46,11 @@ export function createMcpHandler({
   allowedOrigins = (process.env.MCP_ALLOWED_ORIGINS || process.env.ORIGIN || '').split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean),
   fetchImpl,
   now = Date.now,
+  // The app's public address, for the OAuth discovery pointer on a 401 (api/oauth.js): Claude
+  // and ChatGPT start their sign-in from it. Without one the 401 says only how to make a token.
+  publicOrigin = (process.env.ORIGIN || '').replace(/\/+$/, ''),
+  // Under a subpath deployment the documents live below the prefix too (BASE_PATH, docs/MCP_REMOTE.md).
+  basePath = String(process.env.BASE_PATH || '').replace(/\/+$/, ''),
 } = {}) {
   const base = String(apiUrl).replace(/\/+$/, '')
   // One cached profile per token (by its hash), so a conversation of tool calls reads the
@@ -58,8 +65,12 @@ export function createMcpHandler({
     res.end(JSON.stringify(body))
   }
   const rpcError = (res, status, message, headers) => send(res, status, { jsonrpc: '2.0', error: { code: -32000, message }, id: null }, headers)
+  // The pointer Claude and ChatGPT start their sign-in from (RFC 9728 5.1), and the scope they
+  // should ask for when the person picks nothing else: read the training, plan it. Claude
+  // requires the 401 (it ignores the header on any other status).
   const unauthorized = (res, why) => rpcError(res, 401, why, {
-    'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="make a token in openGym: Settings, API tokens"',
+    'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="sign in with openGym, or make a token in Settings, API tokens"'
+      + (publicOrigin ? `, resource_metadata="${publicOrigin}${basePath}/.well-known/oauth-protected-resource/mcp", scope="${DEFAULT_SCOPE}"` : ''),
   })
 
   function profileFor(token) {
@@ -77,14 +88,17 @@ export function createMcpHandler({
 
   function readJson(req) {
     return new Promise((resolve, reject) => {
-      let size = 0
+      let size = 0, over = false
       const chunks = []
       req.on('data', d => {
         size += d.length
-        if (size > MAX_BODY) { reject(Object.assign(new Error('body too large'), { status: 413 })); req.destroy(); return }
+        // Drain instead of destroying: a reset socket would drop the 413 (same as api readBody).
+        if (over) { if (size > 2 * MAX_BODY) req.destroy(); return }
+        if (size > MAX_BODY) { over = true; chunks.length = 0; reject(Object.assign(new Error('body too large'), { status: 413 })); return }
         chunks.push(d)
       })
       req.on('end', () => {
+        if (over) return
         try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))) } catch { reject(Object.assign(new Error('invalid json'), { status: 400 })) }
       })
       req.on('error', reject)

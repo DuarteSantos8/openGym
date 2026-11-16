@@ -3,10 +3,11 @@ import { useStore } from '../store/useStore.js'
 import { BODYPARTS, allExercises, equipmentOf, searchExercises } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
-import { fmtNum, exCount } from '../lib/format.js'
+import { fmtNum, exCount, exerciseNameText } from '../lib/format.js'
 import { MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { MUSCLE_GROUPS, groupTerm, groupOfTerm, matchesTerms, toggleTerm, shownMuscles, termsWeight } from '../lib/muscle-filter.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import BodyMap from './BodyMap.jsx'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
@@ -39,9 +40,16 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
     const all = allExercises(S)
     return (profile && !showAll) ? all.filter(e => exAvailable(S, e)) : all
   }, [S.customEx, S.equipFilterOn, S.activeEquipId, S.equipProfiles, showAll])
-  const counts = useMemo(() => Object.fromEntries(MUSCLES.map(m => [m,
-    catalog.filter(e => musclesOf(e)[m]).length
-  ])), [catalog])
+  // One pass over the catalogue: asking musclesOf again for each of the muscles (5,632 exercises
+  // times every muscle) was a 450 ms freeze when the page opened, 1.8 s on a slow phone (QA 1.4.5).
+  const counts = useMemo(() => {
+    const n = Object.fromEntries(MUSCLES.map(m => [m, 0]))
+    for (const e of catalog) {
+      const hit = musclesOf(e)
+      for (const m in hit) if (hit[m] && m in n) n[m]++
+    }
+    return n
+  }, [catalog])
   const reset = () => { setEq(''); setShown(40) }
   const pick = muscle => { setTerms(cur => toggleTerm(cur, muscle)); reset() }
   const pickGroup = g => {
@@ -129,8 +137,9 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
           it, without forgetting the choice. "All" clears it, since it spans every body part. */}
       <div className="chips" style={{ marginBottom: eqOpts.length > 1 ? 8 : 12 }}>
         {favIds(S).length > 0 && <button className={'chip' + (favOn ? ' on' : '')} onClick={() => { setBp(FAV); setEq(''); setShown(40) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favHere})</button>}
-        <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
-        {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
+        {/* "Body part: Shoulders" for a screen reader: the muscle groups above have a Shoulders too (P4). */}
+        <button className={'chip nocap' + (!bp ? ' on' : '')} aria-label={nameIn(t('Body part'), t('All'))} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
+        {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} aria-label={nameIn(t('Body part'), t(b))} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>
       {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
         <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
@@ -147,7 +156,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
             <button type="button" className="grow item-open tap-main" onClick={() => choose(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss">{t(primary ? 'Primary target' : 'Also trains')} · <span className="capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></span></button>
             {onPick ? <Icon name={pickIcon} className="chev" /> : <>
               {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
-              <Button size="sm" variant="tinted" icon="plus" onClick={() => onPlan(e)}>{t('Plan')}</Button>
+              <Button size="sm" variant="tinted" icon="plus" aria-label={nameIn(exerciseNameText(e), t('Plan'))} onClick={() => onPlan(e)}>{t('Plan')}</Button>
             </>}
           </div>
         })}

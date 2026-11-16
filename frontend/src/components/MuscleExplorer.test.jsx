@@ -188,3 +188,22 @@ describe('MuscleExplorer with several muscles and groups', () => {
     expect(host.textContent).not.toContain('Exercises for')
   })
 })
+
+// QA 1.4.5: the per-muscle counts are tallied in one pass over the catalogue now (they asked
+// musclesOf once per muscle per exercise before: a 450 ms freeze on opening the page). Same numbers.
+describe('MuscleExplorer per-muscle counts', () => {
+  it('each muscle chip shows how many exercises train it', async () => {
+    const { allExercises } = await import('../lib/exercises.js')
+    const { MUSCLES, MUSCLE_NAME, musclesOf } = await import('../lib/muscles.js')
+    const host = render()
+    const all = allExercises(mocks.S)
+    let checked = 0
+    for (const m of MUSCLES) {
+      const chip = [...host.querySelectorAll('.chips .chip')].find(b => b.querySelector('.dim') && b.textContent.trim().startsWith(MUSCLE_NAME[m] + ' '))
+      if (!chip) continue
+      expect(Number(chip.querySelector('.dim').textContent), m).toBe(all.filter(e => musclesOf(e)[m]).length)
+      checked++
+    }
+    expect(checked).toBeGreaterThan(5)
+  })
+})

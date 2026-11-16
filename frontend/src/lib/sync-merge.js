@@ -725,7 +725,8 @@ const OWN_MERGE = new Set([
 // (lib/programmes.js; the running one, `programme`, is a plain setting).
 // `modules` (lib/modules.js): one switch per feature area, so Body off on the phone and Seasonal off
 // on the laptop both hold.
-const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'exShownName', 'programmes', 'modules'])
+// bandEx (lib/bands.js): which exercises use bands, per exercise like exNotes.
+const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'exShownName', 'programmes', 'modules', 'bandEx'])
 // The order of the routines, as the list shows them, is a choice of its own (`edited.routineOrder`):
 // a reorder on one device was lost to the other's whole copy whenever that one was newer.
 export const ORDER_KEY = 'routineOrder'

@@ -31,7 +31,7 @@ export const MODULES = [
   { id: 'videos', group: 'training', icon: 'camera', tint: 'var(--teal)', title: 'Form videos',
     desc: 'Film a set and watch it back right under the row.' },
   { id: 'watch', group: 'training', icon: 'watch', tint: 'var(--grey)', title: 'Watch',
-    desc: 'Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.' },
+    desc: 'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.' },
   { id: 'checkin', group: 'training', icon: 'qr', tint: 'var(--blue)', title: 'Gym check-in',
     desc: 'Your membership codes on Home, and NFC stickers that start a workout.' },
   { id: 'body', group: 'body', icon: 'scale', tint: 'var(--teal)', title: 'Body',

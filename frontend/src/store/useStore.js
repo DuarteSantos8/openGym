@@ -31,7 +31,7 @@ import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
-import { sanitizeAccent } from '../lib/accent.js'
+import { sanitizeAccent, NEW_ACCENT } from '../lib/accent.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
 
 const KEY = 'gym_state_v1'
@@ -92,6 +92,9 @@ const gainedWorkoutMedia = (prev, next) => {
 }
 export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
+  // accent: the old iOS green on purpose. A loaded copy that never picked one (saved before accents,
+  // a server document, a backup) keeps the green it always had; a new profile starts on the
+  // brand's green instead (freshState, lib/accent.js NEW_ACCENT).
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
   rateGoal: null,
@@ -349,6 +352,8 @@ export function freshState() {
   // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
   // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
   s.streakRuleAsk = true
+  // The brand's green (1.4.5). DEF stays on the old green, so only a copy made here gets this.
+  s.accent = NEW_ACCENT
   return s
 }
 
@@ -389,6 +394,11 @@ export function restoredStateFor(local, remote, dirty = false) {
   if (local.active) next.active = local.active
   return next
 }
+
+// What moves a running workout (persist): it starts or ends, an exercise or a set comes or goes, a
+// set or one side of it is ticked. Weights, reps and the rest of what is typed are left out.
+const workoutShape = a => a ? JSON.stringify([a.id, a.start, (a.entries || []).map(e => [e.id,
+  (e.sets || []).map(x => [!!x.done, !!x.sides?.L?.done, !!x.sides?.R?.done])])]) : null
 
 export const useStore = create((set, get) => {
   let pushTm = null
@@ -747,11 +757,12 @@ export const useStore = create((set, get) => {
     }
     meta.set(S, { base, owed: owed || !saved || (!!joined && storedOwed()) })
     if (!saved) saveOwed(true)
-    // The running workout changed (a set ticked, a workout started or finished): on a phone it goes
-    // to the file at once rather than after the usual wait. localStorage alone is not enough there:
-    // the WebView writes it to disk on its own schedule, and an app killed within that moment (or
-    // iOS ending it in the background before the page's timers run again) lost the last set.
-    const workoutMoved = MOBILE && JSON.stringify(get()?.S?.active ?? null) !== JSON.stringify(S.active ?? null)
+    // The running workout moved (a set ticked, added or removed, a workout started or finished): on
+    // a phone it goes to the file at once rather than after the usual wait. localStorage alone is
+    // not enough there: the WebView writes it to disk on its own schedule, and an app killed within
+    // that moment (or iOS ending it in the background before the page's timers run again) lost the
+    // last set. A value typed into a set is not a move: it waits like any change (#1089).
+    const workoutMoved = MOBILE && workoutShape(get()?.S?.active) !== workoutShape(S.active)
     set({ S })
     // A copy that replaces the last one wholesale and keeps an older stamp — adopted from the
     // server — goes to the file at once. Until it does, the file holds the copy it replaced,
@@ -2151,7 +2162,7 @@ export const useStore = create((set, get) => {
     async resetDemo() {
       const { buildDemoState } = await import('../lib/demoSeed.js')
       markOwed(false)
-      persist(Object.assign(clone(DEF), buildDemoState()), false)
+      persist(Object.assign(clone(DEF), { accent: NEW_ACCENT }, buildDemoState()), false)
       // The demo's photos and videos were only ever in this browser, and the reset takes them too.
       await mediaStore.clearAll().catch(() => {})
     },
@@ -2264,6 +2275,11 @@ export const useStore = create((set, get) => {
       // passkey's, so this copy's question is asked (adoptProfile) before anything syncs.
       const arrived = takeOidcReturn()?.ok === 'signed-in'
       try {
+        // Nobody is signed in and the server has just said so (`signed_in` in /api/config, made
+        // with the same cookie /api/me would read): asking anyway only earns the 401 every
+        // guest's start used to print in the console as an error. Skipped on a plain `false`
+        // alone: a server from before the flag, or one that did not answer, is asked as before.
+        if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await api('/api/me')
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
         get().setUser(me.user, arrived ? { adopt: true } : undefined)

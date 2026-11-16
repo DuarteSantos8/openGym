@@ -55,6 +55,14 @@ describe('tempo in the workout', () => {
     expect(guide.textContent).toContain('6 reps')
     expect(guide.textContent).toContain('30 s under tension')
   })
+  // QA 1.4.5: a per-side set's row holds both sides' reps (12 = 6 a side), and the guide counted all
+  // twelve for one arm.
+  it('counts one side’s reps for a per-side set, the side up next', () => {
+    const side = (r, done) => ({ w: 10, r, done })
+    mount([{ w: 10, r: 12, done: false, sides: { L: side(6, true), R: side(5, false) } }], { mode: 'reps', sets: 1, reps: 12, side: true, tempo: '3-1-1-0' })
+    act(() => container.querySelector('.tempo-tag').click())
+    expect(renderTop().textContent).toContain('5 reps')
+  })
   it('no tempo, no tag', () => {
     mount([{ w: 80, r: 8, done: false }], { mode: 'reps', sets: 1, reps: 8 })
     expect(container.querySelector('.tempo-tag')).toBeNull()

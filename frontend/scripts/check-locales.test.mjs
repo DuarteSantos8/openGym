@@ -111,9 +111,10 @@ describe('check-locales.mjs', () => {
   })
 
   // The app's own packs, so the suite carries the same check CI does rather than only the rule.
+  // Reading 25 packs takes 3 to 4 s alone and went past the default 5 s on a busy machine: its own limit.
   it('passes the locale packs this app ships', () => {
     const r = spawnSync(process.execPath, [script], { encoding: 'utf8' })
     expect(r.stdout + r.stderr).toContain('in sync')
     expect(r.status).toBe(0)
-  })
+  }, 60000)
 })

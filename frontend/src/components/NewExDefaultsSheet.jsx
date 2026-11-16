@@ -6,9 +6,10 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { NEW_EX_DEFAULTS, newExDefaultsOf, fmtSec } from '../lib/history.js'
 import { Stepper, Button } from './ui.jsx'
+import { isoRun } from '../lib/bidi.js'
 
 /** "3 × 10 · 3 × 0:45", as the settings row shows it. */
-export const newExLine = S => { const d = newExDefaultsOf(S); return `${d.sets} × ${d.reps} · ${d.sets} × ${fmtSec(d.sec)}` }
+export const newExLine = S => { const d = newExDefaultsOf(S); return `${isoRun(`${d.sets} × ${d.reps}`)} · ${isoRun(`${d.sets} × ${fmtSec(d.sec)}`)}` }
 
 export default function NewExDefaultsSheet({ close }) {
   const S = useStore(s => s.S)

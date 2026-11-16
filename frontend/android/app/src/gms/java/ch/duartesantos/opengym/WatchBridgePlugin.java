@@ -85,6 +85,8 @@ public class WatchBridgePlugin extends Plugin {
     private static volatile WatchBridgePlugin live;
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
+    /** The snapshot messages to the Wear OS watches: their own thread, the newest only (WatchEventQueue.LatestOnly). */
+    private final WatchEventQueue.LatestOnly snapshotMessages = new WatchEventQueue.LatestOnly(Executors.newSingleThreadExecutor());
     private CapabilityClient.OnCapabilityChangedListener capListener;
 
     @Override
@@ -92,7 +94,7 @@ public class WatchBridgePlugin extends Plugin {
         live = this;
         GarminLink.get(getContext());
         try {
-            capListener = info -> notifyListeners("watchState", new JSObject().put("installed", !info.getNodes().isEmpty()));
+            capListener = info -> { wearNodesAt = 0; notifyListeners("watchState", new JSObject().put("installed", !info.getNodes().isEmpty())); };
             Wearable.getCapabilityClient(getContext()).addListener(capListener, CAPABILITY_WEAR);
         } catch (Exception ignored) {
             // No Play services: no watch, and nothing to listen to.
@@ -115,6 +117,7 @@ public class WatchBridgePlugin extends Plugin {
         io.execute(() -> {
             JSObject out = new JSObject();
             boolean paired = false, installed = false, reachable = false, supported = false;
+            JSArray watches = new JSArray();
             try {
                 Context ctx = getContext();
                 List<Node> connected = Tasks.await(Wearable.getNodeClient(ctx).getConnectedNodes(), 5, TimeUnit.SECONDS);
@@ -124,9 +127,18 @@ public class WatchBridgePlugin extends Plugin {
                 supported = true;
                 paired = installed || !connected.isEmpty();
                 reachable = !near.getNodes().isEmpty();
+                watches = WatchNodes.list(nodes(connected), nodes(all.getNodes()), nodes(near.getNodes()));
             } catch (Exception e) {
                 // No Play services (or no answer): no Wear OS watch. A Garmin may still be there.
             }
+            // The Wear OS link by itself, for Settings → Wear OS watch (a Garmin has its own page).
+            JSObject wear = new JSObject();
+            wear.put("supported", supported);
+            wear.put("paired", paired);
+            wear.put("installed", installed);
+            wear.put("reachable", reachable);
+            wear.put("watches", watches);
+            out.put("wear", wear);
             // A Garmin with the openGym app counts as a watch for the page: it then sends snapshots.
             GarminLink g = GarminLink.get(getContext());
             boolean garmin = g.anyInstalled();
@@ -140,6 +152,13 @@ public class WatchBridgePlugin extends Plugin {
         });
     }
 
+    /** Nodes as { id, name } pairs, for WatchNodes (which knows nothing of Play services). */
+    private static List<String[]> nodes(java.util.Collection<Node> in) {
+        List<String[]> out = new ArrayList<>();
+        for (Node n : in) out.add(new String[] { n.getId(), n.getDisplayName() });
+        return out;
+    }
+
     @PluginMethod
     public void sendSnapshot(PluginCall call) {
         String json = call.getString("json");
@@ -151,11 +170,17 @@ public class WatchBridgePlugin extends Plugin {
             PutDataMapRequest req = PutDataMapRequest.create(SNAPSHOT);
             req.getDataMap().putString("snapshot", json);
             // Stamped, so the same snapshot sent again (a reinstalled watch app) is a change too.
-            req.getDataMap().putLong("at", System.currentTimeMillis());
+            // Never back with the clock (WatchEventQueue.nextStamp); remembered across launches.
+            long at = stamp(getContext());
+            req.getDataMap().putLong("at", at);
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
                 .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
                 .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("error", String.valueOf(e.getMessage()))));
+            // And as a message to the watches in reach (protocol 2): on time, for the watch's clock offset.
+            byte[] msg = WatchEventQueue.snapshotMessage(at, json);
+            // Not on `io`: the stills' uploads wait seconds there, and a late message misleads the watch's clock.
+            if (msg != null) snapshotMessages.submit(() -> messageWatches(msg));
         } catch (Exception e) {
             call.resolve(new JSObject().put("sent", garminSent));
         }
@@ -189,6 +214,36 @@ public class WatchBridgePlugin extends Plugin {
         });
     }
 
+    /** The watches with the app in reach, asked again at most every 30 s (and when the capability changes). */
+    private volatile List<String> wearNodes = new ArrayList<>();
+    private volatile long wearNodesAt = 0;
+
+    private void messageWatches(byte[] msg) {
+        Context ctx = getContext();
+        try {
+            long now = System.currentTimeMillis();
+            if (now - wearNodesAt > 30_000 || now < wearNodesAt) {
+                CapabilityInfo near = Tasks.await(Wearable.getCapabilityClient(ctx).getCapability(CAPABILITY_WEAR, CapabilityClient.FILTER_REACHABLE), 5, TimeUnit.SECONDS);
+                List<String> ids = new ArrayList<>();
+                for (Node n : near.getNodes()) ids.add(n.getId());
+                wearNodes = ids;
+                wearNodesAt = now;
+            }
+            for (String id : wearNodes) {
+                try { Tasks.await(Wearable.getMessageClient(ctx).sendMessage(id, SNAPSHOT, msg), 5, TimeUnit.SECONDS); } catch (Exception ignored) {}
+            }
+        } catch (Exception ignored) {
+            // No Play services, or no answer: the data item still carries the snapshot.
+        }
+    }
+
+    private static synchronized long stamp(Context ctx) {
+        android.content.SharedPreferences p = ctx.getSharedPreferences("opengym-watch", Context.MODE_PRIVATE);
+        long at = WatchEventQueue.nextStamp(p.getLong("snapshotAt", 0), System.currentTimeMillis());
+        p.edit().putLong("snapshotAt", at).apply();
+        return at;
+    }
+
     /** A workout started here: the watch shows it (its ongoing notification opens the app). */
     @PluginMethod
     public void openOnWatch(PluginCall call) {
@@ -212,11 +267,11 @@ public class WatchBridgePlugin extends Plugin {
     /* ---------- the Garmin (Settings → Garmin, views/GarminSettings.jsx) ---------- */
 
     @PluginMethod
-    public void garminStatus(PluginCall call) { call.resolve(GarminLink.get(getContext()).status()); }
+    public void garminStatus(PluginCall call) { call.resolve(GarminLink.use(getContext()).status()); }
 
     @PluginMethod
     public void garminPick(PluginCall call) {
-        GarminLink.get(getContext()).refresh();
+        GarminLink.use(getContext()).lookAgain();
         call.resolve(new JSObject().put("ok", true));
     }
 
@@ -229,7 +284,7 @@ public class WatchBridgePlugin extends Plugin {
     /**
      * The running workout's stills for the watch's Overview: each the app's own 180 px WebP (about
      * 5 KB), read from the app package by the path the page names (lib/watch-sync.js clipsFor), never
-     * fetched. Sent once per workout and exercise; the Data Layer delivers them when the watch is near.
+     * fetched. With it the set page's animation ("clip"), when the build has it as animated WebP. Sent once per workout and exercise; the Data Layer delivers them when the watch is near.
      */
     @PluginMethod
     public void sendClips(PluginCall call) {
@@ -242,8 +297,10 @@ public class WatchBridgePlugin extends Plugin {
             JSONObject c = clips.optJSONObject(i);
             String exId = c == null ? null : c.optString("exId", null);
             String still = c == null ? null : c.optString("still", null);
+            // Only what the page marks for Wear OS (watch-sync.js wearClip: a 180 px build's WebP).
+            String clip = c == null ? null : c.optString("wear", null);
             if (!safeId(exId) || !inPackage(still)) continue;
-            todo.add(new String[] { exId, still });
+            todo.add(new String[] { exId, still, clipInPackage(clip) ? clip : null });
             queued++;
         }
         call.resolve(new JSObject().put("queued", queued));
@@ -260,6 +317,13 @@ public class WatchBridgePlugin extends Plugin {
                     PutDataMapRequest req = PutDataMapRequest.create(STILL_PREFIX + t[0]);
                     req.getDataMap().putAsset("img", Asset.createFromBytes(bytes));
                     req.getDataMap().putString("wid", wid);
+                    // The set page's animation, where this build ships them as animated WebP (MP4 builds: the still only).
+                    if (t[2] != null) {
+                        try (java.io.InputStream anim = getContext().getAssets().open("public/" + t[2])) {
+                            byte[] clip = readAll(anim, CLIP_MAX);
+                            if (clip != null) req.getDataMap().putAsset("clip", Asset.createFromBytes(clip));
+                        } catch (Exception ignored) {}
+                    }
                     Tasks.await(Wearable.getDataClient(getContext()).putDataItem(req.asPutDataRequest()), 10, TimeUnit.SECONDS);
                     synchronized (stillsSent) { stillsSent.computeIfAbsent(wid, k -> new HashSet<>()).add(t[0]); }
                 } catch (Exception ignored) {
@@ -280,6 +344,14 @@ public class WatchBridgePlugin extends Plugin {
             } catch (Exception ignored) {}
             call.resolve();
         });
+    }
+
+    /** The biggest animation sent to the watch (the 180 px WebPs are far smaller). */
+    static final int CLIP_MAX = 512 * 1024;
+
+    /** An animation inside the app package: relative, no way out of it, an animated WebP. */
+    static boolean clipInPackage(String p) {
+        return p != null && p.matches("[A-Za-z0-9_./-]+\\.webp") && !p.startsWith("/") && !p.contains("..");
     }
 
     /** An exercise id as a file name on the watch: letters, digits, - and _ only. */
@@ -329,8 +401,11 @@ public class WatchBridgePlugin extends Plugin {
         try {
             Uri prefix = new Uri.Builder().scheme("wear").path(EVENT_PREFIX).build();
             DataItemBuffer items = Tasks.await(Wearable.getDataClient(ctx).getDataItems(prefix, DataClient.FILTER_PREFIX), 5, TimeUnit.SECONDS);
-            for (DataItem item : items) if (store(ctx, item)) any = true;
-            items.release();
+            try {
+                for (DataItem item : items) {
+                    try { if (store(ctx, item)) any = true; } catch (Exception ignored) {} // one bad item must not stop the rest
+                }
+            } finally { items.release(); }
         } catch (Exception ignored) {}
         return any;
     }

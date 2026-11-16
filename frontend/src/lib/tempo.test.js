@@ -51,3 +51,14 @@ describe('tempo (#572)', () => {
     expect(stepAt([], 0)).toEqual({ done: true })
   })
 })
+
+describe('guideReps', () => {
+  it('one side’s reps on a per-side set, else the set’s, the plan’s or 8', async () => {
+    const { guideReps } = await import('./tempo.js')
+    expect(guideReps({ r: 12, sides: { L: { r: 6, done: false }, R: { r: 6, done: false } } })).toBe(6)
+    expect(guideReps({ r: 12, sides: { L: { r: 6, done: true }, R: { r: 7, done: false } } })).toBe(7)
+    expect(guideReps({ r: 10 }, { reps: 8 })).toBe(10)
+    expect(guideReps(null, { reps: 8 })).toBe(8)
+    expect(guideReps(undefined, undefined)).toBe(8)
+  })
+})

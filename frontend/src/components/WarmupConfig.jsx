@@ -9,6 +9,7 @@ import { dropGrid } from '../lib/plates.js'
 import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, autoRungs, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { isAssisted } from '../lib/exercises.js'
+import { isoRun } from '../lib/bidi.js'
 
 const LB_KG = 0.45359237
 
@@ -30,7 +31,7 @@ function previewLine(st, cfg, work, unit) {
   const rows = warmupBlock(st, cfg, [{ w: work, r: cfg.reps || 5 }], { grid: dropGrid(st, cfg), floor: barFloor(st, cfg.id), unit })
   if (!rows) return null
   if (!rows.length) return t('Nothing at {0} {1}: that one starts cold.', fmtNum(work), unit)
-  return rows.filter(isWarmupRow).map(r => fmtNum(r.w) + ' × ' + (r.sides ? r.sides.L.r : r.r)).join(' · ')
+  return rows.filter(isWarmupRow).map(r => isoRun(fmtNum(r.w) + ' × ' + (r.sides ? r.sides.L.r : r.r))).join(' · ')
 }
 
 export default function WarmupConfig({ st, ex, c, setC }) {

@@ -72,17 +72,17 @@ extension WidgetState {
     }
 }
 
-/// openGym's mark, the app icon's barbell (frontend/public/icon-512.png), drawn as one shape so it
-/// takes the watch face's tint and stays sharp at every complication size.
+/// openGym's mark (assets/logo/opengym-mark.svg): five plain rectangles on a 352 x 174 grid, square
+/// corners. One shape, so it takes the watch face's tint and stays sharp at every complication size.
 struct OpenGymLogo: Shape {
+    /// The brand green (#A3E635): the logo's colour wherever it is not tinted by the face.
+    static let green = Color(red: 163 / 255, green: 230 / 255, blue: 53 / 255)
+
     func path(in rect: CGRect) -> Path {
-        // The icon's own coordinates (512 × 512); the barbell spans x 80…432, y 170…342.
         let boxes: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
-            (80, 200, 36, 112), (116, 242, 16, 28), (132, 170, 46, 172),
-            (178, 242, 156, 28),
-            (334, 170, 46, 172), (380, 242, 16, 28), (396, 200, 36, 112),
+            (80, 242, 352, 28), (80, 199, 36, 114), (131, 169, 47, 174), (334, 169, 47, 174), (396, 199, 36, 114),
         ]
-        let minX: CGFloat = 80, minY: CGFloat = 170, w: CGFloat = 352, h: CGFloat = 172
+        let minX: CGFloat = 80, minY: CGFloat = 169, w: CGFloat = 352, h: CGFloat = 174
         let scale = min(rect.width / w, rect.height / h)
         let ox = rect.midX - w * scale / 2, oy = rect.midY - h * scale / 2
         var p = Path()

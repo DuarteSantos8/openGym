@@ -39,6 +39,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readVitals", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWorkouts", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "allowBirthDate", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"
@@ -106,6 +107,24 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         store.requestAuthorization(toShare: shareTypes, read: readTypes) { _, _ in
             call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
+        }
+    }
+
+    /// The Apple Watch's Zones page takes the max heart rate from the age; the watch app shares this
+    /// app's Health permissions. Asks once; once answered, Apple Health is the only place to change
+    /// it, so it opens there. Answers { opened: Bool }.
+    @objc func allowBirthDate(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable(),
+              let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) else { call.resolve(["opened": false]); return }
+        store.getRequestStatusForAuthorization(toShare: [], read: [dob]) { status, _ in
+            if status == .unnecessary {
+                DispatchQueue.main.async {
+                    if let url = URL(string: "x-apple-health://") { UIApplication.shared.open(url) }
+                    call.resolve(["opened": true])
+                }
+            } else {
+                self.store.requestAuthorization(toShare: [], read: [dob]) { _, _ in call.resolve(["opened": false]) }
+            }
         }
     }
 
@@ -409,7 +428,24 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         let start = Date(timeIntervalSince1970: startMs / 1000), end = Date(timeIntervalSince1970: endMs / 1000)
         // A workout type with a limit of its own (none today): HealthKit would raise at the finish.
         guard AppleHealthPlugin.fits(HKObjectType.workoutType(), from: start, to: end, cap: false) else { return false }
-        if try await watchSaved(id) { return true }
+        if try await watchSaved(id) {
+            // The watch saved this workout, but with no energy at all (TestFlight 11-04: "Active
+            // and Total Energy always 0 kcal"; a watch that never got the calories permission, or
+            // a session paused through the rests). The phone's estimate fills in as a sample of
+            // its own over the same stretch, with the same checks as a workout the phone saves.
+            // A watch (or any other source) that measured something keeps it: nothing counts twice.
+            if energyOk, caloriesGranted, let type = activeEnergy,
+               let estimate = HealthWriteCore.kcal((s["kcal"] as? NSNumber)?.doubleValue),
+               AppleHealthPlugin.fits(type, from: start, to: end),
+               await measuredEnergy(type, from: start, to: end) == nil {
+                var kmeta = syncMetadata(id + "-kcal")
+                kmeta["OpenGymEstimate"] = true
+                let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: estimate),
+                                              start: start, end: end, device: .local(), metadata: kmeta)
+                try? await store.save(sample)
+            }
+            return true
+        }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
         // heart rate: left as it is, like the watch's copy.
         if await PhoneWorkoutLedger.handled(id) { return true }

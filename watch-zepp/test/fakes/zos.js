@@ -14,6 +14,8 @@ export function createWidget (type, props) {
   return w
 }
 export function deleteWidget (w) { w.alive = false; g.widgets = g.widgets.filter(x => x !== w) }
+// Roughly a system font's advance: 0.62 of the size per character (DejaVu Sans, for the previews).
+export function getTextLayout (text, { text_size }) { return { width: Math.ceil(String(text).length * text_size * 0.62), height: Math.round(text_size * 1.2) } }
 export function getAppWidgetSize () { return { w: 416, h: 180, margin: 32, radius: 32 } }
 export function getDeviceInfo () { return { ...g.device, deviceName: 'Amazfit Test' } }
 export class LocalStorage { getItem (k) { return g.storage.get(k) } setItem (k, v) { g.storage.set(k, v) } }

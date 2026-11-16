@@ -7,7 +7,9 @@
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
+import Toybox.WatchUi;
 
+(:sim)
 module Sim {
     var timer = null;
     var peak = 0;
@@ -15,7 +17,9 @@ module Sim {
     function begin() as Void {
         G.state = Core.normalize(null);
         G.ended = null;
-        Core.applySnapshot(G.state, SimData.snapshot());
+        if (!SimData.none()) {
+            Core.applySnapshot(G.state, SimData.snapshot());
+        }
         G.save();
         timer = new Timer.Timer();
         timer.start(new Lang.Method(Sim, :mem), 2000, true);
@@ -28,5 +32,12 @@ module Sim {
             peak = used;
         }
         System.println("mem " + used + " " + peak + " " + st.totalMemory);
+        // SIM_PAUSE=1: the phone pauses the first rest (its snapshot, through the real followRest)
+        if (SimData.pause() && !paused && G.state["rest"] != null) {
+            paused = true;
+            Core.followRest(G.state, { "restAt" => Core.nowMs(), "restPaused" => true, "restLeft" => 42 });
+            WatchUi.requestUpdate();
+        }
     }
+    var paused = false;
 }

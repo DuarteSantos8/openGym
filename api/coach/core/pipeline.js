@@ -84,7 +84,7 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
       : kind === 'ask'
-      ? validateAsk(parsed.value)
+      ? validateAsk(parsed.value, payload, { customIds, equipment, offered, noDumbbells, machines })
       : kind === 'adapt'
       ? validateAdapt(parsed.value, payload.today, { customIds, equipment, offered, noDumbbells, machines })
       : validatePlan(answer, {
@@ -95,7 +95,11 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
 
   if (!checked.ok) return { ok: false, repairable: !repair, errors: checked.errors, raw: r.text, errorClass: 'unusable' };
   if (checked.nochange) return { ok: true, nochange: true, reading: checked.reading };
-  return { ok: true, result: checked.proposal || { bundle: checked.bundle, summary: checked.bundle.summary } };
+  const result = checked.proposal || { bundle: checked.bundle, summary: checked.bundle.summary };
+  // The pages a web-researched answer read, shown under it as links (coach-146).
+  const sources = kind === 'ask' && Array.isArray(r.sources) && r.sources.length ? { sources: r.sources.slice(0, 8) } : {};
+  // An answer that turned into a plan or a change-set is pending as that kind, with its own card.
+  return { ok: true, result: { ...result, ...sources }, ...(checked.kind && checked.kind !== kind ? { kind: checked.kind } : {}) };
 }
 
 /** The whole loop: one attempt, then one repair round if the answer was fixable (FR-48). */

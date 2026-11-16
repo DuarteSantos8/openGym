@@ -62,7 +62,10 @@ object PhoneLink {
     /** One event for the phone: saved in the outbox, then sent. */
     fun send(ctx: Context, event: Event) {
         val app = ctx.applicationContext
-        val item = edit(app) { o -> OutboxCore.add(o, event) ?: (o to null) } ?: return
+        // Every event says how far this watch's clock is off the phone's when it was made (protocol 2):
+        // the phone moves its times onto its own clock. Resends keep it (the times are of that moment).
+        val withOff = RestEvents.withOff(event, WearStore.clockOff())
+        val item = edit(app) { o -> OutboxCore.add(o, withOff) ?: (o to null) } ?: return
         io.launch { put(app, listOf(item)); refreshNear(app) }
     }
 
@@ -111,25 +114,34 @@ object PhoneLink {
             try {
                 val uri = Uri.Builder().scheme("wear").path(Paths.SNAPSHOT).build()
                 val items = Wearable.getDataClient(app).getDataItems(uri, DataClient.FILTER_LITERAL).await()
-                var newest: Pair<Long, String>? = null
+                var newest: Triple<Long, String, String?>? = null
                 for (item in items) {
                     val map = DataMapItem.fromDataItem(item).dataMap
                     val json = map.getString(Paths.KEY_SNAPSHOT) ?: continue
                     val at = map.getLong(Paths.KEY_AT)
-                    if (newest == null || at > newest.first) newest = at to json
+                    if (newest == null || at > newest.first) newest = Triple(at, json, item.uri.host)
                 }
                 items.release()
-                newest?.let { (_, json) -> withContext(Dispatchers.Main) { WearStore.applySnapshotJson(json) } }
+                newest?.let { (at, json, host) -> withContext(Dispatchers.Main) { WearStore.applySnapshotJson(json, host, at.takeIf { it > 0 }) } }
             } catch (_: Exception) {}
             refreshNear(app)
         }
     }
 
+    /** Every 30 s while a workout runs or something waits (WearStore's idle loop): reach, and what is due. */
+    fun upkeep(ctx: Context) {
+        refreshNear(ctx)
+        flush(ctx)
+    }
+
+    /** Debug builds only: the e2e rig (src/debug RigReceiver) plays the phone and says whether it is near. */
+    @Volatile var nearForTest: Boolean? = null
+
     /** Whether the phone is connected right now. */
     fun refreshNear(ctx: Context) {
         val app = ctx.applicationContext
         io.launch {
-            val near = try { Wearable.getNodeClient(app).connectedNodes.await().any { it.isNearby } } catch (_: Exception) { false }
+            val near = nearForTest ?: try { Reach.phone(Wearable.getNodeClient(app).connectedNodes.await().size) } catch (_: Exception) { false }
             val back = near && !WearStore.phoneNear.value
             withContext(Dispatchers.Main) { WearStore.phoneNear.value = near }
             // The phone is back: everything it has not applied goes out again (it may have missed it).

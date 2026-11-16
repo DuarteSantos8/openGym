@@ -117,6 +117,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "da": {
+    "friendly": {
+      "title": "Er alt okay?",
+      "lines": [
+        "{0} venter stadig. Hvad sker der?",
+        "Ingen {0} i dag? Selv en kort træning i morgen tæller.",
+        "Hård dag? {0} kan vente. I morgen er en ny dag.",
+        "Hej, {0} blev ikke til noget i dag. Alt godt?"
+      ]
+    },
+    "guilt": {
+      "title": "Jeg savner dig",
+      "lines": [
+        "{0} ventede ved døren hele aftenen. På dig.",
+        "Vægtstangen spurgte efter dig i dag. Jeg vidste ikke, hvad jeg skulle sige.",
+        "Var det noget, jeg sagde? {0} savner dig.",
+        "Jeg holdt en plads på bænken til dig. Den er stadig tom."
+      ]
+    },
+    "drill": {
+      "title": "Ret ind, rekrut!",
+      "lines": [
+        "Dine gains pakker kufferten. {0} i morgen, ingen undskyldninger!",
+        "{0} laver ikke sig selv, rekrut. Kom i gang!",
+        "Undskyldninger løfter ikke vægte. Meld dig til {0} i morgen!",
+        "Dine muskler har meldt dig savnet. Mød op til {0}!"
+      ]
+    }
+  },
   "de": {
     "friendly": {
       "title": "Alles okay?",

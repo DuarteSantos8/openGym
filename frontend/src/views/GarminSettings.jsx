@@ -7,7 +7,7 @@ import { t } from '../lib/i18n.js'
 import { Section, Row, Switch } from '../components/ui.jsx'
 import { readWatchPrefs, writeWatchPrefs, onWatchPrefs } from '../lib/watch-settings.js'
 import { garminCall } from '../lib/watch-sync.js'
-import { garminView, garminDeviceLine, GARMIN_DOCS } from '../lib/garmin-view.js'
+import { garminView, garminDeviceLine, GARMIN_STORE } from '../lib/garmin-view.js'
 
 const lineOf = key => ({
   checking: t('Checking…'),
@@ -19,6 +19,7 @@ const lineOf = key => ({
   'no-watch': t('Garmin Connect doesn’t know a watch yet. Pair yours there first.'),
   'on-watch': t('openGym is on your Garmin. Sets you log on the wrist land here.'),
   'on-watch-away': t('openGym is on your Garmin. It catches up as soon as the watch is in reach.'),
+  away: t('Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.'),
   'get-app': t('Your Garmin is here, openGym isn’t on it yet. Get it, then open it once on the watch.'),
 }[key] || '')
 
@@ -48,8 +49,9 @@ export default function GarminSettingsPage ({ api = garminCall }) {
   const set = patch => setPrefs(writeWatchPrefs(patch))
   const pick = () => api('garminPick').then(() => api('garminStatus')).then(st => st && setStatus(st))
   const getApp = async () => {
+    // Garmin Connect opens its store page; when it cannot (or will not), the page on the web does.
     const r = status?.store ? await api('garminStore') : null
-    if (!r?.ok) window.open(GARMIN_DOCS, '_blank', 'noopener,noreferrer')
+    if (!r?.ok) window.open(GARMIN_STORE, '_blank', 'noopener,noreferrer')
   }
 
   return <>

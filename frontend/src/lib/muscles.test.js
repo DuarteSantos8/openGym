@@ -115,6 +115,18 @@ describe('catalogue secondary muscles', () => {
   })
 })
 
+describe('leg press and hack squat calves (#1034)', () => {
+  const legWork = EXDB.filter(e => /\b(leg press|hack squat)\b/i.test(e.n) && !/calf|calves|good morning|deadlift/i.test(e.n))
+  it('credits no calves to a leg press or hack squat', () => {
+    expect(legWork.length).toBeGreaterThan(30)
+    expect(legWork.filter(e => musclesOf(EXIDX[e.id]).calves).map(e => e.id)).toEqual([])
+  })
+
+  it('still credits calves to a calf press on the leg press machine', () => {
+    for (const id of ['0738', '1391', '1392', '2289']) expect(musclesOf(EXIDX[id]).calves).toBe(1)
+  })
+})
+
 
 describe('catalogue secondary additions', () => {
   it('enriches the muscle map without mutating the raw dataset', () => {
@@ -226,6 +238,48 @@ describe('planned weekly muscle volume', () => {
     // weekday 'arms' (3) + the queue's 'push' once (2 chest, 0.8 triceps); the weekday 'push' rows
     // are the queue's session, not a second plan of their own.
     expect(loadOfWeeklyPlan(queued)).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
+  })
+
+  // #1249: a loop is not a week. Six sessions at four a week is 4/6 of one turn of the loop,
+  // a routine named twice counted twice and rest days not at all.
+  describe('your own rotation with a weekly target (#1249)', () => {
+    const loop = (sequence, weekTarget, ids = ['push', 'arms']) => ({
+      ...state, weekTarget,
+      rotation: { id: 'rot', sequence, label: '' },
+      queue: { ids, since: 1, startsOn: '2026-08-17', rotationId: 'rot' },
+    })
+
+    it('scales one turn of the loop to the sessions a week holds', () => {
+      // push, arms: chest 2, triceps 0.8, biceps 3 a turn; four sessions a week is two turns.
+      const load = loadOfWeeklyPlan(loop(['push', 'arms'], 4))
+      expect(load.chest).toBeCloseTo(4)
+      expect(load.triceps).toBeCloseTo(1.6)
+      expect(load.biceps).toBeCloseTo(6)
+    })
+
+    it('counts a routine as often as the loop names it, whichever part of the loop is running', () => {
+      // push, arms, rest, push: three sessions, run as [push, arms] and then [push].
+      const seq = ['push', 'arms', 'rest', 'push']
+      const first = loadOfWeeklyPlan(loop(seq, 3, ['push', 'arms']))
+      expect(first.chest).toBeCloseTo(4)
+      expect(first.biceps).toBeCloseTo(3)
+      expect(loadOfWeeklyPlan(loop(seq, 3, ['push']))).toEqual(first)
+    })
+
+    it('fewer sessions a week than the loop holds plans less than one turn', () => {
+      expect(loadOfWeeklyPlan(loop(['push', 'arms'], 1)).biceps).toBeCloseTo(1.5)
+    })
+
+    it('leaves the weekday routines out: the target is the whole week', () => {
+      // state.week names arms and push on weekdays; with a target the loop is the plan.
+      expect(loadOfWeeklyPlan(loop(['push'], 2)).biceps).toBeUndefined()
+    })
+
+    it('with no target, or a queue that is not this rotation, counts as before', () => {
+      expect(loadOfWeeklyPlan(loop(['push'], null, ['push']))).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
+      const planner = { ...loop(['push'], 4, ['push']), queue: { ids: ['push'], since: 1, startsOn: '2026-08-17' } }
+      expect(loadOfWeeklyPlan(planner)).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
+    })
   })
 
   it('returns an empty projection for missing or empty plans', () => {

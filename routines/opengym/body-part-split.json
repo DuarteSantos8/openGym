@@ -1,0 +1,225 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Five days, one muscle at a time",
+  "goal": "muscle",
+  "level": "intermediate",
+  "split": "bro-split",
+  "duration": 60,
+  "tags": [
+    "gym",
+    "five days"
+  ],
+  "description": "Chest Monday, back Tuesday, and so on to arms on Friday. One muscle group a day, worked from several angles, with the weekend off.",
+  "sessions": [
+    {
+      "name": "Chest",
+      "exercises": [
+        {
+          "id": "0025",
+          "sets": 4,
+          "reps": 8,
+          "rest": 150
+        },
+        {
+          "id": "0314",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0308",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0251",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0662",
+          "sets": 2,
+          "reps": 20,
+          "rest": 60,
+          "note": "Burnout: as many clean reps as you have."
+        }
+      ]
+    },
+    {
+      "name": "Back",
+      "exercises": [
+        {
+          "id": "0652",
+          "sets": 4,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "0027",
+          "sets": 4,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "2330",
+          "sets": 3,
+          "reps": 12,
+          "rest": 90
+        },
+        {
+          "id": "1323",
+          "sets": 3,
+          "reps": 12,
+          "rest": 90
+        },
+        {
+          "id": "0406",
+          "sets": 3,
+          "reps": 15,
+          "rest": 60
+        }
+      ]
+    },
+    {
+      "name": "Shoulders",
+      "exercises": [
+        {
+          "id": "1162",
+          "sets": 4,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "0334",
+          "sets": 4,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0178",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "5609",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0348",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Legs",
+      "exercises": [
+        {
+          "id": "0043",
+          "sets": 4,
+          "reps": 8,
+          "rest": 180
+        },
+        {
+          "id": "0085",
+          "sets": 3,
+          "reps": 10,
+          "rest": 120
+        },
+        {
+          "id": "0739",
+          "sets": 3,
+          "reps": 12,
+          "rest": 90
+        },
+        {
+          "id": "0586",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0605",
+          "sets": 4,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Arms",
+      "exercises": [
+        {
+          "id": "0031",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        },
+        {
+          "id": "0241",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0313",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0814",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        },
+        {
+          "id": "0294",
+          "sets": 2,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0200",
+          "sets": 2,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      5,
+      4
+    ]
+  ]
+}

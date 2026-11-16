@@ -193,4 +193,15 @@ describe('lengths in cm on a pounds profile (#932)', () => {
     expect(S.measurements[0].other.find(o => o.id === 'Knee')).toMatchObject({ value: 40, unit: 'cm' })
     expect(host.textContent).toContain('Left knee')
   })
+
+  // QA 1.4.5: the old name came back when a renamed field was switched off and an old check-in
+  // was opened to correct it (its readings carry the name they were logged under).
+  it('an old check-in opened for editing shows a renamed field under its new name, also once it is switched off', () => {
+    install({ customMeasurements: [custom('Knee', 'cm')], measurements: [{ d: '2026-10-19', t: 1, other: [{ id: 'Knee', value: 40, unit: 'cm' }] }] })
+    useStore.getState().update(S => { S.customMeasurements[0].name = 'Left knee'; S.customMeasurements[0].enabled = false })
+    measurementLogSheet('2026-10-19')
+    const log = topSheet()
+    expect(field(log, 'Left knee')).toBeTruthy()
+    expect(field(log, 'Knee')).toBeFalsy()
+  })
 })

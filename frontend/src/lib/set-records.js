@@ -21,6 +21,7 @@ import { metricRowsForEntry, workoutAt, bestWeightFor } from './history.js'
 import { isAssisted, beatsWeight } from './exercises.js'
 import { estimate1RM, best1RM, weightedEstimate, FORMULAS, DEFAULT_FORMULA, REP_CAP } from './onerm.js'
 import { historyAs } from './dumbbells.js'
+import { t, tn } from './i18n.js'
 
 export const RECORD_KINDS = ['weight', 'reps', 'e1rm', 'volume']
 
@@ -246,4 +247,15 @@ export function repRecordTable(S, exId, { as = 'as', formula = DEFAULT_FORMULA, 
     rows.push({ r, best: best && { w: best.w, r: best.r, d: best.d }, possible })
   }
   return rows
+}
+
+/** The words of the line before a set (lib/set-records.js recordHint), or null. */
+export function recordHintText(hint) {
+  if (!hint) return null
+  const parts = []
+  if (hint.record.includes('weight')) parts.push(t('Heavier than ever. No pressure.'))
+  else if (hint.record.includes('reps')) parts.push(t('These reps would be a record'))
+  else if (hint.moreReps != null) parts.push(tn('{0} more rep for a record at this weight', '{0} more reps for a record at this weight', hint.moreReps))
+  if (hint.pct != null) parts.push(hint.pct > 100 ? t('Beats your best e1RM') : t('{0}% of your best e1RM', hint.pct))
+  return parts.length ? parts.join(' · ') : null
 }

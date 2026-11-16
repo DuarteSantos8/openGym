@@ -4,6 +4,7 @@
 import { z } from 'zod'
 import { getState, getUser } from './state.js'
 import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
+import { setTagCell } from '../../frontend/src/lib/set-tags.js'
 import { speedUnitOf } from '../../frontend/src/lib/speed.js'
 import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
@@ -12,7 +13,7 @@ import {
   modeOf, workoutVolume, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
-import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
+import { exOr, registerCustom, allExercises, searchScore, CATEGORIES } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow, isFailureSet } from '../../frontend/src/lib/workout-model.js'
 import {
   bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
@@ -81,7 +82,9 @@ export function entryView(e, S, speedUnit = speedUnitOf(S)) {
       min: Number(s.min) || 0,
       speed: Number(s.speed) || 0,
       // The set's own note (set menu → Note in the app), when it has one.
-      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {})
+      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {}),
+      // The set's colour tag (set menu → Colour tag), the lifter's own code: "red", "blue", …
+      ...(setTagCell(s) ? { color_tag: setTagCell(s) } : {})
     })),
     // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
     // videos themselves, their files and their refs never reach a client of this server.
@@ -746,8 +749,53 @@ export const getProgramme = {
   }
 }
 
+/* ---------- search_exercises ---------- */
+
+const BODY_PARTS = ['back', 'cardio', 'chest', 'lower arms', 'lower legs', 'neck', 'shoulders', 'upper arms', 'upper legs', 'waist']
+/** search_exercises — the exercise library (thousands built in, plus the user's own), with ids. */
+export const searchExercises = {
+  name: 'search_exercises',
+  description: [
+    'Search openGym\'s exercise library (the built-in catalogue plus the user\'s own exercises) by name, muscle or equipment, e.g. "romanian deadlift", "rear delt dumbbell", "pull-up bar".',
+    'Returns ids with name, body part, target muscle, equipment and category, best match first.',
+    'Use it before create_routine, update_routine or log_workout whenever a name could mean several exercises (there are many curls and presses): pass the id you picked as `exercise`, and the save cannot land on the wrong one.',
+    'Filter with body_part, equipment (as the results spell it: "barbell", "dumbbell", "body weight", "cable", "leverage machine", "band"...) or category to build a plan from what the user owns.',
+  ].join(' '),
+  schema: {
+    query: z.string().max(80).optional().describe('Words to look for. Omit to list by the filters alone.'),
+    body_part: z.enum(BODY_PARTS).optional(),
+    equipment: z.string().max(40).optional(),
+    category: z.enum(CATEGORIES).optional(),
+    limit: z.number().int().min(1).max(50).optional().describe('How many to return, 15 by default.'),
+  },
+  handler: p => {
+    const S = getState() || {}
+    const eq = String(p.equipment || '').toLowerCase().trim()
+    const scored = []
+    for (const ex of allExercises(S)) {
+      if (!ex || !ex.id || !ex.n) continue
+      if (p.body_part && ex.bp !== p.body_part) continue
+      if (eq && !String(ex.eq || '').toLowerCase().includes(eq)) continue
+      if (p.category && (ex.cat || 'strength') !== p.category) continue
+      const score = p.query ? searchScore(ex, p.query) : 1
+      if (score > 0) scored.push([score, ex])
+    }
+    scored.sort((a, b) => b[0] - a[0] || String(a[1].n).localeCompare(String(b[1].n)))
+    const limit = p.limit || 15
+    return {
+      total: scored.length,
+      exercises: scored.slice(0, limit).map(([, ex]) => ({
+        id: ex.id, name: ex.n, body_part: ex.bp || null, target: ex.tg || null, equipment: ex.eq || null,
+        category: ex.cat || 'strength', ...(ex.hd ? { mode: 'time' } : ex.bp === 'cardio' ? { mode: 'cardio' } : {}),
+        ...((S.customEx || []).some(c => c && c.id === ex.id) ? { own: true } : {}),
+      })),
+      ...(scored.length > limit ? { more: `${scored.length - limit} more: narrow the query or add a filter` } : {}),
+    }
+  }
+}
+
 export const TOOLS = [
-  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme
+  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme, searchExercises
 ]
 
 function noState() {

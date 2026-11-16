@@ -17,6 +17,7 @@
  * A backup file is someone else's data as much as a plan file is: the imported state's media refs
  * and links go through the same gates as everywhere else (sanitizeCustomMedia).
  */
+import { dropBrokenRows } from './backup-sane.js'
 import { zipStore, readZip, looksLikeZip } from './zip.js'
 import { referencedFiles, normalizeMediaRef, workoutMediaOf, cleanUrl, MEDIA_MIMES } from './media-refs.js'
 import { sniffKind } from './media-sniff.js'
@@ -139,7 +140,8 @@ export async function readBackupFile(file) {
     state = JSON.parse(await file.text())
     if (!isBackup(state)) throw notBackup()
   }
-  return { state: sanitizeCustomMedia(state), files, zip }
+  // Rows no screen can read (a null among the workouts) stay out: lib/backup-sane.js.
+  return { state: sanitizeCustomMedia(dropBrokenRows(state).state), files, zip }
 }
 
 /**

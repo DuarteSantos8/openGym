@@ -24,6 +24,24 @@
    "side-delts"
   ]
  },
+ "1027": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "1253": {
   "primaries": [
    "calves"
@@ -698,6 +716,60 @@
    "biceps": 0
   }
  },
+ "1575": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "1579": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "1583": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "1614": {
   "primaries": [
    "biceps"
@@ -760,6 +832,24 @@
    "obliques"
   ]
  },
+ "1992": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "2144": {
   "primaries": [
    "chest"
@@ -774,6 +864,42 @@
    "front-delts": 0.4,
    "triceps": 0.4,
    "biceps": 0
+  }
+ },
+ "2224": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "2267": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
   }
  },
  "2287": {
@@ -845,6 +971,24 @@
    "hamstring": 0
   }
  },
+ "2345": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "2364": {
   "primaries": [
    "chest"
@@ -912,6 +1056,24 @@
    "triceps": 0
   }
  },
+ "2749": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "2805": {
   "primaries": [
    "gluteal",
@@ -923,6 +1085,24 @@
    "adductors",
    "calves"
   ]
+ },
+ "2951": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
  },
  "3006": {
   "muscleWeights": {
@@ -1003,6 +1183,24 @@
    "calves"
   ]
  },
+ "3385": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "3418": {
   "bp": "full body",
   "primaries": [
@@ -1045,6 +1243,42 @@
    "triceps": 0
   }
  },
+ "3616": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "3617": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "3758": {
   "primaries": [
    "chest"
@@ -1069,6 +1303,24 @@
   ],
   "secondaries": []
  },
+ "3768": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
  "3888": {
   "bp": "full body",
   "primaries": [
@@ -1087,6 +1339,150 @@
    "obliques",
    "side-delts"
   ]
+ },
+ "4327": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "4681": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "5784": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "6354": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "6523": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "7107": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "7566": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
+ },
+ "8375": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
+  }
  },
  "0007": {
   "primaries": [
@@ -1311,6 +1707,24 @@
    "front-delts": 0.4,
    "triceps": 0.4,
    "biceps": 0
+  }
+ },
+ "0046": {
+  "primaries": [
+   "quadriceps",
+   "gluteal",
+   "adductors"
+  ],
+  "secondaries": [
+   "hamstring",
+   "calves"
+  ],
+  "muscleWeights": {
+   "quadriceps": 1,
+   "gluteal": 1,
+   "adductors": 1,
+   "hamstring": 0.4,
+   "calves": 0
   }
  },
  "0047": {

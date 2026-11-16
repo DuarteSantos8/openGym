@@ -121,6 +121,36 @@ export const TRAINER_COPY = {
       "body": "Trénovat spolu dál soukromě? Na rozhodnutí máš 30 dní."
     }
   },
+  "da": {
+    "connected": {
+      "title": "{0} er nu din træner",
+      "body": "De ser det, du har delt, intet mere. Ændr det når som helst i Træner & center."
+    },
+    "scopes": {
+      "title": "Din deling er ændret",
+      "body": "Det, {0} ser, er lige blevet ændret. Ikke dig? Tjek Træner & center."
+    },
+    "joined": {
+      "title": "Velkommen til {0}",
+      "body": "Din centerleder ser kun det, du har krydset af."
+    },
+    "change": {
+      "title": "{0} opdaterede din træning",
+      "body": "Tag et kig. Hvis det ikke er noget for dig, er fortryd ét tryk væk i Træner & center."
+    },
+    "suggest": {
+      "title": "{0} har en idé til dig",
+      "body": "Tag den, eller lad den ligge, i Træner & center."
+    },
+    "comment": {
+      "title": "{0} har skrevet en note til dig",
+      "body": ""
+    },
+    "offer": {
+      "title": "{0} forlod {1}",
+      "body": "Fortsætte med at træne sammen privat? Du har 30 dage til at beslutte dig."
+    }
+  },
   "de": {
     "connected": {
       "title": "{0} ist jetzt dein Trainer",
@@ -303,16 +333,16 @@ export const TRAINER_COPY = {
   },
   "id": {
     "connected": {
-      "title": "{0} sekarang trainermu",
-      "body": "Mereka melihat apa yang kamu bagikan, tidak lebih. Ubah kapan saja di Trainer & gym."
+      "title": "{0} sekarang trainer-mu",
+      "body": "Dia melihat apa yang kamu bagikan, tidak lebih. Ubah kapan saja di Trainer & gym."
     },
     "scopes": {
-      "title": "Berbagimu berubah",
+      "title": "Yang kamu bagikan berubah",
       "body": "Apa yang dilihat {0} baru saja berubah. Bukan kamu? Cek Trainer & gym."
     },
     "joined": {
       "title": "Selamat datang di {0}",
-      "body": "Pengelola gymmu hanya melihat apa yang kamu centang."
+      "body": "Pengelola gym-mu hanya melihat apa yang kamu centang."
     },
     "change": {
       "title": "{0} memperbarui latihanmu",
@@ -320,7 +350,7 @@ export const TRAINER_COPY = {
     },
     "suggest": {
       "title": "{0} punya ide untukmu",
-      "body": "Ambil atau lepaskan di Trainer & gym."
+      "body": "Terima atau abaikan di Trainer & gym."
     },
     "comment": {
       "title": "{0} meninggalkan catatan untukmu",

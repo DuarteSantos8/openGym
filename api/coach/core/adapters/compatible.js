@@ -17,6 +17,4 @@ export const compatibleSpec = chatCompletionsSpec('compatible', {
   versionlessFallback: true,
   compatLadder: true
 });
-// Streams once an answer was cut off mid-wait (a CDN's 60 s idle limit, #546), see http.js.
-compatibleSpec.streamOnCut = true;
 export default httpAdapter(compatibleSpec);

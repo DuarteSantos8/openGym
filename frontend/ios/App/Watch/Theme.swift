@@ -11,9 +11,12 @@ import WatchKit
  * screen is updated rarely then and every lit pixel costs.
  */
 enum Theme {
-    /// --green, the app's default accent, until the phone has said which one it wears.
-    static let green = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
+    /// The brand's green (#a3e635, the logo's and a new profile's accent since 1.4.5), until the
+    /// phone has said which accent it wears. It is light, so the ink on it is near-black (onAccent).
+    static let green = Color(red: 0xa3 / 255, green: 0xe6 / 255, blue: 0x35 / 255)
     static let accent = green
+    /// The brand's near-black (#0c0e12): what reads on the green.
+    static let onGreen = Color(red: 0x0c / 255, green: 0x0e / 255, blue: 0x12 / 255)
     static let orange = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
     static let red = Color(red: 1, green: 0x45 / 255, blue: 0x3a / 255)
     static let yellow = Color(red: 1, green: 0xd6 / 255, blue: 0x0a / 255)
@@ -36,7 +39,7 @@ enum Theme {
 }
 
 private struct AccentKey: EnvironmentKey { static let defaultValue: Color = Theme.green }
-private struct OnAccentKey: EnvironmentKey { static let defaultValue: Color = .black }
+private struct OnAccentKey: EnvironmentKey { static let defaultValue: Color = Theme.onGreen }
 
 extension EnvironmentValues {
     /// The app's accent, as the phone sends it.
@@ -52,7 +55,7 @@ extension EnvironmentValues {
 }
 
 extension Color {
-    /// "#30d158" as a colour, nil for anything else (WatchCore's Hex).
+    /// "#a3e635" as a colour, nil for anything else (WatchCore's Hex).
     init?(hex: String?) {
         guard let c = Hex.rgb(hex) else { return nil }
         self.init(red: c.r, green: c.g, blue: c.b)
@@ -69,6 +72,22 @@ func formatNumber(_ v: Double) -> String {
 
 /* ---------- buttons ---------- */
 
+extension Theme {
+    /// Liquid Glass draws its own edge; outlines that stood in for it go.
+    static var hasGlass: Bool { if #available(watchOS 26, *) { return true } else { return false } }
+}
+
+extension View {
+    /// Liquid Glass behind a control on watchOS 26 (tinted when given), `fill` before 26 and in Always On.
+    @ViewBuilder func glass<S: Shape>(_ shape: S, tint: Color? = nil, fill: Color, dimmed: Bool) -> some View {
+        if #available(watchOS 26, *), !dimmed {
+            glassEffect(tint.map { Glass.regular.tint($0).interactive() } ?? .regular.interactive(), in: shape)
+        } else {
+            background(shape.fill(fill))
+        }
+    }
+}
+
 /// The one thing to press on a screen: full width, a capsule in the accent, the ink on it.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.accent) private var accent
@@ -81,11 +100,11 @@ struct PrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(.body, design: .rounded).weight(.semibold))
             .lineLimit(1)
-            .minimumScaleFactor(0.7)
+            .minimumScaleFactor(0.55) // "Start hold" beside ‹ › on a 40 mm, German longer still
             .foregroundStyle(dimmed ? accent : onAccent)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap)
-            .background(Capsule().fill(dimmed ? Color.clear : accent))
+            .glass(Capsule(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
             .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
             .contentShape(Capsule())
             .opacity(enabled ? 1 : 0.35)
@@ -106,8 +125,8 @@ struct RowButtonStyle: ButtonStyle {
             .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
-                .fill(dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous),
+                   fill: dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
             .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
             .opacity(enabled ? 1 : 0.35)
@@ -151,7 +170,7 @@ struct RoundButton: View {
                     .font(.system(size: size * 0.44, weight: .heavy))
                     .foregroundStyle(dimmed ? accent : onAccent)
                     .frame(width: size, height: size)
-                    .background(Circle().fill(dimmed ? Color.clear : accent))
+                    .glass(Circle(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
                     .overlay(Circle().stroke(accent, lineWidth: dimmed ? 2 : 0))
             }
             .buttonStyle(.plain)
@@ -175,7 +194,7 @@ struct EdgeButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.white.opacity(dimmed ? 0.7 : 1))
                 .frame(width: size, height: size)
-                .background(Circle().fill(dimmed ? Color.clear : Theme.dim))
+                .glass(Circle(), fill: dimmed ? Color.clear : Theme.dim, dimmed: dimmed)
                 .overlay(Circle().stroke(Theme.dim, lineWidth: dimmed ? 1 : 0))
                 .contentShape(Circle())
         }

@@ -153,3 +153,9 @@
 
 /* a finished step's summary reads as a receipt, not a control */
 .adm-step.done>summary .adm-step-t span{color:var(--acc-ink)}
+/* The setup token's risk and the cheap-key tips (AdminCoach.jsx, sub-connect-146). */
+.adm-risk{display:flex;gap:8px;align-items:flex-start;margin:6px 0 10px;padding:10px 12px;border-radius:10px;background:var(--surface-2);background:color-mix(in srgb,var(--orange) 14%,transparent);font-size:var(--fs-footnote);line-height:1.45;color:var(--label)}
+.adm-risk svg{flex:none;color:var(--orange);margin-top:2px}
+.adm-tip{display:flex;gap:8px;align-items:flex-start}
+.adm-tip svg{flex:none;color:var(--yellow);margin-top:2px}
+.adm-tip a{color:var(--acc)}

@@ -12,7 +12,9 @@
  */
 import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
-import { muscleLoad, gymOf, challengesOf } from './context.js';
+import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, rotationOf } from './context.js';
+import { shareOf } from './categories.js';
+import { asksForBodyweight, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -451,6 +453,8 @@ function trainedIds(S, workouts) {
 export const FULL_DETAIL_SESSIONS = 3;
 // The sessions a question in the chat sees: enough for "last week", not a review's whole window.
 export const ASK_SESSIONS = 8;
+// The library slice a chat question gets, for actions that name exercises (coach-146).
+export const ASK_LIBRARY = 90;
 
 // A set taken to failure (the app's "F", `failure: true`) is RIR 0 when nothing was rated.
 const fmtSet = s => {
@@ -627,7 +631,9 @@ export function build(S, opts = {}) {
       effortScale: effortOf(S),
       // Settings → Workout → Automatic warm-ups, what a slot without a choice of its own follows.
       warmups: S.warmupAuto === 'compounds' || S.warmupAuto === 'all' ? S.warmupAuto : 'off',
-      today: iso(new Date(now))
+      today: iso(new Date(now)),
+      // The provider can search the web for this answer (a chat question with research on).
+      ...(opts.web === true && opts.kind === 'ask' ? { web: true } : {})
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
     plan: cleanPlan(S, now)
@@ -642,6 +648,17 @@ export function build(S, opts = {}) {
     if (gym) p.gym = gym;
     const challenges = opts.kind === 'review' || opts.kind === 'ask' ? challengesOf(S, now) : null;
     if (challenges) p.challenges = challenges;
+  }
+  // The switchable categories (core/categories.js OPTIONAL_CATEGORIES): strength trends, body
+  // measurements and, only when switched on, health. A review and a question read them; the loop
+  // order goes along with the plan.
+  if (opts.kind === 'review' || opts.kind === 'ask') {
+    const share = shareOf(S);
+    if (share.records) { const r = recordsOf(S, now); if (r.length) p.records = r; }
+    if (share.measurements) { const m = measurementsOf(S, now); if (m.length) p.measurements = m; }
+    if (share.health) { const h = healthOf(S, now, opts.vitals); if (h) p.health = h; }
+    const rot = rotationOf(S);
+    if (rot) p.rotation = rot;
   }
   // Someone who set up a home gym under Settings → Equipment and left the Coach's own equipment
   // question empty was handed the whole catalogue, leverage machines and all. The profile they
@@ -716,6 +733,14 @@ export function build(S, opts = {}) {
     const since = new Date(now);
     since.setDate(since.getDate() - 28);
     p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, iso(since), null) };
+    // What the Coach may do from the chat (core/ask-actions.js) names exercises by id, so the
+    // question gets a library slice, leaning to what the question names. "Only bodyweight" narrows
+    // it to exercises that need nothing.
+    const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
+    p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    // Routines from the library (core/routine-library.js) the app found for this question.
+    const hits = cleanHits(opts.routines);
+    if (hits.length) p.routineLibrary = hits;
   } else if (opts.kind === 'adapt') {
     // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
     // short day, feeling great. The session as it stands (each entry with its index, so a change

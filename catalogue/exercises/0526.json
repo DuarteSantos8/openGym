@@ -11,13 +11,11 @@
   "category": "olympic",
   "description": "You clean two kettlebells alternately from a hang to the rack. It works the hips, back, shoulders and grip.",
   "instructions": [
-    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand with an overhand grip.",
-    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and chest up.",
-    "Allow the kettlebells to hang straight down in front of your body.",
-    "In one fluid motion, explosively extend your hips and knees while shrugging your shoulders.",
-    "As the kettlebells rise, pull them up towards your shoulders, keeping your elbows high and out to the sides.",
-    "Catch the kettlebells at shoulder height, with your palms facing inward and your elbows pointing forward.",
-    "Lower the kettlebells back down to the starting position and repeat for the desired number of repetitions."
+    "Stand with your feet shoulder-width apart, a kettlebell hanging in each hand.",
+    "Hinge slightly at the hips with a flat back.",
+    "Drive your hips forward and clean one kettlebell to the rack position at your shoulder, keeping it close to your body.",
+    "Lower it back to the hang as you clean the other one.",
+    "Keep alternating sides in a steady rhythm."
   ],
   "muscleMap": {
     "bodyPart": "full body",
