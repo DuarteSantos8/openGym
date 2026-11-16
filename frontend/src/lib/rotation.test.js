@@ -550,6 +550,30 @@ describe('rest days and repeats (#536)', () => {
     expect(queueNext(s, '2026-09-13', '2026-09-13')).toBe('b')
   })
 
+  it('a plan on an earlier segment\'s routine survives the refill, and stopping, restarting or leaving the loop clears it', () => {
+    const advanced = () => {
+      const s = loop(['a', REST, 'b'], { rotation: { at: 0 } })
+      startPass(s, '2026-09-11', NOW - 2 * 86400000)
+      s.workouts = [w('a', TODAY)]
+      s.dayPlan = { '2026-09-20': 'a', '2026-09-21': 'b', '2026-09-10': 'a', '2026-09-22': 'own' }
+      expect(refillAfter(s, s.workouts[0], TODAY, NOW)).toBe(true)
+      expect(s.queue.ids).toEqual(['b'])
+      expect(s.dayPlan['2026-09-20']).toBe('a')   // refills keep plans
+      return s
+    }
+    // Dated before today, or not a routine of the loop: left alone.
+    const left = { '2026-09-10': 'a', '2026-09-22': 'own' }
+    const stopped = advanced()
+    stopPass(stopped, TODAY)
+    expect(stopped.dayPlan).toEqual(left)
+    const restarted = advanced()
+    startNewPass(restarted, TODAY, NOW)
+    expect(restarted.dayPlan).toEqual(left)
+    const fixed = advanced()
+    chooseFixedWeek(fixed, TODAY)
+    expect(fixed.dayPlan).toEqual(left)
+  })
+
   it('a rest day after a segment: the next one starts a day later, and the day in between has no session', () => {
     const s = loop(['a', 'b', REST, 'c'], { rotation: { at: 0 } })
     startPass(s, '2026-09-11', NOW - 2 * 86400000)

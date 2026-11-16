@@ -116,6 +116,13 @@ const sweepPins = (s, ids, today) => {
   })
 }
 
+/**
+ * The ids an explicit stop or restart sweeps: the pass's own, and for a pass this app manages
+ * every routine of its loop. A loop with rest days or repeats runs one segment at a time and a
+ * refill keeps plans, so a pin on another segment's routine can still be waiting.
+ */
+const ownedIds = (s, q) => (q.rotationId && q.rotationId === s.rotation?.id ? [...new Set([...q.ids, ...rotationIds(s)])] : q.ids)
+
 /** Settings → Rotation with a saved rotation and no queue. False when nothing valid is left to start. */
 export function startPass(s, today = todayISO(), now = Date.now()) {
   const seq = sequenceOf(s)
@@ -215,7 +222,7 @@ function advanceLoop(s, q, bound, today, now) {
  */
 export function stopPass(s, today = todayISO()) {
   const q = queueOf(s)
-  if (q) sweepPins(s, q.ids, today)
+  if (q) sweepPins(s, ownedIds(s, q), today)
   s.queue = null
 }
 
@@ -278,7 +285,7 @@ export function startNewPass(s, today = todayISO(), now = Date.now()) {
   const ids = loop ? loop.ids : rotationIds(s)
   if (!ids.length) return
   const q = queueOf(s)
-  if (q) sweepPins(s, q.ids, today)
+  if (q) sweepPins(s, ownedIds(s, q), today)
   // A live workout on one of the loop's routines, already running when the loop is started over,
   // belongs to the new pass: otherwise `strict` + since=now means it never counts once finished.
   // Still never earlier than the old pass's own workouts (sinceAfter's floor).
