@@ -26,7 +26,7 @@ import { cleanBands, bandsFromCell } from './bands.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
-import { activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
+import { activitiesFromHealthExport, activitiesFromStravaExport, isStravaExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
 import {
   MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
@@ -1228,6 +1228,11 @@ const importReadingId = b => 'i' + hashId(`${b.d}|${b.at || ''}|${b.w}`)
 export function parseImport(text, opts) {
   const s = String(text)
   if (s.includes('HKQuantityTypeIdentifier') || /^\s*</.test(s)) return parseBodyweight(s, opts)
+  // Strava's activities.csv: its runs, rides and matches as activities (lib/activities.js). Sniffed
+  // on the first line before anything parses the file, which can hold years of rows.
+  if (isStravaExport(parseCSV(s.slice(0, s.search(/[\r\n]/) + 1 || s.length))[0])) {
+    return finishBodyweight(new Map(), opts?.unit || 'kg', 'Strava', '', [], activitiesFromStravaExport(parseCSV(s)))
+  }
   const asWorkouts = parseWorkoutCSV(s, opts)
   if (!asWorkouts.error) return asWorkouts
   const asWeights = parseBodyweight(s, opts)

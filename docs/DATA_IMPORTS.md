@@ -9,6 +9,7 @@ Everything here lives in the app under **Settings → Data & backup**, except pl
 | Bring plans over from Liftosaur or Liftoff | **Import from another app** with the JSON export |
 | Pull workouts, routines and weigh-ins from Hevy Pro | **Import from Hevy** (API key) |
 | Bring body weight over from an iPhone | **Import from another app** with the Apple Health export |
+| Bring your runs and rides over from Strava | **Import from another app** with `activities.csv` from your Strava archive |
 | Give someone your routines | **Plan → share button (top right) → Export plan file** |
 | Back up or move everything | **Export backup** / **Import backup** |
 
@@ -149,6 +150,24 @@ last), added only to a day that has none yet. The body CSV openGym exports itsel
 weigh-in that way and reads back the same. So does Strong's
 measurements export (Settings → Export Data, the file with *Measurement Type* and *Value*
 columns): only its weight rows are read, each in the unit it was logged in.
+
+## Runs and rides from Strava
+
+On strava.com, open **Settings → My Account → Download or Delete Your Account** and press **Request
+Your Archive** (the same page deletes an account, so only that one button). Strava mails a link to a
+zip file. Unzip it and pick `activities.csv` under **Import from another app**.
+
+Runs, rides, swims, hikes and matches come in as activities, with their day, minutes, distance and
+name: they show in History and the calendar and tire the right muscles, and they are not workouts.
+Weight training, walks and indoor cardio are left out, the way the Apple Health and Health Connect
+read leaves them out, and so is anything openGym uploaded to Strava itself or that sits over a
+workout logged here. A plain "Workout" comes in only when its name says a sport. The file's times
+are UTC, so each activity lands on the day it started on this device's clock.
+
+Importing the same file twice adds nothing. A session that is already there from Apple Health or
+Health Connect (same sport, started within five minutes) is skipped too, so the archive fills in the
+years before the health read began without doubling the weeks they share. The file has to be the
+English one: Strava writes the dates and types in the language of the account.
 
 ## Sharing a plan
 

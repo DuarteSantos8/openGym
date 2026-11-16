@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   readActivity, activitiesOf, withActivity, activityTotals, activityStimuli, activityFromHealth, mergeHealthActivities,
-  sportOfName, activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities, isOwnRecord, hkSportName, activityLine,
+  sportOfName, activitiesFromHealthExport, activitiesFromStravaExport, splitSportWorkouts, mergeImportedActivities, isOwnRecord, hkSportName, activityLine,
 } from './activities.js'
 import { streakInfo } from './streak.js'
 import { fatigueOf } from './recovery.js'
@@ -129,6 +129,58 @@ describe('activities: imports', () => {
     expect(mergeImport(S, parsed).activities).toBe(2)
     expect(mergeImport(S, parsed).activities).toBe(0)
     expect(activitiesOf(S)).toHaveLength(2)
+  })
+  it('reads the runs and matches of a Strava export, and skips strength, walks and gym cardio', () => {
+    // The real header has 104 columns, "Elapsed Time" and "Distance" twice: summary first, exact after.
+    const csv = [
+      'Activity ID,Activity Date,Activity Name,Activity Type,Activity Description,Elapsed Time,Distance,Max Heart Rate,Filename,Elapsed Time,Moving Time,Distance',
+      '101,"Oct 5, 2026, 5:00:00 AM",Morning Run,Run,,2550,8.20,160,activities/101.fit.gz,2550.0,2500.0,8204.5',
+      '102,"Oct 6, 2026, 4:00:00 PM","Tennis, with Tom",Workout,"two\nlines",5400,0.00,,activities/102.fit.gz,5400.0,5400.0,0.0',
+      '103,"Oct 7, 2026, 4:00:00 PM",Push day,Weight Training,,3600,0.00,,,3600.0,3600.0,0.0',
+      '104,"Oct 8, 2026, 10:00:00 AM",Lunch Walk,Walk,,1800,2.00,,,1800.0,1700.0,2000.0',
+      '105,"Oct 9, 2026, 10:00:00 AM",Afternoon Workout,Workout,,1800,0.00,,,1800.0,1800.0,0.0',
+      '106,"Oct 10, 2026, 12:30:00 PM",Gravel,E-Bike Ride,,3600,30.00,,,3600.0,3500.0,30000.0',
+      '107,"Oct 11, 2026, 12:30:00 PM",Too short,Run,,120,0.30,,,120.0,120.0,300.0',
+      '108,not a date,Broken,Run,,1800,5.00,,,1800.0,1800.0,5000.0',
+      '109,"Oct 12, 2026, 6:00:00 AM",Treadmill,Run,"5 km\nLogged with openGym",1800,5.00,,,1800.0,1800.0,5000.0',
+      '110,"Oct 13, 2026, 6:00:00 AM",Zwift - Run,Virtual Run,,1800,5.00,,,1800.0,1800.0,5000.0',
+      '111,"Oct 14, 2026, 6:00:00 AM",Gym wall,Rock Climbing,,3600,0.00,,,3600.0,3600.0,0.0',
+    ].join('\n')
+    const parsed = parseImport(csv, { unit: 'kg' })
+    expect(parsed.kind).toBe('bodyweight')
+    expect(parsed.source).toBe('Strava')
+    expect(parsed.bodyweight).toEqual([])
+    expect(parsed.activities.map(a => [a.sport, a.min, a.km ?? null, a.title])).toEqual([
+      ['run', 43, 8.2, 'Morning Run'], ['racket', 90, null, 'Tennis, with Tom'], ['ride', 60, 30, 'Gravel'], ['climb', 60, null, 'Gym wall'],
+    ])
+    // the export's times are UTC
+    expect(parsed.activities[0].at).toBe(Date.UTC(2026, 9, 5, 5, 0, 0))
+    expect(parsed.activities[2].at).toBe(Date.UTC(2026, 9, 10, 12, 30, 0))
+    const S = { workouts: [], bodyweight: [], customEx: [], exWeights: {} }
+    expect(mergeImport(S, parsed).activities).toBe(4)
+    expect(mergeImport(S, parsed).activities).toBe(0)
+    // a run over a workout logged here is that workout, sent to Strava by openGym or by a watch
+    const run = Date.UTC(2026, 9, 5, 5, 0, 0)
+    const G = { workouts: [{ id: 'w1', d: '2026-10-05', start: run - 60e3, end: run + 40 * 60e3, entries: [] }], bodyweight: [], customEx: [], exWeights: {} }
+    expect(mergeImport(G, parsed).activities).toBe(3)
+    // a workout history that happens to have a date column is still a workout history
+    expect(activitiesFromStravaExport([['Date', 'Workout Name', 'Exercise Name'], ['2026-10-05', 'Push', 'Bench']])).toEqual([])
+  })
+  it('does not bring the same session in twice from two sources', () => {
+    const start = Date.UTC(2026, 9, 5, 5, 0, 0)
+    const run = { d: '2026-10-05', sport: 'run', min: 43, km: 8.2, at: start, src: 'import' }
+    // read from the health store first, then the same run in a file, a minute apart
+    const S = { workouts: [] }
+    expect(mergeHealthActivities(S, [{ id: 'hk-1', sport: 'run', start, end: start + 43 * 60e3, km: 8.2 }], { src: 'ah', now: start + 864e5 })).toHaveLength(1)
+    expect(mergeImportedActivities(S, [{ id: 'i1', ...run, at: start + 60e3 }])).toBe(0)
+    // another sport at that time, and a second run that afternoon, are their own sessions
+    expect(mergeImportedActivities(S, [{ id: 'i2', ...run, sport: 'ride' }, { id: 'i3', ...run, at: start + 6 * 36e5 }])).toBe(2)
+    // the other way round: the file first, then the store, and two apps saving one run to the store
+    const T = { workouts: [] }
+    expect(mergeImportedActivities(T, [{ id: 'i1', ...run }])).toBe(1)
+    const rec = id => ({ id, sport: 'run', start: start + 30e3, end: start + 43 * 60e3, km: 8.2 })
+    expect(mergeHealthActivities(T, [rec('strava-1'), rec('garmin-1')], { src: 'ah', now: start + 864e5 })).toEqual([])
+    expect(activitiesOf(T)).toHaveLength(1)
   })
   it('turns a session that was only sport into an activity and keeps a real workout', () => {
     const nameOf = e => ({ c1: 'Padel', c2: 'Bench Press', c3: 'Football' })[e.id] || ''
