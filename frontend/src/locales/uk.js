@@ -5894,4 +5894,6 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Застій уже {0} тренувань. Залиште {1} {2} і робіть {3} повторень.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Застій уже {0} тренувань. Розвантаження за Еплі до {1} {2} на {3} повторень.",
 }

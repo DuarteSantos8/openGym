@@ -5901,4 +5901,6 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Застой {0} тренировок. Оставьте {1} {2} и делайте {3} повторений.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Застой {0} тренировок. Разгрузка по Эпли до {1} {2} на {3} повторений.",
 }

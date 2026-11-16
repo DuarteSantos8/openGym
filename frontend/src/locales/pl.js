@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Stoisz w miejscu od {0} treningów. Zostań przy {1} {2} i rób {3} powtórzeń.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Stoisz w miejscu od {0} treningów. Odciążenie według Epleya do {1} {2} na {3} powtórzeń.",
 }

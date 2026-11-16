@@ -5893,4 +5893,6 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Jau {0} treniruotes be pažangos. Likite ties {1} {2} ir darykite {3} pakartojimus.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Jau {0} treniruotes be pažangos. Iškrova pagal Epley iki {1} {2}, {3} pakartojimai.",
 }

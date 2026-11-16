@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} tréninků bez posunu. Zůstaň na {1} {2} a dělej {3} opakování.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} tréninků bez posunu. Odlehčení podle Epleyho na {1} {2} na {3} opakování.",
 }

@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "已停滞 {0} 次训练。保持 {1} {2}，做 {3} 次。",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "已停滞 {0} 次训练。按 Epley 减载到 {1} {2}，做 {3} 次。",
 }

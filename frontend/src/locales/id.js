@@ -5862,4 +5862,6 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Mandek selama {0} sesi. Tetap di {1} {2} dan lakukan {3} repetisi.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Mandek selama {0} sesi. Deload Epley ke {1} {2} untuk {3} repetisi.",
 };

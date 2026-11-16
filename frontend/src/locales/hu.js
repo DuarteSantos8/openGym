@@ -5900,4 +5900,6 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} edzés óta elakadtál. Maradj {1} {2}-nál, és csinálj {3} ismétlést.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} edzés óta elakadtál. Epley szerinti tehermentesítés {1} {2}-ra, {3} ismétléssel.",
 }

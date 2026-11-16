@@ -5976,4 +5976,6 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} সেশন ধরে আটকে আছেন। {1} {2} রাখুন আর {3}টি রেপ করুন।",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} সেশন ধরে আটকে আছেন। এপলি অনুযায়ী {1} {2}-এ নামিয়ে {3}টি রেপ।",
 }
