@@ -191,6 +191,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Skaitoma tik šiame įrenginyje. Į openNutrition nieko nerašoma, ir niekas, ką jis siunčia, nepatenka į atsarginę kopiją ar sinchronizaciją.",
   "Runs, rides and matches": "Bėgimai, važiavimai ir rungtynės",
   "Runs, rides and matches from other apps": "Bėgimai, važiavimai ir rungtynės iš kitų programų",
+  "Birth date, for heart-rate zones": "Gimimo data pulso zonoms",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Tavo Apple Watch pulso zonas skaičiuoja pagal tavo amžių. Leisk gimimo datą arba vėliau pakeisk tai Apple Health.",
   "Show it in": "Rodyti",
   "Some days had foods without numbers, so their totals are a little low.": "Kai kuriomis dienomis produktai neturėjo verčių, todėl sumos kiek per mažos.",
   "Sport": "Sportas",
@@ -5896,4 +5898,10 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tinkinti",
+  "Collapsed": "Suskleista",
+  "Hide": "Slėpti",
+  "Totals": "Sumos",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
 }

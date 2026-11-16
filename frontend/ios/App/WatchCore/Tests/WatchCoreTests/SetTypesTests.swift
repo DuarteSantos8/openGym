@@ -75,8 +75,8 @@ final class SetTypesTests: XCTestCase {
         var phone = state([e]).workout!
         phone.entries[0].sets[0] = row0
         let confirmed = SessionCore.applySnapshot(back, Snapshot(v: 1, unit: "kg", restSec: 90, active: phone, ready: nil, settings: nil))
-        XCTAssertNil(confirmed.pending["split#0#L"])
-        XCTAssertNil(confirmed.pending["split#0#R"])
+        XCTAssertNil(confirmed.pending["e0:split#0#L"])
+        XCTAssertNil(confirmed.pending["e0:split#0#R"])
         XCTAssertEqual(SessionCore.summary(s.workout!, end: 1).volume, 300)   // 20×8 + 20×7
     }
 

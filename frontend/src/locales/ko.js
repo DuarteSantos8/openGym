@@ -191,6 +191,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "이 기기에서만 읽어요. openNutrition에는 아무것도 쓰지 않고, 받아 온 것은 백업이나 동기화에 들어가지 않아요.",
   "Runs, rides and matches": "달리기, 라이딩, 경기",
   "Runs, rides and matches from other apps": "다른 앱의 달리기, 라이딩, 경기",
+  "Birth date, for heart-rate zones": "생년월일, 심박수 구간용",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch가 나이로 심박수 구간을 계산해요. 생년월일을 허용하거나 나중에 Apple Health에서 바꿀 수 있어요.",
   "Show it in": "표시할 곳",
   "Some days had foods without numbers, so their totals are a little low.": "수치가 없는 음식이 있던 날이 있어서 합계가 조금 낮아요.",
   "Sport": "스포츠",
@@ -5900,4 +5902,10 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "맞춤 설정",
+  "Collapsed": "접힘",
+  "Hide": "숨기기",
+  "Totals": "합계",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
 }

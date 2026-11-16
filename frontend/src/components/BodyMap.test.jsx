@@ -3,6 +3,10 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import BodyMap, { BodyMapLegend } from './BodyMap.jsx'
+import { _setLangState } from '../lib/i18n-core.js'
+
+const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+const pack = code => packs[`../locales/${code}.js`]
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -84,5 +88,194 @@ describe('BodyMap interaction semantics', () => {
   it('labels the existing legend direction for assistive technology', () => {
     act(() => root.render(<BodyMapLegend />))
     expect(container.querySelector('.hm-legend').getAttribute('aria-label')).toBe('Less More')
+  })
+})
+
+// A muscle is drawn as several shapes, on both views, so a map that is not interactive used to
+// hand a screen reader one unnamed image holding every shape in it: on a routine's page that is
+// 116 symbols over 20 muscle names, "obliques" sixteen times and "forearms" fourteen, with the
+// six muscles the routine actually hits sounding exactly like the fourteen it does not, because
+// the difference is carried by fill colour alone. The interactive branch above already solves
+// this by naming one shape per muscle and hiding the rest; this is the same treatment for the
+// branch that has no tap handler, where there is nothing to name per shape.
+// The guard at the end of this file reads source rather than the rendered tree, so a new call
+// site cannot be added without deciding what a screen reader gets from it. It is here at module
+// scope, and fed made-up sources by its own test, because both ways it can fail are silent: it
+// can miss a site, and it can excuse one that needs naming.
+
+// The element's own opening tag, ending at the first ">" outside braces so that a prop holding an
+// arrow function (onMuscle={() => pick(m)}) does not cut it short. Quoted text is skipped, so a
+// brace inside a value does not move the boundary and swallow the next element -- which is what
+// happens to a template literal like aria-label={`${t('a')} ${t('b')}`} if braces are counted
+// wherever they appear. A window of lines around the call is not the same thing either: it takes
+// in a <button> that closed above the map and a sibling's aria-hidden below it, neither of which
+// says anything about the map between them.
+const openTag = (text, from) => {
+  let depth = 0
+  let quote = ''
+  for (let i = from; i < text.length; i++) {
+    const c = text[i]
+    if (quote) {
+      if (c === '\\') i++                       // t('it\'s') must not end the string early
+      else if (c === quote) quote = ''
+      continue
+    }
+    if (c === '"' || c === "'" || c === '`') quote = c
+    else if (c === '{') depth++
+    else if (c === '}') depth--
+    else if (c === '>' && depth === 0) return text.slice(from, i + 1)
+  }
+  return text.slice(from)
+}
+
+// Two sites are decoration without a marker on the map itself, because the element wrapped around
+// them carries it. Both were read in Chrome's accessibility tree, not assumed:
+//  - the session's header button, whose aria-label names it. A <button aria-label> hides its
+//    subtree where role="img" does not, so the 116 shapes under it are not exposed;
+//  - the Wrapped card, whose wrapper is aria-hidden, the way MiniBodyMap hides itself.
+// Matched on the text of the call, not on a line number (any unrelated edit above would move it)
+// and not on neighbouring lines. Reformat one and the guard fails and points at it.
+const DECORATION_BY_ANCESTOR = [
+  '<BodyMap className="bm-mini bm-session"',
+  '<BodyMap load={st.load} body={body} />',
+]
+
+/** The maps in `text` that are neither tappable, named, nor hidden. */
+function unnamedMaps(text) {
+  const lines = text.split('\n')
+  const out = []
+  // \b, not a space: a call site written over several lines starts with "<BodyMap" alone, and a
+  // guard that quietly stopped seeing it would be worse than no guard. Still excludes
+  // <BodyMapLegend, which is a different component.
+  for (const m of text.matchAll(/<BodyMap\b/g)) {
+    const tag = openTag(text, m.index)
+    // Whole attribute names, each at the start of the tag or after whitespace: /hits=/ is also
+    // inside data-hits=, and a call site carrying that would be excused while still rendering a
+    // map that says nothing.
+    if (/(?:^|\s)(?:onMuscle|aria-hidden|hits)=/.test(tag)) continue
+    if (DECORATION_BY_ANCESTOR.some(named => tag.startsWith(named))) continue
+    const no = (text.slice(0, m.index).match(/\n/g) || []).length + 1
+    out.push({ line: no, snippet: (lines[no - 1] || '').trim() })
+  }
+  return out
+}
+
+describe('BodyMap as a read-only picture', () => {
+  // Leaving the app in German would send every later test in this file looking for German names.
+  afterEach(() => _setLangState('en', null, null, null))
+
+  // Stable on purpose. An inline literal is a new array every render, so a memo that forgot the
+  // language would be forced to recompute and the language test below would pass while the bug
+  // was present.
+  const HITS = ['chest', 'lats']
+  const LOAD = { chest: 12, lats: 8 }
+
+  async function renderReadOnly(props = {}) {
+    await act(async () => {
+      root.render(<BodyMap load={LOAD} {...props} />)
+    })
+    await vi.waitFor(() => expect(container.querySelectorAll('.bm-v')).toHaveLength(2))
+    return container
+  }
+
+  it('does not read every shape of a muscle it has already named', async () => {
+    const c = await renderReadOnly({ hits: ['chest', 'lats'] })
+    const shapes = [...c.querySelectorAll('.bm-m')]
+    expect(shapes.length).toBeGreaterThan(20)
+    expect(shapes.every(p => p.getAttribute('aria-hidden') === 'true')).toBe(true)
+  })
+
+  it('names the muscles the map stands for, in the order given', async () => {
+    const c = await renderReadOnly({ hits: ['chest', 'lats'] })
+    expect(c.querySelector('.bm-v').getAttribute('aria-label')).toBe('Chest, Lats')
+  })
+
+  // The two views draw one body, not two loads: naming both would read the muscle list twice.
+  it('names the front view and leaves the back view to it', async () => {
+    const c = await renderReadOnly({ hits: ['chest', 'lats'] })
+    const [front, back] = [...c.querySelectorAll('.bm-v')]
+    expect(front.getAttribute('aria-label')).toBe('Chest, Lats')
+    expect(back.getAttribute('aria-label')).toBeNull()
+    expect(back.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('keeps the interactive map naming one shape per muscle instead of the whole picture', async () => {
+    await renderReadOnly({ hits: ['chest'], onMuscle: vi.fn() })
+    expect(container.querySelector('.bm-v').getAttribute('aria-label')).toBeNull()
+    const named = [...container.querySelectorAll('[role="button"]')].map(b => b.getAttribute('aria-label'))
+    expect(named).toContain('Chest')
+    expect(new Set(named).size).toBe(named.length)
+  })
+
+  it('says nothing rather than an empty label when the map has no muscles', async () => {
+    const c = await renderReadOnly({ hits: [] })
+    const named = [...c.querySelectorAll('.bm-v')].filter(v => v.hasAttribute('aria-label'))
+    expect(named).toHaveLength(0)
+  })
+
+  it('ignores a load key that is not a muscle', async () => {
+    const c = await renderReadOnly({ hits: ['chest', 'nonsense'] })
+    expect(c.querySelector('.bm-v').getAttribute('aria-label')).toBe('Chest')
+  })
+
+  // The names come from t(), so a language change made with a map on screen has to reach them.
+  // App.jsx holds the language with useLang() and re-renders the whole shell over it; a label
+  // remembered from the previous language reads as a picture of a different workout.
+  it('renames the muscles when the language changes under it', async () => {
+    const c = await renderReadOnly({ hits: HITS })
+    expect(c.querySelector('.bm-v').getAttribute('aria-label')).toBe('Chest, Lats')
+    // The packs load lazily in the app; handing the German one over is the state a change in
+    // Settings leaves the app in.
+    _setLangState('de', pack('de'), null, null)
+    await act(async () => { root.render(<BodyMap load={LOAD} hits={HITS} />) })
+    expect(c.querySelector('.bm-v').getAttribute('aria-label')).toBe('Brust, Latissimus')
+  })
+
+  // A read-only map with no `hits` is silent: its shapes are hidden and nothing replaces them.
+  // Right for decoration, a hole for content, so every call site has to say which it is. This
+  // walks the tree rather than a list of files so a new one cannot slip in unnamed.
+  it('gives every call site one of the three treatments', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const src = path.resolve(__dirname, '..')
+    const files = []
+    const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
+      const p = path.join(dir, e.name)
+      if (e.isDirectory()) { if (e.name !== 'locales') walk(p) } else if (/\.jsx$/.test(e.name) && !/\.test\.jsx$/.test(e.name)) files.push(p)
+    })
+    walk(src)
+    const offenders = []
+    for (const f of files) {
+      if (f.endsWith('BodyMap.jsx') || f.endsWith('MiniBodyMap.jsx')) continue
+      const rel = path.relative(src, f).split(path.sep).join('/')
+      unnamedMaps(fs.readFileSync(f, 'utf8')).forEach(o => offenders.push(rel + ':' + o.line + '  ' + o.snippet.slice(0, 70)))
+    }
+    expect(offenders).toEqual([])
+  })
+
+  // The two ways that guard fails are silent, so they are tested rather than trusted. Every case
+  // here was a live hole at some point while this was being written.
+  it.each([
+    ['a button that closed above the map', '<button aria-label="Open">Open</button>\n<BodyMap load={{}} />'],
+    ['a sibling aria-hidden below the map', '<BodyMap load={{}} />\n<div aria-hidden="true" />'],
+    ['a call site written over several lines', '<BodyMap\n  load={{}}\n  body="male"\n/>'],
+    ['a data- attribute that only looks like the prop', '<BodyMap load={load} data-hits={hits} />'],
+    ['a brace in a value, with a named map after it', '<BodyMap className="{" />\n<BodyMap hits={["chest"]} />'],
+    // The escaped apostrophe ends the string only if the scanner knows a backslash escapes. If it
+    // does not, the tag runs on into the second element and its hits= excuses the first, so this
+    // reports one map instead of none.
+    ['an escaped apostrophe, with a named map after it', '<BodyMap aria-label={t(\'it\\\'s here\')} />\n<BodyMap hits={["chest"]} />'],
+  ])('still reports %s', (_case, source) => {
+    expect(unnamedMaps(source)).toHaveLength(1)
+  })
+
+  it.each([
+    ['a prop holding an arrow function', '<BodyMap load={{}} onMuscle={() => pick("chest")} />'],
+    ['hits= on a line of its own', '<BodyMap\n  load={{}}\n  hits={["chest"]}\n/>'],
+    ['a legend beside the map', '<BodyMap load={{}} hits={["chest"]} />\n<BodyMapLegend />'],
+    // The app builds labels this way (BodyMapLegend does), so the scanner meets it for real.
+    ['a template literal in a label', '<BodyMap hits={["chest"]} aria-label={`${t("Less")} ${t("More")}`} />'],
+  ])('does not report %s', (_case, source) => {
+    expect(unnamedMaps(source)).toHaveLength(0)
   })
 })
