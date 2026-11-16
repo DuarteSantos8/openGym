@@ -29,12 +29,14 @@ COPY mcp/package.json mcp/package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force \
  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
-# The helpers the tools import, and the one api module they reach (the streak rules), each
+# The helpers the tools import, and the api modules they reach (the streak rules, the engine, the migration), each
 # beside its package.json so node reads them as the ES modules they are.
 COPY frontend/package.json /app/frontend/package.json
 COPY frontend/src/lib/ /app/frontend/src/lib/
 COPY api/package.json /app/api/package.json
 COPY api/coach/core/ /app/api/coach/core/
+COPY api/engine/ /app/api/engine/
+COPY api/migration/ /app/api/migration/
 COPY mcp/src/ ./src/
 
 ENV NODE_ENV=production
