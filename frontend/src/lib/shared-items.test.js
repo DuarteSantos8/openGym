@@ -114,6 +114,12 @@ describe('applyImport: a copy that is yours and says where it came from', () => 
     expect(s.accentCustom).toBeUndefined()
     expect(s.look).toBe('refined')
   })
+  it('a preset whose colour is not the one the look shows is ignored: the shown colour is applied', () => {
+    const s = {}
+    applyImport(s, { type: 'look', payload: { accent: '#123456', preset: 'ironvane' }, origin })
+    expect(s.accent).toBe('custom')
+    expect(s.accentCustom).toBe('#123456')
+  })
   it('an older look (no preset, no look) still comes in as before; a look this app does not draw is left', () => {
     const s = { look: 'bold' }
     applyImport(s, { type: 'look', payload: { accent: '#ff6b2c', preset: 'nosuch', look: 'neon' }, origin })
