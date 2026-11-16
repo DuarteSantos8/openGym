@@ -6,7 +6,7 @@
 //
 // Idea and first version of sharing custom exercises with everyone on a server: davoloko (#441).
 import { t } from './i18n.js'
-import { uid } from './format.js'
+import { uid, ACCENTS } from './format.js'
 import { normalizeMediaRef } from './media-refs.js'
 import { soundsOf, addSound, SOUNDS_MAX } from './user-sounds.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
@@ -217,7 +217,9 @@ export function applyImport(s, res, { exId } = {}) {
         // Only what this app knows how to draw: anything else stays as it was.
         if (iconChoice({ [kind === 'flame' ? 'flameIcon' : 'freezeIcon']: next }, kind)) s[kind === 'flame' ? 'flameIcon' : 'freezeIcon'] = next
       }
-      if (typeof p.preset === 'string' && HEX_PRESETS.has(p.preset)) s.accent = p.preset
+      // The preset only when its colour is the one the look shows, so a look never applies
+      // a colour other than the one its card previews.
+      if (typeof p.preset === 'string' && HEX_PRESETS.has(p.preset) && String(p.accent || '').toLowerCase() === ACCENTS[p.preset]) s.accent = p.preset
       else if (typeof p.accent === 'string') {
         if (/^#[0-9a-f]{6}$/i.test(p.accent)) { s.accent = 'custom'; s.accentCustom = p.accent.toLowerCase() }
         else if (/^[a-z]{3,12}$/.test(p.accent) && accentValue({ accent: p.accent }) === p.accent) s.accent = p.accent
