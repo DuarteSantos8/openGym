@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手表",
+  "Set once": "设置一次",
+  "Connections": "连接",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "只在这台设备上读取。不会写入 openNutrition，它发来的任何内容也不会进入你的备份或同步。",
   "Runs, rides and matches": "跑步、骑行和比赛",
   "Runs, rides and matches from other apps": "来自其他应用的跑步、骑行和比赛",
+  "Birth date, for heart-rate zones": "出生日期，用于心率区间",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "你的 Apple Watch 会根据你的年龄算出心率区间。允许“出生日期”，或之后在 Apple Health 中更改。",
   "Show it in": "显示在",
   "Some days had foods without numbers, so their totals are a little low.": "有些天的食物没有数值，所以合计略低。",
   "Sport": "运动",
@@ -5889,4 +5895,12 @@ export default {
   "Own setup for {0}": "{0}的专属设置",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟随主页面。打开它，就能自己为这个类型挑选细节和按钮。",
   "Preview on": "预览位置",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "缩短一点",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自定义",
+  "Collapsed": "已折叠",
+  "Hide": "隐藏",
+  "Totals": "总计",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
 }

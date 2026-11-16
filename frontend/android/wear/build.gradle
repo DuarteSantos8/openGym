@@ -59,6 +59,9 @@ android {
     lint {
         // The strings are written by wear-strings.mjs from the app's own translations.
         disable 'MissingTranslation'
+        // An API 31+ class on a Wear OS 3 watch (API 30) stops the app the moment it is touched
+        // (VibratorManager, #1168): fatal, so lintVitalRelease fails assembleRelease on it.
+        fatal 'NewApi'
     }
 }
 

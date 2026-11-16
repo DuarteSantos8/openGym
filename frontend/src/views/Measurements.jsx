@@ -14,6 +14,7 @@ import {
 import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import HealthBodyCard from '../components/HealthBodyCard.jsx'
@@ -323,8 +324,9 @@ export default function Measurements() {
       <Segmented className="seg-range" value={range} onChange={setRange}
         options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
       <div className="chart">{isBp
-        ? <LineChart points={bpLines.sys} h={170} unit={unit} series={[{ points: bpLines.sys, color: 'var(--red)' }, { points: bpLines.dia, color: 'var(--blue)' }]} />
-        : <LineChart points={points} h={170} unit={unit} color="var(--teal)" />}</div>
+        ? <LineChart points={bpLines.sys} h={170} unit={unit} ariaLabel={t('Blood pressure')}
+          series={[{ points: bpLines.sys, color: 'var(--red)', label: t('Systolic') }, { points: bpLines.dia, color: 'var(--blue)', label: t('Diastolic') }]} />
+        : <LineChart points={points} h={170} unit={unit} color="var(--teal)" ariaLabel={field ? t(field.label) : t('Body measurements')} />}</div>
       {isBp && <div className="cal-legend" style={{ justifyContent: 'center' }}>
         <span><i style={{ background: 'var(--red)' }} />{t('Systolic')}</span>
         <span><i style={{ background: 'var(--blue)' }} />{t('Diastolic')}</span>
@@ -354,8 +356,8 @@ export default function Measurements() {
         <div className="row between">
           <div><b>{fmtDate(entry.d, true)}</b><div className="small dim" style={{ marginTop: 2 }}>{t(count === 1 ? '{0} measurement' : '{0} measurements', count)}</div></div>
           <div className="row" style={{ gap: 4 }}>
-            <button className="iconbtn" onClick={() => measurementLogSheet(entry.d)} aria-label={t('Edit')}><Icon name="pencil" /></button>
-            <button className="iconbtn" style={{ color: 'var(--red)' }} onClick={() => remove(entry)} aria-label={t('Delete')}><Icon name="trash" /></button>
+            <button className="iconbtn" onClick={() => measurementLogSheet(entry.d)} aria-label={nameIn(fmtDate(entry.d, true), t('Edit'))}><Icon name="pencil" /></button>
+            <button className="iconbtn" style={{ color: 'var(--red)' }} onClick={() => remove(entry)} aria-label={nameIn(fmtDate(entry.d, true), t('Delete'))}><Icon name="trash" /></button>
           </div>
         </div>
         {(previewFields.length > 0 || bp) && <div className="measure-preview">

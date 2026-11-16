@@ -35,8 +35,8 @@ const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.
 // A labelled Stepper is .stp-w > .stp-l (label) + .stp (Decrease, value input, Increase).
 const stepperOf = (host, label) => [...host.querySelectorAll('.stp-w')].find(el => el.querySelector('.stp-l')?.textContent.trim() === label)
 const valueOf = st => st.querySelector('input').value
-const dec = st => st.querySelector('[aria-label="Decrease"]')
-const inc = st => st.querySelector('[aria-label="Increase"]')
+const dec = st => st.querySelector('[aria-label*=": Decrease"]')
+const inc = st => st.querySelector('[aria-label*=": Increase"]')
 
 describe('plate loading editor', () => {
   beforeEach(() => {
