@@ -5777,6 +5777,8 @@ export default {
   "They’re on Today. Tap it.": "De finns på Idag. Tryck på den.",
   "They live under Progress. Tap it.": "De bor under Framsteg. Tryck på den.",
   "Back to Progress": "Tillbaka till Framsteg",
+  "Video, steps and form cues": "Video, steg och teknikpunkter",
+  "Exercise options": "Övningsval",
   "Based on openGym": "Baserad på openGym",
   "Bold": "Markant",
   "Refined": "Förfinad",

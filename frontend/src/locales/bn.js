@@ -5809,6 +5809,8 @@ export default {
   "They’re on Today. Tap it.": "এগুলো \"আজ\"-এ আছে। ট্যাপ করুন।",
   "They live under Progress. Tap it.": "এগুলো \"অগ্রগতি\"-তে আছে। ট্যাপ করুন।",
   "Back to Progress": "অগ্রগতিতে ফিরুন",
+  "Video, steps and form cues": "ভিডিও, ধাপ ও ফর্মের টিপস",
+  "Exercise options": "ব্যায়ামের বিকল্প",
   "Based on openGym": "openGym-এর উপর ভিত্তি করে",
   "Bold": "গাঢ়",
   "Refined": "পরিশীলিত",

@@ -5733,6 +5733,8 @@ export default {
   "They’re on Today. Tap it.": "A Ma lapon vannak. Koppints rá.",
   "They live under Progress. Tap it.": "A Fejlődésben laknak. Koppints rá.",
   "Back to Progress": "Vissza a Fejlődéshez",
+  "Video, steps and form cues": "Videó, lépések és technikai tippek",
+  "Exercise options": "Gyakorlat beállításai",
   "Based on openGym": "Az openGym alapján",
   "Bold": "Merész",
   "Refined": "Letisztult",

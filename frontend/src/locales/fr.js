@@ -5730,6 +5730,8 @@ export default {
   "They’re on Today. Tap it.": "Elles sont sur Aujourd’hui. Touche-le.",
   "They live under Progress. Tap it.": "Elles sont dans Progrès. Touche-le.",
   "Back to Progress": "Retour à Progrès",
+  "Video, steps and form cues": "Vidéo, étapes et points de technique",
+  "Exercise options": "Options de l’exercice",
   "Based on openGym": "Basé sur openGym",
   "Bold": "Affirmé",
   "Refined": "Raffiné",

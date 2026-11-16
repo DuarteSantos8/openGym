@@ -5696,6 +5696,8 @@ export default {
   "They’re on Today. Tap it.": "در صفحه امروز هستند. بزنید رویش.",
   "They live under Progress. Tap it.": "زیر «پیشرفت» هستند. بزنید رویش.",
   "Back to Progress": "بازگشت به پیشرفت",
+  "Video, steps and form cues": "ویدیو، مراحل و نکته‌های فرم",
+  "Exercise options": "گزینه‌های تمرین",
   "Based on openGym": "بر پایه openGym",
   "Bold": "پررنگ",
   "Refined": "ظریف",

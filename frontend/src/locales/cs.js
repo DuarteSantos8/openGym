@@ -5696,6 +5696,8 @@ export default {
   "They’re on Today. Tap it.": "Najdeš je na obrazovce Dnes. Klepni na ni.",
   "They live under Progress. Tap it.": "Najdeš je v „Pokroku“. Klepni na něj.",
   "Back to Progress": "Zpět na Pokrok",
+  "Video, steps and form cues": "Video, kroky a tipy k technice",
+  "Exercise options": "Možnosti cviku",
   "Based on openGym": "Založeno na openGym",
   "Bold": "Výrazný",
   "Refined": "Jemný",

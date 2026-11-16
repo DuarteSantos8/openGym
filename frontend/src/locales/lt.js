@@ -5726,6 +5726,8 @@ export default {
   "They’re on Today. Tap it.": "Jos yra skiltyje „Šiandien“. Paspauskite ją.",
   "They live under Progress. Tap it.": "Jos yra skiltyje „Progresas“. Paspauskite ją.",
   "Back to Progress": "Grįžti į progresą",
+  "Video, steps and form cues": "Vaizdo įrašas, žingsniai ir technikos patarimai",
+  "Exercise options": "Pratimo parinktys",
   "Based on openGym": "Sukurta pagal openGym",
   "Bold": "Ryškus",
   "Refined": "Subtilus",

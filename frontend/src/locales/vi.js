@@ -5696,6 +5696,8 @@ export default {
   "They’re on Today. Tap it.": "Chúng ở Hôm nay. Chạm vào đó.",
   "They live under Progress. Tap it.": "Chúng nằm trong Tiến bộ. Chạm vào đó.",
   "Back to Progress": "Quay lại Tiến bộ",
+  "Video, steps and form cues": "Video, các bước và mẹo tư thế",
+  "Exercise options": "Tùy chọn bài tập",
   "Based on openGym": "Dựa trên openGym",
   "Bold": "Đậm",
   "Refined": "Tinh tế",
