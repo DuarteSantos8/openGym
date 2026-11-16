@@ -43,6 +43,26 @@ so a staging message can't approve on production. The service long-polls `getUpd
 presses only (`allowed_updates: ["callback_query"]`); **only one process may poll a bot**, so stop
 the staging container before production polls the same bot, or give production its own bot.
 
+### Review on Discord (since 2026-11-15)
+
+With `MOD_KEY` set (in `telegram.env`, 64 hex characters), the mods review in the private
+`#routine-review` channel instead: ServiceBot (homelab repo, `opengym-discord/review.js`, the same
+key as `ROUTINES_MOD_KEY`) asks `api/mod/pending` every minute, posts each new submission once with
+Approve and Reject, and sends the decision to `api/mod/decide`. Telegram then only gets a one-line
+note without buttons. The bot asks instead of being told, so a post that fails is made on the next
+round. Approve and Reject do exactly what the Telegram buttons did. The owner's dashboard
+(`hq`, openGym tab) lists, edits and deletes what is pending or approved.
+
+| Route (header `x-mod-key`) | What it does |
+|---|---|
+| `GET api/mod/pending` | the waiting submissions as data, with `posted` (the Discord message) once it is up |
+| `GET api/mod/cover/<sid>` | the cover photo |
+| `POST api/mod/posted` | `{ sid, message }` |
+| `POST api/mod/decide` | `{ sid, ok, by }` |
+
+Without `MOD_KEY` the routes answer 404. Ten wrong keys in ten minutes from one address and that
+address gets 429; the right key is never limited.
+
 ### The GitHub token (owner, once)
 
 1. github.com → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** →

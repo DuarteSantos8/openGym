@@ -1021,8 +1021,8 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
 /* ------------------------------------------------- contents: easier to find
    The pill used to be grey on black in a corner, and on a computer people did not
    see it at all. It now carries the accent colour, and on the two reference pages
-   (body.dock: docs, API) a wide screen gets the contents as a fixed column beside
-   the text instead of a drawer, so there is nothing to find. */
+   (docs, API, about, privacy, brand) a wide screen shows the contents as a column
+   beside the text instead (ref.css), and this pill is only for narrower screens. */
 .toc-btn {
   color: var(--acc); font-weight: 600; font-size: 14.5px;
   border-color: rgba(163, 230, 53, .45);
@@ -1030,21 +1030,6 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
 }
 .toc-btn:hover { color: var(--fg); border-color: var(--acc); background: rgba(32, 33, 37, .96); }
 
-@media (min-width: 1200px) {
-  body.dock { --rail-w: 270px; }
-  body.dock .side {
-    top: 54px; width: var(--rail-w);
-    transform: none; visibility: visible; transition: none;
-    box-shadow: none; background: #050506;
-  }
-  body.dock .side-top { position: static; }
-  body.dock .rail-close, body.dock .toc-btn { display: none; }
-  body.dock::after { content: none; }
-  /* Centre the text in what the rail leaves over, never under it. */
-  body.dock main.prose { margin-left: max(calc(var(--rail-w) + 24px), calc((100% - 720px) / 2)); margin-right: auto; }
-  body.dock main.api-main { margin-left: max(calc(var(--rail-w) + 24px), calc((100% - 880px) / 2)); margin-right: auto; }
-  body.dock .toc { display: none; }
-}
 @media (max-width: 1199px) {
   /* Where the drawer is the only way in, keep the chip row that points into the page. */
   .toc { display: flex; }
