@@ -172,13 +172,15 @@ function weekStartOn(iso, ws) {
 // The `?.` on each routine entry is this copy's own: it reads whatever is on disk, including a
 // file written before PUT /api/data dropped null entries.
 // Per-date overrides: 'rest' -> null; a pin on an open queue session -> that session; a pin on a
-// done one is fulfilled and ignored once trained in its own week; an explicit routine id -> that id. Otherwise a live queue's
+// done one is fulfilled and ignored once trained in its own week; an explicit routine id -> that id.
+// The pin is judged as of `today` (the user's date by default), as the phone judges it, so a past
+// pin on a done session is fulfilled even when `iso` is asked about as if it were today. Otherwise a live queue's
 // next session wins over the plain weekday assignment, falling back to the weekday only once the
 // queue is finished, not yet started, or absent.
-export function effectiveRoutineId(S, iso) {
+export function effectiveRoutineId(S, iso, today = dayIn(Date.now(), S.reminder?.tz)) {
   const ov = S.dayPlan?.[iso];
   if (ov === 'rest') return null;
-  const pin = pinState(S, ov, iso, iso);
+  const pin = pinState(S, ov, today, iso);
   if (pin === 'open') return ov;
   if (!pin && ov && S.routines?.some(r => r?.id === ov)) return ov;
   const q = queueNext(S, iso);

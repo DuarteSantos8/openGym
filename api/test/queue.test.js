@@ -210,10 +210,19 @@ test('pins: a done session planned again for a later week is that day\'s session
   assert.equal(pinState(S, 'own', TODAY, '2026-09-15'), null);
   // The reminder asks each date as today: next Tuesday trains r1, today's week already did it.
   const again = P({ workouts: [done('r1')], dayPlan: { '2026-09-15': 'r1', [FRI]: 'r1' } });
-  assert.equal(effectiveRoutineId(again, '2026-09-15'), 'r1');
-  assert.equal(effectiveRoutineId(again, FRI), 'r2');
-  assert.equal(effectiveRoutineId(again, TODAY), 'r2');
-  assert.equal(effectiveRoutineId({ ...again, dayPlan: { '2026-09-13': 'r1' }, weekStart: 0 }, '2026-09-13'), 'r1');
+  assert.equal(effectiveRoutineId(again, '2026-09-15', '2026-09-15'), 'r1');
+  assert.equal(effectiveRoutineId(again, FRI, FRI), 'r2');
+  assert.equal(effectiveRoutineId(again, TODAY, TODAY), 'r2');
+  assert.equal(effectiveRoutineId({ ...again, dayPlan: { '2026-09-13': 'r1' }, weekStart: 0 }, '2026-09-13', '2026-09-13'), 'r1');
+});
+
+test('pins: a past day is judged as of the real today, as the phone does: a pin there on a done session is fulfilled', () => {
+  // r1 trained Tuesday 09-08, planned again for 09-15 (the next week). Asked on 09-20 about 09-15,
+  // that pin is in the past and the session done, so it is not the day's session any more.
+  const S = P({ workouts: [done('r1')], dayPlan: { '2026-09-15': 'r1' } });
+  assert.equal(effectiveRoutineId(S, '2026-09-15', '2026-09-20'), 'r2');
+  // Asked on the day itself it still trains r1.
+  assert.equal(effectiveRoutineId(S, '2026-09-15', '2026-09-15'), 'r1');
 });
 
 test('pins: every remaining session pinned to other days — nothing floats, the weekday plan (or nothing) shows through', () => {
