@@ -27,4 +27,14 @@ public class WatchStillsTest {
         assertFalse(WatchBridgePlugin.inPackage("https://example.com/a.webp"));
         assertFalse(WatchBridgePlugin.inPackage("exercise-media/clip/0001.mp4"));
     }
+
+    @Test
+    public void aClipIsAnAnimatedWebPInsideTheAppPackage() {
+        assertTrue(WatchBridgePlugin.clipInPackage("exercise-media/clip/0001.webp"));
+        assertFalse("an MP4 build: the still only", WatchBridgePlugin.clipInPackage("exercise-media/clip/0001.mp4"));
+        assertFalse(WatchBridgePlugin.clipInPackage(null));
+        assertFalse(WatchBridgePlugin.clipInPackage("/data/data/x/secret.webp"));
+        assertFalse(WatchBridgePlugin.clipInPackage("exercise-media/../../secret.webp"));
+        assertFalse(WatchBridgePlugin.clipInPackage("https://example.com/a.webp"));
+    }
 }

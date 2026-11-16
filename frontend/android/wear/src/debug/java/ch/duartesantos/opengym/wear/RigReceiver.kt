@@ -10,6 +10,7 @@ import java.io.File
 /**
  * Debug builds only: a script plays the phone (no paired phone in the emulator).
  *   adb shell am broadcast -a ch.duartesantos.opengym.wear.RIG -p <pkg> --es do snap   applies files/rig-snapshot.json
+ *   ... --es do snap-msg --el at <stamp>                                                  the same as the phone's message (WearListener's SNAPSHOT message path: stamp order, clock offset)
  *   ... --es do near --ez near false                                                     phone out of reach / back
  *   ... --es do dump                                                                     outbox + state to files/rig-dump.json
  * And the Data Layer itself, for the two-emulator rig (the phone's WatchRigReceiver is its twin):
@@ -36,10 +37,16 @@ class RigReceiver : BroadcastReceiver() {
             try {
                 when (intent.getStringExtra("do")) {
                     "snap" -> File(app.filesDir, "rig-snapshot.json").takeIf { it.exists() }?.let { WearStore.applySnapshotJson(it.readText()) }
+                    "snap-msg" -> File(app.filesDir, "rig-snapshot.json").takeIf { it.exists() }?.let {
+                        val bytes = (intent.getLongExtra("at", System.currentTimeMillis()).toString() + "\n" + it.readText()).toByteArray()
+                        SnapshotMessage.decode(bytes)?.let { (at, json) -> WearStore.applySnapshotJson(json, "rig-phone", at, viaMessage = true) }
+                    }
                     "near" -> { PhoneLink.nearForTest = intent.getBooleanExtra("near", true); PhoneLink.refreshNear(app) }
                     "dump" -> {
                         val p = app.getSharedPreferences("opengym-wear", Context.MODE_PRIVATE)
-                        val out = "{\"outbox\":" + (p.getString("outbox", null) ?: "null") + ",\"state\":" + (p.getString("state", null) ?: "null") + "}"
+                        val out = "{\"outbox\":" + (p.getString("outbox", null) ?: "null") + ",\"state\":" + (p.getString("state", null) ?: "null") +
+                            ",\"restAt\":" + (p.getString("restAt", null) ?: "0") + ",\"off\":" + WearStore.clockOff() +
+                            ",\"rest\":" + (WearStore.rest.value?.let { r -> "{\"endsAt\":${r.endsAt},\"total\":${r.total},\"pausedLeft\":${r.pausedLeft ?: "null"}}" } ?: "null") + "}"
                         File(app.filesDir, "rig-dump.json").writeText(out)
                     }
                 }

@@ -70,6 +70,7 @@ struct DemoEnvironment: ViewModifier {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var dimmed
 
@@ -111,6 +112,8 @@ struct RootView: View {
         .tint(store.accent)
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
+        // Back in front: a rest that ended while the app was away gives the set page back (#1101).
+        .onChange(of: scenePhase) { phase in if phase == .active { store.restRanOutIfDue() } }
         // The complication's Start: today's workout, when none runs yet.
         .onOpenURL { url in
             if url.host == "start", store.workout == nil, let today = store.ready?.today { store.start(today, fromLink: true) }
