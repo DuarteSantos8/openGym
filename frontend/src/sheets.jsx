@@ -129,7 +129,7 @@ import { streakWeeks } from './lib/streak-explain.js'
 import { gymNoteText, withGymNote } from './lib/journal.js'
 import { recoveryDays, recoveryOn } from './lib/recovery-sessions.js'
 import { recoverySheet, RecoveryRow } from './components/RecoverySheet.jsx'
-import { activityDays, activitiesOn } from './lib/activities.js'
+import { activityDays, activitiesOn, mergeImportedActivities } from './lib/activities.js'
 import { activitySheet, ActivityRow } from './components/ActivitySheet.jsx'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
 import { copyText } from './lib/clipboard.js'
@@ -600,8 +600,9 @@ function ImportSummary({ parsed: initial, text, close }) {
   // Liftosaur and Liftoff bring plans as well (lib/import-apps.js); one already imported stays as it is.
   const plans = !isBW && parsed.routines?.routines?.length ? parsed.routines : null
   const newPlans = plans ? freshRoutines(st, plans) : 0
-  // Activities from an Apple Health export (lib/activities.js): one already here is not new.
-  const newActs = (parsed.activities || []).filter(a => !Object.hasOwn(st.activities || {}, a.id)).length
+  // Activities from an Apple Health export or a Strava archive (lib/activities.js): one already here
+  // is not new. Counted by the merge itself, on a copy, so the tile says what Import will do.
+  const newActs = parsed.activities?.length ? mergeImportedActivities({ workouts: st.workouts, activities: { ...st.activities } }, parsed.activities) : 0
   const fresh = (isBW ? parsed.bodyweight.length + checkIns.length : parsed.workouts.length) - have + newPlans + newActs
   const hasWorkouts = isBW || parsed.workouts.length > 0
   const unmatched = [...new Set([...(isBW ? [] : parsed.unmatchedNames), ...(plans?.unmatchedNames || [])])].sort()
@@ -631,7 +632,7 @@ function ImportSummary({ parsed: initial, text, close }) {
 
     <div className="tiles" style={{ textAlign: 'start' }}>
       {isBW ? <>
-        <div className="tile"><div className="l">{t('Weigh-ins')}</div><div className="v v-sm">{parsed.bodyweight.length}</div></div>
+        {(parsed.bodyweight.length > 0 || !parsed.activities?.length) && <div className="tile"><div className="l">{t('Weigh-ins')}</div><div className="v v-sm">{parsed.bodyweight.length}</div></div>}
         {parsed.activities?.length > 0 && <div className="tile"><div className="l">{t('Activities')}</div><div className="v v-sm">{parsed.activities.length}</div></div>}
         {checkIns.length > 0 && <div className="tile"><div className="l">{t('Body measurements')}</div><div className="v v-sm">{checkIns.length}</div></div>}
         <div className="tile"><div className="l">{t('New')}</div><div className="v v-sm">{fresh}</div></div>
@@ -717,7 +718,7 @@ export function importFromApp(file, onDone) {
     if (parsed.error === 'format') { toast(t('This looks like a {0} export, but we couldn’t read it. Nothing was imported.', parsed.app)); return }
     if (parsed.error === 'opengym') { toast(t('That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.')); return }
     if (parsed.error) { toast(t("We don't recognise that file's columns. Check the docs for supported apps.")); return }
-    if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length : !parsed.workouts.length && !parsed.routines?.routines?.length) {
+    if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length && !parsed.activities?.length : !parsed.workouts.length && !parsed.routines?.routines?.length) {
       toast(t('Nothing to import from that file')); return
     }
     const text = String(rd.result)

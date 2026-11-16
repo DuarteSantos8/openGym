@@ -122,3 +122,33 @@ describe('the import summary with routines', () => {
     expect(useUI.getState().sheets).toHaveLength(0)
   })
 })
+
+// A Strava archive's activities.csv has no weigh-in in it: the sheet used to answer "Nothing to
+// import from that file" to any file that was activities alone.
+describe('the import summary for a file that is activities alone', () => {
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    useUI.setState({ sheets: [], toasts: [], toastMsg: '' })
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', workouts: [], bodyweight: [], activities: {} } }))
+  })
+  afterEach(() => { if (root) act(() => root.unmount()); root = null; document.body.innerHTML = '' })
+  const STRAVA = [
+    'Activity ID,Activity Date,Activity Name,Activity Type,Activity Description,Elapsed Time,Distance,Elapsed Time,Distance',
+    '101,"Oct 5, 2026, 12:00:00 PM",Morning Run,Run,,2550,8.20,2550.0,8204.5',
+    '102,"Oct 6, 2026, 12:00:00 PM",Evening Ride,Ride,,3600,30.00,3600.0,30000.0',
+  ].join('\n')
+  const tiles = () => Object.fromEntries([...host.querySelectorAll('.tile')].map(d => [d.querySelector('.l').textContent, d.querySelector('.v').textContent]))
+
+  it('opens, counts the activities and leaves the weigh-in tile out', async () => {
+    await summaryFor(STRAVA)
+    expect(host.querySelector('h3').textContent).toBe('Import from Strava')
+    expect(tiles()).toEqual({ Activities: '2', New: '2' })
+  })
+
+  it('does not call new a run the health read already brought in', async () => {
+    const at = Date.UTC(2026, 9, 5, 12, 0, 30)
+    useStore.setState(s => ({ S: { ...s.S, activities: { ah1: { d: '2026-10-05', sport: 'run', min: 42, at, src: 'ah', _ts: at } } } }))
+    await summaryFor(STRAVA)
+    expect(tiles()).toEqual({ Activities: '2', New: '1' })
+  })
+})

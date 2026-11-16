@@ -9,7 +9,7 @@ you switch it on.
 | **Apple Health** | iPhone app | Finished workouts and weigh-ins go to Apple Health; heart rate from your watch and weigh-ins from your scale come back. |
 | **Health Connect** | Android app | The same, with Health Connect. |
 | **Hevy** | everywhere | A one-off import of your Hevy history with a Hevy Pro API key. |
-| **Import a file** | everywhere | Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export, once ([details](DATA_IMPORTS.md)). |
+| **Import a file** | everywhere | Strong, FitNotes, Hevy CSV, GymMane, an Apple Health export or your Strava archive, once ([details](DATA_IMPORTS.md)). |
 | **Spreadsheet (CSV)** | everywhere | Every set, weigh-in and measurement as a CSV openGym can read back. |
 | **WebDAV backup** | everywhere | A copy of your data every day in your own Nextcloud or WebDAV folder, and restore on a new phone ([details](WEBDAV_BACKUP.md)). |
 | **Calendar feed** | needs your own server | Your planned sessions (and finished workouts) in Apple, Google or Outlook calendar ([details](CALENDAR.md)). |
