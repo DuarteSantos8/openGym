@@ -32,6 +32,7 @@
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
 import { stripBidi } from './bidi.js'
+import { groupRoutines, folderOf, isArchive } from './routine-folders.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
@@ -373,8 +374,8 @@ function watchEntry (stored, H, S) {
 }
 
 /**
- * What the watch can start by itself, the phone asleep: today's planned session and a few other
- * routines, each with its exercises built exactly as starting it on the phone builds them
+ * What the watch can start by itself, the phone asleep: today's planned session and the other
+ * routines (by folder, none archived), each with its exercises built exactly as starting it on the phone builds them
  * (buildCombinedEntries, as sheets.jsx beginWorkout does).
  */
 export function buildReady (S, today = todayISO()) {
@@ -400,7 +401,12 @@ export function buildReady (S, today = todayISO()) {
   let todayIds = []
   try { todayIds = effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || [] } catch { todayIds = [] }
   const planned = todayIds.length ? session(todayIds) : null
-  const others = (S.routines || []).filter(r => r && !todayIds.includes(r.id)).map(r => session([r.id])).filter(Boolean)
+  // By folder like the phone's Plan (no folder first); archived routines stay on the phone.
+  const shown = (S.routines || []).filter(r => r && r.archived !== true && !isArchive(folderOf(r)) && !todayIds.includes(r.id))
+  const others = groupRoutines(shown).flatMap(g => g.routines.map(r => {
+    const s = session([r.id])
+    return s && g.folder ? { ...s, folder: g.folder } : s
+  })).filter(Boolean)
   return { today: planned, others }
 }
 
