@@ -13,7 +13,8 @@ package ch.duartesantos.opengym.wear
  *   /opengym/still/<exId>  data item, phone → watch: "img" (an Asset: the exercise's 180 px WebP
  *                          still from the phone's app package), "wid" (the workout it is for). For
  *                          the Overview's rows (Stills in WatchLogic.kt); the phone deletes them when
- *                          the workout ends, the watch deletes its copies when it does.
+ *                          the workout ends, the watch deletes its copies when it does. With it,
+ *                          where the build has them, "clip": the 180 px animated WebP for the set page.
  */
 object Paths {
     const val SNAPSHOT = "/opengym/snapshot"
@@ -21,6 +22,7 @@ object Paths {
     const val OPEN = "/opengym/open"
     const val STILL_PREFIX = "/opengym/still/"
     const val KEY_IMG = "img"
+    const val KEY_CLIP = "clip"
     const val KEY_WID = "wid"
     const val KEY_SNAPSHOT = "snapshot"
     const val KEY_AT = "at"

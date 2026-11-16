@@ -26,6 +26,7 @@
 "Start without weighing in" = "Začít bez vážení";
 "Body weight" = "Tělesná váha";
 "Effort" = "Náročnost";
+"Muscles" = "Svaly";
 "None" = "Žádná";
 "Exercises" = "Cviky";
 "Save" = "Uložit";
@@ -44,6 +45,7 @@
 "Keep going" = "Pokračovat";
 "Finish now" = "Ukončit teď";
 "Workout" = "Trénink";
+"Back" = "Zpět";
 "Last time: %@" = "Naposledy: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Chvíli nic zapsáno. Jestli máš hotovo, skončí sám v %@, uložený na poslední sérii.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Ukončit trénink teď? Jinak skončí sám v %@.";
@@ -82,5 +84,14 @@
 "Workout action" = "Akce tréninku";
 "Pause workout" = "Pozastavit trénink";
 "Resume workout" = "Pokračovat v tréninku";
+"Active\nkcal" = "Aktivní\nkcal";
+"Metrics" = "Metriky";
+"Zones" = "Zóny";
 "avg" = "prům.";
-"No effort rated yet" = "Zatím žádná namáhavost";
+"No effort rated yet" = "Zatím žádné hodnocení náročnosti";
+"max" = "max";
+"min" = "min";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Zapni na iPhonu Apple Zdraví a openGym zůstane na displeji i při pauzách a výdržích.";
+"No sets yet" = "Zatím žádné série";
+"+%lld more" = "+%lld další";
+"%@ sets" = "Sérií: %@";

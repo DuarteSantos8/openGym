@@ -26,6 +26,7 @@
 "Start without weighing in" = "Pradėti neįsvertus";
 "Body weight" = "Kūno svoris";
 "Effort" = "Pastangos";
+"Muscles" = "Raumenys";
 "None" = "Nėra";
 "Exercises" = "Pratimai";
 "Save" = "Išsaugoti";
@@ -44,6 +45,7 @@
 "Keep going" = "Tęsti";
 "Finish now" = "Baigti dabar";
 "Workout" = "Treniruotė";
+"Back" = "Grįžti";
 "Last time: %@" = "Paskutinį kartą: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Kurį laiką nieko neįrašyta. Jei baigei, ji baigsis pati %@, išsaugota ties paskutiniu priėjimu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Baigti treniruotę dabar? Kitaip ji baigsis pati %@.";
@@ -82,5 +84,14 @@
 "Workout action" = "Treniruotės veiksmas";
 "Pause workout" = "Pristabdyti treniruotę";
 "Resume workout" = "Tęsti treniruotę";
+"Active\nkcal" = "Aktyvios\nkcal";
+"Metrics" = "Rodikliai";
+"Zones" = "Zonos";
 "avg" = "vid.";
 "No effort rated yet" = "Dar neįvertinta jokio krūvio";
+"max" = "maks.";
+"min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Įjunk Apple Health iPhone ir openGym liks ekrane per poilsį ir išlaikymus.";
+"No sets yet" = "Dar nėra serijų";
+"+%lld more" = "+%lld daugiau";
+"%@ sets" = "Serijų: %@";

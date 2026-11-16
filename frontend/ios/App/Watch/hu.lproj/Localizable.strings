@@ -26,6 +26,7 @@
 "Start without weighing in" = "Indítás mérés nélkül";
 "Body weight" = "Testsúly";
 "Effort" = "Megerőltetés";
+"Muscles" = "Izmok";
 "None" = "Nincs";
 "Exercises" = "Gyakorlatok";
 "Save" = "Mentés";
@@ -44,6 +45,7 @@
 "Keep going" = "Folytatom";
 "Finish now" = "Befejezés most";
 "Workout" = "Edzés";
+"Back" = "Vissza";
 "Last time: %@" = "Legutóbb: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Egy ideje nincs bejegyzés. Ha végeztél, %@-kor magától véget ér, az utolsó sorozatodnál mentve.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Befejezed most az edzést? Különben %@-kor magától véget ér.";
@@ -82,5 +84,14 @@
 "Workout action" = "Edzésművelet";
 "Pause workout" = "Edzés szüneteltetése";
 "Resume workout" = "Edzés folytatása";
+"Active\nkcal" = "Aktív\nkcal";
+"Metrics" = "Mérések";
+"Zones" = "Zónák";
 "avg" = "átl.";
 "No effort rated yet" = "Még nincs értékelt erőfeszítés";
+"max" = "max.";
+"min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Kapcsold be az Apple Egészséget az iPhone-on, és az openGym a pihenők és tartások alatt is a képernyőn marad.";
+"No sets yet" = "Még nincs sorozat";
+"+%lld more" = "+%lld további";
+"%@ sets" = "%@ sorozat";

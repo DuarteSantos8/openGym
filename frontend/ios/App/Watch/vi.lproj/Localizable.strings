@@ -26,6 +26,7 @@
 "Start without weighing in" = "Bắt đầu không cần cân";
 "Body weight" = "Thể trọng";
 "Effort" = "Độ gắng sức";
+"Muscles" = "Nhóm cơ";
 "None" = "Không";
 "Exercises" = "Bài tập";
 "Save" = "Lưu";
@@ -44,6 +45,7 @@
 "Keep going" = "Tiếp tục";
 "Finish now" = "Kết thúc ngay";
 "Workout" = "Buổi tập";
+"Back" = "Quay lại";
 "Last time: %@" = "Lần trước: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Một lúc rồi chưa ghi gì. Nếu xong rồi, nó tự kết thúc lúc %@, lưu ở hiệp cuối của bạn.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Kết thúc buổi tập ngay? Nếu không, nó tự kết thúc lúc %@.";
@@ -82,5 +84,14 @@
 "Workout action" = "Thao tác buổi tập";
 "Pause workout" = "Tạm dừng buổi tập";
 "Resume workout" = "Tiếp tục buổi tập";
+"Active\nkcal" = "Kcal\nhoạt động";
+"Metrics" = "Chỉ số";
+"Zones" = "Vùng";
 "avg" = "TB";
 "No effort rated yet" = "Chưa đánh giá mức nỗ lực";
+"max" = "tối đa";
+"min" = "tối thiểu";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Bật Apple Sức khỏe trên iPhone để openGym luôn ở trên màn hình khi nghỉ và giữ tư thế.";
+"No sets yet" = "Chưa có hiệp nào";
+"+%lld more" = "+%lld nữa";
+"%@ sets" = "%@ hiệp";

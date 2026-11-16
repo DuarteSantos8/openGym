@@ -32,7 +32,10 @@ const isSel = (selected, slug) => (Array.isArray(selected) ? selected.includes(s
 // A muscle is drawn as several shapes (two forearms, six serratus slips, and again on the back):
 // every one takes a tap, but only one of them is the button a keyboard and a screen reader meet,
 // so the map has one "Forearms" and not fourteen (P4). `silent`: muscles the other view names.
-function View({ view, levels, onMuscle, selected, silent }) {
+// With no tap handler there is no button to name, so `label` names the whole picture instead and
+// `hide` takes the view out of the accessibility tree; either way the shapes themselves are never
+// announced, which is what left 116 unnamed symbols where one sentence belongs.
+function View({ view, levels, onMuscle, selected, silent, label, hide }) {
   const heard = (slug, i) => !!onMuscle && i === 0 && !silent?.(slug)
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
@@ -40,7 +43,8 @@ function View({ view, levels, onMuscle, selected, silent }) {
     onMuscle(slug)
   }
   return (
-    <svg className="bm-v" viewBox={view.vb} role={onMuscle ? 'group' : 'img'}>
+    <svg className="bm-v" viewBox={view.vb} role={onMuscle ? 'group' : 'img'}
+      aria-label={label} aria-hidden={hide ? 'true' : undefined}>
       {INERT.map(slug => (view.p[slug] || []).map((d, i) =>
         <path key={slug + i} className="bm-sil" d={d} />))}
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
@@ -54,7 +58,7 @@ function View({ view, levels, onMuscle, selected, silent }) {
           tabIndex={heard(slug, i) ? 0 : undefined}
           aria-label={heard(slug, i) ? t(MUSCLE_NAME[slug]) : undefined}
           aria-pressed={heard(slug, i) ? isSel(selected, slug) : undefined}
-          aria-hidden={onMuscle && !heard(slug, i) ? 'true' : undefined}
+          aria-hidden={heard(slug, i) ? undefined : 'true'}
         >
           <title>{t(MUSCLE_NAME[slug])}</title>
         </path>))}
@@ -69,16 +73,22 @@ function View({ view, levels, onMuscle, selected, silent }) {
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior. `levels`
  * hands over ready-made steps instead (the live session map, lib/muscles.js sessionLevels).
+ * `hits` is the muscle list the picture stands for, most-worked first (`rankOf(load).worked`).
+ * Only a read-only map reads it out; a tappable one already names every muscle as its own button.
  */
-export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, hits, className = '' }) {
   const paths = useBodyPaths()
   const levels = given || levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
+  // The order the caller gave is the message (most worked first), so it is kept, but a key that
+  // is not a muscle is dropped rather than read out as "undefined".
+  const named = onMuscle ? '' : (hits || []).filter(m => MUSCLES.includes(m)).map(m => t(MUSCLE_NAME[m])).join(', ')
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} silent={slug => !!g.front.p[slug]?.length} />
+        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} label={named || undefined} hide={!onMuscle && !named} />
+        {/* One body, not two loads: the back view adds shapes, never muscles the front lacks. */}
+        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} silent={slug => !!g.front.p[slug]?.length} hide={!onMuscle} />
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

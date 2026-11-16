@@ -156,6 +156,7 @@ class OpenGymApp extends Application.AppBase {
         }
         G.awayAt = null;
         var had = G.state["w"];
+        var r0 = G.state["rest"];
         var ended = Core.applySnapshot(G.state, data);
         if (ended != null) {
             Workout.end(true);
@@ -163,9 +164,13 @@ class OpenGymApp extends Application.AppBase {
             Actions.ended(ended);
         } else if (G.state["w"] == null) {
             Actions.reset();
-        } else if (had == null && G.state["w"] != null) {
-            // Started on the phone: the watch measures and records it too.
-            Workout.begin();
+        } else {
+            if (had == null) {
+                // Started on the phone: the watch measures and records it too.
+                Workout.begin();
+            }
+            Rest.followed(r0);
+            Actions.followTick();
         }
         // Room in the outbox again (the phone took some): pending ticks it had no room for go in.
         Core.refill(G.state, false);
@@ -228,6 +233,7 @@ module Link {
         if (Core.full(G.state, ev)) {
             return;
         }
+        Core.supersede(G.state, ev);
         Core.room(G.state, MAX, HARD);
         G.state["ob"].add(Core.pack(ev));
         G.saveOb();
@@ -457,19 +463,25 @@ module Workout {
 }
 
 //! The rest between sets: a nudge ten seconds before the end, a clear double buzz at the end.
+//! One rest for the phone and the watch (protocol 2, docs/WATCH_SYNC.md "One rest"): +15, -15 and
+//! Skip pressed here reach the phone as a `rest` event; the rest running out, or ended or changed
+//! on the phone, sends nothing back.
 module Rest {
     var nudged = false;
     var over = false;
 
-    //! The rest's length in seconds, for its ring (one started on the phone: what was left then).
+    //! The rest's length in seconds, for its ring (one started on the phone: its own, else what was
+    //! left then).
     var total = null;
+    //! The end the nudge and the end's buzz were for: a new end (+15, the phone's) has its own.
+    var forEnd = null;
 
-    function start(sec) {
-        G.state["rest"] = Core.nowMs() + (sec.toNumber() * 1000).toLong();
-        total = sec.toNumber();
+    //! A rest a set done here started (Core.tickRest), `sec` long; null for none.
+    function begin(end, sec) {
+        forEnd = end;
         nudged = false;
         over = false;
-        G.save();
+        total = end == null ? null : sec.toNumber();
     }
 
     //! +15 s, or -15 s (at 15 s or less that is a Skip, as on the phone).
@@ -480,41 +492,112 @@ module Rest {
         }
         var to = sec > 0 ? r + (sec * 1000).toLong() : Core.restMinus(r, Core.nowMs(), (-sec * 1000).toLong());
         if (to == null) {
-            stop();
-            Nav.follow();
+            skip();
             return;
         }
         G.state["rest"] = to;
+        forEnd = to;
         if (total != null && sec > 0) {
             total += sec;
         }
         nudged = false;
+        Link.send(Core.restEvent(G.state, to));
         G.save();
     }
 
+    //! Skip (or -15 to nothing, or Next exercise mid-rest), pressed here: the rest ends on the
+    //! phone too, and what follows a rest comes up. The set page waits a second under the thumb.
+    function skip() {
+        var had = G.state["rest"] != null || G.state["rh"] != null;
+        stop();
+        if (had) {
+            Link.send(Core.restEvent(G.state, null));
+            G.lock = System.getTimer() + 1000;
+            after();
+        }
+        Nav.follow();
+    }
+
+    //! The rest is over: run out, a Skip, ended on the phone, a new workout. Nothing is sent.
     function stop() {
         G.state["rest"] = null;
+        G.state["rh"] = null;
         total = null;
         G.save();
         // The next set's heart rate counts from here, not from the rest.
         Workout.newSet();
     }
 
-    //! Seconds left, or null without a rest.
+    //! After a rest (run out or skipped, here or on the phone): "Timed holds start by themselves"
+    //! (the phone's setting) brings up the hold's 3-2-1, as on the other watches.
+    (:small)
+    function after() {
+    }
+    (:big)
+    function after() {
+        if (G.fix == null && G.hold == null && G.hcd == null && Core.autoHold(G.state, Ui.big())) {
+            Actions.holdCount();
+        }
+    }
+
+    //! A snapshot from the phone changed the rest (App.onPhone; `was` its end before): ended there
+    //! runs what a Skip here runs, without telling the phone; a new end there starts the ring over.
+    (:small)
+    function followed(was) {
+        if (Core.rx) {
+            Core.rx = false;
+            Workout.newSet();
+        }
+        // only a rest the phone changed starts its ring over (an ack leaves it as it was)
+        if (G.state["rest"] != was) {
+            total = null;
+        }
+    }
+    (:big)
+    function followed(was) {
+        if (Core.rx) {
+            Core.rx = false;
+            total = null;
+            Workout.newSet();
+            after();
+            return;
+        }
+        var r = G.state["rest"];
+        if (r != null && (was == null || r != was)) {
+            var w = Core.dictOf(G.state["w"]);
+            var pr = w == null ? null : Core.dictOf(w["rest"]);
+            var t = pr == null ? null : Core.toF(pr["total"]);
+            total = t != null && t > 0 ? t.toNumber() : null;
+        }
+    }
+
+    //! Seconds left, or null without a rest (paused on the phone: what it holds at).
     function left() {
         var r = G.state["rest"];
         if (r == null) {
-            return null;
+            var h = G.state["rh"];
+            return h == null ? null : Core.toI(h, 0);
         }
         var ms = r - Core.nowMs();
         return ms <= 0 ? 0 : ((ms + 999) / 1000).toNumber();
     }
 
+    //! Whether the rest is paused on the phone (it holds here, no buzz at its end).
+    function paused() {
+        return G.state["rest"] == null && G.state["rh"] != null;
+    }
+
     function tick() {
-        var l = left();
-        if (l == null) {
+        var r = G.state["rest"];
+        if (r == null) {
             return;
         }
+        if (r != forEnd) {
+            forEnd = r;
+            nudged = false;
+            over = false;
+        }
+        var l = left();
         if (l <= 10 && l > 0 && !nudged) {
             nudged = true;
             buzz([[50, 150]]);
@@ -523,11 +606,7 @@ module Rest {
             over = true;
             buzz([[100, 400], [0, 200], [100, 400]]);
             stop();
-            // "Timed holds start by themselves" (the phone's setting): the hold's 3-2-1 comes up.
-            var st = Core.dictOf(G.state["set"]);
-            if (st != null && Core.isTrue(st["autoHolds"]) && Core.isTimed(Core.entryAt(G.state, G.state["pos"])) && G.fix == null) {
-                Actions.holdCount();
-            }
+            after();
             Nav.follow();
         }
     }

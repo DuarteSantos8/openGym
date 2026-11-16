@@ -219,11 +219,11 @@ class OfflineSyncTest {
         assertTrue(s.entryIndex in 0..1)
         assertEquals(1, s.workout!!.entries.size)
         // the tick is still the watch's until the phone says it has it (the event waits in the outbox)
-        assertNotNull(s.pending[SessionCore.key("0001", 1)])
+        assertNotNull(s.pending[SessionCore.placeKey("0001", 0, 1)])
         // the curl back with one set fewer: the tick has no row, and still waits
         s = SessionCore.applySnapshot(s, snap(phoneWorkout(bench, curl.copy(sets = curl.sets.take(1)))))
         assertEquals(1, s.workout!!.entries[1].sets.size)
-        assertNotNull(s.pending[SessionCore.key("0001", 1)])
+        assertNotNull(s.pending[SessionCore.placeKey("0001", 0, 1)])
         // applied on the phone: the watch lets go of its copy
         s = SessionCore.applySnapshot(s, snap(phoneWorkout(bench, curl), acked = listOf("a")))
         assertTrue(s.pending.isEmpty())
@@ -284,7 +284,7 @@ class OfflineSyncTest {
         val after = SessionCore.applySnapshot(s, snap(both, acked = listOf("garmin-17")))
         assertEquals(listOf(PhoneTick("0001", 1, 0, t0 + 2000)), SessionCore.phoneTicks(s.workout, after.workout))
         // this watch's own tick is untouched by the other one's ack
-        assertNotNull(after.pending[SessionCore.key("0025", 0)])
+        assertNotNull(after.pending[SessionCore.placeKey("0025", 0, 0)])
         assertTrue(after.workout!!.entries[0].sets[0].done)
         assertTrue(after.workout!!.entries[1].sets[0].done)
         assertNotNull(before)

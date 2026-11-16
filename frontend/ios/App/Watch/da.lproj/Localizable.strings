@@ -26,6 +26,7 @@
 "Start without weighing in" = "Start uden indvejning";
 "Body weight" = "Kropsvægt";
 "Effort" = "Indsats";
+"Muscles" = "Muskler";
 "None" = "Ingen";
 "Exercises" = "Øvelser";
 "Save" = "Gem";
@@ -44,6 +45,7 @@
 "Keep going" = "Fortsæt";
 "Finish now" = "Afslut nu";
 "Workout" = "Træning";
+"Back" = "Tilbage";
 "Last time: %@" = "Sidste gang: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Intet logget i et stykke tid. Er du færdig, slutter den af sig selv kl. %@, gemt ved dit sidste sæt.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Afslut træningen nu? Ellers slutter den af sig selv kl. %@.";
@@ -82,5 +84,14 @@
 "Workout action" = "Træningshandling";
 "Pause workout" = "Sæt træning på pause";
 "Resume workout" = "Genoptag træning";
+"Active\nkcal" = "Aktive\nkcal";
+"Metrics" = "Målinger";
+"Zones" = "Zoner";
 "avg" = "gns.";
 "No effort rated yet" = "Ingen anstrengelse vurderet endnu";
+"max" = "maks.";
+"min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Slå Apple Sundhed til på din iPhone, så bliver openGym på skærmen under pauser og hold.";
+"No sets yet" = "Ingen sæt endnu";
+"+%lld more" = "+%lld mere";
+"%@ sets" = "%@ sæt";
