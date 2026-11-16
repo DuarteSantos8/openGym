@@ -1,0 +1,31 @@
+# The moment a GitHub release is published or its files change: does it carry everything the
+# in-app updater on Android needs (scripts/ci/release-assets-check.mjs)? v1.4.5 was published
+# without the per-APK .sha256 files and no sideloaded phone could update until they were added.
+# The same check runs on the draft from scripts/android/upload-release.sh; this is the net under it.
+name: Release files
+
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release to check, e.g. v1.4.6'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Every APK has its checksum, nothing from the last release is missing
+        env:
+          TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci/release-assets-check.mjs "$TAG"

@@ -248,9 +248,21 @@ extension GarminLink: IQDeviceEventDelegate, IQAppMessageDelegate, IQUIOverrideD
 
     private func sendTo(_ d: IQDevice, _ snap: [String: Any]?) {
         guard let snap, let ciq = ConnectIQ.sharedInstance() else { return }
-        ciq.sendMessage(snap, to: app(for: d), progress: { _, _ in }, completion: { _ in
+        ciq.sendMessage(GarminLink.stamped(snap, now: Date()), to: app(for: d), progress: { _, _ in }, completion: { _ in
             // Not delivered: the next connect or hello sends the latest again.
         })
+    }
+
+    /// The snapshot as it leaves for a watch, its `now` (the phone's clock, from which the watch
+    /// works out how far off its own is: docs/WATCH_SYNC.md "Clocks") the moment it goes. The last
+    /// one is kept and sent again at a hello or a reconnect, maybe minutes after the page made it;
+    /// with the page's time the watch would take those minutes for its clock being off. One
+    /// without `now` (an older page) goes as it is (GarminMessages.stamped on Android).
+    static func stamped(_ snap: [String: Any], now: Date) -> [String: Any] {
+        guard snap["now"] != nil else { return snap }
+        var out = snap
+        out["now"] = NSNumber(value: Int64((now.timeIntervalSince1970 * 1000).rounded()))
+        return out
     }
 
     func deviceStatusChanged(_ device: IQDevice, status: IQDeviceStatus) {

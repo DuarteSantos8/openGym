@@ -84,7 +84,7 @@ describe('Ask the Coach mid-workout', () => {
     expect(mocks.S.active.entries[1].sets).toHaveLength(1)
     expect(mocks.S.active.entries[0].target.restSec).toBeUndefined()
     expect(mocks.S.coach.log[0]).toMatchObject({ kind: 'adapt', proposalId: 'p1' })
-    expect(api.resolvePending).toHaveBeenCalledWith({ accepted: ['a0'], rejected: ['a1'] })
+    expect(api.resolvePending).toHaveBeenCalledWith({ id: 'p1', accepted: ['a0'], rejected: ['a1'] })
     expect(close).toHaveBeenCalled()
   })
 
@@ -94,7 +94,7 @@ describe('Ask the Coach mid-workout', () => {
     expect(host.textContent).toContain('That workout is over')
     expect([...host.querySelectorAll('button')].some(b => b.textContent.includes('Apply'))).toBe(false)
     act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Dismiss')).click() })
-    expect(api.resolvePending).toHaveBeenCalledWith({ dismissed: true })
+    expect(api.resolvePending).toHaveBeenCalledWith({ id: 'p1', dismissed: true })
   })
 
   it('says so when the Coach sees nothing to change', () => {

@@ -40,7 +40,7 @@ afterEach(() => _resetWatchSync())
 describe('the snapshot the Wear OS watch parses', () => {
   it('is the fixture its Kotlin test reads', () => {
     const snap = buildSnapshot(state(), { timer: { endsAt: 1761743000000 }, activeAt: 1761742950000 })
-    snap.settings = { health: false, restHaptics: true, crown: 'reps', show: { hr: true, last: true, next: true }, lang: 'de', weighIn: false }
+    snap.settings = { health: false, restHaptics: true, crown: 'reps', birthYear: 1988, show: { hr: true, last: true, next: true }, lang: 'de', weighIn: false }
     snap.streak = streakFor(state(), '2026-10-29')
     const file = join(fixtures, 'snapshot.json')
     if (process.env.UPDATE_WEAR_FIXTURES) writeFileSync(file, JSON.stringify(snap, null, 2) + '\n')

@@ -17,6 +17,8 @@ import { isWarmupRow } from './workout-model.js'
 import { EXIDX, smOf, isBuiltinEx } from './exercises.js'
 import { todayISO, weekKey, MONDAY } from './format.js'
 import { queueOf } from './queue.js'
+import { sequenceOf, REST } from './rotation.js'
+import { weekTargetOf } from './week-left.js'
 import { workoutAt } from './history.js'
 
 // The muscles a map can shade, in head-to-toe order — also the order of any list
@@ -388,11 +390,29 @@ export function sessionLevels({ done, planned }) {
  * Effective sets programmed by the live recurring week; overrides and history are not plans.
  * A floating week or rotation (S.queue, lib/queue.js) is the plan too: each of its sessions once,
  * beside your own weekday routines — the same split the Home streak card tallies (weekTally).
+ *
+ * Your own rotation with a weekly target (Settings, Workouts per week, lib/week-left.js) is a loop,
+ * not a week (#1249): one turn of it, repeats counted, is scaled to the sessions a week holds.
+ * A loop of 6 sessions at 4 a week plans 4/6 of the loop's sets. With no target a loop has no week
+ * to scale to, and it counts as before.
  */
 export function loadOfWeeklyPlan(S) {
   const routines = new Map((S?.routines || []).map(routine => [routine.id, routine]))
   const exercises = Object.fromEntries((S?.customEx || []).map(exercise => [exercise.id, exercise]))
   const q = queueOf(S)
+  const target = weekTargetOf(S)
+  if (q && target && S.rotation && q.rotationId === S.rotation.id) {
+    const sessions = sequenceOf(S).filter(id => id !== REST)
+    if (sessions.length) {
+      const load = {}
+      for (const id of sessions) {
+        for (const [slug, sets] of Object.entries(loadOfRoutine(routines.get(id), exercises))) {
+          load[slug] = (load[slug] || 0) + sets * target / sessions.length
+        }
+      }
+      return load
+    }
+  }
   const queued = new Set(q ? (S.queue.ids || []) : [])
   const ids = [
     ...Object.values(S?.week || {}).flatMap(value => [].concat(value || [])).filter(id => !queued.has(id)),
