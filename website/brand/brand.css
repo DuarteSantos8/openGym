@@ -1,0 +1,107 @@
+/* opengym.ch/brand: the parts only the brand page has (figures, the background picker, swatches,
+   download cards, the banner list). Layout, contents and type come from ../ref.css. */
+.brand-doc {
+  --ink: #0c0e12; --paper: #eef1f6; --dark: #12151b; --green: #a3e635; --onl: #4d7c0f;
+  --surf: #15181d; --surf-2: #1d2128; --text: #e7e9ee; --text-2: #b4b9c3; --muted: #8b919c;
+  --e: cubic-bezier(.16, 1, .3, 1);
+}
+.brand-doc figure { margin-left: 0; margin-right: 0; }
+/* figures and panels */
+.bg-panel { border-radius: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; aspect-ratio: 16 / 9; padding: 7%; }
+.bg-panel > img { width: 78%; height: auto; }
+.bg-panel-ink { background: #000; }
+.bg-panel-mark > img { width: 46%; }
+.bg-hero { margin-top: 36px; }
+.bg-hero-stage { background: #000; border-radius: 16px; aspect-ratio: 16 / 8; display: flex; align-items: center; justify-content: center; }
+.bg-hero-stage img { width: 62%; height: auto; }
+.bg-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+.bg-values div { background: var(--surf); border-radius: 12px; padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.bg-values b { font-size: 17px; color: var(--green); }
+.bg-values span { font-size: 14px; line-height: 1.5; color: var(--text-2); }
+
+/* grids of cards */
+.bg-grid2, .bg-grid3, .bg-grid4 { display: grid; gap: 12px; margin-top: 18px; }
+.bg-grid2 { grid-template-columns: repeat(2, 1fr); } .bg-grid3 { grid-template-columns: repeat(3, 1fr); } .bg-grid4 { grid-template-columns: repeat(4, 1fr); }
+.bg-card { margin: 0; background: var(--surf); border-radius: 14px; overflow: hidden; }
+.bg-card .bg-panel { border-radius: 0; aspect-ratio: 16 / 9; }
+.bg-card figcaption { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.bg-card figcaption b { color: var(--text); font-size: 15px; }
+.bg-card figcaption span { color: var(--muted); }
+.bg-grid4 .bg-panel { aspect-ratio: 4 / 3; }
+.bg-grid4 figcaption span { color: var(--text-2); font-size: 13.5px; line-height: 1.45; }
+.bg-no .bg-panel { position: relative; }
+.bg-no .bg-panel::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top right, transparent calc(50% - 1.5px), #e5484d calc(50% - 1.5px), #e5484d calc(50% + 1.5px), transparent calc(50% + 1.5px)); }
+.bg-dl { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.bg-dl a { font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 99px; background: var(--surf-2); color: var(--text) !important; text-decoration: none !important;
+  transition: background .15s, transform .15s var(--e); }
+.bg-dl a:hover { background: rgba(163, 230, 53, .18); } .bg-dl a:active { transform: scale(.95); }
+
+/* construction, space, specimen, icons */
+.bg-construct svg { width: 100%; height: auto; }
+.bg-construct { padding: 4% 5%; aspect-ratio: auto; }
+.bg-space-box { width: 72%; outline: 1.5px dashed rgba(163, 230, 53, .7); outline-offset: -7.6%; line-height: 0; }
+.bg-space-box img { width: 100%; height: auto; }
+.bg-specimen { flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; aspect-ratio: auto; padding: 36px 34px; }
+.bg-sp-1 { font-size: clamp(44px, 6vw, 72px); font-weight: 700; letter-spacing: -.045em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--paper); }
+.bg-sp-2 { font-size: clamp(20px, 2.4vw, 28px); font-weight: 700; letter-spacing: -.03em; color: var(--paper); }
+.bg-sp-3 { font-size: 16px; color: var(--muted); }
+.bg-icons { background: var(--surf); gap: 5%; align-items: flex-end; aspect-ratio: 16 / 7; }
+.bg-icons img { height: auto; }
+
+/* the live background picker */
+.bg-picker { display: grid; grid-template-columns: 1.15fr 1fr; gap: 0; background: var(--surf); border-radius: 14px; overflow: hidden; }
+.bg-stage { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: #000; transition: background .3s var(--e); }
+.bg-stage[data-bg="white"] { background: #fff; } .bg-stage[data-bg="green"] { background: var(--green); } .bg-stage[data-bg="mono"] { background: var(--onl); }
+.bg-stage-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s var(--e); }
+.bg-stage[data-bg="photo"] .bg-stage-photo { opacity: 1; }
+.bg-stage-logo { position: relative; width: 76%; height: auto; }
+.bg-stage[data-bg="photo"] .bg-stage-logo { width: 66%; background: var(--ink); padding: 3% 4%; border-radius: 6px; }
+.bg-picker-side { padding: 22px; display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+.bg-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.bg-tab { font: inherit; font-size: 14px; font-weight: 600; color: var(--text-2); background: var(--surf-2); border: 0; padding: 9px 14px; border-radius: 99px; cursor: pointer;
+  transition: background .15s, color .15s, transform .15s var(--e); }
+.bg-tab:hover { color: var(--text); } .bg-tab:active { transform: scale(.95); }
+.bg-tab[aria-selected="true"] { background: var(--green); color: var(--ink); }
+.bg-note { font-size: 16px; line-height: 1.55; color: var(--text); min-height: 3.1em; }
+.bg-dl-live { margin-top: 0; }
+
+/* colour */
+.bg-ratio { display: flex; height: 44px; border-radius: 10px; overflow: hidden; margin-top: 26px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.bg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+.bg-sw { position: relative; border: 0; border-radius: 12px; padding: 58px 14px 12px; text-align: left; font: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 1px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); transition: transform .18s var(--e); }
+.bg-sw:hover { transform: translateY(-2px); } .bg-sw:active { transform: scale(.97); }
+.bg-sw b { font-size: 15px; } .bg-sw span { font-size: 13.5px; font-variant-numeric: tabular-nums; opacity: .85; }
+.bg-copied { position: absolute; top: 10px; right: 12px; font-style: normal; font-size: 12.5px; font-weight: 700; opacity: 0; transform: translateY(3px); transition: opacity .2s, transform .2s var(--e); }
+.bg-sw.is-copied .bg-copied { opacity: 1; transform: none; }
+
+/* voice */
+.bg-say > div { background: var(--surf); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.bg-say b { font-size: 15px; } .bg-say span { font-size: 15px; color: var(--text-2); }
+.bg-yes b { color: var(--green); } .bg-nope b { color: #ff8a8e; } .bg-nope span { text-decoration: line-through; text-decoration-color: rgba(255, 138, 142, .6); }
+
+/* banners: index with preview */
+.bg-ix { position: relative; margin-top: 18px; }
+.bg-ix-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.bg-ix-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 12px; background: var(--surf); border-radius: 14px; overflow: hidden;
+  padding: 0 14px 12px; text-decoration: none !important; transition: background .15s, opacity .2s; }
+.bg-ix-row:hover { background: var(--surf-2); }
+.bg-ix-thumb { flex-basis: calc(100% + 28px); margin: 0 -14px 10px; width: calc(100% + 28px); height: 170px; object-fit: contain; background: #000; }
+.bg-ix-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.bg-ix-size { font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bg-ix-frame { display: none; }
+
+@media (max-width: 960px) {
+  .bg-grid4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .bg-grid3, .bg-grid2, .bg-values, .bg-ix-list { grid-template-columns: 1fr; }
+  .bg-picker { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .brand-doc * { transition: none !important; } }
+
+/* figures sit on ink, one step up from the page's black, so they read as figures */
+.bg-panel-ink, .bg-hero-stage { background: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07); }
+.bg-space { aspect-ratio: 16 / 7; }
+.bg-hero-stage { aspect-ratio: 16 / 7; }

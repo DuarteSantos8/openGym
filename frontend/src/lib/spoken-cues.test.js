@@ -161,3 +161,36 @@ describe('styles, the last set, records and clips (v1.4.5 Voice)', () => {
     expect(played).toEqual(['c3'])
   })
 })
+
+// #1210: only a rest announced the next set, so the workout's first exercise (nothing precedes
+// it) and every circuit member but the round's first (no rest between members) went unsaid.
+describe('the first exercise and a circuit’s members (#1210)', () => {
+  test('a workout that begins names its first set', () => {
+    bindCueState(() => S([entry(BENCH, [set(80, 8), set(80, 8)]), entry(SQUAT, [set(100, 5)])]))
+    cues.began()
+    expect(speak.mock.calls.map(c => c[0])).toEqual([expect.stringMatching(/^.+\. Set 1, 80 kilos, 8 reps$/)])
+  })
+  test('began says nothing with cues off, no workout, or nothing left', () => {
+    bindCueState(() => ({ ...S([entry(BENCH, [set(80, 8)])]), spokenCues: false }))
+    cues.began()
+    bindCueState(() => ({ unit: 'kg', spokenCues: true, active: null }))
+    cues.began()
+    bindCueState(() => S([entry(BENCH, [set(80, 8, true)])]))
+    cues.began()
+    expect(speak).not.toHaveBeenCalled()
+  })
+  test('a superset member with no rest between is announced, named', () => {
+    const st = S([entry(BENCH, [set(80, 8, true), set(80, 8)], undefined, { sg: 'g' }), entry(SQUAT, [set(100, 5), set(100, 5)], undefined, { sg: 'g' })])
+    st.active.cur = 1   // the flow already moved to the partner (views/Workout.jsx)
+    bindCueState(() => st)
+    cues.movedOn(0)
+    expect(speak.mock.calls.map(c => c[0])).toEqual([expect.stringMatching(/^.+\. Set 1, 100 kilos, 5 reps$/)])
+  })
+  test('the round’s first member again says its next set', () => {
+    const st = S([entry(BENCH, [set(80, 8, true), set(80, 8)], undefined, { sg: 'g' }), entry(SQUAT, [set(100, 5, true), set(100, 5)], undefined, { sg: 'g' })])
+    st.active.cur = 0
+    bindCueState(() => st)
+    cues.movedOn(1)
+    expect(speak.mock.calls.map(c => c[0])).toEqual([expect.stringMatching(/^.+\. Set 2, 80 kilos, 8 reps$/)])
+  })
+})
