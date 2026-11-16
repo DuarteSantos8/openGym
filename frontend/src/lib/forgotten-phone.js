@@ -24,7 +24,8 @@ const CHECK_MS = 30 * 1000
 let deps = null          // { useStore, useUI, finish, discard, openPrompt, closePrompt, gymOn }
 let timer = null
 let shown = null         // the card on screen: { wid, state }
-let planned = ''         // the notification planned last ("wid|at")
+let planned = null       // the notification planned last ("wid|at", '' for none, null: not known, as at launch)
+let planning = Promise.resolve()
 
 // Handed out inside an object: a Capacitor plugin proxy answers `then` with a native call that
 // never settles, so a promise resolved with the bare proxy hangs (#42, the Coach's hang).
@@ -64,8 +65,16 @@ async function registerActions(L) {
   } catch { /* an older shell: the notification still opens the app */ }
 }
 
-/** The notification for "Still training?", planned for `at`; or none (`at` 0). Never asks for permission. */
-async function planNotification(wid, at) {
+/**
+ * The notification for "Still training?", planned for `at`; or none (`at` 0). Never asks for permission.
+ * One at a time, in order: a set and the watch's Finish right after it must not let the set's
+ * schedule land after the finish's cancel (the question then came 45 minutes after the finish).
+ */
+function planNotification(wid, at) {
+  planning = planning.then(() => planNow(wid, at), () => planNow(wid, at))
+  return planning
+}
+async function planNow(wid, at) {
   const key = wid && at ? wid + '|' + at : ''
   if (key === planned) return
   const L = (await ln())?.L
@@ -84,7 +93,7 @@ async function planNotification(wid, at) {
     }]) })
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
-  } catch { planned = '' }
+  } catch { planned = null }
 }
 
 /** When the question counts as asked: shown here, or its notification gone out. */
@@ -99,7 +108,7 @@ export function checkForgotten(now = Date.now()) {
   const { useStore, useUI } = deps
   const S = useStore.getState().S
   const A = S?.active
-  if (!A || useStore.getState().tourSandbox) { hide(); if (planned) planNotification(null, 0); return null }
+  if (!A || useStore.getState().tourSandbox) { hide(); if (planned !== '') planNotification(null, 0); return null }
   const prefs = readForgottenPrefs()
   const st = readForgottenState(A.id)
   const ui = useUI.getState()
@@ -235,4 +244,4 @@ export function startForgotten({ useStore, useUI, ...rest }) {
 }
 
 /** For the tests. */
-export function _resetForgottenPhone() { deps = null; shown = null; planned = ''; actionsRegistered = false; clearTimeout(timer) }
+export function _resetForgottenPhone() { deps = null; shown = null; planned = null; planning = Promise.resolve(); actionsRegistered = false; clearTimeout(timer) }
