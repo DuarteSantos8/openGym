@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tùy chỉnh",
+  "Collapsed": "Thu gọn",
+  "Hide": "Ẩn",
+  "Totals": "Tổng",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
 };

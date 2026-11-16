@@ -61,6 +61,7 @@ import { getMediaStatus, subscribeMediaStatus, pendingRefCount, localOnlyRefCoun
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
+import { layoutSheet } from '../components/PageLayout.jsx'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
@@ -348,7 +349,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             // The release always publishes the checksum next to the APK. Without it the file is
             // not installed — a sideloaded binary is exactly the thing that should be verified.
             let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
+            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl, updateInfo.sumsUrl, updateInfo.sumsApiUrl, updateInfo.apkName) } catch (e) { /* reported below */ }
             if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
             await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
               if (setProgress) setProgress(received, total)
@@ -888,9 +889,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
         </Section>
-        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
-            over" and the count of a hold, in the app's language. The phone's own voice in the
-            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
+        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
+            workout begins and each superset member the focus moves to without a rest (#1210),
+            "10 seconds", "Rest is over" and the count of a hold, in the app's language. The
+            phone's own voice in the apps (music ducks and comes back), the browser's elsewhere.
+            Off by default. */}
         {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
         <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
@@ -1151,6 +1154,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
         {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
           subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
+        {/* Which cards Home and Stats show, folded or in which order (components/PageLayout.jsx, #1119). */}
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Home')} accessory="chevron" onClick={() => layoutSheet('home')} />
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Stats')} accessory="chevron" onClick={() => layoutSheet('stats')} />
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>

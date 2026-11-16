@@ -5901,4 +5901,10 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Настроить",
+  "Collapsed": "Свёрнута",
+  "Hide": "Скрыть",
+  "Totals": "Итоги",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
 }

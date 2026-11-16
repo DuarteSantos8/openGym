@@ -5907,4 +5907,10 @@ export default {
   "Preview on": "Anteprima su",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un po’ più corto",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Personalizza",
+  "Collapsed": "Compressa",
+  "Hide": "Nascondi",
+  "Totals": "Totali",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
 }

@@ -5837,4 +5837,10 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tilpas",
+  "Collapsed": "Foldet sammen",
+  "Hide": "Skjul",
+  "Totals": "Totaler",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
 }

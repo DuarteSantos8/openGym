@@ -4,6 +4,33 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+- Routines library: a submission can no longer get lost on the way to review. If the message to the reviewer fails, it is sent again until it arrives (a mod's routine sat unseen on 2026-11-15, thanks @seals187). And a routine written in a language you do not read comes after the others in the list.
+- Home and Stats are yours to arrange: Customize at the end of either page (or Settings → Look & Home) shows, collapses or hides each card and moves it up or down. A collapsed card is one line that opens on a tap. On Stats a card stays in its own part (Overview, Body, Lifts, Effort), and a part with nothing left in it disappears. It syncs with your profile (#1119, thanks @seals187 and Drakwen on Discord).
+- Fixed: "Add several at once" for a weight stack or your dumbbells opens the full keyboard on the phone. The number pad had no Return and no space, so on an iPhone a list could not be typed, only pasted (#926, thanks @johannes1984).
+- Android: when pairing cannot reach your server, the message now ends with what the phone itself said (no such host, an untrusted certificate, connection refused), so "my browser opens it" has an answer (#870).
+- Fixed: a timed exercise done per side no longer runs off the right edge of the phone. Left and Right are the short L and R badge there, as on a reps exercise (#1239, thanks @DomHeadroom).
+- F-Droid build: the app's own code is shrunk with R8 now (about 12 MB down to 2.4 MB), as F-Droid asked. The other Android builds are unchanged.
+- Android updater: when a release has no checksum file next to its APK, the app reads the hash from the release's combined SHA256SUMS instead of stopping with "Checksum not available" (#1223, thanks @dagov42; #1256). That is what blocked the in-app update to 1.4.5 for a day. The release itself is checked for its checksum files before and after publishing now.
+- Fixed: a FitNotes export with an inch mark in an exercise name (Step Ups 16") imports whole. The mark used to swallow the rows after it, so hundreds of sets went missing (#1106, #1227, thanks @ivenos).
+- Spoken cues: the first set of a workout is announced as it begins, and in a superset or circuit every exercise is announced as you move to it, not only the first one (#1210, #1241, thanks @dagov42).
+- Fixed: importing a body CSV no longer skips a day that already has data. A weigh-in with a different weight joins the day as another reading, and measurements fill the fields the day did not have. What is already there is never overwritten (#1206, #1246, thanks @dagov42).
+- Phone: typing a weight or reps no longer writes your whole profile to storage on every keystroke. It waits a moment like any other change, and a ticked set is still saved at once (#1089, #1201, thanks @cubetes).
+- Calendar feed: building it is much faster on a big profile, so a calendar app fetching it no longer holds up the server (#1203, thanks @liluzigrt).
+- Fixed: the Coach showed raw JSON under a superset or cardio suggestion. It says it in words now (#1147, #1145, thanks @cubetes).
+- Fixed: Got it, Apply and Dismiss on a Coach card work on the first tap, and the reply no longer shows up twice (#1148, #1146, thanks @cubetes).
+- API tokens: your gym check-in cards are never part of what a token can read (#1179, thanks @liluzigrt).
+- For forks: a build can name the repository its updates come from (VITE_UPDATE_REPO), so a fork's APK finds the fork's releases (#1254, thanks @dagov42).
+- Android: pulling past the top or bottom of a page no longer stretches the whole app, tab bar included, and the page's scrollbar is gone (#1177, thanks @RodiAda).
+- Screen readers: a chart has a name and says where its line starts and ends, and the goal if there is one (#1228, thanks @Creatgame).
+- Screen readers: a body map you cannot tap says which muscles it shows instead of reading out every shape (#1230, thanks @Creatgame).
+- Indonesian: more natural wording across the app, the watch and the trainer notifications (#1238, thanks @m-ridha).
+- Bengali: the newer strings say আপনি and use everyday wording like the rest (#1234, thanks @mrjohndoel).
+- Fixed: with a rotation and Workouts per week set, Planned sets in Stats follow your week instead of one turn of the loop. A loop of six sessions at four a week plans four sixths of its sets, and a routine the loop names twice counts twice (#1249, thanks @avikl).
+- Fixed: on an exercise's page, "Your photo or video" and the description under it no longer touch. There is a gap between the two cards now (#1260, thanks @unabomberlive).
+- Garmin: the watch app now runs on the fēnix 9 line (fēnix 9, 9 Pro and 9 Pro Solar, every size), the Forerunner 70 and 170, Enduro 4, MARQ (Gen 3), Approach S50 and S72 and the D2 Air X10. Some older watches it had skipped are in too: fēnix 5 Plus, Forerunner 645 Music, the first MARQ, Descent G1, D2 Air, Venu Sq Music and the Legacy Hero and Legacy Saga watches. That is 36 more models, 118 in all, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
+
 ## v1.4.5 (2026-11-14)
 
 **Apple Watch, redesigned and in step with the phone**

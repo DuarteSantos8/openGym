@@ -5890,4 +5890,10 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自訂",
+  "Collapsed": "已摺疊",
+  "Hide": "隱藏",
+  "Totals": "總計",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
 }

@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "अनुकूलित करें",
+  "Collapsed": "समेटा हुआ",
+  "Hide": "छिपाएँ",
+  "Totals": "कुल",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
 }

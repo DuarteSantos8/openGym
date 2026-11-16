@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Přizpůsobit",
+  "Collapsed": "Sbalené",
+  "Hide": "Skrýt",
+  "Totals": "Součty",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
 }
