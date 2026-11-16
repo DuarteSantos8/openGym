@@ -856,7 +856,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let start = restStartedAt, shift = restShift
         startRest(until: to, notify: true)
         restStartedAt = start
-        restShift = shift - RestMath.step
+        restShift = shift + to.timeIntervalSince(end) // what it really moved: a short rest can't lose a full 15 s
         sendRest(to)
     }
 
