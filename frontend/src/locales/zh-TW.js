@@ -5711,6 +5711,12 @@ export default {
   "Your own code for this set": "你為這組定的記號",
   "openGym dark": "openGym 深色",
   "openGym green": "openGym 綠色",
+  "Ironvane orange": "Ironvane 橘色",
+  "Based on openGym": "以 openGym 為基礎",
+  "Bold": "醒目",
+  "Refined": "精緻",
+  "Sharp corners, bold titles and numbers.": "銳利邊角、粗體標題與數字。",
+  "Soft corners, quieter type.": "柔和邊角、較低調的字體。",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "你網路裡的模型",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "付費的 ChatGPT 方案，網頁版。Business 和 Enterprise 工作區由工作區決定成員能否自行新增。",

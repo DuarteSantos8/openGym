@@ -5728,6 +5728,12 @@ export default {
   "Your own code for this set": "Il tuo codice per questa serie",
   "openGym dark": "Scuro openGym",
   "openGym green": "Verde openGym",
+  "Ironvane orange": "Arancione Ironvane",
+  "Based on openGym": "Basato su openGym",
+  "Bold": "Deciso",
+  "Refined": "Raffinato",
+  "Sharp corners, bold titles and numbers.": "Angoli netti, titoli e numeri in grassetto.",
+  "Soft corners, quieter type.": "Angoli morbidi, caratteri più discreti.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "Un modello nella tua rete",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "Un piano ChatGPT a pagamento, sul web. Negli spazi di lavoro Business ed Enterprise è lo spazio a decidere se i membri possono aggiungerne di propri.",

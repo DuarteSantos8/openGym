@@ -75,6 +75,7 @@ import Home from './views/Home.jsx'
 import { tintCss } from './lib/streak-icons.js'
 import Plan from './views/Plan.jsx'
 import Workout from './views/Workout.jsx'
+import { lookOf } from './lib/look.js'
 
 // Screens most sessions never open (the Coach, the admin dashboard, photos, measurements, the
 // balance check) are their own chunks rather than part of the code every start parses: ~200 KB
@@ -217,6 +218,8 @@ function Shell() {
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
   useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
+  // Settings → Look: Bold (the default) or Refined (lib/look.js, index.css [data-look]).
+  useEffect(() => { document.documentElement.dataset.look = lookOf(S) }, [S.look])
   // Settings → Icons → your own streak flame and freeze: the tints around them come from their
   // colour (lib/streak-icons.js tintCss), one <style> per page, emptied on Reset to default.
   const ownTints = tintCss({ flameIcon: S.flameIcon, freezeIcon: S.freezeIcon })

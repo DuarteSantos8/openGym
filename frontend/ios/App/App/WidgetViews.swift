@@ -290,7 +290,7 @@ struct WidgetEmpty: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             OpenGymMark(width: 30)
-            Text("Open openGym once to see your plan here.").font(.caption).foregroundStyle(.secondary)
+            Text("Open Ironvane once to see your plan here.").font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -807,7 +807,7 @@ extension WorkoutActivityAttributes {
     /// The line with no set to show: all done, or sets left that the activity does not carry
     /// (many taps with the page asleep), where "All sets done" was simply wrong (Discord).
     func noSetText(_ state: ContentState) -> String {
-        state.done < state.total ? (labels.openApp ?? "Open openGym for the next set") : labels.allDone
+        state.done < state.total ? (labels.openApp ?? "Open Ironvane for the next set") : labels.allDone
     }
 
     /// The word over the clock: the count-in, the hold, or the rest.

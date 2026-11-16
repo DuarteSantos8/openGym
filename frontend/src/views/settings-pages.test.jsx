@@ -46,6 +46,7 @@ import Settings from './Settings.jsx'
 import { FLOWS } from '../lib/tour.js'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
+import { brandText } from '../lib/brand.js'
 
 globalThis.__APP_VERSION__ ??= 'test'
 
@@ -286,7 +287,7 @@ describe('the search lands on a row', () => {
       mount(page)
       await settle()
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
-      for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
+      for (const title of want) expect(have, `${page}: ${title}`).toContain(brandText(title))
     }
   })
 
@@ -315,7 +316,7 @@ describe('the search lands on a row', () => {
     for (const page of PAGE_IDS) {
       // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
       if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
-      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)])
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)].map(brandText))
       mount(page)
       await settle()
       for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
@@ -447,7 +448,7 @@ describe('the pages', () => {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
-      for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
+      for (const title of want) expect(have, `${page}: ${title}`).toContain(brandText(title))
     }
   })
 

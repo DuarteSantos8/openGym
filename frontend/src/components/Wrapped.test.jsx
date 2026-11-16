@@ -49,7 +49,7 @@ describe('Home: the December card', () => {
     expect(host.querySelector('[data-wrapped-home]')).toBeNull()
     localStorage.setItem(NOW_KEY, '2026-12-01')
     render(<Card key="2" />)
-    expect(host.textContent).toContain('Your 2026 in openGym is ready 🎉')
+    expect(host.textContent).toContain('Your 2026 in Ironvane is ready 🎉')
     act(() => button('Show me my year').click())
     expect(useWrappedUI.getState().year).toBe(2026)
   })
@@ -71,7 +71,7 @@ describe('the stories', () => {
     act(() => openWrapped(2026))
     render(<Wrapped />)
     const dialog = host.querySelector('[role="dialog"]')
-    expect(dialog.getAttribute('aria-label')).toBe('Your 2026 in openGym')
+    expect(dialog.getAttribute('aria-label')).toBe('Your 2026 in Ironvane')
     expect(S().wrapped.opened).toEqual([2026])
     const group = () => host.querySelector('.wr-card[role="group"]')
     const total = host.querySelectorAll('.wr-progress span').length

@@ -5721,6 +5721,12 @@ export default {
   "Your own code for this set": "A saját kódod ehhez a sorozathoz",
   "openGym dark": "openGym sötét",
   "openGym green": "openGym zöld",
+  "Ironvane orange": "Ironvane narancs",
+  "Based on openGym": "Az openGym alapján",
+  "Bold": "Merész",
+  "Refined": "Letisztult",
+  "Sharp corners, bold titles and numbers.": "Éles sarkok, félkövér címek és számok.",
+  "Soft corners, quieter type.": "Lágy sarkok, visszafogottabb betűk.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "Egy modell a saját hálózatodon",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "Fizetős ChatGPT-csomag, a weben. Business és Enterprise munkaterületeken a munkaterület dönti el, hogy a tagok hozzáadhatnak-e sajátot.",

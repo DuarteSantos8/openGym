@@ -5715,6 +5715,12 @@ export default {
   "Your own code for this set": "Твій власний код для цього підходу",
   "openGym dark": "Темний openGym",
   "openGym green": "Зелений openGym",
+  "Ironvane orange": "Помаранчевий Ironvane",
+  "Based on openGym": "На основі openGym",
+  "Bold": "Виразний",
+  "Refined": "Стриманий",
+  "Sharp corners, bold titles and numbers.": "Гострі кути, жирні заголовки й числа.",
+  "Soft corners, quieter type.": "М’які кути, спокійніший шрифт.",
   // --- sub-connect-146: Use your subscription (Claude, ChatGPT, Gemini connectors) ---
   "A model on your network": "Модель у твоїй мережі",
   "A paid ChatGPT plan, on the web. Business and Enterprise workspaces decide whether members may add their own.": "Платний план ChatGPT, у браузері. У просторах Business та Enterprise сам простір вирішує, чи можуть учасники додавати власні.",

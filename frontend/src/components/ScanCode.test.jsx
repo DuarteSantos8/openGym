@@ -50,7 +50,7 @@ describe('a scanned code goes to its handler', () => {
 
   it('anything else is shown back, not acted on', async () => {
     await handleScannedText('WIFI:S:gym;T:WPA;P:hunter2;;', { indexAddress: null })
-    expect(m.toasts).toEqual(['That’s not an openGym code: WIFI:S:gym;T:WPA;P:hunter2;;'])
+    expect(m.toasts).toEqual(['That’s not an Ironvane code: WIFI:S:gym;T:WPA;P:hunter2;;'])
     expect(m.routine.length + m.tags.length + m.imports.length).toBe(0)
   })
 

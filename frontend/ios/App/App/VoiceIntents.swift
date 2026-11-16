@@ -139,7 +139,7 @@ enum VoiceWords {
     static func today(_ snap: VoiceSnapshot?, now: Date = Date()) -> String {
         let iso = VoiceSnapshot.isoDay(now)
         guard let snap = snap, let day = snap.days.first(where: { $0.iso == iso }) else {
-            return say("Open openGym once, then ask me again.")
+            return say("Open Ironvane once, then ask me again.")
         }
         if snap.today == iso, let active = snap.active {
             if let name = active.name, !name.isEmpty { return say("You’re in the middle of %@.", name) }
@@ -159,7 +159,7 @@ enum VoiceWords {
 
     /// The week streak, from the snapshot as of `now`.
     static func streak(_ snap: VoiceSnapshot?, now: Date = Date()) -> String {
-        guard let snap = snap else { return say("Open openGym once, then ask me again.") }
+        guard let snap = snap else { return say("Open Ironvane once, then ask me again.") }
         let iso = VoiceSnapshot.isoDay(now)
         let n = snap.streakInfo?.current ?? snap.streak ?? 0
         // A snapshot from an earlier week says nothing about this one.
@@ -195,7 +195,7 @@ struct StartWorkoutIntent: AppIntent {
 @available(iOS 16.0, *)
 struct LogWeightIntent: AppIntent {
     static let title: LocalizedStringResource = "Log weight"
-    static let description = IntentDescription("Logs your body weight without opening openGym.")
+    static let description = IntentDescription("Logs your body weight without opening Ironvane.")
     static let openAppWhenRun = false
 
     @Parameter(title: "Weight", requestValueDialog: IntentDialog("What’s your weight?"))
@@ -206,7 +206,7 @@ struct LogWeightIntent: AppIntent {
     func perform() async throws -> some IntentResult & ProvidesDialog {
         // The unit is the profile's, as the app last wrote it; before that there is none to go by.
         guard let snap = VoiceSnapshot.load() else {
-            return .result(dialog: IntentDialog(stringLiteral: VoiceWords.say("Open openGym once, then ask me again.")))
+            return .result(dialog: IntentDialog(stringLiteral: VoiceWords.say("Open Ironvane once, then ask me again.")))
         }
         let unit = snap.weightUnit
         let w = (weight * 10).rounded() / 10
