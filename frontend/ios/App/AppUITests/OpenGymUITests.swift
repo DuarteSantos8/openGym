@@ -156,7 +156,8 @@ final class OpenGymUITests: XCTestCase {
         // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
         // and a workout running. Pick up from there instead of looking for the empty home again.
         let finish = app.buttons["Finish"]
-        let resume = app.buttons["Resume"]
+        // The way back into a running workout: the live bar (components/LiveBar.jsx), which replaced the tab's "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Workout in progress")).firstMatch
         if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
             tap(app.buttons["Load starter plan"], "Load starter plan")
             tap(button(startingWith: "Full Body"), "the Full Body plan")
@@ -218,12 +219,13 @@ final class OpenGymUITests: XCTestCase {
         app.launchArguments = ["-OpenGymUITestPending"]
         app.launch()
         let finish = app.buttons["Finish"]
-        let resume = app.buttons["Resume"]
+        // The way back into a running workout: the live bar (components/LiveBar.jsx), which replaced the tab's "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Workout in progress")).firstMatch
         let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
         // One query for any of the four, waited on, rather than four polled every second: on a busy
         // simulator each poll is a whole snapshot of the app, and they ran past XCTest's limit (CI 10-13).
-        let anyScreen = app.buttons.matching(NSPredicate(format: "label IN %@", ["Finish", "Resume", "Log", "Use on this device"])).firstMatch
+        let anyScreen = app.buttons.matching(NSPredicate(format: "label IN %@ OR label BEGINSWITH %@", ["Finish", "Log", "Use on this device"], "Workout in progress")).firstMatch
         XCTAssertTrue(anyScreen.waitForExistence(timeout: 120), "the app never showed a screen")
         if local.exists { chooseLocal() }
         if !finish.exists && resume.exists { resume.tap() }
