@@ -5732,6 +5732,8 @@ export default {
   "Back to Progress": "回到进展",
   "Video, steps and form cues": "视频、步骤与动作要点",
   "Exercise options": "动作选项",
+  "Setup for this exercise": "此动作的设置",
+  "Weight unit, plates and bar, other names, your media": "重量单位、杠铃片与杠铃杆、其他名称、你的媒体",
   "Based on openGym": "基于 openGym",
   "Bold": "醒目",
   "Refined": "精致",

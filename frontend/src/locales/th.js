@@ -5743,6 +5743,8 @@ export default {
   "Back to Progress": "กลับไปความก้าวหน้า",
   "Video, steps and form cues": "วิดีโอ ขั้นตอน และคำแนะนำท่าทาง",
   "Exercise options": "ตัวเลือกท่า",
+  "Setup for this exercise": "การตั้งค่าท่านี้",
+  "Weight unit, plates and bar, other names, your media": "หน่วยน้ำหนัก แผ่นน้ำหนักและบาร์ ชื่ออื่น สื่อของคุณ",
   "Based on openGym": "พัฒนาต่อจาก openGym",
   "Bold": "เข้ม",
   "Refined": "ประณีต",

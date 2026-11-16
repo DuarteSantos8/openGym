@@ -5735,6 +5735,8 @@ export default {
   "Back to Progress": "Vissza a Fejlődéshez",
   "Video, steps and form cues": "Videó, lépések és technikai tippek",
   "Exercise options": "Gyakorlat beállításai",
+  "Setup for this exercise": "A gyakorlat beállítása",
+  "Weight unit, plates and bar, other names, your media": "Súlymértékegység, tárcsák és rúd, más nevek, saját médiád",
   "Based on openGym": "Az openGym alapján",
   "Bold": "Merész",
   "Refined": "Letisztult",

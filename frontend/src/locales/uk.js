@@ -5729,6 +5729,8 @@ export default {
   "Back to Progress": "Назад до прогресу",
   "Video, steps and form cues": "Відео, кроки та підказки з техніки",
   "Exercise options": "Параметри вправи",
+  "Setup for this exercise": "Налаштування вправи",
+  "Weight unit, plates and bar, other names, your media": "Одиниця ваги, блини та гриф, інші назви, твої медіа",
   "Based on openGym": "На основі openGym",
   "Bold": "Виразний",
   "Refined": "Стриманий",

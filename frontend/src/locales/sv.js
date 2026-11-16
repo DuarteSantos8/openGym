@@ -5779,6 +5779,8 @@ export default {
   "Back to Progress": "Tillbaka till Framsteg",
   "Video, steps and form cues": "Video, steg och teknikpunkter",
   "Exercise options": "Övningsval",
+  "Setup for this exercise": "Inställningar för övningen",
+  "Weight unit, plates and bar, other names, your media": "Viktenhet, viktskivor och stång, andra namn, dina medier",
   "Based on openGym": "Baserad på openGym",
   "Bold": "Markant",
   "Refined": "Förfinad",

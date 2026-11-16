@@ -5698,6 +5698,8 @@ export default {
   "Back to Progress": "Quay lại Tiến bộ",
   "Video, steps and form cues": "Video, các bước và mẹo tư thế",
   "Exercise options": "Tùy chọn bài tập",
+  "Setup for this exercise": "Thiết lập cho bài tập này",
+  "Weight unit, plates and bar, other names, your media": "Đơn vị mức tạ, bánh tạ và thanh đòn, tên khác, phương tiện của bạn",
   "Based on openGym": "Dựa trên openGym",
   "Bold": "Đậm",
   "Refined": "Tinh tế",

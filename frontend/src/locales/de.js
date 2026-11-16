@@ -5752,6 +5752,8 @@ export default {
   "Back to Progress": "Zurück zu Fortschritt",
   "Video, steps and form cues": "Video, Schritte und Technik-Tipps",
   "Exercise options": "Übungsoptionen",
+  "Setup for this exercise": "Einstellungen für diese Übung",
+  "Weight unit, plates and bar, other names, your media": "Gewichtseinheit, Scheiben und Stange, andere Namen, deine Medien",
   "Based on openGym": "Basiert auf openGym",
   "Bold": "Markant",
   "Refined": "Dezent",

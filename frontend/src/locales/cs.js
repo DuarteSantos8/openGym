@@ -5698,6 +5698,8 @@ export default {
   "Back to Progress": "Zpět na Pokrok",
   "Video, steps and form cues": "Video, kroky a tipy k technice",
   "Exercise options": "Možnosti cviku",
+  "Setup for this exercise": "Nastavení tohoto cviku",
+  "Weight unit, plates and bar, other names, your media": "Jednotka váhy, kotouče a osa, další názvy, tvoje média",
   "Based on openGym": "Založeno na openGym",
   "Bold": "Výrazný",
   "Refined": "Jemný",

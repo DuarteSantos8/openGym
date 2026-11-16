@@ -15,7 +15,7 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
+import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, freestyleConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -49,7 +49,8 @@ import Icon from './components/Icon.jsx'
 import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
-import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
+import { useNfcSupported, nfcExerciseSheet, addExerciseToSession } from './components/Nfc.jsx'
+import { exMediaOf, setExMediaShow } from './lib/ex-media.js'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -1542,24 +1543,77 @@ function FavButton({ id }) {
   </button>
 }
 
+// Last time's top set: the heaviest work set, more reps breaking a tie (a warm-up never speaks
+// for the session). Read as the log reads it (setLabel), so a run or a hold says itself.
+function lastTopSet(exId, last, st) {
+  const work = (last?.sets || []).filter(x => !isWarmupRow(x))
+  if (!work.length) return ''
+  const top = work.reduce((a, x) => ((+x.w || 0) > (+a.w || 0) || ((+x.w || 0) === (+a.w || 0) && (+x.r || 0) > (+a.r || 0)) ? x : a))
+  return setLabel(exId, top, last.target, speedUnitOf(st))
+}
+
+// The picture at the top, and which one shows. Today an exercise can have the catalogue's
+// animation and a photo or video of your own (lib/ex-media.js); with both, a switch above the
+// picture picks one, the same choice the flip on the picture made (it stays on the workout's
+// picture). Demonstration videos and step photos join the switch as their own segments.
+function ExerciseMediaSwitch({ ex }) {
+  const entry = useStore(s => (ex && !isCustomEx(ex) ? s.S.exMedia?.[ex.id] : undefined))
+  const own = !isCustomEx(ex) && entry ? exMediaOf({ exMedia: { [ex.id]: entry } }, ex.id) : null
+  const segs = [ex.gif && { value: 'stock', label: t('Animation') }, own && { value: 'own', label: t('Yours') }].filter(Boolean)
+  const showing = own && (own.show === 'own' || !ex.gif) ? 'own' : 'stock'
+  return <>
+    {segs.length > 1 && <Segmented className="ex-media-seg" options={segs} value={showing}
+      onChange={v => update(s => { setExMediaShow(s, ex.id, v) })} />}
+    <Media ex={ex} noFlip />
+  </>
+}
+
+// The exercise sheet (Ironvane redesign, step 4): learn it, see your numbers, then act. The name
+// and its tags; the picture; Last · Best · estimated 1RM; one block for how to do it (the
+// description, the steps and the YouTube search together, where they were two blocks far apart);
+// Add to this workout and Add to my plan as the main buttons; everything you set once for the
+// exercise folded under "Setup for this exercise"; Merge and Delete at the very end, apart (P6).
 function ExerciseDetail({ ex, close }) {
   useLang() // the description and steps arrive in their own chunk the first time a sheet asks
   // The best and last time in the exercise's own weight unit (#657).
   const st = exView(useStore(s => s.S), ex.id)
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
+  const active = useStore(s => s.S.active)
+  const inWorkout = !!active && (active.entries || []).some(e => e?.id === ex.id)
   const nfcOK = useNfcSupported()
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
   const [showOther, setShowOther] = useState(false)
+  const [setup, setSetup] = useState(false)
+  const [calc, setCalc] = useState(false)
+  // No one-rep max on an assistance machine: the load is the help you were given, so the
+  // calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
+  // stronger (issue #232). Cardio has none for the same kind of reason.
+  const hasOrm = !isCardio(ex) && !isAssisted(ex)
+  const orm = hasOrm ? best1RM(st, ex.id) : null
+  const lastVal = last ? lastTopSet(ex.id, last, st) : ''
+  const reps = modeOf({ id: ex.id }) === 'reps'
+  const steps = instrFor(ex)
+  const desc = descFor(ex)
+  const yt = youtubeSearchUrl(ex)
+  const addHere = () => {
+    if (!useStore.getState().S.active) return
+    if (addExerciseToSession(ex.id) < 0) return
+    closeThenNav(close, '/workout')
+    toast(t('“{0}” added', exerciseNameText(ex)))
+  }
+  const startWith = () => {
+    const now = S()
+    startBuiltSession([freestyleConfig(sessionHistory(now), { id: ex.id, ...pickedExerciseConfig(ex.id, undefined, now) })], null, close)
+  }
   return <>
     <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
       <h3 className={'exdetail-name ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
       <FavButton id={ex.id} />
     </div>
-    <Media ex={ex} />
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '2px 0 10px' }}>
       {detailTags(ex).map(tg => {
         if (tg.other) {
           if (!showOther) {
@@ -1573,49 +1627,80 @@ function ExerciseDetail({ ex, close }) {
         return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
       })}
     </div>
-    <ExerciseAliasesEditor key={ex.id} ex={ex} />
-    {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the animation
-        or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
-    <OwnExerciseMedia ex={ex} />
-    {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
-    {/* One line of text that wraps as a sentence: as a flex row, the last session became a
-        separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}
-    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtWeight(best, st.unit)}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
-    <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
-    {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
-    <FormVideosSection exId={ex.id} />
-    {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
-    {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
-    {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
-    {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
-    {modeOf({ id: ex.id }) === 'reps' && <>
-      <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} /></div>
-      <GymSplitRow ex={ex} />
-      <h4 className="sec">{t('Plate loading')}</h4>
-      <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
-      {canHaveStack(ex) && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
-    </>}
-    {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
-        above. A routine can still pick its own on the exercise's settings. */}
-    {isBellEx(ex) && <>
-      <h4 className="sec">{t('Weight means')}</h4>
-      <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
-        onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
-    </>}
+    <ExerciseMediaSwitch ex={ex} />
+    {/* Your numbers, one tile each. Last opens the history; the estimated 1RM opens the
+        calculator for a set you have not done (issue #18), so it is there before any history. */}
+    {(last || best > 0 || hasOrm) && <div className="ex-nums" style={{ '--n': hasOrm ? 3 : 2 }}>
+      <button type="button" className="ex-num" disabled={!last} aria-label={nameIn(t('History'), lastVal || '–')}
+        onClick={() => exerciseHistorySheet(ex.id)}>
+        <span className="ex-num-l">{t('Last')}{last && <Icon name="chevronRight" />}</span>
+        <bdi dir="ltr" className="ex-num-v">{lastVal || '–'}</bdi>
+      </button>
+      <div className="ex-num">
+        <span className="ex-num-l">{t('Best')}</span>
+        <bdi dir="ltr" className="ex-num-v">{best > 0 ? fmtWeight(best, st.unit) : '–'}</bdi>
+      </div>
+      {hasOrm && <button type="button" className={'ex-num' + (calc ? ' on' : '')} aria-expanded={calc}
+        aria-label={nameIn(t('Estimated 1RM'), orm ? fmtNum(orm.est) + ' ' + st.unit : '–')} onClick={() => setCalc(c => !c)}>
+        <span className="ex-num-l">{t('Est. 1RM')}<Icon name={calc ? 'chevronUp' : 'chevronDown'} /></span>
+        <bdi dir="ltr" className="ex-num-v">{orm ? fmtNum(orm.est) + ' ' + st.unit : '–'}</bdi>
+      </button>}
+    </div>}
+    {hasOrm && calc && <div className="ex-calc"><OneRM ex={ex} /></div>}
     {/* Beginner to Elite for the main lifts, from the best estimated 1RM against body weight
         (lib/strength-level.js). Hidden without a weigh-in. */}
     <StrengthLevelBlock exId={ex.id} />
-    {/* No one-rep max on an assistance machine: the load is the help you were given, so the
-        calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
-        stronger (issue #232). Cardio has none for the same kind of reason. */}
-    {!isCardio(ex) && !isAssisted(ex) && <OneRM ex={ex} />}
-    {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
-    {/* A YouTube search for the exercise, opened after the tap and only then (lib/youtube.js). A
-        video link of the exercise's own stays first, in the media above. */}
-    {youtubeSearchUrl(ex) && <Button variant="ghost" icon="play" style={{ marginTop: 6 }} onClick={() => openExternal(youtubeSearchUrl(ex))}>{t('Watch on YouTube')}</Button>}
+    {/* How to do it, in one place: what the exercise is, its steps, and a YouTube search opened
+        after the tap and only then (lib/youtube.js). */}
+    {(desc || steps.length > 0 || yt) && <div className="ex-learn">
+      <h4 className="sec">{t('How to')}{steps.length > 0 && getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4>
+      {desc && <div className="exnote">{desc}</div>}
+      {steps.length > 0 && <ol className="steps-list">{steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
+      {yt && <Button variant="ghost" icon="play" className="ex-yt" onClick={() => openExternal(yt)}>{t('Watch on YouTube')}</Button>}
+    </div>}
+    {/* The main actions. In a workout that already has it, there is nothing to add: the plan is. */}
+    <div className={'ex-acts' + (inWorkout ? ' one' : '')}>
+      {!inWorkout && (active
+        ? <Button variant="primary" onClick={addHere}>{t('Add to this workout')}</Button>
+        : <Button variant="primary" onClick={startWith}>{t('Start workout')}</Button>)}
+      <Button variant={inWorkout ? 'primary' : 'tinted'} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
+    </div>
+    <FormVideosSection exId={ex.id} />
     {/* The community library: where a copy came from, and tips from people on this server. */}
     <CommunityBits ex={ex} />
+    {/* What you set once for this exercise, folded: it was most of the sheet. The tour's
+        "its own page" stop points here (lib/tour.js, c-unit). */}
+    <div className="ex-setup" data-tour="ex-unit">
+      <button type="button" className="ex-setup-h" aria-expanded={setup} onClick={() => setSetup(o => !o)}>
+        <span className="ex-setup-m"><span className="ex-setup-t">{t('Setup for this exercise')}</span>
+          <span className="ex-setup-s">{t('Weight unit, plates and bar, other names, your media')}</span></span>
+        <Icon name={setup ? 'chevronUp' : 'chevronDown'} />
+      </button>
+      {setup && <div className="ex-setup-b">
+        {isCustomEx(ex) && <Button icon="pencil" style={{ marginBottom: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
+        {reps && <>
+          <h4 className="sec">{t('Weight unit')}</h4>
+          <ExUnitRow ex={ex} />
+          <GymSplitRow ex={ex} />
+          <h4 className="sec">{t('Plate loading')}</h4>
+          <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
+          {canHaveStack(ex) && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
+        </>}
+        {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
+            above. A routine can still pick its own on the exercise's settings. */}
+        {isBellEx(ex) && <>
+          <h4 className="sec">{t('Weight means')}</h4>
+          <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
+            onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
+        </>}
+        <ExerciseAliasesEditor key={ex.id} ex={ex} />
+        {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the
+            animation or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
+        <OwnExerciseMedia ex={ex} />
+        {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
+        {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 8 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
+      </div>}
+    </div>
     {/* The catalogue is community-edited (catalogue/README.md): a wrong muscle, a clumsy step or a
         missing translation is one tap from an issue that already names the exercise. */}
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
@@ -1623,8 +1708,8 @@ function ExerciseDetail({ ex, close }) {
       <Icon name="pencil" /> {t('Suggest a fix for this exercise')}</a>}
     {/* The end of the sheet: what makes this exercise go away. Merge into… (#656,
         lib/exercise-merge.js) moves its history and plans onto another and then deletes or hides
-        it, so it sits here with Delete, above it, rather than between History and the settings
-        (1.4.5 features pass). Delete stays the last row, red and on its own (P6). Both ask. */}
+        it, so it sits here with Delete, above it (1.4.5 features pass). Delete stays the last
+        row, red and on its own (P6). Both ask. */}
     {canMerge && <div className="sect-b ex-del">
       <button type="button" className="lrow tap" onClick={() => mergeExerciseFlow(ex, close)}>
         <Icon name="merge" className="ex-del-i ex-merge-i" /><span className="lrow-m"><span className="lrow-t">{t('Merge into…')}</span></span>

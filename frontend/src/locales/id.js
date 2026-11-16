@@ -5697,6 +5697,8 @@ export default {
   "Back to Progress": "Kembali ke Progres",
   "Video, steps and form cues": "Video, langkah, dan petunjuk teknik",
   "Exercise options": "Opsi latihan",
+  "Setup for this exercise": "Pengaturan latihan ini",
+  "Weight unit, plates and bar, other names, your media": "Satuan berat, plat dan barbel, nama lain, mediamu",
   "Based on openGym": "Berdasarkan openGym",
   "Bold": "Tegas",
   "Refined": "Halus",

@@ -5787,6 +5787,8 @@ export default {
   "Back to Progress": "رجوع إلى التقدم",
   "Video, steps and form cues": "فيديو وخطوات ونصائح الأداء",
   "Exercise options": "خيارات التمرين",
+  "Setup for this exercise": "إعدادات هذا التمرين",
+  "Weight unit, plates and bar, other names, your media": "وحدة الوزن، الأقراص والبار، أسماء أخرى، وسائطك",
   "Based on openGym": "مبني على openGym",
   "Bold": "جريء",
   "Refined": "أنيق",

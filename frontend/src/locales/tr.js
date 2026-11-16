@@ -5732,6 +5732,8 @@ export default {
   "Back to Progress": "İlerleme'ye dön",
   "Video, steps and form cues": "Video, adımlar ve form ipuçları",
   "Exercise options": "Egzersiz seçenekleri",
+  "Setup for this exercise": "Bu egzersizin ayarları",
+  "Weight unit, plates and bar, other names, your media": "Ağırlık birimi, diskler ve bar, diğer adlar, kendi medyan",
   "Based on openGym": "openGym tabanlı",
   "Bold": "Belirgin",
   "Refined": "Zarif",

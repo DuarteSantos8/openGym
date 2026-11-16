@@ -5732,6 +5732,8 @@ export default {
   "Back to Progress": "वापस प्रगति पर",
   "Video, steps and form cues": "वीडियो, स्टेप और फ़ॉर्म टिप्स",
   "Exercise options": "व्यायाम के विकल्प",
+  "Setup for this exercise": "इस व्यायाम की सेटिंग",
+  "Weight unit, plates and bar, other names, your media": "वज़न की इकाई, प्लेट और बार, दूसरे नाम, तुम्हारी मीडिया",
   "Based on openGym": "openGym पर आधारित",
   "Bold": "बोल्ड",
   "Refined": "परिष्कृत",

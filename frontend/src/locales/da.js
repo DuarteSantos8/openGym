@@ -5674,6 +5674,8 @@ export default {
   "Back to Progress": "Tilbage til Fremskridt",
   "Video, steps and form cues": "Video, trin og teknikpunkter",
   "Exercise options": "Øvelsesvalg",
+  "Setup for this exercise": "Opsætning af denne øvelse",
+  "Weight unit, plates and bar, other names, your media": "Vægtenhed, skiver og stang, andre navne, dine medier",
   "Based on openGym": "Baseret på openGym",
   "Bold": "Markant",
   "Refined": "Raffineret",

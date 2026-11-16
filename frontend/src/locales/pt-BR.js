@@ -4335,6 +4335,8 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // --- exercise sheet (Ironvane redesign, step 4) ---
+  "Weight unit, plates and bar, other names, your media": "Unidade de peso, anilhas e barra, outros nomes, sua mídia",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -5732,6 +5732,8 @@ export default {
   "Back to Progress": "진행으로 돌아가기",
   "Video, steps and form cues": "영상, 단계, 자세 팁",
   "Exercise options": "운동 옵션",
+  "Setup for this exercise": "이 운동 설정",
+  "Weight unit, plates and bar, other names, your media": "무게 단위, 플레이트와 바, 다른 이름, 내 미디어",
   "Based on openGym": "openGym 기반",
   "Bold": "굵게",
   "Refined": "세련되게",

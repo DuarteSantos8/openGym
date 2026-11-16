@@ -5732,6 +5732,8 @@ export default {
   "Back to Progress": "Volver a Progreso",
   "Video, steps and form cues": "Vídeo, pasos y claves de técnica",
   "Exercise options": "Opciones del ejercicio",
+  "Setup for this exercise": "Configuración de este ejercicio",
+  "Weight unit, plates and bar, other names, your media": "Unidad de peso, discos y barra, otros nombres, tus fotos y vídeos",
   "Based on openGym": "Basado en openGym",
   "Bold": "Audaz",
   "Refined": "Refinado",

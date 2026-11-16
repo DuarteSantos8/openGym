@@ -5698,6 +5698,8 @@ export default {
   "Back to Progress": "بازگشت به پیشرفت",
   "Video, steps and form cues": "ویدیو، مراحل و نکته‌های فرم",
   "Exercise options": "گزینه‌های تمرین",
+  "Setup for this exercise": "تنظیمات این تمرین",
+  "Weight unit, plates and bar, other names, your media": "واحد وزن، صفحه‌ها و میله، نام‌های دیگر، رسانه‌های خودت",
   "Based on openGym": "بر پایه openGym",
   "Bold": "پررنگ",
   "Refined": "ظریف",

@@ -5728,6 +5728,8 @@ export default {
   "Back to Progress": "Grįžti į progresą",
   "Video, steps and form cues": "Vaizdo įrašas, žingsniai ir technikos patarimai",
   "Exercise options": "Pratimo parinktys",
+  "Setup for this exercise": "Šio pratimo nustatymai",
+  "Weight unit, plates and bar, other names, your media": "Svorio vienetas, diskai ir štanga, kiti pavadinimai, tavo medija",
   "Based on openGym": "Sukurta pagal openGym",
   "Bold": "Ryškus",
   "Refined": "Subtilus",

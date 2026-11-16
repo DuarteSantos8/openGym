@@ -5811,6 +5811,8 @@ export default {
   "Back to Progress": "অগ্রগতিতে ফিরুন",
   "Video, steps and form cues": "ভিডিও, ধাপ ও ফর্মের টিপস",
   "Exercise options": "ব্যায়ামের বিকল্প",
+  "Setup for this exercise": "এই ব্যায়ামের সেটআপ",
+  "Weight unit, plates and bar, other names, your media": "ওজনের ইউনিট, প্লেট ও বার, অন্য নাম, আপনার মিডিয়া",
   "Based on openGym": "openGym-এর উপর ভিত্তি করে",
   "Bold": "গাঢ়",
   "Refined": "পরিশীলিত",
