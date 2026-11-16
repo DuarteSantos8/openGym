@@ -45,7 +45,7 @@ import { nextUnfinishedUnit, restSecFor } from './supersetFlow.js'
 import { speedUnitOf, fmtSpeed } from './speed.js'
 import { fmtDist, distUnitOf } from './distance.js'
 import { hasIncline, hasLevel } from './incline.js'
-import { accentPair, accentValue } from './accent.js'
+import { accentPair } from './accent.js'
 import { circuitClock } from './circuit.js'
 import { ACTIONS, REST_ADD_SEC } from './live-layout.js'
 import { setBandsOf, bandText, bandsOf } from './bands.js'
@@ -55,6 +55,7 @@ import { adjustFor, stepped, NO_EFFORT, withNumbers } from './live-adjust.js'
 import { isPaused } from './workout-pause.js'
 import { liveHeartRate, onLiveHeartRate } from './phone-workout.js'
 import { makeWarmupAt, makeWorkAt, canBeWarmup, modeOf, EFFORT, effortOf } from './history.js'
+import { deviceAccentValue } from './dynamic-color.js'
 
 export const LIVE_VERSION = 4
 const APPLIED_KEY = 'gym_live_applied'
@@ -319,7 +320,7 @@ export function buildLiveActivity (S, timer = null, hold = {}, ctx = {}) {
   const wk = cc ? (cc.kind === 'hold' ? cc : null) : !ci && hold && hold.work ? hold.work : null
   const clock = ci || wk
   const auto = !!(ci || (wk && wk.auto) || (timer && !timer.ready && hold && hold.autoNext))
-  const pair = accentPair(accentValue(S))
+  const pair = accentPair(deviceAccentValue(S))
   let needs = null
   try { needs = liveNeeds(S) } catch { needs = null }
   // The first open set of each exercise after the current one, in the order the sets come.

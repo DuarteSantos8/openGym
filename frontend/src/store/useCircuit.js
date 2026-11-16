@@ -23,9 +23,9 @@ import { beep, chime, vibrate, unlock } from '../lib/sound.js'
 import { speak, voiceOpts } from '../lib/speech.js'
 import { MOBILE } from '../lib/mobile.js'
 import { armRestAlert, disarmRestAlert } from '../lib/rest-alert.js'
-import { accentValue } from '../lib/accent.js'
 import { t } from '../lib/i18n.js'
 import { bindCircuitSource, circuitChanged } from '../lib/watch-sync.js'
+import { deviceAccentValue } from '../lib/dynamic-color.js'
 
 const KEY = 'gym_circuit_v1'
 const TICK_MS = 200
@@ -105,7 +105,7 @@ function bookLock(run) {
   if (!plan) { disarmRestAlert(); return }
   const st = S() || {}
   armRestAlert(plan.at, { title: plan.title, cues: plan.cues, countdown: false, totalSec: Math.max(1, Math.round((plan.at - Date.now()) / 1000)),
-    accent: accentValue(st), sound: !!st.sound, vibrate: st.vibrate !== false, alarmBuzz: st.vibrate !== false && !!st.vibrateOnSilent })
+    accent: deviceAccentValue(st), sound: !!st.sound, vibrate: st.vibrate !== false, alarmBuzz: st.vibrate !== false && !!st.vibrateOnSilent })
 }
 
 export const useCircuit = create((set, get) => ({

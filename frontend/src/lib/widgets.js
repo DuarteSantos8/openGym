@@ -35,11 +35,12 @@ import { deriveSessionName } from './session-merge.js'
 import { queueOf, weekTally } from './queue.js'
 import { workoutsLeft } from './week-left.js'
 import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek, weekKey, exerciseNameText } from './format.js'
-import { accentPair, accentValue } from './accent.js'
+import { accentPair } from './accent.js'
 import { speedUnitOf } from './speed.js'
 import { isOn } from './modules.js'
 import { viewTarget, exUnitOf, shownWeight } from './ex-unit.js'
 import { buildLogger } from './widget-logger.js'
+import { deviceAccentValue } from './dynamic-color.js'
 
 export const WIDGET_SNAPSHOT_VERSION = 2
 // What the weight goal's little curve draws: the last weigh-ins.
@@ -222,7 +223,7 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
   const streak = streakX.current
   const ws = weekStartOf(st)
   const weekFrom = isoOf(startOfWeek(today, ws))
-  const pair = accentPair(accentValue(st))
+  const pair = accentPair(deviceAccentValue(st))
   return {
     v: WIDGET_SNAPSHOT_VERSION,
     today,
