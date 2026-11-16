@@ -264,6 +264,15 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
     try { await p.PW.end({ wid: r.wid, ...how }) } catch { /* the session ends with the app */ }
   }
 
+  // The Apple Health follow while the watch has the workout: the start it follows from, or null.
+  let following = null
+  const follow = since => {
+    if (since === following) return
+    if (following != null && since == null) { latest = null; tellLive() }
+    following = since
+    try { since == null ? p.PW.unfollow?.() : p.PW.follow?.({ since }) } catch { /* an older native side */ }
+  }
+
   const evaluate = () => { busy = busy.then(evaluateNow).catch(() => {}); return busy }
   const evaluateNow = async () => {
     clearTimeout(waitTm)
@@ -289,6 +298,10 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
       supported, healthOn, S, now: Date.now(),
       watch: info, watchClaimed: !!(A?.id && watch?.claimed?.(A.id)), running: !!running,
     })
+    // lean: experiment (owner, 2026-11-16): the watch has the workout and sends heart rate only per set,
+    // so the live readout follows Apple Health instead (the watch's samples as they sync, any other
+    // source). Keep or drop once tried on a wrist; a watch->phone liveHr message is the alternative (#1312).
+    follow(!plan.run && plan.reason === 'watch' && document.visibilityState === 'visible' ? Number(A?.start) || Date.now() : null)
     if (!plan.run) {
       // The watch took it, or Apple Health went off: the phone's session goes, unsaved.
       if (running) await stop(false)
@@ -336,16 +349,16 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
   const offClaim = watch?.onClaim?.(() => evaluate()) || (() => {})
   const sub = await Promise.resolve(p.PW.addListener('heartRate', e => {
     const bpm = Math.round(Number(e?.bpm)), at = Number(e?.at) || Date.now()
-    if (!running || !(bpm >= 25 && bpm <= 250)) return
+    if (!(running || (following != null && e?.follow)) || !(bpm >= 25 && bpm <= 250)) return
     // the device that measured it, when iOS names one ("AirPods Pro"): the device button draws earbuds
     const device = typeof e?.device === 'string' ? e.device.trim().slice(0, 60) : ''
     latest = device ? { bpm, at, device } : { bpm, at }
     tellLive()
   })).catch(() => null)
-  const onVisible = () => { if (document.visibilityState === 'visible') { evaluate(); settle() } }
+  const onVisible = () => { if (document.visibilityState === 'visible') { evaluate(); settle() } else follow(null) }
   document.addEventListener('visibilitychange', onVisible)
   evaluate()
-  return () => { offStore(); offUI(); offHealth(); offClaim(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(waitTm); clearTimeout(settleTm) }
+  return () => { follow(null); offStore(); offUI(); offHealth(); offClaim(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(waitTm); clearTimeout(settleTm) }
 }
 
 // Test seams.

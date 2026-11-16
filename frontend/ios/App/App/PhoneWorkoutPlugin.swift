@@ -38,10 +38,17 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "recover", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "samples", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "end", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "follow", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "unfollow", returnType: CAPPluginReturnPromise),
     ]
 
     override public func load() {
         if #available(iOS 26.0, *) {
+            PhoneWorkoutSession.shared.onFollow = { [weak self] bpm, at, device in
+                var data: [String: Any] = ["bpm": bpm, "at": at, "follow": true]
+                if let device = device { data["device"] = device }
+                self?.notifyListeners("heartRate", data: data)
+            }
             PhoneWorkoutSession.shared.onReading = { [weak self] bpm, at in
                 var data: [String: Any] = ["bpm": bpm, "at": at]
                 // The device that measured it ("AirPods Pro"), when iOS names one: the page draws earbuds.
@@ -106,6 +113,24 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         let since = call.getDouble("since").map { Date(timeIntervalSince1970: $0 / 1000) }
         PhoneWorkoutSession.shared.samples(since: since) { list in
             call.resolve(["samples": list.map { [$0.0.timeIntervalSince1970 * 1000, $0.1] }])
+        }
+    }
+
+    /// Experiment: the newest heart rate Apple Health gets from any source since `since` (ms),
+    /// with no session (the watch has the workout). `unfollow` stops it.
+    @objc func follow(_ call: CAPPluginCall) {
+        guard #available(iOS 26.0, *), let since = call.getDouble("since") else { call.resolve(); return }
+        DispatchQueue.main.async {
+            PhoneWorkoutSession.shared.follow(from: Date(timeIntervalSince1970: since / 1000))
+            call.resolve()
+        }
+    }
+
+    @objc func unfollow(_ call: CAPPluginCall) {
+        guard #available(iOS 26.0, *) else { call.resolve(); return }
+        DispatchQueue.main.async {
+            PhoneWorkoutSession.shared.unfollow()
+            call.resolve()
         }
     }
 
@@ -363,6 +388,33 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         guard let i = stopping.firstIndex(where: { $0.0 === s }) else { return }
         let run = stopping.remove(at: i).1
         run()
+    }
+
+    /// Told the newest followed reading: bpm, its time (ms), the device or source that measured it.
+    var onFollow: ((Double, Double, String?) -> Void)?
+    private var followQuery: HKAnchoredObjectQuery?
+
+    /// Experiment (lean: kept or dropped once tried on a wrist): every new heart-rate sample in Apple
+    /// Health since `start`, from any source (the watch's as they sync), while no session runs here.
+    func follow(from start: Date) {
+        unfollow()
+        guard session == nil, let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: nil, options: .strictStartDate)
+        let handler: (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] _, added, _, _, _ in
+            guard let self = self, let s = (added as? [HKQuantitySample])?.max(by: { $0.endDate < $1.endDate }) else { return }
+            let v = s.quantity.doubleValue(for: self.bpm)
+            let name = s.device?.name ?? s.sourceRevision.source.name
+            DispatchQueue.main.async { self.onFollow?(v.rounded(), s.endDate.timeIntervalSince1970 * 1000, name) }
+        }
+        let q = HKAnchoredObjectQuery(type: type, predicate: predicate, anchor: nil, limit: HKObjectQueryNoLimit, resultsHandler: handler)
+        q.updateHandler = handler
+        followQuery = q
+        store.execute(q)
+    }
+
+    func unfollow() {
+        if let q = followQuery { store.stop(q) }
+        followQuery = nil
     }
 
     private func startQuery(from start: Date) {

@@ -328,6 +328,28 @@ describe('the session with the workout', () => {
     stop()
   })
 
+  it('the watch has the workout: the live readout follows Apple Health while the app is in front', async () => {
+    p.follow = vi.fn()
+    p.unfollow = vi.fn()
+    watch = { ...watch, status: async () => ({ paired: true, installed: true, reachable: true }), reported: () => ({ health: 'on' }) }
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now - 5e3, entries: [] }, workouts: [] } })
+    await flush()
+    expect(p.follow).toHaveBeenCalledWith({ since: now - 5e3 })
+    p.listeners.heartRate({ bpm: 141, at: now, device: 'Apple Watch', follow: true })
+    expect(liveHeartRate()).toEqual({ bpm: 141, at: now, device: 'Apple Watch' })
+    // Only the follow's own readings count while no session runs.
+    p.listeners.heartRate({ bpm: 90, at: now })
+    expect(liveHeartRate().bpm).toBe(141)
+    // In the background it stops, and the readout clears.
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(p.unfollow).toHaveBeenCalled()
+    expect(liveHeartRate()).toBeNull()
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+    stop()
+  })
+
   it('a session iOS kept through a crash is taken up for its workout', async () => {
     p = fakePlugin({ recovered: { wid: 'w1', start: now - 20 * 60e3 } })
     _setPhonePluginForTest(p)
