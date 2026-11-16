@@ -164,6 +164,15 @@ describe('no metadata leaves the device', () => {
     const leak = fakeDeps({ out: webpWithExif() })
     const clean = await renderAvatar(await openAvatarImage(new Blob([jpeg()]), leak), 264, { zoom: 1 }, leak)
     expect(hasImageMetadata(new Uint8Array(await clean.blob.arrayBuffer()))).toBe(false)
+    // Over the cap only by its metadata block: cleaned first, so it is kept at the first quality.
+    const L = AVATAR_MAX_BYTES
+    const fat = bytes('RIFF', [0, 0, 0, 0], 'WEBP', 'VP8X', [10, 0, 0, 0], [8, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'EXIF', [L & 255, (L >> 8) & 255, 0, 0], new Uint8Array(L), 'VP8 ', [0, 0, 0, 0])
+    let tries = 0
+    const over = fakeDeps()
+    over.encodeImage = async (pic, edge) => { tries++; return { blob: new Blob([fat], { type: 'image/webp' }), mime: 'image/webp', width: edge, height: edge } }
+    const ok = await renderAvatar(await openAvatarImage(new Blob([jpeg()]), over), 264, { zoom: 1 }, over)
+    expect(tries).toBe(1)
+    expect(ok.blob.size).toBeLessThan(AVATAR_MAX_BYTES)
     const never = fakeDeps({ sizes: [90000] })
     await expect(renderAvatar(await openAvatarImage(new Blob([jpeg()]), never), 264, { zoom: 1 }, never)).rejects.toMatchObject({ code: 'too-large' })
   })

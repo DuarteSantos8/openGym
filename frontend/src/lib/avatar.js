@@ -273,11 +273,12 @@ export async function renderAvatar (pic, view, crop, deps = {}) {
     const square = { source: canvas, width: AVATAR_EDGE, height: AVATAR_EDGE }
     for (const [edge, q] of [[256, 0.82], [256, 0.7], [256, 0.55], [192, 0.6], [192, 0.45]]) {
       const out = await d.encodeImage(square, edge, q, d)
-      if (out.blob.size > AVATAR_MAX_BYTES) continue
       let bytes = new Uint8Array(await out.blob.arrayBuffer())
-      // An encoder that wrote a block of its own (Safari): taken out, not a reason to refuse the photo.
+      // An encoder that wrote a block of its own (Safari): taken out first, so the cap below is
+      // measured on what is stored, and the block is no reason to refuse the photo.
       if (hasImageMetadata(bytes)) bytes = stripImageMetadata(bytes)
       if (hasImageMetadata(bytes)) throw new MediaError('unreadable')
+      if (bytes.length > AVATAR_MAX_BYTES) continue
       const hash = await sha256Hex(bytes)
       const media = normalizeMediaRef({ kind: 'image', hash, mime: out.mime, size: bytes.length, width: out.width, height: out.height, at: Date.now() })
       if (!media) throw new MediaError('unreadable')
