@@ -58,6 +58,9 @@ COPY coach ./coach
 COPY library ./library
 COPY oidc ./oidc
 COPY integrations ./integrations
+# The training engine and the v1 → v2 profile migration, shared with the web build.
+COPY engine ./engine
+COPY migration ./migration
 COPY trainers ./trainers
 COPY sources ./sources
 ENV NODE_ENV=production
