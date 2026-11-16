@@ -35,6 +35,7 @@ export const KEEP_KEYS = new Set([
   'Your Garmin is here, openGym isn’t on it yet. Get it, then open it once on the watch.',
   'Start a workout on the phone and your Garmin asks to open openGym.',
   'Get openGym for Wear OS',
+  'Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.',
   'Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.',
   'openGym is on your watch and in reach. Sets you log on the wrist land here.',
   'openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.',
