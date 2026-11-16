@@ -1,6 +1,10 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Ure",
+  "Set once": "Indstil én gang",
+  "Connections": "Forbindelser",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Sidste sæt: {0}",
   "Your note for this exercise": "Din note til denne øvelse",
@@ -179,6 +183,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Læses kun på denne enhed. Intet skrives til openNutrition, og intet derfra havner i din backup eller synkronisering.",
   "Runs, rides and matches": "Løb, cykelture og kampe",
   "Runs, rides and matches from other apps": "Løb, cykelture og kampe fra andre apps",
+  "Birth date, for heart-rate zones": "Fødselsdato til pulszoner",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Dit Apple Watch regner dine pulszoner ud fra din alder. Tillad fødselsdato, eller ret det senere i Apple Health.",
   "Show it in": "Vis det i",
   "Some days had foods without numbers, so their totals are a little low.": "Nogle dage havde fødevarer uden tal, så deres totaler er lidt lave.",
   "Sport": "Sport",
@@ -5829,4 +5835,12 @@ export default {
   "Own setup for {0}": "Egen opsætning for {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Følger hovedsiden. Slå det til for selv at vælge detaljer og knapper for denne type.",
   "Preview on": "Forhåndsvisning på",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "lidt kortere",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tilpas",
+  "Collapsed": "Foldet sammen",
+  "Hide": "Skjul",
+  "Totals": "Totaler",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
 }

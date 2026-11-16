@@ -155,7 +155,7 @@ assigns (below).
    developer account), then `npx zeus preview` and pick your watch. It prints a QR code.
 3. In the Zepp app: Profile → your watch → Developer mode → Scan, and scan the code. The app installs
    on the watch.
-4. Pair it: in openGym, Settings → Zepp OS watch → Pair a watch. In the Zepp app, open the openGym
+4. Pair it: in openGym, Settings → Watches → Zepp OS watch → Pair a watch (in a browser: Settings → Zepp OS watch). In the Zepp app, open the openGym
    app's settings (Profile → your watch → App settings → openGym), type the server address and the
    code shown, and tap Pair. Open openGym on the watch.
 

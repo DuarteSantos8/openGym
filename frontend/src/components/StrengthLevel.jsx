@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { fmtNum, exerciseNameText } from '../lib/format.js'
 import { dateLocale } from '../lib/i18n-core.js'
 
@@ -72,7 +73,7 @@ export function StrengthLevelsCard({ S }) {
       <span className="slevel-ex">{EXIDX[lv.id] ? exerciseNameText(EXIDX[lv.id]) : lv.id}</span>
       <span className="slevel-meta" aria-hidden="true"><b>{t(LEVEL_NAME[lv.name])}</b> · {fmtRatio(lv.ratio)}×</span>
     </div>)}
-    {rows.length > LEVEL_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all}
+    {rows.length > LEVEL_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all} aria-label={nameIn(t('Strength levels'), t(all ? 'Show less' : 'Show more'))}
       onClick={() => setAll(v => !v)}>{t(all ? 'Show less' : 'Show more')}</Button>}
     <SexHint S={S} />
   </div>

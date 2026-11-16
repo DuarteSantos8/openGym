@@ -1,9 +1,11 @@
 import { showsDashboard } from '../lib/trainer-api.js'
+import { recordHintsOn } from '../lib/set-records.js'
 import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import { readWatchPrefs, writeWatchPrefs } from '../lib/watch-settings.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, allowBirthDate } from '../lib/health-sync.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -47,6 +49,7 @@ import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../l
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
@@ -58,6 +61,7 @@ import { getMediaStatus, subscribeMediaStatus, pendingRefCount, localOnlyRefCoun
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
+import { layoutSheet } from '../components/PageLayout.jsx'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
@@ -85,7 +89,7 @@ import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
-import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
+import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
@@ -117,7 +121,7 @@ import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
 import ReminderSounds from '../components/ReminderSounds.jsx'
 import DisplayRows from '../components/DisplayRows.jsx'
 
-/* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
+/* Settings (v1.3.11). The root is one screen: an account card, a row per page under four headings
    (/settings/<page>), and a search over every row. Rare things live one level further down
    (Workout → Fine-tuning). The rows and their rules are the ones the single long page had; only
    where they sit changed. settings-pages.js says which page holds what, and is what the search
@@ -345,7 +349,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             // The release always publishes the checksum next to the APK. Without it the file is
             // not installed — a sideloaded binary is exactly the thing that should be verified.
             let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
+            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl, updateInfo.sumsUrl, updateInfo.sumsApiUrl, updateInfo.apkName) } catch (e) { /* reported below */ }
             if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
             await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
               if (setProgress) setProgress(received, total)
@@ -472,6 +476,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const ctx = {
     user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
+    recordHints: recordHintsOn(S),
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     nfc: nfcOK, gymReminder,
@@ -581,6 +586,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   const pages = {
     modules: () => <ModulesPage />,
+    watches: () => <Section>{WATCH_PAGES.filter(id => pageVisible(id, ctx)).map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint}
+      title={t(PAGES[id].title)} accessory="chevron" onClick={() => open(id)} />)}</Section>,
     watch: () => <WatchSettingsPage />,
     integrations: () => <IntegrationsPage android={android} ios={ios} />,
     'api-tokens': () => <ApiTokensPage />,
@@ -882,9 +889,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
         </Section>
-        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
-            over" and the count of a hold, in the app's language. The phone's own voice in the
-            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
+        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
+            workout begins and each superset member the focus moves to without a rest (#1210),
+            "10 seconds", "Rest is over" and the count of a hold, in the app's language. The
+            phone's own voice in the apps (music ducks and comes back), the browser's elsewhere.
+            Off by default. */}
         {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
         <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
@@ -1145,6 +1154,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
         {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
           subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
+        {/* Which cards Home and Stats show, folded or in which order (components/PageLayout.jsx, #1119). */}
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Home')} accessory="chevron" onClick={() => layoutSheet('home')} />
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Stats')} accessory="chevron" onClick={() => layoutSheet('stats')} />
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
@@ -1342,10 +1354,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           which build you are running, or whether an update actually installed. */}
       <div className="dim small sp-version">
         openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener">{t('Source code')}</a><br />
-        {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated */}
-        Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a>, gymvisual.com.
-        Media licensed for use in openGym only; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" target="_blank" rel="noopener">NOTICE.md</a>
+        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
+        {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated.
+            The spans keep each link's words above its neighbours' 44 px tap targets (index.css). */}
+        Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener"><span>Gym visual</span></a>, gymvisual.com.
+        Media licensed for use in openGym only; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" target="_blank" rel="noopener"><span>NOTICE.md</span></a>
       </div>
     </>,
 
@@ -1496,18 +1509,18 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
           <Icon name="chevronRight" className="lrow-c" />
         </button>
       </Section>
-      {ROOT_GROUPS.map(g => g.filter(id => pageVisible(id, ctx))).filter(g => g.length).map(g => (
-        <Section key={g[0]}>
-          {g.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
+      {ROOT_GROUPS.map(g => ({ ...g, ids: g.ids.filter(id => onRoot(id, ctx)) })).filter(g => g.ids.length).map(g => (
+        <Section key={g.ids[0]} title={g.title && t(g.title)}>
+          {g.ids.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" tour={'settings-' + id} />)}
-          {/* The phone app sets up its own Coach on the Coach page beside Look; in a hosted app the
+          {/* The phone app sets up its own Coach on the Coach page in Connections; in a hosted app the
               Coach is the server's, set up by an admin on the admin dashboard. Its admins get the
               same row, in the same place, straight to that card; nobody else has anything to set. */}
-          {g[0] === 'look' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
+          {g.title === 'Connections' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
             value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
           {/* Claude, ChatGPT or Gemini on the plan people already pay for, with openGym as their
               connector (views/Assistants.jsx). Everywhere but the offline build and the demo. */}
-          {g[0] === 'look' && !DEMO && !ctx.offline && <Row icon="chat" iconTint="var(--acc)" title={t('Use your subscription')}
+          {g.title === 'Connections' && !DEMO && !ctx.offline && <Row icon="chat" iconTint="var(--acc)" title={t('Use your subscription')}
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
@@ -2009,7 +2022,7 @@ function EquipmentCard({ S, update }) {
       <Row key={p.id} icon="house" iconTint="var(--teal)" title={p.name}
         subtitle={profileLine(p)} accessory="chevron"
         onClick={() => equipmentProfileSheet(p)}>
-        <button className="iconbtn" aria-label={t('Delete')} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
+        <button className="iconbtn" aria-label={t('Delete {0}', said(p.name))} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
       </Row>
     ))}
     <Row icon="plus" iconTint="var(--acc)" title={t('Add equipment profile')} accessory="chevron" onClick={() => equipmentProfileSheet(null)} />
@@ -2146,7 +2159,7 @@ function HealthLinkRow({ android, nav }) {
   useEffect(() => { let gone = false; healthStatus().then(s => { if (!gone) setSt(s) }).catch(() => {}); return () => { gone = true } }, [])
   if (!st || st.status === 'unsupported') return null
   const ios = st.platform === 'ios' || (!st.platform && !android)
-  return <Section>
+  return <Section tour="data-health">
     <Row icon="heart" iconTint="var(--red)" title={ios ? t('Apple Health') : t('Health Connect')} subtitle={t('Now in Integrations')} accessory="chevron"
       onClick={() => nav('/settings/' + (ios ? 'apple-health' : 'health-connect'))} />
   </Section>
@@ -2159,6 +2172,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const [busy, setBusy] = useState(false)
   // iOS 26+: AirPods that measure the heart rate fill each set's when no Apple Watch does (#818).
   const [airpods, setAirpods] = useState(false)
+  const [zones, setZones] = useState(() => readWatchPrefs().show.zones)
   useEffect(() => {
     let gone = false
     Promise.all([healthStatus(), loadHealth()]).then(([s, f]) => { if (!gone) { setSt(s); setH(f) } }).catch(() => {})
@@ -2174,7 +2188,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const c = HEALTH_COPY[ios ? 'ios' : 'android']()
 
   if (st.status !== 'available') return (
-    <Section title={t('Health Connect')} tour="data-health">
+    <Section title={t('Health Connect')}>
       <Row icon="heart" iconTint="var(--red)" title={t('Health Connect')}
         subtitle={st.status === 'update'
           ? t('Update Health Connect to share workouts and weigh-ins with other apps.')
@@ -2226,7 +2240,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   })
 
   return (
-    <Section title={c.section} tour="data-health"
+    <Section title={c.section}
       footer={[h.on && c.footer, h.on && ios && airpods && t('AirPods Pro 3 or Powerbeats Pro 2 in? Your iPhone measures the heart rate for every set, unless your Apple Watch is already on it.'), reading && (h.readWeight && h.wHistory ? t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.') : t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last 30 days. Older workouts stay as they are.'))].filter(Boolean).join(' ') || null}>
       <Row icon="heart" iconTint="var(--red)" title={c.write}
         subtitle={t('Finished workouts and weigh-ins, from this phone only.')}>
@@ -2264,6 +2278,15 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={t('Strava, your watch, Runna and friends: their sessions show in your calendar and tire the right muscles. No sets, no volume.')}>
         <Switch checked={!!h.readSport} disabled={busy} onChange={toggleRead('sport')} />
       </Row>
+      {/* The Apple Watch's Zones page: max heart rate from the age, a watch setting (show.zones).
+          On asks Apple Health (the watch app shares this app's permissions), or opens it once answered. */}
+      {ios && isOn(S, 'watch') && <Row icon="heart" iconTint="var(--orange)" title={t('Birth date, for heart-rate zones')}
+        subtitle={t('Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.')}>
+        <Switch aria-label={t('Birth date, for heart-rate zones')} checked={zones} disabled={busy} onChange={v => {
+          setZones(writeWatchPrefs({ show: { zones: v } }).show.zones)
+          if (v) allowBirthDate().catch(() => {})
+        }} />
+      </Row>}
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
         onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readVitals ? 'vitals' : 'sport')(true)} />}
