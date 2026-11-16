@@ -1,0 +1,1 @@
+openGym 1.4.5：可直接記錄組數的即時通知，搭配大計時器的循環訓練、AMRAP、EMOM 和 Tabata，為你規劃菜單的 AI 教練，你自己的語音提示，彈力帶，依距離計的負重行走，以及六種新語言。手錶 App 換上全新設計，並與手機共用一個休息計時器，但這個 F-Droid 版本沒有手錶連線：Wear OS 或 Garmin 請使用 GitHub 上的 APK。問題和點子：Discord 或 GitHub。

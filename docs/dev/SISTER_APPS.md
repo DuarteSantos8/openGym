@@ -1,6 +1,6 @@
 # Sister apps: openNutrition and openRunning
 
-openGym has two sister apps: **openNutrition** (food, live as a self-hosted app) and
+openGym has two sister apps: **openNutrition** (food, in private beta: the repository is not public yet) and
 **openRunning** (runs and rides, planned, working name). They stay separate apps with separate
 data. openGym only ever **reads** from them, only after you link them, and every link can be
 undone from both sides.

@@ -71,13 +71,13 @@ export function AdaptProposal({ p, onDone }) {
       const at = (useStore.getState().S.active?.entries || []).findIndex(e => e.id === owner)
       if (at >= 0 && useUI.getState().timer) useUI.setState({ timer: { ...useUI.getState().timer, forIdx: at } })
     }
-    resolvePending({ accepted: applied, rejected: marked.filter(c => !applied.includes(c.id)).map(c => c.id) }).catch(() => {})
+    resolvePending({ id: p.id, accepted: applied, rejected: marked.filter(c => !applied.includes(c.id)).map(c => c.id) }).catch(() => {})
     toast(applied.length ? tn('{0} change made to this workout', '{0} changes made to this workout', applied.length) : t('Nothing could be applied any more.'))
     finish()
   }
   const dismiss = () => {
     update(s => { appendLog(s, adaptLogEntry(p, [], { dismissed: true })) })
-    resolvePending({ dismissed: true }).catch(() => {})
+    resolvePending({ id: p.id, dismissed: true }).catch(() => {})
     finish()
   }
 

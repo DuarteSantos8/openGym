@@ -217,6 +217,28 @@ export const cues = {
   restOver() { const S = live(); if (S) moment(S, 'restOver') },
   /** A set just earned a record trophy (views/Workout.jsx cheerRecord). */
   record() { const S = live(); if (S) moment(S, 'record') },
+  /** A workout begins: the first exercise's first set, named. Only a rest announced anything
+   *  before, so the first exercise went unsaid until its first set was done — worked around with
+   *  a dummy rest before it (#1210). */
+  began() {
+    const S = live()
+    const entry = S?.active?.entries?.[Number.isInteger(S?.active?.cur) ? S.active.cur : 0]
+    const i = (entry?.sets || []).findIndex(notDone)
+    if (!entry || i < 0) return
+    const ex = EXIDX[entry.id]
+    const name = (ex ? exerciseNameFor(ex) : (entry.n || '')) || null
+    say(S, setCueText(S, entry, i, { name }))
+  },
+  /** The focus moved to another exercise with no rest between (a superset's next member,
+   *  views/Workout.jsx): its next set, named. A rest is what announced the next set before, and
+   *  a circuit has none between its members, so only the round's first exercise was ever said
+   *  (#1210). No style line here: it is not a rest, and every member would shout one. */
+  movedOn(forIdx) {
+    const S = live()
+    if (!S) return
+    const text = restStartText(S, forIdx)
+    if (text) say(S, text)
+  },
   /** A count-in or the end of a hold: a number, cutting off whatever is still being said. */
   count(n) { if (n >= 1 && n <= 3) { const S = live(); if (S) say(S, String(n), { queue: false }) } },
   /** The count-in is over and the hold begins. */

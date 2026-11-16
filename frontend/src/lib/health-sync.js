@@ -72,6 +72,12 @@ export async function healthStatus() {
   } catch { return { status: 'unsupported', granted: false, platform: null } }
 }
 
+/** iPhone: asks Apple Health for the birth date the watch's Zones page needs (or opens Health once answered). */
+export async function allowBirthDate() {
+  const p = await plugin()
+  if (p?.platform === 'ios') await p.HC.allowBirthDate()
+}
+
 /** Health Connect's own screen for what apps wrote, or its store page where it is missing. */
 export async function openHealthConnect() {
   const p = await plugin()
