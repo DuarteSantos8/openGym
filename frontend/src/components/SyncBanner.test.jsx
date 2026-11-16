@@ -349,6 +349,15 @@ describe('closing the can\'t-be-reached line', () => {
     expect(bar()).not.toBeNull()
   })
 
+  // CodeRabbit on #1272: the server out of reach is named before an open sign-in question, and
+  // nothing is pushed while it is open, so `pending` says nothing about what this device holds.
+  it('a sign-in question still open keeps it: what this device holds is not on the server yet', () => {
+    mocks.sync = away({ held: true })
+    render()
+    expect(bar()).not.toBeNull()
+    expect(close()).toBeNull()
+  })
+
   it('an error or a refusal keeps no × of its own', () => {
     for (const [st, extra] of [['error', { lastError: { status: 502 } }], ['auth', {}], ['held', {}]]) {
       mocks.sync = sync(st, extra)

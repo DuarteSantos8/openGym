@@ -48,7 +48,10 @@ function useConnection() {
   // Signed out on the web, the sign-in screen is the whole app: it hears only that the server
   // ended the session, and that the changes are still here.
   const show = !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
-  return { view, show, user, status, pending: !!sync?.pending }
+  // Owed: changes waiting for a push, or a sign-in's question still open. While it is open nothing
+  // is pushed, so `pending` stays false however much this device holds (statusOf names the server
+  // out of reach before the question).
+  return { view, show, user, status, owed: !!(sync?.pending || sync?.held) }
 }
 
 // "Show connection status" (#369, #330): on by default, and an older profile without the key
@@ -81,7 +84,7 @@ export default function SyncBanner() {
   const { view, user, status } = conn
   const quiet = view?.tone === 'quiet'
   // Out of reach with nothing owed: closable until it is reached again (the comment above).
-  const away = view?.tone === 'off' && !conn.pending
+  const away = view?.tone === 'off' && !conn.owed
   const [closed, setClosed] = useState(false)
   useEffect(() => { if (!away && closed) setClosed(false) }, [away, closed])
   const show = conn.show && on && (!quiet || local) && !(away && closed)
