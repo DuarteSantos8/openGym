@@ -298,9 +298,9 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
       supported, healthOn, S, now: Date.now(),
       watch: info, watchClaimed: !!(A?.id && watch?.claimed?.(A.id)), running: !!running,
     })
-    // lean: experiment (owner, 2026-11-16): the watch has the workout and sends heart rate only per set,
-    // so the live readout follows Apple Health instead (the watch's samples as they sync, any other
-    // source). Keep or drop once tried on a wrist; a watch->phone liveHr message is the alternative (#1312).
+    // The watch has the workout and sends heart rate only per set: while the app is in front the live
+    // readout follows Apple Health instead (the watch's samples as they sync, any other source). Fresh
+    // enough on the owner's wrist (2026-11-16), so no watch->phone message is needed (#1312).
     follow(!plan.run && plan.reason === 'watch' && document.visibilityState === 'visible' ? Number(A?.start) || Date.now() : null)
     if (!plan.run) {
       // The watch took it, or Apple Health went off: the phone's session goes, unsaved.

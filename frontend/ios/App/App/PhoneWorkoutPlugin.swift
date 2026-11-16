@@ -116,7 +116,7 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    /// Experiment: the newest heart rate Apple Health gets from any source since `since` (ms),
+    /// The newest heart rate Apple Health gets from any source since `since` (ms),
     /// with no session (the watch has the workout). `unfollow` stops it.
     @objc func follow(_ call: CAPPluginCall) {
         guard #available(iOS 26.0, *), let since = call.getDouble("since") else { call.resolve(); return }
@@ -394,8 +394,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
     var onFollow: ((Double, Double, String?) -> Void)?
     private var followQuery: HKAnchoredObjectQuery?
 
-    /// Experiment (lean: kept or dropped once tried on a wrist): every new heart-rate sample in Apple
-    /// Health since `start`, from any source (the watch's as they sync), while no session runs here.
+    /// Every new heart-rate sample in Apple Health since `start`, from any source (the watch's as they
+    /// sync), while no session runs here: the live bar's reading during a watch workout.
     func follow(from start: Date) {
         unfollow()
         guard session == nil, let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
