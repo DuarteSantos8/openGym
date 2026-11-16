@@ -484,7 +484,7 @@ describe('the pages', () => {
     mount('look')
     expect(heads()).toEqual(['Look', 'Home', 'Streak'])
     expect(titles()).toEqual(['Theme', 'Accent color', 'Icons', 'Motion', 'Text size', 'Body diagram', 'Exercise drawings', 'Seasonal themes',
-      'Body weight', 'Recovery tips', 'Week and month recap', 'Weekly sets on Home', 'Monthly challenges', 'Show connection status',
+      'Customize', 'Customize', 'Body weight', 'Recovery tips', 'Week and month recap', 'Weekly sets on Home', 'Monthly challenges', 'Show connection status',
       'Streak flame', 'Streak freeze', 'Streak freezes', 'Sick and travel weeks', 'Recovery counts for the streak', 'Sport counts for the streak'])
     mocks.S.modules = { motivation: false }                    // no streak: no empty heading
     mount('look')
