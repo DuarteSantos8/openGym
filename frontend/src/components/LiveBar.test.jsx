@@ -75,6 +75,7 @@ describe('the live bar', () => {
     expect(text()).toContain('1:12')
     expect(text()).toContain('Next: BENCH')
     expect(bar().getAttribute('aria-label')).toContain('Next: BENCH')
+    expect(bar().getAttribute('aria-label')).toContain('Rest 1:12') // VoiceOver hears the time left too
     expect(text()).not.toContain('Set 2 of 4')
   })
 

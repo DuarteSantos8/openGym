@@ -270,7 +270,8 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
     if (since === following) return
     if (following != null && since == null) { latest = null; tellLive() }
     following = since
-    try { since == null ? p.PW.unfollow?.() : p.PW.follow?.({ since }) } catch { /* an older native side */ }
+    // An older native side has no follow: the plugin proxy still answers, with a rejection.
+    try { Promise.resolve(since == null ? p.PW.unfollow?.() : p.PW.follow?.({ since })).catch(() => {}) } catch { /* none at all */ }
   }
 
   const evaluate = () => { busy = busy.then(evaluateNow).catch(() => {}); return busy }
@@ -301,13 +302,16 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
     // The watch has the workout and sends heart rate only per set: while the app is in front the live
     // readout follows Apple Health instead (the watch's samples as they sync, any other source). Fresh
     // enough on the owner's wrist (2026-11-16), so no watch->phone message is needed (#1312).
-    follow(!plan.run && plan.reason === 'watch' && document.visibilityState === 'visible' ? Number(A?.start) || Date.now() : null)
+    const followFrom = !plan.run && plan.reason === 'watch' && document.visibilityState === 'visible' ? Number(A?.start) || Date.now() : null
     if (!plan.run) {
       // The watch took it, or Apple Health went off: the phone's session goes, unsaved.
       if (running) await stop(false)
+      // After the session is gone: the native follow starts no query while one runs (review, #1312).
+      follow(followFrom)
       if (plan.wait > 0) waitTm = setTimeout(evaluate, plan.wait + 250)
       return
     }
+    follow(null) // the phone's own session measures from here
     if (!running) {
       try {
         const res = await p.PW.start({ wid: A.id, type: plannedType(A.entries) || undefined })

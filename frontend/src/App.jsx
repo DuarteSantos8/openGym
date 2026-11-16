@@ -451,7 +451,8 @@ function Shell() {
           lands it simply stays: same key, same parent, so React keeps it instead of mounting
           the route again. */}
       <div id="app">
-        <Page key={loc.pathname} loc={loc} render={view} motion={loc.state?.rise || pageMotion(pathRef.current, loc.pathname, navType)} />
+        {/* The bar's rise or fold is that tap's own: Back to the same entry gets the usual motion (its state stays in history). */}
+        <Page key={loc.pathname} loc={loc} render={view} motion={(navType !== 'POP' && loc.state?.rise) || pageMotion(pathRef.current, loc.pathname, navType)} />
         {showPreview && <Page key={preview} loc={previewLoc(preview)} render={view} under scrollY={scrollPositions.get(preview) || 0} />}
       </div>
       {/* Outside #app: the view's fade-in animates a transform, and a fixed element inside it

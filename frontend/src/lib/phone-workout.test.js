@@ -319,6 +319,25 @@ describe('the session with the workout', () => {
     stop()
   })
 
+  // The native follow starts no query while a phone session runs: asked before the session ended,
+  // it did nothing and was never asked again (review, #1312).
+  it('the watch takes over a running phone session: the Apple Health follow starts after it has ended', async () => {
+    const order = []
+    p.end = vi.fn(async () => { order.push('end') })
+    p.follow = vi.fn(() => { order.push('follow') })
+    p.unfollow = vi.fn()
+    let claimed = false, onClaim = null
+    watch = { ...watch, claimed: () => claimed, onClaim: fn => { onClaim = fn; return () => {} } }
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })
+    await flush()
+    claimed = true
+    onClaim('w1')
+    await flush()
+    expect(order).toEqual(['end', 'follow'])
+    stop()
+  })
+
   it('a watch with Apple Health on and its app open: no phone session at all', async () => {
     watch = { ...watch, status: async () => ({ paired: true, installed: true, reachable: true }), reported: () => ({ health: 'on' }) }
     await begin()

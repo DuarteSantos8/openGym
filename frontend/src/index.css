@@ -791,7 +791,8 @@ h4.sec{
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
-  .livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}
+  /* body .livebar: the bar's own rule comes later in the file, so .livebar alone lost to it (review, #1312). */
+  .livebar,body .livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}
   .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
