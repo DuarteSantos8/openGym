@@ -5,7 +5,7 @@
 // that a bad row is skipped and counted rather than thrown on, and that nothing leaves parseImport
 // the rest of the app cannot render — plus the merge rule that an import adds and never overwrites.
 import { describe, expect, it } from 'vitest'
-import { parseImport, parseWhen, mergeImport } from './import-csv.js'
+import { parseCSV, parseImport, parseWhen, mergeImport } from './import-csv.js'
 import { EXIDX } from './exercises.js'
 
 const BODY_PARTS = new Set(['chest', 'back', 'shoulders', 'upper arms', 'lower arms', 'upper legs', 'lower legs', 'waist', 'cardio', 'neck'])
@@ -94,6 +94,24 @@ describe('numbers that are not numbers', () => {
     const mixed = parseImport(csv(row({ w: 50, u: 'kg', r: 5 }), row({ date: '2024-03-08', w: 100, u: 'lbs', r: 5 })), kg)
     expect(mixed.mixedUnits).toBe(true)
     expect(mixed.workouts[1].entries[0].sets[0].w).toBe(45.36)
+  })
+})
+
+describe('a quote mark inside a cell', () => {
+  it('an unescaped quote in a FitNotes name or comment stays in the cell and the rows after it stay rows', () => {
+    const p = parseImport(csv(
+      row({ ex: 'Zorb Step 16"', w: 20, u: 'kg', r: 10, note: 'felt "easy"' }),
+      row({ ex: 'Zorb Twirl', w: 50, u: 'kg', r: 5 }),
+      row({ ex: 'Zorb Step 16"', w: 20, u: 'kg', r: 8 }),
+    ), kg)
+    expect(p.skipped).toBe(0)
+    expect(p.sets).toBe(3)
+    expect(p.customEx.map(c => c.n).sort()).toEqual(['zorb step 16"', 'zorb twirl'])
+    expect(p.workouts[0].entries.map(e => e.note).filter(Boolean)).toEqual(['felt "easy"'])
+  })
+
+  it('a quoted cell still reads its doubled quotes and commas', () => {
+    expect(parseCSV('"Zorb Step 16""",b\n"a, b",c')).toEqual([['Zorb Step 16"', 'b'], ['a, b', 'c']])
   })
 })
 
@@ -230,12 +248,13 @@ describe('mergeImport adds and never overwrites', () => {
     expect(S.workouts[2].entries[0].sets[0]).toEqual({ min: 30, speed: 10, done: true })
   })
 
-  it('weigh-ins: existing days win and the list stays sorted', () => {
+  it('weigh-ins: a different weight joins its day, the day\'s own stays its value, the list sorted', () => {
     const S = state()
     const p = parseImport('Date,Weight (kg)\n2024-03-07,99\n2024-03-05,79\n2024-03-09,81', kg)
     expect(p.kind).toBe('bodyweight')
-    expect(mergeImport(S, p)).toEqual({ added: 2, skipped: 1 })
+    expect(mergeImport(S, p)).toEqual({ added: 3, skipped: 0 })
     expect(S.bodyweight.map(b => [b.d, b.w])).toEqual([['2024-03-05', 79], ['2024-03-07', 80], ['2024-03-09', 81]])
+    expect(S.bodyweight[1].ins.map(r => r.w)).toEqual([80, 99])
   })
 
 })
