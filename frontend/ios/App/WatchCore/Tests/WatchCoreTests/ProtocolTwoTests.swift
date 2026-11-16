@@ -69,6 +69,12 @@ final class ProtocolTwoTests: XCTestCase {
         XCTAssertNil(o.active?.restAt)
     }
 
+    func testARoutinesFolderIsReadAndAnOlderPhoneGivesNone() throws {
+        let json = #"{"v":1,"ready":{"today":null,"others":[{"routineIds":["a"],"name":"A","entries":[],"folder":"Legs"},{"routineIds":["b"],"name":"B","entries":[]}]}}"#
+        let s = try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8))
+        XCTAssertEqual(s.ready?.others.map(\.folder), ["Legs", nil])
+    }
+
     /* ---------- rule 3: following the phone's rest ---------- */
 
     func testAnOlderPhoneLeavesTheOldRulesInCharge() {
