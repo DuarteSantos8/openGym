@@ -232,8 +232,11 @@ describe('Home — coach week progress row', () => {
 })
 
 describe('Home — a session pinned to a day', () => {
-  it('a fulfilled pin — pinned to today, done on an earlier day — reads as no override on the today row', () => {
-    setS({ dayPlan: { [todayISO()]: 'd1' }, workouts: [logged('d1')] })
+  it('a fulfilled pin — pinned to today, done on an earlier day of this week — reads as no override on the today row', () => {
+    // Yesterday and today share a week that starts on Sunday, unless today is Sunday.
+    const yesterday = daysFromToday(-1), start = new Date(yesterday + 'T12:00:00').getTime()
+    const done = { ...logged('d1'), d: yesterday, start, end: start + 3600000 }
+    setS({ dayPlan: { [todayISO()]: 'd1' }, workouts: [done], weekStart: new Date().getDay() === 0 ? 1 : 0 })
     mount()
     expect(chipTexts()).toEqual(['US W1 D1Done', 'US W1 D2Up next', 'US W1 D3Later'])
     expect(status()).toBe('Next: US W1 D2, today')
@@ -277,6 +280,25 @@ describe('Home — a session pinned to a day', () => {
     // Soonest by date, not first in slot order.
     act(() => setS({ dayPlan: { [daysFromToday(3)]: 'd1', [daysFromToday(1)]: 'd2', [daysFromToday(2)]: 'd3' } }))
     expect(status()).toBe('Next: US W1 D2 · ' + fmtDate(daysFromToday(1), true))
+  })
+
+  it('a session the pass already did, planned for today in a later week, is today\'s, and the line says so', () => {
+    const start = Date.now() - 9 * 86400000
+    const old = { ...logged('d1'), d: daysFromToday(-9), start, end: start + 3600000 }
+    setS({ queue: queue({ since: start - 3600000, startsOn: daysFromToday(-9) }), dayPlan: { [todayISO()]: 'd1' }, workouts: [old] })
+    mount()
+    expect(chipTexts()).toEqual(['US W1 D1Done', 'US W1 D2Up next', 'US W1 D3Later'])
+    expect(status()).toBe('Next: US W1 D1, today')
+    expect(todayTitle()).toBe('US W1 D1 · rescheduled')
+  })
+
+  it('with today trained, the line names the next day the calendar plans, not the chip still lit today', () => {
+    const on = daysFromToday(8)
+    const now = Date.now() - 60000
+    const today = { id: 'w-today', d: todayISO(), start: now, end: now + 1000, routineIds: ['d2'], routineId: 'd2', name: 'US W1 D2', entries: [] }
+    setS({ dayPlan: { [on]: 'd1' }, workouts: [logged('d1'), today] })
+    mount()
+    expect(status()).toBe('Next: US W1 D1 · ' + fmtDate(on, true))
   })
 
   it('tapping a pinned chip starts that routine alone, today', () => {

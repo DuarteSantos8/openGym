@@ -1,9 +1,26 @@
 import { queueView } from '../lib/queue.js'
 import { effectiveRoutineIds } from '../lib/history.js'
-import { fmtDate } from '../lib/format.js'
+import { fmtDate, isoOf } from '../lib/format.js'
+import { workoutsOn } from '../lib/backfill.js'
 import { t } from '../lib/i18n.js'
 import { sequenceOf, isSimpleSequence } from '../lib/rotation.js'
 import Icon from './Icon.jsx'
+
+// The day the Calendar shows next: the first from today on with nothing logged and something to
+// train, `{ iso, ids }`, or null. A day planned for a session the pass already did trains it
+// (pinState, queue.js), which the chips cannot show, so the status line reads the days themselves.
+// shortcut: looks four weeks ahead, past that the chips' answer stands; widen if plans go further out.
+function nextPlannedDay(S, today) {
+  for (let i = 0; i < 28; i++) {
+    const d = new Date(today + 'T12:00:00')
+    d.setDate(d.getDate() + i)
+    const iso = isoOf(d)
+    if (workoutsOn(S, iso).length) continue
+    const ids = effectiveRoutineIds(S, iso, today)
+    if (ids.length) return { iso, ids }
+  }
+  return null
+}
 
 // Home's progress row for a coach week (S.queue) — it stands in for the seven weekday dots
 // while a planner-written queue runs the week, because its sessions have no weekday: they are done in
@@ -24,11 +41,14 @@ export default function QueueRow({ S, today, onStart, managed }) {
   // "today" only when the today row really offers it: a 'rest' or routine override for today
   // wins over the queue there (effectiveRoutineIds), and this line must not contradict it.
   const shownToday = !!next && effectiveRoutineIds(S, today, today).includes(next.id)
+  const day = !v.complete && !v.waiting ? nextPlannedDay(S, today) : null
+  const dayNames = day && day.ids.map(id => S.routines.find(r => r.id === id)?.name ?? id).join(' + ')
   // A pass this app manages refills itself (lib/rotation.js) — "ask the coach" and naming a
   // whole week are a planner's copy, wrong for a pass with no coach and no week shape at all.
   const status = v.complete ? (managed ? t('Round complete') : t('Week complete, ask the coach'))
     // A loop with rest days (#536) waits out a rest the same way a new round waits for its day.
     : v.waiting ? (managed ? (isSimpleSequence(sequenceOf(S)) ? t('Next round starts {0}.', fmtDate(v.startsOn, true)) : t('Rest day. The loop goes on {0}.', fmtDate(v.startsOn, true))) : t('Next week starts {0}', fmtDate(v.startsOn, true)))
+    : day ? (day.iso === today ? t('Next: {0}, today', dayNames) : t('Next: {0}', dayNames + ' · ' + fmtDate(day.iso, true)))
     : shownToday ? t('Next: {0}, today', next.name)
     : next ? t('Next: {0}', next.name)
     : t('Next: {0}', pinned.name + ' · ' + fmtDate(pinned.on, true))
