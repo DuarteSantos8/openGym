@@ -5907,4 +5907,5 @@ export default {
   "Hide": "Masquer",
   "Totals": "Totaux",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Les flèches changent l’ordre.",
+  "iCloud Drive": "iCloud Drive",
 }

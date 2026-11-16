@@ -5904,4 +5904,5 @@ export default {
   "Hide": "Сховати",
   "Totals": "Підсумки",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
+  "iCloud Drive": "iCloud Drive",
 }

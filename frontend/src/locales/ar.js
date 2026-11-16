@@ -5962,4 +5962,5 @@ export default {
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
+  "iCloud Drive": "iCloud Drive",
 }

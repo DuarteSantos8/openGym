@@ -5873,4 +5873,5 @@ export default {
   "Hide": "Skrýt",
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  "iCloud Drive": "iCloud Drive",
 }

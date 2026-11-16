@@ -5910,4 +5910,5 @@ export default {
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
+  "iCloud Drive": "iCloud Drive",
 }

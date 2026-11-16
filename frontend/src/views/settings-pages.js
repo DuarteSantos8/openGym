@@ -300,6 +300,7 @@ export const SEARCH = [
   { page: 'data', title: 'Export as spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel sheets export workouts sets body weight measurements' },
   { page: 'data', title: 'Auto-backup on changes', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup automatic', when: c => c.mobile },
   { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && (c.android || c.ios) && c.autoBackup },
+  { page: 'data', title: 'Restore from a backup', icon: 'download', tint: 'var(--teal)', kw: 'restore backup folder icloud files recover new phone', when: c => c.mobile && c.ios },
   // The daily WebDAV backup (1.4.5, components/WebDavBackup.jsx): a row on the page, not in demo or Offline.
   { page: 'data', title: 'Back up to WebDAV', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic remote server', when: c => !c.demo },
   { page: 'data', title: 'Import backup', icon: 'download', tint: 'var(--teal)', kw: 'import restore backup json zip' },
@@ -315,6 +316,7 @@ export const SEARCH = [
   { page: 'apple-health', title: 'Birth date, for heart-rate zones', icon: 'heart', tint: 'var(--orange)', mod: 'watch', kw: 'birth date age zones heart rate max watch', when: c => c.ios },
   { page: 'integrations', title: 'Webhooks', net: true, icon: 'webhook', tint: 'var(--indigo)', mod: 'integrations', kw: 'webhook webhooks home assistant n8n ntfy node-red zapier ifttt automation notify', when: c => c.demo || !c.user || (c.integrations || []).includes('webhook') || !!c.user?.admin },
   { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
+  { page: 'integrations', title: 'iCloud Drive', icon: 'cloud', tint: 'var(--blue)', kw: 'icloud drive files folder backup copy apple', when: c => c.mobile && c.ios },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
   { page: 'integrations', title: 'MCP server', net: true, icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },

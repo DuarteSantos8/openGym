@@ -5954,4 +5954,5 @@ export default {
   "Hide": "Dölj",
   "Totals": "Totalt",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
+  "iCloud Drive": "iCloud Drive",
 }

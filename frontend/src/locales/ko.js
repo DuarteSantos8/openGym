@@ -5907,4 +5907,5 @@ export default {
   "Hide": "숨기기",
   "Totals": "합계",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
+  "iCloud Drive": "iCloud Drive",
 }

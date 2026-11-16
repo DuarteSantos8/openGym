@@ -5873,4 +5873,5 @@ export default {
   "Hide": "Ẩn",
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
+  "iCloud Drive": "iCloud Drive",
 };

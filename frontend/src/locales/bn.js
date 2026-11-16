@@ -5986,4 +5986,5 @@ export default {
   "Hide": "লুকান",
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  "iCloud Drive": "iCloud Drive",
 }

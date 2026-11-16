@@ -5907,4 +5907,5 @@ export default {
   "Hide": "Gizle",
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
+  "iCloud Drive": "iCloud Drive",
 }
