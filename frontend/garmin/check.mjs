@@ -5,13 +5,15 @@
 //   - brackets, braces and parentheses that do not pair up (strings and comments skipped)
 //   - a Rez.Strings id the English strings do not have, or a language missing one
 //   - a (:color) helper without its (:mono) twin (or (:big) without (:small)), or the other way round
-//   - a product in manifest.xml that is not a Connect IQ device id (when the SDK is there)
+//   - a product in manifest.xml that is not a Connect IQ device id (when the SDK is there; the
+//     SDK Manager's device files count too)
 //   - an em dash in the copy
 //   - a function named like a Monkey C keyword (`has`, `instanceof`, …): the parser stops there
 //   - a manifest version that is not the app's (frontend/package.json), as for Zepp OS and Wear OS
 //
 //   node frontend/garmin/check.mjs [path to the Connect IQ SDK]
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -98,7 +100,10 @@ if (ciqVersion !== appVersion) bad('manifest.xml', `version ${ciqVersion} is not
 const sdk = process.argv[2] || process.env.CIQ_SDK
 const refDir = sdk && join(sdk, 'resources', 'device-reference')
 if (refDir && existsSync(refDir)) {
-  const known = new Set(readdirSync(refDir))
+  // also the device files the SDK Manager downloaded: they can be newer than the SDK (the fēnix 9
+  // line came as device files while the SDK was still 9.2.0)
+  const devDir = process.env.CIQ_DEVICES || join(homedir(), '.Garmin', 'ConnectIQ', 'Devices')
+  const known = new Set([...readdirSync(refDir), ...(existsSync(devDir) ? readdirSync(devDir) : [])])
   for (const p of products) if (!known.has(p)) bad('manifest.xml', `${p} is not a Connect IQ device id`)
 }
 const jungle = readFileSync(join(here, 'monkey.jungle'), 'utf8')
