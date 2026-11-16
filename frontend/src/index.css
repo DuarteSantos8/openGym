@@ -309,6 +309,9 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 .nocap,.tag.nocap,.chip.nocap{text-transform:none}
 
 /* ---------------------------------------------------------------- layout -- */
+/* The status bar sits on solid page ground: what scrolls up passes under it, never behind the
+   clock (1.4.5, owner). Over the pinned headers (20), under the connection bar (45) and sheets. */
+body::before{content:'';position:fixed;inset-inline:0;top:0;height:var(--sat);z-index:30;background:var(--bg);pointer-events:none}
 #app{
   padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) calc(88px + var(--sab));
   max-width:560px;margin:0 auto;
