@@ -706,7 +706,7 @@ object WearStore {
             // The last three seconds, one tap each, as a timed hold's: the wrist knows without a look.
             for (left in listOf(3, 2, 1)) {
                 val at = r.endsAt - left * 1000L
-                if (r.total > left + 1 && at > now()) { delay(at - now()); if (buzz()) Haptics.count(app) }
+                if (r.total > left + 1 && at > now()) { delay(at - now()); if (buzz()) Haptics.restCount(app) }
             }
             delay((r.endsAt - now()).coerceAtLeast(0))
             if (buzz()) {
