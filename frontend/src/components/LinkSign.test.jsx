@@ -20,7 +20,7 @@ let host, root
 beforeEach(() => { host = document.createElement('div'); document.body.append(host); root = createRoot(host); m.open = vi.fn() })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 const render = async (rows, overall) => {
-  m.link = { rows, overall }
+  m.link = { rows, overall, checking: overall === 'checking' } // as linkSnapshot returns it
   await act(async () => { root.render(<LinkSign />) })
   return host.querySelector('button.dev-sign')
 }
