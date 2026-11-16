@@ -1497,7 +1497,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
     <div className="sp-nav">
-      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
+      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Today')}><Icon name="chevronLeft" /><span>{t('Today')}</span></button>
     </div>
     <h1 className="sp-root-title">{t('Settings')}</h1>
     <div className="sp-search">

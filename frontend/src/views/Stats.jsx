@@ -571,7 +571,7 @@ export function StatsIndex({ sections }) {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => { window.removeEventListener('scroll', onScroll); if (raf) window.cancelAnimationFrame(raf) }
   }, [sections.length]) // eslint-disable-line react-hooks/exhaustive-deps
-  return <nav className="stats-index" aria-label={t('Stats')}>
+  return <nav className="stats-index" aria-label={t('Progress')}>
     <Segmented className="stats-index-seg" value={cur} onChange={v => go(v)} options={sections} />
   </nav>
 }
@@ -910,7 +910,7 @@ export default function Stats() {
   </>
 
   return <>
-    <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Progress')}</h1><div className="sub">{t('Records & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
         <button className="iconbtn" data-tour="stats-history" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>

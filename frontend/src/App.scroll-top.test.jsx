@@ -88,7 +88,7 @@ describe('on a long page', () => {
     await start('#/stats')
     await appear('#app .hdr button[aria-label="History"]')
     await scrolledTo(1500)
-    await tap([...document.querySelectorAll('#tabbar button')].find(b => b.textContent === 'Stats'))
+    await tap([...document.querySelectorAll('#tabbar button')].find(b => b.textContent === 'Progress'))
     expect(window.location.hash).toBe('#/stats')
     expect(scrolls.at(-1)).toEqual({ top: 0, left: 0, behavior: 'smooth' })
   })
