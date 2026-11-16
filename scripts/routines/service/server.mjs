@@ -14,6 +14,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import dns from 'node:dns'
 import {
   catalogueFrom, checkRoutine, sessionsFromPlan, decodePayload, payloadFromLink, slugify, imageInfo,
   cleanHttpsUrl, LIMITS, ROUTINE_ID
@@ -40,7 +41,10 @@ export function configFromEnv(env = process.env) {
     ghBranch: env.GITHUB_BRANCH || 'routines-inbox',
     ghBase: env.GITHUB_BASE || 'main',
     cwebp: env.CWEBP || 'cwebp',
-    poll: env.TELEGRAM_POLL !== '0'
+    poll: env.TELEGRAM_POLL !== '0',
+    // Review on Discord (the mods' #routine-review, ServiceBot's review.js): with a key set the
+    // bot may read what is waiting and send a decision, and Telegram only says "there is one".
+    modKey: env.MOD_KEY || ''
   }
 }
 
@@ -176,6 +180,25 @@ export function moderationText(sub, { label = '', cat } = {}) {
   let text = lines.filter(l => l !== null).join('\n').replace(/\n{3,}/g, '\n\n')
   if (text.length > 4000) text = text.slice(0, 3990) + '…'
   return text
+}
+
+/** A submission the way a reviewer needs it, as data: Discord (and anything else) lays it out itself. */
+export function reviewData(sub, { cat, cover = false } = {}) {
+  const r = sub.routine
+  return {
+    sid: sub.sid, slug: sub.slug, at: sub.at, posted: sub.discord || null, cover,
+    title: r.title, author: r.author, language: r.language, goal: r.goal, level: r.level, split: r.split,
+    days: r.days, duration: r.duration, tags: r.tags || [], description: r.description, about: r.about || '',
+    sessions: r.sessions.map((s, i) => ({
+      name: s.name,
+      when: (r.schedule || []).filter(p => p[1] === i).map(p => DAY[p[0]]).join(' '),
+      exercises: s.exercises.map(x => ({
+        name: (n => n.charAt(0).toUpperCase() + n.slice(1))(String(cat?.get(x.id)?.n || x.id)),
+        line: `${x.sets}×${x.sec ? clock(x.sec) : x.repsMin ? `${x.repsMin}-${x.reps}` : x.reps}${x.rest ? `, rest ${clock(x.rest)}` : ''}`,
+        note: x.note || ''
+      }))
+    }))
+  }
 }
 
 export const keyboard = (sid, tag) => ({ inline_keyboard: [[{ text: '✅ Approve', callback_data: `rt:${tag}:ok:${sid}` }, { text: '❌ Reject', callback_data: `rt:${tag}:no:${sid}` }]] })
@@ -392,11 +415,101 @@ export function createApp(cfg, deps = {}) {
     writeAtomic(path.join(dirs.pending, sid + '.json'), JSON.stringify(sub, null, 2))
     if (coverBuf) writeAtomic(path.join(dirs.pending, sid + '.webp'), coverBuf)
     send(res, 200, { ok: true })
-    notify(sub, coverBuf).catch(e => console.error('telegram notify failed:', e.message))
+    tell(sid)
+  }
+
+  // The Telegram message is the only way the owner hears about a submission, and one failed
+  // request used to lose it for good: on 2026-11-15 a mod's routine sat in pending/ unseen
+  // ("telegram notify failed: fetch failed", once, no second try). A submission is now marked
+  // `notified` only after the message went out, and everything unmarked is sent again when the
+  // service starts and every few minutes (tellPending), so a hiccup costs minutes, not the routine.
+  const telling = new Set()
+  async function tell(sid) {
+    if (!tg || telling.has(sid)) return false
+    const file = path.join(dirs.pending, sid + '.json')
+    telling.add(sid)
+    try {
+      const sub = JSON.parse(fs.readFileSync(file, 'utf8'))
+      if (sub.notified) return true
+      const coverFile = path.join(dirs.pending, sid + '.webp')
+      await notify(sub, fs.existsSync(coverFile) ? fs.readFileSync(coverFile) : null)
+      // Approved or rejected in the second it took to send: the file is gone, nothing to mark.
+      if (fs.existsSync(file)) writeAtomic(file, JSON.stringify({ ...sub, notified: new Date(now()).toISOString() }, null, 2))
+      return true
+    } catch (e) {
+      console.error(`telegram notify failed for ${sid}, will try again:`, e.message)
+      return false
+    } finally { telling.delete(sid) }
+  }
+  async function tellPending() {
+    let n = 0
+    for (const f of fs.readdirSync(dirs.pending)) {
+      const m = /^([0-9a-f]{12})\.json$/.exec(f)
+      if (m && await tell(m[1])) n++
+    }
+    return n
+  }
+
+  /* ------------------------------- review from Discord ------------------------------- */
+  // api/mod/*: for ServiceBot only, with the shared key in x-mod-key (MOD_KEY on both sides).
+  // Without a key configured the routes do not exist. The bot ASKS what is waiting instead of
+  // being told, so a message that fails to post is simply posted on the next round.
+  //   GET  mod/pending         what waits, with `posted` (the Discord message) once it is up
+  //   GET  mod/cover/<sid>     the cover photo (webp)
+  //   POST mod/posted          { sid, message }  remember the Discord message of a submission
+  //   POST mod/decide          { sid, ok, by }   approve or reject; answers with the sentence
+  const modLimit = new Limiter(10, 10 * 60000, now)
+  function modAllowed(req) {
+    if (!cfg.modKey) return false
+    const got = Buffer.from(String(req.headers['x-mod-key'] || '')), want = Buffer.from(cfg.modKey)
+    return got.length === want.length && crypto.timingSafeEqual(got, want)
+  }
+  async function handleMod(req, res, what) {
+    if (!cfg.modKey) return send(res, 404, { ok: false, error: 'No such thing.' })
+    // Wrong keys are counted per visitor, so guessing is slow and cannot lock the bot out.
+    if (!modAllowed(req)) return modLimit.take(visitor(req)) ? send(res, 403, { ok: false, error: 'No.' }) : send(res, 429, { ok: false, error: 'Slow down.' })
+    const pendingFile = sid => (/^[0-9a-f]{12}$/.test(String(sid)) ? path.join(dirs.pending, sid + '.json') : null)
+    if (req.method === 'GET' && what === 'pending') {
+      const list = fs.readdirSync(dirs.pending).filter(f => /^[0-9a-f]{12}\.json$/.test(f)).map(f => {
+        const sub = JSON.parse(fs.readFileSync(path.join(dirs.pending, f), 'utf8'))
+        return reviewData(sub, { cat, cover: fs.existsSync(path.join(dirs.pending, sub.sid + '.webp')) })
+      }).sort((a, b) => (a.at < b.at ? -1 : 1))
+      return send(res, 200, { ok: true, pending: list })
+    }
+    if (req.method === 'GET' && what.startsWith('cover/')) {
+      const f = pendingFile(what.slice(6))
+      const img = f && f.replace(/\.json$/, '.webp')
+      if (!img || !fs.existsSync(img)) return send(res, 404, { ok: false, error: 'No cover.' })
+      res.writeHead(200, { 'content-type': 'image/webp', 'cache-control': 'no-store' })
+      return res.end(fs.readFileSync(img))
+    }
+    if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Method not allowed.' })
+    const body = await readJSON(req, 2048)
+    const f = pendingFile(body.sid)
+    if (what === 'posted') {
+      if (!f || !fs.existsSync(f)) return send(res, 404, { ok: false, error: 'Already handled.' })
+      if (!/^[0-9]{5,25}$/.test(String(body.message || ''))) return send(res, 422, { ok: false, error: 'message is a Discord id.' })
+      writeAtomic(f, JSON.stringify({ ...JSON.parse(fs.readFileSync(f, 'utf8')), discord: String(body.message) }, null, 2))
+      return send(res, 200, { ok: true })
+    }
+    if (what === 'decide') {
+      if (!f) return send(res, 422, { ok: false, error: 'Unknown submission.' })
+      if (typeof body.ok !== 'boolean') return send(res, 422, { ok: false, error: 'ok is true or false.' })
+      const result = await moderate(body.sid, body.ok)
+      console.log(`routine ${body.sid} ${body.ok ? 'approved' : 'rejected'} on Discord by ${String(body.by || '?').slice(0, 60)}`)
+      return send(res, 200, { ok: true, result })
+    }
+    return send(res, 404, { ok: false, error: 'No such thing.' })
   }
 
   async function notify(sub, coverBuf) {
     if (!tg) { console.log(`routine ${sub.sid} (${sub.slug}) waiting, Telegram not configured`); return }
+    if (cfg.modKey) {
+      // The mods decide on Discord; this is only the nudge, without buttons.
+      const r = sub.routine
+      await tg('sendMessage', { chat_id: cfg.tgChat, text: `${cfg.label ? `[${cfg.label}] ` : ''}New routine submission: "${r.title}" by ${r.author.name}. Review it in #routine-review on Discord.` })
+      return
+    }
     const text = moderationText(sub, { label: cfg.label, cat })
     if (coverBuf) {
       await tg('sendPhoto', { chat_id: cfg.tgChat, caption: `${cfg.label ? `[${cfg.label}] ` : ''}Cover for "${sub.routine.title}"`.slice(0, 1000) }, { field: 'photo', buf: coverBuf, type: 'image/webp', name: 'cover.webp' })
@@ -510,6 +623,7 @@ export function createApp(cfg, deps = {}) {
         const route = urlPath.slice(cfg.api.length)
         if (route === 'health' && req.method === 'GET') return send(res, 200, { ok: true })
         if (route === 'stats' && req.method === 'GET') return send(res, 200, { ok: true, copies: counts }, { 'cache-control': 'public, max-age=300' })
+        if (route === 'mod' || route.startsWith('mod/')) return await handleMod(req, res, route.slice(4))
         if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Method not allowed.' }, { allow: 'POST' })
         if (route === 'copy') return await handleCopy(req, res)
         if (route === 'preview') return await handlePreview(req, res)
@@ -525,16 +639,21 @@ export function createApp(cfg, deps = {}) {
   })
 
   return {
-    server, moderate, onCallback, poll, stop: () => { polling = false; clearTimeout(saveTimer) },
+    server, moderate, onCallback, poll, tellPending, stop: () => { polling = false; clearTimeout(saveTimer) },
     counts: () => counts, flush: () => writeAtomic(countsFile, JSON.stringify(counts)), reloadKnown: loadKnown
   }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  // api.telegram.org has an IPv6 address too and the container has no IPv6 route: ask for IPv4
+  // first, so a request does not start on an address that cannot answer.
+  dns.setDefaultResultOrder('ipv4first')
   const cfg = configFromEnv()
   const app = createApp(cfg)
   app.server.listen(cfg.port, () => console.log(`routines service on :${cfg.port}${cfg.label ? ` [${cfg.label}]` : ''}, api ${cfg.api}, telegram ${cfg.tgToken ? 'on' : 'off'}, github ${cfg.ghToken ? 'on' : 'off'}`))
   if (cfg.poll) app.poll()
+  // Submissions whose Telegram message never went out (see tell): now, and every five minutes.
+  if (cfg.tgToken) { setTimeout(app.tellPending, 5000).unref(); setInterval(app.tellPending, 5 * 60000).unref() }
   // Re-read the published list when the site is redeployed (cheap, once a minute).
   setInterval(app.reloadKnown, 60000).unref()
   const bye = () => { app.flush(); process.exit(0) }

@@ -13,6 +13,7 @@ vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ openSheet: () 
 
 import CardioWeekCard, { GoalSheet } from './CardioWeek.jsx'
 import { cardioGoalsOf } from '../lib/cardio-goals.js'
+import { todayISO } from '../lib/format.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, host
@@ -23,7 +24,9 @@ function render(el) {
   root = createRoot(host)
   act(() => root.render(el))
 }
-const today = new Date().toISOString().slice(0, 10)
+// The app's own "today" (local time). The UTC date is still yesterday for the first hour or two after
+// midnight in Europe, and on a Monday that put the run in last week: two tests failed from 00:00 to 01:00.
+const today = todayISO()
 const run = (min, km) => ({ id: 'w' + min, d: today, start: Date.now() - 3600e3, end: Date.now(), entries: [{ id: '0685', sets: [{ min, km, done: true }] }] })
 const click = el => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })))
 const button = text => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)

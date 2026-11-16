@@ -1,5 +1,9 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Órák",
+  "Set once": "Egyszer beállítandó",
+  "Connections": "Kapcsolatok",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Utolsó sorozat: {0}",
   "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Csak ezen az eszközön olvassuk. Az openNutritionbe semmi nem íródik, és semmi, amit küld, nem kerül a biztonsági mentésbe vagy a szinkronba.",
   "Runs, rides and matches": "Futások, bringázások és meccsek",
   "Runs, rides and matches from other apps": "Futások, bringázások és meccsek más alkalmazásokból",
+  "Birth date, for heart-rate zones": "Születési dátum a pulzuszónákhoz",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Az Apple Watch a korodból számolja a pulzuszónáidat. Engedélyezd a születési dátumot, vagy később módosítsd az Apple Health alkalmazásban.",
   "Show it in": "Megjelenítés itt",
   "Some days had foods without numbers, so their totals are a little low.": "Néhány napon voltak érték nélküli ételek, így az összegek kicsit alacsonyak.",
   "Sport": "Sport",
@@ -5961,4 +5967,10 @@ export default {
   "No favourites yet.": "Még nincs kedvenc.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Nyisd meg egy rutin menüjét, és válaszd a Kedvencekhez adás lehetőséget. Itt fog megjelenni.",
   "{0} of {1} routines": "{0} / {1} rutin",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Testreszabás",
+  "Collapsed": "Összecsukva",
+  "Hide": "Elrejtés",
+  "Totals": "Összesítők",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
 }

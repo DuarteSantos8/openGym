@@ -67,7 +67,7 @@ import RoutineTile from '../components/RoutineTile.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { tileStyle } from '../lib/routine-colors.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
-import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.js'
+import { bindWatchActions, markDiscarded, watchTickRest, applyRestStep, restAtFor, setStamp } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
@@ -906,7 +906,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {/* Both words sit in the pill's one grid cell (::before/::after, hidden), so Left and
           Right are as wide as the longer of the two in every language and the inputs
           after them line up (#322). */}
-      {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span>{sideTagOf(s)}</span></span>}
+      {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span className="full">{sideTagOf(s)}</span><span className="short" aria-hidden="true">{s.side === 'L' ? t('L') : t('R')}</span></span>}
       {cell(s, i, col1, 'w')}
       {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
@@ -2364,7 +2364,11 @@ function ActiveWorkout() {
         if (nextUnit?.length) startRest(restAfter, idx, { forSet: i, rest: 'exercise' })
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
+        // A round's rest announces what comes after it; between members there is no rest, so
+        // the member that is next gets said here instead, or a circuit says only its first
+        // exercise (#1210).
         if (step.roundDone) startRest(restAfter, idx, { forSet: i, rest: 'superset' })
+        else if (step.nextIdx != null) cues.movedOn(idx)
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
     }
@@ -2405,7 +2409,7 @@ function ActiveWorkout() {
   // The time is the watch's: the phone may hear of the set much later (lib/finish-workout.js
   // sessionEnd reads the sets' times). The watch's Finish runs the phone's Finish and save.
   useEffect(() => bindWatchActions({
-    setDone: (idx, i, { w, r, sec, side, at, hr, rpe, rir }) => {
+    setDone: (idx, i, { w, r, sec, side, at, hr, rpe, rir, restEnd }) => {
       if (useStore.getState().S.active?.editingWorkoutId) return   // a saved workout being edited is not the session
       const now = useStore.getState().S.active?.entries?.[idx]?.sets?.[i]
       // One side of a per-side set (a unilateral exercise): that side's numbers and its own tick.
@@ -2414,10 +2418,18 @@ function ActiveWorkout() {
       // The same set ticked here after the watch did: the later tick wins, the heart rate still lands.
       // The effort the watch logged (lib/watch-sync.js effortFrom): RPE or RIR, never both.
       const eff = rpe != null ? ['rpe', rpe] : rir != null ? ['rir', rir] : null
-      if (wasDone && at && Number(now.at) > at) {
+      // The rest is decided on its own, by its stamp, whoever's numbers win the set: the rest the
+      // watch started for this tick (restEnd) is the phone's too unless the rest changed here
+      // since (lib/watch-sync.js watchTickRest). A watch that does not say: the lag rule, and only
+      // for a rest this tick started here.
+      const wid = useStore.getState().S.active?.id
+      const restFor = (before, timer) => applyRestStep(useUI, watchTickRest({ before, timer, at, restEnd, restAt: restAtFor(wid) }), { wid, at: at || Date.now() })
+      const watchRest = () => { if (restEnd !== undefined) { const tm = useUI.getState().timer; restFor(tm, tm) } }
+      if (wasDone && at && setStamp(now) > at) {
         if (hr) mutEntry(idx, en => { if (en.sets[i]) en.sets[i].hr = hr })
         // the phone's rating wins, the watch's only fills a set that has none
         if (eff && !oneSide && now.rpe == null && now.rir == null) mutEntry(idx, en => { if (en.sets[i]) en.sets[i][eff[0]] = eff[1] })
+        watchRest()
         return
       }
       mutEntry(idx, en => {
@@ -2435,14 +2447,15 @@ function ActiveWorkout() {
         if (eff) { delete set.rpe; delete set.rir; set[eff[0]] = eff[1] }
       })
       if (!wasDone) {
+        const before = useUI.getState().timer
         toggleRef.current(idx, i, oneSide || undefined)
-        // The rest counts from the tick at the wrist, not from when this phone heard of it: both
-        // end together, and a set done long ago (the phone was away) starts no rest here now.
-        const rest = useUI.getState().timer
-        const lag = restLagSec(rest, at)
-        // Over already: stopped, not skipped (a skip would count a hold in that nobody is about to do).
-        if (lag > 0) { if (lag >= rest.left) useUI.getState().stopRest(); else useUI.getState().addRest(-lag) }
-      }
+        // The rest is the watch's: it ends when the one the watch started for this set ends (or
+        // there is none when the watch started none), counted from the tick at the wrist for a
+        // watch that does not say (restLagSec), so a set done long ago starts no rest here now.
+        // A rest changed here after that tick stands. Over already: stopped, not skipped (a skip
+        // would count a hold in that nobody is about to do).
+        restFor(before, useUI.getState().timer)
+      } else watchRest()
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
     finish: opts => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(opts) },

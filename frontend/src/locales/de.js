@@ -1,5 +1,9 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Uhren",
+  "Set once": "Einmal einstellen",
+  "Connections": "Verbindungen",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Letzter Satz: {0}",
   "Your note for this exercise": "Deine Notiz zu dieser Übung",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Nur auf diesem Gerät gelesen. Nichts wird in openNutrition geschrieben, und nichts davon landet in deinem Backup oder deiner Synchronisierung.",
   "Runs, rides and matches": "Läufe, Touren und Matches",
   "Runs, rides and matches from other apps": "Läufe, Touren und Matches aus anderen Apps",
+  "Birth date, for heart-rate zones": "Geburtsdatum, für Herzfrequenzzonen",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Deine Apple Watch berechnet deine Herzfrequenzzonen aus deinem Alter. Erlaube das Geburtsdatum oder ändere es später in Apple Health.",
   "Show it in": "Zeigen in",
   "Some days had foods without numbers, so their totals are a little low.": "An manchen Tagen fehlten bei Lebensmitteln die Werte, ihre Summen sind also etwas zu tief.",
   "Sport": "Sport",
@@ -5978,4 +5984,10 @@ export default {
   "No favourites yet.": "Noch keine Favoriten.",
   "Open the menu on a routine and pick Add to favourites. It will show here.": "Öffne das Menü einer Routine und wähle Zu Favoriten hinzufügen. Sie erscheint dann hier.",
   "{0} of {1} routines": "{0} von {1} Routinen",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Anpassen",
+  "Collapsed": "Eingeklappt",
+  "Hide": "Ausblenden",
+  "Totals": "Summen",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Die Pfeile ändern die Reihenfolge.",
 }
