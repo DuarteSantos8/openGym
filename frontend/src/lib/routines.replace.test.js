@@ -75,9 +75,18 @@ describe('replaceSlotExercise', () => {
 
   it('starts from the new exercise\'s defaults between cardio and lifting, keeping the note, rest and superset', () => {
     expect(replaceSlotExercise({ id: BENCH, sg: 'sgA', sets: 4, mode: 'reps', reps: 8, weight: 60, note: 'n', restSec: 90 }, BIKE))
-      .toEqual({ id: BIKE, sets: 1, min: 20, speed: 8, sg: 'sgA', note: 'n', restSec: 90 })
+      .toEqual({ id: BIKE, sets: 1, min: 20, speed: 20, sg: 'sgA', note: 'n', restSec: 90 })
     expect(replaceSlotExercise({ id: BIKE, sets: 2, min: 30, speed: 12, note: 'easy' }, BENCH))
       .toEqual({ id: BENCH, sets: 3, reps: 10, weight: 0, mode: 'reps', note: 'easy' })
+  })
+
+  it('a walk swapped in for a lift starts at a round pace in the unit the profile reads', () => {
+    const WALK = '2259'     // walking on treadmill
+    const lift = { id: BENCH, sets: 3, mode: 'reps', reps: 8, weight: 60 }
+    expect(replaceSlotExercise(lift, WALK, { unit: 'kg' }).speed).toBe(5)
+    // 3 mph, stored in km/h: not 5 km/h, which an mph profile reads as 3.1
+    expect(replaceSlotExercise(lift, WALK, { unit: 'lb' }).speed).toBe(4.83)
+    expect(replaceSlotExercise(lift, WALK, { unit: 'kg', speedUnit: 'mph' }).speed).toBe(4.83)
   })
 
   it('keeps a cardio slot\'s minutes and speed on another cardio exercise', () => {

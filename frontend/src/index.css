@@ -482,6 +482,23 @@ button.conn:active{filter:brightness(1.12)}
 .iconbtn,.chip,.seg button,.helpbtn{position:relative}
 .iconbtn::before,.chip::before,.seg button::before,.helpbtn::before{content:'';position:absolute;inset:-6px}
 .seg button::before{inset:-6px 0}
+/* More of the same (tap-target probe, 1.4.5 UX round): the guest line's × was 26 px, the links
+   under About 15 px tall, a small button 35, a switch 31. Each keeps its painted size and gets a
+   target of about 44 px. Vertical only where a neighbour sits beside it. */
+.conn-x,button.conn,.btn.sm,.sp-back,.sw,.bw-rate,.weekly-volume-toggle,.slevel-about,.sp-version a{position:relative}
+.conn-x::before,button.conn::before,.btn.sm::before,.sp-back::before,.sw::before,.bw-rate::before,.weekly-volume-toggle::before,.slevel-about::before,.sp-version a::before{content:'';position:absolute;inset:-5px 0}
+/* The ×: up and down by 9, and sideways out to the screen edge (the bar's own padding), not
+   back over the line beside it: 9 px to the left took the right edge of its "Sign in" pill. */
+.conn-x::before{inset:-9px;inset-inline:-2px calc(-1 * var(--pad))}
+.sw::before{inset:-7px 0}
+.bw-rate::before{inset:-6px 0}
+.weekly-volume-toggle::before{inset:-11px 0}
+.slevel-about::before,.sp-version a::before{inset:-14px -4px}
+/* The About links sit on neighbouring lines, so their targets overlap. The words of every link
+   lie above every target (views/Settings.jsx wraps them), so a tap on a link's words always
+   opens that link, and only the gaps between the lines go to the nearer one. */
+.sp-version{position:relative;z-index:0}
+.sp-version a>span{position:relative;z-index:1}
 .iconbtn.on-ss{background:var(--acc-soft);color:var(--acc-ink)}
 .iconbtn:disabled{opacity:.32}
 
@@ -532,6 +549,31 @@ h4.sec{
   padding:16px;margin-bottom:12px;
 }
 .card .big{font-size:1.875rem;font-weight:600;letter-spacing:-.026em;line-height:1.1}
+/* Arrange your own Home and Stats (components/PageLayout.jsx, #1119). A folded card is one line
+   with its name; open, the line stays as the card's header so the same tap closes it. */
+.fold{margin-bottom:12px}
+.fold-h{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;
+  padding:12px 16px;border:0;border-radius:var(--r-card);background:var(--surface);color:var(--label);
+  font:inherit;font-weight:600;text-align:start;cursor:pointer;
+  transition:transform var(--fast) var(--ease)
+}
+.fold-h:active{transform:scale(var(--press-scale-card))}
+.fold-h .icn{color:var(--label-3);flex:none}
+.fold.open .fold-h{margin-bottom:6px}
+.fold-b>:last-child{margin-bottom:0}
+.fold-b[hidden]{display:none}
+.arr{display:contents}
+.customize-link{display:flex;justify-content:center;margin:4px 0 12px}
+.lay-group{margin-top:14px}
+.lay-row{padding:12px 14px}
+.lay-row+.lay-row{box-shadow:inset 0 .5px 0 var(--separator)}
+.lay-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.lay-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.lay-row.off .lay-name{color:var(--label-2)}
+.lay-move{display:flex;gap:8px;flex:none}
+.lay-move .iconbtn{width:44px;height:36px;border-radius:10px}
+.lay-move .iconbtn:disabled{opacity:.35}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -913,6 +955,24 @@ h4.sec{
 .tag.sidepill>span,.tag.sidepill::before,.tag.sidepill::after{grid-area:1/1}
 .tag.sidepill::before{content:attr(data-l);visibility:hidden}
 .tag.sidepill::after{content:attr(data-r);visibility:hidden}
+/* On a phone the word has no room: a timed per-side row is number, pill, two steppers, play and
+   tick, and with "Sinistra" or "Esquerda" in the pill it ran 40 to 60 px off the screen at
+   360 px (#1239). There the pill is the one-letter badge a reps L/R row wears (.sidetag), and
+   the row takes that row's tighter gap. The word stays for a screen reader. */
+.tag.sidepill>.short{display:none}
+@media (max-width:480px){
+  .tag.sidepill{width:24px;height:24px;padding:0;align-items:center;border-radius:8px;font-size:var(--fs-caption2);font-weight:600}
+  .tag.sidepill::before,.tag.sidepill::after{display:none}
+  .tag.sidepill>.short{display:block}
+  .tag.sidepill>.full{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
+@media (max-width:400px){
+  .setrow.timed:has(>.sidepill){gap:4px}
+  .setrow.timed>.sidepill{width:20px}
+}
+@media (max-width:340px){
+  .setrow.timed:has(>.sidepill){gap:3px}
+}
 /* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
    the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
 .fav-star{color:var(--gold-ink);font-size:var(--fs-caption);display:inline-block;margin-inline-end:5px;vertical-align:-1px}
@@ -1413,7 +1473,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 .own-wrap .own-flip:active{transform:scale(.96);background:rgba(0,0,0,.6)}
 .own-wrap .own-flip .icn{font-size:var(--fs-footnote)}
-.own-media{margin-top:4px}
+/* The gap under it is the description's own (.exnote): the two cards sat flush (#1260). */
+.own-media{margin:4px 0 10px}
 /* superset: both exercises are on screen together, so the animations have to give way —
    at 180px you had to scroll a full screen between two exercises done back-to-back */
 .exmedia.compact img{height:120px}
@@ -4388,13 +4449,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-kicker{font-size:var(--fs-footnote);font-weight:600;color:var(--cp-phase)}
 .cp-media{width:min(100%,46vh,320px)}
 .cp-media .exmedia{border-radius:var(--r-lg)}
-.cp-name{margin:0;font-size:var(--fs-title2,1.375rem);line-height:var(--lh-title);letter-spacing:var(--ls-title);text-transform:capitalize}
+/* Names in the circuit timer arrive already cased (exerciseNameText): a capitalize on top turned
+   your own "am Turm" into "Am Turm" and re-cased German names. */
+.cp-name{margin:0;font-size:var(--fs-title2,1.375rem);line-height:var(--lh-title);letter-spacing:var(--ls-title)}
 .cp-target{font-size:var(--fs-body);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;min-width:7.5em}
 .cp-reps{display:flex;align-items:center;gap:12px}
 .cp-round-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);color:var(--label);display:grid;place-items:center;font-size:var(--fs-title3);
   transition:transform var(--fast) var(--ease),background var(--fast)}
 .cp-round-btn:active{transform:scale(var(--press-scale-sm))}
-.cp-after{display:flex;gap:6px;font-size:var(--fs-subhead);color:var(--label-dim);text-transform:capitalize}
+.cp-after{display:flex;gap:6px;font-size:var(--fs-subhead);color:var(--label-dim)}
 .cp-after .cp-kicker{text-transform:none;color:var(--label-dim)}
 .cp-ctrl{width:100%;display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:10px;margin-top:auto;padding-top:8px}
 .cp-ctrl button{min-height:64px;border-radius:var(--r-xl);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
@@ -4412,7 +4475,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-st{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:56px}
 .cp-st+.cp-st{box-shadow:inset 0 var(--hair) 0 var(--sep)}
 .cp-st-m{display:flex;flex-direction:column;min-width:0}
-.cp-st-n{font-weight:600;text-transform:capitalize}
+.cp-st-n{font-weight:600}
 .cp-st-s{font-size:var(--fs-footnote);color:var(--label-dim);font-variant-numeric:tabular-nums}
 .cp-ready-go{width:100%;margin-top:auto;padding-top:12px}
 .cp-ready-go .btn,.cp-result>.btn,.cp-ask>.btn{width:100%;min-height:56px}
@@ -4425,7 +4488,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-rounds,.cp-next-l{list-style:none;margin:0;padding:0;width:100%;background:var(--surface);border-radius:var(--r-card)}
 .cp-rounds li,.cp-next-l li{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;min-height:44px;align-items:center}
 .cp-rounds li+li,.cp-next-l li+li{box-shadow:inset 0 var(--hair) 0 var(--sep)}
-.cp-next-l li span:first-child{text-transform:capitalize}
 .cp-next{width:100%;display:flex;flex-direction:column;gap:8px}
 .cp-next-h{margin:6px 2px 0;font-size:var(--fs-subhead);font-weight:600;color:var(--label-dim)}
 .cp-result>.btn:last-child{margin-top:auto}

@@ -33,7 +33,7 @@ function renderWorkout(entries) {
 }
 
 const startHold = () => {
-  const go = container.querySelector('button[aria-label="Start set"]')
+  const go = container.querySelector('button[aria-label*=": Start set"]')
   expect(go).toBeTruthy()
   act(() => go.click())
   expect(useUI.getState().work).not.toBeNull()
@@ -92,7 +92,7 @@ describe('a per-side hold', () => {
     { sec: 10, w: 0, done: false, side: 'L' }, { sec: 10, w: 0, done: false, side: 'R' },
   ] })
   const holdRow = n => {
-    const go = container.querySelectorAll('button[aria-label="Start set"]')[n]
+    const go = container.querySelectorAll('button[aria-label*=": Start set"]')[n]
     act(() => go.click())
     act(() => { vi.advanceTimersByTime(11_000) })
   }
@@ -134,7 +134,9 @@ describe('a per-side hold', () => {
   it('Left and Right pills carry both words, so they are one width (#322)', () => {
     renderWorkout([sidePlank()])
     const pills = [...container.querySelectorAll('.sidepill')]
-    expect(pills.map(p => p.textContent)).toEqual(['Left', 'Right', 'Left', 'Right'])
+    expect(pills.map(p => p.querySelector('.full').textContent)).toEqual(['Left', 'Right', 'Left', 'Right'])
+    // The one-letter badge a phone shows instead of the word, which has no room there (#1239).
+    expect(pills.map(p => p.querySelector('.short').textContent)).toEqual(['L', 'R', 'L', 'R'])
     for (const p of pills) expect([p.dataset.l, p.dataset.r]).toEqual(['Left', 'Right'])
   })
 })

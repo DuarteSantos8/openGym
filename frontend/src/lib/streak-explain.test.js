@@ -3,9 +3,10 @@
 // gap in September a freeze covered, then 6 more: 11.
 import { describe, expect, it } from 'vitest'
 import { streakInfo } from './streak.js'
+import { isoOf } from './format.js'
 import { streakWeeks, explainWeek, freezeLine } from './streak-explain.js'
 
-const day = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10) }
+const day = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
 const wk = k => day('2026-08-17', 7 * k)
 const S = { workouts: [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11].map(k => ({ d: day('2026-08-18', 7 * k), entries: [] })), weekStart: 1 }
 
