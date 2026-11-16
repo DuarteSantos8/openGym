@@ -1031,7 +1031,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
       </Section>
       <Section title={t('Stats')}>
-        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Stats')} accessory="chevron" onClick={() => layoutSheet('stats')} />
         {/* Which formula turns a set into an estimated 1RM (Discord, #155): the exercise page,
             the 1RM chart and records all follow it. Formula names are people, not words. */}
         <SelectRow icon="chart" iconTint="var(--teal)" title={t('1RM formula')}
@@ -1140,6 +1139,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
         {/* Which cards Home and Stats show, folded or in which order (components/PageLayout.jsx, #1119). */}
         <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Home')} accessory="chevron" onClick={() => layoutSheet('home')} />
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Stats')} accessory="chevron" onClick={() => layoutSheet('stats')} />
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
