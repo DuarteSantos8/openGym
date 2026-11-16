@@ -13,7 +13,6 @@ import { buildSessionExposures, occurrenceFor } from './session-start.js'
 import { buildCompletedSession } from './finish-session.js'
 import { entriesForExposures } from './session-ui-adapter.js'
 import { planPhase } from './prescription/index.js'
-import { pctWeight } from './programmes.js'
 import { mergeStates, STAMPED_MAPS } from './sync-merge.js'
 import { STAMPED_MAPS as API_STAMPED_MAPS } from '../../../api/sync-stamps.js'
 import { EXIDX } from './exercises.js'
@@ -214,13 +213,6 @@ describe('the exercise as it sees the state', () => {
     expect(stackOf(exView(stacked, FLY), FLY)).toEqual([10, 20, 30])
     // The profile's own reading of it is the kg equivalent, to the tenth.
     expect(stackOf(stacked, FLY)).toEqual([4.5, 9.1, 13.6])
-  })
-
-  it('a programme’s %1RM rounds to the pinned unit’s step', () => {
-    const S = pin('kg', BENCH, 'lb', { workouts: [session('2026-10-01', BENCH, [[storedWeight(pin('kg', BENCH, 'lb'), BENCH, 225), 5]])] })
-    const w = pctWeight(exView(migratedFixture(S), BENCH), BENCH, 75, { step: 5 })
-    expect(w % 5).toBe(0)
-    expect(w).toBe(195)
   })
 })
 

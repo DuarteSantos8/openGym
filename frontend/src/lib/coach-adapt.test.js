@@ -9,7 +9,8 @@ import { describe, it, expect } from 'vitest'
 import { applyAdapt, markAdaptStale, resolveEntry, adaptFor, adaptLogEntry } from './coach-adapt.js'
 import { applyChangeSet, markStale, revertLast, changeMeaning, changeValues, changeTitle } from './coach.js'
 import { isWarmupRow } from './workout-model.js'
-import { legacyWeeksOf, programmeById, programmesOf, setLegacyWeeks } from './programmes.js'
+import { programmeById, programmesOf } from './programmes.js'
+import { legacyProgramme, weekPcts } from './test-fixtures.js'
 
 const BENCH = '0025', CURL = '0294', SQUAT = '0043', DBPRESS = '0289', ROW = '0027'
 const row = (w, r, done = false, extra = {}) => ({ w, r, done, ...extra })
@@ -175,7 +176,8 @@ describe('a review that sets warm-ups or writes a programme', () => {
     applyChangeSet(S, p, ['c0'])
     const [prog] = programmesOf(S)
     expect(prog.name).toBe('Bench 3 weeks')
-    expect(legacyWeeksOf(prog)).toEqual([{ t: { [BENCH]: { pct: 75 } } }, { t: { [BENCH]: { pct: 80 } } }, { deload: true }])
+    expect(weekPcts(prog, BENCH)).toEqual([75, 80, null])
+    expect(prog.tracks[0].stages.map(st => st.kind)).toEqual(['work', 'work', 'recovery'])
     expect(prog.schedule.appts).toEqual([{ rid: 'push', day: 1 }])
     expect(S.programme).toBeUndefined()
     // Spec 13: the card says what the Coach fixes, apart from what the exercise's own progression keeps deciding.
@@ -192,13 +194,14 @@ describe('a review that sets warm-ups or writes a programme', () => {
 
   it('a revised programme keeps its id and schedule; the revert brings its weeks back', () => {
     const S = S0()
-    S.programmes = { p1: setLegacyWeeks({ id: 'p1', name: 'Old', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ t: { [BENCH]: { pct: 70 } } }], S, { days: { 1: ['push'] } }) }
+    S.programmes = { p1: legacyProgramme(S, { id: 'p1', name: 'Old', at: 1, weeks: [{ t: { [BENCH]: { pct: 70 } } }], days: { 1: ['push'] } }) }
     const p = markStale(review([{ type: 'programme', target: { programmeId: 'p1' }, before: { name: 'Old', weeks: 1 }, after: { name: 'Old', weeks: [{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }] } }]), S)
     applyChangeSet(S, p, ['c0'])
-    expect(legacyWeeksOf(programmeById(S, 'p1'))).toEqual([{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }])
+    expect(weekPcts(programmeById(S, 'p1'), BENCH)).toEqual([72.5, null])
+    expect(programmeById(S, 'p1').tracks[0].stages.map(st => st.kind)).toEqual(['work', 'recovery'])
     expect(programmeById(S, 'p1').schedule.appts).toEqual([{ rid: 'push', day: 1 }])
     revertLast(S)
-    expect(legacyWeeksOf(programmeById(S, 'p1'))).toEqual([{ t: { [BENCH]: { pct: 70 } } }])
+    expect(weekPcts(programmeById(S, 'p1'), BENCH)).toEqual([70])
     // Gone meanwhile: the revision is stale rather than writing a new programme under an old id.
     delete S.programmes.p1
     expect(markStale(p, S).changes[0].status).toBe('stale')

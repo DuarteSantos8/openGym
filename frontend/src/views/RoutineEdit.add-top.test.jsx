@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 vi.mock('../sheets.jsx', async () => {
   const { ruleOccurrence } = await import('../lib/test-fixtures.js')
-  return { exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), occurrenceSummary: () => '', quickOccurrence: (ex, routine) => ruleOccurrence(ex.id, { routineId: routine.id }) }
+  return { exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), quickOccurrence: (ex, routine) => ruleOccurrence(ex.id, { routineId: routine.id }) }
 })
 vi.mock('../components/Media.jsx', () => ({ Thumb: () => null }))
 vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))

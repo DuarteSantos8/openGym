@@ -100,7 +100,9 @@ describe('a custom exercise stored without the flag', () => {
     const ex = legacy()
     seed(ex)
     exConfigSheet(ex, ruleOccurrence('cx1'), () => {})
-    expect(buttons(renderTop())).toContain('Edit or delete this exercise')
+    const sheet = renderTop()
+    act(() => sheet.querySelector('button[aria-label="More"]').click())   // the ⋯ menu over the sheet
+    expect([...renderTop().querySelectorAll('.menu-item')].map(item => item.textContent.trim())).toContain('Edit or delete this exercise')
   })
 
   it('its thumbnail is the custom one, never a dataset image', () => {
@@ -135,5 +137,30 @@ describe('the store heals it', () => {
     useStore.getState().update(s => { s.restDefault = 90 })
     expect(S().customEx[0]._ts).toBe(7)   // healing twice changes nothing
     expect(S().customEx[0]).toEqual(healed[0])
+  })
+})
+
+describe('a custom exercise that is assisted', () => {
+  it('saves the choice, and Automatic removes it', () => {
+    const ex = { id: 'cx2', n: 'Band pull-up', bp: 'back', eq: 'band', custom: true }
+    seed(ex)
+    customExSheet(ex)
+    let host = renderTop()
+    expect(host.querySelector('[data-field="Assistance"]').textContent).toContain('Automatic: not assisted')
+    click(host, '[data-field="Assistance"] button', 'Assisted')
+    click(host, 'button', 'Save')
+    expect(S().customEx[0].assisted).toBe(true)
+    customExSheet(S().customEx[0])
+    host = renderTop()
+    click(host, '[data-field="Assistance"] button', 'Automatic')
+    click(host, 'button', 'Save')
+    expect(S().customEx[0]).not.toHaveProperty('assisted')
+  })
+
+  it('reads the automatic answer from the form\'s name and equipment', () => {
+    const ex = { id: 'cx3', n: 'Gym assisted dip', bp: 'chest', eq: 'leverage machine', custom: true }
+    seed(ex)
+    customExSheet(ex)
+    expect(renderTop().querySelector('[data-field="Assistance"]').textContent).toContain('Automatic: assisted')
   })
 })

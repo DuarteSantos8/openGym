@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { contentHash, defaultPlanRule, planPhase } from './prescription/index.js'
+import { contentHash, defaultPlanRule, estimate1RMRange, planPhase } from './prescription/index.js'
 import { buildSessionExposures } from './session-start.js'
 import { entriesForExposures, exposuresWithPerformance, rowsOfPerformance } from './session-ui-adapter.js'
 import { buildCompletedSession } from './finish-session.js'
@@ -7,7 +7,8 @@ import { exView, shownWeight, storedWeight, withExUnit } from './ex-unit.js'
 import { convertStateUnit } from './units.js'
 import { sessionVolume } from './history.js'
 import { routineChangesFromEntry, updateRoutineFromEntry } from './routine-update.js'
-import { setLegacyWeeks, startProgramme } from './programmes.js'
+import { startProgramme } from './programmes.js'
+import { legacyProgramme } from './test-fixtures.js'
 
 const BENCH = '0025'
 const profile = (over = {}) => ({ engineSchemaVersion: 2, unit: 'kg', routines: [], workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {}, ...over })
@@ -42,7 +43,7 @@ describe('new main features on the v2 session path', () => {
   it('freezes programme targets and excludes its deload from advancement', () => {
     const r = routine(100)
     const S = profile({ routines: [r], oneRepMaxes: { one: { id: 'one', exerciseId: BENCH, value: 120, unit: 'kg', capturedAt: '2026-10-01T12:00:00Z', source: 'manual' } } })
-    S.programmes = { p: setLegacyWeeks({ id: 'p', name: 'P', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ deload: true, t: { [BENCH]: { pct: 75, rpe: 7 } } }], S, { days: { 1: ['r'] } }) }
+    S.programmes = { p: legacyProgramme(S, { id: 'p', name: 'P', at: 1, weeks: [{ deload: true, t: { [BENCH]: { pct: 75, rpe: 7 } } }], days: { 1: ['r'] } }) }
     // A heavier session in history does not move it: the run adopted the 120 kg 1RM at its start.
     S.workouts.push({ id: 'previous', d: '2026-10-01', exposures: [{ exerciseId: BENCH, performance: { sets: [{ role: 'work', status: 'completed', resistance: { kind: 'external-load', value: 100, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 5 }] }] } }] })
     expect(startProgramme(S, 'p', { policies: { 't:p:o': { onFailure: 'advance', onSkipped: 'advance' } }, end: 'stop', today: '2026-10-19', now: ctx.now })).toEqual({ ok: true })
@@ -90,5 +91,26 @@ describe('new main features on the v2 session path', () => {
     expect(next.workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(135)
     expect(Object.values(next.prescriptions)[0].rows[0].load.value).toBe(135)
     expect(next.workouts[0].vol).toBe(2025)
+  })
+})
+
+
+describe('selective failure with the main session features', () => {
+  it('keeps failure, own warmups and the blended estimate together for a pinned lift', () => {
+    const S = profile({ oneRmFormula: 'weighted', exUnit: withExUnit({}, BENCH, 'lb', 1) })
+    const r = routine(storedWeight(S, BENCH, 135), { failureSets: [1, 3], warmup: 'own', warmupRows: [{ wp: 50, r: 8 }] })
+    S.routines = [r]
+    const a = start(S, r), entry = a.entries[0]
+    expect(entry.sets.map(row => !!row.failure)).toEqual([false, true, false, true])
+    entry.sets[1].note = 'controlled descent'
+    const expected = estimate1RMRange(entry.sets[1].w, entry.sets[1].r, 'weighted', 0)
+    const result = finish(S, a), x = result.session.exposures[0]
+    expect(x.failureSets).toEqual([1, 3])
+    const rows = rowsOfPerformance(x.performance.sets, x.mode)
+    expect(rows.map(row => !!row.failure)).toEqual([false, true, false, true])
+    expect(rows[0]).toMatchObject({ phase: 'warmup', wp: 50, r: 8 })
+    expect(rows[1]).toMatchObject({ note: 'controlled descent', rir: 0 })
+    expect(result.oneRepMaxes[0]).toMatchObject({ value: expected.mid, low: expected.low, high: expected.high, unit: 'kg' })
+    expect(shownWeight(S, BENCH, start(S, r, 1).entries[0].sets[1].w)).toBe(140)
   })
 })

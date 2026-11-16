@@ -10,8 +10,8 @@ import { defaultPlanRule, planPhase } from '../lib/prescription/index.js'
 import { finishWorkout, finishWorkoutSheet } from '../sheets.jsx'
 import { discardedFor } from '../lib/watch-sync.js'
 import { isWarmupRow } from '../lib/workout-model.js'
-import { migratedFixture } from '../lib/test-fixtures.js'
-import { setLegacyWeeks, startProgramme } from '../lib/programmes.js'
+import { legacyProgramme, migratedFixture } from '../lib/test-fixtures.js'
+import { startProgramme } from '../lib/programmes.js'
 import { todayISO } from '../lib/format.js'
 
 const menuItemsOf = menu => (menu.sections ? menu.sections.flatMap(g => g.more ? g.more.flatMap(s => s.items || []) : g.items || []) : menu.items || []).filter(Boolean)
@@ -868,7 +868,7 @@ describe('Workout add exercise flow', () => {
 
     const exposure = mocks.A.exposures[1]
     expect(mocks.A.entries[1].exposureId).toBe(exposure.exposureId)
-    expect(mocks.S.prescriptions[exposure.prescriptionId].preset).toBe('autoregulated')
+    expect(mocks.S.prescriptions[exposure.prescriptionId].preset).toBe('manual')
   })
 })
 
@@ -877,6 +877,48 @@ describe('Workout add exercise flow', () => {
 const stepName = b => (b.getAttribute('aria-label') || '').split(', ')[0].split(': ').pop()
 
 describe('active workout weight controls', () => {
+  it('shows the current exposure phase and a training-max review message', async () => {
+    const rule = defaultPlanRule('wave', { id: 'rule', exerciseId: 'plain-bench', trainingMax: { mode: 'direct', value: 100, unit: 'kg' } })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Phase 1 of 3')
+    const id = mocks.A.exposures[0].prescriptionId
+    const p = mocks.S.prescriptions[id]
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, reviewTrainingMax: true } }
+    await rerender()
+    expect(container.querySelector('[role="status"]').textContent).toContain('review your training max')
+  })
+
+  it('shows the named variation of a bodyweight ladder', async () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'rule', exerciseId: 'plain-bench', rungs: ['easy', 'hard'] })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Variation: easy')
+  })
+
+  it('names a rung that points at an exercise, and survives a rung past the list', async () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'rule', exerciseId: 'plain-bench', rungs: [{ name: 'Tuck', exerciseId: 'plain-bench' }, 'Full'] })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    expect(container.textContent).toContain('Variation: Tuck')
+    const id = mocks.A.exposures[0].prescriptionId
+    const p = mocks.S.prescriptions[id]
+    mocks.S.prescriptions[id] = { ...p, values: { ...p.values, difficulty: 5 } }
+    await rerender()
+    expect(container.textContent).toContain('Variation: Full')
+  })
+
+  it('says when the ladder moved up or back a rung', async () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'rule', exerciseId: 'plain-bench', rungs: ['easy', 'hard'] })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    const id = mocks.A.exposures[0].prescriptionId
+    const p = mocks.S.prescriptions[id]
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, rung: { from: 0, to: 1, reason: 'promote' } } }
+    await rerender()
+    expect(container.textContent).toContain('Moved up to hard.')
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, rung: { from: 1, to: 0, reason: 'regress' } } }
+    await rerender()
+    expect(container.textContent).toContain('Back to easy.')
+    expect(container.textContent).not.toContain('Moved up to')
+  })
+
   const press = async (label, selector) => {
     const control = container.querySelector(selector)
     // A row's stepper buttons say their set and field ("Set 1: Weight (kg): Increase", P4).
@@ -1143,7 +1185,7 @@ async function mountProgrammeSession({ tick = false, role = null } = {}) {
     ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
     restSec: 90, sound: false, effort: 'none', gifSize: 'full', exWeights: {}, dayPlan: {}, programme: null,
   }
-  S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{}, {}], S, { days: { [new Date().getDay()]: ['r1'] } }) }
+  S.programmes = { P: legacyProgramme(S, { id: 'P', name: 'Block', at: 1, weeks: [{}, {}], days: { [new Date().getDay()]: ['r1'] } }) }
   const advance = { onFailure: 'advance', onSkipped: 'advance' }
   expect(startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop', today, now: Date.now() })).toEqual({ ok: true })
   const exposures = buildSessionExposures(S, S.routines[0], { now: Date.now(), newId: x => x })

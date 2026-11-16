@@ -5,38 +5,27 @@
 import { useState } from 'react'
 import Icon from './Icon.jsx'
 import Stepper from './Stepper.jsx'
-import { Button, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
+import { Button, PickRow, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
 import { t } from '../lib/i18n.js'
+import { exerciseNameText, fmtNum, fmtSpread } from '../lib/format.js'
+import { EXIDX } from '../lib/exercises.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
 import { pyramidLabel, PYRAMID_PRESETS, PYRAMID_MAX, MAX_PYRAMID_SETS } from '../lib/pyramid.js'
-import { INCREMENT_TYPES, PRESETS, PRESET_IDS, defaultDeload, defaultPlanRule, editPlan, isTemplateRule, planOptions, pyramidDirection, rptOffsets, validatePlanRule } from '../lib/prescription/index.js'
+import { INCREMENT_TYPES, PRESETS, PRESET_IDS, defaultDeload, defaultPlanRule, editPlan, isTemplateRule, needsOneRm, planOptions, pyramidDirection, rptOffsets, validatePlanRule } from '../lib/prescription/index.js'
 
 export const PRESET_LABEL = {
-  autoregulated: 'Autoregulated', linear: 'Linear', greyskull: 'Greyskull LP',
-  double: 'Double progression', steady: 'Steady double progression', triple: 'Triple progression', hold_seconds: 'Timed hold progression',
-  bodyweight_ladder: 'Bodyweight ladder', pyramid_reps: 'Pyramid sets', pyramid: 'Pyramid', five_three_one: '5/3/1',
+  manual: 'Manual', linear: 'Linear', greyskull: 'Greyskull LP',
+  double: 'Double progression', triple: 'Triple progression', hold_seconds: 'Timed hold progression',
+  bodyweight_ladder: 'Bodyweight ladder', pyramid_reps: 'preset.pyramid_reps.name', pyramid: 'Pyramid', five_three_one: '5/3/1',
   top_set_backoff: 'Top set and back-off', accumulation_intensification: 'Accumulation then intensification', density: 'Shorter rests',
-  skill_ladder: 'Skill ladder', undulating: 'Undulating days'
+  double_controlled: 'preset.double_controlled.name', wave: 'preset.wave.name',
+  // v1.4.5's own rules.
+  steady: 'Steady double progression', skill_ladder: 'Skill ladder', undulating: 'Undulating days',
+  // A previous build's name for Manual (api/engine/rules.js): never offered, shown as what it is.
+  autoregulated: 'Manual'
 }
-export const PRESET_HINT = {
-  autoregulated: 'You set every value by feel (reps, load or seconds); nothing is advanced for you.',
-  linear: 'Add a fixed amount of weight after every successful session.',
-  greyskull: 'Add weight when you hit the target; the last set is an AMRAP.',
-  double: 'Reach the top of the rep or time range, then add weight and start again.',
-  triple: 'Fill sets and reps up to the top of the range, then add weight.',
-  hold_seconds: 'Hold for time; the target seconds go up each time you reach the longest time.',
-  bodyweight_ladder: 'Build reps and sets, then move to a harder variation.',
-  pyramid_reps: 'A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.',
-  pyramid: 'Sets at different shares of one anchor load, lightest first or heaviest first.',
-  five_three_one: 'Wendler cycle: four weeks of percentages of your training max.',
-  top_set_backoff: 'One heavy top set, then lighter back-off sets; the top set decides the next load.',
-  accumulation_intensification: 'Build reps at a lighter percentage of your training max, then a heavier block of fewer reps.',
-  density: 'Same weight, a bit less rest each time every set is clean. At your shortest rest the weight goes up and the rest starts over.',
-  steady: 'Work up a rep range one rep at a time. Every set has to hit the target before it moves, and at the top of the range the weight goes up.',
-  undulating: 'Each session rotates: a medium day at your reps, a heavy day with fewer, a light day with more. The weights come from your estimated max, so they climb as you get stronger.',
-  skill_ladder: 'For bodyweight skills. One more rep each clean session up to the top of the range, then the next, harder variation of the ladder, back at the bottom.',
-}
+export const PRESET_HINT = Object.fromEntries(PRESET_IDS.map(id => [id, `preset.${id}.desc`]))
 const INCREMENT_LABEL = {
   absolute: 'Fixed amount', current_load_percent: '% of current load', snapshot_1rm_percent: '% of 1RM',
   target_load_percent: '% of target', percentage_points: 'Percentage points'
@@ -68,7 +57,7 @@ function RangeToggle({ ranged, onToggle }) {
 // policy (PRESETS[preset].ranges): 'fixed' one value, 'range' from/to, 'either' the planner's
 // choice. A fixed value is stored as min === max, so an 'either' field opened to a range keeps
 // showing from/to (open) until it is toggled back.
-function RangeField({ label, value, step = 1, min = 0, max = Infinity, policy = 'range', onChange }) {
+export function RangeField({ label, value, step = 1, min = 0, max = Infinity, policy = 'range', onChange }) {
   const [open, setOpen] = useState(false)
   const ranged = policy === 'range' || (policy === 'either' && (open || value.min !== value.max))
   const toggle = () => { if (ranged) onChange({ min: value.min, max: value.min }); setOpen(!ranged) }
@@ -84,7 +73,7 @@ function RangeField({ label, value, step = 1, min = 0, max = Infinity, policy = 
 }
 
 // `value` is the low end; `upTo` the optional high end (loadTo), offered when `rangeable`.
-function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode, onChange }) {
+function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode, oneRm = null, onChange }) {
   const [open, setOpen] = useState(false)
   const modes = [
     ...(noneMode ? [{ value: noneMode, label: t('None') }] : []),
@@ -111,20 +100,100 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
       <SelectButton className="unit-btn" title={label} value={value.mode} options={modes} onChange={setMode} />
       {rangeable && loaded && <RangeToggle ranged={ranged} onToggle={toggle} />}
     </div>
+    {/* What a % of the 1RM comes to: the weight, and the weights the spread of the 1RM gives. */}
+    {value.mode === 'percent_1rm' && oneRm && [value, ranged && upTo].filter(Boolean).map((v, i) => <div key={i} className="small dim" style={{ marginTop: 4 }}>
+      {t('{0}% of {1} → {2}', v.percent, fmtNum(oneRm.value) + fmtSpread(oneRm.low, oneRm.high), fmtNum(oneRm.value * v.percent / 100) + fmtSpread(oneRm.low * v.percent / 100, oneRm.high * v.percent / 100) + ' ' + unit)}
+    </div>)}
   </div>
+}
+
+// The ladder's steps, easiest first: a name each, and the exercise it logs when it names one. A step
+// without an exercise is stored as its plain name, so a chain of names saves exactly as it was.
+// `pickExercise` is the sheet's exercise picker (passed in: sheets.jsx imports this file).
+function RungList({ rungs, regress, pickExercise, onChange }) {
+  const list = rungs.map(r => (typeof r === 'string' ? { name: r } : r))
+  const write = next => onChange({ rungs: next.map(r => (r.exerciseId ? { name: r.name, exerciseId: r.exerciseId } : r.name)) })
+  const at = (i, patch) => write(list.map((r, j) => (j === i ? { ...r, ...patch } : r)))
+  const swap = (i, j) => { const next = [...list]; [next[i], next[j]] = [next[j], next[i]]; write(next) }
+  const exOf = r => (r.exerciseId ? EXIDX[r.exerciseId] : null)
+  const autoName = (r, i) => (exOf(r) ? exerciseNameText(exOf(r)) : t('Step {0}', i + 1))
+  const choose = i => {
+    const picker = pickExercise(ex => {
+      picker.close()
+      const r = list[i]
+      // A name the user typed stays; an empty or generated one follows the exercise.
+      const auto = !r.name.trim() || r.name === autoName(r, i) || r.name === t('Step {0}', i + 1)
+      at(i, { exerciseId: ex.id, ...(auto ? { name: exerciseNameText(ex) } : {}) })
+    }, { title: t('Choose exercise') })
+  }
+  return <div style={{ marginBottom: 14 }}>
+    <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      {list.map((r, i) => <li key={i} data-rung={i} className="sect-b" style={{ marginBottom: 10 }}>
+        <div className="row cfgrow" style={{ alignItems: 'center', gap: 10 }}>
+          <span className="re-count" aria-hidden="true" style={{ minWidth: 14, textAlign: 'center' }}>{i + 1}</span>
+          <input className="input grow" aria-label={t('Step {0}', i + 1)} value={r.name}
+            onChange={e => at(i, { name: e.target.value })}
+            onBlur={e => { if (!e.target.value.trim()) at(i, { name: autoName(r, i) }) }} />
+        </div>
+        <div className="row" style={{ alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+          {pickExercise && <Button size="sm" variant="tinted" icon={exOf(r) ? 'swap' : 'plus'} style={{ flex: '1 1 0', justifyContent: 'flex-start', minWidth: 0 }}
+            onClick={() => choose(i)}>{exOf(r) ? exerciseNameText(exOf(r)) : t('Choose exercise')}</Button>}
+          {r.exerciseId && <Button size="sm" icon="xmark" aria-label={t('Clear exercise')} title={t('Clear exercise')} onClick={() => at(i, { exerciseId: undefined })} />}
+          <span className="re-order" style={{ flexDirection: 'row', marginInlineStart: 'auto' }}>
+            <button type="button" className="iconbtn" aria-label={t('Move up')} title={t('Move up')} disabled={i === 0} onClick={() => swap(i, i - 1)}><Icon name="chevronUp" /></button>
+            <button type="button" className="iconbtn" aria-label={t('Move down')} title={t('Move down')} disabled={i === list.length - 1} onClick={() => swap(i, i + 1)}><Icon name="chevronDown" /></button>
+            <button type="button" className="iconbtn" aria-label={t('Remove step')} title={t('Remove step')} onClick={() => write(list.filter((_, j) => j !== i))}><Icon name="trash" /></button>
+          </span>
+        </div>
+      </li>)}
+    </ol>
+    <div className="small dim" style={{ marginBottom: 8 }}>{t('From easiest to hardest, top first.')}</div>
+    <Button size="sm" icon="plus" onClick={() => write([...list, { name: t('Step {0}', list.length + 1) }])}>{t('Add step')}</Button>
+    {list.length >= 2 && <div className="sect-b" style={{ marginTop: 14 }}>
+      <Row title={t('Go back a step after missed sessions')}>
+        <Switch aria-label={t('Go back a step after missed sessions')} checked={!!regress} onChange={on => onChange({ regress: on ? { after: 2 } : null })} />
+      </Row>
+      {regress && <div className="row cfgrow">
+        <Stepper label={t('Missed sessions before going back')} value={regress.after} step={1} decimal={false}
+          onChange={after => onChange({ regress: { after: Math.min(10, Math.max(1, after)) } })} />
+      </div>}
+      <div className="small dim">{t('Missed means short of the minimum sets and reps.')}</div>
+    </div>}
+  </div>
+}
+
+/**
+ * Whether a newer 1RM is offered for this exercise (occurrence.refs, spec 6.1), only for a rule that
+ * works from a 1RM: its default named with where it comes from (`fallback`, refPreference without
+ * the occurrence's own), asking, or keeping the 1RM it adopted (`adopted`).
+ */
+export function ReferenceRow({ value = 'inherit', adopted = null, fallback, onChange }) {
+  const word = pref => (pref === 'keep' ? t('Keep the one in use') : t('Ask me first'))
+  return <PickRow icon="chartLine" iconTint="var(--teal)" title={t('New 1RM estimates')} value={value} onChange={onChange} options={[
+    { value: 'inherit', label: t('Use my default ({0})', word(fallback.pref)), subtitle: fallback.from === 'routine' ? t('Set for this routine') : t('Set in Settings') },
+    { value: 'ask', label: t('Ask me') },
+    { value: 'keep', label: adopted ? t('Keep {0}', `${fmtNum(adopted.value)} ${adopted.unit}`) : t('Keep the 1RM it starts with') },
+  ]} />
 }
 
 // `restDefault`: the exercise takes the profile's rest (`defaultRest`) instead of its own; the wheel's 0:00 says so.
 // `restLabel` / `onRestClick`: the caller's own reading of the rest row and its own picker (the exercise sheet's
 // Default / No timer / Pick a time).
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, restDefault = false, defaultRest = 90, onRestDefault, restLabel, onRestClick, hidePreset = false, onChange }) {
+// `tab` ('target' | 'progression') lays the form out as the exercise sheet's two tabs: both panels
+// stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
+// Without it the editor is one flat form, Progression then Target. `extra` closes the Target form
+// with what the caller owns beside the rule (the sheet's sets to failure). `reference`: the
+// occurrence's 1RM preference (ReferenceRow's props), shown when the rule needs a 1RM.
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, restLabel, onRestClick, hidePreset = false, onChange, tab, extra = null, pickExercise = null, reference = null }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
   const loaded = def.steps === 'load'
   const step = rule.rounding.step ?? (unit === 'lb' ? 5 : 2.5)
   const timed = !!p.durationSeconds
-  const supportsTime = !['hold_seconds', 'bodyweight_ladder', 'five_three_one', 'pyramid_reps', 'top_set_backoff', 'accumulation_intensification', 'density'].includes(rule.preset)
+  const cyclic = !!p.trainingMax
+  const phase = rule.program.phases[0]
+  const supportsTime = !['hold_seconds', 'bodyweight_ladder', 'five_three_one', 'pyramid_reps', 'top_set_backoff', 'accumulation_intensification', 'density', 'double_controlled', 'wave', 'steady', 'skill_ladder', 'undulating'].includes(rule.preset)
   const { errors } = validatePlanRule(rule)
   // Every edit is a set of new numbers; the template rebuilds the program from them. null removes an optional one.
   const set = patch => onChange(editPlan(rule, patch))
@@ -135,14 +204,24 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       options={PRESET_IDS.filter(id => id !== 'triple' || !bodyweight || (p.load.mode === 'absolute' && p.load.value > 0) || rule.preset === 'triple').map(id => ({ value: id, label: t(PRESET_LABEL[id]), subtitle: t(PRESET_HINT[id]) }))} />
   </div>
   const errorLine = errors.length > 0 && <div className="small" role="alert" style={{ color: 'var(--red)', margin: '10px 0 14px' }}>{errors[0]}</div>
+  const refRow = reference && needsOneRm(rule) && <div className="sect-b" style={{ marginBottom: 14 }}><ReferenceRow {...reference} /></div>
+  const panel = (name, children) => <div key={name} role="tabpanel" id={`xc-panel-${name}`} aria-labelledby={`xc-tab-${name}`} hidden={tab !== name}>{children}</div>
   // A program edited past its template (an import, a future builder) is shown, not edited: rebuilding
   // it from these numbers would drop what the template does not know. Choosing a template replaces it.
-  if (!isTemplateRule(rule)) return <>
-    <h4 className="sec">{t('Progression')}</h4>
-    {presetRow}
-    <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
-    {errorLine}
-  </>
+  if (!isTemplateRule(rule)) {
+    const notice = <>
+      {presetRow}
+      <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
+    </>
+    if (tab) return <>{panel('target', <>{notice}{refRow}{extra}</>)}{panel('progression', notice)}{errorLine}</>
+    return <>
+      <h4 className="sec">{t('Progression')}</h4>
+      {notice}
+      {refRow}
+      {extra}
+      {errorLine}
+    </>
+  }
 
   // Defaults: absolute increments for absolute loads, percentage points for percent loads.
   // loadTo: the load range's high end, or undefined for a fixed load.
@@ -152,10 +231,12 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
     ...(load.mode !== 'percent_1rm' && p.step?.type === 'percentage_points' ? { step: { type: 'absolute', value: step, unit } } : {})
   })
   const has = metric => p.completion.some(c => c.metric === metric)
+  const namedLadder = rule.preset === 'bodyweight_ladder' && p.rungs.length > 0
   const toggleMetric = (metric, on) => set({
     completion: on
       ? [...p.completion, { metric, target: metric === 'cycle_count' ? 4 : metric === 'training_max' ? (p.trainingMax?.value ?? 100) : metric === 'max_duration' && rule.preset === 'hold_seconds' ? 120 : metric === 'rest_floor' ? p.restFloor : null }]
-      : p.completion.filter(c => c.metric !== metric)
+      : p.completion.filter(c => c.metric !== metric),
+    ...(on && cyclic ? { end: 'repeat' } : {})
   })
   const setMetricTarget = (metric, target) => set({ completion: p.completion.map(c => (c.metric === metric ? { ...c, target } : c)) })
   const setOffsets = offsets => set({ offsets, sets: p.sets.min === p.sets.max ? { min: offsets.length, max: offsets.length } : p.sets })
@@ -179,21 +260,22 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
 
   const stopSummary = p.completion.length ? String(p.completion.length) : t('None')
 
-  return <>
-    <h4 className="sec">{t('Progression')}</h4>
+  const presetBlock = <>
     {presetRow}
     <div className="small dim" style={{ marginBottom: 14 }}>{t(PRESET_HINT[rule.preset])}</div>
+  </>
+  const progressionBody = <>
+    {presetBlock}
 
-    {loaded && <div style={{ marginTop: 22, marginBottom: 14 }}>
-      <div className="sect-b" style={{ marginBottom: 8 }}>
-        <SelectRow title={assisted ? t('Reduce assistance by') : t('Increase load by')} sheetTitle={assisted ? t('Reduce assistance by') : t('Increase load by')} value={p.step.type}
+    {loaded && <div className="row cfgrow rule-step" style={{ marginTop: 22, marginBottom: 14 }}>
+      <div className="stp-w">
+        <span className="stp-l">{assisted ? t('Reduce assistance by') : t('Increase load by')}</span>
+        <SelectButton className="unit-btn" title={assisted ? t('Reduce assistance by') : t('Increase load by')} value={p.step.type}
           onChange={type => set({ step: type === 'absolute' ? { type, value: step, unit } : { type, value: 2.5 } })}
           options={incrementTypes.map(type => ({ value: type, label: t(INCREMENT_LABEL[type]) }))} />
       </div>
-      <div className="row cfgrow">
-        <Stepper value={p.step.value} step={p.step.type === 'absolute' ? step : 0.5} unit={p.step.type === 'absolute' ? unit : '%'}
-          onChange={value => set({ step: { ...p.step, value } })} />
-      </div>
+      <Stepper label={p.step.type === 'absolute' ? unit : t(INCREMENT_LABEL[p.step.type])} value={p.step.value} step={p.step.type === 'absolute' ? step : 0.5}
+        onChange={value => set({ step: { ...p.step, value } })} />
     </div>}
 
     {def.steps === 'seconds' && <div className="row cfgrow" style={{ marginTop: 22, marginBottom: 14 }}>
@@ -207,14 +289,20 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
     </div>}
 
     {def.metrics.length > 0 && <Disclosure title={t('Stop progressing when all of these are met')} value={stopSummary}>
-      {def.metrics.map(metric => <div key={metric}>
-        <Row title={t(timed && metric === 'max_reps' ? METRIC_LABEL.max_duration : METRIC_LABEL[metric])}><Switch checked={has(metric)} onChange={on => toggleMetric(metric, on)} /></Row>
+      <div className="small dim" style={{ marginBottom: 10 }}>{t('progression.completion.help')}</div>
+      {def.metrics.filter(metric => rule.preset !== 'bodyweight_ladder' || (namedLadder ? metric === 'difficulty_rung' : metric !== 'difficulty_rung')).map(metric => <div key={metric}>
+        <Row title={t(timed && metric === 'max_reps' ? METRIC_LABEL.max_duration : METRIC_LABEL[metric])}><Switch checked={has(metric)} onChange={on => namedLadder ? set({ completion: on ? ['max_sets', 'max_reps', 'difficulty_rung'].map(metric => ({ metric, target: null })) : [] }) : toggleMetric(metric, on)} /></Row>
         {has(metric) && (metric === 'cycle_count' || metric === 'training_max' || metric === 'rest_floor' || (metric === 'max_duration' && rule.preset === 'hold_seconds')) && <div className="row cfgrow">
           <Stepper value={p.completion.find(c => c.metric === metric).target} step={metric === 'cycle_count' ? 1 : metric === 'max_duration' || metric === 'rest_floor' ? 5 : step}
             unit={metric === 'max_duration' || metric === 'rest_floor' ? 's' : undefined} decimal={metric === 'training_max'} onChange={v => setMetricTarget(metric, v)} />
         </div>}
       </div>)}
     </Disclosure>}
+
+    {cyclic && <div className="sect-b" style={{ marginBottom: 14 }}>
+      <Row title={t('progression.cycle.repeat')}><Switch checked={p.end === 'repeat'} onChange={on => set({ end: on ? 'repeat' : 'complete', ...(!on ? { completion: [] } : {}) })} /></Row>
+      <div className="small dim">{t('progression.cycle.help')}</div>
+    </div>}
 
     {def.stalls && <Disclosure title={t('Back off when stuck')}
       value={p.deload ? t('after {0} · to {1}%', p.deload.after, Math.round(p.deload.factor * 100)) : t('None')}>
@@ -234,17 +322,18 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </>}
     </Disclosure>}
 
-    <h4 className="sec">{t('Target')}</h4>
-    {!['five_three_one', 'pyramid_reps', 'top_set_backoff'].includes(rule.preset) && <RangeField key={'sets' + rule.preset} label={t('Sets')} value={p.sets} min={1} max={50} policy={def.ranges.sets} onChange={sets => set({ sets })} />}
+  </>
+  const targetBody = <>
     {supportsTime && <div className="sect-b" style={{ marginBottom: 14 }}>
       <Segmented value={timed ? 'time' : 'reps'} onChange={setTargetMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>}
-    {!['five_three_one', 'pyramid_reps'].includes(rule.preset) && (timed
+    {!['five_three_one', 'pyramid_reps', 'top_set_backoff', 'wave'].includes(rule.preset) && <RangeField key={'sets' + rule.preset} label={t('Sets')} value={p.sets} min={1} max={50} policy={def.ranges.sets} onChange={sets => set({ sets })} />}
+    {!['five_three_one', 'pyramid_reps', 'wave'].includes(rule.preset) && (timed
       ? <RangeField key={'sec' + rule.preset} label={t('Seconds')} value={p.durationSeconds} step={5} policy={def.ranges.durationSeconds} onChange={durationSeconds => set({ durationSeconds })} />
       : <RangeField key={'reps' + rule.preset} label={rule.preset === 'top_set_backoff' ? t('Top set reps') : t('Reps')} value={p.reps} min={1} max={1000} policy={def.ranges.reps} onChange={reps => set({ reps })} />)}
-    {!['five_three_one', 'accumulation_intensification'].includes(rule.preset) && <LoadField key={rule.preset} label={p.offsets || rule.preset === 'top_set_backoff' ? t('Anchor load') : t('Starting load')} value={p.load} upTo={p.loadTo ?? undefined} rangeable={def.ranges.load === 'range'}
-      unit={unit} step={step} noneMode={loaded || rule.preset === 'density' ? null : 'empty'} onChange={setLoad} />}
+    {!cyclic && <LoadField key={rule.preset} label={p.offsets || rule.preset === 'top_set_backoff' ? t('Anchor load') : t('Starting load')} value={p.load} upTo={p.loadTo ?? undefined} rangeable={def.ranges.load === 'range'}
+      unit={unit} step={step} noneMode={loaded || rule.preset === 'density' ? null : 'empty'} oneRm={oneRm} onChange={setLoad} />}
     {rule.preset === 'top_set_backoff' && <div style={{ marginBottom: 14 }}>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Decides the next load')} sheetTitle={t('Decides the next load')} value={p.scope} onChange={scope => set({ scope })}
@@ -269,9 +358,24 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
       <div className="row cfgrow">
         <Stepper label={t('Intensification: % of training max')} value={p.intensification.percent} step={2.5} unit="%" onChange={percent => intensification({ percent })} />
-        <Stepper label={t('Clean sessions to finish')} value={p.intensification.successes} step={1} decimal={false} onChange={successes => intensification({ successes: Math.max(1, successes) })} />
+        <Stepper label={t('progression.successes.label')} value={p.intensification.successes} step={1} decimal={false} onChange={successes => intensification({ successes: Math.max(1, successes) })} />
       </div>
-      <Row title={t('Start over when done')}><Switch checked={p.end === 'repeat'} onChange={on => set({ end: on ? 'repeat' : 'complete' })} /></Row>
+      <div className="row cfgrow">
+        <Stepper label={t('progression.reviewAfter.label')} value={p.reviewAfter} step={1} decimal={false} onChange={reviewAfter => set({ reviewAfter: Math.min(10, Math.max(1, reviewAfter)) })} />
+      </div>
+      <div className="small dim">{t('progression.reviewAfter.help')}</div>
+    </div>}
+    {p.wave && <div style={{ marginBottom: 14 }}>
+      {p.wave.map((w, i) => <div key={i} data-wave={i} className="sect-b" style={{ marginBottom: 10 }}>
+        <div className="small dim">{i < 3 ? t(['progression.wave.volume', 'progression.wave.intermediate', 'progression.wave.strength'][i]) : t('Phase {0} of {1}', i + 1, p.wave.length)}</div>
+        <div className="row cfgrow">
+          <Stepper label={t('Sets')} value={w.sets} step={1} decimal={false} onChange={sets => set({ wave: p.wave.map((x, j) => j === i ? { ...x, sets: Math.max(1, sets) } : x) })} />
+          <Stepper label={t('Reps')} value={w.reps} step={1} decimal={false} onChange={reps => set({ wave: p.wave.map((x, j) => j === i ? { ...x, reps: Math.max(1, reps) } : x) })} />
+        </div>
+        <div className="row cfgrow">
+          <Stepper label={t('progression.wave.percent')} value={w.percent} step={2.5} unit="%" onChange={percent => set({ wave: p.wave.map((x, j) => j === i ? { ...x, percent: Math.max(2.5, percent) } : x) })} />
+        </div>
+      </div>)}
     </div>}
     {targets && <div style={{ marginBottom: 14 }}>
       {/* Presets replace the list (and its rests) in one tap; nothing is saved until Save. */}
@@ -332,13 +436,10 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
     </div>}
 
-    {rule.preset === 'bodyweight_ladder' && <textarea className="input" rows={3} style={{ marginBottom: 14 }}
-      placeholder={t('Harder variations, one per line (optional)')}
-      value={(p.rungs || []).join('\n')}
-      onChange={e => set({ rungs: e.target.value.split('\n') })}
-      onBlur={e => set({ rungs: e.target.value.split('\n').map(x => x.trim()).filter(Boolean) })} />}
+    {/* A ladder that adds weight has no steps: the template drops them on a loaded phase. */}
+    {rule.preset === 'bodyweight_ladder' && !p.loadedPreset && <RungList rungs={p.rungs} regress={p.regress} pickExercise={pickExercise} onChange={set} />}
 
-    {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" onChange={target => set({ target })} />}
+    {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" oneRm={oneRm} onChange={target => set({ target })} />}
     <div className="sect-b" style={{ marginBottom: 14 }}>
       <Row icon="timer" iconTint="var(--orange)" title={rule.preset === 'density' ? t('Starting rest') : t('Rest for this exercise')} accessory="chevron"
         value={restLabel ?? (restDefault ? t('Default ({0})', fmtRest(defaultRest)) : fmtRest(p.restSeconds))}
@@ -363,9 +464,17 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
           onChange={v => set({ rir: v ? { min: 1, max: 3 } : null })}
           options={[{ value: '', label: t('None') }, { value: 'rir', label: 'RIR' }]} />
       </div>
-      {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t('Load only goes up if your hardest set left at least this many reps in reserve.')}</div>}
+      {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t(phase.success.effort === 'ignore' ? 'progression.rir.ignoredHelp' : phase.exit?.type === 'exposures' ? 'progression.rir.scheduleHelp' : phase.progression.some(op => op.when === 'worked') ? 'progression.rir.doubleHelp' : !phase.progression.length && !phase.exit ? 'progression.rir.manualHelp' : 'progression.rir.floorHelp')}</div>}
     </div>}
-
+    {refRow}
+    {extra}
+  </>
+  if (tab) return <>{panel('progression', progressionBody)}{panel('target', <>{presetBlock}{targetBody}</>)}{errorLine}</>
+  return <>
+    <h4 className="sec">{t('Progression')}</h4>
+    {progressionBody}
+    <h4 className="sec">{t('Target')}</h4>
+    {targetBody}
     {errorLine}
   </>
 }

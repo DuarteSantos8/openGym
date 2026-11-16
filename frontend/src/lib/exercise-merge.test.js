@@ -1,11 +1,11 @@
-import { migratedFixture } from './test-fixtures.js'
+import { legacyProgramme, migratedFixture } from './test-fixtures.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 import { contentHash } from './prescription/index.js'
 import { describe, expect, test } from 'vitest'
 import { mergeExercise, undoMerge, mergePreview, mergeBlocked, mergedInto, mergedAway, applyExerciseMerges } from './exercise-merge.js'
 import { mergeStates, stampChange } from './sync-merge.js'
 import { allExercises, EXIDX, registerCustom } from './exercises.js'
-import { programmeView, setLegacyWeeks, startProgramme } from './programmes.js'
+import { programmeView, startProgramme } from './programmes.js'
 
 const BENCH = '0025'   // barbell bench press (catalogue)
 const SQUAT = '0043'   // barbell squat (catalogue)
@@ -172,7 +172,7 @@ test('merging an exercise remaps programme tracks', () => {
   const S = migratedFixture({ unit: 'kg', weekStart: 1, customEx: [clone(custom)], routines: [{ id: 'r1', name: 'Push', ex: [{ id: CUSTOM, sets: 3, reps: 8, weight: 60 }, { id: SQUAT, sets: 3, reps: 5, weight: 80 }] }], workouts: [] })
   registerCustom(S.customEx)
   S.week = { 1: ['r1'] }
-  S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7, t: { [CUSTOM]: { pct: 75 } } }, {}], S, { days: { 1: ['r1'] } }) }
+  S.programmes = { P: legacyProgramme(S, { id: 'P', name: 'Block', at: 1, weeks: [{ rpe: 7, t: { [CUSTOM]: { pct: 75 } } }, {}], days: { 1: ['r1'] } }) }
   startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(t => [t.id, { onFailure: 'advance', onSkipped: 'advance' }])), end: 'stop', today: '2026-10-19' })
   expect(mergePreview(S, CUSTOM, BENCH).programmes).toBe(1)
   const before = clone(S)

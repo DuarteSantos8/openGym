@@ -29,7 +29,7 @@ describe('createRoutine', () => {
     expect({ ...r.routine, ex: undefined }).toEqual({ id: 'n1', name: 'Legs', emoji: 'figureStrength', ex: undefined })
     expect(r.routine.ex.map(view)).toEqual([
       { id: '0043', sets: 5, reps: 5, weight: 100, restSec: 150, preset: 'linear' },
-      { id: '0463', sets: 3, sec: 60, weight: 0, preset: 'autoregulated' },
+      { id: '0463', sets: 3, sec: 60, weight: 0, preset: 'manual' },
     ])
     expect(r.routine.ex.every(o => o.rule.routineId === 'n1')).toBe(true)
     expect(S.routines).toHaveLength(2)

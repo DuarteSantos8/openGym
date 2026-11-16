@@ -31,7 +31,7 @@ function rng(seed) {
 const BY_EQ = {};
 for (const e of LIB_BY_ID.values()) (BY_EQ[e.eq] ??= []).push(e.id);
 const EXERCISES = [
-  '0025', '0026', '0009', '3220', '0001', '3293', '0011', ...BY_EQ['dumbbell'].slice(0, 3), ...BY_EQ['cable'].slice(0, 2),
+  '0025', '0026', '0009', '2331', '0001', '3293', '0011', ...BY_EQ['dumbbell'].slice(0, 3), ...BY_EQ['cable'].slice(0, 2),
   ...BY_EQ['kettlebell'].slice(0, 2), ...BY_EQ['band'].slice(0, 2), ...BY_EQ['stability ball'].slice(0, 2), ...BY_EQ['sled machine'].slice(0, 1),
   ...BY_EQ['smith machine'].slice(0, 1), ...BY_EQ['trap bar'], ...BY_EQ['weighted'].slice(0, 2), ...BY_EQ['stationary bike'], 'custom-1', 'custom-2'
 ];
@@ -205,7 +205,7 @@ test('fuzz: corrupted v1 profiles never throw and never produce an invalid docum
 });
 
 /* ======================= named edge cases ======================= */
-const BENCH = '0025', SQUAT = '0026', DIP = '0009', CARDIO = '3220', SITUP = '0001';
+const BENCH = '0025', SQUAT = '0026', DIP = '0009', CARDIO = '2331', SITUP = '0001';
 const row = (r, w, extra = {}) => ({ r, w, done: true, ...extra });
 const v1 = (over = {}) => ({ unit: 'kg', restSec: 90, routines: [], workouts: [], ...over });
 const plan = (ex, over = {}) => ({ id: 'r1', name: 'R', ex: [ex], ...over });
@@ -330,7 +330,7 @@ test('v1.3.10 pyramid sets migrate as the pyramid_reps preset, Max sets and per-
   const short = run(v1({ routines: [plan({ id: BENCH, sets: 4, reps: 8, pyramid: [10, 8] })] }), 'pyramid short').profile.routines[0].ex[0].rule;
   assert.deepEqual(planOptions(short).setReps, [10, 8, 8, 8]);
   // Timed work has no rep targets to keep.
-  assert.equal(run(v1({ routines: [plan({ id: SITUP, mode: 'time', sec: 30, sets: 2, pyramid: [10, 8] })] }), 'pyramid timed').profile.routines[0].ex[0].rule.preset, 'autoregulated');
+  assert.equal(run(v1({ routines: [plan({ id: SITUP, mode: 'time', sec: 30, sets: 2, pyramid: [10, 8] })] }), 'pyramid timed').profile.routines[0].ex[0].rule.preset, 'manual');
 });
 
 test('numbers: sets are capped at the engine maximum and the clamp is not silent (M8)', () => {

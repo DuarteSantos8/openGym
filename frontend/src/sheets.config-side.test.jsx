@@ -22,7 +22,7 @@ function render(sheet) {
   return host
 }
 const holdOccurrence = extra => {
-  const occ = ruleOccurrence(PLANK, { preset: 'autoregulated', occurrenceId: 'o1', routineId: 'r1' })
+  const occ = ruleOccurrence(PLANK, { preset: 'manual', occurrenceId: 'o1', routineId: 'r1' })
   occ.rule = editPlan(occ.rule, { sets: { min: 3, max: 3 }, durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 } })
   return { ...occ, ...extra }
 }

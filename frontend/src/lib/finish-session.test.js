@@ -5,7 +5,7 @@ import { buildCompletedSession, recordsOf, workLoadOf } from './finish-session.j
 import { replayProgression } from './prescription/index.js'
 import { ruleOccurrence, loggedExposure } from './test-fixtures.js'
 
-const profile = () => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
+const profile = () => ({ unit: 'kg', oneRmFormula: 'epley', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
 const start = (S, occ, extra = {}) => {
   const exposures = buildSessionExposures(S, { id: 'r1', ex: [occ], ...extra }, { now: Date.UTC(2026, 8, 24), newId: s => s, unit: 'kg' })
   return { id: 'w1', d: '2026-09-24', start: 1, routineIds: ['r1'], name: 'Push', exposures, entries: entriesForExposures(exposures, S.prescriptions) }
@@ -27,7 +27,22 @@ describe('buildCompletedSession', () => {
     expect(log.sourceAudit).toEqual({ derivedFromOutOfPlan: false, sourceLogId: null })
     // v1 readSession.weight: the next load steps from the heaviest set lifted (250, out of plan); the cap holds the rows at the target.
     expect(progression['occ-0025']).toMatchObject({ status: 'active', values: { load: { value: 252.5 } }, lastCompletedLogId: log.exposureId })
-    expect(oneRepMaxes).toEqual([expect.objectContaining({ exerciseId: '0025', source: 'estimated', value: 291.7, capturedAt: '2026-09-24T01:00:00.000Z', sourceRecordId: log.exposureId })])
+    expect(oneRepMaxes).toEqual([expect.objectContaining({ exerciseId: '0025', source: 'estimated', value: 291.7, low: expect.any(Number), high: expect.any(Number), capturedAt: '2026-09-24T01:00:00.000Z', sourceRecordId: log.exposureId })])
+  })
+
+  it('records the estimate with the profile\'s formula and the range of the models behind it; the blend when none is picked', () => {
+    const run = over => {
+      const S = { ...profile(), ...over }
+      const active = start(S, ruleOccurrence('0025'))
+      active.entries[0].sets.forEach(s => { s.done = true })
+      active.entries[0].sets[2].w = 250
+      return finish(S, active).oneRepMaxes[0]
+    }
+    const epley = run({}), blend = run({ oneRmFormula: undefined })
+    expect(epley.value).toBe(291.7)
+    expect(blend.value).toBeLessThan(epley.value)
+    expect(blend.low).toBeLessThan(blend.value)
+    expect(blend.high).toBeGreaterThan(blend.value)
   })
 
   it('never advances an excluded exposure', () => {

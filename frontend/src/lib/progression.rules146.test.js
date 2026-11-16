@@ -73,8 +73,8 @@ describe('the new rules are policies like the others', () => {
   it('leaves every old rule and an unknown one exactly where they were', () => {
     expect(presetForPolicy('double', 'reps', false)).toBe('double')
     expect(presetForPolicy('triple', 'reps', false)).toBe('triple')
-    expect(presetForPolicy('undulating', 'time', false)).toBe('autoregulated')
-    expect(presetForPolicy('something-newer', 'reps', false)).toBe('autoregulated')
+    expect(presetForPolicy('undulating', 'time', false)).toBe('manual')
+    expect(presetForPolicy('something-newer', 'reps', false)).toBe('manual')
   })
 })
 

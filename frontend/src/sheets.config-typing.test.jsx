@@ -111,7 +111,7 @@ describe('exercise settings: bodyweight and plate loading', () => {
   const bwSwitch = host => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Bodyweight')).querySelector('[role=switch]')
 
   it('saves the override, drops the load where the preset runs without one, and keeps it where it steps it', () => {
-    const manual = ruleOccurrence(ex.id, { preset: 'autoregulated', options: { load: { mode: 'absolute', value: 40, unit: 'kg' } } })
+    const manual = ruleOccurrence(ex.id, { preset: 'manual', options: { load: { mode: 'absolute', value: 40, unit: 'kg' } } })
     const one = renderConfig(manual)
     expect(bwSwitch(one.host).getAttribute('aria-checked')).toBe('false')
     act(() => bwSwitch(one.host).click())
@@ -131,8 +131,10 @@ describe('exercise settings: bodyweight and plate loading', () => {
 
   it('sets how the exercise is loaded, for every plan it is in', () => {
     const { host } = renderConfig({})
-    const plates = [...host.querySelectorAll('h4')].find(e => e.textContent === 'Plate loading').nextElementSibling
+    act(() => host.querySelector('#xc-tab-options').click())
+    const plates = [...host.querySelectorAll('.disc')].find(e => e.textContent.startsWith('Plate loading'))
     expect(plates.textContent).toContain('Off')   // a leverage machine has no plate math by default
+    act(() => plates.querySelector('.lrow, button, [role=button]').click())
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Per side').click())
     expect(useStore.getState().S.loadKind[ex.id]).toMatchObject({ kind: 'pairs' })
   })

@@ -53,7 +53,7 @@ describe('earning a load step', () => {
   })
 
   it('manual never steps anything', () => {
-    expect(finish(prescribe(rule('autoregulated')), { sets: 3, reps: 8, load: null }).values).toMatchObject({ load: { mode: 'empty' }, sets: 3, reps: 8 })
+    expect(finish(prescribe(rule('manual')), { sets: 3, reps: 8, load: null }).values).toMatchObject({ load: { mode: 'empty' }, sets: 3, reps: 8 })
   })
 
   it('the same finish twice earns nothing twice', () => {
@@ -92,7 +92,7 @@ describe('completion', () => {
     expect(finish(p, { sets: 3, reps: 5, load: kg(120) }).status).toBe('completed')
   })
 
-  it('5/3/1 walks the weeks, adds the TM increment at cycle end, and completes on cycle count', () => {
+  it('5/3/1 walks the exposure phases and freezes the final phase on cycle-count completion', () => {
     const r = rule('five_three_one', { trainingMax: { mode: 'direct', value: 100, unit: 'kg' }, completion: [{ metric: 'cycle_count', target: 1 }] })
     let state = null
     let last = null
@@ -102,7 +102,7 @@ describe('completion', () => {
       state = finish(p, { sets: 3, reps: 5, load: p.rows[2].load }, state)
       last = p
     }
-    expect(state).toMatchObject({ cyclesCompleted: 1, phaseId: 'w1', values: { trainingMax: kg(102.5) }, status: 'completed' })
+    expect(state).toMatchObject({ cyclesCompleted: 1, phaseId: 'w4', values: { trainingMax: kg(100) }, status: 'completed' })
   })
 
   it('5/3/1 completes on a training-max target', () => {
@@ -124,7 +124,9 @@ describe('completion', () => {
     expect(s1).toMatchObject({ status: 'active', values: { difficulty: 1, sets: null, reps: null } })
     const p1 = prescribe(r, { id: 'p2', state: s1, lastPrescription: p0, lastLog: { id: 'l1', actual: { sets: 5, reps: 10, load: null }, audit: [] } })
     expect(p1.prefill).toMatchObject({ sets: 3, reps: 5 })
-    expect(finish(p1, { sets: 3, reps: 5, load: null }, s1).status).toBe('completed')
+    expect(finish(p1, { sets: 3, reps: 5, load: null }, s1).status).toBe('active')
+    const final = prescribe(r, { id: 'p3', state: { ...s1, values: { ...s1.values, sets: 5, reps: 10 } }, lastPrescription: p1 })
+    expect(finish(final, { sets: 5, reps: 10, load: null }, s1).status).toBe('completed')
   })
 })
 
@@ -224,7 +226,7 @@ describe('timed holds that climb in seconds', () => {
   })
 
   it('leaves the other timed presets on their old completion rule', () => {
-    expect(finish(prescribe(rule('autoregulated', { durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 }, completion: metrics('max_duration') })), held(60)).status).toBe('completed')
+    expect(finish(prescribe(rule('manual', { durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 }, completion: metrics('max_duration') })), held(60)).status).toBe('completed')
   })
 })
 

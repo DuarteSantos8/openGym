@@ -42,7 +42,7 @@ describe('replaceSlotExercise', () => {
   it('between kinds (lifting ↔ cardio) only the note and superset survive; the rule is the new exercise\'s default', () => {
     const out = replaceSlotExercise(slot(BENCH, { note: 'x', sg: 'g' }), TREADMILL, { unit: 'kg' }, 'r')
     expect(out).toMatchObject({ exerciseId: TREADMILL, note: 'x', sg: 'g' })
-    expect(out.rule.preset).toBe('autoregulated')
+    expect(out.rule.preset).toBe('manual')
   })
   // v1's rules (#110), which the first v2 cut had narrowed to "same kind or start over".
   it('drops the flags that describe the old movement, so the new exercise follows its own', () => {

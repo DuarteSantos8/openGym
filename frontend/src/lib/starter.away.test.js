@@ -25,7 +25,7 @@ describe('away-from-the-gym starter plans', () => {
   it('plans holds as timed sets', () => {
     // v2: a hold's seconds are its rule's; v1 never progressed a timed starter hold ('off').
     const plank = buildStarterPlan('hotel').routines[0].ex.find(e => e.exerciseId === '0463')
-    expect(plank.rule.preset).toBe('autoregulated')
+    expect(plank.rule.preset).toBe('manual')
     expect(planPhase(plank.rule).parameters.durationSeconds).toEqual({ min: 45, max: 45 })
   })
 })

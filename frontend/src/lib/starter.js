@@ -31,7 +31,7 @@ export function starterEntry([id, sets, amount, mode]) {
 const build = (routines, unit) =>
   routines.map(([, name, emoji, list]) => {
     const routineId = uid()
-    return { id: routineId, name, emoji, ex: list.map(line => { const e = starterEntry(line); return { ...occurrenceFor(e.id, e, { id: uid(), unit, routineId, preset: e.sec ? 'autoregulated' : 'linear' }), restFromProfile: true } }) }
+    return { id: routineId, name, emoji, ex: list.map(line => { const e = starterEntry(line); return { ...occurrenceFor(e.id, e, { id: uid(), unit, routineId, preset: e.sec ? 'manual' : 'linear' }), restFromProfile: true } }) }
   })
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on

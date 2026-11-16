@@ -59,10 +59,9 @@ describe('saving an exercise config', () => {
 it('edits failure and back-off flags without dropping the dumbbell load meaning', () => {
   const existing = { ...ruleOccurrence('0289'), dbLoad: 'each' }
   const { host, save, onSave } = open('0289', existing)
-  for (const title of ['Last set to failure', 'Back-off sets']) {
-    const row = [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes(title))
-    act(() => row.querySelector('[role=switch]').click())
-  }
+  act(() => [...host.querySelectorAll('[data-section="failure"] .seg button')].find(b => b.textContent.trim() === 'Last').click())
+  const row = [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Back-off sets'))
+  act(() => row.querySelector('[role=switch]').click())
   act(() => save.click())
   expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ dbLoad: 'each', lastToFailure: true, backoff: true }))
 })

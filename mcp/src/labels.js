@@ -37,14 +37,14 @@ export function muscleOrder() { return MUSCLES.slice() }
 // Human label per PlanRule preset id (api/engine/rules.js PRESETS). Add a new
 // preset's id here rather than inlining a name at a call site.
 export const PRESET_LABEL = {
-  autoregulated: 'Autoregulated (no automatic progression)',
+  manual: 'Manual (no automatic progression)',
   linear: 'Linear progression',
   greyskull: 'Greyskull LP',
   double: 'Double progression',
   triple: 'Triple progression',
   hold_seconds: 'Timed hold progression',
   bodyweight_ladder: 'Bodyweight ladder',
-  pyramid_reps: 'Pyramid sets (a rep target per set)',
+  pyramid_reps: 'Custom sets (a target per set)',
   pyramid: 'Pyramid',
   five_three_one: '5/3/1',
   top_set_backoff: 'Top set and back-off',
@@ -52,7 +52,9 @@ export const PRESET_LABEL = {
   density: 'Shorter rests (less rest each clean session)',
   steady: 'Steady double progression',
   undulating: 'Undulating days (medium, heavy, light)',
-  skill_ladder: 'Skill ladder'
+  skill_ladder: 'Skill ladder',
+  double_controlled: 'Controlled double progression',
+  wave: 'Training-max wave'
 }
 export const presetLabel = id => PRESET_LABEL[id] || id || null
 

@@ -7,11 +7,11 @@ import { buildCombinedExposures } from './session-merge.js'
 import { historyAsOf } from './backfill.js'
 import { buildCompletedSession } from './finish-session.js'
 import { entriesForExposures } from './session-ui-adapter.js'
-import { migratedFixture } from './test-fixtures.js'
+import { migratedFixture, weekPcts } from './test-fixtures.js'
 import { isWarmupRow } from './workout-model.js'
 import { mergeStates } from './sync-merge.js'
 import { contentHash, defaultPlanRule, generatePrescription, slotFor, slotInputs } from './prescription/index.js'
-import { programmeView, startProgramme, saveProgramme, setLegacyWeek, legacyWeeksOf, discardEvents, bypassOf } from './programmes.js'
+import { programmeView, startProgramme, saveProgramme, setTarget, discardEvents, bypassOf } from './programmes.js'
 import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
@@ -106,7 +106,7 @@ describe('a session of a running programme', () => {
     // (backfill.js historyAsOf), as beginBackfill does.
     const start = Date.parse('2026-10-19T17:00:00Z')
     const backfill = S => buildCombinedExposures(S, ['A', 'R'], { now: start, newId: s => 'bf:' + s, history: historyAsOf(S, { d: '2026-10-19', start }) })
-    const pct = { occurrenceId: 'r-bench', exerciseId: BENCH, rule: defaultPlanRule('autoregulated', { id: 'r-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
+    const pct = { occurrenceId: 'r-bench', exerciseId: BENCH, rule: defaultPlanRule('manual', { id: 'r-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
     const withR = S => ({ ...S, routines: [...S.routines, { id: 'R', name: 'Standalone', ex: [pct, occ(SQUAT, 'r-squat', 'R', 3, 5, 80)] }] })
     // Tuesday's A already holds this week's Monday appointment: the late Monday is extra, never a second credit.
     const S = running(withR(profile()))
@@ -170,11 +170,16 @@ describe('a session of a running programme', () => {
     const S = running(profile(), { ...BLOCK, days: { 1: ['A'], 4: ['A'] } })
     finish(S, session(S, 'A', '2026-10-19T10:00:00Z'))
     const def = S.programmes.P
-    saveProgramme(S, setLegacyWeek(setLegacyWeek(def, 0, { rpe: 7, t: { [BENCH]: { pct: 85 } } }, S), 1, { rpe: 8, t: { [BENCH]: { pct: 90 } } }, S), Date.parse('2026-10-20T09:00:00Z'))
+    // Weeks 1 and 2 of the bench raised to 85 and 90 %, as the editor does it (setTarget, the rest of the week kept).
+    const pct = (d, i, percent) => {
+      const tr = d.tracks.find(t => t.exerciseId === BENCH), st = tr.stages[i], x = st.targets[tr.slots[0].oid]
+      return setTarget(d, tr.id, st.id, tr.slots[0].oid, { ...x, phase: { ...x.phase, parameters: { ...x.phase.parameters, load: { mode: 'percent_1rm', percent } } } })
+    }
+    saveProgramme(S, pct(pct(def, 0, 85), 1, 90), Date.parse('2026-10-20T09:00:00Z'))
     const amends = Object.values(S.programmeEvents).filter(e => e.type === 'amend')
     expect(amends).toHaveLength(1)
     expect(amends[0].def.rev).toBe(def.rev + 1)
-    expect(legacyWeeksOf(amends[0].def)[0].t[BENCH].pct).toBe(85)
+    expect(weekPcts(amends[0].def, BENCH)[0]).toBe(85)
     // Thursday of the started week keeps its 75 %; next week takes the edit.
     const thu = session(S, 'A', '2026-10-22T10:00:00Z')
     expect(work(S, benchOf(thu))).toEqual([75, 75, 75])
@@ -185,7 +190,7 @@ describe('a session of a running programme', () => {
   })
 
   it('first use of a percent rule captures its reference into the occurrence', () => {
-    const pct = { occurrenceId: 'p-bench', exerciseId: BENCH, rule: defaultPlanRule('autoregulated', { id: 'p-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
+    const pct = { occurrenceId: 'p-bench', exerciseId: BENCH, rule: defaultPlanRule('manual', { id: 'p-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
     const S = profile({ routines: [{ id: 'R', name: 'Bench', ex: [pct] }] })
     const [x] = buildSessionExposures(S, S.routines[0], { now: Date.parse('2026-10-21T10:00:00Z'), newId: s => s })
     expect(S.routines[0].ex[0].ref).toMatchObject({ id: 'b100', value: 100 })

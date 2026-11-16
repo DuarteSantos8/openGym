@@ -19,7 +19,8 @@ afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root
 
 function mount(patch = {}) {
   const S = clone(DEF)
-  Object.assign(S, { unit: 'kg', sex: 'male' }, patch)
+  // Epley, the formula these numbers are worked out with (the app's default is the 1RM blend).
+  Object.assign(S, { unit: 'kg', sex: 'male', oneRmFormula: 'epley' }, patch)
   const wo = (d, id, w, r) => ({ id: d + id, d, start: new Date(d + 'T17:00:00').getTime(), entries: [{ id, target: { mode: 'reps', sets: 1, reps: r }, sets: [{ w, r, done: true }] }] })
   S.workouts = [wo('2026-10-01', '0043', 140, 5), wo('2026-10-02', '0025', 100, 5), wo('2026-10-03', '0032', 180, 5), wo('2026-10-04', '0025', 100, 3)]
   S.bodyweight = [{ d: '2026-10-04', w: 90 }]
@@ -37,9 +38,9 @@ describe('Tools page', () => {
     expect(pct.querySelector('.chip.on').textContent.toLowerCase()).toContain('bench')
     const first = pct.querySelector('tbody tr')
     // 100 × 5 Epley is 116.7, which a 2.5 kg grid loads as 115.
-    expect(estimate1RM(100, 5)).toBe(116.7)
+    expect(estimate1RM(100, 5, 'epley')).toBe(116.7)
     expect(first.textContent).toContain('115')
-    const total = Math.round((estimate1RM(140, 5) + estimate1RM(100, 5) + estimate1RM(180, 5)) * 2) / 2
+    const total = Math.round((estimate1RM(140, 5, 'epley') + estimate1RM(100, 5, 'epley') + estimate1RM(180, 5, 'epley')) * 2) / 2
     const tiles = [...container.querySelectorAll('[aria-labelledby="tools-scores"] .tile')]
     expect(tiles[0].textContent).toContain(String(Math.round(dots(total, 90) * 10) / 10))
   })
