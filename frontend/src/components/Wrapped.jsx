@@ -120,6 +120,9 @@ export default function Wrapped() {
   const [i, setI] = useState(0)
   const [dir, setDir] = useState(1)
   const still = useMemo(() => reducedMotion(), [])
+  // A sheet on top (Share) pauses the drifting glow: on phones it kept the GPU busy and the
+  // picture took seconds to draw (#1103).
+  const covered = useUI(s => s.sheets.length > 0)
   const rtl = isRtl()
   const root = useRef(null)
   const stage = useRef(null)
@@ -190,7 +193,7 @@ export default function Wrapped() {
   }
   const hideBody = () => update(s => { s.wrappedBody = false })
   const last = idx === cards.length - 1
-  return <div className={'wrapped' + (still ? ' still' : '')} ref={root} role="dialog" aria-modal="true" aria-label={t('Your {0} in openGym', label)}>
+  return <div className={'wrapped' + (still ? ' still' : '') + (covered ? ' covered' : '')} ref={root} role="dialog" aria-modal="true" aria-label={t('Your {0} in openGym', label)}>
     <div className="wr-glow" aria-hidden="true"><i /><i /><i /></div>
     <div className="wr-top">
       <div className="wr-progress" aria-hidden="true">

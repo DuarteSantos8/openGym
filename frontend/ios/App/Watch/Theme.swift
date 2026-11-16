@@ -72,6 +72,22 @@ func formatNumber(_ v: Double) -> String {
 
 /* ---------- buttons ---------- */
 
+extension Theme {
+    /// Liquid Glass draws its own edge; outlines that stood in for it go.
+    static var hasGlass: Bool { if #available(watchOS 26, *) { return true } else { return false } }
+}
+
+extension View {
+    /// Liquid Glass behind a control on watchOS 26 (tinted when given), `fill` before 26 and in Always On.
+    @ViewBuilder func glass<S: Shape>(_ shape: S, tint: Color? = nil, fill: Color, dimmed: Bool) -> some View {
+        if #available(watchOS 26, *), !dimmed {
+            glassEffect(tint.map { Glass.regular.tint($0).interactive() } ?? .regular.interactive(), in: shape)
+        } else {
+            background(shape.fill(fill))
+        }
+    }
+}
+
 /// The one thing to press on a screen: full width, a capsule in the accent, the ink on it.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.accent) private var accent
@@ -84,11 +100,11 @@ struct PrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(.body, design: .rounded).weight(.semibold))
             .lineLimit(1)
-            .minimumScaleFactor(0.7)
+            .minimumScaleFactor(0.55) // "Start hold" beside ‹ › on a 40 mm, German longer still
             .foregroundStyle(dimmed ? accent : onAccent)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap)
-            .background(Capsule().fill(dimmed ? Color.clear : accent))
+            .glass(Capsule(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
             .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
             .contentShape(Capsule())
             .opacity(enabled ? 1 : 0.35)
@@ -109,8 +125,8 @@ struct RowButtonStyle: ButtonStyle {
             .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
-                .fill(dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous),
+                   fill: dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
             .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
             .opacity(enabled ? 1 : 0.35)
@@ -154,7 +170,7 @@ struct RoundButton: View {
                     .font(.system(size: size * 0.44, weight: .heavy))
                     .foregroundStyle(dimmed ? accent : onAccent)
                     .frame(width: size, height: size)
-                    .background(Circle().fill(dimmed ? Color.clear : accent))
+                    .glass(Circle(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
                     .overlay(Circle().stroke(accent, lineWidth: dimmed ? 2 : 0))
             }
             .buttonStyle(.plain)
@@ -178,7 +194,7 @@ struct EdgeButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.white.opacity(dimmed ? 0.7 : 1))
                 .frame(width: size, height: size)
-                .background(Circle().fill(dimmed ? Color.clear : Theme.dim))
+                .glass(Circle(), fill: dimmed ? Color.clear : Theme.dim, dimmed: dimmed)
                 .overlay(Circle().stroke(Theme.dim, lineWidth: dimmed ? 1 : 0))
                 .contentShape(Circle())
         }

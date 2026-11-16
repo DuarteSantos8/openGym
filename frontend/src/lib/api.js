@@ -287,6 +287,20 @@ async function healthAnswer(base, ms) {
     return null
   } finally { clearTimeout(timer) }
 }
+/** The Android app's own error for a server it cannot reach, in the system's words; '' elsewhere. */
+async function nativeWhy(base, ms) {
+  if (!(await inAndroidApp())) return ''
+  let timer = null
+  try {
+    await Promise.race([
+      nativeFetch(base + '/api/health', { method: 'GET', headers: { Accept: 'application/json' } }),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), ms) }),
+    ])
+    return ''
+  } catch (e) {
+    return String(e?.message || e || '').replace(/\s+/g, ' ').trim().slice(0, 200)
+  } finally { clearTimeout(timer) }
+}
 async function whyUnreachable(base, ms) {
   let reached = false
   const ctl = typeof AbortController === 'function' ? new AbortController() : null
@@ -314,14 +328,20 @@ async function whyUnreachable(base, ms) {
     const origin = globalThis.location?.origin || 'https://localhost'
     return failure(t('Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.', origin), 'cors')
   }
+  // What the app's own network stack said (#870): "Unable to resolve host", "Trust anchor for
+  // certification path not found", "Failed to connect to /192.168.1.5:443". The WebView only ever
+  // says "Failed to fetch", so without this a phone that cannot reach a server its browser opens
+  // (another DNS, a VPN the app is not in, a certificate store of the browser's own) cannot say why.
+  const detail = await nativeWhy(base, ms)
+  const said = msg => failure(detail ? `${msg} (${detail})` : msg, 'unreachable')
   // An address typed without a scheme is tried as https://. A home server on plain http gives
   // that try nothing to talk to, while the phone's browser, which tries http, opens it (#428).
   let u = null
   try { u = new URL(base) } catch { /* said as it is below */ }
   if (u && u.protocol === 'https:' && looksLocal(u.hostname)) {
-    return failure(t('Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.', hostOfBase(base)), 'unreachable')
+    return said(t('Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.', hostOfBase(base)))
   }
-  return failure(t('Could not reach {0}. Check the address and that this phone can reach it.', hostOfBase(base)), 'unreachable')
+  return said(t('Could not reach {0}. Check the address and that this phone can reach it.', hostOfBase(base)))
 }
 
 // An address that only makes sense on a home network: a private or link-local IP, a name
