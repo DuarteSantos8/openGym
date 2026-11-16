@@ -11,7 +11,7 @@ import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnits, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
@@ -920,7 +920,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
           after them line up (#322). */}
       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span>{sideTagOf(s)}</span></span>}
       {/* Said by the "Last time" line above the card; the column is for the eye. */}
-      {showLast && <span className="last" aria-hidden="true">{lastAt(i)}</span>}
+      {/* Its own left-to-right island, as on the "Last time" line: in Arabic 60×8 must not read 8×60. */}
+      {showLast && <span className="last" aria-hidden="true"><bdi dir="ltr">{lastAt(i)}</bdi></span>}
       {cell(s, i, col1, 'w')}
       {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
@@ -2905,9 +2906,14 @@ function ActiveWorkout() {
 
     <div style={{ height: 12 }} />
     {/* Up next (redesign step 3): what the next page holds, one tap to it. */}
-    {!listMode && unitIdx >= 0 && unitIdx < units.length - 1 && (() => {
-      const nx = units[unitIdx + 1]
-      const n = nx.reduce((a, j) => a + (A.entries[j]?.sets.filter(x => !isWarmupRow(x)).length || 0), 0)
+    {!listMode && unitIdx >= 0 && (() => {
+      // Where Next goes, so the card names what a tap opens: with "Skip completed exercises" on,
+      // a finished exercise next in line is passed over here too (lib/supersetFlow.js).
+      const to = stepUnitIndex(A.entries, units, unitIdx, 1, skipDone)
+      if (to < 0 || to === unitIdx) return null
+      const nx = units[to]
+      // Work sets as the workout counts them: a left/right set is two (lib/history.js setUnits).
+      const n = nx.reduce((a, j) => a + (A.entries[j]?.sets || []).filter(x => !isWarmupRow(x)).reduce((m, x) => m + setUnits(x), 0), 0)
       return <button type="button" className="upnext" onClick={() => navigateUnit(1)}>
         <span className="upnext-m"><span className="upnext-k">{t('Up next')}</span>
           <span className="upnext-t">{nx.map(j => exerciseNameText(exOr(A.entries[j].id))).join(' + ')} · {tn('{0} set', '{0} sets', n)}</span></span>

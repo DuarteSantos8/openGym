@@ -19,14 +19,15 @@ let root, container
 beforeEach(() => { useUI.setState({ sheets: [], toastMsg: '', timer: null, work: null }) })
 afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null })
 
-function mount({ view = 'cards', history = true } = {}) {
+function mount({ view = 'cards', history = true, patch = {}, entries } = {}) {
   const S = clone(DEF)
-  Object.assign(S, { unit: 'kg', workoutView: view })
+  Object.assign(S, { unit: 'kg', workoutView: view }, patch)
   if (history) S.workouts = [{ id: 'w1', d: '2026-10-01', name: 'Push', entries: [{ id: BENCH, sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 7, done: true }] }] }]
   S.active = { id: 'a', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, workoutView: view, entries: [
     { id: BENCH, target: { mode: 'reps', sets: 3, reps: 8 }, sets: [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }] },
     { id: SQUAT, target: { mode: 'reps', sets: 2, reps: 5 }, sets: [{ w: 100, r: 5, done: false }, { w: 100, r: 5, done: false }] },
   ] }
+  if (entries) S.active.entries = entries(S.active.entries)
   useStore.setState({ S, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -74,6 +75,23 @@ describe('workout logging (redesign step 3)', () => {
     act(() => up.click())
     expect(useStore.getState().S.active.cur).toBe(1)
     expect(container.querySelector('.upnext')).toBeNull()   // the last page has nothing up next
+  })
+  it('with Skip completed on, Up next names the exercise Next actually opens', () => {
+    const DIPS = '0251'
+    mount({ patch: { skipCompleted: true }, entries: es => [es[0], { ...es[1], sets: es[1].sets.map(x => ({ ...x, done: true })) },
+      { id: DIPS, target: { mode: 'reps', sets: 1, reps: 10 }, sets: [{ w: 0, r: 10, done: false }] }] })
+    const up = container.querySelector('.upnext')
+    expect(up.textContent).toMatch(/1 set\b/)
+    act(() => up.click())
+    expect(useStore.getState().S.active.cur).toBe(2)
+  })
+  it('Up next counts a left/right set as two, as the workout does', () => {
+    mount({ entries: es => [es[0], { ...es[1], sets: [{ w: 20, r: 20, done: false, sides: { L: { w: 20, r: 10, done: false }, R: { w: 20, r: 10, done: false } } }] }] })
+    expect(container.querySelector('.upnext').textContent).toMatch(/2 sets/)
+  })
+  it('keeps last time’s numbers left to right inside the Last column', () => {
+    mount()
+    expect(container.querySelector('.setrow .last bdi')?.getAttribute('dir')).toBe('ltr')
   })
   it('the list view keeps its rows as they were', () => {
     mount({ view: 'list' })
