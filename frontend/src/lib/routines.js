@@ -153,7 +153,8 @@ export function replaceSlotExercise(slot, id, S, rid) {
   if (old.id === id) return { ...old }
   if ((modeOf(old) === 'cardio') !== isCardio(id)) {
     const kept = ['sg', 'note', 'restSec', 'restOff', 'subs', 'subCfg'].filter(key => old[key] != null)
-    return dropSelfBackup({ id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
+    // With the profile: a walk swapped in opens at a round 3 mph where speeds read in mph (lib/cardio-kind.js).
+    return dropSelfBackup({ id, ...defaultConfig(id, undefined, S), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
   }
   const { id: _replaced, bodyweight: _flag, assisted: _assisted, side: _side, ...carried } = old
   const out = dropSelfBackup({ id, ...carried })

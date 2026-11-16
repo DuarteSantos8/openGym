@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { exOr } from '../lib/exercises.js'
 import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
@@ -91,8 +92,8 @@ function LadderCard ({ S, ladder, onEdit }) {
       })}
     </ol>
     <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-      <Button size="sm" variant="tinted" icon="plus" onClick={() => ui.openSheet(close => <TrainIt ladder={ladder} rung={next} close={close} />)}>{t('Train it')}</Button>
-      {ladder.own && <Button size="sm" variant="ghost" onClick={() => onEdit(ladder)}>{t('Edit')}</Button>}
+      <Button size="sm" variant="tinted" icon="plus" aria-label={nameIn(ladderName(ladder), t('Train it'))} onClick={() => ui.openSheet(close => <TrainIt ladder={ladder} rung={next} close={close} />)}>{t('Train it')}</Button>
+      {ladder.own && <Button size="sm" variant="ghost" aria-label={nameIn(ladderName(ladder), t('Edit'))} onClick={() => onEdit(ladder)}>{t('Edit')}</Button>}
     </div>
   </div>
 }
@@ -125,9 +126,9 @@ export function LadderEditor ({ ladder, close }) {
       {steps.map((id, i) => <li key={id} className="item">
         <span className="ladder-num" aria-hidden="true">{i + 1}</span>
         <span className="grow tt">{exerciseNameFor(exOr(id))}</span>
-        <button type="button" className="iconbtn" aria-label={t('Move up')} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
-        <button type="button" className="iconbtn" aria-label={t('Move down')} disabled={i === steps.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
-        <button type="button" className="iconbtn" aria-label={t('Remove')} onClick={() => setSteps(list => list.filter(x => x !== id))}><Icon name="xmark" /></button>
+        <button type="button" className="iconbtn" aria-label={t('Move {0} up', said(exerciseNameText(exOr(id))))} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
+        <button type="button" className="iconbtn" aria-label={t('Move {0} down', said(exerciseNameText(exOr(id))))} disabled={i === steps.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
+        <button type="button" className="iconbtn" aria-label={t('Remove {0}', said(exerciseNameText(exOr(id))))} onClick={() => setSteps(list => list.filter(x => x !== id))}><Icon name="xmark" /></button>
       </li>)}
     </ol>
     {steps.length < STEPS_MAX && <Button variant="tinted" icon="plus" onClick={add}>{t('Add a rung')}</Button>}

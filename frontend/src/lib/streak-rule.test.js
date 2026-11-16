@@ -3,10 +3,11 @@
 // along in a sync merge and in a backup.
 import { describe, expect, it } from 'vitest'
 import { streakInfo } from './streak.js'
+import { isoOf } from './format.js'
 import { streakRuleOf, ruleTimeline, ruleAt, setStreakRule, currentRule, HISTORY_MAX } from './streak-rule.js'
 import { mergeStates, stampEdits } from './sync-merge.js'
 
-const day = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10) }
+const day = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
 const MON = '2026-06-01' // a Monday; week k starts at day(MON, 7k)
 const wk = k => day(MON, 7 * k)
 // Trained in the listed weeks (a Tuesday each), with Monday weeks.

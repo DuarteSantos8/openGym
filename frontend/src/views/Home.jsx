@@ -37,6 +37,7 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
+import { Arranged, CustomizeLink } from '../components/PageLayout.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -220,32 +221,11 @@ export default function Home() {
       <SeasonDeco spot="home-hero" />
     </div>
 
-    {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
-    <RecapHomeCard S={S} />
-
     {/* Christmas (lib/seasonal.js): the advent calendar's card, 1 to 24 December, from the theme's chunk. */}
     <SeasonDeco spot="home-advent" />
 
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
     {on('motivation') && <WrappedHomeCard S={S} />}
-
-    {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). */}
-    {on('health') && <RecoveryHint S={S} />}
-
-    {/* A deload week now or next, or a lighter week suggested (lib/deload-cycle.js). */}
-    <DeloadCard S={S} />
-
-    {/* This month's three challenges and how far you are (lib/challenges.js). */}
-    <ChallengesCard S={S} />
-
-    {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
-        arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
-    {on('checkin') && (
-      <div className="card tap-host checkin-card">
-        <CardHead icon="qr" tint="var(--blue)" eyebrow={t('At the gym')} title={t('Check in')} open={{ onClick: () => nav('/checkin') }}
-          action={<Icon name="chevronRight" className="chev" />} />
-      </div>
-    )}
 
     {!S.routines.length && !S.active && (
       <div className="card">
@@ -259,7 +239,28 @@ export default function Home() {
         (components/StreakRule.jsx). */}
     {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
 
-    {on('body') && S.showWeightCard !== false && <div className="card">
+    {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
+        party banner are buttons of their own beside it, not inside a card that is a button. */}
+    {/* The cards below the plan are yours to arrange: Customize at the end of the page
+        (components/PageLayout.jsx). Each keeps its own rule for when it has something to say. */}
+    <Arranged page="home" S={S} items={[
+      // Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home.
+      { id: 'recap', node: <RecapHomeCard S={S} /> },
+      // What has rested and what is still recovering, kindly (lib/recovery-hint.js).
+      { id: 'recovery', node: on('health') && <RecoveryHint S={S} /> },
+      // A deload week now or next, or a lighter week suggested (lib/deload-cycle.js).
+      { id: 'deload', node: <DeloadCard S={S} /> },
+      // This month's three challenges and how far you are (lib/challenges.js).
+      { id: 'challenges', node: <ChallengesCard S={S} /> },
+      // Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
+      // arrival at the gym; folds away per user via the "Gym check-in" switch in Settings.
+      { id: 'checkin', node: on('checkin') && (
+        <div className="card tap-host checkin-card">
+          <CardHead icon="qr" tint="var(--blue)" eyebrow={t('At the gym')} title={t('Check in')} open={{ onClick: () => nav('/checkin') }}
+            action={<Icon name="chevronRight" className="chev" />} />
+        </div>
+      ) },
+      { id: 'bodyweight', node: on('body') && <div className="card">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
       <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
@@ -281,7 +282,7 @@ export default function Home() {
             <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
           </div>
         )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
+        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} ariaLabel={t('Body weight')} /></div>
         {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
         <WeightRate S={S} />
         {/* every weigh-in, week by week with its average (Discord 'Weight') */}
@@ -295,11 +296,8 @@ export default function Home() {
           : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>
         <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={{ marginTop: 6, ...(S.targetW ? { color: 'var(--gold-ink)' } : {}) }} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
       </>}
-    </div>}
-
-    {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
-        party banner are buttons of their own beside it, not inside a card that is a button. */}
-    {on('motivation') ? <div className="card tap-host streak-card">
+    </div> },
+      { id: 'streak', node: on('motivation') ? <div className="card tap-host streak-card">
       <SeasonDeco spot="home-streak" />
       {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
       <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /><SeasonDeco spot="streak-flame" /></span>}
@@ -314,6 +312,8 @@ export default function Home() {
       {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
     </div>
       // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
-      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div> },
+    ]} />
+    <CustomizeLink page="home" />
   </div>
 }
