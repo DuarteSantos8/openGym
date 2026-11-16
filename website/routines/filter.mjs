@@ -117,14 +117,19 @@ export const QUICK = {
   short: { on: s => s.len === '30', set: (s, on) => ({ ...s, len: on ? '30' : '' }) }
 }
 
-export function sortRoutines(list, sort, popular = {}) {
+// `mine`: the languages this visitor reads (the page's English, and the browser's own). A routine
+// written in another one goes after the rest whatever the sort, so one German plan does not sit
+// third in an English list looking like a mistake (a mod's note, 2026-11-15). It is still there,
+// still found by search, and the Language filter shows it alone.
+export function sortRoutines(list, sort, popular = {}, mine = null) {
   const by = {
     new: (a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0),
     popular: (a, b) => (popular[b.id] || 0) - (popular[a.id] || 0) || (a.at < b.at ? 1 : -1),
     name: (a, b) => a.t.localeCompare(b.t, 'en', { sensitivity: 'base' }),
     short: (a, b) => a.m - b.m || a.t.localeCompare(b.t, 'en')
   }[sort] || (() => 0)
-  return list.map((r, i) => [r, i]).sort((x, y) => by(x[0], y[0]) || x[1] - y[1]).map(x => x[0])
+  const far = r => (mine && !mine.includes(r.lang || 'en') ? 1 : 0)
+  return list.map((r, i) => [r, i]).sort((x, y) => far(x[0]) - far(y[0]) || by(x[0], y[0]) || x[1] - y[1]).map(x => x[0])
 }
 
 /**

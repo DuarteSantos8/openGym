@@ -102,6 +102,158 @@ class SessionCoreTest {
         assertEquals(1, SessionCore.setIndex(s, 0))
     }
 
+    /* ---------- MetricsTests.swift: the Pulse page's average and line, the Effort page's rows ---------- */
+
+    @Test fun metricsAverageIsWholeBpmAndIgnoresZeros() {
+        assertEquals("105.5 rounds up, the zero is no reading", 106, Metrics.average(listOf(0L to 100, 1L to 0, 2L to 111)))
+        assertNull(Metrics.average(emptyList()))
+        assertNull(Metrics.average(listOf(0L to 0)))
+    }
+
+    @Test fun metricsRangeIgnoresZeros() {
+        assertEquals(99..152, Metrics.range(listOf(0L to 120, 1L to 0, 2L to 99, 3L to 152)))
+        assertNull(Metrics.range(emptyList()))
+        assertNull(Metrics.range(listOf(0L to 0)))
+    }
+
+    @Test fun metricsZonesByPercentOfTanakaMax() {
+        assertEquals(180.0, Metrics.maxHeartRate(40), 1e-9)
+        assertEquals("zone 1 is everything under 60 %", 1, Metrics.zone(68.0, 180.0))
+        assertEquals(1, Metrics.zone(107.0, 180.0))
+        assertEquals("60 % opens zone 2", 2, Metrics.zone(108.0, 180.0))
+        assertEquals("70 % opens zone 3", 3, Metrics.zone(126.0, 180.0))
+        assertEquals(4, Metrics.zone(161.0, 180.0))
+        assertEquals("over max stays in 5", 5, Metrics.zone(200.0, 180.0))
+        assertNull(Metrics.zone(0.0, 180.0))
+    }
+
+    @Test fun metricsZoneBandsMatchZone() {
+        val b = Metrics.zoneBands(180.0)
+        assertEquals(listOf(null, 108, 126, 144, 162), b.map { it.lo })
+        assertEquals(listOf(107, 125, 143, 161, null), b.map { it.hi })
+        val max = Metrics.maxHeartRate(37)   // 182.1: bands on a fraction still agree with zone()
+        Metrics.zoneBands(max).forEachIndexed { i, band ->
+            band.lo?.let { assertEquals(i + 1, Metrics.zone(it.toDouble(), max)); assertEquals(i, Metrics.zone(it - 1.0, max)) }
+        }
+    }
+
+    @Test fun metricsTimeInZonesCountsEachReadingUntilTheNextCappedAt30s() {
+        val hr = listOf(0L to 100, 10_000L to 130, 20_000L to 170, 120_000L to 170)
+        assertEquals("the last reading counts nothing; the 100 s gap counts 30", listOf(10.0, 0.0, 10.0, 0.0, 30.0), Metrics.timeInZones(hr, 180.0))
+        assertEquals(List(5) { 0.0 }, Metrics.timeInZones(emptyList(), 180.0))
+        assertEquals(List(5) { 0.0 }, Metrics.timeInZones(listOf(0L to 150), 180.0))
+        assertEquals("a reading out of order counts nothing", listOf(0.0, 0.0, 0.0, 0.0, 0.0), Metrics.timeInZones(listOf(5_000L to 100, 1_000L to 100), 180.0))
+    }
+
+    @Test fun metricsAgeOnlyFrom10To100() {
+        assertEquals(38, Metrics.age(1988, 2026))
+        assertEquals(10, Metrics.age(2016, 2026)); assertEquals(100, Metrics.age(1926, 2026))
+        assertNull(Metrics.age(null, 2026)); assertNull(Metrics.age(2017, 2026)); assertNull(Metrics.age(1925, 2026))
+    }
+
+    @Test fun metricsDownsampleKeepsOrderAndCapsTheCount() {
+        val hr = (0 until 100).map { it.toLong() to 100 + it }
+        val d = Metrics.downsample(hr, 10)
+        assertEquals(10, d.size)
+        assertEquals(104.5, d[0].second, 0.001)
+        assertTrue(d.zipWithNext().all { (a, b) -> a.first < b.first })
+        assertEquals(5, Metrics.downsample(hr.take(5), 10).size)
+        assertTrue(Metrics.downsample(hr, 0).isEmpty())
+    }
+
+    @Test fun metricsEffortPerExerciseSkipsTheUnrated() {
+        fun entry(id: String, name: String) = Entry(id, name, sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        assertTrue(Metrics.effort(SessionState()).isEmpty())
+        var s = started(entry("a", "Bench"), entry("b", "Row"), entry("c", "Fly"))
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1.0, "1", effort = EffortRating("rpe", 8.0)).first
+        s = SessionCore.tick(s, 0, 1, null, 60.0, 8.0, null, 2.0, "2", effort = EffortRating("rpe", 9.0)).first
+        s = SessionCore.tick(s, 1, 0, null, 60.0, 8.0, null, 3.0, "3").first
+        s = SessionCore.tick(s, 2, 0, null, 60.0, 8.0, null, 4.0, "4", effort = EffortRating("rpe", 7.0)).first
+        val rows = Metrics.effort(s)
+        assertEquals(listOf("Bench", "Fly"), rows.map { it.name })
+        assertEquals(8.5, rows[0].value, 0.0)
+        assertNull("a finished workout leaves no ratings", SessionCore.finish(s, 5.0, "f").first.efforts)
+    }
+
+    @Test fun metricsEffortKeepsRepeatsApartFollowsTheScaleAndDropsUnticked() {
+        val bench = Entry("a", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        val rir = WatchSettings(effort = "rir")
+        var s = SessionCore.applySnapshot(SessionState(), Snapshot(active = workout("w1", bench, bench), settings = WatchSettings(effort = "rpe")))
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1.0, "1", effort = EffortRating("rpe", 8.0)).first
+        s = SessionCore.tick(s, 1, 0, null, 60.0, 8.0, null, 2.0, "2", effort = EffortRating("rpe", 10.0)).first
+        assertEquals("the same exercise twice rates apart", listOf(8.0, 10.0), Metrics.effort(s).map { it.value })
+        // the phone has both ticks, then switches to RIR: RPE 8 is RIR 2
+        val done = bench.copy(sets = listOf(set(60.0, 8.0, done = true, at = 9.0), set(60.0, 8.0)))
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", done, done), acked = listOf("1", "2"), settings = rir))
+        assertEquals(listOf(2.0, 0.0), Metrics.effort(s).map { it.value })
+        // the phone unticks the first entry's set: its rating goes and does not come back
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", bench, done), settings = rir))
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", done, done), settings = rir))
+        assertEquals(listOf(0.0), Metrics.effort(s).map { it.value })
+    }
+
+    @Test fun metricsMusclesCountWorkingSetsDoneByThePhonesWeights() {
+        val json = """{"name":"Push","unit":"kg","cur":0,"restSec":90,"muscleNames":{"chest":"Pecho","triceps":"Tríceps"},"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1,"triceps":0.4},"sets":[
+            {"done":true,"warmup":true},{"done":true,"warmup":false},{"done":true,"warmup":false},{"done":false,"warmup":false}]},
+          {"id":"2","name":"Pushdown","mode":"reps","muscles":{"triceps":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"3","name":"Old phone","mode":"reps","sets":[{"done":true,"warmup":false}]}]}"""
+        val m = Metrics.muscles(WireJson.decodeFromString(ActiveWorkout.serializer(), json))
+        assertEquals(listOf("Pecho", "Tríceps"), m.map { it.name })
+        assertEquals(2.0, m[0].sets, 0.001)   // the warm-up and the set not done count nothing
+        assertEquals(1.8, m[1].sets, 0.001)   // 2 × 0.4 from the bench, 1 from the pushdown
+        assertTrue(Metrics.muscles(null).isEmpty())
+    }
+
+    @Test fun metricsMusclesAddUpTheSameExerciseTwiceAndASupersetAndShowNothingBeforeASet() {
+        fun w(done: Boolean) = WireJson.decodeFromString(ActiveWorkout.serializer(), """{"name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1},"sets":[{"done":$done,"warmup":false}]},
+          {"id":"2","name":"Row","mode":"reps","group":"a","muscles":{"lats":1},"sets":[{"done":$done,"warmup":false}]},
+          {"id":"1","name":"Bench","mode":"reps","group":"a","muscles":{"chest":1},"sets":[{"done":$done,"warmup":false},{"done":false,"warmup":false}]}]}""")
+        val m = Metrics.muscles(w(true))
+        assertEquals(listOf("chest", "lats"), m.map { it.name })
+        assertEquals(2.0, m[0].sets, 0.001)   // one set from each Bench entry
+        assertTrue(Metrics.muscles(w(false)).isEmpty())   // just started: the page says "No sets yet"
+    }
+
+    @Test fun metricsMusclesTiesByNameSlugWhenUnnamedAndSkipsZeroWeights() {
+        val w = workout("w1",
+            Entry("a", "A", sets = listOf(set(1.0, 1.0, done = true)), muscles = mapOf("calves" to 1.0, "biceps" to 1.0, "neck" to 0.0)))
+            .copy(muscleNames = mapOf("calves" to "Calves"))
+        assertEquals(listOf("Calves", "biceps"), Metrics.muscles(w).map { it.name })   // tie by name, by code unit as Swift's <; an unnamed slug shows as is
+        assertTrue(Metrics.muscles(workout("w1", Entry("b", "B", sets = listOf(set(1.0, 1.0, done = true))))).isEmpty())  // older phone
+    }
+
+    @Test fun metricsMusclesCountAWatchTickTheSnapshotHasNotShownYet() {
+        val bench = Entry("b", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)), muscles = mapOf("chest" to 1.0))
+        var s = started(bench)
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1000.0, "t1").first
+        assertEquals(1.0, Metrics.muscles(s.workout).single().sets, 0.0)
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", bench)))   // stale: the phone has not applied it
+        assertEquals(1.0, Metrics.muscles(s.workout).single().sets, 0.0)
+    }
+
+    @Test fun metricsMusclesNamesComeWithAWorkoutStartedOnTheWatch() {
+        val snap = Snapshot.parse("""{"v":1,"ready":{"today":{"routineIds":["r1"],"name":"Push","entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1,"front-delts":0.4},"sets":[{"w":60,"r":8,"done":false}]}],
+          "muscleNames":{"chest":"Brust","front-delts":"Vordere Schulter"}},"others":[]}}""")!!
+        var s = SessionCore.start(SessionState(), snap.ready!!.today!!, "watch-1", 100.0, "s1").first
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 101.0, "t1").first
+        assertEquals(listOf("Brust", "Vordere Schulter"), Metrics.muscles(s.workout).map { it.name })
+    }
+
+    @Test fun metricsMusclesSkipAPerSideSetWithOneSideDone() {
+        val e = lunge.copy(muscles = mapOf("quads" to 1.0))
+        val s = SessionCore.tick(started(e), 0, 0, "L", 20.0, 8.0, null, 5.0, "l").first
+        assertTrue(Metrics.muscles(s.workout).isEmpty())
+    }
+
+    @Test fun metricsSetsTextHasAtMostOneDecimalInTheLanguage() {
+        assertEquals("5,2", Metrics.setsText(5.2, java.util.Locale.GERMAN))
+        assertEquals("8", Metrics.setsText(8.0, java.util.Locale.ENGLISH))
+        assertEquals("1.2", Metrics.setsText(0.4 + 0.4 + 0.4, java.util.Locale.ENGLISH))
+    }
+
     @Test fun summaryCountsWorkSetsVolumeAndRecords() {
         var s = started(squat.copy(sets = listOf(set(60.0, 10.0, warmup = true), set(100.0, 5.0), set(100.0, 5.0))))
         s = SessionCore.tick(s, 0, 1, null, 102.5, 5.0, null, 1.0, "a").first
@@ -193,18 +345,18 @@ class SessionCoreTest {
         // an older snapshot, sent before the phone applied the tick: the tick stays
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(60.0, 8.0), row(60.0, 8.0)))))
         assertEquals(row(62.5, 7.0, done = true, at = 1000.0), s.workout?.entries?.get(0)?.sets?.get(0))
-        assertNotNull(s.pending["0025#0"])
+        assertNotNull(s.pending["n0:0025#0"])
         // the phone changed that set itself earlier: the watch's later tick still wins
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(55.0, 5.0, done = true, at = 500.0), row(60.0, 8.0)))))
         assertEquals(62.5, s.workout!!.entries[0].sets[0].w!!, 0.0)
         // the phone has applied it: confirmed, no longer pending
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(62.5, 7.0, done = true, at = 1000.0), row(60.0, 8.0)))))
-        assertNull(s.pending["0025#0"])
+        assertNull(s.pending["n0:0025#0"])
         // a later change on the phone wins over the watch's tick
         s = SessionCore.tick(s, 0, 1, null, 60.0, 8.0, null, 2000.0, "e2").first
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(62.5, 7.0, done = true, at = 1000.0), row(65.0, 6.0, done = true, at = 3000.0)))))
         assertEquals(65.0, s.workout!!.entries[0].sets[1].w!!, 0.0)
-        assertNull(s.pending["0025#1"])
+        assertNull(s.pending["n0:0025#1"])
     }
 
     @Test fun testRelaunchRestoresTheSessionWithItsUnconfirmedTicks() {
@@ -376,8 +528,8 @@ class SessionCoreTest {
         val p = mixed(listOf(e)).workout!!
         val phone = p.copy(entries = listOf(p.entries[0].copy(sets = listOf(row0) + p.entries[0].sets.drop(1))))
         val confirmed = SessionCore.applySnapshot(back, snap(phone))
-        assertNull(confirmed.pending["split#0#L"])
-        assertNull(confirmed.pending["split#0#R"])
+        assertNull(confirmed.pending["n0:split#0#L"])
+        assertNull(confirmed.pending["n0:split#0#R"])
         assertEquals(300.0, SessionCore.summary(s.workout!!, 1.0).volume, 0.0)   // 20x8 + 20x7
     }
 
@@ -470,6 +622,8 @@ class SessionCoreTest {
         val saved = """{"settings":{},"unit":"kg","restSec":90,"finishedHere":[],"pending":{"x#0":{"w":1,"r":2,"at":3}},"entryIndex":0}"""
         val s = WireJson.decodeFromString(SessionState.serializer(), saved)
         assertTrue(s.skipped.isEmpty())
+        // kept under the key it was saved with (read by SessionCore.keysOf on the exercise's first copy)
+        assertNotNull(s.pending["x#0"])
         assertNull(s.pending["x#0"]?.sec)
     }
 
@@ -545,5 +699,27 @@ class SessionCoreTest {
         val rest = ev["restHr"] as kotlinx.serialization.json.JsonObject
         assertEquals("112", (rest["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
         assertEquals("140", (rest["max"] as kotlinx.serialization.json.JsonPrimitive).content)
+    }
+
+    // #1149: a set ticked on the phone takes the watch to the set after it, on whichever exercise.
+    @Test fun aPhoneTickOnAnyExerciseMovesTheWatchThere() {
+        val bench = Entry("be", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        fun after(sq: Entry, be: Entry) = SessionCore.applySnapshot(SessionState(), Snapshot(active = workout("w1", sq, be)))
+        val done = { e: Entry, n: Int -> e.copy(sets = e.sets.mapIndexed { i, r -> if (i < n) r.copy(done = true) else r }) }
+        // the watch shows the squat (entry 0); the phone ticked bench set 1: the watch goes to the bench
+        assertEquals(1, SessionCore.followTick(after(squat, done(bench, 1)), 1, 0))
+        // the phone ticked squat set 1 and set 2 is open: the watch stays on the squat
+        assertNull(SessionCore.followTick(after(done(squat, 1), bench), 0, 0))
+        // the squat's last set: on to the bench
+        assertEquals(1, SessionCore.followTick(after(done(squat, 2), bench), 0, 1))
+    }
+
+    @Test fun metricsRowsThatFitKeepRoomForTheMoreLine() {
+        assertEquals(0, Metrics.rowsThatFit(emptyList(), 100f, 2f, 14f))
+        assertEquals(5, Metrics.rowsThatFit(List(8) { 18f }, 200f, 2f, 14f))          // capped at 5
+        assertEquals(3, Metrics.rowsThatFit(List(5) { 20f }, 80f, 2f, 14f))           // 3 rows + gaps + "+2 more" = 80
+        assertEquals(4, Metrics.rowsThatFit(List(4) { 20f }, 86f, 2f, 14f))           // all shown: no "+N more" needed
+        assertEquals(1, Metrics.rowsThatFit(listOf(200f, 10f), 50f, 2f, 14f))        // the top muscle always shows
+        assertEquals(4, Metrics.rowsThatFit(List(5) { 18f }, 98f, 2f, 14f, total = 8)) // 5 fit alone, but 3 more need their line
     }
 }

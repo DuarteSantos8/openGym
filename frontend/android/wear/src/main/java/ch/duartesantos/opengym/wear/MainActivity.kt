@@ -9,7 +9,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.ambient.AmbientLifecycleObserver
@@ -38,10 +44,20 @@ class MainActivity : ComponentActivity() {
         WorkoutService.sync(this)
     }
 
+    private var burnIn = false
+    private val minute = mutableIntStateOf(0)
+
     private val ambient = AmbientLifecycleObserver(this, object : AmbientLifecycleObserver.AmbientLifecycleCallback {
-        override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) { WearStore.ambient.value = true }
+        override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
+            burnIn = ambientDetails.burnInProtectionRequired
+            // The grid walks on from where the last wrist-down left it: short Always On spells
+            // would otherwise all sit on the same spot (#1169 review). Only used while dim.
+            if (burnIn) minute.intValue++
+            WearStore.ambient.value = true
+        }
         override fun onExitAmbient() { WearStore.ambient.value = false }
-        override fun onUpdateAmbient() {}
+        // Once a minute in Always On: a screen that can burn in moves a little (BurnIn).
+        override fun onUpdateAmbient() { if (burnIn) minute.intValue++ }
     })
 
     override fun attachBaseContext(base: Context) {
@@ -61,13 +77,21 @@ class MainActivity : ComponentActivity() {
             val s by WearStore.state.collectAsState()
             val dim by WearStore.ambient.collectAsState()
             OpenGymTheme(accent = Accent.of(s.settings), ambient = dim, reduceMotion = reduceMotion.value, round = round) {
-                AppScaffold(timeText = { OgTimeText() }) {
-                    WearApp(onWorkoutShown = { onWorkout() })
+                Box(Modifier.offset { (if (dim) BurnIn.offset(minute.intValue) else 0 to 0).let { (x, y) -> IntOffset(x.dp.roundToPx(), y.dp.roundToPx()) } }) {
+                    AppScaffold(timeText = { OgTimeText() }) {
+                        WearApp(onWorkoutShown = { onWorkout() })
+                    }
                 }
             }
         }
         demo(intent)
         openPage(intent)
+    }
+
+    // Any touch is a reaction to "rest over", as on the Apple Watch: no second buzz.
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) WearStore.ackRestOver()
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -96,8 +120,12 @@ class MainActivity : ComponentActivity() {
         if (demoShown) return
         // Either one missing: people updating from heart rate only are asked for physical activity too.
         val actOk = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
-        if ((!WorkoutService.hasHrPermission(this) || !actOk) && !askedHr) {
+        val prefs = getSharedPreferences("opengym-wear", MODE_PRIVATE)
+        // Heart rate missing: asked once per launch, as before. Only physical activity missing (someone
+        // who allowed heart rate before 1.4.5): asked once ever, not at every launch (#1171 review).
+        if (PermissionAsk.due(WorkoutService.hasHrPermission(this), actOk, askedHr, prefs.getBoolean("askedActivity", false))) {
             askedHr = true
+            prefs.edit().putBoolean("askedActivity", true).apply()
             // The heart rate, the calories (physical activity), and the notification that keeps the workout on the watch face.
             askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.ACTIVITY_RECOGNITION, android.Manifest.permission.POST_NOTIFICATIONS))
         } else WorkoutService.sync(this)
@@ -118,7 +146,31 @@ class MainActivity : ComponentActivity() {
         val filled = json.replace("\"__START__\"", "${now - 25 * 60_000}").replace("\"__AT1__\"", "${now - 20 * 60_000}")
             .replace("\"__AT2__\"", "${now - 16 * 60_000}")
             .replace("\"lang\": \"en\"", "\"lang\": \"${intent.getStringExtra("lang") ?: "en"}\"")
+            .let { if (intent.getStringExtra("names") == "long") longNames(it) else it }
+            .let { demoMuscleNames(it, intent.getStringExtra("lang")) }
+            // `--es age none`: no birth year from the phone, for the Zones page's "add your birth year" card.
+            .let { if (intent.getStringExtra("age") == "none") it.replace("\"birthYear\": 1988, ", "") else it }
         WearStore.ambient.value = intent.getStringExtra("ambient") == "1"
         WearStore.demo(screen, filled)
     }
+
+    /** The Muscles page's names as the phone sends them in the app's language (debug only; de and ru have the longest). */
+    private fun demoMuscleNames(json: String, lang: String?): String {
+        val names = when (lang) {
+            "de" -> """{"chest":"Brust","front-delts":"Vordere Schulter","triceps":"Trizeps","abs":"Bauch","obliques":"Schräge Bauchmuskeln","lower-back":"Unterer Rücken","hip-flexors":"Hüftbeuger"}"""
+            "ru" -> """{"chest":"Грудь","front-delts":"Передние дельты","triceps":"Трицепс","abs":"Пресс","obliques":"Косые мышцы","lower-back":"Поясница","hip-flexors":"Сгибатели бедра"}"""
+            "ar" -> """{"chest":"الصدر","front-delts":"الكتف الأمامي","triceps":"الترايسبس","abs":"البطن","obliques":"العضلات المائلة","lower-back":"أسفل الظهر","hip-flexors":"مثنيات الورك"}"""
+            else -> return json
+        }
+        return json.replace(Regex("\"muscleNames\": \\{[^}]*\\}"), Regex.escapeReplacement("\"muscleNames\": $names"))
+    }
+
+    /** `--es names long`: the demo with the longest names a lifter types, for the clipping checks (debug only). */
+    private fun longNames(json: String) = json
+        .replace("\"Push day\"", "\"Upper body: push, pull and core\"")
+        .replace("\"Bench Press\"", "\"Single-Arm Landmine Shoulder Press to Overhead\"")
+        .replace("\"Incline Dumbbell Press\"", "\"Incline Dumbbell Press (neutral grip, slow)\"")
+        .replace("\"Cable Fly\"", "\"Kneeling High-to-Low Cable Crossover Fly\"")
+        .replace("\"Triceps Pushdown\"", "\"Overhead Rope Triceps Extension\"")
+        .replace("\"Plank\"", "\"Weighted Side Plank with Hip Dips\"")
 }

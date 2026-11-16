@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { exMediaOf, setExMedia, clearExMedia, setExMediaShow, serverTakesExMedia } from '../lib/ex-media.js'
 import { isCustomEx } from '../lib/exercises.js'
 import { useMediaPicker } from './CustomMediaField.jsx'
@@ -36,10 +37,10 @@ export default function OwnExerciseMedia({ ex }) {
       subtitle={m ? t('Only you see it. It travels with your account.') : t('Show how you do it, on your own machine. Only you see it.')}>
       <div className="cmf-act">
         {m && <span className="cmf-thumb"><CustomThumb ex={{ custom: true, media: m }} /></span>}
-        {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'camera'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
+        {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'camera'} disabled={!canAdd} aria-label={busy ? undefined : nameIn(t('Your photo or video'), m ? t('Change') : t('Add'))} onClick={() => fileRef.current?.click()}>
           {busy ? busyLabel : m ? t('Change') : t('Add')}
         </Button>}
-        {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={t('Remove')} title={t('Remove')} disabled={busy}
+        {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={nameIn(t('Your photo or video'), t('Remove'))} title={t('Remove')} disabled={busy}
           onClick={() => update(s => { clearExMedia(s, ex.id) })} />}
       </div>
     </Row>

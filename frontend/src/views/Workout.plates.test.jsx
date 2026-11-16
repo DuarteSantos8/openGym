@@ -163,7 +163,7 @@ describe('plate line under set rows', () => {
 
   it('the ⋯ menu offers Plate loading with the bar as its summary', () => {
     mount([entry(SQUAT, [work(145)], { w: 145 })])
-    const more = [...container.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || b.title || '') === 'More' && !b.classList.contains('n'))
+    const more = [...container.querySelectorAll('button')].find(b => /^More(, |$)/.test(b.getAttribute('aria-label') || b.title || '') && !b.classList.contains('n'))
     expect(more).toBeTruthy()
     act(() => more.click())
     const sheet = useUI.getState().sheets.at(-1)
@@ -185,7 +185,7 @@ describe('plate line under set rows', () => {
       loadKind: { [MACHINE]: { kind: 'pairs', _ts: 1 } }, barWeights: { [MACHINE]: 50 },
     })
     expect(lines()).toEqual([{ text: '45 + 2.5 per side', moves: null }])
-    const more = [...container.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || b.title || '') === 'More' && !b.classList.contains('n'))
+    const more = [...container.querySelectorAll('button')].find(b => /^More(, |$)/.test(b.getAttribute('aria-label') || b.title || '') && !b.classList.contains('n'))
     act(() => more.click())
     const sc = document.createElement('div')
     document.body.appendChild(sc)
@@ -204,7 +204,7 @@ describe('plate line under set rows', () => {
     act(() => useStore.setState(s => ({ S: { ...s.S, active: { ...s.S.active, editingWorkoutId: 'saved' } } })))
     expect(container.textContent).toContain('Editing a saved workout')
     expect(lines()).toEqual([])
-    const more = [...container.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || b.title || '') === 'More' && !b.classList.contains('n'))
+    const more = [...container.querySelectorAll('button')].find(b => /^More(, |$)/.test(b.getAttribute('aria-label') || b.title || '') && !b.classList.contains('n'))
     act(() => more.click())
     const sc = document.createElement('div')
     document.body.appendChild(sc)
