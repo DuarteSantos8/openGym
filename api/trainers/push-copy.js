@@ -333,16 +333,16 @@ export const TRAINER_COPY = {
   },
   "id": {
     "connected": {
-      "title": "{0} sekarang trainermu",
-      "body": "Mereka melihat apa yang kamu bagikan, tidak lebih. Ubah kapan saja di Trainer & gym."
+      "title": "{0} sekarang trainer-mu",
+      "body": "Dia melihat apa yang kamu bagikan, tidak lebih. Ubah kapan saja di Trainer & gym."
     },
     "scopes": {
-      "title": "Berbagimu berubah",
+      "title": "Yang kamu bagikan berubah",
       "body": "Apa yang dilihat {0} baru saja berubah. Bukan kamu? Cek Trainer & gym."
     },
     "joined": {
       "title": "Selamat datang di {0}",
-      "body": "Pengelola gymmu hanya melihat apa yang kamu centang."
+      "body": "Pengelola gym-mu hanya melihat apa yang kamu centang."
     },
     "change": {
       "title": "{0} memperbarui latihanmu",
@@ -350,7 +350,7 @@ export const TRAINER_COPY = {
     },
     "suggest": {
       "title": "{0} punya ide untukmu",
-      "body": "Ambil atau lepaskan di Trainer & gym."
+      "body": "Terima atau abaikan di Trainer & gym."
     },
     "comment": {
       "title": "{0} meninggalkan catatan untukmu",

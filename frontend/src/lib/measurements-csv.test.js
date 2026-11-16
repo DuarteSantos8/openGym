@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { bodyCSV } from './export-csv.js'
-import { parseCSV, parseBodyweight, parseImport, mergeImport } from './import-csv.js'
+import { parseCSV, parseBodyweight, parseImport, mergeImport, measurementImportPlan } from './import-csv.js'
 import {
   CUSTOM_MEASUREMENT_UNITS, fromMeasurementDisplay, measurementSeries, measurementUnitLabel,
   normalizeMeasurementsState, parseCustomCsvColumn,
@@ -100,5 +100,56 @@ describe('importing measurements that make no sense', () => {
     const res = mergeImport(S, parseBodyweight('date,weight_kg,Muscle ratio (%)\n2026-10-05,,140\n', { unit: 'kg' }))
     expect(res.measurements).toBe(0)
     expect(S.measurements.map(e => e.d)).toEqual(['2026-10-01'])
+  })
+})
+
+// #1206: a day that has some measurements no longer swallows the rest of its row — the check-in
+// keeps what it has, the file fills what it has not.
+describe('a check-in the file only completes (#1206)', () => {
+  it('fills the fields the day has not, and keeps the ones it has', () => {
+    const S = state()
+    const res = mergeImport(S, parseBodyweight('date,weight_kg,waist_cm,chest_cm\n2026-10-01,,90,100\n', { unit: 'kg' }))
+    expect(res.measurements).toBe(1)
+    const day = S.measurements.find(e => e.d === '2026-10-01')
+    expect(day.waist).toBe(84.5) // the day's own value wins
+    expect(day.chest).toBe(100)
+    expect(day.other.find(o => o.id === 'ratio').value).toBe(40.5)
+    expect(S.measurements).toHaveLength(1)
+    // The same file again brings nothing.
+    expect(mergeImport(S, parseBodyweight('date,weight_kg,waist_cm,chest_cm\n2026-10-01,,90,100\n', { unit: 'kg' })).measurements).toBe(0)
+    expect(S.measurements.find(e => e.d === '2026-10-01').chest).toBe(100)
+  })
+
+  it('makes a custom field a filled day needs, and files the value under it', () => {
+    const S = state()
+    const res = mergeImport(S, parseBodyweight('date,weight_kg,Shoulder (cm)\n2026-10-01,,55\n', { unit: 'kg' }))
+    expect(res.measurements).toBe(1)
+    const field = S.customMeasurements.find(c => c.name === 'Shoulder')
+    expect(field).toMatchObject({ unit: 'cm', enabled: true })
+    const day = S.measurements.find(e => e.d === '2026-10-01')
+    expect(day.other.find(o => o.id === field.id)).toMatchObject({ value: 55 })
+    expect(day.waist).toBe(84.5)
+  })
+
+  it('folds several rows of one date into one check-in, the first value of a field winning', () => {
+    const S = state()
+    const res = mergeImport(S, parseBodyweight('date,weight_kg,waist_cm,chest_cm\n2026-11-01,,90,\n2026-11-01,,91,100\n', { unit: 'kg' }))
+    expect(res.measurements).toBe(1)
+    const days = S.measurements.filter(e => e.d === '2026-11-01')
+    expect(days).toHaveLength(1)
+    expect([days[0].waist, days[0].chest]).toEqual([90, 100])
+  })
+
+  it('the import plan says which days the file adds to, fills or leaves alone', () => {
+    const S = state()
+    const before = JSON.stringify(S)
+    const days = parseBodyweight(
+      'date,weight_kg,waist_cm,chest_cm\n2026-10-01,,90,100\n2026-10-03,,83,\n', { unit: 'kg' }).measurements
+    const plan = measurementImportPlan(S, days)
+    expect(plan.get('2026-10-01')).toBe('fill')
+    expect(plan.get('2026-10-03')).toBe('add')
+    // A day the file can only repeat is kept.
+    expect(measurementImportPlan(S, parseBodyweight('date,weight_kg,waist_cm\n2026-10-01,,90\n', { unit: 'kg' }).measurements).get('2026-10-01')).toBe('keep')
+    expect(JSON.stringify(S)).toBe(before) // planning touches nothing
   })
 })

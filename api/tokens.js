@@ -55,8 +55,10 @@ export const KEY_CATEGORY = {
 };
 // Never in a token's read, whatever it holds: pictures and videos (their own category, not
 // offered), the Coach's conversation, the live workout, linked services, and the server's notes.
-// Your own sounds (`sounds`, v1.4.5) are recordings of yours like the photos.
-const NEVER = new Set(['dayPhotos', 'exMedia', 'dayForm', 'avatar', 'sounds', 'active', 'coach', 'integrations', '_unstamped', '_prior', 'deleted', 'edited', 'undone']);
+// Your own sounds (`sounds`, v1.4.5) are recordings of yours like the photos. A gym check-in
+// card (`gymCards`, and `lastGymCardId` naming the one last shown) holds the code that opens the
+// turnstile: no category, and no setting either.
+const NEVER = new Set(['dayPhotos', 'exMedia', 'dayForm', 'avatar', 'sounds', 'gymCards', 'lastGymCardId', 'active', 'coach', 'integrations', '_unstamped', '_prior', 'deleted', 'edited', 'undone']);
 const NEVER_RE = /photo|avatar|video|secret|token|password|integration/i;
 // What the server keeps itself and the token reads along with the document, never writes.
 const BOOK = new Set(['_rev', '_wid', '_wids', '_ts']);

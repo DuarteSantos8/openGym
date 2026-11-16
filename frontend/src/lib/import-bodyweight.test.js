@@ -108,10 +108,20 @@ describe('several weigh-ins a day from a file', () => {
     expect(parsed.bodyweight.map(b => [b.d, b.at || null, b.w])).toEqual([['2026-09-01', null, 80.4], ['2026-09-02', null, 80.5]])
   })
 
-  it('a day the profile has gets the file\'s untimed weigh-in only when it has none', async () => {
+  it('a day the profile has takes the file\'s untimed weigh-in as another of that day (#1206)', async () => {
     const { mergeImport } = await import('./import-csv.js')
     const S = { unit: 'kg', workouts: [], bodyweight: [{ d: '2026-09-01', w: 79, t: 5 }] }
-    expect(mergeImport(S, parseImport('Date,Weight (kg)\n2026-09-01,80\n2026-09-02,80.5'))).toEqual({ added: 1, skipped: 1 })
-    expect(S.bodyweight[0]).toEqual({ d: '2026-09-01', w: 79, t: 5 })
+    expect(mergeImport(S, parseImport('Date,Weight (kg)\n2026-09-01,80\n2026-09-02,80.5'))).toEqual({ added: 2, skipped: 0 })
+    // Both readings kept, the day's own the first one; the same file again adds nothing.
+    expect(S.bodyweight[0].ins.map(r => r.w)).toEqual([79, 80])
+    expect(S.bodyweight[0].w).toBe(79)
+    expect(mergeImport(S, parseImport('Date,Weight (kg)\n2026-09-01,80\n2026-09-02,80.5'))).toEqual({ added: 0, skipped: 2 })
+  })
+
+  it('an untimed weigh-in of the same weight as the day\'s is a duplicate and stays skipped', async () => {
+    const { mergeImport } = await import('./import-csv.js')
+    const S = { unit: 'kg', workouts: [], bodyweight: [{ d: '2026-09-01', w: 80, t: 5 }] }
+    expect(mergeImport(S, parseImport('Date,Weight (kg)\n2026-09-01,80'))).toEqual({ added: 0, skipped: 1 })
+    expect(S.bodyweight[0]).toEqual({ d: '2026-09-01', w: 80, t: 5 })
   })
 })

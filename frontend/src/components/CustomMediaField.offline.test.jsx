@@ -35,7 +35,8 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.render(null)); host.remove() })
 
-describe('picking a photo with the ingest not loaded', () => {
+// In order: once the second test loads the ingest it stays loaded, so the first could not be offline after it.
+describe('picking a photo with the ingest not loaded', { shuffle: false }, () => {
   it('says the device is offline, not that the file is bad', async () => {
     let out
     await act(async () => { out = await picker.pick(new Blob(['x'], { type: 'image/jpeg' })) })

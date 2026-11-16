@@ -66,8 +66,8 @@ import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substit
 import { backupSuggestions } from './lib/backup-suggestions.js'
 import { refusalsFor, markUsed } from './lib/session-targets.js'
 import { isGymSplit, brandAt, withExGym, currentGymId, cleanBrand, BRAND_MAX, placesOf, onlyPlace } from './lib/gym-split.js'
-import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle, MUSCLE_MODEL } from './lib/muscles.js'
-import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
+import { exerciseMuscleSnapshot, loadOfWorkouts, rankOf, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle, MUSCLE_MODEL } from './lib/muscles.js'
+import { mergeImport, importHasWeighIn, measurementImportPlan } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
 import { importHevyData, parseHevyAccount, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
@@ -544,7 +544,7 @@ function WeighIns() {
   return <>
     <h3 style={{ marginBottom: 2 }}>{t('Weigh-ins')}</h3>
     <div className="muted small" style={{ marginBottom: 10 }}>{tn('{0} weigh-in', '{0} weigh-ins', n)}</div>
-    <div className="chart"><LineChart points={points} h={140} unit={st.unit} goal={st.targetW} /></div>
+    <div className="chart"><LineChart points={points} h={140} unit={st.unit} goal={st.targetW} ariaLabel={t('Weigh-ins')} /></div>
     <div className="small dim" style={{ marginTop: 6 }}>{t('Weekly average')}</div>
     {weeks.map(w => {
       // Only a change the display can show: at one decimal, 0.02 kg is "0", and an arrow over a
@@ -602,9 +602,11 @@ function ImportSummary({ parsed: initial, text, close }) {
     } catch { return initial }
   }, [text, choices, initial])
   const isBW = parsed.kind === 'bodyweight'
-  // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps it.
+  // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps its
+  // values, and only one the file cannot add anything to counts as already here (#1206).
   const checkIns = isBW ? parsed.measurements || [] : []
-  const haveM = checkIns.filter(m => (st.measurements || []).some(x => x.d === m.d)).length
+  const mPlan = isBW && checkIns.length ? measurementImportPlan(st, checkIns) : null
+  const haveM = mPlan ? [...mPlan].filter(([d, a]) => a === 'keep' && (st.measurements || []).some(x => x.d === d)).length : 0
   const have = (isBW
     ? parsed.bodyweight.filter(b => importHasWeighIn(st, b)).length
     : parsed.workouts.filter(w => st.workouts.some(x => x.d === w.d)).length) + haveM
@@ -1170,7 +1172,9 @@ function WeightListPaste({ unit, onAdd }) {
     toast(t('Added to the list'))
   }
   return <div style={{ marginBottom: 8 }}>
-    <textarea className="input" rows={4} autoFocus inputMode="decimal" value={text} onChange={e => setText(e.target.value)}
+    {/* The full keyboard, not the number pad: an iPhone's number pad has no Return, no space and
+        no second separator, so a list could not be typed on it at all (#926). */}
+    <textarea className="input" rows={4} autoFocus inputMode="text" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={text} onChange={e => setText(e.target.value)}
       aria-label={t('Weights ({0})', unit)} placeholder={t('One per line, or like this: 5, 11.3, 18.1')} style={{ marginBottom: 8 }} />
     <div className="row" style={{ gap: 8 }}>
       <Button variant="ghost" className="dim" onClick={() => { setOpen(false); setText('') }}>{t('Cancel')}</Button>
@@ -1724,7 +1728,7 @@ function ExerciseHistory({ exId }) {
     </div>}
     {curveOpts.length > 1 && <Segmented className="seg-range" value={onRel ? 'bodyweight' : onE1 ? 'e1rm' : 'top'} onChange={setCurve} options={curveOpts} />}
     <div className="chart" style={{ marginTop: 8 }}>
-      <LineChart points={onRel ? rel : onE1 ? h.e1rmPoints : h.points} h={140} unit={onRel ? '% BW' : onE1 ? st.unit : unit} color="var(--blue)" />
+      <LineChart points={onRel ? rel : onE1 ? h.e1rmPoints : h.points} h={140} unit={onRel ? '% BW' : onE1 ? st.unit : unit} color="var(--blue)" ariaLabel={exerciseNameFor(ex)} />
     </div>
     <div className="small row" style={{ margin: '6px 0 4px', gap: 5 }}>
       <Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />
@@ -4677,6 +4681,7 @@ function KeepInRoutine({ additions }) {
 
 function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
   const st = useStore(s => s.S)
+  const trained = loadOfWorkouts([w])
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     {/* Sticky, so the summary can be left from the top however far it has been scrolled. */}
     <div className="fin-x"><button type="button" className="iconbtn" aria-label={t('Close')} onClick={() => closeThenNav(close, '/home')}><Icon name="xmark" /></button></div>
@@ -4704,7 +4709,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
     </div>
     <div style={{ height: 14 }} />
     <h4 className="sec" style={{ textAlign: 'start' }}>{t('What you just trained')}</h4>
-    <BodyMap load={loadOfWorkouts([w])} body={st.body} />
+    <BodyMap load={trained} body={st.body} hits={rankOf(trained).worked} />
     <div style={{ height: 14 }} />
     <LastAndNext st={st} w={w} />
     <CardioDone st={st} w={w} />
