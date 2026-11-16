@@ -527,7 +527,9 @@ struct ExerciseDonePanel: View {
 
 /*
  * A value typed in, for what the crown's steps don't land on (62.25 kg, 13 reps in one go). The
- * number on top turns red when it is out of range, and ✓ saves only what fits.
+ * number on top turns red when it is out of range, and ✓ saves only what fits (with nothing
+ * typed it just closes, keeping the number shown). ✓ and ✕ take a tap on their whole shape:
+ * glass draws no hit area, and only their glyphs took one (1.4.5, owner).
  */
 struct KeypadView: View {
     let field: NumberField
@@ -563,7 +565,9 @@ struct KeypadView: View {
             VStack(spacing: 4) {
                 HStack(spacing: 6) {
                     Button { dismiss() } label: {
+                        // The whole circle takes the tap: a plain button's is only the glyph, and it sits in the corner.
                         Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
+                            .contentShape(Circle())
                     }
                     .buttonStyle(.plain)
                     .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
@@ -577,16 +581,23 @@ struct KeypadView: View {
                         ForEach(keys, id: \.self) { key in keyButton(key, height: keyH) }
                     }
                 }
-                Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
+                let ok = pad.confirms(range)
+                Button {
+                    guard ok else { return }
+                    if let v = pad.value { save(v) }
+                    dismiss()
+                } label: {
                     Image(systemName: "checkmark")
                         .font(.system(size: 17, weight: .bold))
-                        .foregroundStyle(dimmed || !pad.fits(range) ? accent : onAccent)
+                        .foregroundStyle(dimmed || !ok ? accent : onAccent)
                         .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
-                        .glass(Capsule(), tint: pad.fits(range) ? accent : nil, fill: dimmed || !pad.fits(range) ? Color.clear : accent, dimmed: dimmed || !pad.fits(range))
-                        .overlay(Capsule().stroke(accent, lineWidth: pad.fits(range) && !dimmed ? 0 : 1.5))
+                        .glass(Capsule(), tint: ok ? accent : nil, fill: dimmed || !ok ? Color.clear : accent, dimmed: dimmed || !ok)
+                        .overlay(Capsule().stroke(accent, lineWidth: ok && !dimmed ? 0 : 1.5))
+                        // The whole bar takes the tap, as PrimaryButtonStyle's: without it only the glyph did, typed or not.
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
-                .disabled(!pad.fits(range))
+                .disabled(!ok)
                 .accessibilityLabel(Text("Save"))
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .top)

@@ -794,12 +794,13 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
                 }
             }
             // Save, a wide bar under the keys: outlined until the number is one it takes, then filled (and only then a tap saves).
-            val ok = pad.fits(range)
+            // With nothing typed it closes, keeping the number shown (it was dead there, and read as broken).
+            val ok = pad.confirms(range)
             val fill = ok && !LocalAmbient.current
             Box(
                 Modifier.widthIn(max = barW).fillMaxWidth().height(barH.dp).clip(CircleShape)
                     .background(if (fill) a.accent else Color.Transparent).border(1.5.dp, a.accent, CircleShape)
-                    .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
+                    .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) ?: onClose() }
                     .semantics { contentDescription = said },
                 contentAlignment = Alignment.Center,
             ) { Glyph(G.CHECK, if (fill) a.on else a.accent, 17.dp) }
