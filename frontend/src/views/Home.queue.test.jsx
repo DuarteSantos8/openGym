@@ -301,6 +301,15 @@ describe('Home — a session pinned to a day', () => {
     expect(status()).toBe('Next: US W1 D1 · ' + fmtDate(on, true))
   })
 
+  it('a strict pass started after a session today: that session is still due today, and the line says so', () => {
+    const since = Date.now() - 60000, start = since - 3600000
+    const before = { id: 'w-before', d: todayISO(), start, end: start + 1000, routineIds: ['d1'], routineId: 'd1', name: 'US W1 D1', entries: [] }
+    setS({ queue: queue({ since, startsOn: todayISO(), strict: true }), dayPlan: { [daysFromToday(8)]: 'd3' }, workouts: [before] })
+    mount()
+    expect(chipTexts()[0]).toBe('US W1 D1Up next')
+    expect(status()).toBe('Next: US W1 D1, today')
+  })
+
   it('a session done today leaves today named while the next one is still due today', () => {
     const now = Date.now() - 60000
     const today = { id: 'w-today', d: todayISO(), start: now, end: now + 1000, routineIds: ['d1'], routineId: 'd1', name: 'US W1 D1', entries: [] }

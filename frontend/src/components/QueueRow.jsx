@@ -1,4 +1,4 @@
-import { queueView } from '../lib/queue.js'
+import { queueView, queueRemaining } from '../lib/queue.js'
 import { effectiveRoutineIds } from '../lib/history.js'
 import { fmtDate, isoOf } from '../lib/format.js'
 import { workoutsOn } from '../lib/backfill.js'
@@ -7,16 +7,18 @@ import { sequenceOf, isSimpleSequence } from '../lib/rotation.js'
 import Icon from './Icon.jsx'
 
 // The day the Calendar shows next: the first from today on with something planned it has not
-// trained yet, `{ iso, ids }` (those routines), or null. A day planned for a session the pass already did trains it
+// trained yet, `{ iso, ids }` (those routines), or null. Today a session the queue still has to do
+// stays, whatever was logged: a strict pass does not count a workout from before it started. A day planned for a session the pass already did trains it
 // (pinState, queue.js), which the chips cannot show, so the status line reads the days themselves.
 // shortcut: looks four weeks ahead, past that the chips' answer stands; widen if plans go further out.
 function nextPlannedDay(S, today) {
+  const due = queueRemaining(S, today)
   for (let i = 0; i < 28; i++) {
     const d = new Date(today + 'T12:00:00')
     d.setDate(d.getDate() + i)
     const iso = isoOf(d)
     const trained = workoutsOn(S, iso).flatMap(w => (Array.isArray(w.routineIds) ? w.routineIds : [w.routineId]))
-    const ids = effectiveRoutineIds(S, iso, today).filter(id => !trained.includes(id))
+    const ids = effectiveRoutineIds(S, iso, today).filter(id => (iso === today && due.includes(id)) || !trained.includes(id))
     if (ids.length) return { iso, ids }
   }
   return null
