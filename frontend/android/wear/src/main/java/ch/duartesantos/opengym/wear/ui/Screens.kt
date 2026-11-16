@@ -77,6 +77,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -96,6 +97,7 @@ import android.view.HapticFeedbackConstants
 import androidx.wear.compose.foundation.curvedComposable
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.itemsIndexed
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.foundation.pager.HorizontalPager
 import androidx.wear.compose.foundation.pager.rememberPagerState
@@ -275,9 +277,13 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
                 item { PrimaryButton(stringResource(R.string.quick_start), Modifier.fillMaxWidth(), icon = G.PLAY) { WearStore.start(first) } }
             }
         }
-        items(others) { r ->
+        itemsIndexed(others) { i, r ->
+            Plan.folderHeader(i, others)?.let { h ->
+                Quiet(h, 12.sp, Modifier.fillMaxWidth().padding(top = 6.dp).semantics { heading() }, lines = 1, align = TextAlign.Start)
+            }
             RowButton(r.name, Modifier.fillMaxWidth(), center = false, icon = G.PLAY, tint = Og.Text) { WearStore.start(r) }
         }
+        if (others.isNotEmpty()) item { Quiet(stringResource(R.string.archived_stay_on_phone), 12.sp, lines = 3) }
         // A workout finished here with the phone away: its sets are still on their way.
         item { SyncLine(sync, showSynced = false) }
         item { VersionLine() }

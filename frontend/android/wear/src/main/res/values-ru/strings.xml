@@ -117,4 +117,5 @@
     <string name="zone_current">текущая</string>
     <string name="zone_n">Зона %1$d</string>
     <string name="zones">Зоны</string>
+    <string name="archived_stay_on_phone">Архивные тренировки остаются на телефоне.</string>
 </resources>

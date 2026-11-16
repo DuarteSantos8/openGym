@@ -657,4 +657,22 @@ class WatchLogicTest {
         // The sensor rests and comes back in B: B's count goes on.
         k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
     }
+
+    private fun routine(folder: String?) = ReadySession(routineIds = listOf("r"), name = "R", folder = folder)
+
+    @Test fun aHeaderWhereTheFolderChanges() {
+        val o = listOf(routine(null), routine("Legs"), routine("Legs"), routine("Push"))
+        assertEquals(listOf(null, "Legs", null, "Push"), o.indices.map { Plan.folderHeader(it, o) })
+    }
+
+    @Test fun noFoldersMeansNoHeaders() {
+        val o = listOf(routine(null), routine(null))
+        assertEquals(listOf(null, null), o.indices.map { Plan.folderHeader(it, o) })
+    }
+
+    @Test fun aBlankFolderIsNoHeaderAndAFirstFolderGetsOne() {
+        assertNull(Plan.folderHeader(0, listOf(routine("  "))))
+        assertEquals("Legs", Plan.folderHeader(0, listOf(routine("Legs"))))
+        assertNull(Plan.folderHeader(5, listOf(routine("Legs"))))
+    }
 }

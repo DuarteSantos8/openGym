@@ -117,4 +117,5 @@
     <string name="zone_current">aktuální</string>
     <string name="zone_n">Zóna %1$d</string>
     <string name="zones">Zóny</string>
+    <string name="archived_stay_on_phone">Archivované rutiny zůstávají v telefonu.</string>
 </resources>

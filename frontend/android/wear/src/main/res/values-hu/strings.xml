@@ -117,4 +117,5 @@
     <string name="zone_current">jelenlegi</string>
     <string name="zone_n">%1$d. zóna</string>
     <string name="zones">Zónák</string>
+    <string name="archived_stay_on_phone">Az archivált rutinok a telefonodon maradnak.</string>
 </resources>

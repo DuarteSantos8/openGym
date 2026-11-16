@@ -117,4 +117,5 @@
     <string name="zone_current">ปัจจุบัน</string>
     <string name="zone_n">โซน %1$d</string>
     <string name="zones">โซน</string>
+    <string name="archived_stay_on_phone">รูทีนที่เก็บถาวรจะอยู่บนโทรศัพท์ของคุณ</string>
 </resources>

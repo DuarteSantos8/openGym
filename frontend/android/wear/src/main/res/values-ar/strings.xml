@@ -117,4 +117,5 @@
     <string name="zone_current">الحالي</string>
     <string name="zone_n">النطاق %1$d</string>
     <string name="zones">النطاقات</string>
+    <string name="archived_stay_on_phone">تبقى الروتينات المؤرشفة على هاتفك.</string>
 </resources>

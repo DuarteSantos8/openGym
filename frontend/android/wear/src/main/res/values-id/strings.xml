@@ -117,4 +117,5 @@
     <string name="zone_current">saat ini</string>
     <string name="zone_n">Zona %1$d</string>
     <string name="zones">Zona</string>
+    <string name="archived_stay_on_phone">Rutinitas yang diarsipkan tetap ada di ponselmu.</string>
 </resources>

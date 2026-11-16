@@ -117,4 +117,5 @@
     <string name="zone_current">मौजूदा</string>
     <string name="zone_n">ज़ोन %1$d</string>
     <string name="zones">ज़ोन</string>
+    <string name="archived_stay_on_phone">आर्काइव की गई रूटीन आपके फ़ोन पर ही रहती हैं।</string>
 </resources>

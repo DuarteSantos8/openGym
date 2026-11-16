@@ -117,4 +117,5 @@
     <string name="zone_current">bieżąca</string>
     <string name="zone_n">Strefa %1$d</string>
     <string name="zones">Strefy</string>
+    <string name="archived_stay_on_phone">Zarchiwizowane rutyny zostają na telefonie.</string>
 </resources>

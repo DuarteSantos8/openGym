@@ -117,4 +117,5 @@
     <string name="zone_current">فعلی</string>
     <string name="zone_n">ناحیه %1$d</string>
     <string name="zones">ناحیه‌ها</string>
+    <string name="archived_stay_on_phone">روتین‌های بایگانی‌شده روی گوشی شما می‌مانند.</string>
 </resources>

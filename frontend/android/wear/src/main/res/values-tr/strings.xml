@@ -117,4 +117,5 @@
     <string name="zone_current">geçerli</string>
     <string name="zone_n">Bölge %1$d</string>
     <string name="zones">Bölgeler</string>
+    <string name="archived_stay_on_phone">Arşivlenen rutinler telefonunda kalır.</string>
 </resources>

@@ -117,4 +117,5 @@
     <string name="zone_current">当前</string>
     <string name="zone_n">区间 %1$d</string>
     <string name="zones">区间</string>
+    <string name="archived_stay_on_phone">已归档的训练计划会保留在你的手机上。</string>
 </resources>

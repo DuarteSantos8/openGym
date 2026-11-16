@@ -117,4 +117,5 @@
     <string name="zone_current">dabartinė</string>
     <string name="zone_n">%1$d zona</string>
     <string name="zones">Zonos</string>
+    <string name="archived_stay_on_phone">Suarchyvuotos programos lieka tavo telefone.</string>
 </resources>

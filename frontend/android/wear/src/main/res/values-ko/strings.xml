@@ -117,4 +117,5 @@
     <string name="zone_current">현재</string>
     <string name="zone_n">%1$d구간</string>
     <string name="zones">구간</string>
+    <string name="archived_stay_on_phone">보관된 루틴은 휴대폰에 남아 있어요.</string>
 </resources>

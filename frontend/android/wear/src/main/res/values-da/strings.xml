@@ -117,4 +117,5 @@
     <string name="zone_current">aktuel</string>
     <string name="zone_n">Zone %1$d</string>
     <string name="zones">Zoner</string>
+    <string name="archived_stay_on_phone">Arkiverede rutiner bliver på din telefon.</string>
 </resources>
