@@ -24,12 +24,12 @@
   entry = "src/index.js";
   extraTrees = [
     {
-      from = lib.cleanSource ./../../frontend;
+      from = lib.cleanSource ./../../frontend/src/lib;
       at = "../../frontend/src/lib";
     }
     {
       from = lib.cleanSource ./../../api;
-      at = "../../../api";
+      at = "../../api";
     }
   ];
 })

@@ -69,6 +69,8 @@
                 (opengymConfig {
                   rpId = "localhost";
                   origin = "http://localhost:8080";
+                  apiPort = 3000;
+                  environment.MY_FLAG = "1";
                 })
               ];
             }
