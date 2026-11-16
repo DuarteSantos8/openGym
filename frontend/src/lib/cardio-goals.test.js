@@ -89,6 +89,23 @@ describe('the sums per week', () => {
     const mon = cardioWeekTotals(S0(), { today: '2026-11-08' })
     expect(mon.at(-1).by.run.n).toBe(2)
   })
+  // #1296: jump rope starts as sets and reps since 1.4.3, so timed rope was counted as 0 minutes.
+  it('counts jump rope logged in seconds, and not a plank', () => {
+    const S = {
+      weekStart: 1,
+      workouts: [{ d: '2026-11-17', entries: [
+        { id: '2258', sets: [done({ min: 11, speed: 5 })] },
+        { id: '2612', target: { id: '2612', mode: 'time' }, sets: [done({ sec: 1651 })] },
+        { id: '3885', sets: [done({ sec: 60 }), { sec: 60, done: false }] },
+        { id: '0511', sets: [done({ r: 100 })] },
+        { id: '0463', sets: [done({ sec: 90 })] },
+      ] }],
+    }
+    const now = cardioWeekTotals(S, { today: '2026-11-17' }).at(-1)
+    expect(now.by.rope.min).toBeCloseTo(1651 / 60 + 1)
+    expect(now.by.rope.n).toBe(1)
+    expect(now.by.any.min).toBeCloseTo(11 + 1651 / 60 + 1)
+  })
   it('cardioWeeks keeps its shape, with sport counted', () => {
     const w = cardioWeeks(S0(), { today: '2026-11-06' })
     expect(w.at(-1)).toEqual({ week: '2026-11-02', min: 260 })
