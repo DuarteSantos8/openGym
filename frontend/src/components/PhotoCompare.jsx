@@ -146,7 +146,8 @@ export default function PhotoCompare({ photos, close, toast }) {
     setSharing(true)
     try {
       const [{ renderCompare }, { shareImage, saveImage }] = await Promise.all([import('../lib/compare-image.js'), import('../lib/share-image.js')])
-      const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: pos[p.key] }))
+      // The slider shows each photo without its zoom, so the picture does too: it is what is on the screen.
+      const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: slider && pos[p.key] ? { ...pos[p.key], z: 1 } : pos[p.key] }))
       if (items.some(it => !it.url)) { toast?.(t('Still loading the photos. Try again in a second.')); return }
       const blob = await renderCompare({ items, rows: slider ? [1] : rows, aspect, mode: slider ? 'slider' : 'side', pct, caption: span })
       if (!blob) { toast?.(t('This device could not draw the picture.')); return }

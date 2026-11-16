@@ -117,6 +117,15 @@ describe('the shutter', () => {
     expect(overlay()).not.toBeNull()
     expect(props.onTaken).not.toHaveBeenCalled()
   })
+  it('drops a picture still being made when the camera is closed', async () => {
+    let done
+    await mount({ capture: vi.fn(() => new Promise(r => { done = r })) })
+    act(() => { button('Take photo').click() })
+    act(() => root.unmount())
+    await act(async () => { done(new Blob(['jpg'], { type: 'image/jpeg' })) })
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
+    root = createRoot(host)   // for afterEach
+  })
   it('hands the picture over as a JPEG named for today, and closes', async () => {
     await mount()
     await act(async () => { button('Take photo').click() })
@@ -217,6 +226,15 @@ describe('the frame', () => {
     await mount()
     size = [960, 720]
     act(() => { host.querySelector('video').dispatchEvent(new Event('resize')) })
+    expect(Number(frame().style.getPropertyValue('--r'))).toBeCloseTo(4 / 3)
+  })
+  it('keeps the shape of the picture taken until Retake, even if the video turns', async () => {
+    await mount()
+    await act(async () => { button('Take photo').click() })
+    size = [960, 720]
+    act(() => { host.querySelector('video').dispatchEvent(new Event('resize')) })
+    expect(frame().style.getPropertyValue('--r')).toBe('0.75')
+    act(() => button('Retake').click())
     expect(Number(frame().style.getPropertyValue('--r'))).toBeCloseTo(4 / 3)
   })
   it('has no shape of its own until the camera sends a frame', async () => {

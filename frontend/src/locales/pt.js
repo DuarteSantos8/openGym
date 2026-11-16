@@ -4840,7 +4840,7 @@ export default {
   "Change the day": "Mudar o dia",
   "Date from the file name.": "Data do nome do ficheiro.",
   "Date from the photo itself.": "Data da própria foto.",
-  "Drag a photo to move what shows, pinch to zoom.": "Arrasta uma foto para mudar o que aparece e junta os dedos para ampliar.",
+  "Drag a photo to move what shows, pinch to zoom.": "Arrasta uma foto para mudar o que aparece e afasta os dedos para ampliar.",
   "Fewer": "Menos",
   "Keep this one?": "Ficar com esta?",
   "Last photo: yesterday.": "Última foto: ontem.",

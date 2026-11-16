@@ -36,8 +36,10 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   const [overlay, setOverlay] = useState(() => defaultOverlay(photos))
   const [choosing, setChoosing] = useState(false)
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
-  const [shot, setShot] = useState(null)                 // { blob, url } once the shutter is pressed
+  const [shot, setShot] = useState(null)                 // { blob, url, ratio } once the shutter is pressed
   const [busy, setBusy] = useState(false)
+  const open = useRef(true)                             // false once the camera is closed: a capture still running is dropped
+  useEffect(() => () => { open.current = false }, [])
   const [timer, setTimer] = useState(0)                 // seconds the shutter waits before it takes the photo; 0 is off
   const [count, setCount] = useState(null)               // seconds left while the timer runs, else null
   const overlayUrl = useMediaUrl(overlay ? overlay.m : null).url
@@ -83,8 +85,10 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
     setBusy(true)
     try {
       const blob = await capture(v, { mirror })
-      if (blob) setShot({ blob, url: URL.createObjectURL(blob) })
-    } finally { setBusy(false) }
+      // The frame's shape is kept with the shot, so the preview shows all of it even if the video
+      // turns before Retake.
+      if (blob && open.current) setShot({ blob, url: URL.createObjectURL(blob), ratio: frameRatio(v.videoWidth, v.videoHeight) || ratio })
+    } finally { if (open.current) setBusy(false) }
   }
   // The shutter with the timer on counts down on the screen and takes the photo at zero; pressed
   // again, or on closing, flipping or retaking, it stops. A second goes by per render of `count`.
@@ -116,7 +120,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
     {/* The frame has the shape of the video, which is the shape of the photo that is kept; the video,
         the overlay and the picture taken all fill it. A photo has no reading direction, so it stays ltr. */}
     <div className="pp-cam-stage" dir="ltr">
-      <div className="pp-cam-frame" style={ratio ? { '--r': ratio } : undefined}>
+      <div className="pp-cam-frame" style={(shot?.ratio || ratio) ? { '--r': shot?.ratio || ratio } : undefined}>
         <video ref={videoRef} playsInline muted autoPlay onPlaying={() => setLive(true)} style={mirror ? { transform: 'scaleX(-1)' } : undefined} />
         {overlayUrl && live && !error && !shot && <img className="pp-cam-overlay" src={overlayUrl} alt="" draggable={false} style={{ opacity }} />}
         {shot && <img className="pp-cam-shot" src={shot.url} alt="" draggable={false} />}

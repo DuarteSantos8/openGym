@@ -1600,7 +1600,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The frame has the shape of the video frame (--r, width over height), as large as fits the stage: the
    video, the overlay and the picture taken all fill it, so the overlay has the proportions of the photo
    that is kept. Without container units the frame takes the width and the shape sets the height. */
-.pp-cam-frame{position:relative;width:100%;aspect-ratio:var(--r,.75);width:min(100cqw,calc(100cqh * var(--r,.75)))}
+.pp-cam-frame{position:relative;aspect-ratio:var(--r,.75);width:min(100cqw,calc(100cqh * var(--r,.75)))}
+/* Without container units (Safari before 16) the frame takes the stage's height and the shape sets the
+   width, held to the stage's width. */
+@supports not (width:1cqw){.pp-cam-frame{width:auto;height:100%;max-width:100%}}
 .pp-cam-frame video,.pp-cam-overlay,.pp-cam-shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-select:none;user-select:none;pointer-events:none}
 .pp-cam-error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;line-height:1.45;color:rgba(255,255,255,.8)}
 .pp-cam-controls{position:relative;flex:none;padding:10px 16px calc(14px + var(--sab))}
