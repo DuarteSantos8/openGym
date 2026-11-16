@@ -80,12 +80,14 @@ const step = () => document.querySelector('.tour')?.getAttribute('data-step')
 const btn = label => [...document.querySelectorAll('.tour-card button')].find(b => b.textContent === label)
 const anchor = name => document.querySelector(`[data-tour="${name}"]`)
 const click = async el => { await act(async () => { el.click() }); await settle() }
-// Next, then wait for the step to move on: a busy machine can take longer than one settle() to
-// reach the next anchor, and a second Next pressed before then is lost.
-const next = async () => {
-  const was = step()
+// Next, then wait (up to 2 s) for the tour to reach the step expected after it. On a busy
+// machine one settle() is not always enough to reach the next anchor, a Next pressed before then
+// is lost, and a step whose anchor is missing (c-media in the stand-in form) shows for a moment
+// before the tour passes over it. Fails right here, naming both steps, if it never arrives.
+const nextTo = async id => {
   await click(btn('Next'))
-  for (let i = 0; i < 40 && step() === was; i++) await settle(50)
+  for (let i = 0; i < 40 && step() !== id; i++) await settle(50)
+  expect(step()).toBe(id)
 }
 const key = async (k, opts = {}) => { await act(async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, ...opts })) }); await settle(30) }
 const run = async (at, flow, path) => {
@@ -504,11 +506,7 @@ describe('Create your own exercise', () => {
   }
   it('walks the real form, and Next past Create makes nothing', async () => {
     await toForm()
-    for (const id of ['c-bp', 'c-eq', 'c-save']) {   // no media field in the stand-in: passed over
-      await click(btn('Next'))
-      await settle(150)
-      expect(step()).toBe(id)
-    }
+    for (const id of ['c-bp', 'c-eq', 'c-save']) await nextTo(id)   // no media field in the stand-in: passed over
     await click(btn('Next'))
     await settle(300)
     expect(step()).toBe('c-done')
@@ -517,8 +515,7 @@ describe('Create your own exercise', () => {
   })
   it('the form’s own Create makes it, and the tour follows', async () => {
     await toForm()
-    for (let k = 0; k < 3; k++) await next()
-    expect(step()).toBe('c-save')
+    for (const id of ['c-bp', 'c-eq', 'c-save']) await nextTo(id)
     await click(anchor('cx-save'))
     await settle(300)
     expect(useStore.getState().S.customEx.map(c => c.id)).toEqual(['cmine'])
