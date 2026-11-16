@@ -986,7 +986,7 @@ h4.sec{
    rows before that). So a strip never scrolls vertically (overflow-y:hidden), keeps its sideways
    overscroll to itself, and leaves both pan axes to the browser: a sideways swipe scrolls the
    strip, a vertical one that starts on it scrolls the page (pan-x alone used to swallow that). */
-.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row{
+.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row,.gw-car{
   overflow-y:hidden;overscroll-behavior-x:contain;overscroll-behavior-y:auto;touch-action:pan-x pan-y}
 :is(.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-chips,.pcard-tabs,.chips-row) :is(.chip,button)::before{top:0;bottom:0}
 /* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
