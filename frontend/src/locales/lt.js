@@ -5721,7 +5721,7 @@ export default {
   "Practice over. Progress is where the gains pile up. Tap it.": "Treniruotė baigta. Skiltyje „Progresas“ kaupiasi jūsų rezultatai. Paspauskite čia.",
   "Settings are on Today": "Nustatymai yra skiltyje „Šiandien“",
   "Head back to Today first. Tap it.": "Pirmiausia grįžkite į skiltį „Šiandien“. Paspauskite.",
-  "Today shows it on its day and Start opens it. Change it any time right here.": "„Šiandien“ jį rodo numatytą dieną, o „Start“ jį atidaro. Keiskite bet kada čia.",
+  "Today shows it on its day and Start opens it. Change it any time right here.": "„Šiandien“ jį rodo numatytą dieną, o „Pradėti“ jį atidaro. Keiskite bet kada čia.",
   "Custom exercises live with the rest. Tap Library.": "Individualūs pratimai yra sąraše kartu su kitais. Paspauskite „Biblioteka“.",
   "They’re on Today. Tap it.": "Jos yra skiltyje „Šiandien“. Paspauskite ją.",
   "They live under Progress. Tap it.": "Jos yra skiltyje „Progresas“. Paspauskite ją.",
