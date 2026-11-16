@@ -232,11 +232,10 @@ object RestMath {
         return ((end - now).toFloat() / total).coerceIn(0f, 1f)
     }
 
-    /** The rest's net change made with −15 and +15, as the chip reads it: "+30 s", "−15 s", from a minute up "+1:15"; null at 0 (no chip). */
+    /** The rest's net change made with −15 and +15, as the circle reads it: signed seconds, "+30", "−15", "+105"; null at 0 (no circle). */
     fun shiftText(net: Int): String? {
         if (net == 0) return null
-        val m = kotlin.math.abs(net)
-        return (if (net > 0) "+" else "−") + if (m < 60) "$m s" else "%d:%02d".format(m / 60, m % 60)
+        return (if (net > 0) "+" else "−") + kotlin.math.abs(net)
     }
 
     /** The last three seconds, as shown (the clock rounds up). */

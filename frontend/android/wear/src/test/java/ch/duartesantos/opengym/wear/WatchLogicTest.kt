@@ -215,13 +215,10 @@ class WatchLogicTest {
     }
 
     @Test fun restShiftChipText() {
-        assertEquals("+30 s", RestMath.shiftText(30))
-        assertEquals("−15 s", RestMath.shiftText(-15))
-        assertEquals("+45 s", RestMath.shiftText(45))
-        assertEquals("from a minute up, the timer's clock", "+1:00", RestMath.shiftText(60))
-        assertEquals("+1:15", RestMath.shiftText(75))
-        assertEquals("−1:00", RestMath.shiftText(-60))
-        assertEquals("+9:45", RestMath.shiftText(585))
+        assertEquals("+30", RestMath.shiftText(30))
+        assertEquals("−15", RestMath.shiftText(-15))
+        assertEquals("seconds all the way: a circle has no room for a clock", "+105", RestMath.shiftText(105))
+        assertEquals("−60", RestMath.shiftText(-60))
         assertNull("back to zero: no chip", RestMath.shiftText(0))
     }
 

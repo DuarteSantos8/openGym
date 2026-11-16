@@ -9,7 +9,6 @@ import ch.duartesantos.opengym.wear.RestMath
 import ch.duartesantos.opengym.wear.Stills
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ColorFilter
@@ -856,17 +855,14 @@ fun RestView(rest: Rest) {
                         color = if (dim) Og.Text.copy(alpha = 0.75f) else tint,
                         modifier = Modifier.semantics { contentDescription = text })
                 }
-                Spacer(Modifier.width(32.dp + inset))
+                // The slot that balances ‹ holds the ±15 circle: right of the digits, taking no room from them.
+                Box(Modifier.width(32.dp + inset), contentAlignment = Alignment.CenterStart) { RestShiftCircle(rest.shift) }
             }
-            // The bar, with the ±15 chip riding its end (the chip takes no room: owner, the screen is cramped).
-            Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp), contentAlignment = Alignment.CenterEnd) {
-                if (s.settings.show?.rest != "plain") {
-                    val p = rest.pausedLeft
-                    // Paused: the bar stands where the phone's rest stands.
-                    if (p != null) TimeBar(now - (rest.total * 1000L - p).coerceAtLeast(0), now + p, a.accent)
-                    else TimeBar(rest.startedAt, rest.endsAt, a.accent)
-                }
-                RestShiftChip(rest.shift)
+            if (s.settings.show?.rest != "plain") {
+                val p = rest.pausedLeft
+                // Paused: the bar stands where the phone's rest stands.
+                if (p != null) TimeBar(now - (rest.total * 1000L - p).coerceAtLeast(0), now + p, a.accent, Modifier.padding(horizontal = 8.dp))
+                else TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
             }
             // −15, Skip, +15 mid-screen, where a round screen is widest. Always On hides them but keeps their place.
             Row(Modifier.fillMaxWidth().alpha(if (dim) 0f else 1f), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -884,29 +880,27 @@ fun RestView(rest: Rest) {
     }
 }
 
-/** The net change made with −15 and +15 in this rest, a slim chip on the bar's end. It reports no height, so the bar's row stays the bar's. */
+/** The net change made with −15 and +15 in this rest, in seconds ("+30", "−15"), a circle right of the countdown (owner: there, not on the bar). */
 @Composable
-private fun RestShiftChip(shift: Int) {
+private fun RestShiftCircle(shift: Int) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val reduce = LocalReduceMotion.current
     val shown = RestMath.shiftText(shift)
     var last by remember { mutableStateOf("") }
-    if (shown != null) last = shown // the chip fades out with its last words, not an empty capsule
+    if (shown != null) last = shown // the circle fades out with its last words, not empty
     val add = shift > 0
     val c = if (add) a.accent else Og.Text
-    // Measured whole, laid out 0 tall and centred on the row: an overlay, not a taller row.
-    Box(Modifier.layout { m, cs -> val p = m.measure(cs.copy(minHeight = 0, maxHeight = Constraints.Infinity)); layout(p.width, 0) { p.place(0, -p.height / 2) } }) {
+    Box {
         AnimatedVisibility(shown != null,
-            enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.9f)),
+            enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.8f)),
             exit = if (dim) ExitTransition.None else fadeOut(tween(if (reduce) 150 else 200))) {
-            Box(Modifier.height(15.dp).clip(CircleShape)
-                .background(Color.Black) // hides the bar under it
+            Box(Modifier.size(32.dp).clip(CircleShape)
                 .background(if (dim) Color.Transparent else if (add) c.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.14f))
-                .border(1.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.4f), CircleShape)
-                .padding(horizontal = 6.dp).semantics { contentDescription = last }, contentAlignment = Alignment.Center) {
+                .border(1.5.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.4f), CircleShape)
+                .semantics { contentDescription = "$last s" }, contentAlignment = Alignment.Center) {
                 AnimatedContent(last, transitionSpec = { fadeIn(tween(if (dim) 0 else 250)) togetherWith fadeOut(tween(if (dim) 0 else 250)) }, label = "shift") { t ->
-                    Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number)
+                    Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = if (t.length > 3) 10.sp else 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
                 }
             }
         }

@@ -13,13 +13,11 @@ final class RestMathTests: XCTestCase {
     }
 
     func testTheShiftChipReadsTheNetChange() {
-        XCTAssertEqual(RestMath.shift(30), "+30 s")
-        XCTAssertEqual(RestMath.shift(-15), "−15 s", "a real minus sign")
-        XCTAssertEqual(RestMath.shift(45), "+45 s")
-        XCTAssertEqual(RestMath.shift(60), "+1:00", "from a minute up, the timer's clock")
-        XCTAssertEqual(RestMath.shift(75), "+1:15")
-        XCTAssertEqual(RestMath.shift(-60), "−1:00")
-        XCTAssertEqual(RestMath.shift(585), "+9:45")
+        XCTAssertEqual(RestMath.shift(30), "+30")
+        XCTAssertEqual(RestMath.shift(-15), "−15", "a real minus sign")
+        XCTAssertEqual(RestMath.shift(105), "+105", "seconds all the way: a circle has no room for a clock")
+        XCTAssertEqual(RestMath.shift(-60), "−60")
+        XCTAssertEqual(RestMath.shift(14.6), "+15", "rounded")
         XCTAssertNil(RestMath.shift(0), "back to zero: no chip")
         XCTAssertNil(RestMath.shift(.nan))
     }
