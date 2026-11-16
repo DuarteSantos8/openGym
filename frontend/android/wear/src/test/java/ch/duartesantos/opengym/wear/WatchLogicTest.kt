@@ -119,7 +119,7 @@ class WatchLogicTest {
         assertTrue(known.containsAll(ev.keys))
         assertEquals(62.5, s.workout!!.entries[0].sets[0].w!!, 0.0)
         assertTrue(s.workout!!.entries[0].sets[0].done)
-        assertEquals("kept until the phone has it", "fix1", s.pending[SessionCore.key("b", 0)]?.id)
+        assertEquals("kept until the phone has it", "fix1", s.pending[SessionCore.placeKey("b", 0, 0)]?.id)
     }
 
     @Test fun onlyALoggedSetCanBeFixedAndNeverCardio() {
@@ -191,6 +191,15 @@ class WatchLogicTest {
         assertNotNull(RestMath.minus(now + 16_000, now))
     }
 
+    // #1149: Skip on the phone ends the watch's rest; a pause, a rest that ran out or a new one does not.
+    @Test fun aRestSkippedOnThePhoneEndsHere() {
+        assertTrue(RestMath.phoneSkipped((now + 30_000).toDouble(), null, paused = false, now = now))
+        assertFalse("paused on the phone", RestMath.phoneSkipped((now + 30_000).toDouble(), null, paused = true, now = now))
+        assertFalse("ran out", RestMath.phoneSkipped((now + 500).toDouble(), null, paused = false, now = now))
+        assertFalse("still running", RestMath.phoneSkipped((now + 30_000).toDouble(), (now + 30_000).toDouble(), paused = false, now = now))
+        assertFalse("none sent before", RestMath.phoneSkipped(null, null, paused = false, now = now))
+    }
+
     @Test fun followsOnlyARestEndThePhoneHasNotSentBefore() {
         assertTrue(RestMath.follows(5000.0, null))
         assertFalse("the same end again leaves a ±15 or a Skip alone", RestMath.follows(5000.0, 5000.0))
@@ -203,6 +212,28 @@ class WatchLogicTest {
         assertEquals(0.75f, RestMath.left(start, end, now + 25_000), 0.0001f)
         assertEquals(0f, RestMath.left(start, end, now + 200_000), 0f)
         assertEquals("a backwards rest is over", 0f, RestMath.left(end, start, now), 0f)
+    }
+
+    @Test fun restPillAddsQuickTapsAndIgnoresJumps() {
+        assertEquals(15, RestMath.pillSum(0, 60_000, 75_000))
+        assertEquals(30, RestMath.pillSum(15, 75_000, 90_000))
+        assertEquals(0, RestMath.pillSum(15, 90_000, 75_000))
+        assertEquals("a clamp shows the real change", 12, RestMath.pillSum(0, 60_000, 72_000))
+        assertEquals("a jump over 120 s is ignored", 15, RestMath.pillSum(15, 75_000, 300_000))
+        assertEquals(15, RestMath.pillSum(15, 75_000, 75_000))
+    }
+
+    @Test fun restPillText() {
+        assertEquals("+30 s", RestMath.pillText(30))
+        assertEquals("−15 s", RestMath.pillText(-15))
+        assertNull(RestMath.pillText(0))
+    }
+
+    @Test fun restWarnsInTheLastThreeSeconds() {
+        assertTrue(RestMath.warn(3.0))
+        assertTrue(RestMath.warn(0.6))
+        assertFalse(RestMath.warn(3.4))
+        assertFalse(RestMath.warn(0.0))
     }
 
     @Test fun chipsAreRatingsThePhoneLogs() {
@@ -275,6 +306,21 @@ class WatchLogicTest {
         assertNull(WeighIn.event(0.0, 1.0, "x"))
         assertNull(WeighIn.event(800.0, 1.0, "x"))
     }
+    // #1169: the crown reached 700.x lb, which WeighIn.event refuses, so that weigh-in was never sent
+    @Test fun testTheTopWeighInOnTheScreenIsStillSent() {
+        assertEquals(699.9, WeighIn.top("lb"), 1e-9)
+        assertEquals(320.9, WeighIn.top("kg"), 1e-9)
+        assertNotNull(WeighIn.event(WeighIn.top("lb"), 1.0, "lb"))
+        assertNotNull(WeighIn.event(WeighIn.top("kg"), 1.0, "kg"))
+        // TalkBack's More stops at the top, Less at the bottom, always on the tenth's grid
+        assertEquals(699.9, WeighIn.stepTenths(699.9, 1, "lb"), 1e-9)
+        assertEquals(699.9, WeighIn.stepTenths(699.85, 1, "lb"), 1e-9)
+        assertEquals(320.9, WeighIn.stepTenths(320.9, 5, "kg"), 1e-9)
+        assertEquals(20.0, WeighIn.stepTenths(20.0, -1, "kg"), 1e-9)
+        assertEquals(80.1, WeighIn.stepTenths(80.0, 1, "kg"), 1e-9)
+        assertNotNull(WeighIn.event(WeighIn.stepTenths(699.9, 1, "lb"), 1.0, "x"))
+    }
+
 
     @Test fun aStartCarriesTheBodyWeightJustWeighedIn() {
         val session = ReadySession(listOf("r"), "Legs", listOf(entry("sq", listOf(row()))))
@@ -363,6 +409,54 @@ class WatchLogicTest {
         assertEquals("128 avg" to "164 max", ch.duartesantos.opengym.wear.ui.splitStat("128 avg · 164 max"))
         assertEquals("Ø 128" to "max. 164", ch.duartesantos.opengym.wear.ui.splitStat("Ø 128 · max. 164"))
         assertEquals("128" to null, ch.duartesantos.opengym.wear.ui.splitStat("128"))
+    }
+
+    // #1182: the long-text slot shows the whole line, no title; the watch face must be told it may ask
+    @Test fun testTheLongTextComplicationSaysTheWholeLine() {
+        val setsOf = { d: Int, t: Int -> "$d of $t sets" }
+        assertEquals("3 of 12 sets", ComplicationWords.line(true, 3, 12, 4, 0, setsOf, "Week streak", "Waiting to sync"))
+        assertEquals("3 of 12 sets, Waiting to sync 2", ComplicationWords.line(true, 3, 12, 4, 2, setsOf, "Week streak", "Waiting to sync"))
+        assertEquals("Week streak: 4", ComplicationWords.line(false, 0, 0, 4, 0, setsOf, "Week streak", "Waiting to sync"))
+        val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
+        val types = manifest.substringAfter("complications.SUPPORTED_TYPES").substringAfter("android:value=\"").substringBefore("\"")
+        assertTrue(types, types.split(",").contains("LONG_TEXT"))
+        val src = java.io.File("src/main/java/ch/duartesantos/opengym/wear/ProgressComplicationService.kt").readText()
+        assertTrue("LONG_TEXT is built", src.contains("ComplicationType.LONG_TEXT ->"))
+    }
+
+    // #1171 review: someone who allowed heart rate before is asked for physical activity once, not every launch
+    @Test fun testPhysicalActivityIsAskedForOnceNotEveryLaunch() {
+        assertTrue(PermissionAsk.due(hrOk = false, activityOk = false, askedThisLaunch = false, activityAskedBefore = false))
+        assertTrue("no heart rate: asked each launch", PermissionAsk.due(false, true, false, true))
+        assertFalse("never twice in one launch", PermissionAsk.due(false, false, true, false))
+        assertTrue("heart rate ok, activity never asked", PermissionAsk.due(true, false, false, false))
+        assertFalse("heart rate ok, activity asked before", PermissionAsk.due(true, false, false, true))
+        assertFalse("both allowed", PermissionAsk.due(true, true, false, false))
+    }
+
+    // Watch round 1.4.5: the Metrics page's last row lost its first digit on a 192 dp round watch
+    @Test fun testTheRoundEdgeClosesInTowardTheBottom() {
+        assertEquals("the middle: the full width", 0f, RoundEdge.inset(192f, 192f, 96f), 0.01f)
+        assertEquals("the very bottom: the centre", 96f, RoundEdge.inset(192f, 192f, 192f), 0.01f)
+        // where "3/14 SETS" stands (its foot ~177 dp): about 45 dp in, far more than the 18 % (35 dp) the column had
+        val low = RoundEdge.inset(192f, 192f, 177f)
+        assertTrue("$low", low > 0.18f * 192f && low < 50f)
+        assertTrue(RoundEdge.inset(227f, 227f, 150f) < RoundEdge.inset(227f, 227f, 200f))
+    }
+
+    @Test fun aTitleWrapsBetweenWordsAndALongWordMakesItSmaller() {
+        assertEquals("тренируешься?", TitleFit.longestWord("Ещё тренируешься?"))
+        val wordAt = { sp: Float -> 13 * 0.7f * sp * 1.3f }       // a 13-letter word, bold, at font scale 1.3
+        // 192 dp wide, 28 dp in each side for the round top: 136 dp, the word needs 189 at 16 sp
+        val fit = TitleFit.of(16f, 164f, 28f, 6f, wordAt)
+        assertTrue("${fit.sp}", fit.sp < 16f && fit.sp >= 12f)
+        assertTrue("the word fits on its line: ${wordAt(fit.sp)} in ${164f - 2 * fit.inset}", wordAt(fit.sp) <= 164f - 2 * fit.inset)
+        // a short title keeps its size and the inset
+        assertEquals(TitleFit.Fit(16f, 28f), TitleFit.of(16f, 164f, 28f, 6f) { it * 4f })
+        // a word too long even at 12 sp: the inset gives way, never below its floor
+        val huge = TitleFit.of(16f, 164f, 28f, 6f) { it * 14f }
+        assertEquals(12f, huge.sp, 0f)
+        assertTrue(huge.inset >= 6f && huge.inset < 28f)
     }
 
     @Test fun everyMediaControlsAppIsVisibleThroughTheManifest() {
@@ -476,6 +570,14 @@ class WatchLogicTest {
         assertEquals(1234.0, WireJson.decodeFromString(ActiveWorkout.serializer(), newer).activeAt!!, 0.0)
     }
 
+    @Test fun alwaysOnMovesTheScreenRoundAGridAMinuteAtATime() {
+        assertEquals("starts where it was", 0 to 0, BurnIn.offset(0))
+        val nine = (0 until 9).map { BurnIn.offset(it) }
+        assertEquals("nine different places", 9, nine.toSet().size)
+        assertTrue("never more than 3 dp", nine.all { (x, y) -> kotlin.math.abs(x) <= 3 && kotlin.math.abs(y) <= 3 })
+        assertEquals("then round again", BurnIn.offset(2), BurnIn.offset(11))
+    }
+
     /* ---------- SensorPlanTests.swift: the heart-rate sensor rests in a workout nobody finishes ---------- */
 
     private val h = 3600.0 * 1000
@@ -523,5 +625,36 @@ class WatchLogicTest {
         val yesterday = 1_700_000_000_000.0
         val w = sp(yesterday, listOf(row(done = true, at = yesterday + 600_000), row()))
         assertTrue(SensorPlan.idle(w, seen = null, now = yesterday + 20 * h, busy = false))
+    }
+
+    /* ---------- KcalCount ---------- */
+
+    @Test fun kcalSendsNoneForAWorkoutRestoredAfterARestart() {
+        val k = KcalCount()
+        k.lose("a"); k.start("a"); k.total(100.0); assertNull(k.value)
+        k.start("b"); k.total(40.0); assertEquals(40.0, k.value!!, 0.0)
+    }
+
+    @Test fun kcalAddsAnExerciseRestartedMidWorkout() {
+        val k = KcalCount()
+        k.start("a"); k.total(120.0)
+        k.start("a"); assertEquals(120.0, k.value!!, 0.0)
+        k.total(30.0); assertEquals(150.0, k.value!!, 0.0)
+    }
+
+    @Test fun kcalStartsAgainForANewWorkout() {
+        val k = KcalCount()
+        k.start("a"); k.total(120.0)
+        k.start("b"); assertNull(k.value)
+        k.total(40.0); assertEquals(40.0, k.value!!, 0.0)
+    }
+
+    @Test fun kcalSwitchUnderARunningExerciseCountsFromThen() {
+        val k = KcalCount()
+        k.start("a"); k.total(200.0)
+        k.switchTo("b"); assertNull(k.value)
+        k.total(260.0); assertEquals(60.0, k.value!!, 0.0)
+        // The sensor rests and comes back in B: B's count goes on.
+        k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
     }
 }

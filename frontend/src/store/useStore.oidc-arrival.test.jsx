@@ -26,7 +26,7 @@ const bootSignedIn = async () => {
 beforeEach(() => { localStorage.clear(); api.mockReset(); useStore.setState({ user: null, ready: false, config: null }) })
 afterEach(() => { vi.restoreAllMocks(); history.replaceState({}, '', '/'); useStore.setState({ user: null, ready: false, config: null }) })
 
-describe('boot after a provider sign-in', () => {
+describe('boot after a provider sign-in', { shuffle: false }, () => {
   // First: the store keeps module state between tests, and a finished adoption leaves some behind.
   it('a reload without the flag boots as before', async () => {
     history.replaceState({}, '', '/#/')

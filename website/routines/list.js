@@ -27,6 +27,8 @@ function rebuildHays() {
 }
 rebuildHays()
 
+// The languages this visitor reads: English (the page) and the browser's own, "de-CH" as "de".
+const MINE = ['en', ...(navigator.languages || [navigator.language || '']).flatMap(l => [l, l.split('-')[0]])]
 // The exercise names (every language) arrive on the first keystroke: most visits never search.
 let loadingNames = null
 function needNames() {
@@ -113,7 +115,8 @@ function activeChips() {
 }
 
 function render() {
-  const shown = sortRoutines(list.filter(r => matches(r, state, hays[r.s])), state.sort, popular)
+  // With a language picked in the filter, that choice decides; else foreign-language plans go last.
+  const shown = sortRoutines(list.filter(r => matches(r, state, hays[r.s])), state.sort, popular, state.lang.length ? null : MINE)
   const keep = new Set(shown.map(r => r.s))
   for (const [slug, li] of cards) li.hidden = !keep.has(slug)
   // Reorder only when the order changed: moving nodes resets hover and focus for nothing.
