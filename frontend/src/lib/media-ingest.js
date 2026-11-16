@@ -64,6 +64,29 @@ export async function decodeImage(blob, mime, { doc = globalThis.document } = {}
   }
 }
 
+/**
+ * A JPEG without its metadata blocks: Exif/XMP (APP1), Photoshop (APP13), comments, and APP2 unless
+ * it is the colour profile. The headers end where the image data starts (SOS); the rest is copied.
+ */
+export function stripJpegMetadata(b) {
+  if (b[0] !== 0xff || b[1] !== 0xd8) return b
+  const keep = [b.subarray(0, 2)]
+  let i = 2
+  while (i + 4 <= b.length && b[i] === 0xff) {
+    const mk = b[i + 1]
+    if (mk === 0xda || mk === 0xd9) break
+    const end = i + 2 + ((b[i + 2] << 8) | b[i + 3])
+    const icc = mk === 0xe2 && String.fromCharCode(...b.subarray(i + 4, i + 15)) === 'ICC_PROFILE'
+    if (!(mk === 0xe1 || mk === 0xed || mk === 0xfe || (mk === 0xe2 && !icc))) keep.push(b.subarray(i, end))
+    i = end
+  }
+  keep.push(b.subarray(i))
+  const out = new Uint8Array(keep.reduce((n, p) => n + p.length, 0))
+  let o = 0
+  for (const p of keep) { out.set(p, o); o += p.length }
+  return out
+}
+
 const toBlob = (canvas, type, q) => new Promise(resolve => {
   try { canvas.toBlob(b => resolve(b), type, q) } catch { resolve(null) }
 })
@@ -97,9 +120,11 @@ export async function encodeImage(pic, edge, quality, { doc = globalThis.documen
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, w, h)
     const jpeg = await toBlob(canvas, 'image/jpeg', quality)
-    const head = jpeg ? new Uint8Array(await jpeg.slice(0, 4).arrayBuffer()) : null
-    if (!jpeg || sniffKind(head)?.mime !== 'image/jpeg') throw new MediaError('unreadable')
-    return { blob: jpeg, mime: 'image/jpeg', width: w, height: h }
+    const bytes = jpeg ? new Uint8Array(await jpeg.arrayBuffer()) : null
+    if (!bytes || sniffKind(bytes.subarray(0, 4))?.mime !== 'image/jpeg') throw new MediaError('unreadable')
+    // Safari's JPEG comes with an Exif and a Photoshop block of its own (Apple's encoder writes them
+    // for any image): the canvas has nothing of the photo's, but they are taken out all the same.
+    return { blob: new Blob([stripJpegMetadata(bytes)], { type: 'image/jpeg' }), mime: 'image/jpeg', width: w, height: h }
   } finally {
     canvas.width = 0
     canvas.height = 0
