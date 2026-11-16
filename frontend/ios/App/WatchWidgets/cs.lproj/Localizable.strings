@@ -45,9 +45,14 @@
 "Keep going" = "Pokračovat";
 "Finish now" = "Ukončit teď";
 "Back" = "Zpět";
+"Saved" = "Uloženo";
+"Hours" = "Hodiny";
+"Records" = "Rekordy";
+"New record" = "Nový rekord";
 "Last time: %@" = "Naposledy: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Chvíli nic zapsáno. Jestli máš hotovo, skončí sám v %@, uložený na poslední sérii.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Ukončit trénink teď? Jinak skončí sám v %@.";
+"%@ bpm" = "%@ tep/min";
 "No workout running" = "Žádný trénink neběží";
 "Not synced yet" = "Zatím nesynchronizováno";
 "Open openGym on your iPhone once and your routines show up here." = "Otevři openGym jednou na iPhonu a tvoje rutiny se objeví tady.";
@@ -88,4 +93,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Zapni na iPhonu Apple Zdraví a openGym zůstane na displeji i při pauzách a výdržích.";
 "No sets yet" = "Zatím žádné série";
 "+%lld more" = "+%lld další";
+"On iPhone" = "Na iPhonu";
 "%@ sets" = "Sérií: %@";

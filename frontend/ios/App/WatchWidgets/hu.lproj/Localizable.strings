@@ -45,9 +45,14 @@
 "Keep going" = "Folytatom";
 "Finish now" = "Befejezés most";
 "Back" = "Vissza";
+"Saved" = "Elmentve";
+"Hours" = "Órák";
+"Records" = "Rekordok";
+"New record" = "Új rekord";
 "Last time: %@" = "Legutóbb: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Egy ideje nincs bejegyzés. Ha végeztél, %@-kor magától véget ér, az utolsó sorozatodnál mentve.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Befejezed most az edzést? Különben %@-kor magától véget ér.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";
 "Open openGym on your iPhone once and your routines show up here." = "Nyisd meg egyszer az openGymet az iPhone-on, és itt lesznek a rutinjaid.";
@@ -88,4 +93,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Kapcsold be az Apple Egészséget az iPhone-on, és az openGym a pihenők és tartások alatt is a képernyőn marad.";
 "No sets yet" = "Még nincs sorozat";
 "+%lld more" = "+%lld további";
+"On iPhone" = "iPhone-on";
 "%@ sets" = "%@ sorozat";

@@ -70,6 +70,11 @@ const FROM_APP = {
   'Finish now': 'Finish now',
   // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
   'Back': 'Back',
+  // The summary's medal (#1309): the status beside the clock, the time's unit, the records' legend.
+  'Saved': 'Saved',
+  'Hours': 'Hours',
+  'Records': 'Records',
+  'New record': 'New record',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
@@ -79,6 +84,8 @@ const COMPOSED = {
     ['Nothing logged for a while. If you’re done, it ends by itself at {0}, saved at your last set.', w => w.replace('{0}', '%@')],
   'Finish the workout now? Otherwise it ends by itself at %@.':
     ['Finish the workout now? Otherwise it ends by itself at {0}.', w => w.replace('{0}', '%@')],
+  // The medal's back: "AVG BPM", "MAX 162 BPM", in the phone's unit word.
+  '%@ bpm': ['{0} bpm', w => w.replace('{0}', '%@')],
 }
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
@@ -274,6 +281,11 @@ const OWN = {
   // The Muscles page of Metrics.
   'No sets yet': { de: 'Noch keine Sätze', fr: 'Aucune série', es: 'Aún sin series', it: 'Ancora nessuna serie', 'pt-PT': 'Ainda sem séries', 'pt-BR': 'Nenhuma série ainda', pl: 'Jeszcze bez serii', hu: 'Még nincs sorozat', tr: 'Henüz set yok', ru: 'Подходов пока нет', uk: 'Підходів ще немає', ar: 'لا مجموعات بعد', hi: 'अभी कोई सेट नहीं', bn: 'এখনো কোনো সেট নেই', th: 'ยังไม่มีเซ็ต', ko: '아직 세트가 없어요', 'zh-Hans': '还没有组', 'zh-Hant': '還沒有組', cs: 'Zatím žádné série', fa: 'هنوز ستی نیست', id: 'Belum ada set', lt: 'Dar nėra serijų', sv: 'Inga set än', vi: 'Chưa có hiệp nào' },
   '+%lld more': { de: '+%lld weitere', fr: '+%lld autres', es: '+%lld más', it: '+%lld altri', 'pt-PT': '+%lld mais', 'pt-BR': '+%lld mais', pl: '+%lld więcej', hu: '+%lld további', tr: '+%lld daha', ru: 'ещё %lld', uk: 'ще %lld', ar: '+%lld أخرى', hi: '+%lld और', bn: '+%lld আরও', th: '+%lld อื่นๆ', ko: '+%lld개 더', 'zh-Hans': '还有 %lld 个', 'zh-Hant': '還有 %lld 個', cs: '+%lld další', fa: '+%lld مورد دیگر', id: '+%lld lagi', lt: '+%lld daugiau', sv: '+%lld till', vi: '+%lld nữa' },
+  // The summary's medal when the phone ended the workout (finished there): beside the clock.
+  'On iPhone': {
+    de: 'Am iPhone', fr: 'Sur l’iPhone', es: 'En el iPhone', it: 'Sull’iPhone', 'pt-PT': 'No iPhone', 'pt-BR': 'No iPhone', pl: 'Na iPhonie', hu: 'iPhone-on', tr: 'iPhone’da', ru: 'На iPhone', uk: 'На iPhone', ar: 'على iPhone', hi: 'iPhone पर', bn: 'iPhone-এ', th: 'บน iPhone', ko: 'iPhone에서', 'zh-Hans': '在 iPhone 上', 'zh-Hant': '在 iPhone 上',
+    cs: 'Na iPhonu', fa: 'در iPhone', id: 'Di iPhone', lt: 'Baigta iPhone', sv: 'På iPhone', vi: 'Trên iPhone', da: 'På iPhone',
+  },
   '%@ sets': { de: '%@ Sätze', fr: '%@ séries', es: '%@ series', it: '%@ serie', 'pt-PT': '%@ séries', 'pt-BR': '%@ séries', pl: 'Serie: %@', hu: '%@ sorozat', tr: '%@ set', ru: 'Подходов: %@', uk: 'Підходів: %@', ar: '%@ مجموعات', hi: '%@ सेट', bn: '%@ সেট', th: '%@ เซ็ต', ko: '%@세트', 'zh-Hans': '%@ 组', 'zh-Hant': '%@ 組', cs: 'Sérií: %@', fa: '%@ ست', id: '%@ set', lt: 'Serijų: %@', sv: '%@ set', vi: '%@ hiệp' },
 }
 

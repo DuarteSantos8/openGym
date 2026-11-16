@@ -45,9 +45,14 @@
 "Keep going" = "Tęsti";
 "Finish now" = "Baigti dabar";
 "Back" = "Grįžti";
+"Saved" = "Išsaugota";
+"Hours" = "Valandos";
+"Records" = "Rekordai";
+"New record" = "Naujas rekordas";
 "Last time: %@" = "Paskutinį kartą: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Kurį laiką nieko neįrašyta. Jei baigei, ji baigsis pati %@, išsaugota ties paskutiniu priėjimu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Baigti treniruotę dabar? Kitaip ji baigsis pati %@.";
+"%@ bpm" = "%@ k./min";
 "No workout running" = "Treniruotė nevyksta";
 "Not synced yet" = "Dar nesinchronizuota";
 "Open openGym on your iPhone once and your routines show up here." = "Vieną kartą atidarykite „openGym“ iPhone ir jūsų rutinos atsiras čia.";
@@ -88,4 +93,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Įjunk Apple Health iPhone ir openGym liks ekrane per poilsį ir išlaikymus.";
 "No sets yet" = "Dar nėra serijų";
 "+%lld more" = "+%lld daugiau";
+"On iPhone" = "Baigta iPhone";
 "%@ sets" = "Serijų: %@";

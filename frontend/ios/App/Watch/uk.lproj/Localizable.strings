@@ -45,9 +45,14 @@
 "Keep going" = "Продовжити";
 "Finish now" = "Завершити зараз";
 "Back" = "Назад";
+"Saved" = "Збережено";
+"Hours" = "Години";
+"Records" = "Рекорди";
+"New record" = "Новий рекорд";
 "Last time: %@" = "Минулого разу: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Давно нічого не записано. Якщо закінчив, воно завершиться саме о %@, збережене на останньому підході.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Завершити тренування зараз? Інакше воно завершиться саме о %@.";
+"%@ bpm" = "%@ уд/хв";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";
 "Open openGym on your iPhone once and your routines show up here." = "Відкрий openGym на iPhone один раз, і твої програми з’являться тут.";
@@ -88,4 +93,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Увімкни Apple Здоров’я на iPhone, і openGym залишатиметься на екрані під час відпочинку та утримань.";
 "No sets yet" = "Підходів ще немає";
 "+%lld more" = "ще %lld";
+"On iPhone" = "На iPhone";
 "%@ sets" = "Підходів: %@";
