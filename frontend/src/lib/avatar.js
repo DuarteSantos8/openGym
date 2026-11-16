@@ -164,6 +164,62 @@ export function hasImageMetadata (bytes) {
   return false
 }
 
+/**
+ * The same bytes without what hasImageMetadata finds: a JPEG's APP1, APP13, COM and non-colour-
+ * profile APP2 segments, a WebP's EXIF and XMP chunks (with the RIFF size and the VP8X flags
+ * brought in line). Some browsers' canvas encoders write such a block of their own (Safari and
+ * the iPhone's web view), and refusing the photo for it left the person with nothing. Pixels and
+ * colour profile are untouched. Anything else comes back as it was.
+ */
+export function stripImageMetadata (bytes) {
+  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
+  if (b[0] === 0xff && b[1] === 0xd8) {
+    const parts = [b.subarray(0, 2)]
+    let i = 2
+    while (i + 4 <= b.length) {
+      if (b[i] !== 0xff) break
+      const mk = b[i + 1]
+      if (mk === 0xda || mk === 0xd9) break
+      const end = Math.min(b.length, i + 2 + ((b[i + 2] << 8) | b[i + 3]))
+      const drop = mk === 0xe1 || mk === 0xed || mk === 0xfe || (mk === 0xe2 && ascii(b, i + 4, 11) !== 'ICC_PROFILE')
+      if (!drop) parts.push(b.subarray(i, end))
+      i = end
+    }
+    parts.push(b.subarray(i))
+    return concatBytes(parts)
+  }
+  if (ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 4) === 'WEBP') {
+    const parts = []
+    let i = 12
+    while (i + 8 <= b.length) {
+      const id = ascii(b, i, 4)
+      const len = b[i + 4] | (b[i + 5] << 8) | (b[i + 6] << 16) | (b[i + 7] << 24)
+      const end = Math.min(b.length, i + 8 + len + (len & 1))
+      if (id === 'VP8X') {
+        const chunk = b.slice(i, end)
+        chunk[8] &= ~0x0c   // no EXIF (0x08), no XMP (0x04) any more
+        parts.push(chunk)
+      } else if (id !== 'EXIF' && id !== 'XMP ') parts.push(b.subarray(i, end))
+      i = end
+    }
+    const body = concatBytes(parts)
+    const out = new Uint8Array(12 + body.length)
+    out.set(b.subarray(0, 12))
+    out.set(body, 12)
+    const size = out.length - 8
+    out[4] = size & 255; out[5] = (size >> 8) & 255; out[6] = (size >> 16) & 255; out[7] = (size >>> 24) & 255
+    return out
+  }
+  return b
+}
+
+const concatBytes = parts => {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0))
+  let at = 0
+  for (const p of parts) { out.set(p, at); at += p.length }
+  return out
+}
+
 /* ---------------------------------------------------------------- picking and encoding */
 
 const defaultDeps = { decodeImage, encodeImage, doc: globalThis.document }
@@ -202,7 +258,7 @@ export async function openAvatarImage (file, deps = {}) {
 /**
  * The crop drawn into the AVATAR_EDGE square and encoded under AVATAR_MAX_BYTES:
  * { blob, media } with media a MediaRef ready for setAvatarPhoto. Quality steps down, then the
- * edge, before it gives up ('too-large'). Refuses bytes that carry metadata ('unreadable').
+ * edge, before it gives up ('too-large'). Metadata an encoder wrote is taken out (stripImageMetadata).
  */
 export async function renderAvatar (pic, view, crop, deps = {}) {
   const d = { ...defaultDeps, ...deps }
@@ -218,7 +274,9 @@ export async function renderAvatar (pic, view, crop, deps = {}) {
     for (const [edge, q] of [[256, 0.82], [256, 0.7], [256, 0.55], [192, 0.6], [192, 0.45]]) {
       const out = await d.encodeImage(square, edge, q, d)
       if (out.blob.size > AVATAR_MAX_BYTES) continue
-      const bytes = new Uint8Array(await out.blob.arrayBuffer())
+      let bytes = new Uint8Array(await out.blob.arrayBuffer())
+      // An encoder that wrote a block of its own (Safari): taken out, not a reason to refuse the photo.
+      if (hasImageMetadata(bytes)) bytes = stripImageMetadata(bytes)
       if (hasImageMetadata(bytes)) throw new MediaError('unreadable')
       const hash = await sha256Hex(bytes)
       const media = normalizeMediaRef({ kind: 'image', hash, mime: out.mime, size: bytes.length, width: out.width, height: out.height, at: Date.now() })

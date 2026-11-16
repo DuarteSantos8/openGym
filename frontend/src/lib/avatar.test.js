@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   avatarOf, initialOf, setAvatarPhoto, setAvatarPreset, clearAvatar, sanitizeAvatar, AVATAR_PRESETS,
-  clampCrop, sourceRect, zoomAround, coverScale, hasImageMetadata, openAvatarImage, renderAvatar,
+  clampCrop, sourceRect, zoomAround, coverScale, hasImageMetadata, stripImageMetadata, openAvatarImage, renderAvatar,
   AVATAR_EDGE, AVATAR_MAX_BYTES, ZOOM_MAX
 } from './avatar.js'
 import { referencedHashes, uploadableFiles, keptHashes } from './media-refs.js'
@@ -117,6 +117,25 @@ describe('no metadata leaves the device', () => {
     expect(hasImageMetadata(comment)).toBe(true)
   })
 
+  it('takes EXIF, XMP and comments out and keeps the colour profile and the picture', () => {
+    const icc = [0xff, 0xe2, 0, 16, ...Array.from('ICC_PROFILE', c => c.charCodeAt(0)), 0, 1, 0]
+    const body = [0xff, 0xda, 0, 2, 1, 2, 3]
+    const dirty = bytes([0xff, 0xd8], [0xff, 0xe1, 0, 8, 69, 120, 105, 102, 0, 0], [0xff, 0xfe, 0, 6, 104, 101, 121, 33], icc, body)
+    const out = stripImageMetadata(dirty)
+    expect(hasImageMetadata(out)).toBe(false)
+    expect(out).toEqual(bytes([0xff, 0xd8], icc, body))
+    expect(stripImageMetadata(jpeg())[0]).toBe(0xff)
+    expect(hasImageMetadata(stripImageMetadata(jpegWithGps()))).toBe(false)
+    const w = stripImageMetadata(webpWithExif())
+    expect(hasImageMetadata(w)).toBe(false)
+    expect(String.fromCharCode(...w.subarray(0, 4))).toBe('RIFF')
+    expect((w[4] | (w[5] << 8) | (w[6] << 16) | (w[7] << 24)) + 8).toBe(w.length)
+    const clean = webpVp8()
+    const same = stripImageMetadata(clean)
+    expect(same.length).toBe(clean.length)
+    expect(same.subarray(8)).toEqual(clean.subarray(8))   // only the RIFF size is set right
+  })
+
   it('stores only the re-drawn square: a 256 px WebP under the cap, never the picked bytes', async () => {
     const d = fakeDeps()
     const file = new Blob([jpegWithGps()], { type: 'image/jpeg' })
@@ -141,8 +160,10 @@ describe('no metadata leaves the device', () => {
     const pic = await openAvatarImage(new Blob([jpeg()]), big)
     const out = await renderAvatar(pic, 264, { zoom: 1 }, big)
     expect(out.blob.size).toBe(20000)
+    // An encoder that wrote an EXIF block of its own (Safari): the block goes, the photo stays.
     const leak = fakeDeps({ out: webpWithExif() })
-    await expect(renderAvatar(await openAvatarImage(new Blob([jpeg()]), leak), 264, { zoom: 1 }, leak)).rejects.toMatchObject({ code: 'unreadable' })
+    const clean = await renderAvatar(await openAvatarImage(new Blob([jpeg()]), leak), 264, { zoom: 1 }, leak)
+    expect(hasImageMetadata(new Uint8Array(await clean.blob.arrayBuffer()))).toBe(false)
     const never = fakeDeps({ sizes: [90000] })
     await expect(renderAvatar(await openAvatarImage(new Blob([jpeg()]), never), 264, { zoom: 1 }, never)).rejects.toMatchObject({ code: 'too-large' })
   })
