@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.wear.compose.foundation.pager.PagerDefaults
 import androidx.wear.compose.foundation.pager.VerticalPager
 import androidx.wear.compose.material3.VerticalPageIndicator
 import androidx.wear.compose.material3.VerticalPagerScaffold
@@ -1123,7 +1124,10 @@ fun MetricsStack(onScreen: Boolean) {
     // Pulse comes or goes under you: back to the numbers, as on the Apple Watch, not onto another page.
     LaunchedEffect(hasPulse, hasZones) { if (pager.currentPage != 0) pager.scrollToPage(0) }
     VerticalPagerScaffold(pagerState = pager, pageIndicator = { VerticalPageIndicator(pagerState = pager) }) {
+        // A quarter of the screen turns the page, as on the Apple Watch: at the default half, an
+        // unhurried swipe on a small watch sprang back to the numbers every time.
         VerticalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null,
+            flingBehavior = PagerDefaults.snapFlingBehavior(state = pager, snapPositionalThreshold = 0.25f),
             modifier = Modifier.crown(focus) { d -> scope.launch { pager.animateScrollToPage((pager.targetPage + d).coerceIn(0, parts - 1)) } },
         ) { i ->
             when {
