@@ -38,6 +38,10 @@
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
+        # Clear client-supplied CF-Connecting-IP to prevent spoofing.
+        # Only trust this header when nginx itself is behind a verified Cloudflare
+        # ingress (configured via realip module with Cloudflare IP ranges).
+        proxy_set_header CF-Connecting-IP "";
       '';
     };
 
@@ -62,10 +66,12 @@
   # spelling has no counterpart here). The `nix run` script wraps this in its port.
   caddySite = ''
     handle /exercise-media/* {
+      root * ${webRoot}
       header {
         Cache-Control "public, max-age=2592000, immutable"
         Cross-Origin-Resource-Policy same-origin
       }
+      file_server
     }
 
     handle /api/* {

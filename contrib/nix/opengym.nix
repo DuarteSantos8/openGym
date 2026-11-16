@@ -356,7 +356,7 @@ in
 
       videoMaxMb = lib.mkOption {
         type = lib.types.ints.unsigned;
-        default = 40;
+        default = 100;
         description = "Max size for a video, in MB (MEDIA_VIDEO_MAX_MB).";
       };
 

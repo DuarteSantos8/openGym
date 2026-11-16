@@ -26,9 +26,10 @@
 {
   lib,
   buildNpmPackage,
-  nodejs_22,
+  nodejs ? null,
   makeWrapper,
   importNpmLock,
+  rsync,
   pname,
   description,
   version,
@@ -70,14 +71,14 @@ buildNpmPackage {
     description
     ;
 
-  nodejs = nodejs_22;
+  nodejs = nodejs;
 
   npmDeps = importNpmLock { npmRoot = src; };
   npmConfigHook = importNpmLock.npmConfigHook;
 
   dontNpmBuild = true;
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper rsync ];
 
   installPhase = ''
     runHook preInstall
@@ -109,8 +110,9 @@ buildNpmPackage {
       # A tree the entry's imports reach, staged exactly where the import says. Only
       # the parent is made: cp -r into an existing directory would nest the tree one
       # level deeper than the import that needs it.
+      # Filter out non-runtime directories (test/, scripts/, node_modules/) from extraTrees.
       mkdir -p $(dirname ${resolveAt entryDir tree.at})
-      cp -r ${tree.from} ${resolveAt entryDir tree.at}
+      rsync -a --exclude='node_modules' --exclude='test' --exclude='scripts' --exclude='test/' --exclude='scripts/' ${tree.from}/ ${resolveAt entryDir tree.at}/
     '') extraTrees
   )
   + ''
@@ -162,19 +164,69 @@ buildNpmPackage {
         dir=$(dirname "$file")
         while IFS= read -r spec; do
           resolved=no
-          for cand in "$dir/$spec" "$dir/$spec.js" "$dir/$spec.mjs" "$dir/$spec/index.js" "$dir/$spec/index.mjs"; do
-            if [ -f "$cand" ]; then
-              resolved=$cand
-              break
-            fi
-          done
+          # Check only the exact ESM target specified by the import.
+          # ESM imports must specify the exact path (with extension for .js/.mjs files,
+          # or the directory path for index files). Do not append extensions or try
+          # directory indexes — the import must be explicit.
+          cand="$dir/$spec"
+          if [ -f "$cand" ]; then
+            resolved=$cand
+          fi
           if [ "$resolved" = no ]; then
             echo "opengym-package (${pname}): '$spec' imported by ''${file#${libDir}/} is not in the package" >&2
             failed=1
           else
             next="$next $(canon "$resolved")"
           fi
-        done < <(grep -ohE "(from[[:space:]]+|import[[:space:]]*\(?[[:space:]]*)['\"]\.[^'\"]+['\"]" "$file" | sed -E "s/.*['\"](\.[^'\"]+)['\"].*/\1/" | sort -u)
+        done < <(
+          # Extract relative import specifiers (static and dynamic), including
+          # multiline dynamic imports like: await import(\n  './foo'\n)
+          # Use a two-pass approach: first single-line, then multiline dynamic imports.
+          {
+            # Pass 1: Single-line static and dynamic imports (original pattern)
+            grep -ohE "(from[[:space:]]+|import[[:space:]]*\(?[[:space:]]*)['\"]\.[^'\"]+['\"]" "$file" 2>/dev/null || true
+            # Pass 2: Multiline dynamic imports - find import( and extract specifier
+            # across line boundaries until closing )
+            awk '
+              BEGIN { in_import=0; paren=0; spec="" }
+              {
+                line = $0
+                # Check for import( starting on this line
+                if (!in_import && line ~ /import[[:space:]]*\(/) {
+                  in_import = 1
+                  # Count parens on this line
+                  for (i=1; i<=length(line); i++) {
+                    c = substr(line, i, 1)
+                    if (c == "(") paren++
+                    else if (c == ")") paren--
+                  }
+                  # Extract any quoted string after import(
+                  while (match(line, /import[[:space:]]*\([[:space:]]*["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
+                    print arr[1]
+                    line = substr(line, RSTART + RLENGTH)
+                  }
+                }
+                # If we are in a multiline import, continue scanning
+                if (in_import) {
+                  # Look for quoted relative specifiers
+                  while (match(line, /["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
+                    # Only print if we are inside the import( parens
+                    if (paren > 0) print arr[1]
+                    line = substr(line, RSTART + RLENGTH)
+                  }
+                  # Count parens
+                  for (i=1; i<=length(line); i++) {
+                    c = substr(line, i, 1)
+                    if (c == "(") paren++
+                    else if (c == ")") paren--
+                  }
+                  # If parens balanced, we are done
+                  if (paren == 0) in_import = 0
+                }
+              }
+            ' "$file" 2>/dev/null || true
+          } | sed -E "s/.*['\"](\.[^'\"]+)['\"].*/\1/" | sort -u
+        )
       done
       worklist=$next
     done
@@ -185,7 +237,7 @@ buildNpmPackage {
     fi
 
     mkdir -p $out/bin
-    makeWrapper ${nodejs_22}/bin/node $out/bin/${pname} \
+    makeWrapper ${nodejs}/bin/node $out/bin/${pname} \
       --add-flags "${libDir}/${entry}" \
       --set NODE_ENV production
 
@@ -196,6 +248,6 @@ buildNpmPackage {
     inherit description;
     homepage = "https://gitlab.com/DuarteSantos8/opengym";
     license = licenses.agpl3Plus;
-    platforms = nodejs_22.meta.platforms;
+    platforms = nodejs.meta.platforms;
   };
 }

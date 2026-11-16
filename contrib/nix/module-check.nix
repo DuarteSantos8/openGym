@@ -88,6 +88,20 @@ let
   optionValue =
     config: path: builtins.foldl' (value: name: value.${name}) config.services.opengym path;
 
+  # A control scenario that must evaluate successfully — verifies the baseline
+  # config (including the valid root filesystem from flake.nix) is sound, so
+  # negative scenarios failing for unrelated reasons would be caught.
+  checkControl =
+    scenario:
+    let
+      config = evalConfig scenario.modules;
+      controlResult = builtins.tryEval config.system.build.toplevel.drvPath;
+    in
+    if controlResult.success then
+      [ ]
+    else
+      [ "${scenario.label} :: control evaluation failed unexpectedly: ${controlResult.value or "unknown error"}" ];
+
   reportScenario =
     scenario:
     let
@@ -127,6 +141,8 @@ let
     in
     if scenario ? doc then
       reportDocumented scenario
+    else if scenario ? control then
+      checkControl scenario
     else if scenario ? failsToEvaluate then
       if checkFails then
         [ "${scenario.label} :: expected this configuration to fail evaluation, but it evaluated" ]

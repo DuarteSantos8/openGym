@@ -102,12 +102,14 @@ nix build .#checks.x86_64-linux.nixos-module-eval   # just the eval check (scena
 nix build .#checks.x86_64-linux.opengym-nixos-test  # just the VM integration test
 ```
 
-`nix flake check` is the full gate: the eval check (a few seconds) and, on Linux, the VM
-integration test (builds and boots a QEMU image — minutes). Nothing runs it in CI yet, so run it
-after touching anything under `contrib/nix/`. Separately from the checks, building `opengym-api`
-or `opengym-mcp` proves at build time that every relative import the package ships resolves —
-a package that would boot as `ERR_MODULE_NOT_FOUND` fails the build instead, which is the point of
-`node-package.nix` (see §2).
+`nix flake check` is the full gate: on Linux it runs both the eval check (`nixos-module-eval`,
+a few seconds) and the VM integration test (`opengym-nixos-test`, builds and boots a QEMU image
+— minutes). On Darwin (macOS), neither check runs — the flake's `checks` output only defines
+them for `pkgs.stdenv.hostPlatform.isLinux`. Nothing runs these checks in CI yet, so run
+`nix flake check` on Linux after touching anything under `contrib/nix/`. Separately from the
+checks, building `opengym-api` or `opengym-mcp` proves at build time that every relative
+import the package ships resolves — a package that would boot as `ERR_MODULE_NOT_FOUND` fails
+the build instead, which is the point of `node-package.nix` (see §2).
 
 `nix run .#opengym` starts the API and the built frontend (exercise media included) behind a
 throwaway Caddy — open `http://localhost:8080` and use it (passkeys work on `localhost`). Overrides via env
@@ -161,10 +163,12 @@ module (where `config` is in scope) so the store paths resolve from the module's
         encode zstd gzip
 
         handle /exercise-media/* {
+          root * ${config.services.opengym.web.root}
           header {
             Cache-Control "public, max-age=2592000, immutable"
             Cross-Origin-Resource-Policy same-origin
           }
+          file_server
         }
 
         handle /api/* {

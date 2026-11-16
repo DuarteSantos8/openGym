@@ -40,6 +40,10 @@
           services.opengym = attrs // {
             enable = true;
           };
+          # Provide a minimal but valid NixOS configuration so negative scenarios
+          # fail for the module's own assertions, not for unrelated NixOS validation
+          # (e.g., missing required options like networking.hostId).
+          networking.hostId = "00000000";
           system.stateVersion = "25.05";
         };
 
@@ -55,6 +59,20 @@
           pkgs = pkgs;
           name = "opengym-module-check";
           scenarios = [
+            # Control: a minimal valid config that must evaluate successfully.
+            # Verifies the baseline (including networking.hostId) is sound, so negative
+            # scenarios failing for unrelated reasons would be caught.
+            {
+              label = "control";
+              control = true;
+              modules = [
+                (opengymConfig {
+                  rpId = "localhost";
+                  origin = "http://localhost:8080";
+                })
+              ];
+            }
+
             # The default config: every option left alone — the old smoke-test config's
             # job, plus the branches the ladder never reached.
             {
@@ -487,7 +505,7 @@
             export DATA_DIR
             export RP_ID=''${OPENGYM_RP_ID:-localhost}
             export ORIGIN=''${OPENGYM_ORIGIN:-http://localhost:$WEB_PORT}
-            export TRUST_PROXY=''${TRUST_PROXY:-1}
+            export TRUST_PROXY=''${TRUST_PROXY:-0}
             export ALLOW_GUEST=''${ALLOW_GUEST:-1}
 
             ${opengymPackages.opengym-api}/bin/opengym-api &
