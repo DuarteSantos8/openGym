@@ -47,6 +47,7 @@
 "Back" = "返回";
 "Saved" = "已保存";
 "Hours" = "小时";
+"min (minutes)" = "分钟";
 "Records" = "纪录";
 "New record" = "新纪录";
 "Last time: %@" = "上次: %@";

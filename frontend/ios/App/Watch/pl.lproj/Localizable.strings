@@ -47,6 +47,7 @@
 "Back" = "Wstecz";
 "Saved" = "Zapisano";
 "Hours" = "Godziny";
+"min (minutes)" = "min";
 "Records" = "Rekordy";
 "New record" = "Nowy rekord";
 "Last time: %@" = "Ostatnio: %@";

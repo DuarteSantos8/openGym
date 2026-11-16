@@ -47,6 +47,7 @@
 "Back" = "Quay lại";
 "Saved" = "Đã lưu";
 "Hours" = "Giờ";
+"min (minutes)" = "phút";
 "Records" = "Kỷ lục";
 "New record" = "Kỷ lục mới";
 "Last time: %@" = "Lần trước: %@";

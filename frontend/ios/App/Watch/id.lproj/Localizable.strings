@@ -47,6 +47,7 @@
 "Back" = "Kembali";
 "Saved" = "Disimpan";
 "Hours" = "Jam";
+"min (minutes)" = "menit";
 "Records" = "Rekor";
 "New record" = "Rekor baru";
 "Last time: %@" = "Terakhir kali: %@";

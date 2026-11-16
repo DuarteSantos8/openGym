@@ -47,6 +47,7 @@
 "Back" = "Geri";
 "Saved" = "Kaydedildi";
 "Hours" = "Saat";
+"min (minutes)" = "dk";
 "Records" = "Rekorlar";
 "New record" = "Yeni rekor";
 "Last time: %@" = "Geçen sefer: %@";

@@ -47,6 +47,7 @@
 "Back" = "Grįžti";
 "Saved" = "Išsaugota";
 "Hours" = "Valandos";
+"min (minutes)" = "min.";
 "Records" = "Rekordai";
 "New record" = "Naujas rekordas";
 "Last time: %@" = "Paskutinį kartą: %@";

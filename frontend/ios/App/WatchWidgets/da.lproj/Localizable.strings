@@ -47,6 +47,7 @@
 "Back" = "Tilbage";
 "Saved" = "Gemt";
 "Hours" = "Timer";
+"min (minutes)" = "min";
 "Records" = "Rekorder";
 "New record" = "Ny rekord";
 "Last time: %@" = "Sidste gang: %@";

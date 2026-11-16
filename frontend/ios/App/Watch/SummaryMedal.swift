@@ -167,7 +167,7 @@ struct SummaryView: View {
         return MedalWords(
             status: store.L(summary.endedOnPhone ? "On iPhone" : "Saved"),
             name: up(summary.name), arcable: Medal.arcable(summary.name),
-            time: time?.text ?? sets, timeLabel: up(time == nil ? store.L("Sets") : time!.hours ? store.L("Hours") : store.L("min")),
+            time: time?.text ?? sets, timeLabel: up(time == nil ? store.L("Sets") : time!.hours ? store.L("Hours") : store.L("min (minutes)")),
             legend: up(legend), sets: sets, setsWord: up(store.L("Sets")),
             volume: volume, unit: up(summary.unit),
             avgLabel: up("\(store.L("avg")) \(bpm)"), kcalLabel: up(kcal),
@@ -660,8 +660,15 @@ private enum Engraver {
         case .name(let s, let arcable):
             name(s, arcable: arcable, in: ctx, color: color)
         case .arc(let s, let size, let tracking, let r, let top, let length):
-            let (text, fs) = fit(s, size: size, tracking: tracking, length: length, smallest: 13, in: ctx)
-            arc(text, size: fs, tracking: tracking, radius: r, top: top, in: ctx, color: color)
+            // Joined scripts (an Arabic month, a translated legend) fall apart a letter at a time on the
+            // rim: straight across just inside it instead, as the name does (CodeRabbit, #1314).
+            if Medal.arcable(s) {
+                let (text, fs) = fit(s, size: size, tracking: tracking, length: length, smallest: 13, in: ctx)
+                arc(text, size: fs, tracking: tracking, radius: r, top: top, in: ctx, color: color)
+            } else {
+                straight(s, size: min(size, 15), tracking: 0.4, at: CGPoint(x: 0, y: top ? -(r - 8) : r - 8), align: .center,
+                         width: 100, mono: false, in: ctx, color: color)
+            }
         case .text(let s, let size, let tracking, let x, let y, let align, let width, let mono, let opacity):
             var g = ctx
             g.opacity = opacity

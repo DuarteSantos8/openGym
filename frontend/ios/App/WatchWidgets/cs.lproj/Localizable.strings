@@ -47,6 +47,7 @@
 "Back" = "Zpět";
 "Saved" = "Uloženo";
 "Hours" = "Hodiny";
+"min (minutes)" = "min";
 "Records" = "Rekordy";
 "New record" = "Nový rekord";
 "Last time: %@" = "Naposledy: %@";

@@ -47,6 +47,7 @@
 "Back" = "뒤로";
 "Saved" = "저장됨";
 "Hours" = "시간";
+"min (minutes)" = "분";
 "Records" = "기록";
 "New record" = "새 기록";
 "Last time: %@" = "지난번: %@";

@@ -20,7 +20,7 @@
 "Volume" = "Volume";
 "Time" = "Time";
 "Skip set" = "Skip set";
-"Personal records" = "Personal records";
+"Personal records" = "PRs";
 "Quick check-in" = "Quick check-in";
 "Save & start workout" = "Save & start workout";
 "Start without weighing in" = "Start without weighing in";
@@ -47,6 +47,7 @@
 "Back" = "Back";
 "Saved" = "Saved";
 "Hours" = "Hours";
+"min (minutes)" = "min";
 "Records" = "Records";
 "New record" = "New record";
 "Last time: %@" = "Last time: %@";

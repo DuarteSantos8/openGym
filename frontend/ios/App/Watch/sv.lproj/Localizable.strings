@@ -47,6 +47,7 @@
 "Back" = "Tillbaka";
 "Saved" = "Sparat";
 "Hours" = "Timmar";
+"min (minutes)" = "min";
 "Records" = "Rekord";
 "New record" = "Nytt rekord";
 "Last time: %@" = "Förra gången: %@";

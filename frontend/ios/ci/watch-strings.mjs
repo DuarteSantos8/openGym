@@ -73,6 +73,8 @@ const FROM_APP = {
   // The summary's medal (#1309): the status beside the clock, the time's unit, the records' legend.
   'Saved': 'Saved',
   'Hours': 'Hours',
+  // The app's "min" is minutes; the watch's own "min" is a heart-rate minimum (zh 最低), so its own key.
+  'min (minutes)': 'min',
   'Records': 'Records',
   'New record': 'New record',
 }
@@ -366,7 +368,8 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
 {
   const keys = [...Object.keys(FROM_APP), ...Object.keys(COMPOSED), ...Object.keys(OWN)]
   const lines = ['/* openGym on the Apple Watch, en. Written by ios/ci/watch-strings.mjs: change that, not this. */', '']
-  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k)}";`)
+  // A borrowed word says the app's English ("min (minutes)" → "min"); every other key is its own English.
+  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(FROM_APP[k] || k)}";`)
   for (const dir of [out, widgets]) {
     mkdirSync(join(dir, 'en.lproj'), { recursive: true })
     writeFileSync(join(dir, 'en.lproj', 'Localizable.strings'), lines.join('\n') + '\n')

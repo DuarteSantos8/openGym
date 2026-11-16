@@ -47,6 +47,7 @@
 "Back" = "برگشت";
 "Saved" = "ذخیره شد";
 "Hours" = "ساعت";
+"min (minutes)" = "دقیقه";
 "Records" = "رکوردها";
 "New record" = "رکورد جدید";
 "Last time: %@" = "آخرین بار: %@";

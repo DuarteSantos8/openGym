@@ -47,6 +47,7 @@
 "Back" = "Indietro";
 "Saved" = "Salvato";
 "Hours" = "Ore";
+"min (minutes)" = "min";
 "Records" = "Record";
 "New record" = "Nuovo record";
 "Last time: %@" = "L'ultima volta: %@";

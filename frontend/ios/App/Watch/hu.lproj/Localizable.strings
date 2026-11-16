@@ -47,6 +47,7 @@
 "Back" = "Vissza";
 "Saved" = "Elmentve";
 "Hours" = "Órák";
+"min (minutes)" = "perc";
 "Records" = "Rekordok";
 "New record" = "Új rekord";
 "Last time: %@" = "Legutóbb: %@";
