@@ -98,6 +98,8 @@ describe('the stories', () => {
     expect(button('Share my year')).toBeTruthy()
     act(() => button('Share my year').click())
     expect(useUI.getState().sheets).toHaveLength(1)
+    // The glow holds still under the sheet, so the picture draws fast on phones (#1103).
+    expect(host.querySelector('.wrapped.covered')).toBeTruthy()
   })
 
   it('leaves body weight out when asked, for good', () => {

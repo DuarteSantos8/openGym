@@ -1,4 +1,4 @@
 /* openGym on the Apple Watch, it: Info.plist. Written by ios/ci/watch-strings.mjs. */
 
-"NSHealthShareUsageDescription" = "openGym mostra il tuo battito durante l’allenamento e accanto a ogni serie.";
+"NSHealthShareUsageDescription" = "openGym mostra il tuo battito durante l'allenamento e accanto a ogni serie, e usa la tua data di nascita per le zone cardiache.";
 "NSHealthUpdateUsageDescription" = "openGym salva i tuoi allenamenti in Apple Salute se lo attivi.";
