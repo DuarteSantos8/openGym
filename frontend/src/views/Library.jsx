@@ -96,7 +96,7 @@ export default function Library() {
 
   return <>
     {/* in season, a string of lights or a few bats along the header (components/Seasonal.jsx) */}
-    <div className="hdr lib-hdr"><SeasonDeco spot="header-bats" /><div><h1>{t('Exercises')}</h1></div>
+    <div className="hdr lib-hdr"><SeasonDeco spot="header-bats" /><div><h1>{t('Library')}</h1></div>
       <div className="row lib-hdr-btns" style={{ gap: 6 }}>
         {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
         <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
