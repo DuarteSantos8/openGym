@@ -68,6 +68,7 @@ import { bindWatchActions, markDiscarded, watchTickRest, applyRestStep, restAtFo
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
+import { askEffortFirst } from '../lib/effort-ask.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
@@ -2230,6 +2231,25 @@ function ActiveWorkout() {
     // mid-screen on iOS (lib/viewport-guard.js).
     if (typeof document !== 'undefined') { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) a.blur?.() }
     const m = modeAt(idx)
+    // Settings → Workout → "Ask how hard every set was" (lib/effort-ask.js): an unrated working set
+    // asks first, and counts only once it is rated. Picking ticks it through here again, rated.
+    if (!editing) {
+      const live = useStore.getState().S
+      const kind = askEffortFirst(live, live.active?.entries?.[idx]?.sets?.[i], side, m)
+      if (kind) {
+        effortPickerSheet(kind, null, nv => {
+          if (nv == null) return
+          update(s => {
+            const e = s.active?.entries?.[idx]
+            if (!e?.sets?.[i]) return
+            if (side) e.sets[i] = setSideField(e.sets[i], side, EFFORT[kind].f, nv)
+            else e.sets[i][EFFORT[kind].f] = nv
+          })
+          toggle(idx, i, side, { quiet, onFocusProgress })
+        })
+        return
+      }
+    }
     const cardioEntry = m === 'cardio'
     let exJustDone = false, workoutDone = false, checked = false
     update(s => {

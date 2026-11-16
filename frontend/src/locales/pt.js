@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Pré-visualizar em",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "um pouco mais curto",
+  "Ask how hard every set was": "Perguntar o esforço de cada série",
+  "A set counts once you rate it. The watch asks too.": "Uma série conta quando a avalias. O relógio também pergunta.",
 }

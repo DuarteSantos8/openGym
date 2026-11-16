@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Ask how hard every set was": "Hỏi độ nặng của mỗi hiệp",
+  "A set counts once you rate it. The watch asks too.": "Một hiệp chỉ được tính khi bạn đánh giá. Đồng hồ cũng hỏi.",
 };

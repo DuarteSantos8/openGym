@@ -5900,4 +5900,6 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Ask how hard every set was": "Kérdezze meg minden sorozat nehézségét",
+  "A set counts once you rate it. The watch asks too.": "A sorozat akkor számít, ha értékelted. Az óra is rákérdez.",
 }

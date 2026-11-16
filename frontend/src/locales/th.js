@@ -5908,4 +5908,6 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Ask how hard every set was": "ถามความหนักของทุกเซต",
+  "A set counts once you rate it. The watch asks too.": "เซตจะนับเมื่อคุณให้คะแนนแล้ว นาฬิกาก็ถามด้วย",
 }

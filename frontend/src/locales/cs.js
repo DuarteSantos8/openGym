@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Ask how hard every set was": "Ptát se na náročnost každé série",
+  "A set counts once you rate it. The watch asks too.": "Série se započítá, až ji ohodnotíš. Hodinky se ptají taky.",
 }

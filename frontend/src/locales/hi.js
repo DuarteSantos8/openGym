@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Ask how hard every set was": "हर सेट कितना कठिन था, पूछें",
+  "A set counts once you rate it. The watch asks too.": "सेट तभी गिना जाता है जब आप उसे रेट करें। घड़ी भी पूछती है।",
 }
