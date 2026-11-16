@@ -117,6 +117,13 @@ describe('the shutter', () => {
     expect(overlay()).not.toBeNull()
     expect(props.onTaken).not.toHaveBeenCalled()
   })
+  it('still takes the picture after StrictMode mounted it twice', async () => {
+    props = { photos, onTaken: vi.fn(), close: vi.fn(), capture: vi.fn(async () => new Blob(['jpg'], { type: 'image/jpeg' })) }
+    host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
+    await act(async () => { root.render(<React.StrictMode><PhotoCamera {...props} /></React.StrictMode>) })
+    await act(async () => { button('Take photo').click() })
+    expect(host.querySelector('.pp-cam-shot')).not.toBeNull()
+  })
   it('drops a picture still being made when the camera is closed', async () => {
     let done
     await mount({ capture: vi.fn(() => new Promise(r => { done = r })) })

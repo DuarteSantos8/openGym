@@ -177,10 +177,10 @@ export default function PhotoCompare({ photos, close, toast }) {
           </div>)}
     </div>
     <div className="pcmp-foot">
-      {two
-        ? <Segmented value={mode} onChange={setMode}
-            options={[{ value: 'slider', label: t('Slider') }, { value: 'side', label: t('Side by side') }]} />
-        : <div className="small" style={{ opacity: 0.7, textAlign: 'center' }}>{t('Drag a photo to move what shows, pinch to zoom.')}</div>}
+      {two && <Segmented value={mode} onChange={setMode}
+        options={[{ value: 'slider', label: t('Slider') }, { value: 'side', label: t('Side by side') }]} />}
+      {/* The slider has no zoom, so no hint there. */}
+      {!slider && <div className="small" style={{ opacity: 0.7, textAlign: 'center' }}>{t('Drag a photo to move what shows, pinch to zoom.')}</div>}
     </div>
   </div>
 }

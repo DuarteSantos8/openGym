@@ -1593,7 +1593,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pcmp-slider .pp-img{object-fit:cover}
 .pcmp-slider .pp-pill{bottom:12px;font-size:var(--fs-caption)}
 .pcmp-slider:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
-.pcmp-foot{flex:none;padding:8px 16px 12px;display:flex;justify-content:center}
+.pcmp-foot{flex:none;padding:8px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .pcmp-foot .seg{width:min(100%,320px)}
 /* The progress-photo camera: the live view with the earlier photo over it (components/PhotoCamera.jsx). */
 .pp-cam-stage{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;container-type:size}

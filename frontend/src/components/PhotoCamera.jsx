@@ -39,7 +39,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   const [shot, setShot] = useState(null)                 // { blob, url, ratio } once the shutter is pressed
   const [busy, setBusy] = useState(false)
   const open = useRef(true)                             // false once the camera is closed: a capture still running is dropped
-  useEffect(() => () => { open.current = false }, [])
+  useEffect(() => { open.current = true; return () => { open.current = false } }, [])
   const [timer, setTimer] = useState(0)                 // seconds the shutter waits before it takes the photo; 0 is off
   const [count, setCount] = useState(null)               // seconds left while the timer runs, else null
   const overlayUrl = useMediaUrl(overlay ? overlay.m : null).url
