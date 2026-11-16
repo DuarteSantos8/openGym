@@ -191,6 +191,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "อ่านบนอุปกรณ์นี้เท่านั้น ไม่มีการเขียนอะไรลง openNutrition และไม่มีอะไรที่มันส่งมาเข้าไปในข้อมูลสำรองหรือการซิงค์ของคุณ",
   "Runs, rides and matches": "วิ่ง ปั่น และแมตช์",
   "Runs, rides and matches from other apps": "วิ่ง ปั่น และแมตช์จากแอปอื่น",
+  "Birth date, for heart-rate zones": "วันเกิด สำหรับโซนอัตราการเต้นของหัวใจ",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch คำนวณโซนอัตราการเต้นของหัวใจจากอายุของคุณ อนุญาตวันเกิด หรือเปลี่ยนภายหลังใน Apple Health",
   "Show it in": "แสดงใน",
   "Some days had foods without numbers, so their totals are a little low.": "บางวันมีอาหารที่ไม่มีค่า ยอดรวมจึงต่ำไปเล็กน้อย",
   "Sport": "กีฬา",
@@ -5912,4 +5914,10 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "ปรับแต่ง",
+  "Collapsed": "ย่อไว้",
+  "Hide": "ซ่อน",
+  "Totals": "ยอดรวม",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
 }

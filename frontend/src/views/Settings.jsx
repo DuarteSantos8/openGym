@@ -4,7 +4,8 @@ import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import { readWatchPrefs, writeWatchPrefs } from '../lib/watch-settings.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, allowBirthDate } from '../lib/health-sync.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -60,6 +61,7 @@ import { getMediaStatus, subscribeMediaStatus, pendingRefCount, localOnlyRefCoun
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
+import { layoutSheet } from '../components/PageLayout.jsx'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
@@ -347,7 +349,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             // The release always publishes the checksum next to the APK. Without it the file is
             // not installed — a sideloaded binary is exactly the thing that should be verified.
             let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
+            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl, updateInfo.sumsUrl, updateInfo.sumsApiUrl, updateInfo.apkName) } catch (e) { /* reported below */ }
             if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
             await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
               if (setProgress) setProgress(received, total)
@@ -863,9 +865,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
         </Section>
-        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
-            over" and the count of a hold, in the app's language. The phone's own voice in the
-            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
+        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
+            workout begins and each superset member the focus moves to without a rest (#1210),
+            "10 seconds", "Rest is over" and the count of a hold, in the app's language. The
+            phone's own voice in the apps (music ducks and comes back), the browser's elsewhere.
+            Off by default. */}
         {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
         <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
@@ -1027,6 +1031,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
       </Section>
       <Section title={t('Stats')}>
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Stats')} accessory="chevron" onClick={() => layoutSheet('stats')} />
         {/* Which formula turns a set into an estimated 1RM (Discord, #155): the exercise page,
             the 1RM chart and records all follow it. Formula names are people, not words. */}
         <SelectRow icon="chart" iconTint="var(--teal)" title={t('1RM formula')}
@@ -1133,6 +1138,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       <Section title={t('Home')}>
         {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
+        {/* Which cards Home and Stats show, folded or in which order (components/PageLayout.jsx, #1119). */}
+        <Row icon="layout" iconTint="var(--blue)" title={t('Customize')} value={t('Home')} accessory="chevron" onClick={() => layoutSheet('home')} />
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
@@ -2173,6 +2180,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const [busy, setBusy] = useState(false)
   // iOS 26+: AirPods that measure the heart rate fill each set's when no Apple Watch does (#818).
   const [airpods, setAirpods] = useState(false)
+  const [zones, setZones] = useState(() => readWatchPrefs().show.zones)
   useEffect(() => {
     let gone = false
     Promise.all([healthStatus(), loadHealth()]).then(([s, f]) => { if (!gone) { setSt(s); setH(f) } }).catch(() => {})
@@ -2278,6 +2286,15 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={t('Strava, your watch, Runna and friends: their sessions show in your calendar and tire the right muscles. No sets, no volume.')}>
         <Switch checked={!!h.readSport} disabled={busy} onChange={toggleRead('sport')} />
       </Row>
+      {/* The Apple Watch's Zones page: max heart rate from the age, a watch setting (show.zones).
+          On asks Apple Health (the watch app shares this app's permissions), or opens it once answered. */}
+      {ios && isOn(S, 'watch') && <Row icon="heart" iconTint="var(--orange)" title={t('Birth date, for heart-rate zones')}
+        subtitle={t('Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.')}>
+        <Switch aria-label={t('Birth date, for heart-rate zones')} checked={zones} disabled={busy} onChange={v => {
+          setZones(writeWatchPrefs({ show: { zones: v } }).show.zones)
+          if (v) allowBirthDate().catch(() => {})
+        }} />
+      </Row>}
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
         onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readVitals ? 'vitals' : 'sport')(true)} />}

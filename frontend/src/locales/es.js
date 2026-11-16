@@ -191,6 +191,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Se lee solo en este dispositivo. No se escribe nada en openNutrition, y nada de lo que envía va a tu copia de seguridad ni a tu sincronización.",
   "Runs, rides and matches": "Carreras, salidas y partidos",
   "Runs, rides and matches from other apps": "Carreras, salidas y partidos de otras apps",
+  "Birth date, for heart-rate zones": "Fecha de nacimiento, para las zonas de pulso",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Tu Apple Watch calcula tus zonas de pulso a partir de tu edad. Permite la fecha de nacimiento o cámbialo luego en Apple Health.",
   "Show it in": "Mostrarlo en",
   "Some days had foods without numbers, so their totals are a little low.": "Algunos días tenían alimentos sin valores, así que sus totales salen algo bajos.",
   "Sport": "Deporte",
@@ -5901,4 +5903,10 @@ export default {
   "Preview on": "Vista previa en",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un poco más corto",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Personalizar",
+  "Collapsed": "Plegada",
+  "Hide": "Ocultar",
+  "Totals": "Totales",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Las flechas cambian el orden.",
 }

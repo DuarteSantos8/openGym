@@ -188,6 +188,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Læses kun på denne enhed. Intet skrives til openNutrition, og intet derfra havner i din backup eller synkronisering.",
   "Runs, rides and matches": "Løb, cykelture og kampe",
   "Runs, rides and matches from other apps": "Løb, cykelture og kampe fra andre apps",
+  "Birth date, for heart-rate zones": "Fødselsdato til pulszoner",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Dit Apple Watch regner dine pulszoner ud fra din alder. Tillad fødselsdato, eller ret det senere i Apple Health.",
   "Show it in": "Vis det i",
   "Some days had foods without numbers, so their totals are a little low.": "Nogle dage havde fødevarer uden tal, så deres totaler er lidt lave.",
   "Sport": "Sport",
@@ -5841,4 +5843,10 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tilpas",
+  "Collapsed": "Foldet sammen",
+  "Hide": "Skjul",
+  "Totals": "Totaler",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
 }

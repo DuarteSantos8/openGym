@@ -56,7 +56,7 @@ export function SessionMuscles({ close }) {
       <h3 style={{ margin: 0 }}>{t('What this session hits')}</h3>
       <Button size="sm" variant="ghost" onClick={close}>{t('Done')}</Button>
     </div>
-    <BodyMap className="bm-session" levels={levels} body={body} />
+    <BodyMap className="bm-session" levels={levels} body={body} hits={muscles} />
     <div className="hm-legend sm-legend">
       <span className="hm-c l4" />{t('Already worked')}<span className="hm-c l1" />{t('Still to come')}
     </div>
