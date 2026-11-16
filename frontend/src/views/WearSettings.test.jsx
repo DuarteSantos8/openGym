@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { act } from 'react'
 import WearSettingsPage from './WearSettings.jsx'
 import { readWatchPrefs, writeWatchStatus } from '../lib/watch-settings.js'
-import { PAGES, ROOT_GROUPS, pageVisible } from './settings-pages.js'
+import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible } from './settings-pages.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -87,7 +87,10 @@ describe('where the page lives', () => {
   const ctx = over => ({ mobile: true, android: true, ios: false, demo: false, mod: () => true, ...over })
   it('in the Android app, not on the iPhone, the web or the demo; gone with the Watch module', () => {
     expect(PAGES.wear.mod).toBe('watch')
-    expect(ROOT_GROUPS.flat()).toContain('wear')
+    // On the phone it sits under Settings → Watches with the other watches (#1105), not on the root.
+    expect(PAGES.wear.parent).toBe('watches')
+    expect(WATCH_PAGES).toContain('wear')
+    expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('wear')
     expect(pageVisible('wear', ctx())).toBe(true)
     expect(pageVisible('wear', ctx({ android: false, ios: true }))).toBe(false)
     expect(pageVisible('wear', ctx({ mobile: false, android: false }))).toBe(false)

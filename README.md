@@ -106,7 +106,7 @@ if you want to try it before installing anything.
   everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
-- 24 languages, including right-to-left Arabic and Persian, and Traditional Chinese. Exercise names and
+- 26 languages, including right-to-left Arabic and Persian, and Traditional Chinese. Exercise names and
   instructions are translated for most of them.
 
 **On the phone and the wrist**
@@ -305,8 +305,8 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
 | v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
 | v1.4.4 | released Nov 2026 | Programmes, a fresh look, Modules, a tour with tutorials, AirPods heart rate, kg or lb per exercise, the Google Play closed test and a Wear OS beta |
-| v1.4.5 | released Nov 2026 | The watch redesign everywhere (Garmin too), circuits, a live widget, a Coach that acts, trainers and gyms, OIDC, a community library |
-| v1.4.6 | Dec 2026 | Google Play for everyone, F-Droid, Garmin's store, Wear OS out of beta |
+| v1.4.5 | released Nov 2026 | The watch redesign on all three watches with one shared rest timer, Garmin in its store, circuits, a live widget, a Coach that acts, trainers and gyms, OIDC, a community library |
+| v1.4.6 | Dec 2026 | Google Play for everyone, F-Droid, Wear OS out of beta, set marks and calories from the watch, routine folders, the fixes waiting in review |
 | later | dates are guesses | The rest of the progression engine, accounts, skins, more integrations, database storage |
 
 ## Community
@@ -354,6 +354,14 @@ What that does and doesn't mean:
 
 Community pull requests are written by their authors, with whatever tools they like, and reviewed
 the same way.
+
+## Sponsors
+
+**[ElfHosted](https://store.elfhosted.com/product/opengym/?utm_source=opengym&utm_medium=github&utm_campaign=opengym-sponsor)** sponsors openGym. If you'd rather not run a server, ElfHosted
+runs your own private openGym for you, and your data stays yours. There's no Docker or HTTPS to set up, the AI coach is included with no API key needed, and updates and daily backups are handled for you. Try it with a $1, 7-day trial.
+
+Sponsoring keeps the lights on. It buys no say in what openGym does: nothing is held back for
+sponsors, and nothing ever will be.
 
 ## Support
 

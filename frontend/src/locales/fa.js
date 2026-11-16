@@ -1,5 +1,9 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ساعت‌ها",
+  "Set once": "یک‌بار تنظیم",
+  "Connections": "اتصال‌ها",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخرین ست: {0}",
   "Your note for this exercise": "یادداشت تو برای این حرکت",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "فقط روی همین دستگاه خوانده می‌شود. چیزی در openNutrition نوشته نمی‌شود و هیچ‌چیز از آنچه می‌فرستد وارد پشتیبان یا همگام‌سازی تو نمی‌شود.",
   "Runs, rides and matches": "دویدن‌ها، رکاب‌زدن‌ها و مسابقه‌ها",
   "Runs, rides and matches from other apps": "دویدن‌ها، رکاب‌زدن‌ها و مسابقه‌ها از برنامه‌های دیگر",
+  "Birth date, for heart-rate zones": "تاریخ تولد، برای ناحیه‌های ضربان قلب",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch ناحیه‌های ضربان قلبت را از سنت حساب می‌کند. به تاریخ تولد اجازه بده، یا بعداً در Apple Health تغییرش بده.",
   "Show it in": "نمایش در",
   "Some days had foods without numbers, so their totals are a little low.": "برخی روزها خوراکی‌های بدون مقدار داشتند، پس جمع آن‌ها کمی پایین است.",
   "Sport": "ورزش",
@@ -5912,4 +5918,10 @@ export default {
   "“{0}” restored.": "«{0}» بازیابی شد.",
   "{0} deleted.": "{0} حذف شد.",
   "Nothing archived.": "چیزی بایگانی نشده است.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "سفارشی‌سازی",
+  "Collapsed": "جمع‌شده",
+  "Hide": "پنهان",
+  "Totals": "مجموع‌ها",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
 }

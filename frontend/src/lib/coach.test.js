@@ -3,7 +3,7 @@ import {
   canonicalPlan, planHash, hashPlan, markStale, applicable, currentValue, ROUTINE_NAME_SEEN,
   pushSnapshot, revertLast, canRevert, appendLog, applyChangeSet, applyCreatedPlan,
   recordDismissal, validateProposal, coachAvailable, hasConsent,
-  recordDebrief, logEntry, lightBundle, changeValues, defaultTrainingDays,
+  recordDebrief, decisionBody, logEntry, lightBundle, changeValues, defaultTrainingDays,
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
 import { registerCustom } from './exercises.js'
@@ -353,6 +353,21 @@ describe('applying changes', () => {
     expect(changeValues(c, S)).toEqual({ before: 'Full body A + Full body B', after: 'Full body A' })
     expect(changeValues({ type: 'week', target: { weekday: 3 }, before: ['r1', 'r2'], after: 'rest' }, S).after).toBe('Rest')
     expect(changeValues({ type: 'week', target: { weekday: 3 }, before: null, after: 'r2' }, S).before).toBe('Rest')
+  })
+
+  it('changeValues never shows raw JSON for superset or cardio changes', () => {
+    const S = state()
+    expect(changeValues({ type: 'superset', target: { exId: '0001' }, before: null, after: { link: true, with: '0009' } }, S)).toBeNull()
+    expect(changeValues({ type: 'cardio', target: { exId: '0001' }, before: { min: 20, speed: 8 }, after: { min: 25 } }, S))
+      .toEqual({ before: '20 min @ 8 km/h', after: '25 min' })
+  })
+
+  it('decisionBody rebuilds the answer the server was sent, from the log entry', () => {
+    expect(decisionBody({ kind: 'create', proposalId: 'p1' })).toEqual({ id: 'p1', accepted: ['plan'] })
+    expect(decisionBody({ kind: 'debrief', proposalId: 'p2' })).toEqual({ id: 'p2', accepted: ['debrief'] })
+    expect(decisionBody({ kind: 'review', proposalId: 'p3', dismissed: true, decisions: [{ id: 'c1', status: 'rejected' }] })).toEqual({ id: 'p3', dismissed: true })
+    expect(decisionBody({ kind: 'review', proposalId: 'p4', decisions: [{ id: 'c1', status: 'accepted' }, { id: 'c2', status: 'rejected' }] }))
+      .toEqual({ id: 'p4', accepted: ['c1'], rejected: ['c2'] })
   })
 
   it('never touches history, weigh-ins or settings', () => {

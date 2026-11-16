@@ -113,7 +113,9 @@ fun GoView() {
     LaunchedEffect(Unit) { if (!reduce && !dim) grow.animateTo(1f, spring(dampingRatio = 0.65f, stiffness = Spring.StiffnessMedium)) }
     Box(Modifier.fillMaxSize().background(Og.Bg).semantics { contentDescription = "" }, contentAlignment = Alignment.Center) {
         Ring(1f, a.accent, Modifier.fillMaxSize().padding(10.dp))
-        Text(stringResource(R.string.go), fontSize = 50.sp, fontWeight = FontWeight.Black, color = a.accent, textAlign = TextAlign.Center,
-            maxLines = 1, modifier = Modifier.padding(horizontal = 26.dp).scale(grow.value))
+        // One line that shrinks to the ring (watch-wear verification: "Пошёл!" ran over itself on a 192 dp watch).
+        Box(Modifier.padding(horizontal = 26.dp).scale(grow.value), contentAlignment = Alignment.Center) {
+            FitText(stringResource(R.string.go), a.accent, 50.sp, FontWeight.Black)
+        }
     }
 }

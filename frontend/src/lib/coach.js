@@ -21,6 +21,7 @@ import { deleteRoutine } from './routines.js'
 import { POLICIES, POLICY_NAME, POLICY_DESC } from './progression.js'
 import { newProgramme, programmeById, saveProgramme, normalizeProgramme } from './programmes.js'
 import { ownRowsOf, cleanOwnRow, ownRowsLine } from './warmup-ramp.js'
+import { fmtSpeed, speedUnitOf } from './speed.js'
 import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
@@ -703,6 +704,16 @@ export function recordDebrief(s, proposal) {
   })
 }
 
+/** What the server is told about a proposal decided here, from its log entry (and told again while it still lists it). */
+export function decisionBody(entry) {
+  const id = entry.proposalId
+  if (entry.dismissed) return { id, dismissed: true }
+  if (entry.kind === 'create') return { id, accepted: ['plan'] }
+  if (entry.kind === 'debrief') return { id, accepted: ['debrief'] }
+  const ds = entry.decisions || []
+  return { id, accepted: ds.filter(d => d.status === 'accepted').map(d => d.id), rejected: ds.filter(d => d.status !== 'accepted').map(d => d.id) }
+}
+
 /* ============================ display helpers ============================ */
 
 export const exName = id => EXIDX[id]?.n || t('Unknown exercise')
@@ -751,6 +762,7 @@ export function changeValues(c, S) {
       return ids.length ? ids.map(routineName).join(' + ') : t('Rest')
     }
     if (v == null) return '–'
+    if (c.type === 'cardio') return [v.min != null && `${v.min} min`, v.speed != null && fmtSpeed(v.speed, speedUnitOf(S))].filter(Boolean).join(' @ ') || '–'
     if (typeof v === 'object') return v.id ? exTitle(v.id) : v.name || JSON.stringify(v)
     if (Array.isArray(v)) return v.length + ''
     return String(v)
@@ -760,7 +772,8 @@ export function changeValues(c, S) {
     const weeks = c.after?.weeks || []
     return { before: c.before ? tn('{0} week', '{0} weeks', c.before.weeks || 0) : '–', after: tn('{0} week', '{0} weeks', weeks.length) + (weeks.some(w => w.deload) ? ' · ' + t('deload included') : '') }
   }
-  if (['add-exercise', 'add-routine', 'reorder'].includes(c.type)) return null
+  // The title already names both exercises; the raw { link, with } value means nothing to a lifter.
+  if (['add-exercise', 'add-routine', 'reorder', 'superset'].includes(c.type)) return null
   if (['remove-exercise', 'remove-routine'].includes(c.type)) return null
   return { before: fmt(c.before), after: fmt(c.after) }
 }
