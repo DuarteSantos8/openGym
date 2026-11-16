@@ -62,7 +62,7 @@ describe('the snapshot carries every kind of set', () => {
   it('no best for an exercise never done before', () => { expect(curl.best).toBeUndefined() })
   it('the weight step each exercise moves in: 1.25 kg at most, a finer one of its own kept', () => {
     expect(bench.step).toBe(1.25)
-    expect(plank.step).toBeUndefined()
+    expect(plank.step).toBe(1.25) // a hold can carry weight (a weighted plank): its wheel is capped too
     const S2 = S()
     S2.active.entries[0].target.inc = 5
     expect(buildSnapshot(S2).active.entries[0].step).toBe(1.25)

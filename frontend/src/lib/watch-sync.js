@@ -373,8 +373,9 @@ function watchEntry (stored, H, S) {
     ...(e.sg ? { group: String(e.sg) } : {}),
     ...(best ? { best } : {}),
     ...(mode === 'reps' && isAssisted(e.id) ? { assisted: true } : {}),
-    // the step the weight moves in, as on the phone (this exercise's own, else its plates' default)
-    ...(mode === 'reps' && stepOf(cfg, V) ? { step: stepOf(cfg, V) } : {}),
+    // the step the weight moves in, as on the phone (this exercise's own, else its plates' default);
+    // a hold too: a weighted plank's wheel fell back to the watch's 2.5 kg without it
+    ...(stepOf(cfg, V) ? { step: stepOf(cfg, V) } : {}),
     ...(own ? { unit: own } : {}),
   }
 }
