@@ -3,6 +3,10 @@ export default {
   // --- Liquid Glass G2: CodeRabbit review ---
   "−15 s": "−15 sn",
   "{0} past zero": "sıfırı {0} geçti",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Saatler",
+  "Set once": "Bir kez ayarla",
+  "Connections": "Bağlantılar",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",
@@ -185,6 +189,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Yalnızca bu cihazda okunur. openNutrition’a hiçbir şey yazılmaz ve gönderdiği hiçbir şey yedeğine ya da senkronizasyonuna girmez.",
   "Runs, rides and matches": "Koşular, turlar ve maçlar",
   "Runs, rides and matches from other apps": "Diğer uygulamalardan koşular, turlar ve maçlar",
+  "Birth date, for heart-rate zones": "Doğum tarihi, nabız bölgeleri için",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch nabız bölgelerini yaşından hesaplar. Doğum tarihine izin ver ya da sonra Apple Health’te değiştir.",
   "Show it in": "Şurada göster",
   "Some days had foods without numbers, so their totals are a little low.": "Bazı günlerde değeri olmayan yiyecekler vardı, bu yüzden toplamlar biraz düşük.",
   "Sport": "Spor",
@@ -5901,4 +5907,10 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Özelleştir",
+  "Collapsed": "Daraltılmış",
+  "Hide": "Gizle",
+  "Totals": "Toplamlar",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
 }

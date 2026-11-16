@@ -33,6 +33,8 @@ data class Snapshot(
     val streak: Streak? = null,
     /** The ids of the watch's events the phone has applied lately: the outbox lets go of them. */
     val acked: List<String>? = null,
+    /** The phone's clock when it made this (ms, protocol 2): the watch's clock offset (ClockOffset). */
+    val now: Double? = null,
 ) {
     companion object {
         fun parse(json: String): Snapshot? = try { WireJson.decodeFromString(serializer(), json) } catch (_: Exception) { null }
@@ -52,6 +54,8 @@ data class ReadySession(
     val name: String = "",
     val entries: List<Entry> = emptyList(),
     val healthType: String? = null,
+    /** Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it. */
+    val muscleNames: Map<String, String>? = null,
 )
 
 @Serializable
@@ -62,6 +66,12 @@ data class ActiveWorkout(
     val cur: Int = 0,
     val restSec: Double = 0.0,
     val rest: RestInfo? = null,
+    /** The phone's rest is paused (`rest` is null then), not skipped: the watch keeps its own (#1149). */
+    val restPaused: Boolean? = null,
+    /** The seconds a paused rest holds at (protocol 2). */
+    val restLeft: Double? = null,
+    /** When the rest was last changed on purpose, phone clock (ms, protocol 2): followed only when newer (RestFollow). */
+    val restAt: Double? = null,
     val entries: List<Entry> = emptyList(),
     /** When it started (ms since 1970), for the summary's duration. */
     val start: Double? = null,
@@ -72,10 +82,12 @@ data class ActiveWorkout(
     val pausedAt: Double? = null,
     /** The phone walked out of the gym at this moment (ms, forgotten workouts, 1.4.5): asked at once. */
     val leftGymAt: Double? = null,
+    /** Each muscle's name in the app's language, for the Muscles page. Older phones never send it. */
+    val muscleNames: Map<String, String>? = null,
 )
 
 @Serializable
-data class RestInfo(val endsAt: Double)
+data class RestInfo(val endsAt: Double, val total: Double? = null)
 
 @Serializable
 data class Entry(
@@ -94,6 +106,8 @@ data class Entry(
     val step: Double? = null,
     /** Its own weight unit when it is not the workout's (#657). */
     val unit: String? = null,
+    /** What it trains, with the phone's weights (1 main, 0.4 helper). Older phones never send it. */
+    val muscles: Map<String, Double>? = null,
 ) {
     val isTimed get() = mode == "time"
     val isCardio get() = mode == "cardio"
@@ -130,6 +144,8 @@ data class SetRow(
     val warmup: Boolean = false,
     val at: Double? = null,
     val sides: Sides? = null,
+    /** The set's id (protocol 2, #1162): events name it, pending ticks are kept by it. */
+    val sid: String? = null,
 ) {
     /** The side up next on a per-side set ("L", then "R"), or null. */
     val sideUp: String? get() = sides?.let { if (!it.L.done) "L" else if (!it.R.done) "R" else null }
@@ -152,6 +168,8 @@ data class WatchSettings(
     val onAccent: String? = null,
     /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
     val forgotten: ForgottenSettings? = null,
+    /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
+    val birthYear: Int? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */
@@ -171,10 +189,13 @@ data class WatchShow(
     val kcal: Boolean? = null,
     val next: Boolean? = null,
     val rest: String? = null,
+    val zones: Boolean? = null,
 ) {
     val showHr get() = hr ?: true
+    val showKcal get() = kcal ?: true
     val showLast get() = last ?: true
     val showNext get() = next ?: true
+    val showZones get() = zones ?: true
 }
 
 /**

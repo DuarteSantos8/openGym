@@ -299,6 +299,10 @@ test('facet counts, quick picks, sorting, clearing and the address round-trip', 
   assert.deepEqual(F.sortRoutines(R, 'name').map(r => r.s), ['b', 'c', 'd', 'a'])
   assert.deepEqual(F.sortRoutines(R, 'short').map(r => r.s), ['c', 'a', 'd', 'b'])
   assert.deepEqual(F.sortRoutines(R, 'popular', { 'x/a': 9, 'x/c': 2 }).map(r => r.s), ['a', 'c', 'd', 'b'])
+  // a plan in a language the visitor does not read goes last, whatever the sort; a reader of it gets the plain order
+  assert.deepEqual(F.sortRoutines(R, 'new', {}, ['en']).map(r => r.s), ['d', 'b', 'a', 'c'])
+  assert.deepEqual(F.sortRoutines(R, 'short', {}, ['en']).map(r => r.s), ['a', 'd', 'b', 'c'])
+  assert.deepEqual(F.sortRoutines(R, 'new', {}, ['en', 'de']).map(r => r.s), ['d', 'b', 'c', 'a'])
   const s = st({ q: 'bar', goal: ['general', 'strength'], len: '45', kit: ['pull-up bar'], kitonly: true, home: true, sort: 'popular' })
   const q = F.queryFromState(s)
   assert.equal(q, '?q=bar&goal=general,strength&len=45&kit=pull-up+bar&have=only&home=1&sort=popular')
@@ -645,3 +649,72 @@ test('service: static files, no listings, media only for our pages, CORS on the 
     await page.text()
   } finally { await close(s) }
 })
+
+test('service: a submission whose Telegram message failed is sent again, once', async () => {
+  let fail = true
+  const sent = []
+  const s = await startApp({ deps: { telegram: async (method, payload) => { if (fail) throw new Error('fetch failed'); sent.push({ method, payload }); return {} } } })
+  try {
+    const r = await s.post('submit', form())
+    assert.equal(r.status, 200)
+    await new Promise(r => setTimeout(r, 50))
+    const pending = path.join(s.dataDir, 'pending')
+    const file = path.join(pending, fs.readdirSync(pending).find(f => f.endsWith('.json')))
+    assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).notified, undefined, 'not marked while the message did not go out')
+    assert.equal(await s.app.tellPending(), 0)
+    fail = false
+    assert.equal(await s.app.tellPending(), 1)
+    assert.equal(sent.filter(x => x.method === 'sendMessage').length, 1)
+    assert.ok(JSON.parse(fs.readFileSync(file, 'utf8')).notified)
+    await s.app.tellPending()
+    assert.equal(sent.filter(x => x.method === 'sendMessage').length, 1, 'never twice')
+  } finally { await close(s) }
+})
+
+test('service: review from Discord (api/mod) needs the key, lists what waits, remembers the message and decides', async () => {
+  const s = await startApp({ cfg: { modKey: 'k'.repeat(40) }, github: null })
+  const mod = (p, { method = 'GET', body, key = 'k'.repeat(40) } = {}) => fetch(s.base + 'mod/' + p, {
+    method, headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.9', ...(key ? { 'x-mod-key': key } : {}) }, body: body ? JSON.stringify(body) : undefined })
+  try {
+    assert.equal((await s.post('submit', form())).status, 200)
+    await new Promise(r => setTimeout(r, 50))
+    // Telegram only gets the nudge, without buttons
+    const note = s.sent.find(x => x.method === 'sendMessage')
+    assert.match(note.payload.text, /Review it in #routine-review/)
+    assert.equal(note.payload.reply_markup, undefined)
+    assert.equal((await mod('pending', { key: '' })).status, 403)
+    assert.equal((await mod('pending', { key: 'x'.repeat(40) })).status, 403)
+    const list = (await (await mod('pending')).json()).pending
+    assert.equal(list.length, 1)
+    const one = list[0]
+    assert.equal(one.title, 'Doorway strength')
+    assert.equal(one.author.name, 'Ana')
+    assert.equal(one.posted, null)
+    assert.equal(one.sessions[0].exercises[0].name, 'Pull-up')
+    assert.match(one.sessions[0].exercises[0].line, /^\d+×/)
+    assert.equal((await mod('posted', { method: 'POST', body: { sid: one.sid, message: 'nope' } })).status, 422)
+    assert.equal((await mod('posted', { method: 'POST', body: { sid: one.sid, message: '1571607685219090493' } })).status, 200)
+    assert.equal((await (await mod('pending')).json()).pending[0].posted, '1571607685219090493')
+    assert.equal((await mod('cover/' + one.sid)).status, 404)
+    assert.equal((await mod('decide', { method: 'POST', body: { sid: '../../etc', ok: true } })).status, 422)
+    const done = await (await mod('decide', { method: 'POST', body: { sid: one.sid, ok: true, by: 'seals187' } })).json()
+    assert.match(done.result, /Approved/)
+    assert.equal((await (await mod('pending')).json()).pending.length, 0)
+    assert.ok(fs.existsSync(path.join(s.dataDir, 'approved', one.slug + '.json')))
+    const again = await (await mod('decide', { method: 'POST', body: { sid: one.sid, ok: false } })).json()
+    assert.equal(again.result, 'Already handled.')
+  } finally { await close(s) }
+})
+
+test('service: without a key the review routes do not exist, and wrong keys run out', async () => {
+  const off = await startApp()
+  try { assert.equal((await fetch(off.base + 'mod/pending', { headers: { 'x-mod-key': '' } })).status, 404) } finally { await close(off) }
+  const s = await startApp({ cfg: { modKey: 'k'.repeat(40) } })
+  try {
+    let last = 0
+    for (let i = 0; i < 12; i++) last = (await fetch(s.base + 'mod/pending', { headers: { 'x-mod-key': 'wrong', 'cf-connecting-ip': '198.51.100.7' } })).status
+    assert.equal(last, 429)
+    assert.equal((await fetch(s.base + 'mod/pending', { headers: { 'x-mod-key': 'k'.repeat(40), 'cf-connecting-ip': '198.51.100.7' } })).status, 200, 'the right key still works')
+  } finally { await close(s) }
+})
+
