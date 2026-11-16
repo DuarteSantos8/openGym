@@ -13,7 +13,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "openGym"))
+                .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "")) // the logo says openGym, centred with the rest
                 .toolbar { ToolbarItem(placement: .topBarLeading) { PhoneMark().environmentObject(store) } }
         }
         // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
@@ -99,17 +99,22 @@ struct TodayCard: View {
     var body: some View {
         let size = Plan.size(session.entries)
         VStack(alignment: .leading, spacing: 6) {
-            Text(verbatim: session.name)
-                .font(.system(.title3, design: .rounded).weight(.bold))
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
-                .fixedSize(horizontal: false, vertical: true)
-            if size.exercises > 0 {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    stat(size.exercises, Text("Exercises"))
-                    stat(size.sets, Text("Sets"))
+            // Clear of the round screen's top corner on every case size (the system's inset), as the
+            // Overview's title.
+            VStack(alignment: .leading, spacing: 6) {
+                Text(verbatim: session.name)
+                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
+                if size.exercises > 0 {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        stat(size.exercises, Text("Exercises"))
+                        stat(size.sets, Text("Sets"))
+                    }
                 }
             }
+            .scenePadding(.horizontal)
             Button { store.start(session) } label: {
                 Label { Text("Start workout") } icon: { Image(systemName: "play.fill") }
             }
@@ -145,7 +150,7 @@ struct VersionLine: View {
         let version = info?["CFBundleShortVersionString"] as? String ?? ""
         let build = info?["CFBundleVersion"] as? String ?? ""
         Text(verbatim: "openGym \(version)" + (build.isEmpty ? "" : " (\(build))"))
-            .font(.system(size: 10, design: .rounded))
+            .font(.system(size: 12, design: .rounded))
             .foregroundStyle(Theme.label3)
             .frame(maxWidth: .infinity)
             .padding(.top, 8)

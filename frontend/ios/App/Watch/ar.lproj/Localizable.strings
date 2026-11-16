@@ -26,6 +26,7 @@
 "Start without weighing in" = "بدء دون تسجيل الوزن";
 "Body weight" = "وزن الجسم";
 "Effort" = "الجهد";
+"Muscles" = "العضلات";
 "None" = "بدون";
 "Exercises" = "التمارين";
 "Save" = "حفظ";
@@ -43,6 +44,7 @@
 "Looks like you left the gym" = "يبدو أنك غادرت النادي";
 "Keep going" = "استمر";
 "Finish now" = "إنهاء الآن";
+"Back" = "رجوع";
 "Last time: %@" = "المرة السابقة: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";
@@ -78,5 +80,14 @@
 "iPhone in reach" = "iPhone ضمن النطاق";
 "No set for %lld min. Still at it?" = "لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟";
 "A skipped set is still waiting." = "مجموعة متخطاة ما زالت تنتظر.";
+"Active\nkcal" = "سعرات\nنشطة";
+"Metrics" = "المقاييس";
+"Zones" = "المناطق";
 "avg" = "المتوسط";
 "No effort rated yet" = "لم يُقيَّم أي جهد بعد";
+"max" = "الأقصى";
+"min" = "الأدنى";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "فعّل Apple صحتي على iPhone ليبقى openGym على الشاشة خلال الراحة والثبات.";
+"No sets yet" = "لا مجموعات بعد";
+"+%lld more" = "+%lld أخرى";
+"%@ sets" = "%@ مجموعات";

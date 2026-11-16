@@ -12,6 +12,77 @@ final class MetricsTests: XCTestCase {
         XCTAssertNil(Metrics.average([(at(0), 0)]))
     }
 
+    func testRangeIsWholeBpmAndIgnoresZeros() {
+        XCTAssertEqual(Metrics.range([(at(0), 120.4), (at(1), 0), (at(2), 98.6), (at(3), 152)]), 99...152)
+        XCTAssertNil(Metrics.range([]))
+        XCTAssertNil(Metrics.range([(at(0), 0)]))
+    }
+
+    func testZonesByPercentOfTanakaMax() {
+        XCTAssertEqual(Metrics.maxHeartRate(age: 40), 180)
+        XCTAssertEqual(Metrics.zone(68, max: 180), 1, "zone 1 is everything under 60 %")
+        XCTAssertEqual(Metrics.zone(107, max: 180), 1)
+        XCTAssertEqual(Metrics.zone(108, max: 180), 2, "60 % opens zone 2")
+        XCTAssertEqual(Metrics.zone(126, max: 180), 3, "70 % opens zone 3")
+        XCTAssertEqual(Metrics.zone(161, max: 180), 4)
+        XCTAssertEqual(Metrics.zone(200, max: 180), 5, "over max stays in 5")
+        XCTAssertNil(Metrics.zone(0, max: 180))
+    }
+
+    func testZoneBandsMatchZone() {
+        let b = Metrics.zoneBands(max: 180)
+        XCTAssertEqual(b.map { $0.lo }, [nil, 108, 126, 144, 162])
+        XCTAssertEqual(b.map { $0.hi }, [107, 125, 143, 161, nil])
+        let max = Metrics.maxHeartRate(age: 37) // 182.1: bands on a fraction still agree with zone()
+        for (i, band) in Metrics.zoneBands(max: max).enumerated() {
+            if let lo = band.lo { XCTAssertEqual(Metrics.zone(Double(lo), max: max), i + 1); XCTAssertEqual(Metrics.zone(Double(lo - 1), max: max), i) }
+        }
+    }
+
+    func testTimeInZonesCountsEachReadingUntilTheNextCappedAt30s() {
+        let hr: [Metrics.Sample] = [(at(0), 100), (at(10), 130), (at(20), 170), (at(120), 170)]
+        XCTAssertEqual(Metrics.timeInZones(hr, max: 180), [10, 0, 10, 0, 30], "the last reading counts nothing; the 100 s gap counts 30")
+        XCTAssertEqual(Metrics.timeInZones([], max: 180), [0, 0, 0, 0, 0])
+    }
+
+    func testMusclesCountWorkingSetsDoneByThePhonesWeights() throws {
+        let json = #"""
+        {"name":"Push","unit":"kg","cur":0,"restSec":90,"muscleNames":{"chest":"Pecho","triceps":"Tríceps"},"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1,"triceps":0.4},"sets":[
+            {"done":true,"warmup":true},{"done":true,"warmup":false},{"done":true,"warmup":false},{"done":false,"warmup":false}]},
+          {"id":"2","name":"Pushdown","mode":"reps","muscles":{"triceps":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"3","name":"Old phone","mode":"reps","sets":[{"done":true,"warmup":false}]}]}
+        """#
+        let w = try JSONDecoder().decode(ActiveWorkout.self, from: Data(json.utf8))
+        let m = Metrics.muscles(w)
+        XCTAssertEqual(m.map(\.name), ["Pecho", "Tríceps"])
+        XCTAssertEqual(m[0].sets, 2, accuracy: 0.001, "the warm-up and the set not done count nothing")
+        XCTAssertEqual(m[1].sets, 1.8, accuracy: 0.001, "2 × 0.4 from the bench, 1 from the pushdown")
+        XCTAssertTrue(Metrics.muscles(nil).isEmpty)
+    }
+
+    func testMusclesAddUpTheSameExerciseTwiceAndASupersetAndShowNothingBeforeASet() throws {
+        let json = #"""
+        {"name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"2","name":"Row","mode":"reps","group":"a","muscles":{"lats":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"1","name":"Bench","mode":"reps","group":"a","muscles":{"chest":1},"sets":[{"done":true,"warmup":false},{"done":false,"warmup":false}]}]}
+        """#
+        let w = try JSONDecoder().decode(ActiveWorkout.self, from: Data(json.utf8))
+        let m = Metrics.muscles(w)
+        XCTAssertEqual(m.map(\.slug), ["chest", "lats"])
+        XCTAssertEqual(m[0].sets, 2, accuracy: 0.001, "one set from each Bench entry")
+        var none = w
+        for i in none.entries.indices { for j in none.entries[i].sets.indices { none.entries[i].sets[j].done = false } }
+        XCTAssertTrue(Metrics.muscles(none).isEmpty, "a workout that just started: no rows, the page says No sets yet")
+    }
+
+    func testAWorkoutStartedOnTheWatchKeepsTheMuscleNames() {
+        let ready = ReadySession(routineIds: ["r"], name: "Push", entries: [], muscleNames: ["chest": "Pecho"])
+        let (s, _) = SessionCore.start(SessionState(), ready, wid: "watch-1", at: 5, id: "s")
+        XCTAssertEqual(s.workout?.muscleNames, ["chest": "Pecho"])
+    }
+
     func testDownsampleKeepsOrderAndCapsTheCount() {
         let hr: [Metrics.Sample] = (0..<100).map { (at(Double($0)), Double(100 + $0)) }
         let d = Metrics.downsample(hr, to: 10)

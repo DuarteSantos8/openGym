@@ -542,6 +542,8 @@ export default function App() {
         })
         return ok
       },
+      // A set the watch's set menu added or took out (lib/watch-sync.js addWatchSet, removeWatchSet).
+      edit: fn => { let ok = false; useStore.getState().update(s => { ok = !!fn(s) }); return ok },
       // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
       stillHere: at => keepGoing(at),
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
