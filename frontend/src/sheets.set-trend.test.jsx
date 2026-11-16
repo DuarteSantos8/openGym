@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { workoutDetailSheet } from './sheets.jsx'
+import { migratedFixture } from './lib/test-fixtures.js'
 import { EXDB } from './lib/exercises-data.js'
 
 const lift = EXDB.find(e => e.bp !== 'cardio' && e.eq === 'barbell').id
@@ -22,10 +23,10 @@ function mountTopSheet() {
   return host
 }
 const done = (w, r, more = {}) => ({ w, r, done: true, ...more })
-const workout = (id, d, sets) => ({
+const workout = (id, d, sets) => migratedFixture({ ...clone(DEF), engineSchemaVersion: 1, workouts: [{
   id, d, start: new Date(d + 'T17:00:00').getTime(), end: new Date(d + 'T18:00:00').getTime(), name: 'Push',
   prs: [], routineIds: [], entries: [{ id: lift, target: { mode: 'reps' }, sets }],
-})
+}] }).workouts[0]
 const older = workout('w0', '2026-09-10', [done(77.5, 8), done(80, 7), done(60, 8), done(75, 6)])
 const today = workout('w1', '2026-09-15', [done(40, 5, { phase: 'warmup' }), done(80, 8), done(80, 7), done(70, 6), done(75, 5)])
 const later = workout('w2', '2026-09-20', [done(100, 8), done(100, 8), done(100, 8), done(100, 8)])
@@ -34,8 +35,8 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   useUI.setState({ sheets: [], toast: vi.fn() })
   const S = clone(DEF)
-  Object.assign(S, { unit: 'kg', routines: [], workouts: [older, today, later], active: null })
-  useStore.setState({ S, user: null })
+  Object.assign(S, { unit: 'kg', routines: [], workouts: [older, today, later] })
+  useStore.setState({ S, A: null, user: null })
   document.body.innerHTML = ''
 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
@@ -63,7 +64,8 @@ describe('set vs last time in a saved workout (#907)', () => {
 
 describe('set notes in a saved workout', () => {
   it('marks the set and lists the note under the sets', () => {
-    const noted = { ...today, entries: [{ ...today.entries[0], sets: today.entries[0].sets.map((s, i) => (i === 2 ? { ...s, note: 'grip slipped' } : s)) }] }
+    const noted = clone(today)
+    noted.exposures[0].performance.sets[2].note = 'grip slipped'
     workoutDetailSheet(noted)
     const host = mountTopSheet()
     expect(host.querySelector('.setnote-mark').getAttribute('aria-label')).toBe('Note: grip slipped')

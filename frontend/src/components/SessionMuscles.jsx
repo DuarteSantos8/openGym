@@ -43,7 +43,7 @@ const ROWS = 6
 // The sheet reads the live session itself, so a set ticked behind it (the watch, another tab)
 // shows up while it is open.
 export function SessionMuscles({ close }) {
-  const entries = useStore(s => s.S.active?.entries)
+  const entries = useStore(s => s.A?.entries)
   const body = useStore(s => s.S.body)
   const load = useSessionLoad(entries)
   const levels = useMemo(() => sessionLevels(load), [load])

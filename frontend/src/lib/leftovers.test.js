@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { leftoversOf, leftoversBefore, leadEntries, LEFTOVER_DAYS } from './leftovers.js'
+import { leftoversOf, leftoversBefore, leadExposures, LEFTOVER_DAYS } from './leftovers.js'
+import { migratedFixture } from './test-fixtures.js'
 
 const TODAY = '2026-11-06'
 const base = (over = {}) => ({
@@ -38,9 +39,11 @@ describe('leftovers', () => {
     expect(leftoversBefore(base(), TODAY, ['legs', 'core'])).toBeNull()
   })
   it('builds their session entries like Start does, stamped with their routine', () => {
-    const S = base()
-    const es = leadEntries(S, leftoversOf(S, TODAY))
-    expect(es.map(e => [e.id, e.rid, e.sets.length])).toEqual([['0032', 'legs', 3], ['0585', 'legs', 2], ['0001', 'core', 2]])
-    expect(leadEntries(S, null)).toEqual([])
+    const S = migratedFixture(base())
+    const draft = { ...S, prescriptions: { ...S.prescriptions } }
+    const ctx = { now: Date.parse(TODAY + 'T12:00:00Z'), newId: x => x }
+    const xs = leadExposures(draft, leftoversOf(S, TODAY), ctx)
+    expect(xs.map(x => [x.exerciseId, x.routineId, draft.prescriptions[x.prescriptionId].rows.length])).toEqual([['0032', 'legs', 3], ['0585', 'legs', 2], ['0001', 'core', 2]])
+    expect(leadExposures(draft, null, ctx)).toEqual([])
   })
 })

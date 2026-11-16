@@ -20,12 +20,12 @@ export function applyAutoGym(id, { store = useStore, toast = m => useUI.getState
   const S = store.getState().S
   const g = gymsOf(S).find(p => p.id === id)
   if (!g || S.activeEquipId === id) return false
-  const a = S.active
+  const a = store.getState().A
   if (a && !a.editingWorkoutId && !a.backfill && (a.entries || []).some(e => (e?.sets || []).some(hasCompletedWork))) return false
   store.getState().update(s => {
     switchGym(s, id)
-    if (s.active && !s.active.editingWorkoutId && !s.active.backfill) reRoundOpenSets(s)
   })
+  if (a && !a.editingWorkoutId && !a.backfill) store.getState().updateActive(active => { const view = { ...store.getState().S, active }; reRoundOpenSets(view); Object.assign(active, view.active, { gym: { id: g.id, name: gymLabel(g) } }) })
   toast(t('Using {0} equipment', gymLabel(g)))
   return true
 }

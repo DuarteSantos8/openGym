@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
-import { nextPrescription, POLICIES_FOR, LADDER_TOP } from './progression.js'
+import { LADDER_TOP } from './ladders.js'
+import { presetForPolicy } from './prescription/index.js'
+import { migratedFixture } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 import { EXIDX } from './exercises.js'
 
 const done = (d, id, reps, sets = 3) => ({ d, entries: [{ id, target: { id, sets, reps, prog: 'ladder', weight: 0 }, sets: Array.from({ length: sets }, () => ({ w: 0, r: reps, done: true })) }] })
@@ -41,18 +45,26 @@ describe('ladders', () => {
 
 describe('the Skill ladder rule', () => {
   const cfg = { id: '0662', sets: 3, reps: 12, repsMin: 5, weight: 0, bodyweight: true, prog: 'ladder', mode: 'reps' }
-  it('is a reps rule', () => { expect(POLICIES_FOR.reps).toContain('ladder'); expect(POLICIES_FOR.time).not.toContain('ladder') })
+  // v2: what Start opens for a routine with this slot after the given workouts.
+  const nextPrescription = (state, slot = cfg) => {
+    const P = migratedFixture({ unit: 'kg', routines: [{ id: 'r', name: 'R', ex: [slot] }], workouts: state.workouts.map(w => ({ ...w, start: Date.parse(w.d + 'T10:00:00Z'), end: Date.parse(w.d + 'T11:00:00Z'), routineIds: ['r'], entries: w.entries.map(e => ({ ...e, rid: 'r' })) })) })
+    const draft = { ...P, prescriptions: { ...P.prescriptions } }
+    const [x] = buildSessionExposures(draft, P.routines[0], { now: Date.parse('2026-11-05T12:00:00Z'), newId: v => v })
+    const [e] = entriesForExposures([x], draft.prescriptions)
+    return { reps: e.sets.find(r => !r.warmup).r, ...(x.plan || {}) }
+  }
+  it('is a reps rule', () => { expect(presetForPolicy('ladder', 'reps', true)).toBe('skill_ladder'); expect(presetForPolicy('ladder', 'time', false)).not.toBe('skill_ladder') })
 
   it('starts at the bottom, climbs a rep per clean session, repeats a miss', () => {
-    expect(nextPrescription({ workouts: [] }, cfg)).toMatchObject({ kind: 'first', reps: 5 })
-    expect(nextPrescription({ workouts: [done('2026-11-01', '0662', 8)] }, cfg)).toMatchObject({ kind: 'up', reps: 9 })
+    expect(nextPrescription({ workouts: [] })).toMatchObject({ reps: 5 })
+    expect(nextPrescription({ workouts: [done('2026-11-01', '0662', 8)] })).toMatchObject({ reps: 9 })
     const miss = done('2026-11-01', '0662', 8)
     miss.entries[0].sets[2].r = 6
-    expect(nextPrescription({ workouts: [miss] }, cfg)).toMatchObject({ kind: 'hold', reps: 8 })
+    expect(nextPrescription({ workouts: [miss] })).toMatchObject({ reps: 8 })
   })
 
   it('at the top names the next rung, and at the last rung holds', () => {
-    const p = nextPrescription({ workouts: [done('2026-11-01', '0662', LADDER_TOP)] }, cfg)
+    const p = nextPrescription({ workouts: [done('2026-11-01', '0662', LADDER_TOP)] })
     expect(p).toMatchObject({ kind: 'ladder', next: '0283', reps: 12 })
     const last = nextPrescription({ workouts: [done('2026-11-01', '0725', 12)] }, { ...cfg, id: '0725' })
     expect(last.kind).toBe('hold')

@@ -14,6 +14,8 @@ import path from 'node:path'
 import http from 'node:http'
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { UnauthorizedError } from '@modelcontextprotocol/sdk/client/auth.js'
@@ -28,11 +30,13 @@ const cookie = () => {
   const payload = `${UID}:${Date.now() + 86400000}:0:c`
   return 'gymsid=' + payload + '.' + crypto.createHmac('sha256', SECRET).update(payload).digest('base64url')
 }
-const DOC = {
+const V1 = {
   unit: 'kg', restSec: 120,
   routines: [{ id: 'r1', name: 'Ana push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100, mode: 'reps', restSec: 180 }], _ts: 1000 }],
-  week: { 1: ['r1'] }, workouts: [], exWeights: {}, customEx: [], bodyweight: [], _rev: 5, _wid: 'w-seed', _ts: 1000,
+  week: { 1: ['r1'] }, workouts: [], exWeights: {}, customEx: [], bodyweight: [],
 }
+// The server serves the MCP only the engine schema: the profile as a migrated device holds it.
+const DOC = { ...migrateProfileV1ToV2(V1, LIB_BY_ID).profile, _rev: 5, _wid: 'w-seed', _ts: 1000 }
 const REDIRECT = 'https://claude.ai/api/mcp/auth_callback'
 
 // What an assistant keeps between calls: its registration, its tokens, the PKCE verifier.

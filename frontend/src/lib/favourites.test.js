@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { favIds, isFav, toggleFav, sortFavouritesFirst, sortYoursFirst, usageOf } from './favourites.js'
+import { canonicalProfile } from './test-fixtures.js'
 
 const ex = id => ({ id, n: id })
 
@@ -42,5 +43,7 @@ describe('sortYoursFirst', () => {
   })
   it('counts routines and logged workouts as use', () => {
     expect(usageOf({ routines: [{ ex: [{ id: 'a' }] }], workouts: [{ entries: [{ id: 'a' }, { id: 'b' }] }] })).toEqual({ a: 2, b: 1 })
+    // A migrated workout has exposures and no entries; its exercise counts the same.
+    expect(usageOf(canonicalProfile())).toEqual({ '0025': 2 })
   })
 })

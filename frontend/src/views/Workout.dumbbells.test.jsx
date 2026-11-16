@@ -10,6 +10,8 @@ import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { EXIDX } from '../lib/exercises.js'
+import { buildSessionExposures } from '../lib/session-start.js'
+import { defaultPlanRule } from '../lib/prescription/index.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
@@ -36,8 +38,12 @@ function mount(entries, patch = {}) {
   S.unit = 'kg'
   S.workoutView = 'list'
   Object.assign(S, patch)
-  S.active = { id: 'db-test', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Dumbbells', bw: null, cur: 0, entries, workoutView: S.workoutView }
-  useStore.setState({ S, user: null })
+  const routine = { id: 'db-routine', ex: entries.map((entry, i) => ({ occurrenceId: 'db-occ-' + i, exerciseId: entry.id,
+    rule: defaultPlanRule('linear', { id: 'db-rule-' + i, exerciseId: entry.id, unit: 'kg', load: { mode: 'absolute', value: entry.sets[0].w, unit: 'kg' }, step: { type: 'absolute', value: entry.target.inc || 2.5, unit: 'kg' }, rounding: { mode: 'nearest', step: entry.target.inc || 2.5 } }) })) }
+  const exposures = buildSessionExposures(S, routine, { now: Date.now(), newId: s => s })
+  entries = entries.map((entry, i) => ({ ...entry, exposureId: exposures[i].exposureId }))
+  const A = { exposures, id: 'db-test', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Dumbbells', bw: null, cur: 0, entries, workoutView: S.workoutView }
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -70,27 +76,27 @@ describe('stepper over owned dumbbells', () => {
   it('walks the bells you own', () => {
     mount([entry('0294', [work(9)], { inc: 2 })], { dumbbells: { kg: { weights: RACK, _ts: 1 } } })
     tap('Increase')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(11)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(11)
     tap('Increase')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(13)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(13)
     tap('Decrease')
     tap('Decrease')
     tap('Decrease')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(8)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(8)
     expect(weightOf()).toBe('8')
   })
 
   it('keeps the increment without a list', () => {
     mount([entry('0294', [work(9)], { inc: 2 })], {})
     tap('Increase')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(11)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(11)
     tap('Increase')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(13)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(13)
     tap('Decrease')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(11)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(11)
     // From an even weight the grid takes over again: 10 + 2 = 12, which no rack above holds.
-    act(() => useStore.setState(st => { const S = clone(st.S); S.active.entries[0].sets[0].w = 10; return { S } }))
+    act(() => useStore.setState(st => { const A = clone(st.A); A.entries[0].sets[0].w = 10; return { A } }))
     tap('Increase')
-    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(12)
+    expect(useStore.getState().A.entries[0].sets[0].w).toBe(12)
   })
 })

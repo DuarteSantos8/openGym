@@ -2,11 +2,12 @@
 // timer as large as the phone allows, the station you are on with its animation, what comes
 // next, and three buttons a sweaty thumb can find: Pause, Done, Skip. Opened from the circuit's
 // card in the workout; it can be closed and opened again while the clock keeps running.
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useCircuit } from '../store/useCircuit.js'
 import { t, tn } from '../lib/i18n.js'
 import { EXIDX } from '../lib/exercises.js'
+import { editPlan } from '../lib/prescription/index.js'
 import { exerciseNameText, fmtNum } from '../lib/format.js'
 import { viewRow, exUnitOf } from '../lib/ex-unit.js'
 import { runStep, stepEndsAt, leftOf, nextWorkAfter, stationNow, stationSuggestions, compareResult, previousResult, plannedLength, stepAt, cleanCircuit, nextProgram } from '../lib/circuit.js'
@@ -114,12 +115,15 @@ function Result({ S, run, result, close }) {
   const sugg = A ? stationSuggestions(run, A.entries) : []
   const apply = () => {
     update(s => {
-      const rid = s.active?.entries?.[run.unit[0]]?.rid || s.active?.routineId || (s.active?.routineIds || [])[0]
+      const rid = A?.entries?.[run.unit[0]]?.rid || A?.routineId || (A?.routineIds || [])[0]
       const r = (s.routines || []).find(x => x.id === rid)
       if (!r) return
+      // A v2 slot is an occurrence: the station's reps or seconds are its rule's, a new revision.
       for (const x of sugg) {
-        const slot = r.ex.find(e => e.id === x.id && e.sg === run.sg) || r.ex.find(e => e.id === x.id)
-        if (slot) slot[x.field] = x.to
+        const slot = r.ex.find(e => e.exerciseId === x.id && e.sg === run.sg) || r.ex.find(e => e.exerciseId === x.id)
+        if (!slot?.rule) continue
+        const patch = x.field === 'sec' ? { durationSeconds: { min: x.to, max: x.to } } : { reps: { min: x.to, max: x.to } }
+        slot.rule = { ...editPlan(slot.rule, patch), revision: slot.rule.revision + 1 }
       }
     })
     setApplied(true)
@@ -238,7 +242,10 @@ export default function CircuitPlayer() {
   const run = useCircuit(s => s.run)
   const ask = useCircuit(s => s.ask)
   const result = useCircuit(s => s.result)
-  const S = useStore(s => s.S)
+  const profile = useStore(s => s.S)
+  const A = useStore(s => s.A)
+  // What the screens read as one profile: the running workout is the store's own `A`.
+  const S = useMemo(() => ({ ...profile, active: A }), [profile, A])
   const close = () => useCircuit.getState().close()
   const box = useRef(null)
   const running = !!run && !run.ended && run.paused == null

@@ -19,7 +19,7 @@ Change something when the data says so:
 - Body weight moving against their goal for several weeks — that is a **note**, not a plan change. Say it plainly and leave the plan alone.
 - A muscle far behind the others in `muscles` (weekly sets well under the rest, or not trained for weeks) while the plan claims to cover it — rebalance. A muscle with many `sets72h` and stalls on its lifts may be under-recovered: fewer sets, or a lighter day, before anything else.
 - Warm-ups: a heavy compound starting cold, or a lifter whose first work set keeps missing, may want `warmup` set to `auto` (the app ramps by load and rounds to their plates). Someone who asks for their own ramp gets `own` with rows. Never touch warm-ups of a timed or cardio exercise.
-- A request for a block ("a 6-week strength block", "peak for a meet") is a `programme`: weeks of %1RM or RPE targets on exercises of the plan, often with a deload week last. To change the one they run, name its `programmeId`.
+- A request for a block ("a 6-week strength block", "peak for a meet") is a `programme`: weeks of targets on exercises of the plan, often with a deload week last. To change one, name its `programmeId`; a change to the one they run applies from the next week they have not started.
 - `challenges` (this month's goals) may tip a close call toward something that also helps a goal; never invent a change just for a challenge.
 
 **Say why in plain words.** Every `why` on a change to progression or volume (`sets`, `reps`, `repsMin`, `repsMax`, `inc`, `exercise-prog`, `routine-prog`, `programme`) tells them what they will notice at the gym, not the jargon: "you will add a rep each session until 12, then the weight goes up and you start again at 8", not "switch to double progression".
@@ -78,7 +78,7 @@ Prefer few, high-conviction changes over many small ones. Never propose more tha
 | `rename-routine` | `routineId` | new name |
 | `week` | `weekday` | routine id, `"rest"`, or `null` |
 | `warmup` | `routineId`, `exId` | `{ mode: "auto" }`, `{ mode: "none" }`, or `{ mode: "own", rows: [{ bar: true, reps }, { pct, reps }, …] }` (1-5 rows, climbing; `pct` is a share of the work weight, 0 the body alone) |
-| `programme` | `programmeId` to revise one, or nothing for a new one | `{ name, weeks: [{ deload?, rpe?, targets: [{ exId, routineId?, pct?, rpe? }] }] }` (1-16 weeks; `pct` 30-110 of the best estimated 1RM, `rpe` 6-10) |
+| `programme` | `programmeId` to revise one, or nothing for a new one | `{ name, weeks: [{ deload?, rpe?, targets: [{ exId, routineId?, pct?, rpe?, sets?, reps?, sec?, weight?, rest?, policy? }] }] }` (1-16 weeks; `pct` 30-110 of the adopted 1RM, `rpe` 6-10, `sets` 1-10, `reps` 1-100, `sec` 5-3600, `weight` in kg above 0, `rest` 0-600 seconds, `policy` `{ onFailure, onSkipped }` each `"advance"` or `"repeat"`) |
 
 Every change that names an exercise has to agree with the plan as it stands:
 
@@ -87,6 +87,6 @@ Every change that names an exercise has to agree with the plan as it stands:
 
 A `week` change names **exactly one** routine (or `"rest"` / `null`) and **replaces** that day. You can move a day's routine, but you cannot build a combined day. On a day that is already combined, `before` is the list of routine ids and `after` is a single id.
 
-Only one `programme` change per review. Its targets name exercises of the plan (`exId`, with `routineId` when the same exercise is in several routines and only one should change); a new programme runs over the plan's own schedule and starts when the lifter starts it.
+Only one `programme` change per review. Its targets name exercises of the plan (`exId`, with `routineId` when the same exercise is in several routines and only one should change); a new programme runs over the plan's own schedule and starts when the lifter starts it. A revision replaces every week, so restate what should stay (read it off that programme's `stages`). A target with `sets`, `reps`, `sec`, `weight` or `rest` fixes that week for the exercise instead of leaving it to its own progression: say so in the `why`. On a lift with a weight such a week needs its load too, as `pct` or `weight`, never both. `pct` and `weight` are only for exercises lifted with a weight (never bodyweight, band or assisted ones), `reps` for exercises done for reps, `sec` for timed ones, and none of them for cardio. An exercise with a `preset` keeps its numbers. `policy` is one choice per exercise for the whole programme, a proposal the lifter confirms when starting it.
 
-`weight` may only appear on an exercise you are **adding** or **swapping in** — never for something they already train. Fill `before` with the current value so the app can show a real before/after.
+`weight` may only appear on an exercise you are **adding** or **swapping in**, never for something they already train; the one other place a load goes is a `programme` week (`pct` or `weight`). Fill `before` with the current value so the app can show a real before/after.

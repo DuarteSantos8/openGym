@@ -17,22 +17,26 @@ import TabBar, { START_HOLD_MS } from './TabBar.jsx'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ pathname: '/home' }) }))
 
+import { migratedFixture } from '../lib/test-fixtures.js'
 bindUI(useUI)
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let host, root
+const V1_ROUTINES = [
+  { id: 'push', name: 'Push', emoji: null, ex: [{ id: '0025', sets: 3, reps: 8, w: 60 }] },
+  { id: 'pull', name: 'Pull', emoji: null, ex: [{ id: '0027', sets: 3, reps: 10 }] },
+  { id: 'mob', name: 'Morning mobility', emoji: null, ex: [{ id: '1162', sets: 2, reps: 12 }] },
+]
+// The profile as v2 holds it: v1 routines and workouts through the migration, the rest as given.
+const v2 = st => { const { routines, workouts, ...rest } = st; return { ...rest, ...migratedFixture({ unit: st.unit || 'kg', routines, workouts: workouts || [] }), week: st.week } }
 const wd = new Date(todayISO() + 'T12:00:00').getDay()
 beforeEach(() => {
   started.length = 0
   menus.length = 0
   const S = structuredClone(DEF)
-  S.routines = [
-    { id: 'push', name: 'Push', emoji: null, ex: [{ id: '0025', sets: 3, reps: 8, w: 60 }] },
-    { id: 'pull', name: 'Pull', emoji: null, ex: [{ id: '0027', sets: 3, reps: 10 }] },
-    { id: 'mob', name: 'Morning mobility', emoji: null, ex: [{ id: '1162', sets: 2, reps: 12 }] },
-  ]
+  S.routines = structuredClone(V1_ROUTINES)
   S.week = { [wd]: ['push'], [(wd + 1) % 7]: ['pull'] }
   S.weighIn = false
-  useStore.setState({ S, user: { id: 1, name: 'x' } })
+  useStore.setState({ S: v2(S), user: { id: 1, name: 'x' } })
   useUI.setState({ sheets: [], toastMsg: '' })
   host = document.createElement('div'); document.body.append(host); root = createRoot(host)
 })
@@ -98,9 +102,9 @@ describe('the preview (#976)', () => {
 
 describe('the exercises you didn’t get to (#985)', () => {
   const yesterday = () => { const d = new Date(todayISO() + 'T12:00:00'); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10) }
-  const leftPull = () => useStore.setState(st => ({ S: { ...st.S,
-    routines: st.S.routines.map(r => (r.id === 'pull' ? { ...r, ex: [{ id: '0027' }, { id: '0029' }, { id: '0031' }] } : r)),
-    workouts: [{ id: 'w9', d: yesterday(), start: 1, routineIds: ['pull'], entries: [{ id: '0027', rid: 'pull', sets: [{ w: 40, r: 10, done: true }] }] }] } }))
+  const leftPull = () => useStore.setState(st => ({ S: v2({ ...st.S,
+    routines: V1_ROUTINES.map(r => (r.id === 'pull' ? { ...r, ex: [{ id: '0027' }, { id: '0029' }, { id: '0031' }] } : r)),
+    workouts: [{ id: 'w9', d: yesterday(), start: 1, routineIds: ['pull'], entries: [{ id: '0027', rid: 'pull', sets: [{ w: 40, r: 10, done: true }] }] }] }) }))
 
   it('Start asks once: with them first, then today; the answer is remembered', () => {
     leftPull()

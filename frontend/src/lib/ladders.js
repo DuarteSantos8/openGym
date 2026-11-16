@@ -12,8 +12,13 @@
 // exercise in one of your chains follows yours first, so you can reorder a built-in one by making
 // your own copy.
 import { EXIDX } from './exercises.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const STEPS_MAX = 12
+// The rep range a rung climbs by default: from the bottom up to the top, then the next rung.
+export const LADDER_TOP = 12
+export const LADDER_BOTTOM = 5
 export const OWN_MAX = 24
 export const NAME_MAX = 40
 
@@ -78,7 +83,7 @@ export function prevRung (S, exId) {
 export function reachedRung (S, ladder) {
   const done = new Set()
   for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
-    for (const e of w?.entries || []) if (e?.id && (e.sets || []).some(s => s?.done)) done.add(e.id)
+    for (const e of legacyEntriesOf(w)) if (e?.id && (e.sets || []).some(s => s?.done)) done.add(e.id)
   }
   let top = -1
   ladder.steps.forEach((id, i) => { if (done.has(id)) top = i })

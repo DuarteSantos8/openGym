@@ -1,11 +1,24 @@
 // The finish summary's "last time / next time" (#324): one line per lift, today against the
 // previous session of the same exercise, and what the next session will open at. "Next" has no
-// rule of its own: it is buildPlannedEntry, the same call Start makes, run on the state right
+// rule of its own: it is buildSessionExposures, the same call Start makes, run on the state right
 // after this workout was saved, so the summary cannot promise a number the next session won't.
 import { isWarmupRow, isFailureSet } from './workout-model.js'
-import { buildPlannedEntry } from './session-start.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { legacyEntriesOf, policyOfPreset } from './prescription/index.js'
 import { workoutAt, modeOf } from './history.js'
 import { setBandsOf } from './bands.js'
+
+// What Start would open `cfg` (a routine occurrence) at, on the state right after `w` was saved:
+// the planned entry (rows and target) and whether its rule is a deload or no progression at all.
+function plannedEntry(st, cfg, routine, w) {
+  const preview = { ...st, prescriptions: { ...st.prescriptions } }
+  const exposures = buildSessionExposures(preview, { ...routine, ex: [cfg] }, { now: workoutAt(w) + 1, newId: s => 'preview:' + s })
+  const [built] = entriesForExposures(exposures, preview.prescriptions)
+  const p = preview.prescriptions[exposures[0].prescriptionId]
+  const kind = p?.provenance?.deload ? 'deload' : policyOfPreset(p?.ruleSnapshot?.preset) === 'off' ? 'off' : 'on'
+  return { ...built, plan: { kind } }
+}
 
 const workSets = entry => (Array.isArray(entry?.sets) ? entry.sets : [])
   .filter(s => s && s.done && !isWarmupRow(s) && Number(s.r) > 0)
@@ -52,7 +65,7 @@ export function finishCompare(st, w) {
   const workouts = (st?.workouts || []).filter(x => x && x !== w && x.id !== w?.id && workoutAt(x) < workoutAt(w))
   const rows = []
   const seen = new Set()
-  for (const entry of w?.entries || []) {
+  for (const entry of legacyEntriesOf(w, st?.prescriptions)) {
     if (!entry?.id || seen.has(entry.id)) continue
     const mode = modeOf(entry.target || entry)
     if (mode !== 'reps' && mode !== 'time') continue
@@ -62,7 +75,7 @@ export function finishCompare(st, w) {
     seen.add(entry.id)
     let last = null, lastHolds = null
     for (let i = workouts.length - 1; i >= 0 && ((today.length && !last) || (holds.length && !lastHolds)); i--) {
-      const prev = (workouts[i].entries || []).find(e => e?.id === entry.id)
+      const prev = legacyEntriesOf(workouts[i], st.prescriptions).find(e => e?.id === entry.id)
       if (!prev) continue
       if (today.length && !last) { const sets = workSets(prev); if (sets.length) last = sets }
       if (holds.length && !lastHolds) { const sets = holdSets(prev); if (sets.length) lastHolds = sets }
@@ -70,11 +83,11 @@ export function finishCompare(st, w) {
     let next = null, nextHold = null
     const routine = entry.rid ? (st.routines || []).find(r => r.id === entry.rid) : null
     const cfg = routine && !routine.excludeFromProgression && !entry.noProg && !w.noProg
-      ? (routine.ex || []).find(c => c?.id === entry.id) : null
-    if (cfg && modeOf(cfg) === 'time') {
+      ? (routine.ex || []).find(c => c?.exerciseId === entry.id) : null
+    if (cfg && modeOf({ ...(entry.target || {}), id: entry.id }) === 'time') {
       // What Start will put in the first hold's row, and whether the plan moved it.
       try {
-        const built = buildPlannedEntry(st, cfg, routine)
+        const built = plannedEntry(st, cfg, routine, w)
         const first = (Array.isArray(built.sets) ? built.sets : []).find(s => s && !isWarmupRow(s))
         const sec = Math.round(Number(first?.sec ?? built.target?.sec)) || 0
         if (sec > 0 && holds.length) {
@@ -88,7 +101,7 @@ export function finishCompare(st, w) {
       } catch { /* a routine the builder cannot read keeps its row without a "next" */ }
     } else if (cfg && today.length) {
       try {
-        const built = buildPlannedEntry(st, cfg, routine)
+        const built = plannedEntry(st, cfg, routine, w)
         let nw = built.target?.weight, nr = built.target?.reps
         // No progression (switched off, or pyramid sets, which never progress): the target's
         // weight says nothing (a pyramid keeps it at 0, its weights are per set), so the next
@@ -135,9 +148,9 @@ export function finishCompare(st, w) {
  * exercise with the sets that were done, warm-ups included (a walk to warm up is still a walk).
  * The summary prints them with setLabel, so a treadmill's speed and incline read as logged.
  */
-export function finishCardio(w) {
+export function finishCardio(w, prescriptions = {}) {
   const rows = []
-  for (const entry of w?.entries || []) {
+  for (const entry of legacyEntriesOf(w, prescriptions)) {
     if (!entry?.id || modeOf({ ...(entry.target || {}), id: entry.id }) !== 'cardio') continue
     const sets = (Array.isArray(entry.sets) ? entry.sets : []).filter(s => s && s.done && (Number(s.min) > 0 || Number(s.speed) > 0))
     if (sets.length) rows.push({ id: entry.id, target: entry.target, sets })

@@ -29,6 +29,8 @@ import { FATIGUE_RECOVERING_BELOW } from './recovery-view.js'
 import { favIds } from './favourites.js'
 import { defaultConfig, lastBW } from './history.js'
 import { activityStimuli } from './activities.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const DURATIONS = [20, 40, 60]
 export const MAX_PICKS = 9
@@ -55,7 +57,7 @@ const movementOf = e => String(e?.n || '').toLowerCase().replace(KIT, ' ').repla
 function historyOf (S) {
   const count = {}, last = {}
   for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
-    for (const e of w?.entries || []) {
+    for (const e of legacyEntriesOf(w)) {
       if (!e?.id || !(e.sets || []).some(s => s?.done)) continue
       count[e.id] = (count[e.id] || 0) + 1
       if (!last[e.id] || w.d > last[e.id]) last[e.id] = w.d

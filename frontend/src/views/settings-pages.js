@@ -240,6 +240,9 @@ export const SEARCH = [
   { page: 'plan', title: 'Workouts per week', icon: 'target', tint: 'var(--green)', kw: 'target goal sessions per week rotation left countdown remaining', when: c => c.rotation },
   { page: 'plan', title: 'Week starts on', icon: 'calendar', tint: 'var(--orange)', kw: 'monday sunday first day week', opts: ['Monday', 'Sunday'], tkw: () => t('week start') },
   { page: 'plan', title: 'Weekly sets per muscle', icon: 'slider', tint: 'var(--teal)', kw: 'volume sets per week muscle target range mev mrv hypertrophy landmarks' },
+  // Programmes on the engine (v2): what a new 1RM does to them, and what a run does at its end.
+  { page: 'plan', title: 'New 1RM estimates', icon: 'chartLine', tint: 'var(--teal)', kw: 'one rep max 1rm estimate reference programme update ask keep' },
+  { page: 'plan', title: 'When a programme’s weeks run out', icon: 'repeat', tint: 'var(--orange)', kw: 'programme end finish repeat again weeks run out block' },
   { page: 'plan', title: 'Load starter plan', icon: 'clipboard', tint: 'var(--green)', kw: 'starter template beginner program routine' },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },

@@ -25,14 +25,21 @@ export function dropBrokenRows(state) {
     if (changed) { out[key] = after; dropped += Math.max(1, before.length - after.length) }
   }
   // A workout is an object with its entries; an entry is an object with an exercise id and sets.
-  clean('workouts', list => rows(list, w => isObj(w) && Array.isArray(w.entries)).map(w => {
+  // A v2 workout holds exposures instead: each an object with its exercise, and its sets objects.
+  clean('workouts', list => rows(list, w => isObj(w) && (Array.isArray(w.entries) || Array.isArray(w.exposures))).map(w => {
+    if (!Array.isArray(w.entries)) {
+      const xs = rows(w.exposures, x => isObj(x) && x.exerciseId != null)
+      const fixed = xs.map(x => (!isObj(x.performance) || !Array.isArray(x.performance.sets) || x.performance.sets.every(isObj) ? x : { ...x, performance: { ...x.performance, sets: rows(x.performance.sets) } }))
+      return fixed.length === w.exposures.length && fixed.every((x, i) => x === w.exposures[i]) ? w : { ...w, exposures: fixed }
+    }
     const entries = rows(w.entries, e => isObj(e) && e.id != null && Array.isArray(e.sets))
     const fixed = entries.map(e => (e.sets.every(isObj) ? e : { ...e, sets: rows(e.sets) }))
     return fixed.length === w.entries.length && fixed.every((e, i) => e === w.entries[i]) ? w : { ...w, entries: fixed }
   }))
   // A routine is an object with an id and its exercise list.
   clean('routines', list => rows(list, r => isObj(r) && r.id != null).map(r => {
-    const ex = rows(r.ex, e => isObj(e) && e.id != null)
+    // A v2 slot names its exercise as `exerciseId`.
+    const ex = rows(r.ex, e => isObj(e) && (e.id != null || e.exerciseId != null))
     return Array.isArray(r.ex) && ex.length === r.ex.length ? r : { ...r, ex }
   }))
   // A weigh-in needs its day and a weight that is a number.

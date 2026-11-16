@@ -11,7 +11,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
   const state = { S: null, calls: [], status: { supported: true, island: false }, statusP: null, asked: 0, shown: true, os: 'ios', sheets: [], opened: 0, perm: 'denied', permAsked: 0 }
-  state.snapshot = () => ({ S: state.S, ready: true, update: mut => { const next = structuredClone(state.S); mut(next); state.S = next } })
+  state.snapshot = () => ({ S: state.S, A: state.S?.active ?? null, ready: true, update: mut => { const next = structuredClone(state.S); mut(next); state.S = next } })
   state.plugin = {
     status: async () => { state.asked++; return state.statusP ? state.statusP : state.status },
     update: async x => { state.calls.push(['update', x]); return { shown: state.shown } },

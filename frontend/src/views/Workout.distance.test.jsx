@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 // #887: a cardio exercise logged by distance. The heading switches Speed and Distance, the row
 // takes km (or miles), and the speed is worked out from the distance and the minutes.
+import { storeFromV1 } from '../lib/test-fixtures.js'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -19,7 +20,7 @@ function mount(settings = {}) {
   const S = { ...JSON.parse(JSON.stringify(DEF)), ...settings }
   S.active = { id: 'd', d: '2026-11-03', start: Date.now(), name: 'Cardio', bw: null, cur: 0,
     entries: [{ id: BIKE, target: { sets: 1, min: 30, speed: 8 }, sets: [{ min: 30, speed: 8, done: false }] }] }
-  useStore.setState({ S, user: null })
+  useStore.setState({ ...storeFromV1(S), user: null })
   container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container)
   act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
 }
@@ -32,7 +33,7 @@ const type = (n, value) => {
     input.dispatchEvent(new Event('input', { bubbles: true }))
   })
 }
-const row = () => useStore.getState().S.active.entries[0].sets[0]
+const row = () => useStore.getState().A.entries[0].sets[0]
 
 describe('cardio by distance (#887)', () => {
   it('switches the heading, shows speed × time, and works the speed out from a typed distance', () => {

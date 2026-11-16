@@ -1,316 +1,365 @@
-// How a session's exercise entries are built from a routine. Shared by the live start and by
-// "log a past workout", which is the same screen pointed at another day — both must walk up
-// to identical entries, or the two paths drift apart the first time a prescription rule changes.
-// Imports both history.js and progression.js (which itself imports history.js); nothing in
-// either imports this file, so there is no cycle.
-import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, isPerSide, lastEntryFor, insertWarmupRow, bandClimbReps } from './history.js'
-import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
-import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR, sessionsFor } from './progression.js'
-import { dropGrid } from './plates.js'
-import { backoffStepOf, applyBackoff } from './backoff.js'
-import { dbLoadFor, historyAs, ownedWeightsFor, withMeaning } from './dumbbells.js'
-import { isAssisted } from './exercises.js'
-import { sessionHistory } from './backfill.js'
-import { programmeSlot, pctWeight, programmeStatus } from './programmes.js'
+// Generate one immutable prescription per routine occurrence. The engine decides; this boundary
+// only gathers its inputs (rule, track state, newest log, current 1RM) and stores its output.
+import { policyOfPreset, planOptions, currentOneRm, bestLoad, operatorFor, phaseOf, planFingerprint, planPhase, rungsOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, slotFor, slotInputs, supports, withRest } from './prescription/index.js'
+import { EXIDX, isAssisted, isBodyweightEq } from './exercises.js'
+import { modeOf, barFloor, lastAcrossRoutines, lastEntryFor, insertWarmupRow } from './history.js'
+import { oneRmForMeaning } from './onerm.js'
+import { exView, exConverted, viewTarget, profileUnit } from './ex-unit.js'
+import { convertExact, convPrescription } from './units.js'
+import { prescriptionWhy } from './progression-why.js'
+import { captureReference, programmeView } from './programmes.js'
+import { dateIn } from '../../../api/engine/programme-run.js'
 import { isDeloadDay, deloadSets } from './deload-cycle.js'
-import { todayISO } from './format.js'
-import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-unit.js'
+import { bandsOf, setBandsOf, nextBandsUp, usesBands } from './bands.js'
+import { gymSplitView } from './gym-split.js'
+import { nextRung } from './ladders.js'
+import { dupSessions, undulatingDay } from './undulating.js'
+import { isoOf } from './format.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
-import { withSessionTarget } from './session-targets.js'
+import { dropGrid } from './plates.js'
+import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
+import { contentHash, deepFreeze } from '../../../api/engine/index.js'
+import { entriesForExposures, loadStepFor } from './session-ui-adapter.js'
+import { dbLoadFor, bellsIn, ownedWeightsFor, historyAs, meaningFactor, entryDbLoad } from './dumbbells.js'
 
-/**
- * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
- * the routine's own sets × reps, with history and the progression policy deciding the weight —
- * and a policy that moves reps (double progression, bodyweight, a timed hold) still moving them
- * from there. 'last': the reps you logged last time, the way every planned session opened before
- * this setting existed. A profile saved before it, or one that never chose, reads as 'plan'.
- *
- * An exercise whose progression is off has no prescription, so its rows open at the routine's own
- * weight and reps. 'last' sends those to last time's weight and reps too (the weight as well as
- * the reps, since no policy is there to decide it). A deload or rehab routine (`noProg`) keeps the
- * routine's numbers.
- */
-export const startsFromLast = st => st?.startFrom === 'last'
-
-/**
- * One carried warm-up row: the load and reps (or duration) the last session logged, reset for
- * the new one. Nothing else survives — not done, not effort, not the tick time, not drops or
- * bursts. A per-side row keeps each side's own numbers and resyncs its aggregate. `edited`
- * stays, so a warm-up you set by hand is carried again next time.
- */
-const carriedWarmupRow = (row, mode) => {
-  if (isSideSet(row)) {
-    const side = s => ({ w: Number(s?.w) || 0, r: Number(s?.r) || 0, done: false })
-    return syncSideAggregate({ phase: 'warmup', warmup: true, edited: true, sides: { L: side(row.sides.L), R: side(row.sides.R) } })
-  }
-  if (mode === 'time') return { sec: row.sec, w: Number(row.w) || 0, done: false, phase: 'warmup', warmup: true, edited: true }
-  return { w: Number(row.w) || 0, r: Number(row.r) || 0, done: false, phase: 'warmup', warmup: true, edited: true }
+// How the exercise is logged: the occurrence's own mode, else the catalogue's (a cardio exercise);
+// a rule with a duration and no reps is a hold.
+const modeFor = (occ, p) => {
+  const mode = modeOf({ mode: occ.mode, id: occ.exerciseId })
+  return mode === 'reps' && p.parameters.durationSeconds ? 'time' : mode
 }
 
-/**
- * Puts a carried warm-up block in front of the finished work rows. Only the rows you set by hand
- * (`edited`, lib/workout-model.js markWarmupEdited) keep last time's numbers; an automatic rung in
- * the block is built again with insertWarmupRow, so it still ramps toward today's work weight
- * instead of freezing at the one it was made for. The block's length is last time's.
- */
-function withCarriedWarmups(rows, carry, mode, cfg, step, floor) {
-  let out = rows
-  for (const row of carry) {
-    if (!row.edited) { out = insertWarmupRow(out, mode, cfg, step, floor); continue }
-    const at = out.findIndex(x => !isWarmupRow(x))
-    out = at === -1 ? [...out, carriedWarmupRow(row, mode)] : [...out.slice(0, at), carriedWarmupRow(row, mode), ...out.slice(at)]
-  }
-  return out
-}
-
-/**
- * The warm-up block "Your last session" carries into a planned build (#525), or null when
- * there is nothing to carry — no last entry, no warm-up rows in it, or rows that no longer fit
- * the exercise's mode (a rep count for an exercise that is timed now, or none for one that is
- * reps now). Null means the ramp is built from the routine's `warmupSets` exactly as before.
- * A block with no row set by hand is an automatic ramp, so that is null too: carrying it would
- * freeze the first session's 50/75% rungs while the work weight climbs, and the routine's own
- * warm-up count would stop mattering. Rows from before the `edited` mark read as automatic.
- */
-function carriedWarmups(st, cfg, routine, noProg) {
-  if (!startsFromLast(st) || noProg || cfg.intensifier?.type === 'restpause') return null
-  // A slot that chose its warm-ups (auto, its own saved rows, none) keeps that choice: today's
-  // tweaks are today's, and the saved block is not overwritten by them (#525).
-  if (warmupModeOf(cfg)) return null
-  const mode = modeOf(cfg)
-  // Cardio has no carried warm-up block. A rep exercise with progression off still carries
-  // marked warm-ups when it starts its work rows from the last session.
-  if (mode === 'cardio') return null
-  const rows = lastEntryFor(st, cfg.id, routine?.id)?.warmups || []
-  if (!rows.some(row => row.edited)) return null
-  const fits = row => (mode === 'time' ? row.sec > 0 : isSideSet(row) || row.r > 0)
-  return rows.every(fits) ? rows : null
-}
-
-/**
- * One planned exercise, built the way a session builds it: the prescription, the rows it opens
- * with and the target it is judged against. The session start, a mid-session edit of the
- * exercise, and an exercise added to or swapped into a planned session all build through here,
- * so an entry cannot come out differently depending on where it was made. `routine` is the one
- * the exercise is planned in: its own history comes first (#216) and its policy applies.
- * `noProg` builds the routine's own numbers with no prescription, as an excluded routine does.
- */
-export function buildPlannedEntry(stored, cfg, routine, opts) {
-  return inExUnit(stored, cfg, (st, c) => planEntry(st, c, routine, opts))
-}
-
-function planEntry(stored, cfg, routine, { noProg = false } = {}) {
-  // What a dumbbell weight means for this exercise today (lib/dumbbells.js): the history it
-  // progresses from is read in that meaning, so a switch from "40 total" to per bell opens at
-  // 20, not at 40 a hand. Only a switch between the two explicit meanings converts anything.
-  const meaning = dbLoadFor(stored, cfg)
-  const st = historyAs(stored, cfg.id, meaning)
-  // `plan` is kept on the entry purely so the workout can explain the number it chose.
-  let plan = noProg ? { policy: 'off', kind: 'off' } : nextPrescription(st, cfg, routine)
-  // The warm-up ramp and the prescription snap to the exercise's own increment (1.25 kg
-  // plates exist), not the unit default; a timed exercise's `inc` is seconds, so it keeps the
-  // default for its optional load.
-  const step = modeOf(cfg) === 'reps' ? weightIncrement(cfg, st.unit) : defaultIncrement(cfg.id, st.unit)
-  // A running programme's target for this exercise this week (lib/programmes.js) replaces the
-  // policy's prescription: the weight from the %1RM, the reps from the routine, so neither the
-  // policy nor "Your last session" moves numbers the programme set.
-  const slot = noProg ? null : programmeSlot(stored, routine?.id, cfg.id, stored?.active?.d || todayISO())
-  // A deload week of your own (lib/deload-cycle.js), with no programme running: fewer work sets,
-  // the weight and reps where they were, and the session kept out of progression (the caller
-  // reads `deload`). Only a lifting exercise of a routine; a timed hold or cardio trains as usual.
-  const iso = stored?.active?.d || todayISO()
-  const cycle = !noProg && !slot && !!routine && modeOf(cfg) === 'reps' && !(Array.isArray(cfg.pyramid) && cfg.pyramid.length)
-    && isDeloadDay(stored, iso, !!programmeStatus(stored, iso)?.current)
-  if (cycle) {
-    const lastW = sessionsFor(st, cfg.id, cfg, routine?.id).filter(x => x.mode === 'reps').at(-1)?.weight
-    const n = deloadSets(cfg.sets)
-    plan = {
-      policy: plan.policy, kind: 'deloadweek', sets: n,
-      ...(lastW > 0 ? { weight: lastW } : plan.weight != null && plan.kind !== 'up' ? { weight: plan.weight } : cfg.weight > 0 ? { weight: cfg.weight } : {}),
-      ...(cfg.reps > 0 ? { reps: cfg.reps } : {}),
-      why: ['Deload week: {0} of {1} sets, same weight. Lighter on purpose.', n, Math.max(1, cfg.sets || 1)],
-      prog: { deload: true },
+/** Exercises in these routines that need a 1RM the profile does not have yet: a rule of its own
+ *  without an adopted one, or a programme slot its run cannot generate without one. */
+export function missingOneRms(profile, routines) {
+  const ids = new Set()
+  const view = programmeView(profile)
+  for (const routine of routines) {
+    for (const occ of routine.ex || []) {
+      if (currentOneRm(profile.oneRepMaxes, occ.exerciseId)) continue
+      const at = view && slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date: dateIn(Date.now(), view.run.tz || 'UTC') }).assignment
+      const own = at ? slotInputs({ view, run: view.run, assignment: at, occRule: occ.rule }).blocked === 'reference-missing' : occ.rule && needsOneRm(occ.rule) && !occ.ref
+      if (own) ids.add(occ.exerciseId)
     }
   }
-  // What the rows are built from: the routine's own, with a deload week's fewer sets.
-  const rowCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
-  const policyKind = plan.kind
-  if (slot) plan = programmePlan(st, cfg, plan, slot, step)
-  const planReps = !startsFromLast(st) || plan.kind === 'programme'
-  const fromLast = !noProg && policyKind === 'off' && !slot && startsFromLast(st)
-  // Warm-ups ramp over the dumbbells you own when the profile lists them (issue #376): a rung
-  // lands on the heaviest bell under it, never on a weight in between that no rack holds.
-  const ramp = (modeOf(cfg) === 'reps' && ownedWeightsFor(st, cfg)) || step
-  // Back-off sets step down from the top set by the exercise's own step (lib/backoff.js).
-  const backoffStep = modeOf(cfg) === 'reps' && backoffStepOf(cfg, st.unit) ? step : 0
-  // Warm-ups carried from the last session ("Your last session") are final: they go in front
-  // AFTER the prescription, back-off and intensifier steps, none of which may rewrite them.
-  const warmCarry = carriedWarmups(st, cfg, routine, noProg)
-  // A generated or saved warm-up block (lib/warmup-ramp.js) is built last too, from the weight the
-  // first work set really opens at, on the active gym's plates and dumbbells.
-  const block = !warmCarry && ['auto', 'own'].includes(warmupSource(st, cfg).kind)
-  const buildOpts = { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }
-  // Bands that go up start the reps again from the bottom (history.js seedBands): the heavier band
-  // is this session's progress, not one rep more on top of it.
-  const climbReps = plan.reps != null ? bandClimbReps(st, rowCfg, buildOpts) : 0
-  if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined, why: undefined }
-  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
-  const rows = backoffStep ? applyBackoff(built, backoffStep) : built
-  const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
-  const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
-    : block ? withWarmupBlock(st, cfg, shaped, { grid: dropGrid(st, cfg), floor: barFloor(st, cfg.id), unit: st.unit })
-      : shaped
-  // `preType` is the routine editor's memory of the slot before a routine type (lib/circuit.js), not a target.
-  const { preType: _preType, ...target } = cfg
-  // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
-  if (meaning !== 'as') target.dbLoad = meaning
-  if (plan.weight != null) target.weight = plan.weight
-  if (plan.reps != null) target.reps = plan.reps
-  if (plan.sec != null) target.sec = plan.sec
-  if (plan.sets != null) target.sets = plan.sets
-  // Triple progression's per-set aim (progression.js readSession grades by it). Only a session
-  // whose prescription set it carries one: a config that picked one up from a copied target
-  // must not have a later session graded against an old day's aims.
-  if (Array.isArray(plan.rowReps)) target.rowReps = plan.rowReps
-  else delete target.rowReps
-  // The step the back-off sets were built with, kept on the session so reading it back
-  // (progression.js readSession) holds each set to its own weight even after the plan changes.
-  if (backoffStep) target.backoffStep = backoffStep
-  else delete target.backoffStep
-  // Undulating's day (progression.js DUP_DAYS): the next session reads it to pick the day after.
-  if (Number.isInteger(plan.dup)) target.dup = plan.dup
-  else delete target.dup
-  // Shorter rests (density): the rest this session runs on, which the next one steps down from.
-  // "No timer" on the exercise stays no timer.
-  if (plan.rest > 0 && !target.restOff) target.restSec = plan.rest
-  // Rows that opened at last session's reps rather than the plan's ("Your last session", and no
-  // policy that decided reps), so the workout card can say where the number came from. Written
-  // only when true, and never saved with the finished workout.
-  // An exercise with progression off that opened at last time's numbers (fromLast) says so too.
-  const carried = !planReps && (plan.kind !== 'off' || fromLast) && plan.reps == null && modeOf(cfg) === 'reps'
-    && rows.some(s => !isWarmupRow(s) && s.r !== cfg.reps)
-  // `planned` is what the routine asked for, kept apart from the target the prescription moved,
-  // so the next session can tell an edited plan from a progressed one (nextPrescription).
-  return { target, plan, sets, planned: plannedOf(cfg), ...(carried ? { carried: true } : {}), ...(slot?.deload || cycle ? { deload: true } : {}) }
+  return [...ids]
 }
 
-// An exercise with a weight unit of its own (#657, lib/ex-unit.js) is built in that unit: on the
-// state as it sees it, so the progression's step, the warm-up ramp, the plates and a programme's
-// %1RM land on that unit's grid. What comes out is stored back in the profile's unit, the
-// numbers of the config it was built from kept as they were.
-function inExUnit(stored, cfg, build) {
-  const id = cfg?.id
-  if (!exConverted(stored, id)) return build(stored, cfg)
-  const out = build(exView(stored, id), viewTarget(stored, id, cfg))
-  return {
-    ...out,
-    target: storedTarget(stored, id, out.target, cfg),
-    ...(out.planned ? { planned: storedTarget(stored, id, out.planned, plannedOf(cfg)) } : {}),
-    sets: (out.sets || []).map(s => storedRow(stored, id, s)),
-  }
+/** An occurrence whose rule starts from `preset`'s defaults with these plain numbers. */
+export function occurrenceFor(exerciseId, { sets, reps, sec, weight } = {}, { id, unit = 'kg', routineId = null, preset = 'manual' } = {}) {
+  const o = {}
+  if (sets > 0) o.sets = { min: Math.round(sets), max: Math.round(sets) }
+  if (sec > 0) Object.assign(o, { durationSeconds: { min: sec, max: sec }, reps: { min: 1, max: 1 } })
+  else if (reps > 0) o.reps = { min: Math.round(reps), max: Math.round(reps) }
+  if (weight > 0) o.load = { mode: 'absolute', value: weight, unit }
+  return { occurrenceId: id, exerciseId, rule: defaultPlanRule(preset, { id, exerciseId, routineId, unit, ...o }) }
+}
+
+/** The exercise the track's current rung names: the occurrence's own when the rung names none. */
+export function effectiveExerciseId(occ, profile) {
+  const op = occ.rule && operatorFor(planPhase(occ.rule), 'difficulty')
+  if (!op) return occ.exerciseId
+  const s = profile?.progression?.[occ.occurrenceId]
+  // A plan edit restarts the track at rung 0 (advance.js `restart`): so does its exercise.
+  const at = s && (!s.planFingerprint || s.planFingerprint === planFingerprint(occ.rule)) ? s.values?.difficulty ?? 0 : 0
+  const rungs = rungsOf(op)
+  const id = rungs[Math.min(at, rungs.length - 1)]?.exerciseId
+  return id && EXIDX[id] ? id : occ.exerciseId
 }
 
 /**
- * The prescription a programme's target makes of the policy's (buildPlannedEntry). A %1RM with an
- * estimate to take it from sets the weight; without one (a first session, a body-weight lift) the
- * policy's weight stands. A deload week without a %1RM takes the policy's weight down by the
- * deload factor. The reps and sets are left to the routine, the RPE rides along to be shown.
+ * Mutates `profile.prescriptions` (the store's update draft) and returns the session exposures. An
+ * occurrence the current programme run plans (programmes.js programmeView) is generated from its
+ * stage on the run's own track (slotFor → slotInputs), the week's options over the occurrence's,
+ * and stamped with where it went (`exposure.programme`); anything else from its own rule. When
+ * continuing would pass earlier appointments of the week or round (spec 7.3), nothing is built: the
+ * answer is an empty list carrying `bypass` (`p<n>:a<i>` ids) until programmes.js bypassTo records them.
+ * `ctx.history` (a session logged into the past: the profile as of its day, backfill.js historyAsOf)
+ * is what its prescriptions are generated from; the run, its slots and every capture are read and
+ * written on `stored` itself, so a later session already in the run still holds its slot. The
+ * workout a backfill replaces (`ctx.replaceId`) is read as gone: the replacement takes its slot back.
  */
-export function programmePlan(st, cfg, plan, slot, step) {
-  const reps = modeOf(cfg) === 'reps' && !isBw(cfg) && !isAssisted(cfg)
-  const owned = reps ? ownedWeightsFor(st, cfg) : null
-  let weight = reps && slot.pct != null ? pctWeight(st, cfg.id, slot.pct, { step, owned, floor: barFloor(st, cfg.id) }) : null
-  if (weight == null && slot.deload && reps) {
-    const base = plan.weight ?? cfg.weight
-    if (base > 0) weight = deloadTo(base, step, DELOAD_FACTOR)
-  }
-  const why = [slot.pct != null && weight != null ? 'Week {0} of {1}: {2}% of your best 1RM' : slot.deload ? 'Week {0} of {1}: deload week' : 'Week {0} of {1}',
-    slot.week, slot.weeks, slot.pct]
-  return {
-    policy: plan.policy, kind: 'programme', why,
-    // Without a weight of its own the policy's stands, so the weight still moves as it would have.
-    ...(weight != null ? { weight } : plan.weight != null ? { weight: plan.weight } : {}),
-    prog: { week: slot.week, weeks: slot.weeks, ...(slot.pct != null ? { pct: slot.pct } : {}), ...(slot.rpe != null ? { rpe: slot.rpe } : {}), ...(slot.deload ? { deload: true } : {}) },
-  }
-}
-
-/**
- * What an exercise's settings sheet opens with in a running session: the entry's target with the
- * sets and reps (the range, the seconds) its routine planned put back in place of today's.
- *
- * The sheet edits the plan. Today's target is the prescription, and a double-progression aim, a
- * bodyweight climb or a set the rep ceiling added has moved it off the plan. Opened at those
- * numbers, a save that changed nothing stamped them as the plan, and the next build read that as
- * an edit: "Plan changed", the raise undone within the session, the climb started again the next
- * time (#275). The weight stays today's, the one on the bar. An entry built before plans were
- * stamped has only its target.
- */
-export function plannedConfigOf(entry) {
-  const out = { ...(entry?.target || {}) }
-  const planned = entry?.planned
-  if (!planned) return out
-  for (const key of ['sets', 'reps', 'repsMin', 'sec']) {
-    if (planned[key] != null) out[key] = planned[key]
-    // A plan with no range has no bottom to keep.
-    else if (key === 'repsMin') delete out.repsMin
-  }
-  return out
-}
-
-/**
- * Whether an entry is rebuilt the way an excluded routine builds its exercises: at the routine's
- * own numbers, with no prescription (buildPlannedEntry's `noProg`).
- *
- * `entry.noProg` comes from two places. A deload or rehab routine freezes it onto every exercise
- * it starts, and those are built without a prescription. An exercise's ⋯ menu sets it by hand for
- * one session, and that only stops the session from counting: its rows stay at the prescription.
- * Read as the first kind, a hand-set flag made a rebuild (Progression settings saved, a swap) drop
- * today's 102.5 to the routine's own 60, and its Undo then let those 60 count as progress. So only
- * an entry whose routine is itself kept out is built that way.
- */
-export const builtOutOfProgression = (entry, routine) => entry?.noProg === true && routine?.excludeFromProgression === true
-
-/**
- * An exercise added to or swapped into a running session, beside `slot`. A planned slot builds
- * it the way its routine would; freestyle reproduces what you did last time, so swapping barbell
- * for dumbbell bench does not start you at an empty bar. Read from before the session's day when
- * it is logged into the past (sessionHistory).
- */
-export function buildSessionEntry(st, id, cfg, routine, slot) {
-  const full = { ...cfg, id }
-  const past = sessionHistory(st)
-  if (routine) return buildPlannedEntry(past, full, routine, { noProg: builtOutOfProgression(slot, routine) })
-  return inExUnit(st, full, v => freestyleEntry(v, id, viewTarget(st, id, cfg)))
-}
-
-function freestyleEntry(st, id, cfg) {
-  const full = { ...cfg, id }
-  const past = sessionHistory(st)
-  // Freestyle stamps the meaning of a dumbbell weight and reads last time in it, the way
-  // buildPlannedEntry does for a planned exercise (lib/dumbbells.js).
-  const step = modeOf(full) === 'reps' ? (ownedWeightsFor(st, full) || weightIncrement(full, st.unit)) : defaultIncrement(id, st.unit)
-  const block = ['auto', 'own'].includes(warmupSource(st, full).kind)
-  const rows = applyIntensifierPlan(buildSets(historyAs(past, id, dbLoadFor(st, full)), block ? { ...full, warmupSets: 0 } : full, { step, preferLast: true }), full, dropGrid(st, full))
-  const sets = block ? withWarmupBlock(st, full, rows, { grid: dropGrid(st, full), floor: barFloor(st, id), unit: st.unit }) : rows
-  return { target: withMeaning(st, cfg, id), plan: null, sets }
-}
-
-// Returns a bare array of session entries. "Excluded from progression" is per-entry now
-// (`entry.noProg`, written only when true) rather than a wrapper flag — a rehab routine merged
-// into real work must exclude only its own exercises. The merge helper (lib/session-merge.js)
-// stamps `entry.rid`, so the single-routine and combined paths share this builder unchanged; it
-// only reads the routine's id, to start each exercise from that routine's own history (#216).
-export function buildSessionEntries(st, r) {
-  // The prescription is applied as the session is built, so you walk up to the bar with the
-  // right weight already on the screen instead of being told about it afterwards.
-  const noProg = r?.excludeFromProgression === true
-  const entries = (r ? r.ex : []).map(cfg => {
-    const { deload, ...built } = buildPlannedEntry(st, cfg, r, { noProg })
-    // A programme's deload week stays out of progression, as a deload routine does.
-    return { id: cfg.id, sg: cfg.sg, ...built, ...(noProg || deload ? { noProg: true } : {}) }
+export function buildSessionExposures(stored, routine, ctx) {
+  stored.prescriptions ||= {}
+  const past = ctx.history || stored
+  // The workout in progress (`ctx.active`): an exercise added to it never takes a slot it holds already.
+  const active = ctx.active ?? stored.active ?? null
+  // Only the records a run reads: spreading the draft would copy the whole profile.
+  const runView = () => programmeView(ctx.replaceId == null ? stored : { programme: stored.programme, programmeRuns: stored.programmeRuns, programmeEvents: stored.programmeEvents,
+    prescriptions: stored.prescriptions, routines: stored.routines, workouts: (stored.workouts || []).filter(w => w.id !== ctx.replaceId) }, null, active)
+  // Logged as extra (`ctx.extra`, the person's answer to a bypass): outside the run, moving nothing.
+  const outside = routine?.excludeFromProgression === true || ctx.extra === true
+  let view = outside ? null : runView()
+  // The session's day in the run's own timezone, the one its saved work is read back in (deriveRun):
+  // the start of the workout in progress an exercise joins, else now. Never the device's own date.
+  const date = view && (ctx.date || dateIn(Number.isFinite(active?.start) ? active.start : ctx.now, view.run.tz || 'UTC'))
+  const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date, appt: ctx.appts?.[routine.id] ?? null }) : null))
+  const bypass = [...new Set(placed.flatMap(x => x?.bypass || []))]
+  if (bypass.length) return Object.assign([], { bypass })
+  return (routine?.ex || []).map((original, i) => {
+    const id = effectiveExerciseId(original, past)
+    const storedOccurrence = id === original.exerciseId ? original : { ...original, exerciseId: id, exerciseName: undefined }
+    const profile = exConverted(past, id)
+      ? exView({ ...past, workouts: [...(past.workouts || [])] }, id) : past
+    const base = viewTarget(stored, id, storedOccurrence)
+    const at = placed[i]?.assignment
+    let inputs = at ? slotInputs({ view, run: view.run, assignment: at, occRule: base.rule }) : null
+    // The first session that finds a 1RM for a track with none adopts it (spec 10.1).
+    if (inputs?.blocked === 'reference-missing' && currentOneRm(stored.oneRepMaxes, base.exerciseId)) {
+      captureReference(stored, at.trackId, currentOneRm(stored.oneRepMaxes, base.exerciseId), ctx.now)
+      view = runView()
+      inputs = slotInputs({ view, run: view.run, assignment: at, occRule: base.rule })
+    }
+    // Still no reference: ordinary work kept out of progression, nothing fabricated; the slot stays open.
+    const prog = inputs && !inputs.blocked ? inputs : null
+    const options = prog?.rule.options || {}
+    // The week's execution options over the occurrence's own (an incline lives in its cardio settings).
+    const occ = prog ? { ...base, ...options, ...(options.incline != null ? { cardio: { ...base.cardio, incline: options.incline } } : {}) } : base
+    // A programme's maintenance, extra and recovery work is logged and moves nothing.
+    const excluded = outside || occ.excludeFromProgression === true || !!inputs?.blocked || (!!prog && (at.role !== 'work' || prog.rule.program.adaptive === false))
+    const trackId = prog ? prog.trackId : occ.occurrenceId
+    const meaning = dbLoadFor(profile, occ)
+    const owned = ownedWeightsFor(profile, occ)
+    // An exercise kept per gym (#988, lib/gym-split.js) reads only this gym's (or brand's) sessions:
+    // the engine then replays its track over those alone, so each gym progresses on its own (v1).
+    const history = gymSplitView({ ...historyAs(profile, occ.exerciseId, meaning), ...(ctx.active?.gym ? { active: { gym: ctx.active.gym } } : {}) }, occ.exerciseId)
+    // An assistance machine's load is the help given: the engine runs every step the other way.
+    // An occurrence can say so itself (v1's per-exercise override), else the catalogue does.
+    const assisted = typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(occ.exerciseId)
+    // A reference the occurrence adopted (spec 10.1), captured from the current 1RM on its first use.
+    const adopted = prog ? prog.oneRm : occ.rule && needsOneRm(occ.rule) ? occ.ref ?? currentOneRm(stored.oneRepMaxes, occ.exerciseId) : null
+    if (!prog && adopted && !occ.ref) adoptReference(stored, routine.id, original.occurrenceId, adopted)
+    let generation
+    if (prog) generation = { trackId, state: prog.state, lastPrescription: prog.lastPrescription, lastLog: prog.lastLog, at: prog.at ?? null, startFrom: 'plan' }
+    else {
+      // The engine picks the history and decides a restart; this boundary only passes the profile.
+      const context = resolveProgressionContext({
+        trackId, exerciseId: occ.exerciseId, rule: occ.rule, assisted,
+        workouts: history.workouts, prescriptions: profile.prescriptions, progression: profile.progression,
+        // A ladder's rung is its own track's: another routine's state for the same exercise would move it.
+        acrossRoutines: lastAcrossRoutines(profile) && !(occ.rule && operatorFor(planPhase(occ.rule), 'difficulty'))
+      })
+      const previous = (profile.workouts || []).flatMap(w => w.exposures || []).find(x => x.exposureId === context.baseline?.exposureId)
+      const previousMeaning = entryDbLoad(previous)
+      const factor = meaningFactor(previousMeaning, meaning, { id: occ.exerciseId, side: occ.side })
+      if (factor !== 1 && context.state?.values?.load?.mode === 'absolute') {
+        const next = context.state.values.load.value, lifted = bestLoad(previous, assisted)
+        // A meaning change scales the lifted load; an earned absolute increment keeps its size.
+        const earned = !context.state.deload && context.lastPrescription && operatorFor(phaseOf(context.lastPrescription), 'load')?.step.type === 'absolute' && lifted > 0 ? next - lifted : 0
+        context.state = { ...context.state, values: { ...context.state.values, load: { ...context.state.values.load, value: next * factor + earned * (1 - factor) } } }
+      }
+      generation = {
+        trackId, state: excluded ? null : context.state, lastPrescription: excluded ? null : context.lastPrescription,
+        // The engine reads a log's id; a saved exposure carries it as exposureId.
+        lastLog: !excluded && context.baseline ? { ...context.baseline, id: context.baseline.exposureId } : null,
+        reset: excluded ? null : context.reset, heldLoad: excluded ? null : context.heldLoad, startFrom: profile.startFrom
+      }
+    }
+    let rule = prog ? prog.rule : occ.rule
+    if (occ.restFromProfile && Number.isFinite(profile.restSec)) rule = withRest(rule, profile.restSec)
+    if (rule.exerciseId !== occ.exerciseId) rule = { ...rule, exerciseId: occ.exerciseId }
+    if (owned) rule = { ...rule, rounding: { mode: 'allowed_values', allowedValues: owned } }
+    let prescription = generatePrescription({
+      id: ctx.newId(`prescription:${routine.id}:${occ.occurrenceId}:${ctx.now}:${i}`),
+      now: new Date(ctx.now).toISOString(),
+      rule, ...generation,
+      oneRm: adopted ? oneRmForMeaning({ ...profile, oneRepMaxes: { [adopted.id]: adopted } }, occ.exerciseId, meaning) : oneRmForMeaning(profile, occ.exerciseId, meaning),
+      // Lighter is harder on an assisted machine: the engine ramps its warm-ups up in help instead (#581).
+      warmup: typeof occ.warmup === 'object' ? occ.warmup : null,
+      warmupFloor: barFloor(profile, occ.exerciseId),
+      backoff: occ.backoff === true,
+      failureSets: modeOf({ mode: occ.mode, id: occ.exerciseId }) === 'cardio' ? undefined : occ.failureSets,
+      lastToFailure: modeOf({ mode: occ.mode, id: occ.exerciseId }) !== 'cardio' && occ.lastToFailure === true,
+      equipment: EXIDX[occ.exerciseId]?.eq ?? null, assisted,
+      // What a deload needs to know about the movement (deload.js).
+      perSide: occ.side === true, restPause: occ.intensifier?.type === 'restpause', restPauseReps: occ.intensifier?.totalReps,
+      bodyweight: typeof occ.bodyweight === 'boolean' ? occ.bodyweight : isBodyweightEq(occ.exerciseId)
+    })
+    // "Repeat today" hands over the rows of the day it repeats (session-repeat.js), as many as were done.
+    const repeated = ctx.rows?.get(occ.occurrenceId)
+    if (repeated) prescription = prescriptionAtRows(prescription, repeated, profile.unit, repeated.length)
+    else if (!prog && occ.repeatLast && prescription.preset === 'manual' && modeFor(occ, prescription) === 'reps') {
+      const last = lastEntryFor(history, occ.exerciseId)?.sets
+      if (last?.length) prescription = prescriptionAtRows(prescription, last, profile.unit)
+    }
+    // A carry or a sled (#1011): the slot's metres, or last time's metres and load when that was a
+    // distance set too (v1 buildWorkSets); no progression of its own yet.
+    if (modeFor(occ, prescription) === 'distance' && !repeated) {
+      const last = (lastEntryFor(history, occ.exerciseId, routine?.id)?.sets || []).filter(r => !isWarmupRow(r) && r.m > 0)
+      const n = prescription.rows.length
+      const at = i => last[i] || last.at(-1)
+      const metres = Math.max(1, Math.round(Number(occ.distance?.m)) || 20)
+      prescription = freezePrescription({
+        ...prescription,
+        ...(last.length ? { rows: prescription.rows.map((row, i) => ({ ...row, load: at(i).w > 0 ? { value: at(i).w, unit: profile.unit } : row.load })) } : {}),
+        prefill: { ...prescription.prefill, metres, ...(last.length ? { rowMetres: Array.from({ length: n }, (_, i) => at(i).m), load: null } : {}) }
+      })
+    }
+    // A band exercise (lib/bands.js, v1 seedBands): each row opens with the bands last time's did,
+    // else the slot's. Every work set at the top of the reps climbs one band and starts the reps
+    // again at the bottom, instead of one rep more on the same band (night QA 146).
+    let rowBands = null, bandClimb = false
+    if (modeFor(occ, prescription) === 'reps' && !repeated && usesBands(profile, occ.exerciseId, occ)) {
+      const plan = setBandsOf({ bands: occ.bands })
+      const lastEntry = lastEntryFor(history, occ.exerciseId, routine?.id)
+      const lastWork = (lastEntry?.sets || []).filter(r => !isWarmupRow(r) && !isSideSet(r))
+      const anyBands = lastWork.some(r => setBandsOf(r).length)
+      if (anyBands || plan.length) {
+        // A ladder migrated from a v1 double keeps that window (loadedReps): its bottom is where the reps restart.
+        const reps = planOptions(occ.rule).loadedReps || planPhase(occ.rule).parameters.reps
+        const list = bandsOf(profile)
+        // The top is what last time asked for (a ladder's reps climb without a ceiling of their own).
+        const top = Number(lastEntry?.target?.reps) > 0 ? Number(lastEntry.target.reps) : reps.max < 1000 ? reps.max : reps.min
+        bandClimb = anyBands && (policyOfPreset(prescription.preset) || 'off') !== 'off' && !(prescription.rows[0]?.load?.value > 0) && top > 0 && lastWork.every(r => Number(r.r) >= top)
+          && !!nextBandsUp(setBandsOf(lastWork[0]), list)
+        rowBands = prescription.rows.map((_, i) => {
+          const prev = lastWork[i] || lastWork.at(-1)
+          const ids = (anyBands && setBandsOf(prev).length ? setBandsOf(prev) : plan)
+          return ids.length && bandClimb ? nextBandsUp(ids, list) || ids : ids
+        })
+        if (bandClimb) prescription = prescriptionAtRows(prescription, prescription.rows.map(() => ({ w: 0, r: reps.min })), profile.unit)
+      }
+    }
+    // Undulating days (lib/undulating.js): today's reps off the plan, the load off the recent estimated
+    // max, the day stamped on the exposure. Also a bodyweight ladder that has turned undulating with weight.
+    let dup = null
+    const undulating = prescription.preset === 'undulating' || (planOptions(occ.rule).loadedPreset === 'undulating' && prescription.rows[0]?.load?.value > 0)
+    if (undulating && !prog && !repeated && !excluded && !assisted && modeFor(occ, prescription) === 'reps') {
+      const day = undulatingDay(dupSessions(history.workouts, occ.exerciseId), { reps: planPhase(occ.rule).parameters.reps.max, perSide: occ.side === true, step: planOptions(occ.rule).step?.type === 'absolute' ? planOptions(occ.rule).step.value : loadStepFor(prescription, profile.unit), unit: profile.unit })
+      if (day) {
+        dup = day
+        const w = day.weight ?? prescription.rows[0]?.load?.value ?? 0
+        prescription = prescriptionAtRows(prescription, prescription.rows.map(() => ({ w, r: day.reps })), profile.unit)
+      }
+    }
+    // A deload week of your own (lib/deload-cycle.js), with no programme running: fewer work sets,
+    // the weight and reps where they were, and the session kept out of progression. Only a lifting
+    // exercise of a routine; a timed hold, cardio or pyramid sets train as usual (v1 planEntry).
+    const deloadWeek = !prog && !repeated && routine?.id != null && routine.id !== 'freestyle' && modeFor(occ, prescription) === 'reps'
+      && !['pyramid_reps', 'pyramid'].includes(prescription.preset) && isDeloadDay(profile, ctx.date || isoOf(new Date(ctx.now)), !!programmeView(stored))
+    if (deloadWeek) {
+      const planned = planPhase(occ.rule).parameters
+      const n = deloadSets(planned.sets.min)
+      const lastW = (lastEntryFor(history, occ.exerciseId, routine.id)?.sets || []).filter(r => !isWarmupRow(r) && r.w > 0).at(-1)?.w
+      const w = lastW > 0 ? lastW : prescription.rows[0]?.load?.value ?? 0
+      prescription = prescriptionAtRows(prescription, [{ w, r: planned.reps.max }], profile.unit, n)
+    }
+    // Where the session went in the run, frozen with it (provenance only; its targets are the engine's).
+    const stamp = prog ? { runId: view.run.id, rev: view.tracks[at.trackId]?.def?.rev ?? view.run.def.rev, trackId: at.trackId, slot: at.slot, stage: at.stage, attempt: at.attempt, role: at.role, ref: prog.oneRm ?? null, effort: prog.effort ?? null } : null
+    if (stamp) prescription = freezePrescription({ ...prescription, provenance: { ...prescription.provenance, programme: stamp } })
+    const exposure = {
+      exposureId: ctx.newId(`exposure:${routine.id}:${occ.occurrenceId}:${ctx.now}:${i}`),
+      exerciseId: occ.exerciseId, exerciseNameSnapshot: occ.exerciseName || occ.exerciseId, mode: modeFor(occ, prescription),
+      routineId: routine.id, occurrenceId: occ.occurrenceId, trackId,
+      excludedFromProgression: excluded || deloadWeek,
+      prescriptionId: prescription.id,
+      ...(deloadWeek ? { deloadWeek: true } : {}),
+      ...(rowBands?.some(ids => ids.length) ? { rowBands } : {}),
+      ...(dup ? { dup: dup.day } : {}),
+      ...Object.fromEntries(['sgName', 'sgRest', 'sgCircuit', 'tempo', 'nextRestSec', 'nextRestOff', 'sideRestOff', 'sideRestSec', 'autoHold', 'warmupRestOff', 'subs', 'restOff'].filter(k => occ[k] != null).map(k => [k, occ[k]])),
+      ...(stamp ? { programme: stamp } : {}),
+      ...(occ.sg ? { sg: occ.sg } : {}),
+      // The plan's instruction for this exercise, shown on its card; session-only (finish-session.js drops it).
+      ...(typeof occ.note === 'string' && occ.note ? { setupNote: occ.note } : {}),
+      ...(occ.side ? { side: true } : {}),
+      ...(meaning !== 'as' ? { dbLoad: meaning, bells: bellsIn({ id: occ.exerciseId, side: occ.side }) } : {}),
+      ...(prescription.failureSets != null ? { failureSets: prescription.failureSets } : {}),
+      ...(occ.lastToFailure && prescription.failureSets === 'last' ? { lastToFailure: true } : {}),
+      ...(occ.backoff ? { backoff: true } : {}),
+      ...(occ.cardio?.incline != null ? { incline: occ.cardio.incline } : {}),
+      ...(occ.cardio?.level != null ? { level: occ.cardio.level } : {}),
+      assisted,
+      ...(occ.warmupRestSec > 0 ? { warmupRestSec: occ.warmupRestSec } : {}),
+      ...(occ.bodyweight != null ? { bodyweight: occ.bodyweight } : {}),
+      ...(occ.intensifier && supports(occ.rule)[occ.intensifier.type] ? { intensifier: occ.intensifier } : {}),
+      performance: { sets: [] }
+    }
+    // Why it opens at these numbers (v1's line on the card); session-only, like the note (finish-session.js drops it).
+    const why = bandClimb ? null : dup ? { policy: 'undulating', kind: dup.kind, why: dup.why } : deloadWeek ? { policy: policyOfPreset(prescription.preset) || 'off', kind: 'deloadweek', why: ['Deload week: {0} of {1} sets, same weight. Lighter on purpose.', prescription.rows.length, planPhase(occ.rule).parameters.sets.min] }
+      : prog || excluded ? null : prescriptionWhy({ prescription, last: generation.lastPrescription, state: generation.state, lastLog: generation.lastLog, reset: generation.reset, unit: profile.unit, assisted })
+    if (why) exposure.plan = why
+    // A skill ladder at the top with every set there (v1 ladderPrescription): the plan names the next,
+    // harder rung for the workout to offer (views/Workout.jsx LadderNext), or says it is the last.
+    if (prescription.preset === 'skill_ladder' && !prog && !excluded && generation.lastLog) {
+      const top = planPhase(occ.rule).parameters.reps.max
+      const last = (lastEntryFor(history, occ.exerciseId, routine?.id)?.sets || []).filter(r => !isWarmupRow(r))
+      if (prescription.prefill.reps >= top && last.length && last.every(r => Number(r.r) >= top)) {
+        const next = nextRung(profile, occ.exerciseId)
+        exposure.plan = next ? { policy: 'ladder', kind: 'ladder', next, why: ['Every set at {0}. You’re ready for the next rung.', top] }
+          : { policy: 'ladder', kind: 'hold', why: ['Top of the ladder. Add weight, slow the tempo or make your own next rung.'] }
+      }
+    }
+    prescription = sessionWarmups(profile, occ, routine, prescription, exposure, excluded)
+    if (exConverted(stored, occ.exerciseId)) prescription = convPrescription(prescription, profile.unit, profileUnit(stored), true, convertExact, (v, from, to) => convertExact(v, from, to, 10))
+    stored.prescriptions[prescription.id] = prescription
+    return exposure
   })
-  // The rows a coach or planner set for this routine on this day (#972, lib/session-targets.js),
-  // in place of the prescription's; the routine and its targets stay what they built.
-  return withSessionTarget(st, r, entries, st?.active?.d || todayISO(), TARGET_HELPERS)
 }
-const TARGET_HELPERS = { modeOf, isPerSide }
+
+// The first use of a 1RM rule adopts the current 1RM into the occurrence, in the same change.
+function adoptReference(stored, rid, oid, ref) {
+  stored.routines = (stored.routines || []).map(r => (r.id !== rid ? r : { ...r, ex: (r.ex || []).map(o => (o.occurrenceId === oid && !o.ref ? { ...o, ref: { ...ref } } : o)) }))
+}
+
+/**
+ * A prescription reopened at rows that were logged (a freestyle exercise's last time, "Repeat
+ * today"): each row at its own weight and reps, a hold at its seconds, cardio at its minutes and
+ * speed, `count` rows of them.
+ */
+function prescriptionAtRows(p, logged, unit, count = p.rows.length) {
+  const at = i => logged[i] || logged.at(-1)
+  const rows = Array.from({ length: count }, (_, i) => ({ ...(p.rows[i] || p.rows.at(-1)), load: at(i).w > 0 ? { value: at(i).w, unit } : null }))
+  const rowReps = rows.map((_, i) => at(i).r)
+  const own = !p.parameters.durationSeconds ? { reps: rowReps[0], rowReps }
+    : p.parameters.speed ? { cardioRows: rows.map((_, i) => ({ min: at(i).min, speed: at(i).speed, ...(at(i).incline != null ? { incline: at(i).incline } : {}), ...(at(i).level != null ? { level: at(i).level } : {}) })) }
+      : at(0).sec > 0 ? { durationSeconds: at(0).sec, rowSeconds: rows.map((_, i) => at(i).sec || at(0).sec) } : {}
+  return freezePrescription({ ...p, rows, prefill: { ...p.prefill, sets: count, load: null, ...own } })
+}
+
+const freezePrescription = p => {
+  const { contentHash: previous, ...body } = p
+  return deepFreeze({ ...body, contentHash: contentHash(body) })
+}
+function sessionWarmups(profile, occ, routine, p, exposure, excluded) {
+  // Cardio has no carried warm-up block; a rep exercise with progression off still carries marked
+  // warm-ups when it starts its work rows from the last session (v1.4.5).
+  const cfg = { ...occ, id: occ.exerciseId, mode: exposure.mode, ...(occ.legacyWarmupSets > 0 ? { warmup: undefined, warmupSets: occ.legacyWarmupSets } : {}) }
+  const source = warmupSource(profile, cfg)
+  const step = dropGrid(profile, cfg), floor = barFloor(profile, occ.exerciseId)
+  const carried = profile.startFrom === 'last' && !excluded && !warmupModeOf(occ) && (typeof occ.warmup !== 'object' || occ.legacyWarmupSets > 0) && exposure.mode !== 'cardio' && occ.intensifier?.type !== 'restpause'
+    ? lastEntryFor(profile, occ.exerciseId, routine.id)?.warmups : null
+  let rows = entriesForExposures([exposure], { [p.id]: p })[0].sets
+  if (carried?.some(row => row.edited) && carried.every(row => exposure.mode === 'time' ? row.sec > 0 : isSideSet(row) || row.r > 0)) {
+    rows = rows.filter(row => !isWarmupRow(row))
+    for (const row of carried) {
+      if (!row.edited) { rows = insertWarmupRow(rows, exposure.mode, cfg, step, floor); continue }
+      const fresh = isSideSet(row) ? syncSideAggregate({ phase: 'warmup', warmup: true, edited: true, sides: Object.fromEntries(['L', 'R'].map(side => [side, { w: Number(row.sides[side].w) || 0, r: Number(row.sides[side].r) || 0, done: false }])) })
+        : { w: Number(row.w) || 0, ...(exposure.mode === 'time' ? { sec: row.sec } : { r: Number(row.r) || 0 }), done: false, phase: 'warmup', warmup: true, edited: true }
+      const at = rows.findIndex(row => !isWarmupRow(row))
+      rows.splice(at < 0 ? rows.length : at, 0, fresh)
+    }
+  } else if (occ.warmup && typeof occ.warmup === 'object' && !(occ.legacyWarmupSets > 0)) return p
+  else if (source.kind === 'auto' || source.kind === 'own') rows = withWarmupBlock(profile, cfg, rows, { grid: step, floor, unit: profile.unit })
+  else if (occ.warmup === 'none') rows = rows.filter(row => !isWarmupRow(row))
+  else if (source.kind === 'count' && (typeof occ.warmup !== 'object' || occ.legacyWarmupSets > 0)) {
+    rows = rows.filter(row => !isWarmupRow(row))
+    for (let i = 0; i < Math.min(5, cfg.warmupSets); i++) rows = insertWarmupRow(rows, exposure.mode, cfg, step, floor)
+  } else return p
+  return freezePrescription({ ...p, warmupRows: rows.filter(isWarmupRow).map(row => ({ load: { value: row.w || 0, unit: profile.unit }, reps: row.r || 1, phase: 'warmup', uiRow: row })) })
+}
+
+/**
+ * One exercise built the way adding it to a running session builds it (Workout.jsx's Add): from
+ * `routine`'s rule when it belongs to one, else freestyle, at last time's numbers. Writes its
+ * prescription to `stored` (the store's update draft) and returns `{ entry, exposures }` for the
+ * running workout, which keeps its exposures beside its entries. `ctx`: `{ now, newId, active }`.
+ */
+export function buildSessionEntry(stored, exId, cfg, routine = null, ctx = {}) {
+  const newId = ctx.newId || (() => Date.now().toString(36) + Math.random().toString(36).slice(2, 7))
+  const occ = occurrenceFor(exId, cfg || {}, { id: newId(), unit: stored.unit, routineId: routine?.id ?? null })
+  const occurrence = routine ? occ : { ...occ, repeatLast: true }
+  const exposures = buildSessionExposures(stored, { ...(routine || { id: 'freestyle' }), ex: [occurrence] }, { now: ctx.now ?? Date.now(), newId, unit: stored.unit, active: ctx.active ?? null })
+  if (!routine) for (const x of exposures) delete x.routineId
+  const [entry] = entriesForExposures(exposures, stored.prescriptions, stored)
+  return { entry: entry ? { id: exId, ...entry } : null, exposures }
+}

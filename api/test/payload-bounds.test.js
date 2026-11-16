@@ -223,3 +223,36 @@ test('the cohort is bounded where it joins the payload, whoever built it', () =>
     assert.equal(p.cohort.exercises[1].median, 60);
   }
 });
+
+// Programmes come from the synced state too: a client can store any number of them, of any size.
+test('programmes are cut to six, 24 exercises and 16 weeks each, within one stage budget, every field bounded', async () => {
+  const { programmeProfile, PROGRAMME_TODAY } = await import('./helpers.mjs');
+  const S = await programmeProfile();
+  const LONG_ID = 'y'.repeat(5000);
+  const phase = { parameters: { sets: { min: 3, max: 3 }, reps: { min: 8, max: 12 }, load: { mode: 'absolute', value: 100.25, unit: 'kg' + INJECT }, restSeconds: 90 } };
+  const stage = i => ({ id: 's' + i, kind: i ? 'work' : INJECT, targets: { o: { own: 'set', phase, effort: { mode: INJECT, rpe: 8 }, note: INJECT } }, note: INJECT });
+  const track = i => ({ id: 't' + i, exerciseId: LONG_ID, slots: [{ rid: LONG_ID, oid: 'o' }], stages: Array.from({ length: 20 }, (_, k) => stage(k)), policy: { onFailure: INJECT, onSkipped: 'advance' } });
+  for (let i = 0; i < 10; i++) {
+    S.programmes['x' + i] = { id: 'x' + i + LONG_ID, name: INJECT, at: 100 + i, rev: 1, schedule: { mode: 'weeks', appts: [] }, duration: { n: 99, unit: INJECT }, end: INJECT, tracks: Array.from({ length: 60 }, (_, k) => track(k)), secret: INJECT };
+  }
+  const p = payload.build(S, { handle: 'h'.repeat(16), kind: 'review', now: PROGRAMME_TODAY });
+  const out = p.plan.programmes;
+  assert.equal(out.length, payload.MAX_PROGRAMMES);
+  assert.ok(out.every(x => x.tracks.length <= payload.MAX_PROGRAMME_TARGETS && x.tracks.every(t => t.stages.length <= 16)));
+  const stages = out.reduce((n, x) => n + x.tracks.reduce((m, t) => m + t.stages.length, 0), 0);
+  assert.ok(stages <= payload.MAX_PROGRAMME_STAGES, `${stages} stages`);
+  // What did not fit is counted, so the Coach knows a programme is shown in part.
+  assert.equal(out[0].tracks.length, payload.MAX_PROGRAMME_TARGETS);
+  assert.equal(out[0].more, 60 - payload.MAX_PROGRAMME_TARGETS);
+  assert.ok(out.some(x => x.tracks.length < payload.MAX_PROGRAMME_TARGETS && x.more > 0));
+  const [first] = out[0].tracks;
+  assert.deepEqual(first.stages[0], { kind: 'work', own: 'set', sets: 3, reps: [8, 12], load: { weight: 100.25, unit: 'kg' }, rest: 90, effort: { mode: 'advisory', rpe: 8 } });
+  assert.equal(first.policy, undefined, 'a policy that is not one is left out');
+  assert.deepEqual([out[0].duration, out[0].end], [{ n: 16, unit: 'weeks' }, 'stop']);
+  const json = JSON.stringify(out);
+  assert.ok(!json.includes(INJECT.slice(0, payload.NAME_MAX + 1)), 'no more of a name than its bound');
+  assert.ok(!json.includes(LONG_ID.slice(0, payload.ID_MAX + 1)), 'no more of an id than its bound');
+  assert.equal(first.exId, LONG_ID.slice(0, payload.ID_MAX));
+  assert.ok(!json.includes('secret') && !json.includes('note'), 'only named fields are copied');
+  assert.ok(JSON.stringify(p).length < payload.MAX_PAYLOAD_CHARS, `the payload fits (${JSON.stringify(p).length})`);
+});

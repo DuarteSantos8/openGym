@@ -22,6 +22,8 @@ import { isWarmupRow } from './workout-model.js'
 import { rirOf } from './effort.js'
 import { formOf, formScore } from './daily-form.js'
 import { sleepHoursOn } from './vitals.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const MIN_GROUP = 5
 export const MIN_TOTAL = 14
@@ -51,21 +53,22 @@ export function workoutPerformance(S) {
   for (const w of sorted(S)) {
     const ratios = []
     const seen = new Set()
-    for (const e of Array.isArray(w.entries) ? w.entries : []) {
-      if (!e || typeof e.id !== 'string' || seen.has(e.id) || isCardio(e.id)) continue
-      const best = bestSetOf(e, formula)
+    for (const x of w.exposures || []) {
+      const id = x?.exerciseId
+      if (typeof id !== 'string' || seen.has(id) || isCardio(id)) continue
+      const best = bestSetOf(x, formula)
       if (!best) continue
-      seen.add(e.id)
-      const prev = exHist.get(e.id) || []
+      seen.add(id)
+      const prev = exHist.get(id) || []
       if (prev.length >= 2) ratios.push(best.est / median(prev))
-      exHist.set(e.id, [...prev, best.est].slice(-LOOKBACK))
+      exHist.set(id, [...prev, best.est].slice(-LOOKBACK))
     }
     const key = [].concat(w.routineIds || w.routineId || []).filter(Boolean).sort().join('+') || 'free'
     const vol = sessionVolume(w, S)
     const prevVol = volHist.get(key) || []
     const volume = vol > 0 && prevVol.length >= 2 ? vol / median(prevVol) : null
     if (vol > 0) volHist.set(key, [...prevVol, vol].slice(-LOOKBACK))
-    const rirs = (w.entries || []).flatMap(e => (e?.sets || []).filter(s => s && s.done && !isWarmupRow(s)).map(rirOf)).filter(r => r != null)
+    const rirs = legacyEntriesOf(w).flatMap(e => (e?.sets || []).filter(s => s && s.done && !isWarmupRow(s)).map(rirOf)).filter(r => r != null)
     out.push({
       id: w.id, d: workoutDay(w),
       strength: ratios.length ? mean(ratios) : null,

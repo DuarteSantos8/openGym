@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { cleanBackups, cleanBackupConfigs, withBackups, MAX_BACKUPS, backupSlotConfig } from './routine-backups.js'
 import { replaceSlotExercise } from './routines.js'
 import { parsePlan, buildPlanBundle } from './plan-share.js'
+import { ruleOccurrence } from './test-fixtures.js'
+import { planPhase } from './prescription/index.js'
 
 /* Planned substitutes for an exercise in a routine (Discord): an optional list on the entry. */
 describe('cleanBackups', () => {
@@ -27,22 +29,20 @@ describe('a replaced exercise', () => {
 })
 
 describe('a backup taking the slot in one tap (#649)', () => {
-  const slot = { id: '0025', sets: 4, reps: 6, repsMin: 5, weight: 80, restSec: 150, warmupSets: 2, prog: 'double', note: 'Pause', subs: ['0047', '0289'] }
+  const slot = { ...ruleOccurrence('0025', { routineId: 'r' }), note: 'Pause', subs: ['0047', '0289'] }
   it('keeps the slot\'s plan, and the exercise it replaces becomes the first backup', () => {
-    const out = backupSlotConfig(slot, '0047', { workouts: [] }, 'r')
-    expect(out).toMatchObject({ id: '0047', sets: 4, reps: 6, repsMin: 5, restSec: 150, warmupSets: 2, prog: 'double', note: 'Pause' })
+    const out = backupSlotConfig(slot, '0047', { workouts: [], unit: 'kg' }, 'r')
+    expect(out).toMatchObject({ exerciseId: '0047', note: 'Pause' })
+    expect(out.rule.exerciseId).toBe('0047')
     expect(out.subs).toEqual(['0025', '0289'])
     // And back again: the bench is free.
-    expect(backupSlotConfig(out, '0025', { workouts: [] }, 'r').subs).toEqual(['0047', '0289'])
+    expect(backupSlotConfig(out, '0025', { workouts: [], unit: 'kg' }, 'r').subs).toEqual(['0047', '0289'])
   })
   it('never more than five, and never an exercise that is gone', () => {
+    const S = { workouts: [], unit: 'kg' }
     const full = { ...slot, subs: ['0047', '1', '2', '3', '4'] }
-    expect(backupSlotConfig(full, '0047', { workouts: [] }, 'r').subs).toEqual(['0025', '1', '2', '3', '4'])
-    expect(backupSlotConfig({ ...slot, subs: ['0047', 'gone'] }, '0047', { workouts: [] }, 'r', id => id !== 'gone').subs).toEqual(['0025'])
-  })
-  it('opens a backup at its own last weight in this routine, not the bench\'s 80', () => {
-    const S = { workouts: [{ id: 'w', d: '2026-10-01', start: 1, entries: [{ id: '0047', rid: 'r', target: { mode: 'reps', sets: 3, reps: 8, weight: 30 }, sets: [{ w: 30, r: 8, done: true }] }] }] }
-    expect(backupSlotConfig(slot, '0047', S, 'r').weight).toBe(30)
+    expect(backupSlotConfig(full, '0047', S, 'r').subs).toEqual(['0025', '1', '2', '3', '4'])
+    expect(backupSlotConfig({ ...slot, subs: ['0047', 'gone'] }, '0047', S, 'r', id => id !== 'gone').subs).toEqual(['0025'])
   })
 })
 
@@ -50,33 +50,43 @@ describe('plan files', () => {
   const S = ex => ({ unit: 'kg', week: {}, customEx: [{ id: 'cu1', n: 'mine', bp: 'back', custom: true }], routines: [{ id: 'r', name: 'R', ex: [ex] }] })
   const roundTrip = ex => parsePlan(JSON.stringify(buildPlanBundle(S(ex), 'Plan'))).routines[0].ex[0]
   it('carry the catalogue backups, not someone\'s own exercises, and nothing when there are none', () => {
-    expect(roundTrip({ id: '0025', sets: 3, reps: 8, subs: ['0047', 'cu1', 'nope', '0025'] }).subs).toEqual(['0047'])
-    expect('subs' in roundTrip({ id: '0025', sets: 3, reps: 8 })).toBe(false)
+    expect(roundTrip({ ...ruleOccurrence('0025'), subs: ['0047', 'cu1', 'nope', '0025'] }).subs).toEqual(['0047'])
+    expect('subs' in roundTrip(ruleOccurrence('0025'))).toBe(false)
   })
 })
 
 // #978: a backup in a routine could only be listed, never given its own weight, reps or rule.
+// v2: the slot is a rule occurrence, and a backup's own plan an occurrence without who it is.
 describe('a backup with its own plan (#978)', () => {
+  const abs = value => ({ mode: 'absolute', value, unit: 'kg' })
+  const plan = (id, preset, options) => { const { occurrenceId: _o, exerciseId: _e, ...rest } = ruleOccurrence(id, { preset, routineId: 'r', options }); return rest }
   const slot = {
-    id: '0025', sets: 4, reps: 6, weight: 80, prog: 'double', sg: 'g1', sgName: 'Push',
-    subs: ['0047', '0289'],
-    subCfg: { '0047': { sets: 3, reps: 12, weight: 24, prog: 'linear', inc: 2, restSec: 90 } },
+    ...ruleOccurrence('0025', { preset: 'double', routineId: 'r', options: { sets: { min: 4, max: 4 }, reps: { min: 6, max: 6 }, load: abs(80) } }),
+    sg: 'g1', sgName: 'Push', subs: ['0047', '0289'],
+    subCfg: { '0047': { ...plan('0047', 'linear', { reps: { min: 12, max: 12 }, load: abs(24) }), restSec: 90 } },
   }
+  const load = o => planPhase(o.rule).parameters.load.value
   it('opens at that plan when it takes the slot, in the slot\'s superset', () => {
     const out = backupSlotConfig(slot, '0047', { workouts: [] }, 'r')
-    expect(out).toMatchObject({ id: '0047', sets: 3, reps: 12, weight: 24, prog: 'linear', inc: 2, restSec: 90, sg: 'g1', sgName: 'Push' })
+    expect(out).toMatchObject({ exerciseId: '0047', restSec: 90, sg: 'g1', sgName: 'Push' })
+    expect(out.rule).toMatchObject({ preset: 'linear', exerciseId: '0047', id: out.occurrenceId })
+    expect(load(out)).toBe(24)
   })
   it('the exercise it replaces keeps its plan, so swapping back restores it', () => {
     const out = backupSlotConfig(slot, '0047', { workouts: [] }, 'r')
     expect(out.subs).toEqual(['0025', '0289'])
-    expect(out.subCfg['0025']).toMatchObject({ sets: 4, reps: 6, weight: 80, prog: 'double' })
+    expect(out.subCfg['0025'].rule.preset).toBe('double')
     expect(out.subCfg['0047']).toBeUndefined()
     const back = backupSlotConfig(out, '0025', { workouts: [] }, 'r')
-    expect(back).toMatchObject({ id: '0025', sets: 4, reps: 6, weight: 80, prog: 'double' })
-    expect(back.subCfg['0047']).toMatchObject({ sets: 3, reps: 12, weight: 24 })
+    expect(back).toMatchObject({ exerciseId: '0025' })
+    expect(back.rule.preset).toBe('double')
+    expect(load(back)).toBe(80)
+    expect(back.subCfg['0047'].rule.preset).toBe('linear')
   })
   it('one without a plan still takes the slot\'s', () => {
-    expect(backupSlotConfig(slot, '0289', { workouts: [] }, 'r')).toMatchObject({ id: '0289', sets: 4, reps: 6, prog: 'double' })
+    const out = backupSlotConfig(slot, '0289', { workouts: [] }, 'r')
+    expect(out.exerciseId).toBe('0289')
+    expect(out.rule.preset).toBe('double')
   })
   it('is saved only for backups still listed, and never with an id, backups or a superset of its own', () => {
     expect(withBackups(['0047'], '0025', undefined, { '0047': { id: 'x', sets: 3, reps: 8, subs: ['y'], sg: 'z' }, '0289': { sets: 2, reps: 5 } }))
@@ -90,7 +100,7 @@ describe('a backup with its own plan (#978)', () => {
     expect('subCfg' in out).toBe(false)
   })
   it('plan files do not take a backup plan from someone else\'s file', () => {
-    const S = { unit: 'kg', week: {}, customEx: [], routines: [{ id: 'r', name: 'R', ex: [{ id: '0025', sets: 3, reps: 8, subs: ['0047'], subCfg: { '0047': { sets: 3, reps: 8 } } }] }] }
+    const S = { unit: 'kg', week: {}, customEx: [], routines: [{ id: 'r', name: 'R', ex: [{ ...ruleOccurrence('0025', { routineId: 'r' }), subs: ['0047'], subCfg: { '0047': plan('0047', 'linear', {}) } }] }] }
     const bundle = buildPlanBundle(S, 'Plan')
     bundle.routines[0].ex[0].subCfg = { '0047': { sets: 99, reps: 1 } }
     expect('subCfg' in parsePlan(JSON.stringify(bundle)).routines[0].ex[0]).toBe(false)

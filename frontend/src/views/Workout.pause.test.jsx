@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 // #976: Pause from the header's ⋯, against the real store and timers: the clock stands, a running
 // rest holds, the screen says so with Resume, and a set ticked while paused carries on.
+import { storeFromV1 } from '../lib/test-fixtures.js'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -21,7 +22,7 @@ function mount() {
   S.weighIn = false
   S.active = { id: 's', d: '2026-11-03', start: Date.now() - 600_000, routineIds: [], name: 'Push', bw: null, cur: 0, workoutView: 'list',
     entries: [{ id: '0025', target: { sets: 2, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: false }, { w: 60, r: 5, done: false }] }] }
-  useStore.setState({ S, user: null })
+  useStore.setState({ ...storeFromV1(S), user: null })
   container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container)
   act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
 }
@@ -37,7 +38,7 @@ const menuItem = label => {
   act(() => container.querySelector('button[aria-label="Workout options"]').click())
   return [...renderTopSheet().querySelectorAll('.menu-item')].find(it => it.querySelector('.tt')?.textContent === label)
 }
-const A = () => useStore.getState().S.active
+const A = () => useStore.getState().A
 
 beforeEach(() => {
   vi.useFakeTimers()

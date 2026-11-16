@@ -1,3 +1,5 @@
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
 // @vitest-environment happy-dom
 // The finish summary's Share (v1.4.5): right next to the way out, which stays right under the
 // numbers, and it opens the same picture sheet as History's "Share as image".
@@ -29,7 +31,9 @@ beforeEach(() => {
   st.routines = [{ id: 'r1', name: 'Push A', ex: [{ id: '0025', sets: 1, reps: 5, weight: 60 }] }]
   st.active = { id: 'fin', d: '2026-09-28', start: Date.now() - 20 * 60000, routineIds: ['r1'], routineId: 'r1', name: 'Push A', bw: null, cur: 0,
     entries: [{ id: '0025', rid: 'r1', target: { sets: 1, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: true }] }] }
-  useStore.setState({ S: st, user: null })
+  const { profile, activeSession } = migrateProfileV1ToV2({ ...st, engineSchemaVersion: 1 }, LIB_BY_ID)
+  const A = { ...activeSession, entries: st.active.entries.map((e, i) => ({ ...e, exposureId: activeSession.exposures[i].exposureId })) }
+  useStore.setState({ S: profile, A, user: null })
 })
 afterEach(() => {
   mounted.splice(0).forEach(r => act(() => r.unmount()))

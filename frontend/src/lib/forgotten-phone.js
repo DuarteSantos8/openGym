@@ -15,6 +15,9 @@ import {
   decideForgotten, readForgottenPrefs, readForgottenState, writeForgottenState, keepGoingPatch, leaveGymOn,
 } from './forgotten-workout.js'
 
+// The running workout: the store's own `A`; a plain state without one (a test's) keeps it in `S.active`.
+const activeOf = st => (st?.A !== undefined ? st.A : st?.S?.active)
+
 export const ASK_NOTIFICATION_ID = 3100
 export const LEFT_NOTIFICATION_ID = 3001   // posted by the native gym reminder (GymReminder.java, GymReminderPlugin.swift)
 export const ASK_ACTIONS = 'og-forgotten'
@@ -138,7 +141,7 @@ function hide() {
 
 /** "Keep going", from the card, the notification or a watch (`at`: when it was tapped). */
 export function keepGoing(at = Date.now()) {
-  const A = deps?.useStore.getState().S?.active
+  const A = activeOf(deps?.useStore.getState())
   if (!A) return
   writeForgottenState(A.id, keepGoingPatch(at))
   hide()
@@ -148,7 +151,7 @@ export function keepGoing(at = Date.now()) {
 
 /** "Finish" / "Finish now": the ordinary finish, with the summary, ending now. */
 export function finishFromPrompt() {
-  const A = deps?.useStore.getState().S?.active
+  const A = activeOf(deps?.useStore.getState())
   hide()
   if (!A) return
   writeForgottenState(null)
@@ -167,7 +170,7 @@ export function discardFromPrompt() {
  * notification ('finish', 'keep'), if the app was opened from one of its buttons.
  */
 export function noteLeftGym(at, answer = '') {
-  const A = deps?.useStore.getState().S?.active
+  const A = activeOf(deps?.useStore.getState())
   if (!A || !(at > 0)) return
   const st = readForgottenState(A.id)
   // A leave from before this workout (or before its last Keep going) is old news.
@@ -186,22 +189,22 @@ export function noteLeftGym(at, answer = '') {
 export function startForgotten({ useStore, useUI, ...rest }) {
   if (!MOBILE) return () => {}
   deps = { useStore, useUI, gymOn: () => false, ...rest }
-  let lastId = useStore.getState().S?.active?.id || null
+  let lastId = activeOf(useStore.getState())?.id || null
   const tick = () => {
     clearTimeout(timer)
-    const run = !!useStore.getState().S?.active
+    const run = !!activeOf(useStore.getState())
     if (run) timer = setTimeout(() => { checkForgotten(); tick() }, CHECK_MS)
   }
   const readLeft = async () => {
     try { const r = await deps.readLeft?.(); if (r?.at) noteLeftGym(Number(r.at), r.answer) } catch { /* no gym reminder here */ }
   }
   const offStore = useStore.subscribe((s, prev) => {
-    if (s.S === prev.S) return
-    const id = s.S?.active?.id || null
+    if (s.S === prev.S && activeOf(s) === activeOf(prev)) return
+    const id = activeOf(s)?.id || null
     // Another workout (or none): this one's question and leave are not its business.
     if (id !== lastId) { lastId = id; hide(); if (!id) writeForgottenState(null) }
     // Something changed in the workout (a set): the planned question moves, a shown card goes.
-    if (id && s.S.active !== prev.S?.active) checkForgotten()
+    if (id && activeOf(s) !== activeOf(prev)) checkForgotten()
     else if (!id) checkForgotten()
     tick()
   })

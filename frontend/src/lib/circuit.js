@@ -107,7 +107,8 @@ export function setCircuit(ex, sg, cfg) {
 export function rememberRegular(ex) {
   for (const e of ex || []) {
     if (!e || e.preType) continue
-    e.preType = { sets: e.sets, sg: e.sg || null, ...(e.sgName ? { sgName: e.sgName } : {}), ...(e.sgRest ? { sgRest: e.sgRest } : {}) }
+    // A v2 slot keeps its whole rule (its sets are the rule's); a v1 one its sets.
+    e.preType = { ...(e.rule ? { rule: JSON.parse(JSON.stringify(e.rule)) } : { sets: e.sets }), sg: e.sg || null, ...(e.sgName ? { sgName: e.sgName } : {}), ...(e.sgRest ? { sgRest: e.sgRest } : {}) }
   }
   return ex
 }
@@ -121,7 +122,8 @@ export function restoreRegular(ex) {
     const was = e.preType
     delete e.preType
     if (!was || typeof was !== 'object') { if (typeSg.has(e.sg)) { delete e.sg; delete e.sgName; delete e.sgRest } continue }
-    if (Number(was.sets) > 0) e.sets = was.sets
+    if (was.rule && typeof was.rule === 'object') e.rule = { ...was.rule, revision: Math.max(Number(e.rule?.revision) || 0, Number(was.rule.revision) || 0) + 1 }
+    else if (Number(was.sets) > 0) e.sets = was.sets
     if (was.sg) e.sg = was.sg; else delete e.sg
     if (was.sgName) e.sgName = was.sgName; else delete e.sgName
     if (was.sgRest) e.sgRest = was.sgRest; else delete e.sgRest

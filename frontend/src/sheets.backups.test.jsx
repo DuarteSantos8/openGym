@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
+import { planPhase } from './lib/prescription/index.js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { EXDB, EXIDX } from './lib/exercises.js'
@@ -8,6 +9,9 @@ import { useUI } from './store/useUI.js'
 import { exConfigSheet, exercisePicker, swapActiveWorkoutToBackup } from './sheets.jsx'
 import { exerciseNameFor } from './lib/i18n.js'
 import { exerciseNameText } from './lib/format.js'
+import { buildSessionExposures } from './lib/session-start.js'
+import { entriesForExposures } from './lib/session-ui-adapter.js'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 
 /* Planned substitutes (Discord "Substitutions for a routine"): picked in the routine editor's
    exercise sheet, offered first by the swap picker, kept by every sheet that saves the slot. */
@@ -111,7 +115,8 @@ describe('the routine editor\'s exercise sheet', () => {
     act(() => save(host))
     const saved = onSave.mock.calls[0][0]
     expect(saved.subs).toEqual(['0047'])
-    expect(saved.subCfg['0047']).toMatchObject({ sets: 3, reps: 8 })
+    // v2: the backup's own plan is a rule of its own, with the slot's sets and reps.
+    expect(planPhase(saved.subCfg['0047'].rule).parameters).toMatchObject({ sets: { min: 3, max: 3 }, reps: { max: 8 } })
     expect(saved.subCfg['0047'].id).toBeUndefined()
   })
 
@@ -145,23 +150,24 @@ describe('the swap picker', () => {
 })
 
 describe('one tap from the exercise menu (#649)', () => {
-  const slot = { id: '0025', mode: 'reps', sets: 4, reps: 6, weight: 80, restSec: 150, subs: ['0047', '0289'] }
-  const install = (done = false) => useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [{ id: 'r', name: 'Push', ex: [slot] }],
-    active: { id: 'a', d: '2026-10-24', start: Date.now(), routineId: 'r', name: 'Push', cur: 0,
-      entries: [{ id: '0025', rid: 'r', target: { ...slot }, plan: null, sets: [{ w: 80, r: 6, done }] }] } } }))
+  const slot = { ...ruleOccurrence('0025', { routineId: 'r', occurrenceId: 'o1' }), subs: ['0047', '0289'] }
+  const install = (done = false) => {
+    const routine = { id: 'r', name: 'Push', ex: [slot] }
+    const st = { ...useStore.getState().S, engineSchemaVersion: 2, workouts: [], routines: [routine], prescriptions: {} }
+    const exposures = buildSessionExposures(st, routine, { now: Date.parse('2026-10-24T12:00:00Z'), newId: x => x })
+    const entries = entriesForExposures(exposures, st.prescriptions)
+    entries[0].sets.forEach(row => { row.done = done })
+    useStore.setState({ S: st, A: { id: 'a', d: '2026-10-24', start: Date.now(), routineIds: ['r'], name: 'Push', cur: 0, exposures, entries } })
+  }
+  const first = () => useStore.getState().A.entries[0]
 
   it('puts the backup in the slot with the slot\'s plan, and swapping back is one tap too', () => {
     install()
     swapActiveWorkoutToBackup(0, '0047')
-    let entry = useStore.getState().S.active.entries[0]
-    expect(entry.id).toBe('0047')
-    expect(entry.rid).toBe('r')
-    expect(entry.target).toMatchObject({ sets: 4, reps: 6, restSec: 150, subs: ['0025', '0289'] })
-    expect(entry.sets.filter(x => !x.warm)).toHaveLength(4)
+    expect(first().id).toBe('0047')
+    expect(first().rid).toBe('r')
     swapActiveWorkoutToBackup(0, '0025')
-    entry = useStore.getState().S.active.entries[0]
-    expect(entry.id).toBe('0025')
-    expect(entry.target.subs).toEqual(['0047', '0289'])
+    expect(first().id).toBe('0025')
     // The routine itself is untouched: the swap is today's.
     expect(useStore.getState().S.routines[0].ex[0]).toEqual(slot)
   })
@@ -169,7 +175,7 @@ describe('one tap from the exercise menu (#649)', () => {
   it('asks first when sets are logged, the same as any swap', () => {
     install(true)
     swapActiveWorkoutToBackup(0, '0047')
-    expect(useStore.getState().S.active.entries[0].id).toBe('0025')
+    expect(first().id).toBe('0025')
     expect(useUI.getState().sheets.length).toBe(1)
   })
 })

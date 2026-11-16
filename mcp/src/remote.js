@@ -36,6 +36,8 @@ export function createRemoteProfile(cfg, { fetchImpl } = {}) {
       const r = await apiFetch(cfg, paths.data, opts)
       state = r.body?.state && typeof r.body.state === 'object' ? r.body.state : null
       rev = typeof r.body?.rev === 'number' ? r.body.rev : 0
+      // The served v2 profile leaves its revision to the envelope: the tools read it as S._rev.
+      if (state) state._rev = rev
       wid = typeof r.body?.wid === 'string' ? r.body.wid : (state && typeof state._wid === 'string' ? state._wid : null)
     },
     /** What withProfile() takes. A copy each time: the tools may shape what they read. */

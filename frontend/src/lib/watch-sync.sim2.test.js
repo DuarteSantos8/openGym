@@ -5,7 +5,7 @@
 // that is woken by a watch, and two watches at once. The real page against lib/watch-sim.js, whose
 // protocol-2 watch is what docs/WATCH_SYNC.md asks of the native sides.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeWorld } from './watch-sim.js'
+import { makeWorld, savedEntries } from './watch-sim.js'
 import { _resetWatchSync } from './watch-sync.js'
 
 const T0 = 1_800_000_000_000
@@ -43,7 +43,7 @@ async function world (opts = {}) {
 beforeEach(async () => { vi.useFakeTimers({ now: T0 }); W = null; await world() })
 afterEach(async () => { await W.phone.kill(); W = null; vi.useRealTimers() })
 
-const saved = id => W.phone.S.workouts.find(w => w.id === id)
+const saved = id => { const w = W.phone.S.workouts.find(x => x.id === id); return w && { ...w, entries: savedEntries(w) } }
 const doneOf = w => w.entries.flatMap(e => e.sets.map((s, i) => (s.done ? `${e.id}#${i}:${s.w}x${s.r}` : null)).filter(Boolean))
 const atRest = () => {
   expect(W.phone.S.active).toBeNull()

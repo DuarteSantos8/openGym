@@ -12,7 +12,7 @@ import { workoutDay, workoutDuration, sessionVolume, doneUnits } from './history
 import { isWarmupRow } from './workout-model.js'
 import { isAssisted } from './exercises.js'
 import { MUSCLES, MUSCLE_NAME, loadOfWorkouts, levelsOf } from './muscles.js'
-import { sessionPrs } from './finish-workout.js'
+import { sessionPrs } from './session-end.js'
 import { comparisonFor } from './wrapped.js'
 import { volumeParts, hoursOf, comparisonLine, exName } from './wrapped-cards.js'
 import { weekKey, weekStartOf, fmtDur, fmtNum, MONTHS_LONG } from './format.js'
@@ -21,6 +21,8 @@ import { LB_KG } from './units.js'
 import { t, tn, tnf, dateLocale } from './i18n-core.js'
 import { activityTotals } from './activities.js'
 import { nutritionSummary } from './sister-nutrition.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 const YM = /^\d{4}-\d{2}$/
 const MIN_SESSION_MS = 60000
@@ -64,7 +66,7 @@ function weeksOfMonth(ym, wkStart) {
 /** The records a workout set: its saved `prs`, or sessionPrs against the history before it. */
 function recordsOf(w, before, S) {
   if (Array.isArray(w.prs)) return w.prs.filter(id => typeof id === 'string')
-  return sessionPrs({ ...S, workouts: before }, w.entries || []).prs
+  return sessionPrs({ ...S, workouts: before }, legacyEntriesOf(w)).prs
 }
 
 /**
@@ -85,7 +87,7 @@ export function monthStats(S, ym, today = null) {
   const perEx = new Map()
   const records = new Map()   // id -> { w, d }
   const firstSeen = new Map() // id -> first day ever
-  for (const w of list) for (const e of w.entries || []) if (e?.id && workSets(e).length && !firstSeen.has(e.id)) firstSeen.set(e.id, workoutDay(w))
+  for (const w of list) for (const e of legacyEntriesOf(w)) if (e?.id && workSets(e).length && !firstSeen.has(e.id)) firstSeen.set(e.id, workoutDay(w))
 
   for (const w of ws) {
     days.add(workoutDay(w))
@@ -94,10 +96,10 @@ export function monthStats(S, ym, today = null) {
     if (dur >= MIN_SESSION_MS) { ms += dur; timed++ }
     const before = list.slice(0, list.indexOf(w))
     for (const id of new Set(recordsOf(w, before, S))) {
-      const top = Math.max(0, ...(w.entries || []).filter(e => e?.id === id).map(topWeight))
+      const top = Math.max(0, ...legacyEntriesOf(w).filter(e => e?.id === id).map(topWeight))
       if (!records.has(id) || top > records.get(id).w) records.set(id, { w: top, d: workoutDay(w) })
     }
-    for (const e of w.entries || []) {
+    for (const e of legacyEntriesOf(w)) {
       if (!e || typeof e.id !== 'string') continue
       const n = workSets(e).reduce((m, s) => m + doneUnits(s), 0)
       if (!n) continue
@@ -117,7 +119,7 @@ export function monthStats(S, ym, today = null) {
 
   // Records: the heaviest gain past the best before the month first, assisted lifts left out of the
   // list (less help is the record there, and "+10 kg" would read the wrong way round).
-  const bestBefore = id => Math.max(0, ...list.filter(w => workoutDay(w) < start).flatMap(w => (w.entries || []).filter(e => e?.id === id).map(topWeight)))
+  const bestBefore = id => Math.max(0, ...list.filter(w => workoutDay(w) < start).flatMap(w => legacyEntriesOf(w).filter(e => e?.id === id).map(topWeight)))
   const recordList = [...records].filter(([id, r]) => !isAssisted(id) && r.w > 0)
     .map(([id, r]) => { const prev = bestBefore(id); return { id, w: r.w, d: r.d, gain: prev > 0 ? r.w - prev : null } })
     .sort((a, b) => (b.gain ?? -1) - (a.gain ?? -1) || b.w - a.w || (a.id < b.id ? -1 : 1))

@@ -10,7 +10,7 @@ import { watchTourOffer, offerDue, offerBlocked, OFFER_SETTLE_MS, OFFER_QUIET_MS
 
 let stop = null
 let S0
-const fresh = () => useStore.setState(st => ({ user: null, S: { ...st.S, active: null, workouts: [] } }))
+const fresh = () => useStore.setState(st => ({ user: null, A: null, S: { ...st.S, workouts: [] } }))
 const tick = async ms => { await vi.advanceTimersByTimeAsync(ms) }
 const fire = type => window.dispatchEvent(new Event(type))
 
@@ -96,12 +96,13 @@ describe('the first-run question waits for an idle app', () => {
 
   it('never during a workout, and a logged workout ends the question for good', async () => {
     stop = watchTourOffer()
-    useStore.setState(st => ({ S: { ...st.S, active: { id: 'w', entries: [] } } }))
+    // The running workout is the store's own A.
+    useStore.setState({ A: { id: 'w', entries: [], exposures: [] } })
     await tick(20000)
     expect(tourState()).toBe(null)
     expect(offerDue()).toBe(null)
     expect(offerBlocked(null)).toBe('workout')
-    useStore.setState(st => ({ S: { ...st.S, active: null, workouts: [{ id: 'w1', date: '2026-11-01', entries: [] }] } }))
+    useStore.setState(st => ({ A: null, S: { ...st.S, workouts: [{ id: 'w1', date: '2026-11-01', exposures: [] }] } }))
     stop(); stop = watchTourOffer()
     await tick(20000)
     expect(tourState()).toBe(null)

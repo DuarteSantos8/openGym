@@ -80,7 +80,7 @@ describe('the effort picker commits once', () => {
   it('one tap of + logs nothing', () => {
     const onPick = vi.fn()
     const p = openPicker('rir', null, onPick)
-    tap(p.host.querySelector('[aria-label="Increase"]'))
+    tap(p.host.querySelector('[aria-label$="Increase"]'))
     expect(onPick).not.toHaveBeenCalled()
     expect(field(p.host).value).not.toBe('')     // the number moved on screen, though
   })

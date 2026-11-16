@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 // Discord, dark._.ninja: a drop set ticked done greyed its main row, but its drops (and a
 // rest-pause set's bursts) stayed bright as if still to do. They carry the row's done state now.
+import { storeFromV1 } from '../lib/test-fixtures.js'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -30,7 +31,7 @@ function mount(sets) {
   const S = clone(DEF)
   S.workoutView = 'list'
   S.active = { id: 'drop-done', d: '2026-11-04', start: Date.now(), routineId: null, name: 'Drops', bw: null, cur: 0, entries: [{ id: SQUAT, target: { sets: sets.length, reps: 8 }, sets }], workoutView: 'list' }
-  useStore.setState({ S, user: null })
+  useStore.setState({ ...storeFromV1(S), user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)

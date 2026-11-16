@@ -160,21 +160,24 @@ export function applyWidgetEvents (events, getState) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
     const st = getState()
-    const A = st?.S?.active
+    // The store's own `A`; a plain state without one (a test's) keeps it in `S.active`.
+    const A = st?.A !== undefined ? st.A : st?.S?.active
     if (ev.type === 'setDone' && A && Array.isArray(A.entries) && !A.editingWorkoutId && (!ev.wid || ev.wid === String(A.id))) {
       const idx = entryIndexOf(A, ev)
       const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
       if (set && !set.done) {
         if (handlers) {
           // The numbers first, then the screen's own tick (rest timer, the end-of-workout sheet).
-          st.update(s => {
-            const a = s.active
+          // The running workout is the store's own `A` (a plain test state: `S.active`).
+          const edit = fn => (st.A !== undefined && st.updateActive ? st.updateActive(fn) : st.update(s => { if (s.active) fn(s.active) }))
+          edit(a => {
             const nums = { w: num(ev.w), r: num(ev.r), sec: num(ev.sec) }
-            s.active = { ...a, entries: a.entries.map((x, k) => (k === idx ? { ...x, sets: x.sets.map((y, i) => (i === ev.setIdx ? withNumbers(y, nums) : y)) } : x)) }
+            a.entries = a.entries.map((x, k) => (k === idx ? { ...x, sets: x.sets.map((y, i) => (i === ev.setIdx ? withNumbers(y, nums) : y)) } : x))
           })
           handlers.setDone(idx, ev.setIdx, { at: num(ev.at) })
         } else {
-          st.update(s => { applyWidgetSet(s, ev) })
+          if (st.A !== undefined && st.updateActive) st.updateActive(a => { const view = { ...st.S, active: a }; if (applyWidgetSet(view, ev)) a.entries = view.active.entries })
+          else st.update(s => { applyWidgetSet(s, ev) })
         }
       }
     }

@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { defaultConfig, buildSets, setLabel, setsRepsOf, exLine, modeOf, fmtMetres, metricRowsForEntry } from './history.js'
+import { defaultConfig, setLabel, setsRepsOf, exLine, modeOf, fmtMetres, metricRowsForEntry } from './history.js'
 import { modeForSet } from './workout-model.js'
 import { workoutsCSV } from './export-csv.js'
 import { parseWorkoutCSV } from './import-csv.js'
 import { exerciseHistory } from './exercise-history.js'
 import { buildSnapshot } from './watch-sync.js'
+import { migratedFixture } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
 // Reddit + #1011/#1012: carries and sleds by distance, a load over metres per set.
 const SLED = '4428' // power sled push
@@ -30,23 +34,29 @@ describe('the distance mode', () => {
     expect(modeForSet({ m: 40, w: 32 })).toBe('distance')
   })
 
+  // v2: a slot of distance work opens its rows at the slot's metres and load, then at last time's.
   it('builds rows from the plan, then from last time', () => {
     const cfg = { id: CARRY, mode: 'distance', sets: 2, m: 30, weight: 24 }
-    expect(buildSets({ workouts: [] }, cfg)).toEqual([{ m: 30, w: 24, done: false }, { m: 30, w: 24, done: false }])
-    const S = { workouts: [{ id: 'w', d: '2026-11-01', entries: [{ id: CARRY, target: cfg, sets: [{ m: 40, w: 28, done: true }] }] }] }
-    expect(buildSets(S, cfg)[0]).toEqual({ m: 40, w: 28, done: false })
+    const rows = state => {
+      const P = migratedFixture({ unit: 'kg', routines: [{ id: 'r', name: 'R', ex: [cfg] }], ...state })
+      const draft = { ...P, prescriptions: { ...P.prescriptions } }
+      const xs = buildSessionExposures(draft, P.routines[0], { now: Date.parse('2026-11-05T12:00:00Z'), newId: x => x })
+      return entriesForExposures(xs, draft.prescriptions)[0].sets.map(({ m, w, done }) => ({ m, w, done }))
+    }
+    expect(rows({ workouts: [] })).toEqual([{ m: 30, w: 24, done: false }, { m: 30, w: 24, done: false }])
+    expect(rows({ workouts: [{ id: 'w', d: '2026-11-01', routineIds: ['r'], entries: [{ id: CARRY, rid: 'r', target: cfg, sets: [{ m: 40, w: 28, done: true }] }] }] })[0]).toEqual({ m: 40, w: 28, done: false })
   })
 
   it('charts the farthest set, and the history keeps the sets', () => {
     const cfg = { id: SLED, mode: 'distance', m: 20 }
-    const S = { unit: 'kg', workouts: [
+    const S = migratedFixture({ unit: 'kg', workouts: [
       { id: 'a', d: '2026-11-01', start: 1, entries: [{ id: SLED, target: cfg, sets: [{ m: 20, w: 60, done: true }] }] },
       { id: 'b', d: '2026-11-03', start: 2, entries: [{ id: SLED, target: cfg, sets: [{ m: 30, w: 60, done: true }] }] },
-    ] }
+    ] })
     const h = exerciseHistory(S, SLED)
     expect(h.metric).toBe('m')
     expect(h.best).toBe(30)
-    expect(metricRowsForEntry(S.workouts[1].entries[0])).toHaveLength(1)
+    expect(metricRowsForEntry(legacyEntriesOf(S.workouts[1], S.prescriptions)[0])).toHaveLength(1)
   })
 
   it('goes through our CSV and back as metres, not as a run', () => {

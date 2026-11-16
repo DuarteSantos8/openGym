@@ -12,9 +12,14 @@ import { applyEvents, bindWatchActions, bindWatchAppActions, ensureWatchSet, pat
 import { buildSessionEntry } from './lib/session-start.js'
 import { pickedExerciseConfig } from './lib/history.js'
 import { EXIDX } from './lib/exercises.js'
+import { migratedFixture } from './lib/test-fixtures.js'
+import { savedEntries } from './lib/watch-sim.js'
+import { uid } from './lib/format.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
-const S = () => useStore.getState().S
+// The profile, with the running workout (the store's own `A`) as `active`; and a saved workout's rows.
+const S = () => ({ ...useStore.getState().S, active: useStore.getState().A })
+const withEntries = w => w && { ...w, entries: savedEntries(w) }
 const T0 = Date.UTC(2026, 10, 10, 9, 0, 0)
 const MIN = 60_000
 
@@ -22,35 +27,43 @@ function install () {
   const st = clone(DEF)
   st.sound = false
   st.weighIn = false
-  st.routines = [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 2, reps: 8, weight: 60 }] }]
+  st.routines = migratedFixture({ routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 2, reps: 8, weight: 60 }] }] }).routines
   st.workouts = []
-  useStore.setState({ S: st, user: null })
+  useStore.setState({ S: st, A: null, user: null })
 }
 
 /** The app's actions for the watch, as App.jsx and views/Workout.jsx bind them. */
 function bind () {
   bindWatchAppActions({
     start: (ids, { bw = null, ...opts } = {}) => beginWorkout(ids, bw, opts),
-    patchSet: (where, fields, opts = {}) => useStore.getState().update(s => { patchSetIn(s, where, fields, null, opts) }),
+    patchSet: (where, fields, opts = {}) => {
+      const st = useStore.getState()
+      if (st.A && st.A.id === where.wid) { st.updateActive(A => { patchSetIn({ active: A }, where, fields, null, opts) }); return }
+      st.update(s => { patchSetIn(s, where, fields, null, opts) })
+    },
     ensureSet: (where, fields) => {
+      const st = useStore.getState()
+      if (!st.A) return false
+      const A = clone(st.A)
       let ok = false
-      useStore.getState().update(s => {
-        ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
+      st.update(s => {
+        ok = ensureWatchSet({ ...s, active: A }, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, { active: A, newId: uid }) : null), fields)
       })
+      if (ok) useStore.getState().setActive(A)
       return ok
     },
     openWorkout: () => {},
   })
   bindWatchActions({
-    setDone: (idx, i, { w, r, at }) => useStore.getState().update(s => {
-      const set = s.active.entries[idx].sets[i]
+    setDone: (idx, i, { w, r, at }) => useStore.getState().updateActive(A => {
+      const set = A.entries[idx].sets[i]
       if (w != null) set.w = w
       if (r != null) set.r = r
       set.done = true
       if (at) set.at = at
     }),
     finish: opts => finishWorkoutNow(opts),
-    discard: () => useStore.getState().update(s => { s.active = null }),
+    discard: () => useStore.getState().clearActive(),
   })
 }
 
@@ -81,7 +94,7 @@ describe('a workout from the watch, merged later', () => {
     vi.setSystemTime(T0 + 21 * MIN)
     act(() => { applyEvents(events, () => useStore.getState()) })
     expect(S().active).toBeNull()
-    const w = S().workouts.at(-1)
+    const w = withEntries(S().workouts.at(-1))
     expect(w.id).toBe('watch-A')
     expect(w.start).toBe(T0)
     expect(w.end).toBe(T0 + 9 * MIN)
@@ -112,7 +125,7 @@ describe('a workout from the watch, merged later', () => {
     let done = []
     act(() => { done = applyEvents(events, () => useStore.getState()) })
     expect(done).toHaveLength(5)
-    const w = S().workouts.at(-1)
+    const w = withEntries(S().workouts.at(-1))
     expect(w.end).toBe(T0 + 10 * MIN)
     const bench = w.entries.find(e => e.id === '0025')
     expect(bench.sets[0]).toMatchObject({ w: 60, r: 8, done: true })
@@ -132,7 +145,7 @@ describe('a workout from the watch, merged later', () => {
     ]
     vi.setSystemTime(T0 + 3600_000)
     act(() => { applyEvents(events, () => useStore.getState()) })
-    const w = S().workouts.at(-1)
+    const w = withEntries(S().workouts.at(-1))
     expect(w.id).toBe('watch-A')
     expect(w.entries).toHaveLength(1)
     expect(w.entries[0].sets.filter(s => s.done).map(s => [s.w, s.r])).toEqual([[60, 8], [60, 7]])
@@ -149,7 +162,7 @@ describe('a workout from the watch, merged later', () => {
     let done = []
     act(() => { done = applyEvents(events, () => useStore.getState()) })
     expect(done).toHaveLength(4)
-    const w = S().workouts.at(-1)
+    const w = withEntries(S().workouts.at(-1))
     expect(w.entries.map(e => e.id)).toEqual(['0025'])
   })
 })

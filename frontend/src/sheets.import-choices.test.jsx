@@ -49,7 +49,7 @@ describe('the import summary’s choices', () => {
     act(() => btn('Import').click())
     const S = useStore.getState().S
     expect(S.customEx).toEqual([])
-    expect(S.workouts.flatMap(w => w.entries.map(e => e.id))).toEqual([matchExercise('Bench Press (Barbell)'), matchExercise('Squat (Barbell)')])
+    expect(S.workouts.flatMap(w => w.exposures.map(x => x.exerciseId))).toEqual([matchExercise('Bench Press (Barbell)'), matchExercise('Squat (Barbell)')])
   })
 
   it('keeps a matched name as your own, from the menu', async () => {

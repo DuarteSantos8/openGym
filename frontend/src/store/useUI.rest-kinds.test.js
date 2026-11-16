@@ -60,7 +60,7 @@ describe('rest kinds', () => {
     expect(useUI.getState().timer.rk).toBe('superset')
     const saved = localStorage.getItem(REST_KEY)
     expect(JSON.parse(saved).rk).toBe('superset')
-    useStore.setState({ S: { ...useStore.getState().S, active: { id: 'a', entries: [] } } })
+    useStore.setState({ A: { id: 'a', entries: [], exposures: [] } })
     useUI.setState({ timer: null })
     localStorage.setItem(REST_KEY, saved)
     expect(restoreRest()).toBe(true)

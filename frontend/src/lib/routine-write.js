@@ -11,8 +11,13 @@
 // does not have, comes back as a problem with candidates instead of a guess.
 import { resolveExercise } from './log-workout.js'
 import { pickedExerciseConfig, cleanupSg } from './history.js'
-import { deleteRoutine } from './routines.js'
+import { deleteRoutine, occurrenceFromConfig } from './routines.js'
 import { isCardio } from './exercises.js'
+import { editPlan, planPhase, withRest } from './prescription/index.js'
+
+// A v2 slot is an occurrence (a rule, not v1 numbers). A new one is built from the v1 description
+// the way the editor's pick is (routines.js occurrenceFromConfig); an edit sets only what was said.
+const RANGED = new Set(['double', 'steady', 'triple', 'skill_ladder'])
 
 const LB_TO_KG = 0.45359237
 export const ROUTINE_LIMITS = { maxExercises: 40, maxSets: 20, maxReps: 100, maxSec: 3600, maxRestSec: 900, maxKg: 2000, maxName: 80, maxNote: 280 }
@@ -36,10 +41,10 @@ export function weekdaysOf(list) {
 
 // One described exercise as a slot. `base` is the slot it edits (its settings stay), else a fresh
 // pick. Weight is in `unit` and stored in the profile's.
-function slotOf(S, ex, base, unit, at, problems) {
+function slotOf(S, ex, base, unit, at, problems, routineId = null) {
   const want = ex?.exercise
   let hit
-  if (base && (want == null || want === base.id)) hit = { id: base.id }
+  if (base && (want == null || want === base.exerciseId)) hit = { id: base.exerciseId }
   else {
     hit = resolveExercise(S, want)
     if (hit.problem) { problems.push({ field: at + '.exercise', input: want ?? null, problem: hit.problem, ...(hit.candidates ? { candidates: hit.candidates } : {}) }); return null }
@@ -47,9 +52,6 @@ function slotOf(S, ex, base, unit, at, problems) {
   const timed = ex?.seconds != null
   if (timed && ex?.reps != null) { problems.push({ field: at, problem: 'give reps or seconds, not both' }); return null }
   if (isCardio(hit.id) && (ex?.reps != null || timed)) { problems.push({ field: at, problem: 'a cardio exercise is planned in minutes in the app; leave reps and seconds out' }); return null }
-  const slot = base && base.id === hit.id ? { ...base } : { id: hit.id, ...pickedExerciseConfig(hit.id, timed ? 'time' : undefined, S) }
-  if (timed && slot.mode !== 'time') { slot.mode = 'time'; delete slot.reps; delete slot.repsMin }
-  if (ex?.reps != null && slot.mode === 'time') { slot.mode = 'reps'; delete slot.sec }
   const check = (k, v, lo, hi) => {
     if (v == null) return undefined
     const n = num(v)
@@ -57,29 +59,60 @@ function slotOf(S, ex, base, unit, at, problems) {
     return n
   }
   const sets = check('sets', ex?.sets, 1, ROUTINE_LIMITS.maxSets)
-  if (sets != null) slot.sets = Math.round(sets)
   const reps = check('reps', ex?.reps, 1, ROUTINE_LIMITS.maxReps)
-  if (reps != null) { slot.reps = Math.round(reps); if (slot.repsMin >= slot.reps) delete slot.repsMin }
   const sec = check('seconds', ex?.seconds, 1, ROUTINE_LIMITS.maxSec)
-  if (sec != null) slot.sec = Math.round(sec)
   const rest = check('rest_sec', ex?.rest_sec, 0, ROUTINE_LIMITS.maxRestSec)
-  if (rest != null) { if (rest > 0) slot.restSec = Math.round(rest); else delete slot.restSec }
+  let weight
   if (ex?.weight != null) {
     const w = num(ex.weight)
     const kg = w == null ? null : unit === 'lb' ? w * LB_TO_KG : w
     if (w == null || w < 0 || kg > ROUTINE_LIMITS.maxKg) problems.push({ field: `${at}.weight`, problem: `must be 0 to ${ROUTINE_LIMITS.maxKg} kg` })
     else {
       const profileUnit = S.unit === 'lb' ? 'lb' : 'kg'
-      slot.weight = unit === profileUnit ? w : Math.round((unit === 'lb' ? w * LB_TO_KG : w / LB_TO_KG) * 10) / 10
+      weight = unit === profileUnit ? w : Math.round((unit === 'lb' ? w * LB_TO_KG : w / LB_TO_KG) * 10) / 10
     }
   }
-  if (ex?.note != null) { const n = clean(ex.note, ROUTINE_LIMITS.maxNote); if (n) slot.note = n; else delete slot.note }
+  const note = ex?.note != null ? clean(ex.note, ROUTINE_LIMITS.maxNote) : undefined
+  const params = base?.rule ? planPhase(base.rule).parameters : null
+  const wasTimed = !!params?.durationSeconds
+  // The same exercise, in the same kind of sets: its rule edited in place, everything else kept.
+  if (base && base.exerciseId === hit.id && params && (timed ? wasTimed : ex?.reps != null ? !wasTimed : true)) {
+    const slot = { ...base }
+    const unitOf = S.unit === 'lb' ? 'lb' : 'kg'
+    const edit = {}
+    if (sets != null) edit.sets = { min: Math.round(sets), max: Math.round(sets) }
+    if (reps != null) edit.reps = RANGED.has(base.rule.preset) && params.reps.min < Math.round(reps) ? { min: params.reps.min, max: Math.round(reps) } : { min: Math.round(reps), max: Math.round(reps) }
+    if (sec != null) edit.durationSeconds = { min: Math.round(sec), max: Math.round(sec) }
+    if (weight != null) edit.load = weight > 0 ? { mode: 'absolute', value: weight, unit: unitOf } : { mode: 'empty' }
+    if (Object.keys(edit).length) slot.rule = editPlan(slot.rule, edit)
+    if (rest != null) {
+      if (rest > 0) { slot.rule = withRest(slot.rule, Math.round(rest)); delete slot.restFromProfile }
+      else { slot.rule = withRest(slot.rule, S.restSec > 0 ? S.restSec : 90); slot.restFromProfile = true }
+    }
+    if (note != null) { if (note) slot.note = note; else delete slot.note }
+    return slot
+  }
+  // Otherwise a fresh pick, as the editor would build it, with what was said on top.
+  const cfg = { id: hit.id, ...pickedExerciseConfig(hit.id, timed ? 'time' : undefined, S) }
+  if (timed && cfg.mode !== 'time') { cfg.mode = 'time'; delete cfg.reps; delete cfg.repsMin }
+  if (ex?.reps != null && cfg.mode === 'time') { cfg.mode = 'reps'; delete cfg.sec }
+  if (sets != null) cfg.sets = Math.round(sets)
+  if (reps != null) { cfg.reps = Math.round(reps); if (cfg.repsMin >= cfg.reps) delete cfg.repsMin }
+  if (sec != null) cfg.sec = Math.round(sec)
+  if (rest > 0) cfg.restSec = Math.round(rest)
+  else if (base && !base.restFromProfile && params?.restSeconds > 0 && rest == null) cfg.restSec = params.restSeconds
+  if (weight != null) cfg.weight = weight
+  const keptNote = note != null ? note : base?.note
+  if (keptNote) cfg.note = keptNote
+  const slot = occurrenceFromConfig(S, cfg, { routineId })
+  if (!slot) { problems.push({ field: at, problem: 'this exercise cannot be planned here' }); return null }
+  if (base?.sg) slot.sg = base.sg
   return slot
 }
 
 // The slots a list of described exercises stands for. With `old` (an edit), each exercise named
 // again takes the next unused slot of that exercise, so repeated slots keep their own settings.
-function slotsOf(S, list, old, unit, field, problems) {
+function slotsOf(S, list, old, unit, field, problems, routineId = null) {
   if (!Array.isArray(list) || !list.length) { problems.push({ field, problem: 'at least one exercise' }); return [] }
   if (list.length > ROUTINE_LIMITS.maxExercises) { problems.push({ field, problem: `at most ${ROUTINE_LIMITS.maxExercises}` }); return [] }
   const used = new Set()
@@ -87,11 +120,11 @@ function slotsOf(S, list, old, unit, field, problems) {
     let base = null
     if (old) {
       const ref = ex?.exercise
-      const id = ref == null ? null : (old.find((s, j) => !used.has(j) && s.id === ref) ? ref : resolveExercise(S, ref).id)
-      const j = old.findIndex((s, k) => !used.has(k) && s.id === id)
+      const id = ref == null ? null : (old.find((s, j) => !used.has(j) && s.exerciseId === ref) ? ref : resolveExercise(S, ref).id)
+      const j = old.findIndex((s, k) => !used.has(k) && s.exerciseId === id)
       if (j >= 0) { used.add(j); base = old[j] }
     }
-    return slotOf(S, ex, base, unit, `${field}[${i}]`, problems)
+    return slotOf(S, ex, base, unit, `${field}[${i}]`, problems, routineId)
   }).filter(Boolean)
 }
 
@@ -119,11 +152,12 @@ export function createRoutine(S, input, { id } = {}) {
     problems.push({ field: 'name', problem: 'a routine with this name exists already; update it, or pick another name' })
   }
   const unit = input?.unit === 'lb' || input?.unit === 'kg' ? input.unit : S.unit === 'lb' ? 'lb' : 'kg'
-  const ex = slotsOf(S, input?.exercises, null, unit, 'exercises', problems)
+  const rid = id || 'mr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  const ex = slotsOf(S, input?.exercises, null, unit, 'exercises', problems, rid)
   const days = input?.weekdays == null ? { days: null } : weekdaysOf(input.weekdays)
   if (days.problem) problems.push({ field: 'weekdays', problem: days.problem })
   if (problems.length) return { problems }
-  const routine = { id: id || 'mr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, emoji: 'figureStrength', ex }
+  const routine = { id: rid, name, emoji: 'figureStrength', ex }
   cleanupSg(routine.ex)
   S.routines = [...(S.routines || []), routine]
   if (days.days) placeOnWeekdays(S, routine.id, days.days)
@@ -148,8 +182,8 @@ export function updateRoutine(S, routineId, patch) {
   }
   const unit = patch?.unit === 'lb' || patch?.unit === 'kg' ? patch.unit : S.unit === 'lb' ? 'lb' : 'kg'
   const oldEx = Array.isArray(old.ex) ? old.ex : []
-  if (patch?.exercises != null) next.ex = slotsOf(S, patch.exercises, oldEx, unit, 'exercises', problems)
-  if (patch?.add_exercises != null) next.ex = [...(next.ex || oldEx), ...slotsOf(S, patch.add_exercises, null, unit, 'add_exercises', problems)]
+  if (patch?.exercises != null) next.ex = slotsOf(S, patch.exercises, oldEx, unit, 'exercises', problems, routineId)
+  if (patch?.add_exercises != null) next.ex = [...(next.ex || oldEx), ...slotsOf(S, patch.add_exercises, null, unit, 'add_exercises', problems, routineId)]
   if ((next.ex || []).length > ROUTINE_LIMITS.maxExercises) problems.push({ field: 'exercises', problem: `at most ${ROUTINE_LIMITS.maxExercises}` })
   const days = patch?.weekdays == null ? { days: null } : weekdaysOf(patch.weekdays)
   if (days.problem) problems.push({ field: 'weekdays', problem: days.problem })

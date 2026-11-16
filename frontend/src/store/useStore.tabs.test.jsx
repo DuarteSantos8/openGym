@@ -8,7 +8,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({ api: null }))
-vi.mock('../lib/api.js', () => ({ api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {} }) } }))
 
 // The store's heavy imports (the 1 MB exercise table, the sync and mobile libraries) are
@@ -35,7 +35,7 @@ async function openTab(user = { id: 'u1' }) {
   const m = await import('./useStore.js')
   DEF = m.DEF
   tabs.push(m.useStore)
-  m.useStore.setState({ user, ready: true })
+  m.useStore.setState({ user, ready: true, config: { engineContract: 1, coach: null } })
   return m.useStore
 }
 

@@ -87,6 +87,10 @@ const cache = new WeakMap()
  * entries from other gyms or brands taken out (the workouts themselves and every other exercise
  * left as they are). S itself for an exercise that is not split, or when there are no workouts.
  */
+// A workout's logged exercises, whatever their shape: v2 exposures (`exerciseId`), v1 entries (`id`).
+const itemsKey = w => (Array.isArray(w?.exposures) ? 'exposures' : 'entries')
+const itemsOf = w => w?.[itemsKey(w)] || []
+const idOfItem = e => e?.exerciseId ?? e?.id
 export function gymSplitView(S, exId) {
   if (!isGymSplit(S, exId) || !Array.isArray(S?.workouts) || !S.workouts.length) return S
   const ctx = contextOf(S, exId)
@@ -95,16 +99,16 @@ export function gymSplitView(S, exId) {
   if (!byKey) { byKey = new Map(); cache.set(S.workouts, byKey) }
   let workouts = byKey.get(key)
   if (!workouts) {
-    const has = w => (w?.entries || []).some(e => e && e.id === exId)
-    const anyMatch = S.workouts.some(w => has(w) && w.entries.some(e => e && e.id === exId && matchesContext(entryContext(w, e), ctx)))
+    const has = w => itemsOf(w).some(e => e && idOfItem(e) === exId)
+    const anyMatch = S.workouts.some(w => has(w) && itemsOf(w).some(e => e && idOfItem(e) === exId && matchesContext(entryContext(w, e), ctx)))
     const keep = (w, e) => {
       const c = entryContext(w, e)
       return anyMatch ? matchesContext(c, ctx) : unlabelled(c)
     }
     workouts = S.workouts.map(w => {
       if (!has(w)) return w
-      const entries = w.entries.filter(e => !(e && e.id === exId) || keep(w, e))
-      return entries.length === w.entries.length ? w : { ...w, entries }
+      const kept = itemsOf(w).filter(e => !(e && idOfItem(e) === exId) || keep(w, e))
+      return kept.length === itemsOf(w).length ? w : { ...w, [itemsKey(w)]: kept }
     })
     byKey.set(key, workouts)
   }
@@ -133,8 +137,8 @@ export function placesOf(S, exId) {
   const ws = Array.isArray(S?.workouts) ? S.workouts : []
   for (let i = ws.length - 1; i >= 0; i--) {
     const w = ws[i]
-    for (const en of w?.entries || []) {
-      if (!en || en.id !== exId) continue
+    for (const en of itemsOf(w)) {
+      if (!en || idOfItem(en) !== exId) continue
       const key = placeKey(w, en)
       if (!key) continue
       const got = out.get(key)
@@ -149,7 +153,7 @@ export function placesOf(S, exId) {
 export function onlyPlace(S, exId, key) {
   if (!key || !Array.isArray(S?.workouts)) return S
   return { ...S, workouts: S.workouts.map(w => {
-    if (!(w?.entries || []).some(e => e && e.id === exId)) return w
-    return { ...w, entries: w.entries.filter(e => !(e && e.id === exId) || placeKey(w, e) === key) }
+    if (!itemsOf(w).some(e => e && idOfItem(e) === exId)) return w
+    return { ...w, [itemsKey(w)]: itemsOf(w).filter(e => !(e && idOfItem(e) === exId) || placeKey(w, e) === key) }
   }) }
 }

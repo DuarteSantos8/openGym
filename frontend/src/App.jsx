@@ -7,7 +7,7 @@ import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavig
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
-import { setWeightDecimals } from './lib/format.js'
+import { setWeightDecimals, uid } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
@@ -23,7 +23,7 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume, pickedExerciseConfig } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { applyProfileSteps, profileStep } from './lib/weight-step.js'
-import { stepPlaces } from './lib/progression.js'
+import { stepPlaces } from './lib/exercises.js'
 import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
@@ -69,6 +69,7 @@ import { useAnimPacksBoot, useAnimOffer } from './components/Animations.jsx'
 import { useNfcTagLinks } from './components/Nfc.jsx'
 import { useRoutineLinks } from './components/RoutineShare.jsx'
 import Login from './views/Login.jsx'
+import MigrationGate from './views/MigrationGate.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
 import Home from './views/Home.jsx'
@@ -152,7 +153,7 @@ function Shell() {
   const navigate = useNavigate()
   const loc = useLocation()
   const navType = useNavigationType()
-  const { S, user, ready } = useStore()
+  const { S, A, user, ready } = useStore()
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
@@ -193,6 +194,7 @@ function Shell() {
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)
+  const migration = useStore(s => s.migration)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
   // Android: Settings → Screen orientation (#821), this device's own choice.
@@ -205,11 +207,11 @@ function Shell() {
     lastEditPath.current = loc.pathname
     // The live store, not this render's S: a save that just closed the editor may not have
     // reached this render yet, and asking again would offer to delete the workout it saved.
-    if (previous !== '/workout' || !useStore.getState().S.active?.editingWorkoutId || loc.pathname === '/workout') return
+    if (previous !== '/workout' || !useStore.getState().A?.editingWorkoutId || loc.pathname === '/workout') return
     const destination = loc.pathname + loc.search
     navigate('/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
-  }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
+  }, [loc.pathname, loc.search, A?.editingWorkoutId, navigate])
   // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked. A
   // seasonal theme's colours stand in for it while that theme shows, and only when chosen
   // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
@@ -355,12 +357,12 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(wantsWakeLock(S))
+  useWakeLock(wantsWakeLock({ ...S, active: A }))
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
   // (owner, 2026-10-14: the bottom Complete / Finish button of #563 is gone again).
-  const inWorkout = loc.pathname === '/workout' && !!S.active
+  const inWorkout = loc.pathname === '/workout' && !!A
   useEffect(() => {
     document.body.classList.toggle('no-tabbar', inWorkout)
     return () => document.body.classList.remove('no-tabbar')
@@ -394,7 +396,7 @@ function Shell() {
     </div>
   )
 
-  const view = l => (!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
+  const view = l => (!authed ? <Login /> : migration ? <MigrationGate /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
     <Routes location={l}>
       <Route path="/home" element={<Home />} />
       {/* A module switched off (Settings → Modules, lib/modules.js) takes its screens with it: the
@@ -454,8 +456,8 @@ function Shell() {
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
-      {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
+      {!noTabs && !migration && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {!noTabs && authed && !migration && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
       <RestTimer />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
@@ -529,21 +531,35 @@ export default function App() {
       // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
       // runs again, finds them gone and stops retrying them.
       healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },
-      patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
-        patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
-      }),
+      patchSet: (where, fields, opts = {}) => {
+        const st = useStore.getState()
+        // The running workout is the store's own `A`, not part of the profile.
+        if (st.A && st.A.id === where.wid) { st.updateActive(A => { patchSetIn({ active: A }, where, fields, null, opts) }); return }
+        st.update(s => { patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } }) })
+      },
       // A set from the watch for a row the running workout does not have (the exercise taken out
       // here meanwhile, a routine changed since the watch last heard): the workout gets the row with
       // the set in it, the exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
+      // The running workout is `A`: its exposures go with a new entry, the prescription to the profile.
       ensureSet: (where, fields) => {
+        const st = useStore.getState()
+        if (!st.A) return false
+        const A = JSON.parse(JSON.stringify(st.A))
         let ok = false
-        useStore.getState().update(s => {
-          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
+        st.update(s => {
+          ok = ensureWatchSet({ ...s, active: A }, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, { active: A, newId: uid }) : null), fields)
         })
+        if (ok) useStore.getState().setActive(A)
         return ok
       },
       // A set the watch's set menu added or took out (lib/watch-sync.js addWatchSet, removeWatchSet).
-      edit: fn => { let ok = false; useStore.getState().update(s => { ok = !!fn(s) }); return ok },
+      edit: fn => {
+        const st = useStore.getState()
+        if (!st.A) return false
+        let ok = false
+        st.updateActive(A => { ok = !!fn({ ...st.S, active: A }) })
+        return ok
+      },
       // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
       stillHere: at => keepGoing(at),
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
@@ -562,8 +578,8 @@ export default function App() {
       discard: () => confirmSheet({
         title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
         onConfirm: () => {
-          markDiscarded(useStore.getState().S.active?.id)
-          useStore.getState().update(s => { s.active = null })
+          markDiscarded(useStore.getState().A?.id)
+          useStore.getState().clearActive()
           useUI.getState().stopRest(); useUI.getState().stopWork()
           nav('/home')
         },
@@ -607,7 +623,7 @@ export default function App() {
   useEffect(() => {
     if (!MOBILE) return
     let stop = null, gone = false
-    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds, finishSheet: requestLiveFinish })
+    startWidgetLinks({ getS: () => { const st = useStore.getState(); return { ...st.S, active: st.A } }, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds, finishSheet: requestLiveFinish })
       .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])

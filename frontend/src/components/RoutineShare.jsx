@@ -19,6 +19,8 @@ import { libraryLinkFromUrl } from '../lib/library-link.js'
 import { openLibraryLink } from './LibraryLink.jsx'
 import { Button, Switch } from './ui.jsx'
 import Icon from './Icon.jsx'
+// A shared routine arrives as v2 occurrences: each slot's line as the routine editor shows it.
+import { occurrenceTargets } from '../lib/occurrence-view.js'
 
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
@@ -126,8 +128,8 @@ function RoutinePreview({ parsed, close }) {
     <div className="list" style={{ marginBottom: 12 }}>
       {r.ex.map((e, i) => <div key={i} className="item">
         <div className="grow">
-          <div className="tt">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
-          <div className="ss">{exLine(e, parsed.unit, speedUnit)}</div>
+          <div className="tt">{nameOf(e.exerciseId ?? e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
+          <div className="ss">{e.rule ? occurrenceTargets(e) : exLine(e, parsed.unit, speedUnit)}</div>
         </div>
       </div>)}
     </div>

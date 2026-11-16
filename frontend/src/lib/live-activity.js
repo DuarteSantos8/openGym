@@ -482,7 +482,9 @@ export function applyLiveEvents (events, getState) {
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
-    const A = getState()?.S?.active
+    // The store's own `A`; a plain state without one (a test's) keeps it in `S.active`.
+    const st0 = getState()
+    const A = st0?.A !== undefined ? st0.A : st0?.S?.active
     const ours = A && Array.isArray(A.entries) && !A.editingWorkoutId && (!ev.wid || ev.wid === String(A.id))
     if (ev.type === 'setDone' && ours) {
       if (!handlers) break
@@ -514,7 +516,9 @@ export function applyLiveEvents (events, getState) {
       // − + through the workout screen's own setter when it is there (the cascade to the sets after),
       // else straight into the stored workout, as the Home Screen widget's numbers go.
       const own = idx >= 0 && ev.type === 'adjust' && num(ev.value) != null && handlers?.adjust?.(idx, ev.setIdx, ev.field, ev.value)
-      if (idx >= 0 && !own && st?.update) st.update(s => { if (ev.type === 'warm') applyWarmToggle(s, idx, ev.setIdx); else applyAdjust(s, idx, ev.setIdx, ev.field, ev.value) })
+      const apply = s => { if (ev.type === 'warm') applyWarmToggle(s, idx, ev.setIdx); else applyAdjust(s, idx, ev.setIdx, ev.field, ev.value) }
+      if (idx >= 0 && !own && st?.A !== undefined && st?.updateActive) st.updateActive(a => apply({ ...st.S, active: a }))
+      else if (idx >= 0 && !own && st?.update) st.update(apply)
     } else if (ev.type === 'addSet' && ours) {
       if (!handlers) break
       const idx = entryIndexOf(A, ev)
@@ -717,7 +721,8 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       // Taken here, with no await before the state is built: exactly the taps it has in it.
       const seen = seenIds.slice()
       const ui = useUI.getState()
-      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null }, { live: liveHeartRate(), now: Date.now() })
+      const st = useStore.getState()
+      const live = buildLiveActivity({ ...st.S, active: st.A }, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null }, { live: liveHeartRate(), now: Date.now() })
       const json = live ? JSON.stringify(live) : ''
       // Calories and the like move on by themselves: a fresh look a minute later, while one is shown.
       clearTimeout(beat)
@@ -751,7 +756,7 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   sendNow = direct
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }
-    else if (s.S !== prev.S) schedule()
+    else if (s.S !== prev.S || s.A !== prev.A) schedule()
   })
   const restOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.ready}|${x.left}|${x.kind || ''}` : '')
   const holdOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.auto}` : '')
@@ -833,7 +838,7 @@ export async function liveStatus () {
  * after TRY_SECONDS. Resolves true when the phone showed it.
  */
 export async function tryLive (live, S) {
-  if (!live || S?.active || liveOff()) return false
+  if (!live || S?.active || getStateRef?.()?.A || liveOff()) return false
   const p = await livePlugin()
   if (!p) return false
   if (!tryWid) tryWid = 'preview-' + Date.now().toString(36)
@@ -856,7 +861,7 @@ export async function endTryLive (getS = () => getStateRef?.()?.S) {
   if (!tryWid) return
   tryWid = null
   const p = await livePlugin()
-  if (!p || getS()?.active) return
+  if (!p || getS()?.active || getStateRef?.()?.A) return
   try { await p.LiveActivity.end() } catch { /* gone already */ }
 }
 

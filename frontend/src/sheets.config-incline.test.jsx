@@ -9,6 +9,7 @@ import { EXIDX } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 
 const TREADMILL = '2259'   // walking on treadmill
 const BIKE = '2138'        // stationary bike run v. 3
@@ -29,7 +30,7 @@ function open(ex, existing) {
     Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value').set.call(el, value)
     el.dispatchEvent(new Event('input', { bubbles: true }))
   })
-  const save = () => act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save').click())
+  const save = () => act(() => [...host.querySelectorAll('button')].find(b => ['Save', 'Add to routine'].includes(b.textContent.trim())).click())
   return { labels, field, type, save, onSave }
 }
 
@@ -42,25 +43,25 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) 
 
 describe('incline in a treadmill\'s settings (Discord)', () => {
   it('offers Incline next to Minutes and Speed and saves it on the slot', () => {
-    const v = open(EXIDX[TREADMILL], { sets: 1, min: 30, speed: 5 })
+    const v = open(EXIDX[TREADMILL], { ...ruleOccurrence(TREADMILL), mode: 'cardio', cardio: { sets: 1, min: 30, speed: 5 } })
     expect(v.labels()).toEqual(expect.arrayContaining(['Minutes', 'Incline (%)']))
     v.type(v.field('Incline (%)'), '7.3')
     v.save()
-    expect(v.onSave.mock.calls[0][0]).toMatchObject({ sets: 1, min: 30, speed: 5, incline: 7.5 })
+    expect(v.onSave.mock.calls[0][0]).toMatchObject({ mode: 'cardio', cardio: { sets: 1, min: 30, speed: 5, incline: 7.5 } })
   })
 
   it('reopens with the saved incline, and a flat one leaves the key out', () => {
-    const v = open(EXIDX[TREADMILL], { sets: 1, min: 30, speed: 5, incline: 6 })
+    const v = open(EXIDX[TREADMILL], { ...ruleOccurrence(TREADMILL), mode: 'cardio', cardio: { sets: 1, min: 30, speed: 5, incline: 6 } })
     expect(v.field('Incline (%)').value).toBe('6')
     v.type(v.field('Incline (%)'), '0')
     v.save()
-    expect(v.onSave.mock.calls[0][0]).not.toHaveProperty('incline')
+    expect(v.onSave.mock.calls[0][0].cardio).not.toHaveProperty('incline')
   })
 
   it('a bike has no incline to set', () => {
-    const v = open(EXIDX[BIKE], { sets: 1, min: 30, speed: 20 })
+    const v = open(EXIDX[BIKE], { ...ruleOccurrence(BIKE), mode: 'cardio', cardio: { sets: 1, min: 30, speed: 20 } })
     expect(v.labels()).not.toContain('Incline (%)')
     v.save()
-    expect(v.onSave.mock.calls[0][0]).not.toHaveProperty('incline')
+    expect(v.onSave.mock.calls[0][0].cardio).not.toHaveProperty('incline')
   })
 })

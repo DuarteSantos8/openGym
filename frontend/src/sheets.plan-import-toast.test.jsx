@@ -12,6 +12,7 @@ import { EXDB } from './lib/exercises.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = EXDB.filter(e => e.bp !== 'cardio').slice(0, 2).map(e => e.id)
+import { ruleOccurrence } from './lib/test-fixtures.js'
 const mounted = []
 
 function renderTop() {
@@ -24,8 +25,8 @@ function renderTop() {
   return host
 }
 const buttonFor = (host, label) => [...host.querySelectorAll('button')].find(b => b.textContent === label)
-const bundleOf = routines => parsePlan({ opengym_plan: 1, unit: 'kg', week: {}, routines, customEx: [] }, 'kg')
-const routine = (id, name) => ({ id, name, emoji: null, ex: [{ id: ids[0], sets: 3, reps: 8, weight: 40 }] })
+const bundleOf = routines => parsePlan({ opengym_plan: 3, unit: 'kg', week: {}, routines, customEx: [] }, 'kg')
+const routine = (id, name) => ({ id, name, emoji: null, ex: [ruleOccurrence(ids[0], { occurrenceId: id + '-o1', routineId: id })] })
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true

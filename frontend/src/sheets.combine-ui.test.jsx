@@ -6,10 +6,13 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { addRoutineToSessionSheet, workoutDetailSheet } from './sheets.jsx'
 import { EXDB } from './lib/exercises.js'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = EXDB.filter(e => e.bp !== 'cardio').slice(0, 4).map(e => e.id)
 const mounted = []
+const fiveAt60 = r => ({ ...r, parameters: { ...r.parameters, sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'absolute', value: 60, unit: 'kg' } } })
+const routine = (id, name, exercises, over = {}) => ({ id, name, ex: exercises.map((exerciseId, i) => ruleOccurrence(exerciseId, { occurrenceId: id + '-' + i, routineId: id, patch: fiveAt60 })), ...over })
 
 function renderTop() {
   const sheet = useUI.getState().sheets.at(-1)
@@ -33,29 +36,29 @@ describe('Add routine mid-session sheet', () => {
   const setup = () => {
     const S = clone(useStore.getState().S)
     S.routines = [
-      { id: 'strength', name: 'Strength', emoji: '🏋️', prog: 'off', ex: [{ id: ids[0], sets: 3, reps: 5, weight: 60 }] },
-      { id: 'core', name: 'Core', emoji: '🧘', prog: 'off', ex: [{ id: ids[1], sets: 3, reps: 12, weight: 0 }, { id: ids[2], sets: 3, reps: 10, weight: 0 }] },
-      { id: 'empty', name: 'Empty', emoji: '📝', ex: [] },
+      routine('strength', 'Strength', [ids[0]]),
+      routine('core', 'Core', [ids[1], ids[2]]),
+      routine('empty', 'Empty', []),
     ]
     S.workouts = []
-    S.active = {
+    const A = {
       id: 'a', d: '2026-09-06', start: 1, routineIds: ['strength'], name: 'Strength', cur: 0,
-      entries: [{ id: ids[0], rid: 'strength', target: {}, sets: [{ w: 60, r: 5, done: true }] }],
+      exposures: [{ routineId: 'strength' }], entries: [],
       workoutView: 'cards',
     }
-    useStore.setState({ S, user: null })
+    useStore.setState({ S, A, user: null })
   }
 
-  it('appends the picked routine’s entries with rid, updates routineIds + name, toasts', () => {
+  it('appends the picked routine’s exposures, updates routineIds + name, toasts', () => {
     setup()
     addRoutineToSessionSheet()
     const host = renderTop()
     act(() => { rowFor(host, 'Core').click() })
 
-    const a = useStore.getState().S.active
+    const a = useStore.getState().A
     expect(a.routineIds).toEqual(['strength', 'core'])
     expect(a.name).toBe('Strength + Core')
-    expect(a.entries.map(e => e.rid)).toEqual(['strength', 'core', 'core'])
+    expect(a.exposures.map(x => x.routineId)).toEqual(['strength', 'core', 'core'])
     expect(a.cur).toBe(0)                    // current unit is left where it was
     expect(useUI.getState().toastMsg).toContain('Core added')
   })
@@ -75,14 +78,14 @@ describe('WorkoutDetail — per-routine grouping', () => {
   const combined = {
     id: 'w', d: '2026-09-06', start: 1, end: 2, name: 'Strength + Core', vol: 500,
     routineIds: ['strength', 'core'], prs: [],
-    entries: [
-      { id: ids[0], rid: 'strength', target: { reps: 5 }, sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }] },
-      { id: ids[1], rid: 'core', target: { reps: 12 }, sets: [{ w: 0, r: 12, done: true }] },
+    exposures: [
+      { exerciseId: ids[0], routineId: 'strength', performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 60 }, segments: [] }, { status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 60 }, segments: [] }] } },
+      { exerciseId: ids[1], routineId: 'core', performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 12 }], resistance: { kind: 'bodyweight' }, segments: [] }] } },
     ],
   }
   const legacy = {
     id: 'w2', d: '2026-09-06', start: 1, end: 2, name: 'Push', vol: 100, routineIds: ['strength'], prs: [],
-    entries: [{ id: ids[0], target: { reps: 5 }, sets: [{ w: 100, r: 5, done: true }] }],
+    exposures: [{ exerciseId: ids[0], performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 100 }, segments: [] }] } }],
   }
 
   beforeEach(() => {

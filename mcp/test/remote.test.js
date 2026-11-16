@@ -24,7 +24,7 @@ function stub(docs) {
   })
   return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ base: `http://127.0.0.1:${srv.address().port}`, hits })))
 }
-const doc = name => ({ unit: 'kg', routines: [{ id: 'r1', name, ex: [] }], _rev: 1 })
+const doc = name => ({ engineSchemaVersion: 2, engineContractRevision: 1, unit: 'kg', routines: [{ id: 'r1', name, ex: [] }], _rev: 1 })
 
 describe('remote profile', () => {
   test('a paired session reads the app routes, a scoped token its own, and only again when the revision moved', async () => {

@@ -1,6 +1,7 @@
 // log_workout against a stand-in for the api: a node:http server that answers /api/me and
 // /api/data the way api/server.js does, and records what it is sent. What the real server does
 // with the write is log-workout.e2e.test.js; the arithmetic is frontend/src/lib/log-workout.test.js.
+import { rowsOfPerformance } from '../../frontend/src/lib/session-ui-adapter.js'
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import http from 'node:http'
 import { logWorkout, WRITE_LIMIT, _resetWriteWindow } from '../src/write-tools.js'
@@ -86,7 +87,7 @@ describe('log_workout writes through the server', () => {
     expect(r.exercises[0].sets[0]).toMatchObject({ minutes: 20, speed: 3.5, speed_unit: 'mph', distance_mi: 1.17, incline: 7 })
     expect(r.exercises[0].sets[0].label).toMatch(/3\.5 mph/)
     const saved = api.puts[0].state.workouts.at(-1)
-    expect(saved.entries[0].sets[0]).toEqual({ min: 20, speed: 5.63, incline: 7, done: true })
+    expect(rowsOfPerformance(saved.exposures[0].performance.sets, 'cardio')[0]).toMatchObject({ min: 20, speed: 5.63, incline: 7, done: true })
     expect(saved.prs).toEqual([])
   })
 
@@ -170,8 +171,8 @@ describe('found in review', () => {
     const r = await call({ exercises: [{ exercise: '0025', sets: [{ reps: 5, weight: 100 }] }] })
     expect(r.logged).toBe(true)
     const [first, second] = api.puts.map(p => p.state.workouts[0])
-    expect(first.entries[0].sets[0].w).toBe(100)
-    expect(second.entries[0].sets[0].w).toBe(220.5)
+    expect(first.exposures[0].performance.sets[0].resistance.value).toBe(100)
+    expect(second.exposures[0].performance.sets[0].resistance.value).toBe(220.5)
     expect(second.id).toBe(first.id)
   })
 
@@ -201,7 +202,7 @@ describe('found in review', () => {
     const r = await call({ exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 20 }] }] })
     expect(r.logged).toBe(true)
     const [first, second] = api.puts.map(p => p.state.workouts[0])
-    expect(second.entries[0].target.dbLoad).toBe('each')
+    expect(second.exposures[0].dbLoad).toBe('each')
     expect(second.vol).toBe(first.vol)
     expect(api.doc.dbLoad['0289'].mode).toBe('total')   // the device's new default itself is kept
   })

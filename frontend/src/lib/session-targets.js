@@ -31,6 +31,7 @@
 // workout says so (refusalsFor), and the routine builds as it always does. A target for another
 // day does nothing at all.
 import { convertExact, EXACT_STORE } from './units.js'
+import { planPhase } from './prescription/index.js'
 
 // The longest rest a row may ask for: lib/duration.js REST_MAX (that file pulls in the locales,
 // this one is read while a session is built; session-targets.test.js holds the two together).
@@ -151,5 +152,20 @@ export function markUsed(map, entries, workoutId, now = Date.now()) {
   if (!ids.size) return map
   const out = { ...map }
   for (const id of ids) out[id] = { ...map[id], used: String(workoutId ?? true), _ts: now }
+  return out
+}
+
+// A v2 routine as lib/session-targets.js reads one: each slot's exercise, mode and side.
+export const targetRoutine = r => ({ ...r, ex: (r.ex || []).map(o => ({ id: o.exerciseId, ...(o.mode ? { mode: o.mode } : o.rule && planPhase(o.rule).parameters.durationSeconds ? { mode: 'time' } : {}), ...(o.side ? { side: true } : {}) })) })
+// Today's rows from a coach or planner (#972, lib/session-targets.js) over each routine's own, in
+// place of the prescription's; the routine and its prescriptions stay what they built.
+export function withSessionTargets(s, routines, exposures, entries, d, helpers) {
+  const out = [...entries]
+  for (const r of routines) {
+    const at = exposures.map((x, i) => [x, i]).filter(([x]) => x.routineId === r.id)
+    const slots = (r.ex || []).map(o => at.find(([x]) => x.occurrenceId === o.occurrenceId))
+    if (slots.some(x => !x)) continue
+    withSessionTarget(s, targetRoutine(r), slots.map(([, i]) => out[i]), d, helpers).forEach((e, k) => { out[slots[k][1]] = e })
+  }
   return out
 }

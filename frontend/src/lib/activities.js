@@ -24,6 +24,8 @@
 // never makes a second one, and a removed one is never brought back (the stamp stays).
 import { NOTE_MAX } from './history.js'
 import { hashId } from './weigh-ins.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const SPORTS = ['run', 'ride', 'swim', 'hike', 'row', 'ski', 'football', 'racket', 'ball', 'climb', 'fight', 'yoga', 'dance', 'other']
 export const SPORT_LABEL = {
@@ -325,7 +327,7 @@ export function activitiesFromHealthExport(text) {
 export function splitSportWorkouts(workouts, nameOf) {
   const keep = [], activities = []
   for (const w of Array.isArray(workouts) ? workouts : []) {
-    const entries = Array.isArray(w?.entries) ? w.entries : []
+    const entries = legacyEntriesOf(w)
     const sports = entries.map(e => sportOfName(nameOf(e)))
     const timedOnly = entries.every(e => (e.sets || []).length > 0 && (e.sets || []).every(s => !(s.r > 0) && !(s.w > 0) && Number(s.min) > 0))
     const first = sports.find(Boolean)

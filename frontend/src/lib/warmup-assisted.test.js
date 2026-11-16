@@ -1,20 +1,33 @@
 import { describe, expect, it } from 'vitest'
-import { buildSets, insertWarmupRow } from './history.js'
-import { applyPrescription } from './progression.js'
-import { isAssisted } from './exercises.js'
+import { insertWarmupRow, rerampWarmups } from './history.js'
+import { EXDB, isAssisted } from './exercises.js'
+import { migratedFixture } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 
 // On an assistance machine the weight is the help the stack gives: less is harder. A warm-up
 // must therefore carry MORE help than the work set, ramping down toward it, the mirror of the
 // 50% / 75% / 87.5% ramp of a plain lift. Before this the same halving ran on the raw number,
 // so 30 of help warmed up at 15 then 22.5: harder than the set it was meant to prepare for.
 describe('an assisted warm-up carries more help than the work set', () => {
-  const S = { workouts: [], exWeights: {}, routines: [] }
-  const cfg = { id: 'x-assisted', assisted: true, sets: 3, reps: 8, weight: 30 }
+  // An assistance machine of the catalogue; `assisted: false` reads it as a plain lift.
+  const MACHINE = EXDB.find(e => isAssisted(e.id) && e.eq === 'leverage machine').id
+  const cfg = { id: MACHINE, assisted: true, sets: 3, reps: 8, weight: 30 }
+  // v2: the rows Start opens for a routine with this slot, its load grid `step`.
+  const buildSets = (_, slot, { step }) => {
+    const P = migratedFixture({ unit: 'kg', workouts: [], exWeights: {}, routines: [{ id: 'r', name: 'R', ex: [{ ...slot, inc: step }] }] })
+    const draft = { ...P, prescriptions: { ...P.prescriptions } }
+    const xs = buildSessionExposures(draft, P.routines[0], { now: Date.parse('2026-11-05T12:00:00Z'), newId: x => x })
+    return entriesForExposures(xs, draft.prescriptions, draft)[0].sets
+  }
+  // A new work load on the rows (progression or a deload), the warm-ups re-aimed like Start does.
+  const applyPrescription = (rows, { weight }, step) => rerampWarmups(rows.map(r => (r.phase === 'warmup' ? r : { ...r, w: weight })), step, 0, true)
+  const S = null
   const warmOf = rows => rows.filter(r => r.phase === 'warmup').map(r => r.w)
   const workOf = rows => rows.filter(r => r.phase !== 'warmup').map(r => r.w)
 
   it('the flag is what marks it (the catalogue marks the machines by name)', () => {
-    expect(isAssisted(cfg)).toBe(true)
+    expect(isAssisted(cfg.id)).toBe(true)
   })
 
   it('ramps down toward the work help: 45, 37.5, 35 for 30', () => {
@@ -57,13 +70,13 @@ describe('an assisted warm-up carries more help than the work set', () => {
   })
 
   it('re-ramps after progression takes help away (less help)', () => {
-    const rows = applyPrescription(buildSets(S, { ...cfg, warmupSets: 2 }, { step: 2.5 }), { kind: 'up', weight: 20 }, 2.5, 0, true)
+    const rows = applyPrescription(buildSets(S, { ...cfg, warmupSets: 2 }, { step: 2.5 }), { kind: 'up', weight: 20 }, 2.5)
     expect(workOf(rows)).toEqual([20, 20, 20])
     expect(warmOf(rows)).toEqual([30, 25])
   })
 
   it('re-ramps after a deload gives more help', () => {
-    const rows = applyPrescription(buildSets(S, { ...cfg, warmupSets: 2 }, { step: 2.5 }), { kind: 'deload', weight: 40 }, 2.5, 0, true)
+    const rows = applyPrescription(buildSets(S, { ...cfg, warmupSets: 2 }, { step: 2.5 }), { kind: 'deload', weight: 40 }, 2.5)
     expect(workOf(rows)).toEqual([40, 40, 40])
     expect(warmOf(rows)).toEqual([60, 50])
   })
@@ -71,7 +84,7 @@ describe('an assisted warm-up carries more help than the work set', () => {
   it('keeps a warm-up already logged and ramps the rest from it', () => {
     const base = buildSets(S, { ...cfg, warmupSets: 2 }, { step: 2.5 })
     base[0] = { ...base[0], done: true, w: 50 }
-    const rows = applyPrescription(base, { kind: 'up', weight: 20 }, 2.5, 0, true)
+    const rows = applyPrescription(base, { kind: 'up', weight: 20 }, 2.5)
     expect(warmOf(rows)).toEqual([50, 35])
   })
 

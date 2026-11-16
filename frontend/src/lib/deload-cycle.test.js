@@ -3,7 +3,9 @@ import {
   deloadCycleOf, setDeloadEvery, deloadWhy, isDeloadDay, nextDeloadWeek, pushBack, skipDeload, addDeload,
   dismissSuggestion, deloadSets, performanceTrend, formTrend, deloadSuggestion, setDailyFormSource, dailyFormScores, setDeloadAuto,
 } from './deload-cycle.js'
-import { buildSessionEntries } from './session-start.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { migratedFixture } from './test-fixtures.js'
 
 const sess = (d, id, w, r = 5) => ({ id: d + id, d, entries: [{ id, sets: [{ w, r, done: true }, { w, r, done: true }] }] })
 
@@ -43,17 +45,19 @@ describe('deload weeks on a schedule', () => {
   })
 
   it('a deload week trains fewer sets at the same weight, out of progression', () => {
-    const S = { weekStart: 1, unit: 'kg', workouts: [sess('2026-11-16', '0025', 100)], routines: [], exWeights: {}, deloadCycle: { every: 4, from: '2026-11-02' }, active: { d: '2026-11-25' } }
-    const r = { id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100 }] }
-    S.routines = [r]
-    const [e] = buildSessionEntries(S, r)
-    expect(e.noProg).toBe(true)
-    expect(e.plan.kind).toBe('deloadweek')
-    expect(e.sets.filter(x => x.phase !== 'warmup' && !x.warmup).map(x => x.w)).toEqual([100, 100])
+    const P = migratedFixture({ weekStart: 1, unit: 'kg', workouts: [sess('2026-11-16', '0025', 100)], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100 }] }], exWeights: {}, deloadCycle: { every: 4, from: '2026-11-02' } })
+    const start = date => {
+      const draft = { ...P, prescriptions: { ...P.prescriptions } }
+      const xs = buildSessionExposures(draft, P.routines[0], { now: Date.parse(date + 'T12:00:00Z'), date, newId: x => x })
+      return { x: xs[0], e: entriesForExposures(xs, draft.prescriptions)[0] }
+    }
+    const { x, e } = start('2026-11-25')
+    expect(x.excludedFromProgression).toBe(true)
+    expect(x.plan.kind).toBe('deloadweek')
+    expect(e.sets.filter(r => r.phase !== 'warmup' && !r.warmup).map(r => r.w)).toEqual([100, 100])
     // The plan the next session compares against is still the routine's own.
     expect(e.planned.sets).toBe(3)
-    const normal = buildSessionEntries({ ...S, active: { d: '2026-11-18' } }, r)[0]
-    expect(normal.noProg).toBeUndefined()
+    expect(start('2026-11-18').x.excludedFromProgression).toBe(false)
   })
 })
 

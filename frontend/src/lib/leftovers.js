@@ -6,8 +6,8 @@
 //   leftoversOf(S, today)   { key, d, routines: [{ id, name }], ex: [{ rid, id }] } or null
 //   leftoversBefore(S, today, ids)   the same, minus the routines `ids` (the session about to
 //                           start) already holds: those exercises come with it anyway
-//   leadEntries(S, lead)    the session entries for them, built like Start builds a routine's
-import { buildCombinedEntries } from './session-merge.js'
+//   leadExposures(S, lead, ctx)   the session exposures for them, built like Start builds a routine's
+import { buildSessionExposures } from './session-start.js'
 import { canonicalExId } from './exercises.js'
 
 // An offer older than this is a different week's plan, not a session to finish.
@@ -33,16 +33,19 @@ export function leftoversOf(S, today) {
   const rids = [...new Set([].concat(w.routineIds || [], w.routineId || []).filter(Boolean))]
   // A session with nothing logged was ticked off as done (a day marked done, an import), not
   // cut short: there is nothing it "didn't get to".
-  if (!rids.length || !(Array.isArray(w.entries) && w.entries.length)) return null
-  const done = new Set((w.entries || []).map(e => canonicalExId(String(e?.id))))
+  // A v2 workout logs exposures, a v1 one entries.
+  const logged = Array.isArray(w.exposures) ? w.exposures.map(x => x?.exerciseId) : Array.isArray(w.entries) ? w.entries.map(e => e?.id) : []
+  if (!rids.length || !logged.length) return null
+  const done = new Set(logged.map(id => canonicalExId(String(id))))
   const routines = [], ex = []
   for (const rid of rids) {
     const r = (S.routines || []).find(x => x && x.id === rid)
     if (!r) continue
-    const left = (r.ex || []).filter(e => e && e.id != null && !done.has(canonicalExId(String(e.id))))
+    const idOf = e => e?.exerciseId ?? e?.id
+    const left = (r.ex || []).filter(e => e && idOf(e) != null && !done.has(canonicalExId(String(idOf(e)))))
     if (!left.length) continue
     routines.push({ id: r.id, name: r.name })
-    for (const e of left) ex.push({ rid: r.id, id: String(e.id) })
+    for (const e of left) ex.push({ rid: r.id, id: String(idOf(e)) })
   }
   return ex.length ? { key: keyOf(w), d: w.d, routines, ex } : null
 }
@@ -57,10 +60,16 @@ export function leftoversBefore(S, today, ids = []) {
   return { ...left, ex, routines: left.routines.filter(r => keep.has(r.id)) }
 }
 
-/** Session entries for the leftovers, in their routine's order, each with its routine's `rid`. */
-export function leadEntries(S, lead) {
+/**
+ * Session exposures for the leftovers, in their routine's order, each on its own routine. `S` is the
+ * store's update draft (the prescriptions are written to it); `ctx` is buildSessionExposures' own.
+ */
+export function leadExposures(S, lead, ctx) {
   if (!lead?.ex?.length) return []
   const want = new Set(lead.ex.map(x => `${x.rid}|${x.id}`))
-  const rids = [...new Set(lead.ex.map(x => x.rid))]
-  return buildCombinedEntries(S, rids).entries.filter(e => want.has(`${e.rid}|${e.id}`))
+  return [...new Set(lead.ex.map(x => x.rid))].flatMap(rid => {
+    const r = (S.routines || []).find(x => x && x.id === rid)
+    const ex = (r?.ex || []).filter(o => want.has(`${rid}|${o.exerciseId}`))
+    return ex.length ? buildSessionExposures(S, { ...r, ex }, ctx) : []
+  })
 }

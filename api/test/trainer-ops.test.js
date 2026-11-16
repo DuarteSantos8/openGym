@@ -238,3 +238,27 @@ test('nutrition: reads openNutrition\'s own summary.v1 names (energy, carbohydra
     { date: '2026-10-05', kcal: 2512, protein: 171, carbs: 280, fat: null, target: { kcal: 2600, protein: 170 }, logged: true, proteinMeals: 4 });
   assert.equal(cleanDay({ date: '2026-10-05', kcal: null }).kcal, null);
 });
+
+test('a v2 member: a routine and a workout land in the engine shapes, an edit on the exposure, the projection reads them back', async () => {
+  const { migrateProfileV1ToV2 } = await import('../migration/profile-migration.js');
+  const { LIB_BY_ID } = await import('../coach/core/library.js');
+  const { validateCanonicalProfile } = await import('../migration/profile-validation.js');
+  const { project } = await import('../trainers/projections.js');
+  const S = migrateProfileV1ToV2({ unit: 'kg', routines: [], workouts: [] }, LIB_BY_ID).profile;
+  const ops = cleanOps([
+    { op: 'routine.put', routine: { name: 'Strength', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] } },
+    { op: 'workout.add', workout: { d: '2026-11-02', name: 'Logged by coach', entries: [{ id: '0025', sets: [{ w: 60, r: 5 }, { w: 60, r: 4 }] }] } },
+  ]);
+  applyOps(S, ops, { by: { id: 't1', name: 'Coach' }, t: 10, rand: n => Buffer.alloc(n, 1) });
+  const [r] = S.routines;
+  assert.equal(r.ex[0].exerciseId, '0025');
+  assert.equal(r.ex[0].rule.routineId, r.id);
+  const [w] = S.workouts;
+  assert.equal(Array.isArray(w.exposures), true);
+  assert.equal('entries' in w, false);
+  assert.equal(validateCanonicalProfile(S).ok, true);
+  applyOps(S, cleanOps([{ op: 'workout.edit', id: w.id, sets: [{ e: 0, s: 1, ex: '0025', r: 5 }] }]), { t: 11 });
+  const view = project(S, { workouts: 'view', plans: 'view' }, { today: '2026-11-03' });
+  assert.deepEqual(view.workouts.list[0].entries[0].sets.map(x => [x.w, x.r]), [[60, 5], [60, 5]]);
+  assert.equal(view.plans.routines[0].ex[0].id, '0025');
+});

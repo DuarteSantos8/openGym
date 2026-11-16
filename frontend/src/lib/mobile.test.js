@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { isoOf } from './format.js'
 import { buildReminderNotifications } from './mobile.js'
 
@@ -100,5 +100,62 @@ describe('buildReminderNotifications', () => {
     expect(n[0].body).toContain('Push')
     expect(iso(n[1].schedule.at)).toBe(iso(new Date(2026, 8, 9)))   // Tuesday has its workout
     expect(n[1].body).toContain('Pull')
+  })
+})
+
+// Mock setup for active-session tests
+const activeBacking = new Map()
+const activeImpl = {
+  readFile: async ({ path }) => {
+    if (path === 'corrupt.json' && activeBacking.has(path)) return { data: JSON.stringify({ corrupt: true }) }
+    if (!activeBacking.has(path)) throw new Error('File not found')
+    return { data: activeBacking.get(path) }
+  },
+  writeFile: async ({ path, data }) => {
+    activeBacking.set(path, data)
+  }
+}
+const ActiveFilesystem = new Proxy({}, {
+  get(_, prop) {
+    if (prop === '$$typeof') return undefined
+    return (...args) => {
+      if (activeImpl[prop]) return activeImpl[prop](...args)
+      return Promise.reject(new Error(`Filesystem.${String(prop)}() not implemented`))
+    }
+  }
+})
+vi.mock('@capacitor/filesystem', () => ({
+  Filesystem: ActiveFilesystem,
+  Directory: { Data: 0 },
+  Encoding: { UTF8: 'utf8' }
+}), { virtual: true })
+
+describe('active-session mirror', () => {
+  beforeEach(() => { activeBacking.clear() })
+
+  it('writes and reads the session through the existing JSON file helpers', async () => {
+    const { nativeActiveSave, nativeActiveLoad, ACTIVE_FILE } = await import('./mobile.js')
+    expect(ACTIVE_FILE).toBe('gym_active_v1.json')
+    const session = { id: 'a1', d: '2026-09-22', start: 1, entries: [] }
+    await nativeActiveSave(session)
+    expect(await nativeActiveLoad()).toEqual(session)
+  })
+
+  it('removes nothing and returns null when there is no session', async () => {
+    const { nativeActiveSave, nativeActiveLoad } = await import('./mobile.js')
+    await nativeActiveSave(null)
+    expect(await nativeActiveLoad()).toBe(null)
+  })
+
+  it('survives a filesystem failure without throwing', async () => {
+    const { nativeActiveLoad } = await import('./mobile.js')
+    await expect(nativeActiveLoad()).resolves.not.toThrow()
+  })
+
+  it('clears a previously saved session when passed null', async () => {
+    const { nativeActiveSave, nativeActiveLoad } = await import('./mobile.js')
+    await nativeActiveSave({ id: 'a1', d: '2026-09-22', start: 1, entries: [] })
+    await nativeActiveSave(null)
+    expect(await nativeActiveLoad()).toBe(null)
   })
 })

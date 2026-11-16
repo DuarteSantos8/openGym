@@ -16,6 +16,7 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: async () => false }))
 
 import { api } from '../lib/api.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
 import { DEF, useStore } from './useStore.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -41,13 +42,15 @@ async function drain() {
   }
 }
 
-const SERVER_A = { ...clone(DEF), _ts: 100, unit: 'kg', workouts: [workout('a1')], _rev: 4 }
-const SERVER_B = { ...clone(DEF), _ts: 200, unit: 'lb', restSec: 45, workouts: [workout('b1')], _rev: 40 }
+// Profiles as this app keeps them (v2), migrated the way an upgrade does.
+const v2 = st => ({ ...st, ...migratedFixture(st), _ts: st._ts, _rev: st._rev })
+const SERVER_A = v2({ ...clone(DEF), _ts: 100, unit: 'kg', workouts: [workout('a1')], _rev: 4 })
+const SERVER_B = v2({ ...clone(DEF), _ts: 200, unit: 'lb', restSec: 45, workouts: [workout('b1')], _rev: 40 })
 
 // Signed in as A on a copy in step with A's revision 4.
 function asA() {
   localStorage.setItem('gym_sync', JSON.stringify({ rev: 4, ts: 100 }))
-  useStore.setState({ S: clone(SERVER_A), user: null, ready: true })
+  useStore.setState({ S: clone(SERVER_A), A: null, user: null, ready: true, config: { engineContract: 1, coach: null } })
   useStore.getState().setUser(A)
 }
 // B signs in on this device and its sign-in settles on B's own server copy.
@@ -219,7 +222,7 @@ describe('a pull answered after another account signed in', () => {
 describe('an adoption interrupted by another sign-in', () => {
   it('B gets its own adoption, and A\'s late answer neither applies A\'s copy nor ends B\'s hold', async () => {
     // A guest's copy; A signs in and its adoption is reading A's server copy.
-    useStore.setState({ S: { ...clone(DEF), _ts: 50, workouts: [workout('g1')] }, user: null, ready: true })
+    useStore.setState({ S: v2({ ...clone(DEF), _ts: 50, workouts: [workout('g1')] }), user: null, ready: true, config: { engineContract: 1, coach: null } })
     useStore.getState().setUser(A, { adopt: true })
     const adoptA = useStore.getState().adoptProfile(async () => false)
     await flush()
