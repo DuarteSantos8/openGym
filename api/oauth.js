@@ -163,8 +163,12 @@ export function cimdClient(id, doc) {
   if (!doc || typeof doc !== 'object' || doc.client_id !== id) return { ok: false, error: 'the client metadata document does not name itself as its client_id' };
   const uris = Array.isArray(doc.redirect_uris) ? doc.redirect_uris.filter(u => typeof u === 'string') : [];
   if (!uris.length || uris.length > 10 || !uris.every(redirectOk)) return { ok: false, error: 'the client metadata document lists no usable redirect_uris' };
+  // A document may name a stronger method as the one it prefers and still list `none` among
+  // those it supports: ChatGPT's says private_key_jwt and lists both (#1251). This server offers
+  // `none` only (authServerMetadata), so such a client signs in as a public one, with PKCE.
   const method = doc.token_endpoint_auth_method || 'none';
-  if (method !== 'none') return { ok: false, error: 'only public clients (token_endpoint_auth_method none) are supported' };
+  const supported = Array.isArray(doc.token_endpoint_auth_methods_supported) ? doc.token_endpoint_auth_methods_supported : [];
+  if (method !== 'none' && !supported.includes('none')) return { ok: false, error: 'only public clients (token_endpoint_auth_method none) are supported' };
   const grants = Array.isArray(doc.grant_types) ? GRANTS.filter(g => doc.grant_types.includes(g)) : ['authorization_code'];
   let name = cleanName(doc.client_name, '');
   if (!name) { try { name = new URL(id).hostname; } catch { name = 'MCP client'; } }
