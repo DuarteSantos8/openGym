@@ -32,6 +32,8 @@ vi.mock('../lib/nav.js', () => ({ nav: to => m.navs.push(to) }))
 
 import { shareRoutineSheet, openRoutinePayload, incomingLink, _resetRoutineLinksForTests } from './RoutineShare.jsx'
 import { routinePayloadFromUrl, decodePayload, encodePayload, routineLinkBundle } from '../lib/routine-link.js'
+import { canonicalProfile, ruleOccurrence } from '../lib/test-fixtures.js'
+import { planPhase } from '../lib/prescription/index.js'
 import { EXIDX } from '../lib/exercises.js'
 
 const BENCH = '0025'
@@ -41,10 +43,10 @@ const render = async el => { await act(async () => { root.render(el) }); await f
 const openSheet = async () => { const r = m.sheets.at(-1); await render(<>{r(vi.fn())}</>) }
 const click = async el => { await act(async () => { el.click() }); await flush() }
 const button = text => [...host.querySelectorAll('button')].find(b => b.textContent.includes(text))
-const push = { id: 'r1', name: 'Push Day', ex: [{ id: BENCH, sets: 3, reps: 8, weight: 80 }] }
+const push = { id: 'r1', name: 'Push Day', ex: [ruleOccurrence(BENCH, { options: { sets: { min: 3, max: 3 }, reps: { min: 8, max: 8 }, load: { mode: 'absolute', value: 80, unit: 'kg' } } })] }
 
 beforeEach(() => {
-  m.S = { unit: 'kg', routines: [push], week: {}, customEx: [], workouts: [] }
+  m.S = canonicalProfile({ routines: [push], workouts: [] })
   m.sheets = []; m.toasts = []; m.navs = []; m.user = { name: 'Alex' }
   _resetRoutineLinksForTests()
   host = document.createElement('div')
@@ -71,7 +73,7 @@ describe('Share with a friend', () => {
     expect(text).toBe('Here’s my Push Day on openGym 💪')
     expect(url.startsWith('https://opengym.ch/r#1.')).toBe(true)
     const data = await decodePayload(routinePayloadFromUrl(url))
-    expect(data.routines[0].ex[0].weight).toBeUndefined()
+    expect(planPhase(data.routines[0].ex[0].rule).parameters.load.value).toBe(0)
     expect(data.from).toBeUndefined()
   })
 
@@ -87,12 +89,12 @@ describe('Share with a friend', () => {
     await click(button('Share link'))
     await vi.waitFor(() => expect(share).toHaveBeenCalledTimes(1), { timeout: 5000 })
     const data = await decodePayload(routinePayloadFromUrl(share.mock.calls[0][0].url))
-    expect(data.routines[0].ex[0].weight).toBe(80)
+    expect(planPhase(data.routines[0].ex[0].rule).parameters.load.value).toBe(80)
     expect(data.from).toBe('Alex')
   })
 
   it('a routine too big for a link goes as a plan file', async () => {
-    const big = { id: 'b', name: 'Everything', ex: Object.keys(EXIDX).slice(0, 120).map(id => ({ id, sets: 3, reps: 8, note: 'a note to make it long ' + id })) }
+    const big = { id: 'b', name: 'Everything', ex: Object.keys(EXIDX).slice(0, 120).map(id => ({ ...ruleOccurrence(id, { routineId: 'b', options: { sets: { min: 3, max: 3 }, reps: { min: 8, max: 8 } } }), note: 'a note to make it long ' + id })) }
     const share = vi.fn()
     navigator.share = share
     URL.createObjectURL = vi.fn(() => 'blob:x'); URL.revokeObjectURL = vi.fn()
@@ -124,7 +126,7 @@ describe('an incoming routine link', () => {
 
   it('shows a friend’s own exercise as they typed it, and catalogue names in their casing', async () => {
     m.S.customEx = [{ id: 'c-turm', n: 'am Turm', bp: 'back', eq: 'cable', custom: true }]
-    const pull = { id: 'r2', name: 'Pull', ex: [{ id: 'c-turm', sets: 3, reps: 10, weight: 40 }, { id: BENCH, sets: 3, reps: 8, weight: 80 }] }
+    const pull = { id: 'r2', name: 'Pull', ex: [ruleOccurrence('c-turm', { routineId: 'r2', options: { sets: { min: 3, max: 3 }, reps: { min: 10, max: 10 }, load: { mode: 'absolute', value: 40, unit: 'kg' } } }), ruleOccurrence(BENCH, { routineId: 'r2', options: { sets: { min: 3, max: 3 }, reps: { min: 8, max: 8 }, load: { mode: 'absolute', value: 80, unit: 'kg' } } })] }
     const payload = await encodePayload(routineLinkBundle(m.S, pull, { weights: true }))
     m.S.customEx = []
     expect(await openRoutinePayload(payload)).toBe(true)

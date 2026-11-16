@@ -34,13 +34,15 @@ describe('tempo in the CSV', () => {
 })
 
 describe('tempo in a shared plan', () => {
-  const plan = ex => ({ unit: 'kg', week: {}, customEx: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', mode: 'reps', sets: 3, reps: 8, weight: 60, ...ex }] }] })
+  // A v1 plan file comes in through the migration; a v2 one is cleaned occurrence by occurrence.
+  const v1 = ex => JSON.stringify({ opengym_plan: 1, unit: 'kg', week: {}, customEx: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', mode: 'reps', sets: 3, reps: 8, weight: 60, ...ex }] }] })
   it('travels with the exercise', () => {
-    const back = parsePlan(JSON.stringify(buildPlanBundle(plan({ tempo: '3110' }), 'P'))).routines[0].ex[0]
+    const back = parsePlan(v1({ tempo: '3110' })).routines[0].ex[0]
     expect(back.tempo).toBe('3-1-1-0')
+    expect(parsePlan(JSON.stringify(buildPlanBundle({ unit: 'kg', routines: [{ id: 'r1', name: 'Push', ex: [back] }] }, 'P'))).routines[0].ex[0].tempo).toBe('3-1-1-0')
   })
   it('a file with a broken tempo arrives without one', () => {
-    const bundle = buildPlanBundle(plan({}), 'P')
+    const bundle = buildPlanBundle({ unit: 'kg', routines: [{ id: 'r1', name: 'Push', ex: [parsePlan(v1({})).routines[0].ex[0]] }] }, 'P')
     bundle.routines[0].ex[0].tempo = '<script>'
     expect(parsePlan(JSON.stringify(bundle)).routines[0].ex[0].tempo).toBeUndefined()
   })

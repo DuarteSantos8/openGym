@@ -11,9 +11,12 @@ import { useCircuit } from './store/useCircuit.js'
 import { finishWorkoutNow } from './sheets.jsx'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { cleanCircuit, PREP_SEC } from './lib/circuit.js'
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
-const S = () => useStore.getState().S
+// The profile with the running workout (the store's own `A`) as `active`.
+const S = () => ({ ...useStore.getState().S, active: useStore.getState().A })
 const mounted = []
 
 // The third session on level 1: finishing it as planned earns level 2.
@@ -30,7 +33,10 @@ function install() {
     id: 'w-rw', d: '2026-11-10', start: Date.now(), routineIds: ['rw'], routineId: 'rw', name: 'Run/walk', bw: null, cur: 0,
     entries: [{ id: '0685', rid: 'rw', sg: 'g', target: { mode: 'time', sets: third.rounds, sec: third.work, sg: 'g', sgCircuit: { ...third } }, sets: rows(third.rounds) }],
   }
-  useStore.setState({ S: st, user: null })
+  // Written as v1 and converted the way an upgrade does (DEF is v2 already).
+  const { engineSchemaVersion: _s, engineContractRevision: _c, ...v1 } = st
+  const { profile, activeSession } = migrateProfileV1ToV2(v1, LIB_BY_ID)
+  useStore.setState({ S: profile, A: activeSession, user: null })
 }
 
 // The whole session, start to end, as the clock runs it.
@@ -79,7 +85,7 @@ describe('run/walk: the next level comes with the save', () => {
     runToTheEnd()
     expect(useCircuit.getState().result.ended).toBe('done')
     // Discard (views/Workout.jsx discardNow): the session goes, nothing is saved.
-    act(() => useStore.getState().update(s => { s.active = null }))
+    act(() => useStore.getState().clearActive())
     expect(level()).toMatchObject({ level: 1, n: 2 })
     expect(S().workouts).toHaveLength(0)
   })
@@ -111,10 +117,8 @@ describe('run/walk: the next level comes with the save', () => {
 
   it('no level line when the session does not finish the level', () => {
     const second = cleanCircuit({ mode: 'intervals', program: 'runwalk', level: 1, n: 1 })
-    useStore.getState().update(s => {
-      s.routines[0].ex[0].sgCircuit = { ...second }
-      s.active.entries[0].target.sgCircuit = { ...second }
-    })
+    useStore.getState().update(s => { s.routines[0].ex[0].sgCircuit = { ...second } })
+    useStore.getState().updateActive(A => { A.entries[0].target.sgCircuit = { ...second } })
     runToTheEnd()
     useCircuit.setState({ open: true })
     const host = document.createElement('div')

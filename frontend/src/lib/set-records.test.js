@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { recordBaseline, recordKindsOf, entryRecords, savedEntryRecords, recordHint, repRecordTable, repsRecordAt, repFactor, liveRecordsOn, recordHintsOn, recordSoundOn } from './set-records.js'
-import { sessionPrs, isWeightPr } from './finish-workout.js'
+import { sessionPrs, isWeightPr } from './session-end.js'
 import { estimate1RM } from './onerm.js'
+import { migratedFixture } from './test-fixtures.js'
 
 const BENCH = '0025'
 const ASSISTED = '0017'
 const set = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
 const wo = (id, d, sets, exId = BENCH) => ({ id, d, start: Date.parse(d + 'T10:00:00'), entries: [{ id: exId, sets }] })
-const S0 = (workouts, extra = {}) => ({ workouts, bodyweight: [], exWeights: {}, ...extra })
+// The history as v2 saves it: v1 workouts through the migration.
+const S0 = (workouts, extra = {}) => migratedFixture({ unit: 'kg', workouts, bodyweight: [], exWeights: {}, ...extra })
 
 describe('record baseline', () => {
   it('reads the best load, estimate, set volume and every done work set, warm-ups left out', () => {

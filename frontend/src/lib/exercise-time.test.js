@@ -1,3 +1,4 @@
+import { migratedFixture } from './test-fixtures.js'
 import { describe, it, expect } from 'vitest'
 import { entryTimes, exerciseTimeRows } from './exercise-time.js'
 
@@ -48,4 +49,11 @@ describe('exercise time', () => {
     expect(exerciseTimeRows(ws, T1)).toEqual([{ id: 'a', sessions: 1, total: 2 * MIN, avg: 2 * MIN }])
     expect(exerciseTimeRows([])).toEqual([])
   })
+})
+
+ it('reads timestamps after migration to canonical exposures', () => {
+  const w = { id: 'timed', d: '2026-10-01', start: 1000, end: 61000, entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 5, done: true, at: 61000 }] }] }
+  const profile = migratedFixture({ unit: 'kg', workouts: [w], routines: [] })
+  expect(entryTimes(profile.workouts[0])).toEqual(entryTimes(w))
+  expect(exerciseTimeRows(profile.workouts)).toEqual(exerciseTimeRows([w]))
 })

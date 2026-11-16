@@ -17,7 +17,9 @@
 import { isWarmupRow, isSideSet, syncSideAggregate, hasCompletedWork } from './workout-model.js'
 import { supersetUnits, modeOf, barFloor, liveReramp } from './history.js'
 import { insertionIndexAfterCurrentUnit } from './supersetFlow.js'
-import { buildSessionEntry, plannedConfigOf, builtOutOfProgression } from './session-start.js'
+import { buildSessionExposures, occurrenceFor } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { uid } from './format.js'
 import { swapActiveExercise } from './active-exercise-swap.js'
 import { dropGrid } from './plates.js'
 import { snapDown } from './warmup-snap.js'
@@ -70,22 +72,23 @@ const routineOf = (s, entry) => (entry?.rid ? (s.routines || []).find(r => r.id 
 /** A new entry for exercise `id` built the way an exercise added to this session is built. */
 function newEntry(s, id, cfg, slot) {
   const routine = routineOf(s, slot)
-  const built = buildSessionEntry(s, id, cfg, routine, slot)
-  return joinSessionNoProg(s.active, {
-    id, ...built,
-    ...(slot?.rid ? { rid: slot.rid, addedInSession: true } : {}),
-    ...(routine && builtOutOfProgression(slot, routine) ? { noProg: true } : {}),
-  })
+  const occurrence = occurrenceFor(id, cfg, { id: uid(), unit: s.unit, routineId: routine?.id })
+  const exposures = buildSessionExposures(s, { id: routine?.id || s.active.id, ex: [occurrence] }, { now: Date.now(), newId: () => uid() })
+  const [built] = entriesForExposures(exposures, s.prescriptions)
+  s.active.exposures ||= []
+  s.active.exposures.push(...exposures)
+  return joinSessionNoProg(s.active, { ...built, ...(routine ? { rid: routine.id } : {}), addedInSession: true })
 }
 
 const HANDLERS = {
   swap(s, entry, c) {
     const idx = s.active.entries.indexOf(entry)
     const open = openWorkIdx(entry).length
-    const cfg = { ...plannedConfigOf(entry), id: c.to, sets: Math.max(1, open), ...(c.reps ? { reps: c.reps } : {}), ...(c.weight > 0 ? { weight: c.weight } : {}) }
+    const cfg = { ...(entry.target || {}), id: c.to, sets: Math.max(1, open), ...(c.reps ? { reps: c.reps } : {}), ...(c.weight > 0 ? { weight: c.weight } : {}) }
     // A slot swapped means the sets you wanted to do of one exercise go to another; the routine
     // slot it stands in for stays the same (swapActiveExercise keeps `rid` and the superset).
-    const replacement = newEntry(s, c.to, cfg, entry)
+    const replacementEntry = newEntry(s, c.to, cfg, entry)
+    const replacement = { entry: replacementEntry, exposure: s.active.exposures.pop() }
     if (!hasLogged(entry)) { swapActiveExercise(s.active, idx, replacement); return }
     // Under way: the logged rows stay where they are, the open ones go to the replacement.
     entry.sets = entry.sets.filter(row => hasCompletedWork(row))
@@ -186,6 +189,10 @@ export function applyAdapt(s, p, acceptedIds) {
   // where it was; skipped, the marker stays at that place, on whatever comes next.
   const at = was ? s.active.entries.indexOf(was) : -1
   s.active.cur = at >= 0 ? at : Math.max(0, Math.min(wasIdx, s.active.entries.length - 1))
+  if (Array.isArray(s.active.exposures)) {
+    const byId = new Map(s.active.exposures.map(x => [x.exposureId, x]))
+    s.active.exposures = s.active.entries.map(e => byId.get(e.exposureId)).filter(Boolean)
+  }
   return { applied }
 }
 

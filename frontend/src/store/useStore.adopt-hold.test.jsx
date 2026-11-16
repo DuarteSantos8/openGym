@@ -70,7 +70,7 @@ function serverWith(doc) {
   const srv = { doc: clone(doc), puts: [] }
   h.server = (path, method, init) => {
     if (path === '/api/me') return json(200, { user: USER })
-    if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true })
+    if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true, engineContract: 1 })
     if (path === '/api/pair/redeem') return json(200, { token: 'TOKEN', user: USER })
     if (path === '/api/data/rev') return json(200, { rev: srv.doc._rev })
     if (path === '/api/data' && method === 'GET') return json(200, { state: clone(srv.doc), rev: srv.doc._rev })
@@ -89,7 +89,7 @@ function serverWith(doc) {
 
 // The account: twelve workouts at rev 5. The phone: local mode, one workout of its own, newer.
 const TWELVE = Array.from({ length: 12 }, (_, i) => workout('s' + i, `2026-09-${String(i + 1).padStart(2, '0')}`))
-const SERVER = { _ts: 1000, _rev: 5, unit: 'kg', workouts: TWELVE, routines: [], bodyweight: [] }
+const SERVER = { engineSchemaVersion: 2, _ts: 1000, _rev: 5, unit: 'kg', workouts: TWELVE, routines: [], bodyweight: [] }   // a v2 server; a v1 answer opens the migration screen instead
 // At collection, not in a hook: the cold transform of the store's imports (the 1 MB exercise
 // table among them) takes seconds, and under a parallel run it went past the hook's timeout.
 const { DEF } = await import('./useStore.js')

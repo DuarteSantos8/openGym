@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 // An exercise in a weight unit of its own (#657) on the Apple Watch and the Lock Screen: sent in
 // that unit with the unit named, and what the watch logs is stored in the profile's.
+import { migratedFixture } from './test-fixtures.js'
+import { rowsOfPerformance } from './session-ui-adapter.js'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { buildSnapshot, patchSetIn, _resetWatchSync } from './watch-sync.js'
 import { buildLiveActivity } from './live-activity.js'
@@ -9,7 +11,8 @@ import { withExUnit } from './ex-unit.js'
 const BENCH = '0025'   // barbell bench press
 const SQUAT = '0043'   // barbell squat
 
-const state = () => ({
+const state = () => {
+  const raw = {
   unit: 'kg', restSec: 90, routines: [], exUnit: withExUnit({}, BENCH, 'lb', 1),
   workouts: [{ id: 'old', d: '2026-10-01', start: 1, entries: [{ id: BENCH, target: { sets: 1, reps: 5 }, sets: [{ w: 61.235, r: 5, done: true }] }] }],
   active: {
@@ -19,7 +22,9 @@ const state = () => ({
       { id: SQUAT, target: { sets: 1, reps: 5, weight: 100, mode: 'reps' }, sets: [{ w: 100, r: 5, done: false }] },
     ],
   },
-})
+  }
+  return { ...raw, workouts: migratedFixture(raw).workouts }
+}
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 
@@ -40,13 +45,13 @@ describe('the watch', () => {
 
   it('a weight the watch logged in lb is stored as the exact kg, and an unchanged one as it was', () => {
     const s = state()
-    s.workouts.push({ ...s.active, id: 'w-2', active: undefined })
+    s.workouts.push(migratedFixture({ unit: s.unit, workouts: [{ ...s.active, id: 'w-2' }] }).workouts[0])
     patchSetIn(s, { wid: 'w-2', exId: BENCH, entryIdx: 0, setIdx: 0 }, { w: 145, r: 5, done: true }, () => {})
-    expect(s.workouts[1].entries[0].sets[0].w).toBe(65.7709)
+    expect(rowsOfPerformance(s.workouts[1].exposures[0].performance.sets, 'reps')[0].w).toBe(65.7709)
     patchSetIn(s, { wid: 'w-2', exId: BENCH, entryIdx: 0, setIdx: 1 }, { w: 140, r: 4, done: true }, () => {})
-    expect(s.workouts[1].entries[0].sets[1].w).toBe(63.5029)
+    expect(rowsOfPerformance(s.workouts[1].exposures[0].performance.sets, 'reps')[1].w).toBe(63.5029)
     patchSetIn(s, { wid: 'w-2', exId: SQUAT, entryIdx: 1, setIdx: 0 }, { w: 102.5, r: 5, done: true }, () => {})
-    expect(s.workouts[1].entries[1].sets[0].w).toBe(102.5)
+    expect(rowsOfPerformance(s.workouts[1].exposures[1].performance.sets, 'reps')[0].w).toBe(102.5)
   })
 })
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { policyFor, profileRule, nextPrescription } from './progression.js'
+import { profileRule } from './prescription/vocabulary.js'
+import { migratedFixture, startMigratedFixture } from './test-fixtures.js'
 import { EXDB, isAssisted } from './exercises.js'
 
 // A plainly loaded lift, as in progression.test.js.
@@ -19,17 +20,19 @@ describe('the profile’s default progression rule', () => {
     expect(profileRule({ progDefault: 'double' })).toBe('double')
   })
 
-  it('applies to a reps exercise only when neither it nor its routine sets a rule', () => {
-    expect(policyFor(cfg, {}, 'reps', 'off')).toBe('off')
-    expect(policyFor(cfg, {}, 'reps')).toBe('linear')
-    expect(policyFor(cfg, { prog: 'linear' }, 'reps', 'off')).toBe('linear')
-    expect(policyFor({ ...cfg, prog: 'double' }, {}, 'reps', 'off')).toBe('double')
-    expect(policyFor({ id: LIFT, mode: 'time', sec: 30 }, {}, 'time', 'linear')).toBe('off')
+  it('applies only when neither an exercise nor its routine specifies a rule', () => {
+    const preset = (state, exercise, routine = {}) => migratedFixture({ ...state, routines: [{ id: 'r', ...routine, ex: [exercise] }] }).routines[0].ex[0].rule.preset
+    expect(preset(clean('off'), cfg)).toBe('autoregulated')
+    expect(preset(clean(), cfg)).toBe('linear')
+    expect(preset(clean('off'), cfg, { prog: 'linear' })).toBe('linear')
+    expect(preset(clean('off'), { ...cfg, prog: 'double' })).toBe('double')
+    expect(preset(clean(), { id: LIFT, mode: 'time', sec: 30 })).toBe('autoregulated')
   })
 
   it('decides the next session: Off keeps the weight, the default still adds a step', () => {
-    expect(nextPrescription(clean('off'), cfg, {})).toMatchObject({ kind: 'off' })
-    expect(nextPrescription(clean(), cfg, {})).toMatchObject({ kind: 'up', weight: 62.5 })
-    expect(nextPrescription(clean('off'), cfg, { prog: 'linear' })).toMatchObject({ kind: 'up', weight: 62.5 })
+    const next = (S, routine = {}) => startMigratedFixture(S, { id: 'r', ...routine, ex: [cfg] }).entries[0]
+    expect(next(clean('off')).target.weight).toBe(60)
+    expect(next(clean()).target.weight).toBe(62.5)
+    expect(next(clean('off'), { prog: 'linear' }).target.weight).toBe(62.5)
   })
 })

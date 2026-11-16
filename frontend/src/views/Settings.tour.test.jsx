@@ -14,7 +14,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
   const state = { S: null }
   state.snapshot = () => ({
-    S: state.S,
+    S: state.S, A: state.A,
     user: null,
     update: mut => {
       const next = structuredClone(state.S)
@@ -56,6 +56,7 @@ globalThis.__APP_VERSION__ ??= 'test'
 
 let host, root
 beforeEach(() => {
+  mocks.A = null
   mocks.S = { unit: 'kg', restSec: 90, workouts: [], routines: [], exWeights: {}, active: null }
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -79,7 +80,7 @@ describe('Settings: Show the tour again', () => {
     expect(tourState()).toEqual({ kind: 'run', at: null })
   })
   it('waits for a running workout to end', () => {
-    mocks.S.active = { id: 'a', entries: [] }
+    mocks.A = { id: 'a', entries: [] }
     act(() => root.render(<Settings page="about" />))
     act(() => row().click())
     expect(tourState()).toBe(null)
@@ -106,7 +107,7 @@ describe('Settings: Tutorials', () => {
     expect(tourState()).toEqual({ kind: 'run', at: null, flow: 'backup' })
   })
   it('a tutorial waits for a running workout too', () => {
-    mocks.S.active = { id: 'a', entries: [] }
+    mocks.A = { id: 'a', entries: [] }
     act(() => root.render(<Settings page="about" />))
     act(() => row('Create your own exercise').click())
     expect(tourState()).toBe(null)

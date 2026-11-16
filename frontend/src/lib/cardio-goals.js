@@ -22,6 +22,8 @@ export { kindOfName }
 import { activitiesOf } from './activities.js'
 import { distanceKmOf, distUnitOf } from './distance.js'
 import { weekKey, weekStartOf, todayISO, isoOf } from './format.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const CARDIO_KINDS = ['any', 'run', 'ride', 'swim', 'walk', 'hike', 'row', 'elliptical', 'stairs', 'rope', 'ski']
 export const KIND_LABEL = {
@@ -91,7 +93,7 @@ export function cardioWeekTotals(S, { weeks = 8, today = todayISO() } = {}) {
     const by = day && per.get(weekKey(day, ws))
     if (!by) continue
     const seen = new Set()
-    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+    for (const e of legacyEntriesOf(w)) {
       const { min, km } = entryCardio(e)
       if (!(min > 0) && !(km > 0)) continue
       for (const kind of ['any', kindOfEntry(e, S)]) {

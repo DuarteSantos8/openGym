@@ -1,5 +1,6 @@
 // The watch's Muscles page: the phone sends what each exercise of the running workout trains, with
 // its own weights, and the muscles' names in the app's language; the watch adds up the sets.
+import { migratedFixture } from './test-fixtures.js'
 import { describe, expect, it } from 'vitest'
 import { buildSnapshot, buildReady, fitSnapshot } from './watch-sync.js'
 import { EXIDX } from './exercises.js'
@@ -69,7 +70,7 @@ describe('muscles on the watch', () => {
 
   it('too big, the other routines\' muscles go before the running workout\'s', () => {
     const S = { unit: 'kg', restSec: 90, workouts: [], week: { 2: 'r0' }, dayPlan: {},
-      routines: Array.from({ length: 4 }, (_, k) => ({ id: 'r' + k, name: 'R' + k, ex: [{ id: ID, sets: 3, reps: 8 }] })),
+      routines: migratedFixture({ routines: Array.from({ length: 4 }, (_, k) => ({ id: 'r' + k, name: 'R' + k, ex: [{ id: ID, sets: 3, reps: 8 }] })) }).routines,
       active: state().active }
     const snap = buildSnapshot(S, { ready: buildReady(S, '2026-10-13') })
     expect(snap.ready.others.length).toBeGreaterThan(0)
@@ -84,7 +85,7 @@ describe('muscles on the watch', () => {
   })
 
   it('a session the watch can start offline carries its muscles and their names', () => {
-    const S = { unit: 'kg', workouts: [], routines: [{ id: 'r', name: 'Push', ex: [{ id: ID, sets: 3, reps: 8 }] }], week: { 2: 'r' }, dayPlan: {} }
+    const S = { unit: 'kg', workouts: [], routines: migratedFixture({ routines: [{ id: 'r', name: 'Push', ex: [{ id: ID, sets: 3, reps: 8 }] }] }).routines, week: { 2: 'r' }, dayPlan: {} }
     const today = buildReady(S, '2026-10-13').today // a Tuesday
     expect(Object.keys(today.entries[0].muscles).sort()).toEqual(Object.keys(musclesOf(EXIDX[ID])).sort())
     for (const k in today.entries[0].muscles) expect(today.muscleNames[k]).toBe(MUSCLE_NAME[k])

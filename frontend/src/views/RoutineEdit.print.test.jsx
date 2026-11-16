@@ -7,12 +7,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
-vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), printPlanSheet: vi.fn() }))
+vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), printPlanSheet: vi.fn(), occurrenceSummary: vi.fn(() => ''), quickOccurrence: vi.fn() }))
 vi.mock('../components/Media.jsx', () => ({ Thumb: () => null }))
 vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 
 import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 import { printPlanSheet } from '../sheets.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -39,14 +40,14 @@ afterEach(() => {
 // print sheet's: components/PrintPlanSheet.test.jsx, lib/plan-print.test.js printPlan.
 describe('RoutineEdit — print this routine (#282)', () => {
   it('opens the print step for this routine alone, named after it', () => {
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }])
+    mount([ruleOccurrence('0025', { options: { sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'absolute', value: 80, unit: 'kg' } } })])
     act(() => printButton().click())
     expect(printPlanSheet).toHaveBeenCalledOnce()
     expect(printPlanSheet).toHaveBeenCalledWith({ routineId: 'r1', name: 'Push day' })
   })
 
   it('names the print job even when the routine has no name, which Android refuses', () => {
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }], '')
+    mount([ruleOccurrence('0025', { options: { sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'absolute', value: 80, unit: 'kg' } } })], '')
     act(() => printButton().click())
     expect(printPlanSheet.mock.calls[0][0].name).toBe('Routine')
   })

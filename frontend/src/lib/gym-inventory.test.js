@@ -9,7 +9,14 @@ import { inventoryFor, rowLoad, baseWeightFor, loadKindFor } from './plates.js'
 import { dumbbellsOf, ownsNoDumbbells, stackOf, ownedWeightsFor } from './dumbbells.js'
 import { barTypeWeight } from './bar.js'
 import { mergeStates, stampChange } from './sync-merge.js'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { legacyEntriesOf } from './prescription/index.js'
+const completedView = (active, { end = Date.now() } = {}) => {
+  const { profile } = migrateProfileV1ToV2({ unit: 'kg', workouts: [{ ...active, end }], routines: [], customEx: [] }, LIB_BY_ID)
+  const w = profile.workouts[0]
+  return { ...w, entries: legacyEntriesOf(w, profile.prescriptions) }
+}
 import { buildSnapshot } from './watch-sync.js'
 import * as coachPayload from '../../../api/coach/core/payload.js'
 
@@ -242,9 +249,9 @@ describe('mid-workout', () => {
 
   it('a finished workout names its gym; a session without gyms does not', () => {
     const S = session(migrated())
-    expect(buildCompletedWorkout(S.active).gym).toEqual({ id: 'big', name: 'Big gym' })
+    expect(completedView(S.active).gym).toEqual({ id: 'big', name: 'Big gym' })
     const { gym: _g, ...plain } = S.active
-    expect('gym' in buildCompletedWorkout(plain)).toBe(false)
+    expect('gym' in completedView(plain)).toBe(false)
   })
 
   it('a new session is tagged with the active gym, a past one logged later is not', () => {

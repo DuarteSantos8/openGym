@@ -14,8 +14,8 @@ import { nextAutoHold } from '../lib/auto-holds.js'
 
 const REST = 60
 const hold = (sec, extra = {}) => ({ sec, done: false, ...extra })
-const sets = () => useStore.getState().S.active.entries[0].sets
-const isTimed = idx => useStore.getState().S.active.entries[idx]?.target?.mode === 'time'
+const sets = () => useStore.getState().A.entries[0].sets
+const isTimed = idx => useStore.getState().A.entries[idx]?.target?.mode === 'time'
 
 // The workout screen's tick, cut down to what the chain leans on (views/Workout.jsx holdDone and
 // toggle): the set is logged, its rest starts (a switch pause between two sides), a rest heard of
@@ -26,7 +26,7 @@ const done = (owner, elapsed, { abandoned = false, endedAt = null } = {}) => {
   if (abandoned) return
   const late = endedAt && Date.now() - endedAt > 1000 ? endedAt : null
   const before = useUI.getState().timer
-  useStore.getState().update(s => { const st = s.active.entries[owner.idx].sets[owner.i]; st.sec = elapsed; st.done = true; st.at = late || Date.now() }, true)
+  useStore.getState().updateActive(a => { const st = a.entries[owner.idx].sets[owner.i]; st.sec = elapsed; st.done = true; st.at = late || Date.now() }, true)
   const rows = sets()
   const partner = rows[owner.i].side === 'L' && rows[owner.i + 1]?.side === 'R' && !rows[owner.i + 1].done
   const rest = useStore.getState().S.restSec
@@ -36,21 +36,21 @@ const done = (owner, elapsed, { abandoned = false, endedAt = null } = {}) => {
   useUI.getState().autoAfterHold(late || Date.now())
 }
 const hooks = {
-  peek: () => { const n = nextAutoHold(useStore.getState().S, isTimed); return n && { ...n, label: 'Plank' } },
+  peek: () => { const n = nextAutoHold({ ...useStore.getState().S, active: useStore.getState().A }, isTimed); return n && { ...n, label: 'Plank' } },
   focus: vi.fn(),
   startHold: (owner, startedAt) => useUI.getState().startWork(owner.plan, 'Plank', (e, o) => done(owner, e, o), { idx: owner.idx, i: owner.i, id: owner.id }, { startedAt, auto: true }),
   forecast: () => [],
-  stop: vi.fn(() => useStore.getState().update(s => { s.active.autoHoldsOff = true }, true)),
+  stop: vi.fn(() => useStore.getState().updateActive(a => { a.autoHoldsOff = true })),
 }
 
 describe('timed holds that run themselves', () => {
   let original, unbind
   const start = (rows, extra = {}) => {
-    useStore.setState({ S: { ...original.S, sound: true, autoHolds: true, restSec: REST, active: { id: 'w', cur: 0, entries: [{ id: 'plank', target: { mode: 'time' }, sets: rows }] }, ...extra } })
+    useStore.setState({ S: { ...original.S, sound: true, autoHolds: true, restSec: REST, ...extra }, A: { id: 'w', cur: 0, entries: [{ id: 'plank', target: { mode: 'time' }, sets: rows }] } })
   }
   beforeEach(() => {
     vi.useFakeTimers()
-    original = { S: useStore.getState().S }
+    original = { S: useStore.getState().S, A: useStore.getState().A }
     useUI.setState({ timer: null, work: null, countIn: null, autoSay: '', sheets: [], toastMsg: '' })
     logs.length = 0
     beep.mockClear(); vibrate.mockClear(); hooks.stop.mockClear(); hooks.focus.mockClear()

@@ -6,7 +6,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({ api: null }))
-vi.mock('../lib/api.js', () => ({ api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {}, stopRest: () => {}, abandonWork: () => {} }) } }))
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -59,7 +59,7 @@ function leaveOldCopy(base, mut) {
 async function openApp() {
   vi.resetModules()
   const m = await import('./useStore.js')
-  m.useStore.setState({ user: { id: OWNER, name: 'Ana' }, ready: true })
+  m.useStore.setState({ user: { id: OWNER, name: 'Ana' }, ready: true, config: { engineContract: 1, coach: null } })
   return m.useStore
 }
 

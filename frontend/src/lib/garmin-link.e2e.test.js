@@ -13,6 +13,7 @@
 // openGym's process dead (Garmin Connect takes the message, nobody hears it), a transmit that
 // never calls back, an ack that never arrives, a restart of either side mid-queue.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { migratedFixture } from './test-fixtures.js'
 
 vi.mock('./health-sync.js', () => ({ loadHealth: async () => ({ on: false }), onHealthChange: () => () => {} }))
 
@@ -44,7 +45,10 @@ const ROUTINES = [
   { id: 'r-pull', name: 'Pull', ex: [{ id: '0027', sets: 2, reps: 10 }] },
 ]
 const week = Object.fromEntries([0, 1, 2, 3, 4, 5, 6].map(d => [d, 'r-push']))
-const S0 = () => ({ unit: 'kg', restSec: 90, workouts: [], routines: clone(ROUTINES), week, dayPlan: {}, queue: { ids: [] }, active: null })
+// The phone's profile as the app keeps it (v2): the routines migrated the way an upgrade does.
+// Exercises as a routine of today's app holds them (rule occurrences).
+const v2ex = (rid, ex) => migratedFixture({ routines: [{ id: rid, name: 'x', ex }] }).routines[0].ex
+const S0 = () => ({ ...migratedFixture({ unit: 'kg', restSec: 90, workouts: [], routines: clone(ROUTINES), week, dayPlan: {}, queue: { ids: [] } }), active: null })
 
 function world (S = S0()) {
   const w = {
@@ -340,7 +344,7 @@ describe('a workout from the phone, logged on the watch', () => {
 
   it('more sets waiting than fit in one message, and more than the phone names at once', async () => {
     const big = S0()
-    big.routines[0].ex = Array.from({ length: 6 }, (_, i) => ({ id: ['0025', '0001', '0003', '0027', '0030', '0031'][i], sets: 5, reps: 8 }))
+    big.routines[0].ex = v2ex('r-push', Array.from({ length: 6 }, (_, i) => ({ id: ['0025', '0001', '0003', '0027', '0030', '0031'][i], sets: 5, reps: 8 })))
     const w = world(big)
     await w.launch()
     // started on the watch from today's routine, so it has all 30 sets with the phone away
@@ -648,8 +652,8 @@ describe('limits', () => {
   it('the biggest workout still fits a Connect IQ message, and the watch can go on from it', async () => {
     const big = S0()
     const ids = ['0025', '0001', '0003', '0027', '0030', '0031', '0032', '0033', '0034', '0035', '0036', '0037']
-    big.routines = [{ id: 'r-push', name: 'A very long routine name that goes on and on and on', ex: ids.map(id => ({ id, sets: 8, reps: 12 })) },
-      ...Array.from({ length: 12 }, (_, i) => ({ id: 'r' + i, name: 'Routine number ' + i + ' with a long name', ex: [{ id: '0025', sets: 3, reps: 8 }] }))]
+    big.routines = migratedFixture({ routines: [{ id: 'r-push', name: 'A very long routine name that goes on and on and on', ex: ids.map(id => ({ id, sets: 8, reps: 12 })) },
+      ...Array.from({ length: 12 }, (_, i) => ({ id: 'r' + i, name: 'Routine number ' + i + ' with a long name', ex: [{ id: '0025', sets: 3, reps: 8 }] }))] }).routines
     const w = world(big)
     await w.launch()
     await w.run(2)
@@ -762,7 +766,7 @@ describe('one rest, the two clocks, set ids (protocol 2, docs/WATCH_SYNC.md)', (
 
   it('a long workout logged offline drains without the watch jumping back to an exercise it has done', async () => {
     const big = S0()
-    big.routines[0].ex = [{ id: '0025', sets: 5, reps: 8 }, { id: '0001', sets: 2, reps: 10 }, { id: '0003', sets: 3, reps: 12 }, { id: '0027', sets: 3, reps: 10 }]
+    big.routines[0].ex = v2ex('r-push', [{ id: '0025', sets: 5, reps: 8 }, { id: '0001', sets: 2, reps: 10 }, { id: '0003', sets: 3, reps: 12 }, { id: '0027', sets: 3, reps: 10 }])
     const w = world(big)
     await w.launch()
     await w.run(2)

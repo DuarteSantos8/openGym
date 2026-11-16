@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { isGymSplit, brandAt, withExGym, gymSplitView, matchesContext, splitLabel, placesOf, onlyPlace, cleanBrand, currentGymId } from './gym-split.js'
 import { lastEntryFor } from './history.js'
-import { nextPrescription } from './progression.js'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { buildSessionExposures } from './session-start.js'
+import { buildCompletedSession } from './finish-session.js'
+import { migratedFixture } from './test-fixtures.js'
 import { mergeStates, STAMPED_MAPS } from './sync-merge.js'
 import { STAMPED_MAPS as API_STAMPED_MAPS } from '../../../api/sync-stamps.js'
 
@@ -14,12 +15,14 @@ const workout = (id, d, gym, w, brand) => ({
   ...(gym ? { gym: { id: gym, name: gym === 'a' ? 'Gym A' : 'Gym B' } } : {}),
   entries: [{ id: EX, sets: [set(w), set(w), set(w)], target: { id: EX, sets: 3, reps: 10, weight: w }, ...(brand ? { brand } : {}) }, { id: '0025', sets: [set(60, 5)] }],
 })
-const base = over => ({
+const v1 = over => ({
   unit: 'kg', activeEquipId: 'a',
   equipProfiles: [{ id: 'a', name: 'Gym A', equipment: [] }, { id: 'b', name: 'Gym B', equipment: [] }],
   workouts: [workout('w0', '2026-10-01', null, 12), workout('w1', '2026-10-05', 'a', 15), workout('w2', '2026-10-07', 'b', 10)],
   ...over,
 })
+// The profile as v2 holds it; the settings ride along as they are.
+const base = over => { const st = v1(over); return { ...st, ...migratedFixture(st), exGym: st.exGym, activeEquipId: st.activeEquipId, equipProfiles: st.equipProfiles } }
 const split = (brands) => ({ [EX]: { split: true, ...(brands ? { brands } : {}), _ts: 1 } })
 
 describe('gym split (#988)', () => {
@@ -52,16 +55,30 @@ describe('gym split (#988)', () => {
     expect(matchesContext({ gym: 'a', brand: '' }, { gym: 'a', brand: 'Life Fitness' })).toBe(true)
     expect(matchesContext({ gym: 'a', brand: 'Matrix' }, { gym: 'a', brand: '' })).toBe(true)
     expect(matchesContext({ gym: 'b', brand: '' }, { gym: 'a', brand: '' })).toBe(false)
-    const S = base({ exGym: split({ a: 'Life Fitness' }), workouts: [...base().workouts, workout('w3', '2026-10-09', 'b', 14, 'Life Fitness')] })
+    const S = base({ exGym: split({ a: 'Life Fitness' }), workouts: [...v1().workouts, workout('w3', '2026-10-09', 'b', 14, 'Life Fitness')] })
     expect(lastEntryFor(S, EX).sets[0].w).toBe(14)
   })
 
   it('progression follows the gym too', () => {
+    // v2: Start reads the gym's own sessions, and the engine replays the track over those alone.
     const cfg = { id: EX, sets: 3, reps: 10, weight: 15, prog: 'linear', inc: 2.5 }
-    const atA = nextPrescription(base({ exGym: split() }), cfg, null)
-    const atB = nextPrescription(base({ exGym: split(), activeEquipId: 'b' }), cfg, null)
-    expect(atA.weight).toBeGreaterThan(atB.weight)
-    expect(atB.weight).toBeLessThan(15)
+    const P = migratedFixture({ ...v1(), routines: [{ id: 'r', name: 'Pull', ex: [cfg] }],
+      workouts: v1().workouts.map(w => ({ ...w, routineIds: ['r'], entries: w.entries.map(e => ({ ...e, rid: 'r' })) })) })
+    const weightAt = gym => {
+      const draft = { ...P, exGym: split(), activeEquipId: gym, prescriptions: { ...P.prescriptions } }
+      const [x] = buildSessionExposures(draft, draft.routines[0], { now: Date.parse('2026-10-10T10:00:00Z'), newId: v => v })
+      return draft.prescriptions[x.prescriptionId].rows.at(-1).load.value
+    }
+    expect(weightAt('a')).toBeGreaterThan(weightAt('b'))
+    expect(weightAt('b')).toBeLessThan(15)
+    // Finished at Gym A, the track advances from Gym A's last log, not from Gym B's newer state.
+    const draft = { ...P, exGym: split(), activeEquipId: 'a', prescriptions: { ...P.prescriptions } }
+    const [x] = buildSessionExposures(draft, draft.routines[0], { now: Date.parse('2026-10-10T10:00:00Z'), newId: v => v })
+    const p = draft.prescriptions[x.prescriptionId]
+    const rows = p.rows.map(r => ({ w: r.load.value, r: 10, done: true }))
+    const live = { id: 'n', d: '2026-10-10', start: 1, gym: { id: 'a', name: 'Gym A' }, exposures: [x], entries: [{ id: EX, exposureId: x.exposureId, sets: rows }] }
+    const { progression } = buildCompletedSession(live, draft, { end: 2, newId: v => v, unit: 'kg' })
+    expect(progression[x.trackId].values.load.value).toBeGreaterThan(15)
   })
 
   it('withExGym sets the switch and a brand per gym, stamped, without mutating', () => {
@@ -86,19 +103,22 @@ describe('gym split (#988)', () => {
 
   it('a finished workout keeps the brand an entry was done on', () => {
     const active = { id: 'x', d: '2026-11-01', start: 1, entries: [{ id: EX, sets: [set(15)] }, { id: '0025', sets: [set(60)] }], gym: { id: 'a', name: 'Gym A' } }
-    const w = buildCompletedWorkout(active, { end: 2, brandFor: id => (id === EX ? 'Matrix' : '') })
-    expect(w.entries[0].brand).toBe('Matrix')
-    expect('brand' in w.entries[1]).toBe(false)
+    // The saved workout (v2 finish-session.js): each row on an exposure of its own.
+    const finish = (A, brandFor) => buildCompletedSession({ ...A, entries: A.entries.map((e, i) => ({ ...e, exposureId: 'x' + i })), exposures: A.entries.map((e, i) => ({ exposureId: 'x' + i, exerciseId: e.id, mode: 'reps' })) },
+      { prescriptions: {} }, { end: 2, newId: v => v, unit: 'kg', brandFor }).session
+    const w = finish(active, id => (id === EX ? 'Matrix' : ''))
+    expect(w.exposures[0].brand).toBe('Matrix')
+    expect('brand' in w.exposures[1]).toBe(false)
     // One already on the entry (an edited workout) is kept.
-    const again = buildCompletedWorkout({ ...active, entries: [{ ...active.entries[0], brand: 'Old' }] }, { end: 2, brandFor: () => 'New' })
-    expect(again.entries[0].brand).toBe('Old')
+    const again = finish({ ...active, entries: [{ ...active.entries[0], brand: 'Old' }, active.entries[1]] }, () => 'New')
+    expect(again.exposures[0].brand).toBe('Old')
   })
 
   it('history lists the places and shows one at a time', () => {
-    const S = base({ workouts: [...base().workouts, workout('w3', '2026-10-09', 'b', 14, 'Matrix')] })
+    const S = base({ workouts: [...v1().workouts, workout('w3', '2026-10-09', 'b', 14, 'Matrix')] })
     expect(placesOf(S, EX).map(p => [p.key, p.label, p.n])).toEqual([['b:matrix', 'Matrix', 1], ['g:b', 'Gym B', 1], ['g:a', 'Gym A', 1]])
     const onlyA = onlyPlace(S, EX, 'g:a')
-    expect(onlyA.workouts.filter(w => w.entries.some(e => e.id === EX)).map(w => w.id)).toEqual(['w1'])
+    expect(onlyA.workouts.filter(w => w.exposures.some(x => x.exerciseId === EX)).map(w => w.id)).toEqual(['w1'])
     expect(onlyPlace(S, EX, '')).toBe(S)
   })
 

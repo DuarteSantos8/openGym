@@ -28,6 +28,7 @@
 //
 // No shaming, ever: a challenge not made just ends with its month.
 import { workoutDay, sessionVolume, completedRepsOf, doneUnits } from './history.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { isWarmupRow } from './workout-model.js'
 import { EXIDX, isCardio, canonicalExId } from './exercises.js'
 import { musclesOf } from './muscles.js'
@@ -130,7 +131,7 @@ function monthFacts(S, key, ws, months, firstSeen) {
     try { v = sessionVolume(w, S) } catch { v = 0 }
     volume += v
     prs += new Set(Array.isArray(w.prs) ? w.prs.filter(id => typeof id === 'string') : []).size
-    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+    for (const e of legacyEntriesOf(w, S.prescriptions)) {
       if (!e) continue
       const name = nameOf(e)
       if (PULLUP.test(name)) pullups += repsOf(e)
@@ -174,7 +175,7 @@ export function factsFor(S, keys) {
     if (!day) continue
     const key = day.slice(0, 7)
     if (want.has(key)) { if (!months.has(key)) months.set(key, []); months.get(key).push(w) }
-    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+    for (const e of legacyEntriesOf(w, S.prescriptions)) {
       const k = exKey(e?.id)
       if (!k || !workRows(e).some(s => doneUnits(s) > 0)) continue
       const f = firstSeen.get(k)

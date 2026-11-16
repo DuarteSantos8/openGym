@@ -2,7 +2,11 @@
 // survives a reload (it lives in S.active), and finishing while paused ends it at the pause.
 import { describe, expect, it } from 'vitest'
 import { isPaused, canPause, pauseWorkout, resumeWorkout, elapsedMs, stopAt, pauseSpans, pausedBetween } from './workout-pause.js'
-import { buildCompletedWorkout, sessionEnd } from './finish-workout.js'
+import { sessionEnd } from './session-end.js'
+import { buildCompletedSession } from './finish-session.js'
+
+// The saved workout (v2 finish-session.js), from a live one with nothing prescribed.
+const buildCompletedWorkout = (A, { end }) => buildCompletedSession({ exposures: [], ...A }, { prescriptions: {} }, { end, newId: x => x, unit: 'kg' }).session
 
 const live = () => ({ id: 'a', d: '2026-11-03', start: 1_000_000, cur: 0, entries: [] })
 

@@ -6,6 +6,8 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { migratedFixture } from './lib/test-fixtures.js'
+import { planOptions } from './lib/prescription/index.js'
 
 // #445: with Pyramid sets on, the exercise settings had no weight field at all. Each set now has
 // its own, next to its reps and rest.
@@ -14,7 +16,7 @@ const mounted = []
 
 function renderConfig(cfg, exercise = ex) {
   const onSave = vi.fn()
-  exConfigSheet(exercise, { sets: 3, reps: 10, weight: 0, mode: 'reps', pyramid: [12, 10, 8], ...cfg }, onSave)
+  exConfigSheet(exercise, migratedFixture({ unit: 'kg', routines: [{ id: 'r', ex: [{ id: exercise.id, sets: 3, reps: 10, weight: 0, mode: 'reps', pyramid: [12, 10, 8], ...cfg }] }] }).routines[0].ex[0], onSave)
   const sheet = useUI.getState().sheets.at(-1)
   const host = document.createElement('div')
   document.body.appendChild(host)
@@ -49,8 +51,8 @@ describe('exercise settings: weight per pyramid set (#445)', () => {
     act(() => { type(fields[0], '40'); leave(fields[0]) })
     act(() => { type(fields[2], '60'); leave(fields[2]) })
     act(() => save(host))
-    expect(onSave.mock.calls[0][0].pyramid).toEqual([12, 10, 8])
-    expect(onSave.mock.calls[0][0].pyramidWeight).toEqual([40, 0, 60])
+    expect(planOptions(onSave.mock.calls[0][0].rule).setReps).toEqual([12, 10, 8])
+    expect(planOptions(onSave.mock.calls[0][0].rule).setWeights).toEqual([40, 0, 60])
   })
 
   it('opens on the saved weights and writes no field when every set is left at 0', () => {
@@ -58,9 +60,9 @@ describe('exercise settings: weight per pyramid set (#445)', () => {
     expect(weightFields(host).map(f => f.value)).toEqual(['40', '50', '60'])
     const blank = renderConfig()
     act(() => save(blank.host))
-    expect(blank.onSave.mock.calls[0][0]).not.toHaveProperty('pyramidWeight')
+    expect(planOptions(blank.onSave.mock.calls[0][0].rule).setWeights?.some(v => v > 0) || false).toBe(false)
     act(() => save(host))
-    expect(onSave.mock.calls[0][0].pyramidWeight).toEqual([40, 50, 60])
+    expect(planOptions(onSave.mock.calls[0][0].rule).setWeights).toEqual([40, 50, 60])
   })
 
   it('keeps bodyweight work on its one Added load', () => {

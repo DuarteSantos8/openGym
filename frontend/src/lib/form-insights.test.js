@@ -2,6 +2,7 @@
 // a word on how sure, and lighter days left out.
 import { describe, it, expect } from 'vitest'
 import { workoutPerformance, formInsights, insightProgress, MIN_GROUP, MIN_TOTAL } from './form-insights.js'
+import { migratedFixture } from './test-fixtures.js'
 
 const BENCH = '0025'
 const day = i => { const d = new Date(2026, 8, 1 + i * 2, 12); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
@@ -17,7 +18,7 @@ function profile(n = 20, { lighter = false } = {}) {
     workouts.push(workout(i, good ? 100 : 90))
     dayForm[day(i)] = { energy: good ? 5 : 2, _ts: 1, ...(lighter && !good ? { lighter: 'load' } : {}) }
   }
-  return { unit: 'kg', workouts, dayForm }
+  return migratedFixture({ unit: 'kg', workouts, dayForm })
 }
 
 describe('how a workout went', () => {
@@ -58,7 +59,7 @@ describe('the insights', () => {
   it('calls a gap within the noise what it is', () => {
     const S = profile()
     // The same lifts whatever the energy: every comparison is flat.
-    S.workouts.forEach(w => { w.entries[0].sets.forEach(s => { s.w = 95; if (s.rir != null) s.rir = 1 }) })
+    S.workouts.forEach(w => { w.exposures[0].performance.sets.forEach(s => { s.resistance.value = 95; if (s.rir != null) s.rir = 1 }) })
     const ins = formInsights(S)
     expect(ins.length).toBeGreaterThan(0)
     expect(ins.filter(i => !i.flat).map(i => [i.factor, i.metric, i.diff])).toEqual([])

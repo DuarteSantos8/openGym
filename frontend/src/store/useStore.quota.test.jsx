@@ -8,7 +8,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({ api: null }))
-vi.mock('../lib/api.js', () => ({ api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: (...a) => h.api(...a), setRemoteAuth: () => {} }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {} }) } }))
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -35,7 +35,7 @@ function server(doc) {
 async function openApp() {
   vi.resetModules()
   const m = await import('./useStore.js')
-  m.useStore.setState({ user: { id: 'u1' }, ready: true })
+  m.useStore.setState({ user: { id: 'u1' }, ready: true, config: { engineContract: 1, coach: null } })
   return m
 }
 

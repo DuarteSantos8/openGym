@@ -5,6 +5,7 @@
 // one tap (#649). Nothing else reads it, and a routine entry without it is exactly what it was.
 
 import { replaceSlotExercise } from './routines.js'
+import { uid } from './format.js'
 
 export const MAX_BACKUPS = 5
 
@@ -29,14 +30,15 @@ export function cleanBackups(list, selfId, known = () => true) {
 // takes the slot's plan, as it always did (backupSlotConfig).
 // What a backup's plan may not hold: who it is, its own backups, and the superset it sits in
 // (that belongs to the slot).
-const NOT_IN_BACKUP_CFG = ['id', 'subs', 'subCfg', 'sg', 'sgName', 'sgRest', 'sgCircuit']
+const NOT_IN_BACKUP_CFG = ['id', 'exerciseId', 'occurrenceId', 'subs', 'subCfg', 'sg', 'sgName', 'sgRest', 'sgCircuit']
 
 /** One backup's plan as it may be stored, or null when there is nothing usable. */
 export function cleanBackupConfig(cfg) {
   if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return null
   const out = { ...cfg }
   for (const k of NOT_IN_BACKUP_CFG) delete out[k]
-  return Object.keys(out).length && Number(out.sets) > 0 ? out : null
+  // A v2 slot's plan is its rule (an occurrence without who it is), a v1 one its sets.
+  return Object.keys(out).length && (Number(out.sets) > 0 || (out.rule && typeof out.rule === 'object')) ? out : null
 }
 
 /** The plans of the backups still in `subs`, cleaned; an empty map is no map. */
@@ -79,8 +81,9 @@ export function backupSlotConfig(slot, backupId, S, rid, known) {
   const own = ownBackupConfig(old, backupId)
   // A backup with its own plan (#978) opens at that plan, in the slot's superset; one without
   // takes the slot's, carried as Replace carries it.
+  const occurrenceId = uid()
   const out = own
-    ? { ...own, id: backupId, ...(old.sg ? { sg: old.sg, ...(old.sgName ? { sgName: old.sgName } : {}), ...(old.sgRest ? { sgRest: old.sgRest } : {}), ...(old.sgCircuit ? { sgCircuit: old.sgCircuit } : {}) } : {}) }
+    ? { ...structuredClone(own), occurrenceId, exerciseId: backupId, ...(own.rule ? { rule: { ...structuredClone(own.rule), id: occurrenceId, exerciseId: backupId } } : {}), ...(old.sg ? { sg: old.sg, ...(old.sgName ? { sgName: old.sgName } : {}), ...(old.sgRest ? { sgRest: old.sgRest } : {}), ...(old.sgCircuit ? { sgCircuit: old.sgCircuit } : {}) } : {}) }
     : replaceSlotExercise(old, backupId, S, rid)
   delete out.subs
   delete out.subCfg
@@ -88,6 +91,6 @@ export function backupSlotConfig(slot, backupId, S, rid, known) {
   // and the other backups keep theirs.
   const configs = { ...(old.subCfg || {}) }
   delete configs[backupId]
-  if (old.id) { const mine = slotPlanOf(old); if (mine) configs[old.id] = mine }
-  return { ...out, ...withBackups([old.id, ...(old.subs || [])], backupId, known, configs) }
+  if (old.exerciseId) { const mine = slotPlanOf(old); if (mine) configs[old.exerciseId] = mine }
+  return { ...out, ...withBackups([old.exerciseId, ...(old.subs || [])], backupId, known, configs) }
 }

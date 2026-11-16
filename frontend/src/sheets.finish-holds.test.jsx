@@ -9,6 +9,8 @@ import { useUI } from './store/useUI.js'
 import { finishWorkout, holdsLine, workoutDetailSheet } from './sheets.jsx'
 import { EXDB } from './lib/exercises-data.js'
 import { isHold } from './lib/exercises.js'
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const HOLD = EXDB.find(e => isHold(e.id) && e.bp !== 'cardio').id
@@ -26,11 +28,15 @@ function topSheet() {
 const hold = (sec, more = {}) => ({ sec, w: 0, done: true, ...more })
 const cfg = { id: HOLD, sets: 3, sec: 45, weight: 0, mode: 'time', bodyweight: true }
 
+// DEF is a v2 profile already: the fixture is written as v1 and converted.
+const v1 = st => { const { engineSchemaVersion: _s, engineContractRevision: _c, ...rest } = st; return rest }
 function install(entries, { routines = [], workouts = [] } = {}) {
   const st = clone(DEF)
   Object.assign(st, { unit: 'kg', routines, workouts })
   st.active = { id: 'fin', d: '2026-11-10', start: Date.now() - 20 * 60000, routineId: routines[0]?.id || null, name: 'Core', bw: null, cur: 0, entries }
-  useStore.setState({ S: st, user: null })
+  // The profile and the running workout as this app keeps them (v2), converted the way an upgrade does.
+  const { profile, activeSession } = migrateProfileV1ToV2(v1(st), LIB_BY_ID)
+  useStore.setState({ S: profile, A: activeSession, user: null })
 }
 const block = host => [...host.querySelectorAll('h4')].find(h => h.textContent === 'Last time and next time')?.parentElement
 
@@ -94,8 +100,9 @@ describe('timed holds in the finish summary', () => {
       entries: [{ id: HOLD, target: { ...cfg, side: true, sets: 1 }, sets: [hold(30, { side: 'L' }), hold(25, { side: 'R' })] }] }
     const st = clone(DEF)
     Object.assign(st, { unit: 'kg', routines: [], workouts: [w], active: null })
-    useStore.setState({ S: st, user: null })
-    act(() => { workoutDetailSheet(w) })
+    const { profile } = migrateProfileV1ToV2(v1(st), LIB_BY_ID)
+    useStore.setState({ S: profile, A: null, user: null })
+    act(() => { workoutDetailSheet(profile.workouts[0]) })
     const sets = [...topSheet().querySelectorAll('.wd-set')].map(n => n.textContent)
     expect(sets).toEqual(['L 0:30', 'R 0:25'])
   })

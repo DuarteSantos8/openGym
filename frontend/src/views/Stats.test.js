@@ -1,12 +1,24 @@
 import { describe, expect, it } from 'vitest'
+import { loggedExposure } from '../lib/test-fixtures.js'
 import { readFileSync } from 'node:fs'
-import { bestWeightForEntry, metricModeForEntry, metricRowsForEntry } from '../lib/history.js'
+import { bestWeightForEntry, metricEntriesForExercise, metricModeForEntry, metricRowsForEntry } from '../lib/history.js'
 
 const source = readFileSync(new URL('./Stats.jsx', import.meta.url), 'utf8')
 const uiSource = readFileSync(new URL('../components/ui.jsx', import.meta.url), 'utf8')
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
 
 describe('Stats mixed-entry metric contract', () => {
+  it('keeps repeated occurrences when reading canonical exposure history', () => {
+    const workout = { exposures: [
+      loggedExposure('0025', [{ w: 60, r: 5 }], { exposureId: 'heavy' }),
+      loggedExposure('0027', [{ w: 40, r: 8 }]),
+      loggedExposure('0025', [{ w: 50, r: 8 }], { exposureId: 'light' }),
+    ] }
+    const saved = structuredClone(workout)
+    const metrics = metricEntriesForExercise(workout, '0025')
+    expect(metrics.map(({ entry }) => bestWeightForEntry(entry))).toEqual([60, 50])
+    expect(workout).toEqual(saved)
+  })
   it('selects authoritative reps rows before timed rows without stale topW', () => {
     const entry = { target: { mode: 'time', sec: 60 }, topW: 200, sets: [
       { phase: 'work', mode: 'reps', w: 100, r: 5, done: true },
@@ -25,13 +37,17 @@ describe('Stats mixed-entry metric contract', () => {
     expect(source).not.toContain('onExercise')
   })
 
-  it('uses the shared metric mode and occurrence helpers rather than entryMode as a chart gate', () => {
-    expect(source).toContain('metricModeForEntry')
-    expect(source).toContain('metricEntriesForExercise')
-    expect(source).toContain('completedRepsOf')
-    expect(source).toContain('bestWeightForEntry')
-    expect(source).not.toContain('const loggedMode = entryMode(en)')
-    expect(source).not.toContain('(en.topW || 0)')
+  it('charts completed reps from a mixed exposure before timed, skipped or warm-up rows', () => {
+    const workout = { exposures: [loggedExposure('0025', [
+      { w: 100, r: 5 },
+      { w: 200, sec: 60 },
+      { w: 250, r: 5, done: false },
+      { w: 300, r: 5, role: 'warmup' },
+    ], { mode: 'time' })] }
+    const [metric] = metricEntriesForExercise(workout, '0025')
+    expect(metric.mode).toBe('reps')
+    expect(metric.rows).toMatchObject([{ w: 100, r: 5 }])
+    expect(bestWeightForEntry(metric.entry)).toBe(100)
   })
 
   it('stacks the Stats exercise selector value without changing shared SelectRow defaults', () => {

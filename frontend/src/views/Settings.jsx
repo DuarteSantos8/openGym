@@ -54,6 +54,8 @@ import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
 import { NUDGE_COPY, NUDGE_TONES, toneOf } from '../lib/nudge.js'
+import { isLegacyProfile } from '../../../api/migration/profile-version.js'
+import { buildProfileBackup } from '../lib/export-profile.js'
 import { referencedFiles } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { syncMedia, fetchToStore } from '../lib/media-sync.js'
@@ -82,11 +84,11 @@ import { OidcRow } from '../components/OidcAccount.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
-import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField, openSelectSheet } from '../components/ui.jsx'
 import LiveWidgetSettings, { LiveWidgetCustomise } from '../components/LiveWidgetSettings.jsx'
 import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
-import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
+import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/prescription/vocabulary.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
 import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
@@ -187,7 +189,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const passkeys = usePasskeys(!!user && !DEMO && (page === 'account'))
   const [credsV, setCredsV] = useState(0)
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
-  const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
+  const { update, importConflict, importBackup, importLegacyBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const importRef = useRef(null)
@@ -369,7 +371,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   // Reads the store at the moment of the tap: the sheet that asks before a sign-out offers it too,
   // and the copy it exports is the one that has not reached the server.
   const doExport = async () => {
-    const json = JSON.stringify(useStore.getState().S, null, 2)
+    const json = JSON.stringify(buildProfileBackup(useStore.getState().S), null, 2)
     const name = 'opengym-backup-' + todayISO() + '.json'
     // WKWebView can't download blob URLs — the native build hands the file to the share sheet.
     if (MOBILE) {
@@ -428,7 +430,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
      nothing local: still signed in here, and the toast says so. */
   const kept = t('The changes your server has not seen are kept on this device, and added back when it connects as this account again.')
   // A workout running here is kept aside by the sign-out (useStore stashActive): the confirm says so.
-  const running = () => S.active ? ' ' + t('You have a workout running. It waits on this device until you’re back on this account.') : ''
+  const running = () => useStore.getState().A ? ' ' + t('You have a workout running. It waits on this device until you’re back on this account.') : ''
   const leave = (kind, after) => leaveServer(kind, { exportBackup: doExport, exportBackupZip: doExportZip, done: r => { nav('/home'); if (r.stashed) toast(kept); else if (after) toast(after) } })
   const disconnect = () => confirmSheet({
     title: t('Disconnect from your server?'),
@@ -677,7 +679,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="minimize" iconTint="var(--teal)" title={t('Collapse completed exercises')}
           subtitle={t('In List and Compact, a finished exercise folds into one line.')}>
           <Switch aria-label={t('Collapse completed exercises')} checked={!!S.collapseCompleted}
-            onChange={v => update(s => { s.collapseCompleted = v; if (s.active) delete s.active.collapseCompleted })} />
+            onChange={v => { update(s => { s.collapseCompleted = v }); useStore.getState().updateActive(A => { delete A.collapseCompleted }) }} />
         </Row>
         {/* Its counterpart for Cards and Focus (#523): Prev, Next and the swipe jump over an
             exercise whose every set is done. */}
@@ -766,7 +768,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const setWc = (k, v) => update(s => { s.wc = { ...workoutControls(s), [k]: v } })
       return <>
         <Section title={t('Sessions and timed sets')}>
-          {/* The rule of every reps exercise whose routine sets none (lib/progression.js
+          {/* The rule of every reps exercise whose routine sets none (lib/prescription/vocabulary.js
               profileRule). Absent reads as linear, the way the app always behaved. A routine's or
               an exercise's own rule still wins. */}
           <SelectRow icon="chartLine" iconTint="var(--blue)" title={t('Default progression')}
@@ -947,6 +949,23 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       </Section>
+      {/* The Config defaults of programmes (lib/programmes.js): whether a newer 1RM is offered or the
+          adopted one kept (S.refUpdates, absent reads as ask), and what a programme's start proposes
+          for its end (S.programmeEnd, absent reads as stop). A running programme keeps its own. */}
+      <Section title={t('Progression')} footer={t('A programme still asks at its start; a running one keeps the choices it started with.')}>
+        {/* Their answers are sentences: shown under the title, where they wrap, not cut at the row's end. */}
+        {[
+          { icon: 'chartLine', tint: 'var(--teal)', title: t('New 1RM estimates'), value: S.refUpdates === 'keep' ? 'keep' : 'ask', set: v => update(s => { s.refUpdates = v }), options: [
+            { value: 'ask', label: t('Ask me first'), subtitle: t('A newer 1RM is offered before any weight changes.') },
+            { value: 'keep', label: t('Keep the one in use'), subtitle: t('Weights keep the 1RM they use, and no newer one is offered.') },
+          ] },
+          { icon: 'calendar', tint: 'var(--orange)', title: t('When a programme’s weeks run out'), value: S.programmeEnd === 'extend' ? 'extend' : 'stop', set: v => update(s => { s.programmeEnd = v }), options: [
+            { value: 'stop', label: t('Stop') },
+            { value: 'extend', label: t('Keep going until every goal is reached') },
+          ] },
+        ].map(r => <Row key={r.title} icon={r.icon} iconTint={r.tint} title={r.title} subtitle={r.options.find(o => o.value === r.value).label} accessory="chevron"
+          onClick={() => openSelectSheet({ title: r.title, value: r.value, options: r.options, onChange: r.set })} />)}
+      </Section>
     </>,
 
     units: () => <>
@@ -1007,7 +1026,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
                 '{0} exercises in your routines change to it. You can still give any of them its own step later.', n),
               confirmText: t('Apply to all'),
               onConfirm: () => {
-                update(s => { Object.assign(s, applyStepToAll(s)) })
+                useStore.getState().updateBoth(s => { Object.assign(s, applyStepToAll(s)) })
                 toast(tn('{0} exercise now steps by {1}.', '{0} exercises now step by {1}.', n, fmtStepLabel(step, S.unit)))
               },
             })} />
@@ -1233,6 +1252,19 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     </>,
 
     data: () => <>
+      {(S.migrationAudit?.unsupported?.length > 0 || S.migrationAudit?.discarded?.length > 0) && <details className="lrow" style={{ display: 'block' }}>
+        <summary>{t('Training data upgrade review')}</summary>
+        <div className="muted small" style={{ marginTop: 12 }}>{t('These settings could not be converted. Review the affected exercises before training.')}</div>
+        <ul>
+          {(S.migrationAudit.unsupported || []).map((item, i) => <li key={i}>
+            {item.field === 'date' ? item.path : `${S.routines.find(r => r.id === item.routineId)?.name || item.routineId} · ${item.exerciseId} · ${item.field}`}: {JSON.stringify(item.value)}
+          </li>)}
+        </ul>
+        {S.migrationAudit.discarded?.length > 0 && <>
+          <div className="muted small">{t('Malformed records were preserved below and in the original backup.')}</div>
+          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{JSON.stringify(S.migrationAudit.discarded, null, 2)}</pre>
+        </>}
+      </details>}
       <Section title={t('Back up')}>
         <Row icon="share" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={hasMedia ? t('Without photos and videos') : undefined} accessory="chevron" onClick={doExport} tour="data-export" />
         {hasMedia && <Row icon="share" iconTint="var(--blue)" title={t('Export with photos & videos (.zip)')} accessory="chevron" onClick={doExportZip} />}
@@ -1308,12 +1340,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           tutorials' copies would have to stand in for the real one. */}
       <Section title={t('Tutorials')}>
         <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Show the tour again')} subtitle={t('A one-minute walk around the app')} accessory="chevron"
-          onClick={() => (useStore.getState().S.active ? toast(t('Finish your workout first, then the tour is all yours.')) : startTour())} />
+          onClick={() => (useStore.getState().A ? toast(t('Finish your workout first, then the tour is all yours.')) : startTour())} />
         {TUTORIALS.map(f => {
           const [title, sub] = TUTORIAL_COPY[f]()
           return <Row key={f} icon={TUTORIAL_ICON[f]} iconTint="var(--yellow)" title={title} subtitle={sub} accessory="chevron"
             value={tutorialDone(f) ? t('Done') : null}
-            onClick={() => (useStore.getState().S.active ? toast(t('Finish your workout first, then the tour is all yours.')) : startTour(null, f))} />
+            onClick={() => (useStore.getState().A ? toast(t('Finish your workout first, then the tour is all yours.')) : startTour(null, f))} />
         })}
       </Section>
       {/* Support: the project's own donation pages, and on the iPhone a straight line to writing a
@@ -1701,7 +1733,7 @@ function MobileReminderCard({ S, update, toast }) {
   const toggle = async () => {
     const on = !S.reminder?.on
     if (on) {
-      const ok = await syncReminder({ ...S, reminder: { ...(S.reminder || DEF.reminder), on: true } }, true)
+      const ok = await syncReminder({ ...S, reminder: { ...(S.reminder || DEF.reminder), on: true } }, true, !!useStore.getState().A)
       if (!ok) { toast(t('Could not change notification settings')); return }
     }
     setReminder({ on })
@@ -1958,14 +1990,14 @@ function EquipmentCard({ S, update }) {
   const pickGym = id => {
     const g = profiles.find(p => p.id === id)
     if (!g || id === S.activeEquipId) return
-    update(s => { switchGym(s, id) })
+    useStore.getState().updateBoth(s => { switchGym(s, id) })
     toast(t('Using {0} equipment', gymLabel(g)))
   }
   // Removing the active gym makes the next one active, with its own lists.
   const remove = p => confirmSheet({
     title: t('Delete profile?'), message: t('"{0}" and its equipment list will be removed.', p.name),
     confirmText: t('Delete'), danger: true,
-    onConfirm: () => update(s => {
+    onConfirm: () => useStore.getState().updateBoth(s => {
       const rest = (s.equipProfiles || []).filter(x => x.id !== p.id)
       if (s.activeEquipId === p.id && rest[0]) switchGym(s, rest[0].id)
       s.equipProfiles = (s.equipProfiles || []).filter(x => x.id !== p.id)

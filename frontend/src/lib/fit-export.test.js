@@ -7,6 +7,7 @@ import {
   fitCategory, cardioSport, CATEGORY, SPORT, SUB_SPORT, MSG,
 } from './fit-export.js'
 import { EXIDX } from './exercises.js'
+import { loggedExposure } from './test-fixtures.js'
 
 /* ---------------------------------------------------------------- decoder -- */
 
@@ -309,6 +310,37 @@ describe('a cardio workout as FIT', () => {
     const mixed = { ...walk, entries: [...walk.entries, { id: BIKE, target: { mode: 'cardio' }, sets: [{ min: 10, speed: 25, done: true }] }] }
     const [session] = of(decode(workoutFit(mixed)), MSG.session)
     expect([session[5], session[6]]).toEqual([SPORT.training, SUB_SPORT.cardioTraining])
+  })
+})
+
+describe('canonical workouts as FIT', () => {
+  const workout = exposures => ({ id: 'canonical', d: '2026-10-09', start: T0, end: T0 + min(30), exposures })
+
+  it('exports completed canonical strength sets with their weight and category', () => {
+    const w = workout([loggedExposure(BENCH, [{ w: 60, r: 5 }, { w: 70, r: 7, done: false }])])
+    const file = workoutFit(w)
+    const sets = of(decode(file), MSG.set).filter(s => s[5] === 1)
+    expect(sets).toHaveLength(1)
+    expect([sets[0][3], sets[0][4], sets[0][7]]).toEqual([5, 60 * 16, CATEGORY.benchPress])
+    expect(fitCrc(file)).toBe(0)
+  })
+
+  it('keeps the logged timed mode when no prescription dictionary is available', () => {
+    const w = workout([loggedExposure(PLANK, [{ sec: 60 }], { mode: 'time' })])
+    const sets = of(decode(workoutFit(w)), MSG.set).filter(s => s[5] === 1)
+    expect(sets).toHaveLength(1)
+    expect([sets[0][0], sets[0][3], sets[0][7]]).toEqual([60000, 0xFFFF, CATEGORY.plank])
+  })
+
+  it('exports canonical cardio intervals as treadmill laps with their distance', () => {
+    const exposure = loggedExposure(TREADMILL, [{ sec: 600 }], { mode: 'cardio' })
+    exposure.performance.sets[0].observations.push({ metric: 'speed', unit: 'kmh', value: 6 })
+    const d = decode(workoutFit(workout([exposure])))
+    expect(of(d, MSG.set)).toEqual([])
+    const [session] = of(d, MSG.session)
+    expect([session[5], session[6], session[9]]).toEqual([SPORT.walking, SUB_SPORT.treadmill, 100000])
+    const [lap] = of(d, MSG.lap)
+    expect([lap[7], lap[9], lap[13]]).toEqual([600000, 100000, 1667])
   })
 })
 

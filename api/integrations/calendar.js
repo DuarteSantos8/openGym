@@ -18,6 +18,7 @@
 import { effectiveRoutineId, queueLiveOn } from '../queue.js';
 import { libraryName } from '../coach/core/library.js';
 import { workoutTime } from './events.js';
+import { legacyEntriesOf } from '../engine/performance.js';
 
 export const PAST_DAYS = 7;
 export const AHEAD_DAYS = 56;
@@ -107,8 +108,10 @@ export function buildIcs(S, { uid = 'u', now = Date.now(), tz = S?.reminder?.tz,
       const at = workoutTime(w);
       if (!at || at < since || at > now + 86400000) continue;
       const start = Number(w.start) || at, end = Number(w.end) > start ? Number(w.end) : start + 3600000;
-      const names = list(w.entries).map(e => exerciseName(e.id, S)).slice(0, 40);
-      const sets = list(w.entries).reduce((a, e) => a + list(e.sets).filter(s => s.done === true || s.sides?.L?.done || s.sides?.R?.done).length, 0);
+      // A v2 workout's exposures read as entries (engine/performance.js).
+      const entries = list(legacyEntriesOf(w, S.prescriptions || {}));
+      const names = entries.map(e => exerciseName(e.id, S)).slice(0, 40);
+      const sets = entries.reduce((a, e) => a + list(e.sets).filter(s => s.done === true || s.sides?.L?.done || s.sides?.R?.done).length, 0);
       if (typeof w.d === 'string') doneDays.add(w.d.slice(0, 10));
       event([
         'UID:' + icsText(`done-${String(w.id).slice(0, 60)}-${uid}@opengym`),
@@ -127,7 +130,7 @@ export function buildIcs(S, { uid = 'u', now = Date.now(), tz = S?.reminder?.tz,
     for (const id of dayRoutines(S, iso, today)) {
       const r = routines.get(id);
       if (!r) continue;
-      const exNames = list(r.ex).map(e => exerciseName(e.id, S)).slice(0, 40);
+      const exNames = list(r.ex).map(e => exerciseName(e.exerciseId ?? e.id, S)).slice(0, 40);
       event([
         'UID:' + icsText(`plan-${iso}-${String(id).slice(0, 60)}-${uid}@opengym`),
         'DTSTAMP:' + stamp(now),

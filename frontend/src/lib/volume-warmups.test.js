@@ -10,22 +10,24 @@ import { workoutCardModel } from './workout-card.js'
 import { workoutText } from './workout-text.js'
 
 const BENCH = '0025'
-const warm = (w, r, done = true) => ({ w, r, done, phase: 'warmup', warmup: true })
-const work = (w, r, done = true) => ({ w, r, done })
+const row = (w, r, done, role, extra = {}) => ({ role, status: done ? 'completed' : 'skipped', prescribed: false, observations: [{ metric: 'repetitions', unit: 'reps', value: r }], resistance: { kind: 'external-load', value: w, unit: 'kg' }, segments: [], ...extra })
+const warm = (w, r, done = true) => row(w, r, done, 'warmup')
+const work = (w, r, done = true) => row(w, r, done, 'work')
+const exposure = (sets, id = 'x') => ({ exposureId: id, exerciseId: BENCH, mode: 'reps', trackId: 'import:' + BENCH, excludedFromProgression: true, performance: { sets } })
 // 2 done warm-ups (20×10 + 40×5 = 400), 1 skipped (60×3), 2 work sets (60×5 ×2 = 600).
 const session = (d, extra = {}) => ({
   id: d, d, name: 'Push', start: Date.parse(d + 'T10:00:00'), end: Date.parse(d + 'T11:00:00'),
-  entries: [{ id: BENCH, target: { sets: 2, reps: 5 }, sets: [warm(20, 10), warm(40, 5), warm(60, 3, false), work(60, 5), work(60, 5)] }],
+  exposures: [exposure([warm(20, 10), warm(40, 5), warm(60, 3, false), work(60, 5), work(60, 5)], 'x' + d)],
   vol: 600, prs: [], ...extra,
 })
 const profile = (on, workouts = [session('2026-10-01'), session('2026-10-08')]) =>
-  ({ unit: 'kg', volumeWarmups: on, workouts, bodyweight: [], routines: [], exWeights: {} })
+  ({ engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {}, unit: 'kg', volumeWarmups: on, workouts, bodyweight: [], routines: [], exWeights: {} })
 
 describe('workoutVolume and the warm-up switch', () => {
   it('leaves warm-ups out unless asked, and never counts one that was not done', () => {
     const w = session('2026-10-01')
-    expect(workoutVolume(w)).toBe(600)
-    expect(workoutVolume(w, { warmups: true })).toBe(1000)
+    expect(workoutVolume(null, w)).toBe(600)
+    expect(workoutVolume(null, w, { warmups: true })).toBe(1000)
   })
 
   it('reads the profile: off unless switched on', () => {
@@ -41,9 +43,9 @@ describe('workoutVolume and the warm-up switch', () => {
   })
 
   it('a per-side warm-up counts each side, as a work set does', () => {
-    const w = { entries: [{ id: BENCH, sets: [{ ...warm(0, 0), sides: { L: { w: 10, r: 5, done: true }, R: { w: 12, r: 5, done: true } } }] }] }
-    expect(workoutVolume(w, { warmups: true })).toBe(110)
-    expect(workoutVolume(w)).toBe(0)
+    const w = { exposures: [exposure([warm(10, 5, true), warm(12, 5, true)].map((r, i) => ({ ...r, side: i ? 'R' : 'L' })))] }
+    expect(workoutVolume(null, w, { warmups: true })).toBe(110)
+    expect(workoutVolume(null, w)).toBe(0)
   })
 
   it('adds up a lifetime the same way', () => {

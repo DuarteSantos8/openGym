@@ -9,7 +9,7 @@
    made yet — comes back as `problems` with candidates, for the LLM to put to the user. */
 import crypto from 'node:crypto'
 import { z } from 'zod'
-import { isoDate, entryView, withCustomsIndexed } from './tools.js'
+import { isoDate, exposureView, withCustomsIndexed } from './tools.js'
 import { localUid, invalidate } from './state.js'
 import { apiConfig, apiFetch, profilePaths } from './api-client.js'
 import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
@@ -74,36 +74,43 @@ function viewOf(w, S, resolved, speedUnit = speedUnitOf(S)) {
     volume: w.vol,
     ...(w.note ? { note: w.note } : {}),
     prs: (w.prs || []).map(id => resolved.resolved.find(r => r.id === id)?.name || id),
-    exercises: w.entries.map(e => {
-      const v = entryView(e, withCustoms, speedUnit)
-      const r = resolved.resolved.find(x => x.id === e.id)
+    exercises: w.exposures.map(x => {
+      const v = exposureView(withCustoms, x, speedUnit)
+      const r = resolved.resolved.find(y => y.id === x.exerciseId)
       return {
-        id: e.id,
+        id: x.exerciseId,
         name: v.name,
         ...(r?.input !== undefined && r.input !== v.name ? { you_said: r.input } : {}),
         ...(r?.created ? { new_custom_exercise: true } : {}),
         ...(r?.weightMeans ? { weight_means: r.weightMeans === 'each' ? 'per dumbbell' : 'both dumbbells together' } : {}),
         // The numbers spelled out next to the app's own label ("12×10 F": 12 kg, 10 reps, to
         // failure), so reading it back to the user cannot swap the weight and the reps.
-        sets: e.sets.map((row, i) => row.min != null ? {
+        sets: x.performance.sets.map((row, i) => {
+          const o = v.sets[i].observed
           // A cardio set: its minutes, the speed in the unit the call used (or the profile's), the
           // distance that follows, and the grade.
-          label: v.sets[i].label,
-          minutes: row.min,
-          speed: Math.round(toSpeed(row.speed || 0, speedUnit) * 100) / 100, speed_unit: speedUnit,
-          ...(speedUnit === 'mph' ? { distance_mi: Math.round((row.km ?? row.speed * row.min / 60) / KMH_PER_MPH * 100) / 100 } : { distance_km: Math.round((row.km ?? row.speed * row.min / 60) * 100) / 100 }),
-          ...(row.incline ? { incline: row.incline } : {}),
-          ...(row.rpe != null ? { rpe: row.rpe } : {}),
-        } : ({
-          label: v.sets[i].label,
-          weight: Number(row.w) || 0,
-          ...(row.sec != null ? { seconds: row.sec } : { reps: row.r }),
-          ...(row.phase === 'warmup' ? { warmup: true } : {}),
-          ...(row.failure ? { failure: true } : {}),
-          ...(row.rir != null ? { rir: row.rir } : {}),
-          ...(row.rpe != null ? { rpe: row.rpe } : {}),
-        })),
-        ...(e.note ? { note: e.note } : {}),
+          if (v.mode === 'cardio') {
+            const km = o.km ?? (o.speed || 0) * (o.min || 0) / 60
+            return {
+              label: v.sets[i].label,
+              minutes: o.min,
+              speed: Math.round(toSpeed(o.speed || 0, speedUnit) * 100) / 100, speed_unit: speedUnit,
+              ...(speedUnit === 'mph' ? { distance_mi: Math.round(km / KMH_PER_MPH * 100) / 100 } : { distance_km: Math.round(km * 100) / 100 }),
+              ...(o.incline ? { incline: o.incline } : {}),
+              ...(row.rpeEntered != null ? { rpe: row.rpeEntered } : {}),
+            }
+          }
+          return {
+            label: v.sets[i].label,
+            weight: o.w,
+            ...(v.mode === 'time' ? { seconds: o.sec } : { reps: o.r }),
+            ...(row.role === 'warmup' ? { warmup: true } : {}),
+            ...(row.failure ? { failure: true } : {}),
+            ...(row.rir != null && !(row.failure && row.rir === 0) ? { rir: row.rir } : {}),
+            ...(row.rpeEntered != null ? { rpe: row.rpeEntered } : {}),
+          }
+        }),
+        ...(x.performance.note ? { note: x.performance.note } : {}),
       }
     }),
   }
@@ -196,7 +203,7 @@ export const logWorkout = {
         return { logged: false, problems: built.problems, next: 'Nothing was saved. Settle these with the user (pick a candidate id, fix a set) and call again.' }
       }
       // What each dumbbell weight meant on the first read stays what it means on a retry.
-      meanings = meanings || Object.fromEntries(built.workout.entries.map(e => [e.id, e.target?.dbLoad || 'as']))
+      meanings = meanings || Object.fromEntries(built.workout.exposures.map(x => [x.exerciseId, x.dbLoad || 'as']))
       const su = params.speed_unit || speedUnitOf(S)
       if (params.dry_run) {
         // Filed into a throw-away copy, so the preview carries the PR badges the save will give
@@ -223,9 +230,9 @@ export const logWorkout = {
         saves.push(now)
         // The operator's trail (stderr, as the profile guard's): which workout went in, for what
         // day and at which revision. Never the token, and nothing the model sees.
-        const sets = added.workout.entries.reduce((n, e) => n + e.sets.length, 0)
-        console.error(`[opengym-mcp] log_workout saved ${added.workout.id} for ${added.workout.d} (${added.workout.entries.length} exercises, ${sets} sets), rev ${put.body?.rev ?? '?'}`)
-        return { logged: true, ...viewOf(added.workout, S, built, su), revision: put.body?.rev ?? null }
+          const sets = added.workout.exposures.reduce((n, x) => n + x.performance.sets.length, 0)
+          console.error(`[opengym-mcp] log_workout saved ${added.workout.id} for ${added.workout.d} (${added.workout.exposures.length} exercises, ${sets} sets), rev ${put.body?.rev ?? '?'}`)
+          return { logged: true, ...viewOf(added.workout, S, built, su), revision: put.body?.rev ?? null }
       }
       // Another device wrote in between: the server sent its current document back with the 409,
       // so the workout is built again on top of that one. A 409 without one (a proxy's page) is

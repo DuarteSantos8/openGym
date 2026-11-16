@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { buildSets, setLabel, seedBands } from './history.js'
+import { setLabel, seedBands } from './history.js'
+import { migratedFixture } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 import { setKnownBands } from './bands.js'
 
 // Reddit: "15 reps with red", and the next session starts where the bands left off.
@@ -11,7 +14,14 @@ const BANDS = [
 const BAND_EX = '0005' // band alternate biceps curl
 const LIFT = '0025'
 const cfg = (extra = {}) => ({ id: BAND_EX, sets: 2, reps: 12, weight: 0, mode: 'reps', ...extra })
-const after = sets => ({ bands: BANDS, workouts: [{ id: 'w1', d: '2026-11-01', entries: [{ id: BAND_EX, sets }] }] })
+const after = sets => ({ bands: BANDS, workouts: [{ id: 'w1', d: '2026-11-01', start: 1, end: 2, routineIds: ['r'], entries: [{ id: BAND_EX, rid: 'r', sets }] }] })
+// v2: the work rows Start opens for the slot, after the state's workouts.
+const buildSets = (state, slot) => {
+  const S = migratedFixture({ unit: 'kg', ...state, routines: [{ id: 'r', name: 'R', ex: [slot] }] })
+  const draft = { ...S, prescriptions: { ...S.prescriptions } }
+  const xs = buildSessionExposures(draft, S.routines[0], { now: Date.parse('2026-11-03T12:00:00Z'), newId: x => x })
+  return entriesForExposures(xs, draft.prescriptions)[0].sets.filter(r => r.phase !== 'warmup')
+}
 
 describe('the set line', () => {
   it('reads "15 × Red + Yellow", "20×15 + Red" with a weight too', () => {
@@ -31,7 +41,7 @@ describe('the bands a new session starts with', () => {
 
   it('steps up a band once every set reached the top of the reps, and starts the reps again', () => {
     const S = after([{ w: 0, r: 12, bands: ['y'], done: true }, { w: 0, r: 13, bands: ['y'], done: true }])
-    const rows = buildSets(S, cfg({ repsMin: 8, repsMax: 12 }))
+    const rows = buildSets(S, cfg({ prog: 'double', repsMin: 8, repsMax: 12 }))
     expect(rows.map(s => s.bands)).toEqual([['r'], ['r']])
     expect(rows.map(s => s.r)).toEqual([8, 8])
   })

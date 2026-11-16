@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { buildSessionEntries } from './session-start.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { migratedFixture } from './test-fixtures.js'
 import { setKnownBands } from './bands.js'
 
 // Night QA 146: every set at the top with Red, and the next session handed out Green AND 13 reps.
@@ -9,7 +11,13 @@ const BANDS = [
   { id: 'g', name: 'Green', color: '#27ae60', kg: 15 },
 ]
 const routine = { id: 'r1', name: 'Bands', ex: [{ id: '0005', sets: 2, reps: 12, weight: 0, mode: 'reps', bands: ['r'] }] }
-const stateAfter = reps => ({
+// The session Start opens after that workout, as the workout screen's rows.
+const start = S => {
+  const draft = { ...S, prescriptions: { ...S.prescriptions } }
+  const xs = buildSessionExposures(draft, S.routines[0], { now: Date.parse('2026-11-03T12:00:00Z'), newId: x => x })
+  return entriesForExposures(xs, draft.prescriptions).map((e, i) => ({ ...e, plan: xs[i].plan }))
+}
+const stateAfter = reps => migratedFixture({
   unit: 'kg', bands: BANDS, routines: [routine], week: {},
   workouts: [{ id: 'w1', d: '2026-11-01', start: 1, end: 2, routineId: 'r1', name: 'Bands',
     entries: [{ id: '0005', target: { reps: 12, weight: 0, mode: 'reps' }, sets: reps.map(r => ({ w: 0, r, bands: ['r'], done: true })) }] }],
@@ -18,7 +26,7 @@ const stateAfter = reps => ({
 describe('bands that go up start the reps again', () => {
   it('the heavier band at the plan reps, not one rep more as well', () => {
     setKnownBands(BANDS)
-    const [entry] = buildSessionEntries(stateAfter([12, 12]), routine)
+    const [entry] = start(stateAfter([12, 12]))
     const work = entry.sets.filter(s => s.phase !== 'warmup')
     expect(work.map(s => s.bands)).toEqual([['g'], ['g']])
     expect(work.map(s => s.r)).toEqual([12, 12])
@@ -27,7 +35,7 @@ describe('bands that go up start the reps again', () => {
   })
   it('a session that fell short keeps the band and the prescription as before', () => {
     setKnownBands(BANDS)
-    const [entry] = buildSessionEntries(stateAfter([12, 10]), routine)
-    expect(entry.sets.map(s => s.bands)).toEqual([['r'], ['r']])
+    const [entry] = start(stateAfter([12, 10]))
+    expect(entry.sets.filter(s => s.phase !== 'warmup').map(s => s.bands)).toEqual([['r'], ['r']])
   })
 })

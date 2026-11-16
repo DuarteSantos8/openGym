@@ -5,7 +5,7 @@ import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur } from '../lib/format.js'
 import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
-import { workoutVolume, setsDone } from '../lib/history.js'
+import { legacyEntriesOf } from '../lib/prescription/index.js'
 import { pathBefore } from '../lib/nav.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -33,6 +33,11 @@ const rel = ts => {
 }
 const fmtBytes = b => (b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB')
 const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min' }
+// This drill-down reads raw server JSON, not the client's migrated canonical shape — a document
+// written before an old cleanup can still answer with legacy entries/sets. Its own defensive
+// count/volume, decoupled from history.js's canonical-only readers.
+const rawSetsDone = w => legacyEntriesOf(w).reduce((n, e) => n + (e.sets || []).filter(s => s.done).length, 0)
+const rawVolume = w => legacyEntriesOf(w).reduce((v, e) => v + (e.sets || []).reduce((s2, s) => s2 + (s.done && !s.warmup ? (s.w || 0) * (s.r || 0) : 0), 0), 0)
 
 // The one time the reset code is visible. Locked, so a tap beside the sheet cannot lose it
 // before it has been copied or written down.
@@ -74,7 +79,7 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
   // sheet renders outside the route's ErrorBoundary: one throw here blanked the whole app and
   // left exactly this account un-disableable. setsDone/workoutVolume walk entries and sets, so
   // an entry that lacks either has nothing to show and is skipped rather than drawn.
-  const workouts = (d.workouts || []).filter(w => w && Array.isArray(w.entries) && w.entries.every(e => e && Array.isArray(e.sets)))
+  const workouts = (d.workouts || []).filter(w => w && (Array.isArray(w.exposures) || (Array.isArray(w.entries) && w.entries.every(e => e && Array.isArray(e.sets)))))
   // Without ADMIN_DATA_VIEW the server sends counts only (data_view false): no history to list or download.
   const view = d.data_view !== false
   const n = d.counts || { workouts: workouts.length, bodyweight: (d.bodyweight || []).length, measurements: (d.measurements || []).length, routines: (d.routines || []).length }
@@ -209,8 +214,8 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
     {!view ? null : workouts.length ? <div className="list" style={{ gap: 0 }}>
       {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
         <div><div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
-          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
-        <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
+          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {rawSetsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
+        <span className="small muted">{fmtVol(w.vol ?? rawVolume(w), d.unit)}</span>
       </div>)}
     </div> : <div className="adm-empty">No workouts logged.</div>}
   </>

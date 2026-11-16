@@ -112,17 +112,18 @@ async function routinesForCoach(st, text) {
 const _askCoach = async text => {
   if (DEMO) return (await demo()).demoAsk(S(), text)
   const st = S()
+  const today = todayForCoach(st, Date.now(), useStore.getState().A)
   const [vitals, routines] = await Promise.all([vitalsForCoach(st), routinesForCoach(st, text)])
-  return LOCAL() ? (await local()).localAsk(st, text, todayForCoach(st), vitals, routines)
-    : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(st), lang: getLang(), vitals, routines }) })
+  return LOCAL() ? (await local()).localAsk(st, text, today, vitals, routines)
+    : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today, lang: getLang(), vitals, routines }) })
 }
 export const askCoach = (...a) => asked(_askCoach)(...a).then(track)
 // "Ask the Coach" on an exercise mid-workout (the `adapt` job): `entry` is its index in the running
 // session, `reason` one of pain/busy/short/great/tired/other, `text` optional. The session goes
 // along (lib/coach-context.js) with its id, so the answer can be matched to this workout.
 const _requestAdapt = async ({ entry, reason, text } = {}) => {
-  const st = S()
-  const today = todayForCoach(st)
+  const st = { ...S(), active: useStore.getState().A }
+  const today = todayForCoach(st, Date.now(), useStore.getState().A)
   if (!today) throw Object.assign(new Error(t('There’s no workout running.')), { code: 'invalid' })
   const body = { today, entry, reason: reason || 'other', text: String(text || '').trim(), activeId: st.active?.id || null }
   return DEMO ? (await demo()).demoAdapt(st, body) : LOCAL() ? (await local()).localAdapt(st, body) : api('/api/coach/adapt', { method: 'POST', body: JSON.stringify({ ...body, lang: getLang() }) })

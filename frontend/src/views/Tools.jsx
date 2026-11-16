@@ -1,3 +1,5 @@
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from '../lib/prescription/index.js'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -46,7 +48,7 @@ export default function Tools() {
   // Lifts with an estimated 1RM, most logged first: the chips of the % table.
   const lifts = useMemo(() => {
     const count = new Map()
-    for (const w of S.workouts || []) for (const e of w.entries || []) {
+    for (const w of S.workouts || []) for (const e of legacyEntriesOf(w)) {
       if (modeOf({ ...(e.target || {}), id: e.id }) === 'reps') count.set(e.id, (count.get(e.id) || 0) + 1)
     }
     return [...count.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id)

@@ -39,6 +39,8 @@ const load = () => { try { const v = JSON.parse(store()?.getItem(KEY) || 'null')
 
 const nameOf = id => { const ex = EXIDX[id]; return ex ? exerciseNameText(ex) : String(id ?? '') }
 const S = () => useStore.getState().S
+// The running workout: the store's own `A`, not part of the profile.
+const active = () => useStore.getState().A
 const sound = () => !!S()?.sound
 const visible = () => typeof document === 'undefined' || document.visibilityState !== 'hidden'
 
@@ -66,9 +68,8 @@ function writeEvents(run, events) {
   const work = events.filter(e => e.type === 'work')
   const step = events.filter(e => e.type === 'step').at(-1)
   if (!work.length && !step) return
-  useStore.getState().update(s => {
-    const A = s.active
-    if (!A || (run.wid != null && A.id !== run.wid)) return
+  useStore.getState().updateActive(A => {
+    if (run.wid != null && A.id !== run.wid) return
     for (const e of work) {
       const st = run.stations[e.m]
       if (!st) continue
@@ -116,7 +117,7 @@ export const useCircuit = create((set, get) => ({
 
   /** Opens the player on the circuit around entry `idx`: its running clock, or a new one ready to start. */
   openAt(idx) {
-    const A = S()?.active
+    const A = active()
     const g = circuitUnitAt(A, idx)
     if (!g) return false
     const cur = get().run
@@ -128,7 +129,7 @@ export const useCircuit = create((set, get) => ({
 
   /** Get ready… The rest and hold timers stop: one clock at a time. */
   start() {
-    const A = S()?.active
+    const A = active()
     const idx = get().pending?.idx ?? get().run?.unit?.[0]
     const g = circuitUnitAt(A, idx)
     if (!g) return
@@ -224,12 +225,12 @@ export const useCircuit = create((set, get) => ({
     const run = get().run
     if (!run || !run.ended) return
     const ask = get().ask
-    const A0 = S()?.active
+    const A0 = active()
     const name = A0 ? supersetMeta(A0.entries, run.unit, { onTarget: true }).name : ''
     const result = runResult(run, { partialReps: ask ? partialReps : 0, name })
-    useStore.getState().update(s => {
-      const A = s.active
-      if (!A || (run.wid != null && A.id !== run.wid)) return
+    const routines = S()?.routines || []
+    useStore.getState().updateActive(A => {
+      if (run.wid != null && A.id !== run.wid) return
       if (ask && partialReps > 0) {
         const st = run.stations[ask.m]
         if (st) logStation(A.entries, st, run.partial.r, { reps: partialReps, w: stationNow(run, ask.m)?.w ?? st.w, sec: 0, at: run.endedAt })
@@ -239,7 +240,7 @@ export const useCircuit = create((set, get) => ({
       // but only once the workout is saved (sheets.jsx doFinishWorkout, applyProgramAdvances):
       // here the step is only noted, so a workout discarded after the run does not count it.
       const rid = run.cfg.program === 'runwalk' ? A.entries[run.unit[0]]?.rid || A.routineId || (A.routineIds || [])[0] : null
-      const r = rid != null ? (s.routines || []).find(x => x.id === rid) : null
+      const r = rid != null ? routines.find(x => x.id === rid) : null
       const advance = r ? programAdvance(run.cfg, result, rid) : null
       A.circuits = [...(Array.isArray(A.circuits) ? A.circuits : []), { ...result, at: run.endedAt, ...(advance ? { advance } : {}) }]
     })
@@ -262,7 +263,7 @@ export const useCircuit = create((set, get) => ({
 // Back after a reload: the run of this workout picks up where the clock is.
 export function restoreCircuit() {
   const run = load()
-  const A = S()?.active
+  const A = active()
   if (!run || !A || (run.wid != null && A.id !== run.wid)) { if (run) save(null); return false }
   useCircuit.setState({ run })
   // It ended while the page was gone (the reps of the last station were never asked): keep what was done.
@@ -284,7 +285,7 @@ export function wireCircuit() {
   useStore.subscribe((s, prev) => {
     const run = useCircuit.getState().run
     if (!run) return
-    const A = s.S?.active
+    const A = s.A
     if (!A || (run.wid != null && A.id !== run.wid)) useCircuit.getState().reset()
   })
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (visible()) useCircuit.getState().tick() })

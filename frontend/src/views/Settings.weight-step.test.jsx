@@ -18,6 +18,12 @@ const mocks = vi.hoisted(() => {
       mut(next)
       state.S = next
     },
+    // A change to the profile and the running workout together (none runs here).
+    updateBoth: mut => {
+      const next = structuredClone(state.S)
+      mut(next)
+      state.S = next
+    },
     replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(),
     signOut: vi.fn(), signOutAll: vi.fn(), resetDemo: vi.fn(), disconnectServer: vi.fn(),
   })

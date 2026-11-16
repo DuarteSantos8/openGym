@@ -18,7 +18,7 @@
 //
 // Times in ms. The choices are this device's (localStorage), like the gym reminder they lean on:
 // the places only exist on this phone, and a laptop has no business ending a phone's workout.
-import { sessionEnd } from './finish-workout.js'
+import { sessionEnd } from './session-end.js'
 import { hasCompletedWork } from './workout-model.js'
 
 export const FORGOTTEN_KEY = 'gym_forgotten_v1'
@@ -196,6 +196,9 @@ export function reopenRecord(st, A, w, { now = Date.now(), reason = 'idle' } = {
     active: JSON.parse(JSON.stringify(A)),
     exWeights,
     sessionTargets: st?.sessionTargets === undefined ? undefined : JSON.parse(JSON.stringify(st.sessionTargets ?? null)),
+    // v2: what the finish advanced (each track's state, the 1RMs it appended), as it was before.
+    ...(st?.progression !== undefined ? { progression: JSON.parse(JSON.stringify(st.progression ?? null)) } : {}),
+    ...(st?.oneRepMaxes !== undefined ? { oneRepMaxes: JSON.parse(JSON.stringify(st.oneRepMaxes ?? null)) } : {}),
   }
 }
 
@@ -228,6 +231,9 @@ export function applyReopen(s, rec, now = Date.now()) {
     if (cur && cur.d === w.d) { if (prev) s.exWeights[id] = prev; else delete s.exWeights[id] }
   }
   if (rec.sessionTargets !== undefined) s.sessionTargets = rec.sessionTargets
+  // The tracks go back to where they stood, so finishing again advances them once, not twice.
+  if (rec.progression !== undefined) s.progression = rec.progression
+  if (rec.oneRepMaxes !== undefined) s.oneRepMaxes = rec.oneRepMaxes
   s.active = { ...rec.active, reopenedAt: now }
   return true
 }

@@ -5,7 +5,7 @@
 // came back, both sides touching the same set. After each, the two sides are let come to rest and
 // the history has to hold every set exactly once.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeWorld, readyOf } from './watch-sim.js'
+import { makeWorld, readyOf, savedEntries } from './watch-sim.js'
 import { _resetWatchSync } from './watch-sync.js'
 
 const T0 = 1_800_000_000_000
@@ -31,7 +31,7 @@ beforeEach(async () => {
 })
 afterEach(async () => { await W.phone.kill(); vi.useRealTimers() })
 
-const saved = id => W.phone.S.workouts.find(w => w.id === id)
+const saved = id => { const w = W.phone.S.workouts.find(x => x.id === id); return w && { ...w, entries: savedEntries(w) } }
 const doneOf = w => w.entries.flatMap(e => e.sets.map((s, i) => (s.done ? `${e.id}#${i}:${s.w}x${s.r}` : null)).filter(Boolean))
 /** Nothing is left anywhere: no workout running, nothing waiting on either side. */
 const atRest = () => {

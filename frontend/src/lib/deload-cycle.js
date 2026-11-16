@@ -31,6 +31,8 @@ import { weekKey, weekStartOf, todayISO } from './format.js'
 import { estimate1RM } from './onerm.js'
 import { isWarmupRow, isSideSet } from './workout-model.js'
 import { isAssisted } from './exercises.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 export const EVERY_CHOICES = [0, 4, 5, 6, 8]
 export const EVERY_MIN = 3
@@ -202,7 +204,7 @@ export function performanceTrend (S, today = todayISO()) {
     const age = (t0 - ms(w.d)) / DAY
     if (age < 0 || age >= 28) continue
     const into = age < 14 ? recent : before
-    for (const e of w.entries || []) {
+    for (const e of legacyEntriesOf(w)) {
       if (!e?.id || e.noProg === true) continue
       const v = e1rmOf(e)
       if (v > (into.get(e.id) || 0)) into.set(e.id, v)

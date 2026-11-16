@@ -16,6 +16,7 @@ import { NEW_ACCENT, DEFAULT_ACCENT, accentKey, accentValue, accentPair, sanitiz
 import { mergeStates } from './sync-merge.js'
 import { watchAccent } from './watch-sync.js'
 import { garminLook } from './garmin-snapshot.js'
+import { migratedFixture } from './test-fixtures.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const blank = () => ({ workouts: [], routines: [], bodyweight: [], customEx: [] })
@@ -126,9 +127,10 @@ describe('a backup imported on this device', () => {
   afterEach(() => { localStorage.clear(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
   it('a backup from before 1.4.5 keeps its old green, a fresh one its brand green', () => {
     useStore.setState({ S: freshState(), user: null, ready: true })
-    useStore.getState().importBackup({ unit: 'kg', workouts: [{ id: 'w1', d: '2026-09-01', entries: [] }], routines: [] })
+    // A v1 file is converted first (useStore finishImport), then imported like a v2 one.
+    useStore.getState().importBackup(migratedFixture({ unit: 'kg', workouts: [{ id: 'w1', d: '2026-09-01', entries: [] }], routines: [] }))
     expect(useStore.getState().S.accent).toBe('lime')
-    useStore.getState().importBackup({ ...freshState(), workouts: [{ id: 'w2', d: '2026-09-02', entries: [] }] })
+    useStore.getState().importBackup({ ...freshState(), workouts: [{ id: 'w2', d: '2026-09-02', exposures: [] }] })
     expect(useStore.getState().S.accent).toBe('brand')
   })
 })

@@ -1,3 +1,7 @@
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { coachExOf } from '../../../api/coach/core/plan-view.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 // "Ask the Coach" mid-workout: the changes the Coach proposes for the unfinished part of the
 // session, applied to S.active (lib/coach-adapt.js), and what a review may now do to a plan
 // (warm-ups, programmes) applied and undone with the ordinary engine (lib/coach.js).
@@ -5,12 +9,12 @@ import { describe, it, expect } from 'vitest'
 import { applyAdapt, markAdaptStale, resolveEntry, adaptFor, adaptLogEntry } from './coach-adapt.js'
 import { applyChangeSet, markStale, revertLast, changeMeaning, changeValues, changeTitle } from './coach.js'
 import { isWarmupRow } from './workout-model.js'
-import { programmeById, programmesOf } from './programmes.js'
+import { legacyWeeksOf, programmeById, programmesOf, setLegacyWeeks } from './programmes.js'
 
 const BENCH = '0025', CURL = '0294', SQUAT = '0043', DBPRESS = '0289', ROW = '0027'
 const row = (w, r, done = false, extra = {}) => ({ w, r, done, ...extra })
 const warm = (w, r, done = false) => ({ w, r, done, phase: 'warmup', warmup: true })
-const session = () => ({
+const legacySession = () => ({
   unit: 'kg', exWeights: {}, workouts: [], week: {}, dayPlan: {},
   routines: [{ id: 'push', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }, { id: CURL, sets: 3, reps: 10, weight: 14 }, { id: SQUAT, sets: 3, reps: 5, weight: 100 }] }],
   active: {
@@ -22,6 +26,12 @@ const session = () => ({
   },
   coach: { consent: { agreedAt: 1, version: 2 }, log: [], snapshots: [] },
 })
+const session = () => {
+  const legacy = legacySession()
+  const { profile, activeSession } = migrateProfileV1ToV2(legacy, LIB_BY_ID)
+  const entries = entriesForExposures(activeSession.exposures, profile.prescriptions).map((e, i) => ({ ...e, ...legacy.active.entries[i], exposureId: e.exposureId }))
+  return { ...profile, active: { ...activeSession, entries } }
+}
 const proposal = changes => ({ id: 'p1', kind: 'adapt', activeId: 'act-1', summary: 'For today.', changes: changes.map((c, i) => ({ id: 'a' + i, why: 'because', ...c })) })
 const ids = p => p.changes.map(c => c.id)
 
@@ -61,7 +71,7 @@ describe('applying the Coach’s changes to the workout in progress', () => {
     applyAdapt(S, p, ids(p))
     expect(S.active.entries[1].sets.map(r => r.r)).toEqual([8, 8, 8])
     expect(S.active.entries[2].target.restSec).toBe(180)
-    expect(S.routines[0].ex.map(e => e.reps)).toEqual([5, 10, 5])
+    expect(S.routines[0].ex.map(e => coachExOf(e, LIB_BY_ID[e.exerciseId]).reps)).toEqual([5, 10, 5])
     expect(S.routines[0].ex[2].restSec).toBeUndefined()
   })
 
@@ -165,22 +175,30 @@ describe('a review that sets warm-ups or writes a programme', () => {
     applyChangeSet(S, p, ['c0'])
     const [prog] = programmesOf(S)
     expect(prog.name).toBe('Bench 3 weeks')
-    expect(prog.weeks).toHaveLength(3)
-    expect(prog.days).toEqual({ 1: ['push'] })
+    expect(legacyWeeksOf(prog)).toEqual([{ t: { [BENCH]: { pct: 75 } } }, { t: { [BENCH]: { pct: 80 } } }, { deload: true }])
+    expect(prog.schedule.appts).toEqual([{ rid: 'push', day: 1 }])
     expect(S.programme).toBeUndefined()
-    expect(changeMeaning(p.changes[0])).toMatch(/Week 1: 75%.*Week 3: deload/)
+    // Spec 13: the card says what the Coach fixes, apart from what the exercise's own progression keeps deciding.
+    expect(changeMeaning(p.changes[0])).toMatch(/Week 1: fixed at 75%.*Week 3: deload/)
+    const open = { type: 'programme', after: { weeks: [{ rpe: 8, t: { [BENCH]: { rpe: 8, policy: { onFailure: 'repeat', onSkipped: 'advance' } } } }] } }
+    expect(changeMeaning(open)).toBe('Saved under Plan → Programmes. It starts when you start it. Week 1: your progression picks the rest (RPE 8) · '
+      + 'Barbell Bench Press: after a missed week, repeat it; after a skipped week, move on. You choose when you start it.')
+    // A programme that runs in rounds reads its weeks as rounds.
+    const rot = { programmes: { rot: { ...prog, id: 'rot', schedule: { mode: 'rotation', sequence: ['push'] }, duration: { n: 3, unit: 'blocks' } } } }
+    expect(changeMeaning({ ...open, target: { programmeId: 'rot' } }, rot)).toContain('Round 1: your progression picks the rest (RPE 8) · Barbell Bench Press: after a missed round, repeat it; after a skipped round, move on.')
     revertLast(S)
     expect(programmesOf(S)).toEqual([])
   })
 
   it('a revised programme keeps its id and schedule; the revert brings its weeks back', () => {
     const S = S0()
-    S.programmes = { p1: { id: 'p1', name: 'Old', at: 1, weeks: [{ t: { [BENCH]: { pct: 70 } } }], days: { 1: ['push'] } } }
+    S.programmes = { p1: setLegacyWeeks({ id: 'p1', name: 'Old', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ t: { [BENCH]: { pct: 70 } } }], S, { days: { 1: ['push'] } }) }
     const p = markStale(review([{ type: 'programme', target: { programmeId: 'p1' }, before: { name: 'Old', weeks: 1 }, after: { name: 'Old', weeks: [{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }] } }]), S)
     applyChangeSet(S, p, ['c0'])
-    expect(programmeById(S, 'p1').weeks).toEqual([{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }])
+    expect(legacyWeeksOf(programmeById(S, 'p1'))).toEqual([{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }])
+    expect(programmeById(S, 'p1').schedule.appts).toEqual([{ rid: 'push', day: 1 }])
     revertLast(S)
-    expect(programmeById(S, 'p1').weeks).toEqual([{ t: { [BENCH]: { pct: 70 } } }])
+    expect(legacyWeeksOf(programmeById(S, 'p1'))).toEqual([{ t: { [BENCH]: { pct: 70 } } }])
     // Gone meanwhile: the revision is stale rather than writing a new programme under an old id.
     delete S.programmes.p1
     expect(markStale(p, S).changes[0].status).toBe('stale')

@@ -10,7 +10,14 @@ import {
 } from './set-videos.js'
 import { normalizeMediaRef, referencedHashes, keptHashes, referencedFiles, uploadableFiles, stateMediaRefs } from './media-refs.js'
 import { copyRowAt, removeRowAt } from './history.js'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { legacyEntriesOf } from './prescription/index.js'
+const completedView = (active, { end = Date.now() } = {}) => {
+  const { profile } = migrateProfileV1ToV2({ unit: 'kg', workouts: [{ ...active, end }], routines: [], customEx: [] }, LIB_BY_ID)
+  const w = profile.workouts[0]
+  return { ...w, entries: legacyEntriesOf(w, profile.prescriptions) }
+}
 import { sanitizeCustomMedia } from './backup-media.js'
 import { createMediaSync } from './media-sync.js'
 import { createMediaStore, memoryBackend, _setMediaStore } from './media-store.js'
@@ -105,7 +112,7 @@ describe('saved workouts', () => {
   it('Finish keeps the video on its set; a copied set does not bring it along', () => {
     const S = activeState()
     attachSetVideo(S, { entry: 0, set: 1 }, video(A))
-    const w = buildCompletedWorkout(S.active, { end: 99 })
+    const w = completedView(S.active, { end: 99 })
     expect(setVideoOf(w.entries[0].sets[1]).hash).toBe(A)
     const copied = copyRowAt(S.active.entries[0].sets, 1)
     expect(copied).toHaveLength(4)
@@ -142,20 +149,21 @@ describe('deleting a set or a workout lets its video go', () => {
     // The session in progress never syncs, but its files are kept while it runs.
     expect(referencedHashes(S).has(A)).toBe(false)
     expect(keptHashes(S)).toEqual(new Set([A, P]))
-    let st = { ready: true, user: null, config: null, sync: { lastSynced: 0 }, S, stashedMediaHashes: async () => new Set() }
+    let st = { ready: true, user: null, config: null, sync: { lastSynced: 0 }, S, A: S.active, stashedMediaHashes: async () => new Set() }
     const store = { getState: () => st, subscribe: () => () => {} }
     const sync = createMediaSync({ store, media, now: () => clock, locks: null, storage: null, nativeLoad: null, toast: vi.fn() })
     clock += 2 * 3600e3
     await sync.localMediaGc()
     expect(await media.has(A)).toBe(true)
     // Saved, then the set removed in the editor: nothing names the file any more.
-    const w = buildCompletedWorkout(S.active, { end: 9 })
-    st = { ...st, S: { workouts: [w], active: null } }
+    const w = completedView(S.active, { end: 9 })
+    st = { ...st, A: null, S: { workouts: [w], active: null } }
     expect(referencedHashes(st.S).has(A)).toBe(true)
     await sync.localMediaGc()
     expect(await media.has(A)).toBe(true)
     const rows = removeRowAt(w.entries[0].sets, 1)
-    st = { ...st, S: { workouts: [{ ...w, entries: [{ ...w.entries[0], sets: rows }] }], active: null } }
+    w.exposures[0].performance.sets.splice(1, 1)
+    st = { ...st, A: null, S: { workouts: [w], active: null } }
     expect(referencedHashes(st.S).has(A)).toBe(false)
     await sync.localMediaGc()
     expect(await media.has(A)).toBe(false)

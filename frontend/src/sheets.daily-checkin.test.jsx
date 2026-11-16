@@ -8,10 +8,13 @@ import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { startFlow } from './sheets.jsx'
 import { isWarmupRow } from './lib/workout-model.js'
+import { migratedFixture } from './lib/test-fixtures.js'
+import { planPhase } from './lib/prescription/index.js'
 
 const BENCH = '0025'
 const clone = v => JSON.parse(JSON.stringify(v))
-const S = () => useStore.getState().S
+// The profile with the running workout (the store's own `A`) as `active`.
+const S = () => ({ ...useStore.getState().S, active: useStore.getState().A })
 const mounted = []
 function mountTopSheet() {
   const sheet = useUI.getState().sheets.at(-1)
@@ -28,10 +31,10 @@ const pip = (host, row, n) => host.querySelectorAll('.dfc-scale')[row].querySele
 function install(extra = {}) {
   const st = clone(DEF)
   Object.assign(st, {
-    routines: [{ id: 'A', name: 'Push', emoji: 'dumbbell', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }] }],
-    week: {}, dayPlan: {}, active: null, workouts: [], weighIn: false,
+    routines: migratedFixture({ routines: [{ id: 'A', name: 'Push', emoji: 'dumbbell', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }] }] }).routines,
+    week: {}, dayPlan: {}, workouts: [], weighIn: false,
   }, extra)
-  useStore.setState({ S: st, user: null })
+  useStore.setState({ S: st, A: null, user: null })
 }
 
 beforeEach(() => {
@@ -93,7 +96,7 @@ describe('the daily check-in on Start', () => {
     expect(S().dayForm['2026-11-06']).toMatchObject({ sleep: 1, energy: 2, lighter: 'sets' })
     expect(S().active.entries[0].sets.filter(r => !isWarmupRow(r))).toHaveLength(2)
     expect(S().active.noProg).toBe(true)
-    expect(S().routines[0].ex[0].sets).toBe(3)
+    expect(planPhase(S().routines[0].ex[0].rule).parameters.sets.min).toBe(3)
     expect(useUI.getState().toastMsg).toMatch(/one set fewer/i)
   })
 

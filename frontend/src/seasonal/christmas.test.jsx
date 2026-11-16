@@ -15,11 +15,16 @@ const store = vi.hoisted(() => ({ S: null, listeners: new Set() }))
 vi.mock('../store/useStore.js', async () => {
   const React = await import('react')
   const update = fn => { const s = JSON.parse(JSON.stringify(store.S)); fn(s); store.S = s; store.listeners.forEach(l => l()) }
+  // The running workout is the store's own `A`; this stand-in keeps it in `store.S.active` for the tests.
+  const setActive = A => { store.S = { ...store.S, active: A ? JSON.parse(JSON.stringify(A)) : null }; store.listeners.forEach(l => l()) }
+  const updateActive = fn => { if (!store.S?.active) return; const A = JSON.parse(JSON.stringify(store.S.active)); fn(A); setActive(A) }
+  const state = () => { const { active = null, ...S } = store.S || {}; return { S, A: active, update: fn => update(x => { const a = x.active; delete x.active; fn(x); x.active = a }), setActive, updateActive } }
   const useStore = sel => {
     const [, bump] = React.useReducer(x => x + 1, 0)
     React.useEffect(() => { store.listeners.add(bump); return () => { store.listeners.delete(bump) } }, [])
-    return sel({ S: store.S, update })
+    return sel(state())
   }
+  useStore.getState = state
   return { useStore }
 })
 const buzz = vi.hoisted(() => ({ vibrate: null }))

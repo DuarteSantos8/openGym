@@ -17,6 +17,32 @@
  * (null: it did not exist), or for the week plan the weekday's value. */
 import crypto from 'node:crypto';
 import { stampEntry } from '../sync-stamps.js';
+import { migrateProfileV1ToV2 } from '../migration/profile-migration.js';
+import { LIB_BY_ID } from '../coach/core/library.js';
+
+// A member on the v2 engine (engineSchemaVersion 2) keeps routines as occurrences and workouts as
+// exposures: what a trainer writes in v1 terms is converted on the way in, the way a device's own
+// v1 data is (migration/profile-migration.js), and an edit lands on the exposure's rows.
+const isV2 = S => S?.engineSchemaVersion === 2;
+const migrated = (S, part) => migrateProfileV1ToV2({ unit: S.unit === 'lb' ? 'lb' : 'kg', restSec: S.restSec, customEx: Array.isArray(S.customEx) ? S.customEx : [], routines: [], workouts: [], ...part }, LIB_BY_ID).profile;
+function routineFor(S, routine, id) {
+  if (!isV2(S)) return routine;
+  const ex = Array.isArray(routine.ex) ? routine.ex : [];
+  // A v2 trainer's own routine: its occurrences, now this routine's.
+  if (ex.every(e => isMap(e.rule))) return { ...routine, ex: ex.map(e => ({ ...e, rule: { ...e.rule, routineId: id } })) };
+  const [r] = migrated(S, { routines: [{ ...routine, id }] }).routines;
+  return { ...routine, ex: r ? r.ex : [] };
+}
+const workoutFor = (S, w) => (isV2(S) ? { ...migrated(S, { workouts: [w] }).workouts[0], id: w.id, ...(w._by ? { _by: w._by } : {}) } : w);
+// One logged row of a v2 exposure, edited as the v1 set it reads as (engine/performance.js legacySet).
+function editRow(row, { w, r, done }) {
+  if (w != null) row.resistance = { ...(isMap(row.resistance) ? row.resistance : {}), kind: w > 0 ? 'external-load' : (row.resistance?.kind === 'bodyweight' ? 'bodyweight' : 'external-load'), value: w };
+  if (r != null) {
+    const obs = Array.isArray(row.observations) ? row.observations.filter(o => o?.metric !== 'repetitions') : [];
+    row.observations = [...obs, { metric: 'repetitions', value: r }];
+  }
+  if (done != null) row.status = done ? 'completed' : 'skipped';
+}
 
 export class OpError extends Error {
   constructor(status, code, message) { super(message); this.status = status; this.code = code; }
@@ -55,7 +81,7 @@ function cleanRoutine(r) {
   if (!name) throw bad('a routine needs a name');
   if (!Array.isArray(r.ex) || r.ex.length > 80) throw bad('routine.ex must be a list of at most 80');
   const ex = r.ex.map(e => {
-    if (!isMap(e) || !idOk(e.id)) throw bad('every exercise needs an id');
+    if (!isMap(e) || !idOk(e.id ?? e.exerciseId)) throw bad('every exercise needs an id');
     const x = noMedia(e);
     if (JSON.stringify(x).length > 4000) throw bad('an exercise is too big');
     return x;
@@ -200,7 +226,7 @@ export function applyOps(S, ops, { by, t, rand = crypto.randomBytes } = {}) {
         if (id != null && findIn(S, 'routines', id) < 0) throw new OpError(404, 'no-routine', 'no such routine');
         if (id == null) id = newId('tr_', rand);
         const before = snapshot(S, 'routines', id);
-        const value = { ...(before || {}), ...o.routine, id, ...(o.origin ? { origin: o.origin } : {}), ...(label ? { _by: label } : {}) };
+        const value = { ...(before || {}), ...routineFor(S, o.routine, id), id, ...(o.origin ? { origin: o.origin } : {}), ...(label ? { _by: label } : {}) };
         delete value._ts; delete value._f; delete value._u;
         rec.inverse.push({ list: 'routines', key: id, value: before });
         putEntry(S, 'routines', id, value, t);
@@ -275,17 +301,22 @@ export function applyOps(S, ops, { by, t, rand = crypto.randomBytes } = {}) {
         const before = snapshot(S, 'workouts', o.id);
         if (!before) throw new OpError(404, 'no-workout', 'no such workout');
         const w = clone(before);
-        // The same positions the projection showed: entries and sets that are objects, in order.
-        const entries = Array.isArray(w.entries) ? w.entries.filter(isMap) : [];
+        // The same positions the projection showed: entries and sets that are objects, in order
+        // (a v2 workout's exposures and their rows, one for one: trainers/projections.js v1View).
+        const v2 = Array.isArray(w.exposures);
+        const entries = v2 ? w.exposures.filter(isMap).map(x => ({ id: x.exerciseId, sets: x.performance?.sets })) : Array.isArray(w.entries) ? w.entries.filter(isMap) : [];
         for (const x of o.sets) {
           const e = entries[x.e];
           const st = e && Array.isArray(e.sets) ? e.sets.filter(isMap)[x.s] : null;
           if (!e || String(e.id) !== String(x.ex) || !st) throw new OpError(409, 'changed-since', 'that workout changed since you looked');
           const target = isMap(st.sides) ? (x.side ? st.sides[x.side] : null) : (x.side ? null : st);
           if (!isMap(target)) throw new OpError(409, 'changed-since', 'that workout changed since you looked');
-          if (x.w != null) target.w = x.w;
-          if (x.r != null) target.r = x.r;
-          if (x.done != null) target.done = x.done;
+          if (v2) editRow(target, x);
+          else {
+            if (x.w != null) target.w = x.w;
+            if (x.r != null) target.r = x.r;
+            if (x.done != null) target.done = x.done;
+          }
         }
         if (o.name) w.name = o.name;
         if (label) w._edit = label;
@@ -297,7 +328,7 @@ export function applyOps(S, ops, { by, t, rand = crypto.randomBytes } = {}) {
       }
       case 'workout.add': {
         const id = newId('tw_', rand);
-        const w = { ...o.workout, id, ...(label ? { _by: label } : {}) };
+        const w = workoutFor(S, { ...o.workout, id, ...(label ? { _by: label } : {}) });
         rec.inverse.push({ list: 'workouts', key: id, value: null });
         putEntry(S, 'workouts', id, w, t);
         rec.summary = { kind: o.op, d: w.d, name: w.name };

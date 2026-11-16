@@ -30,10 +30,11 @@ export default function LiveCard () {
   const timer = useUI(s => s.timer)
   const G = useMemo(() => glanceOf(S), [S.liveWidget, S.liveLayout])
   const live = useLiveHeart(G.card)
-  const A = S.active
+  const A = useStore(s => s.A)
   if (!G.card || !A || A.backfill || A.editingWorkoutId) return null
   let payload = null
-  try { payload = buildLiveActivity(S, timer, {}, { live, now: Date.now() }) } catch { payload = null }
+  // The running workout is the store's own A: the card reads the profile with it in place.
+  try { payload = buildLiveActivity({ ...S, active: A }, timer, {}, { live, now: Date.now() }) } catch { payload = null }
   if (!stripContent(payload)) return null
   return <section className="card gl-card" aria-label={t('Live widget')}><GlanceStrip live={payload} /></section>
 }

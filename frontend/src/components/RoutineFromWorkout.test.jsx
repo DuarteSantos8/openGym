@@ -8,6 +8,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { EXDB } from '../lib/exercises.js'
 import { routineFromWorkoutSheet } from './RoutineFromWorkout.jsx'
+import { migratedFixture } from '../lib/test-fixtures.js'
 
 const mounted = []
 function renderTop() {
@@ -24,7 +25,7 @@ const workout = (id, name, d) => ({ id, name, d, entries: [{ id: EXDB[0].id, set
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   useUI.setState({ sheets: [], toastMsg: '' })
-  useStore.setState({ S: { ...structuredClone(DEF), routines: [], workouts: [workout('a', 'Push day', '2026-10-01'), workout('b', 'Push day', '2026-10-08'), workout('c', 'Legs', '2026-10-03')] }, user: null })
+  useStore.setState({ S: { ...structuredClone(DEF), ...migratedFixture({ unit: 'kg', routines: [], workouts: [workout('a', 'Push day', '2026-10-01'), workout('b', 'Push day', '2026-10-08'), workout('c', 'Legs', '2026-10-03')] }) }, user: null })
 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(r => r.unmount()) }); document.body.innerHTML = '' })
 
@@ -40,7 +41,7 @@ describe('routine from a past workout', () => {
     const S = useStore.getState().S
     expect(S.routines).toHaveLength(1)
     expect(S.routines[0]).toMatchObject({ name: 'Push day' })
-    expect(S.routines[0].ex.map(e => e.id)).toEqual([EXDB[0].id])
+    expect(S.routines[0].ex.map(e => e.exerciseId)).toEqual([EXDB[0].id])
     expect(S.workouts).toHaveLength(3)
     expect(onSaved).toHaveBeenCalledWith(S.routines[0].id)
     expect(useUI.getState().sheets).toHaveLength(0)

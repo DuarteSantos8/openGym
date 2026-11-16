@@ -239,6 +239,21 @@ describe('the session with the workout', () => {
     stop()
   })
 
+  it('follows the device-local active session and saves its canonical workout', async () => {
+    S = store({ ready: true, A: null, S: { workouts: [] } })
+    await begin()
+    S.setState({ A: { id: 'w1', start: now, entries: [{ id: 'bench', sets: [{ w: 60, r: 8 }] }] } })
+    await flush()
+    expect(p.start).toHaveBeenCalledWith({ wid: 'w1', type: 'strength_training' })
+    vi.setSystemTime(now + 60e3)
+    const row = { status: 'completed', role: 'work', at: now + 60e3, resistance: { kind: 'external-load', value: 60, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 8, unit: 'reps' }] }
+    S.setState({ A: null, S: { workouts: [{ id: 'w1', name: 'Push', start: now, end: now + 100e3, exposures: [{ exerciseId: 'bench', mode: 'reps', performance: { sets: [row] } }] }] } })
+    await flush()
+    expect(apply.mock.calls[0][0][0]).toMatchObject({ where: { wid: 'w1', exId: 'bench', entryIdx: 0, setIdx: 0 }, fields: { hr: { avg: 130, max: 130 } } })
+    expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: true, at: now + 100e3, title: 'Push' })
+    stop()
+  })
+
   it('discarded: dropped, nothing saved', async () => {
     await begin()
     S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })

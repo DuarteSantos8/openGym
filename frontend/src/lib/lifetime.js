@@ -9,6 +9,8 @@ import { isWarmupRow } from './workout-model.js'
 import { cardioWeekTotals } from './cardio-goals.js'
 import { todayISO, fmtNum } from './format.js'
 import { t } from './i18n-core.js'
+// A saved v2 workout is exposures: read as the v1 entries these readers know.
+import { legacyEntriesOf } from './prescription/index.js'
 
 // A session longer than this is a timer left running, not training: it would add a day to the hours.
 const LONGEST_MS = 6 * 3600e3
@@ -18,7 +20,7 @@ export function lifetimeTotals(S) {
   const list = Array.isArray(S?.workouts) ? S.workouts : []
   let sets = 0, ms = 0
   for (const w of list) {
-    for (const e of w?.entries || []) for (const s of e?.sets || []) if (s && !isWarmupRow(s)) sets += doneUnits(s)
+    for (const e of legacyEntriesOf(w)) for (const s of e?.sets || []) if (s && !isWarmupRow(s)) sets += doneUnits(s)
     const d = workoutDuration(w)
     if (d >= 60000 && d <= LONGEST_MS) ms += d
   }
