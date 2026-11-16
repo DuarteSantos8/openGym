@@ -3095,6 +3095,10 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 26px -8px rgba(0,0,0,.45);
 }
 .livebar:focus-visible{outline:2px solid var(--on-acc);outline-offset:2px}
+/* A press answers at once, before the page rises (the haptic is iPhone-only). Reduce Motion: no shrink. */
+.livebar{transition:transform var(--fast) cubic-bezier(.23,1,.32,1)}
+.livebar:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){.livebar:active{transform:none}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
 .livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:rgba(128,128,128,.55);background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
 .livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform 1s linear}
