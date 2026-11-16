@@ -30,12 +30,12 @@ describe('the watch', () => {
     expect(snap.active.unit).toBe('kg')
     expect(bench.unit).toBe('lb')
     expect(bench.sets.map(s => s.w)).toEqual([140, 140])
-    expect(bench.step).toBe(5)
+    expect(bench.step).toBe(2.5)  // the lb default (5), at most 2.5 lb on the watch
     expect(bench.last).toBe('135×5')
     expect(bench.best.w).toBe(135)
     expect('unit' in squat).toBe(false)
     expect(squat.sets[0].w).toBe(100)
-    expect(squat.step).toBe(5)   // a heavy lift's kg default
+    expect(squat.step).toBe(1.25) // a heavy lift's kg default (5), at most 1.25 kg on the watch
   })
 
   it('a weight the watch logged in lb is stored as the exact kg, and an unchanged one as it was', () => {
