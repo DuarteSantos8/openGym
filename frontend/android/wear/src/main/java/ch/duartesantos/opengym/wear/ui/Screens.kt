@@ -9,6 +9,7 @@ import ch.duartesantos.opengym.wear.RestMath
 import ch.duartesantos.opengym.wear.Stills
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ColorFilter
@@ -837,7 +838,6 @@ fun RestView(rest: Rest) {
         // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            RestCaption(rest.shift)
             // The time left, the screen's one number (#1100): in the accent, as big as the room the rest leaves.
             // Never shorter than ‹, and on a round screen ‹ steps in from the curve (seen on a 40 mm watch: it
             // was cut at its corner under the clock once Up next took the chips' place).
@@ -858,11 +858,15 @@ fun RestView(rest: Rest) {
                 }
                 Spacer(Modifier.width(32.dp + inset))
             }
-            if (s.settings.show?.rest != "plain") {
-                val p = rest.pausedLeft
-                // Paused: the bar stands where the phone's rest stands.
-                if (p != null) TimeBar(now - (rest.total * 1000L - p).coerceAtLeast(0), now + p, a.accent, Modifier.padding(horizontal = 8.dp))
-                else TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
+            // The bar, with the ±15 chip riding its end (the chip takes no room: owner, the screen is cramped).
+            Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp), contentAlignment = Alignment.CenterEnd) {
+                if (s.settings.show?.rest != "plain") {
+                    val p = rest.pausedLeft
+                    // Paused: the bar stands where the phone's rest stands.
+                    if (p != null) TimeBar(now - (rest.total * 1000L - p).coerceAtLeast(0), now + p, a.accent)
+                    else TimeBar(rest.startedAt, rest.endsAt, a.accent)
+                }
+                RestShiftChip(rest.shift)
             }
             // −15, Skip, +15 mid-screen, where a round screen is widest. Always On hides them but keeps their place.
             Row(Modifier.fillMaxWidth().alpha(if (dim) 0f else 1f), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -880,9 +884,9 @@ fun RestView(rest: Rest) {
     }
 }
 
-/** "Rest" and, after it, a chip with the net change made with −15 and +15 in this rest. The row is always 18 dp (6 more on a round screen, off the rim), so the chip coming and going moves nothing. */
+/** The net change made with −15 and +15 in this rest, a slim chip on the bar's end. It reports no height, so the bar's row stays the bar's. */
 @Composable
-private fun RestCaption(shift: Int) {
+private fun RestShiftChip(shift: Int) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val reduce = LocalReduceMotion.current
@@ -891,23 +895,19 @@ private fun RestCaption(shift: Int) {
     if (shown != null) last = shown // the chip fades out with its last words, not an empty capsule
     val add = shift > 0
     val c = if (add) a.accent else Og.Text
-    Box(Modifier.fillMaxWidth().height(if (LocalRound.current) 24.dp else 18.dp), contentAlignment = Alignment.BottomCenter) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) { // the word stays centred, the chip hangs off its right
-            Spacer(Modifier.weight(1f))
-            Text(stringResource(R.string.rest), color = Og.Label2, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.clearAndSetSemantics {})
-            Box(Modifier.weight(1f).padding(start = 6.dp), contentAlignment = Alignment.CenterStart) {
-            AnimatedVisibility(shown != null,
-                enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.9f)),
-                exit = if (dim) ExitTransition.None else fadeOut(tween(if (reduce) 150 else 200))) {
-                Box(Modifier.height(18.dp).clip(CircleShape)
-                    .background(if (dim) Color.Transparent else if (add) c.copy(alpha = 0.24f) else Color.White.copy(alpha = 0.10f))
-                    .border(1.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.34f), CircleShape)
-                    .padding(horizontal = 7.dp).semantics { contentDescription = last }, contentAlignment = Alignment.Center) {
-                    AnimatedContent(last, transitionSpec = { fadeIn(tween(if (dim) 0 else 250)) togetherWith fadeOut(tween(if (dim) 0 else 250)) }, label = "shift") { t ->
-                        Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number)
-                    }
+    // Measured whole, laid out 0 tall and centred on the row: an overlay, not a taller row.
+    Box(Modifier.layout { m, cs -> val p = m.measure(cs.copy(minHeight = 0, maxHeight = Constraints.Infinity)); layout(p.width, 0) { p.place(0, -p.height / 2) } }) {
+        AnimatedVisibility(shown != null,
+            enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.9f)),
+            exit = if (dim) ExitTransition.None else fadeOut(tween(if (reduce) 150 else 200))) {
+            Box(Modifier.height(15.dp).clip(CircleShape)
+                .background(Color.Black) // hides the bar under it
+                .background(if (dim) Color.Transparent else if (add) c.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.14f))
+                .border(1.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.4f), CircleShape)
+                .padding(horizontal = 6.dp).semantics { contentDescription = last }, contentAlignment = Alignment.Center) {
+                AnimatedContent(last, transitionSpec = { fadeIn(tween(if (dim) 0 else 250)) togetherWith fadeOut(tween(if (dim) 0 else 250)) }, label = "shift") { t ->
+                    Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number)
                 }
-            }
             }
         }
     }

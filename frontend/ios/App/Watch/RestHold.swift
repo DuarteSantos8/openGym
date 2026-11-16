@@ -50,7 +50,6 @@ struct RestView: View {
                 }
                 .offset(y: roomy ? 9 : 4) // the clock sits lower the bigger the case
                 .frame(height: 36)
-                RestCaption(shift: store.restShift)
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
                     countdown
@@ -63,9 +62,15 @@ struct RestView: View {
                 if store.show.restRing && store.restPausedAt == nil {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
                         .frame(height: 4)
+                        .opacity(dimmed ? 0.75 : 1)
+                        .overlay(alignment: .trailing) { RestShiftChip(shift: store.restShift) }
                         .padding(.horizontal, 4)
                         .padding(.bottom, 2)
-                        .opacity(dimmed ? 0.75 : 1)
+                } else if !store.show.restRing {
+                    // No bar (switched off): the chip keeps the same spot, still taking no room.
+                    Color.clear.frame(height: 0)
+                        .overlay(alignment: .trailing) { RestShiftChip(shift: store.restShift) }
+                        .padding(.horizontal, 4)
                 }
                 HStack(spacing: 6) {
                     Button { store.minusRest() } label: {
@@ -173,9 +178,9 @@ struct RestView: View {
     }
 }
 
-/// "Rest" and, after it, a chip with the net change made with −15 and +15 in this rest ("+30 s", "−15 s",
-/// "+1:15"). The row is always 18 pt, so the chip coming and going moves nothing.
-struct RestCaption: View {
+/// The net change made with −15 and +15 in this rest ("+30 s", "−15 s", "+1:15"), a slim chip riding the
+/// time bar's end: an overlay, so it takes no room from the countdown (owner: the screen is cramped).
+struct RestShiftChip: View {
     let shift: TimeInterval
     @Environment(\.accent) private var accent
     @Environment(\.isLuminanceReduced) private var luminanceReduced
@@ -183,31 +188,26 @@ struct RestCaption: View {
     private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
 
     var body: some View {
-        HStack(spacing: 6) { // the word stays centred, the chip hangs off its right
-            Color.clear.frame(maxWidth: .infinity, maxHeight: 1)
-            Text("Rest").font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundStyle(Theme.label2)
-                .accessibilityHidden(true) // the timer already says "Rest"
-            ZStack(alignment: .leading) {
-                if let label = RestMath.shift(shift) {
-                    let added = shift > 0
-                    let fill: Color = dimmed ? .clear : added ? accent.opacity(0.24) : Color.white.opacity(0.10)
-                    let stroke: Color = dimmed ? Color.white.opacity(0.55) : added ? accent.opacity(0.8) : Color.white.opacity(0.34)
-                    Text(verbatim: label)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Color.white.opacity(dimmed ? 0.88 : 1))
-                        .contentTransition(.numericText())
-                        .padding(.horizontal, 7)
-                        .frame(height: 18)
-                        .background(Capsule().fill(fill))
-                        .overlay(Capsule().strokeBorder(stroke, lineWidth: 1))
-                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.9)))
-                        .accessibilityLabel(Text(verbatim: label))
-                }
+        ZStack {
+            if let label = RestMath.shift(shift) {
+                let added = shift > 0
+                let tint: Color = dimmed ? .clear : added ? accent.opacity(0.28) : Color.white.opacity(0.14)
+                let stroke: Color = dimmed ? Color.white.opacity(0.55) : added ? accent.opacity(0.85) : Color.white.opacity(0.4)
+                Text(verbatim: label)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(Color.white.opacity(dimmed ? 0.88 : 1))
+                    .contentTransition(.numericText())
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.horizontal, 6)
+                    .frame(height: 15)
+                    .background(Capsule().fill(tint))
+                    .background(Capsule().fill(Color.black)) // under the tint: hides the bar beneath
+                    .overlay(Capsule().strokeBorder(stroke, lineWidth: 1))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.9)))
+                    .accessibilityLabel(Text(verbatim: label))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .lineLimit(1)
-        .frame(height: 18)
         .animation(dimmed ? nil : .easeOut(duration: reduceMotion ? 0.15 : 0.25), value: shift)
     }
 }
