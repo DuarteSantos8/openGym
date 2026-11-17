@@ -21,6 +21,13 @@ object Plan {
         val real = entries.filter { it.sets.isNotEmpty() }
         return real.size to real.sumOf { e -> e.sets.count { !it.warmup } }
     }
+
+    /** The folder name to draw above the routine at `index`: where it differs from the one before (the phone sends them grouped), else null. */
+    fun folderHeader(index: Int, others: List<ReadySession>): String? {
+        val f = others.getOrNull(index)?.folder?.trim()
+        if (f.isNullOrEmpty()) return null
+        return if (index > 0 && others[index - 1].folder == others[index].folder) null else f
+    }
 }
 
 /** "#30d158" as an ARGB int, or null for anything that is not a #rrggbb colour. */

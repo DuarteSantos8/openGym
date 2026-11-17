@@ -51,6 +51,11 @@ class CodecTest {
         assertEquals(1, snap.streak!!.weeks)
     }
 
+    @Test fun readsARoutinesFolderAndAnOlderPhoneGivesNone() {
+        val snap = Snapshot.parse("""{"v":2,"ready":{"today":null,"others":[{"routineIds":["a"],"name":"A","folder":"Legs"},{"routineIds":["b"],"name":"B"}]}}""")!!
+        assertEquals(listOf("Legs", null), snap.ready!!.others.map { it.folder })
+    }
+
     @Test fun ignoresWhatItDoesNotKnow() {
         val snap = Snapshot.parse("""{"v":2,"unit":"lb","future":{"x":1},"active":null,"ready":{"today":null,"others":[],"more":true}}""")
         assertEquals("lb", snap!!.unit)

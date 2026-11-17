@@ -156,6 +156,13 @@ describe('starting and finishing on the watch', () => {
     expect(snap.ready.today.name).toBe('Push')
   })
 
+  // A lifter with ten routines saw the tenth missing on the watch: a fixed cap of 8 cut it.
+  it('every routine reaches the watch, however many there are', () => {
+    const many = Array.from({ length: 12 }, (_, i) => ({ id: `r${i}`, name: `R${i}`, ex: [{ id: '0025', sets: 1, reps: 5 }] }))
+    const ready = buildReady({ unit: 'kg', workouts: [], routines: many, week: {}, dayPlan: {} }, '2026-10-13')
+    expect(ready.others.map(o => o.name)).toEqual(many.map(r => r.name))
+  })
+
   // #799: the watch's Apple Health workout used to be strength training whatever was planned.
   it('tells the watch which Apple Health type each session is', () => {
     const run = { id: 'r-run', name: 'Run', ex: [{ id: '0685', mode: 'cardio', min: 30, speed: 10 }] }
@@ -339,5 +346,32 @@ describe('the birth year for the watch zones', () => {
     // the stored prefs keep the switch, so the off reaches watchExtras
     const off = readWatchPrefs({ getItem: () => JSON.stringify({ show: { zones: false } }) }).show
     expect(watchExtras({ birthYear: y - 38 }, off)).not.toHaveProperty('birthYear')
+  })
+})
+
+describe('routines on the watch, by folder', () => {
+  const ex = [{ id: '0025', sets: 1, reps: 5 }]
+  const R = (id, folder, more = {}) => ({ id, name: id, ex, ...(folder ? { folder } : {}), ...more })
+  const ready = (routines, week = {}) => buildReady({ unit: 'kg', workouts: [], routines, week, dayPlan: {} }, '2026-10-13')
+
+  it('sends no folder first, then each folder in list order, each tagged with its folder', () => {
+    const o = ready([R('a', 'Legs'), R('b'), R('c', 'Push'), R('d', 'Legs'), R('e')]).others
+    expect(o.map(x => x.name)).toEqual(['b', 'e', 'a', 'd', 'c'])
+    expect(o.map(x => x.folder)).toEqual([undefined, undefined, 'Legs', 'Legs', 'Push'])
+  })
+
+  it('one folder spelled two ways is one folder, named as first written', () => {
+    expect(ready([R('a', 'Push'), R('b', 'push')]).others.map(x => x.folder)).toEqual(['Push', 'Push'])
+  })
+
+  it('leaves out archived routines: the Archive folder and the archived flag', () => {
+    const o = ready([R('a', 'Archive'), R('b', 'Legs', { archived: true }), R('c', 'Legs')]).others
+    expect(o.map(x => x.name)).toEqual(['c'])
+  })
+
+  it("today's routine stays Today and is not repeated under its folder", () => {
+    const r = ready([R('t', 'Legs'), R('u', 'Legs')], { 2: 't' })
+    expect(r.today.name).toBe('t')
+    expect(r.others.map(x => x.name)).toEqual(['u'])
   })
 })
