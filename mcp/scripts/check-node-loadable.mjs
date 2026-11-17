@@ -40,13 +40,37 @@ for (const m of MODULES) {
 
 // The real assertion: the server's own entry points, which pull the whole graph transitively.
 // A module added to the graph later is covered by this even if the list above never learns it.
+let tools = null
+let seed = null
 for (const entry of ['../src/state.js', '../src/tools.js', '../src/write-tools.js', '../src/routine-tools.js', '../src/server.js', '../src/remote.js', '../src/http.js']) {
   try {
-    await import(new URL(entry, import.meta.url))
+    const m = await import(new URL(entry, import.meta.url))
+    if (m.TOOLS) tools = m.TOOLS
+    if (m._seedStateForTests) seed = m._seedStateForTests
     console.log(`  ok    mcp/${entry.replace('../', '')}`)
   } catch (e) {
     failed++
     console.error(`  FAIL  mcp/${entry.replace('../', '')} — ${e.message}`)
+  }
+}
+
+// Importing is not running. A lib module can import cleanly under plain node and still reach a
+// Vite-only or browser-only path the first time a handler asks it for something (i18n's t() is
+// the shape that bit us before, and it is called, not imported). So call one handler for real.
+if (tools && seed) {
+  try {
+    seed({
+      unit: 'kg', routines: [{ id: 'r1', name: 'Check', ex: [{ id: '0025', sets: 3, mode: 'reps', reps: 8, weight: 50 }] }],
+      week: {}, dayPlan: {}, exWeights: {}, customEx: [], bodyweight: [],
+      workouts: [{ id: 'w1', d: '2026-01-02', start: 1, end: 2, name: 'Check', routineId: 'r1', entries: [{ id: '0025', target: { id: '0025', sets: 1, mode: 'reps', reps: 8, weight: 50 }, sets: [{ w: 50, r: 8, done: true }] }] }]
+    })
+    const t = tools.find(x => x.name === 'get_week_plan')
+    const out = t.handler({})
+    if (!out || typeof out.today !== 'string') throw new Error('get_week_plan returned no plan')
+    console.log('  ok    get_week_plan() runs (queue + history + labels, not just imported)')
+  } catch (e) {
+    failed++
+    console.error(`  FAIL  calling a tool handler — ${e.message}`)
   }
 }
 
