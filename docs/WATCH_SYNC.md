@@ -45,6 +45,7 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `finish` | `wid`, `at`, `idle?`, `left?` | Finish and save, ending at `at`; an idle finish is checked against the phone's own log first |
 | `discard` | `wid`, `at` | the workout screen's Discard |
 | `stillHere` | `wid`, `at` | "Keep going" on the forgotten-workout question |
+| `workoutNote` | `wid`, `note`, `was`, `at` | the Overview's "Add note": the running workout's own note (`A.note`, the session note). Applied only when the phone's note is still `was` ("" for none): the phone wins a clash, and a phone note longer than 280 characters never matches, so the wrist cannot cut it. `note` is cut at 280, an emptied one clears the note. Needs `settings.workoutNote` |
 | `weighIn` | `w`, `at` | a body weight entry |
 | `healthDeleted` | `ids` | the phone's own Apple Health removal runs again |
 | `watchStatus` | `health`, `version`, `at` | Settings → Apple Watch; an older one never replaces a newer one |
@@ -134,7 +135,7 @@ Display-only fields for the Metrics pages (1.4.5, #1187, #1188): each entry of `
 main 1, helper 0.4, only the muscles the phone's map draws), and `active.muscleNames` and
 `ready.*.muscleNames` give those slugs' names in the app's language; the watch adds up its done
 working sets into the Muscles page (a workout started on the watch takes the names of the
-`ready` session it came from). `settings.birthYear` (ages 10 to 100 only, and only while
+`ready` session it came from). `active.note` (the session note, cut at 280) and `settings.workoutNote` (true) drive the Overview's note button: a phone that does not send the flag gets no button. `settings.birthYear` (ages 10 to 100 only, and only while
 the Zones page is on) and `settings.show.zones` drive the Zones page. Nothing about a set, a rest
 or an event depends on them: a watch that does not know them ignores them (Codable, Wear's
 `ignoreUnknownKeys`), `fitSnapshot` drops the muscle fields first when a snapshot is too big (the
