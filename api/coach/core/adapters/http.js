@@ -29,6 +29,9 @@ const DEFAULT_TIMEOUT_MS = 5 * 60000;
 // only then become the job's failure. Never on a 4xx that means "the request is wrong".
 export const RETRY_STATUSES = new Set([429, 500, 502, 503, 504, 529]);
 const RETRY_DELAYS_MS = [2000, 5000];
+// A connection cut is retried once, but only after the request has been waiting this long: a
+// refusal that comes back at once is the answer, not a transient drop (#1290).
+const RETRY_AFTER_MS = 5000;
 const sleep = (ms, signal) => new Promise(resolve => {
   const t = setTimeout(resolve, ms);
   if (signal) signal.addEventListener('abort', () => { clearTimeout(t); resolve(); }, { once: true });
@@ -362,6 +365,22 @@ export function httpAdapter(spec) {
       let body = spec.compat ? applySteps(spec, build(), steps) : build();
       let triedOtherModel = false;
       let transientRetries = 0;
+      // One more try for a transport error that came after the request had been waiting a while:
+      // a phone going to the background, a NAT rebinding or a proxy dropping an idle socket cut
+      // the provider connection mid-think (#1290). A refusal that came back at once is not retried.
+      let transportRetries = 0;
+      // The one retry covers both places a cut shows up: before the response (the catch around the
+      // request) and while reading an answer that has produced nothing yet (got === 0). They share
+      // one budget and one deadline, so a request is retried at most once and the retry cannot
+      // outlive the timeout the first attempt was given.
+      let retryDeadline = null;
+      const retryAfterDrop = async (sentAt, waitedMs) => {
+        if (waitedMs < RETRY_AFTER_MS || transportRetries >= 1 || (signal && signal.aborted)) return false;
+        transportRetries++;
+        if (retryDeadline == null) retryDeadline = sentAt + timeoutMs;
+        await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[0], signal);
+        return true;
+      };
       let firstRefusal = null;
       // Every request shape sent in this call, so no rung ever asks the same thing twice.
       const sent = new Set();
@@ -385,16 +404,20 @@ export function httpAdapter(spec) {
         let res;
         const sentAt = Date.now();
         const streaming = useStream;
+        // The first attempt gets the caller's timeout; a retry gets what is left of it.
+        const budget = retryDeadline == null ? timeoutMs : Math.max(1, retryDeadline - Date.now());
         try {
           res = await reach(spec, base, streaming && spec.stream.path ? spec.stream.path(chosen) : spec.path(chosen), url => call(fetchImpl, url, {
             method: 'POST',
             headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...(streaming ? { accept: 'text/event-stream' } : {}), ...spec.headers(key) },
             body: JSON.stringify(body)
-          }, timeoutMs, signal));
+          }, budget, signal));
         } catch (e) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
-          const waited = Math.round((Date.now() - sentAt) / 1000);
-          if (Date.now() - sentAt >= WAITED_MS) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped while waiting for the answer (after ${waited} s): ${trim(e.message, 200)}` };
+          const waitedMs = Date.now() - sentAt;
+          const waited = Math.round(waitedMs / 1000);
+          if (await retryAfterDrop(sentAt, waitedMs)) continue;
+          if (waitedMs >= WAITED_MS) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped while waiting for the answer (after ${waited} s): ${trim(e.message, 200)}` };
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };
         }
         let read;
@@ -404,6 +427,11 @@ export function httpAdapter(spec) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           const got = streaming ? answerCharsOf(spec, progress.partial) : 0;
           if (got > 0) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped after ${got} characters of the answer: ${trim(e.message, 200)}` };
+          // Nothing came yet, so this is the same transient cut the request catch handles: one
+          // retry after a long wait, then the same wording a dropped wait gets.
+          const waitedMs = Date.now() - sentAt;
+          if (await retryAfterDrop(sentAt, waitedMs)) continue;
+          if (waitedMs >= WAITED_MS) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped while waiting for the answer (after ${Math.round(waitedMs / 1000)} s): ${trim(e.message, 200)}` };
           return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped mid-answer: ${trim(e.message, 200)}` };
         }
         const { data, text } = read;

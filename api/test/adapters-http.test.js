@@ -783,18 +783,86 @@ test('a connection that dies after a long wait is a dropped connection, not an u
   const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://slow.test/' } } };
   const real = Date.now;
   let clock = 1_000_000;
+  let calls = 0;
   Date.now = () => clock;
   try {
-    const f = async () => { clock += 95_000; throw new TypeError('Software caused connection abort'); };
-    const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+    // #1290: a long wait followed by a transport error is retried once before it is reported.
+    const f = async () => { calls++; clock += 95_000; throw new TypeError('Software caused connection abort'); };
+    const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f, retryDelayMs: 0 });
+    assert.equal(calls, 2, 'the dropped connection is tried once more');
     assert.match(r.stderr, /dropped while waiting for the answer \(after 95 s\)/);
     const { classifyFailure } = await import('../coach/core/failure.js');
     assert.equal(classifyFailure({ text: r.stderr }), 'cutoff');
     const quick = async () => { throw new TypeError('getaddrinfo ENOTFOUND slow.test'); };
-    const q = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: quick });
+    const q = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: quick, retryDelayMs: 0 });
     assert.match(q.stderr, /^could not reach slow\.test/);
     assert.equal(classifyFailure({ text: q.stderr }), 'unreachable');
   } finally { Date.now = real; }
+});
+
+test('a dropped connection that answers on the second try is a success (#1290)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://flaky.test/' } } };
+  const real = Date.now;
+  let clock = 1_000_000;
+  Date.now = () => clock;
+  try {
+    let calls = 0;
+    const f = async () => {
+      calls++;
+      if (calls === 1) { clock += 63_000; throw new TypeError('Software caused connection abort'); }
+      return {
+        ok: true, status: 200, headers: new Headers(),
+        text: async () => JSON.stringify({ choices: [{ message: { content: 'done' } }] })
+      };
+    };
+    const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f, retryDelayMs: 0 });
+    assert.equal(calls, 2);
+    assert.equal(r.code, 0);
+    assert.equal(r.text, 'done');
+  } finally { Date.now = real; }
+});
+
+test('a stream that drops before its first character is retried once, like a dropped request (#1290)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://flaky-stream.test/' } } };
+  const real = Date.now;
+  let clock = 1_000_000;
+  let calls = 0;
+  Date.now = () => clock;
+  try {
+    const f = async () => {
+      calls++;
+      if (calls === 1) {
+        clock += 63_000;
+        return {
+          ok: true, status: 200, headers: new Headers(),
+          body: { getReader: () => ({ read: async () => { throw new TypeError('Software caused connection abort') } }) },
+          text: async () => { throw new Error('read through the reader') }
+        };
+      }
+      return { ok: true, status: 200, headers: new Headers(), text: async () => JSON.stringify({ choices: [{ message: { content: 'done' } }] }) };
+    };
+    const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f, retryDelayMs: 0 });
+    assert.equal(calls, 2, 'the empty stream is tried once more');
+    assert.equal(r.code, 0);
+    assert.equal(r.text, 'done');
+  } finally { Date.now = real; }
+});
+
+test('a stream that drops at once is not retried, and says how it dropped', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://quick-stream.test/' } } };
+  let calls = 0;
+  const f = async () => {
+    calls++;
+    return {
+      ok: true, status: 200, headers: new Headers(),
+      body: { getReader: () => ({ read: async () => { throw new TypeError('ECONNRESET') } }) },
+      text: async () => { throw new Error('read through the reader') }
+    };
+  };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f, retryDelayMs: 0 });
+  assert.equal(calls, 1, 'an immediate cut is the answer, not a retry');
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /dropped mid-answer: ECONNRESET/);
 });
 
 test('compatible: an endpoint that refuses to stream goes back to one answer, remembered (#546)', async () => {
