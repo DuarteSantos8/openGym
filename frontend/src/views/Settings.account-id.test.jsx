@@ -8,7 +8,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 /* Settings → Account ID (#219): the signed-in account's id, small, one tap to copy. It is what
    an admin puts in ADMIN_UIDS and what names an account beyond doubt in a support request. A
-   browser shows it under Account, a paired phone in its Server & sync block, a guest nowhere. */
+   browser shows it under Account, a paired phone too (#1105), a guest nowhere. */
 const mocks = vi.hoisted(() => {
   const state = { S: null, user: null, MOBILE: false }
   state.toast = vi.fn()
@@ -89,10 +89,10 @@ describe('Settings → Account ID', () => {
     expect(mocks.toast).toHaveBeenCalledWith('Account ID copied')
   })
 
-  it('a paired phone shows it in the Server & sync block', () => {
+  it('a paired phone shows it under Account, as a browser does (#1105)', () => {
     mocks.MOBILE = true
     const page = mount(<Settings page="account" />)
-    expect(idRow(section(page, 'Server & sync')).querySelector('.acct-id').textContent).toBe(ID)
+    expect(idRow(section(page, 'Account')).querySelector('.acct-id').textContent).toBe(ID)
   })
 
   it('a clipboard that refuses says nothing, and the id stays on screen', async () => {

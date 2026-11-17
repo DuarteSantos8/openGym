@@ -83,26 +83,42 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { ro
 const asked = path => mocks.api.mock.calls.filter(([p]) => p === path).length
 
 describe('Settings: passkeys and another device', () => {
-  it('a signed-in browser lists its passkeys and offers a code for another device, in Account', async () => {
+  // #1105: the account's devices under Account, the ways to sign in under Sign in.
+  it('a signed-in browser offers a code for another device in Account, and lists its passkeys under Sign in', async () => {
     const page = mount(<Settings page="account" />)
     await settle()
-    const account = section(page, 'Account')
-    expect(titles(account)).toEqual(expect.arrayContaining(['Passkeys', 'Add another device']))
-    expect(rowByTitle(account, 'Passkeys').textContent).toContain('2 passkeys')
-    // Above pairing and the password, which are about other ways in.
-    const order = titles(account)
-    expect(order.indexOf('Passkeys')).toBeLessThan(order.indexOf('Pair the mobile app'))
-    expect(order.indexOf('Add another device')).toBeLessThan(order.indexOf('Password'))
+    expect(titles(section(page, 'Account'))).toEqual(expect.arrayContaining(['Add another device', 'Pair the mobile app']))
+    const signIn = section(page, 'Sign in')
+    expect(titles(signIn)).toEqual(expect.arrayContaining(['Passkeys', 'Password']))
+    expect(rowByTitle(signIn, 'Passkeys').textContent).toContain('2 passkeys')
+    expect(titles(signIn).indexOf('Passkeys')).toBeLessThan(titles(signIn).indexOf('Password'))
+  })
+
+  // #1105: one order on every platform, leaving last: sign-out on its own, then Delete my account alone.
+  it('the same section order on a browser and a phone, sign-out then Delete my account at the end', async () => {
+    const heads = page => [...page.querySelectorAll('.sect-t')].map(e => e.textContent)
+    const last = (page, n) => [...page.querySelectorAll('.sect')].slice(-n).map(s => titles(s))
+    let page = mount(<Settings page="account" />)
+    await settle()
+    expect(heads(page)).toEqual(['Profile picture', 'Server & sync', 'Account', 'Sign in'])
+    expect(last(page, 2)).toEqual([['Sign out', 'Sign out everywhere'], ['Delete my account']])
+    act(() => { mounted.splice(0).forEach(({ root, host }) => { root.unmount(); host.remove() }) })
+    mocks.MOBILE = true
+    mocks.sync.server = 'https://gym.example.com'
+    page = mount(<Settings page="account" />)
+    await settle()
+    expect(heads(page)).toEqual(['Profile picture', 'Server & sync', 'Account'])
+    expect(last(page, 2)).toEqual([['Disconnect'], ['Delete my account']])
   })
 
   // #551: the code for a computer comes from a phone connected to the server, and a phone that
   // keeps everything on itself says why it has none instead of leaving you to search for it.
-  it('a paired phone offers a code for another device in its Server & sync block', async () => {
+  it('a paired phone offers a code for another device in Account, as a browser does', async () => {
     mocks.MOBILE = true
     mocks.sync.server = 'https://gym.example.com'
     const page = mount(<Settings page="account" />)
     await settle()
-    expect(titles(section(page, 'Server & sync'))).toContain('Add another device')
+    expect(titles(section(page, 'Account'))).toContain('Add another device')
     expect(section(page, 'Your data')).toBeUndefined()
   })
 
@@ -134,7 +150,7 @@ describe('Settings: passkeys and another device', () => {
       await settle()
       expect(titles(page)).not.toContain('Passkeys')
       expect(titles(page)).not.toContain('Add another device')
-      expect(titles(section(page, 'Account'))).toContain('Password')
+      expect(titles(section(page, 'Sign in'))).toContain('Password')
     } finally { mocks.list = list }
   })
 
@@ -148,14 +164,14 @@ describe('Settings: passkeys and another device', () => {
     })
     const page = mount(<Settings page="account" />)
     await settle()
-    expect(titles(section(page, 'Account'))).not.toEqual(expect.arrayContaining(['Passkeys']))
-    expect(titles(section(page, 'Account'))).not.toContain('Password')
+    expect(titles(page)).not.toEqual(expect.arrayContaining(['Passkeys']))
+    expect(titles(page)).not.toContain('Password')
 
     mocks.api.mockImplementation(answer)
     mocks.sync = { ...mocks.sync, lastSynced: mocks.sync.lastSynced + 30000 }   // a check that found both sides in step
     act(() => mounted.at(-1).root.render(<Settings page="account" />))
     await settle()
-    expect(titles(section(page, 'Account'))).toEqual(expect.arrayContaining(['Passkeys', 'Add another device', 'Password']))
+    expect(titles(page)).toEqual(expect.arrayContaining(['Passkeys', 'Add another device', 'Password']))
     expect(asked('/api/account/passkeys')).toBe(2)
     expect(asked('/api/account/password')).toBe(2)
 
@@ -188,7 +204,7 @@ describe('Settings: passkeys and another device', () => {
     await settle()
     expect(asked('/api/account/passkeys')).toBe(1)
     expect(asked('/api/account/password')).toBe(1)
-    act(() => rowByTitle(section(page, 'Account'), 'Passkeys').click())
+    act(() => rowByTitle(section(page, 'Sign in'), 'Passkeys').click())
     const list = mount(mocks.sheets.at(-1).render(() => {}))
     await settle()
     act(() => rowByTitle(list, 'Laptop').click())

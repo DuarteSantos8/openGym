@@ -53,7 +53,7 @@ describe('openGym Offline', () => {
     const ctx = { mobile: true, platform: 'android', mod: () => true, offline: true }
     const ids = directory(ctx).flatMap(c => c.cards.map(x => x.id))
     for (const id of OFFLINE_OFF_CARDS) expect(ids).not.toContain(id)
-    expect(ids).toEqual(expect.arrayContaining(['files', 'csv']))
+    expect(ids).toEqual(['health-connect'])   // files and backups are on Data & backup (#1105)
     const normal = directory({ ...ctx, offline: false }).flatMap(c => c.cards.map(x => x.id))
     expect(normal.length).toBeGreaterThan(ids.length)
   })

@@ -51,7 +51,6 @@ vi.mock('../sheets.jsx', () => ({
 vi.mock('../components/CsvExportSheet.jsx', () => ({ csvExportSheet: vi.fn() }))
 
 import IntegrationsPage from './Integrations.jsx'
-import { importFromHevy } from '../sheets.jsx'
 import { searchSettings } from './settings-pages.js'
 
 let host, root, sheetHost, sheetRoot
@@ -86,7 +85,7 @@ const type = (input, v) => act(() => {
 describe('the cards', () => {
   it('a guest in a browser: the health stores live in the phone app, webhooks need a server, nothing fake to connect', async () => {
     await mount()
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Backups & calendar', 'Automation', 'AI & API', 'Sister apps'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Automation', 'AI & API', 'Sister apps'])
     expect(pill('apple-health')).toBe('Not available on this device')
     expect(pill('health-connect')).toBe('Not available on this device')
     expect(action('apple-health')).toBeNull()
@@ -104,7 +103,7 @@ describe('the cards', () => {
     expect(card('webhook').querySelector('.intg-open').getAttribute('aria-label')).toBe('Webhooks, Needs your server')
   })
 
-  it('on Android: Health Connect only, off until set up on its page; imports open their sheets', async () => {
+  it('on Android: Health Connect only, off until set up on its page; no import here (#1105: Data & backup)', async () => {
     mocks.MOBILE = true
     mocks.health = { status: 'available', platform: 'android', on: false }
     await mount({ android: true })
@@ -112,8 +111,7 @@ describe('the cards', () => {
     expect(pill('health-connect')).toBe('Off')
     act(() => action('health-connect').click())
     expect(mocks.navs).toEqual([['/settings/health-connect']])
-    act(() => action('hevy').click())
-    expect(importFromHevy).toHaveBeenCalled()
+    for (const id of ['hevy', 'files', 'csv', 'webdav']) expect(card(id)).toBeNull()
     // The detail sheet says what it does.
     act(() => card('health-connect').querySelector('.intg-open').click())
     await showSheet()

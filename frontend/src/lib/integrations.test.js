@@ -12,7 +12,16 @@ describe('the directory', () => {
     expect(cardState('webhook', web)).toEqual({ status: 'server', action: null })
     expect(cardState('mcp', web)).toEqual({ status: 'server', action: null })
     expect(ids(web)).not.toContain('coach')   // the server's Coach, not offered here
-    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai', 'sister'])
+    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'automation', 'ai', 'sister'])
+  })
+
+  // #1105: files and backups live on Data & backup only; this page is the live links to other services.
+  it('holds no file or backup action, and the calendar feed sits with the automation', () => {
+    for (const ctx of [web, { ...web, user: { id: 'u' }, tokens: true }, { ...web, mobile: true, platform: 'ios' }]) {
+      for (const id of ['hevy', 'files', 'csv', 'webdav']) expect(ids(ctx)).not.toContain(id)
+    }
+    const dir = directory({ ...web, user: { id: 'u' }, tokens: true, offered: ['webhook'] })
+    expect(dir.find(c => c.id === 'automation').cards.map(c => c.id)).toEqual(['calendar', 'webhook'])
   })
 
   it('openNutrition (gm-hooks): this device links itself, no server needed; off until linked, never in the demo', () => {
@@ -58,9 +67,8 @@ describe('the directory', () => {
     expect(cardState('mcp', user)).toEqual({ status: null, action: 'open' })
   })
 
-  it('the demo has no Hevy key to spend and no server', () => {
+  it('the demo has no server', () => {
     const demo = { ...web, demo: true }
-    expect(cardState('hevy', demo)).toBeNull()
     expect(cardState('webhook', demo).status).toBe('server')
   })
 
@@ -91,17 +99,6 @@ describe('normalizeWebhookUrl', () => {
     expect(normalizeWebhookUrl('ftp://nas/x')).toBe('ftp://nas/x')
     expect(normalizeWebhookUrl('not a url')).toBe('not a url')
     expect(normalizeWebhookUrl('')).toBe('')
-  })
-})
-
-describe('the WebDAV card (#582)', () => {
-  it('needs no server, says when the last backup failed, and stays out of the demo', async () => {
-    const { cardState } = await import('./integrations.js')
-    expect(cardState('webdav', { user: null })).toEqual({ status: 'off', action: 'connect' })
-    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1 } })).toEqual({ status: 'connected', action: 'manage' })
-    expect(cardState('webdav', { webdav: { url: 'https://x/', last: { ok: false } } })).toEqual({ status: 'attention', action: 'manage' })
-    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1, foreign: true } })).toEqual({ status: 'attention', action: 'manage' })
-    expect(cardState('webdav', { demo: true })).toBeNull()
   })
 })
 

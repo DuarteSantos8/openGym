@@ -107,7 +107,7 @@ describe('the root', () => {
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
-    expect(rowTitled('Units & language').querySelector('.lrow-v').textContent).toBe('kg · English')
+    expect(rowTitled('Units & language').querySelector('.lrow-v').textContent).toBe('kg · English · Epley')
     expect(rowTitled('Equipment').querySelector('.lrow-v').textContent).toBe('Everything')
     expect(rowTitled('About & updates').querySelector('.lrow-v').textContent).toMatch(/^v\d|^vtest/)
   })
@@ -360,8 +360,8 @@ describe('the search lands on a row', () => {
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
     expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
     // Full QA 146: the daily WebDAV backup was a row on Data & backup that the search never found.
-    // Both homes of the WebDAV backup: the Data & backup row and the Integrations card (#1120).
-    expect(searchSettings('webdav', web, tr).map(h => h.title).sort()).toEqual(['Back up to WebDAV', 'WebDAV backup'])
+    // One home for the WebDAV backup: Data & backup (#1105 step 6 dropped the Integrations card).
+    expect(searchSettings('webdav', web, tr).map(h => h.title)).toEqual(['Back up to WebDAV'])
     expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
     expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
     for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['new exercises', 'New exercises start with'],
@@ -451,24 +451,54 @@ describe('the pages', () => {
     }
   })
 
-  it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
+  // #1105: each heading names what is under it, in the order a session goes.
+  it('every old row has a home: the Workout page, from starting to the workout screen', () => {
     mount('workout')
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
-      'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Starting', 'Warm-ups', 'Rest', 'Logging', 'Records', 'Workout screen', 'More'])
+    expect(titles()).toEqual(['Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest',
+      'Effort per set', 'Shown under each exercise', 'Last time means', 'Compare sets with last time', 'New exercises start with', 'Record trophies', 'Cheer on a record', 'How close to a record',
+      'Layout', 'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
+    // Fine-tuning is the workout screen only; the rules for the numbers a session opens with
+    // sit on Plan & schedule (#1105).
     mount('advanced')
-    expect(titles()).toEqual(['Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Timed sets', 'Buttons on the workout screen'])
+    expect(titles()).toEqual(['Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+    mount('plan')
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Training rules'])
+    expect(titles()).toEqual(['How you train', 'Week starts on', 'Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from',
+      'Weekly sets per muscle', 'Load starter plan'])
+    expect(searchSettings('deload weeks', guestWeb, s => s)[0].trail).toBe('Plan & schedule')
+    // "Last time means" sits under the row it explains (#1105 polish).
+    expect(searchSettings('last time means', guestWeb, s => s)[0].trail).toBe('Workout')
+  })
+
+  // #1105 step 5: Look, then what Home shows, then the streak; Units & language says what is what.
+  it('every old row has a home: Look & Home and Units & language', () => {
+    const heads = () => [...host.querySelectorAll('.sect-t')].map(e => e.textContent)
+    mount('look')
+    expect(heads()).toEqual(['Look', 'Home', 'Streak'])
+    expect(titles()).toEqual(['Theme', 'Accent color', 'Icons', 'Motion', 'Text size', 'Body diagram', 'Exercise drawings', 'Seasonal themes',
+      'Customize', 'Customize', 'Body weight', 'Recovery tips', 'Week and month recap', 'Weekly sets on Home', 'Monthly challenges', 'Show connection status',
+      'Streak flame', 'Streak freeze', 'Streak freezes', 'Sick and travel weeks', 'Recovery counts for the streak', 'Sport counts for the streak'])
+    mocks.S.modules = { motivation: false }                    // no streak: no empty heading
+    mount('look')
+    expect(heads()).toEqual(['Look', 'Home'])
+    delete mocks.S.modules
+    mount('units')
+    expect(heads()).toEqual(['Language', 'Units', 'Stats'])
+    expect(titles()).toEqual(['Language', 'Weight unit', 'Weight decimals', 'Weight step', 'Speed unit',
+      '1RM formula', 'Count warm-ups in volume', 'Count body weight in bodyweight lifts', 'About you', 'Daily weigh-in value'])
   })
 
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
     bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
-    mount('advanced')
+    mount('plan')
     expect(rowTitled('Default progression').querySelector('.lrow-v').textContent).toBe('Linear progression')
     act(() => rowTitled('Default progression').click())
     const h = document.createElement('div'); document.body.appendChild(h)
@@ -526,9 +556,8 @@ describe('the pages', () => {
 // The tour and the tutorials point at rows by their data-tour anchor (#1105). A row that moves
 // without its anchor makes an optional stop vanish in silence, so every Settings stop is checked.
 describe('the tour on Settings', () => {
-  // Stops a test cannot show: sp-back is the page header, drawn outside Settings; data-health needs
-  // the phone's health store (Settings.health.test.jsx checks it).
-  const ELSEWHERE = new Set(['sp-back', 'data-health'])
+  // A stop a test cannot show: sp-back is the page header, drawn outside Settings.
+  const ELSEWHERE = new Set(['sp-back'])
   it('every Settings stop of every flow finds its anchor', async () => {
     mocks.MOBILE = true; mocks.user = { id: 'u1', name: 'Dana' }; mocks.sync = { status: 'ok', server: 'https://gym.example' }
     mocks.S.autoBackup = true

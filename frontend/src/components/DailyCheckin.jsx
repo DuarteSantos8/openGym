@@ -1,6 +1,6 @@
 // The daily-form check-in before a workout (lib/daily-form.js): four quick 1-to-5 answers, all
 // optional, then Start. On a rough day it offers to go lighter, never picks it for you. Opened by
-// sheets.jsx startFlow; switched in Settings → Workout → Before and during.
+// sheets.jsx startFlow; switched in Settings → Workout → Starting.
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { Button, Segmented } from './ui.jsx'
