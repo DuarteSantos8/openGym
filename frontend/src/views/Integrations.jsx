@@ -218,7 +218,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       <Section title={t(cat.title)}>
         {cat.cards.map(card => <Card key={card.id} card={card} onOpen={() => open(card)} onAction={() => act(card)} />)}
       </Section>
-      {cat.id === 'health' && <WorksWith platform={platform} nav={nav} />}
+      {cat.id === 'health' && <WorksWith platform={platform} nav={nav} renpho={renpho} />}
       {/* openRunning has no app yet (docs/dev/SISTER_APPS.md): said once, no fake Connect button. */}
       {cat.id === 'sister' && <p className="sect-f intg-intro">{t('openRunning is on its way. Until it lands, runs and matches come in from Apple Health or Health Connect.')}</p>}
     </div>)}
@@ -253,13 +253,13 @@ async function offAll(removeWritten, toast) {
 
 /* ---------------- "works with" ---------------- */
 
-function WorksWith({ platform, nav }) {
+function WorksWith({ platform, nav, renpho }) {
   const store = platform === 'ios' ? 'Apple Health' : platform === 'android' ? 'Health Connect' : null
   return <Section title={t('Works with')} footer={store
     ? t('No extra connection needed: they write to {0}, and openGym reads from there.', store)
     : t('No extra connection needed: they write to Apple Health or Health Connect, and the openGym phone app reads from there.')}>
     <div className="intg-chips">
-      {WORKS_WITH.map(w => <button key={w.name} className="btn xs intg-chip" onClick={() => worksWithSheet(w, platform, nav)}>
+      {WORKS_WITH.map(w => <button key={w.name} className="btn xs intg-chip" onClick={() => worksWithSheet(w, platform, nav, renpho)}>
         <Icon name={w.glyph} /><span translate="no">{w.name}</span>
       </button>)}
     </div>
@@ -272,9 +272,10 @@ const READS = {
   both: 'Heart rate during your workouts, and your weigh-ins',
 }
 
-function worksWithSheet(w, platform, nav) {
+// `renpho`: what /api/renpho said (useRenpho), false where this server has no RENPHO to connect.
+function worksWithSheet(w, platform, nav, renpho) {
   const store = platform === 'ios' ? 'apple-health' : platform === 'android' ? 'health-connect' : null
-  const direct = w.direct === 'renpho' && !!useStore.getState().user
+  const direct = w.direct === 'renpho' && !!useStore.getState().user && renpho !== false
   sheet(close => <>
     <SheetHead icon={w.glyph} title={w.name} />
     {direct && <p className="intg-lead">{t('RENPHO also connects straight to your openGym server, with every reading of the scale.')}</p>}

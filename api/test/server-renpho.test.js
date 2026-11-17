@@ -260,8 +260,10 @@ test('RENPHO Health end to end', async t => {
   // The password changed in RENPHO: the next sync says so, and keeps what came before.
   f.accounts['b@example.com'].password = 'changed';
   f.expireTokens();
+  // Taken before the request: the sync can fail before the answer comes back.
+  const cut = Date.now() - 1;
   await call(h, B, 'POST', '/api/renpho/sync');
-  const sb = await synced(h, B, Date.now() - 1);
+  const sb = await synced(h, B, cut);
   assert.equal(sb.error.code, 'auth');
   assert.equal(sb.error.reason, '30001: fail');
   assert.ok(kept(h, B).length > 0);
@@ -281,7 +283,9 @@ test('RENPHO through a second account: the friend\'s daily values, and the app s
   await new Promise(r => f.server.listen(0, '127.0.0.1', r));
   t.after(() => f.server.close());
   const url = `http://127.0.0.1:${f.server.address().port}`;
-  const day = 86400, now = Math.floor(Date.now() / 1000);
+  // Noon UTC today: the two weigh-ins an hour apart stay on one date whatever the hour the test runs.
+  const day = 86400, today = new Date();
+  const now = Math.floor(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 12) / 1000);
   const main = f.accounts['a@example.com'];
   f.accounts['tech@example.com'] = { password: 'tech-pass', id: '9300000000000000003', rows: [], friends: [] };
   // Two weigh-ins on one day (the friend pages keep the last), one 3 days back, one 40 days back

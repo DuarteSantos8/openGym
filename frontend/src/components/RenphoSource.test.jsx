@@ -144,4 +144,30 @@ describe('RENPHO Health card', () => {
     await mount()
     expect(host.textContent).toContain('RENPHO refused the request. Try again, or connect again. — RENPHO: 401: token expired')
   })
+
+  it('a second account RENPHO refuses, even after signing in again, can be connected again', async () => {
+    m.api.mockResolvedValue({ connected: true, email: 'tech@example.com', mode: 'friend', friend: 'me@example.com', error: { code: 'rejected', reason: '401: token expired' } })
+    await mount()
+    expect(button('Connect')).toBeTruthy()
+    await act(async () => { button('Connect').click() })
+    expect(input('Password')).toBeTruthy()
+    // a second account that syncs fine has nothing to connect again
+    m.api.mockResolvedValue({ connected: true, email: 'tech@example.com', mode: 'friend', friend: 'me@example.com', error: null })
+    act(() => root.render(null)); await mount()
+    expect(button('Connect')).toBeUndefined()
+  })
+
+  it('a page left while a sync runs asks no more', async () => {
+    vi.useFakeTimers()
+    try {
+      let answer
+      m.api.mockImplementation(() => new Promise(r => { answer = r }))
+      await act(async () => { root.render(<RenphoSource />) })
+      act(() => root.render(null))   // left before the server answered
+      await act(async () => { answer({ connected: true, email: 'me@example.com', syncing: true }) })
+      const asked = m.api.mock.calls.length
+      await act(async () => { vi.advanceTimersByTime(30000) })
+      expect(m.api.mock.calls.length).toBe(asked)
+    } finally { vi.useRealTimers() }
+  })
 })

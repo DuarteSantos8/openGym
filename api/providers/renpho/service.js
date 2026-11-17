@@ -102,7 +102,9 @@ const inRange = r => {
  * obj)` keep the readings, `log` is told what happened (never a secret).
  */
 export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, removeRaw, client = createRenphoClient(), now = Date.now, log = () => {} }) {
-  const running = new Map();   // uid → the sync in flight
+  // uid → the sync in flight, with the connection it is for: `user.renpho` is a new object on every
+  // connect, so a sync started for an earlier one can tell it is no longer current.
+  const running = new Map();
 
   function status(user) {
     const r = user.renpho;
@@ -159,36 +161,41 @@ export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, rem
     log('renpho.disconnect', user.id);
   }
 
-  async function signIn(user) {
-    const creds = unseal(user.renpho.creds);
+  // A sync started for a connection since replaced or removed stops before it writes anything.
+  const current = (user, conn) => user.renpho === conn;
+  class Stale extends Error {}
+
+  async function signIn(user, conn) {
+    const creds = unseal(conn.creds);
     if (!creds?.email || !creds?.password) throw new RenphoError('auth', MESSAGES.auth);
-    const s = await client.login(creds, device(user.renpho));
-    user.renpho.session = seal({ token: s.token, userId: s.userId });
+    const s = await client.login(creds, device(conn));
+    if (!current(user, conn)) throw new Stale();
+    conn.session = seal({ token: s.token, userId: s.userId });
     save();
     return { token: s.token, userId: s.userId };
   }
 
   // A request with the kept session, and once more after signing in again if RENPHO refused it.
-  async function withSession(user, session, fn) {
+  async function withSession(user, conn, session, fn) {
     try { return { session, value: await fn(session) }; }
     catch (e) {
       if (e.code !== 'rejected') throw e;
-      const fresh = await signIn(user);
+      const fresh = await signIn(user, conn);
       return { session: fresh, value: await fn(fresh) };
     }
   }
 
   // The account's own readings, every one RENPHO keeps, as [mapped, raw] pairs.
-  async function ownReadings(user, session) {
-    const dev = device(user.renpho);
-    const got = await withSession(user, session, s => client.tables(dev, s));
+  async function ownReadings(user, conn, session) {
+    const dev = device(conn);
+    const got = await withSession(user, conn, session, s => client.tables(dev, s));
     session = got.session;
     const raws = [];
     let complete = true;
     for (const table of got.value) {
       const ids = table.userIds.length ? table.userIds : [session.userId];
       const who = ids.includes(String(session.userId)) ? String(session.userId) : ids[0];
-      const page = await withSession(user, session, s => client.readings(dev, s, table, who));
+      const page = await withSession(user, conn, session, s => client.readings(dev, s, table, who));
       session = page.session;
       complete = complete && page.value.complete;
       raws.push(...page.value.rows.filter(x => belongsTo(x, session.userId)));
@@ -198,13 +205,13 @@ export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, rem
 
   // A friend's daily values, one trend per value, put together by day. After the first sync only
   // the last few days are asked again (and the windows they fall in), not the whole history.
-  async function friendReadings(user, session) {
-    const r = user.renpho, dev = device(r), fid = r.friend?.id;
+  async function friendReadings(user, conn, session) {
+    const r = conn, dev = device(r), fid = r.friend?.id;
     if (!fid) throw new RenphoError('no-friend', MESSAGES['no-friend']);
     const since = r.lastSync ? r.lastSync - 3 * 86400000 : 0;
     const days = new Map();
     for (const param of FRIEND_PARAMS) {
-      const got = await withSession(user, session, s => client.trend(dev, s, fid, param, { since }));
+      const got = await withSession(user, conn, session, s => client.trend(dev, s, fid, param, { since }));
       session = got.session;
       for (const pt of got.value) {
         if (param !== 'weight' && !days.has(pt.day)) continue;   // a day is a weigh-in
@@ -216,29 +223,32 @@ export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, rem
     return { items: [...days.values()].map(d => [mapFriendDay(fid, d), d]), complete: true };
   }
 
-  async function run(user) {
-    const r = user.renpho;
+  async function run(user, conn) {
+    const r = conn;
     let session = unseal(r.session);
-    if (!session?.token) session = await signIn(user);
+    if (!session?.token) session = await signIn(user, conn);
     const friendMode = r.mode === 'friend';
-    const { items, complete } = friendMode ? await friendReadings(user, session) : await ownReadings(user, session);
-    // Map, keep the raw reading, and fold the values in.
+    const { items, complete } = friendMode ? await friendReadings(user, conn, session) : await ownReadings(user, conn, session);
+    if (!current(user, conn)) throw new Stale();
+    // Map, keep the raw reading, and fold the values in. A file that is there but cannot be read
+    // stops the sync (readRaw throws): starting from nothing would write over every reading in it.
     const at = now();
     const store = readRaw(user.id) || { provider: PROVIDER, measurements: {} };
     // A day the account's own readings already cover (imported before a switch to a second
-    // account) keeps them: the friend's value of that day would be the same weigh-in twice.
-    const ownDays = new Set();
+    // account) keeps them, up to the latest of them: the friend's value of that day would be the
+    // same weigh-in twice. A friend's weigh-in later that day is a new one and comes in.
+    const ownLatest = new Map();
     if (friendMode) {
       for (const m of Object.values(store.measurements)) {
         if (String(m.external_id).startsWith('day:')) continue;
-        const d = mapMeasurement(m.raw_provider_data)?.d;
-        if (d) ownDays.add(d);
+        const own = mapMeasurement(m.raw_provider_data);
+        if (own?.d) ownLatest.set(own.d, Math.max(ownLatest.get(own.d) || 0, Number(own.t) || 0));
       }
     }
     const fields = new Set(), unknown = new Set();
     let segmental = false, count = 0, added = 0, updated = 0;
     for (const [m, raw] of items) {
-      if (!m || ownDays.has(m.d)) continue;
+      if (!m || (ownLatest.has(m.d) && ownLatest.get(m.d) >= m.t)) continue;
       count++;
       const prev = store.measurements[m.externalId];
       const same = prev && JSON.stringify(prev.raw_provider_data) === JSON.stringify(raw);
@@ -252,19 +262,24 @@ export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, rem
       m.unknown.forEach(f => unknown.add(f));
       if (m.fields.some(f => /^(segFat|segMuscle|imp20|imp100)/.test(f))) segmental = true;
     }
+    if (!current(user, conn)) throw new Stale();
     writeRaw(user.id, store);
     return { measurements: count, added, updated, complete, fields: [...fields].sort(), unknown: [...unknown].sort(), segmental };
   }
 
   /** One sync of the profile's RENPHO readings; a second call while one runs waits for it. */
   function sync(user) {
-    if (!user.renpho) return Promise.reject(Object.assign(new Error('not connected'), { code: 'not-connected' }));
-    if (running.has(user.id)) return running.get(user.id);
+    const conn = user.renpho;
+    if (!conn) return Promise.reject(Object.assign(new Error('not connected'), { code: 'not-connected' }));
+    const before = running.get(user.id);
+    if (before?.conn === conn) return before.p;
+    // A sync still running for an earlier connection: this one starts after it has stopped.
     const p = (async () => {
+      if (before) await before.p.catch(() => {});
       try {
-        const res = await run(user);
-        if (!user.renpho) return res;   // disconnected meanwhile
-        Object.assign(user.renpho, {
+        const res = await run(user, conn);
+        if (!current(user, conn)) return { ...res, stale: true };
+        Object.assign(conn, {
           lastSync: now(), error: null, fields: res.fields, unknown: res.unknown, segmental: res.segmental,
           lastResult: { measurements: res.measurements, added: res.added, updated: res.updated, complete: res.complete },
         });
@@ -272,13 +287,15 @@ export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, rem
         log('renpho.sync', user.id, `${res.measurements} readings, ${res.added} added, ${res.updated} updated`);
         return res;
       } catch (e) {
+        // Disconnected or connected again meanwhile: nothing was written, and nothing to say.
+        if (e instanceof Stale || !current(user, conn)) { log('renpho.sync-dropped', user.id); return { stale: true }; }
         const err = problem(e);
-        if (user.renpho) { user.renpho.error = { ...err, at: now() }; save(); }
+        conn.error = { ...err, at: now() }; save();
         log('renpho.sync-failed', user.id, err.code);
         throw Object.assign(new Error(err.message), { code: err.code });
-      } finally { running.delete(user.id); }
+      } finally { if (running.get(user.id)?.p === p) running.delete(user.id); }
     })();
-    running.set(user.id, p);
+    running.set(user.id, { conn, p });
     return p;
   }
 
@@ -298,7 +315,11 @@ export function createRenphoService({ seal, unseal, save, readRaw, writeRaw, rem
   }
 
   /** The summary of a profile's kept readings (summarize), for Body measurements. */
-  const summary = user => (user.renpho ? summarize(readRaw(user.id), SUMMARY_KINDS) : { items: [], t: null });
+  const summary = user => {
+    if (!user.renpho) return { items: [], t: null };
+    try { return summarize(readRaw(user.id), SUMMARY_KINDS); }
+    catch { log('renpho.unreadable', user.id); return { items: [], t: null }; }
+  };
 
   return { status, connect, disconnect, sync, due, summary };
 }

@@ -2560,7 +2560,14 @@ const RENPHO_BASE = (() => {
 const RENPHO = createRenphoService({
   client: createRenphoClient({ baseUrl: RENPHO_BASE }),
   seal: obj => coachConfig.encrypt(obj), unseal: blob => coachConfig.decrypt(blob), save: () => saveDb(),
-  readRaw: uid => { try { return JSON.parse(fs.readFileSync(providerFile('renpho', uid), 'utf8')); } catch { return null; } },
+  // Only a file that is not there yet is "nothing kept": one that cannot be read or parsed throws,
+  // so a sync never starts from nothing and writes over the readings in it.
+  readRaw: uid => {
+    let text;
+    try { text = fs.readFileSync(providerFile('renpho', uid), 'utf8'); }
+    catch (e) { if (e.code === 'ENOENT') return null; throw e; }
+    return JSON.parse(text);
+  },
   writeRaw: (uid, obj) => {
     fs.mkdirSync(path.join(DATA, 'providers'), { recursive: true, mode: 0o700 });
     atomicWrite(providerFile('renpho', uid), JSON.stringify(obj), 0o600);

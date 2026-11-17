@@ -188,7 +188,7 @@ export function createRenphoClient({ fetchFn = fetch, baseUrl = BASE_URL, timeou
   /**
    * A friend's daily values of one `param` (FRIEND_PARAMS): windows of about a month ending at
    * `endTime` (seconds, 0 for now), moved back until one comes empty, one reaches past `since`
-   * (ms) or `maxPages` have come. Each point is {day, ts (seconds), value}.
+   * (ms) or `maxPages` have come. Each point is {day, ts (seconds), value}, one per day (its latest).
    */
   async function trend(device, session, friendId, param, { since = 0, maxPages = 36 } = {}) {
     const out = [];
@@ -216,7 +216,11 @@ export function createRenphoClient({ fetchFn = fetch, baseUrl = BASE_URL, timeou
       if (since && oldest * 1000 < since) break;
       endTime = oldest - 1;
     }
-    return out;
+    // Windows meet at a day: the day the last one ended in comes again in the next, with an
+    // earlier point of it. One point a day, the latest, whatever page it came on.
+    const byDay = new Map();
+    for (const p of out) if (!byDay.has(p.day) || p.ts > byDay.get(p.day).ts) byDay.set(p.day, p);
+    return [...byDay.values()];
   }
 
   /** The tables the account's scale readings are in. */
