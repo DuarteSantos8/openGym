@@ -92,7 +92,10 @@ function exerciseNotes(S, cfg) {
 // to call before telling someone what they are about to lift — did not mention supersets at all.
 // A planned session read back as 21 flat exercises, with nothing to tell the 13 that are warm-up
 // and cool-down from the 8 that are the training.
-function blockList(items) {
+// `workSets` (optional): how many work sets each exercise opens with, by index. preview_session
+// passes the session's own count, which a progression can raise above the routine's stored `sets`
+// (triple progression adds sets up to `setsMax`); get_routine reads the stored plan.
+function blockList(items, workSets = null) {
   const list = items || []
   const units = supersetUnits(list)
   return units.map((u, i) => {
@@ -108,7 +111,7 @@ function blockList(items) {
       // counts intervals): null.
       ...(circuit ? { circuit: { mode: circuit.mode, rounds: circuit.rounds ?? null } } : {}),
       superset_group: u.length > 1 ? sg : null,
-      rounds: u.reduce((n, x) => Math.max(n, list[x].sets || 1), 0),
+      rounds: u.reduce((n, x) => Math.max(n, (workSets ? workSets[x] : list[x].sets) || 1), 0),
       exercise_positions: u.map(x => x + 1)
     }
   })
@@ -688,7 +691,9 @@ export const previewSession = {
     // prescription, step, progression-off targets, deload routines and warm-up ramps all come from
     // there, so the preview cannot drift from what the screen shows.
     const built = withCustomsIndexed(S, () => buildSessionEntries(S, r))
-    const blocks = blockList(r.ex || [])
+    // A block's rounds are the work sets its members open with: warm-up rows are not rounds, and a
+    // per-side timed hold's right row is the same set as its left (buildSets writes them as two).
+    const blocks = blockList(r.ex || [], built.map(b => (b.sets || []).filter(s => !isWarmupRow(s) && s.side !== 'R').length))
     const exercises = (r.ex || []).map((cfg, i) => {
       const ex = exerciseOf(cfg.id, S)
       const mode = modeOf({ ...cfg, id: cfg.id })

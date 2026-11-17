@@ -1133,6 +1133,40 @@ describe('preview_session', () => {
     expect(e.planned.summary).toBe('3–5 × 8–12 · 50 kg')
   })
 
+  test('a block counts the work sets the session opens with, not the routine\'s stored sets', () => {
+    // Triple progression adds a set once every set reached the top of the range, up to setsMax:
+    // the session opens with 4 sets while the routine still stores 3. The block says 4, as
+    // opening_sets does; the ramp's warm-up rows are not rounds.
+    const cfg = { id: '0025', sets: 3, setsMax: 5, reps: 12, repsMin: 8, weight: 50, warmupSets: 2 }
+    only(cfg, {
+      prog: 'triple',
+      workouts: [{
+        id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
+        entries: [{ id: '0025', target: { ...cfg }, sets: [12, 12, 12].map(r => ({ w: 50, r, done: true })) }],
+      }],
+    })
+    const r = call('preview_session')
+    const work = r.exercises[0].opening_sets.filter(s => s.phase === 'work')
+    expect(work).toHaveLength(4)
+    expect(r.exercises[0].opening_sets.some(s => s.phase === 'warmup')).toBe(true)
+    expect(r.blocks[0].rounds).toBe(4)
+    // get_routine describes the stored plan
+    expect(call('get_routine', { routine_id: 'r-preview' }).blocks[0].rounds).toBe(3)
+  })
+
+  test('a per-side timed hold is one round, though it opens as a left row and a right row', () => {
+    S.routines = [{ id: 'r-preview', name: 'Preview', emoji: 'barbell', prog: 'off', ex: [
+      { id: '3544', sg: 'sg-c', mode: 'time', sets: 1, sec: 30, restSec: 10, side: true, sgName: 'Cool-down' },
+      { id: '1424', sg: 'sg-c', mode: 'time', sets: 1, sec: 35, restSec: 10, sgName: 'Cool-down' },
+    ] }]
+    S.week = { [WD]: 'r-preview' }
+    S.dayPlan = {}
+    _seedStateForTests(S)
+    const r = call('preview_session')
+    expect(r.exercises[0].opening_sets).toHaveLength(2)
+    expect(r.blocks).toEqual([{ position: 1, name: 'Cool-down', view: 'sets', superset_group: 'sg-c', rounds: 1, exercise_positions: [1, 2] }])
+  })
+
   test('says which block each exercise is in, and groups the session into blocks', () => {
     // preview_session is the tool to call before telling someone what they are about to lift,
     // and it used to be the one place a coach session read as a flat list: no superset id, no
