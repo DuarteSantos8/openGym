@@ -38,6 +38,31 @@ function state() {
 }
 
 describe('merging an exercise into another (#656)', () => {
+  test('machine settings of both exercises end up on the first line of the merged note', () => {
+    const S = state()
+    S.exNotes = { [CUSTOM]: 'Seat: 5 · Pad: 2\nSource text', [BENCH]: 'Grip 81' }
+    registerCustom(S.customEx)
+    mergeExercise(S, CUSTOM, BENCH, { now: 1000 })
+    expect(S.exNotes).toEqual({ [BENCH]: 'Seat: 5 · Pad: 2\nGrip 81\nSource text' })
+    // both have settings: the target's value wins for a shared name, the text of both stays
+    const T = state()
+    T.exNotes = { [CUSTOM]: 'Seat: 5 · Pad: 2\nA', [BENCH]: 'Seat: 7 · Handles: wide\nB' }
+    registerCustom(T.customEx)
+    mergeExercise(T, CUSTOM, BENCH, { now: 1000 })
+    expect(T.exNotes[BENCH]).toBe('Pad: 2 · Seat: 7 · Handles: wide\nB\nA')
+  })
+
+  test('the target keeps all its settings; the source pairs that do not fit stay as text', () => {
+    const names = 'ABCDEFG'.split('')
+    const S = state()
+    S.exNotes = { [CUSTOM]: 'X: 1 · Y: 2', [BENCH]: names.map(n => n + ': 1').join(' · ') }
+    registerCustom(S.customEx)
+    mergeExercise(S, CUSTOM, BENCH, { now: 1000 })
+    const [line, ...rest] = S.exNotes[BENCH].split('\n')
+    expect(line).toBe('X: 1 · ' + names.map(n => n + ': 1').join(' · '))
+    expect(rest).toEqual(['Y: 2'])
+  })
+
   test('the preview counts what moves', () => {
     expect(mergePreview(state(), CUSTOM, BENCH)).toMatchObject({ workouts: 2, sets: 3, routines: 1, programmes: 1, note: true, custom: true })
   })
