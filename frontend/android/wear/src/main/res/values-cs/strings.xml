@@ -13,6 +13,7 @@
     <string name="band_under">pod %1$d</string>
     <string name="body_weight">Tělesná váha</string>
     <string name="bodyweight">Vlastní váha</string>
+    <string name="bpm">%1$s tep/min</string>
     <string name="calories">Kalorie</string>
     <string name="cancel">Zrušit</string>
     <string name="complication_desc">Dosavadní série, nebo tvoje řada týdnů.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">Tep</string>
     <string name="hold">Výdrž</string>
     <string name="hold_to_finish">Podrž pro dokončení</string>
+    <string name="hours">Hodiny</string>
     <string name="how_hard">Jak těžká byla série?</string>
     <string name="hr_avg_max">průměr %1$d · max %2$d</string>
     <string name="hr_why">Povol tep a uvidíš ho u každé série.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">Tišeji</string>
     <string name="media_title">Hudba</string>
     <string name="min">min</string>
+    <string name="min_minutes">min</string>
     <string name="more">Více</string>
     <string name="muscles">Svaly</string>
     <string name="n_more">+%1$d další</string>
     <string name="n_sets">Sérií: %1$s</string>
+    <string name="new_record">Nový rekord</string>
     <string name="next_set_btn">Další série</string>
     <string name="no_age_set">Věk není nastaven</string>
     <string name="no_effort_yet">Zatím žádné hodnocení náročnosti</string>
@@ -79,6 +83,7 @@
     <string name="prs">Rekordy</string>
     <string name="quick_checkin">Rychlé vážení</string>
     <string name="quick_start">Rychlý start</string>
+    <string name="records">Rekordy</string>
     <string name="reps">Opak.</string>
     <string name="rest">Pauza</string>
     <string name="rest_day">Nic v plánu. Je to na tobě.</string>
@@ -87,6 +92,7 @@
     <string name="routines">Sestavy</string>
     <string name="save">Uložit</string>
     <string name="save_and_start">Uložit a začít trénink</string>
+    <string name="saved">Uloženo</string>
     <string name="set_of">Série %1$d z %2$d</string>
     <string name="sets">Série</string>
     <string name="sets_of">%1$d z %2$d sérií</string>
