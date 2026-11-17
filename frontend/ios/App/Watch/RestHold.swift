@@ -85,11 +85,13 @@ struct RestView: View {
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text("Skip"))
+                    .doubleTapTarget(.skipRest)
                     Button { store.addRest(15) } label: {
                         Text(verbatim: "+15").font(.system(.body, design: .rounded).weight(.bold)).frame(width: 40)
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "+15 s"))
+                    .doubleTapTarget(.addRest)
                     .disabled(paused).opacity(paused ? 0.35 : 1)
                 }
                 // In from the edges: with Up next off the row sits low, where the screen's corners round off.
@@ -372,6 +374,7 @@ struct HoldView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(RowButtonStyle())
+            .doubleTapTarget(.stopHold)
             .opacity(dimmed ? 0 : 1)
         }
         .padding(.horizontal, 2)
