@@ -40,6 +40,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var hold: String?
         var getReady: String?
         var stopAuto: String?
+        /// "{0} of {1} planned sets done.", for VoiceOver on the "3/10" count. Optional like the ones above.
+        var setsDone: String?
     }
 
     /// One set as the activity shows it, with the rest that follows it.
@@ -171,6 +173,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
             return Array(starts[(i + 1)...])
         }
 
+        /// When the system should call the activity stale: the rest's end, where the label turns to "Rest over".
+        var staleDate: Date? { restRange?.upperBound }
         /// The running rest as a range Text(timerInterval:) can count down, or nil.
         var restRange: ClosedRange<Date>? {
             guard let end = restEndsAt, end.isFinite, (restTotal ?? 1).isFinite else { return nil }
@@ -623,7 +627,7 @@ enum LiveActivityTick {
             next.restTotal = nil
         }
         tap.willUpdate()
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -651,7 +655,7 @@ enum LiveActivityTick {
         }
         next.unitStarts = state.startsAfter(next.cur)
         tap.willUpdate()
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -681,7 +685,7 @@ enum LiveActivityTick {
             NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
         }
         tap.willUpdate()
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -706,7 +710,7 @@ enum LiveActivityTick {
         }
         if activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
         tap.willUpdate()
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -751,7 +755,7 @@ enum LiveActivityTick {
         var next = state
         next.cur = cur
         tap.willUpdate()
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -778,7 +782,7 @@ enum LiveActivityTick {
             next.restLeft = left + more
         }
         tap.willUpdate()
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -807,7 +811,7 @@ enum LiveActivityTick {
             var next = state
             next.paused = !(state.paused ?? false)
             tap.willUpdate()
-            await activity.update(ActivityContent(state: next, staleDate: nil))
+            await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
             tap.didUpdate()
         }
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
