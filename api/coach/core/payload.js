@@ -432,19 +432,21 @@ function aggregates(S, workouts, custom = customOf(S)) {
   const reschedules = Object.entries(S.dayPlan || {}).filter(([d]) => workouts.some(w => w.d === d) || d >= (workouts[0]?.d || '')).length;
 
   // Muscle coverage in the window, by body part — the "not trained" gap the Stats screen shows.
-  const hit = {};
+  // A Map, because a custom body part is free text: "constructor" or "__proto__" would otherwise
+  // read through to Object.prototype and count a string instead of the sets.
+  const hit = new Map();
   workouts.forEach(w => (w.entries || []).forEach(en => {
     const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
     const bp = bpOf(en.id, custom);
-    if (bp) hit[bp] = (hit[bp] || 0) + work.length;
+    if (bp) hit.set(bp, (hit.get(bp) || 0) + work.length);
   }));
 
   const durations = workouts.map(w => (w.end && w.start ? Math.round((w.end - w.start) / 60000) : null)).filter(Boolean);
   return {
     exercises,
     adherence: { plannedPerWeek: plannedDays, sessionsInWindow: workouts.length, distinctDays: trained.size, dayOverrides: reschedules },
-    setsByBodyPart: hit,
+    setsByBodyPart: Object.fromEntries(hit),
     sessionMinutes: durations.length
       ? { median: durations.slice().sort((a, b) => a - b)[Math.floor(durations.length / 2)], min: Math.min(...durations), max: Math.max(...durations) }
       : null

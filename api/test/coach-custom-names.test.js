@@ -57,6 +57,16 @@ test('a custom body part is bounded before it becomes an aggregate key', () => {
   odd.customEx[0].bp = { not: 'a string' };
   const q = payload.build(odd, { handle: H, kind: 'review' }).aggregates.setsByBodyPart;
   assert.equal('[object Object]' in q, false, 'a non-string body part is not a key');
+
+  // A body part is free text, so it can collide with an inherited key. It has to count the sets
+  // the person did, not read `Object.prototype` and add to a string (or drop the entry).
+  for (const bp of ['constructor', '__proto__']) {
+    const proto = withCustom();
+    proto.customEx[0].bp = bp;
+    const counts = payload.build(proto, { handle: H, kind: 'review' }).aggregates.setsByBodyPart;
+    assert.equal(Object.hasOwn(counts, bp), true, `${bp} is an own key`);
+    assert.equal(counts[bp], 2, `${bp} counts the sets, not an inherited value`);
+  }
 });
 
 test('an exercise the catalogue does know is still named from the catalogue', () => {
@@ -143,5 +153,26 @@ test('the pipeline threads the slice\'s custom names into validation', async () 
   const adapter = { spawns: false, async invoke() { return { code: 0, text: JSON.stringify(answer) }; } };
   const r = await runPipeline({ adapter, cfg: {}, kind: 'review', payload: p });
   assert.equal(r.ok, true, JSON.stringify(r.errors || r));
+  assert.equal(r.result.changes[0].after.name, 'Sandbag carry');
+});
+
+/* A question can turn into a change-set (`actions`), and `validateAsk` hands it to
+   `validateReview`. The pipeline used to leave `customNames` off that call, so the approval card
+   for an ask that swapped in the person's own exercise showed `after.name: null`. */
+test('an ask action that swaps in a custom exercise is named through the pipeline', async () => {
+  // Not `withCustom`: the plan must not already hold the custom exercise, or a swap that brings
+  // it in is refused as a duplicate.
+  const S = sampleState({ customEx: [CUSTOM] });
+  const p = payload.build(S, { handle: H, kind: 'ask' });
+  assert.equal(p.library.some(e => e.id === 'cx1' && e.custom), true, 'the question offers the custom exercise');
+  const answer = {
+    coach_contract: 1,
+    answer: 'Use your own carry instead of the sit-up.',
+    actions: [{ type: 'swap', routineId: 'r1', exId: '0001', to: 'cx1', why: 'You asked for your own carry.' }]
+  };
+  const adapter = { spawns: false, async invoke() { return { code: 0, text: JSON.stringify(answer) }; } };
+  const r = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload: p });
+  assert.equal(r.ok, true, JSON.stringify(r.errors || r));
+  assert.equal(r.kind, 'review');
   assert.equal(r.result.changes[0].after.name, 'Sandbag carry');
 });

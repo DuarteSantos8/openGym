@@ -89,7 +89,7 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
       : kind === 'ask'
-      ? validateAsk(parsed.value, payload, { customIds, equipment, offered, noDumbbells, machines })
+      ? validateAsk(parsed.value, payload, { customIds, customNames, equipment, offered, noDumbbells, machines })
       : kind === 'adapt'
       ? validateAdapt(parsed.value, payload.today, { customIds, customNames, equipment, offered, noDumbbells, machines })
       : validatePlan(answer, {
