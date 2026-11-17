@@ -174,9 +174,16 @@ describe('a pyramid session is graded against its own targets', () => {
     expect(readSession(entry([12, 7, 6, 9, 12]), pyramidCfg()).ok).toBe(false)
   })
 
+  it('an unticked Max row is not a hit just because its goal is zero', () => {
+    const rows = [12, 8, 6, 0, 12].map((r, i) => ({ w: 60, r, done: i !== 3 }))
+    expect(readSession({ id: LIFT, target: pyramidCfg(), sets: rows }, pyramidCfg()).ok).toBe(false)
+  })
+
   it('an all-max pyramid has no numeric goal to miss', () => {
     const allMax = pyramidCfg({ sets: 3, pyramid: [PYRAMID_MAX, PYRAMID_MAX, PYRAMID_MAX] })
     expect(readSession({ id: LIFT, target: allMax, sets: [5, 4, 3].map(r => ({ w: 0, r, done: true })) }, allMax).ok).toBe(true)
+    // …but every prescribed row still has to be ticked.
+    expect(readSession({ id: LIFT, target: allMax, sets: [{ w: 0, r: 5, done: true }, { w: 0, r: 0, done: false }, { w: 0, r: 3, done: true }] }, allMax).ok).toBe(false)
   })
 })
 

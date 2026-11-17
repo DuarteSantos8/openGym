@@ -832,8 +832,8 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
       pyramid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], pyramidRest: [0, 0], pyramidWeight: [0, 0]
     })).routines[0].ex[0]
     expect(bounded.pyramid).toHaveLength(10)
-    expect(bounded).not.toHaveProperty('pyramidRest', 'an all-zero rest is no field')
-    expect(bounded).not.toHaveProperty('pyramidWeight', 'an all-zero load is no field')
+    expect(bounded).not.toHaveProperty('pyramidRest')
+    expect(bounded).not.toHaveProperty('pyramidWeight')
   })
 })
 
