@@ -130,6 +130,7 @@ describe('the live bar', () => {
 
   it('a tap goes to the workout', () => {
     seed(active()); render()
+    expect(bar().querySelector('[data-icon="chevronUp"]')).not.toBeNull() // the arrow says it opens upward
     act(() => { bar().click() })
     expect(mocks.nav).toHaveBeenCalledWith('/workout', { state: { rise: 'rise' } })
   })

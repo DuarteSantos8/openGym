@@ -8,6 +8,7 @@ import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
 import { vibrate } from '../lib/sound.js'
 import Elapsed from './Elapsed.jsx'
+import Icon from './Icon.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 const WATCH_WORDS = { linked: 'Watch connected', relinking: 'Watch reconnecting', none: 'No watch linked' }
@@ -123,6 +124,9 @@ function LiveBarOn () {
       {b.pulseSlot && <span className="livebar-hr livebar-num" aria-hidden="true">
         {b.bpm != null && <><svg viewBox="0 0 24 24"><path d="M12 21s-8.5-5.2-8.5-11.3C3.5 6.6 5.8 4.6 8.3 4.6c1.5 0 2.9.8 3.7 2 .8-1.2 2.2-2 3.7-2 2.5 0 4.8 2 4.8 5.1C20.5 15.8 12 21 12 21Z" /></svg>{b.bpm}</>}
       </span>}
+      {/* Says a tap opens the workout upward; the mirror of the workout page's Minimize chevron. */}
+      <Icon name="chevronUp" size={18} className="livebar-up" />
+
     </button>
   )
 }

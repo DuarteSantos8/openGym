@@ -3088,7 +3088,7 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar{
   position:fixed;z-index:51;inset-inline:12px;bottom:calc(66px + var(--sab));max-width:520px;margin-inline:auto;
   container-type:inline-size;container-name:livebar;
-  min-height:58px;box-sizing:border-box;border-radius:29px;padding-block:10px 8px;padding-inline:12px 16px;
+  min-height:58px;box-sizing:border-box;border-radius:29px;padding-block:10px 8px;padding-inline:12px 10px;
   display:flex;align-items:center;gap:12px;text-align:start;color:var(--on-acc);
   font-size:min(1rem,28px); /* follows the root text size, up to 1.75 times */
   background:var(--acc);background:color-mix(in srgb,var(--acc) calc(var(--livebar-a) * 100%),transparent);
@@ -3127,6 +3127,7 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar-nx{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:400}
 .livebar-hr{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;width:calc(13px + 4px + 3ch);font-size:.9375em;font-weight:600}
 .livebar-hr svg{width:13px;height:13px;fill:var(--on-acc);flex:none}
+.livebar-up{flex:none;margin-inline-start:-6px} /* the icon's own side space stands in for most of the 12px gap */
 /* Largest text: both lines stay (the time too); only the mark grows. */
 @container livebar (max-width:17em){
   .livebar-dev svg{width:36px;height:36px}
