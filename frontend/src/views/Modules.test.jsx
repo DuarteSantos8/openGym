@@ -3,6 +3,7 @@
 // before a connected module goes off, and the Settings root and search following the modules.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { searchSettings, pageVisible, SEARCH } from './settings-pages.js'
 import { MODULES, isOn, presetOf } from '../lib/modules.js'
@@ -45,7 +46,7 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 
-const mount = () => act(() => root.render(<ModulesPage />))
+const mount = () => act(() => root.render(<MemoryRouter><ModulesPage /></MemoryRouter>))
 const row = title => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
 const sw = title => row(title).querySelector('[role="switch"]')
 
@@ -59,9 +60,9 @@ describe('the Modules page', () => {
     for (const m of MODULES) {
       expect(row(m.title), m.id).toBeTruthy()
       expect(row(m.title).querySelector('.lrow-s').textContent).toBe(brandText(m.desc))
-      expect(sw(m.title).getAttribute('aria-checked')).toBe('true')
+      expect(sw(m.title).getAttribute('aria-checked')).toBe(String(!m.optIn))
     }
-    expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Everything')
+    expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
   })
 
   it('Community is not offered where the server has no library', () => {
@@ -76,7 +77,7 @@ describe('the Modules page', () => {
     mount()
     expect(sw('Seasonal themes').getAttribute('aria-checked')).toBe('false')
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
-    expect(host.textContent).toContain('11 of 12 modules on.')
+    expect(host.textContent).toContain('11 of 13 modules on.')
     act(() => sw('Seasonal themes').click())
     expect(isOn(mocks.S, 'seasonal')).toBe(true)
   })

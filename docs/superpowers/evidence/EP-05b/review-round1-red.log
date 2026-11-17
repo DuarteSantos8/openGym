@@ -1,0 +1,35 @@
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+
+ ❯ src/components/nutrition/FoodLookup.test.jsx (33 tests | 3 failed) 343ms
+   × same-batch module away and back invalidates the old Save 20ms
+   × same-batch account away and back invalidates the old Save 14ms
+   × same-batch config away and back invalidates the old Save 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/nutrition/FoodLookup.test.jsx > same-batch module away and back invalidates the old Save
+ FAIL  src/components/nutrition/FoodLookup.test.jsx > same-batch account away and back invalidates the old Save
+ FAIL  src/components/nutrition/FoodLookup.test.jsx > same-batch config away and back invalidates the old Save
+AssertionError: expected [ { …(19) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/components/nutrition/FoodLookup.test.jsx:137:18
+    135|     save.click()
+    136|   })
+    137|   expect(rows()).toHaveLength(0)
+       |                  ^
+    138|   expect(host.textContent).not.toContain('Synthetic oats')
+    139| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 30 passed (33)
+   Start at  10:41:08
+   Duration  2.83s (transform 1.60s, setup 42ms, import 1.93s, tests 343ms, environment 358ms)

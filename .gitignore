@@ -34,6 +34,7 @@ frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+.worktrees/
 
 # Python and Kotlin build leftovers (scripts/, the Android build)
 __pycache__/
@@ -56,3 +57,8 @@ frontend/ios/App/WatchCore/.build/
 /dist/
 .wrangler/
 .taste-skill/
+
+# Movement Lab runtime and pose model, staged at build time (frontend/scripts/stage-mediapipe.mjs)
+frontend/public/mediapipe/
+frontend/e2e-results/
+frontend/e2e-report/

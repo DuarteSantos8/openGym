@@ -1,0 +1,50 @@
+{
+  "observed_date": "2026-11-13",
+  "pr_number": 4,
+  "pr_url": "https://github.com/sorensadrgit-art/openGym/pull/4",
+  "base": "next/integration",
+  "head": "feat/ep-00-baseline",
+  "observed_head_sha": "f614dc918ebfc5bbff3f3ab1851bf82bd5019f41",
+  "is_draft": true,
+  "actions_enabled": true,
+  "commands": [
+    "gh pr view 4 --json url,isDraft,baseRefName,headRefName,state,commits,statusCheckRollup",
+    "gh api repos/sorensadrgit-art/openGym/actions/permissions",
+    "gh run list --branch feat/ep-00-baseline --limit 5 --json databaseId,workflowName,event,status,conclusion,headSha",
+    "gh pr checks 4 --watch --interval 10",
+    "gh run view 43498244134 --json status,conclusion,jobs",
+    "gh run view 43498244323 --json status,conclusion,jobs",
+    "gh run view 43498244323 --log-failed"
+  ],
+  "pr_checks_command_exit": 1,
+  "check_counts": { "pass": 4, "fail": 1, "skip": 9 },
+  "workflows": [
+    {
+      "name": "Tests",
+      "run_id": 43498244134,
+      "event": "pull_request",
+      "conclusion": "success",
+      "passed_jobs": ["changes", "report", "tests-ok"],
+      "skipped_jobs": ["frontend", "api", "mcp", "catalogue", "images", "android"]
+    },
+    {
+      "name": "iOS",
+      "run_id": 43498244069,
+      "event": "pull_request",
+      "conclusion": "success",
+      "passed_jobs": ["gate"],
+      "skipped_jobs": ["simulator", "ui-tests", "device-archive"]
+    },
+    {
+      "name": "CLA",
+      "run_id": 43498244323,
+      "event": "pull_request_target",
+      "conclusion": "failure",
+      "failed_jobs": ["cla"],
+      "classification": "environment",
+      "error_excerpt": "Error occurred when creating the signed contributors file: Branch cla-signatures not found. Make sure the branch where signatures are stored is NOT protected.",
+      "additional_error": "Committers of pull request 4 have to sign the CLA"
+    }
+  ],
+  "limitation": "Observation applies to the recorded head. Documentation filters skipped substantive suites. No CLA branch, signature, workflow or repository setting was changed."
+}
