@@ -137,6 +137,7 @@ export const listRoutines = {
       routines: (S.routines || []).map(r => ({
         id: r.id,
         name: r.name,
+        ...(r.archived === true ? { archived: true } : {}),
         emoji: r.emoji || null,
         exercise_count: (r.ex || []).length,
         superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
@@ -216,7 +217,7 @@ export const getWeekPlan = {
     const today = new Date()
     const isoToday = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
     const todayWd = today.getDay()
-    const routines = S.routines || []
+    const routines = (S.routines || []).filter(r => r.archived !== true)
     const nameOf = id => routines.find(x => x.id === id)?.name || null
     // A weekday holds a routine-id list (combine routines); older states hold one id.
     const weekdayIds = d => [].concat(S.week?.[d] || []).filter(id => routines.some(x => x.id === id))

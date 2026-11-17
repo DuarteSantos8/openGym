@@ -1,4 +1,5 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
+import { isLive } from './routine-folders.js'
 import { syncSupersetMeta } from './superset-meta.js'
 import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
@@ -593,9 +594,9 @@ export function effectiveRoutineIds(S, iso, today = todayISO()) {
   const ov = S.dayPlan[iso]
   if (ov === 'rest') return []
   const pin = pinState(S, ov, today)
-  if (!pin && ov && S.routines.some(r => r.id === ov)) return [ov]
+  if (!pin && ov && S.routines.some(r => r.id === ov && isLive(r))) return [ov]
   const wd = new Date(iso + 'T12:00:00').getDay()
-  const weekday = [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
+  const weekday = [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id && isLive(r)))
   const q = pin === 'open' ? ov : queueNext(S, iso, today)
   // The planner's weekday pointers stay hidden on the queue's day even when it has no session for
   // it (every remaining one pinned to another day): those sessions have their days.

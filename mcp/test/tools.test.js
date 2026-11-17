@@ -1484,3 +1484,16 @@ describe('search_exercises (sub-connect-146)', () => {
     expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'off', bodyweight: 'view' })).toBe(false)
   })
 })
+
+describe('archived routines', () => {
+  test('list_routines marks one, get_week_plan skips it', () => {
+    const push = S.routines.find(x => x.name === 'Push Day')
+    push.archived = true
+    _seedStateForTests(S)
+    expect(call('list_routines').routines.find(x => x.id === push.id).archived).toBe(true)
+    expect(call('list_routines').routines.find(x => x.name === 'Pull Day').archived).toBeUndefined()
+    const r = call('get_week_plan')
+    expect(r.today_routine_id).toBeNull()
+    expect(r.weekdays.flatMap(d => d.routine_ids).includes(push.id)).toBe(false)
+  })
+})

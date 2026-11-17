@@ -14,6 +14,7 @@ import { isRungRow } from './warmup-snap.js'
 export function copyRoutine(routine, suffix = 'Copy') {
   const copy = structuredClone(routine)
   copy.id = uid()
+  delete copy.archived
   // "Push (Copy)" copied again becomes "Push (Copy 2)", not "Push (Copy) (Copy)".
   const esc = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const m = new RegExp('^(.*) \\(' + esc + '(?: (\\d+))?\\)$').exec(routine.name || '')
@@ -71,7 +72,7 @@ export function routineSnapshot(S, id) {
   return { routine: structuredClone(S.routines[index]), index, week, dayPlan, seqAt, queueAt }
 }
 
-const putBack = (list, at, id) => {
+export const putBack = (list, at, id) => {
   if (list.includes(id)) return list
   const next = list.slice()
   next.splice(Math.min(at, next.length), 0, id)

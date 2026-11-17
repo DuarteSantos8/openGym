@@ -68,7 +68,7 @@ function stateQueue(S) {
   const hit = derived.get(q);
   if (hit && hit.routines === routines && hit.routineCount === (routines?.length ?? 0) && hit.ids === q.ids
     && hit.idCount === q.ids.length && hit.rawStartsOn === q.startsOn && hit.since === q.since && hit.tz === tz) return hit;
-  const known = new Set((routines || []).map(r => r?.id));
+  const known = new Set((routines || []).filter(r => r?.archived !== true).map(r => r?.id));
   const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? dayIn(q.since, tz) : null);
   // First valid occurrence of each id — the same normalization as the frontend's queueOf.
   const ids = [...new Set(q.ids)].filter(id => known.has(id));
@@ -160,7 +160,7 @@ export function effectiveRoutineId(S, iso) {
   if (ov === 'rest') return null;
   const pin = pinState(S, ov, iso);
   if (pin === 'open') return ov;
-  if (!pin && ov && S.routines?.some(r => r?.id === ov)) return ov;
+  if (!pin && ov && S.routines?.some(r => r?.id === ov && r.archived !== true)) return ov;
   const q = queueNext(S, iso);
   if (q) return q;
   const wd = new Date(iso + 'T12:00:00').getDay();
@@ -170,7 +170,7 @@ export function effectiveRoutineId(S, iso) {
   const list = [].concat(S.week?.[wd] || []);
   if (!list.length) return null;
   const sq = stateQueue(S);
-  const known = sq ? sq.known : new Set((S.routines || []).map(r => r?.id));
+  const known = sq ? sq.known : new Set((S.routines || []).filter(r => r?.archived !== true).map(r => r?.id));
   // A live queue has its known ids in `want`, and only known ids are looked up in it.
   const queued = live ? sq.queue.want : null;
   return list.find(id => known.has(id) && !(live && queued.has(id))) || null;

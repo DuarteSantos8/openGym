@@ -10,6 +10,7 @@ import { uid } from './format.js'
 import { normalizeMediaRef } from './media-refs.js'
 import { soundsOf, addSound, SOUNDS_MAX } from './user-sounds.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
+import { activeRoutines } from './routine-folders.js'
 import { iconChoice } from './streak-icons.js'
 import { accentValue } from './accent.js'
 import { dayPhotosOf } from './day-photos.js'
@@ -63,13 +64,14 @@ export function ownItems(S, type) {
       })
     case 'plan': {
       const out = []
-      if ((S.routines || []).some(r => !originOf(r))) {
+      const live = activeRoutines(S)
+      if (live.some(r => !originOf(r))) {
         try {
-          const bundle = buildPlanBundle({ ...S, routines: (S.routines || []).filter(r => !originOf(r)) }, '')
+          const bundle = buildPlanBundle({ ...S, routines: live.filter(r => !originOf(r)) }, '')
           out.push({ src: 'plan:all', title: t('My plan'), payload: { bundle }, media: bundleMedia(bundle), routines: bundle.routines.length })
         } catch { /* a unit the plan file cannot carry */ }
       }
-      for (const r of (S.routines || []).filter(r => r && r.id && !originOf(r))) {
+      for (const r of live.filter(r => r && r.id && !originOf(r))) {
         try {
           const bundle = buildPlanBundle({ ...S, routines: [r], week: {}, programmes: {} }, r.name)
           out.push({ src: 'plan:r:' + r.id, title: str(r.name) || t('Routine'), payload: { bundle }, media: bundleMedia(bundle), routines: 1 })

@@ -68,6 +68,15 @@ const P = {
   // Head lifted clear of the arm-V apex (was cy 10.5, right where the arm strokes
   // meet) so the body no longer reads as tangled lines behind a transparent head.
   pullup: <><path d="M3.6 5.1h16.8M8.5 5.5v2.3M15.5 5.5v2.3" /><circle cx="12" cy="9.6" r="1.8" /><path d="m8.5 7.8 3.5 5 3.5-5M12 13.3v3.9M12 17.2l-2.1 3.2M12 17.2l2.1 3.2" /></>,
+  // The split days and kit: arrows for push and pull, garment shapes for upper and lower.
+  splitPush: <><path d="M3.5 7v10"/><path d="M8 12h12.5M15 6.5l5.5 5.5-5.5 5.5"/></>,
+  splitPull: <><path d="M20.5 7v10"/><path d="M16 12H3.5M9 6.5 3.5 12 9 17.5"/></>,
+  splitUpper: <><path d="M8.4 3.6v3c0 1.7-1.2 3.1-2.9 3.5V19a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-8.9c-1.7-.4-2.9-1.8-2.9-3.5v-3"/><path d="M8.4 3.6c0 1.9 1.5 2.9 3.6 2.9s3.6-1 3.6-2.9"/></>,
+  splitLower: <><path d="M6.5 4.5h11l1 14.2h-4.6L12 11.4l-1.9 7.3H5.5Z"/><path d="M6.3 8h11.4"/></>,
+  splitFull: <><circle cx="12" cy="4.5" r="2"/><path d="M5 10.5 12 8.5l7 2M12 8.5V15M12 15l-3.2 5.8M12 15l3.2 5.8"/></>,
+  gripHand: <><path d="M8 20.5v-5.2c-1.8-.8-3-2.4-3-4.4V8a3.4 3.4 0 0 1 3.4-3.4h7.2A3.4 3.4 0 0 1 19 8v2.9c0 2-1.2 3.6-3 4.4v5.2Z"/><path d="M2.5 11.2h9M19 11.2h2.5M12 4.8v3.8"/></>,
+  suitcase: <><rect x="5.5" y="8.5" width="13" height="11" rx="2.5"/><path d="M9 8.5v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M5.5 13h13M8.5 19.5V21M15.5 19.5V21"/></>,
+  homeGym: <><path d="M3.5 10.7 12 3.8l8.5 6.9M5.9 9.4V19a1.4 1.4 0 0 0 1.4 1.4h9.6a1.4 1.4 0 0 0 1.4-1.4V9.4"/><path d="M9.2 12.6v5.6M14.8 12.6v5.6M9.2 15.4h5.6"/></>,
   kettlebell: <><path d="M9.5 11V9.6a2.5 2.5 0 0 1 5 0V11" /><path d="M14.9 11.8c2.2 1.5 3.6 3.9 3.6 6.4a1.6 1.6 0 0 1-1.6 1.6H7.1a1.6 1.6 0 0 1-1.6-1.6c0-2.5 1.4-4.9 3.6-6.4Z" /></>,
   // An adjustable bench: the seat, its legs, and the backrest tilted up (Settings → Equipment → Bench).
   bench: <path d="M3.4 14.2h10.4M5.6 14.2v4.6M11.6 14.2v4.6M13.8 14.2l5.4-7.6M16.6 17.4l-1.8-2.2M16.6 17.4v1.4" />,
@@ -116,6 +125,8 @@ const P = {
   list: <path d="M8.4 6.6h11.2M8.4 12h11.2M8.4 17.4h11.2M4.6 6.6h.01M4.6 12h.01M4.6 17.4h.01" />,
   grid: <><rect x="4" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" /></>,
   folder: <path d="M3.6 7.4a2 2 0 0 1 2-2h3.1l2 2.4h6.7a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" />,
+  // a box with a lid: the Archive
+  archive: <><rect x="3.6" y="4.8" width="16.8" height="4.2" rx="1.4" /><path d="M5.2 9v8.6a2 2 0 0 0 2 2h9.6a2 2 0 0 0 2-2V9M9.6 13h4.8" /></>,
   globe: <><circle cx="12" cy="12" r="8.2" /><path d="M3.8 12h16.4M12 3.8c2.1 2.2 3.2 5.1 3.2 8.2s-1.1 6-3.2 8.2c-2.1-2.2-3.2-5.1-3.2-8.2s1.1-6 3.2-8.2Z" /></>,
   // Seasonal themes (lib/seasonal.js): two halves of a pumpkin and its stem.
   pumpkin: <><path d="M12 7.4c-1.6-1.2-4.9-1.4-6.8.6-2.4 2.6-2.4 8.4 0 11 1.9 2 5.2 1.8 6.8.6 1.6 1.2 4.9 1.4 6.8-.6 2.4-2.6 2.4-8.4 0-11-1.9-2-5.2-1.8-6.8-.6Z" /><path d="M12 7.4c-1.4 2.2-1.4 10 0 12.2M12 7.4c.1-1.6.6-2.9 1.8-3.8" /></>,
@@ -199,6 +210,11 @@ const P = {
   steps: <path d="M3.6 19.8h4.6v-4.6h4.6v-4.6h4.6V6h3" />,
   // a note pinned to show next time (flag is Finish workout)
   pin: <path d="M9.2 3.8h5.6M10.2 3.8v5.4l-3.4 3.8h10.4l-3.4-3.8V3.8M12 13v7.2" />,
+  // a push-pin, tilted as if stuck in a board: the current plan (a round tile; mapPin means a
+  // place). Drawn upright, turned 45 degrees and nudged down-left so it sits centred in a circle.
+  pushpin: <g transform="translate(-.9 .9) rotate(45 12 12)"><path d="M8.6 3.4h6.8M10 3.4v4.3c-2.2 1-3.7 2.7-3.7 4.8h11.4c0-2.1-1.5-3.8-3.7-4.8V3.4M12 12.5v8" /></g>,
+  // a folder crossed out: Move to No folder
+  folderOff: <><path d="M3.6 7.4a2 2 0 0 1 2-2h3.1l2 2.4h6.7a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" /><path d="M4.4 4.4l15.2 15.2" /></>,
   // a place on a map (the gym reminder, #614)
   mapPin: <><path d="M12 20.6s-6.4-5.6-6.4-10.6a6.4 6.4 0 0 1 12.8 0c0 5-6.4 10.6-6.4 10.6Z" /><circle cx="12" cy="10" r="2.4" /></>,
   // The gym map (1.4.4): "I'm here right now" (a location arrow) and "Open in Google Maps".

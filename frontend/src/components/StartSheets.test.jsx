@@ -137,3 +137,11 @@ describe('the exercises you didn’t get to (#985)', () => {
     expect(started).toEqual([{ ids: ['push'], lead: ['0029', '0031'] }])
   })
 })
+
+describe('an archived routine in the start picker', () => {
+  it('is not listed, not even as today', () => {
+    act(() => useStore.getState().update(s => { s.routines.find(r => r.id === 'mob').archived = true; s.routines.find(r => r.id === 'push').archived = true }))
+    startPickerSheet(); renderTop()
+    expect(rowTitles('.menu-list')).toEqual(['Pull', 'Freestyle workout (pick as you go)'])
+  })
+})

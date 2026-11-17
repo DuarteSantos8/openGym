@@ -155,11 +155,12 @@ describe('the routines list', () => {
     expect(useUI.getState().toastMsg).toBe('It’s already back.')
   })
 
-  it('Edit’s minus deletes the same way, with the Undo in place of the confirm', () => {
+  it('Edit’s Delete bar deletes the ticked routine with an Undo that puts it back', () => {
     mount('routines')
-    click(host.querySelector('.plan-textbtn'))
-    click(host.querySelector('button[aria-label="Delete Legs"]'))
-    expect(confirmSheet).not.toHaveBeenCalled()
+    click([...host.querySelectorAll('.plan-textbtn')].find(b => b.textContent === 'Edit'))
+    click(host.querySelector('button[aria-label="Select Legs"]'))
+    click([...host.querySelectorAll('.plan-editbar button')].find(b => b.textContent === 'Delete'))
+    act(() => confirmSheet.mock.lastCall[0].onConfirm())
     expect(S().routines.map(r => r.id)).toEqual(['a', 'b'])
     undo()
     expect(S().routines.map(r => r.id)).toEqual(['a', 'b', 'c'])

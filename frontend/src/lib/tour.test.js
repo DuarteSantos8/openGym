@@ -160,6 +160,9 @@ describe('ways to another screen', () => {
     expect(reached(step('p-new'), '/plan')).toBe(false)
     expect(reached(step('today'), '/home')).toBe(false)
   })
+  it('the New step points at the pill, whose menu is the user\'s to use (free, in a sheet)', () => {
+    expect(step('p-new')).toMatchObject({ anchor: 'plan-new', free: true, sheet: true })
+  })
   it('is passed over when that screen is on already, or by its own rule', () => {
     const has = () => false
     expect(passOver(step('c-go'), { path: '/library', has })).toBe(true)

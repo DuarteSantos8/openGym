@@ -10,17 +10,19 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
+import { exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { circuitOf, setCircuit, roundsPerStation, defaultCircuit, rememberRegular, restoreRegular } from '../lib/circuit.js'
 import { circuitLine, modeName, MODE_HINT } from '../lib/circuit-copy.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import { colorOf, tileStyle } from '../lib/routine-colors.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { RoutineFolderRow } from '../components/RoutineFolder.jsx'
+import { routineLookSheet } from '../components/RoutineLook.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
@@ -498,9 +500,9 @@ export default function RoutineEdit() {
   const swipe = workoutControls(S).swipeSets
 
   return <div className="narrow">
-    <div className="hdr">
+    <div className="hdr hdr-mid">
       <button className="iconbtn" data-back="/plan" data-tour="routine-back" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, margin: '0 12px' }}>
+      <div style={{ flex: 1 }}>
         <input className="input" data-tour="routine-name" aria-label={t('Routine name')} defaultValue={r.name} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em' }}
           onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
       </div>
@@ -509,7 +511,7 @@ export default function RoutineEdit() {
         aria-label={isFavRoutine(r) ? t('Remove from favourites') : t('Add to favourites')}
         onClick={() => { let on = false; update(s => { on = toggleFavRoutine(s, id) }); toast(on ? t('Starred. It leads your routines now.') : t('No longer a favourite.')) }}>
         <Icon name={isFavRoutine(r) ? 'starFill' : 'star'} /></button>
-      <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
+      <button className="iconbtn look-btn" aria-label={t('Colour and icon')} onClick={() => routineLookSheet(id)}><span className="lrow-i" style={tileStyle(r)}><Icon name={glyphOf(r.emoji)} /></span></button>
     </div>
 
     <div className="sect-b" style={{ marginBottom: 16 }}>
@@ -629,7 +631,7 @@ export default function RoutineEdit() {
       const { worked } = rankOf(load)
       return <div className="card" style={{ marginTop: 12 }}>
         <h2>{t('What this session hits')}</h2>
-        <BodyMap load={load} body={S.body} hits={worked} />
+        <div style={colorOf(r) ? { '--acc': `var(--${colorOf(r)})` } : undefined}><BodyMap load={load} body={S.body} hits={worked} /></div>
         <div className="mchips">
           {worked.slice(0, 6).map(m => <span key={m} className="mchip">{t(MUSCLE_NAME[m])}</span>)}
         </div>
