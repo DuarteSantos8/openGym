@@ -1,6 +1,13 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Liquid Glass G1: floating tab bar ---
+  "Sections": "Sektioner",
+  "More sections": "Flere sektioner",
+  "Choose routine": "Vælg rutine",
+  "{0}, show all tabs": "{0}, vis alle faner",
+  "Resume workout, {0} elapsed": "Fortsæt træningen, {0} gået",
+  "Workout started": "Træning startet",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",
   "Set once": "Indstil én gang",
