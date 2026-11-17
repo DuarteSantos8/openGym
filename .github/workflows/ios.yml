@@ -79,7 +79,9 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: macos-26
-    timeout-minutes: 60
+    # Room for the two picture steps' own limits (45 + 30 min) after the build: they may end their
+    # step, never the job (a slow runner needs ~15 min per watch size for the shots).
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
