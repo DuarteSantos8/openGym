@@ -53,6 +53,20 @@ describe('exercise detail star', () => {
     expect(useUI.getState().toastMsg).toBe('Removed from favourites')
   })
 
+  it('pops the star when a tap fills it, not when the sheet opens on a favourite', () => {
+    const ex = EXDB[0]
+    act(() => { useStore.getState().update(s => { s.favEx = [ex.id] }, false) })
+    exerciseDetailSheet(ex)
+    const host = renderTop()
+    expect(starOf(host).querySelector('.fav-pop')).toBeNull()
+    act(() => starOf(host).click())
+    expect(starOf(host).querySelector('.fav-pop')).toBeNull()
+    act(() => starOf(host).click())
+    expect(starOf(host).querySelector('.fav-pop')).not.toBeNull()
+    act(() => starOf(host).click())
+    expect(starOf(host).querySelector('.fav-pop')).toBeNull()
+  })
+
   it('tolerates a profile written before the field existed', () => {
     useStore.setState(s => { const next = { ...s.S }; delete next.favEx; return { S: next } })
     exerciseDetailSheet(EXDB[0])
