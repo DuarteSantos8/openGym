@@ -3,7 +3,7 @@
 // the list shows every weigh-in of a day with its time under the day's value, and each one can
 // be edited or deleted (with Undo) on its own.
 import React, { act } from 'react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -42,8 +42,11 @@ beforeEach(() => {
   const st = clone(DEF)
   Object.assign(st, { unit: 'kg', bodyweight: clone(LOG), weekStart: 1, targetW: null })
   useStore.setState({ S: st, user: null })
+  // "Now" is read twice (sheet, then test): a fixed mid-minute clock keeps both reads on one minute.
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date(2026, 10, 16, 12, 16, 30))
 })
-afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
+afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }); vi.useRealTimers() })
 
 describe('the log sheet', () => {
   it('starts on now, and a second weigh-in today joins the first', () => {
