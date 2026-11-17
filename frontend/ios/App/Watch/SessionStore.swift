@@ -1249,7 +1249,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         closeFix()
         send(event: ev)
         state = next
-        Haptics.finished()
+        Haptics.finished(records: summary?.prs.count ?? 0)
     }
 
     /// Discards the session: nothing saved here or in Apple Health, and the phone drops it too.
@@ -1742,10 +1742,19 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
-            if screen == "summary" || screen == "summary-end" || screen == "ended" {
-                self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
-                                              prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
-                                              endedOnPhone: screen == "ended")
+            // The medal: a records day (gold), its back, its end with Done, a day without records (steel).
+            if screen.hasPrefix("summary") || screen == "ended" {
+                let now = Date().timeIntervalSince1970 * 1000
+                let long = ProcessInfo.processInfo.arguments.contains("-OpenGymWatchLong")
+                self.summary = screen == "summary-steel"
+                    ? WorkoutSummary(name: long ? "Upper body hypertrophy A" : "Pull day", unit: "kg", duration: 48 * 60 + 5, sets: 16, volume: 5180,
+                                     prs: [], hrAvg: 128, hrMax: 155, calories: 286, endedOnPhone: false, endedAt: now)
+                    : WorkoutSummary(name: long ? "Upper body hypertrophy A" : "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 18, volume: 6240,
+                                     prs: ["Bench Press", "Incline Dumbbell Press"], hrAvg: 132, hrMax: 162, calories: 312,
+                                     endedOnPhone: screen == "ended",
+                                     records: [RecordLine(name: "Bench Press", kind: .weight, old: 100, new: 105, unit: "kg"),
+                                               RecordLine(name: "Incline Dumbbell Press", kind: .weight, old: 32, new: 34, unit: "kg")],
+                                     endedAt: now)
             }
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames
@@ -1793,7 +1802,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   side       a light click (one side of a per-side set: the other one now)
  *   restOver   an alarm: two strong taps and a rising one (again after 5 s if not noticed)
  *   start      the system's start
- *   finished   stop, then two successes: the workout is saved
+ *   finished   on the summary medal's beats (Medal.beats): stop as it is struck, then a success
+ *              once it rests, or a rising tap per record's diamond (3 at most)
  *   skip       a soft one going down
  *   count      a click each second of the 3-2-1 before a workout
  *   ask        two taps: "All done?", nothing logged for 20 minutes
@@ -1810,7 +1820,11 @@ enum Haptics {
     static func side() { play([(0, .click)]) }
     static func restOver() { play([(0, .notification), (0.45, .notification), (0.9, .directionUp)]) }
     static func start() { play([(0, .start)]) }
-    static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
+    static func finished(records: Int) {
+        play(Medal.beats(records: records).map { b -> (Double, WKHapticType) in
+            (b.at, b.beat == .strike ? .stop : b.beat == .settled ? .success : .directionUp)
+        })
+    }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }

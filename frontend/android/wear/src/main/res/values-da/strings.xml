@@ -13,6 +13,7 @@
     <string name="band_under">under %1$d</string>
     <string name="body_weight">Kropsvægt</string>
     <string name="bodyweight">Kropsvægt</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Kalorier</string>
     <string name="cancel">Annuller</string>
     <string name="complication_desc">Dine sæt indtil nu, eller din streak.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">Puls</string>
     <string name="hold">Hold</string>
     <string name="hold_to_finish">Hold inde for at afslutte</string>
+    <string name="hours">Timer</string>
     <string name="how_hard">Hvor hårdt var det sæt?</string>
     <string name="hr_avg_max">snit %1$d · maks %2$d</string>
     <string name="hr_why">Tillad puls for at se den ved hvert sæt.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">Lavere</string>
     <string name="media_title">Musik</string>
     <string name="min">min.</string>
+    <string name="min_minutes">min</string>
     <string name="more">Mere</string>
     <string name="muscles">Muskler</string>
     <string name="n_more">+%1$d mere</string>
     <string name="n_sets">%1$s sæt</string>
+    <string name="new_record">Ny rekord</string>
     <string name="next_set_btn">Næste sæt</string>
     <string name="no_age_set">Ingen alder angivet</string>
     <string name="no_effort_yet">Ingen anstrengelse vurderet endnu</string>
@@ -79,6 +83,7 @@
     <string name="prs">PRs</string>
     <string name="quick_checkin">Hurtigt tjek-ind</string>
     <string name="quick_start">Hurtig start</string>
+    <string name="records">Rekorder</string>
     <string name="reps">Reps</string>
     <string name="rest">Pause</string>
     <string name="rest_day">Intet planlagt. Det er dit valg.</string>
@@ -87,6 +92,7 @@
     <string name="routines">Rutiner</string>
     <string name="save">Gem</string>
     <string name="save_and_start">Gem og start træning</string>
+    <string name="saved">Gemt</string>
     <string name="set_of">Sæt %1$d af %2$d</string>
     <string name="sets">Sæt</string>
     <string name="sets_of">%1$d af %2$d sæt</string>

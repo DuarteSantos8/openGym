@@ -45,9 +45,15 @@
 "Keep going" = "继续";
 "Finish now" = "现在结束";
 "Back" = "返回";
+"Saved" = "已保存";
+"Hours" = "小时";
+"min (minutes)" = "分钟";
+"Records" = "纪录";
+"New record" = "新纪录";
 "Last time: %@" = "上次: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "有一阵没记录了。如果练完了，它会在 %@ 自动结束，按最后一组保存。";
 "Finish the workout now? Otherwise it ends by itself at %@." = "现在结束训练吗？否则它会在 %@ 自动结束。";
+"%@ bpm" = "%@ 次/分";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";
 "Open openGym on your iPhone once and your routines show up here." = "在 iPhone 上打开一次 openGym，你的训练计划就会出现在这里。";
@@ -88,4 +94,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "在 iPhone 上打开 Apple 健康，休息和静力保持时 openGym 就会一直留在屏幕上。";
 "No sets yet" = "还没有组";
 "+%lld more" = "还有 %lld 个";
+"On iPhone" = "在 iPhone 上";
 "%@ sets" = "%@ 组";

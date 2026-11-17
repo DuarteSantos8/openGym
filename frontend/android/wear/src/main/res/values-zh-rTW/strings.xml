@@ -13,6 +13,7 @@
     <string name="band_under">低於 %1$d</string>
     <string name="body_weight">體重</string>
     <string name="bodyweight">徒手動作</string>
+    <string name="bpm">%1$s 次/分</string>
     <string name="calories">卡路里</string>
     <string name="cancel">取消</string>
     <string name="complication_desc">目前完成的組數，或你的連續週數。</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">心率</string>
     <string name="hold">保持</string>
     <string name="hold_to_finish">按住以結束</string>
+    <string name="hours">小時</string>
     <string name="how_hard">這組感覺有多吃力？</string>
     <string name="hr_avg_max">平均 %1$d · 最高 %2$d</string>
     <string name="hr_why">允許讀取心率，每組都能看到脈搏。</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">調低音量</string>
     <string name="media_title">音樂</string>
     <string name="min">最低</string>
+    <string name="min_minutes">分鐘</string>
     <string name="more">較多</string>
     <string name="muscles">肌肉</string>
     <string name="n_more">還有 %1$d 個</string>
     <string name="n_sets">%1$s 組</string>
+    <string name="new_record">新紀錄</string>
     <string name="next_set_btn">下一組</string>
     <string name="no_age_set">未設定年齡</string>
     <string name="no_effort_yet">尚未評定強度</string>
@@ -79,6 +83,7 @@
     <string name="prs">個人紀錄</string>
     <string name="quick_checkin">快速記錄體重</string>
     <string name="quick_start">快速開始</string>
+    <string name="records">紀錄</string>
     <string name="reps">次數</string>
     <string name="rest">休息</string>
     <string name="rest_day">今天沒計畫。你說了算。</string>
@@ -87,6 +92,7 @@
     <string name="routines">訓練課表</string>
     <string name="save">儲存</string>
     <string name="save_and_start">儲存並開始訓練</string>
+    <string name="saved">已儲存</string>
     <string name="set_of">第 %1$d 組，共 %2$d 組</string>
     <string name="sets">組數</string>
     <string name="sets_of">%1$d / %2$d 組</string>

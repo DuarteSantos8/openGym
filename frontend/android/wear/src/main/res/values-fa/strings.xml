@@ -13,6 +13,7 @@
     <string name="band_under">کمتر از %1$d</string>
     <string name="body_weight">وزن بدن</string>
     <string name="bodyweight">وزن بدن</string>
+    <string name="bpm">%1$s ضربان/دقیقه</string>
     <string name="calories">کالری</string>
     <string name="cancel">لغو</string>
     <string name="complication_desc">ست‌های تا الان، یا رکورد پیوسته‌ات.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">ضربان قلب</string>
     <string name="hold">نگه‌داشتن</string>
     <string name="hold_to_finish">برای پایان نگه دارید</string>
+    <string name="hours">ساعت</string>
     <string name="how_hard">این ست چقدر سخت بود؟</string>
     <string name="hr_avg_max">میانگین %1$d · بیشینه %2$d</string>
     <string name="hr_why">اجازهٔ ضربان قلب بده تا در هر ست نبضت را ببینی.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">آهسته‌تر</string>
     <string name="media_title">موسیقی</string>
     <string name="min">کمینه</string>
+    <string name="min_minutes">دقیقه</string>
     <string name="more">بیشتر</string>
     <string name="muscles">عضلات</string>
     <string name="n_more">+%1$d مورد دیگر</string>
     <string name="n_sets">%1$s ست</string>
+    <string name="new_record">رکورد جدید</string>
     <string name="next_set_btn">ست بعدی</string>
     <string name="no_age_set">سنی تنظیم نشده</string>
     <string name="no_effort_yet">هنوز شدتی ثبت نشده</string>
@@ -79,6 +83,7 @@
     <string name="prs">رکوردهای شخصی</string>
     <string name="quick_checkin">ثبت سریع وزن</string>
     <string name="quick_start">شروع سریع</string>
+    <string name="records">رکوردها</string>
     <string name="reps">تکرار</string>
     <string name="rest">استراحت</string>
     <string name="rest_day">برنامه‌ای نیست. تصمیم با خودت.</string>
@@ -87,6 +92,7 @@
     <string name="routines">روتین‌ها</string>
     <string name="save">ذخیره</string>
     <string name="save_and_start">ذخیره و شروع تمرین</string>
+    <string name="saved">ذخیره شد</string>
     <string name="set_of">ست %1$d از %2$d</string>
     <string name="sets">ست‌ها</string>
     <string name="sets_of">%1$d از %2$d ست</string>
