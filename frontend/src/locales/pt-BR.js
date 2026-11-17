@@ -4326,6 +4326,14 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "Rotinas no relógio",
+  "All {0}": "Todas: {0}",
+  "Sending…": "Enviando…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "Todas as rotinas estão no seu relógio. As arquivadas ficam no celular.",
+  "Last checked {0}": "Última verificação: {0}",
+  "Keep openGym open on the watch for a moment.": "Deixe o openGym aberto no relógio por um momento.",
+  "Update openGym on the watch to see this.": "Atualize o openGym no relógio para ver isto.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

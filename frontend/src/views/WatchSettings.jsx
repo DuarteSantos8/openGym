@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
 import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState, lastHeardAt } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState, lastHeardAt, routinesSync, readRoutinesSent } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
@@ -95,6 +95,13 @@ export default function WatchSettingsPage() {
     live: onWatch + heard + t('Connected right now.'),
     away: onWatch + heard + t('The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.'),
   }[state]
+  // Whether the watch has every routine (it reports what it shows, each time it takes in a new file).
+  const rs = routinesSync({ link, phone: readRoutinesSent(), status, enabled: prefs.enabled })
+  const routinesLine = {
+    synced: t('Every routine is on your watch. Archived ones stay on the phone.') + (status?.at ? ' ' + t('Last checked {0}', fmtAgo(status.at)) : ''),
+    sending: t('Keep openGym open on the watch for a moment.'),
+    unknown: t('Update openGym on the watch to see this.'),
+  }[rs]
   const denied = healthOn && status?.health === 'denied'
   const healthValue = healthOn == null ? '' : denied ? t('Not allowed') : healthOn ? t('On') : t('Off')
   const healthLine = denied ? t('Not allowed on the watch. Allow it in the Health app on your iPhone.')
@@ -112,6 +119,10 @@ export default function WatchSettingsPage() {
         <Switch checked={prefs.enabled} onChange={v => set({ enabled: v })} aria-label={t('Send workouts to the watch')} />
       </Row>
     </Section>
+    {rs !== 'off' && <Section footer={<span data-routines-sync={rs} aria-live="polite">{routinesLine}</span>}>
+      <Row icon="clipboard" iconTint="var(--grey)" title={t('Routines on the watch')}
+        value={rs === 'synced' ? t('All {0}', readRoutinesSent().count) : rs === 'sending' ? t('Sending…') : ''} />
+    </Section>}
     {prefs.enabled && <>
       <Section footer={t('Start a workout on the phone and openGym pops up on your wrist.')}>
         <Row icon="bolt" iconTint="var(--green)" title={t('Open on the watch')}>

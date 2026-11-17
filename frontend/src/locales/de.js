@@ -5917,4 +5917,12 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "Routinen auf der Uhr",
+  "All {0}": "Alle {0}",
+  "Sending…": "Wird gesendet…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "Alle Routinen sind auf deiner Uhr. Archivierte bleiben auf dem Handy.",
+  "Last checked {0}": "Zuletzt geprüft: {0}",
+  "Keep openGym open on the watch for a moment.": "Lass openGym auf der Uhr einen Moment geöffnet.",
+  "Update openGym on the watch to see this.": "Aktualisiere openGym auf der Uhr, um das zu sehen.",
 }

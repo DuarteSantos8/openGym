@@ -5897,4 +5897,12 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "워치의 루틴",
+  "All {0}": "전체 {0}개",
+  "Sending…": "보내는 중…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "모든 루틴이 워치에 있어요. 보관한 루틴은 휴대폰에 남아요.",
+  "Last checked {0}": "마지막 확인: {0}",
+  "Keep openGym open on the watch for a moment.": "잠시 동안 워치에서 openGym을 열어 두세요.",
+  "Update openGym on the watch to see this.": "이 내용을 보려면 워치의 openGym을 업데이트하세요.",
 }

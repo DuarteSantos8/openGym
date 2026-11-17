@@ -5863,4 +5863,12 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "Bài tập trên đồng hồ",
+  "All {0}": "Tất cả {0}",
+  "Sending…": "Đang gửi…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "Mọi bài tập đều có trên đồng hồ. Bài đã lưu trữ vẫn ở trên điện thoại.",
+  "Last checked {0}": "Kiểm tra lần cuối: {0}",
+  "Keep openGym open on the watch for a moment.": "Hãy để openGym mở trên đồng hồ một lúc.",
+  "Update openGym on the watch to see this.": "Cập nhật openGym trên đồng hồ để xem mục này.",
 };

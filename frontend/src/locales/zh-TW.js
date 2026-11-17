@@ -5890,4 +5890,12 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "手錶上的訓練計畫",
+  "All {0}": "全部 {0} 個",
+  "Sending…": "傳送中…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "所有訓練計畫都在你的手錶上。已封存的留在手機裡。",
+  "Last checked {0}": "上次檢查：{0}",
+  "Keep openGym open on the watch for a moment.": "請讓手錶上的 openGym 保持開啟片刻。",
+  "Update openGym on the watch to see this.": "請更新手錶上的 openGym 以查看此項。",
 }

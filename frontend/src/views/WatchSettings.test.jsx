@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: one Apple Health story. The phone's Apple Health switch (Settings → Integrations)
 // is the one switch; this page says what the watch makes of it and leads there.
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { act } from 'react'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
@@ -12,7 +12,7 @@ vi.mock('../lib/watch-sync.js', () => ({ watchStatus: async () => mocks.link }))
 
 import WatchSettingsPage from './WatchSettings.jsx'
 import { useStore } from '../store/useStore.js'
-import { readWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchStatus, watchLinkState, noteRoutinesSent } from '../lib/watch-settings.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let where = null
@@ -158,5 +158,41 @@ describe('Settings → Apple Watch', () => {
     expect(watchLinkState({ paired: true, installed: true }, null)).toBe('silent')
     expect(watchLinkState({ paired: true, installed: true }, { at: 5 })).toBe('away')
     expect(watchLinkState({ paired: true, installed: true, reachable: true }, null)).toBe('live')
+  })
+})
+
+describe('Routines on the watch', () => {
+  const at = Date.now() - 5 * 60e3
+  afterEach(() => noteRoutinesSent(null))
+  const foot = el => el.querySelector('[data-routines-sync]')
+  it('says all of them are there, with how many and when the watch last said so', async () => {
+    noteRoutinesSent({ hash: 'h1', count: 24 })
+    writeWatchStatus({ health: 'off', version: '1.4.6', at, routinesHash: 'h1', routinesCount: 24 })
+    const el = await mount()
+    expect(row(el, 'Routines on the watch').querySelector('.lrow-v').textContent).toBe('All 24')
+    expect(foot(el).textContent).toContain('Every routine is on your watch. Archived ones stay on the phone.')
+    expect(foot(el).textContent).toContain('Last checked')
+    expect(foot(el).getAttribute('aria-live')).toBe('polite')
+  })
+  it('says sending while the watch shows another list', async () => {
+    noteRoutinesSent({ hash: 'h2', count: 24 })
+    writeWatchStatus({ health: 'off', version: '1.4.6', at, routinesHash: '', routinesCount: 16 })
+    const el = await mount()
+    expect(row(el, 'Routines on the watch').querySelector('.lrow-v').textContent).toBe('Sending…')
+    expect(foot(el).textContent).toBe('Keep openGym open on the watch for a moment.')
+  })
+  it('asks for an update from a watch app that does not report it', async () => {
+    noteRoutinesSent({ hash: 'h2', count: 24 })
+    writeWatchStatus({ health: 'off', version: '1.4.5', at })
+    const el = await mount()
+    expect(foot(el).textContent).toBe('Update openGym on the watch to see this.')
+  })
+  it('is not there without a watch app or with nothing sent', async () => {
+    noteRoutinesSent({ hash: 'h2', count: 24 })
+    mocks.link = { paired: true, installed: false }
+    expect(row(await mount(), 'Routines on the watch')).toBeUndefined()
+    mocks.link = { paired: true, installed: true }
+    noteRoutinesSent(null)
+    expect(row(await mount(), 'Routines on the watch')).toBeUndefined()
   })
 })

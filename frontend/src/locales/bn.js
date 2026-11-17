@@ -5976,4 +5976,12 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "ঘড়িতে রুটিন",
+  "All {0}": "সব {0}টি",
+  "Sending…": "পাঠানো হচ্ছে…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "প্রতিটি রুটিন আপনার ঘড়িতে আছে। আর্কাইভ করাগুলো ফোনেই থাকে।",
+  "Last checked {0}": "শেষ যাচাই: {0}",
+  "Keep openGym open on the watch for a moment.": "কিছুক্ষণ ঘড়িতে openGym খোলা রাখুন।",
+  "Update openGym on the watch to see this.": "এটি দেখতে ঘড়িতে openGym আপডেট করুন।",
 }

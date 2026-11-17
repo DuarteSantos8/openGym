@@ -5900,4 +5900,12 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "Rutinok az órán",
+  "All {0}": "Mind a(z) {0}",
+  "Sending…": "Küldés…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "Minden rutin az órádon van. Az archiváltak a telefonon maradnak.",
+  "Last checked {0}": "Utoljára ellenőrizve: {0}",
+  "Keep openGym open on the watch for a moment.": "Hagyd egy pillanatra nyitva az openGym-et az órán.",
+  "Update openGym on the watch to see this.": "Frissítsd az openGym-et az órán, hogy ezt lásd.",
 }

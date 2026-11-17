@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: this phone's choices for its watch, per device, never in the profile.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt } from './watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt, routinesSync, noteRoutinesSent, readRoutinesSent } from './watch-settings.js'
 import { applyEvents, bindWatchAppActions, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -72,5 +72,43 @@ describe('when the watch was last heard from', () => {
     // a newer status still wins, and a status never loses to an event (its own check is untouched)
     writeWatchStatus({ health: 'on', version: '1.4.5', at: T + 10 })
     expect(lastHeardAt()).toBe(T + 10)
+  })
+})
+
+describe('whether the watch has the routines', () => {
+  const link = { paired: true, installed: true }
+  const phone = { hash: 'h1', count: 20 }
+  const status = (over = {}) => ({ at: 5, routinesHash: 'h1', routinesCount: 20, ...over })
+  it('synced when the watch shows the file the phone has, with as many routines', () => {
+    expect(routinesSync({ link, phone, status: status() })).toBe('synced')
+  })
+  it('sending while the watch shows another file, the snapshot fallback (no hash) or fewer routines', () => {
+    expect(routinesSync({ link, phone, status: status({ routinesHash: 'h0' }) })).toBe('sending')
+    expect(routinesSync({ link, phone, status: status({ routinesHash: '' }) })).toBe('sending')
+    expect(routinesSync({ link, phone, status: status({ routinesCount: 16 }) })).toBe('sending')
+    expect(routinesSync({ link, phone, status: null })).toBe('sending')
+  })
+  it('unknown from a watch app that does not report it', () => {
+    expect(routinesSync({ link, phone, status: { at: 5, version: '1.4.5' } })).toBe('unknown')
+  })
+  it('off (hidden) when the watch is switched off, not paired, without the app, or there is nothing to send', () => {
+    expect(routinesSync({ link, phone, status: status(), enabled: false })).toBe('off')
+    expect(routinesSync({ link: null, phone, status: status() })).toBe('off')
+    expect(routinesSync({ link: { paired: false, installed: false }, phone, status: status() })).toBe('off')
+    expect(routinesSync({ link: { paired: true, installed: false }, phone, status: status() })).toBe('off')
+    expect(routinesSync({ link, phone: null, status: status() })).toBe('off')
+  })
+  it('the status keeps what the watch reports, and nothing it does not', () => {
+    expect(writeWatchStatus({ health: 'on', version: '1', at: 9, routinesHash: 'h1', routinesCount: 20 })).toMatchObject({ routinesHash: 'h1', routinesCount: 20 })
+    const old = writeWatchStatus({ health: 'on', version: '1', at: 9 })
+    expect(old).not.toHaveProperty('routinesHash')
+    expect(old).not.toHaveProperty('routinesCount')
+  })
+  it('the phone remembers what it last sent', () => {
+    expect(readRoutinesSent()).toBeNull()
+    noteRoutinesSent({ hash: 'h1', count: 3 })
+    expect(readRoutinesSent()).toEqual({ hash: 'h1', count: 3 })
+    noteRoutinesSent(null)
+    expect(readRoutinesSent()).toBeNull()
   })
 })

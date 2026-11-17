@@ -49,7 +49,7 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, noteRoutinesSent, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
@@ -1230,6 +1230,9 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       // Every routine goes as a file; the snapshot's own (fitted) list stays for a watch that has no file yet.
       if (snap.ready !== fileOf) { fileOf = snap.ready; file = routinesFile(snap.ready) }
       if (file) snap.routinesHash = file.hash
+      // What Settings → Apple Watch compares with the watch's report: today's routines and the others.
+      const count = file ? (snap.ready.today?.routineIds?.length || 0) + snap.ready.others.length : 0
+      noteRoutinesSent(file ? { hash: file.hash, count } : null)
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
       snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }

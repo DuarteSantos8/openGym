@@ -5893,4 +5893,12 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Routines on the watch": "Treniruočių planai laikrodyje",
+  "All {0}": "Visi {0}",
+  "Sending…": "Siunčiama…",
+  "Every routine is on your watch. Archived ones stay on the phone.": "Visi planai yra tavo laikrodyje. Suarchyvuoti lieka telefone.",
+  "Last checked {0}": "Paskutinį kartą tikrinta: {0}",
+  "Keep openGym open on the watch for a moment.": "Akimirką laikyk openGym atidarytą laikrodyje.",
+  "Update openGym on the watch to see this.": "Atnaujink openGym laikrodyje, kad tai matytum.",
 }
