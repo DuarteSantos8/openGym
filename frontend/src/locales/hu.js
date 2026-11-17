@@ -5901,17 +5901,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "Rutinok az órán",
-  "All {0}": "Mind a(z) {0}",
-  "Sending…": "Küldés…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "Minden rutin az órádon van. Az archiváltak a telefonon maradnak.",
-  "Last checked {0}": "Utoljára ellenőrizve: {0}",
   "Keep openGym open on the watch for a moment.": "Hagyd egy pillanatra nyitva az openGym-et az órán.",
-  "Update openGym on the watch to see this.": "Frissítsd az openGym-et az órán, hogy ezt lásd.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Testreszabás",
   "Collapsed": "Összecsukva",
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Csatlakozás. Próbáld újra egy pillanat múlva.",
+  "Pair a watch in the Watch app.": "Párosíts egy órát a Watch appban.",
+  "Install openGym from the Watch app.": "Telepítsd az openGym-et a Watch appból.",
+  "Open openGym on the watch once.": "Nyisd meg egyszer az openGym-et az órán.",
+  "Open openGym on the watch, or bring it closer.": "Nyisd meg az openGym-et az órán, vagy hozd közelebb.",
+  "Update openGym on the watch.": "Frissítsd az openGym-et az órán.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Ez a verzió nem éri el az órát. Töltsd le az openGym-et a Google Playről vagy az opengym.ch-ról.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Párosítsd az órát a saját appjában, például a Galaxy Wearable-ben.",
+  "On the watch, install openGym from the Play Store.": "Az órán telepítsd az openGym-et a Play Áruházból.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Telepítsd ennek a kiadásnak a Wear OS APK-ját. A Play Áruházas nem párosodik.",
+  "Syncing": "Szinkronizálás",
+  "Not set up": "Nincs beállítva",
+  "Update watch app": "Frissítsd az óra appját",
+  "Last heard {0}": "Utoljára jelentkezett: {0}",
 }

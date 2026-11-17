@@ -150,3 +150,20 @@ export function routinesSync ({ link, phone, status, enabled = true }) {
   if (status && status.routinesHash === undefined) return 'unknown'
   return status && status.routinesHash === phone.hash && status.routinesCount === phone.count ? 'synced' : 'sending'
 }
+
+const CHIP = { synced: 'ok', sending: 'sync', unknown: 'warn', off: 'idle' }
+/**
+ * The status pill on top of Settings → Apple Watch and → Wear OS watch (components/WatchPill.jsx),
+ * from the page's link state (watchLinkState's words) and routinesSync's answer: its tone ('ok',
+ * 'busy', 'warn', 'idle'), its one word, and three marks: paired, openGym on the watch, the routines.
+ */
+export function watchPill (link, routines) {
+  const r = CHIP[routines] || 'idle'
+  if (link === 'unpaired') return { tone: 'warn', word: 'setup', chips: ['warn', 'idle', 'idle'] }
+  if (link === 'missing') return { tone: 'warn', word: 'setup', chips: ['ok', 'warn', 'idle'] }
+  if (link === 'away' || link === 'silent') return { tone: 'warn', word: 'away', chips: ['ok', 'ok', r] }
+  if (link !== 'live') return { tone: 'idle', word: 'checking', chips: ['idle', 'idle', 'idle'] }
+  if (routines === 'unknown') return { tone: 'warn', word: 'update', chips: ['ok', 'ok', 'warn'] }
+  if (routines === 'sending') return { tone: 'busy', word: 'syncing', chips: ['ok', 'ok', 'sync'] }
+  return { tone: 'ok', word: 'connected', chips: ['ok', 'ok', r] }
+}

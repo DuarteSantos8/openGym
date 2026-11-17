@@ -3181,6 +3181,32 @@ button.cal-wk:active{background:var(--press-fill)}
 .app-icon:active{transform:scale(var(--press-scale-sm))}
 .app-icon:disabled{opacity:1}
 .app-icon.on::after{content:'';position:absolute;inset:-4px;border-radius:27%;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
+/* Settings → Apple Watch and → Wear OS watch: the status pill (components/WatchPill.jsx). Green tint when all is
+   well, orange on trouble (with the next step under it), plain while it waits. Text stays --label/--label-2 on the
+   tints; green and orange as glyphs use the -ink shades. The marks wrap under the words at large text sizes. */
+.wpill-w{margin-bottom:22px}
+.wpill{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-height:60px;padding:10px 14px 10px 10px;border-radius:32px;background:var(--surface)}
+.wpill.ok{background:rgba(48,209,88,.14);background:color-mix(in srgb,var(--green) 14%,var(--surface))}
+.wpill.warn{background:rgba(255,159,10,.16);background:color-mix(in srgb,var(--orange) 16%,var(--surface))}
+.wpill-sign{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2);box-shadow:0 0 0 1.5px var(--label-3)}
+.wpill-sign svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.wpill-sign .lit{fill:currentColor;stroke:none;opacity:.9}
+.wpill.ok .wpill-sign{background:color-mix(in srgb,var(--green) 16%,var(--surface-2));color:var(--green-ink);box-shadow:0 0 0 1.5px var(--green),0 0 14px rgba(48,209,88,.35)}
+.wpill.busy .wpill-sign{color:var(--blue-ink);box-shadow:0 0 0 1.5px var(--blue)}
+.wpill.warn .wpill-sign{background:color-mix(in srgb,var(--orange) 16%,var(--surface-2));color:var(--orange-ink);box-shadow:0 0 0 2px var(--orange)}
+.wpill-tx{flex:1 1 9em;min-width:0}
+.wpill-tx b{display:block;font-size:var(--fs-body);font-weight:600;line-height:1.2}
+.wpill-tx span{display:block;font-size:var(--fs-footnote);color:var(--label-2);margin-top:1px;line-height:1.25}
+.wpill-tx i{font-style:normal;white-space:nowrap}   /* breaks between the parts, never inside "Last heard 5 minutes ago" */
+.wpill.warn .wpill-tx span{color:var(--label)}
+.wpill-marks{display:flex;gap:8px;flex:none;margin-inline-start:auto}
+.wpill-m{position:relative;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2)}
+.wpill-m.ok{color:var(--green-ink)}.wpill-m.sync{color:var(--blue-ink)}
+.wpill-m.warn{color:var(--orange-ink);outline:1.5px dashed var(--orange-ink);outline-offset:1px}   /* the one that broke, as a broken link */
+.wpill-m i{position:absolute;inset-inline-end:-3px;bottom:-3px;width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--surface);background:var(--label-3);color:var(--surface)}
+.wpill-m.ok i{background:var(--green);color:#000}.wpill-m.warn i{background:var(--orange);color:#000}.wpill-m.sync i{background:var(--blue);color:#fff}
+.wpill-m i svg{fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.wpill-todo{font-size:var(--fs-footnote);color:var(--label);padding:8px 4px 0;line-height:1.38}
 /* Settings → Apple Watch → Rest timer: two watch screens side by side, the chosen one ticked (like Display & Brightness). */
 .looks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr));gap:12px;padding:16px}
 .look{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:44px;padding:0;text-align:center}

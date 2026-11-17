@@ -5898,17 +5898,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "Rutyny na zegarku",
-  "All {0}": "Wszystkie: {0}",
-  "Sending…": "Wysyłanie…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "Wszystkie rutyny są na twoim zegarku. Zarchiwizowane zostają w telefonie.",
-  "Last checked {0}": "Ostatnio sprawdzono: {0}",
   "Keep openGym open on the watch for a moment.": "Zostaw na chwilę otwarte openGym na zegarku.",
-  "Update openGym on the watch to see this.": "Zaktualizuj openGym na zegarku, aby to zobaczyć.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Dostosuj",
   "Collapsed": "Zwinięta",
   "Hide": "Ukryj",
   "Totals": "Sumy",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Pokaż to, czego używasz, zwiń to, co otwierasz rzadko, a resztę ukryj. Strzałki zmieniają kolejność.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Łączenie. Spróbuj za chwilę.",
+  "Pair a watch in the Watch app.": "Sparuj zegarek w aplikacji Watch.",
+  "Install openGym from the Watch app.": "Zainstaluj openGym z aplikacji Watch.",
+  "Open openGym on the watch once.": "Otwórz raz openGym na zegarku.",
+  "Open openGym on the watch, or bring it closer.": "Otwórz openGym na zegarku lub przybliż go.",
+  "Update openGym on the watch.": "Zaktualizuj openGym na zegarku.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Ta wersja nie łączy się z zegarkiem. Pobierz openGym z Google Play lub opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Sparuj zegarek w jego aplikacji, np. Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Na zegarku zainstaluj openGym ze Sklepu Play.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Zainstaluj APK Wear OS z tego wydania. Wersja ze Sklepu Play się nie sparuje.",
+  "Syncing": "Synchronizacja",
+  "Not set up": "Nieskonfigurowany",
+  "Update watch app": "Zaktualizuj aplikację na zegarku",
+  "Last heard {0}": "Ostatni kontakt: {0}",
 }

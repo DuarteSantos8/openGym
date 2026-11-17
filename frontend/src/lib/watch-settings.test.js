@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: this phone's choices for its watch, per device, never in the profile.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt, routinesSync, noteRoutinesSent, readRoutinesSent } from './watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt, routinesSync, noteRoutinesSent, readRoutinesSent, watchPill } from './watch-settings.js'
 import { applyEvents, bindWatchAppActions, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -110,5 +110,20 @@ describe('whether the watch has the routines', () => {
     expect(readRoutinesSent()).toEqual({ hash: 'h1', count: 3 })
     noteRoutinesSent(null)
     expect(readRoutinesSent()).toBeNull()
+  })
+})
+
+describe('watchPill', () => {
+  it('says one word for each state, and marks what is missing', () => {
+    expect(watchPill('live', 'synced')).toEqual({ tone: 'ok', word: 'connected', chips: ['ok', 'ok', 'ok'] })
+    expect(watchPill('live', 'off')).toEqual({ tone: 'ok', word: 'connected', chips: ['ok', 'ok', 'idle'] })
+    expect(watchPill('live', 'sending')).toEqual({ tone: 'busy', word: 'syncing', chips: ['ok', 'ok', 'sync'] })
+    expect(watchPill('live', 'unknown')).toEqual({ tone: 'warn', word: 'update', chips: ['ok', 'ok', 'warn'] })
+    expect(watchPill('away', 'synced')).toEqual({ tone: 'warn', word: 'away', chips: ['ok', 'ok', 'ok'] })
+    expect(watchPill('silent', 'sending').word).toBe('away')
+    expect(watchPill('missing', 'off')).toEqual({ tone: 'warn', word: 'setup', chips: ['ok', 'warn', 'idle'] })
+    expect(watchPill('unpaired', 'off')).toEqual({ tone: 'warn', word: 'setup', chips: ['warn', 'idle', 'idle'] })
+    expect(watchPill('checking', 'off').word).toBe('checking')
+    expect(watchPill('starting', 'off').word).toBe('checking')
   })
 })

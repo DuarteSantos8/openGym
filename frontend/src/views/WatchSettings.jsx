@@ -10,10 +10,10 @@ import { Section, Row, Switch } from '../components/ui.jsx'
 import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState, lastHeardAt, routinesSync, readRoutinesSent } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
-import { fmtAgo } from '../lib/format.js'
 import { useStore } from '../store/useStore.js'
 import { isOn } from '../lib/modules.js'
 import Icon from '../components/Icon.jsx'
+import WatchPill from '../components/WatchPill.jsx'
 
 // The two rest screens as the watch draws them (simulator screenshots of the effort screen from #1100, in public/watch/).
 const REST_LOOKS = [
@@ -79,29 +79,22 @@ export default function WatchSettingsPage() {
   }, [])
   const set = patch => setPrefs(writeWatchPrefs(patch))
 
-  // Every state says what to do next (lib/watch-settings.js watchLinkState). What the watch said
-  // last (it checks in each time its app starts) is the one sign the two really talk.
+  // The pill on top says where the watch stands (lib/watch-settings.js watchLinkState); on trouble
+  // the line under it says what to do next. What the watch said last (it checks in each time its
+  // app starts, and with its newest set or rest, #1151) is the one sign the two really talk.
   const state = watchLinkState(link, status)
-  const onWatch = t('openGym is on your Apple Watch') + '. '
-  // (its newest set, rest or status that reached this phone, #1151)
-  const heardAt = lastHeardAt(status)
-  const heard = heardAt ? t('Last heard from the watch: {0}', fmtAgo(heardAt)) + '. ' : ''
-  const linkLine = {
-    checking: t('Checking…'),
-    starting: t('Still connecting to your Apple Watch. Give it a moment, then open this page again.'),
-    unpaired: t('No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.'),
-    missing: t('openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.'),
-    silent: onWatch + t('The watch hasn’t checked in yet. Open openGym on it once.'),
-    live: onWatch + heard + t('Connected right now.'),
-    away: onWatch + heard + t('The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.'),
-  }[state]
   // Whether the watch has every routine (it reports what it shows, each time it takes in a new file).
-  const rs = routinesSync({ link, phone: readRoutinesSent(), status, enabled: prefs.enabled })
-  const routinesLine = {
-    synced: t('Every routine is on your watch. Archived ones stay on the phone.') + (status?.at ? ' ' + t('Last checked {0}', fmtAgo(status.at)) + '.' : ''),
-    sending: t('Keep openGym open on the watch for a moment.'),
-    unknown: t('Update openGym on the watch to see this.'),
-  }[rs]
+  const sent = readRoutinesSent()
+  const rs = routinesSync({ link, phone: sent, status, enabled: prefs.enabled })
+  const todo = state === 'live'
+    ? { sending: t('Keep openGym open on the watch for a moment.'), unknown: t('Update openGym on the watch.') }[rs]
+    : {
+        starting: t('Still connecting. Try again in a moment.'),
+        unpaired: t('Pair a watch in the Watch app.'),
+        missing: t('Install openGym from the Watch app.'),
+        silent: t('Open openGym on the watch once.'),
+        away: t('Open openGym on the watch, or bring it closer.'),
+      }[state]
   const denied = healthOn && status?.health === 'denied'
   const healthValue = healthOn == null ? '' : denied ? t('Not allowed') : healthOn ? t('On') : t('Off')
   const healthLine = denied ? t('Not allowed on the watch. Allow it in the Health app on your iPhone.')
@@ -114,15 +107,13 @@ export default function WatchSettingsPage() {
     : nav('/settings/modules', { state: { find: 'Health' } })
 
   return <>
-    <Section footer={<span data-watch-link={state} aria-live="polite">{linkLine}</span>}>
+    {/* With the switch off the watch gets nothing, so there is nothing to report. */}
+    {prefs.enabled && <WatchPill link={state} routines={rs} count={sent?.count} heardAt={lastHeardAt(status)} todo={todo} />}
+    <Section>
       <Row icon="watch" iconTint="var(--grey)" title={t('Send workouts to the watch')}>
         <Switch checked={prefs.enabled} onChange={v => set({ enabled: v })} aria-label={t('Send workouts to the watch')} />
       </Row>
     </Section>
-    {rs !== 'off' && <Section footer={<span data-routines-sync={rs} aria-live="polite">{routinesLine}</span>}>
-      <Row icon="clipboard" iconTint="var(--grey)" title={t('Routines on the watch')}
-        value={rs === 'synced' ? t('All {0}', readRoutinesSent().count) : rs === 'sending' ? t('Sending…') : ''} />
-    </Section>}
     {prefs.enabled && <>
       <Section footer={t('Start a workout on the phone and openGym pops up on your wrist.')}>
         <Row icon="bolt" iconTint="var(--green)" title={t('Open on the watch')}>

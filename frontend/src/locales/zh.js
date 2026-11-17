@@ -5898,17 +5898,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "手表上的训练计划",
-  "All {0}": "全部 {0} 个",
-  "Sending…": "正在发送…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "所有训练计划都在你的手表上。已归档的留在手机里。",
-  "Last checked {0}": "上次检查：{0}",
   "Keep openGym open on the watch for a moment.": "请让手表上的 openGym 保持打开片刻。",
-  "Update openGym on the watch to see this.": "请更新手表上的 openGym 以查看此项。",
   // Arrange your own Home and Stats (#1119)
   "Customize": "自定义",
   "Collapsed": "已折叠",
   "Hide": "隐藏",
   "Totals": "总计",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "正在连接。请稍后再试。",
+  "Pair a watch in the Watch app.": "在 Watch App 中配对手表。",
+  "Install openGym from the Watch app.": "通过 Watch App 安装 openGym。",
+  "Open openGym on the watch once.": "在手表上打开一次 openGym。",
+  "Open openGym on the watch, or bring it closer.": "在手表上打开 openGym，或把手表拿近一些。",
+  "Update openGym on the watch.": "在手表上更新 openGym。",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "此版本无法连接手表。请从 Google Play 或 opengym.ch 获取 openGym。",
+  "Pair your watch in its own app, like Galaxy Wearable.": "在手表自己的应用中配对，例如 Galaxy Wearable。",
+  "On the watch, install openGym from the Play Store.": "在手表上从 Play 商店安装 openGym。",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "安装此版本的 Wear OS APK。Play 商店的版本无法配对。",
+  "Syncing": "同步中",
+  "Not set up": "尚未设置",
+  "Update watch app": "更新手表应用",
+  "Last heard {0}": "上次联系：{0}",
 }

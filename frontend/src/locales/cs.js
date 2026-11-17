@@ -5864,17 +5864,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "Rutiny v hodinkách",
-  "All {0}": "Všech {0}",
-  "Sending…": "Odesílá se…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "Každá rutina je v hodinkách. Archivované zůstávají v telefonu.",
-  "Last checked {0}": "Naposledy zkontrolováno: {0}",
   "Keep openGym open on the watch for a moment.": "Nechte na chvíli openGym v hodinkách otevřený.",
-  "Update openGym on the watch to see this.": "Aktualizujte openGym v hodinkách, ať to uvidíte.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Přizpůsobit",
   "Collapsed": "Sbalené",
   "Hide": "Skrýt",
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Připojuje se. Zkuste to za chvíli.",
+  "Pair a watch in the Watch app.": "Spárujte hodinky v aplikaci Watch.",
+  "Install openGym from the Watch app.": "Nainstalujte openGym z aplikace Watch.",
+  "Open openGym on the watch once.": "Jednou otevřete openGym v hodinkách.",
+  "Open openGym on the watch, or bring it closer.": "Otevřete openGym v hodinkách, nebo je dejte blíž.",
+  "Update openGym on the watch.": "Aktualizujte openGym v hodinkách.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Tato verze se k hodinkám nepřipojí. Stáhněte openGym z Google Play nebo z opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Spárujte hodinky v jejich aplikaci, třeba Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "V hodinkách nainstalujte openGym z Obchodu Play.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Nainstalujte APK pro Wear OS z tohoto vydání. To z Obchodu Play se nespáruje.",
+  "Syncing": "Synchronizuje se",
+  "Not set up": "Nenastaveno",
+  "Update watch app": "Aktualizujte aplikaci v hodinkách",
+  "Last heard {0}": "Poslední spojení: {0}",
 }

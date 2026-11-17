@@ -5894,17 +5894,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "Treniruočių planai laikrodyje",
-  "All {0}": "Visi {0}",
-  "Sending…": "Siunčiama…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "Visi planai yra tavo laikrodyje. Suarchyvuoti lieka telefone.",
-  "Last checked {0}": "Paskutinį kartą tikrinta: {0}",
   "Keep openGym open on the watch for a moment.": "Akimirką laikyk openGym atidarytą laikrodyje.",
-  "Update openGym on the watch to see this.": "Atnaujink openGym laikrodyje, kad tai matytum.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Tinkinti",
   "Collapsed": "Suskleista",
   "Hide": "Slėpti",
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Jungiamasi. Pabandyk po akimirkos.",
+  "Pair a watch in the Watch app.": "Susiek laikrodį programėlėje Watch.",
+  "Install openGym from the Watch app.": "Įdiek openGym per programėlę Watch.",
+  "Open openGym on the watch once.": "Kartą atidaryk openGym laikrodyje.",
+  "Open openGym on the watch, or bring it closer.": "Atidaryk openGym laikrodyje arba priartink jį.",
+  "Update openGym on the watch.": "Atnaujink openGym laikrodyje.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Ši versija nepasiekia laikrodžio. Gauk openGym iš Google Play arba opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Susiek laikrodį jo programėlėje, pvz., Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Laikrodyje įdiek openGym iš Play parduotuvės.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Įdiek šio leidimo Wear OS APK. Iš Play parduotuvės nesusies.",
+  "Syncing": "Sinchronizuojama",
+  "Not set up": "Nenustatyta",
+  "Update watch app": "Atnaujink laikrodžio programėlę",
+  "Last heard {0}": "Paskutinį kartą: {0}",
 }

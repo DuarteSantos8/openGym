@@ -5898,17 +5898,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "घड़ी पर रूटीन",
-  "All {0}": "सभी {0}",
-  "Sending…": "भेजा जा रहा है…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "हर रूटीन आपकी घड़ी पर है। आर्काइव किए गए फ़ोन पर ही रहते हैं।",
-  "Last checked {0}": "आख़िरी जाँच: {0}",
   "Keep openGym open on the watch for a moment.": "कुछ देर के लिए घड़ी पर openGym खुला रखें।",
-  "Update openGym on the watch to see this.": "यह देखने के लिए घड़ी पर openGym अपडेट करें।",
   // Arrange your own Home and Stats (#1119)
   "Customize": "अनुकूलित करें",
   "Collapsed": "समेटा हुआ",
   "Hide": "छिपाएँ",
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "कनेक्ट हो रहा है। थोड़ी देर में फिर कोशिश करें।",
+  "Pair a watch in the Watch app.": "Watch ऐप में घड़ी पेयर करें।",
+  "Install openGym from the Watch app.": "Watch ऐप से openGym इंस्टॉल करें।",
+  "Open openGym on the watch once.": "घड़ी पर एक बार openGym खोलें।",
+  "Open openGym on the watch, or bring it closer.": "घड़ी पर openGym खोलें या घड़ी पास लाएँ।",
+  "Update openGym on the watch.": "घड़ी पर openGym अपडेट करें।",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "यह वर्ज़न घड़ी तक नहीं पहुँचता। openGym को Google Play या opengym.ch से लें।",
+  "Pair your watch in its own app, like Galaxy Wearable.": "अपनी घड़ी को उसके अपने ऐप में पेयर करें, जैसे Galaxy Wearable।",
+  "On the watch, install openGym from the Play Store.": "घड़ी पर Play Store से openGym इंस्टॉल करें।",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "इसी रिलीज़ का Wear OS APK इंस्टॉल करें। Play Store वाला पेयर नहीं होगा।",
+  "Syncing": "सिंक हो रहा है",
+  "Not set up": "सेट अप नहीं है",
+  "Update watch app": "घड़ी का ऐप अपडेट करें",
+  "Last heard {0}": "आख़िरी संपर्क: {0}",
 }

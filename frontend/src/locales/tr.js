@@ -5898,17 +5898,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "Saatteki rutinler",
-  "All {0}": "Hepsi: {0}",
-  "Sending…": "Gönderiliyor…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "Tüm rutinler saatinde. Arşivlenenler telefonda kalır.",
-  "Last checked {0}": "Son kontrol: {0}",
   "Keep openGym open on the watch for a moment.": "openGym'i saatte bir süre açık tut.",
-  "Update openGym on the watch to see this.": "Bunu görmek için saatte openGym'i güncelle.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Özelleştir",
   "Collapsed": "Daraltılmış",
   "Hide": "Gizle",
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Bağlanıyor. Birazdan tekrar dene.",
+  "Pair a watch in the Watch app.": "Watch uygulamasında bir saat eşle.",
+  "Install openGym from the Watch app.": "openGym’i Watch uygulamasından yükle.",
+  "Open openGym on the watch once.": "openGym’i saatte bir kez aç.",
+  "Open openGym on the watch, or bring it closer.": "openGym’i saatte aç ya da saati yaklaştır.",
+  "Update openGym on the watch.": "openGym’i saatte güncelle.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Bu sürüm saate ulaşamaz. openGym’i Google Play’den veya opengym.ch’den al.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Saatini kendi uygulamasında eşle, örneğin Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Saatte openGym’i Play Store’dan yükle.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Bu sürümün Wear OS APK’sını yükle. Play Store’daki eşleşmez.",
+  "Syncing": "Eşitleniyor",
+  "Not set up": "Kurulmadı",
+  "Update watch app": "Saat uygulamasını güncelle",
+  "Last heard {0}": "Son haber: {0}",
 }

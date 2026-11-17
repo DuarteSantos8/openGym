@@ -5838,17 +5838,26 @@ export default {
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
   // --- routines on the watch, in Settings → Apple Watch ---
-  "Routines on the watch": "Rutiner på uret",
-  "All {0}": "Alle {0}",
-  "Sending…": "Sender…",
-  "Every routine is on your watch. Archived ones stay on the phone.": "Alle rutiner er på dit ur. Arkiverede bliver på telefonen.",
-  "Last checked {0}": "Sidst tjekket: {0}",
   "Keep openGym open on the watch for a moment.": "Lad openGym være åben på uret et øjeblik.",
-  "Update openGym on the watch to see this.": "Opdater openGym på uret for at se dette.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Tilpas",
   "Collapsed": "Foldet sammen",
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Forbinder. Prøv igen om lidt.",
+  "Pair a watch in the Watch app.": "Par et ur i Watch-appen.",
+  "Install openGym from the Watch app.": "Installer openGym fra Watch-appen.",
+  "Open openGym on the watch once.": "Åbn openGym på uret én gang.",
+  "Open openGym on the watch, or bring it closer.": "Åbn openGym på uret, eller hold det tættere på.",
+  "Update openGym on the watch.": "Opdater openGym på uret.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Denne version kan ikke nå et ur. Hent openGym fra Google Play eller opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Par dit ur i dets egen app, fx Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Installer openGym fra Play Butik på uret.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Installer Wear OS-APK’en fra denne udgivelse. Den fra Play Butik kan ikke parres.",
+  "Syncing": "Synkroniserer",
+  "Not set up": "Ikke sat op",
+  "Update watch app": "Opdater appen på uret",
+  "Last heard {0}": "Sidst hørt: {0}",
 }
