@@ -98,6 +98,9 @@ struct RestView: View {
                 // Always On hides the chips but keeps their place, so the screen is the same one
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
+                        // In from the edges like the ±15 row: on a 42 mm Series 12 the 0 and 3+ chips ran
+                        // under the display's rounded edge (fine in a screenshot, cut on the wrist).
+                        .padding(.horizontal, 4)
                 }
                 if store.show.showNext { upNext(roomy: roomy, name: true, bigCase: g.size.height >= Self.roomyHeight).padding(.top, 2) }
             }
@@ -167,7 +170,7 @@ struct RestView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 4)
+            .padding(.horizontal, 4) // trailing too: the workout time sat on the right edge (42 mm Series 12)
         }
     }
 }
