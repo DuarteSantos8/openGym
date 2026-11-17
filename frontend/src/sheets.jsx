@@ -95,7 +95,7 @@ import { savedEntryRecords, repRecordTable, liveRecordsOn } from './lib/set-reco
 import { RecordBadge } from './components/SetRecord.jsx'
 import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { reopenRecord, saveReopen, readReopen, canReopen, applyReopen } from './lib/forgotten-workout.js'
-import { refillAfter } from './lib/rotation.js'
+import { refillAfter, restartOnRedo } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork, isSideSet } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
@@ -3383,7 +3383,7 @@ function DayOverride({ iso, close }) {
   const hasOvr = st.dayPlan[iso] !== undefined
   // A fulfilled pin (a coach session pinned here and since done) reads as no override, as it does
   // everywhere else — the row to clear the leftover entry stays.
-  const changed = hasOvr && pinState(st, st.dayPlan[iso]) !== 'done'
+  const changed = hasOvr && pinState(st, st.dayPlan[iso], todayISO(), iso) !== 'done'
   // The plan the day would have without its override — the weekday's routines, and in a coach
   // week the queue's session for the day in front of them, same as the Home row shows.
   const { [iso]: _ovr, ...noOvr } = st.dayPlan
@@ -3915,7 +3915,7 @@ function Calendar({ start, close, help = false }) {
   for (let d = 1; d <= daysIn; d++) {
     const iso = y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0')
     // A fulfilled pin (a coach session pinned here and since done) reads as no override, as it does everywhere else.
-    const ws = byDay[iso], planned = effectiveRoutineIds(st, iso).length > 0, ovr = st.dayPlan[iso] !== undefined && pinState(st, st.dayPlan[iso]) !== 'done'
+    const ws = byDay[iso], planned = effectiveRoutineIds(st, iso).length > 0, ovr = st.dayPlan[iso] !== undefined && pinState(st, st.dayPlan[iso], todayISO(), iso) !== 'done'
     // A day off with a note on it (#261) shows the note's dot instead of the plan's, and its
     // note as the tooltip; tapping it opens the day sheet, where the note is.
     const note = !ws && dayNoteOf(st, iso)
@@ -4821,6 +4821,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
     s.active = null
     // A rotation pass this app manages starts its next pass the moment the last session lands
     // (lib/rotation.js). A planner's queue is left alone: it completes and waits for its writer.
+    // A session redone first starts the pass over from it.
+    restartOnRedo(s, w)
     refillAfter(s, w)
   })
   useStore.getState().autoBackupNow()

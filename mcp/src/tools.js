@@ -226,7 +226,7 @@ export const getWeekPlan = {
     const plannedBy = (iso, ids) => {
       const ov = S.dayPlan?.[iso]
       if (ov === 'rest') return 'rest_override'
-      const pin = pinState(S, ov)
+      const pin = pinState(S, ov, isoToday, iso)
       if (pin === 'open') return 'pinned'
       if (!pin && ov && routines.some(x => x.id === ov)) return 'override'
       if (ids.length && queueNext(S, iso, isoToday) === ids[0]) return 'coach'

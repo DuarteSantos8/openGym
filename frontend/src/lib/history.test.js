@@ -1452,6 +1452,16 @@ describe('effectiveRoutineIds — coach queue', () => {
     expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'd1' }, workouts: [done('d1')] }), TODAY, TODAY)).toEqual(['d2'])
   })
 
+  it('a session the pass already did, planned again for a later week, is that day\'s session', () => {
+    // d1 done Tuesday 09-08; planned for Tuesday 09-15 and for today. Today shares Tuesday's week, so
+    // its pin is fulfilled; next week's is not, and that day trains d1 with its own routine beside it.
+    const s = S({ dayPlan: { '2026-09-15': 'd1' }, workouts: [done('d1')], week: { 2: ['own'] } })
+    expect(effectiveRoutineIds(s, '2026-09-15', TODAY)).toEqual(['d1', 'own'])
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['d2'])
+    const last = S({ dayPlan: { [TODAY]: 'd1' }, workouts: [{ ...done('d1'), d: '2026-09-04', start: SINCE - 86400000 * 3 }], queue: { ids: ['d1', 'd2'], since: SINCE - 86400000 * 4, startsOn: '2026-09-03', label: 'US W1' } })
+    expect(effectiveRoutineIds(last, TODAY, TODAY)).toEqual(['d1'])
+  })
+
   it('with every remaining session pinned to other days, today shows only your own routines — a coach pointer on the weekday stays hidden', () => {
     const s = S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: ['d2', 'own'] } })
     expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['own'])
