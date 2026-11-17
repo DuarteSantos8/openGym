@@ -46,7 +46,8 @@ export function liveBarState (S, { timer = null, live = null, rows = [], checkin
     pausedAt: A.pausedAt || 0,
     done,
     total,
-    progress: resting ? Math.max(0, Math.min(1, timer.left / timer.total)) || 0 : total ? done / total : 0,
+    // One section per exercise, filled by its sets done (a rest's time is in the countdown digits).
+    parts: entries.filter(x => x?.sets?.length).map(x => x.sets.filter(y => y?.done).length / x.sets.length),
     bpm,
     device,
     pulseSlot: bpm != null || device === 'linked',

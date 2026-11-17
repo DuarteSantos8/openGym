@@ -3101,8 +3101,10 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){.livebar:active{transform:none}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
-.livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;border-radius:2px;background:rgba(128,128,128,.55);background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
-.livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform 1s linear}
+/* The progress line: one section per exercise, each filling with its own sets. */
+.livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;display:flex;gap:3px}
+.livebar-hl>span{flex:1;min-width:0;border-radius:2px;background:rgba(128,128,128,.55);background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
+.livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform .4s var(--ease)}
 :root[dir="rtl"] .livebar-hl i{transform-origin:right}
 .livebar-dev{flex:none;display:flex;line-height:0}
 .livebar-dev svg{overflow:visible}

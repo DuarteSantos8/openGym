@@ -103,7 +103,7 @@ function LiveBarOn () {
 
   return (
     <button ref={btn} id="livebar" className="livebar" type="button" aria-label={label} onClick={rise}>
-      <span className="livebar-hl" aria-hidden="true"><i style={{ transform: `scaleX(${b.progress})` }} /></span>
+      <span className="livebar-hl" aria-hidden="true">{b.parts.map((p, i) => <span key={i}><i style={{ transform: `scaleX(${p})` }} /></span>)}</span>
       {/* Says a tap opens the workout upward; the mirror of the workout page's Minimize chevron,
           and in the same order as that page's top bar: arrow first, the watch at the end. */}
       <Icon name="chevronUp" size={18} className="livebar-up" />

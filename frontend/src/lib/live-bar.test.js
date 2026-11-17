@@ -26,12 +26,16 @@ describe('liveBarState', () => {
   })
   it('lifting: the exercise, the next set, no rest, progress by sets done', () => {
     const b = liveBarState(S(lifting()))
-    expect(b).toMatchObject({ routine: 'Push day', exercise: 'BENCH', set: { n: 2, of: 4 }, allDone: false, rest: null, done: 1, total: 4, progress: 0.25, start: 1000, pausedAt: 0 })
+    expect(b).toMatchObject({ routine: 'Push day', exercise: 'BENCH', set: { n: 2, of: 4 }, allDone: false, rest: null, done: 1, total: 4, parts: [0.25], start: 1000, pausedAt: 0 })
   })
-  it('rest counting: the countdown, progress by time left, and what is next', () => {
+  it('progress: one section per exercise, filled by its own sets; an exercise with no sets has none', () => {
+    const A = lifting({ entries: [entry('a', [set({ done: true }), set({ done: true })]), entry('b', [set({ done: true }), set(), set()]), entry('c', []), entry('d', [set()])] })
+    expect(liveBarState(S(A)).parts).toEqual([1, 1 / 3, 0])
+  })
+  it('rest counting: the countdown, what is next, and the sections stay on the sets', () => {
     const b = liveBarState(S(lifting()), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0 } })
     expect(b.rest).toEqual({ left: 72, switch: false })
-    expect(b.progress).toBe(0.8)
+    expect(b.parts).toEqual([0.25])
     expect(b.next).toBe('BENCH')
   })
   it('a paused workout keeps its stop time, and a paused rest keeps its time left', () => {
@@ -41,17 +45,16 @@ describe('liveBarState', () => {
   })
   it('no exercises and no name: fallbacks, never NaN', () => {
     const b = liveBarState(S(lifting({ entries: [], name: '' })))
-    expect(b).toMatchObject({ routine: '', exercise: '', set: null, allDone: false, progress: 0, done: 0, total: 0 })
+    expect(b).toMatchObject({ routine: '', exercise: '', set: null, allDone: false, parts: [], done: 0, total: 0 })
   })
   it('every set done: all done, no exercise line', () => {
     const b = liveBarState(S(lifting({ entries: [entry('bench', [set({ done: true }), set({ done: true })])] })))
-    expect(b).toMatchObject({ allDone: true, exercise: '', set: null, progress: 1 })
+    expect(b).toMatchObject({ allDone: true, exercise: '', set: null, parts: [1] })
   })
   it('a rest that ran out (ready, or left 0) is no rest', () => {
     expect(liveBarState(S(lifting()), { timer: { left: 30, total: 90, endsAt: 5000, forIdx: 0, ready: true } }).rest).toBeNull()
     const b = liveBarState(S(lifting()), { timer: { left: 0, total: 90, endsAt: 5000, forIdx: 0 } })
     expect(b.rest).toBeNull()
-    expect(b.progress).toBe(0.25)
   })
   it('a superset: during rest the next exercise is the other one', () => {
     const A = lifting({ entries: [entry('a', [set({ done: true }), set()], { sg: 'g' }), entry('b', [set(), set()], { sg: 'g' })] })

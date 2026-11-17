@@ -21,6 +21,10 @@ source), `heartNow` (`live-tiles.js`) and the watch row from the device link sta
 LiveBar.jsx` only draws it. A paused workout or rest stands still. An empty or unnamed workout
 shows "Workout". Every set done shows "All sets done".
 
+The line along the top is split into one equal section per exercise (`parts`), each filled by its
+own sets done; an exercise with no sets has no section. A rest leaves it on the sets: the countdown
+digits carry the rest.
+
 ## The rest bar
 
 The capsule is the countdown for a plain rest (and the ready state after it); `RestTimer` is not mounted
