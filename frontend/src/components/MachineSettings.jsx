@@ -92,7 +92,7 @@ function MachineSettingsSheet({ exId, close }) {
       </button>
     </div>)}
     {suggestions.length > 0 && !full && <div className="chips" style={{ margin: '4px 0 10px' }}>
-      {suggestions.map(k => <button key={k} type="button" className="chip nocap" onClick={() => add(k)}><Icon name="plus" />{k}</button>)}
+      {suggestions.map(k => <button key={k} type="button" className="chip nocap ichip" onClick={() => add(k)}><Icon name="plus" />{k}</button>)}
     </div>}
     <Button variant="tinted" icon="plus" disabled={full} onClick={() => add()}>{t('Add setting')}</Button>
     {tooLong && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: 10 }}>{t('The note is too long for the machine settings. Shorten it and try again.')}</div>}
