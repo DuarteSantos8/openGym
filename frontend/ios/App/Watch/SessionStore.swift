@@ -1520,7 +1520,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let q = OutboxCore.waiting(o)
         let sets = OutboxCore.waitingSets(o)
         DispatchQueue.main.async {
-            if self.reachable != r { self.reachable = r }
+            // The demo screens set reachability by hand (idle-away); a live link must not undo it.
+            if !self.isDemo, self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
             if self.unsentSets != sets { self.unsentSets = sets }
         }
@@ -1652,7 +1653,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "countdown" ? SessionStore.demoReadyJSON : SessionStore.demoJSON)) }
+        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "idle-away" || screen == "countdown" ? SessionStore.demoReadyJSON : SessionStore.demoJSON)) }
         // The 3-2-1 as it runs before a workout started here (without Apple Health, which the demo has not).
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
@@ -1741,6 +1742,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
+            if screen == "idle-away" { self.reachable = false }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
