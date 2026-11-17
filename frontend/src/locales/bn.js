@@ -1,5 +1,10 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "শুরু করা",
+  "Workout screen": "ওয়ার্কআউট স্ক্রিন",
+  "Training rules": "ট্রেনিংয়ের নিয়ম",
+  "Timed sets": "টাইমড সেট",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ঘড়ি",
   "Set once": "একবার সেট করুন",
@@ -784,6 +789,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'ওয়ার্কআউট চলাকালীন স্ক্রিন চালু থাকে, তাই সেটের মাঝে ফোন আনলক করতে হয় না।',
   'Weight unit': 'ওজনের ইউনিট',
   'Speed unit': 'গতির ইউনিট',
+  'Units': 'ইউনিট',
   'Week starts on': 'সপ্তাহ শুরু হয়',
   'Weight decimals': 'ওজনের দশমিক',
   'How precisely weights are shown.': 'ওজন কতটা নির্ভুলভাবে দেখানো হবে।',
@@ -5426,7 +5432,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ মিনি-সেট",
   "A classic for {0}": "{0}-এর জন্য একটা ক্লাসিক",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "অসুস্থ, ট্রাভেলে বা আহত লেখা দিনের নোট বছরে এতগুলো সপ্তাহ স্ট্রিক ধরে রাখে।",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "বছরে কত সপ্তাহ অসুস্থ, ভ্রমণে বা আহত লেখা দিনের নোট আপনার স্ট্রিক বাঁচাতে পারে।",
   "A ladder needs at least two rungs.": "একটা মইয়ে অন্তত দুটো ধাপ লাগে।",
   "A lighter week might do more than a harder one.": "হালকা একটা সপ্তাহ কঠিন সপ্তাহের চেয়েও বেশি কাজে দিতে পারে।",
   "A lighter week on a rhythm, no programme needed.": "নির্দিষ্ট ছন্দে একটা হালকা সপ্তাহ, কোনো প্রোগ্রাম লাগবে না।",
