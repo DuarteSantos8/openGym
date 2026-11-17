@@ -1676,3 +1676,12 @@ describe('timed per-side pairs come off as a pair', () => {
     expect(setSpanAt([{ sec: 30, side: 'L' }, { sec: 30 }], 0)).toEqual([0, 1])
   })
 })
+
+describe('an archived routine is out of the plan', () => {
+  const routines = [{ id: 'r1', name: 'A', ex: [{ id: '1' }] }, { id: 'r2', name: 'B', ex: [{ id: '2' }], archived: true }]
+  const ISO = '2026-08-19'                       // a Wednesday
+  it('skips it on its weekday and as a day override, as if deleted', () => {
+    expect(effectiveRoutineIds({ routines, week: { 3: ['r1', 'r2'] }, dayPlan: {} }, ISO)).toEqual(['r1'])
+    expect(effectiveRoutineIds({ routines, week: { 3: ['r1'] }, dayPlan: { [ISO]: 'r2' } }, ISO)).toEqual(['r1'])
+  })
+})

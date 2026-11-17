@@ -415,6 +415,16 @@ describe('Build your first plan', () => {
     // the routine's screen had nothing left to show: back to Plan
     expect(where).toBe('/plan')
   })
+  it('New routine offers no Next: only making the routine moves on, to its real id', async () => {
+    await run(null, 'plan')
+    await click(btn('Next'))
+    await click(anchor('tab-plan'))
+    expect(step()).toBe('p-new')
+    expect(btn('Next')).toBeUndefined()
+    await click(anchor('plan-new'))
+    expect(step()).toBe('p-name')
+    expect(where).toBe('/plan/r/r1')
+  })
   it('quitting halfway (Escape on the name) leaves nothing either, and keeps no resume point', async () => {
     await run(null, 'plan')
     await click(btn('Next'))

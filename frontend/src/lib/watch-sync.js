@@ -31,6 +31,7 @@
 //
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { isLive } from './routine-folders.js'
 import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
@@ -402,7 +403,7 @@ export function buildReady (S, today = todayISO()) {
   let todayIds = []
   try { todayIds = effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || [] } catch { todayIds = [] }
   const planned = todayIds.length ? session(todayIds) : null
-  const others = (S.routines || []).filter(r => r && !todayIds.includes(r.id)).slice(0, READY_MAX).map(r => session([r.id])).filter(Boolean)
+  const others = (S.routines || []).filter(r => isLive(r) && !todayIds.includes(r.id)).slice(0, READY_MAX).map(r => session([r.id])).filter(Boolean)
   return { today: planned, others }
 }
 

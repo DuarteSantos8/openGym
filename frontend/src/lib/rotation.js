@@ -32,6 +32,7 @@
 // fallback for an early or unreliable clock. Without the boundary the session that finished the
 // old pass would immediately tick an item of the new one.
 
+import { isLive } from './routine-folders.js'
 import { isoOf, todayISO, uid } from './format.js'
 import { queueOf, queueView } from './queue.js'
 
@@ -48,7 +49,7 @@ export const queueRecovery = S => S?.queue != null && !queueOf(S)
 export const rotationIds = S => {
   const seq = Array.isArray(S?.rotation?.sequence) ? S.rotation.sequence : []
   const routines = Array.isArray(S?.routines) ? S.routines : []
-  return seq.filter((id, i) => seq.indexOf(id) === i && routines.some(r => r.id === id))
+  return seq.filter((id, i) => seq.indexOf(id) === i && routines.some(r => r.id === id && isLive(r)))
 }
 
 const newPass = (ids, label, rotationId, startsOn, since) => ({ ids, since, startsOn, label, rotationId })
@@ -63,7 +64,7 @@ const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d
 export const sequenceOf = S => {
   const seq = Array.isArray(S?.rotation?.sequence) ? S.rotation.sequence : []
   const routines = Array.isArray(S?.routines) ? S.routines : []
-  const out = seq.filter(id => id === REST || routines.some(r => r.id === id))
+  const out = seq.filter(id => id === REST || routines.some(r => r.id === id && isLive(r)))
   return out.some(id => id !== REST) ? out : []
 }
 

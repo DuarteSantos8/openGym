@@ -55,6 +55,13 @@ describe('ownItems', () => {
     expect(plans.map(x => x.src)).toEqual(['plan:all', 'plan:r:r1'])
     expect(plans[0].payload.bundle.routines[0].name).toBe('Push')
   })
+  it('never offers an archived routine', () => {
+    const A = { ...S, routines: [...S.routines, { id: 'r2', name: 'Old', ex: [{ id: '0001', sets: 3, reps: 8 }], archived: true }] }
+    const plans = ownItems(A, 'plan')
+    expect(plans.map(x => x.src)).toEqual(['plan:all', 'plan:r:r1'])
+    expect(plans[0].payload.bundle.routines.map(x => x.name)).toEqual(['Push'])
+  })
+
   it('a set video kept on the phone is not offered', () => {
     const local = { ...S, customEx: [{ id: 'c3', n: 'Clip', media: { kind: 'video', hash: H('d'), mime: 'video/mp4', size: 9, width: 2, height: 2, local: true } }] }
     expect(ownItems(local, 'exercise')[0].media).toEqual([])

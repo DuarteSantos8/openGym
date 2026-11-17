@@ -62,7 +62,7 @@ const COPY = {
   'p-intro': () => [t('Build your first plan'), t('This one is for real: we build a routine together and it lands in your plan when you tap Save. Bail before that and nothing stays behind.')],
   'p-go': () => [t('Off to Plan'), t('Routines are made in Plan. Tap it.')],
   'p-views': () => [t('Routines'), t('New routines start on the Routines side. Tap Routines.')],
-  'p-new': () => [t('A new routine'), t('Tap New routine. It stays a draft until you save it.')],
+  'p-new': () => [t('A new routine'), t('Tap New, then New routine. It stays a draft until you save it.')],
   'p-name': () => [t('Name it'), t('Push Day, Legs, Monday Misery. Tap the name and type your own.')],
   'p-add': () => [t('Add exercises'), t('Tap Add exercise to pick what goes in.')],
   'p-pick': () => [t('Pick your exercises'), t('Tap one to set its sets, reps and weight, or + to take the usual. Close the list when you’re done.')],
@@ -568,7 +568,8 @@ function Run({ at, flow = 'tour' }) {
         <p id="tour-b">{body}</p>
         <div className="tour-acts">
           {i > 0 && <Button size="sm" onClick={() => go(-1)}>{t('Back')}</Button>}
-          <Button size="sm" variant="primary" onClick={() => go(1)}>{t('Next')}</Button>
+          {/* A way on (step.go) is the user's own action: Next would skip it and leave no routine made. */}
+          {!step.go && <Button size="sm" variant="primary" onClick={() => go(1)}>{t('Next')}</Button>}
         </div>
       </div>
     </div>

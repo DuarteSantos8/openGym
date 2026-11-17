@@ -48,6 +48,7 @@
 // handed a `today` pass it down, so a caller asking about another day gets that day's answer:
 // the reminder builder asks each coming date as if it were today (lib/mobile.js).
 
+import { isLive } from './routine-folders.js'
 import { isoOf, todayISO, weekKey, weekStartOf } from './format.js'
 
 const routineIdsOf = w => (Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []))
@@ -80,7 +81,7 @@ export const queueOf = S => {
   // First valid occurrence of each id: a queue is a set of sessions, and a repeated id would
   // otherwise show twice in the progress row and count twice in the week's tally. The persisted
   // payload is never rewritten — normalizing is a read, not a migration.
-  const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && routines.some(r => r.id === id))
+  const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && routines.some(r => r.id === id && isLive(r)))
   if (!ids.length) return null
   const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? isoOf(new Date(q.since)) : null)
   if (!startsOn) return null
@@ -212,7 +213,7 @@ export function weekTally(S, today) {
   // the queue" is tested against the raw ids: a queue routine deleted mid-week is gone from
   // `q.ids`, but a weekday pointer to it is still not a day you planned yourself.
   const unqueued = id => !(q && S.queue.ids.includes(id))
-  const ownIds = ids => [].concat(ids || []).filter(id => S.routines.some(r => r.id === id) && unqueued(id))
+  const ownIds = ids => [].concat(ids || []).filter(id => S.routines.some(r => r.id === id && isLive(r)) && unqueued(id))
   const ownDays = Object.values(S.week || {}).filter(ids => ownIds(ids).length).length
   if (!q) return { done: thisWeek.length, planned: ownDays }
   // The workout that earns each session its credit is the earliest one the DONE RULE accepts
