@@ -29,7 +29,9 @@ describe('the Library layout rules', () => {
     expect(css).not.toMatch(/\.iv-library \.iv-lib-row \.thumb\{/)
   })
   it('moves the result count in past the enlarged Clear button', () => {
-    expect(css).toMatch(/\.iv-library \.search\.has-clear \.search-count\{inset-inline-end:60px\}/)
-    expect(css).toMatch(/\.iv-library \.search\.has-count\.has-clear \.input\{padding-inline-end:114px\}/)
+    expect(css).toMatch(/\.iv-library \.search\.has-clear \.search-count\{inset-inline-end:52px\}/)
+    expect(css).toMatch(/\.iv-library \.search\.has-count\.has-clear \.input\{padding-inline-end:106px\}/)
+    // a 48 px target, with only a 24 px round mark drawn inside it
+    expect(css).toMatch(/\.iv-library \.search \.clear::before\{content:'';position:absolute;inset:12px;border-radius:50%/)
   })
 })

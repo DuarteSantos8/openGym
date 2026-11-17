@@ -19,7 +19,7 @@ import GymHiddenLine from '../components/GymHiddenLine.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable, useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
-import { isFav, sortFavouritesFirst, sortYoursFirst, usageOf } from '../lib/favourites.js'
+import { isFav, sortYoursFirst, usageOf } from '../lib/favourites.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { libraryOn } from '../lib/shared-api.js'
 import { isOn } from '../lib/modules.js'
@@ -39,7 +39,10 @@ export default function Library() {
   const [cat, setCat] = useState('')
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
   const [shown, setShown] = useState(40)
-  const [selectedId, setSelectedId] = useState(null)
+  // Ids picked with Select, in the order picked. Nothing is picked until the user picks: the Add
+  // bar appears with the first one, so no tap can add an exercise nobody chose. Picks survive a
+  // new search or filter, so "bench", Select, "row", Select, Add takes both.
+  const [picked, setPicked] = useState([])
   const bpStrip = useRef(null)
   const moreRef = useAutoMore(() => setShown(s => s + 40))
   const profile = activeProfile(S)
@@ -59,8 +62,10 @@ export default function Library() {
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order;
   // while searching, the exercises you have logged or planned follow right after them.
   const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
-  const usage = useMemo(() => (q.trim() ? usageOf(S) : null), [q, S.routines, S.workouts])
-  const f = usage ? sortYoursFirst(narrowedList, S, usage) : sortFavouritesFirst(narrowedList, S)
+  // Not only while searching: with no query either, what you train comes first, so the list does
+  // not open on the catalogue's alphabetical start ("1 2 Stick Drill").
+  const usage = useMemo(() => usageOf(S), [S.routines, S.workouts])
+  const f = sortYoursFirst(narrowedList, S, usage)
   useRevealActiveChip(bpStrip, bp)
   // Type and equipment live in the Filters sheet (P7). It works out its own options from the same
   // search and body part, so a choice it offers is never a dead end either.
@@ -83,11 +88,13 @@ export default function Library() {
   const similar = q.trim() && qLate === q && f.length <= shown
     ? similarExercises(allExercises(S).filter(e => (!bp || e.bp === bp) && (!profile || showAll || exAvailable(S, e))), q, f, f.length ? 12 : 30)
     : []
-  const visibleExercises = [...f.slice(0, shown), ...similar]
-  const selected = visibleExercises.find(e => e.id === selectedId) || visibleExercises[0] || null
+  const byId = useMemo(() => new Map(allExercises(S).map(e => [e.id, e])), [S])
+  const selected = picked.map(id => byId.get(id)).filter(Boolean)
+  const togglePick = id => setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id]))
+  const addLabel = selected.length ? t('Add “{0}” to my plan', selected.map(e => said(exerciseNameText(e))).join(', ')) : t('Add to my plan')
   const row = e => {
     const best = bestWeightFor(S, e.id)
-    const chosen = selected?.id === e.id
+    const chosen = picked.includes(e.id)
     // The exercise name opens Details. A separate, visible Select control chooses what the one
     // primary action below adds; neither action overlaps or relies on a swipe/long-press.
     return <div key={e.id} className={'item tap-host iv-lib-row' + (chosen ? ' is-selected' : '')}>
@@ -96,7 +103,7 @@ export default function Library() {
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
       {profile && !showAll && <NotHereButton profile={profile} ex={e} showLabel />}
       <Button size="sm" variant={chosen ? 'tinted' : 'plain'} icon={chosen ? 'check' : undefined} className="iv-lib-select"
-        aria-label={t('Select') + ': ' + said(exerciseNameText(e))} aria-pressed={chosen} onClick={() => setSelectedId(e.id)}>{t('Select')}</Button>
+        aria-label={t('Select') + ': ' + said(exerciseNameText(e))} aria-pressed={chosen} onClick={() => togglePick(e.id)}>{t('Select')}</Button>
     </div>
   }
 
@@ -154,9 +161,12 @@ export default function Library() {
       {similar.map(row)}
     </div>
     {f.length > shown && <><div style={{ height: 10 }} /><Button ref={moreRef} onClick={() => setShown(s => s + 40)}>{t('Show more')}</Button></>}
-    <div className="iv-lib-primary"><Button variant="primary" icon="plus" disabled={!selected}
-      aria-label={selected ? t('Add “{0}” to my plan', said(exerciseNameText(selected))) : t('Add to my plan')}
-      onClick={() => selected && addToRoutineSheet(selected)}>{t('Add to my plan')}</Button></div>
+    {selected.length > 0 && <div className="iv-lib-primary" role="region" aria-label={t('Add to my plan')}>
+      <Button variant="primary" icon="plus" aria-label={addLabel}
+        onClick={() => { addToRoutineSheet(selected.length === 1 ? selected[0] : selected); setPicked([]) }}>
+        {t('Add to my plan')}{selected.length > 1 && <span className="iv-lib-count" aria-hidden="true">{fmtNum(selected.length)}</span>}</Button>
+      <Button variant="plain" className="iv-lib-unpick" onClick={() => setPicked([])}>{t('Clear')}</Button>
+    </div>}
   </div>
 }
 

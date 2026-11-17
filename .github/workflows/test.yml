@@ -211,6 +211,44 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+  # The layout in a real browser (scripts/ci/ui-layout.mjs): a demo build at phone and desktop
+  # size, with a rest timer running, fails when a floating action lands under the timer or the
+  # tab bar, or a screen logs an error. The screenshots stay as the `ui-layout` artifact.
+  # playwright-core is installed here only, pinned, outside the project: no new dependency.
+  ui-layout:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - name: Demo build
+        working-directory: frontend
+        run: npx vite build --outDir dist-demo
+        env:
+          VITE_DEMO: '1'
+      - name: Browser driver (pinned, not a project dependency)
+        run: npm install --prefix "$RUNNER_TEMP/pw" --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.65.1
+      - name: Layout check
+        run: node scripts/ci/ui-layout.mjs frontend/dist-demo ui-layout
+        env:
+          PLAYWRIGHT_DIR: ${{ runner.temp }}/pw
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: ui-layout
+          path: ui-layout
+          retention-days: 14
+
   api:
     needs: changes
     if: needs.changes.outputs.api == 'true'
@@ -593,7 +631,7 @@ jobs:
   # The single required check. Green when every job that ran passed and the others were
   # skipped because nothing they check changed.
   tests-ok:
-    needs: [changes, frontend, api, mcp, catalogue, routines, images, android]
+    needs: [changes, frontend, ui-layout, api, mcp, catalogue, routines, images, android]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

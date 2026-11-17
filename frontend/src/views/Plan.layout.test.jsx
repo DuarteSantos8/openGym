@@ -27,7 +27,7 @@ vi.mock('../lib/coach.js', () => ({ coachAvailable: () => mocks.coach }))
 vi.mock('../lib/mobile.js', () => ({ MOBILE: false }))
 vi.mock('../lib/demo.js', () => ({ DEMO: false }))
 vi.mock('../sheets.jsx', () => ({
-  dayAssignSheet: vi.fn(), starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), menuSheet: vi.fn(),
+  dayAssignSheet: vi.fn(), starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), menuSheet: vi.fn(), exerciseDetailSheet: vi.fn(),
   planHasRoutines: () => true, exportPlanFile: vi.fn(), printWholePlan: vi.fn(), importPlanFile: vi.fn(),
 }))
 
@@ -49,7 +49,7 @@ function render(over = {}) {
 }
 const click = el => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })))
 const button = (host, label) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === label)
-const primary = host => host.querySelector('.iv-plan-primary .btn.primary')
+const primary = host => host.querySelector('.iv-plan-start .btn')
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -69,7 +69,10 @@ describe('approved Plan layout', () => {
     expect(host.querySelector('#iv-plan-today-heading').textContent).toBe('Today · Exercises')
     expect(host.querySelectorAll('.iv-plan-today-ex')).toHaveLength(1)
     expect(host.querySelector('.iv-plan-today-ex .tt').textContent.length).toBeGreaterThan(0)
-    expect(host.querySelectorAll('.iv-plan-primary .btn.primary')).toHaveLength(1)
+    expect(host.querySelectorAll('.iv-plan-start .btn')).toHaveLength(1)
+    // in the page under today's session, not floating: the tab bar's Start is the floating one
+    expect(primary(host).closest('.iv-plan-today')).not.toBeNull()
+    expect(host.querySelector('.iv-plan-primary')).toBeNull()
     expect(primary(host).textContent).toBe('Start today’s workout')
     expect(primary(host).disabled).toBe(false)
     expect(host.querySelector('.iv-plan-more').textContent).toContain('Plan options')
@@ -95,8 +98,7 @@ describe('approved Plan layout', () => {
 
     vi.mocked(startOrPreview).mockClear()
     host = render({ ...apart, workouts: [{ id: 'w1', d: todayISO(), routineIds: ['r1'], ex: [] }, { id: 'w2', d: todayISO(), routineIds: ['r2'], ex: [] }] })
-    expect(primary(host).disabled).toBe(true)
-    click(primary(host))
+    expect(primary(host)).toBeNull()
     expect(startOrPreview).not.toHaveBeenCalled()
   })
 
@@ -119,9 +121,26 @@ describe('approved Plan layout', () => {
   it('shows a rest day and never starts a nonexistent session', () => {
     const host = render({ week: { [(new Date().getDay() + 1) % 7]: ['r1'] } })
     expect(host.querySelector('.iv-plan-rest').textContent).toBe('Rest day')
-    expect(primary(host).disabled).toBe(true)
-    click(primary(host))
+    expect(primary(host)).toBeNull()
     expect(startOrPreview).not.toHaveBeenCalled()
+  })
+
+  it('names today’s exercises in the catalogue’s casing, with their sets and the day’s rough length', () => {
+    const today = new Date().getDay()
+    const host = render({ routines: [{ id: 'r1', name: 'Push', emoji: null, ex: [{ id: '0025', sets: 4, reps: 8, restSec: 120 }, { id: '0025', sets: 3, reps: 10 }] }], week: { [today]: ['r1'] } })
+    const names = [...host.querySelectorAll('.iv-plan-today-ex .tt')]
+    expect(names).toHaveLength(2)
+    for (const n of names) expect(n.classList.contains('capitalize')).toBe(true)
+    expect([...host.querySelectorAll('.iv-plan-today-ex .ss')].map(n => n.textContent)).toEqual(['4 sets', '3 sets'])
+    expect(host.querySelector('.iv-plan-today-sum').textContent).toMatch(/^7 sets · \d+ min$/)
+  })
+
+  it('opens an exercise’s details from today’s list', async () => {
+    const { exerciseDetailSheet } = await import('../sheets.jsx')
+    const today = new Date().getDay()
+    const host = render({ week: { [today]: ['r1'] } })
+    click(host.querySelector('button.iv-plan-today-ex'))
+    expect(exerciseDetailSheet).toHaveBeenCalledWith(expect.objectContaining({ id: '0025' }))
   })
 
   it('offers visible Move buttons and a labelled Delete in routine edit mode', () => {

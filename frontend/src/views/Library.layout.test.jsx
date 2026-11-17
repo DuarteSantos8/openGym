@@ -47,18 +47,47 @@ describe('approved Library layout', () => {
     const host = render()
     expect(host.querySelector('h1').textContent).toBe('Library')
     expect(host.querySelector('label[for="iv-library-search"]').textContent).toBe('Search')
+    expect(host.querySelectorAll('.lib-add')).toHaveLength(0)
+    // nothing is picked until the user picks, so no Add action is armed yet
+    expect(rows(host).every(r => select(r).getAttribute('aria-pressed') === 'false')).toBe(true)
+    expect(host.querySelector('.iv-lib-primary')).toBeNull()
+    expect(select(rows(host)[0]).textContent).toContain('Select')
+    act(() => select(rows(host)[0]).click())
     expect(host.querySelectorAll('.iv-lib-primary .btn.primary')).toHaveLength(1)
     expect(primary(host).textContent).toBe('Add to my plan')
-    expect(host.querySelectorAll('.lib-add')).toHaveLength(0)
-    expect(select(rows(host)[0]).getAttribute('aria-pressed')).toBe('true')
-    expect(select(rows(host)[0]).textContent).toContain('Select')
+  })
+
+  it('adds several picked exercises together, keeps picks across a search, and clears them', () => {
+    const host = render()
+    const [a, b] = rows(host).slice(0, 2).map(r => r.querySelector('.tt').textContent)
+    act(() => select(rows(host)[0]).click())
+    act(() => select(rows(host)[1]).click())
+    expect(primary(host).querySelector('.iv-lib-count').textContent).toBe('2')
+    // a pick hidden by a search stays picked
+    const input = host.querySelector('#iv-library-search')
+    act(() => { const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(input, 'zzzz-no-match'); input.dispatchEvent(new Event('input', { bubbles: true })) })
+    expect(primary(host)).not.toBeNull()
+    act(() => primary(host).click())
+    expect(addToRoutineSheet).toHaveBeenCalledTimes(1)
+    expect(addToRoutineSheet.mock.calls[0][0].map(e => e.n)).toEqual([a, b])
+    expect(host.querySelector('.iv-lib-primary')).toBeNull()
+    act(() => { const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(input, ''); input.dispatchEvent(new Event('input', { bubbles: true })) })
+    act(() => select(rows(host)[0]).click())
+    act(() => host.querySelector('.iv-lib-unpick').click())
+    expect(host.querySelector('.iv-lib-primary')).toBeNull()
+  })
+
+  it('opens on what you train, not the catalogue’s alphabetical start', () => {
+    mocks.S.routines = [{ id: 'r', name: 'R', ex: [{ id: '0025' }] }]
+    const host = render()
+    expect(rows(host)[0].querySelector('.item-open').textContent).toMatch(/bench press/i)
   })
 
   it('adds the exercise chosen with the visible Select control through the existing flow', () => {
     const host = render(), second = rows(host)[1]
     const name = second.querySelector('.tt').textContent
     act(() => select(second).click())
-    expect(select(second).getAttribute('aria-pressed')).toBe('true')
+    expect(select(rows(host)[1]).getAttribute('aria-pressed')).toBe('true')
     expect(primary(host).getAttribute('aria-label')).toBe(`Add “${capWords(name)}” to my plan`)
     act(() => primary(host).click())
     expect(addToRoutineSheet).toHaveBeenCalledTimes(1)
@@ -96,16 +125,11 @@ describe('approved Library layout', () => {
     expect(mocks.navigate).toHaveBeenCalledWith('/community')
   })
 
-  it('falls back to the first visible exercise after a filter hides the old selection', () => {
-    const host = render(), secondName = rows(host)[1].querySelector('.tt').textContent
-    act(() => select(rows(host)[1]).click())
-    const chest = [...host.querySelectorAll('.lib-filters .chip')].find(b => b.textContent === 'chest')
-    act(() => chest.click())
-    const visible = rows(host)
-    expect(visible.length).toBeGreaterThan(0)
-    expect(select(visible[0]).getAttribute('aria-pressed')).toBe('true')
-    act(() => primary(host).click())
-    expect(addToRoutineSheet.mock.calls[0][0].bp).toBe('chest')
-    expect(addToRoutineSheet.mock.calls[0][0].n).not.toBe(secondName)
+  it('a Select tap again unpicks, and the Add bar goes with the last pick', () => {
+    const host = render()
+    act(() => select(rows(host)[0]).click())
+    act(() => select(rows(host)[0]).click())
+    expect(select(rows(host)[0]).getAttribute('aria-pressed')).toBe('false')
+    expect(host.querySelector('.iv-lib-primary')).toBeNull()
   })
 })

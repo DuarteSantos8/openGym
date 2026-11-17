@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { DAYN, DAYS, weekOrder, weekStartOf, uid, exCount, routineCount, todayISO, fmtDate } from '../lib/format.js'
-import { t, exerciseNameFor } from '../lib/i18n.js'
+import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveRoutines, effectiveRoutineIds } from '../lib/history.js'
 import { dayApart, nextSessionIds, daySessionsStatus } from '../lib/day-sessions.js'
 import { allExercises } from '../lib/exercises.js'
 import { startOrPreview } from '../components/StartSheets.jsx'
+import { estimateMinutes } from '../lib/session-builder.js'
 import {
-  dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet,
+  dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet, exerciseDetailSheet,
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -215,10 +216,12 @@ export default function Plan() {
     </button>}
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} />
-      : <><TodayExercises S={S} nav={nav} /><Schedule S={S} update={update} nav={nav} mode={mode} /></>}
-    <div className="iv-plan-primary"><Button variant="primary" icon="play" disabled={!S.active && !canStart}
-      aria-label={S.active ? t('Resume workout') : t('Start today’s workout')} onClick={startToday}>
-      {S.active ? t('Resume workout') : t('Start today’s workout')}</Button></div>
+      : <><TodayExercises S={S} nav={nav} start={(S.active || canStart) && <div className="iv-plan-start">
+          {/* In the page, under the session it starts: the tab bar's Start stays the one floating
+              action, and nothing here can sit under a rest timer. */}
+          <Button variant="tinted" icon="play" aria-label={S.active ? t('Resume workout') : t('Start today’s workout')} onClick={startToday}>
+            {S.active ? t('Resume workout') : t('Start today’s workout')}</Button></div>} />
+        <Schedule S={S} update={update} nav={nav} mode={mode} /></>}
   </div>
 }
 
@@ -240,14 +243,18 @@ function todayStartIds(S, iso = todayISO()) {
 // The approved Plan puts the session you can start next to the week that contains it. This is a
 // summary of the same effective plan Home and Start use, not another editable exercise list;
 // Edit opens the existing routine editor and preserves combined days and rotation behavior.
-function TodayExercises({ S, nav }) {
+function TodayExercises({ S, nav, start }) {
   const routines = effectiveRoutines(S, todayISO())
   const byId = new Map(allExercises(S).map(e => [e.id, e]))
   // On a day trained separately, a session already logged says so, since Start moves past it.
   const done = new Set(dayApart(S, todayISO()) ? daySessionsStatus(S, todayISO()).filter(x => x.done).flatMap(x => x.ids) : [])
+  const entries = routines.filter(r => !done.has(r.id)).flatMap(r => r.ex)
+  const sets = entries.reduce((n, e) => n + Math.max(1, Number(e.sets) || 1), 0)
   return <section className="iv-plan-today" aria-labelledby="iv-plan-today-heading">
     <div className="row between plan-sec-h">
-      <h2 className="sec" id="iv-plan-today-heading">{t('Today')} · {t('Exercises')}</h2>
+      <div><h2 className="sec" id="iv-plan-today-heading">{t('Today')} · {t('Exercises')}</h2>
+        {/* What today asks of you, roughly: work sets and minutes (lib/session-builder estimateMinutes). */}
+        {entries.length > 0 && <div className="ss iv-plan-today-sum">{t('{0} sets', sets)} · {t('{0} min', estimateMinutes(entries))}</div>}</div>
       {routines.length === 1 && <Button size="sm" variant="plain" icon="edit" aria-label={nameIn(routines[0].name, t('Edit'))}
         onClick={() => nav('/plan/r/' + routines[0].id)}>{t('Edit')} · {routines[0].name}</Button>}
     </div>
@@ -255,12 +262,22 @@ function TodayExercises({ S, nav }) {
       {routines.length > 1 && <div className="iv-plan-today-group"><div className="tt">{r.name}{done.has(r.id) && <span className="tag iv-plan-done">{t('Done')}</span>}</div>
         <Button size="sm" variant="plain" icon="edit" aria-label={nameIn(r.name, t('Edit'))}
           onClick={() => nav('/plan/r/' + r.id)}>{t('Edit')} · {r.name}</Button></div>}
-      {r.ex.map((e, i) => <div className="item iv-plan-today-ex" key={`${r.id}:${i}:${e.id}`}>
-        <span className="plan-order" aria-hidden="true">{i + 1}</span>
-        <div className="grow"><div className="tt">{exerciseNameFor(byId.get(e.id) || e)}</div></div>
-      </div>)}
+      {r.ex.map((e, i) => {
+        const ex = byId.get(e.id)
+        const body = <>
+          <span className="plan-order" aria-hidden="true">{i + 1}</span>
+          <span className="grow"><span className={'tt ' + exerciseNameClass(ex || e)}>{exerciseNameFor(ex || e)}</span>
+            <span className="ss">{t('{0} sets', Math.max(1, Number(e.sets) || 1))}</span></span>
+          {ex && <Icon name="chevronRight" className="chev" />}
+        </>
+        // The name opens the exercise's details (how to do it, history), as it does in Library.
+        return ex
+          ? <button type="button" className="item iv-plan-today-ex" key={`${r.id}:${i}:${e.id}`} aria-haspopup="dialog" onClick={() => exerciseDetailSheet(ex)}>{body}</button>
+          : <div className="item iv-plan-today-ex" key={`${r.id}:${i}:${e.id}`}>{body}</div>
+      })}
       {!r.ex.length && <div className="empty">{exCount(0)}</div>}
     </div>)}</div> : <div className="empty iv-plan-rest">{t('Rest day')}</div>}
+    {start}
   </section>
 }
 
