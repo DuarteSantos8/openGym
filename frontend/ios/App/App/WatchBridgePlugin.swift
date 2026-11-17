@@ -4,6 +4,7 @@ import Foundation
 import HealthKit
 import ImageIO
 import UniformTypeIdentifiers
+import UserNotifications
 import WatchConnectivity
 
 /**
@@ -405,9 +406,20 @@ final class WatchLink: NSObject, WCSessionDelegate {
             if !events.contains(where: { ($0["id"] as? String) == id }) {
                 events.append(event)
                 stored = self.writeEvents(events)
+                if stored { self.endsPhoneWorkout(event) }
             }
         }
         return stored ? id : nil
+    }
+
+    /// The watch ended the workout this phone runs: its "Still training?" (lib/forgotten-phone.js,
+    /// id 3100) is taken back now, with the page asleep, not 45 minutes later when it has gone out.
+    /// A finish the page then refuses (it kept the workout going) gets it back with its next set.
+    private func endsPhoneWorkout(_ event: [String: Any]) {
+        guard let type = event["type"] as? String, type == "finish" || type == "discard",
+              let wid = event["wid"] as? String,
+              wid == UserDefaults.standard.string(forKey: WatchBridgePlugin.idleWidKey) else { return }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["3100"])
     }
 
     /// The page asked for the status before the session was up (right after launch): it is told now.
