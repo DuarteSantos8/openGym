@@ -14,32 +14,26 @@ const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 // [fewer, more] words at the ends of the scale and `countLabel(n)` a day's tooltip.
 export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChange, counts, legend, countLabel }) {
   const wrapRef = useRef(null)
-  const aligned = useRef(false)
   const [localMetric, setLocalMetric] = useState(() => normalizeMetric(selectedMetric ?? S?.heatmapMetric))
   useEffect(() => {
-    const wrap = wrapRef.current
-    if (!wrap || aligned.current) return
-    // A closed disclosure has no layout width. Align once its contents first have layout.
+    const el = wrapRef.current
+    if (!el) return
+    let aligned = false
+    let observer = null
+    // A heatmap mounted inside closed More has no layout yet. Align on its first visible size,
+    // then stop observing so opening More again never undoes the reader's horizontal scroll.
     const align = () => {
-      if (aligned.current || !wrap.clientWidth) return
-      wrap.scrollLeft = wrap.scrollWidth
-      aligned.current = true
+      if (aligned || !el.clientWidth) return
+      el.scrollLeft = el.scrollWidth
+      aligned = true
       observer?.disconnect()
-    }
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(align)
-    observer?.observe(wrap)
-    const disclosures = []
-    for (let el = wrap.parentElement; el; el = el.parentElement) {
-      if (el.tagName === 'DETAILS') {
-        disclosures.push(el)
-        el.addEventListener('toggle', align)
-      }
     }
     align()
-    return () => {
-      observer?.disconnect()
-      disclosures.forEach(el => el.removeEventListener('toggle', align))
+    if (!aligned && typeof ResizeObserver === 'function') {
+      observer = new ResizeObserver(align)
+      observer.observe(el)
     }
+    return () => observer?.disconnect()
   }, [])
 
   const metric = normalizeMetric(selectedMetric ?? localMetric)

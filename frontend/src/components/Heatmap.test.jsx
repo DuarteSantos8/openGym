@@ -8,7 +8,7 @@ import { workoutDay } from '../lib/history.js'
 
 let root, host
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
-afterEach(() => { act(() => root?.unmount()); host?.remove(); root = null; host = null })
+afterEach(() => { act(() => root?.unmount()); host?.remove(); root = null; host = null; vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 it('changes shading and legend by metric while retaining day actions and history', () => {
   const now = new Date(), workouts = [1, 2, 3, 4].map((n, i) => {
@@ -58,6 +58,29 @@ it('leaves malformed history out of the activity map', () => {
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   act(() => root.render(<Heatmap S={{ workouts: [{ d: 'not-a-day', start: NaN, end: NaN, vol: 100 }], unit: 'kg' }} />))
   expect(host.querySelectorAll('.hm-grid .hm-c:not(.l0)')).toHaveLength(0)
+})
+
+it('aligns once when a hidden heatmap first becomes visible, then preserves the reader position', () => {
+  let resize, width = 0
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) { resize = callback }
+    observe() {}
+    disconnect() {}
+  })
+  host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
+  act(() => root.render(<Heatmap S={{ workouts: [], unit: 'kg' }} />))
+  const wrap = host.querySelector('.hm-wrap')
+  Object.defineProperty(wrap, 'clientWidth', { configurable: true, get: () => width })
+  Object.defineProperty(wrap, 'scrollWidth', { configurable: true, get: () => 1200 })
+  // Mount effects have already run in a real hidden disclosure. Re-render once after installing
+  // the geometry probe only if the environment did not observe the initial hidden layout.
+  expect(wrap.scrollLeft).toBe(0)
+  width = 400
+  act(() => resize([{ target: wrap }]))
+  expect(wrap.scrollLeft).toBe(1200)
+  wrap.scrollLeft = 200
+  act(() => resize([{ target: wrap }]))
+  expect(wrap.scrollLeft).toBe(200)
 })
 
 it('honors a saved volume preference on the next render', () => {
@@ -130,36 +153,4 @@ it('draws given counts per day, with the caller legend and no metric switch', ()
   expect(cell(day(3)).classList.contains('l0')).toBe(true)
   expect(cell(day(5)).classList.contains('l0')).toBe(true)     // a workout is not a photo
   act(() => cell(day(1)).click()); expect(onDay).toHaveBeenCalledWith(day(1))
-})
-
-
-it('aligns on first disclosure visibility and preserves subsequent horizontal scrolling', () => {
-  host = document.createElement('details'); document.body.appendChild(host)
-  const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => host.open ? 300 : 0)
-  const scrollWidth = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(900)
-  let resize
-  const disconnect = vi.fn()
-  vi.stubGlobal('ResizeObserver', class {
-    constructor(callback) { resize = callback }
-    observe() {}
-    disconnect() { disconnect() }
-  })
-  try {
-    root = createRoot(host)
-    act(() => root.render(<Heatmap S={{ workouts: [], unit: 'kg' }} />))
-    const wrap = host.querySelector('.hm-wrap')
-    expect(wrap.scrollLeft).toBe(0)
-    host.open = true
-    act(() => resize())
-    expect(wrap.scrollLeft).toBe(900)
-    expect(disconnect).toHaveBeenCalled()
-    wrap.scrollLeft = 120
-    host.open = false
-    act(() => host.dispatchEvent(new Event('toggle')))
-    host.open = true
-    act(() => { host.dispatchEvent(new Event('toggle')); resize() })
-    expect(wrap.scrollLeft).toBe(120)
-  } finally {
-    width.mockRestore(); scrollWidth.mockRestore(); vi.unstubAllGlobals()
-  }
 })

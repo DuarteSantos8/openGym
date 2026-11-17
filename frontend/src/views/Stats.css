@@ -37,6 +37,9 @@
 .iv-stats .stats-links .lrow{min-height:56px}
 .iv-stats-primary{position:fixed;z-index:45;left:50%;bottom:calc(5rem + var(--sab));transform:translateX(-50%);width:min(calc(100% - 32px),640px);pointer-events:none}
 .iv-stats-primary .btn{pointer-events:auto;width:100%;min-height:56px;box-shadow:0 8px 30px rgba(0,0,0,.3);font-size:var(--fs-body)}
+/* The global timer sits above the tab bar. Keep History and the final content above it too. */
+body.resting .iv-stats{padding-bottom:calc(11rem + 88px + var(--sab))}
+body.resting .iv-stats-primary{bottom:calc(11rem + var(--sab))}
 :root[data-theme="light"] .iv-stats .btn.tinted,:root[data-theme="light"] .iv-stats .btn.plain,:root[data-theme="light"] .iv-stats .btn.ghost,:root[data-theme="light"] .iv-stats-more>summary::after{color:#873006}
 @media (max-width:560px){
   .iv-stats .ex-day{grid-template-columns:minmax(0,1fr);gap:4px;padding:10px 6px}
@@ -52,5 +55,7 @@
 @media (min-width:1000px){
   .iv-stats{padding-bottom:calc(6.25rem + 128px + var(--sab))}
   .iv-stats-primary{bottom:6.25rem}
+  body.resting .iv-stats{padding-bottom:calc(13rem + 88px + var(--sab))}
+  body.resting .iv-stats-primary{bottom:calc(13rem + var(--sab))}
 }
 @media (prefers-reduced-motion:reduce){.iv-stats *,.iv-stats *::before,.iv-stats *::after{transition:none!important;animation:none!important}}
