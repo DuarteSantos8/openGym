@@ -57,6 +57,7 @@ import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedW
 import { streakInfo } from './streak.js'
 import { accentValue, accentPair, customAccentVars } from './accent.js'
 import { circuitClock } from './circuit.js'
+import { routinesFile } from './watch-routines-file.js'
 
 // A circuit's clock (lib/circuit.js, store/useCircuit.js), when one runs: its rests and its get
 // ready go to the watch as the rest it already counts down; the station on now is the current
@@ -1165,6 +1166,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   uiRef = useUI
   // `sentAt`: when the last snapshot went, for the next change to go at once (sendSoon).
   let lastSent = null, lastClips = null, tm = null, sentAt = 0
+  // The routines file: made once per ready list, sent once per change (lastRoutines).
+  let fileOf = null, file = null, lastRoutines = null
   // The ready sessions only change with the plan, the log or the day: built again only then.
   let readyKey = null, ready = null
   const readyFor = S => {
@@ -1198,7 +1201,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     if (withGarmin) writeGarminLink(garmin)
     // A watch that is new here (the app just installed on it, or reinstalled): it has nothing yet,
     // so the snapshot goes again even when it is the same as the last one sent.
-    if (linked && !was) lastSent = null
+    if (linked && !was) { lastSent = null; lastRoutines = null }
     return linked
   }
   await checkLink()
@@ -1224,6 +1227,9 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // The phone's clock as it made this: each watch works out how far off its own clock is.
       snap.now = Date.now()
+      // Every routine goes as a file; the snapshot's own (fitted) list stays for a watch that has no file yet.
+      if (snap.ready !== fileOf) { fileOf = snap.ready; file = routinesFile(snap.ready) }
+      if (file) snap.routinesHash = file.hash
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
       snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
@@ -1262,6 +1268,10 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         // The next list of ids goes with the next snapshot (the newest ones are in every one).
         unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
         if (unnamed.length) schedule()
+      }
+      if (file && file.hash !== lastRoutines) {
+        // An older or F-Droid build has no such call: the snapshot's list is all it gets.
+        try { const r = await p.WatchBridge.sendRoutines?.({ json: file.json, hash: file.hash }); if (r?.sent) lastRoutines = file.hash } catch { /* tried again with the next snapshot */ }
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []
