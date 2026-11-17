@@ -3191,9 +3191,9 @@ button.cal-wk:active{background:var(--press-fill)}
 .wpill-sign{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2);box-shadow:0 0 0 1.5px var(--label-3)}
 .wpill-sign svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .wpill-sign .lit{fill:currentColor;stroke:none;opacity:.9}
-.wpill.ok .wpill-sign{background:color-mix(in srgb,var(--green) 16%,var(--surface-2));color:var(--green-ink);box-shadow:0 0 0 1.5px var(--green),0 0 14px rgba(48,209,88,.35)}
+.wpill.ok .wpill-sign{background:rgba(48,209,88,.16);background:color-mix(in srgb,var(--green) 16%,var(--surface-2));color:var(--green-ink);box-shadow:0 0 0 1.5px var(--green),0 0 14px rgba(48,209,88,.35)}
 .wpill.busy .wpill-sign{color:var(--blue-ink);box-shadow:0 0 0 1.5px var(--blue)}
-.wpill.warn .wpill-sign{background:color-mix(in srgb,var(--orange) 16%,var(--surface-2));color:var(--orange-ink);box-shadow:0 0 0 2px var(--orange)}
+.wpill.warn .wpill-sign{background:rgba(255,159,10,.16);background:color-mix(in srgb,var(--orange) 16%,var(--surface-2));color:var(--orange-ink);box-shadow:0 0 0 2px var(--orange)}
 .wpill-tx{flex:1 1 9em;min-width:0}
 .wpill-tx b{display:block;font-size:var(--fs-body);font-weight:600;line-height:1.2}
 .wpill-tx span{display:block;font-size:var(--fs-footnote);color:var(--label-2);margin-top:1px;line-height:1.25}

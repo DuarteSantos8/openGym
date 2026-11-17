@@ -131,9 +131,11 @@ export function watchLinkState (link, status = null) {
 }
 
 // What the phone last sent the watch as its routines (lib/watch-sync.js): the file's hash and how
-// many routines it lists. In memory: the next snapshot sets it again after a launch.
+// many routines it lists. In memory: the next snapshot sets it again after a launch. No emit():
+// the link sends again on onWatchPrefs, so each send would set off the next; the Settings pages
+// read it again with every look at the watch (every few seconds).
 let routinesSent = null
-export const noteRoutinesSent = v => { if (JSON.stringify(v) !== JSON.stringify(routinesSent)) { routinesSent = v; emit() } }
+export const noteRoutinesSent = v => { routinesSent = v }
 export const readRoutinesSent = () => routinesSent
 
 /**
