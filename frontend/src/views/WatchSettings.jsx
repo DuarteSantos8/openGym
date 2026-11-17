@@ -98,7 +98,7 @@ export default function WatchSettingsPage() {
   // Whether the watch has every routine (it reports what it shows, each time it takes in a new file).
   const rs = routinesSync({ link, phone: readRoutinesSent(), status, enabled: prefs.enabled })
   const routinesLine = {
-    synced: t('Every routine is on your watch. Archived ones stay on the phone.') + (status?.at ? ' ' + t('Last checked {0}', fmtAgo(status.at)) : ''),
+    synced: t('Every routine is on your watch. Archived ones stay on the phone.') + (status?.at ? ' ' + t('Last checked {0}', fmtAgo(status.at)) + '.' : ''),
     sending: t('Keep openGym open on the watch for a moment.'),
     unknown: t('Update openGym on the watch to see this.'),
   }[rs]
