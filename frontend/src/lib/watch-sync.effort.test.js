@@ -21,6 +21,10 @@ describe('the accent on the watch', () => {
 describe('the scale the watch is told about', () => {
   it('only a profile that tracks effort gets the effort tile', () => {
     expect(watchExtras({ effort: 'rpe' }).effort).toBe('rpe')
+    // "Ask how hard every set was" goes to the watch only with a scale to ask in
+    expect(watchExtras({ effort: 'rir', effortAsk: true }).effortAsk).toBe(true)
+    expect(watchExtras({ effort: 'none', effortAsk: true })).not.toHaveProperty('effortAsk')
+    expect(watchExtras({ effort: 'rir' })).not.toHaveProperty('effortAsk')
     expect(watchExtras({ effort: 'rir' }).effort).toBe('rir')
     // Timed holds that start by themselves: the watch's holds count in too, only when switched on.
     expect(watchExtras({ autoHolds: true }).autoHolds).toBe(true)

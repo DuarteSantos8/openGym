@@ -5952,4 +5952,6 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  "Ask how hard every set was": "اسأل عن صعوبة كل مجموعة",
+  "A set counts once you rate it. The watch asks too.": "تُحتسب المجموعة بعد أن تقيّمها. والساعة تسأل أيضًا.",
 }

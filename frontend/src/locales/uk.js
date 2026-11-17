@@ -5894,4 +5894,6 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Ask how hard every set was": "Питати складність кожного підходу",
+  "A set counts once you rate it. The watch asks too.": "Підхід зараховується, лише коли ви його оціните. Годинник теж питає.",
 }

@@ -5890,4 +5890,6 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  "Ask how hard every set was": "每組都詢問用力程度",
+  "A set counts once you rate it. The watch asks too.": "評分後這一組才會計入。手錶也會詢問。",
 }

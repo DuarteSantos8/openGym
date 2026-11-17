@@ -162,6 +162,8 @@ data class WatchSettings(
     val lastBw: Double? = null,
     val show: WatchShow? = null,
     val effort: String? = null,
+    /** Every working set is rated before it counts (the phone's "Ask how hard every set was"). */
+    val effortAsk: Boolean? = null,
     val autoHolds: Boolean? = null,
     /** The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5). */
     val accent: String? = null,

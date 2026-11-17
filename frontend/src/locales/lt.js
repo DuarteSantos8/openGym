@@ -5893,4 +5893,6 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  "Ask how hard every set was": "Klausti, kiek sunkus buvo kiekvienas priėjimas",
+  "A set counts once you rate it. The watch asks too.": "Priėjimas užskaitomas, kai jį įvertini. Laikrodis irgi klausia.",
 }

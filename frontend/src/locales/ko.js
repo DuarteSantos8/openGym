@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Ask how hard every set was": "세트마다 얼마나 힘들었는지 묻기",
+  "A set counts once you rate it. The watch asks too.": "평가해야 세트가 기록돼요. 워치도 물어봐요.",
 }

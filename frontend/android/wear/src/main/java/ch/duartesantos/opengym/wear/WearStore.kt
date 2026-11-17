@@ -83,6 +83,8 @@ object WearStore {
     val lastLogged = MutableStateFlow<SetRef?>(null)
     private var lastSide: String? = null
     val lastRated = MutableStateFlow<Double?>(null)
+    /** Done was pressed on a set that has to be rated first (settings.effortAsk): the chips stand in for Done. */
+    val asking = MutableStateFlow(false)
     /** Which way the set page last moved (‹ -1, › and Done +1): the set's lines come in from there. */
     val lastStep = MutableStateFlow(1)
     /** The weigh-in before a workout started here, and the body weight on its crown. */
@@ -371,6 +373,7 @@ object WearStore {
     }
 
     fun step(d: Int) {
+        asking.value = false
         ackRestOver()
         val to = target(d) ?: return
         lastStep.value = if (d < 0) -1 else 1
@@ -450,8 +453,32 @@ object WearStore {
         Haptics.tick(app)
     }
 
+    /**
+     * The phone's Settings → Workout → "Ask how hard every set was" (settings.effortAsk, lib/effort-ask.js):
+     * a working reps set asks how hard it was before it counts. Holds and cardio never ask.
+     */
+    fun mustRate(): Boolean {
+        val st = _state.value.settings
+        if (st.effortAsk != true || Effort.notches(st.effort) == null) return false
+        val e = entry() ?: return false
+        val row = setIndex()?.let { e.sets.getOrNull(it) } ?: return false
+        return !e.isCardio && !e.isTimed && !row.warmup
+    }
+
+    /** Done on the set page: straight away, or the effort chips first when the set must be rated. */
+    fun done() {
+        if (mustRate()) { if (touchAllowed()) asking.value = true } else completeSet()
+    }
+
+    /** A chip picked after Done: the set counts now, with its rating in the same tick. */
+    fun doneRated(v: Double) {
+        val kind = _state.value.settings.effort ?: return
+        asking.value = false
+        completeSet(effort = EffortRating(kind, v))
+    }
+
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
-    fun completeSet(heldFor: Double? = null) {
+    fun completeSet(heldFor: Double? = null, effort: EffortRating? = null) {
         val s0 = _state.value
         val w = s0.workout ?: return
         val e = entry() ?: return
@@ -471,7 +498,7 @@ object WearStore {
             if ((e.sets[si].w ?: 0.0) > 0) tw = d.w        // a weighted hold keeps its weight
         } else if (!e.isCardio) { tw = d.w; tr = d.r }
         val ei = entryIndex
-        val (s1, event0) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from))
+        val (s1, event0) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from), effort)
         event0 ?: return
         val (nextEi, rest) = SessionCore.next(s1, ei, si)
         // The rest this tick starts here, if any: its end goes with the tick (restEnd, 0 for none), so
@@ -498,7 +525,7 @@ object WearStore {
         } else if (_rest.value != null) stopRest()      // restEnd 0: the phone ends its rest, so does this watch
         lastLogged.value = SetRef(ei, si)
         lastSide = side
-        lastRated.value = null
+        lastRated.value = effort?.value
         lastStep.value = 1
         loadTargets(force = true)
         // Every set done or passed over: the Overview, where Finish is.

@@ -632,6 +632,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
             value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
         </Row>}
+        {/* Every working set is rated before it counts (lib/effort-ask.js): the phone opens the effort
+            sheet on the tick, and the Wear OS watch shows its chips in Done's place. */}
+        {on('effort') && effortOf(S) !== 'none' && <Row icon="checkCircle" iconTint="var(--purple)" title={t('Ask how hard every set was')}
+          subtitle={t('A set counts once you rate it. The watch asks too.')}>
+          <Switch aria-label={t('Ask how hard every set was')} checked={S.effortAsk === true} onChange={v => update(s => { s.effortAsk = v })} />
+        </Row>}
         {/* The line under each exercise that the rows are held against (#173). Tapping the line in
             a workout switches it too; this is where the choice can be found without knowing that. */}
         <SelectRow icon="history" iconTint="var(--blue)" title={t('Shown under each exercise')}

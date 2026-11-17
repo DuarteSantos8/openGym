@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Ask how hard every set was": "Her setin ne kadar zor olduğunu sor",
+  "A set counts once you rate it. The watch asks too.": "Bir set, onu puanladığında sayılır. Saat de sorar.",
 }

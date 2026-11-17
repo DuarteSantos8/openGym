@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Ask how hard every set was": "پرسیدن سختی هر ست",
+  "A set counts once you rate it. The watch asks too.": "یک ست وقتی شمرده می‌شود که آن را امتیاز بدهی. ساعت هم می‌پرسد.",
 }

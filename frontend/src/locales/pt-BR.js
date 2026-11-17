@@ -4326,6 +4326,8 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  "Ask how hard every set was": "Perguntar o esforço de cada série",
+  "A set counts once you rate it. The watch asks too.": "Uma série conta quando você a avalia. O relógio também pergunta.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

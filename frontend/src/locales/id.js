@@ -5862,4 +5862,6 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Ask how hard every set was": "Tanyakan seberapa berat setiap set",
+  "A set counts once you rate it. The watch asks too.": "Set dihitung setelah kamu menilainya. Jam juga bertanya.",
 };

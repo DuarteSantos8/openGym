@@ -474,6 +474,7 @@ fun SetPanel(onScreen: Boolean) {
     val fix by WearStore.fix.collectAsState()
     val rest by WearStore.rest.collectAsState()
     val lastStep by WearStore.lastStep.collectAsState()
+    val asking by WearStore.asking.collectAsState()
     val ambient = LocalAmbient.current
     val reduce = LocalReduceMotion.current
     val view = LocalView.current
@@ -624,8 +625,9 @@ fun SetPanel(onScreen: Boolean) {
                     fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, enabled = fix?.changed == true) { WearStore.saveFix() }
                     e.isTimed -> PrimaryButton(stringResource(R.string.start_hold), Modifier.weight(1f), icon = G.PLAY, iconWhenTight = true) { WearStore.startHold() }
                     e.isCardio -> RowButton(stringResource(R.string.skip_set), Modifier.weight(1f), lines = 1) { WearStore.skipSet() }
+                    asking -> AskEffort(Modifier.weight(1f))
                     else -> PrimaryButton(stringResource(R.string.done), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, onLongClick = { confirmSkip = true }) {
-                        WearStore.completeSet()
+                        WearStore.done()
                     }
                 }
                 ArrowButton(left = false, enabled = WearStore.canStep(1)) { WearStore.step(1) }
@@ -928,6 +930,28 @@ private fun UpNext(roomy: Boolean) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, style = Og.Number, modifier = Modifier.weight(1f, fill = false)); Spacer(Modifier.width(8.dp)) }
             time()
+        }
+    }
+}
+
+/**
+ * Done on a set that must be rated first (settings.effortAsk): the four effort chips in Done's place,
+ * and the set counts with the one picked. ‹ and › (or a new page) leave it unlogged.
+ */
+@Composable
+private fun AskEffort(modifier: Modifier) {
+    val s by WearStore.state.collectAsState()
+    val a = LocalAccent.current
+    val kind = s.settings.effort ?: "rir"
+    Row(modifier.height(Og.Tap), horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
+        for (v in Effort.chips(kind)) {
+            val c = Og.effortColor(Effort.band(kind, v), a.accent)
+            Box(
+                Modifier.weight(1f).fillMaxHeight().clip(CircleShape).background(c.copy(alpha = 0.22f))
+                    .combinedClickable(role = Role.Button) { WearStore.doneRated(v) }
+                    .semantics { contentDescription = "${Effort.name(kind)} ${Effort.chipLabel(kind, v)}" },
+                contentAlignment = Alignment.Center,
+            ) { Text(Effort.chipLabel(kind, v), color = c, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, style = Og.Number, maxLines = 1) }
         }
     }
 }

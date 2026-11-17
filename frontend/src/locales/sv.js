@@ -5944,4 +5944,6 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  "Ask how hard every set was": "Fråga hur tungt varje set var",
+  "A set counts once you rate it. The watch asks too.": "Ett set räknas när du har betygsatt det. Klockan frågar också.",
 }
