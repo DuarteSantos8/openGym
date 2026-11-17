@@ -2,6 +2,8 @@ package ch.duartesantos.opengym.wear
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Test
 
 /** Every routine reaches the watch as a file; the snapshot names the file it goes with. */
@@ -40,5 +42,19 @@ class RoutinesFileTest {
         val s = SessionCore.applySnapshot(SessionState(), Snapshot(routinesHash = "h1"))
         assertEquals("h1", s.routinesHash)
         assertNull(SessionCore.applySnapshot(s, Snapshot()).routinesHash)
+    }
+
+    @Test fun theReportNamesTheFileInUseAndHowManyRoutinesAreListed() {
+        val ready = Ready(today = session("t"), others = listOf(session("s0")))
+        assertEquals("h1" to 31, Plan.routinesReport(ready, "h1", file("h1", 30)))  // today's and the file's 30
+        assertEquals("" to 2, Plan.routinesReport(ready, "h2", file("h1", 30)))      // the snapshot's own list
+        assertEquals("" to 0, Plan.routinesReport(null, null, null))
+    }
+
+    @Test fun theStatusCarriesTheReport() {
+        val e = CheckIn.event("1.4.6", 5, "id", "h1" to 31)
+        assertEquals("h1", e["routinesHash"]?.jsonPrimitive?.content)
+        assertEquals(31, e["routinesCount"]?.jsonPrimitive?.int)
+        assertNull(CheckIn.event("1.4.6", 5, "id")["routinesHash"])
     }
 }
