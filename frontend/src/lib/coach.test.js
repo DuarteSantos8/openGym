@@ -6,6 +6,7 @@ import {
   recordDebrief, logEntry, lightBundle, changeValues, defaultTrainingDays,
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
+import { PYRAMID_MAX } from './pyramid.js'
 import { registerCustom } from './exercises.js'
 
 // The two runtimes share no build step, so the client's copy of the fingerprint logic is
@@ -810,6 +811,29 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+
+  it('keeps the pyramid prescription that was accepted', () => {
+    // A logged proposal used to keep only the flat fallback, so an imported routine that trains
+    // 12-10-8-6 was described by a saved copy that no longer said so.
+    const withEx = ex => ({ ...plan, routines: [{ ...plan.routines[0], ex: [ex] }] })
+    const b = lightBundle(withEx({
+      id: '0001', sets: 4, reps: 12, mode: 'reps',
+      pyramid: [12, 10, 8, PYRAMID_MAX], pyramidRest: [0, 120, 0, 0], pyramidWeight: [40, 45, 50, 0]
+    }))
+    expect(b.routines[0].ex[0]).toMatchObject({
+      pyramid: [12, 10, 8, PYRAMID_MAX],
+      pyramidRest: [0, 120, 0, 0],
+      pyramidWeight: [40, 45, 50, 0]
+    })
+
+    const bounded = lightBundle(withEx({
+      id: '0001', sets: 12, reps: 12, mode: 'reps',
+      pyramid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], pyramidRest: [0, 0], pyramidWeight: [0, 0]
+    })).routines[0].ex[0]
+    expect(bounded.pyramid).toHaveLength(10)
+    expect(bounded).not.toHaveProperty('pyramidRest', 'an all-zero rest is no field')
+    expect(bounded).not.toHaveProperty('pyramidWeight', 'an all-zero load is no field')
   })
 })
 

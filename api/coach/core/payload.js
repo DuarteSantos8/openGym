@@ -188,7 +188,14 @@ function readSession(entry, fallback) {
   // Triple progression's per-set aims (frontend readSession): only on the session's own target.
   const rowGoals = mode === 'reps' && entry && entry.target && Array.isArray(target.rowReps) && target.rowReps.length
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null;
-  const planned = rowGoals ? rowGoals.length : (target.sets || logged.length);
+  // A pyramid carries one target per set too, and it owns the flat `reps`. Without reading it a
+  // clean 12-10-8-6 session is graded against 12 on every set, so its lower sets read as misses
+  // and three of them manufacture a stall the athlete never had. "max" has no fixed goal.
+  const pyrGoals = mode === 'reps' && entry && entry.target && Array.isArray(target.pyramid)
+    ? target.pyramid.slice(0, MAX_PYRAMID_SETS).map(v => (v === PYRAMID_MAX ? 0 : Math.max(0, Number(v) || 0)))
+    : null;
+  const setGoals = rowGoals || (pyrGoals && pyrGoals.length ? pyrGoals : null);
+  const planned = setGoals ? setGoals.length : (target.sets || logged.length);
   const enough = logged.length >= planned;
   // Only the sets the plan asked for decide whether the session was hit, exactly as
   // frontend/src/lib/progression.js readSession has done since issue #233. This copy graded
@@ -205,12 +212,14 @@ function readSession(entry, fallback) {
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0));
     return { mode, bw, goal, ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal) };
   }
-  const goal = rowGoals ? Math.max(...rowGoals) : (target.reps || 0);
+  const goal = setGoals ? Math.max(...setGoals) : (target.reps || 0);
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0));
   // Set count is the dimension bodyweight work grows once reps hit their ceiling (upstream
   // #33), so it travels alongside the reps rather than being inferred from them downstream.
   const done = logged.filter(s => s.done).length;
-  return { mode, bw, goal, count: done, ok: goal > 0 && enough && reps.length > 0 && reps.every((r, k) => r >= (rowGoals ? rowGoals[k] ?? goal : goal)) };
+  // A pyramid can be all "max" sets: it has no numeric goal at all, so "goal > 0" is not a
+  // requirement when it owns the per-set aims.
+  return { mode, bw, goal, count: done, ok: enough && reps.length > 0 && (setGoals || goal > 0) && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal)) };
 }
 /** Consecutive misses counting back from the most recent session. */
 export function stallCount(sessions) {
