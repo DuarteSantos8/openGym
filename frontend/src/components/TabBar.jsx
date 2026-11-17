@@ -7,8 +7,10 @@ import { dayApart, nextSessionIds } from '../lib/day-sessions.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
+import BrandLogo from './BrandLogo.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
+import './TabBar.css'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -16,7 +18,7 @@ import { retapTab } from '../lib/scroll-top.js'
 // state it took with it is the DOM node itself: focus, the :active tint, any in-flight transition.
 function Tab({ active, icon, label, onClick, dot, tour }) {
   return (
-    <button className={active ? 'on' : ''} onClick={onClick} data-tour={tour} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
+    <button className={active ? 'on' : ''} onClick={onClick} data-tour={tour} aria-current={active ? 'page' : undefined} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
       <span className="tab-ic"><Icon name={icon} />{dot && <span className="tab-dot" aria-hidden="true" />}</span><span>{label}</span>
     </button>
   )
@@ -81,6 +83,7 @@ export default function TabBar({ onStart, onPick }) {
 
   return (
     <nav id="tabbar">
+      <BrandLogo size={28} className="tabbar-brand" />
       {/* Ironvane: Today · Plan · Start · Library · Progress. The routes keep their names (/home,
           /stats, /library), so links, shortcuts, the tour and back buttons still land; Library sits
           next to Start because it is opened mid-workout, Progress at the edge, checked least. */}
@@ -96,6 +99,7 @@ export default function TabBar({ onStart, onPick }) {
       <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
         onPointerDown={holdStart} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
         onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}
+        aria-current={S.active && cur === 'workout' ? 'page' : undefined}
         aria-label={running ? t('Resume') : undefined}>
         <span className="cir"><Icon name="play" /></span>
         {running ? <span className="tab-time"><Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></span>

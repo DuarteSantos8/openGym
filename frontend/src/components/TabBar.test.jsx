@@ -38,6 +38,16 @@ afterEach(() => {
 const tabs = () => [...host.querySelectorAll('#tabbar button')]
 
 describe('the tab bar across a store write', () => {
+  it('keeps the Ironvane lockup and announces only the current destination', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(host.querySelector('.tabbar-brand')?.textContent).toBe('Ironvane')
+    expect(tabs().map(b => b.getAttribute('aria-current'))).toEqual(['page', null, null, null, null])
+
+    where.loc = { pathname: '/library' }
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs().map(b => b.getAttribute('aria-current'))).toEqual([null, null, null, 'page', null])
+  })
+
   it('keeps the very same buttons instead of rebuilding them every tick', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     const before = tabs()
