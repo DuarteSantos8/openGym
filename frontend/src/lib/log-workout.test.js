@@ -41,6 +41,11 @@ describe('what the user said becomes the workout Finish would have saved', () =>
     expect(best1RM(profile({ workouts: [w] }), '0294')).toMatchObject({ w: 12, r: 12, d: TODAY })
   })
 
+  it('a rep exercise is filed with mode "reps", so a later catalogue change cannot reread it as cardio', () => {
+    const w = build(profile(), curls()).workout
+    expect(w.entries[0].target).toMatchObject({ id: '0294', mode: 'reps' })
+  })
+
   it('a drawing alias id is filed under the exercise it draws, or its history would never find it', () => {
     const r = build(profile(), { date: TODAY, exercises: [{ exercise: '1019', sets: [{ reps: 5, weight: 50 }] }] })
     expect(r.workout.entries[0].id).toBe('3841')

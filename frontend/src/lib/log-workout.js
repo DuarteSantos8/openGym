@@ -243,7 +243,9 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
     })
     // The meaning of a dumbbell weight is stamped the way a freestyle entry gets it (sheets.jsx
     // swapActiveWorkoutExercise): the exercise's own default, so "20 each" stays 20 each.
-    const cfg = mode === 'time' ? { id: hit.id, mode: 'time' } : { id: hit.id }
+    // The mode is explicit: a catalogue change that turns this exercise into cardio must not make
+    // an already-logged rep entry read as a cardio one (modeOf falls back to the body part).
+    const cfg = mode === 'time' ? { id: hit.id, mode: 'time' } : { id: hit.id, mode: 'reps' }
     const fixed = meanings && Object.hasOwn(meanings, hit.id) ? meanings[hit.id] : null
     const target = fixed === 'each' || fixed === 'total' ? { ...cfg, dbLoad: fixed } : fixed === 'as' ? cfg : withMeaning(S, cfg, hit.id)
     const note = String(ex.note ?? '').trim().slice(0, 280)
