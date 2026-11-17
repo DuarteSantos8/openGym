@@ -91,6 +91,19 @@ export function mix(hex, to, t) {
   return toHex(a.map((v, i) => v + (b[i] - v) * t))
 }
 
+export const LIVEBAR_ALPHA = 0.86 // the most see-through the live bar's fill may be
+
+/**
+ * The lowest alpha from LIVEBAR_ALPHA up to 1, in steps of 0.04, at which `ink` on the fill reaches
+ * 4.5:1 over both a black and a white backdrop. 1 when only the solid fill passes.
+ */
+export function liveBarAlpha(acc, ink) {
+  for (let a = LIVEBAR_ALPHA; a < 1; a = Math.round((a + 0.04) * 100) / 100) {
+    if (contrast(ink, mix(acc, '#000000', 1 - a)) >= 4.5 && contrast(ink, mix(acc, '#ffffff', 1 - a)) >= 4.5) return a
+  }
+  return 1
+}
+
 /** Black or white, whichever reads better on `hex` (black on a tie). */
 export function inkOn(hex) {
   return contrast(hex, '#000000') >= contrast(hex, '#ffffff') ? '#000000' : '#ffffff'
@@ -203,9 +216,11 @@ export function customAccentVars(hex, theme) {
   if (!c) return null
   const acc = readableIn(c, theme)
   const acc2 = mix(acc, '#000000', 0.25)
+  const ink = inkOnBoth(acc, acc2)
   return {
-    '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2), '--acc-ink': inkIn(acc, theme),
+    '--acc': acc, '--acc-2': acc2, '--on-acc': ink, '--acc-ink': inkIn(acc, theme),
     '--knob-ring': contrast('#ffffff', acc) < 1.5 ? KNOB_RING : 'transparent',
+    '--livebar-a': String(liveBarAlpha(acc, ink)),
   }
 }
 
@@ -217,7 +232,7 @@ export function accentPair(v) {
   return { accent: ACCENTS[k], ink: ACCENT_INK[k] }
 }
 
-const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--acc-ink', '--knob-ring']
+const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--acc-ink', '--knob-ring', '--livebar-a']
 
 /**
  * Puts the accent on the page root: a preset by `data-accent` (index.css does the rest), the

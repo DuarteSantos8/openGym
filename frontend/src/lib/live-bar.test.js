@@ -1,0 +1,121 @@
+import { describe, expect, it } from 'vitest'
+import { liveBarHidesRest, liveBarShows, liveBarState } from './live-bar.js'
+
+// The live workout bar: when it shows and what it says, worked out from the session (lib/live-bar.js).
+const set = (over = {}) => ({ w: 60, r: 8, done: false, ...over })
+const entry = (id, sets, over = {}) => ({ id, target: { mode: 'reps', name: id.toUpperCase(), restSec: 120 }, sets, ...over })
+const S = (active, over = {}) => ({ unit: 'kg', restSec: 90, active, ...over })
+const lifting = (over = {}) => ({ id: 'w1', name: 'Push day', start: 1000, cur: 0, entries: [entry('bench', [set({ done: true }), set(), set(), set()])], ...over })
+
+describe('liveBarShows', () => {
+  it('is true for a started workout away from the workout screen', () => {
+    expect(liveBarShows(S(lifting()), '/home')).toBe(true)
+  })
+  it('is false on the workout screen, when editing, backfilling, not started, or with no workout', () => {
+    expect(liveBarShows(S(lifting()), '/workout')).toBe(false)
+    expect(liveBarShows(S(lifting({ editingWorkoutId: 'x' })), '/home')).toBe(false)
+    expect(liveBarShows(S(lifting({ backfill: true })), '/home')).toBe(false)
+    expect(liveBarShows(S(lifting({ start: 0 })), '/home')).toBe(false)
+    expect(liveBarShows(S(null), '/home')).toBe(false)
+  })
+})
+
+describe('liveBarState', () => {
+  it('is null without a workout', () => {
+    expect(liveBarState(S(null))).toBeNull()
+  })
+  it('lifting: the exercise, the next set, no rest, progress by sets done', () => {
+    const b = liveBarState(S(lifting()))
+    expect(b).toMatchObject({ routine: 'Push day', exercise: 'BENCH', set: { n: 2, of: 4 }, allDone: false, rest: null, done: 1, total: 4, parts: [{ sets: 4, done: 1 }], start: 1000, pausedAt: 0 })
+  })
+  it('progress: one section per exercise, as long as its sets and filled by those done; an exercise with no sets has none', () => {
+    const A = lifting({ entries: [entry('a', [set({ done: true }), set({ done: true })]), entry('b', [set({ done: true }), set(), set()]), entry('c', []), entry('d', [set()])] })
+    expect(liveBarState(S(A)).parts).toEqual([{ sets: 2, done: 2 }, { sets: 3, done: 1 }, { sets: 1, done: 0 }])
+  })
+  it('rest counting: the countdown, what is next, and the sections stay on the sets', () => {
+    const b = liveBarState(S(lifting()), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0 } })
+    expect(b.rest).toEqual({ left: 72, switch: false })
+    expect(b.parts).toEqual([{ sets: 4, done: 1 }])
+    expect(b.next).toBe('BENCH')
+  })
+  it('a paused workout keeps its stop time, and a paused rest keeps its time left', () => {
+    const b = liveBarState(S(lifting({ pausedAt: 4000 })), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0, paused: true } })
+    expect(b.rest.left).toBe(72)
+    expect(b.pausedAt).toBe(4000)
+  })
+  it('no exercises and no name: fallbacks, never NaN', () => {
+    const b = liveBarState(S(lifting({ entries: [], name: '' })))
+    expect(b).toMatchObject({ routine: '', exercise: '', set: null, allDone: false, parts: [], done: 0, total: 0 })
+  })
+  it('every set done: all done, no exercise line', () => {
+    const b = liveBarState(S(lifting({ entries: [entry('bench', [set({ done: true }), set({ done: true })])] })))
+    expect(b).toMatchObject({ allDone: true, exercise: '', set: null, parts: [{ sets: 2, done: 2 }] })
+  })
+  it('a rest that ran out (ready, or left 0) is no rest', () => {
+    expect(liveBarState(S(lifting()), { timer: { left: 30, total: 90, endsAt: 5000, forIdx: 0, ready: true } }).rest).toBeNull()
+    const b = liveBarState(S(lifting()), { timer: { left: 0, total: 90, endsAt: 5000, forIdx: 0 } })
+    expect(b.rest).toBeNull()
+  })
+  it('a superset: during rest the next exercise is the other one', () => {
+    const A = lifting({ entries: [entry('a', [set({ done: true }), set()], { sg: 'g' }), entry('b', [set(), set()], { sg: 'g' })] })
+    const b = liveBarState(S(A), { timer: { left: 60, total: 90, endsAt: 5000, forIdx: 0 } })
+    expect(b.next).toBe('B')
+    expect(b.exercise).toBe('B')
+  })
+  it('a warm-up set has no set number', () => {
+    const A = lifting({ entries: [entry('bench', [set({ warmup: true }), set(), set()])] })
+    const b = liveBarState(S(A))
+    expect(b.set).toBeNull()
+    expect(b.exercise).toBe('BENCH')
+  })
+
+  describe('pulse and watch', () => {
+    const watch = state => ({ rows: [{ id: 'watch', kind: 'apple', state }] })
+    it('a live reading gives the bpm', () => {
+      const b = liveBarState(S(lifting()), { live: { bpm: 132 } })
+      expect(b.bpm).toBe(132)
+      expect(b.pulseSlot).toBe(true)
+    })
+    it('no reading and no watch: no slot, no device', () => {
+      expect(liveBarState(S(lifting()))).toMatchObject({ bpm: null, pulseSlot: false, device: null })
+    })
+    it('a linked watch with no reading reserves the slot', () => {
+      expect(liveBarState(S(lifting()), watch('live'))).toMatchObject({ bpm: null, pulseSlot: true, device: 'linked' })
+    })
+    it('maps every watch state', () => {
+      const dev = st => liveBarState(S(lifting()), watch(st)).device
+      expect(dev('live')).toBe('linked')
+      expect(dev('delayed')).toBe('relinking')
+      expect(dev('notAnswering')).toBe('relinking')
+      expect(dev('offline')).toBe('none')
+      expect(dev('notFound')).toBe('none')
+    })
+    it('checking with no watch row', () => {
+      expect(liveBarState(S(lifting()), { checking: true }).device).toBe('checking')
+    })
+  })
+})
+
+describe('liveBarHidesRest', () => {
+  const rest = over => ({ left: 60, total: 90, endsAt: Date.now() + 6e4, ...over })
+  it('hides the old rest bar for a running rest, a finished one, and no timer', () => {
+    expect(liveBarHidesRest({ timer: rest() })).toBe(true)
+    expect(liveBarHidesRest({ timer: rest({ ready: true }) })).toBe(true)
+    expect(liveBarHidesRest({ timer: null })).toBe(true)
+  })
+  it('keeps it for a paused rest, a timed hold and a count-in', () => {
+    expect(liveBarHidesRest({ timer: rest({ paused: true }) })).toBe(false)
+    expect(liveBarHidesRest({ timer: null, work: { left: 30, total: 30 } })).toBe(false)
+    expect(liveBarHidesRest({ timer: null, countIn: { left: 3, total: 3 } })).toBe(false)
+  })
+  it('keeps it for a rest that starts a hold by itself, until it is ready', () => {
+    expect(liveBarHidesRest({ timer: rest({ autoNext: { label: 'Plank' } }) })).toBe(false)
+    expect(liveBarHidesRest({ timer: rest({ autoNext: { label: 'Plank' }, ready: true }) })).toBe(true)
+  })
+})
+
+it('marks the pause between the two sides of a timed set', () => {
+  const t = { left: 20, total: 30, endsAt: 5000, forIdx: 0 }
+  expect(liveBarState(S(lifting()), { timer: { ...t, kind: 'switch' } }).rest.switch).toBe(true)
+  expect(liveBarState(S(lifting()), { timer: t }).rest.switch).toBe(false)
+})

@@ -223,6 +223,11 @@ describe('the session with the workout', () => {
     // Live readout.
     p.listeners.heartRate({ bpm: 128, at: Date.now() })
     expect(liveHeartRate()).toEqual({ bpm: 128, at: now })
+    // The device that measured it, when iOS names one (the device button draws earbuds for AirPods).
+    p.listeners.heartRate({ bpm: 129, at: Date.now(), device: 'AirPods Pro' })
+    expect(liveHeartRate()).toEqual({ bpm: 129, at: now, device: 'AirPods Pro' })
+    p.listeners.heartRate({ bpm: 128, at: Date.now(), device: 42 })
+    expect(liveHeartRate()).toEqual({ bpm: 128, at: now })
     // A set ticked 60 s in.
     vi.setSystemTime(now + 60e3)
     S.setState({ S: { active: { id: 'w1', start: now, entries: [{ id: 'bench', sets: [{ w: 60, r: 8, done: true, at: now + 60e3 }] }] }, workouts: [] } })
@@ -314,12 +319,53 @@ describe('the session with the workout', () => {
     stop()
   })
 
+  // The native follow starts no query while a phone session runs: asked before the session ended,
+  // it did nothing and was never asked again (review, #1312).
+  it('the watch takes over a running phone session: the Apple Health follow starts after it has ended', async () => {
+    const order = []
+    p.end = vi.fn(async () => { order.push('end') })
+    p.follow = vi.fn(() => { order.push('follow') })
+    p.unfollow = vi.fn()
+    let claimed = false, onClaim = null
+    watch = { ...watch, claimed: () => claimed, onClaim: fn => { onClaim = fn; return () => {} } }
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })
+    await flush()
+    claimed = true
+    onClaim('w1')
+    await flush()
+    expect(order).toEqual(['end', 'follow'])
+    stop()
+  })
+
   it('a watch with Apple Health on and its app open: no phone session at all', async () => {
     watch = { ...watch, status: async () => ({ paired: true, installed: true, reachable: true }), reported: () => ({ health: 'on' }) }
     await begin()
     S.setState({ S: { active: { id: 'w1', start: now, entries: [] }, workouts: [] } })
     await flush()
     expect(p.start).not.toHaveBeenCalled()
+    stop()
+  })
+
+  it('the watch has the workout: the live readout follows Apple Health while the app is in front', async () => {
+    p.follow = vi.fn()
+    p.unfollow = vi.fn()
+    watch = { ...watch, status: async () => ({ paired: true, installed: true, reachable: true }), reported: () => ({ health: 'on' }) }
+    await begin()
+    S.setState({ S: { active: { id: 'w1', start: now - 5e3, entries: [] }, workouts: [] } })
+    await flush()
+    expect(p.follow).toHaveBeenCalledWith({ since: now - 5e3 })
+    p.listeners.heartRate({ bpm: 141, at: now, device: 'Apple Watch', follow: true })
+    expect(liveHeartRate()).toEqual({ bpm: 141, at: now, device: 'Apple Watch' })
+    // Only the follow's own readings count while no session runs.
+    p.listeners.heartRate({ bpm: 90, at: now })
+    expect(liveHeartRate().bpm).toBe(141)
+    // In the background it stops, and the readout clears.
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(p.unfollow).toHaveBeenCalled()
+    expect(liveHeartRate()).toBeNull()
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
     stop()
   })
 

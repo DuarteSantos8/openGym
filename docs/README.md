@@ -66,6 +66,7 @@ Design notes for specific features, kept next to the code they describe:
 | [Combine routines](dev/COMBINE_ROUTINES.md) | Spec for running more than one routine in a session |
 | [Fatigue and sets](dev/FATIGUE_SETS_MODEL.md) | How hard sets feed the fatigue map and its recovery time per muscle |
 | [Sister apps](dev/SISTER_APPS.md) | openNutrition and openRunning: the read-only link, activities (runs, matches) and the pairing contract |
+| [Live workout bar](dev/LIVE_WORKOUT_BAR.md) | The glass bar above the tab bar during a workout: when it shows, the rest rule and the glass rule |
 
 ## Still stuck?
 

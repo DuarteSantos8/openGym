@@ -81,3 +81,12 @@ describe('root tab history', () => {
     expect(onStart).not.toHaveBeenCalled()
   })
 })
+
+describe('the centre tab while a workout runs', () => {
+  it('still opens the workout from another tab', async () => {
+    act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: Date.now() } }, false) })
+    await tap('Workout')
+    expect(router.state.location.pathname).toBe('/workout')
+    expect(onStart).not.toHaveBeenCalled()
+  })
+})
