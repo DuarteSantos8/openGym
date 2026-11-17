@@ -36,8 +36,10 @@ describe('Stats sections (P5)', () => {
     mount()
     const parts = index().map(b => b.textContent)
     expect(parts.slice(0, 3)).toEqual(['Overview', 'Body', 'Lifts'])
-    // every part but the first has its heading, and Effort is offered only when its part is there
-    expect([...host.querySelectorAll('.stats-sect-h')].map(h => h.textContent)).toEqual(parts.slice(1))
+    // Lifts leads the approved screen; the other indexed parts keep their headings under More.
+    const headings = [...host.querySelectorAll('.stats-sect-h')].map(h => h.textContent)
+    expect(headings).toHaveLength(parts.length - 1)
+    expect(headings).toEqual(expect.arrayContaining(parts.slice(1)))
     expect(!!host.querySelector('#stats-effort')).toBe(parts.includes('Effort'))
     expect(host.querySelector('#stats-overview [data-tour="stats-tiles"]')).toBeTruthy()
     expect(host.querySelector('#stats-lifts [data-tour="stats-records"]')).toBeTruthy()

@@ -49,6 +49,7 @@ describe('Stats: exercise progress date range', () => {
   it('starts on All and cuts the top-set line to the picked range, Best staying all-time', () => {
     mount([session(400, 100), session(200, 90), session(60, 70), session(10, 75), session(3, 80)])
     const card = exCard()
+    pickFrom(card, 'Chart', 'Top set')
     expect([...card.querySelectorAll('.seg button.on')].map(b => b.textContent)).toEqual(['All'])
     expect([...card.querySelectorAll('.lrow-v')].map(v => v.textContent)).toContain('Top set')
     expect(exChart().points.map(p => p.y)).toEqual([100, 90, 70, 75, 80])
@@ -77,6 +78,7 @@ describe('Stats: exercise progress date range', () => {
   it('shows a hint instead of the chart when the range holds fewer than two workouts', () => {
     mount([session(400, 100), session(200, 90), session(5, 80)])
     const card = exCard()
+    pickFrom(card, 'Chart', 'Top set')
     press(card, '1M')
     expect(card.textContent).toContain('Fewer than two workouts in this period. Pick a longer one.')
     mocks.charts = []

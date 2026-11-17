@@ -41,7 +41,7 @@ beforeEach(async () => {
   scrolls = []
   window.scrollTo = vi.fn((x, y) => { scrolls.push([x, y]); Object.defineProperty(window, 'scrollY', { configurable: true, value: y }) })
   await act(async () => { root.render(<App />) })
-  await appear('#app .hdr button[aria-label="History"]')   // Stats loads on demand too
+  await appear('#app .iv-stats-primary .btn[aria-label="All Workouts"]')   // Stats loads on demand too
 })
 afterEach(() => {
   act(() => root.unmount())
@@ -53,7 +53,7 @@ afterEach(() => {
 describe("a page's own back button", () => {
   it('brings Stats back where it was scrolled, not at the top', async () => {
     await scrolledTo(900)
-    await tap(document.querySelector('#app .hdr button[aria-label="History"]'))
+    await tap(document.querySelector('#app .iv-stats-primary .btn[aria-label="All Workouts"]'))
     expect(window.location.hash).toBe('#/history')
     expect(scrolls.at(-1)).toEqual([0, 0])          // a page you open starts at the top
     await tap(await appear('#app [data-back]'))
