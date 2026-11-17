@@ -54,6 +54,9 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { ro
 describe('Login with password sign-in', () => {
   it('an instance without it looks exactly as before', () => {
     const page = mount(<Login />)
+    expect(page.querySelector('h1').textContent).toBe('Ironvane')
+    expect(page.querySelector('h1').textContent).not.toContain('openGym')
+    expect(page.querySelectorAll('h1 rect')).toHaveLength(0)
     expect(buttons(page)).not.toContain('Sign in with password')
     expect(page.textContent).toContain('Passkeys use your fingerprint. No passwords to remember.')
     mocks.webauthn = false
@@ -65,6 +68,10 @@ describe('Login with password sign-in', () => {
   it('next to passkeys it is a second button, and the footer no longer says "no passwords"', () => {
     mocks.config = { password_login: true, allow_guest: true }
     const page = mount(<Login />)
+    const primary = button(page, 'Sign in with passkey')
+    expect(primary.classList.contains('btn')).toBe(true)
+    expect(primary.classList.contains('primary')).toBe(true)
+    expect(primary.style.background).toBe('')
     expect(buttons(page).slice(0, 3)).toEqual(['Sign in with passkey', 'Sign in with password', 'Create new profile'])
     expect(page.textContent).toContain('Passkeys use your fingerprint. A password works too, where passkeys do not.')
     act(() => button(page, 'Sign in with password').click())
