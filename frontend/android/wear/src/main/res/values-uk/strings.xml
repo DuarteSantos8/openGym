@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, uk. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Вкажи рік народження в застосунку на телефоні</string>
+    <string name="add_session_note">Додати нотатку</string>
     <string name="added_weight">Додаткова вага</string>
     <string name="all_done_q">Тренування завершено?</string>
     <string name="all_sets_done">Усі підходи зроблено</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Скасувати тренування?</string>
     <string name="done">Готово</string>
     <string name="edit">Змінити</string>
+    <string name="edit_session_note">Змінити нотатку</string>
     <string name="effort">Зусилля</string>
     <string name="ended_on_phone">Завершено на телефоні</string>
     <string name="exercises">Вправи</string>

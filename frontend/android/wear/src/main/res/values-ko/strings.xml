@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, ko. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">휴대폰 앱에서 출생 연도를 추가하세요</string>
+    <string name="add_session_note">운동 메모 추가</string>
     <string name="added_weight">추가 무게</string>
     <string name="all_done_q">다 끝났나요?</string>
     <string name="all_sets_done">모든 세트 완료</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">운동을 버릴까요?</string>
     <string name="done">완료</string>
     <string name="edit">편집</string>
+    <string name="edit_session_note">운동 메모 편집</string>
     <string name="effort">강도</string>
     <string name="ended_on_phone">휴대폰에서 끝났어요</string>
     <string name="exercises">운동</string>
