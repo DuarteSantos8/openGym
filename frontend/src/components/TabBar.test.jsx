@@ -131,8 +131,33 @@ describe('the names under the icons', () => {
       act(() => { root.render(<TabBar onStart={() => {}} />) })
       // 10px × 48 / 60
       expect(host.querySelector('#tabbar').style.getPropertyValue('--tab-fs')).toBe('8px')
-      expect(host.querySelectorAll('.tab-l')).toHaveLength(5)
+      // the five tabs and Start's word
+      expect(host.querySelectorAll('.tab-l')).toHaveLength(6)
       host.querySelectorAll('.tab-l').forEach(el => expect(el.style.fontSize).toBe(''))
+    } finally {
+      if (cw) Object.defineProperty(HTMLElement.prototype, 'clientWidth', cw); else delete HTMLElement.prototype.clientWidth
+      if (sw) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', sw); else delete HTMLElement.prototype.scrollWidth
+    }
+  })
+  it('fits Start’s word too, and again when it changes or the bar first shows', () => {
+    const cw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    const sw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth')
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get() { return this.classList.contains('tab-l') ? 50 : 375 } })
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, get() { return ({ Settings: 55, 'Edit workout': 60 })[this.textContent] || 30 } })
+    host.style.fontSize = '10px'
+    const fs = () => host.querySelector('#tabbar')?.style.getPropertyValue('--tab-fs')
+    try {
+      // signed out: no bar; signing in shows it, fitted
+      useStore.setState({ user: null })
+      act(() => { root.render(<TabBar onStart={() => {}} />) })
+      expect(host.querySelector('#tabbar')).toBeNull()
+      act(() => { useStore.setState({ user: { id: 1, name: 'test' } }) })
+      expect(fs()).toBe('8.7px')   // 10px × 48 / 55, for Settings
+      // a past workout opened for editing: Start reads "Edit workout", now the longest (10px × 48 / 60)
+      act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: 0, editingWorkoutId: 'w1' } }, false) })
+      expect(fs()).toBe('8px')
+      act(() => { useStore.getState().update(s => { s.active = null }, false) })
+      expect(fs()).toBe('8.7px')
     } finally {
       if (cw) Object.defineProperty(HTMLElement.prototype, 'clientWidth', cw); else delete HTMLElement.prototype.clientWidth
       if (sw) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', sw); else delete HTMLElement.prototype.scrollWidth

@@ -25,8 +25,9 @@ function Tab({ active, icon, label, onClick, dot, tour }) {
 // Six buttons share a phone's width, and a long name ("Impostazioni", "Einstellungen") is wider
 // than its tab. Rather than cut it, the names are set a little smaller until the longest fits, never
 // below 8px: all of them together (--tab-fs), so the bar keeps one size of type instead of a
-// different one under each icon. Measured again when the names change (the language) or the bar's
-// width does (a phone turned sideways).
+// different one under each icon. Start's word (Start, Resume, Workout, Edit workout) is one of them.
+// Measured again when the names change (the language, Start's word), when the bar first shows, or
+// when its width does (a phone turned sideways).
 function useFitLabels(ref, key) {
   useLayoutEffect(() => {
     const bar = ref.current
@@ -65,9 +66,13 @@ export default function TabBar({ onStart, onPick }) {
   // connection lives (#369, #330).
   const trouble = useConnectionTrouble()
   const barRef = useRef(null)
-  useFitLabels(barRef, [t('Home'), t('Plan'), t('Stats'), t('Exercises'), t('Settings')].join('|'))
-  if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
+  const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
+  const startLabel = S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')
+  // Fitted again when the bar first shows (after signing in), and when Start's own word changes.
+  const shown = !!(user || isGuest)
+  useFitLabels(barRef, [shown, running ? '' : startLabel, t('Home'), t('Plan'), t('Stats'), t('Exercises'), t('Settings')].join('|'))
+  if (!shown) return null
   // A screen without a tab of its own lights the tab it is opened from (Muscles from both).
   // Settings has a tab of its own here.
   const PARENT = { history: 'stats', 'structural-balance': 'stats', tools: 'stats', 'progress-photos': 'stats', measurements: 'stats', checkin: 'home', muscles: 'library', trainer: 'home' }
@@ -81,7 +86,6 @@ export default function TabBar({ onStart, onPick }) {
     else retapTab(path)
   }
 
-  const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
     // The press was held: the picker is open already, and this click is its release.
     if (hold.current === 'fired') { hold.current = null; return }
@@ -129,7 +133,7 @@ export default function TabBar({ onStart, onPick }) {
         aria-label={running ? t('Resume') : undefined}>
         <span className="cir"><Icon name="play" /></span>
         {running ? <span className="tab-time"><Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></span>
-          : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
+          : <span className="tab-l">{startLabel}</span>}
       </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} tour="tab-stats" />
       <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} tour="tab-library" />
