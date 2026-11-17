@@ -80,6 +80,12 @@ describe('plan fingerprint', () => {
     expect(planHash(week)).not.toBe(planHash(S))
   })
 
+  it('drops weekdays that point at an archived routine', () => {
+    const S = state({ week: { 1: ['r1', 'r2'], 3: 'r2' } }); S.routines[1].archived = true
+    expect(canonicalPlan(S).week).toEqual({ 1: ['r1'] })
+    expect(serverPayload.cleanPlan(S, 0).week).toEqual({ 1: ['r1'] })
+  })
+
   it('cannot tell "no weight" from "0 kg" — both mean unloaded', () => {
     const a = state(); delete a.routines[0].ex[2].weight
     const b = state(); b.routines[0].ex[2].weight = 0
@@ -101,7 +107,8 @@ describe('plan fingerprint', () => {
     withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
     withFlags.routines[1].ex[0] = { ...withFlags.routines[1].ex[0], side: true, reps: 16 }
     const combined = state({ week: { 1: ['r1', 'r2'], 3: 'r2', 5: [] } })
-    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined]) {
+    const arch = state({ week: { 1: ['r1', 'r2'], 3: 'r2' } }); arch.routines[1].archived = true
+    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined, arch]) {
       expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
       expect(planHash(S)).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
       expect(hashPlan(canonicalPlan(S))).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
@@ -822,5 +829,15 @@ describe('defaultTrainingDays (the intake pre-selection, #620)', () => {
   it('hands out a copy, so editing one selection never changes the next default', () => {
     defaultTrainingDays(3).push(0)
     expect(defaultTrainingDays(3)).toEqual([1, 3, 5])
+  })
+})
+
+describe('an archived routine is not part of the Coach plan', () => {
+  it('both sides drop it and still agree', () => {
+    const S = state()
+    S.routines[1].archived = true
+    expect(canonicalPlan(S).routines.map(r => r.id)).toEqual(['r1'])
+    expect(serverPayload.cleanPlan(S).routines.map(r => r.id)).toEqual(['r1'])
+    expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
   })
 })

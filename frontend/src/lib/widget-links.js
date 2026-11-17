@@ -18,6 +18,7 @@
 // Any app could open such a link too. None of them does more than a tap in the app would: a
 // start only starts routines the profile has, and still goes through the weigh-in step, a
 // weigh-in link only fills the sheet in, saved by a tap on Save, and Finish only opens its sheet.
+import { isLive } from './routine-folders.js'
 import { MOBILE } from './mobile.js'
 import { parseSpokenWeight, convertWeight, weightInRange } from './voice.js'
 
@@ -70,7 +71,7 @@ export function runWidgetLink (target, { getS, nav, navToWorkout, startFlow, bwS
     if (S.active) { navToWorkout(); if (target.finish) finishSheet?.(); return true }
     // Finish for a workout that is over already: nothing to start.
     if (target.finish) { nav('/'); return true }
-    const have = new Set((S.routines || []).map(r => r?.id))
+    const have = new Set((S.routines || []).filter(isLive).map(r => r.id))
     const asked = target.today && todayIds ? todayIds(S) : target.ids
     const ids = asked.filter(id => have.has(id))
     nav('/')

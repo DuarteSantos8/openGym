@@ -100,9 +100,15 @@ export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.
  * so a plan that says nothing and an exercise the dataset already calls bodyweight hash the
  * same. If you change one, change both; coach.test.js checks them against shared fixtures.
  */
+const weekOf = S => {
+  const gone = new Set((S.routines || []).filter(r => r.archived === true).map(r => r.id))
+  const out = {}
+  ;[1, 2, 3, 4, 5, 6, 0].forEach(d => { const ids = S.week?.[d]?.length ? [].concat(S.week[d]).filter(id => !gone.has(id)) : []; if (ids.length) out[d] = ids })
+  return out
+}
 export function canonicalPlan(S) {
   return {
-    routines: (S.routines || []).map(r => ({
+    routines: (S.routines || []).filter(r => r.archived !== true).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e)
@@ -123,7 +129,7 @@ export function canonicalPlan(S) {
     // one-element list to the same shape, so their fingerprint is identical — no false-stale
     // storm on the first load after the upgrade. `?.length` keeps a stray `[]` out. Insertion
     // order is preserved and never sorted (it is the merge order).
-    week: Object.fromEntries([1, 2, 3, 4, 5, 6, 0].filter(d => S.week?.[d]?.length).map(d => [d, [].concat(S.week[d])]))
+    week: weekOf(S)
   }
 }
 
