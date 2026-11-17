@@ -63,6 +63,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "ack", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "sendClips", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openOnWatch", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "ping", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dropClips", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "garminStatus", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "garminPick", returnType: CAPPluginReturnPromise),
@@ -132,6 +133,31 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         WatchBridgePlugin.health.startWatchApp(with: config) { ok, _ in
             call.resolve(["ok": ok || garmin])
         }
+    }
+
+    /// The link check (Settings → Devices): a message the watch app answers, timed here. Only with a
+    /// reachable watch; no answer in 5 s is { ok: false }. The page never waits on it.
+    @objc func ping(_ call: CAPPluginCall) {
+        guard WCSession.isSupported() else { call.resolve(["ok": false]); return }
+        let s = WCSession.default
+        guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled, s.isReachable else {
+            call.resolve(["ok": false])
+            return
+        }
+        let start = DispatchTime.now()
+        var done = false // main queue only: the reply, the error and the timeout race to resolve once
+        func finish(_ result: [String: Any]) {
+            DispatchQueue.main.async {
+                if done { return }
+                done = true
+                call.resolve(result)
+            }
+        }
+        s.sendMessage(["ping": 1], replyHandler: { _ in
+            let ms = Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
+            finish(["ok": true, "ms": ms])
+        }, errorHandler: { _ in finish(["ok": false]) })
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { finish(["ok": false]) }
     }
 
     private static let health = HKHealthStore()
@@ -418,6 +444,17 @@ final class WatchLink: NSObject, WCSessionDelegate {
     /// A watch paired or unpaired, the app installed on it or removed.
     public func sessionWatchStateDidChange(_ session: WCSession) {
         tell("watchState", ["paired": session.isPaired, "installed": session.isWatchAppInstalled])
+    }
+    /// The watch app came into reach (launched mid-workout, back in range): it gets the running
+    /// workout now. iOS hands the application context over when it chooses, which lagged far behind
+    /// a watch switched on mid-workout, and the page that would send again sleeps while the app is in
+    /// the background. The last snapshot goes as a message (its stamp unchanged, which the watch
+    /// accepts), and an awake page is told so it sends a fresh one.
+    public func sessionReachabilityDidChange(_ session: WCSession) {
+        guard session.isReachable else { return }
+        tell("watchState", ["reachable": true])
+        let last = session.applicationContext
+        if last["snapshot"] != nil { session.sendMessage(last, replyHandler: nil, errorHandler: nil) }
     }
     public func sessionDidBecomeInactive(_ session: WCSession) {}
     public func sessionDidDeactivate(_ session: WCSession) {

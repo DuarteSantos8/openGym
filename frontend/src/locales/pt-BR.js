@@ -4326,6 +4326,22 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  'Nothing connected': 'Nada conectado',
+  "Live": "Ao vivo",
+  "Delayed": "Atrasado",
+  "Offline": "Offline",
+  "Sync server": "Servidor de sincronização",
+  "Sets, rest timer, heart rate per set": "Séries, timer de descanso, batimentos por série",
+  "Last heard {0}": "Último sinal {0}",
+  "Open openGym on your watch": "Abra o openGym no seu relógio",
+  "Pair your watch": "Pareie seu relógio",
+  "Install openGym on your watch": "Instale o openGym no seu relógio",
+  "Open Watch settings": "Abrir configurações do relógio",
+  "Your changes wait on this phone": "Suas alterações aguardam neste celular",
+  "No devices connected": "Nenhum dispositivo conectado",
+  "Add a watch or connect a server in Settings": "Adicione um relógio ou conecte um servidor em Configurações",
+  "Open Settings": "Abrir Configurações",
+
   // Arrange your own Home and Stats (#1119)
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
 }
