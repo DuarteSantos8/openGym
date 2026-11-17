@@ -22,7 +22,9 @@ import kotlin.math.roundToInt
  * A rest running on the watch: until `endsAt` (ms), out of `total` seconds, started at `startedAt`.
  * `pausedLeft` (ms): paused on the phone (protocol 2), the countdown stands there, no alarm.
  */
-data class Rest(val endsAt: Long, val total: Int, val startedAt: Long = endsAt - total * 1000L, val pausedLeft: Long? = null) {
+data class Rest(val endsAt: Long, val total: Int, val startedAt: Long = endsAt - total * 1000L, val pausedLeft: Long? = null,
+    /** The net seconds −15 and +15 moved this rest by (the chip after "Rest"); a rest from the phone starts at 0. */
+    val shift: Int = 0) {
     /** What is left at `now` (ms), the pause's own while paused. */
     fun leftMs(now: Long): Long = pausedLeft ?: (endsAt - now)
 }
@@ -648,7 +650,7 @@ object WearStore {
         if (!touchAllowed()) return
         val r = _rest.value?.takeIf { it.pausedLeft == null } ?: return
         val to = r.copy(endsAt = (r.endsAt + seconds * 1000L).coerceAtLeast(now() + 1000), total = (r.total + seconds).coerceAtLeast(1))
-        armRest(to)
+        armRest(to.copy(shift = r.shift + Math.round((to.endsAt - r.endsAt) / 1000.0).toInt()))
         sendRestChange(to.endsAt)
     }
 
@@ -658,7 +660,7 @@ object WearStore {
         val r = _rest.value?.takeIf { it.pausedLeft == null } ?: return
         val to = RestMath.minus(r.endsAt, now())
         if (to == null) { skipRest(); return }
-        armRest(r.copy(endsAt = to))
+        armRest(r.copy(endsAt = to, shift = r.shift + Math.round((to - r.endsAt) / 1000.0).toInt()))
         sendRestChange(to)
     }
 
@@ -687,7 +689,7 @@ object WearStore {
         ackRestOver()
         Awake.release(REST)
         val total = _rest.value?.total ?: (leftMs / 1000).toInt().coerceAtLeast(1)
-        val r = Rest(now() + leftMs, total, startedAt = _rest.value?.startedAt ?: (now() + leftMs - total * 1000L), pausedLeft = leftMs)
+        val r = Rest(now() + leftMs, total, startedAt = _rest.value?.startedAt ?: (now() + leftMs - total * 1000L), pausedLeft = leftMs, shift = _rest.value?.shift ?: 0)
         _rest.value = r
         prefs.edit().remove("restEndsAt").putLong("restPausedLeft", leftMs.coerceAtLeast(1)).putInt("restTotal", total).apply()
     }
