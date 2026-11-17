@@ -270,6 +270,8 @@ export const ACKED_MAX = 80
 // How long an event of a watch-started workout waits for that workout's start to arrive.
 export const DEFER_MAX_MS = 48 * 3600e3
 const SEND_DEBOUNCE_MS = 400
+// A watch report this long after the routines file went that still names another file: it was lost.
+const ROUTINES_GRACE_MS = 2 * 60e3
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 // A body weight from the watch that holds up (kg or lb, whatever the profile uses).
@@ -1167,7 +1169,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // `sentAt`: when the last snapshot went, for the next change to go at once (sendSoon).
   let lastSent = null, lastClips = null, tm = null, sentAt = 0
   // The routines file: made once per ready list, sent once per change (lastRoutines).
-  let fileOf = null, file = null, lastRoutines = null
+  // `routinesAt`: when it went; `retriedAt`: the watch's report that last had it sent again.
+  let fileOf = null, file = null, lastRoutines = null, routinesAt = 0, retriedAt = null
   // The ready sessions only change with the plan, the log or the day: built again only then.
   let readyKey = null, ready = null
   const readyFor = S => {
@@ -1272,11 +1275,17 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
         if (unnamed.length) schedule()
       }
+      // The watch reports another file than the one sent, minutes after it went: lost on the way (a
+      // transfer the system gave up on) or not kept there. It goes again, once per report, so a
+      // watch that cannot keep it is not sent it with every set.
+      const ws = readWatchStatus()
+      if (lastRoutines && typeof ws?.routinesHash === 'string' && ws.routinesHash !== lastRoutines &&
+        ws.at > routinesAt + ROUTINES_GRACE_MS && ws.at !== retriedAt) { retriedAt = ws.at; lastRoutines = null }
       // Held here: a send that overlaps this one may replace `file` while this upload is on its way.
       const f = file
       if (f && f.hash !== lastRoutines) {
         // An older or F-Droid build has no such call: the snapshot's list is all it gets.
-        try { const r = await p.WatchBridge.sendRoutines?.({ json: f.json, hash: f.hash }); if (r?.sent) lastRoutines = f.hash } catch { /* tried again with the next snapshot */ }
+        try { const r = await p.WatchBridge.sendRoutines?.({ json: f.json, hash: f.hash }); if (r?.sent) { lastRoutines = f.hash; routinesAt = Date.now() } } catch { /* tried again with the next snapshot */ }
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []

@@ -4,6 +4,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routinesFile } from './watch-routines-file.js'
 import { startWatchSync, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { writeWatchStatus } from './watch-settings.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 
@@ -85,6 +86,36 @@ describe('sending it', () => {
       const stop = await run(b, st)
       st.setState({ S: { ...st.getState().S, restSec: 120 } })
       await vi.advanceTimersByTimeAsync(1000)
+      expect(b.sendRoutines).toHaveBeenCalledTimes(2)
+      stop()
+    } finally { vi.useRealTimers() }
+  })
+
+  it('a file the watch never got goes again: once per report, and not while it may still be on its way', async () => {
+    try {
+      const b = bridge()
+      const st = store({ S: S(3), ready: true })
+      const stop = await run(b, st)
+      const h = b.sendRoutines.mock.calls[0][0].hash
+      const report = async ev => { writeWatchStatus({ at: Date.now(), ...ev }); await vi.advanceTimersByTimeAsync(1000) }
+      // reported right after the send: the file may still be on its way
+      await report({ routinesHash: '' })
+      expect(b.sendRoutines).toHaveBeenCalledTimes(1)
+      // an older watch app says nothing about its routines: nothing to go by
+      await vi.advanceTimersByTimeAsync(3 * 60_000)
+      await report({})
+      expect(b.sendRoutines).toHaveBeenCalledTimes(1)
+      // minutes later the watch still shows its own list: lost, sent again
+      await report({ routinesHash: '' })
+      expect(b.sendRoutines).toHaveBeenCalledTimes(2)
+      expect(b.sendRoutines.mock.calls[1][0].hash).toBe(h)
+      // the same report again with the next change: not again (a full watch is not sent it on every set)
+      st.setState({ S: { ...st.getState().S, restSec: 120 } })
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(b.sendRoutines).toHaveBeenCalledTimes(2)
+      // it has it now: nothing more
+      await vi.advanceTimersByTimeAsync(3 * 60_000)
+      await report({ routinesHash: h, routinesCount: 3 })
       expect(b.sendRoutines).toHaveBeenCalledTimes(2)
       stop()
     } finally { vi.useRealTimers() }
