@@ -3813,7 +3813,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(groupsOf(lastMenu().sections)).toEqual([
       [undefined, ['Add note', 'Swap exercise', 'Add warm-up set', 'Rest timer', 'History']],
       ['More', [
-        ['Exercise', ['Exercise settings', 'Plate loading', 'How to do it']],
+        ['Exercise', ['Exercise settings', 'Plate loading', 'Machine settings', 'How to do it']],
         ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
         ['This session', ['Film a set', 'Don’t count for progression']],
       ]],
@@ -4006,3 +4006,40 @@ describe('a set\'s own form video (v1.4.4)', () => {
   })
 })
 
+
+// An exercise's machine settings (lib/machine-settings.js): tags beside its muscle and equipment,
+// kept in the compact layout too, a tap and the ⋯ menu edit them.
+const machineMocks = vi.hoisted(() => ({ sheet: vi.fn() }))
+vi.mock('../components/MachineSettings.jsx', async importOriginal => ({ ...(await importOriginal()), machineSettingsSheet: machineMocks.sheet }))
+
+describe('machine settings on the exercise card', () => {
+  const SET = { exNotes: { 'plain-bench': 'Seat: 5 · Leg position: M' } }
+  const tags = () => [...container.querySelectorAll('.tag.mset')].map(tg => tg.textContent)
+  const lastMenu = () => mocks.menuSheet.mock.calls.at(-1)[0]
+  beforeEach(() => { machineMocks.sheet.mockClear(); mocks.menuSheet.mockReset() })
+  afterEach(unmount)
+
+  it('shows them as tags, and a tap opens the editor for that exercise', async () => {
+    await mount([exercise('plain-bench', [false])], 0, SET)
+    expect(tags()).toEqual(['Seat: 5', 'Leg position: M'])
+    await act(async () => { container.querySelector('.tag.mset').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(machineMocks.sheet).toHaveBeenCalledWith('plain-bench')
+  })
+
+  it('keeps them in the compact layout, and shows none for an exercise without', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { ...SET, active: { workoutView: 'compact' } })
+    expect(tags()).toEqual(['Seat: 5', 'Leg position: M'])
+    await unmount()
+    await mount([exercise('plain-row', [false])], 0, SET)
+    expect(tags()).toEqual([])
+  })
+
+  it('are in the exercise menu under More, with what is set', async () => {
+    await mount([exercise('plain-bench', [false])], 0, SET)
+    await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const item = menuItemsOf(lastMenu()).find(it => it.label === 'Machine settings')
+    expect(item.sub).toBe('Seat: 5 · Leg position: M')
+    item.onClick()
+    expect(machineMocks.sheet).toHaveBeenCalledWith('plain-bench')
+  })
+})

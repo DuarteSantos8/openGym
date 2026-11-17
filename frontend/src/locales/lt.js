@@ -5893,4 +5893,19 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // --- machine settings (components/MachineSettings.jsx) ---
+  "Machine settings": "Įrenginio nustatymai",
+  "Add machine settings": "Pridėti įrenginio nustatymus",
+  "Add setting": "Pridėti nustatymą",
+  "Name, e.g. {0}": "Pavadinimas, pvz., {0}",
+  "Value": "Reikšmė",
+  "Value for {0}": "{0} reikšmė",
+  "Seat, leg position and the like. Shown with the exercise, so the machine is set in seconds.": "Sėdynė, kojų padėtis ir panašiai. Rodoma prie pratimo, kad įrenginį nustatytumėte per kelias sekundes.",
+  "Seat, leg position, …": "Sėdynė, kojų padėtis, …",
+  "Seat": "Sėdynė",
+  "Backrest": "Atlošas",
+  "Leg position": "Kojų padėtis",
+  "Pad": "Pagalvėlė",
+  "Handles": "Rankenos",
+  "Foot plate": "Pėdų platforma",
 }

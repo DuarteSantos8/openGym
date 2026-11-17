@@ -5862,4 +5862,19 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // --- machine settings (components/MachineSettings.jsx) ---
+  "Machine settings": "Pengaturan mesin",
+  "Add machine settings": "Tambah pengaturan mesin",
+  "Add setting": "Tambah pengaturan",
+  "Name, e.g. {0}": "Nama, mis. {0}",
+  "Value": "Nilai",
+  "Value for {0}": "Nilai untuk {0}",
+  "Seat, leg position and the like. Shown with the exercise, so the machine is set in seconds.": "Kursi, posisi kaki, dan sejenisnya. Ditampilkan bersama latihan, jadi mesin siap dalam hitungan detik.",
+  "Seat, leg position, …": "Kursi, posisi kaki, …",
+  "Seat": "Kursi",
+  "Backrest": "Sandaran",
+  "Leg position": "Posisi kaki",
+  "Pad": "Bantalan",
+  "Handles": "Pegangan",
+  "Foot plate": "Pijakan kaki",
 };

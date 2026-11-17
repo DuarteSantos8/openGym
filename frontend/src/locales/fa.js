@@ -5863,4 +5863,19 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // --- machine settings (components/MachineSettings.jsx) ---
+  "Machine settings": "تنظیمات دستگاه",
+  "Add machine settings": "افزودن تنظیمات دستگاه",
+  "Add setting": "افزودن تنظیم",
+  "Name, e.g. {0}": "نام، مثلاً {0}",
+  "Value": "مقدار",
+  "Value for {0}": "مقدار برای {0}",
+  "Seat, leg position and the like. Shown with the exercise, so the machine is set in seconds.": "صندلی، وضعیت پاها و مانند آن. کنار حرکت نمایش داده می‌شود تا دستگاه در چند ثانیه تنظیم شود.",
+  "Seat, leg position, …": "صندلی، وضعیت پاها، …",
+  "Seat": "صندلی",
+  "Backrest": "پشتی",
+  "Leg position": "وضعیت پاها",
+  "Pad": "پد",
+  "Handles": "دسته‌ها",
+  "Foot plate": "صفحه پا",
 }

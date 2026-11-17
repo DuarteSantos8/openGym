@@ -1,6 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { syncSupersetMeta } from './superset-meta.js'
 import { isOn } from './modules.js'
+import { noteWithoutSettings } from './machine-settings.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { cardioStartSpeed } from './cardio-kind.js'
@@ -537,7 +538,8 @@ export function pinnedNoteFor(S, exId) {
 }
 
 /** The standing note for an exercise — the one that is true every session. */
-export const exNoteFor = (S, exId) => ((S?.exNotes || {})[exId] || '').trim() || null
+// The exercise's standing note without its machine-settings line (lib/machine-settings.js): those show as tags.
+export const exNoteFor = (S, exId) => noteWithoutSettings(S, exId) || null
 
 // A freestyle exercise starts with the last target the user actually trained, rather than the
 // generic config sheet defaults used when there is no history. The set rows themselves are still

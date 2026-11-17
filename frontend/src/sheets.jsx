@@ -136,6 +136,8 @@ import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 import { isOn } from './lib/modules.js'
+import { settingsFor, noteWithoutSettings, withNoteText } from './lib/machine-settings.js'
+import { MachineSettingTags, MachineSettingsLink, machineSettingsSheet } from './components/MachineSettings.jsx'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
 import DailyCheckin from './components/DailyCheckin.jsx'
@@ -1549,6 +1551,7 @@ function ExerciseDetail({ ex, close }) {
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
   const nfcOK = useNfcSupported()
+  const machine = settingsFor(useStore(s => s.S), ex.id)
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
@@ -1572,7 +1575,9 @@ function ExerciseDetail({ ex, close }) {
         }
         return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
       })}
+      <MachineSettingTags pairs={machine} onEdit={() => machineSettingsSheet(ex.id)} />
     </div>
+    {!machine.length && !ex.missing && <MachineSettingsLink exId={ex.id} />}
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
     {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the animation
         or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
@@ -4294,7 +4299,7 @@ function ExerciseNote({ entryIdx, close }) {
   const ex = entry ? exOr(entry.id) : null
   const [note, setNote] = useState(entry?.note || '')
   const [pin, setPin] = useState(!!entry?.notePin)
-  const [standing, setStanding] = useState(entry ? (st.exNotes?.[entry.id] || '') : '')
+  const [standing, setStanding] = useState(entry ? noteWithoutSettings(st, entry.id) : '')
   // Only true at one gym ("seat 4" on that brand of machine): pinned at the active gym (lib/journal.js).
   const gym = !editing ? activeGym(st) : null
   const [atGym, setAtGym] = useState(gym && entry ? gymNoteText(st, gym.id, entry.id) : '')
@@ -4311,9 +4316,8 @@ function ExerciseNote({ entryIdx, close }) {
         else { delete e.note; delete e.notePin }
       }
       if (!editing) {
-        s.exNotes = s.exNotes || {}
-        if (always) s.exNotes[entry.id] = always
-        else delete s.exNotes[entry.id]
+        // The machine-settings line at the top of the note stays; only the text under it is edited here.
+        s.exNotes = withNoteText(s.exNotes, entry.id, always, NOTE_MAX)
       }
       if (gym && atGym.trim() !== gymNoteText(st, gym.id, entry.id)) s.gymNotes = withGymNote(s.gymNotes, gym.id, entry.id, atGym)
     })

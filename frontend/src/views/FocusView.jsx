@@ -34,6 +34,8 @@ import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { isOn } from '../lib/modules.js'
+import { settingsFor } from '../lib/machine-settings.js'
+import { MachineSettingTags, machineSettingsSheet } from '../components/MachineSettings.jsx'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 
 const firstIncomplete = entry => {
@@ -330,6 +332,7 @@ export default function FocusView({
           {mode === 'reps' && <TempoTag tempo={tempoOf(entry.target, set)} onClick={() => tempoGuideSheet({ tempo: tempoOf(entry.target, set), reps: guideReps(set, entry.target), name: exerciseNameText(ex) })} />}
           {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
           {ex.eq && <span className="tag">{t(ex.eq)}</span>}
+          <MachineSettingTags pairs={settingsFor(S, entry.id)} onEdit={() => machineSettingsSheet(entry.id)} />
         </div>
         {entry.target?.note && <div className="focus-note">{entry.target.note}</div>}
         {pinnedNote && <div className="focus-note pinned"><Icon name="flag" />{t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}</div>}
