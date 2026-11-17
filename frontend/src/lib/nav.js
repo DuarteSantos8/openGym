@@ -10,7 +10,7 @@ export const nav = (to, opts) => (opts ? _nav(to, opts) : _nav(to))
 const pathAt = new Map()
 const idxNow = () => { try { return Number(globalThis.history?.state?.idx) || 0 } catch { return 0 } }
 export const notePath = (path, key) => { pathAt.set(idxNow(), { path, key: key || null }) }
-export const pathBefore = () => (idxNow() > 0 ? pathAt.get(idxNow() - 1)?.path || null : null)
+export const pathBefore = (n = 1) => (idxNow() >= n ? pathAt.get(idxNow() - n)?.path || null : null)
 /** The router key of the entry before this one, when it showed `path`: the page underneath an
  *  edge swipe back is that entry's page, and a view keyed on its entry (Settings' search) reads it. */
 export const keyBefore = path => { const e = idxNow() > 0 ? pathAt.get(idxNow() - 1) : null; return e && e.path === path ? e.key : null }
@@ -34,4 +34,16 @@ export function closeThenNav(close, to) {
 export function navToWorkout() {
   const here = String(globalThis.location?.hash || '').startsWith('#/workout')
   nav('/workout', here || onSheetEntry() ? { replace: true } : undefined)
+}
+
+// Leaving a page from inside a sheet's action (a confirm that deletes what the page shows): the
+// sheet's own entry is still on top and its close walks back one step, so a second step taken at
+// once would race it. Waits until the sheets' entries are gone, then goes. Returns a cancel.
+export function afterSheets(go) {
+  if (!onSheetEntry()) { go(); return () => {} }
+  const at = location.href
+  // no timeout: a step back while a sheet is still up only spends the sheet's entry; another page (closeThenNav) must not go
+  const check = () => { if (onSheetEntry()) return; window.removeEventListener('popstate', check); if (location.href === at) go() }
+  window.addEventListener('popstate', check)
+  return () => window.removeEventListener('popstate', check)
 }

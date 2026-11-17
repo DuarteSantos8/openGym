@@ -22,7 +22,7 @@ vi.mock('../store/useStore.js', () => {
   useStore.getState = mocks.snapshot
   return { useStore }
 })
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ key: mocks.key }) }))
 vi.mock('../sheets.jsx', () => ({ exerciseDetailSheet: vi.fn(), addToRoutineSheet: vi.fn(), customExSheet: vi.fn() }))
 
 const mounted = []
@@ -219,5 +219,22 @@ describe('Library gym filter while searching', () => {
     search(host, 'dumbbell curl')
     expect(names(host).length).toBeGreaterThan(0)
     expect(line(host)).toBeUndefined()
+  })
+})
+
+// CodeRabbit on #1050: on the iPhone an exercise is a page and the Library unmounts under it;
+// Back to the same history entry finds the search where it was, a new visit starts clean.
+describe('Library search across an exercise page', () => {
+  it('keeps the search for the same history entry, starts clean on a new one', () => {
+    mocks.key = 'k1'
+    const input = render().querySelector('.search input')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    act(() => { setter.call(input, 'squat'); input.dispatchEvent(new Event('input', { bubbles: true })) })
+    act(() => { mounted.splice(0).forEach(r => r.unmount()) })
+    expect(render().querySelector('.search input').value).toBe('squat')
+    act(() => { mounted.splice(0).forEach(r => r.unmount()) })
+    mocks.key = 'k2'
+    expect(render().querySelector('.search input').value).toBe('')
+    mocks.key = undefined
   })
 })
