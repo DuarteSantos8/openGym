@@ -5863,6 +5863,32 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // Routine folders: icon picker groups
+  "Split": "تقسیم",
+  "Kit": "تجهیزات",
+  "Session": "جلسه",
+  // Routine folders: colour and icon sheet
+  "Indigo": "نیلی",
+  "Mint": "نعنایی",
+  "Brown": "قهوه‌ای",
+  "Grey": "خاکستری",
+  "Colour and icon": "رنگ و نماد",
+  // Routine glyph names (screen readers)
+  "Pull day": "روز کشش",
+  "Upper body": "بالاتنه",
+  "Lower body": "پایین‌تنه",
+  "Full body": "تمام بدن",
+  "Pull-ups": "بارفیکس",
+  "Barbell": "هالتر",
+  "Weight plate": "صفحه وزنه",
+  "Machine": "دستگاه",
+  "Grip": "گرفتن",
+  "Travel": "سفر",
+  "Home gym": "باشگاه خانگی",
+  "Bike": "دوچرخه",
+  "Boxing": "بوکس",
+  "Timer": "زمان‌سنج",
+  "Stretch": "کشش",
   // Arrange your own Home and Stats (#1119)
   "Customize": "سفارشی‌سازی",
   "Collapsed": "جمع‌شده",

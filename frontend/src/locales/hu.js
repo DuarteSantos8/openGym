@@ -5900,6 +5900,32 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Routine folders: icon picker groups
+  'Split': 'Felosztás',
+  'Kit': 'Felszerelés',
+  'Session': 'Edzés',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigó",
+  "Mint": "Menta",
+  "Brown": "Barna",
+  "Grey": "Szürke",
+  "Colour and icon": "Szín és ikon",
+  // Routine glyph names (screen readers)
+  "Pull day": "Húzónap",
+  "Upper body": "Felsőtest",
+  "Lower body": "Alsótest",
+  "Full body": "Egész test",
+  "Pull-ups": "Húzódzkodás",
+  "Barbell": "Rúd",
+  "Weight plate": "Súlytárcsa",
+  "Machine": "Gép",
+  "Grip": "Fogás",
+  "Travel": "Utazás",
+  "Home gym": "Otthoni edzőterem",
+  "Bike": "Kerékpár",
+  "Boxing": "Box",
+  "Timer": "Időzítő",
+  "Stretch": "Nyújtás",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Testreszabás",
   "Collapsed": "Összecsukva",

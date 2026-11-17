@@ -5893,6 +5893,32 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Routine folders: icon picker groups
+  "Split": "Skirstinys",
+  "Kit": "Įranga",
+  "Session": "Treniruotė",
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mėtinė",
+  "Brown": "Ruda",
+  "Grey": "Pilka",
+  "Colour and icon": "Spalva ir piktograma",
+  // Routine glyph names (screen readers)
+  "Pull day": "Traukimo diena",
+  "Upper body": "Viršutinė kūno dalis",
+  "Lower body": "Apatinė kūno dalis",
+  "Full body": "Visas kūnas",
+  "Pull-ups": "Prisitraukimai",
+  "Barbell": "Štanga",
+  "Weight plate": "Svarmuo",
+  "Machine": "Treniruoklis",
+  "Grip": "Sučiuopimas",
+  "Travel": "Kelionė",
+  "Home gym": "Namų sporto salė",
+  "Bike": "Dviratis",
+  "Boxing": "Boksas",
+  "Timer": "Laikmatis",
+  "Stretch": "Tempimas",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Tinkinti",
   "Collapsed": "Suskleista",

@@ -5863,6 +5863,32 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // Routine folders: icon picker groups
+  'Split': 'Split',
+  'Kit': 'Vybavení',
+  'Session': 'Trénink',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mátová",
+  "Brown": "Hnědá",
+  "Grey": "Šedá",
+  "Colour and icon": "Barva a ikona",
+  // Routine glyph names (screen readers)
+  "Pull day": "Den tahů",
+  "Upper body": "Horní část těla",
+  "Lower body": "Dolní část těla",
+  "Full body": "Celé tělo",
+  "Pull-ups": "Shyby",
+  "Barbell": "Činka",
+  "Weight plate": "Kotouč",
+  "Machine": "Stroj",
+  "Grip": "Úchop",
+  "Travel": "Cestování",
+  "Home gym": "Domácí posilovna",
+  "Bike": "Kolo",
+  "Boxing": "Box",
+  "Timer": "Časovač",
+  "Stretch": "Protažení",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Přizpůsobit",
   "Collapsed": "Sbalené",

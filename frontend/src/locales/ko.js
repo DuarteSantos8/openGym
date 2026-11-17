@@ -5897,6 +5897,32 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Routine folders: icon picker groups
+  'Split': '분할',
+  'Kit': '장비',
+  'Session': '세션',
+  // Routine folders: colour and icon sheet
+  "Indigo": "남색",
+  "Mint": "민트",
+  "Brown": "갈색",
+  "Grey": "회색",
+  "Colour and icon": "색상과 아이콘",
+  // Routine glyph names (screen readers)
+  "Pull day": "풀 데이",
+  "Upper body": "상체",
+  "Lower body": "하체",
+  "Full body": "전신",
+  "Pull-ups": "풀업",
+  "Barbell": "바벨",
+  "Weight plate": "원판",
+  "Machine": "머신",
+  "Grip": "그립",
+  "Travel": "여행",
+  "Home gym": "홈짐",
+  "Bike": "자전거",
+  "Boxing": "복싱",
+  "Timer": "타이머",
+  "Stretch": "스트레칭",
   // Arrange your own Home and Stats (#1119)
   "Customize": "맞춤 설정",
   "Collapsed": "접힘",

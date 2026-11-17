@@ -48,3 +48,15 @@ describe('Plan with no routines', () => {
     expect(mocks.nav).toHaveBeenCalledWith('/plan/r/' + mocks.S.routines[0].id)
   })
 })
+
+describe('Plan new routine colour', () => {
+  it('gives a new routine a colour the loose routines do not use', () => {
+    mocks.S.routines = [{ id: 'a', name: 'A', ex: [], color: 'blue' }]
+    localStorage.setItem('gym_plan_view', 'routines')
+    act(() => root.render(<Plan />))
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.includes('New routine')).click())
+    const made = mocks.S.routines.find(r => r.id !== 'a')
+    expect(made.color).toBeTruthy()
+    expect(made.color).not.toBe('blue')
+  })
+})

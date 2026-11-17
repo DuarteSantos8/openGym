@@ -5897,6 +5897,32 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Routine folders: icon picker groups
+  'Split': 'Split',
+  'Kit': 'Ekipman',
+  'Session': 'Seans',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Çivit",
+  "Mint": "Nane",
+  "Brown": "Kahverengi",
+  "Grey": "Gri",
+  "Colour and icon": "Renk ve simge",
+  // Routine glyph names (screen readers)
+  "Pull day": "Çekme günü",
+  "Upper body": "Üst vücut",
+  "Lower body": "Alt vücut",
+  "Full body": "Tüm vücut",
+  "Pull-ups": "Barfiks",
+  "Barbell": "Halter",
+  "Weight plate": "Ağırlık plakası",
+  "Machine": "Makine",
+  "Grip": "Kavrama",
+  "Travel": "Seyahat",
+  "Home gym": "Ev spor salonu",
+  "Bike": "Bisiklet",
+  "Boxing": "Boks",
+  "Timer": "Zamanlayıcı",
+  "Stretch": "Esneme",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Özelleştir",
   "Collapsed": "Daraltılmış",

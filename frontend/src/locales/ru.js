@@ -5901,6 +5901,32 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // Routine folders: icon picker groups
+  'Split': 'Сплит',
+  'Kit': 'Инвентарь',
+  'Session': 'Занятие',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Индиго",
+  "Mint": "Мятный",
+  "Brown": "Коричневый",
+  "Grey": "Серый",
+  "Colour and icon": "Цвет и значок",
+  // Routine glyph names (screen readers)
+  "Pull day": "День тяг",
+  "Upper body": "Верх тела",
+  "Lower body": "Низ тела",
+  "Full body": "Всё тело",
+  "Pull-ups": "Подтягивания",
+  "Barbell": "Штанга",
+  "Weight plate": "Блин",
+  "Machine": "Тренажёр",
+  "Grip": "Хват",
+  "Travel": "Поездка",
+  "Home gym": "Домашний зал",
+  "Bike": "Велосипед",
+  "Boxing": "Бокс",
+  "Timer": "Таймер",
+  "Stretch": "Растяжка",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Настроить",
   "Collapsed": "Свёрнута",

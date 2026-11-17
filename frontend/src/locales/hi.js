@@ -5897,6 +5897,32 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // Routine folders: icon picker groups
+  'Split': 'स्प्लिट',
+  'Kit': 'सामान',
+  'Session': 'सेशन',
+  // Routine folders: colour and icon sheet
+  "Indigo": "नील",
+  "Mint": "पुदीना",
+  "Brown": "भूरा",
+  "Grey": "धूसर",
+  "Colour and icon": "रंग और आइकन",
+  // Routine glyph names (screen readers)
+  "Pull day": "पुल डे",
+  "Upper body": "ऊपरी शरीर",
+  "Lower body": "निचला शरीर",
+  "Full body": "पूरा शरीर",
+  "Pull-ups": "पुल-अप",
+  "Barbell": "बारबेल",
+  "Weight plate": "वेट प्लेट",
+  "Machine": "मशीन",
+  "Grip": "ग्रिप",
+  "Travel": "यात्रा",
+  "Home gym": "होम जिम",
+  "Bike": "साइकिल",
+  "Boxing": "बॉक्सिंग",
+  "Timer": "टाइमर",
+  "Stretch": "स्ट्रेच",
   // Arrange your own Home and Stats (#1119)
   "Customize": "अनुकूलित करें",
   "Collapsed": "समेटा हुआ",
