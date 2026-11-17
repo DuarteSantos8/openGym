@@ -73,6 +73,44 @@ final class RestCountdownPlan {
     }
 
     /**
+     * Which end rang last and who rang it: one alert per end (#1007). Plain state so the order of
+     * the native countdown, the exact alarm and the page can be tested; RestAlert holds the one
+     * instance and calls it under its lock.
+     */
+    static final class EndLedger {
+        long firedFor;
+        boolean byPage;
+
+        /**
+         * A native caller (the countdown or the alarm) reached `at`: true when it rings the end.
+         * With the app on screen the page rings it, so the end is left unclaimed for the page:
+         * claimed here and then kept quiet, the page's tone was refused as already rung and the
+         * end made no sound at all with the app open (Android, 1.4.5).
+         */
+        boolean claimNative(long at, boolean appInFront) {
+            if (appInFront) return false;
+            if (alreadyRang(at, firedFor, byPage)) return false;
+            firedFor = at;
+            byPage = false;
+            return true;
+        }
+
+        /** The page is about to play the end of `at` itself: false when this end already rang. */
+        boolean claimPage(long at) {
+            if (alreadyRang(at, firedFor, true)) return false;
+            if (at > 0) {
+                firedFor = at;
+                byPage = true;
+            }
+            return true;
+        }
+
+        boolean pageRang(long at) {
+            return byPage && alreadyRang(at, firedFor, true);
+        }
+    }
+
+    /**
      * What an arriving rest alarm does (#995). Some phones (ColorOS seen) hand an exact alarm over
      * a minute early, and the alert then ended a rest the page and the card still ran: an alarm
      * for an end still ahead is booked again for that end (or waited out when it is seconds away).

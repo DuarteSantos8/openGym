@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: on Android the end of a rest made no sound while the app was open. The beeps for the last seconds played, the final sound only came with the app in the background. It plays on screen again, and still only once (thanks Santiago, by mail).
 - Routines library: a submission can no longer get lost on the way to review. If the message to the reviewer fails, it is sent again until it arrives (a mod's routine sat unseen on 2026-11-15, thanks @seals187). And a routine written in a language you do not read comes after the others in the list.
 - Home and Stats are yours to arrange: Customize at the end of either page (or Settings → Look & Home) shows, collapses or hides each card and moves it up or down. A collapsed card is one line that opens on a tap. On Stats a card stays in its own part (Overview, Body, Lifts, Effort), and a part with nothing left in it disappears. It syncs with your profile (#1119, thanks @seals187 and Drakwen on Discord).
 - Fixed: "Add several at once" for a weight stack or your dumbbells opens the full keyboard on the phone. The number pad had no Return and no space, so on an iPhone a list could not be typed, only pasted (#926, thanks @johannes1984).
