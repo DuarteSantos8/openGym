@@ -1,5 +1,11 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Ефект скла",
+  "See-through bars and sheets. Off, they are solid.": "Прозорі панелі й аркуші. Якщо вимкнути, вони стануть суцільними.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 с",
+  "{0} past zero": "{0} після нуля",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Годинники",
   "Set once": "Налаштовується один раз",
@@ -5567,6 +5573,13 @@ export default {
   "Saved to Photos": "Збережено у Фото",
   "Could not save the picture.": "Не вдалося зберегти зображення.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym не може додавати зображення у Фото. Це можна дозволити в налаштуваннях телефона.",
+  "Sections": "Розділи",
+  "More sections": "Інші розділи",
+  "Choose routine": "Обрати програму",
+  "{0}, show all tabs": "{0}, показати всі вкладки",
+  "Resume workout, {0} elapsed": "Продовжити тренування, минуло {0}",
+  "Workout started": "Тренування розпочато",
+  "Rest over": "Відпочинок скінчився",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Шаблон налаштовує всі місця одразу. Потім змінюй що хочеш.",
   "Add a button": "Додати кнопку",

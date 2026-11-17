@@ -8,3 +8,10 @@ export function platformNow () {
     return p === 'ios' || p === 'android' ? p : null
   } catch { return null }
 }
+
+// The value for <html data-platform>: platformNow() with 'web' for everything that is not a native shell.
+export const platformFlag = () => platformNow() ?? 'web'
+
+// The iPhone app's glass sheets, menus and toasts (index.css, `:root[data-platform="ios"]`), asked at
+// the moment of use: the attribute is set when App.jsx loads, and a test can set it by hand.
+export const isIOS = () => typeof document !== 'undefined' && document.documentElement.dataset.platform === 'ios'
