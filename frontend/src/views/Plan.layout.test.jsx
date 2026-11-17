@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Plan from './Plan.jsx'
 import { startOrPreview } from '../components/StartSheets.jsx'
 import { useUI } from '../store/useUI.js'
+import { todayISO } from '../lib/format.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
@@ -74,6 +75,36 @@ describe('approved Plan layout', () => {
     expect(host.querySelector('.iv-plan-more').textContent).toContain('Plan options')
     click(primary(host))
     expect(startOrPreview).toHaveBeenCalledWith(['r1'])
+  })
+
+  it('on a day trained separately, starts the next session not done yet, like the tab bar', () => {
+    const today = new Date().getDay()
+    const apart = { week: { [today]: ['r1', 'r2'] }, weekApart: { [today]: true } }
+    let host = render(apart)
+    click(primary(host))
+    expect(startOrPreview).toHaveBeenLastCalledWith(['r1'])
+    expect(host.querySelector('.iv-plan-done')).toBeNull()
+    act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+
+    host = render({ ...apart, workouts: [{ id: 'w1', d: todayISO(), routineIds: ['r1'], ex: [] }] })
+    click(primary(host))
+    expect(startOrPreview).toHaveBeenLastCalledWith(['r2'])
+    expect(host.querySelectorAll('.iv-plan-done')).toHaveLength(1)
+    expect(host.querySelector('.iv-plan-done').closest('.iv-plan-today-group').textContent).toContain('Push')
+    act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+
+    vi.mocked(startOrPreview).mockClear()
+    host = render({ ...apart, workouts: [{ id: 'w1', d: todayISO(), routineIds: ['r1'], ex: [] }, { id: 'w2', d: todayISO(), routineIds: ['r2'], ex: [] }] })
+    expect(primary(host).disabled).toBe(true)
+    click(primary(host))
+    expect(startOrPreview).not.toHaveBeenCalled()
+  })
+
+  it('on a combined day, still starts every routine of the day together', () => {
+    const today = new Date().getDay()
+    const host = render({ week: { [today]: ['r1', 'r2'] } })
+    click(primary(host))
+    expect(startOrPreview).toHaveBeenCalledWith(['r1', 'r2'])
   })
 
   it('resumes an active session instead of replacing it', () => {

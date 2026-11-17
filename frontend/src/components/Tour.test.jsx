@@ -25,7 +25,7 @@ import { useStore, DEF } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { beginWorkout } from '../sheets.jsx'
 import { openTour, closeTour, tourState, readTour, noteStep, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID } from '../lib/tour.js'
-import Tour, { _setAnchorWait } from './Tour.jsx'
+import Tour, { _setAnchorWait, revealAnchor } from './Tour.jsx'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const ANCHORS = ['today', 'start', 'plan-mode', 'plan-views', 'plan-menu', 'lib-search', 'lib-filters', 'set', 'tick', 'swipe', 'workout-more', 'finish', 'stats-tiles',
@@ -526,5 +526,23 @@ describe('Create your own exercise', () => {
     await act(async () => { useUI.getState().closeAll() })
     await settle(500)
     expect(step()).toBe('c-new')
+  })
+})
+
+// Plan keeps its mode switch and its menu under Advanced and More, closed on a fresh visit: a stop
+// there opens the disclosures around it, or it would point at a control nobody can see or reach.
+describe('revealAnchor', () => {
+  it('opens every closed disclosure around the element and leaves an open one as it is', () => {
+    document.body.innerHTML = '<details id="outer"><summary>More</summary><details id="inner" open><summary>x</summary>'
+      + '<details id="deep"><summary>y</summary><button data-tour="plan-menu">Plan options</button></details></details></details>'
+      + '<details id="other"><summary>z</summary></details>'
+    revealAnchor(document.querySelector('[data-tour="plan-menu"]'))
+    expect(['outer', 'inner', 'deep'].map(id => document.getElementById(id).open)).toEqual([true, true, true])
+    expect(document.getElementById('other').open).toBe(false)
+  })
+  it('does nothing without an element or a disclosure', () => {
+    expect(() => revealAnchor(null)).not.toThrow()
+    document.body.innerHTML = '<button id="b">B</button>'
+    expect(() => revealAnchor(document.getElementById('b'))).not.toThrow()
   })
 })

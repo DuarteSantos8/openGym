@@ -6,6 +6,7 @@ import { DAYN, DAYS, weekOrder, weekStartOf, uid, exCount, routineCount, todayIS
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveRoutines, effectiveRoutineIds } from '../lib/history.js'
+import { dayApart, nextSessionIds, daySessionsStatus } from '../lib/day-sessions.js'
 import { allExercises } from '../lib/exercises.js'
 import { startOrPreview } from '../components/StartSheets.jsx'
 import {
@@ -152,11 +153,13 @@ export default function Plan() {
   // The lazy shell can remount a loaded view after closing a sheet. Keep this disclosure open
   // across that handoff, as on Library, rather than losing it under the user's pointer.
   const moreOpen = useUI(s => !!s.planMoreOpen)
-  const todayRoutines = effectiveRoutines(S, todayISO())
-  const canStart = todayRoutines.some(r => r.ex.length)
+  // The same session the tab bar's Start begins (TabBar.jsx): on a day trained separately (#908),
+  // the next session not done yet; otherwise today's routines combined, if any has exercises.
+  const startIds = todayStartIds(S)
+  const canStart = !!startIds
   const startToday = () => {
     if (S.active) { nav('/workout'); return }
-    if (canStart) startOrPreview(effectiveRoutineIds(S, todayISO()))
+    if (startIds) startOrPreview(startIds)
   }
   const setView = v => {
     setViewState(v)
@@ -229,12 +232,19 @@ function newRoutine(update, nav) {
   nav('/plan/r/' + r.id)
 }
 
+function todayStartIds(S, iso = todayISO()) {
+  if (dayApart(S, iso)) return nextSessionIds(S, iso)
+  return effectiveRoutines(S, iso).some(r => r.ex.length) ? effectiveRoutineIds(S, iso) : null
+}
+
 // The approved Plan puts the session you can start next to the week that contains it. This is a
 // summary of the same effective plan Home and Start use, not another editable exercise list;
 // Edit opens the existing routine editor and preserves combined days and rotation behavior.
 function TodayExercises({ S, nav }) {
   const routines = effectiveRoutines(S, todayISO())
   const byId = new Map(allExercises(S).map(e => [e.id, e]))
+  // On a day trained separately, a session already logged says so, since Start moves past it.
+  const done = new Set(dayApart(S, todayISO()) ? daySessionsStatus(S, todayISO()).filter(x => x.done).flatMap(x => x.ids) : [])
   return <section className="iv-plan-today" aria-labelledby="iv-plan-today-heading">
     <div className="row between plan-sec-h">
       <h2 className="sec" id="iv-plan-today-heading">{t('Today')} · {t('Exercises')}</h2>
@@ -242,7 +252,7 @@ function TodayExercises({ S, nav }) {
         onClick={() => nav('/plan/r/' + routines[0].id)}>{t('Edit')} · {routines[0].name}</Button>}
     </div>
     {routines.length ? <div className="list iv-plan-today-list">{routines.map(r => <div key={r.id} className="iv-plan-today-routine">
-      {routines.length > 1 && <div className="iv-plan-today-group"><div className="tt">{r.name}</div>
+      {routines.length > 1 && <div className="iv-plan-today-group"><div className="tt">{r.name}{done.has(r.id) && <span className="tag iv-plan-done">{t('Done')}</span>}</div>
         <Button size="sm" variant="plain" icon="edit" aria-label={nameIn(r.name, t('Edit'))}
           onClick={() => nav('/plan/r/' + r.id)}>{t('Edit')} · {r.name}</Button></div>}
       {r.ex.map((e, i) => <div className="item iv-plan-today-ex" key={`${r.id}:${i}:${e.id}`}>

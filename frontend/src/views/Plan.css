@@ -68,3 +68,4 @@
   .iv-plan .list{gap:12px}
 }
 @media (prefers-reduced-motion:reduce){.iv-plan *,.iv-plan *::before,.iv-plan *::after{transition:none!important;animation:none!important}}
+.iv-plan-today-group .iv-plan-done{margin-inline-start:8px;vertical-align:middle}

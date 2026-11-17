@@ -135,6 +135,13 @@ export function findAnchor(name) {
   return null
 }
 
+/** Opens every closed disclosure (<details>) around a stop's element, so the spotlight never
+    points at a control the user cannot see or reach (Plan keeps its mode and menu under
+    Advanced and More). A screen that tracks its disclosures hears the toggle event as usual. */
+export function revealAnchor(el) {
+  for (let d = el?.parentElement?.closest('details'); d; d = d.parentElement?.closest('details')) if (!d.open) d.open = true
+}
+
 // What a screen reader hears the spotlight is on: the element's own name, kept short.
 const nameOf = el => {
   if (!el) return ''
@@ -404,6 +411,7 @@ function Run({ at, flow = 'tour' }) {
       if (step.skip && passOver(step, ctxNow())) { go(dirRef.current); return }
       // Not there after all: an optional stop is passed over, any other one speaks from the middle.
       if (!el && step.anchor && step.optional) { go(dirRef.current); return }
+      revealAnchor(el)
       anchorRef.current = el
       if (el && !visiblePart(el.getBoundingClientRect(), bandBox(viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
       shownAt.current = Date.now()
