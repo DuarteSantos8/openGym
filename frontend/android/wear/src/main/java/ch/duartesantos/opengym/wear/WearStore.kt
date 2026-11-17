@@ -87,6 +87,8 @@ object WearStore {
     val lastStep = MutableStateFlow(1)
     /** The weigh-in before a workout started here, and the body weight on its crown. */
     val weighInFor = MutableStateFlow<ReadySession?>(null)
+    /** Every routine the phone sent as a file (kept in filesDir/routines.json across launches). */
+    val routines = MutableStateFlow<RoutinesFile?>(null)
     val bodyWeight = MutableStateFlow(70.0)
     /** "Still training?": no set for a while (forgotten workouts, WatchLogic Idle). */
     val askDone = MutableStateFlow(false)
@@ -136,6 +138,7 @@ object WearStore {
         prefs.getString("state", null)?.let { json ->
             try { _state.value = WireJson.decodeFromString(SessionState.serializer(), json) } catch (_: Exception) {}
         }
+        routinesFile().takeIf { it.exists() }?.let { f -> try { routines.value = WireJson.decodeFromString(RoutinesFile.serializer(), f.readText()) } catch (_: Exception) {} }
         kcal.lose(_state.value.workout?.id)
         // Events still waiting from the last run (sent then, never applied on the phone): out again.
         PhoneLink.flush(app)
@@ -994,6 +997,20 @@ object WearStore {
             val tmp = java.io.File(f.path + ".tmp")
             tmp.writeBytes(bytes)
             if (tmp.renameTo(f)) stillsVersion.value++
+        } catch (_: Exception) {}
+    }
+
+    private fun routinesFile() = java.io.File(app.filesDir, "routines.json")
+
+    /** The phone's routines file, kept in place of the one before (one file, so nothing piles up). One that cannot be read leaves the old. */
+    fun saveRoutines(bytes: ByteArray) {
+        if (!::app.isInitialized) return
+        try {
+            val text = bytes.toString(Charsets.UTF_8)
+            val f = WireJson.decodeFromString(RoutinesFile.serializer(), text)
+            val tmp = java.io.File(routinesFile().path + ".tmp")
+            tmp.writeText(text)
+            if (tmp.renameTo(routinesFile())) routines.value = f
         } catch (_: Exception) {}
     }
 

@@ -22,6 +22,10 @@ object Plan {
         return real.size to real.sumOf { e -> e.sets.count { !it.warmup } }
     }
 
+    /** What is ready, with every routine when the file on the watch is the one the snapshot names; else the snapshot's own list (an older phone, a first launch before the file arrives, an out-of-date file). */
+    fun merged(ready: Ready?, hash: String?, file: RoutinesFile?): Ready? =
+        if (ready == null || hash == null || file == null || file.h != hash) ready else ready.copy(others = file.others)
+
     /** The folder name to draw above the routine at `index`: where it differs from the one before (the phone sends them grouped), else null. */
     fun folderHeader(index: Int, others: List<ReadySession>): String? {
         val f = others.getOrNull(index)?.folder?.trim()

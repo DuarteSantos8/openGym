@@ -246,7 +246,8 @@ fun rememberSync(): SyncState {
 @Composable
 fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
     val list = rememberTransformingLazyColumnState()
-    val ready = s.ready
+    val file by WearStore.routines.collectAsState()
+    val ready = Plan.merged(s.ready, s.routinesHash, file)
     val today = ready?.today
     val others = ready?.others.orEmpty()
     val sync = rememberSync()

@@ -124,6 +124,18 @@ object PhoneLink {
                 items.release()
                 newest?.let { (at, json, host) -> withContext(Dispatchers.Main) { WearStore.applySnapshotJson(json, host, at.takeIf { it > 0 }) } }
             } catch (_: Exception) {}
+            // The routines file too: it may have come while the app was closed and the listener missed it.
+            try {
+                val uri = Uri.Builder().scheme("wear").path(Paths.ROUTINES).build()
+                val items = Wearable.getDataClient(app).getDataItems(uri, DataClient.FILTER_LITERAL).await()
+                val asset = items.firstNotNullOfOrNull { DataMapItem.fromDataItem(it).dataMap.getAsset(Paths.KEY_JSON) }
+                items.release()
+                asset?.let { a ->
+                    val fd = Wearable.getDataClient(app).getFdForAsset(a).await()
+                    val bytes = fd.inputStream.use { it.readBytes() }
+                    withContext(Dispatchers.Main) { WearStore.saveRoutines(bytes) }
+                }
+            } catch (_: Exception) {}
             refreshNear(app)
         }
     }
