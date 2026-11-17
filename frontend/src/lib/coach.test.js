@@ -6,6 +6,7 @@ import {
   recordDebrief, logEntry, lightBundle, changeValues, defaultTrainingDays,
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
+import { PYRAMID_MAX } from './pyramid.js'
 import { registerCustom } from './exercises.js'
 
 // The two runtimes share no build step, so the client's copy of the fingerprint logic is
@@ -100,12 +101,36 @@ describe('plan fingerprint', () => {
     const withFlags = state()
     withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
     withFlags.routines[1].ex[0] = { ...withFlags.routines[1].ex[0], side: true, reps: 16 }
+    const pyramids = state()
+    pyramids.routines[0].ex[0] = {
+      ...pyramids.routines[0].ex[0], sets: 4, reps: 12,
+      pyramid: [12, 10, 8, 'max'], pyramidRest: [0, 120, 0, 0], pyramidWeight: [40, 45, 50, 0]
+    }
     const combined = state({ week: { 1: ['r1', 'r2'], 3: 'r2', 5: [] } })
-    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined]) {
+    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, pyramids, combined]) {
       expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
       expect(planHash(S)).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
       expect(hashPlan(canonicalPlan(S))).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
     }
+  })
+
+  it('moves for a pyramid — targets, rests and loads — and not for an empty one', () => {
+    // A pyramid is the prescription, so editing it by hand has to stale a pending proposal.
+    const flat = () => {
+      const S = state()
+      S.routines[0].ex[0] = { ...S.routines[0].ex[0], sets: 4, reps: 12 }
+      return S
+    }
+    const pyramid = over => {
+      const S = flat()
+      S.routines[0].ex[0] = { ...S.routines[0].ex[0], pyramid: [12, 10, 8, 'max'], ...over }
+      return S
+    }
+    expect(planHash(pyramid({ pyramid: [] }))).toBe(planHash(flat()))
+    expect(planHash(pyramid())).not.toBe(planHash(flat()))
+    expect(planHash(pyramid({ pyramid: [12, 10, 8, 6] }))).not.toBe(planHash(pyramid()))
+    expect(planHash(pyramid({ pyramidRest: [0, 120, 0, 0] }))).not.toBe(planHash(pyramid()))
+    expect(planHash(pyramid({ pyramidWeight: [40, 0, 0, 0] }))).not.toBe(planHash(pyramid()))
   })
 
   it('a combined day changes the fingerprint, and routine order within a day matters', () => {
@@ -786,6 +811,29 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+
+  it('keeps the pyramid prescription that was accepted', () => {
+    // A logged proposal used to keep only the flat fallback, so an imported routine that trains
+    // 12-10-8-6 was described by a saved copy that no longer said so.
+    const withEx = ex => ({ ...plan, routines: [{ ...plan.routines[0], ex: [ex] }] })
+    const b = lightBundle(withEx({
+      id: '0001', sets: 4, reps: 12, mode: 'reps',
+      pyramid: [12, 10, 8, PYRAMID_MAX], pyramidRest: [0, 120, 0, 0], pyramidWeight: [40, 45, 50, 0]
+    }))
+    expect(b.routines[0].ex[0]).toMatchObject({
+      pyramid: [12, 10, 8, PYRAMID_MAX],
+      pyramidRest: [0, 120, 0, 0],
+      pyramidWeight: [40, 45, 50, 0]
+    })
+
+    const bounded = lightBundle(withEx({
+      id: '0001', sets: 12, reps: 12, mode: 'reps',
+      pyramid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], pyramidRest: [0, 0], pyramidWeight: [0, 0]
+    })).routines[0].ex[0]
+    expect(bounded.pyramid).toHaveLength(10)
+    expect(bounded).not.toHaveProperty('pyramidRest')
+    expect(bounded).not.toHaveProperty('pyramidWeight')
   })
 })
 

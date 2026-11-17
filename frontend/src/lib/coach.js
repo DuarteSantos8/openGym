@@ -25,6 +25,7 @@ import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
+import { normalizePyramid, normalizePyramidRest, normalizePyramidWeight } from './pyramid.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
@@ -114,7 +115,13 @@ export function canonicalPlan(S) {
           weight: mode === 'cardio' ? 0 : (e.weight || 0),
           prog: e.prog || '', inc: e.inc || 0, repsMin: e.repsMin || 0, repsMax: e.repsMax || 0,
           bodyweight: isBw(e), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // A pyramid is its own prescription, so a change to its targets, rests or loads is a
+          // plan change like any other. Strings, so "no pyramid" is one value rather than an
+          // absent field that would hash apart from an empty list.
+          pyramid: Array.isArray(e.pyramid) ? e.pyramid.join(' ') : '',
+          pyramidRest: Array.isArray(e.pyramidRest) ? e.pyramidRest.join(' ') : '',
+          pyramidWeight: Array.isArray(e.pyramidWeight) ? e.pyramidWeight.join(' ') : ''
         }
       })
     })),
@@ -131,7 +138,10 @@ export function hashPlan(plan) {
   const canon = JSON.stringify({
     routines: (plan?.routines || []).map(r => [r.id, r.name, r.prog, (r.ex || []).map(e =>
       [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.weight, e.prog, e.inc,
-        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg].join(':')
+        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg,
+        // Only when there is a pyramid: a plan without one has to keep the fingerprint it had
+        // before v1.4.5, or every pending proposal reads as stale the moment someone upgrades.
+        ...(e.pyramid ? [e.pyramid, e.pyramidRest, e.pyramidWeight] : [])].join(':')
     )]),
     // `plan` is a canonicalPlan output, so each day is already an array. `{1:['r1']}` → "1=r1",
     // byte-identical to the pre-upgrade fingerprint; `{3:['r2','r3']}` → "3=r2+r3". Weekday
@@ -332,6 +342,19 @@ export const logEntry = (S, id) => (S?.coach?.log || []).find(e => e.id === id) 
  * rationale text. The full bundle was merged into the plan already; this is what the chat
  * shows back when someone opens an old proposal months later.
  */
+function pyramidOf(e) {
+  const pyramid = normalizePyramid(e.pyramid)
+  if (!pyramid.length) return {}
+  // Bounded exactly as the editor writes them: an all-zero rest or load is no field at all, so a
+  // logged proposal keeps the prescription it was accepted with and nothing invented.
+  const rest = normalizePyramidRest(e.pyramidRest, pyramid.length)
+  const weight = normalizePyramidWeight(e.pyramidWeight, pyramid.length)
+  return {
+    pyramid,
+    ...(rest.length ? { pyramidRest: rest } : {}),
+    ...(weight.length ? { pyramidWeight: weight } : {})
+  }
+}
 export function lightBundle(b) {
   if (!b) return null
   return {
@@ -339,7 +362,7 @@ export function lightBundle(b) {
     routines: (b.routines || []).map(r => ({
       id: r.id, name: r.name, emoji: r.emoji || '', why: r.why || '',
       ex: (r.ex || []).map(e => ({
-        id: e.id, sets: e.sets, mode: e.mode || 'reps',
+        id: e.id, sets: e.sets, mode: e.mode || 'reps', ...pyramidOf(e),
         ...(e.reps != null ? { reps: e.reps } : {}), ...(e.sec != null ? { sec: e.sec } : {}),
         ...(e.min != null ? { min: e.min } : {}), ...(e.weight ? { weight: e.weight } : {}),
         ...(e.why ? { why: String(e.why).slice(0, 200) } : {}),

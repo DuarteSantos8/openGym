@@ -5,7 +5,7 @@ import {
   normalizePyramidWeight, pyramidWeightAt, maxRecordAt, maxRepsSeries,
 } from './pyramid.js'
 import { buildSets, setsRepsOf } from './history.js'
-import { policyFor } from './progression.js'
+import { policyFor, readSession } from './progression.js'
 import { buildPlanBundle, parsePlan } from './plan-share.js'
 import { convertWeight } from './units.js'
 
@@ -154,6 +154,36 @@ describe('a shared plan keeps the pyramid', () => {
   it('a flat exercise gains no pyramid field', () => {
     const back = parsePlan(JSON.stringify(buildPlanBundle(stateWith({ id: LIFT, sets: 3, reps: 10 }), 'Plan'))).routines[0].ex[0]
     expect(back).not.toHaveProperty('pyramid')
+  })
+})
+
+describe('a pyramid session is graded against its own targets', () => {
+  const entry = reps => ({
+    id: LIFT,
+    target: pyramidCfg(),
+    sets: reps.map(r => ({ w: 60, r, done: true }))
+  })
+
+  it('a clean 12-8-6-Max-12 session is a hit, not a run of misses', () => {
+    // Without the pyramid, readSession graded every set against the flat `reps: 12`, so the
+    // 8, 6 and Max sets read as misses and three of them manufactured a stall.
+    expect(readSession(entry([12, 8, 6, 9, 12]), pyramidCfg()).ok).toBe(true)
+  })
+
+  it('a set short of its own target is still a miss', () => {
+    expect(readSession(entry([12, 7, 6, 9, 12]), pyramidCfg()).ok).toBe(false)
+  })
+
+  it('an unticked Max row is not a hit just because its goal is zero', () => {
+    const rows = [12, 8, 6, 0, 12].map((r, i) => ({ w: 60, r, done: i !== 3 }))
+    expect(readSession({ id: LIFT, target: pyramidCfg(), sets: rows }, pyramidCfg()).ok).toBe(false)
+  })
+
+  it('an all-max pyramid has no numeric goal to miss', () => {
+    const allMax = pyramidCfg({ sets: 3, pyramid: [PYRAMID_MAX, PYRAMID_MAX, PYRAMID_MAX] })
+    expect(readSession({ id: LIFT, target: allMax, sets: [5, 4, 3].map(r => ({ w: 0, r, done: true })) }, allMax).ok).toBe(true)
+    // …but every prescribed row still has to be ticked.
+    expect(readSession({ id: LIFT, target: allMax, sets: [{ w: 0, r: 5, done: true }, { w: 0, r: 0, done: false }, { w: 0, r: 3, done: true }] }, allMax).ok).toBe(false)
   })
 })
 
