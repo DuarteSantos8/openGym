@@ -26,6 +26,7 @@ import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
+import { normalizePyramid, normalizePyramidRest, normalizePyramidWeight } from './pyramid.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
@@ -342,6 +343,19 @@ export const logEntry = (S, id) => (S?.coach?.log || []).find(e => e.id === id) 
  * rationale text. The full bundle was merged into the plan already; this is what the chat
  * shows back when someone opens an old proposal months later.
  */
+function pyramidOf(e) {
+  const pyramid = normalizePyramid(e.pyramid)
+  if (!pyramid.length) return {}
+  // Bounded exactly as the editor writes them: an all-zero rest or load is no field at all, so a
+  // logged proposal keeps the prescription it was accepted with and nothing invented.
+  const rest = normalizePyramidRest(e.pyramidRest, pyramid.length)
+  const weight = normalizePyramidWeight(e.pyramidWeight, pyramid.length)
+  return {
+    pyramid,
+    ...(rest.length ? { pyramidRest: rest } : {}),
+    ...(weight.length ? { pyramidWeight: weight } : {})
+  }
+}
 export function lightBundle(b) {
   if (!b) return null
   return {
@@ -349,7 +363,7 @@ export function lightBundle(b) {
     routines: (b.routines || []).map(r => ({
       id: r.id, name: r.name, emoji: r.emoji || '', why: r.why || '',
       ex: (r.ex || []).map(e => ({
-        id: e.id, sets: e.sets, mode: e.mode || 'reps',
+        id: e.id, sets: e.sets, mode: e.mode || 'reps', ...pyramidOf(e),
         ...(e.reps != null ? { reps: e.reps } : {}), ...(e.sec != null ? { sec: e.sec } : {}),
         ...(e.min != null ? { min: e.min } : {}), ...(e.weight ? { weight: e.weight } : {}),
         ...(e.why ? { why: String(e.why).slice(0, 200) } : {}),

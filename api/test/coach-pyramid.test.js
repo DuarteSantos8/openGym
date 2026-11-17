@@ -9,12 +9,13 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tempData, sampleState } from './helpers.mjs';
+import { tempData, sampleState, D } from './helpers.mjs';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
 const { validatePlan, validateReview, MAX_WEIGHT } = await import('../coach/core/validate.js');
 const { hashPlan } = await import('../coach/core/plan-hash.js');
+const { changesOntoPlan } = await import('../coach/core/refine-changes.js');
 const { handleFor } = await import('../coach/handle.js');
 
 const H = handleFor('u-pyramid');
@@ -258,6 +259,76 @@ test('a swap on a pyramid slot carries the movement, not a flat pair', () => {
   assert.equal(after.id, '0002');
   assert.equal('sets' in after, false, 'the pyramid already owns the set count');
   assert.equal('reps' in after, false, 'the pyramid already owns each set');
+});
+
+/* ---------------- a refined plan answered as a change list ---------------- */
+
+test('a refinement change list cannot write a flat field over a pyramid slot', () => {
+  // The fallback lays changes onto `refine.previous`, and the plan validator would then restore
+  // the flat pair from the pyramid: the requested refinement would vanish and the job succeed.
+  // Declining here sends the answer to the repair round for a complete revised plan instead.
+  const plan = reviewPlan();
+  for (const [type, after] of [['sets', 2], ['reps', 6], ['repsMin', 6], ['repsMax', 10]]) {
+    const out = changesOntoPlan(plan, {
+      coach_contract: 1, summary: 's',
+      changes: [{ id: 'c1', type, target: { routineId: 'r1', exId: '0001' }, after, why: 'x' }]
+    });
+    assert.equal(out, null, `${type} on a pyramid slot must go to the repair round`);
+  }
+});
+
+test('a change list still converts a flat slot beside a pyramid slot', () => {
+  const S = stateWith();
+  S.routines[0].ex.push({ id: '0002', sets: 3, reps: 10, mode: 'reps' });
+  const plan = payload.build(S, { handle: H, kind: 'review' }).plan;
+  const out = changesOntoPlan(plan, {
+    coach_contract: 1, summary: 's',
+    changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: '0002' }, after: 5, why: 'x' }]
+  });
+  assert.equal(out.routines[0].ex.find(e => e.id === '0002').sets, 5);
+});
+
+test('a change-list swap on a pyramid slot keeps the pyramid, not the model\'s flat pair', () => {
+  const plan = reviewPlan();
+  const out = changesOntoPlan(plan, {
+    coach_contract: 1, summary: 's',
+    changes: [{
+      id: 'c1', type: 'swap-exercise', target: { routineId: 'r1', exId: '0001' },
+      after: { id: '0002', sets: 9, reps: 99 }, why: 'x'
+    }]
+  });
+  const ex = out.routines[0].ex[0];
+  assert.equal(ex.id, '0002');
+  assert.deepEqual(ex.pyramid, [12, 10, 8, 'max']);
+  assert.equal(ex.sets, 4, 'the pyramid owns the set count');
+  assert.equal(ex.reps, 12, 'the pyramid owns the reps');
+});
+
+/* ---------------- how a pyramid session is graded ---------------- */
+
+test('a clean pyramid session reads as a hit, not a run of misses', () => {
+  // The payload's readSession prefers rowReps and otherwise graded every set against the flat
+  // `reps`, so a 12-10-8-Max session counted three misses and three of them manufactured a stall.
+  const ex = { id: '0001', sets: 4, reps: 12, mode: 'reps', pyramid: [12, 10, 8, 'max'] };
+  const session = d => ({
+    id: 'w' + d, d, name: 'Push', start: 1000, end: 1000 + 45 * 60000,
+    entries: [{ id: '0001', target: ex, sets: [12, 10, 8, 9].map(r => ({ w: 60, r, done: true })) }]
+  });
+  const S = sampleState({
+    routines: [{ id: 'r1', name: 'Push', emoji: '💪', ex: [ex] }],
+    week: { 1: 'r1' },
+    workouts: ['2026-07-10', '2026-07-13', '2026-07-16'].map(d => session(D(d)))
+  });
+  const row = payload.build(S, { handle: H, kind: 'review' }).aggregates.exercises.find(e => e.id === '0001');
+  assert.equal(row.sessions, 3);
+  assert.equal(row.stalls, 0, 'every set met its own target');
+  assert.equal(row.lastOk, true);
+
+  // A set short of its own target is still a miss.
+  S.workouts[2].entries[0].sets[1].r = 7;
+  const short = payload.build(S, { handle: H, kind: 'review' }).aggregates.exercises.find(e => e.id === '0001');
+  assert.equal(short.lastOk, false);
+  assert.equal(short.stalls, 1);
 });
 
 /* ---------------- the fingerprint ---------------- */
