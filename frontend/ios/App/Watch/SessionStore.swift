@@ -590,6 +590,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
+            self.reportRoutines()
             // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
             // when the phone already runs the next workout (no snapshot without one in between):
             // the session ends unsaved instead of carrying on as the next one. Remembered as run
@@ -1599,7 +1600,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let dest = SessionStore.routinesURL
         try? FileManager.default.createDirectory(at: dest.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? data.write(to: dest, options: .atomic)
-        DispatchQueue.main.async { self.routines = f }
+        DispatchQueue.main.async { self.routines = f; self.reportRoutines() }
         log("routines file: \(f.others.count) routines")
     }
 
@@ -1613,10 +1614,22 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         updateLink()
     }
 
+    /// The routines last told to the phone (hash and count): told again when they change.
+    private var reportedRoutines = ""
+
+    /// A new routines file, or a snapshot that makes the file count: the phone's Settings → Apple Watch is told now.
+    private func reportRoutines() {
+        let r = Plan.routinesReport(state.ready, hash: state.routinesHash, file: routines)
+        if r.hash + "#\(r.count)" != reportedRoutines { sendStatus() }
+    }
+
     /// What the phone's Settings → Apple Watch shows about this watch.
     func sendStatus() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        let r = Plan.routinesReport(state.ready, hash: state.routinesHash, file: routines)
+        reportedRoutines = r.hash + "#\(r.count)"
         send(event: ["id": UUID().uuidString, "type": "watchStatus", "health": health.status, "version": version,
+                     "routinesHash": r.hash, "routinesCount": r.count,
                      "at": Date().timeIntervalSince1970 * 1000])
     }
 

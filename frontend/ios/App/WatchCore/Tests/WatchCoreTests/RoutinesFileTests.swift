@@ -46,4 +46,15 @@ final class RoutinesFileTests: XCTestCase {
         snap.routinesHash = nil
         XCTAssertNil(SessionCore.applySnapshot(SessionState(), snap).routinesHash)
     }
+
+    func testTheReportNamesTheFileInUseAndHowManyRoutinesAreListed() {
+        let ready = Ready(today: session("t"), others: [session("s0")])
+        var r = Plan.routinesReport(ready, hash: "h1", file: file("h1", 30))
+        XCTAssertEqual(r.hash, "h1")
+        XCTAssertEqual(r.count, 31, "today's routine and the 30 of the file")
+        r = Plan.routinesReport(ready, hash: "h2", file: file("h1", 30))
+        XCTAssertEqual(r.hash, "", "the snapshot's own list: no file in use")
+        XCTAssertEqual(r.count, 2)
+        XCTAssertEqual(Plan.routinesReport(nil, hash: nil, file: nil).count, 0)
+    }
 }
