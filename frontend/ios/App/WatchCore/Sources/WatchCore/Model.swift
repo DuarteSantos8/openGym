@@ -74,6 +74,8 @@ struct ActiveWorkout: Codable, Equatable {
     var restLeft: Double? = nil
     /// Each muscle's name in the app's language, for the Muscles page. Older phones never send it.
     var muscleNames: [String: String]? = nil
+    /// The workout's own note (the phone's session note, cut at 280), for the Overview's "Add note".
+    var note: String? = nil
 }
 
 struct RestInfo: Codable, Equatable {
@@ -194,6 +196,8 @@ struct WatchSettings: Codable, Equatable {
     var onAccent: String?
     /// The phone's Settings → Workout → Forgotten workouts (1.4.5); nil from an older phone.
     var forgotten: ForgottenSettings?
+    /// The Overview may offer "Add note" (the phone applies workoutNote); nil from an older phone.
+    var workoutNote: Bool?
 }
 
 /// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).
