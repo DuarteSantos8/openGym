@@ -3,10 +3,11 @@
   "name": "smith decline reverse-grip press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "On a decline bench, you press the smith machine bar with a reverse grip. Works the chest and triceps.",

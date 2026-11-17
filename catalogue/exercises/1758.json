@@ -3,6 +3,7 @@
   "name": "assisted sit-up",
   "bodyPart": "waist",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "abs",
   "secondaryMuscles": [
     "hip flexors"

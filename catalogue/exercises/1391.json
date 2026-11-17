@@ -3,6 +3,7 @@
   "name": "sled calf press on leg press",
   "bodyPart": "lower legs",
   "equipment": "sled machine",
+  "machineKind": "leg-press",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings",

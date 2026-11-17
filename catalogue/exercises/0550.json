@@ -3,11 +3,12 @@
   "name": "kettlebell thruster",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "quadriceps",
     "glutes",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "You squat with a kettlebell at your chest, then stand and press it overhead in one motion. A full body move for legs and shoulders.",

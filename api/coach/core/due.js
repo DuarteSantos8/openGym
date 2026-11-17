@@ -87,3 +87,29 @@ const hhmmToMin = v => {
   const m = /^(\d{1,2}):(\d{2})$/.exec(v || '');
   return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
 };
+
+/* What a failed review means for the next scheduled one (B9, idea from #983 by @radu781). A failure
+ * another try cannot fix (a refused key, no runtime, the provider saying no, a payload too big for
+ * it, a schema it cannot take) counts as this round's review: tried again every minute, it was
+ * queued, failed and spent the day's cap before the real slot, and nothing ever reached the
+ * provider. A passing one (no network, a timeout, a restart) is tried again, but not before
+ * RETRY_AFTER_MS. */
+export const FINAL_FAILURES = new Set(['auth', 'quota', 'missing', 'provider', 'unprivileged', 'schema', 'toolarge', 'unusable']);
+export const RETRY_AFTER_MS = 15 * 60000;
+
+/** When the last review that settles this round ran: answered, or failed for good. */
+export function reviewedAtOf(history) {
+  let at = 0;
+  for (const h of history || []) {
+    if (h?.kind !== 'review') continue;
+    const settled = h.outcome === 'ready' || h.outcome === 'nochange' || (h.outcome === 'failed' && FINAL_FAILURES.has(h.errorClass));
+    if (settled) at = Math.max(at, Number(h.at) || 0);
+  }
+  return at;
+}
+
+/** Whether a scheduled review that just failed for a passing reason is still waiting its turn. */
+export function retryWaiting(history, now = Date.now()) {
+  const last = [...(history || [])].reverse().find(h => h?.kind === 'review' && h.trigger === 'scheduled');
+  return !!last && last.outcome === 'failed' && !FINAL_FAILURES.has(last.errorClass) && now - (Number(last.at) || 0) < RETRY_AFTER_MS;
+}

@@ -3,6 +3,7 @@
   "name": "lever single leg extension (plate loaded)",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-extension",
   "target": "quads",
   "secondaryMuscles": [
     "hip flexors"

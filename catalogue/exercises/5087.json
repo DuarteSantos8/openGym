@@ -3,10 +3,9 @@
   "name": "cable shoulder 90 degrees external rotation",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "Rotate your forearm up and back against a cable with your upper arm at shoulder height. It strengthens the rotator cuff external rotators.",

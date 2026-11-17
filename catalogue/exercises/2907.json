@@ -3,6 +3,7 @@
   "name": "power sled backward push",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",
@@ -11,6 +12,7 @@
     "hamstrings"
   ],
   "category": "strength",
+  "track": "distance",
   "description": "Pushing a power sled while walking backward. Builds quad strength and conditioning.",
   "instructions": [
     "Stand behind the sled with your back to it and grip the handles.",

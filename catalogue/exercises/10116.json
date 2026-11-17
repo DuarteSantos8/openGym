@@ -3,10 +3,11 @@
   "name": "smith incline close grip bench press",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
     "upper chest",
-    "shoulders",
+    "front delts",
     "chest"
   ],
   "category": "strength",

@@ -3,10 +3,9 @@
   "name": "suspension shoulder external rotation",
   "bodyPart": "shoulders",
   "equipment": "suspension trainer",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "External rotation using straps. It strengthens the rotator cuff.",

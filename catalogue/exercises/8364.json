@@ -3,11 +3,12 @@
   "name": "resistance band overhead shoulder press v. 2",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press with a band, training the shoulders and triceps with tension that rises toward the top.",

@@ -3,6 +3,7 @@
   "name": "glute ham raise with extended arms",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "back-extension",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

@@ -4,6 +4,7 @@ import { t } from '../lib/i18n.js'
 import MuscleExplorer from '../components/MuscleExplorer.jsx'
 import { exerciseDetailSheet, addToRoutineSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import { sessionBuilderSheet } from '../components/SessionBuilder.jsx'
 
 // `?m=<muscle>` opens on that muscle (Stats' untrained muscles, #553), and back goes where it came from.
 export default function Muscles() {
@@ -15,8 +16,8 @@ export default function Muscles() {
   const back = loc.state?.from === '/stats' ? '/stats' : '/library'
   return <>
     <div className="hdr"><button className="iconbtn" data-back={back} onClick={() => nav(back)} aria-label={back === '/stats' ? t('Stats') : t('Exercises')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Explore muscles')}</h1><div className="sub">{t('Choose a muscle to see exercises that train it.')}</div></div></div>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Explore muscles')}</h1><div className="sub">{t('Choose a muscle to see exercises that train it, or build a session from it.')}</div></div></div>
 
-    <MuscleExplorer key={initial || ''} initial={initial} onDetail={exerciseDetailSheet} onPlan={addToRoutineSheet} />
+    <MuscleExplorer key={initial || ''} initial={initial} onDetail={exerciseDetailSheet} onPlan={addToRoutineSheet} onBuild={sessionBuilderSheet} />
   </>
 }

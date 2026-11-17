@@ -3,12 +3,13 @@
   "name": "dumbbell z press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "upper chest",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press done on the floor with legs straight out. With no back support, it trains the shoulders and demands a strong core.",

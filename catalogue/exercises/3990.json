@@ -3,10 +3,11 @@
   "name": "ez bar seated close grip shoulder press",
   "bodyPart": "shoulders",
   "equipment": "ez barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press with a narrow grip on the EZ bar. It builds the shoulders and triceps.",

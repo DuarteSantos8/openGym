@@ -3,10 +3,11 @@
   "name": "lever outdoor seated chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A seated chest press on an outdoor lever machine that works your chest, front shoulders and triceps.",

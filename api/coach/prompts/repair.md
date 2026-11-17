@@ -19,7 +19,7 @@ Send the **whole answer again**, corrected, in the schema from the original task
 Common causes, in the order they usually apply:
 
 - A list of `changes` when the task asked for a plan. A plan or a revised plan is always the complete plan — `week` and every routine with its `ex` — never the changes to it.
-- An exercise `id` that is not in the `library` array of the payload. Every id must be copied from there. If nothing in the library fits, choose the closest thing that does rather than inventing one.
+- An exercise `id` that is not in the `library` array of the payload. Every id must be copied from there exactly as printed — a string, leading zeros included (`"0024"`, never `24` or `"24"`). If nothing in the library fits, choose the closest thing that does rather than inventing one.
 - A `type` outside the allowed list, or a `target` naming a routine or exercise that is not in the plan.
 - A `target.exId` that belongs to a different routine than `target.routineId`. It must be one of that routine's own exercise ids.
 - A `swap-exercise` or `add-exercise` whose `after.id` is already in the target routine. Choose a different `library` id that the routine does not have yet, or drop that change — repeating it will be rejected again.

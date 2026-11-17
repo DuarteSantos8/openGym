@@ -3,6 +3,7 @@
   "name": "lever kneeling reverse hyperextension",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "glute-machine",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

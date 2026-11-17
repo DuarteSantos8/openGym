@@ -56,10 +56,11 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
 
   const mode = logged[logged.length - 1].mode
   const repsOnly = mode === 'reps' && !logged.some(l => l.mode === 'reps' && bestWeightForEntry(l.en) > 0)
-  const metric = mode === 'cardio' ? 'min' : mode === 'time' ? 'sec' : repsOnly ? 'reps' : 'weight'
+  const metric = mode === 'cardio' ? 'min' : mode === 'time' ? 'sec' : mode === 'distance' ? 'm' : repsOnly ? 'reps' : 'weight'
   const valueOf = ({ en, rows }) => {
     if (metric === 'min') return rows.reduce((a, s) => a + (Number(s.min) || 0), 0)
     if (metric === 'sec') return Math.max(0, ...rows.map(s => Number(s.sec) || 0))
+    if (metric === 'm') return Math.max(0, ...rows.map(s => Number(s.m) || 0))
     if (metric === 'reps') return Math.max(0, ...rows.map(completedRepsOf))
     return bestWeightForEntry(en)
   }
@@ -73,7 +74,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const t = workoutAt(w)
     // "PR" goes on the session that first reached the all-time best, not on every session
     // that later matched it — one marker says where the record was set.
-    if (value != null && value > best) { best = value; prId = w.id }
+    if (value != null && (metric === 'weight' ? beatsWeight(exId, value, best) : value > best)) { best = value; prId = w.id }
     if (value != null && value > 0) points.push({ t, d: w.d, y: value, e1rm })
     if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
     sessions.push({
@@ -110,6 +111,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
 export function bestSetFor(S, exId, mode = modeOf({ id: exId }), as) {
   const keys = s => mode === 'cardio' ? [Number(s.min) || 0, Number(s.speed) || 0]
     : mode === 'time' ? [Number(s.sec) || 0, Number(s.w) || 0]
+      : mode === 'distance' ? [Number(s.w) || 0, Number(s.m) || 0]
       : [Number(s.w) || 0, Number(s.r) || 0]
   const better = (a, b) => {
     const [a1, a2] = keys(a), [b1, b2] = keys(b)

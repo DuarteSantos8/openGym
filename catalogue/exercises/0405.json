@@ -3,10 +3,11 @@
   "name": "dumbbell seated shoulder press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated with back support, you press dumbbells from shoulder height to overhead. It builds the shoulders and triceps.",
@@ -19,13 +20,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "femaleVariant": "2237",
