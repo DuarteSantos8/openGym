@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { DAYN, DAYS, weekOrder, weekStartOf, uid, exCount, routineCount, todayISO, fmtDate } from '../lib/format.js'
-import { t } from '../lib/i18n.js'
+import { t, exerciseNameFor } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
+import { effectiveRoutines, effectiveRoutineIds } from '../lib/history.js'
+import { dayApart, nextSessionIds, daySessionsStatus } from '../lib/day-sessions.js'
+import { allExercises } from '../lib/exercises.js'
+import { startOrPreview } from '../components/StartSheets.jsx'
 import {
   dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet,
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
@@ -36,6 +40,7 @@ import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routi
 import { isFavRoutine } from '../lib/routine-favs.js'
 import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
 import { routineSources } from '../lib/session-routines.js'
+import './Plan.css'
 
 // Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
 // train). The last one you looked at comes back: a per-device convenience, never synced, so it
@@ -145,6 +150,17 @@ export default function Plan() {
   const user = useStore(s => s.user)
   const fileRef = useRef(null)
   const [view, setViewState] = useState(readView)
+  // The lazy shell can remount a loaded view after closing a sheet. Keep this disclosure open
+  // across that handoff, as on Library, rather than losing it under the user's pointer.
+  const moreOpen = useUI(s => !!s.planMoreOpen)
+  // The same session the tab bar's Start begins (TabBar.jsx): on a day trained separately (#908),
+  // the next session not done yet; otherwise today's routines combined, if any has exercises.
+  const startIds = todayStartIds(S)
+  const canStart = !!startIds
+  const startToday = () => {
+    if (S.active) { nav('/workout'); return }
+    if (startIds) startOrPreview(startIds)
+  }
   const setView = v => {
     setViewState(v)
     try { localStorage.setItem(PLAN_VIEW_KEY, v) } catch { /* private mode: the view just isn't remembered */ }
@@ -180,16 +196,18 @@ export default function Plan() {
   // A running programme wrote the schedule below (lib/programmes.js); the strip says whose it is.
   const progChip = programmeChip(S)
 
-  return <div className="narrow plan">
+  return <div className="narrow plan iv-plan">
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
       <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
-      <div className="hdr-actions">
-        {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
-        <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
-      </div>
     </div>
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
+    <details className="iv-plan-more" open={moreOpen} onToggle={e => useUI.setState({ planMoreOpen: e.currentTarget.open })}>
+      <summary>{t('More')}</summary><div className="iv-plan-more-actions">
+        {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
+        <Button size="sm" variant="tinted" icon="share" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')}>{t('Plan options')}</Button>
+      </div>
+    </details>
     <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
       options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
     {progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
@@ -197,7 +215,10 @@ export default function Plan() {
     </button>}
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} />
-      : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+      : <><TodayExercises S={S} nav={nav} /><Schedule S={S} update={update} nav={nav} mode={mode} /></>}
+    <div className="iv-plan-primary"><Button variant="primary" icon="play" disabled={!S.active && !canStart}
+      aria-label={S.active ? t('Resume workout') : t('Start today’s workout')} onClick={startToday}>
+      {S.active ? t('Resume workout') : t('Start today’s workout')}</Button></div>
   </div>
 }
 
@@ -211,8 +232,52 @@ function newRoutine(update, nav) {
   nav('/plan/r/' + r.id)
 }
 
+function todayStartIds(S, iso = todayISO()) {
+  if (dayApart(S, iso)) return nextSessionIds(S, iso)
+  return effectiveRoutines(S, iso).some(r => r.ex.length) ? effectiveRoutineIds(S, iso) : null
+}
+
+// The approved Plan puts the session you can start next to the week that contains it. This is a
+// summary of the same effective plan Home and Start use, not another editable exercise list;
+// Edit opens the existing routine editor and preserves combined days and rotation behavior.
+function TodayExercises({ S, nav }) {
+  const routines = effectiveRoutines(S, todayISO())
+  const byId = new Map(allExercises(S).map(e => [e.id, e]))
+  // On a day trained separately, a session already logged says so, since Start moves past it.
+  const done = new Set(dayApart(S, todayISO()) ? daySessionsStatus(S, todayISO()).filter(x => x.done).flatMap(x => x.ids) : [])
+  return <section className="iv-plan-today" aria-labelledby="iv-plan-today-heading">
+    <div className="row between plan-sec-h">
+      <h2 className="sec" id="iv-plan-today-heading">{t('Today')} · {t('Exercises')}</h2>
+      {routines.length === 1 && <Button size="sm" variant="plain" icon="edit" aria-label={nameIn(routines[0].name, t('Edit'))}
+        onClick={() => nav('/plan/r/' + routines[0].id)}>{t('Edit')} · {routines[0].name}</Button>}
+    </div>
+    {routines.length ? <div className="list iv-plan-today-list">{routines.map(r => <div key={r.id} className="iv-plan-today-routine">
+      {routines.length > 1 && <div className="iv-plan-today-group"><div className="tt">{r.name}{done.has(r.id) && <span className="tag iv-plan-done">{t('Done')}</span>}</div>
+        <Button size="sm" variant="plain" icon="edit" aria-label={nameIn(r.name, t('Edit'))}
+          onClick={() => nav('/plan/r/' + r.id)}>{t('Edit')} · {r.name}</Button></div>}
+      {r.ex.map((e, i) => <div className="item iv-plan-today-ex" key={`${r.id}:${i}:${e.id}`}>
+        <span className="plan-order" aria-hidden="true">{i + 1}</span>
+        <div className="grow"><div className="tt">{exerciseNameFor(byId.get(e.id) || e)}</div></div>
+      </div>)}
+      {!r.ex.length && <div className="empty">{exCount(0)}</div>}
+    </div>)}</div> : <div className="empty iv-plan-rest">{t('Rest day')}</div>}
+  </section>
+}
+
+// Visible, keyboard-simple alternatives to the optional drag handle and swipe actions. Both
+// buttons call the same write as a drag, so ordering stays identical everywhere the app reads it.
+function MoveButtons({ index, count, name, onMove }) {
+  return <div className="plan-move-btns">
+    <Button size="sm" variant="plain" disabled={index === 0} aria-label={t('Move up') + ': ' + said(name)}
+      onClick={() => onMove(index, index - 1)}>{t('Move up')}</Button>
+    <Button size="sm" variant="plain" disabled={index === count - 1} aria-label={t('Move down') + ': ' + said(name)}
+      onClick={() => onMove(index, index + 1)}>{t('Move down')}</Button>
+  </div>
+}
+
 function Schedule({ S, update, nav, mode }) {
   const [editLoop, setEditLoop] = useState(false)
+  const advancedOpen = useUI(s => !!s.planAdvancedOpen)
   /* The rotation editor. What it shows is the live pass when there is one, otherwise the saved
      sequence — S.rotation is only a definition, so the pass is the truth whenever it exists.
      Every edit writes straight through saveRotation: an edit IS the save (and, for a queue
@@ -319,19 +384,29 @@ function Schedule({ S, update, nav, mode }) {
   const editing = editLoop && !external
 
   return <>
-    <Section className="plan-mode" tour="plan-mode" footer={mode === 'rotation'
-      ? t('Routines in a loop. Whatever is next stays next until you train it, whatever the day.')
-      : t('The same routines on the same weekdays, every week.')}>
-      <Row icon="repeat" iconTint="var(--orange)" title={t('How you train')}>
-        {/* A planner's own queue is not this app's to switch off: text, not a control. */}
-        {external
-          ? <span className="small dim plan-mode-locked">{t('Rotation')} · {t('Externally managed')}</span>
-          : <Segmented className="seg-inline" value={mode} onChange={setMode}
-              options={[{ value: 'week', label: t('Fixed Week') }, { value: 'rotation', label: t('Rotation') }]} />}
-      </Row>
-      {/* a cobweb in the card's empty top corner, in season (components/Seasonal.jsx) */}
-      <SeasonDeco spot="plan-card" />
-    </Section>
+    <details className="iv-plan-advanced" open={advancedOpen}
+      onToggle={e => useUI.setState({ planAdvancedOpen: e.currentTarget.open })}>
+      <summary>{t('Advanced')}</summary><div className="iv-plan-advanced-body">
+        <Section className="plan-mode" tour="plan-mode" footer={mode === 'rotation'
+          ? t('Routines in a loop. Whatever is next stays next until you train it, whatever the day.')
+          : t('The same routines on the same weekdays, every week.')}>
+          <Row icon="repeat" iconTint="var(--orange)" title={t('How you train')}>
+            {/* A planner's own queue is not this app's to switch off: text, not a control. */}
+            {external
+              ? <span className="small dim plan-mode-locked">{t('Rotation')} · {t('Externally managed')}</span>
+              : <Segmented className="seg-inline" value={mode} onChange={setMode}
+                  options={[{ value: 'week', label: t('Fixed Week') }, { value: 'rotation', label: t('Rotation') }]} />}
+          </Row>
+          {/* a cobweb in the card's empty top corner, in season (components/Seasonal.jsx) */}
+          <SeasonDeco spot="plan-card" />
+        </Section>
+        {/* Weekly muscle volume is analysis: it lives in Stats, next to Muscle balance. */}
+        {S.routines.length > 0 && <Section className="plan-link">
+          <Row icon="chart" iconTint="var(--indigo)" title={t('Weekly muscle volume')} subtitle={t('Now in Stats, next to Muscle balance')}
+            accessory="chevron" onClick={() => nav('/stats?focus=weekly-volume')} />
+        </Section>}
+      </div>
+    </details>
 
     {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
@@ -380,7 +455,7 @@ function Schedule({ S, update, nav, mode }) {
           const sayName = seq.filter(x => x === id).length > 1 ? `${i + 1}. ${name}` : name
           const row = <div key={swipe ? undefined : key} {...(swipe ? {} : reorderProps)} className={'item rotation-row' + (item?.state === 'done' ? ' is-done' : '') + (rest ? ' is-rest' : '')}>
             {editing && <button className="plan-minus" aria-label={t('Remove {0}', said(sayName))} title={t('Remove')}
-              onClick={() => takeOut(i)}><Icon name="minus" /></button>}
+              onClick={() => takeOut(i)}><Icon name="minus" /><span>{t('Remove')}</span></button>}
             <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
             <span className={'lrow-i' + (rest ? ' rest' : '')}><Icon name={rest ? 'moon' : glyphOf(r?.emoji)} /></span>
             <div className="grow" style={{ minWidth: 0 }}>
@@ -388,8 +463,10 @@ function Schedule({ S, update, nav, mode }) {
               <div className="ss">{item ? stateWord(item) : rest ? t('A day off before the next one') : r ? exCount(r.ex.length) : ''}</div>
             </div>
             {r && !rest && !editing && <MiniBodyMap routines={[r]} body={S.body} />}
+            {editing && seq.length > 1 && <MoveButtons index={i} count={seq.length} name={sayName}
+              onMove={(from, to) => setSeq(moved(seq, from, to))} />}
             {editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', said(sayName))} title={t('Drag to reorder')}
-              {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
+              {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /><span>{t('Move {0}', '').trim()}</span></button>}
           </div>
           return swipe
             ? <SwipeRow key={key} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteName={t('Remove {0}', said(sayName))} deleteIcon="minus"
@@ -421,12 +498,6 @@ function Schedule({ S, update, nav, mode }) {
       </>}
     </div>}
 
-    {/* Weekly muscle volume is analysis: it moved to Stats, next to Muscle balance. Stats only
-        shows that card once there is a routine, so the link waits for one too. */}
-    {S.routines.length > 0 && <Section className="plan-link">
-      <Row icon="chart" iconTint="var(--indigo)" title={t('Weekly muscle volume')} subtitle={t('Now in Stats, next to Muscle balance')}
-        accessory="chevron" onClick={() => nav('/stats?focus=weekly-volume')} />
-    </Section>}
   </>
 }
 
@@ -443,11 +514,12 @@ function Routines({ S, update, nav }) {
   // The order of this list is the order of `S.routines`, and every other screen reads the same
   // array (the Start screen, the day sheets, the routine pickers), so moving a routine here moves
   // it everywhere (#142). Reordering lives behind Edit, like on an iPhone.
-  const reorder = useListReorder(routines.length, (from, to) => update(s => {
+  const moveRoutine = (from, to) => update(s => {
     if (to < 0 || to >= s.routines.length) return
     const [m] = s.routines.splice(from, 1)
     s.routines.splice(to, 0, m)
-  }))
+  })
+  const reorder = useListReorder(routines.length, moveRoutine)
 
   const addRoutine = () => newRoutine(update, nav)
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
@@ -485,11 +557,12 @@ function Routines({ S, update, nav }) {
       {edit
         ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
           <div key={r.id} data-reorder-row className="item plan-routine" style={reorder.rowStyle(i)}>
-            <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
+            <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /><span>{t('Delete')}</span></button>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
+            {routines.length > 1 && <MoveButtons index={i} count={routines.length} name={r.name} onMove={moveRoutine} />}
             {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
-              {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
+              {...reorder.handle(i)}><Icon name="chevronsUpDown" /><span>{t('Move {0}', '').trim()}</span></button>}
           </div>)}</div>
         // Starred routines first, under Favourites (#327, lib/routine-favs.js): out of their
         // folder while starred, so each routine shows once. Edit still orders S.routines itself.
