@@ -10,6 +10,7 @@ test('barbell bench press shows a video, the whole movement and numbered steps, 
   // The row's name is lower case in the DOM (capitalised by CSS); "(side pov)" is another exercise.
   await click(page.getByRole('button', { name: /^barbell bench press pectorals/i }))
   const how = page.locator('section.expics')
+  await click(page.getByRole('button', { name: 'Video', exact: true }))
   await expect(how).toBeVisible({ timeout: 10_000 })
 
   const video = how.locator('video')
@@ -23,6 +24,8 @@ test('barbell bench press shows a video, the whole movement and numbered steps, 
   expect((await page.request.get(poster)).ok()).toBe(true)
   await expect(how.locator('.expics-video figcaption')).toContainText('CC BY-SA 4.0')
 
+  await click(page.getByRole('button', { name: 'Steps', exact: true }))
+  await expect(how.locator('video')).toHaveCount(0)
   const imgs = how.locator('img')
   await expect(imgs).toHaveCount(3)
   for (const img of await imgs.all()) {
