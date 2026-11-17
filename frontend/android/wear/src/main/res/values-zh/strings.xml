@@ -7,6 +7,7 @@
     <string name="all_sets_done">所有组已完成</string>
     <string name="all_synced">已全部同步</string>
     <string name="allow">允许</string>
+    <string name="archived_stay_on_phone">已归档的训练计划会保留在你的手机上。</string>
     <string name="avg">平均</string>
     <string name="band_over">%1$d 及以上</string>
     <string name="band_to">%1$d 到 %2$d</string>
@@ -117,5 +118,4 @@
     <string name="zone_current">当前</string>
     <string name="zone_n">区间 %1$d</string>
     <string name="zones">区间</string>
-    <string name="archived_stay_on_phone">已归档的训练计划会保留在你的手机上。</string>
 </resources>
