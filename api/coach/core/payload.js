@@ -218,8 +218,14 @@ function readSession(entry, fallback) {
   // #33), so it travels alongside the reps rather than being inferred from them downstream.
   const done = logged.filter(s => s.done).length;
   // A pyramid can be all "max" sets: it has no numeric goal at all, so "goal > 0" is not a
-  // requirement when it owns the per-set aims.
-  return { mode, bw, goal, count: done, ok: enough && reps.length > 0 && (setGoals || goal > 0) && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal)) };
+  // requirement when it owns the per-set aims. Every prescribed row still has to be ticked —
+  // an undone "max" row becomes 0 reps and would otherwise meet its goal of zero.
+  return {
+    mode, bw, goal, count: done,
+    ok: enough && sets.length > 0 && sets.every(s => s.done)
+      && (setGoals || goal > 0)
+      && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal))
+  };
 }
 /** Consecutive misses counting back from the most recent session. */
 export function stallCount(sessions) {

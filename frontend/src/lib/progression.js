@@ -380,7 +380,7 @@ export function readSession(entry, fallback) {
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
-    ok: enough && reps.length > 0 && (setGoals || goal > 0) && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal))
+    ok: enough && sets.length > 0 && sets.every(s => s.done) && (setGoals || goal > 0) && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal))
   }
 }
 

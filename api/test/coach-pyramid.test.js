@@ -329,6 +329,13 @@ test('a clean pyramid session reads as a hit, not a run of misses', () => {
   const short = payload.build(S, { handle: H, kind: 'review' }).aggregates.exercises.find(e => e.id === '0001');
   assert.equal(short.lastOk, false);
   assert.equal(short.stalls, 1);
+
+  // An unticked Max row is not a hit just because its goal is zero.
+  S.workouts[2].entries[0].sets[1].r = 10;
+  S.workouts[2].entries[0].sets[3].done = false;
+  const unfinished = payload.build(S, { handle: H, kind: 'review' }).aggregates.exercises.find(e => e.id === '0001');
+  assert.equal(unfinished.lastOk, false);
+  assert.equal(unfinished.stalls, 1);
 });
 
 /* ---------------- the fingerprint ---------------- */
