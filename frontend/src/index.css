@@ -3274,6 +3274,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 @media (max-width:360px){
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
+}
 
 /* ------------------------------------------------ tab bar on the right -- */
 /* A screen wider than it is tall (a phone on its side, a foldable opened; lib/tabbar-side.js,
