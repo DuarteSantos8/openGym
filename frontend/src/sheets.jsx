@@ -5,6 +5,7 @@ import { normalizeTempo, repSec } from './lib/tempo.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
+import { mapTargetWeights } from './lib/units.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
@@ -2591,7 +2592,7 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
 // anyway (lib/log-workout.js LOG_LIMITS). Typing more settles on the limit when the field is left.
 const PLAN_MAX_SETS = 50
 const PLAN_MAX_REPS = 1000
-function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
+function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle, autosave }) {
   // Shown and typed in the exercise's own weight unit when it has one (#657, lib/ex-unit.js); the
   // config it opened with and the one it saves are in the profile's.
   const live = useStore(s => s.S)
@@ -2662,10 +2663,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       : next
   })
   // Back in the profile's unit, a number shown and left alone kept exactly as it was stored.
-  const saveAs = out => onSave(storedTarget(useStore.getState().S, ex.id, out, seedStored))
-  const save = () => {
+  const storedOf = out => storedTarget(useStore.getState().S, ex.id, out, seedStored)
+  // `saveAs` takes what saving builds: by default the sheet closes and saves it.
+  const save = (saveAs = out => { close(); onSave(storedOf(out)) }) => {
     if (progressionStepInvalid) return
-    close()
     const sets = Math.min(PLAN_MAX_SETS, Math.max(1, Math.round(c.sets) || (cardio ? 1 : 3)))
     // Only carry progression settings that differ from the inherited default, so a plan file
     // stays readable and "follow the routine" keeps meaning exactly that.
@@ -2779,6 +2780,32 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       saveAs(out)
     }
   }
+  // The live workout's sheet (#1079) saves however it closes, but only when what it builds differs
+  // from what it built as it opened: a look, or a change undone, keeps the rows. Compared before the
+  // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit. A unit switch
+  // in this sheet converts the loads, so those are compared per unit: the unit it opened in keeps
+  // its loads, and another unit gets its own from the first build there, if the loads were
+  // untouched until then, else they are compared as they are stored. Everything else is compared
+  // with the opening, whatever the unit.
+  const parts = out => { const loads = [], see = w => (loads.push(w), 1); return [JSON.stringify(mapTargetWeights(out, see, null, see)), JSON.stringify(loads)] }
+  const opened = useRef(null)
+  if (autosave && !opened.current) {
+    const o = opened.current = { unit: exUnitOf(live, ex.id), loads: {} }
+    save(out => { [o.rest, o.loads[o.unit]] = parts(out); o.stored = parts(storedOf(out))[1] })
+  }
+  if (autosave && opened.current.retake) {
+    const o = opened.current
+    o.retake = false
+    save(out => { o.loads[o.unit] ??= parts(out)[1] })
+  }
+  const keep = useRef(null)
+  keep.current = () => save(out => {
+    const o = opened.current, [rest, loads] = parts(out)
+    // No baseline in this unit (the loads were edited before the switch): compared as stored.
+    const same = o.loads[o.unit] != null ? loads === o.loads[o.unit] : parts(storedOf(out))[1] === o.stored
+    if (rest !== o.rest || !same) onSave(storedOf(out))
+  })
+  useEffect(() => () => { if (autosave) keep.current() }, [])
   return <>
     {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
       : <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
@@ -3167,7 +3194,14 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {/* What is typed above is held in the unit on screen; a switch converts it with the unit. */}
     {!cardio && <>
       <h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} onChange={(before, after) => setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))} />
+      <ExUnitRow ex={ex} onChange={(before, after) => {
+        if (autosave) {
+          const o = opened.current
+          save(out => { o.retake = parts(out)[1] === o.loads[o.unit] })
+          o.unit = exUnitOf(after, ex.id)
+        }
+        setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))
+      }} />
       <GymSplitRow ex={ex} />
     </>}
     {mode === 'reps' && <>
@@ -3184,7 +3218,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {/* What saving does, when it is neither of the two usual things: the routine editor's
         Replace (#110) seeds this sheet with the slot it replaces, and saving puts the exercise
         into that slot. */}
-    <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
+    <Button variant="primary" disabled={progressionStepInvalid} onClick={autosave ? close : () => save()}>{autosave ? t('Done') : saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
     {isCustomEx(ex) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
     {/* The routine editor's counterpart to a workout's Swap (#110): another exercise in this
         slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
@@ -3194,7 +3228,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
+// `opts.autosave`: the live workout's sheet, which keeps its changes however it closes (#1079).
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} autosave={!!opts.autosave} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan
