@@ -552,6 +552,7 @@ export function StatsIndex({ sections }) {
     setCur(v)
     quietUntil.current = Date.now() + 900
     const behavior = smooth ? 'smooth' : 'auto'
+    // Overview moved under More with the approved layout; every index item targets its real section.
     document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
     try {
       const base = (window.location.hash || '#/stats').split('?')[0]
@@ -559,7 +560,7 @@ export function StatsIndex({ sections }) {
     } catch { /* a sandboxed frame: the scroll is what matters */ }
   }
   useEffect(() => {
-    if (!asked || asked === 'overview' || !sections.some(x => x.value === asked)) return
+    if (!asked || !sections.some(x => x.value === asked)) return
     // Once now, and once more when the cards above have drawn their charts and grown: the first
     // jump alone landed a screen short. Not again if the reader has started scrolling by then.
     const frame = window.requestAnimationFrame(() => go(asked, false))
@@ -571,8 +572,6 @@ export function StatsIndex({ sections }) {
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(settle); window.removeEventListener('touchstart', mark); window.removeEventListener('wheel', mark) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const targets = [...document.querySelectorAll('[data-stats-sect]')]
-      .filter(el => sections.some(x => x.value === el.dataset.statsSect))
     let raf = 0
     const spy = () => {
       raf = 0
@@ -584,11 +583,12 @@ export function StatsIndex({ sections }) {
       const bar = document.querySelector('.stats-index')
       const line = (bar ? bar.getBoundingClientRect().bottom : 0) + 24
       let on = 'overview'
-      for (const el of targets) {
-        if (el.getBoundingClientRect().top <= line) on = el.dataset.statsSect
-      }
+      // Display order (Overview, Body, Lifts, Effort) is not document order after Lifts moved
+      // above More. The last preceding section in the document is the one being read.
+      const targets = [...document.querySelectorAll('[data-stats-sect]')].filter(el => sections.some(x => x.value === el.dataset.statsSect))
+      for (const el of targets) if (el.getBoundingClientRect().top <= line) on = el.dataset.statsSect
       // the last part may be too short to reach the line: at the very bottom it is the one read
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) on = targets.at(-1)?.dataset.statsSect || on
+      if (targets.length && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) on = targets[targets.length - 1].dataset.statsSect
       setCur(c => (c === on ? c : on))
     }
     const onScroll = () => { if (!raf) raf = window.requestAnimationFrame(spy) }
@@ -611,12 +611,14 @@ export default function Stats() {
   // opens on Planned and scrolls into view. The router is a HashRouter, so the query sits in the
   // hash; the scroll waits a frame for the page's own scroll-to-top on navigation to happen first.
   const [planFocus] = useState(() => /[?&]focus=weekly-volume\b/.test(typeof window === 'undefined' ? '' : window.location.hash || ''))
+  // Home's logged-week summary and Plan's planned-volume row share a card, not a mode.
+  const [muscleFocus] = useState(() => /[?&]focus=weekly-muscle\b/.test(typeof window === 'undefined' ? '' : window.location.hash || ''))
   const [sectionFocus] = useState(() => /[?&]section=(?:overview|body|effort)\b/.test(typeof window === 'undefined' ? '' : window.location.hash || ''))
   // Keep advanced analytics open across the lazy-shell remount that can follow a sheet. Deep
   // links into a folded section force it open so their target is visible and scrollable.
-  const moreOpen = useUI(s => !!s.statsMoreOpen) || planFocus || sectionFocus
+  const moreOpen = useUI(s => !!s.statsMoreOpen) || planFocus || muscleFocus || sectionFocus
   useEffect(() => {
-    if (!planFocus) return
+    if (!planFocus && !muscleFocus) return
     const frame = window.requestAnimationFrame(() => document.getElementById('weekly-volume')?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }))
     return () => window.cancelAnimationFrame(frame)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
