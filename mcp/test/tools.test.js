@@ -165,6 +165,56 @@ describe('get_routine', () => {
     expect(JSON.parse(JSON.stringify(r)).exercises[1]).not.toHaveProperty('rest_sec')
   })
 
+  test('groups the routine into blocks, each with the name it was given', () => {
+    // A warm-up written as a circuit (every member carries the same `sgCircuit`, lib/circuit.js)
+    // and named on its members (`sgName`, lib/superset-meta.js), a plain superset with no name,
+    // and a named superset that runs as set rows.
+    const circuit = { mode: 'circuit', rounds: 2, gap: 5 }
+    S.routines[0].ex = [
+      { id: '1368', sg: 'sg-w', mode: 'time', sets: 2, sec: 35, restSec: 15, sgCircuit: circuit, sgName: 'Warm-up', sgRest: 15 },
+      { id: '1460', sg: 'sg-w', mode: 'time', sets: 2, sec: 45, restSec: 15, sgCircuit: circuit, sgName: 'Warm-up', sgRest: 15 },
+      { id: '0042', mode: 'reps', sets: 3, reps: 6, weight: 60, restSec: 90 },
+      { id: '0289', sg: 'sg-m1', mode: 'reps', sets: 3, reps: 10, weight: 25, restSec: 60 },
+      { id: '0652', sg: 'sg-m1', mode: 'reps', sets: 3, reps: 8, restSec: 60 },
+      { id: '1512', sg: 'sg-c', mode: 'time', sets: 2, sec: 35, restSec: 10, sgName: 'Cool-down' },
+      { id: '1424', sg: 'sg-c', mode: 'time', sets: 1, sec: 35, restSec: 10, sgName: 'Cool-down' },
+    ]
+    const r = call('get_routine', { routine_id: S.routines[0].id })
+    expect(r.blocks).toEqual([
+      { position: 1, name: 'Warm-up', view: 'circuit', circuit: { mode: 'circuit', rounds: 2 }, superset_group: 'sg-w', rounds: 2, exercise_positions: [1, 2] },
+      { position: 2, name: null, view: 'sets', superset_group: null, rounds: 3, exercise_positions: [3] },
+      { position: 3, name: null, view: 'sets', superset_group: 'sg-m1', rounds: 3, exercise_positions: [4, 5] },
+      { position: 4, name: 'Cool-down', view: 'sets', superset_group: 'sg-c', rounds: 2, exercise_positions: [6, 7] },
+    ])
+    // ... and each exercise says which block it is in, so a flat read still answers the question.
+    expect(r.exercises.map(e => [e.block_position, e.block_name]))
+      .toEqual([[1, 'Warm-up'], [1, 'Warm-up'], [2, null], [3, null], [3, null], [4, 'Cool-down'], [4, 'Cool-down']])
+  })
+
+  test('a lone exercise is no group: a name it still carries is not a block name', () => {
+    S.routines[0].ex = [
+      { id: '0042', sg: 'sg-gone', mode: 'reps', sets: 3, reps: 6, sgName: 'Left over' },
+      { id: '0289', mode: 'reps', sets: 3, reps: 10 },
+    ]
+    const blocks = call('get_routine', { routine_id: S.routines[0].id }).blocks
+    expect(blocks.map(b => b.name)).toEqual([null, null])
+  })
+
+  test('a block on the clock says its mode, with rounds only where the mode has them', () => {
+    S.routines[0].ex = [
+      { id: '1368', sg: 'sg-a', mode: 'time', sets: 1, sec: 35, sgCircuit: { mode: 'amrap', cap: 600 } },
+      { id: '1460', sg: 'sg-a', mode: 'time', sets: 1, sec: 45, sgCircuit: { mode: 'amrap', cap: 600 } },
+      { id: '0042', sg: 'sg-b', mode: 'reps', sets: 8, reps: 6, sgCircuit: { mode: 'intervals', work: 20, rest: 10, rounds: 8 } },
+      { id: '0289', mode: 'reps', sets: 3, reps: 10 },
+    ]
+    const blocks = call('get_routine', { routine_id: S.routines[0].id }).blocks
+    expect(blocks.map(b => [b.view, b.circuit ?? null, b.name])).toEqual([
+      ['circuit', { mode: 'amrap', rounds: null }, null],
+      ['circuit', { mode: 'intervals', rounds: 8 }, null],
+      ['sets', null, null],
+    ])
+  })
+
   test('projects routine and exercise progression rules from prog', () => {
     S.routines[0].prog = 'greyskull'
     S.routines[0].ex[0].prog = 'double'
@@ -358,6 +408,30 @@ describe('get_week_plan — coach week and pins', () => {
     expect(r.coach_week.sessions.map(x => x.state)).toEqual(['done', 'next', 'later'])
     expect(r.today_routine_name).toBe('Pull Day')
     expect(r.days[0].planned_by).toBe('coach')
+  })
+
+  test('an in-app rotation pass is named as one, even with no stored label', () => {
+    // The app renders the word "Rotation" at display time and stores label: '', so `label` alone
+    // no longer says whose week this is. A pass the app manages refills itself when it completes
+    // (rotation.js: queue.rotationId === rotation.id); a planner's week does not.
+    coachWeek({ label: '', rotationId: 'rot-abc' })
+    S.rotation = { id: 'rot-abc', sequence: [rid('Push Day'), rid('Pull Day'), rid('Leg Day')], label: 'My Rotation' }
+    _seedStateForTests(S)
+    const rot = call('get_week_plan').coach_week
+    expect(rot.label).toBe('')            // unchanged: whatever the app stored
+    expect(rot.kind).toBe('rotation')
+    expect(rot.managed).toBe(true)
+    expect(rot.sessions.map(x => x.state)).toEqual(['next', 'later', 'later'])
+    // a planner's queue carries no rotationId...
+    coachWeek()
+    S.rotation = null
+    _seedStateForTests(S)
+    expect(call('get_week_plan').coach_week).toMatchObject({ label: 'W1', kind: 'coach', managed: false })
+    // ...and neither does one whose rotationId no longer names the saved rotation
+    coachWeek({ rotationId: 'rot-gone' })
+    S.rotation = { id: 'rot-abc', sequence: [], label: 'My Rotation' }
+    _seedStateForTests(S)
+    expect(call('get_week_plan').coach_week).toMatchObject({ kind: 'coach', managed: false })
   })
 
   test('a session pinned to a date sits there, is skipped today, and the pin is fulfilled once done', () => {
@@ -1059,6 +1133,83 @@ describe('preview_session', () => {
     expect(e.planned.summary).toBe('3–5 × 8–12 · 50 kg')
   })
 
+  test('a block counts the work sets the session opens with, not the routine\'s stored sets', () => {
+    // Triple progression adds a set once every set reached the top of the range, up to setsMax:
+    // the session opens with 4 sets while the routine still stores 3. The block says 4, as
+    // opening_sets does; the ramp's warm-up rows are not rounds.
+    const cfg = { id: '0025', sets: 3, setsMax: 5, reps: 12, repsMin: 8, weight: 50, warmupSets: 2 }
+    only(cfg, {
+      prog: 'triple',
+      workouts: [{
+        id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
+        entries: [{ id: '0025', target: { ...cfg }, sets: [12, 12, 12].map(r => ({ w: 50, r, done: true })) }],
+      }],
+    })
+    const r = call('preview_session')
+    const work = r.exercises[0].opening_sets.filter(s => s.phase === 'work')
+    expect(work).toHaveLength(4)
+    expect(r.exercises[0].opening_sets.some(s => s.phase === 'warmup')).toBe(true)
+    expect(r.blocks[0].rounds).toBe(4)
+    // get_routine describes the stored plan
+    expect(call('get_routine', { routine_id: 'r-preview' }).blocks[0].rounds).toBe(3)
+  })
+
+  test('a per-side timed hold is one round, though it opens as a left row and a right row', () => {
+    S.routines = [{ id: 'r-preview', name: 'Preview', emoji: 'barbell', prog: 'off', ex: [
+      { id: '3544', sg: 'sg-c', mode: 'time', sets: 1, sec: 30, restSec: 10, side: true, sgName: 'Cool-down' },
+      { id: '1424', sg: 'sg-c', mode: 'time', sets: 1, sec: 35, restSec: 10, sgName: 'Cool-down' },
+    ] }]
+    S.week = { [WD]: 'r-preview' }
+    S.dayPlan = {}
+    _seedStateForTests(S)
+    const r = call('preview_session')
+    expect(r.exercises[0].opening_sets).toHaveLength(2)
+    expect(r.blocks).toEqual([{ position: 1, name: 'Cool-down', view: 'sets', superset_group: 'sg-c', rounds: 1, exercise_positions: [1, 2] }])
+  })
+
+  test('says which block each exercise is in, and groups the session into blocks', () => {
+    // preview_session is the tool to call before telling someone what they are about to lift,
+    // and it used to be the one place a coach session read as a flat list: no superset id, no
+    // blocks. An agent could not tell the warm-up from the training.
+    S.routines = [{ id: 'r-preview', name: 'Preview', emoji: 'barbell', prog: 'off', ex: [
+      { id: '1368', sg: 'sg-warmup', mode: 'time', sets: 2, sec: 35, restSec: 15, sgName: 'Warm-up' },
+      { id: '1460', sg: 'sg-warmup', mode: 'time', sets: 2, sec: 45, restSec: 15, sgName: 'Warm-up' },
+      { id: '0025', sets: 3, reps: 8, weight: 50, restSec: 90 },
+    ] }]
+    S.week = { [WD]: 'r-preview' }
+    S.dayPlan = {}
+    _seedStateForTests(S)
+
+    const r = call('preview_session')
+    expect(r.blocks).toEqual([
+      { position: 1, name: 'Warm-up', view: 'sets', superset_group: 'sg-warmup', rounds: 2, exercise_positions: [1, 2] },
+      { position: 2, name: null, view: 'sets', superset_group: null, rounds: 3, exercise_positions: [3] },
+    ])
+    expect(r.exercises.map(e => [e.superset_group, e.block_position, e.block_name])).toEqual([
+      ['sg-warmup', 1, 'Warm-up'], ['sg-warmup', 1, 'Warm-up'], [null, 2, null],
+    ])
+  })
+
+  // A per-side timed hold opens as a left row and a right row, each the whole hold (history.js
+  // buildSets). Without the side on each row, an agent read one set of a 30 s side stretch as two
+  // identical 30 s sets and could not say which side was which.
+  test('a per-side timed hold opens as a left and a right set, and says which is which', () => {
+    S.routines = [{ id: 'r-preview', name: 'Preview', emoji: 'barbell', prog: 'off', ex: [
+      { id: '0025', sets: 3, reps: 8, weight: 50, restSec: 90 },
+      { id: '3544', sg: 'sg-cooldown', mode: 'time', sets: 1, sec: 30, restSec: 10, side: true },
+      { id: '1424', sg: 'sg-cooldown', mode: 'time', sets: 1, sec: 35, restSec: 10 },
+    ] }]
+    S.week = { [WD]: 'r-preview' }
+    S.dayPlan = {}
+    _seedStateForTests(S)
+
+    const [bench, stretch, plain] = call('preview_session').exercises
+    expect(stretch.opening_sets.map(s => [s.phase, s.sec, s.side])).toEqual([['work', 30, 'L'], ['work', 30, 'R']])
+    // Only a row with a side says one: the field is not there at all on any other.
+    expect(plain.opening_sets.map(s => 'side' in s)).toEqual([false])
+    expect(bench.opening_sets.some(s => 'side' in s)).toBe(false)
+  })
+
   test('defaults to the routine scheduled for today', () => {
     only({ id: '0025', sets: 3, reps: 8, weight: 50 })
     const r = call('preview_session')
@@ -1482,5 +1633,115 @@ describe('search_exercises (sub-connect-146)', () => {
     expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'view' })).toBe(true)
     expect(toolAllowed('search_exercises', { workouts: 'view', plans: 'off' })).toBe(true)
     expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'off', bodyweight: 'view' })).toBe(false)
+  })
+})
+
+/* ---------- notes (2026-09-23) ---------- */
+
+// Nothing the athlete wrote reached these tools before: an assistant reading the log saw a weight and
+// not the note explaining how it was counted. The words come through whole now — the app caps a
+// note at 2000 characters and the tools never cut one.
+describe('notes', () => {
+  const LONG = 'x'.repeat(480) + ' end'   // 484 characters: longer than any clip, within the app's cap
+  const seed = () => {
+    const exId = S.routines[0].ex[0].id
+    const other = S.routines[0].ex[1].id
+    S.workouts.push({
+      id: 'w-noted', d: '2026-07-26', routineId: S.routines[0].id, name: 'Noted',
+      start: 1000, end: 1000 + 30 * 60000, vol: 0, prs: [],
+      note: LONG,
+      entries: [
+        { id: exId, target: { mode: 'reps', sets: 1 }, note: 'go a notch narrower', notePin: true, sets: [{ w: 60, r: 5, done: true }] },
+        { id: other, target: { mode: 'reps', sets: 1 }, note: '  ', sets: [{ w: 20, r: 10, done: true }] }
+      ]
+    })
+    S.exNotes = { [exId]: 'seat height 4' }
+    _seedStateForTests(S)
+    return { exId, other }
+  }
+
+  test('get_workout carries the session note whole and each exercise note with its pin', () => {
+    const { exId, other } = seed()
+    const w = call('get_workout', { workout_id: 'w-noted' })
+    expect(w.note).toBe(LONG)
+    expect(w.note.length).toBe(484)
+    const e = w.entries.find(x => x.id === exId)
+    expect(e.note).toBe('go a notch narrower')
+    expect(e.note_pinned).toBe(true)
+    const o = w.entries.find(x => x.id === other)
+    expect(o.note).toBe(null)            // whitespace is no note
+    expect(o.note_pinned).toBe(false)
+  })
+
+  test('a workout without notes reads null / false / 0, never undefined', () => {
+    const list = call('list_workouts', {}).workouts   // the demo seed writes no notes
+    expect(list.length).toBeGreaterThan(0)
+    expect(list.every(w => w.note === null && w.exercise_notes === 0)).toBe(true)
+    const w = call('get_workout', { date: list[0].date })
+    expect(w.note).toBe(null)
+    expect(w.entries.length).toBeGreaterThan(0)
+    expect(w.entries.every(e => e.note === null && e.note_pinned === false)).toBe(true)
+  })
+
+  test('list_workouts shows the session note whole and counts the exercises that carry one', () => {
+    seed()
+    const row = call('list_workouts', {}).workouts.find(w => w.id === 'w-noted')
+    expect(row.note).toBe(LONG)
+    expect(row.exercise_notes).toBe(1)   // the blank one does not count
+  })
+
+  test('get_routine and preview_session show the pinned and standing notes the card shows', () => {
+    const { exId, other } = seed()
+    const views = [
+      call('get_routine', { routine_id: S.routines[0].id }),
+      call('preview_session', { routine_id: S.routines[0].id })
+    ]
+    for (const view of views) {
+      const e = view.exercises.find(x => x.id === exId)
+      expect(e.pinned_note).toEqual({ text: 'go a notch narrower', date: '2026-07-26' })
+      expect(e.standing_note).toBe('seat height 4')
+      const o = view.exercises.find(x => x.id === other)
+      expect(o.pinned_note).toBe(null)
+      expect(o.standing_note).toBe(null)
+    }
+  })
+
+  test('the plan\'s own instruction (the routine\'s cfg.note) is the third note the card shows', () => {
+    const { exId } = seed()
+    S.routines[0].ex[0].note = 'Set 1: left side · Set 2: right side'
+    _seedStateForTests(S)
+    for (const view of [call('get_routine', { routine_id: S.routines[0].id }), call('preview_session', { routine_id: S.routines[0].id })]) {
+      expect(view.exercises.find(x => x.id === exId).plan_note).toBe('Set 1: left side · Set 2: right side')
+      expect(view.exercises.find(x => x.id !== exId).plan_note).toBe(null)
+    }
+  })
+
+  test('notes come back trimmed, and a non-string note (a document edited outside the app) is null, not a crash', () => {
+    const { exId, other } = seed()
+    const w = S.workouts.at(-1)
+    w.note = '  padded  '
+    w.entries[0].note = 42                     // still pinned: a pin on no note is no pin
+    w.entries[1].note = { text: 'object' }
+    S.exNotes = { [exId]: { bad: true }, [other]: '  seat 4  ' }
+    S.routines[0].ex[0].note = 7
+    _seedStateForTests(S)
+    const got = call('get_workout', { workout_id: 'w-noted' })
+    expect(got.note).toBe('padded')
+    expect(got.entries.find(x => x.id === exId)).toMatchObject({ note: null, note_pinned: false })
+    expect(got.entries.find(x => x.id === other).note).toBe(null)
+    expect(call('list_workouts', {}).workouts.find(x => x.id === 'w-noted')).toMatchObject({ note: 'padded', exercise_notes: 0 })
+    for (const view of [call('get_routine', { routine_id: S.routines[0].id }), call('preview_session', { routine_id: S.routines[0].id })]) {
+      expect(view.exercises.find(x => x.id === exId)).toMatchObject({ plan_note: null, pinned_note: null, standing_note: null })
+      expect(view.exercises.find(x => x.id === other).standing_note).toBe('seat 4')
+    }
+  })
+
+  test('an exercise note that was not pinned stays in that day\'s history and off the card', () => {
+    const { exId } = seed()
+    S.workouts.at(-1).entries[0].notePin = false
+    _seedStateForTests(S)
+    expect(call('get_workout', { workout_id: 'w-noted' }).entries.find(x => x.id === exId).note_pinned).toBe(false)
+    expect(call('get_routine', { routine_id: S.routines[0].id }).exercises.find(x => x.id === exId).pinned_note).toBe(null)
+    expect(call('preview_session', { routine_id: S.routines[0].id }).exercises.find(x => x.id === exId).pinned_note).toBe(null)
   })
 })

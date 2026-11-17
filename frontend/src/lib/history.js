@@ -530,14 +530,18 @@ export function pinnedNoteFor(S, exId) {
     const w = workouts[i]
     if (editing != null && (w.id != null ? w.id : `${w.d}|${w.start}`) === editing) continue
     const en = (w.entries || []).find(e => e.id === exId)
-    const note = (en?.note || '').trim()
+    // A note is text the app wrote; a document edited elsewhere can carry anything there.
+    const note = typeof en?.note === 'string' ? en.note.trim() : ''
     if (note && en.notePin) return { note, d: workouts[i].d }
   }
   return null
 }
 
 /** The standing note for an exercise — the one that is true every session. */
-export const exNoteFor = (S, exId) => ((S?.exNotes || {})[exId] || '').trim() || null
+export const exNoteFor = (S, exId) => {
+  const v = (S?.exNotes || {})[exId]
+  return (typeof v === 'string' && v.trim()) || null
+}
 
 // A freestyle exercise starts with the last target the user actually trained, rather than the
 // generic config sheet defaults used when there is no history. The set rows themselves are still

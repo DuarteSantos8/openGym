@@ -10,8 +10,11 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
+  modeOf, workoutVolume, setsDone, setUnitsTotal, supersetUnits, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt,
+  pinnedNoteFor, exNoteFor
 } from '../../frontend/src/lib/history.js'
+import { circuitOf } from '../../frontend/src/lib/circuit.js'
+import { supersetMeta } from '../../frontend/src/lib/superset-meta.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
 import { exOr, registerCustom, allExercises, searchScore, CATEGORIES } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow, isFailureSet } from '../../frontend/src/lib/workout-model.js'
@@ -57,6 +60,65 @@ export function withCustomsIndexed(S, build) {
   try { return build() } finally { registerCustom([]) }
 }
 
+// A note as the athlete wrote it, trimmed, or null. The app trims and caps every note it writes
+// (NOTE_MAX in frontend/src/lib/history.js) and never writes anything but a string; a document
+// edited outside the app can carry a number or an object there, which is no note. Nothing is
+// cut here — the tool reports, it does not edit.
+const noteText = s => (typeof s === 'string' && s.trim()) || null
+
+// The three notes the exercise card shows before a set is logged (ExerciseBlock.jsx): the
+// plan's own instruction written into the routine (`cfg.note`, e.g. "set 1 left, set 2 right" on
+// a one-sided hold), the standing note that is true every session,
+// and the newest note the athlete pinned to "show this next time" — however old, until a newer
+// pin replaces it — with the date it was written. Read the way the screen reads them
+// (pinnedNoteFor, exNoteFor), so this and the card cannot disagree.
+function exerciseNotes(S, cfg) {
+  const p = pinnedNoteFor(S, cfg.id)
+  return {
+    plan_note: noteText(cfg.note),
+    pinned_note: p ? { text: p.note, date: p.d } : null,
+    standing_note: exNoteFor(S, cfg.id)
+  }
+}
+
+// How the workout screen groups a routine: consecutive exercises sharing a superset id are one
+// unit, done in rounds. A group carries the name the athlete or a planner gave it (`sgName`,
+// lib/superset-meta.js, e.g. "Warm-up"), read the way the screen reads it. A group carrying the
+// circuit settings (`sgCircuit` on its members, lib/circuit.js circuitOf, the same reading the
+// screen makes) runs full-screen in the circuit player; everything else gets set rows.
+//
+// It is here because neither tool could say any of it: list_routines counted superset groups,
+// get_routine named each exercise's group one exercise at a time, and preview_session — the tool
+// to call before telling someone what they are about to lift — did not mention supersets at all.
+// A planned session read back as 21 flat exercises, with nothing to tell the 13 that are warm-up
+// and cool-down from the 8 that are the training.
+// `workSets` (optional): how many work sets each exercise opens with, by index. preview_session
+// passes the session's own count, which a progression can raise above the routine's stored `sets`
+// (triple progression adds sets up to `setsMax`); get_routine reads the stored plan.
+function blockList(items, workSets = null) {
+  const list = items || []
+  const units = supersetUnits(list)
+  return units.map((u, i) => {
+    const sg = list[u[0]].sg || null
+    const circuit = circuitOf(list, u)
+    // A lone exercise is no group, so it has no group name even if it still carries one.
+    const name = u.length > 1 || circuit ? supersetMeta(list, u).name || null : null
+    return {
+      position: i + 1,
+      name,
+      view: circuit ? 'circuit' : 'sets',
+      // Its mode, and its rounds where the mode has any (an AMRAP runs to a time cap, an EMOM
+      // counts intervals): null.
+      ...(circuit ? { circuit: { mode: circuit.mode, rounds: circuit.rounds ?? null } } : {}),
+      superset_group: u.length > 1 ? sg : null,
+      rounds: u.reduce((n, x) => Math.max(n, (workSets ? workSets[x] : list[x].sets) || 1), 0),
+      exercise_positions: u.map(x => x + 1)
+    }
+  })
+}
+// Which block an exercise belongs to, by its position in the list the blocks were read from.
+const blockAt = (blocks, position) => blocks.find(b => b.exercise_positions.includes(position)) || null
+
 export function entryView(e, S, speedUnit = speedUnitOf(S)) {
   const ex = exerciseOf(e.id, S)
   // Spread id into the cfg the way every call site in the app does (Workout.jsx, Stats.jsx,
@@ -70,6 +132,12 @@ export function entryView(e, S, speedUnit = speedUnitOf(S)) {
     body_part: ex.bp || null,
     mode,
     target: e.target || null,
+    // What the athlete wrote about this exercise in this session, whole. `note_pinned` is the
+    // "show this next time" flag: the app surfaces a pinned note on the exercise's card the
+    // next time it comes up. Nothing here was exposed before, so an assistant reading the log
+    // saw the numbers and none of the words that explain them.
+    note: noteText(e.note),
+    note_pinned: !!(noteText(e.note) && e.notePin),
     sets: (e.sets || []).map(s => ({
       done: !!s.done,
       // Cardio in the profile's speed unit (mph on an lb profile that never chose), as the app shows it.
@@ -150,13 +218,14 @@ export const listRoutines = {
 /** get_routine — the full exercise list for one routine, including set/rep targets. */
 export const getRoutine = {
   name: 'get_routine',
-  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
+  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). `blocks` groups the exercises the way the workout screen does — consecutive exercises sharing a superset id are one block, done in rounds — with the `name` the block was given (e.g. "Warm-up"), or null. A block set to run on the clock (a circuit, AMRAP, EMOM or intervals) says `view: "circuit"` with its `circuit` mode and rounds, and the screen runs it full-screen in its circuit player; every other block gets ordinary set rows (`view: "sets"`). Each exercise also carries the three notes its card shows: `plan_note` (the routine\'s own instruction for it), `standing_note` (the athlete\'s note that is true every session) and `pinned_note` (the newest session note the athlete flagged to show up again, however old, with its date). Use routine_id from list_routines.',
   schema: { routine_id: z.string().min(1) },
   handler: ({ routine_id }) => {
     const S = getState()
     if (!S) return noState()
     const r = (S.routines || []).find(x => x.id === routine_id)
     if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
+    const blocks = blockList(r.ex || [])
     return {
       id: r.id,
       name: r.name,
@@ -166,6 +235,7 @@ export const getRoutine = {
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
       revision: typeof S._rev === 'number' ? S._rev : null,
+      blocks,
       exercises: (r.ex || []).map((cfg, i) => {
         const ex = exerciseOf(cfg.id, S)
         const mode = modeOf(cfg)
@@ -197,6 +267,10 @@ export const getRoutine = {
           policy: policyFor(cfg, r, mode, profileRule(S)),
           policy_override: cfg.prog || null,
           superset_group: cfg.sg || null,
+          // Which of `blocks` this exercise is part of, and that block's name (null when it has none).
+          block_position: blockAt(blocks, i + 1)?.position ?? null,
+          block_name: blockAt(blocks, i + 1)?.name ?? null,
+          ...exerciseNotes(S, cfg),
           summary: exLine(cfg, S.unit || 'kg')
         }
       })
@@ -246,6 +320,13 @@ export const getWeekPlan = {
       today_routine_names: todayIds.map(nameOf),
       coach_week: view ? {
         label: view.label,
+        // Who owns this queue. A pass the app manages itself (S.queue.rotationId matching
+        // S.rotation.id — the rotation.js ownership rule) refills itself when it completes; a
+        // planner's week does not. It used to be readable from `label`, which said "Rotation",
+        // but that word is rendered at display time now and the stored label is '' — so without
+        // this the payload has nothing that says whose week it is.
+        kind: S.queue?.rotationId && S.queue.rotationId === S.rotation?.id ? 'rotation' : 'coach',
+        managed: !!(S.queue?.rotationId && S.queue.rotationId === S.rotation?.id),
         starts_on: view.startsOn,
         waiting: view.waiting,
         complete: view.complete,
@@ -276,7 +357,7 @@ export const getWeekPlan = {
 /** list_workouts — newest-first summary of recent sessions. */
 export const listWorkouts = {
   name: 'list_workouts',
-  description: 'List recent finished workouts, newest first. Each item summarises the date, exercise count, sets done / planned, total volume (in the user\'s unit), duration and whether PRs were set. Use this before drilling into a specific date with get_workout.',
+  description: 'List recent finished workouts, newest first. Each item summarises the date, exercise count, sets done / planned, total volume (in the user\'s unit), duration and whether PRs were set, plus the athlete\'s session note in full (`note`) and how many exercises carry a note of their own (`exercise_notes`). Use this before drilling into a specific date with get_workout.',
   schema: {
     from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD. Defaults to no lower bound (list most recent).'),
     to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.'),
@@ -324,7 +405,12 @@ export const listWorkouts = {
         prs: (w.prs || []).length,
         bodyweight_at_workout: w.bw || null,
         // The gym (equipment profile) it was done at, since 1.4.4; null before, or with no gyms.
-        gym: gymOf(w)
+        gym: gymOf(w),
+        // The session note rides along whole (the app caps a note at 2000 characters, so 25 rows
+        // are at most ~50 KB of notes), and exercise_notes says how many entries carry one, so
+        // the caller knows which sessions are worth a get_workout for the words.
+        note: noteText(w.note),
+        exercise_notes: (w.entries || []).filter(e => noteText(e.note)).length
       }))
     }
   }
@@ -336,7 +422,7 @@ const gymOf = w => (w && w.gym && typeof w.gym === 'object' && String(w.gym.name
 /** get_workout — full entry/set breakdown for one date. */
 export const getWorkout = {
   name: 'get_workout',
-  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), and form_videos: how many sets the user filmed (a count only; the videos are never shared). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
+  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), form_videos: how many sets the user filmed (a count only; the videos are never shared), and everything the athlete wrote: the session note (`note`, how the whole workout went), each exercise\'s own note for that session (`entries[].note`, with `note_pinned` when they flagged it to show up next time; `entries[].target.note` is the plan\'s instruction the session was started with, not the athlete\'s words) and a set\'s own note (`sets[].note`). Read the notes before judging the numbers — they say why a load was missed or how a weight was counted. Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
   schema: {
     date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
     workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
@@ -388,6 +474,8 @@ export const getWorkout = {
         const ex = exerciseOf(id, S)
         return ex.missing ? id : ex.n
       }),
+      // The session note: how the whole workout went, in the athlete's words, whole.
+      note: noteText(w.note),
       entries: (w.entries || []).map(e => entryView(e, S)),
       // The number of sets filmed that day (form videos), nothing about the videos themselves.
       ...(setVideoCount(w) ? { form_videos: setVideoCount(w) } : {})
@@ -578,7 +666,7 @@ const SOURCE_TEXT = {
 export const previewSession = {
   name: 'preview_session',
   description:
-    'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy progressed or deloaded from that routine\'s last logged session. The reps are the routine\'s own unless a policy that moves reps moved them, or the profile starts planned sessions from the last session (starts_from). Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
+    'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy progressed or deloaded from that routine\'s last logged session. The reps are the routine\'s own unless a policy that moves reps moved them, or the profile starts planned sessions from the last session (starts_from). Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows (a per-side timed hold is a left row and a right row, `side` "L" and "R"), where each number came from, and which block it belongs to. `blocks` groups the session the way the workout screen does — consecutive exercises sharing a superset id are one block done in rounds, with the `name` it was given (e.g. "Warm-up") or null — and `view: "circuit"` (with its `circuit` mode and rounds) marks a block the app runs on the clock in its circuit player. Use it to describe a session as blocks rather than as a flat list of exercises. Each exercise carries the three notes its card will show: `plan_note` (the routine\'s own instruction), `standing_note` (true every session) and `pinned_note` (the newest note the athlete flagged to show up again, however old, with its date). Defaults to today\'s scheduled routine.',
   schema: {
     routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
     date: isoDate().optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
@@ -603,6 +691,9 @@ export const previewSession = {
     // prescription, step, progression-off targets, deload routines and warm-up ramps all come from
     // there, so the preview cannot drift from what the screen shows.
     const built = withCustomsIndexed(S, () => buildSessionEntries(S, r))
+    // A block's rounds are the work sets its members open with: warm-up rows are not rounds, and a
+    // per-side timed hold's right row is the same set as its left (buildSets writes them as two).
+    const blocks = blockList(r.ex || [], built.map(b => (b.sets || []).filter(s => !isWarmupRow(s) && s.side !== 'R').length))
     const exercises = (r.ex || []).map((cfg, i) => {
       const ex = exerciseOf(cfg.id, S)
       const mode = modeOf({ ...cfg, id: cfg.id })
@@ -620,6 +711,16 @@ export const previewSession = {
         id: cfg.id,
         name: ex.n,
         mode,
+        // Supersets were missing here entirely, which made this tool — the one to call before
+        // telling someone what they are about to lift — the only place a session read as a
+        // flat list. See blockList.
+        superset_group: cfg.sg || null,
+        block_position: blockAt(blocks, i + 1)?.position ?? null,
+        block_name: blockAt(blocks, i + 1)?.name ?? null,
+        // The words the card shows beside these numbers: the plan's instruction, the standing
+        // note and the newest pinned note. An assistant naming a weight without them repeats
+        // what the athlete already told themselves to change.
+        ...exerciseNotes(S, cfg),
         policy: plan.policy,
         policy_name: policyName(plan.policy),
         planned: {
@@ -651,7 +752,10 @@ export const previewSession = {
           r: Number(s.r) || 0,
           sec: Number(s.sec) || 0,
           min: Number(s.min) || 0,
-          speed: Number(s.speed) || 0
+          speed: Number(s.speed) || 0,
+          // A per-side timed hold opens as a left row and a right row of the same length (history.js
+          // buildSets); without the tag the pair read as two identical sets.
+          ...(s.side === 'L' || s.side === 'R' ? { side: s.side } : {})
         })),
         weight_source: wSrc,
         weight_source_text: SOURCE_TEXT[wSrc],
@@ -685,6 +789,7 @@ export const previewSession = {
       starts_from: startsFromLast(S) ? 'last_session' : 'plan',
       policy: policyFor(null, r, 'reps', profileRule(S)),
       policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
+      blocks,
       exercises,
       // Surfaced separately so a coach reading this cannot miss it: these are the exercises
       // where what the routine stores and what the athlete will see are two different numbers.

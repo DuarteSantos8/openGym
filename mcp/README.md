@@ -73,11 +73,11 @@ Eleven read-only tools, and four that write:
 | Tool | What it answers |
 |---|---|
 | `list_routines` | What routines are saved in my profile? (names + exercise counts) |
-| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) |
-| `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
+| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise, plus the three notes each exercise's card shows: the plan's instruction, the standing note, the newest pinned note) |
+| `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? Includes the plan's instruction, the standing note and the newest pinned note each exercise card will show. |
 | `get_week_plan` | What's planned when: the next seven days with their routines and how each was decided (coach week, a pinned session, an override, the weekday plan), the current coach week when one is running, and the weekday table. |
-| `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
-| `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. `form_videos` says how many sets were filmed; the videos themselves never leave the app. A set with a note of its own (set menu → Note) carries it as `sets[].note`. |
+| `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs, the session note in full and how many exercises carry a note. |
+| `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date, with everything the athlete wrote: the session note and each exercise's note for that session (and whether they pinned it to show up next time). On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. `form_videos` says how many sets were filmed; the videos themselves never leave the app. A set with a note of its own (set menu → Note) carries it as `sets[].note`. |
 | `get_bodyweight` | Weigh-ins, one value per day (the profile's "Daily weigh-in value": morning, average or last), each day's readings with their times, the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
