@@ -8,6 +8,7 @@
 //
 // Imported only by sheets.jsx and views/Workout.jsx; imports session-start.js (which pulls in
 // history.js + progression.js). Nothing in that chain imports this file, so there is no cycle.
+import { isLive } from './routine-folders.js'
 import { buildSessionEntries } from './session-start.js'
 
 /**
@@ -24,7 +25,7 @@ export function buildCombinedEntries(st, routineIds) {
   const routines = [].concat(routineIds ?? [])
     .filter(id => id && !seen.has(id) && seen.add(id))
     .map(id => (st.routines || []).find(r => r.id === id))
-    .filter(Boolean)
+    .filter(isLive)
   const entries = routines.flatMap(r =>
     buildSessionEntries(st, r).map(e => ({ ...e, rid: r.id }))
   )

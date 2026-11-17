@@ -3,6 +3,7 @@ import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
 import { dismissesOnRelease, scrolledAboveTop } from '../lib/sheet-dismiss.js'
 import { trapTab, canTakeFocusBack } from '../lib/focus-trap.js'
+import { still } from '../lib/flip.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -44,6 +45,30 @@ const drainScrollRestore = close => {
   for (const fn of queue) {
     try { fn() } catch (e) { /* one caller must not keep the others waiting */ }
   }
+}
+
+// The state drops a closed sheet at once, so its exit is a visual copy: inert, in a fixed layer, sliding
+// down 220 ms (CSS .sheet-ghost) and gone on animationend (a timer backs it up). A sheet that is
+// replaced by another leaves without its dim, so there is one dim, not two. None under Reduce Motion.
+function exitGhost(node) {
+  if (!node?.isConnected || still()) return
+  const g = document.createElement('div')
+  g.className = 'sheet-ghost'
+  g.setAttribute('aria-hidden', 'true'); g.inert = true
+  const c = node.cloneNode(true)
+  // A clone starts scrolled to the top; read the pairs before the copy loses any element.
+  const was = [node, ...node.querySelectorAll('*')], copy = [c, ...c.querySelectorAll('*')]
+  const pairs = was.map((n, i) => [n, copy[i]]).filter(([n]) => n.scrollTop || n.scrollLeft)
+  c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'))
+  // Handed off to another sheet: its rows fade in 100 ms (CSS .is-handoff) while it slides, so two sheets' text is never readable together.
+  if (useUI.getState().sheets.length) { c.querySelector('.mback')?.remove(); g.classList.add('is-handoff') }
+  g.appendChild(c)
+  const done = () => g.remove()
+  g.addEventListener('animationend', e => { if (e.target.classList?.contains('sheet') && e.animationName !== 'dimout') done() })
+  setTimeout(done, 400)
+  document.body.appendChild(g)
+  for (const [n, k] of pairs) { k.scrollTop = n.scrollTop; k.scrollLeft = n.scrollLeft }
+  return g
 }
 
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
@@ -145,6 +170,13 @@ function Sheet({ sheet }) {
       if (canTakeFocusBack(opener)) { try { opener.focus({ preventScroll: true }) } catch (e) { /* gone */ } }
     }
   }, [])
+  const wrap = useRef(null)
+  const ghost = useRef(null)
+  useLayoutEffect(() => {
+    ghost.current?.remove(); ghost.current = null   // StrictMode (dev) re-runs effects on a sheet that stays: drop the copy cleanup just made
+    const node = wrap.current
+    return () => { if (sheet.kind === 'sheet') ghost.current = exitGhost(node) }
+  }, [])
   const dialog = { role: 'dialog', 'aria-modal': 'true', tabIndex: -1 }
 
   const close = () => closeSheet(sheet.id)
@@ -161,7 +193,7 @@ function Sheet({ sheet }) {
     )
   }
   return (
-    <div>
+    <div ref={wrap}>
       <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
       <div className="sheet" ref={el => { ref.current = el; box.current = el }} {...dialog} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>

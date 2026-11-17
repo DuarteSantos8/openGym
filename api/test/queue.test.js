@@ -346,3 +346,12 @@ test('queue: a crafted state of any shape is read in time linear in its size', (
   // a long weekday list against many routines
   assert.ok(within({ ...base, routines: ids(R).map(id => ({ id })), week: { 1: ids(R).map(i => i + 'x') } }, '2026-10-12') < 1000);
 });
+
+test('an archived routine is no reminder: override, weekday and queue skip it', () => {
+  const rs = [{ id: 'r1', name: 'Push' }, { id: 'r2', name: 'Pull', archived: true }];
+  const S = { ...base, routines: rs, week: { 1: 'r2' }, dayPlan: { '2026-09-10': 'r2' } };
+  assert.equal(effectiveRoutineId(S, '2026-09-07'), null);
+  assert.equal(effectiveRoutineId(S, '2026-09-10'), null);
+  const Q = { ...base, routines: rs, queue: { ids: ['r2', 'r1'], since: 1000, startsOn: '2026-09-07', label: 'W1' } };
+  assert.equal(effectiveRoutineId(Q, '2026-09-07'), 'r1');
+});

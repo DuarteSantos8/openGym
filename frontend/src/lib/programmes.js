@@ -29,6 +29,7 @@
 // "Your last session" would have opened with, and the reps are the routine's. An RPE target is
 // shown with it and leaves the weight to the policy. A deload week without a %1RM takes the policy's
 // weight down by the usual deload factor, and none of its sessions count for progression.
+import { isLive } from './routine-folders.js'
 import { isoOf, todayISO, uid, weekKey, MONDAY, SUNDAY } from './format.js'
 import { queueOf } from './queue.js'
 import { REST, saveRotation, startPass, stopPass, chooseFixedWeek } from './rotation.js'
@@ -124,7 +125,7 @@ export const programmeById = (S, id) => normalizeProgramme(isMap(S?.programmes) 
 
 /** The routine ids a programme schedules that still exist, each once, in schedule order. */
 export function programmeRoutineIds(S, p) {
-  const have = new Set((S?.routines || []).map(r => r.id))
+  const have = new Set((S?.routines || []).filter(isLive).map(r => r.id))
   const ids = p?.sequence ? p.sequence : Object.keys(p?.days || {}).sort().flatMap(d => p.days[d])
   return [...new Set(ids)].filter(id => id !== REST && have.has(id))
 }
@@ -220,7 +221,7 @@ const snapshot = s => ({
 })
 
 function applySchedule(s, p, today, now) {
-  const have = new Set((s.routines || []).map(r => r.id))
+  const have = new Set((s.routines || []).filter(isLive).map(r => r.id))
   if (p.sequence) {
     const seq = p.sequence.filter(id => id === REST || have.has(id))
     if (seq.some(id => id !== REST)) {

@@ -36,3 +36,16 @@ it('a page that slid in keeps no background or shadow once the slide is over', a
     expect(frames, name).not.toMatch(/box-shadow|background/)
   }
 })
+
+it('Plan into a folder pushes and back pops, like every pushed screen', () => {
+  expect(pageMotion('/plan', '/plan/folder/Block%202', 'PUSH')).toBe('push')
+  expect(pageMotion('/plan/folder/Block%202', '/plan', 'POP')).toBe('pop')
+})
+
+it('Reduce Motion: a pushed page fades in 120 ms linear, no slide (class and media query)', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { resolve } = await import('node:path')
+  const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+  expect(css).toMatch(/\.reduce-motion #app > \.page\.vpush,\.reduce-motion #app > \.page\.vpop\{animation:drag-fade var\(--dur-rm\) linear !important\}/)
+  expect(css).toMatch(/@media \(prefers-reduced-motion:reduce\)\{#app > \.page\.vpush,#app > \.page\.vpop\{animation:drag-fade/)
+})

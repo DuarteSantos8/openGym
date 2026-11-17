@@ -59,6 +59,8 @@
      so every accent-coloured word (Add set, Next, the progression line, links) takes a darker
      shade of the same hue that reaches 4.5:1 (design review 1.4.5). Fills keep --acc. */
   --acc-ink: var(--acc);
+  /* small red text (Delete): the dark red passes, the light theme takes a deeper one (5:1) */
+  --danger-ink: var(--red);
 
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
@@ -85,6 +87,14 @@
   /* motion */
   --ease:cubic-bezier(.32,.72,0,1);
   --fast:140ms; --med:220ms;
+  /* Routine motion (docs/dev/ROUTINE_FOLDERS.md, motion recommendation "Final token set"): --ease for
+     every arrival, travel and FLIP; --ease-exit for exits that move; the keyword ease-out for
+     opacity-only leaves; linear for Reduce Motion. No spring. */
+  --ease-exit:cubic-bezier(.4,0,1,1);
+  --dur-flip:260ms; --flip-delay:40ms;     /* list close-up (lib/flip.js) */
+  --dur-leave:100ms;                       /* a row or old toast leaving on opacity */
+  --dur-in:260ms; --dur-out:180ms; --dur-out-quick:120ms;   /* toast in, timed out, out on Undo */
+  --dur-rm:120ms;                          /* Reduce Motion: fades only */
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
@@ -133,6 +143,7 @@
   --sep:       rgba(60,60,67,.29);
   --sep-op:    rgba(60,60,67,.20);
 
+  --danger-ink:#c4251c;
   --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
   --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
   --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
@@ -162,14 +173,20 @@
    colour of the user's own gets its --acc-ink inline from lib/accent.js (inkIn), to the same 4.5:1
    in both themes (redesign 1.4.5, P12). */
 :root[data-theme="light"][data-accent="brand"] { --acc-ink:#4a7a0e }
-:root[data-theme="light"][data-accent="lime"]  { --acc-ink:#1a7f37 }
+:root[data-theme="light"][data-accent="lime"]  { --acc-ink:#167a33 }
 :root[data-theme="light"][data-accent="sky"]   { --acc-ink:#0062cc }
 :root[data-theme="light"][data-accent="orange"]{ --acc-ink:#a85200 }
 :root[data-theme="light"][data-accent="violet"]{ --acc-ink:#8944ab }
-:root[data-theme="light"][data-accent="pink"]  { --acc-ink:#d70036 }
-:root[data-theme="light"][data-accent="red"]   { --acc-ink:#d70015 }
+:root[data-theme="light"][data-accent="pink"]  { --acc-ink:#c8002f }
+:root[data-theme="light"][data-accent="red"]   { --acc-ink:#c70013 }
 :root[data-theme="light"][data-accent="teal"]  { --acc-ink:#0071a4 }
 :root[data-theme="light"][data-accent="gold"]  { --acc-ink:#8f5e00 }
+/* Dark: these four accents are under 4.5:1 as words on their own 16% tint (the current plan block,
+   tinted buttons); a lighter shade of the same hue. */
+:root:not([data-theme="light"])[data-accent="sky"]    { --acc-ink:#4da3ff }
+:root:not([data-theme="light"])[data-accent="violet"] { --acc-ink:#cf7bf5 }
+:root:not([data-theme="light"])[data-accent="pink"]   { --acc-ink:#ff6b87 }
+:root:not([data-theme="light"])[data-accent="red"]    { --acc-ink:#ff6165 }
 /* Label colour on a filled accent button is picked per accent by measured contrast,
    not by taste. Button text is 17px/600, so the AA bar is 3:1 (large text). White on
    the light-theme green is 2.22:1 and on teal 2.57:1 — both fail, and green is the
@@ -347,6 +364,9 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 @keyframes viewpush-rtl{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes viewpop-rtl{from{transform:translateX(28%);opacity:.7}to{transform:none;opacity:1}}
 #app:has(> .page.vpush),#app:has(> .page.vpop){overflow-x:clip}
+/* Reduce Motion: a pushed or popped page fades in 120 ms linear over the still page, no slide. */
+.reduce-motion #app > .page.vpush,.reduce-motion #app > .page.vpop{animation:drag-fade var(--dur-rm) linear !important}
+@media (prefers-reduced-motion:reduce){#app > .page.vpush,#app > .page.vpop{animation:drag-fade var(--dur-rm) linear !important}}
 /* The page an edge swipe back returns to (App.jsx Page `under`, lib/edge-swipe-back.js): laid
    out where #app lays out a page, fixed under the current one, at the scroll position it was
    left at (.page-in is moved up by it), hidden until the finger has committed to the swipe. */
@@ -413,6 +433,9 @@ button.conn:active{filter:brightness(1.12)}
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
 .hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+/* a header whose middle is a text field (the routine editor): every item on one centre line,
+   spaced by the gap alone */
+.hdr.hdr-mid{align-items:center}
 .hdr h1{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);overflow-wrap:break-word}
 /* the page title drops a step on phone widths (the Library's header leaves it the least room) */
 @media (max-width:420px){:root{--fs-large:1.875rem}}
@@ -443,6 +466,10 @@ button.conn:active{filter:brightness(1.12)}
 .iconbtn,.chip,.seg button,.helpbtn{position:relative}
 .iconbtn::before,.chip::before,.seg button::before,.helpbtn::before{content:'';position:absolute;inset:-6px}
 .seg button::before{inset:-6px 0}
+/* the routine tile is the button itself, the same 36 px as the round buttons beside it, so the
+   header's buttons share one size and one centre line */
+.iconbtn.look-btn{background:none;border-radius:10px}
+.iconbtn.look-btn .lrow-i{width:36px;height:36px;border-radius:10px;font-size:1.25rem}
 /* More of the same (tap-target probe, 1.4.5 UX round): the guest line's × was 26 px, the links
    under About 15 px tall, a small button 35, a switch 31. Each keeps its painted size and gets a
    target of about 44 px. Vertical only where a neighbour sits beside it. */
@@ -595,11 +622,12 @@ h4.sec{
   display:flex;align-items:center;justify-content:center;
   background:var(--tint,var(--acc));color:#fff;
 }
+/* a routine's coloured tile (tileStyle) brings its own ink; beats the weak accent and green rules below */
+.lrow-i[style*="--on-tint"]{color:var(--on-tint)}
 /* A tile on the accent itself (no tint of its own, or the accent passed as one) takes the text
-   colour made for the accent, and a green tile the one made for green: white on the brand's light
-   green was 1.5:1. :where() keeps these as weak as .lrow-i, so a class that paints its own tile
-   (.rec-i, .act-i, .rest) still wins. */
-:root{--on-green:#fff}
+   colour made for the accent, and a green tile the one made for green (--on-green, defined with
+   the routine tile ink below: white on green was 2.0:1). :where() keeps these as weak as .lrow-i,
+   so a class that paints its own tile (.rec-i, .act-i, .rest) still wins. */
 .lrow-i:where(:not([style]),[style*="var(--acc)"]){color:var(--on-acc)}
 .lrow-i:where([style*="var(--green)"]){color:var(--on-green)}
 /* The title column never shrinks below its own longest word. With a basis of 0 and min-width:0 it
@@ -785,9 +813,9 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,.plan-pill{-webkit-backdrop-filter:none;backdrop-filter:none}
   .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
-  .tr-bulk{background:var(--bg-el)}
+  .tr-bulk,.plan-pill{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
@@ -2087,7 +2115,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* --- menu sheet (the workout's "more" menus) --- */
 .menu-list .menu-item{min-height:52px;padding:8px 12px}
 .menu-list .menu-item .lrow-i{width:32px;height:32px;font-size:var(--fs-callout);background:var(--surface-2);color:var(--label)}
-.menu-list .menu-item.danger .tt,.menu-list .menu-item.danger .lrow-i{color:var(--red)}
+.menu-list .menu-item .lrow-i[style*="--on-tint"]{background:var(--tint);color:var(--on-tint)}
+.menu-list .menu-item.danger .tt,.menu-list .menu-item.danger .lrow-i{color:var(--danger-ink)}
+.menu-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:48px;margin-bottom:6px}
+.sheet .menu-head h3{margin:0;text-align:center;overflow-wrap:anywhere}
+.menu-head .plan-textbtn{justify-self:start;min-height:44px;display:inline-flex;align-items:center}
 .menu-list .menu-item.disabled{opacity:.4;pointer-events:none}
 .menu-on{color:transparent;font-size:var(--fs-callout);flex:none}
 .menu-on.is-on{color:var(--acc-ink)}
@@ -2338,6 +2370,14 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 :root[data-theme="light"] .sheet{background:var(--bg)}
 @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+/* A closed sheet leaves as an inert copy (Modals.jsx exitGhost): slides down 220 ms, the dim fades with it.
+   Under the live #modal-root (z 100), so a sheet that takes over rises over it. */
+.sheet-ghost{position:fixed;inset:0;z-index:99;pointer-events:none}
+.sheet-ghost .sheet{animation:sheetdown 220ms var(--ease-exit) forwards}
+.sheet-ghost .mback{animation:dimout 220ms linear forwards}
+.sheet-ghost.is-handoff .sheet{animation:sheetdown 220ms var(--ease-exit) forwards,dimout 100ms ease-out forwards}
+@keyframes sheetdown{to{transform:translateY(100%)}}
+@keyframes dimout{to{opacity:0}}
 .sheet .grab{width:36px;height:5px;border-radius:99px;background:var(--label-4);margin:6px auto 14px}
 .sheet h3{font-size:var(--fs-title3);font-weight:600;letter-spacing:-.021em;margin-bottom:14px}
 .picker-search{
@@ -2781,6 +2821,25 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --teal-ink:#0e7490;
   --blue-ink:#0058c4;
 }
+/* Routine tile ink (lib/routine-colors.js): the glyph colour on a routine's coloured tile. A glyph
+   is a graphic, so the bar is 3:1 (WCAG 1.4.11), measured per palette in routine-colors.test.js.
+   White wherever it reaches 3:1, black otherwise. Dark and light agree; the increased-contrast
+   palettes shift the tiles, so dark goes all black and light all white. */
+:root{
+  --on-blue:#fff; --on-indigo:#fff; --on-purple:#fff; --on-pink:#fff; --on-red:#fff; --on-brown:#fff; --on-grey:#fff;
+  --on-green:#000; --on-orange:#000; --on-yellow:#000; --on-teal:#000; --on-mint:#000;
+}
+:root[data-theme="light"]{--on-indigo:#fff}
+@media (prefers-contrast: more){
+  :root:not([data-theme="light"]){
+    --on-blue:#000; --on-indigo:#000; --on-purple:#000; --on-pink:#000; --on-red:#000; --on-brown:#000; --on-grey:#000;
+  }
+  /* the brand's lime stays #84cc16 here, which white cannot read on (more specific, so order is free) */
+  :root[data-theme="light"][data-accent="brand"]{--on-green:#0c0e12}
+  :root[data-theme="light"]{
+    --on-green:#fff; --on-orange:#fff; --on-yellow:#fff; --on-teal:#fff; --on-mint:#fff;
+  }
+}
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
 .flame-s1{stop-color:#ff4d1a} .flame-s2{stop-color:#ff8a1f} .flame-s3{stop-color:#ffc23d}
@@ -2969,7 +3028,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 
 /* --- toast --- */
 #toast{
-  position:fixed;left:50%;transform:translateX(-50%) translateY(6px);
+  position:fixed;left:50%;transform:translateX(-50%) translateY(8px);
   bottom:calc(96px + var(--sab));z-index:200;
   background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 88%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
@@ -2977,14 +3036,31 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
      wraps to four lines is a rounded box instead of a circle over the page. */
   border-radius:var(--r-xl);padding:11px 20px;font-size:var(--fs-subhead);font-weight:500;
   box-shadow:0 10px 30px -6px rgba(0,0,0,.5);
-  opacity:0;pointer-events:none;transition:opacity var(--med),transform var(--med) var(--ease);
+  /* Out (timed or ×): 180 ms on the exit curve, 8 px down; visibility drops at the end so a hidden
+     toast takes no focus and no screen reader. */
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity var(--dur-out) var(--ease-exit),transform var(--dur-out) var(--ease-exit),visibility 0s linear var(--dur-out);
   /* As wide as its text up to 88vw. Without a width, left:50% left it half the screen to wrap
      in, so a long message stood as a narrow column. */
   width:max-content;max-width:88vw;text-align:center;
 }
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);
+  transition:opacity var(--dur-in) var(--ease),transform var(--dur-in) var(--ease),visibility 0s}
+/* On an Undo tap: out of the way in 120 ms, so only the row coming back moves. */
+#toast.quick{transition-duration:var(--dur-out-quick),var(--dur-out-quick),0s;transition-delay:0s,0s,var(--dur-out-quick)}
+/* Replace: the old words fade on opacity alone (ease-out), the new ones rise in after 60 ms. */
+#toast .toast-ghost{position:absolute;inset:0;display:grid;place-items:center;padding:inherit;pointer-events:none;animation:toast-ghost var(--dur-leave) ease-out both}
+#toast .toast-msg.swap,#toast .toast-act.swap{animation:toast-swap var(--dur-in) var(--ease) 60ms both}
+@keyframes toast-ghost{to{opacity:0}}
+@keyframes toast-swap{from{opacity:0;transform:translateY(8px)}}
+/* Reduce Motion: no rise, no ghost (html.reduce-motion and the phone's setting, same rules). */
+.reduce-motion #toast,.reduce-motion #toast.show{transform:translateX(-50%)}
+.reduce-motion #toast .toast-ghost{display:none}
+.reduce-motion #toast .toast-msg.swap,.reduce-motion #toast .toast-act.swap{animation:none}
+@media (prefers-reduced-motion:reduce){#toast,#toast.show{transform:translateX(-50%)}#toast .toast-ghost{display:none}#toast .toast-msg.swap,#toast .toast-act.swap{animation:none}}
 /* With an action (Undo): the message, then the button at the end, and the toast takes taps. */
 #toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 6px;text-align:start}
+#toast.has-action:not(.show){pointer-events:none}   /* going out: never in the way of a tap */
 #toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
 #toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc-ink);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
 #toast .toast-act:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
@@ -2993,6 +3069,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 #toast .toast-x:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
 #toast .toast-x .icn{font-size:var(--fs-subhead)}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
+/* Plan: the toast sits above the pill, which does not move for it */
+body:has(.plan-pill:not(.is-away)) #toast{bottom:calc(158px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 
 /* --- back to top (components/ScrollTopButton.jsx) --- */
@@ -3477,7 +3555,17 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    to their own line instead and stay on the trailing edge. */
 .plan-sec-h>.plan-sec-acts{margin-inline-start:auto}
 .plan-sec-h h4.sec{margin:0}
-.plan-routines-bar{margin-top:0}
+.plan-routines-bar{margin:0 0 4px;padding:0 4px}
+.plan-edit{min-height:44px;display:inline-flex;align-items:center;font-weight:600}
+.plan-starred-bar{display:flex;align-items:baseline;justify-content:space-between;padding:0 4px 4px;margin-top:8px}
+.plan-starred-bar .ss{font-size:var(--fs-subhead);font-weight:600;color:var(--label-2)}
+.plan-starred-bar .plan-textbtn{font-size:var(--fs-subhead);font-weight:600;min-height:44px;display:inline-flex;align-items:center}
+.plan-fav-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:96px 24px 0}
+.plan-fav-i{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--surface-2);color:var(--label-2);font-size:1.5rem;margin-bottom:8px}
+.plan-fav-empty h3{font-size:var(--fs-body);font-weight:600;margin:0}
+.plan-fav-empty p{max-width:28ch;font-size:var(--fs-subhead);color:var(--label-2);margin:0 0 6px}
+.plan-fav-empty .plan-textbtn{font-size:var(--fs-body);min-height:44px;display:inline-flex;align-items:center}
+.plan-routes.is-starred .fav-star{display:none}
 .plan-textbtn{color:var(--acc-ink);font-size:var(--fs-callout);padding:6px 4px;position:relative}
 .plan-textbtn::before{content:'';position:absolute;inset:-6px}
 .plan .sect-f{margin:0 0 4px}
@@ -4198,16 +4286,177 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cardio-week .cardio-goal-row .pbar{grid-column:1/-1;height:5px;margin:0}
 .cardio-goal-row.met .cg-num{color:var(--win-ink)}
 
-/* Plan: routines in folders (1.4.5, Q11). The folder is a quiet header that folds its routines
-   away; the chevron turns with it. */
-.plan-folder{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;color:var(--label-2);text-align:start;font-size:var(--fs-subhead);font-weight:600}
-.plan-folder .icn{flex:none}
-.plan-folder .grow{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--label)}
-.plan-folder .n{font-weight:400;font-variant-numeric:tabular-nums}
-.plan-folder .chev{transition:transform var(--fast) var(--ease)}
-.plan-folder[aria-expanded="true"] .chev{transform:rotate(90deg)}
-[dir="rtl"] .plan-folder[aria-expanded="false"] .chev{transform:rotate(180deg)}
-@media (prefers-reduced-motion:reduce){.plan-folder .chev{transition:none}}
+/* Plan → Routines, direction C (docs/dev/ROUTINE_FOLDERS.md): groups are one card with hairlines
+   between rows; folders stay grey; a folder's name wraps and is never cut. */
+.plan-routes{padding-bottom:calc(104px + var(--sab))}
+.plan-routes.is-editing{padding-bottom:calc(106px + var(--sab))} /* the edit bar (~82px) covers the tab bar and the Start button */
+.plan-group{gap:0;margin-bottom:12px;background:var(--surface);border-radius:var(--r-card);overflow:hidden}
+.plan-group>*+*{border-top:var(--hair) solid var(--sep)}
+.plan-group .item{min-height:50px;border-radius:0;background:none}
+.plan-group .swrow.swrow-item{border-radius:0}
+.plan-hdr{margin:24px 4px 8px;padding-inline:4px;font-size:var(--fs-subhead);font-weight:600;letter-spacing:normal;text-transform:none;color:var(--label-2)}
+.plan-group.plan-archive{margin-top:24px}
+/* the Archive screen's folder headers */
+.plan-folder-bar{display:flex;align-items:center}
+.plan-folder-bar .plan-folder{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:14px 4px 8px;color:var(--label-2);font-size:var(--fs-subhead);font-weight:600;cursor:default}
+.plan-folder-bar .plan-folder .grow{min-width:0;overflow-wrap:anywhere;color:var(--label)}
+.plan-folder-bar .plan-folder .n{font-weight:400;font-variant-numeric:tabular-nums}
+.plan-folder{cursor:pointer}
+.plan-folder.is-edit{cursor:default}
+.plan-folder .tt{overflow-wrap:anywhere}
+.plan-folder .chev{flex:none;color:var(--label-3)}
+[dir="rtl"] .plan-folder .chev{transform:scaleX(-1)}
+.plan-ftile{background:var(--surface-3);color:var(--label-2)}
+.plan-group .plan-current{background:var(--acc-soft)}
+.plan-current .tt{font-weight:600}
+.plan-current .plan-pin{border-radius:50%}
+.plan-routine .bodymap.bm-mini .bm-v{height:36px}
+:root:not([data-theme="light"]) .plan-routine .bodymap.bm-mini .bm-v path{fill-opacity:1}
+.plan-routine .bodymap.bm-mini .bm-ph{height:36px;width:34px}
+.plan-current .ss{color:var(--label-2)}
+.plan-current .ss b{color:var(--acc-ink);font-weight:600}
+/* Long-press drag (lib/use-long-press-drag.js). Lifted row: scale, shadow, a degree of tilt, transform
+   only; its old slot stays as a dashed outline. A drop target fills with the accent and rings in two
+   lines (neutral inside, accent outside), so it reads on any tile colour. Reduce Motion: outline only. */
+.drag-row{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.drag-row.is-lifted{z-index:5}
+.drag-row.is-lifted::before{content:attr(data-name);position:absolute;inset:4px 8px;display:flex;align-items:center;justify-content:center;border:2px dashed var(--label-3);border-radius:10px;color:var(--label-2);font-size:var(--fs-footnote);transform:translateY(var(--slot,0px));transition:transform var(--fast) var(--ease)}
+.plan-routes.is-dragging .drag-row:not(.is-lifted) .drag-in{transition:transform var(--fast) var(--ease)}
+/* Press cue at 120 ms of the hold (scale .985, 140), then the lift (220): scale, tilt and a separate
+   shadow layer fading in; scale and rotate are their own properties so the ride (transform) never lags. */
+.drag-row .drag-in{transition:scale var(--fast) var(--ease)}
+.drag-row[data-cue] .drag-in{scale:.985}
+.drag-row.is-lifted .drag-in{position:relative;isolation:isolate;background:var(--surface-3);border-radius:var(--r-card);transform:translateY(var(--dy));scale:1.03;rotate:1deg;transition:scale var(--med) var(--ease),rotate var(--med) var(--ease);will-change:transform;pointer-events:none}
+.drag-row.is-lifted .drag-in::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;box-shadow:0 12px 28px rgba(0,0,0,.35);animation:drag-shadow var(--med) var(--ease)}
+@keyframes drag-shadow{from{opacity:0}to{opacity:1}}
+/* Dark theme: a shadow is invisible on black, so the lifted row gets a fill and a hairline. */
+:root:not([data-theme="light"]) .drag-row.is-lifted .drag-in{background:linear-gradient(rgba(255,255,255,.06),rgba(255,255,255,.06)),var(--surface-3)}
+:root:not([data-theme="light"]) .drag-row.is-lifted .drag-in::before{box-shadow:0 12px 28px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.10)}
+:root:not([data-theme="light"]) .drag-row.is-lifted::before{background:rgba(255,255,255,.04)}
+/* The drop into a folder: a copy flies (lib/use-long-press-drag.js), the slot fades, the count ticks. */
+.drag-ghost{position:fixed;z-index:80;margin:0;pointer-events:none;background:var(--surface-3);border-radius:var(--r-card);box-shadow:0 12px 28px rgba(0,0,0,.35);transform-origin:center}
+.drag-slot-ghost{position:fixed;z-index:79;pointer-events:none;border:2px dashed var(--label-3);border-radius:10px;animation:drag-slot-out 100ms ease-out forwards}
+@keyframes drag-slot-out{to{opacity:0}}
+.drop-tick{transform-origin:left center;animation:drag-tick 200ms var(--ease)}
+/* Make current plan (lib/list-motion.js): the new block's tint (200, linear, an overlay so no colour animates)
+   and pin (.85 to 1, 220) land 120 ms after the block starts to move. Reduce Motion: no animation. */
+.plan-group .plan-current.cur-land{background:none;position:relative;isolation:isolate}
+.plan-current.cur-land::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--acc-soft);animation:cur-tint 200ms linear calc(120ms + var(--hold,0ms)) backwards}
+.plan-current.cur-land .plan-pin{animation:cur-pin 220ms var(--ease) calc(120ms + var(--hold,0ms)) backwards}
+@keyframes cur-tint{from{opacity:0}to{opacity:1}}
+@keyframes cur-pin{from{transform:scale(.85)}to{transform:none}}
+.reduce-motion .plan-current.cur-land::before,.reduce-motion .plan-current.cur-land .plan-pin{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-current.cur-land::before,.plan-current.cur-land .plan-pin{animation:none}}
+@keyframes drag-tick{from{transform:scale(1.15)}to{transform:none}}
+@keyframes drag-fade{from{opacity:0}to{opacity:1}}
+.plan-routes.is-dragging .plan-group{overflow:visible}
+.plan-group .item.is-drop{background:var(--acc-soft);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--bg)}
+.plan-textbtn.is-drop{background:var(--acc-soft);border-radius:10px;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc)}
+.plan-here{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--acc);color:var(--on-acc);font-weight:600;font-size:var(--fs-callout)}
+.plan-moveout{min-height:36px;background:var(--acc);color:var(--on-acc)}
+.plan-moveout .icon{width:18px;height:18px}
+.reduce-motion .drag-row.is-lifted .drag-in{transform:translateY(var(--dy));scale:none;rotate:none;box-shadow:none;transition:none !important}
+.reduce-motion .drag-row.is-lifted .drag-in::before{display:none}
+.reduce-motion .drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}
+.reduce-motion .drag-row.is-lifted::before,.reduce-motion .drag-row .drag-in{transition:none !important}
+.reduce-motion .drag-row[data-cue] .drag-in{scale:none}
+.reduce-motion .drop-tick{animation:none}
+.reduce-motion .drag-in.drop-fade{animation:drag-fade var(--dur-rm) linear}
+@media (prefers-reduced-motion:reduce){.drag-row.is-lifted .drag-in{transform:translateY(var(--dy));scale:none;rotate:none;box-shadow:none;transition:none !important}.drag-row.is-lifted .drag-in::before{display:none}.drag-row.is-lifted .drag-in::after{content:'';position:absolute;inset:0;z-index:3;border:2px solid var(--label);border-radius:inherit;pointer-events:none}.drag-row.is-lifted::before,.drag-row .drag-in{transition:none !important}.drag-row[data-cue] .drag-in{scale:none}.drop-tick{animation:none}.drag-in.drop-fade{animation:drag-fade var(--dur-rm) linear}}
+.plan-hdr.is-drop{background:var(--acc-soft);box-shadow:inset 0 0 0 2px var(--acc),inset 0 0 0 4px var(--bg);display:flex;align-items:center;justify-content:space-between;border-radius:12px;padding:4px 8px}
+.plan-group.is-drop-area{box-shadow:0 0 0 2px var(--acc)}
+@media (max-width:359px){.plan-routine .bm-mini-wrap .bm-v+.bm-v{display:none}}
+/* the pill: Starred and New, above the tab bar and the raised Start button */
+.plan-pill{
+  position:fixed;z-index:40;bottom:calc(92px + var(--sab));inset-inline-end:max(var(--pad),calc((100vw - 560px)/2 + var(--pad)));
+  display:flex;align-items:center;min-height:52px;padding:4px;border-radius:26px;
+  background:var(--bg-el);background:color-mix(in srgb,var(--bg-el) 88%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(12px);backdrop-filter:saturate(180%) blur(12px);
+  border:var(--hair) solid var(--sep-op);box-shadow:0 4px 18px rgba(0,0,0,.28);
+}
+.plan-pill button{display:flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:0 14px;border-radius:22px;justify-content:center;font-size:var(--fs-callout);font-weight:600}
+.plan-pill>*+*{position:relative}
+.plan-pill>*+*::before{content:'';position:absolute;inset-inline-start:-1px;top:11px;height:22px;width:1px;background:var(--sep)}
+:root:not([data-theme="light"]) .plan-pill{background:#2c2c2e;border-color:rgba(255,255,255,.08);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+:root:not([data-theme="light"]) .plan-pill>*+*::before{background:rgba(255,255,255,.12)}
+.plan-pill-star{color:var(--label)}
+.plan-pill-star[aria-pressed="true"]{background:var(--acc);color:var(--on-acc)}
+.plan-pill-new{color:var(--acc-ink)}
+/* above a running rest timer (#timer is full width at 88px), and opaque under Reduce Transparency;
+   this block must stay after the pill rules, which have the same specificity */
+body.resting .plan-pill{bottom:calc(166px + var(--sab))}
+@media (prefers-reduced-transparency: reduce){
+  .plan-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg-el)}
+}
+.plan-crumb{align-items:center;min-height:44px}
+.plan-crumb .plan-textbtn{display:flex;align-items:center;gap:4px;min-height:44px}
+.plan-crumb .plan-more{margin-inline-end:12px}
+.plan-new-here{width:100%;text-align:start;color:var(--acc-ink);font-weight:600}
+.plan-new-here .lrow-i{background:var(--acc-soft);color:var(--acc-ink);--icon-stroke:2.3}
+.arch-restore{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:22px;background:var(--acc-soft);color:var(--acc-ink);font-size:var(--fs-subhead);font-weight:600}
+.arch-restore::before{content:'';position:absolute;inset:-5px 0}
+.arch-restore .icn{font-size:.875rem}
+.arch-delete-all{display:block;width:100%;min-height:52px;margin-top:32px;color:var(--danger-ink);font-size:var(--fs-body);font-weight:600;text-align:center}
+.plan-more{flex:none;display:grid;place-items:center;width:44px;height:44px;color:var(--label-2)}
+/* Edit with select: a check circle at the start, a grip at the end, a bar for what is ticked */
+.plan-check{flex:none;display:grid;place-items:center;width:44px;height:44px;margin-inline:-10px -4px}
+.plan-check span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--label-3);color:transparent;font-size:.875rem;--icon-stroke:2.8}
+.plan-check[aria-checked="true"] span{background:var(--label);border-color:var(--label);color:var(--bg)}
+.plan-group .item.is-selected{background:var(--surface-3)}
+.plan-grip{flex:none;display:grid;place-items:center;width:44px;height:44px;margin-inline-end:-8px;color:var(--label-3);font-size:1.125rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.plan-grip:active{cursor:grabbing;color:var(--label-2)}
+/* Edit swaps Plan's header for its bar (views/Plan.jsx): the leaver is an inert copy (lib/exit-copy.js, 100 ms
+   ease-out); the arrival fades in 180 ms --ease. Reduce Motion: no phase class, so none of this runs. */
+/* Favourites off: the group cards come back with their rows (same 160 ms after 60 as the rows), never empty. */
+/* The starred list leaves as a copy (100 ms ease-out); the cards start 60 ms in, so the list is never empty and the two overlap by 40 ms at most. */
+.plan-routes.is-fav-off:not([aria-hidden]) .plan-group{animation:drag-fade 160ms var(--ease) 60ms backwards}   /* not the exit copy's layer, which wears the same class */
+.reduce-motion .plan-routes.is-fav-off .plan-group{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-routes.is-fav-off .plan-group{animation:none}}
+/* Favourites on: the subtitles take their new text at once but stay hidden until the rows have landed (320 ms), then fade in. */
+@keyframes fav-sub{0%,70%{opacity:0}100%{opacity:1}}
+.plan-routes.is-fav-on .plan-routine .ss{animation:fav-sub 320ms linear both}
+.reduce-motion .plan-routes.is-fav-on .plan-routine .ss{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-routes.is-fav-on .plan-routine .ss{animation:none}}
+/* The arrival starts 80 ms after the leaving copy does (100 ms ease-out, nearly gone by then), so the two headers are never both readable. */
+.plan-top.is-swap,.plan-edithead.is-in{animation:drag-fade 180ms var(--ease) 80ms both}
+.reduce-motion .plan-top.is-swap,.reduce-motion .plan-edithead.is-in{animation:none}
+@media (prefers-reduced-motion:reduce){.plan-top.is-swap,.plan-edithead.is-in{animation:none}}
+.plan-selcount{min-height:1.25em;margin:8px 4px 10px;font-size:var(--fs-title1,28px);font-weight:700;letter-spacing:-.01em}
+.plan-editbar{
+  position:fixed;z-index:60;bottom:0;inset-inline:0;
+  display:flex;justify-content:space-around;align-items:flex-start;padding:14px var(--pad) calc(12px + var(--sab));
+  background:var(--bg-el);border-top:var(--hair) solid var(--sep);
+}
+.plan-editbar .icn{font-size:1.375rem}
+.plan-editbar button{flex:1;min-width:0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 6px;font-size:.75rem;font-weight:500;color:var(--label);text-align:center}
+.plan-editbar button.danger{color:var(--danger-ink)}
+.plan-editbar button.apart{margin-inline-start:12px;border-inline-start:var(--hair) solid var(--sep)}
+.plan-editbar button:disabled{opacity:.4}
+/* Edit mode motion (Plan.jsx phase, motion recommendation): the check circles and grips fade in 180 ms with a 12 px
+   slide, the titles shift 34-36 px over 260 (the layout is already final, so it is a transform from the old place),
+   the bar rises 300 ms --ease and leaves 220 --ease-exit, the pill fades out 140. First 12 rows of a group only.
+   Reduce Motion: Plan.jsx sets no phase; the twins below cover a setting that changes mid-way. */
+.plan{--dx:1}
+[dir="rtl"] .plan{--dx:-1}
+@keyframes edit-from{from{opacity:0;transform:translateX(calc(var(--dx)*var(--s)*1px))}}
+@keyframes edit-shift{from{transform:translateX(calc(var(--dx)*var(--s)*1px))}}
+@keyframes edit-bar-in{from{transform:translateY(100%)}}
+@keyframes edit-bar-out{to{transform:translateY(100%)}}
+@keyframes edit-pill-out{to{opacity:0}}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-check{--s:-12;animation:edit-from 180ms var(--ease) backwards}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-grip{--s:12;animation:edit-from 180ms var(--ease) backwards}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-check~:is(.lrow-i,.grow){--s:-34;animation:edit-shift 260ms var(--ease)}
+.is-edit-in .plan-group>:nth-child(-n+12) .plan-check~.bm-mini-wrap{--s:36;animation:edit-shift 260ms var(--ease)}
+.is-edit-out .plan-group>:nth-child(-n+12) .plan-routine>:is(.lrow-i,.grow){--s:34;animation:edit-shift 260ms var(--ease)}
+.is-edit-out .plan-group>:nth-child(-n+12) .plan-routine>.bm-mini-wrap{--s:-36;animation:edit-shift 260ms var(--ease)}
+.plan-editbar{animation:edit-bar-in 300ms var(--ease)}
+.plan-editbar.is-leaving{animation:edit-bar-out 220ms var(--ease-exit) forwards;pointer-events:none}
+.plan-pill.is-away{animation:edit-pill-out 140ms ease-out forwards;pointer-events:none}
+.plan-pill.is-back{animation:drag-fade 180ms ease-out}
+.plan-starred-bar .ss{animation:drag-fade 140ms ease-out}
+.reduce-motion .plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.reduce-motion .plan-editbar,.reduce-motion .plan-pill,.reduce-motion .plan-starred-bar .ss{animation:none!important}
+@media (prefers-reduced-motion:reduce){.plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.plan-editbar,.plan-pill,.plan-starred-bar .ss{animation:none!important}}
+
 
 /* Tempo (#572, components/Tempo.jsx): the tag on an exercise, the picker's big readout and the
    guide's stage. The phase tints the stage so a glance from the bench says lower or lift. */
@@ -4398,8 +4647,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cr-v{font-size:var(--fs-title3,1.25rem);font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .cr-s{font-size:var(--fs-footnote);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;margin-top:2px}
 .cr-s.accent{color:var(--acc-ink)}
-/* Favourite routines (#327): the starred ones under their own quiet heading on Plan. */
-.plan-favs-h{display:flex;align-items:center;gap:2px;margin:4px 2px 8px}
 /* The skill ladder's next rung under the progression line (views/Workout.jsx LadderNext). */
 .ladder-next{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r);background:var(--acc-soft);color:var(--label)}
 .ladder-next .grow{display:grid;gap:1px;min-width:0}
@@ -4705,3 +4952,38 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* --- routine colour and icon sheet (components/RoutineLook.jsx) ---
+   Each swatch is a 44 pt hit area round a 38 pt circle; the chosen one has a ring and a check,
+   so colour is never the only signal. */
+.look-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.look-hd h3{margin:0;font-size:var(--fs-body);font-weight:600}
+.look-hd .btn{width:auto;min-height:44px;padding:0 8px}
+.look-prev{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.look-tile{width:56px;height:56px;border-radius:14px;font-size:1.75rem}
+.look-name{flex:1;min-width:0;padding:14px;border-radius:var(--r);background:var(--surface);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.look-sw{display:grid;grid-template-columns:repeat(6,1fr);justify-items:center;row-gap:10px;padding:4px 0}
+.look-s{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.look-s>span{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+/* Colour and icon motion (motion recommendation): the ring and check 160 ms (check .85 to 1), the preview tile's old colour
+   fades out over the new one 180 ms (a stacked layer), the old glyph out 90 and the new in 160 from .92, the colour name 100. */
+.look-s>span{position:relative}
+.look-s>span::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--label);opacity:0;pointer-events:none;transition:opacity 160ms var(--ease)}
+.look-s.on>span::after{opacity:1}
+.look-s>span>.icn{animation:look-check 160ms var(--ease)}
+.look-tile{position:relative;isolation:isolate}
+.look-old{position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;animation:look-old 180ms linear forwards}
+.look-g,.look-gout{display:flex;align-items:center;justify-content:center}
+.look-gout{position:absolute;inset:0;pointer-events:none;animation:look-gout 90ms ease-out forwards}
+.look-gin{animation:look-gin 160ms var(--ease) 90ms backwards}
+.look-cn{animation:drag-fade 100ms ease-out}
+@keyframes look-check{from{opacity:0;transform:scale(.85)}}
+@keyframes look-old{to{opacity:0}}
+@keyframes look-gout{to{opacity:0}}
+@keyframes look-gin{from{opacity:0;transform:scale(.92)}}
+.reduce-motion .look-s>span::after{transition:none}
+.reduce-motion .look-s>span>.icn,.reduce-motion .look-old,.reduce-motion .look-gout,.reduce-motion .look-gin,.reduce-motion .look-cn{animation:none}
+@media (prefers-reduced-motion:reduce){.look-s>span::after{transition:none}.look-s>span>.icn,.look-old,.look-gout,.look-gin,.look-cn{animation:none}}
+.look-grid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.look-grid .glyph-cell{border-radius:50%;font-size:1.4rem}
+.look-cn{min-height:1.4em;margin:8px 0 18px;text-align:center;font-weight:600;font-size:var(--fs-subhead)}

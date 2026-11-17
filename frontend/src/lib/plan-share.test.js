@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { buildPlanBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.
@@ -411,5 +411,33 @@ describe('distance work in a shared plan (night QA 146)', () => {
     expect(carry[0]).toMatchObject({ id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 })
     expect(carry[1]).toMatchObject({ id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 })
     expect(carry[1].reps).toBeUndefined()
+  })
+})
+
+describe('plan-share routine colour', () => {
+  const src = color => ({ unit: 'kg', week: {}, customEx: [], routines: [{ id: 'r', name: 'Push', emoji: 'arm', color, ex: [] }] })
+  it('carries a routine colour through the bundle and the merge', () => {
+    const bundle = buildPlanBundle(src('mint'), 'P')
+    expect(bundle.routines[0].color).toBe('mint')
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, bundle)
+    expect(target.routines[0].color).toBe('mint')
+  })
+  it('drops a colour that is not one of ours', () => {
+    const bundle = buildPlanBundle(src('mint'), 'P')
+    bundle.routines[0].color = 'chartreuse'
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, bundle)
+    expect(target.routines[0]).not.toHaveProperty('color')
+  })
+})
+
+describe('printed week', () => {
+  it('names only live routines: a weekday still pointing at an archived one reads Rest', () => {
+    const ex = [{ id: '0025', sets: 3, reps: 5 }]
+    const S = { routines: [{ id: 'a', name: 'Old block', ex, archived: true }, { id: 'b', name: 'Now', ex }], week: { 1: ['a'], 2: ['b'] }, customEx: [], workouts: [] }
+    const html = planPrintHTML(S, 'Me')
+    expect(html).toContain('Now')
+    expect(html).not.toContain('Old block')
   })
 })

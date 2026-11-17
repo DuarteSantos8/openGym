@@ -69,6 +69,13 @@ test('text and folding by the rules', () => {
   assert.equal(f.map((l, i) => (i ? l.slice(1) : l)).join(''), long);
 });
 
+test('an archived routine is not in the feed', () => {
+  const arch = { ...S, routines: S.routines.map(r => r.id === 'c' ? { ...r, archived: true } : r) };
+  assert.deepEqual(dayRoutines(arch, '2026-11-13', NOW), []);
+  assert.equal(buildIcs(arch, { now: NOW }).includes('Legs'), false);
+  assert.equal(buildIcs(S, { now: NOW }).includes('Legs'), true);
+});
+
 test('an exercise is named by the person\'s own one with its id, the first of them, then by the catalogue', () => {
   const own = {
     customEx: [{ id: 7, n: 'My press' }, { id: '7', n: 'A later one' }, { id: 'c2', name: 'Old style' }, { id: '0025' }, { id: '0025', n: 'Too late' }, { id: '9', n: 'Nine', name: 'Other' }, null],
