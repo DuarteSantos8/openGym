@@ -5905,4 +5905,10 @@ export default {
   "Last checked {0}": "마지막 확인: {0}",
   "Keep openGym open on the watch for a moment.": "잠시 동안 워치에서 openGym을 열어 두세요.",
   "Update openGym on the watch to see this.": "이 내용을 보려면 워치의 openGym을 업데이트하세요.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "맞춤 설정",
+  "Collapsed": "접힘",
+  "Hide": "숨기기",
+  "Totals": "합계",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
 }

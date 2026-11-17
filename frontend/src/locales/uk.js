@@ -5902,4 +5902,10 @@ export default {
   "Last checked {0}": "Остання перевірка: {0}",
   "Keep openGym open on the watch for a moment.": "Залиште openGym відкритим на годиннику на хвилинку.",
   "Update openGym on the watch to see this.": "Оновіть openGym на годиннику, щоб це побачити.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Налаштувати",
+  "Collapsed": "Згорнута",
+  "Hide": "Сховати",
+  "Totals": "Підсумки",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
 }

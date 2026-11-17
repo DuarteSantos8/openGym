@@ -5871,4 +5871,10 @@ export default {
   "Last checked {0}": "Kiểm tra lần cuối: {0}",
   "Keep openGym open on the watch for a moment.": "Hãy để openGym mở trên đồng hồ một lúc.",
   "Update openGym on the watch to see this.": "Cập nhật openGym trên đồng hồ để xem mục này.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tùy chỉnh",
+  "Collapsed": "Thu gọn",
+  "Hide": "Ẩn",
+  "Totals": "Tổng",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
 };

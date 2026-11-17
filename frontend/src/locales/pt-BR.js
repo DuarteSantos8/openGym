@@ -4334,6 +4334,8 @@ export const PT_BR_OVERRIDES = {
   "Last checked {0}": "Última verificação: {0}",
   "Keep openGym open on the watch for a moment.": "Deixe o openGym aberto no relógio por um momento.",
   "Update openGym on the watch to see this.": "Atualize o openGym no relógio para ver isto.",
+  // Arrange your own Home and Stats (#1119)
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

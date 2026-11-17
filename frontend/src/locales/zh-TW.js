@@ -5898,4 +5898,10 @@ export default {
   "Last checked {0}": "上次檢查：{0}",
   "Keep openGym open on the watch for a moment.": "請讓手錶上的 openGym 保持開啟片刻。",
   "Update openGym on the watch to see this.": "請更新手錶上的 openGym 以查看此項。",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自訂",
+  "Collapsed": "已摺疊",
+  "Hide": "隱藏",
+  "Totals": "總計",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
 }

@@ -5905,4 +5905,10 @@ export default {
   "Last checked {0}": "上次检查：{0}",
   "Keep openGym open on the watch for a moment.": "请让手表上的 openGym 保持打开片刻。",
   "Update openGym on the watch to see this.": "请更新手表上的 openGym 以查看此项。",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自定义",
+  "Collapsed": "已折叠",
+  "Hide": "隐藏",
+  "Totals": "总计",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
 }

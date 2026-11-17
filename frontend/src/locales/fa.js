@@ -5871,4 +5871,10 @@ export default {
   "Last checked {0}": "آخرین بررسی: {0}",
   "Keep openGym open on the watch for a moment.": "openGym را لحظه‌ای روی ساعت باز نگه دارید.",
   "Update openGym on the watch to see this.": "برای دیدن این، openGym را روی ساعت به‌روز کنید.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "سفارشی‌سازی",
+  "Collapsed": "جمع‌شده",
+  "Hide": "پنهان",
+  "Totals": "مجموع‌ها",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
 }

@@ -5905,4 +5905,10 @@ export default {
   "Last checked {0}": "Son kontrol: {0}",
   "Keep openGym open on the watch for a moment.": "openGym'i saatte bir süre açık tut.",
   "Update openGym on the watch to see this.": "Bunu görmek için saatte openGym'i güncelle.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Özelleştir",
+  "Collapsed": "Daraltılmış",
+  "Hide": "Gizle",
+  "Totals": "Toplamlar",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
 }

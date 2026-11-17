@@ -5916,4 +5916,10 @@ export default {
   "Last checked {0}": "ตรวจสอบล่าสุด: {0}",
   "Keep openGym open on the watch for a moment.": "เปิด openGym บนนาฬิกาค้างไว้สักครู่",
   "Update openGym on the watch to see this.": "อัปเดต openGym บนนาฬิกาเพื่อดูส่วนนี้",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "ปรับแต่ง",
+  "Collapsed": "ย่อไว้",
+  "Hide": "ซ่อน",
+  "Totals": "ยอดรวม",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
 }

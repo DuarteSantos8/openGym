@@ -5901,4 +5901,10 @@ export default {
   "Last checked {0}": "Paskutinį kartą tikrinta: {0}",
   "Keep openGym open on the watch for a moment.": "Akimirką laikyk openGym atidarytą laikrodyje.",
   "Update openGym on the watch to see this.": "Atnaujink openGym laikrodyje, kad tai matytum.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tinkinti",
+  "Collapsed": "Suskleista",
+  "Hide": "Slėpti",
+  "Totals": "Sumos",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
 }

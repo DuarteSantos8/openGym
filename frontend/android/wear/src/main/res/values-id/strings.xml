@@ -15,9 +15,9 @@
     <string name="bodyweight">Berat badan</string>
     <string name="calories">Kalori</string>
     <string name="cancel">Batal</string>
-    <string name="complication_desc">Set kamu sejauh ini, atau rentetanmu.</string>
+    <string name="complication_desc">Set kamu sejauh ini, atau streak-mu.</string>
     <string name="continue_workout">Lanjutkan latihan</string>
-    <string name="crown_hint">Putar mahkota untuk mengubahnya.</string>
+    <string name="crown_hint">Putar tombol crown untuk mengubahnya.</string>
     <string name="discard_workout">Buang latihan</string>
     <string name="discard_workout_q">Buang sesi latihan?</string>
     <string name="done">Selesai</string>
@@ -96,13 +96,13 @@
     <string name="skipped_waiting">Satu set yang dilewati masih menunggu.</string>
     <string name="start_hold">Mulai tahan</string>
     <string name="start_on_phone">Mulai di ponselmu, nanti muncul di sini.</string>
-    <string name="start_without_weighin">Mulailah tanpa menimbang</string>
+    <string name="start_without_weighin">Mulai tanpa menimbang</string>
     <string name="start_workout">Mulai latihan</string>
     <string name="still_training">Masih latihan?</string>
     <string name="stop">Berhenti</string>
     <string name="superset">Superset</string>
     <string name="tap_to_change">Ketuk untuk mengubah.</string>
-    <string name="tile_desc">Rentetanmu dan rencana hari ini.</string>
+    <string name="tile_desc">Streak-mu dan rencana hari ini.</string>
     <string name="time">Waktu</string>
     <string name="today">Hari ini</string>
     <string name="up_next">Berikutnya</string>

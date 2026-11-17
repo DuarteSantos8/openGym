@@ -5960,4 +5960,10 @@ export default {
   "Last checked {0}": "آخر فحص: {0}",
   "Keep openGym open on the watch for a moment.": "أبقِ openGym مفتوحًا على الساعة للحظة.",
   "Update openGym on the watch to see this.": "حدّث openGym على الساعة لترى هذا.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "تخصيص",
+  "Collapsed": "مطوية",
+  "Hide": "إخفاء",
+  "Totals": "الإجماليات",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
 }

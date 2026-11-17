@@ -5908,4 +5908,10 @@ export default {
   "Last checked {0}": "Utoljára ellenőrizve: {0}",
   "Keep openGym open on the watch for a moment.": "Hagyd egy pillanatra nyitva az openGym-et az órán.",
   "Update openGym on the watch to see this.": "Frissítsd az openGym-et az órán, hogy ezt lásd.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Testreszabás",
+  "Collapsed": "Összecsukva",
+  "Hide": "Elrejtés",
+  "Totals": "Összesítők",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
 }

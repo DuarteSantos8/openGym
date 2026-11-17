@@ -5905,4 +5905,10 @@ export default {
   "Last checked {0}": "Última verificação: {0}",
   "Keep openGym open on the watch for a moment.": "Deixa o openGym aberto no relógio por um momento.",
   "Update openGym on the watch to see this.": "Atualiza o openGym no relógio para ver isto.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Personalizar",
+  "Collapsed": "Recolhido",
+  "Hide": "Ocultar",
+  "Totals": "Totais",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. As setas mudam a ordem.",
 }

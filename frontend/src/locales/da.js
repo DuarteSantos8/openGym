@@ -5845,4 +5845,10 @@ export default {
   "Last checked {0}": "Sidst tjekket: {0}",
   "Keep openGym open on the watch for a moment.": "Lad openGym være åben på uret et øjeblik.",
   "Update openGym on the watch to see this.": "Opdater openGym på uret for at se dette.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tilpas",
+  "Collapsed": "Foldet sammen",
+  "Hide": "Skjul",
+  "Totals": "Totaler",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
 }

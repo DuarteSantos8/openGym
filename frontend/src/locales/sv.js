@@ -5952,4 +5952,10 @@ export default {
   "Last checked {0}": "Senast kontrollerad: {0}",
   "Keep openGym open on the watch for a moment.": "Låt openGym vara öppet på klockan en stund.",
   "Update openGym on the watch to see this.": "Uppdatera openGym på klockan för att se detta.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Anpassa",
+  "Collapsed": "Hopfälld",
+  "Hide": "Dölj",
+  "Totals": "Totalt",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
 }

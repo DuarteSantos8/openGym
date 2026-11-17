@@ -5871,4 +5871,10 @@ export default {
   "Last checked {0}": "Naposledy zkontrolováno: {0}",
   "Keep openGym open on the watch for a moment.": "Nechte na chvíli openGym v hodinkách otevřený.",
   "Update openGym on the watch to see this.": "Aktualizujte openGym v hodinkách, ať to uvidíte.",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Přizpůsobit",
+  "Collapsed": "Sbalené",
+  "Hide": "Skrýt",
+  "Totals": "Součty",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
 }

@@ -5905,4 +5905,10 @@ export default {
   "Last checked {0}": "आख़िरी जाँच: {0}",
   "Keep openGym open on the watch for a moment.": "कुछ देर के लिए घड़ी पर openGym खुला रखें।",
   "Update openGym on the watch to see this.": "यह देखने के लिए घड़ी पर openGym अपडेट करें।",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "अनुकूलित करें",
+  "Collapsed": "समेटा हुआ",
+  "Hide": "छिपाएँ",
+  "Totals": "कुल",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
 }
