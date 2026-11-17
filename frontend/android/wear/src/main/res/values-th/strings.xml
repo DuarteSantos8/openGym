@@ -7,6 +7,7 @@
     <string name="all_sets_done">ครบทุกเซ็ตแล้ว</string>
     <string name="all_synced">ซิงค์ครบแล้ว</string>
     <string name="allow">อนุญาต</string>
+    <string name="archived_stay_on_phone">รูทีนที่เก็บถาวรจะอยู่บนโทรศัพท์ของคุณ</string>
     <string name="avg">เฉลี่ย</string>
     <string name="band_over">%1$d ขึ้นไป</string>
     <string name="band_to">%1$d ถึง %2$d</string>
@@ -117,5 +118,4 @@
     <string name="zone_current">ปัจจุบัน</string>
     <string name="zone_n">โซน %1$d</string>
     <string name="zones">โซน</string>
-    <string name="archived_stay_on_phone">รูทีนที่เก็บถาวรจะอยู่บนโทรศัพท์ของคุณ</string>
 </resources>

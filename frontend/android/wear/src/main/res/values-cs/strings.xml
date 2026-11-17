@@ -7,6 +7,7 @@
     <string name="all_sets_done">Všechny série hotové</string>
     <string name="all_synced">Vše synchronizováno</string>
     <string name="allow">Povolit</string>
+    <string name="archived_stay_on_phone">Archivované rutiny zůstávají v telefonu.</string>
     <string name="avg">prům.</string>
     <string name="band_over">%1$d a více</string>
     <string name="band_to">od %1$d do %2$d</string>
@@ -117,5 +118,4 @@
     <string name="zone_current">aktuální</string>
     <string name="zone_n">Zóna %1$d</string>
     <string name="zones">Zóny</string>
-    <string name="archived_stay_on_phone">Archivované rutiny zůstávají v telefonu.</string>
 </resources>

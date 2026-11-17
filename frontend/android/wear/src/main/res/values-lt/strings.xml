@@ -7,6 +7,7 @@
     <string name="all_sets_done">Visos serijos atliktos</string>
     <string name="all_synced">Viskas sinchronizuota</string>
     <string name="allow">Leisti</string>
+    <string name="archived_stay_on_phone">Suarchyvuotos programos lieka tavo telefone.</string>
     <string name="avg">vid.</string>
     <string name="band_over">%1$d ir daugiau</string>
     <string name="band_to">nuo %1$d iki %2$d</string>
@@ -117,5 +118,4 @@
     <string name="zone_current">dabartinė</string>
     <string name="zone_n">%1$d zona</string>
     <string name="zones">Zonos</string>
-    <string name="archived_stay_on_phone">Suarchyvuotos programos lieka tavo telefone.</string>
 </resources>

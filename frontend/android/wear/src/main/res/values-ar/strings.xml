@@ -7,6 +7,7 @@
     <string name="all_sets_done">اكتملت كل المجموعات</string>
     <string name="all_synced">تمت مزامنة كل شيء</string>
     <string name="allow">السماح</string>
+    <string name="archived_stay_on_phone">تبقى الروتينات المؤرشفة على هاتفك.</string>
     <string name="avg">المتوسط</string>
     <string name="band_over">%1$d فأكثر</string>
     <string name="band_to">من %1$d إلى %2$d</string>
@@ -117,5 +118,4 @@
     <string name="zone_current">الحالي</string>
     <string name="zone_n">النطاق %1$d</string>
     <string name="zones">النطاقات</string>
-    <string name="archived_stay_on_phone">تبقى الروتينات المؤرشفة على هاتفك.</string>
 </resources>
