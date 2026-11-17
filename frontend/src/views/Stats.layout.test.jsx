@@ -101,6 +101,18 @@ describe('monthSummary', () => {
     expect(result).toEqual({ workouts: 2, activeMs: 30 * 60000, consistency: 50 })
   })
 
+  it.each([
+    [null, 60000], ['0', '60000'], [0, Infinity], [-Infinity, 60000],
+    [NaN, 60000], [0, NaN], [undefined, 60000], [60000, 0], [0, 0],
+  ])('ignores invalid duration %s to %s while retaining the session count', (start, end) => {
+    const result = monthSummary([
+      { d: '2026-11-16', start, end },
+      { d: '2026-11-16', start: 0, end: 60000 },
+    ], '2026-11-17', 1)
+    expect(result.workouts).toBe(2)
+    expect(result.activeMs).toBe(60000)
+  })
+
   it('returns an honest empty month', () => {
     expect(monthSummary([], '2026-11-17', 1)).toEqual({ workouts: 0, activeMs: 0, consistency: 0 })
   })

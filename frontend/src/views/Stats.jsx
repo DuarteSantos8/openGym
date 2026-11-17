@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { scrollToTop } from '../lib/scroll-top.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -78,7 +77,7 @@ export function monthSummary(workouts, today = todayISO(), weekStart = 1) {
     const day = workoutDay(w)
     return day && day >= first && day <= today
   })
-  const activeMs = month.reduce((sum, w) => sum + (w.end > w.start ? w.end - w.start : 0), 0)
+  const activeMs = month.reduce((sum, w) => sum + (Number.isFinite(w.start) && Number.isFinite(w.end) && w.end > w.start ? w.end - w.start : 0), 0)
   const elapsed = new Set()
   const cursor = new Date(first + 'T12:00:00')
   const end = new Date(today + 'T12:00:00')
@@ -553,9 +552,7 @@ export function StatsIndex({ sections }) {
     setCur(v)
     quietUntil.current = Date.now() + 900
     const behavior = smooth ? 'smooth' : 'auto'
-    // The same way up as the back-to-top button: a glide WebKit drops is finished as a jump.
-    if (v === 'overview') { if (smooth) scrollToTop(); else window.scrollTo?.({ top: 0, behavior }) }
-    else document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
+    document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
     try {
       const base = (window.location.hash || '#/stats').split('?')[0]
       window.history.replaceState(window.history.state, '', base + (v === 'overview' ? '' : '?section=' + v))
@@ -574,6 +571,8 @@ export function StatsIndex({ sections }) {
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(settle); window.removeEventListener('touchstart', mark); window.removeEventListener('wheel', mark) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    const targets = [...document.querySelectorAll('[data-stats-sect]')]
+      .filter(el => sections.some(x => x.value === el.dataset.statsSect))
     let raf = 0
     const spy = () => {
       raf = 0
@@ -585,12 +584,11 @@ export function StatsIndex({ sections }) {
       const bar = document.querySelector('.stats-index')
       const line = (bar ? bar.getBoundingClientRect().bottom : 0) + 24
       let on = 'overview'
-      for (const x of sections) {
-        const el = document.getElementById('stats-' + x.value)
-        if (el && el.getBoundingClientRect().top <= line) on = x.value
+      for (const el of targets) {
+        if (el.getBoundingClientRect().top <= line) on = el.dataset.statsSect
       }
       // the last part may be too short to reach the line: at the very bottom it is the one read
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) on = sections[sections.length - 1].value
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) on = targets.at(-1)?.dataset.statsSect || on
       setCur(c => (c === on ? c : on))
     }
     const onScroll = () => { if (!raf) raf = window.requestAnimationFrame(spy) }
