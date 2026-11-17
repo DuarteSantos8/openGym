@@ -62,6 +62,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "drain", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "ack", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "sendClips", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "sendRoutines", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openOnWatch", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dropClips", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "garminStatus", returnType: CAPPluginReturnPromise),
@@ -209,11 +210,26 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    /// Every routine the watch can start, as a file (lib/watch-routines-file.js): the snapshot is
+    /// size-limited, a file is not. It queues until the watch is there; a newer one replaces any
+    /// still waiting, and the watch keeps only the newest.
+    @objc func sendRoutines(_ call: CAPPluginCall) {
+        guard let json = call.getString("json"), WCSession.isSupported() else { call.resolve(["sent": false]); return }
+        let s = WCSession.default
+        guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled else { call.resolve(["sent": false]); return }
+        // Named by its hash: a file still on its way is never written over.
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("routines-\(call.getString("hash") ?? "x").json")
+        guard (try? json.write(to: url, atomically: true, encoding: .utf8)) != nil else { call.resolve(["sent": false]); return }
+        for t in s.outstandingFileTransfers where t.file.metadata?["kind"] as? String == "routines" { t.cancel() }
+        s.transferFile(url, metadata: ["kind": "routines"])
+        call.resolve(["sent": true])
+    }
+
     /// The workout is over: its clips still waiting to go to the watch are cancelled (they would
     /// pile up in the queue while the watch is away, and the watch drops them on arrival anyway).
     @objc func dropClips(_ call: CAPPluginCall) {
         if WCSession.isSupported(), WCSession.default.activationState == .activated {
-            WCSession.default.outstandingFileTransfers.forEach { $0.cancel() }
+            WCSession.default.outstandingFileTransfers.filter { $0.file.metadata?["kind"] == nil }.forEach { $0.cancel() }
         }
         clipQueue.async { self.clipsSent = [:] }
         call.resolve()
@@ -239,7 +255,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         let clips = (call.getArray("clips") ?? []).compactMap { $0 as? [String: Any] }
         call.resolve(["queued": clips.count])
         // Another workout's clips still queued (the watch was away): cancelled, this one's go first.
-        for t in s.outstandingFileTransfers where (t.file.metadata?["wid"] as? String) != wid { t.cancel() }
+        for t in s.outstandingFileTransfers where t.file.metadata?["kind"] == nil && (t.file.metadata?["wid"] as? String) != wid { t.cancel() }
         clipQueue.async {
             var sent = self.clipsSent[wid] ?? []
             if self.clipsSent.count > 4 { self.clipsSent = self.clipsSent.filter { $0.key == wid } }

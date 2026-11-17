@@ -5908,10 +5908,27 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "เปิด openGym บนนาฬิกาค้างไว้สักครู่",
   // Arrange your own Home and Stats (#1119)
   "Customize": "ปรับแต่ง",
   "Collapsed": "ย่อไว้",
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "กำลังเชื่อมต่อ ลองอีกครั้งในอีกสักครู่",
+  "Pair a watch in the Watch app.": "จับคู่นาฬิกาในแอป Watch",
+  "Install openGym from the Watch app.": "ติดตั้ง openGym จากแอป Watch",
+  "Open openGym on the watch once.": "เปิด openGym บนนาฬิกาสักครั้ง",
+  "Open openGym on the watch, or bring it closer.": "เปิด openGym บนนาฬิกา หรือนำนาฬิกาเข้ามาใกล้",
+  "Update openGym on the watch.": "อัปเดต openGym บนนาฬิกา",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "เวอร์ชันนี้เชื่อมต่อนาฬิกาไม่ได้ ดาวน์โหลด openGym จาก Google Play หรือ opengym.ch",
+  "Pair your watch in its own app, like Galaxy Wearable.": "จับคู่นาฬิกาในแอปของนาฬิกาเอง เช่น Galaxy Wearable",
+  "On the watch, install openGym from the Play Store.": "บนนาฬิกา ติดตั้ง openGym จาก Play Store",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "ติดตั้ง APK ของ Wear OS จากรุ่นนี้ ตัวจาก Play Store จะจับคู่ไม่ได้",
+  "Syncing": "กำลังซิงค์",
+  "Not set up": "ยังไม่ได้ตั้งค่า",
+  "Update watch app": "อัปเดตแอปบนนาฬิกา",
+  "Last heard {0}": "ติดต่อล่าสุด: {0}",
 }

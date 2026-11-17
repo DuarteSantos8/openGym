@@ -5944,10 +5944,27 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Låt openGym vara öppet på klockan en stund.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Anpassa",
   "Collapsed": "Hopfälld",
   "Hide": "Dölj",
   "Totals": "Totalt",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Ansluter. Försök igen om en stund.",
+  "Pair a watch in the Watch app.": "Parkoppla en klocka i Watch-appen.",
+  "Install openGym from the Watch app.": "Installera openGym från Watch-appen.",
+  "Open openGym on the watch once.": "Öppna openGym på klockan en gång.",
+  "Open openGym on the watch, or bring it closer.": "Öppna openGym på klockan eller håll den närmare.",
+  "Update openGym on the watch.": "Uppdatera openGym på klockan.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Den här versionen når ingen klocka. Hämta openGym från Google Play eller opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Parkoppla klockan i dess egen app, t.ex. Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Installera openGym från Play Butik på klockan.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Installera Wear OS-APK:n från den här versionen. Den från Play Butik parkopplas inte.",
+  "Syncing": "Synkar",
+  "Not set up": "Inte konfigurerad",
+  "Update watch app": "Uppdatera klockappen",
+  "Last heard {0}": "Senast hörd: {0}",
 }

@@ -7,6 +7,7 @@
     <string name="all_sets_done">모든 세트 완료</string>
     <string name="all_synced">모두 동기화됨</string>
     <string name="allow">허용</string>
+    <string name="archived_stay_on_phone">보관된 루틴은 휴대폰에 남아 있어요.</string>
     <string name="avg">평균</string>
     <string name="band_over">%1$d 이상</string>
     <string name="band_to">%1$d에서 %2$d</string>

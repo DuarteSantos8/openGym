@@ -28,6 +28,15 @@ struct HomeView: View {
                     if !ready.others.isEmpty {
                         VStack(spacing: 4) {
                             ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
+                                if let h = Plan.folderHeader(at: pair.offset, in: ready.others) {
+                                    Text(verbatim: h)
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(Theme.label2)
+                                        .lineLimit(1)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.top, 6)
+                                        .accessibilityAddTraits(.isHeader)
+                                }
                                 Button { store.start(pair.element) } label: {
                                     HStack(spacing: 6) {
                                         Text(verbatim: pair.element.name).lineLimit(2).minimumScaleFactor(0.8)
@@ -37,6 +46,11 @@ struct HomeView: View {
                                 }
                                 .buttonStyle(RowButtonStyle())
                             }
+                            Text("Archived routines stay on your iPhone.")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.label2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 4)
                         }
                         .padding(.top, ready.today == nil ? 0 : 6)
                     }

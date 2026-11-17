@@ -35,6 +35,8 @@ data class Snapshot(
     val acked: List<String>? = null,
     /** The phone's clock when it made this (ms, protocol 2): the watch's clock offset (ClockOffset). */
     val now: Double? = null,
+    /** The routines file this snapshot goes with (lib/watch-routines-file.js); none from an older phone. */
+    val routinesHash: String? = null,
 ) {
     companion object {
         fun parse(json: String): Snapshot? = try { WireJson.decodeFromString(serializer(), json) } catch (_: Exception) { null }
@@ -48,6 +50,10 @@ data class Streak(val weeks: Int = 0, val thisWeekDone: Boolean = false)
 @Serializable
 data class Ready(val today: ReadySession? = null, val others: List<ReadySession> = emptyList())
 
+/** The file the phone sends with every routine the watch can start: `ready.others` is only what fitted the snapshot. */
+@Serializable
+data class RoutinesFile(val h: String, val others: List<ReadySession> = emptyList())
+
 @Serializable
 data class ReadySession(
     val routineIds: List<String> = emptyList(),
@@ -56,6 +62,8 @@ data class ReadySession(
     val healthType: String? = null,
     /** Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it. */
     val muscleNames: Map<String, String>? = null,
+    /** The phone's folder for it; none from an older phone or for a routine in no folder. */
+    val folder: String? = null,
 )
 
 @Serializable

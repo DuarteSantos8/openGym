@@ -34,6 +34,8 @@ data class PendingTick(val w: Double? = null, val r: Double? = null, val at: Dou
 data class SessionState(
     val workout: ActiveWorkout? = null,
     val ready: Ready? = null,
+    /** The hash of the routines file the newest snapshot goes with. */
+    val routinesHash: String? = null,
     val settings: WatchSettings = WatchSettings(),
     val unit: String = "kg",
     val restSec: Double = 90.0,
@@ -112,7 +114,7 @@ object SessionCore {
 
     /** A snapshot from the phone, over what the watch has. */
     fun applySnapshot(s0: SessionState, snap: Snapshot, off: Long = 0): SessionState {
-        var s = s0.copy(ready = snap.ready, synced = true)
+        var s = s0.copy(ready = snap.ready, routinesHash = snap.routinesHash, synced = true)
         snap.unit?.let { s = s.copy(unit = it) }
         snap.restSec?.let { if (it > 0) s = s.copy(restSec = it) }
         snap.settings?.let {
