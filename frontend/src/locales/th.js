@@ -1223,6 +1223,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'การตั้งค่าเครื่อง',
   'Add machine settings': 'เพิ่มการตั้งค่าเครื่อง',
+  'The note is too long for the machine settings. Shorten it and try again.': 'บันทึกยาวเกินไปเมื่อรวมกับการตั้งค่าเครื่อง ย่อให้สั้นลงแล้วลองอีกครั้ง',
   'Add setting': 'เพิ่มการตั้งค่า',
   'Name, e.g. {0}': 'ชื่อ เช่น {0}',
   'Value': 'ค่า',

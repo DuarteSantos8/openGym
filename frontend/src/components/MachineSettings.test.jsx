@@ -80,6 +80,18 @@ describe('the machine settings sheet', () => {
     expect([...host.querySelectorAll('.chips .chip')].map(b => b.textContent)[0]).toBe('Pin')
   })
 
+  it('keeps the sheet open, the note whole and says why when the note leaves no room for the line', () => {
+    const long = 'y'.repeat(2000)
+    useStore.setState({ S: { ...original, exNotes: { [BENCH]: long } } })
+    const host = openSheet()
+    act(() => buttonOf(host, 'Seat').click())
+    setValue(host.querySelectorAll('.mset-row input')[1], '5')
+    act(() => buttonOf(host, 'Save').click())
+    expect(saved()).toEqual({ [BENCH]: long })
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expect(host.querySelector('[role="alert"]').textContent).toContain('too long')
+  })
+
   it('leaves a half-filled row out', () => {
     const host = openSheet()
     setValue(host.querySelectorAll('.mset-row input')[0], 'Seat')

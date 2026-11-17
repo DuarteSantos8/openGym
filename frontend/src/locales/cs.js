@@ -5866,6 +5866,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   "Machine settings": "Nastavení stroje",
   "Add machine settings": "Přidat nastavení stroje",
+  "The note is too long for the machine settings. Shorten it and try again.": "Poznámka je spolu s nastavením stroje příliš dlouhá. Zkraťte ji a zkuste to znovu.",
   "Add setting": "Přidat nastavení",
   "Name, e.g. {0}": "Název, např. {0}",
   "Value": "Hodnota",

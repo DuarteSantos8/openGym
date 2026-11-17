@@ -99,6 +99,9 @@ export function noteRoom(S, exId, max) {
   return Math.max(0, max - (line ? line.length + 1 : 0))
 }
 
+/** Whether `rest` as the note text fits under the exercise's settings line within `max`. */
+export const noteFits = (S, exId, rest, max) => String(rest == null ? '' : rest).trim().length <= noteRoom(S, exId, max)
+
 /**
  * The exNotes map with the exercise's settings replaced (a new object); the rest of its note is
  * kept whole, and no key is left when nothing remains. When the line and the note together would

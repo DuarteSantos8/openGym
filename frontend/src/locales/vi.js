@@ -5866,6 +5866,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   "Machine settings": "Cài đặt máy",
   "Add machine settings": "Thêm cài đặt máy",
+  "The note is too long for the machine settings. Shorten it and try again.": "Ghi chú quá dài khi cộng với cài đặt máy. Hãy rút ngắn và thử lại.",
   "Add setting": "Thêm cài đặt",
   "Name, e.g. {0}": "Tên, ví dụ {0}",
   "Value": "Giá trị",

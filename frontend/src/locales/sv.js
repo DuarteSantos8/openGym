@@ -1368,6 +1368,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'Maskininställningar',
   'Add machine settings': 'Lägg till maskininställningar',
+  'The note is too long for the machine settings. Shorten it and try again.': 'Anteckningen är för lång tillsammans med maskininställningarna. Korta ner den och försök igen.',
   'Add setting': 'Lägg till inställning',
   'Name, e.g. {0}': 'Namn, t.ex. {0}',
   'Value': 'Värde',

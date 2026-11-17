@@ -5865,6 +5865,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   "Machine settings": "Pengaturan mesin",
   "Add machine settings": "Tambah pengaturan mesin",
+  "The note is too long for the machine settings. Shorten it and try again.": "Catatan terlalu panjang bersama pengaturan mesin. Persingkat lalu coba lagi.",
   "Add setting": "Tambah pengaturan",
   "Name, e.g. {0}": "Nama, mis. {0}",
   "Value": "Nilai",

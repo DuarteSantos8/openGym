@@ -1158,6 +1158,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'Налаштування тренажера',
   'Add machine settings': 'Додати налаштування тренажера',
+  'The note is too long for the machine settings. Shorten it and try again.': 'Нотатка разом з налаштуваннями тренажера задовга. Скоротіть її і спробуйте ще раз.',
   'Add setting': 'Додати параметр',
   'Name, e.g. {0}': 'Назва, напр. {0}',
   'Value': 'Значення',

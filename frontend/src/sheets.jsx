@@ -136,7 +136,7 @@ import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 import { isOn } from './lib/modules.js'
-import { settingsFor, noteWithoutSettings, withNoteText, noteRoom } from './lib/machine-settings.js'
+import { settingsFor, noteWithoutSettings, withNoteText, noteRoom, noteFits } from './lib/machine-settings.js'
 import { MachineSettingTags, MachineSettingsLink, machineSettingsSheet } from './components/MachineSettings.jsx'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
@@ -4303,12 +4303,15 @@ function ExerciseNote({ entryIdx, close }) {
   // Only true at one gym ("seat 4" on that brand of machine): pinned at the active gym (lib/journal.js).
   const gym = !editing ? activeGym(st) : null
   const [atGym, setAtGym] = useState(gym && entry ? gymNoteText(st, gym.id, entry.id) : '')
+  const [tooLong, setTooLong] = useState(false)
   useEffect(() => { if (!entry) close() }, [!entry])
   if (!entry) return null
 
   const save = () => {
     const today = note.trim().slice(0, NOTE_MAX)
     const always = standing.trim()
+    // The text no longer fits under the settings line: keep the sheet and the draft, say why.
+    if (!editing && !noteFits(st, entry.id, always, NOTE_MAX)) { setTooLong(true); return }
     update(s => {
       const e = s.active?.entries?.[entryIdx]
       if (e) {
@@ -4342,7 +4345,8 @@ function ExerciseNote({ entryIdx, close }) {
       <div className="small muted" style={{ marginBottom: 6 }}>{t('Always for this exercise')}</div>
       <textarea className="input" rows={2} maxLength={entry ? noteRoom(st, entry.id, NOTE_MAX) : NOTE_MAX} value={standing}
         placeholder={t('Seat height, pin position, a form cue. Shown every session.')}
-        onChange={e => setStanding(e.target.value)} />
+        onChange={e => { setStanding(e.target.value); setTooLong(false) }} />
+      {tooLong && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: 6 }}>{t('The note is too long for the machine settings. Shorten it and try again.')}</div>}
     </>}
     {gym && <>
       <div style={{ height: 18 }} />

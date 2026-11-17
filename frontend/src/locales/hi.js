@@ -1349,6 +1349,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'मशीन सेटिंग्स',
   'Add machine settings': 'मशीन सेटिंग्स जोड़ें',
+  'The note is too long for the machine settings. Shorten it and try again.': 'मशीन सेटिंग्स के साथ नोट बहुत लंबा है। उसे छोटा करें और फिर कोशिश करें।',
   'Add setting': 'सेटिंग जोड़ें',
   'Name, e.g. {0}': 'नाम, जैसे {0}',
   'Value': 'मान',

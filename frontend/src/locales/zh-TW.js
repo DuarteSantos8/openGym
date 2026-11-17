@@ -1341,6 +1341,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': '器材設定',
   'Add machine settings': '新增器材設定',
+  'The note is too long for the machine settings. Shorten it and try again.': '備註加上器材設定後太長。請縮短後再試一次。',
   'Add setting': '新增設定',
   'Name, e.g. {0}': '名稱，例如{0}',
   'Value': '數值',

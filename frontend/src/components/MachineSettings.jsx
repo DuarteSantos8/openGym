@@ -66,9 +66,10 @@ function MachineSettingsSheet({ exId, close }) {
     setFocus({ at, value: !!k })
   }
   const remove = i => setRows(rs => (rs.length > 1 ? rs.filter((_, j) => j !== i) : [blank()]))
+  const [tooLong, setTooLong] = useState(false)
   const save = () => {
-    // Too long together with the note under the line: keep the sheet open and change nothing.
-    if (joinNote(rows, noteWithoutSettings(S, exId)).length > NOTE_MAX) return
+    // Too long together with the note under the line: keep the sheet open, change nothing, say why.
+    if (joinNote(rows, noteWithoutSettings(S, exId)).length > NOTE_MAX) { setTooLong(true); return }
     update(s => { s.exNotes = withSettings(s.exNotes, exId, rows, NOTE_MAX) })
     close()
   }
@@ -94,6 +95,7 @@ function MachineSettingsSheet({ exId, close }) {
       {suggestions.map(k => <button key={k} type="button" className="chip nocap" onClick={() => add(k)}><Icon name="plus" />{k}</button>)}
     </div>}
     <Button variant="tinted" icon="plus" disabled={full} onClick={() => add()}>{t('Add setting')}</Button>
+    {tooLong && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: 10 }}>{t('The note is too long for the machine settings. Shorten it and try again.')}</div>}
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>

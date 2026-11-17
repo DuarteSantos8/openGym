@@ -5866,6 +5866,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   "Machine settings": "تنظیمات دستگاه",
   "Add machine settings": "افزودن تنظیمات دستگاه",
+  "The note is too long for the machine settings. Shorten it and try again.": "یادداشت همراه با تنظیمات دستگاه خیلی طولانی است. آن را کوتاه کنید و دوباره تلاش کنید.",
   "Add setting": "افزودن تنظیم",
   "Name, e.g. {0}": "نام، مثلاً {0}",
   "Value": "مقدار",
