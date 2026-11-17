@@ -98,9 +98,9 @@ describe('estimateMinutes', () => {
     expect(estimateMinutes([{ sets: 3, min: 20 }])).toBe(Math.round((3 * 20 * 60 + 2 * 90 + 90) / 60))
     expect(estimateMinutes([{ sets: 3, min: 20, restSec: 60 }])).toBe(Math.round((3 * 20 * 60 + 2 * 60 + 90) / 60))
   })
-  it('counts a per-side entry’s work once for each side', () => {
+  it('counts a per-side hold once for each side, and per-side reps as the total they already are', () => {
     expect(estimateMinutes([{ sets: 3, sec: 180, mode: 'time', side: true, restSec: 60 }])).toBe(Math.round((3 * 360 + 2 * 60 + 90) / 60))
-    expect(estimateMinutes([{ sets: 3, reps: 10, side: true, restSec: 90 }])).toBe(Math.round((3 * 80 + 2 * 90 + 90) / 60))
+    expect(estimateMinutes([{ sets: 3, reps: 20, side: true, restSec: 90 }])).toBe(estimateMinutes([{ sets: 3, reps: 20, restSec: 90 }]))
   })
   it('keeps the reps and hold estimates as they were', () => {
     expect(estimateMinutes([{ sets: 3, reps: 10, restSec: 90 }])).toBe(Math.round((3 * 40 + 2 * 90 + 90) / 60))
