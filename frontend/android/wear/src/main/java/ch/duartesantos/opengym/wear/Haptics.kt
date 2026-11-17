@@ -76,6 +76,9 @@ object Haptics {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)) } catch (_: Exception) {}
     }
+
+    /** One beat of the rest's last 3 seconds: a heavy click, a tick is lost with the wrist down. */
+    fun restCount(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_HEAVY_CLICK)
 }
 
 /**

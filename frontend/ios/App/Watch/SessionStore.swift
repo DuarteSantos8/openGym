@@ -1333,6 +1333,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             // The set page comes back under the finger: a tap meant for the rest is not a Done.
             DispatchQueue.main.async { self?.restRanOutIfDue() }
         }
+        // The last three seconds, one tap each, as a timed hold's: the wrist knows without a look
+        // (the workout session keeps the app running with the wrist down). Each tap is for this
+        // rest only: one paused, skipped or moved since stays quiet.
+        let left = end.timeIntervalSinceNow
+        for s in [3.0, 2.0, 1.0] where left > s + 1 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + left - s) { [weak self] in
+                guard let self = self, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo else { return }
+                Haptics.restCount()
+            }
+        }
         guard notify, !isDemo else { return }
         let content = UNMutableNotificationContent()
         content.title = L("Rest’s over. Next set!")
@@ -1796,6 +1806,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   finished   stop, then two successes: the workout is saved
  *   skip       a soft one going down
  *   count      a click each second of the 3-2-1 before a workout
+ *   restCount  a firm tap at 3, 2 and 1 seconds of rest left
  *   ask        two taps: "All done?", nothing logged for 20 minutes
  *   discarded  stop alone: the workout is gone, nothing saved
  */
@@ -1813,6 +1824,8 @@ enum Haptics {
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
+    // A click is lost with the wrist down (owner, test build): the rest's last seconds take the firm tap.
+    static func restCount() { play([(0, .notification)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
 }
