@@ -1,5 +1,10 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Zahájení",
+  "Workout screen": "Obrazovka tréninku",
+  "Training rules": "Pravidla tréninku",
+  "Timed sets": "Časované série",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Hodinky",
   "Set once": "Nastavit jednou",

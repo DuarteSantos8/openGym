@@ -2,6 +2,11 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "All’avvio",
+  "Workout screen": "Schermata di allenamento",
+  "Training rules": "Regole di allenamento",
+  "Timed sets": "Serie a tempo",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Orologi",
   "Set once": "Da impostare una volta",

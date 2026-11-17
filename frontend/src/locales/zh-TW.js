@@ -1,4 +1,9 @@
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "開始",
+  "Workout screen": "訓練畫面",
+  "Training rules": "訓練規則",
+  "Timed sets": "計時組",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手錶",
   "Set once": "設定一次",

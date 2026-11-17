@@ -1,5 +1,10 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Rozpoczęcie",
+  "Workout screen": "Ekran treningu",
+  "Training rules": "Zasady treningu",
+  "Timed sets": "Serie na czas",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Zegarki",
   "Set once": "Ustaw raz",
