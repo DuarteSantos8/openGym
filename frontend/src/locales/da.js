@@ -5840,6 +5840,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   "Machine settings": "Maskinindstillinger",
   "Add machine settings": "Tilføj maskinindstillinger",
+  "These notes are too long to merge. Shorten one of them first.": "Disse noter er for lange til at blive slået sammen. Gør først én af dem kortere.",
   "The note is too long for the machine settings. Shorten it and try again.": "Noten er for lang sammen med maskinindstillingerne. Gør den kortere, og prøv igen.",
   "Add setting": "Tilføj indstilling",
   "Name, e.g. {0}": "Navn, f.eks. {0}",

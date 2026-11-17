@@ -1329,6 +1329,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'Настройки тренажёра',
   'Add machine settings': 'Добавить настройки тренажёра',
+  'These notes are too long to merge. Shorten one of them first.': 'Эти заметки слишком длинные для объединения. Сначала сократите одну из них.',
   'The note is too long for the machine settings. Shorten it and try again.': 'Заметка вместе с настройками тренажёра слишком длинная. Сократите её и повторите.',
   'Add setting': 'Добавить настройку',
   'Name, e.g. {0}': 'Название, напр. {0}',

@@ -63,6 +63,19 @@ describe('merging an exercise into another (#656)', () => {
     expect(rest).toEqual(['Y: 2'])
   })
 
+  test('a merge that would cut a note does not happen, and changes nothing', () => {
+    const S = state()
+    S.exNotes = { [CUSTOM]: 'x'.repeat(1500), [BENCH]: 'y'.repeat(1000) }
+    registerCustom(S.customEx)
+    const before = JSON.stringify(S)
+    expect(mergeBlocked(S, CUSTOM, BENCH)).toBe('These notes are too long to merge. Shorten one of them first.')
+    expect(() => mergeExercise(S, CUSTOM, BENCH, { now: 1000 })).toThrow('too long')
+    expect(JSON.stringify(S)).toBe(before)
+    // the same text on both sides counts once, so this one fits
+    S.exNotes = { [CUSTOM]: 'x'.repeat(1500), [BENCH]: 'x'.repeat(1500) }
+    expect(mergeBlocked(S, CUSTOM, BENCH)).toBe(null)
+  })
+
   test('the preview counts what moves', () => {
     expect(mergePreview(state(), CUSTOM, BENCH)).toMatchObject({ workouts: 2, sets: 3, routines: 1, programmes: 1, note: true, custom: true })
   })

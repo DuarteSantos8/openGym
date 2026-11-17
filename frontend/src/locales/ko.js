@@ -1349,6 +1349,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': '기구 설정',
   'Add machine settings': '기구 설정 추가',
+  'These notes are too long to merge. Shorten one of them first.': '이 메모들은 합치기에는 너무 깁니다. 먼저 하나를 줄이세요.',
   'The note is too long for the machine settings. Shorten it and try again.': '기구 설정과 함께 메모가 너무 깁니다. 줄인 뒤 다시 시도하세요.',
   'Add setting': '설정 추가',
   'Name, e.g. {0}': '이름 (예: {0})',

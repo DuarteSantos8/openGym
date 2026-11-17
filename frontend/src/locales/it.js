@@ -1353,6 +1353,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'Regolazioni della macchina',
   'Add machine settings': 'Aggiungi regolazioni della macchina',
+  'These notes are too long to merge. Shorten one of them first.': 'Queste note sono troppo lunghe per essere unite. Accorciane prima una.',
   'The note is too long for the machine settings. Shorten it and try again.': 'La nota è troppo lunga con le regolazioni della macchina. Accorciala e riprova.',
   'Add setting': 'Aggiungi regolazione',
   'Name, e.g. {0}': 'Nome, ad es. {0}',

@@ -5896,6 +5896,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   "Machine settings": "Įrenginio nustatymai",
   "Add machine settings": "Pridėti įrenginio nustatymus",
+  "These notes are too long to merge. Shorten one of them first.": "Šios pastabos per ilgos sujungti. Pirmiausia sutrumpinkite vieną iš jų.",
   "The note is too long for the machine settings. Shorten it and try again.": "Pastaba kartu su įrenginio nustatymais per ilga. Sutrumpinkite ir bandykite dar kartą.",
   "Add setting": "Pridėti nustatymą",
   "Name, e.g. {0}": "Pavadinimas, pvz., {0}",

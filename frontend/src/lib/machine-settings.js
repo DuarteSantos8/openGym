@@ -135,9 +135,10 @@ export function withNoteText(notes, exId, rest, max = Infinity) {
  * settings line on top, then the text of both. The source's pairs come first and the target's
  * after them; a name both have keeps the target's value. The target's pairs are never dropped: the
  * source's other pairs fill what is left of SETTINGS_MAX, and any that do not fit are kept as a
- * line of text under the settings instead of being lost.
+ * line of text under the settings instead of being lost. Never cut: the caller checks the length
+ * first (lib/exercise-merge.js mergeBlocked).
  */
-export function mergeNotes(target, source, max = Infinity) {
+export function mergeNotes(target, source) {
   const t = splitNote(target), s = splitNote(source)
   const have = new Set(t.pairs.map(p => p.k.toLocaleLowerCase()))
   const extra = s.pairs.filter(p => !have.has(p.k.toLocaleLowerCase()))
@@ -145,7 +146,7 @@ export function mergeNotes(target, source, max = Infinity) {
   const pairs = [...extra.slice(0, room), ...t.pairs]
   const left = extra.slice(room).map(settingLabel).join(SEP)
   const text = [...new Set([t.rest, s.rest, left].filter(Boolean))].join('\n')
-  return joinNote(pairs, text).slice(0, max)
+  return joinNote(pairs, text)
 }
 
 /**

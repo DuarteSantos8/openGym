@@ -84,12 +84,16 @@ export function mergePreview(S, fromId, toId) {
   }
 }
 
+const NOTES_TOO_LONG = 'These notes are too long to merge. Shorten one of them first.'
+
 /** Why a merge cannot happen, as an English key for t(), or null when it can. */
 export function mergeBlocked(S, fromId, toId) {
   if (!fromId || !toId || fromId === toId) return 'Pick a different exercise.'
   if (mergedInto(S, toId) === fromId) return 'Pick a different exercise.'
   if (!exOf(S, toId)) return 'Pick a different exercise.'
   if (list(S?.active?.entries).some(e => e?.id === fromId)) return 'Finish your current workout first'
+  // Both notes together must fit: a merge never cuts a note, it does not happen until one is shortened.
+  if (isMap(S?.exNotes) && String(S.exNotes[fromId] || '').trim() && mergeNotes(S.exNotes[toId], S.exNotes[fromId]).length > NOTE_MAX) return NOTES_TOO_LONG
   return null
 }
 
@@ -189,7 +193,7 @@ export function mergeExercise(S, fromId, toId, { now = Date.now(), names = [] } 
   // The standing note: both, the target's first; the machine settings line stays on top, merged.
   if (isMap(S.exNotes) && (S.exNotes[fromId] || '').trim()) {
     const notes = { ...S.exNotes }
-    notes[toId] = mergeNotes(notes[toId], notes[fromId], NOTE_MAX)
+    notes[toId] = mergeNotes(notes[toId], notes[fromId])
     delete notes[fromId]
     S.exNotes = notes
   }

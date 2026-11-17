@@ -1349,6 +1349,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'Makine ayarları',
   'Add machine settings': 'Makine ayarı ekle',
+  'These notes are too long to merge. Shorten one of them first.': 'Bu notlar birleştirilemeyecek kadar uzun. Önce birini kısaltın.',
   'The note is too long for the machine settings. Shorten it and try again.': 'Not, makine ayarlarıyla birlikte çok uzun. Kısaltıp tekrar deneyin.',
   'Add setting': 'Ayar ekle',
   'Name, e.g. {0}': 'Ad, ör. {0}',

@@ -1167,6 +1167,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'Gépbeállítások',
   'Add machine settings': 'Gépbeállítások hozzáadása',
+  'These notes are too long to merge. Shorten one of them first.': 'Ezek a jegyzetek túl hosszúak az egyesítéshez. Előbb rövidítsd le az egyiket.',
   'The note is too long for the machine settings. Shorten it and try again.': 'A jegyzet a gépbeállításokkal együtt túl hosszú. Rövidítsd le, és próbáld újra.',
   'Add setting': 'Beállítás hozzáadása',
   'Name, e.g. {0}': 'Név, pl. {0}',

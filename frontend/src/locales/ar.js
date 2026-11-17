@@ -1079,6 +1079,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'إعدادات الجهاز',
   'Add machine settings': 'إضافة إعدادات الجهاز',
+  'These notes are too long to merge. Shorten one of them first.': 'هاتان الملاحظتان طويلتان جدًا للدمج. قصّر إحداهما أولًا.',
   'The note is too long for the machine settings. Shorten it and try again.': 'الملاحظة طويلة جدًا مع إعدادات الجهاز. قصّرها وحاول مرة أخرى.',
   'Add setting': 'إضافة إعداد',
   'Name, e.g. {0}': 'الاسم، مثلًا {0}',

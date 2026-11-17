@@ -1426,6 +1426,7 @@ export default {
   // --- machine settings (components/MachineSettings.jsx) ---
   'Machine settings': 'মেশিন সেটিংস',
   'Add machine settings': 'মেশিন সেটিংস যোগ করুন',
+  'These notes are too long to merge. Shorten one of them first.': 'এই নোটগুলো মেলানোর জন্য অনেক লম্বা। আগে একটি ছোট করুন।',
   'The note is too long for the machine settings. Shorten it and try again.': 'মেশিন সেটিংসসহ নোটটি অনেক লম্বা। ছোট করে আবার চেষ্টা করুন।',
   'Add setting': 'সেটিং যোগ করুন',
   'Name, e.g. {0}': 'নাম, যেমন {0}',
