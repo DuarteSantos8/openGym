@@ -99,6 +99,10 @@ for (const [size, viewport] of [['phone', { width: 390, height: 844 }], ['deskto
     return b.contains(hit) ? 'ok' : (hit?.id || hit?.className || 'something')
   })
   if (onTop !== 'ok') fail(`${size}: Plan's Resume button is covered (${onTop})`)
+  // The centre test misses a bar over only part of it, so the whole button is checked too.
+  const resume = await box(page, '.iv-plan-start .btn')
+  if (overlap(resume, await box(page, '#timer'))) fail(`${size}: Plan's Resume button sits partly under the rest timer`)
+  if (overlap(resume, await box(page, '#tabbar'))) fail(`${size}: Plan's Resume button sits partly under the tab bar`)
   await ctx.close()
 }
 await browser.close()

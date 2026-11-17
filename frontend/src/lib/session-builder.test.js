@@ -94,6 +94,14 @@ describe('estimateMinutes', () => {
     expect(estimateMinutes([{ sets: 1, min: 20 }])).toBe(22)
     expect(estimateMinutes([{ sets: 1, min: 20 }, { sets: 3, reps: 10, restSec: 90 }])).toBe(Math.round((20 * 60 + 90 + 3 * 40 + 2 * 90 + 90) / 60))
   })
+  it('counts every cardio interval and the rest between them', () => {
+    expect(estimateMinutes([{ sets: 3, min: 20 }])).toBe(Math.round((3 * 20 * 60 + 2 * 90 + 90) / 60))
+    expect(estimateMinutes([{ sets: 3, min: 20, restSec: 60 }])).toBe(Math.round((3 * 20 * 60 + 2 * 60 + 90) / 60))
+  })
+  it('counts a per-side entry’s work once for each side', () => {
+    expect(estimateMinutes([{ sets: 3, sec: 180, mode: 'time', side: true, restSec: 60 }])).toBe(Math.round((3 * 360 + 2 * 60 + 90) / 60))
+    expect(estimateMinutes([{ sets: 3, reps: 10, side: true, restSec: 90 }])).toBe(Math.round((3 * 80 + 2 * 90 + 90) / 60))
+  })
   it('keeps the reps and hold estimates as they were', () => {
     expect(estimateMinutes([{ sets: 3, reps: 10, restSec: 90 }])).toBe(Math.round((3 * 40 + 2 * 90 + 90) / 60))
     expect(estimateMinutes([{ sets: 3, sec: 30, mode: 'time', restSec: 60 }])).toBe(Math.round((3 * 30 + 2 * 60 + 90) / 60))
