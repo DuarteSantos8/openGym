@@ -104,11 +104,14 @@ function LiveBarOn () {
   return (
     <button ref={btn} id="livebar" className="livebar" type="button" aria-label={label} onClick={rise}>
       <span className="livebar-hl" aria-hidden="true"><i style={{ transform: `scaleX(${b.progress})` }} /></span>
-      {b.device && <DeviceMark device={b.device} />}
+      {/* Says a tap opens the workout upward; the mirror of the workout page's Minimize chevron,
+          and in the same order as that page's top bar: arrow first, the watch at the end. */}
+      <Icon name="chevronUp" size={18} className="livebar-up" />
       <span className="livebar-txt" aria-hidden="true">
         <span className="livebar-l1">
           <span className="livebar-nm">{routine}</span>
-          <span className="livebar-el livebar-num"><Elapsed start={b.start} pausedAt={b.pausedAt} /></span>
+          {/* A recording light by the clock: the workout is running. Still while paused. */}
+          <span className="livebar-el livebar-num"><i className={'livebar-on' + (b.pausedAt ? ' paused' : '')} /><Elapsed start={b.start} pausedAt={b.pausedAt} /></span>
         </span>
         {b.rest
           ? <span className="livebar-l2">
@@ -124,9 +127,7 @@ function LiveBarOn () {
       {b.pulseSlot && <span className="livebar-hr livebar-num" aria-hidden="true">
         {b.bpm != null && <><svg viewBox="0 0 24 24"><path d="M12 21s-8.5-5.2-8.5-11.3C3.5 6.6 5.8 4.6 8.3 4.6c1.5 0 2.9.8 3.7 2 .8-1.2 2.2-2 3.7-2 2.5 0 4.8 2 4.8 5.1C20.5 15.8 12 21 12 21Z" /></svg>{b.bpm}</>}
       </span>}
-      {/* Says a tap opens the workout upward; the mirror of the workout page's Minimize chevron. */}
-      <Icon name="chevronUp" size={18} className="livebar-up" />
-
+      {b.device && <DeviceMark device={b.device} />}
     </button>
   )
 }

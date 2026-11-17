@@ -126,11 +126,21 @@ describe('the live bar', () => {
     expect(host.querySelector('.livebar-dev')).not.toBeNull()
     expect(host.querySelector('.livebar-hr')).not.toBeNull()
     expect(bar().getAttribute('aria-label')).toContain('Watch connected')
+    // The workout page's top bar order: the arrow first (after the progress line), the watch last.
+    expect(bar().children[1].dataset.icon).toBe('chevronUp')
+    expect(bar().lastElementChild.classList.contains('livebar-dev')).toBe(true)
+  })
+
+  it('the light by the clock breathes while running and stands still while paused', () => {
+    seed(active()); render()
+    expect(host.querySelector('.livebar-on')).not.toBeNull()
+    expect(host.querySelector('.livebar-on.paused')).toBeNull()
+    seed(active({ pausedAt: Date.now() }))
+    expect(host.querySelector('.livebar-on.paused')).not.toBeNull()
   })
 
   it('a tap goes to the workout', () => {
     seed(active()); render()
-    expect(bar().querySelector('[data-icon="chevronUp"]')).not.toBeNull() // the arrow says it opens upward
     act(() => { bar().click() })
     expect(mocks.nav).toHaveBeenCalledWith('/workout', { state: { rise: 'rise' } })
   })

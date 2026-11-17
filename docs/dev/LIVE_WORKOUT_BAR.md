@@ -40,8 +40,10 @@ violet, pink and red are solid, so are the deeper light colours, and so is high 
 
 ## The rise
 
-An up chevron at the bar's end says a tap opens the workout; it mirrors the workout page's Minimize
-chevron. Tapping the bar navigates at once with `state: { rise: 'rise' }`; that Minimize chevron does
+The bar keeps the workout page's top bar order: an up chevron first (the mirror of its Minimize
+chevron, saying a tap opens the workout), the text, the pulse, the watch mark last. A small light by
+the clock breathes while the workout runs (2 s, opacity and scale only); it stands still while paused
+and with Reduce Motion. Tapping the bar navigates at once with `state: { rise: 'rise' }`; that Minimize chevron does
 the same with `'fold'`. App.jsx hands that to the page as its arrival motion (`vrise`, `vfold` in index.css):
 one 280 ms keyframe, transform and opacity only, on `--ease`. The workout page grows up from the bottom
 edge; the page it folds back to settles down from a touch larger. Reduced motion: the app's global rule
