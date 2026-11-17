@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// The backup-folder rows (#161) sit under Auto-backup, on Android only, and only while it is on.
+// The backup-folder rows (#161) sit under Auto-backup, on Android and iPhone, and only while it is on.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -84,6 +84,7 @@ afterEach(() => {
 })
 
 const mount = async () => { await act(async () => { root.render(<Settings page="data" />) }) }
+const restoreRow = () => [...host.querySelectorAll('.lrow')].some(r => r.textContent.includes('Restore from a backup'))
 const shown = () => !!host.querySelector('.backup-folder-row')
 
 describe('the backup folder rows', () => {
@@ -97,9 +98,25 @@ describe('the backup folder rows', () => {
     await mount()
     expect(shown()).toBe(false)
   })
-  it('not on iOS', async () => {
+  it('show on iPhone too (Files: iCloud Drive and the rest)', async () => {
     mocks.S.autoBackup = true
     mocks.android = false
+    await mount()
+    expect(shown()).toBe(true)
+  })
+  it('the Restore row is the iPhone\'s only', async () => {
+    mocks.S.autoBackup = true
+    await mount()
+    expect(restoreRow()).toBe(false)
+    act(() => root.unmount()); root = createRoot(host)
+    mocks.android = false
+    globalThis.Capacitor = { getPlatform: () => 'ios' }
+    try { await mount() } finally { delete globalThis.Capacitor }
+    expect(restoreRow()).toBe(true)
+  })
+  it('not in a browser', async () => {
+    mocks.S.autoBackup = true
+    mocks.MOBILE = false
     await mount()
     expect(shown()).toBe(false)
   })

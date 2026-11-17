@@ -6,8 +6,8 @@ import { Row } from './ui.jsx'
 
 const DEFAULT_FOLDER = 'Documents/openGym'
 
-/* Where auto-backup puts its copies on this Android phone (#161): Documents/openGym, or a folder
-   chosen with the system picker — a sync app's, an SD card's. The choice is this phone's alone
+/* Where auto-backup puts its copies on this phone (#161): Documents/openGym, or a folder
+   chosen with the system picker — a sync app's, an SD card's, a folder in iCloud Drive. The choice is this phone's alone
    (lib/mobile.js), so it is read here and not from the synced state. When the chosen folder
    stops taking copies they go to Documents/openGym again, and this says so until the folder is
    chosen again or the default is confirmed. */

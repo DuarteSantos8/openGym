@@ -135,7 +135,7 @@ function WebDavManage({ cfg, close }) {
     try { list = await listBackups() } catch (e) { setBusy(false); toast(t(errorText(e))); return }
     setBusy(false)
     if (!list.length) { toast(t('No openGym backups in that folder yet.')); return }
-    useUI.getState().openSheet(c => <RestoreList list={list} close={c} />)
+    useUI.getState().openSheet(c => <RestoreList list={list} close={c} read={fetchBackup} />)
   }
   const forget = confirmForget
   return <>
@@ -164,16 +164,16 @@ function WebDavManage({ cfg, close }) {
   </>
 }
 
-function RestoreList({ list, close }) {
+export function RestoreList({ list, close, read: readText }) {
   const [busy, setBusy] = useState(null)
   const pick = async b => {
     setBusy(b.name)
     try {
-      const text = await fetchBackup(b.name)
+      const text = await readText(b.name)
       const { readBackupFile } = await import('../lib/backup-media.js')
-      const read = await readBackupFile(new File([text], b.name, { type: 'application/json' }))
+      const parsed = await readBackupFile(new File([text], b.name, { type: 'application/json' }))
       close()
-      await confirmBackupImport(read)
+      await confirmBackupImport(parsed)
     } catch (e) {
       if (e instanceof DavError) toast(t(errorText(e)))
       else { const { backupImportError } = await import('../lib/backup-media.js'); toast(backupImportError(e)) }
@@ -190,6 +190,18 @@ function RestoreList({ list, close }) {
     </Section>
     <Button variant="plain" onClick={close}>{t('Cancel')}</Button>
   </>
+}
+
+/** iPhone: the dated copies in the backup folder (or Documents/openGym) in the same list as WebDAV's. */
+let listing = false   // a double tap while the folder is read must not open two sheets
+export async function restoreFromFolder() {
+  if (listing) return
+  listing = true
+  let list
+  try { list = await (await import('../lib/mobile.js')).listFolderBackups() } catch (e) { toast((await import('../lib/backup-media.js')).backupImportError(e)); return } finally { listing = false }
+  if (!list.length) { toast(t('No openGym backups in that folder yet.')); return }
+  const read = name => import('../lib/mobile.js').then(m => m.readFolderBackup(name))
+  useUI.getState().openSheet(c => <RestoreList list={list} close={c} read={read} />)
 }
 
 /** Settings → Data & backup: the way to the same sheet, with how the last backup went. */
