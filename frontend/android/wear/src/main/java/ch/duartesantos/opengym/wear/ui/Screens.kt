@@ -72,9 +72,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.wear.input.RemoteInputIntentHelper
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -1066,8 +1066,9 @@ private fun NoteButton(shown: String) {
         Modifier.fillMaxWidth().padding(top = 4.dp).heightIn(min = Og.Tap).clip(shape).background(Og.Surface)
             .combinedClickable(role = Role.Button, onClickLabel = label) {
                 val input = android.app.RemoteInput.Builder(NOTE_KEY).setLabel(label).build()
-                val intent = RemoteInputIntentHelper.createActionRemoteInputIntent()
-                RemoteInputIntentHelper.putRemoteInputsExtra(intent, listOf(input))
+                // The watch's own input screen, asked for by hand: wear-input's helper is these two strings, not worth a dependency.
+                val intent = Intent("android.support.wearable.input.action.REMOTE_INPUT")
+                    .putExtra("android.support.wearable.input.extra.REMOTE_INPUTS", arrayOf(input))
                 launch.launch(intent)
             }
             .semantics(mergeDescendants = true) { contentDescription = if (shown.isEmpty()) label else "$label: $shown" }
