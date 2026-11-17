@@ -26,16 +26,16 @@ describe('liveBarState', () => {
   })
   it('lifting: the exercise, the next set, no rest, progress by sets done', () => {
     const b = liveBarState(S(lifting()))
-    expect(b).toMatchObject({ routine: 'Push day', exercise: 'BENCH', set: { n: 2, of: 4 }, allDone: false, rest: null, done: 1, total: 4, parts: [0.25], start: 1000, pausedAt: 0 })
+    expect(b).toMatchObject({ routine: 'Push day', exercise: 'BENCH', set: { n: 2, of: 4 }, allDone: false, rest: null, done: 1, total: 4, parts: [{ sets: 4, done: 1 }], start: 1000, pausedAt: 0 })
   })
-  it('progress: one section per exercise, filled by its own sets; an exercise with no sets has none', () => {
+  it('progress: one section per exercise, as long as its sets and filled by those done; an exercise with no sets has none', () => {
     const A = lifting({ entries: [entry('a', [set({ done: true }), set({ done: true })]), entry('b', [set({ done: true }), set(), set()]), entry('c', []), entry('d', [set()])] })
-    expect(liveBarState(S(A)).parts).toEqual([1, 1 / 3, 0])
+    expect(liveBarState(S(A)).parts).toEqual([{ sets: 2, done: 2 }, { sets: 3, done: 1 }, { sets: 1, done: 0 }])
   })
   it('rest counting: the countdown, what is next, and the sections stay on the sets', () => {
     const b = liveBarState(S(lifting()), { timer: { left: 72, total: 90, endsAt: 5000, forIdx: 0 } })
     expect(b.rest).toEqual({ left: 72, switch: false })
-    expect(b.parts).toEqual([0.25])
+    expect(b.parts).toEqual([{ sets: 4, done: 1 }])
     expect(b.next).toBe('BENCH')
   })
   it('a paused workout keeps its stop time, and a paused rest keeps its time left', () => {
@@ -49,7 +49,7 @@ describe('liveBarState', () => {
   })
   it('every set done: all done, no exercise line', () => {
     const b = liveBarState(S(lifting({ entries: [entry('bench', [set({ done: true }), set({ done: true })])] })))
-    expect(b).toMatchObject({ allDone: true, exercise: '', set: null, parts: [1] })
+    expect(b).toMatchObject({ allDone: true, exercise: '', set: null, parts: [{ sets: 2, done: 2 }] })
   })
   it('a rest that ran out (ready, or left 0) is no rest', () => {
     expect(liveBarState(S(lifting()), { timer: { left: 30, total: 90, endsAt: 5000, forIdx: 0, ready: true } }).rest).toBeNull()
