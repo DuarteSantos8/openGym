@@ -110,6 +110,16 @@ describe('Live widget settings', () => {
     await act(async () => opts.onAction())
     expect(mocks.S.liveWidget).toEqual({ look: 'clean' })
   })
+  it('the undo leaves a switch flipped after the reset alone', async () => {
+    mocks.S.liveWidget = { look: 'clean' }
+    await render(<LiveWidgetSettings />)
+    await click([...host.querySelectorAll('.lrow')].find(r => r.textContent === 'Back to the defaults'))
+    const [, opts] = mocks.toasts.pop()
+    await flip('Show a strip in the workout')
+    await act(async () => opts.onAction())
+    expect(mocks.S.liveWidget.card).toBe(true)
+    expect(mocks.toasts.pop()[0]).toBe('Nothing to undo')
+  })
   it('opens Per exercise type, which names the kinds with their own setup', async () => {
     mocks.S.liveWidget = { kinds: { hold: { b: ['pause'] }, cardio: { d: [] } } }
     await render(<LiveWidgetSettings />)

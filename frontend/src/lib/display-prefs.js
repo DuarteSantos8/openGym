@@ -22,6 +22,9 @@ export const TEXT_SIZES = { smallest: 0.82, small: 0.9, default: 1, large: 1.12,
 export const SYSTEM_MIN = 0.82
 export const SYSTEM_MAX = 1.4
 export const TEXT_SCALE_EVENT = 'opengym:text-scale'
+// Sent after every apply: what measures the root size (the iPhone tab bar) measures again. Not the
+// event above, which asks the page to re-read the phone's size.
+export const DISPLAY_EVENT = 'opengym:display'
 
 /**
  * The phone's text size as a factor (1 = the platform's default), or 1 where nobody says (the web:
@@ -88,6 +91,7 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
     // For the few things that size themselves in px from JS (canvas charts): the same factor.
     root.style.setProperty('--text-k', String(k))
   }
+  try { win?.dispatchEvent?.(new Event(DISPLAY_EVENT)) } catch { /* no events here */ }
   listenForSystem(win)
   if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text })) } catch { /* private mode */ } }
   return d

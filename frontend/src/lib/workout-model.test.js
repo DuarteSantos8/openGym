@@ -6,7 +6,7 @@ import {
   addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt,
   nextDropWeight, nextBurstReps, splitBurstReps,
   isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL, markWarmupEdited,
-  addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
+  isLastSetOfExercise, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
 } from './workout-model.js'
 
 describe('phaseForSet / isWarmupRow', () => {
@@ -413,5 +413,18 @@ describe('cluster sets (1.4.5)', () => {
     const row = syncSides({ w: 20, r: 12, type: 'restpause', cluster: true, sides: { L: side, R: side } })
     expect(row.sides.L.cluster).toBe(true)
     expect(isClusterSet(row)).toBe(true)
+  })
+})
+
+describe('isLastSetOfExercise', () => {
+  const sets = [{ done: true }, { done: false }, { done: true }]
+  it('is true only when every other set is done', () => {
+    expect(isLastSetOfExercise(sets, 1)).toBe(true)
+    expect(isLastSetOfExercise(sets, 0)).toBe(false)
+  })
+  it('a per-side row also needs its other side done', () => {
+    const row = { done: false, sides: { L: { done: true }, R: { done: false } } }
+    expect(isLastSetOfExercise([row], 0, 'R')).toBe(true)
+    expect(isLastSetOfExercise([row], 0, 'L')).toBe(false)
   })
 })

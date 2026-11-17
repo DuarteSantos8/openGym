@@ -66,6 +66,18 @@ afterEach(() => { process.off('unhandledRejection', onUnhandled) })
 afterAll(() => { vi.unstubAllEnvs() })
 
 describe('the rest alert in the iOS app', () => {
+  it('hands a haptic kind to the native side, and answers false off the phone', async () => {
+    h.platform = 'ios'
+    const alert = await import('./rest-alert.js')
+    await expect(alert.hapticNative('success')).resolves.toBe(true)
+    expect(h.calls).toContain('haptic')
+    h.platform = 'web'
+    vi.resetModules(); h.calls = []
+    const web = await import('./rest-alert.js')
+    await expect(web.hapticNative('light')).resolves.toBe(false)
+    expect(h.calls).toEqual([])
+  })
+
   it('schedules the end on the phone, like Android, and rejects nothing', async () => {
     h.platform = 'ios'
     const alert = await import('./rest-alert.js')
