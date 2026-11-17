@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cleanSettings, settingsFor, splitNote, joinNote, settingsLine, noteWithoutSettings, withSettings, withNoteText, settingLabel, knownKeys, SETTINGS_MAX, KEY_MAX, VALUE_MAX } from './machine-settings.js'
+import { cleanSettings, settingsFor, splitNote, joinNote, settingsLine, noteWithoutSettings, withSettings, withNoteText, noteRoom, settingLabel, knownKeys, SETTINGS_MAX, KEY_MAX, VALUE_MAX } from './machine-settings.js'
 import { exNoteFor } from './history.js'
 
 describe('cleanSettings', () => {
@@ -83,10 +83,19 @@ describe('settingsFor / withSettings / withNoteText', () => {
     expect(withNoteText({}, 'a', 'new')).toEqual({ a: 'new' })
   })
 
-  it('cuts the note, never the line, when the two together would be too long', () => {
-    const out = withNoteText({ a: 'Seat: 5' }, 'a', 'x'.repeat(100), 20)
-    expect(out.a.length).toBeLessThanOrEqual(20)
-    expect(out.a.startsWith('Seat: 5\n')).toBe(true)
+  it('never cuts a note: when line and text do not fit together, nothing changes', () => {
+    const notes = { a: 'Seat: 5' }
+    expect(withNoteText(notes, 'a', 'x'.repeat(100), 20)).toBe(notes)
+    expect(withNoteText(notes, 'a', 'x'.repeat(12), 20)).toEqual({ a: 'Seat: 5' + String.fromCharCode(10) + 'x'.repeat(12) })
+    const long = { a: 'x'.repeat(19) }
+    expect(withSettings(long, 'a', [{ k: 'Seat', v: '5' }], 20)).toBe(long)
+    expect(noteRoom({ exNotes: notes }, 'a', 20)).toBe(12)
+    // A full 2000-character note: adding a setting is refused, saving without settings keeps every character.
+    const full = { a: 'y'.repeat(2000) }
+    expect(withSettings(full, 'a', [{ k: 'Seat', v: '5' }], 2000)).toBe(full)
+    expect(withSettings(full, 'a', [], 2000)).toEqual(full)
+    expect(withNoteText(full, 'a', 'y'.repeat(2000), 2000)).toEqual(full)
+    expect(noteRoom({}, 'a', 20)).toBe(20)
   })
 
   it('shows the workout the note without the line, as it always did without one', () => {

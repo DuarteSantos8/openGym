@@ -92,15 +92,22 @@ export function noteWithoutSettings(S, exId) {
   return typeof n === 'string' ? splitNote(n).rest : ''
 }
 
+/** Room left for an exercise's note text under its settings line (newline included), at most `max`. */
+export function noteRoom(S, exId, max) {
+  const n = isMap(S?.exNotes) ? S.exNotes[exId] : null
+  const line = typeof n === 'string' ? settingsLine(splitNote(n).pairs) : ''
+  return Math.max(0, max - (line ? line.length + 1 : 0))
+}
+
 /**
  * The exNotes map with the exercise's settings replaced (a new object); the rest of its note is
- * kept, and no key is left when nothing remains.
+ * kept whole, and no key is left when nothing remains. When the line and the note together would
+ * not fit in `max`, nothing changes and the same map comes back: text is never cut silently.
  */
 export function withSettings(notes, exId, pairs, max = Infinity) {
   const next = isMap(notes) ? { ...notes } : {}
-  const { rest } = splitNote(next[exId])
-  const line = settingsLine(pairs)
-  const joined = joinNote(pairs, rest.slice(0, Math.max(0, max - line.length - 1)))
+  const joined = joinNote(pairs, splitNote(next[exId]).rest)
+  if (joined.length > max) return notes
   if (joined) next[exId] = joined
   else delete next[exId]
   return next
@@ -108,13 +115,13 @@ export function withSettings(notes, exId, pairs, max = Infinity) {
 
 /**
  * The exNotes map with the exercise's note (without its settings line) replaced; the settings
- * line is kept.
+ * line is kept. When line and text together would not fit in `max`, nothing changes and the same
+ * map comes back.
  */
 export function withNoteText(notes, exId, rest, max = Infinity) {
   const next = isMap(notes) ? { ...notes } : {}
-  const { pairs } = splitNote(next[exId])
-  const line = settingsLine(pairs)
-  const joined = joinNote(pairs, String(rest == null ? '' : rest).trim().slice(0, Math.max(0, max - (line ? line.length + 1 : 0))))
+  const joined = joinNote(splitNote(next[exId]).pairs, rest)
+  if (joined.length > max) return notes
   if (joined) next[exId] = joined
   else delete next[exId]
   return next

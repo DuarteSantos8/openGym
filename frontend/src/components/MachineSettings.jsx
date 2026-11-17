@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exOr } from '../lib/exercises.js'
-import { settingsFor, withSettings, settingLabel, knownKeys, SUGGESTED_KEYS, SETTINGS_MAX, KEY_MAX, VALUE_MAX } from '../lib/machine-settings.js'
+import { settingsFor, withSettings, joinNote, noteWithoutSettings, settingLabel, knownKeys, SUGGESTED_KEYS, SETTINGS_MAX, KEY_MAX, VALUE_MAX } from '../lib/machine-settings.js'
 import { NOTE_MAX } from '../lib/history.js'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -67,6 +67,8 @@ function MachineSettingsSheet({ exId, close }) {
   }
   const remove = i => setRows(rs => (rs.length > 1 ? rs.filter((_, j) => j !== i) : [blank()]))
   const save = () => {
+    // Too long together with the note under the line: keep the sheet open and change nothing.
+    if (joinNote(rows, noteWithoutSettings(S, exId)).length > NOTE_MAX) return
     update(s => { s.exNotes = withSettings(s.exNotes, exId, rows, NOTE_MAX) })
     close()
   }
