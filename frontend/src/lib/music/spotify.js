@@ -33,7 +33,15 @@ export function spotifyConnected() {
   return !!(t && t.refresh)
 }
 
-export function disconnectSpotify() { write(TOKENS, null); write(PENDING, null) }
+export function disconnectSpotify() { write(TOKENS, null); write(PENDING, null); generation++ }
+
+/** Whether an address's ?state=… is the one this device's own sign-in sent (and so its code is Spotify's). */
+export function isSpotifyReturn(search) {
+  const q = new URLSearchParams(search)
+  if (!q.has('state') || !(q.has('code') || q.has('error'))) return false
+  const p = read(PENDING)
+  return !!p && p.state === q.get('state')
+}
 
 const b64url = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 function randomString(n) {
@@ -65,13 +73,39 @@ export async function connectSpotify(clientId) {
   location.href = url
 }
 
-async function tokenRequest(body, fetchFn = fetch) {
-  const r = await fetchFn(ACCOUNTS + '/api/token', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(body).toString(),
-  })
-  if (!r.ok) throw Object.assign(new Error('token ' + r.status), { status: r.status })
-  return r.json()
+// A request to Spotify that hangs (a phone between networks) gives up, body included, so the bar
+// says so instead of waiting for ever.
+const DEADLINE_MS = 15000
+async function within(fetchFn, url, init, read) {
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null
+  const timer = ctl ? setTimeout(() => ctl.abort(), DEADLINE_MS) : null
+  try {
+    const r = await fetchFn(url, ctl ? { ...init, signal: ctl.signal } : init)
+    return await read(r)
+  } catch (e) {
+    if (e?.name === 'AbortError') throw Object.assign(new Error('spotify did not answer'), { code: 'failed' })
+    throw e
+  } finally { clearTimeout(timer) }
 }
+
+// Spotify's OAuth error (`invalid_grant`, `invalid_request`…) is kept with the status: only
+// invalid_grant means the refresh token is gone for good.
+async function tokenRequest(body, fetchFn = fetch) {
+  return within(fetchFn, ACCOUNTS + '/api/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(body).toString(),
+  }, async r => {
+    if (!r.ok) {
+      let oauth = null
+      try { oauth = (await r.json())?.error || null } catch { /* not JSON */ }
+      throw Object.assign(new Error('token ' + r.status), { status: r.status, oauth })
+    }
+    return r.json()
+  })
+}
+
+// Bumped on every sign-in and sign-out: a refresh that ends after one belongs to a connection that
+// is gone, and neither saves nor clears anything.
+let generation = 0
 
 const save = (j, clientId, old) => write(TOKENS, {
   clientId, access: j.access_token, refresh: j.refresh_token || old?.refresh, exp: Date.now() + (j.expires_in ?? 3600) * 1000,
@@ -92,6 +126,7 @@ export async function finishSpotify(search, fetchFn = fetch) {
   const j = await tokenRequest({
     grant_type: 'authorization_code', code: q.get('code'), redirect_uri: p.redirect, client_id: p.clientId, code_verifier: p.verifier,
   }, fetchFn)
+  generation++
   save(j, p.clientId)
   return true
 }
@@ -104,14 +139,18 @@ async function accessToken(fetchFn, force) {
   if (!t || !t.refresh) throw Object.assign(new Error('not connected'), { code: 'auth' })
   if (!force && t.access && t.exp - 60000 > Date.now()) return t.access
   if (refreshing) return refreshing
+  const gen = generation
+  const gone = () => Object.assign(new Error('not connected'), { code: 'auth' })
   refreshing = (async () => {
     try {
       const j = await tokenRequest({ grant_type: 'refresh_token', refresh_token: t.refresh, client_id: t.clientId }, fetchFn)
+      if (gen !== generation) throw gone()
       save(j, t.clientId, t)
       return j.access_token
     } catch (e) {
-      // A refresh token Spotify no longer knows (revoked, app deleted): sign in again.
-      if (e.status === 400 || e.status === 401) { write(TOKENS, null); throw Object.assign(new Error('not connected'), { code: 'auth' }) }
+      // A refresh token Spotify no longer knows (revoked, app deleted): sign in again. Any other
+      // refusal fails this call and keeps the sign-in.
+      if (e.oauth === 'invalid_grant' && gen === generation) { write(TOKENS, null); throw gone() }
       throw e
     }
   })().finally(() => { refreshing = null })
@@ -122,7 +161,9 @@ async function call(method, path, fetchFn) {
   let r
   for (const force of [false, true]) {
     const token = await accessToken(fetchFn, force)
-    r = await fetchFn(API + path, { method, headers: { Authorization: 'Bearer ' + token } })
+    // The body is read inside the deadline too: a body that stalls is a request that hangs.
+    r = await within(fetchFn, API + path, { method, headers: { Authorization: 'Bearer ' + token } },
+      async res => ({ ok: res.ok, status: res.status, json: res.status === 204 ? null : await res.json().catch(() => null) }))
     if (r.status !== 401) break
   }
   return r
@@ -148,7 +189,7 @@ export async function spotifyNowPlaying(fetchFn = fetch) {
   const r = await call('GET', '/me/player?additional_types=episode', fetchFn)
   if (r.status === 204) return null
   if (!r.ok) throw errorOf(r)
-  return trackOf(await r.json())
+  return trackOf(r.json)
 }
 
 const ACTIONS = { play: ['PUT', '/me/player/play'], pause: ['PUT', '/me/player/pause'], next: ['POST', '/me/player/next'], previous: ['POST', '/me/player/previous'] }

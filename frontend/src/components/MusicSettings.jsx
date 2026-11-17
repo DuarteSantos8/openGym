@@ -33,11 +33,15 @@ export default function MusicSettings() {
   const source = musicSource(S)
   const reload = () => accountStatus(true).then(setAcct)
   useEffect(() => { if (source === 'spotify') reload() }, [source])
-  // Back from Spotify's sign-in in the phone app, with this page still open (App.jsx).
+  // Back from Spotify's sign-in in the phone app, with this page still open (App.jsx): the
+  // Connect button works again whatever the outcome, and so it does when the app is shown again
+  // without one (the sign-in left in the browser).
   useEffect(() => {
-    const on = () => { setConnected(spotifyConnected()); reload() }
+    const on = () => { setBusy(false); setConnected(spotifyConnected()); reload() }
+    const shown = () => { if (document.visibilityState === 'visible') setBusy(false) }
     window.addEventListener('opengym:spotify', on)
-    return () => window.removeEventListener('opengym:spotify', on)
+    document.addEventListener('visibilitychange', shown)
+    return () => { window.removeEventListener('opengym:spotify', on); document.removeEventListener('visibilitychange', shown) }
   }, [])
   const options = [
     { value: 'off', label: t('Off') },
@@ -52,7 +56,13 @@ export default function MusicSettings() {
   const account = source === 'spotify' && acct?.available
 
   let rows = null, footer = t('Shows what is playing at the top of a workout, with previous, pause and next.')
-  if (account) {
+  if (source === 'spotify' && acct?.unknown) {
+    // The server did not answer: whether it has Spotify for the account is not known yet, so
+    // neither way is offered, and the account's connection is left as it is.
+    rows = <Row icon="warning" iconTint="var(--orange)" title={t('Could not reach your server')}>
+      <Button size="sm" onClick={reload}>{t('Try again')}</Button>
+    </Row>
+  } else if (account) {
     rows = acct.connected
       ? <Row icon="checkCircle" iconTint="var(--green)" title="Spotify"
           subtitle={acct.name ? t('Connected to your account as {0}', acct.name) : t('Connected to your account')}>

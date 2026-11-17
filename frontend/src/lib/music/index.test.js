@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({ api: vi.fn() }))
 vi.mock('../api.js', () => api)
-const device = vi.hoisted(() => ({ spotifyNowPlaying: vi.fn(), spotifyControl: vi.fn(), finishSpotify: vi.fn(), spotifyConnected: vi.fn(() => false), APP_REDIRECT: 'opengym://spotify' }))
+const device = vi.hoisted(() => ({ spotifyNowPlaying: vi.fn(), spotifyControl: vi.fn(), finishSpotify: vi.fn(), isSpotifyReturn: vi.fn(() => false), spotifyConnected: vi.fn(() => false), APP_REDIRECT: 'opengym://spotify' }))
 vi.mock('./spotify.js', () => device)
 
 import { nowPlaying, control, initMusicReturn, shownSource } from './index.js'
@@ -100,5 +100,24 @@ describe('the way back from the account\'s sign-in', () => {
     expect(done).toHaveBeenCalledWith(true)
     expect(location.search).toBe('')
     expect(location.hash).toBe('#/settings/features')
+  })
+
+  it('leaves another sign-in’s code and state where they are (OpenRouter reads them after)', () => {
+    history.replaceState(null, '', '/?code=or-code&state=or-state#/settings/coach')
+    device.isSpotifyReturn.mockReturnValue(false)
+    initMusicReturn(vi.fn())
+    expect(location.search).toBe('?code=or-code&state=or-state')
+    expect(device.finishSpotify).not.toHaveBeenCalled()
+  })
+
+  it('takes this device’s own Spotify answer off the address', async () => {
+    history.replaceState(null, '', '/?code=sp-code&state=sp-state#/settings/features')
+    device.isSpotifyReturn.mockReturnValue(true)
+    device.finishSpotify.mockResolvedValue(true)
+    const done = vi.fn()
+    initMusicReturn(done)
+    expect(location.search).toBe('')
+    await vi.waitFor(() => expect(done).toHaveBeenCalledWith(true))
+    expect(device.finishSpotify).toHaveBeenCalledWith('?code=sp-code&state=sp-state')
   })
 })

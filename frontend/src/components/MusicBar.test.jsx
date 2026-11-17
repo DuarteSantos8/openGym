@@ -87,4 +87,34 @@ describe('MusicBar', () => {
     await flush()
     expect(host.querySelector('.mb-sub').textContent).toBe('Spotify Premium is needed to control the music.')
   })
+
+  it('one poll at a time: the page shown again while one is out asks once more after it, not in parallel', async () => {
+    let answer
+    music.nowPlaying.mockImplementation(() => new Promise(r => { answer = r }))
+    await mount()
+    expect(music.nowPlaying).toHaveBeenCalledTimes(1)
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')) })
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')) })
+    expect(music.nowPlaying).toHaveBeenCalledTimes(1)
+    vi.useFakeTimers()
+    try {
+      await act(async () => { answer({ id: '1', playing: true, title: 'Song', artist: 'Band', art: '' }) })
+      await act(async () => { vi.advanceTimersByTime(0) })
+      expect(music.nowPlaying).toHaveBeenCalledTimes(2)   // the one asked for meanwhile, at once
+      await act(async () => { answer(null) })
+      await act(async () => { vi.advanceTimersByTime(4999) })
+      expect(music.nowPlaying).toHaveBeenCalledTimes(2)   // then the usual interval, one loop
+    } finally { vi.useRealTimers() }
+  })
+
+  it('an answer for the player it showed before changes nothing', async () => {
+    const answers = {}
+    music.nowPlaying.mockImplementation(src => new Promise(r => { answers[src] = r }))
+    await mount()
+    await act(async () => { root.render(<MusicBar source="apple" />) })
+    await act(async () => { answers.apple({ id: 'a', playing: true, title: 'Apple song', artist: 'A', art: '' }) })
+    await act(async () => { answers.spotify({ id: 's', playing: true, title: 'Spotify song', artist: 'S', art: '' }) })
+    await flush()
+    expect(host.querySelector('.mb-title').textContent).toBe('Apple song')
+  })
 })

@@ -332,7 +332,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.5</span>
-    <span>183 endpoints</span>
+    <span>184 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3372,7 +3372,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">The Spotify sign-in address</span>
   </summary>
   <div class="ep-body">
-<p>Open the returned <code>url</code> (the phone app in the system browser). Spotify comes back to <code>GET /api/music/spotify/callback</code>. <code>app: true</code> sends the browser on to the phone app's <code>opengym://spotify</code> link afterwards; otherwise to <code>back</code>, the app's own address on this instance (anything else is ignored).</p>
+<p>Open the returned <code>url</code> (the phone app in the system browser). Spotify comes back to <code>GET /api/music/spotify/callback</code>. <code>app: true</code> sends the browser on to the phone app's <code>opengym://spotify</code> link afterwards; otherwise to <code>back</code>, the app's own address on this instance (anything else is ignored). A browser's sign-in is tied to that browser: the answer sets an HttpOnly <code>og_spotify_bind</code> cookie that the callback needs to see.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -3391,7 +3391,47 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The address.<span class="r-sig">{ url: string <span class="p-hint">(uri)</span> }</span></span>
+    <span class="p-desc">The address.<span class="r-sig">{ url: string <span class="p-hint">(uri)</span> } &middot; sets <code>Set-Cookie</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Spotify is not offered on this instance.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-redeemSpotify">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/music/spotify/redeem</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The phone app's way back from the Spotify sign-in</span>
+  </summary>
+  <div class="ep-body">
+<p>The one-time <code>handoff</code> code of the <code>opengym://spotify?handoff=…</code> link the callback sent the phone app to. Saves the Spotify account on this profile, only if this profile started that sign-in; good once, for ten minutes.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">handoff<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connected; the same answer as GET /api/music/spotify.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -3413,7 +3453,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Where Spotify sends the browser back after the sign-in</span>
   </summary>
   <div class="ep-body">
-<p>Called by Spotify, not by the app. The <code>state</code> names the sign-in this server started; it needs no session. Redirects to <code>opengym://spotify?connected=1</code> (or <code>failed=1</code>) for the phone app, or to the app's page with <code>?spotify=connected</code> (or <code>failed</code>).</p>
+<p>Called by Spotify, not by the app. The <code>state</code> names the sign-in this server started; it needs no session. A browser's sign-in needs the <code>og_spotify_bind</code> cookie the connect answer set. Redirects to <code>opengym://spotify?handoff=…</code> (or <code>failed=1</code>) for the phone app, which redeems the code (<code>POST /api/music/spotify/redeem</code>), or to the app's page with <code>?spotify=connected</code> (or <code>failed</code>).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 <p class="ep-h">Query parameters</p><div class="ptab">
   <div class="prow">

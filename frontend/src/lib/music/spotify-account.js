@@ -7,19 +7,25 @@
 // device's own Spotify app is the way (spotify.js).
 import { api } from '../api.js'
 import { MOBILE } from '../mobile.js'
+import { useStore } from '../../store/useStore.js'
 import { spotifyConnected } from './spotify.js'
 
 const MODE = 'og.spotify.mode'
 const remember = m => { try { localStorage.setItem(MODE, m) } catch { /* private window */ } }
 const recall = () => { try { return localStorage.getItem(MODE) } catch { return null } }
 
-// The server's answer, kept a minute so the bar's every-few-seconds poll does not ask it each time.
+// The server's answer, kept a minute so the bar's every-few-seconds poll does not ask it each time;
+// for the profile it was asked for, so signing in as someone else on this page asks again.
 let status = null
 let statusAt = 0
+let statusFor = null
 const FRESH = 60000
+const who = () => useStore.getState().user?.id ?? null
 
 export async function accountStatus(force = false) {
-  if (!force && status && Date.now() - statusAt < FRESH) return status
+  const uid = who()
+  if (!force && status && statusFor === uid && Date.now() - statusAt < FRESH) return status
+  statusFor = uid
   try {
     status = await api('/api/music/spotify')
     statusAt = Date.now()
@@ -38,7 +44,7 @@ export async function accountStatus(force = false) {
   return status
 }
 
-export function forgetAccountStatus() { status = null; statusAt = 0 }
+export function forgetAccountStatus() { status = null; statusAt = 0; statusFor = null }
 
 /** Spotify's sign-in, for this profile: back to this page in a browser, to the app on the phone. */
 export async function connectAccount() {
@@ -46,6 +52,12 @@ export async function connectAccount() {
   const { url } = await api('/api/music/spotify/connect', { method: 'POST', body: JSON.stringify(MOBILE ? { app: true } : { back }) })
   forgetAccountStatus()
   location.href = url
+}
+
+/** The phone app back from the sign-in with its link's one-time code (api POST /api/music/spotify/redeem). */
+export async function redeemAccount(handoff) {
+  forgetAccountStatus()
+  await api('/api/music/spotify/redeem', { method: 'POST', body: JSON.stringify({ handoff }) })
 }
 
 export async function disconnectAccount() {

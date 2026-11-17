@@ -11,8 +11,8 @@
 // Errors carry a `code` MusicBar turns into a sentence: 'auth' (Spotify not connected), 'premium',
 // 'device' (no Spotify device playing), 'denied' (no access to Apple Music), 'busy' and 'failed'.
 import { MOBILE } from '../mobile.js'
-import { spotifyNowPlaying, spotifyControl, finishSpotify, APP_REDIRECT } from './spotify.js'
-import { accountStatus, accountNowPlaying, accountControl, forgetAccountStatus } from './spotify-account.js'
+import { spotifyNowPlaying, spotifyControl, finishSpotify, isSpotifyReturn, APP_REDIRECT } from './spotify.js'
+import { accountStatus, accountNowPlaying, accountControl, forgetAccountStatus, redeemAccount } from './spotify-account.js'
 import { appleNowPlaying, appleControl } from './apple-music.js'
 
 export const SOURCES = ['spotify', 'apple']
@@ -87,8 +87,9 @@ export function initMusicReturn(done) {
     strip(['spotify'])
     forgetAccountStatus()
     done(q.get('spotify') === 'connected')
-  } else if (q.has('state') && (q.has('code') || q.has('error'))) {
-    // Back from this device's own Spotify app.
+  } else if (isSpotifyReturn(search)) {
+    // Back from this device's own Spotify app: only with the state it sent. Another sign-in's way
+    // back (OpenRouter's, lib/openrouter-signin.js) keeps its code and state for its own reader.
     strip(['code', 'state', 'error'])
     finishSpotify(search).then(ours => { if (ours) done(true) }, () => done(false))
   }
@@ -97,7 +98,10 @@ export function initMusicReturn(done) {
     if (!String(url).startsWith(APP_REDIRECT)) return
     const i = url.indexOf('?')
     const back = new URLSearchParams(i < 0 ? '' : url.slice(i))
-    if (back.has('connected') || back.has('failed')) { forgetAccountStatus(); done(back.has('connected')); return }
+    // The account's sign-in: a one-time code, redeemed with this app's session (the server
+    // saves it only for the profile that started the sign-in).
+    if (back.has('handoff')) { redeemAccount(back.get('handoff')).then(() => done(true), () => done(false)); return }
+    if (back.has('failed')) { forgetAccountStatus(); done(false); return }
     finishSpotify(i < 0 ? '' : url.slice(i)).then(ours => { if (ours) done(true) }, () => done(false))
   })).catch(() => {})
 }

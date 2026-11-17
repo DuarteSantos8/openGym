@@ -43,7 +43,7 @@ async function startServer(t, env = {}) {
 }
 const call = async (h, method, p, { headers = session(), body } = {}) => {
   const r = await fetch(h.api + p, { method, headers, redirect: 'manual', body: body == null ? undefined : JSON.stringify(body) });
-  return { status: r.status, location: r.headers.get('location'), body: await r.json().catch(() => null) };
+  return { status: r.status, location: r.headers.get('location'), cookie: r.headers.get('set-cookie'), body: await r.json().catch(() => null) };
 };
 const stateOf = url => new URL(url).searchParams.get('state');
 
@@ -81,6 +81,33 @@ test('a sign-in address for the profile, and a way back to the app only', async 
   // A state that was used, or never handed out.
   assert.equal((await call(h, 'GET', `/api/music/spotify/callback?code=x&state=${stateOf(app)}`, { headers: {} })).status, 400);
   assert.equal((await call(h, 'GET', '/api/music/spotify/callback?code=x&state=forged', { headers: {} })).status, 400);
+});
+
+test('a browser’s sign-in comes back only to that browser; the phone app redeems a one-time code', async t => {
+  const h = await startServer(t, { SPOTIFY_CLIENT_ID: CLIENT });
+  // A browser gets the cookie its way back needs, for the Spotify routes only, Lax and HttpOnly.
+  const web = await call(h, 'POST', '/api/music/spotify/connect', { body: { back: 'https://gym.example.com/' } });
+  assert.match(web.cookie, /^og_spotify_bind=[\w-]{32}; Path=\/api\/music\/spotify; Max-Age=600; HttpOnly; Secure; SameSite=Lax$/);
+  // Opened in a browser without it (someone else's sign-in address): it fails, Spotify is not
+  // asked for tokens, and the cookie is cleared either way.
+  const r = await call(h, 'GET', `/api/music/spotify/callback?code=x&state=${stateOf(web.body.url)}`, { headers: {} });
+  assert.equal(r.location, 'https://gym.example.com/?spotify=failed#/settings/features');
+  assert.match(r.cookie, /^og_spotify_bind=; Path=\/api\/music\/spotify; Max-Age=0/);
+  // A wrong one does no better.
+  const web2 = await call(h, 'POST', '/api/music/spotify/connect', { body: {} });
+  const r2 = await call(h, 'GET', `/api/music/spotify/callback?code=x&state=${stateOf(web2.body.url)}`, { headers: { Cookie: 'og_spotify_bind=' + 'x'.repeat(32) } });
+  assert.match(r2.location, /\?spotify=failed#/);
+
+  // The phone app: no cookie, its link carries a one-time code instead.
+  const app = await call(h, 'POST', '/api/music/spotify/connect', { body: { app: true } });
+  assert.equal(app.cookie, null);
+  const r3 = await call(h, 'GET', `/api/music/spotify/callback?code=x&state=${stateOf(app.body.url)}`, { headers: {} });
+  assert.match(r3.location, /^opengym:\/\/spotify\?handoff=[\w-]{32}$/);
+  // Redeemed only with a session, and a code it never handed out is refused.
+  assert.equal((await call(h, 'POST', '/api/music/spotify/redeem', { headers: { 'Content-Type': 'application/json' }, body: { handoff: 'x' } })).status, 401);
+  const bad = await call(h, 'POST', '/api/music/spotify/redeem', { body: { handoff: 'forged' } });
+  assert.equal(bad.status, 400);
+  assert.equal(bad.body.code, 'failed');
 });
 
 test('the player before connecting: "auth", and an unknown action is refused', async t => {

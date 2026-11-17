@@ -4170,7 +4170,8 @@ paths:
         Open the returned `url` (the phone app in the system browser). Spotify comes back to
         `GET /api/music/spotify/callback`. `app: true` sends the browser on to the phone app's
         `opengym://spotify` link afterwards; otherwise to `back`, the app's own address on this
-        instance (anything else is ignored).
+        instance (anything else is ignored). A browser's sign-in is tied to that browser: the answer
+        sets an HttpOnly `og_spotify_bind` cookie that the callback needs to see.
       requestBody:
         content:
           application/json:
@@ -4182,12 +4183,38 @@ paths:
       responses:
         '200':
           description: The address.
+          headers:
+            Set-Cookie: { description: 'og_spotify_bind, for a browser (not with `app: true`).', schema: { type: string } }
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   url: { type: string, format: uri }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: Spotify is not offered on this instance. }
+
+  /api/music/spotify/redeem:
+    post:
+      tags: [music]
+      operationId: redeemSpotify
+      summary: The phone app's way back from the Spotify sign-in
+      description: |
+        The one-time `handoff` code of the `opengym://spotify?handoff=…` link the callback sent the
+        phone app to. Saves the Spotify account on this profile, only if this profile started that
+        sign-in; good once, for ten minutes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [handoff]
+              properties:
+                handoff: { type: string }
+      responses:
+        '200': { description: Connected; the same answer as GET /api/music/spotify. }
+        '400': { description: Unknown, expired or someone else's sign-in. }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Spotify is not offered on this instance. }
 
@@ -4198,8 +4225,10 @@ paths:
       summary: Where Spotify sends the browser back after the sign-in
       description: |
         Called by Spotify, not by the app. The `state` names the sign-in this server started; it
-        needs no session. Redirects to `opengym://spotify?connected=1` (or `failed=1`) for the
-        phone app, or to the app's page with `?spotify=connected` (or `failed`).
+        needs no session. A browser's sign-in needs the `og_spotify_bind` cookie the connect answer
+        set. Redirects to `opengym://spotify?handoff=…` (or `failed=1`) for the phone app, which
+        redeems the code (`POST /api/music/spotify/redeem`), or to the app's page with
+        `?spotify=connected` (or `failed`).
       security: []
       parameters:
         - { name: code, in: query, schema: { type: string } }

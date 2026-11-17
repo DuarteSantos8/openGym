@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
-  spotifyAuthUrl, finishSpotify, spotifyConnected, disconnectSpotify, spotifyNowPlaying, spotifyControl, trackOf, redirectUri,
+  spotifyAuthUrl, finishSpotify, spotifyConnected, disconnectSpotify, spotifyNowPlaying, spotifyControl, trackOf, redirectUri, isSpotifyReturn,
 } from './spotify.js'
 
 const json = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body, text: async () => JSON.stringify(body) })
@@ -113,5 +113,49 @@ describe('Spotify player', () => {
     await signIn(fetchFn)
     await expect(spotifyNowPlaying(fetchFn)).rejects.toMatchObject({ code: 'auth' })
     expect(spotifyConnected()).toBe(false)
+  })
+
+  it('another refusal of the refresh fails the call and keeps the sign-in', async () => {
+    const fetchFn = vi.fn()
+      .mockResolvedValueOnce(json(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }))
+      .mockResolvedValueOnce(json(400, { error: 'invalid_request' }))
+    await signIn(fetchFn)
+    await expect(spotifyNowPlaying(fetchFn)).rejects.toMatchObject({ status: 400, oauth: 'invalid_request' })
+    expect(spotifyConnected()).toBe(true)
+  })
+
+  it('a refresh that ends after signing out saves nothing', async () => {
+    let answer
+    const fetchFn = vi.fn()
+      .mockResolvedValueOnce(json(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }))
+      .mockImplementationOnce(() => new Promise(r => { answer = r }))
+    await signIn(fetchFn)
+    const p = spotifyNowPlaying(fetchFn)
+    await vi.waitFor(() => expect(answer).toBeTypeOf('function'))
+    disconnectSpotify()
+    answer(json(200, { access_token: 'B', refresh_token: 'R2', expires_in: 3600 }))
+    await expect(p).rejects.toMatchObject({ code: 'auth' })
+    expect(spotifyConnected()).toBe(false)
+  })
+
+  it('a request that hangs gives up', async () => {
+    vi.useFakeTimers()
+    try {
+      const fetchFn = vi.fn()
+        .mockResolvedValueOnce(json(200, { access_token: 'A', refresh_token: 'R', expires_in: 3600 }))
+        .mockImplementationOnce((url, init) => new Promise((_, no) => init.signal.addEventListener('abort', () => no(Object.assign(new Error('aborted'), { name: 'AbortError' })))))
+      await signIn(fetchFn)
+      const p = spotifyNowPlaying(fetchFn)
+      const settled = expect(p).rejects.toMatchObject({ code: 'failed' })
+      await vi.advanceTimersByTimeAsync(15000)
+      await settled
+    } finally { vi.useRealTimers() }
+  })
+
+  it('knows its own way back from another sign-in’s', async () => {
+    const url = new URL(await spotifyAuthUrl('abc123abc123abc123'))
+    expect(isSpotifyReturn('?code=X&state=' + url.searchParams.get('state'))).toBe(true)
+    expect(isSpotifyReturn('?code=X&state=openrouter')).toBe(false)
+    expect(isSpotifyReturn('?link=abc')).toBe(false)
   })
 })

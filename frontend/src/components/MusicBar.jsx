@@ -27,39 +27,61 @@ export default function MusicBar({ source, onBlocked, hideBlocked = false }) {
   const [track, setTrack] = useState(undefined)   // undefined: not asked yet; null: nothing plays
   const [problem, setProblem] = useState('')
   const timer = useRef(null)
-  const alive = useRef(true)
+  // Bumped when the player changes and when the bar goes: whatever was started before (a poll, a
+  // tap) checks it when it ends, and changes nothing if it no longer matches.
+  const life = useRef(0)
+  // One poll at a time: the life of the poll in flight (-1: none), and whether another was asked
+  // for meanwhile (the page shown again, a tap), which then follows at once instead of in POLL.
+  const polling = useRef(-1)
+  const wanted = useRef(false)
   const answered = useRef(false)
 
   const ask = () => {
+    const my = life.current
     clearTimeout(timer.current)
     if (document.visibilityState === 'hidden') return
+    if (polling.current === my) { wanted.current = true; return }
+    polling.current = my
     nowPlaying(source).then(
-      tr => { if (!alive.current) return; answered.current = true; setTrack(tr); setProblem('') },
+      tr => { if (my !== life.current) return; answered.current = true; setTrack(tr); setProblem('') },
       e => {
-        if (!alive.current) return
+        if (my !== life.current) return
         if (e.code === 'auth' || e.code === 'denied') { setProblem(e.code); setTrack(null) }
         else if (!answered.current) setProblem('failed')
       }
-    ).finally(() => { if (alive.current) timer.current = setTimeout(ask, POLL) })
+    ).finally(() => {
+      if (polling.current === my) polling.current = -1
+      if (my !== life.current) return
+      const soon = wanted.current
+      wanted.current = false
+      clearTimeout(timer.current)
+      timer.current = setTimeout(ask, soon ? 0 : POLL)
+    })
   }
 
   useEffect(() => {
-    alive.current = true
+    life.current++
+    wanted.current = false
     answered.current = false
     setTrack(undefined); setProblem('')
     ask()
     const onVis = () => { if (document.visibilityState === 'visible') ask() }
     document.addEventListener('visibilitychange', onVis)
-    return () => { alive.current = false; clearTimeout(timer.current); document.removeEventListener('visibilitychange', onVis) }
+    return () => { life.current++; clearTimeout(timer.current); document.removeEventListener('visibilitychange', onVis) }
   }, [source])
 
   const act = action => {
+    const my = life.current
     // The button answers at once; the next answer from the player says how it really went.
     if (action === 'play' || action === 'pause') setTrack(tr => tr ? { ...tr, playing: action === 'play' } : tr)
     control(source, action).then(
-      () => setProblem(''),
-      e => setProblem(e.code in PROBLEM ? e.code : 'failed')
-    ).finally(() => { clearTimeout(timer.current); timer.current = setTimeout(ask, REFRESH) })
+      () => { if (my === life.current) setProblem('') },
+      e => { if (my === life.current) setProblem(e.code in PROBLEM ? e.code : 'failed') }
+    ).finally(() => {
+      if (my !== life.current) return
+      clearTimeout(timer.current)
+      timer.current = setTimeout(ask, REFRESH)
+    })
   }
 
   const blocked = problem === 'auth' || problem === 'denied'

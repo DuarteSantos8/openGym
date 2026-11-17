@@ -24,9 +24,10 @@ function setup(answers, clock = { t: 1e12 }) {
   return { sp, calls, clock, saved: () => saved };
 }
 
+// A browser's sign-in, with the cookie it started with.
 async function connect(env, user) {
-  const url = new URL(env.sp.start(user, { app: true }));
-  return env.sp.finish(new URLSearchParams({ code: 'C', state: url.searchParams.get('state') }), id => (id === user.id ? user : null));
+  const { url, bind } = env.sp.start(user);
+  return env.sp.finish(new URLSearchParams({ code: 'C', state: new URL(url).searchParams.get('state') }), id => (id === user.id ? user : null), { bind });
 }
 
 test('config: only a real Client ID turns it on, and the redirect is the instance\'s own', () => {
@@ -39,11 +40,12 @@ test('config: only a real Client ID turns it on, and the redirect is the instanc
 test('the sign-in uses PKCE, and its way back saves the tokens sealed with the account name', async () => {
   const env = setup([res(200, { access_token: 'A', refresh_token: 'R', expires_in: 3600 }), res(200, { display_name: 'Ana' })]);
   const user = { id: 'u1' };
-  const url = new URL(env.sp.start(user, { app: true }));
+  const started = env.sp.start(user, { back: 'https://gym.example.com/' });
+  const url = new URL(started.url);
   assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
   assert.equal(url.searchParams.get('redirect_uri'), cfg.redirectUri);
-  const r = await env.sp.finish(new URLSearchParams({ code: 'C', state: url.searchParams.get('state') }), () => user);
-  assert.deepEqual(r, { ok: true, app: true, back: null });
+  const r = await env.sp.finish(new URLSearchParams({ code: 'C', state: url.searchParams.get('state') }), () => user, { bind: started.bind });
+  assert.deepEqual(r, { ok: true, app: false, back: 'https://gym.example.com/' });
   const body = new URLSearchParams(env.calls[0].init.body);
   assert.equal(body.get('code_verifier').length >= 43, true);
   assert.equal(body.get('client_id'), cfg.clientId);
@@ -51,14 +53,55 @@ test('the sign-in uses PKCE, and its way back saves the tokens sealed with the a
   assert.equal(user.spotify.name, 'Ana');
   assert.deepEqual(env.sp.status(user), { available: true, connected: true, name: 'Ana', redirect: cfg.redirectUri });
   // A state is good for one way back only.
-  assert.equal(await env.sp.finish(new URLSearchParams({ code: 'C', state: url.searchParams.get('state') }), () => user), null);
+  assert.equal(await env.sp.finish(new URLSearchParams({ code: 'C', state: url.searchParams.get('state') }), () => user, { bind: started.bind }), null);
+});
+
+test('a browser\'s sign-in comes back only to the browser that started it', async () => {
+  // Someone starts a sign-in for their own profile and gets you to open the address: your
+  // browser has no cookie for it, so your Spotify does not land on their profile.
+  const env = setup([]);
+  const theirs = { id: 'them' };
+  const { url } = env.sp.start(theirs);
+  const state = new URL(url).searchParams.get('state');
+  for (const bind of [null, 'something-else-entirely-of-32-chars']) {
+    const again = env.sp.start(theirs);
+    const s2 = new URL(again.url).searchParams.get('state');
+    const r = await env.sp.finish(new URLSearchParams({ code: 'C', state: s2 }), () => theirs, { bind });
+    assert.equal(r.ok, false);
+  }
+  assert.equal((await env.sp.finish(new URLSearchParams({ code: 'C', state }), () => theirs)).ok, false);
+  assert.equal(env.calls.length, 0, 'no code was turned into tokens');
+  assert.equal(theirs.spotify, undefined);
+});
+
+test('the phone app\'s way back: a one-time code, redeemed only by the profile that started', async () => {
+  const env = setup([res(200, { access_token: 'A', refresh_token: 'R', expires_in: 3600 }), res(200, { display_name: 'Ana' })]);
+  const user = { id: 'u1' }, other = { id: 'u2' };
+  const { url } = env.sp.start(user, { app: true });
+  const r = await env.sp.finish(new URLSearchParams({ code: 'C', state: new URL(url).searchParams.get('state') }), () => user);
+  assert.equal(r.ok, true);
+  assert.equal(r.app, true);
+  assert.match(r.handoff, /^[\w-]{32}$/);
+  assert.equal(user.spotify, undefined, 'nothing saved before the app redeems');
+  assert.equal(env.calls.length, 0);
+  // someone else's session cannot have it, and that spends it
+  assert.equal(await env.sp.redeem(other, r.handoff), false);
+  assert.equal(await env.sp.redeem(user, r.handoff), false);
+  assert.equal(other.spotify, undefined);
+
+  const second = env.sp.start(user, { app: true });
+  const r2 = await env.sp.finish(new URLSearchParams({ code: 'C2', state: new URL(second.url).searchParams.get('state') }), () => user);
+  assert.equal(await env.sp.redeem(user, r2.handoff), true);
+  assert.equal(new URLSearchParams(env.calls[0].init.body).get('code'), 'C2');
+  assert.equal(user.spotify.name, 'Ana');
+  assert.equal(await env.sp.redeem(user, r2.handoff), false, 'good once');
 });
 
 test('a state this server never handed out, or one that expired, is not an answer', async () => {
   const env = setup([]);
   const user = { id: 'u1' };
   assert.equal(await env.sp.finish(new URLSearchParams({ code: 'C', state: 'nope' }), () => user), null);
-  const url = new URL(env.sp.start(user));
+  const url = new URL(env.sp.start(user).url);
   env.clock.t += 11 * 60000;
   assert.equal(await env.sp.finish(new URLSearchParams({ code: 'C', state: url.searchParams.get('state') }), () => user), null);
 });
@@ -66,8 +109,9 @@ test('a state this server never handed out, or one that expired, is not an answe
 test('a refusal on Spotify\'s page comes back as not connected, without a token request', async () => {
   const env = setup([]);
   const user = { id: 'u1' };
-  const url = new URL(env.sp.start(user, { back: 'https://gym.example.com/' }));
-  const r = await env.sp.finish(new URLSearchParams({ error: 'access_denied', state: url.searchParams.get('state') }), () => user);
+  const started = env.sp.start(user, { back: 'https://gym.example.com/' });
+  const url = new URL(started.url);
+  const r = await env.sp.finish(new URLSearchParams({ error: 'access_denied', state: url.searchParams.get('state') }), () => user, { bind: started.bind });
   assert.deepEqual(r, { ok: false, app: false, back: 'https://gym.example.com/' });
   assert.equal(env.calls.length, 0);
   assert.equal(user.spotify, undefined);
@@ -128,6 +172,47 @@ test('a refresh token Spotify no longer honours disconnects the profile', async 
   await assert.rejects(env.sp.nowPlaying(user), { code: 'auth' });
   assert.equal(user.spotify, undefined);
   await assert.rejects(env.sp.nowPlaying(user), { code: 'auth' });
+});
+
+test('another refusal of the refresh (not invalid_grant) fails the call and keeps the connection', async () => {
+  const env = setup([res(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }), res(200, {}), res(400, { error: 'invalid_request' }), res(401, { error: 'invalid_client' })]);
+  const user = { id: 'u1' };
+  await connect(env, user);
+  await assert.rejects(env.sp.nowPlaying(user), { code: 'failed' });
+  assert.ok(user.spotify?.tokens);
+  await assert.rejects(env.sp.nowPlaying(user), { code: 'failed' });
+  assert.ok(user.spotify?.tokens);
+});
+
+test('a refresh that ends after a disconnect, or after connecting again, changes nothing', async () => {
+  let answer;
+  const env = setup([
+    res(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }), res(200, {}),
+    () => new Promise(r => { answer = r; }),
+  ]);
+  const user = { id: 'u1' };
+  await connect(env, user);
+  const p = env.sp.nowPlaying(user);
+  await new Promise(r => setImmediate(r));
+  env.sp.disconnect(user);
+  answer(res(200, { access_token: 'B', refresh_token: 'R2', expires_in: 3600 }));
+  await assert.rejects(p, { code: 'auth' });
+  assert.equal(user.spotify, undefined, 'the disconnect stands');
+
+  // and a refusal of the old one does not take the new connection away
+  const env2 = setup([
+    res(200, { access_token: 'A', refresh_token: 'R', expires_in: 0 }), res(200, {}),
+    () => new Promise(r => { answer = r; }),
+  ]);
+  const u2 = { id: 'u2' };
+  await connect(env2, u2);
+  const p2 = env2.sp.nowPlaying(u2);
+  await new Promise(r => setImmediate(r));
+  const fresh = { ...u2.spotify };
+  u2.spotify = fresh;   // connected again meanwhile
+  answer(res(400, { error: 'invalid_grant' }));
+  await assert.rejects(p2, { code: 'auth' });
+  assert.equal(u2.spotify, fresh);
 });
 
 test('only an https cover is passed on', () => {
