@@ -623,11 +623,14 @@ struct WeighInView: View {
 /// "Workout saved", the time big, sets and volume, the records, then heart rate and calories,
 /// which Apple Health fills in a moment later (last, so nothing above moves when they come).
 /// Done ignores taps for its first second: the thumb on Finish is still on the glass.
+/// It takes the crown when it opens: it replaces the workout, whose crown control is gone, and the
+/// crown scrolled nothing until a touch (owner, 1.4.5).
 struct SummaryView: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.locale) private var locale
     @Environment(\.accent) private var accent
     @State private var shownAt = Date()
+    @FocusState private var crown: Bool
     let summary: WorkoutSummary
 
     var body: some View {
@@ -692,9 +695,11 @@ struct SummaryView: View {
                 // The title starts under the clock, not beside it (it ran into the time on 41 mm).
                 .padding(.top, 14)
             }
+            .focused($crown)
             // CI: the end of the summary too (heart rate, calories, records).
             .onAppear {
                 shownAt = Date()
+                crown = true
                 if SessionStore.demoScreen == "summary-end" { reader.scrollTo("done", anchor: .bottom) }
             }
         }
