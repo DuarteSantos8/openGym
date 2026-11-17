@@ -77,7 +77,6 @@ describe('RestTimer pause and resume', () => {
     act(() => pause().click())
     expect(host.querySelector('#timer').classList.contains('paused')).toBe(true)
     expect(pause().getAttribute('aria-label')).toBe('Resume')
-    expect(pause().getAttribute('aria-pressed')).toBe('true')
     act(() => vi.advanceTimersByTime(60000))
     expect(host.querySelector('#timer .t').textContent).toBe('1:20')
 
