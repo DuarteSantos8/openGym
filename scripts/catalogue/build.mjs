@@ -44,6 +44,7 @@ const rows = exercises
     }
     if (e.category) row.cat = e.category
     if (e.machineKind) row.mk = e.machineKind
+    if (e.assisted) row.assisted = 1
     if (e.hold) row.hd = 1
     if (e.track === 'distance') row.ds = 1
     if (e.needs) row.nd = e.needs

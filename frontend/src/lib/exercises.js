@@ -277,7 +277,9 @@ const assistedName = n => /\bassist(ed)?\b/i.test(String(n || ''))
 
 // The catalogue entry itself carries an `id`, so this never recurses through it — one lookup,
 // then the shape is read directly.
-const assistedShape = ex => (typeof ex?.assisted === 'boolean' ? ex.assisted : ex?.eq === ASSISTED_EQ && assistedName(ex?.n))
+// A catalogue row may mark the machine as assisting the lift (generated as the compact flag 1);
+// an explicit flag is authoritative, otherwise the old name+equipment guess still applies.
+const assistedShape = ex => (ex?.assisted != null ? !!ex.assisted : ex?.eq === ASSISTED_EQ && assistedName(ex?.n))
 
 // Body parts where a 5 kg jump is normal rather than brutal.
 const HEAVY_BP = ['upper legs', 'lower legs', 'back', 'hips', 'glutes']

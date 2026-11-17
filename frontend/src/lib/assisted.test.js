@@ -17,6 +17,9 @@ describe('which exercises count as assisted', () => {
     expect(isAssisted(ASSISTED)).toBe(true)
     expect(EXIDX[ASSISTED].eq).toBe('leverage machine')
     expect(isAssisted(PLAIN)).toBe(false)
+    // A cable machine whose catalogue entry says it assists the lift (#1222): the equipment is
+    // not "leverage machine", so only the generated flag can make this true.
+    expect(isAssisted('3235')).toBe(true)
     // a partner holding your legs, a medicine ball, a band, your own body — ordinary load
     for (const id of ['0011', '1708', '0014', '0970', '0697']) expect(isAssisted(id), id).toBe(false)
   })
