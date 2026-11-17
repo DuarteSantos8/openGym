@@ -89,9 +89,15 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
-Still not on Wear OS: calories saved to Health Connect (#724, #1173; the watch shows them),
-marking a set as warm-up, failure or drop and adding or removing sets from the watch (#1185),
-and a Settings page on the watch (the phone's settings apply). #1173 and #1185 are planned for 1.4.6.
+- **Calories in Health Connect**: the watch's measured calories go with its Finish (`kcal` on the
+  finish event; none when the watch ends a forgotten workout), and the phone writes them to Health
+  Connect with the workout instead of its own estimate, less the resting burn (1 kcal per kg of
+  body weight per hour) since Health Connect takes active calories (lib/health-connect.js), when
+  Health Connect lets openGym write calories (#724).
+
+Still not on Wear OS: marking a set as warm-up, failure or drop and adding or removing sets from
+the watch (#1185), and a Settings page on the watch (the phone's settings apply). #1185 is planned
+for 1.4.6.
 
 ### Screenshots
 

@@ -189,10 +189,12 @@ describe('starting and finishing on the watch', () => {
     expect(start).toHaveBeenCalledWith(['r-push'], { id: 'watch-1', start: 1700000000000 })
     const setDone = vi.fn(), finish = vi.fn()
     bindWatchActions({ setDone, finish })
-    expect(applyEvents([...events, { id: 'f1', type: 'finish', wid: 'watch-1', at: 1700000200000 }], () => ({ S }))).toEqual(['s1', 'd1', 'f1'])
+    expect(applyEvents([...events, { id: 'f1', type: 'finish', wid: 'watch-1', at: 1700000200000, kcal: 312 }], () => ({ S }))).toEqual(['s1', 'd1', 'f1'])
     expect(start).toHaveBeenCalledTimes(1)
     expect(setDone).toHaveBeenCalledWith(0, 0, { w: 60, r: 8, at: 1700000100000, hr: null })
     expect(finish).toHaveBeenCalledTimes(1)
+    // A Wear OS watch's measured calories go with it, for Health Connect (#724).
+    expect(finish).toHaveBeenCalledWith({ end: 1700000200000, kcal: 312 })
   })
 
   // The watch's workout waits, however old its start is by now: it used to be let go of after two

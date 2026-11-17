@@ -358,7 +358,8 @@ object SessionCore {
     }
 
     /** The session finished here, or discarded here (the phone drops it unsaved). */
-    fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false): Pair<SessionState, Event?> {
+    fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false,
+               kcal: Double? = null): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
             workout = null, pending = emptyMap(), skipped = emptyList(), efforts = null, startedHere = null, startId = null,
@@ -370,6 +371,8 @@ object SessionCore {
             // (lib/watch-sync.js staleWatchFinish) and saves it ending at `at` (the last set + rest).
             if (idle && !discard) put("idle", true)
             if (idle && left && !discard) put("left", true)
+            // The calories Health Services measured: the phone writes them to Health Connect instead of its estimate (#724).
+            kcal?.takeIf { !discard && it.isFinite() && it > 0 }?.let { put("kcal", Math.round(it)) }
         }
         return s to event
     }
