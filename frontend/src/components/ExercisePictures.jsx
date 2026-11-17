@@ -18,7 +18,10 @@ function Credit({ p }) {
   </>
 }
 
-export default function ExercisePictures({ ex, load = loadPictureIndex }) {
+// The exercise's demonstration media, or null while it loads or when it has none. The exercise
+// sheet's picture switch (sheets.jsx, ExerciseMediaSwitch) asks for it to know which of Video and
+// Steps to offer.
+export function useDemoMedia(ex, load = loadPictureIndex) {
   const id = ex && !isCustomEx(ex) ? ex.id : null
   const [media, setMedia] = useState(null)
   useEffect(() => {
@@ -27,11 +30,22 @@ export default function ExercisePictures({ ex, load = loadPictureIndex }) {
     load().then(index => { if (live) setMedia(mediaFor(index, id)) })
     return () => { live = false }
   }, [id, load])
-  if (!media || (!media.video && !media.sequences.length && !media.steps.length)) return null
+  return media && (media.video || media.sequences.length || media.steps.length) ? media : null
+}
+
+// `only`: 'video' or 'steps' shows that part alone, without the heading (the sheet's switch names
+// it); without it, everything under "How to do it". `media` skips the load when the caller has it.
+export default function ExercisePictures({ ex, load = loadPictureIndex, only = null, media: given }) {
+  const loaded = useDemoMedia(given === undefined ? ex : null, load)
+  const media = given === undefined ? loaded : given
+  if (!media) return null
   const name = exerciseNameFor(ex)
-  const { video, sequences, steps } = media
-  return <section className="expics" aria-label={t('How to do it')}>
-    <h4 className="expics-title">{t('How to do it')}</h4>
+  const video = only && only !== 'video' ? null : media.video
+  const sequences = only && only !== 'steps' ? [] : media.sequences
+  const steps = only && only !== 'steps' ? [] : media.steps
+  if (!video && !sequences.length && !steps.length) return null
+  return <section className={'expics' + (only ? ' expics-' + only : '')} aria-label={only ? (only === 'video' ? t('Video') : t('Steps')) : t('How to do it')}>
+    {!only && <h4 className="expics-title">{t('How to do it')}</h4>}
     {video && <figure className="expics-video">
       <video src={pictureSrc(video)} poster={posterSrc(video)} width={video.w} height={video.h}
         controls muted loop playsInline preload="none" aria-label={`${name}, ${t('video')}`} />

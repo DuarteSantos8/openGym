@@ -4407,6 +4407,8 @@ export const PT_BR_OVERRIDES = {
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
   "Nutrition totals": "Totais de nutrição",
   "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Totais diários de energia, proteína, carboidrato e gordura do seu diário alimentar das últimas duas semanas. Nunca nomes de alimentos. Desligado até você ativar.",
+  // --- exercise sheet (Ironvane redesign, step 4) ---
+  "Weight unit, plates and bar, other names, your media": "Unidade de peso, anilhas e barra, outros nomes, sua mídia",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
