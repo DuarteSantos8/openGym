@@ -125,14 +125,16 @@ const routineIdsOf = w => (Array.isArray(w?.routineIds) && w.routineIds.length ?
  * Whether a saved workout's entry was done on top of its plan: marked so (`extra: true`, where the
  * app keeps the mark), or, in a session built from routines, an exercise none of them has. The
  * routines are read as they are now, so one since added to its routine counts no more. A freestyle
- * session has no plan to be extra to.
+ * session has no plan to be extra to, and neither has one whose routines are not all there any more.
  */
 export function extraIn(w, entry, routinesById = new Map()) {
   if (entry?.extra === true) return true
   const ids = routineIdsOf(w)
   if (!ids.length || entry?.id == null) return false
-  const routines = ids.map(id => routinesById.get(id)).filter(r => Array.isArray(r?.ex))
-  return routines.length > 0 && !routines.some(r => r.ex.some(x => x?.id === entry.id))
+  const routines = ids.map(id => routinesById.get(id))
+  // A routine since deleted: what it held is unknown, so nothing of the session counts as extra.
+  if (!routines.every(r => Array.isArray(r?.ex))) return false
+  return !routines.some(r => r.ex.some(x => x?.id === entry.id))
 }
 
 /**

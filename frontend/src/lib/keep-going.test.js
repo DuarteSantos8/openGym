@@ -43,6 +43,7 @@ describe('the extras you add most often', () => {
       { end: 3, routineIds: ['r1', 'r2'], entries: [plain('squat'), plain('curl')] }, // squat is r2's
       { end: 4, entries: [plain('row')] },                                          // freestyle
       { end: 5, routineIds: ['gone'], entries: [plain('fly')] },                    // routine deleted
+      { end: 6, routineIds: ['r2', 'gone'], entries: [plain('lunge')] },            // one of two deleted: lunge may have been its
     ]
     expect(frequentExtras(ws, null, { routines })).toEqual([{ id: 'curl', times: 3 }, { id: 'plank', times: 1 }])
     expect(extraIn(ws[0], plain('bench'), new Map(routines.map(r => [r.id, r])))).toBe(false)

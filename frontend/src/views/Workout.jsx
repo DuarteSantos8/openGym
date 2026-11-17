@@ -1878,6 +1878,11 @@ function ActiveWorkout() {
     // never becomes the baseline the regular sessions progress from. An exercise kept out by
     // hand (its ⋯ menu) is that exercise's own choice for today and is not passed on; a session
     // kept out as a whole (the header ⋮) takes the new one with it (joinSessionNoProg).
+    // Read as they are at the tap, not as they were when the screen drew: the Finish sheet and the
+    // picker stay open across writes (another add, the watch, a sync).
+    const S = useStore.getState().S
+    const A = S.active
+    if (!A) return
     const curEntry = A.entries[A.cur]
     const curRid = curEntry?.rid
     const routine = curRid ? S.routines.find(r => r.id === curRid) : null
