@@ -4708,13 +4708,18 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    row width the steppers need the room, so the column steps aside (the "Last time" line above
    the card still says it). */
 .setcard.roomy{container-type:inline-size}
-.setrow .last,.sethead .last-sp{flex:none;width:44px;text-align:center;font-size:var(--fs-footnote);
+.setrow .last,.sethead .last-sp{display:none;flex:none;width:44px;text-align:center;font-size:var(--fs-footnote);
   color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sethead .last-sp{font-size:var(--fs-caption)}
-@container (max-width: 299px){.setrow .last,.sethead .last-sp{display:none}}
-/* Done: a square on the thumb side, filled when ticked; the tap area stays 44 px (::before). */
-.setrow .chk{width:36px;height:36px;border-radius:var(--r-sm, 10px)}
-.sethead .ck-sp{width:36px}
+/* Shown only where the card reports its width: a WebView without container queries (iOS 15)
+   keeps the column hidden instead of squeezing the row. */
+@container (min-width: 300px){.setrow .last,.sethead .last-sp{display:block}}
+/* Done, on the Cards page: a square on the thumb side, filled when ticked; the tap area stays
+   44 px (::before). It grows to 36 px only in the plain two-column rows, where the room is: an
+   effort, per-side or timed row keeps the 30 px its tuned widths count on. */
+.setcard.roomy .setrow .chk{border-radius:var(--r-sm, 10px)}
+.setcard.roomy .setrow:not(.side):not(.eff3):not(.timed) .chk{width:36px;height:36px}
+.setcard.roomy .sethead:not(.per-side):not(.eff3):not(.timed) .ck-sp{width:36px}
 /* Add set: the whole width under the sets, dashed, so it reads as "one more row". */
 .wk-add.wk-add-wide{display:flex;width:100%;justify-content:center;margin-inline-start:0;margin-top:4px;
   border-radius:var(--r, 12px);outline:1.5px dashed var(--sep);outline-offset:-1.5px}
