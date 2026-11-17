@@ -131,3 +131,35 @@ it('draws given counts per day, with the caller legend and no metric switch', ()
   expect(cell(day(5)).classList.contains('l0')).toBe(true)     // a workout is not a photo
   act(() => cell(day(1)).click()); expect(onDay).toHaveBeenCalledWith(day(1))
 })
+
+
+it('aligns on first disclosure visibility and preserves subsequent horizontal scrolling', () => {
+  host = document.createElement('details'); document.body.appendChild(host)
+  const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(() => host.open ? 300 : 0)
+  const scrollWidth = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(900)
+  let resize
+  const disconnect = vi.fn()
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) { resize = callback }
+    observe() {}
+    disconnect() { disconnect() }
+  })
+  try {
+    root = createRoot(host)
+    act(() => root.render(<Heatmap S={{ workouts: [], unit: 'kg' }} />))
+    const wrap = host.querySelector('.hm-wrap')
+    expect(wrap.scrollLeft).toBe(0)
+    host.open = true
+    act(() => resize())
+    expect(wrap.scrollLeft).toBe(900)
+    expect(disconnect).toHaveBeenCalled()
+    wrap.scrollLeft = 120
+    host.open = false
+    act(() => host.dispatchEvent(new Event('toggle')))
+    host.open = true
+    act(() => { host.dispatchEvent(new Event('toggle')); resize() })
+    expect(wrap.scrollLeft).toBe(120)
+  } finally {
+    width.mockRestore(); scrollWidth.mockRestore(); vi.unstubAllGlobals()
+  }
+})

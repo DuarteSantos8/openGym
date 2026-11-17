@@ -11,6 +11,7 @@ import Stats from './Stats.jsx'
 import Modals from '../components/Modals.jsx'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
+import { pickFrom } from './stats-pick.test-util.js'
 
 const DAY = 86400000
 const HOUR = 3600000
@@ -547,6 +548,7 @@ describe('Stats exercise progress picker', () => {
 
     const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('70 kg')
+    pickFrom(card, 'Chart', 'Top set')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
     expect(progressChart?.points).toHaveLength(1)
     expect(progressChart.points[0].y).toBe(70)
@@ -561,6 +563,7 @@ describe('Stats exercise progress picker', () => {
 
     const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
     expect(card.textContent).toContain('80 kg')
+    pickFrom(card, 'Chart', 'Top set')
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 80))
     expect(progressChart?.points).toHaveLength(1)
     expect(progressChart.points[0].y).toBe(80)
