@@ -10,13 +10,13 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: cla-signatures
-  cancel-in-progress: false
-
 jobs:
   record:
     if: github.event.issue.number == 554 && !github.event.issue.pull_request
+    # Shares the cla-signatures queue with cla.yml (see there). Job level so other comments skip it.
+    concurrency:
+      group: cla-signatures
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

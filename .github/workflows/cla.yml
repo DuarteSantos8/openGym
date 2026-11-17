@@ -15,10 +15,6 @@ permissions:
   pull-requests: write
   statuses: write
 
-concurrency:
-  group: cla-signatures
-  cancel-in-progress: false
-
 # pull_request_target runs with a write token, which is safe here only because nothing from the
 # pull request is checked out or executed: the action reads the PR's commit authors through the
 # API and writes to the cla-signatures branch. Keep it that way (no actions/checkout of the head).
@@ -28,6 +24,12 @@ jobs:
     # Comments on plain issues (the pinned CLA issue #554) are not pull requests: the action
     # would look for a PR with that number and fail. Those are recorded by cla-issue.yml.
     if: (github.event_name == 'issue_comment' && github.event.issue.pull_request && (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA')) || github.event_name == 'pull_request_target'
+    # Serialize writes to the cla-signatures branch with cla-issue.yml. Job level, so comments the
+    # `if` skips never enter the group, and queue: max keeps every pending run (the default keeps
+    # one and cancels the rest, which could drop a signature or a required check).
+    concurrency:
+      group: cla-signatures
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
