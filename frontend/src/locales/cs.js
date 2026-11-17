@@ -5863,4 +5863,21 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // --- machine settings (components/MachineSettings.jsx) ---
+  "Machine settings": "Nastavení stroje",
+  "Add machine settings": "Přidat nastavení stroje",
+  "These notes are too long to merge. Shorten one of them first.": "Tyto poznámky jsou na sloučení příliš dlouhé. Nejdřív jednu zkraťte.",
+  "The note is too long for the machine settings. Shorten it and try again.": "Poznámka je spolu s nastavením stroje příliš dlouhá. Zkraťte ji a zkuste to znovu.",
+  "Add setting": "Přidat nastavení",
+  "Name, e.g. {0}": "Název, např. {0}",
+  "Value": "Hodnota",
+  "Value for {0}": "Hodnota pro {0}",
+  "Seat, leg position and the like. Shown with the exercise, so the machine is set in seconds.": "Sedadlo, poloha nohou a podobně. Zobrazí se u cviku, takže stroj nastavíte během pár sekund.",
+  "Seat, leg position, …": "Sedadlo, poloha nohou, …",
+  "Seat": "Sedadlo",
+  "Backrest": "Opěradlo",
+  "Leg position": "Poloha nohou",
+  "Pad": "Polštář",
+  "Handles": "Rukojeti",
+  "Foot plate": "Nášlapná plocha",
 }

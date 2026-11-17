@@ -38,6 +38,44 @@ function state() {
 }
 
 describe('merging an exercise into another (#656)', () => {
+  test('machine settings of both exercises end up on the first line of the merged note', () => {
+    const S = state()
+    S.exNotes = { [CUSTOM]: 'Seat: 5 · Pad: 2\nSource text', [BENCH]: 'Grip 81' }
+    registerCustom(S.customEx)
+    mergeExercise(S, CUSTOM, BENCH, { now: 1000 })
+    expect(S.exNotes).toEqual({ [BENCH]: 'Seat: 5 · Pad: 2\nGrip 81\nSource text' })
+    // both have settings: the target's value wins for a shared name, the text of both stays
+    const T = state()
+    T.exNotes = { [CUSTOM]: 'Seat: 5 · Pad: 2\nA', [BENCH]: 'Seat: 7 · Handles: wide\nB' }
+    registerCustom(T.customEx)
+    mergeExercise(T, CUSTOM, BENCH, { now: 1000 })
+    expect(T.exNotes[BENCH]).toBe('Pad: 2 · Seat: 7 · Handles: wide\nB\nA')
+  })
+
+  test('the target keeps all its settings; the source pairs that do not fit stay as text', () => {
+    const names = 'ABCDEFG'.split('')
+    const S = state()
+    S.exNotes = { [CUSTOM]: 'X: 1 · Y: 2', [BENCH]: names.map(n => n + ': 1').join(' · ') }
+    registerCustom(S.customEx)
+    mergeExercise(S, CUSTOM, BENCH, { now: 1000 })
+    const [line, ...rest] = S.exNotes[BENCH].split('\n')
+    expect(line).toBe('X: 1 · ' + names.map(n => n + ': 1').join(' · '))
+    expect(rest).toEqual(['Y: 2'])
+  })
+
+  test('a merge that would cut a note does not happen, and changes nothing', () => {
+    const S = state()
+    S.exNotes = { [CUSTOM]: 'x'.repeat(1500), [BENCH]: 'y'.repeat(1000) }
+    registerCustom(S.customEx)
+    const before = JSON.stringify(S)
+    expect(mergeBlocked(S, CUSTOM, BENCH)).toBe('These notes are too long to merge. Shorten one of them first.')
+    expect(() => mergeExercise(S, CUSTOM, BENCH, { now: 1000 })).toThrow('too long')
+    expect(JSON.stringify(S)).toBe(before)
+    // the same text on both sides counts once, so this one fits
+    S.exNotes = { [CUSTOM]: 'x'.repeat(1500), [BENCH]: 'x'.repeat(1500) }
+    expect(mergeBlocked(S, CUSTOM, BENCH)).toBe(null)
+  })
+
   test('the preview counts what moves', () => {
     expect(mergePreview(state(), CUSTOM, BENCH)).toMatchObject({ workouts: 2, sets: 3, routines: 1, programmes: 1, note: true, custom: true })
   })

@@ -28,6 +28,7 @@ import { betterWeight, isCustomEx, EXIDX } from './exercises.js'
 import { exerciseMuscleSnapshot } from './muscles.js'
 import { exerciseAliases, normalizeAliases } from './exercise-aliases.js'
 import { NOTE_MAX } from './history.js'
+import { mergeNotes } from './machine-settings.js'
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const list = v => (Array.isArray(v) ? v : [])
@@ -83,12 +84,16 @@ export function mergePreview(S, fromId, toId) {
   }
 }
 
+const NOTES_TOO_LONG = 'These notes are too long to merge. Shorten one of them first.'
+
 /** Why a merge cannot happen, as an English key for t(), or null when it can. */
 export function mergeBlocked(S, fromId, toId) {
   if (!fromId || !toId || fromId === toId) return 'Pick a different exercise.'
   if (mergedInto(S, toId) === fromId) return 'Pick a different exercise.'
   if (!exOf(S, toId)) return 'Pick a different exercise.'
   if (list(S?.active?.entries).some(e => e?.id === fromId)) return 'Finish your current workout first'
+  // Both notes together must fit: a merge never cuts a note, it does not happen until one is shortened.
+  if (isMap(S?.exNotes) && String(S.exNotes[fromId] || '').trim() && mergeNotes(S.exNotes[toId], S.exNotes[fromId]).length > NOTE_MAX) return NOTES_TOO_LONG
   return null
 }
 
@@ -185,11 +190,10 @@ export function mergeExercise(S, fromId, toId, { now = Date.now(), names = [] } 
     delete ew[fromId]
     S.exWeights = ew
   }
-  // The standing note: both, the target's first.
+  // The standing note: both, the target's first; the machine settings line stays on top, merged.
   if (isMap(S.exNotes) && (S.exNotes[fromId] || '').trim()) {
     const notes = { ...S.exNotes }
-    const joined = [notes[toId], notes[fromId]].map(x => (x || '').trim()).filter(Boolean)
-    notes[toId] = [...new Set(joined)].join('\n').slice(0, NOTE_MAX)
+    notes[toId] = mergeNotes(notes[toId], notes[fromId])
     delete notes[fromId]
     S.exNotes = notes
   }

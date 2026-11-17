@@ -88,6 +88,8 @@ import { RecordMark, RecordHintLine } from '../components/SetRecord.jsx'
 import { setNoteOf } from '../lib/set-notes.js'
 import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
 import { isOn } from '../lib/modules.js'
+import { settingsFor, settingLabel } from '../lib/machine-settings.js'
+import { MachineSettingTags, machineSettingsSheet } from '../components/MachineSettings.jsx'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
 import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
@@ -330,6 +332,9 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   }
   const trendSay = (i, label) => (trends?.[i] ? label + ', ' + trendLabel(trends[i], S.unit) : label)
   const standingNote = exNoteFor(S, entry.id)
+  // Seat, leg position and the like (lib/machine-settings.js): with the tags, a tap edits them.
+  const machine = settingsFor(S, entry.id)
+  const editMachine = () => machineSettingsSheet(entry.id)
   // A note pinned at the gym you are at (lib/journal.js gymNoteFor): "seat 4" for this machine only.
   const gymNote = gymNoteFor(S, entry.id)
   // An exercise kept per gym (#988): which gym (and brand) its numbers come from today.
@@ -617,6 +622,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
         { title: t('Exercise'), items: [
           onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
           plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
+          { icon: 'slider', label: t('Machine settings'), sub: machine.length ? machine.map(settingLabel).join(' · ') : t('Seat, leg position, …'), onClick: editMachine },
           { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
           youtubeSearchUrl(ex) && { icon: 'play', label: t('Watch on YouTube'), sub: t('Opens a search for good form'), onClick: () => openExternal(youtubeSearchUrl(ex)) },
           routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
@@ -959,6 +965,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     </div>}
     {/* compact view keeps the plan line: it is what the rows are measured against */}
     {dense && planLine}
+    {/* and the machine settings: the one thing you need at the machine before the first set */}
+    {dense && machine.length > 0 && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}><MachineSettingTags pairs={machine} onEdit={editMachine} /></div>}
     {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
       {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} aria-label={several ? inEx(t('Make superset with previous')) : undefined} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
       {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} aria-label={several ? inEx(t('Make superset with next')) : undefined} onClick={onPairNext}>{t('Make superset with next')}</Button>}
@@ -977,6 +985,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {tempoNow && <TempoTag tempo={tempoNow} onClick={openTempoGuide} />}
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
+      <MachineSettingTags pairs={machine} onEdit={editMachine} />
       {best > 0 && <span className="tag nocap">{t('Best:')} {fmtWeight(best, S.unit)}</span>}
       {splitTag && <span className="tag nocap"><Icon name="mapPin" />{splitTag}</span>}
     </div>

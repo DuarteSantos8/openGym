@@ -885,6 +885,8 @@ h4.sec{
   font-weight:500;text-transform:capitalize;
 }
 .tag.acc{background:var(--acc-soft);color:var(--acc-ink)}
+/* A machine setting (components/MachineSettings.jsx) is a tag you can tap to edit. */
+button.tag{border:0;font-family:inherit;line-height:inherit;cursor:pointer}
 /* Left / Right on a per-side row: one width for both (#322). The two hidden words share the
    visible one's grid cell, so the pill is as wide as the longer word. */
 .tag.sidepill{display:inline-grid;justify-items:center;flex:none}

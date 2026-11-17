@@ -5837,4 +5837,21 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // --- machine settings (components/MachineSettings.jsx) ---
+  "Machine settings": "Maskinindstillinger",
+  "Add machine settings": "Tilføj maskinindstillinger",
+  "These notes are too long to merge. Shorten one of them first.": "Disse noter er for lange til at blive slået sammen. Gør først én af dem kortere.",
+  "The note is too long for the machine settings. Shorten it and try again.": "Noten er for lang sammen med maskinindstillingerne. Gør den kortere, og prøv igen.",
+  "Add setting": "Tilføj indstilling",
+  "Name, e.g. {0}": "Navn, f.eks. {0}",
+  "Value": "Værdi",
+  "Value for {0}": "Værdi for {0}",
+  "Seat, leg position and the like. Shown with the exercise, so the machine is set in seconds.": "Sæde, benposition og lignende. Vises ved øvelsen, så maskinen er indstillet på få sekunder.",
+  "Seat, leg position, …": "Sæde, benposition, …",
+  "Seat": "Sæde",
+  "Backrest": "Ryglæn",
+  "Leg position": "Benposition",
+  "Pad": "Pude",
+  "Handles": "Håndtag",
+  "Foot plate": "Fodplade",
 }

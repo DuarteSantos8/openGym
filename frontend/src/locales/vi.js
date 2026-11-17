@@ -5863,4 +5863,21 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // --- machine settings (components/MachineSettings.jsx) ---
+  "Machine settings": "Cài đặt máy",
+  "Add machine settings": "Thêm cài đặt máy",
+  "These notes are too long to merge. Shorten one of them first.": "Các ghi chú này quá dài để gộp. Hãy rút ngắn một ghi chú trước.",
+  "The note is too long for the machine settings. Shorten it and try again.": "Ghi chú quá dài khi cộng với cài đặt máy. Hãy rút ngắn và thử lại.",
+  "Add setting": "Thêm cài đặt",
+  "Name, e.g. {0}": "Tên, ví dụ {0}",
+  "Value": "Giá trị",
+  "Value for {0}": "Giá trị cho {0}",
+  "Seat, leg position and the like. Shown with the exercise, so the machine is set in seconds.": "Ghế, vị trí chân và những thứ tương tự. Hiện cùng bài tập để bạn chỉnh máy trong vài giây.",
+  "Seat, leg position, …": "Ghế, vị trí chân, …",
+  "Seat": "Ghế",
+  "Backrest": "Tựa lưng",
+  "Leg position": "Vị trí chân",
+  "Pad": "Đệm",
+  "Handles": "Tay cầm",
+  "Foot plate": "Bàn đạp chân",
 };
