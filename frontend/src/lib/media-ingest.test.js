@@ -177,3 +177,28 @@ describe('videos', () => {
     expect(unknown.media.dur).toBeUndefined()
   })
 })
+
+// Safari can't write WebP, so on an iPhone every canvas comes out as JPEG, and Apple's encoder adds
+// an Exif and a Photoshop block to any image: the profile picture refused every one of them as
+// metadata ("This browser cannot read that file", owner, 2026-11-16).
+describe('a JPEG from the canvas loses its metadata blocks', () => {
+  const seg = (mk, body) => bytes([0xff, mk], [((body.length + 2) >> 8) & 0xff, (body.length + 2) & 0xff], body)
+  const scan = bytes([0xff, 0xda], [0, 2], fill(16, 0x77), [0xff, 0xd9])
+  const safari = bytes([0xff, 0xd8], seg(0xe0, 'JFIF\0\x01\x01'), seg(0xe1, 'Exif\0\0MM'), seg(0xed, 'Photoshop 3.0\0'),
+    seg(0xe2, 'ICC_PROFILE\0\x01\x01'), seg(0xe2, 'MPF\0'), seg(0xfe, 'made by'), seg(0xc0, fill(15, 1)), scan)
+
+  it('Exif, Photoshop, comments and a non-profile APP2 go; JFIF, the colour profile, the frame and the image stay', async () => {
+    const { stripJpegMetadata } = await import('./media-ingest.js')
+    const { hasImageMetadata } = await import('./avatar.js')
+    expect(hasImageMetadata(safari)).toBe(true)
+    const out = stripJpegMetadata(safari)
+    expect(hasImageMetadata(out)).toBe(false)
+    expect(out).toEqual(bytes([0xff, 0xd8], seg(0xe0, 'JFIF\0\x01\x01'), seg(0xe2, 'ICC_PROFILE\0\x01\x01'), seg(0xc0, fill(15, 1)), scan))
+  })
+
+  it('anything that is not a JPEG is left alone', async () => {
+    const { stripJpegMetadata } = await import('./media-ingest.js')
+    const p = png()
+    expect(stripJpegMetadata(p)).toBe(p)
+  })
+})
