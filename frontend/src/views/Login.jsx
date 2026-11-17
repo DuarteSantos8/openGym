@@ -101,7 +101,8 @@ export default function Login() {
     {/* The official lockup (assets/logo), not an icon from the app's set. */}
     <h1 style={{ margin: '0 0 10px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={36} /></h1>
   </>
-  const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
+  // A sign-in column, not a full-width form: on a desktop the buttons stay a hand's width.
+  const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center', width: '100%', maxWidth: 440, marginInline: 'auto' }
 
   // Demo build: no backend to sign in against — the only way in is the local guest profile.
   if (DEMO) return (
