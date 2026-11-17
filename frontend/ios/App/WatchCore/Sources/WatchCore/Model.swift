@@ -25,6 +25,15 @@ struct Snapshot: Codable, Equatable {
     /// The phone's clock when it made this snapshot (ms, protocol 2): from a snapshot that came as
     /// a message, the watch works out how far its own clock is off the phone's (ClockOffset).
     var now: Double? = nil
+    /// The routines file this snapshot goes with (lib/watch-routines-file.js): `ready.others` is only
+    /// what fitted the size limit, the file has all of them. None from an older phone.
+    var routinesHash: String? = nil
+}
+
+/// The file the phone sends with every routine the watch can start (not archived, by folder).
+struct RoutinesFile: Codable, Equatable {
+    var h: String
+    var others: [ReadySession]
 }
 
 /// What the watch can start by itself: today's planned session and a few other routines.

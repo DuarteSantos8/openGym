@@ -38,7 +38,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     var workout: ActiveWorkout? { state.workout }
-    var ready: Ready? { state.ready }
+    /// Every routine the phone sent as a file (lib/watch-routines-file.js), kept across launches.
+    @Published private(set) var routines: RoutinesFile? = nil
+    var ready: Ready? { Plan.merged(state.ready, hash: state.routinesHash, file: routines) }
     var entryIndex: Int { state.entryIndex }
     var unit: String { workout?.unit ?? state.unit }
     var weightStep: Double { unit == "lb" ? 5 : 2.5 }
@@ -157,6 +159,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("clips")
     }
 
+    private static var routinesURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("routines.json")
+    }
     static let demoArgument = "-OpenGymWatchDemo"
     /// CI screenshots: "-OpenGymWatchScreen rest" opens the demo on that screen.
     static var demoScreen: String? { argument("-OpenGymWatchScreen") }
@@ -171,6 +176,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     override init() {
         super.init()
+        if !isDemo, let d = try? Data(contentsOf: SessionStore.routinesURL) { routines = try? JSONDecoder().decode(RoutinesFile.self, from: d) }
         if isDemo {
             startDemo()
         } else if let data = UserDefaults.standard.data(forKey: SessionStore.stateKey),
@@ -1564,7 +1570,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        // The file is gone once this returns: moved into the cache now.
+        // The file is gone once this returns: read now.
+        if file.metadata?["kind"] as? String == "routines" { keepRoutines(file.fileURL); return }
         guard let exId = file.metadata?["exId"] as? String else { log("file without an exercise"); return }
         let dir = SessionStore.clipDir
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -1583,6 +1590,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             self.clips[exId] = frames
         }
+    }
+
+    /// The phone's routines file: kept in place of the one before (one file, so nothing piles up). A
+    /// file that cannot be read leaves the old one, and the snapshot's own list covers the gap.
+    private func keepRoutines(_ url: URL) {
+        guard let data = try? Data(contentsOf: url), let f = try? JSONDecoder().decode(RoutinesFile.self, from: data) else { log("routines file could not be read"); return }
+        let dest = SessionStore.routinesURL
+        try? FileManager.default.createDirectory(at: dest.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? data.write(to: dest, options: .atomic)
+        DispatchQueue.main.async { self.routines = f }
+        log("routines file: \(f.others.count) routines")
     }
 
     /* ---------- WCSessionDelegate ---------- */

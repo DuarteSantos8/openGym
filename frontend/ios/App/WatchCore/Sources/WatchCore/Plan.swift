@@ -13,6 +13,15 @@ enum Plan {
         return (real.count, sets)
     }
 
+    /// What is ready, with every routine when the file on the watch is the one the snapshot names
+    /// (`hash`); else the snapshot's own list, which an older phone, a first launch before the file
+    /// arrives and a file already out of date all fall back to.
+    static func merged(_ ready: Ready?, hash: String?, file: RoutinesFile?) -> Ready? {
+        guard var r = ready, let hash = hash, let f = file, f.h == hash else { return ready }
+        r.others = f.others
+        return r
+    }
+
     /// The folder name to draw above the routine at `index`: where it differs from the routine
     /// before it (the phone sends them grouped), nil for no folder or a repeat.
     static func folderHeader(at index: Int, in others: [ReadySession]) -> String? {
