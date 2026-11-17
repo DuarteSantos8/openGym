@@ -78,8 +78,11 @@ class MainViewController: CAPBridgeViewController {
      * below the block (index.css body.tabbar-status).
      */
     private let calls = CXCallObserver()
+    // What the page last took, nil until it has (and again for each new document, which starts
+    // without the class): set only once the script has run, so a page that was not ready still gets it.
     private var islandTall: Bool?
     private var watchingIsland = false
+    private var pageLoads: NSKeyValueObservation?
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -91,6 +94,14 @@ class MainViewController: CAPBridgeViewController {
             }
             if #available(iOS 17.0, *) {
                 registerForTraitChanges([UITraitSceneCaptureState.self]) { (vc: MainViewController, _: UITraitCollection) in vc.reportIsland() }
+            }
+            // A reload, or the page loading again, is a new document: tell it once it has loaded.
+            pageLoads = webView?.observe(\.isLoading, options: [.new]) { [weak self] web, _ in
+                guard !web.isLoading else { return }
+                DispatchQueue.main.async {
+                    self?.islandTall = nil
+                    self?.reportIsland()
+                }
             }
         }
         reportIsland()
@@ -104,8 +115,9 @@ class MainViewController: CAPBridgeViewController {
     @objc private func reportIsland() {
         let tall = recording || calls.calls.contains { !$0.hasEnded }
         guard tall != islandTall, let web = webView else { return }
-        islandTall = tall
-        web.evaluateJavaScript("document.documentElement.classList.toggle('island-tall',\(tall))")
+        web.evaluateJavaScript("document.documentElement.classList.toggle('island-tall',\(tall))") { [weak self] _, error in
+            if error == nil { self?.islandTall = tall }
+        }
     }
 
     /**

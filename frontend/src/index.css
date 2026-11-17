@@ -108,8 +108,9 @@
   --sab:max(env(safe-area-inset-bottom,0px),var(--native-sab,0px));
   --sat:max(env(safe-area-inset-top,0px),var(--native-sat,0px));
   /* The right edge, read only by the tab bar when it stands there (body.tabbar-side, at the end of
-     this file): an iPhone on its side has the camera on one edge. Android passes no bar for it. */
-  --sar:env(safe-area-inset-right,0px);
+     this file): an iPhone on its side has the camera on one edge, an Android phone with three-button
+     navigation its bar (MainActivity passes it as --native-sar). */
+  --sar:max(env(safe-area-inset-right,0px),var(--native-sar,0px));
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
@@ -4684,10 +4685,17 @@ body.tabbar-side.resting #app{padding-bottom:calc(96px + var(--sab))}
 body.tabbar-side #timer{bottom:calc(12px + var(--sab));left:12px;right:calc(var(--rail) + 12px)}
 body.tabbar-side #toast{left:calc(50% - var(--rail) / 2);bottom:calc(24px + var(--sab))}
 body.tabbar-side.resting #toast{bottom:calc(100px + var(--sab))}
-/* A phone on its side is short: the icons alone, so every tab fits the height. */
+/* Back to top keeps to the page's column, which now ends at the rail: beside the column's edge, and
+   never under the rail on a narrow screen. Physical sides: the rail is on the right in every language. */
+body.tabbar-side #totop,body.tabbar-side.resting #totop{left:auto;right:max(calc(var(--rail) + 16px),calc(50vw + var(--rail) / 2 - 264px))}
+@media (min-width:1000px){
+  body.tabbar-side #totop,body.tabbar-side.resting #totop{right:max(calc(var(--rail) + 16px),calc(50vw + var(--rail) / 2 - 540px + var(--pad)))}
+}
+/* A phone on its side is short: the icons alone, so every tab fits the height. The names stay for
+   VoiceOver and TalkBack (the .vh pattern): display:none would leave the buttons without a name. */
 @media (max-height:480px){
   body.tabbar-side #tabbar{gap:0}
-  body.tabbar-side #tabbar button > span:not(.tab-ic):not(.cir){display:none}
+  body.tabbar-side #tabbar button > span:not(.tab-ic):not(.cir){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
   body.tabbar-side #tabbar button.start .cir{width:44px;height:44px}
 }
 
