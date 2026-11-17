@@ -5,6 +5,10 @@
 .iv-library .similar-label{font-size:var(--fs-body)}
 .iv-library .search .input{min-height:52px;font-size:var(--fs-body)}
 .iv-library .search .clear{width:48px;height:48px;display:grid;place-items:center}
+/* The 48 px Clear sits 8px from the end, so the count and the field's text move in past it. */
+.iv-library .search.has-clear .input{padding-inline-end:60px}
+.iv-library .search.has-count.has-clear .input{padding-inline-end:114px}
+.iv-library .search.has-clear .search-count{inset-inline-end:60px}
 .iv-lib-more{margin:0 0 16px;border-bottom:var(--hair) solid var(--sep)}
 .iv-lib-more>summary{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-size:var(--fs-body);font-weight:600;list-style:none}
 .iv-lib-more>summary::-webkit-details-marker{display:none}
@@ -30,6 +34,12 @@
 .iv-lib-row .mk-not{width:auto;flex:0 1 auto;min-width:48px;min-height:48px;margin:0;padding:8px;display:inline-flex;align-items:center;justify-content:center;gap:7px;color:var(--label-2);font-size:var(--fs-body)}
 .iv-lib-row .mk-not span{max-width:180px;text-align:start}
 .iv-lib-primary{position:fixed;z-index:45;left:50%;bottom:calc(5rem + var(--sab));transform:translateX(-50%);width:min(calc(100% - 32px),640px);pointer-events:none}
+/* A rest timer (index.css #timer, z-index 60) stays up on this screen at 88px + --sab: the Add
+   action rises above it, by its stacked height when the auto-advance row is showing. */
+body.resting .iv-lib-primary{bottom:calc(88px + 5.5rem + var(--sab))}
+body.resting:has(#timer.auto) .iv-lib-primary{bottom:calc(142px + 5.5rem + var(--sab))}
+body.resting .iv-library{padding-bottom:calc(264px + var(--sab))}
+body.resting:has(#timer.auto) .iv-library{padding-bottom:calc(318px + var(--sab))}
 .iv-lib-primary .btn{pointer-events:auto;min-height:56px;box-shadow:0 8px 30px rgba(0,0,0,.3);font-size:var(--fs-body)}
 .iv-library .ex-new{min-height:64px;margin-bottom:4px}
 .iv-library .ex-new .tt,.iv-library .ex-new .ss{font-size:var(--fs-body)}
@@ -38,12 +48,14 @@
 .iv-library .ex-grid .iv-lib-select{width:100%}
 .iv-library .ex-grid .iv-lib-row .mk-not{position:static;width:100%;justify-content:flex-start}
 @media (max-width:560px){
-  .iv-library .iv-lib-row .thumb{width:56px;height:56px}
+  .iv-library .list:not(.ex-grid) .iv-lib-row .thumb{width:56px;height:56px}
   .iv-lib-row .tag{order:3}
   .iv-lib-row .mk-not span{max-width:none}
 }
 @media (min-width:1000px){
   .iv-lib-primary{bottom:6.25rem}
+  body.resting .iv-lib-primary{bottom:calc(112px + 5.5rem)}
+  body.resting:has(#timer.auto) .iv-lib-primary{bottom:calc(166px + 5.5rem)}
   .iv-library .list{gap:12px}
 }
 @media (prefers-reduced-motion:reduce){.iv-library *,.iv-library *::before,.iv-library *::after{transition:none!important;animation:none!important}}
