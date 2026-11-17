@@ -36,8 +36,11 @@ const MP4_BRANDS = new Set([
   'isom', 'iso2', 'iso3', 'iso4', 'iso5', 'iso6', 'mp41', 'mp42', 'avc1', 'M4V ', 'M4VP',
   'dash', 'mmp4', 'MSNV', '3gp4', '3gp5', '3gp6', '3g2a'
 ])
-// HEIF/AVIF stills: accepted as input only — decoded and re-encoded like any photo.
-const HEIF_BRANDS = new Set(['heic', 'heix', 'heim', 'heis', 'hevc', 'mif1', 'msf1', 'avif', 'avis'])
+// HEIF/AVIF stills: accepted as input only — decoded and re-encoded like any photo. The list is
+// every ISO/IEC 23008-12 brand plus Apple's AVC image brand; an iPhone hands over 10-bit HEIC
+// (heix) and HEVC sequences (hevx/hevm/hevs) too, and a library photo refused here failed with
+// "That file type isn't supported" (#1268).
+const HEIF_BRANDS = new Set(['heic', 'heix', 'heim', 'heis', 'hevc', 'hevx', 'hevm', 'hevs', 'mif1', 'mif2', 'msf1', 'avif', 'avis', 'avci'])
 
 // An EBML variable-length integer at b[i]. IDs keep their length marker, sizes drop it. A size of
 // all ones means "unknown" (a live recording that never went back to write it).
@@ -89,7 +92,12 @@ export function sniffKind(bytes) {
     const brand = ascii(b, 8, 4)
     if (brand === 'qt  ') return { mime: 'video/quicktime', kind: 'video', category: 'video' }
     if (MP4_BRANDS.has(brand)) return { mime: 'video/mp4', kind: 'video', category: 'video' }
-    if (HEIF_BRANDS.has(brand)) return { mime: brand.startsWith('avi') ? 'image/avif' : 'image/heic', kind: 'image', category: 'still', input: true }
+    // Brands are case-sensitive in ISO BMFF, but a vendor writing MIF1/HEIC in capitals is still
+    // a HEIF still; MP4 brands above keep their exact spelling.
+    const heif = brand.toLowerCase()
+    // avci is AV1 Image; it keeps its own type instead of being labelled image/avif, while
+    // avif/avis stay AVIF and every other HEIF brand is HEIC.
+    if (HEIF_BRANDS.has(heif)) return { mime: heif === 'avci' ? 'image/avci' : heif.startsWith('avi') ? 'image/avif' : 'image/heic', kind: 'image', category: 'still', input: true }
     return null
   }
   if (at(b, 0, [0x1a, 0x45, 0xdf, 0xa3])) {

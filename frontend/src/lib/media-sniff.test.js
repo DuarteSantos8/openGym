@@ -30,6 +30,18 @@ describe('sniffKind', () => {
     expect(sniffKind(ftyp('avif'))).toMatchObject({ mime: 'image/avif', input: true })
   })
 
+  // #1268: an iPhone library photo refused with "That file type isn't supported". 10-bit HEIC
+  // and HEVC sequences use brands the old list did not have, and one vendor writes MIF1 capped.
+  it('reads every HEIF brand an iPhone can hand over', () => {
+    for (const brand of ['heix', 'heim', 'heis', 'hevc', 'hevx', 'hevm', 'hevs', 'mif2', 'msf1', 'avci']) {
+      expect(sniffKind(ftyp(brand)), brand).toMatchObject({ kind: 'image', category: 'still', input: true })
+    }
+    expect(sniffKind(ftyp('MIF1'))).toMatchObject({ mime: 'image/heic', input: true })
+    expect(sniffKind(ftyp('AVIF'))).toMatchObject({ mime: 'image/avif', input: true })
+    // AV1 Image is its own type, not image/avif.
+    expect(sniffKind(ftyp('avci'))).toMatchObject({ mime: 'image/avci', input: true })
+  })
+
   it('refuses SVG, HTML, PDF, ZIP, BMP, TIFF, ICO, M4A and Matroska', () => {
     for (const b of [
       latin1('<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"/>'),
