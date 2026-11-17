@@ -96,10 +96,12 @@ export function pickConfig (S, e, compound) {
   return { ...base, sets: 3, reps, restSec: compound && loaded ? 120 : 75 }
 }
 
-/** The minutes a list of routine entries takes, roughly: work, rest and a minute and a half to set up each. */
+/** The minutes a list of routine entries takes, roughly: work, rest and a minute and a half to set up each.
+    A cardio entry (`min`, defaultConfig) counts its own minutes. */
 export function estimateMinutes (cfgs) {
   let sec = 0
   for (const c of cfgs) {
+    if (c.min > 0 && c.mode !== 'time' && !(c.reps > 0)) { sec += c.min * 60 + 90; continue }
     const sets = Math.max(1, c.sets || 1)
     const work = c.mode === 'time' ? (c.sec || 30) : Math.max(35, (c.reps || 10) * 4)
     sec += sets * work + (sets - 1) * (c.restSec || 90) + 90

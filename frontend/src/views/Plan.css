@@ -1,5 +1,5 @@
 /* Approved Plan layout. Scoped selectors preserve the existing schedule and routine behavior. */
-.iv-plan.narrow{max-width:860px;width:100%;margin:0 auto;padding-bottom:calc(5rem + 128px + var(--sab))}
+.iv-plan.narrow{max-width:860px;width:100%;margin:0 auto}
 .iv-plan .hdr .sub,.iv-plan .sec,.iv-plan .sect-f,.iv-plan .item .tt,.iv-plan .item .ss,.iv-plan .small,.iv-plan .empty,.iv-plan .plan-folder,.iv-plan .plan-mode-locked,.iv-plan .lrow-s{font-size:var(--fs-body)}
 .iv-plan-more,.iv-plan-advanced{border-bottom:var(--hair) solid var(--sep)}
 .iv-plan-more{margin:0 0 16px}
@@ -56,15 +56,18 @@
 .iv-plan .plan-folder{min-height:56px}
 .iv-plan .plan-day:focus-visible,.iv-plan .plan-routine[role="button"]:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px;border-radius:var(--r-card)}
 :root[data-theme="light"] .iv-plan .btn.tinted,:root[data-theme="light"] .iv-plan .btn.plain,:root[data-theme="light"] .iv-plan .plan-textbtn,:root[data-theme="light"] .iv-plan-more>summary::after,:root[data-theme="light"] .iv-plan-advanced>summary::after{color:#873006}
-.iv-plan-primary{position:fixed;z-index:45;left:50%;bottom:calc(5rem + var(--sab));transform:translateX(-50%);width:min(calc(100% - 32px),640px);pointer-events:none}
-.iv-plan-primary .btn{pointer-events:auto;min-height:56px;box-shadow:0 8px 30px rgba(0,0,0,.3);font-size:var(--fs-body)}
+.iv-plan-start{margin:12px 0 4px}
+.iv-plan-start .btn{min-height:56px;font-size:var(--fs-body);font-weight:600}
+.iv-plan-today-sum{margin-top:2px;color:var(--label-2)}
+.iv-plan-today-ex{width:100%;text-align:start;font:inherit;color:inherit}
+.iv-plan-today-ex .grow{display:flex;flex-direction:column;min-width:0}
+.iv-plan-today-ex .ss{color:var(--label-2)}
+.iv-plan-today-ex:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px}
 @media (max-width:560px){
   .iv-plan .plan-day .bm-mini-wrap,.iv-plan .plan-routine .bm-mini-wrap,.iv-plan .rotation-row .bm-mini-wrap{max-width:48px}
   .iv-plan .plan-mode-locked{margin-inline-start:0;text-align:start}
 }
 @media (min-width:1000px){
-  .iv-plan.narrow{padding-bottom:calc(6.25rem + 128px + var(--sab))}
-  .iv-plan-primary{bottom:6.25rem}
   .iv-plan .list{gap:12px}
 }
 @media (prefers-reduced-motion:reduce){.iv-plan *,.iv-plan *::before,.iv-plan *::after{transition:none!important;animation:none!important}}

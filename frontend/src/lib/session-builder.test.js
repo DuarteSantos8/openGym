@@ -88,3 +88,14 @@ describe('session builder', () => {
     expect(buildSession(base(), opts({ terms: [] })).picks).toEqual([])
   })
 })
+
+describe('estimateMinutes', () => {
+  it('counts a cardio entry by its own minutes, not as reps', () => {
+    expect(estimateMinutes([{ sets: 1, min: 20 }])).toBe(22)
+    expect(estimateMinutes([{ sets: 1, min: 20 }, { sets: 3, reps: 10, restSec: 90 }])).toBe(Math.round((20 * 60 + 90 + 3 * 40 + 2 * 90 + 90) / 60))
+  })
+  it('keeps the reps and hold estimates as they were', () => {
+    expect(estimateMinutes([{ sets: 3, reps: 10, restSec: 90 }])).toBe(Math.round((3 * 40 + 2 * 90 + 90) / 60))
+    expect(estimateMinutes([{ sets: 3, sec: 30, mode: 'time', restSec: 60 }])).toBe(Math.round((3 * 30 + 2 * 60 + 90) / 60))
+  })
+})
