@@ -348,7 +348,8 @@ public class WatchBridgePlugin extends Plugin {
                 PutDataMapRequest req = PutDataMapRequest.create(ROUTINES);
                 req.getDataMap().putAsset("json", Asset.createFromBytes(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
                 req.getDataMap().putString("h", hash);
-                Tasks.await(Wearable.getDataClient(getContext()).putDataItem(req.asPutDataRequest()), 10, TimeUnit.SECONDS);
+                // Urgent, as the snapshot: else the Data Layer may hold it up to 30 minutes.
+                Tasks.await(Wearable.getDataClient(getContext()).putDataItem(req.asPutDataRequest().setUrgent()), 10, TimeUnit.SECONDS);
                 sent = true;
             } catch (Exception ignored) {
                 // No Play services, or not now: the page sends it again with the next snapshot.

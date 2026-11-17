@@ -126,6 +126,8 @@ object PhoneLink {
             } catch (_: Exception) {}
             // The routines file too: it may have come while the app was closed and the listener missed it.
             try {
+                // A newer file the listener keeps while this one is read wins (saveRoutines drops this one then).
+                val saved = WearStore.routinesSaved()
                 val uri = Uri.Builder().scheme("wear").path(Paths.ROUTINES).build()
                 val items = Wearable.getDataClient(app).getDataItems(uri, DataClient.FILTER_LITERAL).await()
                 val asset = items.firstNotNullOfOrNull { DataMapItem.fromDataItem(it).dataMap.getAsset(Paths.KEY_JSON) }
@@ -133,7 +135,7 @@ object PhoneLink {
                 asset?.let { a ->
                     val fd = Wearable.getDataClient(app).getFdForAsset(a).await()
                     val bytes = fd.inputStream.use { it.readBytes() }
-                    withContext(Dispatchers.Main) { WearStore.saveRoutines(bytes) }
+                    withContext(Dispatchers.Main) { WearStore.saveRoutines(bytes, saved) }
                 }
             } catch (_: Exception) {}
             refreshNear(app)

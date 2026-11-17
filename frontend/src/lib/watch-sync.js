@@ -1272,9 +1272,11 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
         if (unnamed.length) schedule()
       }
-      if (file && file.hash !== lastRoutines) {
+      // Held here: a send that overlaps this one may replace `file` while this upload is on its way.
+      const f = file
+      if (f && f.hash !== lastRoutines) {
         // An older or F-Droid build has no such call: the snapshot's list is all it gets.
-        try { const r = await p.WatchBridge.sendRoutines?.({ json: file.json, hash: file.hash }); if (r?.sent) lastRoutines = file.hash } catch { /* tried again with the next snapshot */ }
+        try { const r = await p.WatchBridge.sendRoutines?.({ json: f.json, hash: f.hash }); if (r?.sent) lastRoutines = f.hash } catch { /* tried again with the next snapshot */ }
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []

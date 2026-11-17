@@ -3197,7 +3197,7 @@ button.cal-wk:active{background:var(--press-fill)}
 .wpill-tx{flex:1 1 9em;min-width:0}
 .wpill-tx b{display:block;font-size:var(--fs-body);font-weight:600;line-height:1.2}
 .wpill-tx span{display:block;font-size:var(--fs-footnote);color:var(--label-2);margin-top:1px;line-height:1.25}
-.wpill-tx i{font-style:normal;white-space:nowrap}   /* breaks between the parts, never inside "Last heard 5 minutes ago" */
+.wpill-tx i{font-style:normal;display:inline-block}   /* breaks between the parts; inside "Last heard 5 minutes ago" only when it is wider than the pill */
 .wpill.warn .wpill-tx span{color:var(--label)}
 .wpill-marks{display:flex;gap:8px;flex:none;margin-inline-start:auto}
 .wpill-m{position:relative;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2)}

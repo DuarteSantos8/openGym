@@ -1599,7 +1599,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard let data = try? Data(contentsOf: url), let f = try? JSONDecoder().decode(RoutinesFile.self, from: data) else { log("routines file could not be read"); return }
         let dest = SessionStore.routinesURL
         try? FileManager.default.createDirectory(at: dest.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? data.write(to: dest, options: .atomic)
+        // Not kept, not reported: the phone sees the old hash and the pill says so, instead of a list lost at the next launch.
+        guard (try? data.write(to: dest, options: .atomic)) != nil else { log("routines file could not be kept"); return }
         DispatchQueue.main.async { self.routines = f; self.reportRoutines() }
         log("routines file: \(f.others.count) routines")
     }

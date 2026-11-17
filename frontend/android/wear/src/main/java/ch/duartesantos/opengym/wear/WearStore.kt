@@ -1014,16 +1014,25 @@ object WearStore {
 
     private fun routinesFile() = java.io.File(app.filesDir, "routines.json")
 
+    // The listener (its own thread) and PhoneLink.pull (main) both save: one at a time, as they share the .tmp file.
+    private val routinesLock = Any()
+    private var routinesSaves = 0
+    /** How many routines files were kept so far: a pull hands it back, so a newer file that landed meanwhile stays. */
+    fun routinesSaved() = synchronized(routinesLock) { routinesSaves }
+
     /** The phone's routines file, kept in place of the one before (one file, so nothing piles up). One that cannot be read leaves the old. */
-    fun saveRoutines(bytes: ByteArray) {
+    fun saveRoutines(bytes: ByteArray, ifSaved: Int? = null) {
         if (!::app.isInitialized) return
-        try {
-            val text = bytes.toString(Charsets.UTF_8)
-            val f = WireJson.decodeFromString(RoutinesFile.serializer(), text)
-            val tmp = java.io.File(routinesFile().path + ".tmp")
-            tmp.writeText(text)
-            if (tmp.renameTo(routinesFile())) { routines.value = f; reportRoutines() }
-        } catch (_: Exception) {}
+        synchronized(routinesLock) {
+            if (ifSaved != null && ifSaved != routinesSaves) return
+            try {
+                val text = bytes.toString(Charsets.UTF_8)
+                val f = WireJson.decodeFromString(RoutinesFile.serializer(), text)
+                val tmp = java.io.File(routinesFile().path + ".tmp")
+                tmp.writeText(text)
+                if (tmp.renameTo(routinesFile())) { routinesSaves++; routines.value = f; reportRoutines() }
+            } catch (_: Exception) {}
+        }
     }
 
     /** Another workout runs, or none: the stills of every other go. */
