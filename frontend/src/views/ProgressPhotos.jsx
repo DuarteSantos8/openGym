@@ -36,6 +36,7 @@ import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.j
 import { Button } from '../components/ui.jsx'
 import DateField, { datePickerSheet } from '../components/DateField.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import PhotoCamera from '../components/PhotoCamera.jsx'
 import PhotoCompare from '../components/PhotoCompare.jsx'
@@ -297,13 +298,11 @@ export default function ProgressPhotos() {
 
   const firstOfDay = new Set()
   return <>
-    <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
-        <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
-      {photos.length >= 2 && (comparing
+    <ScreenHeader hard title={t('Progress photos')} sub={tn('{0} photo', '{0} photos', photos.length)}
+      left={<button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>}
+      right={photos.length >= 2 && (comparing
         ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
-        : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)}
-    </div>
+        : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)} />
 
     {!comparing && showAdd && <div className="pp-actions">
       <Button variant="primary" icon="camera" disabled={!canAdd || busy} onClick={openCamera}>{t('Take photo')}</Button>
