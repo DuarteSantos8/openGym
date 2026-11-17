@@ -2224,7 +2224,7 @@ function ActiveWorkout() {
     // Spoken cues (Settings → Timer alerts → Voice): the style's line for a record, or a clip.
     cues.record()
   }
-  const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+  const toggle = (idx, i, side, { quiet = false, onFocusProgress, fromWatch = false } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -2233,7 +2233,9 @@ function ActiveWorkout() {
     const m = modeAt(idx)
     // Settings → Workout → "Ask how hard every set was" (lib/effort-ask.js): an unrated working set
     // asks first, and counts only once it is rated. Picking ticks it through here again, rated.
-    if (!editing) {
+    // A tick from the watch is never held up here: the watch asks itself, and an older watch app
+    // that does not would otherwise have its set wait on a sheet nobody is looking at.
+    if (!editing && !fromWatch) {
       const live = useStore.getState().S
       const kind = askEffortFirst(live, live.active?.entries?.[idx]?.sets?.[i], side, m)
       if (kind) {
@@ -2461,7 +2463,7 @@ function ActiveWorkout() {
       })
       if (!wasDone) {
         const before = useUI.getState().timer
-        toggleRef.current(idx, i, oneSide || undefined)
+        toggleRef.current(idx, i, oneSide || undefined, { fromWatch: true })
         // The rest is the watch's: it ends when the one the watch started for this set ends (or
         // there is none when the watch started none), counted from the tick at the wrist for a
         // watch that does not say (restLagSec), so a set done long ago starts no rest here now.
