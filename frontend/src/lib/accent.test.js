@@ -3,9 +3,16 @@ import { describe, expect, it } from 'vitest'
 import { ACCENTS } from './format.js'
 import {
   cleanHex, sanitizeAccent, accentKey, accentValue, contrast, inkOn, readableIn, adjustedIn,
-  customAccentVars, inkIn, accentPair, applyAccent, applyTintFallback, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
+  customAccentVars, fillFor, inkIn, accentPair, applyAccent, applyTintFallback, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
 } from './accent.js'
 import { mergeStates, stampChange } from './sync-merge.js'
+
+describe('fillFor', () => {
+  it('darkens an accent under white text to 4.5:1 and leaves one under black text alone', () => {
+    expect(fillFor('#0a84ff', '#000000')).toBe('#0a84ff')
+    for (const hex of ['#007aff', '#bf5af2', '#ff375f', '#ff453a', '#7b2ff7']) expect(contrast(fillFor(hex, '#ffffff'), '#ffffff')).toBeGreaterThanOrEqual(4.5)
+  })
+})
 
 describe('cleanHex', () => {
   it('takes #rrggbb only, in lowercase', () => {
@@ -130,7 +137,7 @@ describe('readable on the theme', () => {
 
 describe('CSS for the own colour', () => {
   it('derives the accent, its pressed shade and its text', () => {
-    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--acc-ink': inkIn('#0a84ff', 'dark'), '--knob-ring': 'transparent' })
+    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--acc-fill': '#0a84ff', '--acc-ink': inkIn('#0a84ff', 'dark'), '--knob-ring': 'transparent' })
     const v = customAccentVars('#000033', 'dark')
     expect(v['--acc']).toBe(readableIn('#000033', 'dark'))
     expect(v['--on-acc']).toBe(inkOn(v['--acc']))
