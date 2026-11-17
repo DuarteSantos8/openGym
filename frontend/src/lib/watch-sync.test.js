@@ -156,6 +156,13 @@ describe('starting and finishing on the watch', () => {
     expect(snap.ready.today.name).toBe('Push')
   })
 
+  // A lifter with ten routines saw the tenth missing on the watch: a fixed cap of 8 cut it.
+  it('every routine reaches the watch, however many there are', () => {
+    const many = Array.from({ length: 12 }, (_, i) => ({ id: `r${i}`, name: `R${i}`, ex: [{ id: '0025', sets: 1, reps: 5 }] }))
+    const ready = buildReady({ unit: 'kg', workouts: [], routines: many, week: {}, dayPlan: {} }, '2026-10-13')
+    expect(ready.others.map(o => o.name)).toEqual(many.map(r => r.name))
+  })
+
   // #799: the watch's Apple Health workout used to be strength training whatever was planned.
   it('tells the watch which Apple Health type each session is', () => {
     const run = { id: 'r-run', name: 'Run', ex: [{ id: '0685', mode: 'cardio', min: 30, speed: 10 }] }
