@@ -23,18 +23,23 @@ import { isFav, sortFavouritesFirst, sortYoursFirst, usageOf } from '../lib/favo
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { libraryOn } from '../lib/shared-api.js'
 import { isOn } from '../lib/modules.js'
+import './Library.css'
 
 export default function Library() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   // The server's community library (views/Community.jsx), where it has one.
   const community = useStore(s => libraryOn(s.config, s.user)) && isOn(S, 'community')
+  // The shell can replace a lazy screen with its loaded component after a sheet closes. Keep this
+  // transient disclosure in the UI store so that handoff cannot close it under the user's pointer.
+  const moreOpen = useUI(s => !!s.libraryMoreOpen)
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')
   const [eq, setEq] = useState('')
   const [cat, setCat] = useState('')
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
   const [shown, setShown] = useState(40)
+  const [selectedId, setSelectedId] = useState(null)
   const bpStrip = useRef(null)
   const moreRef = useAutoMore(() => setShown(s => s + 40))
   const profile = activeProfile(S)
@@ -78,40 +83,42 @@ export default function Library() {
   const similar = q.trim() && qLate === q && f.length <= shown
     ? similarExercises(allExercises(S).filter(e => (!bp || e.bp === bp) && (!profile || showAll || exAvailable(S, e))), q, f, f.length ? 12 : 30)
     : []
+  const visibleExercises = [...f.slice(0, shown), ...similar]
+  const selected = visibleExercises.find(e => e.id === selectedId) || visibleExercises[0] || null
   const row = e => {
     const best = bestWeightFor(S, e.id)
-    // The row is not a button: its name is, stretched over the row (.tap-main), with Add to my plan
-    // a sibling above it (card dismiss pass), so neither tap can land on the other.
-    return <div key={e.id} className="item tap-host">
+    const chosen = selected?.id === e.id
+    // The exercise name opens Details. A separate, visible Select control chooses what the one
+    // primary action below adds; neither action overlaps or relies on a swipe/long-press.
+    return <div key={e.id} className={'item tap-host iv-lib-row' + (chosen ? ' is-selected' : '')}>
       <Thumb ex={e} />
-      <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
+      <button type="button" className="grow item-open" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
-      {/* "Not at my gym" (#923): this machine off the active gym's list, with Undo. */}
-      {profile && !showAll && <NotHereButton profile={profile} ex={e} />}
-      {/* a quiet trailing button (P7): the accent stays on the one action of the screen */}
-      <button type="button" className="iconbtn lib-add" aria-label={t('Add “{0}” to my plan', said(exerciseNameText(e)))} title={t('Add to my plan')}
-        onClick={() => addToRoutineSheet(e)}><Icon name="plus" /></button>
+      {profile && !showAll && <NotHereButton profile={profile} ex={e} showLabel />}
+      <Button size="sm" variant={chosen ? 'tinted' : 'plain'} icon={chosen ? 'check' : undefined} className="iv-lib-select"
+        aria-label={t('Select') + ': ' + said(exerciseNameText(e))} aria-pressed={chosen} onClick={() => setSelectedId(e.id)}>{t('Select')}</Button>
     </div>
   }
 
-  return <>
+  return <div className="iv-library">
     {/* in season, a string of lights or a few bats along the header (components/Seasonal.jsx) */}
     <div className="hdr lib-hdr"><SeasonDeco spot="header-bats" /><div><h1>{t('Library')}</h1></div>
-      <div className="row lib-hdr-btns" style={{ gap: 6 }}>
-        {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
-        <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
-        {/* Bodyweight skill chains, easiest to hardest (components/Ladders.jsx). */}
-        <Button size="sm" variant="tinted" icon="stairs" onClick={laddersSheet} data-ladders>{t('Ladders')}</Button>
-      </div>
       <div className="sub lib-count">{ownCount
         ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)
         : t('{0} exercises with animations', EXDB.length)}</div>
     </div>
+    <details className="iv-lib-more" open={moreOpen} onToggle={e => useUI.setState({ libraryMoreOpen: e.currentTarget.open })}><summary>{t('More')}</summary><div className="iv-lib-more-actions">
+      {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
+      <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
+      <Button size="sm" variant="tinted" icon="stairs" onClick={laddersSheet} data-ladders>{t('Ladders')}</Button>
+      <ExerciseViewToggle showLabel />
+    </div></details>
+    <label className="iv-lib-search-label" htmlFor="iv-library-search">{t('Search')}</label>
     <div className="search-row" data-tour="lib-search" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-      <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
+      <input id="iv-library-search" className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
       {narrowed && <span className="search-count" role="status" aria-label={exCount(f.length)}>{fmtNum(f.length)}</span>}
-      {q && <button className="clear" onClick={() => { setQ(''); setShown(40) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div>
-      <ExerciseViewToggle /></div>
+      {q && <button type="button" className="clear" onClick={() => { setQ(''); setShown(40) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div>
+    </div>
     {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
       <Icon name="kettlebell" style={{ fontSize: 'var(--fs-footnote)' }} />
       {showAll ? t('Showing all equipment') : t('Showing what you have in "{0}"', profile.name)}
@@ -147,7 +154,10 @@ export default function Library() {
       {similar.map(row)}
     </div>
     {f.length > shown && <><div style={{ height: 10 }} /><Button ref={moreRef} onClick={() => setShown(s => s + 40)}>{t('Show more')}</Button></>}
-  </>
+    <div className="iv-lib-primary"><Button variant="primary" icon="plus" disabled={!selected}
+      aria-label={selected ? t('Add “{0}” to my plan', said(exerciseNameText(selected))) : t('Add to my plan')}
+      onClick={() => selected && addToRoutineSheet(selected)}>{t('Add to my plan')}</Button></div>
+  </div>
 }
 
 

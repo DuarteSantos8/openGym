@@ -31,9 +31,10 @@ function renderTop() {
   const sheet = useUI.getState().sheets.at(-1)
   return render(sheet.render(() => useUI.getState().closeSheet(sheet.id)))
 }
-const toggle = host => host.querySelector('button[aria-label="Cards"]')
-// The button belongs to the search row, next to the field — never in a header (see the next test).
+const toggle = host => host.querySelector('.ex-view-btn')
+// Pickers keep the button beside Search; the approved Library groups it with secondary actions.
 const besideSearch = btn => btn.parentElement.classList.contains('search-row') && !!btn.parentElement.querySelector('.search input')
+const underMore = btn => !!btn.closest('.iv-lib-more')
 const isCards = host => host.querySelector('.list').classList.contains('ex-grid')
 const pickMuscle = host => act(() => host.querySelector('.chip[aria-pressed]').click())
 const setView = v => useStore.setState(s => ({ S: { ...s.S, exerciseView: v } }))
@@ -47,16 +48,19 @@ beforeEach(() => {
 afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
 
 describe('exercise list or cards', () => {
-  it('Library: a list until the button beside the search turns the cards on, and back', () => {
+  it('Library: a list until the labelled button under More turns the cards on, and back', () => {
     const host = render(<Library />)
     expect(isCards(host)).toBe(false)
-    expect(besideSearch(toggle(host))).toBe(true)
+    expect(underMore(toggle(host))).toBe(true)
     expect(toggle(host).closest('.hdr')).toBeNull()
     expect(toggle(host).getAttribute('aria-pressed')).toBe('false')
+    expect(toggle(host).textContent).toBe('Cards')
     act(() => toggle(host).click())
     expect(view()).toBe('cards')
     expect(isCards(host)).toBe(true)
     expect(toggle(host).getAttribute('aria-pressed')).toBe('true')
+    expect(toggle(host).textContent).toBe('List')
+    expect(toggle(host).getAttribute('aria-label')).toBe('List')
     act(() => toggle(host).click())
     expect(view()).toBe('list')
     expect(isCards(host)).toBe(false)
