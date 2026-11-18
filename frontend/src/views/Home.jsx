@@ -38,7 +38,6 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
-import { APP_NAME } from '../lib/brand.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -140,7 +139,9 @@ export default function Home() {
     {isOn(S, 'nutrition') && <button className="card btn" style={{ width: '100%', minHeight: 44, textAlign: 'start' }} onClick={() => nav('/nutrition')}>{t('Nutrition diary')}</button>}
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
-      <div><h1>{user ? t('Hi {0}', user.name) : APP_NAME}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      {/* The page's own name, as the tab bar and the sidebar call it: the brand is already in the
+          sidebar and on the boot screen, and "IRONVANE" told a newcomer nothing about the page. */}
+      <div><h1>{user ? t('Hi {0}', user.name) : t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
     <TrainerNotice />
@@ -258,9 +259,10 @@ export default function Home() {
       </div>
     )}
 
-    {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
-        (components/StreakRule.jsx). */}
-    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
+    {/* A new profile picks how forgiving its streak is, once (components/StreakRule.jsx), but only
+        after its first logged workout: before that there is no streak to be forgiving about, and a
+        first visit already has the welcome card to read (release pass). */}
+    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && S.workouts.length > 0 && <StreakRuleWelcome />}
 
     {on('body') && S.showWeightCard !== false && <div className="card iv-home-body">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}

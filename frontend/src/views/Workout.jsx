@@ -126,8 +126,10 @@ function StartChooser() {
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
     <div style={{ height: 14 }} />
-    <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
-    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
+    {/* With no routines yet, the quickest way in is to just lift: freestyle leads and a plan is the
+        second choice, so a first visit is one tap from a workout (release pass). */}
+    <Button icon="shuffle" variant={S.routines.length ? undefined : 'primary'} onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
+    {!S.routines.length && <><div style={{ height: 10 }} /><Button onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
   </div>
 }
 
@@ -2920,11 +2922,12 @@ function ActiveWorkout() {
         <Icon name="chevronRight" className="upnext-c" />
       </button>
     })()}
-    {!listMode && <div className="row">
+    {/* One exercise has nowhere to step to: two greyed-out buttons only read as broken. */}
+    {!listMode && units.length > 1 && <div className="row">
       <Button icon="chevronLeft" disabled={unitIdx <= 0} onClick={() => navigateUnit(-1)}>{t('Prev')}</Button>
       <Button trailingIcon="chevronRight" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => navigateUnit(1)}>{t('Next')}</Button>
     </div>}
-    {!listMode && <div style={{ height: 10 }} />}
+    {!listMode && units.length > 1 && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
     {/* The end of the workout (redesign 1.4.5, P3): adding an exercise and the session's note are
         one inset list of two rows, not two centred text buttons 40px apart, so the finish button

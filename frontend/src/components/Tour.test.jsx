@@ -211,13 +211,13 @@ describe('the stops', () => {
   })
 
   it('describes the highlighted element for a screen reader and moves focus to the card each time', async () => {
-    await run('plan-menu')
+    await run('plan-views')
     expect(card().getAttribute('role')).toBe('dialog')
-    expect(card().querySelector('.tour-sr').textContent).toContain('the plan-menu')
+    expect(card().querySelector('.tour-sr').textContent).toContain('the plan-views')
     expect(document.activeElement).toBe(card())
   })
   it('Tab stays inside the card, Escape ends the tour and marks it seen', async () => {
-    await run('plan-mode')
+    await run('plan-views')
     const buttons = [...card().querySelectorAll('button')]
     buttons.at(-1).focus()
     await key('Tab')
@@ -230,7 +230,7 @@ describe('the stops', () => {
     expect(readTour().at).toBe(null)
   })
   it('the dimmed screen takes the taps and the scrolling: the highlighted element is covered unless the stop asks for it', async () => {
-    await run('plan-mode')
+    await run('plan-views')
     // four panes around the hole plus one over it
     expect(document.querySelectorAll('.tour-block').length).toBe(5)
     const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 120 })
@@ -268,7 +268,7 @@ describe('the stops', () => {
   })
   it('with reduced motion the spotlight jumps instead of gliding', async () => {
     vi.stubGlobal('matchMedia', q => ({ matches: q.includes('reduce'), media: q, addEventListener() {}, removeEventListener() {} }))
-    await run('plan-mode')
+    await run('plan-views')
     expect(document.querySelector('.tour-hole').style.transition).toBe('none')
   })
 })
@@ -287,7 +287,7 @@ describe('the ways between screens', () => {
     await click(anchor('tab-plan'))
     expect(tapped).toBe('tab-plan')
     expect(where).toBe('/plan')
-    expect(step()).toBe('plan-mode')
+    expect(step()).toBe('plan-views')
     // Back takes the tour to the screen the way started from, to be shown again
     await click(btn('Back'))
     expect(step()).toBe('go-plan')
@@ -309,8 +309,8 @@ describe('the ways between screens', () => {
     expect(step()).toBe('go-settings')
     await click(anchor('settings-gear'))
     expect(where).toBe('/settings')
-    // top to bottom, as the screen lists them since #1105: Units & language comes before Look & Home
-    expect(step()).toBe('units')
+    // one Settings stop since the release pass: Look (text size, theme)
+    expect(step()).toBe('look')
   })
 })
 

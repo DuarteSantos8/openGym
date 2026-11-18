@@ -5,6 +5,7 @@ import Icon from '../components/Icon.jsx'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
 import { todayISO } from '../lib/format.js'
+import { APP_NAME } from '../lib/brand.js'
 import { workoutDay, sessionVolume } from '../lib/history.js'
 import { trainingVolumeSeries } from '../lib/addon-trends.js'
 import { previewActivityFile } from '../lib/addon-activity.js'
@@ -163,11 +164,11 @@ function TrainingInsights({ S, workouts, unit }) {
 const ROADS = [
   { name: 'NutriTrace food library', status: 'Server opt-in', detail: 'Log from your own NutriTrace foods once the server admin adds nutritrace to INTEGRATIONS. Sending workouts to NutriTrace waits on measured calories.' },
   { name: 'Recipes and meal plans', status: 'Not connected', detail: 'Mealie can be connected as a separate recipe service.' },
-  { name: 'Advanced progression', status: 'Simulation', detail: 'Liftosaur-style rules run in an isolated evaluator and are compared with openGym above; applying one to a routine comes later.' },
+  { name: 'Advanced progression', status: 'Simulation', detail: 'Liftosaur-style rules run in an isolated evaluator and are compared with the built-in progression above; applying one to a routine comes later.' },
   { name: 'Endurance activities', status: 'Not connected', detail: 'FitTrackee is optional once activity previews prove useful.' },
   { name: 'Camera coaching', status: 'Lab preview', detail: 'The Movement lab above counts squats on this device; other movements and real-device testing come next. Bluetooth sensors wait on a real gap (docs/next/adr/0003).' },
   { name: '3D anatomy explorer', status: 'Lab preview', detail: 'The 3D muscle map above uses a simplified Z-Anatomy model (CC BY-SA 4.0) and the same levels as the 2D map.' },
-  { name: 'Automations and AI', status: 'Existing integrations first', detail: 'Use openGym webhooks and its coach before adding Node-RED or LangGraph.' },
+  { name: 'Automations and AI', status: 'Existing integrations first', detail: 'Use the built-in webhooks and coach before adding Node-RED or LangGraph.' },
 ]
 
 function Roadmap() {
@@ -200,7 +201,7 @@ export default function Addons() {
     <button type="button" className="sp-back addons-back" data-back="/settings/integrations" onClick={back}><Icon name="chevronLeft" /><span>Integrations</span></button>
     <motion.header className="addons-hero" initial={reduceMotion ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.26 }}>
-      <span className="addon-kicker">OPENGYM / EXTENSION LAB</span>
+      <span className="addon-kicker">{APP_NAME} Lab</span>
       <h1>More ways to train. <span>Under your control.</span></h1>
       <p>Optional, isolated additions to the tracker. Existing workout records are not changed here.</p>
     </motion.header>
@@ -210,10 +211,15 @@ export default function Addons() {
       <AnatomyViewer />
       <FoodLookup enabled={signedIn && config?.addons?.nutrition === true} day={day} />
       {signedIn && config?.integrations?.providers?.includes('nutritrace') && <NutriTraceCard day={day} />}
-      <ProgressionLab unit={S?.unit || 'kg'} />
       <ActivityPreview />
       <MovementLab />
-      <Roadmap />
+      {/* The rule editor and the roadmap are for tinkerers: folded away so the page reads as a few
+          clear tools first (release pass). */}
+      <details className="addon-card addon-advanced">
+        <summary>Advanced: progression rules and roadmap</summary>
+        <ProgressionLab unit={S?.unit || 'kg'} />
+        <Roadmap />
+      </details>
     </div>
   </main>
 }

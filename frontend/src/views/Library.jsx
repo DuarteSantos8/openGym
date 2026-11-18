@@ -3,7 +3,7 @@ import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
+import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises, staplesFirst } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
@@ -65,7 +65,9 @@ export default function Library() {
   // Not only while searching: with no query either, what you train comes first, so the list does
   // not open on the catalogue's alphabetical start ("1 2 Stick Drill").
   const usage = useMemo(() => usageOf(S), [S.routines, S.workouts])
-  const f = sortYoursFirst(narrowedList, S, usage)
+  // Nothing trained or planned yet: the common lifts lead, after any favourites (release pass).
+  const fresh = !q.trim() && !Object.keys(usage).length
+  const f = sortYoursFirst(fresh ? staplesFirst(narrowedList) : narrowedList, S, usage)
   useRevealActiveChip(bpStrip, bp)
   // Type and equipment live in the Filters sheet (P7). It works out its own options from the same
   // search and body part, so a choice it offers is never a dead end either.

@@ -72,3 +72,6 @@
 }
 @media (prefers-reduced-motion:reduce){.iv-plan *,.iv-plan *::before,.iv-plan *::after{transition:none!important;animation:none!important}}
 .iv-plan-today-group .iv-plan-done{margin-inline-start:8px;vertical-align:middle}
+
+/* The unselected Schedule/Routines label: #66666d on the light track was 4.45:1. */
+:root[data-theme="light"] .iv-plan .plan-views button{color:#4a4a50}

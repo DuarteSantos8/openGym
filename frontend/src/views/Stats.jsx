@@ -959,6 +959,13 @@ export default function Stats() {
 
   return <div className="iv-stats">
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Progress')}</h1><div className="sub">{t('Records & history')}</div></div></div>
+    {/* Every workout, one tap from the top of the page. It used to float above the tab bar,
+        where it sat over the chart and the session list (and, on a desktop with the sidebar,
+        over the middle of the page). */}
+    <div className="iv-stats-primary"><Button variant="primary" icon="history"
+      aria-label={t('All') + ' ' + t('Workouts')} onClick={() => nav('/history')}>
+      {t('All')} {t('Workouts')}
+    </Button></div>
 
     <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
       <h2 className="stats-sect-h" id="stats-h-lifts">{t('Lifts')}</h2>
@@ -1152,9 +1159,5 @@ export default function Stats() {
     </section>}
     </div>
     </details>
-    <div className="iv-stats-primary"><Button variant="primary" icon="history"
-      aria-label={t('All') + ' ' + t('Workouts')} onClick={() => nav('/history')}>
-      {t('All')} {t('Workouts')}
-    </Button></div>
   </div>
 }
