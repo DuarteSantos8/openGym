@@ -73,6 +73,7 @@ jobs:
           REG="oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym"
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
           V="${{ steps.version.outputs.version }}"
+          # helm push prints what it pushed. (helm ls lists Kubernetes releases, not OCI charts; that
+          # would need crane or the registry API, so there is no list step.)
           helm push dist/opengym-${V}.tgz "$REG"
           [ "${V%.*}" != "$V" ] && helm push dist/opengym-${V%.*}.tgz "$REG"
-          helm ls "$REG" --short | sed 's/^/  published: /'
