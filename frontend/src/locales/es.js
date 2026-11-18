@@ -1,5 +1,11 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Temporizador",
+  "Stopwatch": "Cronómetro",
+  "Start timer": "Iniciar temporizador",
+  "Timer and stopwatch": "Temporizador y cronómetro",
+  "Time’s up.": "Se acabó el tiempo.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Relojes",
   "Set once": "Una sola vez",

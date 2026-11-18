@@ -1,5 +1,11 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Časovač",
+  "Stopwatch": "Stopky",
+  "Start timer": "Spustit časovač",
+  "Timer and stopwatch": "Časovač a stopky",
+  "Time’s up.": "Čas vypršel.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Hodinky",
   "Set once": "Nastavit jednou",

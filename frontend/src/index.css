@@ -1378,6 +1378,20 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .gym-of-list .icon,.gym-of-list svg{width:13px;height:13px;vertical-align:-2px}
 .btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:var(--fs-subhead);max-width:40%;position:relative}
 .btn.pill.whdr-finish::before{content:'';position:absolute;inset:-4px 0}   /* 38px pill, 46px target; vertical only so the ⋯ button keeps its edge */
+/* The workout Timer and Stopwatch (#1078, components/WorkoutClock.jsx). The header button grows
+   into a pill while the stopwatch runs, its time beside the icon. */
+.iconbtn.wclock-btn{width:auto;min-width:36px;padding:0 8px;gap:4px;border-radius:99px}
+.wclock-hdr{font-size:var(--fs-footnote);font-variant-numeric:tabular-nums;color:var(--acc-ink)}
+.wclock .dw-read{font-size:3.5rem;margin:4px 0 8px}
+.dw-read.wclock-sw{font-size:3rem;margin:12px 0 20px}
+.wclock-ring{display:flex;flex-direction:column;align-items:center;gap:22px;padding:8px 0 4px}
+.wclock-dial{position:relative;width:min(72vw,280px);aspect-ratio:1}
+.wclock-dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.wclock-bg{fill:none;stroke:var(--label-4);stroke-width:10}
+.wclock-fg{fill:none;stroke:var(--acc);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.wclock-t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:4rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wclock-btns{display:flex;gap:10px;width:100%}
+.wclock-btns .btn{flex:1}
 /* Animations set to Small: the picture beside the exercise name, with an expand badge. */
 .wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
 .wthumb .thumb{width:48px;height:48px;border-radius:10px}

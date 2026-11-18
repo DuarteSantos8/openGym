@@ -1,5 +1,11 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "مؤقّت",
+  "Stopwatch": "ساعة إيقاف",
+  "Start timer": "ابدأ المؤقّت",
+  "Timer and stopwatch": "المؤقّت وساعة الإيقاف",
+  "Time’s up.": "انتهى الوقت.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "الساعات",
   "Set once": "تُضبط مرة واحدة",

@@ -37,6 +37,7 @@ import { useCircuit } from '../store/useCircuit.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
 import { SessionMapButton } from '../components/SessionMuscles.jsx'
+import { workoutClockSheet, HeaderStopwatch } from '../components/WorkoutClock.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { REST_MAX, fmtRest, restWheelValue } from '../lib/duration.js'
 import { youtubeSearchUrl } from '../lib/youtube.js'
@@ -2730,6 +2731,9 @@ function ActiveWorkout() {
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
+      {/* Timer and Stopwatch (#1078); a running stopwatch shows its time beside the icon. */}
+      {!(A.backfill || editing) && <button className="iconbtn wclock-btn" title={t('Timer and stopwatch')} onClick={workoutClockSheet}>
+        <span className="vh">{t('Timer and stopwatch')} </span><Icon name="stopwatch" /><HeaderStopwatch session={A.id ?? null} /></button>}
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>

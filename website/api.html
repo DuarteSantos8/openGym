@@ -2437,6 +2437,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">string <span class="p-hint">(&le; 120 chars)</span></span>
     <span class="p-desc">The set waiting after the rest, in the person's language (&quot;Bench press, 80 kg × 8&quot;). It becomes the push's body, one line of plain text cut at 120 characters. Optional; without it the body is the general &quot;Time for your next set.&quot;</span>
   </div>
+  <div class="prow">
+    <span class="p-name">timer</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">The workout's own Timer, not a rest after a set. The push then says the time is up (&quot;Time’s up ⏱️&quot;, &quot;Your timer has finished.&quot;) and <code>next</code> is ignored. Optional.</span>
+  </div>
 </div>
 <pre><code>{
   &quot;seconds&quot;: 90,

@@ -1,5 +1,11 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Minuteur",
+  "Stopwatch": "Chronomètre",
+  "Start timer": "Lancer le minuteur",
+  "Timer and stopwatch": "Minuteur et chronomètre",
+  "Time’s up.": "Temps écoulé.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Montres",
   "Set once": "À régler une fois",

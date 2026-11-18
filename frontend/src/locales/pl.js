@@ -1,5 +1,11 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Minutnik",
+  "Stopwatch": "Stoper",
+  "Start timer": "Uruchom minutnik",
+  "Timer and stopwatch": "Minutnik i stoper",
+  "Time’s up.": "Czas minął.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Zegarki",
   "Set once": "Ustaw raz",

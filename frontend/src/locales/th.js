@@ -1,5 +1,11 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "ตัวจับเวลา",
+  "Stopwatch": "นาฬิกาจับเวลา",
+  "Start timer": "เริ่มจับเวลา",
+  "Timer and stopwatch": "ตัวจับเวลาและนาฬิกาจับเวลา",
+  "Time’s up.": "หมดเวลาแล้ว",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "นาฬิกา",
   "Set once": "ตั้งครั้งเดียว",
