@@ -5,7 +5,7 @@
 import { modeOf } from './history.js'
 import { isSideSet, isWarmupRow } from './workout-model.js'
 import { sanitizeHr } from './heart-rate.js'
-import { exerciseSpans, heartStats } from './heart-steps.js'
+import { exerciseSpans, heartStats, tickOf } from './heart-steps.js'
 
 const BPM_MIN = 25
 const BPM_MAX = 250
@@ -36,8 +36,9 @@ export function parseFormat(key) {
 // tick before it in the workout (any exercise's, or the start) to its own tick.
 function formatSpans(w, exId, key) {
   const start = Number(w?.start) || 0
+  // Every set's tick as the session's card reads it (a per-side set's later side).
   const ticks = []
-  for (const e of w?.entries || []) for (const s of e?.sets || []) if (s?.done && Number(s.at) > 0) ticks.push(Number(s.at))
+  for (const e of w?.entries || []) for (const s of e?.sets || []) { const at = tickOf(s); if (at > 0) ticks.push(at) }
   ticks.sort((a, b) => a - b)
   const out = []
   for (const e of w?.entries || []) {
@@ -50,7 +51,15 @@ function formatSpans(w, exId, key) {
       out.push({ from: before.length ? before[before.length - 1] : start, to })
     }
   }
-  return out.filter(sp => sp.to > sp.from).sort((a, b) => a.from - b.from)
+  // Sets back to back (one's span starts at the other's tick) make one span, so the reading on
+  // the tick between them is counted once.
+  const merged = []
+  for (const sp of out.filter(x => x.to > x.from).sort((a, b) => a.from - b.from)) {
+    const last = merged[merged.length - 1]
+    if (last && sp.from <= last.to) last.to = Math.max(last.to, sp.to)
+    else merged.push({ ...sp })
+  }
+  return merged
 }
 
 // The done work sets of `exId` in `w` with a heart reading, each with its format.
@@ -220,6 +229,27 @@ export function curveCovers(c, w) {
   if (!Array.isArray(c?.v) || !c.v.length || !(end > start)) return false
   const ms = (Number(c.step) || CURVE_STEP_S) * 1000
   return Number(c.s) <= start + 60e3 && Number(c.s) + c.v.length * ms >= end - 60e3
+}
+
+/**
+ * Two kept curves of one workout as one, slot by slot: `b`'s reading where it has one, `a`'s
+ * elsewhere, so a fuller read that misses a slot the first one had does not lose it. Either may
+ * be missing; curves of different steps are not merged (`b` wins).
+ */
+export function mergeCurves(a, b) {
+  const ok = c => c && Array.isArray(c.v) && Number.isFinite(Number(c.s))
+  if (!ok(a)) return ok(b) ? b : null
+  if (!ok(b)) return a
+  const step = Number(b.step) || CURVE_STEP_S
+  if ((Number(a.step) || CURVE_STEP_S) !== step) return b
+  const ms = step * 1000
+  const s = Math.min(Number(a.s), Number(b.s))
+  const at = (c, i) => Math.round((Number(c.s) - s) / ms) + i
+  const n = Math.max(at(a, a.v.length), at(b, b.v.length))
+  const v = new Array(n).fill(0)
+  a.v.forEach((x, i) => { if (x > 0) v[at(a, i)] = x })
+  b.v.forEach((x, i) => { if (x > 0) v[at(b, i)] = x })
+  return { s, step, v }
 }
 
 /** How many slots of a kept curve hold a reading. */

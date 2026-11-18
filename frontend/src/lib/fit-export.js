@@ -368,7 +368,8 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr, 
   // In time order first, so a reading that came out of order is kept; then one a second.
   valid.sort((a, b) => a[0] - b[0])
   for (const b of valid) if (!beats.length || beats[beats.length - 1][0] < b[0]) beats.push(b)
-  for (const [at, bpm] of beats) msgs.push({ global: MSG.record, fields: [[253, 'uint32', at], [3, 'uint8', bpm]] })
+  // Records and sets go out together in time order (timed, below), as a device writes them.
+  const timed = beats.map(([at, bpm]) => ({ at, msg: { global: MSG.record, fields: [[253, 'uint32', at], [3, 'uint8', bpm]] } }))
   const hrAvg = beats.length ? beats.reduce((n, b) => n + b[1], 0) / beats.length : undefined
   const hrMax = beats.length ? Math.max(...beats.map(b => b[1])) : undefined
   const hrOf = (from, to) => {
@@ -385,7 +386,7 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr, 
     })
   } else {
     let index = 0
-    const setMsg = (s, e, type, x) => msgs.push({ global: MSG.set, fields: [
+    const setMsg = (s, e, type, x) => timed.push({ at: fitTime(e), msg: { global: MSG.set, fields: [
       [254, 'uint32', fitTime(e)],          // timestamp: when the set ended
       [0, 'uint32', e - s],                 // duration, ms (scale 1000)
       [3, 'uint16', x?.reps ?? undefined],  // repetitions
@@ -395,7 +396,7 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr, 
       [7, 'uint16', x ? x.category : undefined],
       [9, 'uint16', x && x.w != null ? (unit === 'lb' ? 2 : 1) : undefined],   // weight_display_unit
       [10, 'uint16', index++],              // message_index
-    ] })
+    ] } })
     let prevEnd = null
     for (const x of placed) {
       if (prevEnd != null && x.start - prevEnd >= 1000) setMsg(prevEnd, x.start, 0, null)
@@ -404,6 +405,9 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr, 
     }
     laps.push({ start: startMs, end: endMs, ms: elapsedMs, meters, speed: undefined })
   }
+  // Stable: a set ending on a reading's second follows it.
+  timed.sort((a, b) => a.at - b.at)
+  for (const t of timed) msgs.push(t.msg)
 
   msgs.push({ global: MSG.event, fields: [[253, 'uint32', T1], [0, 'enum', 0], [1, 'enum', 4]] })   // timer stop_all
   laps.forEach((l, i) => msgs.push({ global: MSG.lap, fields: [

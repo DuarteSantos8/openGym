@@ -191,6 +191,15 @@ describe('keepHeartCurve', () => {
     expect(s.workouts[0]._f).toMatchObject({ hrc: 99 })
   })
 
+  it('keeps a slot the fuller read leaves out', () => {
+    const s = S()
+    keepHeartCurve(s, 'w', [[T, 100], [T + 5000, 101]], 99)
+    // a later read with more readings but none in the first slot
+    expect(keepHeartCurve(s, 'w', read(10).slice(1), 200)).toBe(true)
+    expect(s.workouts[0].hrc.v[0]).toBe(100)
+    expect(s.workouts[0].hrc.v).toHaveLength(10)
+  })
+
   it('replaces it only with a fuller one, and leaves the workout untouched otherwise', () => {
     const s = S()
     keepHeartCurve(s, 'w', read(10), 99)

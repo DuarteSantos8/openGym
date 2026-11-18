@@ -47,6 +47,13 @@ describe('retimeWorkout', () => {
     expect(startTimeOf(moved)).toBe('07:30')
     expect(moved.end - moved.start).toBe(47 * 60000)
   })
+  it('moves the heart curve kept with it by as much', () => {
+    const before = { ...w('a', '2026-03-10', '18:00', 47), hrc: { s: 0, step: 5, v: [100] } }
+    before.hrc.s = before.start + 60000
+    const moved = retimeWorkout(before, '2026-02-01', '07:30')
+    expect(moved.hrc.s - moved.start).toBe(60000)
+    expect(moved.hrc.v).toEqual([100])
+  })
   it('leaves everything else alone and does not mutate the input', () => {
     const before = w('a', '2026-03-10', '18:00', 60, [entry('bench', 100)], ['bench'])
     const copy = JSON.parse(JSON.stringify(before))

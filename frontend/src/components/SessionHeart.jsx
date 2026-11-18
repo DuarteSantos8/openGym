@@ -15,7 +15,7 @@ export default function SessionHeart ({ w, nameOf = e => e?.id }) {
   const [samples, setSamples] = useState(null)
   useEffect(() => {
     let open = true
-    workoutSamples(w).then(r => { if (open) { setSamples(r); setCurve(heartCurve(r, w.start, w.end)) } }, () => {})
+    workoutSamples(w, S).then(r => { if (open) { setSamples(r); setCurve(heartCurve(r, w.start, w.end)) } }, () => {})
     return () => { open = false }
   }, [w.start, w.end, w.hrc])
   if (!curve) return null
@@ -29,7 +29,7 @@ export default function SessionHeart ({ w, nameOf = e => e?.id }) {
       </div>
       <HeartGraph samples={curve.points} max={max} span={w.end - w.start}
         bands={exerciseSpans(w).map(s => [s.from - w.start, s.to - w.start])} />
-      {steps.length > 1 && <div className="session-heart-steps small">
+      {steps.length > 0 && <div className="session-heart-steps small">
         {steps.map(x => <div key={x.unit} className="row between">
           <span className="grow tt">{x.members.map(i => nameOf(w.entries[i])).join(' + ')}</span>
           <span className="muted">{heartStepText(x)}</span>

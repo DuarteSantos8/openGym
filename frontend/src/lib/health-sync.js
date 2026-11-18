@@ -328,12 +328,15 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
  * when it covers the session (any device, the web app too), else the hub's on the phone, kept for
  * next time when it is fuller; the kept part when the hub has nothing more.
  */
-export async function workoutSamples(w) {
+export async function workoutSamples(w, S = null) {
   const kept = unpackCurve(w?.hrc, Number(w?.end))
   if (!MOBILE || (kept.length && curveCovers(w?.hrc, w))) return kept
-  const got = await readWorkoutHeart(w).catch(() => [])
+  // `S`, the profile: with Health switched off there, nothing is read nor kept.
+  const got = await readWorkoutHeart(w, S).catch(() => [])
   rememberCurve(w, got)
-  return got.length > kept.length ? got : kept
+  // Compared at the kept curve's resolution (5 s slots), not raw readings against slots.
+  const fuller = curveReadings(packCurve(got, Number(w?.start), Number(w?.end))) > curveReadings(w?.hrc)
+  return fuller ? got : kept
 }
 
 /**
