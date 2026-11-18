@@ -22,7 +22,7 @@ const start = Date.now() - 2 * 86400000
 const workout = { id: 'w1', d: new Date(start).toISOString().slice(0, 10), start, end: start + 3600000, name: 'Push',
   entries: [{ id: '0025', target: { id: '0025', sets: 1, reps: 5 }, sets: [{ w: 60, r: 5, done: true }] }] }
 let root, host
-afterEach(() => { act(() => root.unmount()); host.remove(); window.history.replaceState(null, '', '#/') })
+afterEach(() => { act(() => root.unmount()); host.remove(); window.history.replaceState(null, '', '#/'); vi.restoreAllMocks() })
 function mount() {
   mocks.S = { body: 'male', effort: 'none', unit: 'kg', targetW: null, bodyweight: [], routines: [], exWeights: {}, workouts: [workout] }
   host = document.createElement('div'); document.body.appendChild(host)
@@ -60,25 +60,28 @@ describe('Stats sections (P5)', () => {
     expect(overviewInto).toHaveBeenCalledWith({ block: 'start', behavior: 'smooth' })
     expect(window.location.hash).toBe('#/stats')
   })
-  it('tracks Body after Lifts in document order while preserving button order', async () => {
-    mount()
-    const height = vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(10000)
-    const positions = { lifts: -500, overview: -300, body: 0, effort: 1000 }
-    for (const el of host.querySelectorAll('[data-stats-sect]')) {
-      el.getBoundingClientRect = () => ({ top: positions[el.dataset.statsSect] })
-    }
-    try {
-      await act(async () => { window.dispatchEvent(new Event('scroll')); await new Promise(r => setTimeout(r, 60)) })
-      expect(index()[1].getAttribute('aria-pressed')).toBe('true')
-      expect(index().slice(0, 3).map(b => b.textContent)).toEqual(['Overview', 'Body', 'Lifts'])
-    } finally { height.mockRestore() }
-  })
-
   it('opens on the part the address names', () => {
     window.history.replaceState(null, '', '#/stats?section=body')
     mount()
     expect(index()[1].getAttribute('aria-pressed')).toBe('true')
   })
+  it('uses document order, not display order, when several sections precede the spy line', async () => {
+    window.history.replaceState(null, '', '#/stats')
+    mount()
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800)
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(100)
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000)
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      if (this.classList?.contains('stats-index')) return { bottom: 0, top: 0 }
+      const tops = { 'stats-lifts': -500, 'stats-overview': -400, 'stats-body': -300, 'stats-effort': 500 }
+      const top = tops[this.id] ?? 1000
+      return { top, bottom: top + 100 }
+    })
+    await act(async () => { window.dispatchEvent(new Event('scroll')); await new Promise(r => setTimeout(r, 60)) })
+    expect(index()[1].textContent).toBe('Body')
+    expect(index()[1].getAttribute('aria-pressed')).toBe('true')
+  })
+
   it('leaves the highlight alone while a sheet pins the page (it jumped to the last part)', async () => {
     window.history.replaceState(null, '', '#/stats')
     mount()

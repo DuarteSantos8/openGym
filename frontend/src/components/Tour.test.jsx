@@ -25,17 +25,18 @@ import { useStore, DEF } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { beginWorkout } from '../sheets.jsx'
 import { openTour, closeTour, tourState, readTour, noteStep, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID } from '../lib/tour.js'
-import Tour, { _setAnchorWait, revealAnchor } from './Tour.jsx'
+import Tour, { _setAnchorWait } from './Tour.jsx'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const ANCHORS = ['today', 'start', 'plan-mode', 'plan-views', 'plan-menu', 'lib-search', 'lib-filters', 'set', 'tick', 'swipe', 'workout-more', 'finish', 'stats-tiles',
   'settings-look', 'settings-units', 'settings-data', 'tab-home', 'tab-plan', 'tab-stats', 'tab-library', 'settings-gear']
 const TABS = { 'tab-home': '/home', 'tab-plan': '/plan', 'tab-stats': '/stats', 'tab-library': '/library', 'settings-gear': '/settings' }
 let root, host, where, tapped, made
-function Screens({ skip = [] }) {
+function Screens({ skip = [], foldStats = false }) {
   const nav = useNavigate()
   where = useLocation().pathname
   const S = useStore(s => s.S)
+  const statsMoreOpen = useUI(s => !!s.statsMoreOpen)
   const rid = where.startsWith('/plan/r/') ? where.split('/').pop() : null
   const r = rid && S.routines.find(x => x.id === rid)
   const newRoutine = () => {
@@ -44,8 +45,13 @@ function Screens({ skip = [] }) {
     nav('/plan/r/' + id)
   }
   return <div>
-    {ANCHORS.filter(a => !skip.includes(a)).map(a => <button key={a} data-tour={a} aria-label={'the ' + a}
-      onClick={() => { tapped = a; if (TABS[a]) nav(TABS[a], { replace: true }) }}>{a}</button>)}
+    {ANCHORS.filter(a => !skip.includes(a)).map(a => {
+      const button = <button key={a} data-tour={a} aria-label={'the ' + a}
+        onClick={() => { tapped = a; if (TABS[a]) nav(TABS[a], { replace: true }) }}>{a}</button>
+      return foldStats && a === 'stats-tiles'
+        ? <details key={a} open={statsMoreOpen} onToggle={e => useUI.setState({ statsMoreOpen: e.currentTarget.open })}><summary>More</summary>{button}</details>
+        : button
+    })}
     {where === '/plan' && <button data-tour="plan-new" onClick={newRoutine}>new routine</button>}
     {where === '/library' && <button data-tour="lib-new" onClick={() => useUI.getState().openSheet(() => <ExForm />)}>create</button>}
     {r && <>
@@ -90,9 +96,9 @@ const nextTo = async id => {
   expect(step()).toBe(id)
 }
 const key = async (k, opts = {}) => { await act(async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, ...opts })) }); await settle(30) }
-const run = async (at, flow, path) => {
+const run = async (at, flow, path, props = {}) => {
   await act(async () => { openTour(flow ? { kind: 'run', at, flow } : { kind: 'run', at }) })
-  await render({}, path)
+  await render(props, path)
 }
 
 beforeEach(() => {
@@ -100,6 +106,7 @@ beforeEach(() => {
   _setAnchorWait(120)
   useStore.setState({ S: clone(DEF), user: null, ready: true })
   useUI.getState().closeAll()
+  useUI.setState({ statsMoreOpen: false })
   // Every stand-in anchor sits somewhere on screen; a test moves one by giving it a box of its own.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
     return this.dataset?.tour ? { top: 200, left: 20, width: 120, height: 40, bottom: 240, right: 140, x: 20, y: 200 } : { top: 0, left: 0, width: 0, height: 0, bottom: 0, right: 0, x: 0, y: 0 }
@@ -190,6 +197,15 @@ describe('the stops', () => {
     expect(step()).toBe('today')
     expect(readTour().at).toBe('today')
   })
+  it('opens a folded disclosure and synchronizes it before highlighting its target', async () => {
+    await run('stats', null, '/stats', { foldStats: true })
+    const details = document.querySelector('details')
+    expect(step()).toBe('stats')
+    expect(details.open).toBe(true)
+    expect(useUI.getState().statsMoreOpen).toBe(true)
+    expect(card().querySelector('.tour-sr').textContent).toContain('the stats-tiles')
+  })
+
   it('describes the highlighted element for a screen reader and moves focus to the card each time', async () => {
     await run('plan-menu')
     expect(card().getAttribute('role')).toBe('dialog')
@@ -526,23 +542,5 @@ describe('Create your own exercise', () => {
     await act(async () => { useUI.getState().closeAll() })
     await settle(500)
     expect(step()).toBe('c-new')
-  })
-})
-
-// Plan keeps its mode switch and its menu under Advanced and More, closed on a fresh visit: a stop
-// there opens the disclosures around it, or it would point at a control nobody can see or reach.
-describe('revealAnchor', () => {
-  it('opens every closed disclosure around the element and leaves an open one as it is', () => {
-    document.body.innerHTML = '<details id="outer"><summary>More</summary><details id="inner" open><summary>x</summary>'
-      + '<details id="deep"><summary>y</summary><button data-tour="plan-menu">Plan options</button></details></details></details>'
-      + '<details id="other"><summary>z</summary></details>'
-    revealAnchor(document.querySelector('[data-tour="plan-menu"]'))
-    expect(['outer', 'inner', 'deep'].map(id => document.getElementById(id).open)).toEqual([true, true, true])
-    expect(document.getElementById('other').open).toBe(false)
-  })
-  it('does nothing without an element or a disclosure', () => {
-    expect(() => revealAnchor(null)).not.toThrow()
-    document.body.innerHTML = '<button id="b">B</button>'
-    expect(() => revealAnchor(document.getElementById('b'))).not.toThrow()
   })
 })

@@ -34,6 +34,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   act(() => root.unmount()); host.remove(); window.location.hash = ''
+  vi.restoreAllMocks()
 })
 const mount = (S = demo()) => { mocks.S = S; act(() => root.render(<Stats />)) }
 const click = element => act(() => element.click())
@@ -84,6 +85,17 @@ describe('approved Progress layout', () => {
     mount()
     expect(host.querySelector('.iv-stats-more').open).toBe(true)
   })
+
+  it('opens the logged muscle card from Home without switching to Planned', () => {
+    window.location.hash = '#/stats?focus=weekly-muscle'
+    const into = vi.fn()
+    HTMLElement.prototype.scrollIntoView = into
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { callback(0); return 1 })
+    mount()
+    expect(host.querySelector('.iv-stats-more').open).toBe(true)
+    expect(host.querySelector('[data-weekly-volume-comparison]').dataset.mode).toBe('done')
+    expect(into).toHaveBeenCalled()
+  })
 })
 
 describe('monthSummary', () => {
@@ -101,19 +113,23 @@ describe('monthSummary', () => {
     expect(result).toEqual({ workouts: 2, activeMs: 30 * 60000, consistency: 50 })
   })
 
-  it.each([
-    [null, 60000], ['0', '60000'], [0, Infinity], [-Infinity, 60000],
-    [NaN, 60000], [0, NaN], [undefined, 60000], [60000, 0], [0, 0],
-  ])('ignores invalid duration %s to %s while retaining the session count', (start, end) => {
-    const result = monthSummary([
-      { d: '2026-11-16', start, end },
-      { d: '2026-11-16', start: 0, end: 60000 },
-    ], '2026-11-17', 1)
-    expect(result.workouts).toBe(2)
-    expect(result.activeMs).toBe(60000)
-  })
-
   it('returns an honest empty month', () => {
     expect(monthSummary([], '2026-11-17', 1)).toEqual({ workouts: 0, activeMs: 0, consistency: 0 })
+  })
+
+  it('ignores malformed imported timestamps instead of inflating active time', () => {
+    const at = new Date('2026-11-16T12:00:00').getTime()
+    const workout = (id, start, end) => ({ id, d: '2026-11-16', start, end })
+    const result = monthSummary([
+      workout('valid', at, at + 20 * 60000),
+      workout('null-start', null, at + 60 * 60000),
+      workout('string-times', String(at), String(at + 60 * 60000)),
+      workout('nan', NaN, at + 60 * 60000),
+      workout('infinite', at, Infinity),
+      workout('equal', at, at),
+      workout('reversed', at, at - 1),
+    ], '2026-11-17', 1)
+    expect(result.activeMs).toBe(20 * 60000)
+    expect(result.workouts).toBe(7)
   })
 })
