@@ -2329,9 +2329,13 @@ function ActiveWorkout() {
       // progress, never on a re-tick, and never in the other layouts, where the marker stays put.
       //
       // #1360: "Right away" moves the same marker on the same tick, so the two share one write:
-      // two updates for one move would clone the whole state twice and push it twice. It does not
-      // ask for revealCur, so in the list the marker moves and the screen does not — unless the
-      // exercise folded away as well, which is the collapse's own scroll.
+      // two updates for one move would clone the whole state twice and push it twice. It asks for
+      // revealCur for the same reason the collapse does. In the list every exercise is on the page
+      // and the marker is only a ring, and the keyboard tick below logs the current exercise's next
+      // set on the rule that it is the one in front of you ("a key never logs a set for an exercise
+      // that was not in front of you"). Without the reveal, the first key press after an automatic
+      // move would tick a row the reader may not be looking at. Outside the list the reveal does
+      // nothing: there the card itself is what moves.
       //
       // Focus is left out because it already moved on this tick before the setting existed
       // (FocusView.jsx onProgress → advanceFocusUnit), and it re-reads `cur` to work out where to
@@ -2343,7 +2347,7 @@ function ActiveWorkout() {
       // the move cannot happen twice.
       const moveNow = !focusMode && autoNextMode(useStore.getState().S.autoNextExercise) === 'now'
       if ((collapseOn || moveNow) && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
-        if (collapseOn) revealCur.current = true
+        revealCur.current = true
         update(s => { if (s.active) s.active.cur = nextUnit[0] })
       }
 

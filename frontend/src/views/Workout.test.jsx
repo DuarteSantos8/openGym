@@ -3179,10 +3179,12 @@ describe('workout controls: the more menu and the set menu', () => {
     expect(mocks.S.active.cur).toBe(2)
   })
 
-  // The list shows every exercise at once, so "right away" moves the marker there and leaves the
-  // page where it is. Measured with a real layout: without one nothing ever scrolls, and a test
-  // that asserts "no scroll" against a page with no height proves nothing.
-  it('with right away on in the list, the marker moves and the finished exercise stays open', async () => {
+  // The list shows every exercise at once, so the marker is only a ring on it. Moving that marker
+  // has to bring the new exercise up, the way "collapse completed" does: the keyboard tick logs the
+  // current exercise's next set on the assumption that it is the one in front of you, and a ring
+  // below the fold is not that. Measured with a real layout, because on a page with no height
+  // nothing ever scrolls and a scroll assertion there would prove nothing.
+  it('with right away on in the list, the marker moves and the next exercise is brought up', async () => {
     await mount([exercise('plain-bench', [false, false]), exercise('plain-row', [false])], 0,
       { autoNextExercise: 'now', active: { workoutView: 'list' } })
     await flushFrame()            // the list's own scroll to the current unit, on mount
@@ -3192,7 +3194,7 @@ describe('workout controls: the more menu and the set menu', () => {
     dom.scrollY = 0
     dom.Element.prototype.getBoundingClientRect = function () {
       if (this.classList?.contains('whdr')) return { top: 0, bottom: 120 }
-      // the next exercise sits low on the screen: exactly where revealCur would jump to it
+      // the next exercise sits low on the screen: below the reach that leaves it where it is
       if (this.classList?.contains('wl-unit') && this.dataset.unitKey === '1') return { top: 700, bottom: 1100 }
       return { top: -400, bottom: -100 }
     }
@@ -3202,9 +3204,34 @@ describe('workout controls: the more menu and the set menu', () => {
       await toggleSet(1)
       await rerender()
       expect(mocks.S.active.cur).toBe(1)
-      // nothing folds away here (that is the other setting's doing), and the screen is not dragged
-      // to the new marker: only "collapse completed" asks for that scroll.
+      // nothing folds away here: that is the other setting's doing
       expect([...container.querySelectorAll('.wl-unit')][0].querySelector('.wl-summary')).toBeNull()
+      expect(mocks.scrollCalls).toHaveLength(1)
+      expect(mocks.scrollCalls[0].node.dataset.unitKey).toBe('1')
+    } finally {
+      dom.Element.prototype.getBoundingClientRect = realRect
+    }
+  })
+
+  // ...and when the next exercise is already in reach, the page is left alone.
+  it('with right away on in the list, an exercise already in reach is not scrolled to', async () => {
+    await mount([exercise('plain-bench', [false, false]), exercise('plain-row', [false])], 0,
+      { autoNextExercise: 'now', active: { workoutView: 'list' } })
+    await flushFrame()
+    const realRect = dom.Element.prototype.getBoundingClientRect
+    dom.innerHeight = 800
+    dom.scrollY = 0
+    dom.Element.prototype.getBoundingClientRect = function () {
+      if (this.classList?.contains('whdr')) return { top: 0, bottom: 120 }
+      if (this.classList?.contains('wl-unit') && this.dataset.unitKey === '1') return { top: 300, bottom: 700 }
+      return { top: -400, bottom: -100 }
+    }
+    try {
+      mocks.scrollCalls.length = 0
+      await toggleSet(0)
+      await toggleSet(1)
+      await rerender()
+      expect(mocks.S.active.cur).toBe(1)
       expect(mocks.scrollCalls).toEqual([])
     } finally {
       dom.Element.prototype.getBoundingClientRect = realRect
@@ -3238,10 +3265,10 @@ describe('workout controls: the more menu and the set menu', () => {
 
   it('reads the new "when the rest ends" the way the old switch was read', async () => {
     for (const value of [true, 'rest']) {
-      await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: value })
-      await toggleSet(0)
+      await mount([exercise('plain-bench', [true, false]), exercise('plain-row', [false])], 0, { autoNextExercise: value })
+      await toggleSet(1)
       await rerender()
-      // ticking the last set of the current exercise moves nothing on its own
+      // the unit is finished now, and that alone moves nothing: only the rest ending does
       expect(mocks.S.active.cur).toBe(0)
       await unmount()
     }

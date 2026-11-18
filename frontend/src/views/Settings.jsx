@@ -694,7 +694,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             Focus moves on the tick on its own whatever this says (FocusView.jsx onProgress). */}
         <Row icon="chevronRight" iconTint="var(--teal)" title={t('Move to the next exercise')}
           subtitle={t('In Cards, the next exercise comes up without a tap. Hands stay on the chalk.')}>
-          <Segmented className="seg-inline"
+          <Segmented className="seg-inline" of={t('Move to the next exercise')}
             options={[{ value: 'off', label: t('Off') }, { value: 'rest', label: t('When the rest ends') }, { value: 'now', label: t('Right away') }]}
             value={autoNextMode(S.autoNextExercise)}
             onChange={v => update(s => { if (v === 'off') delete s.autoNextExercise; else s.autoNextExercise = v })} />

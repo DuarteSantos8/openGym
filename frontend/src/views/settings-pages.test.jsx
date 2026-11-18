@@ -480,6 +480,10 @@ describe('the pages', () => {
     mocks.S.autoNextExercise = 'now'
     mount('workout')
     expect(on()).toBe('Right away')
+    // three settings on this page offer an "Off", so the name says which one it belongs to
+    expect(seg().map(b => b.getAttribute('aria-label'))).toEqual([
+      'Move to the next exercise: Off', 'Move to the next exercise: When the rest ends',
+      'Move to the next exercise: Right away'])
     // choosing Off leaves no key behind, the way the switch did
     act(() => seg()[0].click())
     expect(Object.hasOwn(mocks.S, 'autoNextExercise')).toBe(false)
