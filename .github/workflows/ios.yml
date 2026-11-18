@@ -31,6 +31,8 @@ concurrency:
 jobs:
   # Whether a pull request is one for the Mac at all (macOS minutes are the slow queue).
   gate:
+    # Upstream's own publishing/bot job: forks skip it (same guard as mirror.yml).
+    if: github.repository == 'DuarteSantos8/openGym'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
