@@ -25,12 +25,14 @@ export const useCardioClock = create((set, get) => ({
   },
   // Stopped (■, a tick, Finish): the minutes go to the row, as if typed there. `now` is when it
   // stopped, for a stop heard of late (a Log set on the Lock Screen, a Finish on the watch).
+  // Returns that time when minutes were written, else null: Finish ends the workout no earlier.
   stop(now = Date.now()) {
     const run = get().run
-    if (!run) return
+    if (!run) return null
     set({ run: null })
     const min = minutesFor(runSec(run, useStore.getState().S?.active, now))
-    if (min == null) return
+    if (min == null) return null
+    let wrote = false
     useStore.getState().update(s => {
       const at = runAt(s.active, run)
       if (!at) return
@@ -38,7 +40,9 @@ export const useCardioClock = create((set, get) => ({
       st.min = min
       // A row logged by distance keeps its speed in step with the minutes (Workout setField).
       if (Number(st.km) > 0) settleSpeed(st)
+      wrote = true
     }, true)
+    return wrote ? now : null
   },
   // Gone with its set, its exercise or its workout: nothing to write.
   drop() { if (get().run) set({ run: null }) },

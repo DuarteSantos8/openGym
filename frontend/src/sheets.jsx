@@ -4783,7 +4783,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // So does a cardio set's clock (store/useCardioClock.js), at the workout's end: its minutes go
   // to its row. The end is read first because the clock writes into the workout read below.
   const { autoEnd, tappedAt } = finishEnds(S().active, endAt, auto)
-  useCardioClock.getState().stop(autoEnd || tappedAt || Date.now())
+  const clockEnd = useCardioClock.getState().stop(autoEnd || tappedAt || Date.now())
   const st = S()
   const A = st.active
   if (!A) return
@@ -4795,7 +4795,9 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // The decision itself is lib/finish-workout.js sessionPrs, shared with the live trophy.
   const { prs, e1prs } = past ? { prs: [], e1prs: [] } : sessionPrs(st, A.entries)
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : autoEnd || (tappedAt ? sessionEnd(A, tappedAt) : sessionEnd(A)),
+    // The row the clock just wrote is not ticked, so sessionEnd does not see it: the workout ran
+    // at least until the clock stopped.
+    end: past ? backfillEnd(A) : autoEnd || (tappedAt ? sessionEnd(A, tappedAt) : Math.max(sessionEnd(A), clockEnd || 0)),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
