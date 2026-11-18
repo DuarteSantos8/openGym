@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { curveCovers, curveReadings, mergeCurves, exerciseCurve, exerciseHeart, heartFormat, heartLatest, heartPoints, packCurve, parseFormat, setCurve, unpackCurve } from './heart-history.js'
+import { curveCovers, curveReadings, curveVersion, mergeCurves, exerciseCurve, exerciseHeart, heartFormat, heartLatest, heartPoints, packCurve, parseFormat, setCurve, unpackCurve } from './heart-history.js'
 
 const DAY = 86400000
 const T0 = Date.UTC(2026, 10, 1, 9)
@@ -169,6 +169,24 @@ describe('curveCovers', () => {
     expect(curveCovers({ s: 0, step: 5, v: new Array(40).fill(120) }, w)).toBe(false)
     expect(curveCovers(null, w)).toBe(false)
     expect(curveCovers({ s: 0, step: 5, v: [120] }, { start: 5, end: 5 })).toBe(false)
+  })
+  it('is false for a curve with readings near both ends but more than a minute missing between', () => {
+    const v = new Array(120).fill(120)
+    for (let i = 40; i < 53; i++) v[i] = 0 // 65 s without a reading
+    expect(curveCovers({ s: 0, step: 5, v }, w)).toBe(false)
+    for (let i = 40; i < 52; i++) v[i] = 0
+    v[52] = 120 // 60 s: still covered
+    expect(curveCovers({ s: 0, step: 5, v }, w)).toBe(true)
+  })
+})
+
+describe('curveVersion', () => {
+  it('changes when a gap is filled, the start and the length staying the same', () => {
+    const a = curveVersion({ s: 1000, step: 5, v: [120, 0, 140] })
+    expect(curveVersion({ s: 1000, step: 5, v: [120, 130, 140] })).not.toBe(a)
+    expect(curveVersion({ s: 1000, step: 5, v: [120, 0, 140] })).toBe(a)
+    expect(curveVersion({ s: 6000, step: 5, v: [120, 0, 140] })).not.toBe(a)
+    expect(curveVersion(null)).toBe('')
   })
 })
 

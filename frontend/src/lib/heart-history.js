@@ -223,14 +223,32 @@ export function unpackCurve(c, end = Infinity) {
 }
 
 /**
- * Whether a kept curve covers workout `w` from start to end, within a minute each side: a partial
- * one (a hub that synced late) is read again while the workout is recent.
+ * Whether a kept curve covers workout `w` from start to end, within a minute each side and with no
+ * minute without a reading between: a partial one (a hub that synced late) is read again while
+ * the workout is recent.
  */
 export function curveCovers(c, w) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!Array.isArray(c?.v) || !c.v.length || !(end > start)) return false
   const ms = (Number(c.step) || CURVE_STEP_S) * 1000
-  return Number(c.s) <= start + 60e3 && Number(c.s) + c.v.length * ms >= end - 60e3
+  if (!(Number(c.s) <= start + 60e3 && Number(c.s) + c.v.length * ms >= end - 60e3)) return false
+  let run = 0
+  for (const x of c.v) {
+    run = x > 0 ? 0 : run + 1
+    if (run * ms > 60e3) return false
+  }
+  return true
+}
+
+/**
+ * A short fingerprint of a kept curve's start, step and readings, so a cache of what was read
+ * for it notices any change, a filled gap of the same length included; '' for none.
+ */
+export function curveVersion(c) {
+  if (!c || !Array.isArray(c.v)) return ''
+  let h = 0
+  for (const x of c.v) h = (Math.imul(h, 31) + (Number(x) | 0)) | 0
+  return `${c.s}:${c.step || CURVE_STEP_S}:${c.v.length}:${(h >>> 0).toString(36)}`
 }
 
 /**
