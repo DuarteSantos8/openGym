@@ -58,11 +58,12 @@ describe('derivePack', () => {
 
     const swiss = derivePack('de-CH', de)
     expect(Object.keys(swiss)).toEqual(Object.keys(de))
-    expect(Object.values(swiss).filter(v => /ß/.test(v))).toEqual([])
+    expect(Object.values(swiss).filter(v => /ß/.test(JSON.stringify(v)))).toEqual([])
     expect(swiss.glutes).toBe('Gesäss')
     // Only the ß values move; everything else is identical to the German pack.
-    const changed = Object.keys(de).filter(k => de[k] !== swiss[k])
-    expect(changed.every(k => /ß/.test(de[k]))).toBe(true)
+    // A plural entry is an object of forms, compared by value.
+    const changed = Object.keys(de).filter(k => JSON.stringify(de[k]) !== JSON.stringify(swiss[k]))
+    expect(changed.every(k => /ß/.test(JSON.stringify(de[k])))).toBe(true)
   })
 })
 

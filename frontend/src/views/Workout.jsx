@@ -1017,6 +1017,10 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       <span>{entry.sessionTarget.by ? t('Today’s rows come from {0}. Your routine stays as it is.', entry.sessionTarget.by) : t('Today’s rows were planned for this day. Your routine stays as it is.')}</span></div>}
     {planLine}
     {refLine}
+    {/* Never logged before (release pass): no number to aim at, so a first-timer gets the one rule
+        that keeps the first set safe instead of a blank weight to guess. Gone after the first tick. */}
+    {!refLine && !last && mode === 'reps' && !bw && !entry.sets.some(x => x.done) &&
+      <p className="small dim firsttime">{t('First time? Start light: pick a weight you could lift a few more reps than the plan asks, then adjust the next set.')}</p>}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={inEx(t('Open exercise settings'))} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' || plan.prog?.deload ? 'arrowDown' : plan.kind === 'programme' ? 'calendar' : 'lightbulb'} />
