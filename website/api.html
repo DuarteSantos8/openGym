@@ -264,6 +264,9 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <a class="side-link" href="#integrations"><b>Integrations</b></a>
   </div>
   <div class="side-group">
+    <a class="side-link" href="#renpho"><b>RENPHO Health</b></a>
+  </div>
+  <div class="side-group">
     <a class="side-link" href="#tokens"><b>Scoped tokens</b></a>
   </div>
   <div class="side-group">
@@ -306,6 +309,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="ref-toc-group"><a class="ref-toc-a" href="#media">Media</a></div>
   <div class="ref-toc-group"><a class="ref-toc-a" href="#coach">AI Coach</a></div>
   <div class="ref-toc-group"><a class="ref-toc-a" href="#integrations">Integrations</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#renpho">RENPHO Health</a></div>
   <div class="ref-toc-group"><a class="ref-toc-a" href="#tokens">Scoped tokens</a></div>
   <div class="ref-toc-group"><a class="ref-toc-a" href="#mcp">MCP connector</a></div>
   <div class="ref-toc-group"><a class="ref-toc-a" href="#trainers">Trainers</a></div>
@@ -328,7 +332,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.5</span>
-    <span>177 endpoints</span>
+    <span>183 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3675,6 +3679,224 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc"><code>code</code> <code>off</code>: the server runs without <code>INTEGRATIONS</code> (the default). <code>code</code> <code>missing</code>: no such connection on this profile (another profile's id is the same answer).<span class="r-sig"><code>{&quot;error&quot;:&quot;integrations are off on this server&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
+<section class="api-sec" id="renpho">
+  <h2>RENPHO Health</h2>
+  <p class="sub">RENPHO Health on the profile: the server signs in to the RENPHO account, reads the scale's readings every few hours (RENPHO_SYNC_HOURS) and keeps them beside the profile, never in its data. Body measurements shows their summary, read-only.</p>
+  <div class="eps">
+
+<details class="ep" id="op-getRenpho">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/renpho</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The profile's RENPHO Health connection</span>
+  </summary>
+  <div class="ep-body">
+<p><code>connected</code> false and nothing else when there is none. Otherwise the RENPHO e-mail, when it was connected and last synced (ms), what the last sync did, its error if it failed (<code>code</code>: <code>auth</code> when RENPHO no longer accepts the sign-in, <code>rejected</code>, <code>network</code>, <code>format</code>, <code>failed</code>), whether one is running, the openGym types the readings carried (<code>fields</code>), the RENPHO fields this version does not know (<code>unknown</code>, kept in the raw copy all the same) and whether any segmental values came. Never the password or RENPHO's session.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The connection.<span class="r-sig">{ connected: boolean, email: string, connectedAt: integer | null, lastSync: integer | null, lastResult: null | object, error: null | object, syncing: boolean, fields: string[], unknown: string[], segmental: boolean, mode: &quot;account&quot; | &quot;friend&quot;, friend: string | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-deleteRenpho">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/renpho</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Disconnect RENPHO Health</span>
+  </summary>
+  <div class="ep-body">
+<p>Forgets the sign-in and the readings kept on the server.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Disconnected.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-connectRenpho">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/renpho/connect</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Connect a RENPHO Health account</span>
+  </summary>
+  <div class="ep-body">
+<p>Signs in to RENPHO with the account's e-mail and password (sealed on the server with the instance's encryption, used again only when RENPHO's session has expired). The first sync, of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no API: this uses the one the RENPHO Health app uses. RENPHO keeps one session per account, so signing in with the account the app uses signs the app out; with <code>mode: friend</code> the e-mail and password are those of a second account, a RENPHO friend of the main one, and the friend's daily values come in instead (one per day, no segmental values).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">email<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">password<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">areaCode</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Two letters, US by default.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">mode</span>
+    <span class="p-type">&quot;account&quot; | &quot;friend&quot;</span>
+    <span class="p-desc">account by default.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">friendEmail</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">In friend mode, whose readings: needed when the account has more than one friend.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">zone</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The profile time zone (an IANA name), which RENPHO groups readings into days by.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connected; the same body as <code>GET /api/renpho</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">E-mail or password missing, or an area code that is not two letters (<code>code: missing</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">RENPHO did not accept the sign-in (<code>code: auth</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Friend mode: the account has no friends (<code>code: no-friend</code>), or several and none matches <code>friendEmail</code> (<code>code: friend-choice</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many sign-ins (<code>code: busy</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">RENPHO could not be reached or answered unexpectedly (<code>code: network</code>, <code>format</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-syncRenpho">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/renpho/sync</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Sync RENPHO Health now</span>
+  </summary>
+  <div class="ep-body">
+<p>Starts a sync and answers at once (<code>GET /api/renpho</code> says when it is done). Idempotent: readings are matched by RENPHO's own id, so running it again adds nothing twice.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Started; the same body as <code>GET /api/renpho</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Not connected (<code>code: not-connected</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many syncs (<code>code: busy</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getRenphoSummary">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/renpho/summary</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The latest body composition values from RENPHO, for Body measurements</span>
+  </summary>
+  <div class="ep-body">
+<p>Per kind (body fat, lean, fat and muscle mass, water, bone, protein, visceral and subcutaneous fat, BMR, metabolic age, the segmental values…), the latest value RENPHO sent, when (ms), and its change against the reading closest to a month before (at least a week older; <code>null</code> when there is none). Values in the units of <code>api/providers/renpho/composition.js</code> (kg, %, kcal, years; segmental values in the scale's own). The weight is not here: it stays with the weigh-ins. Read-only; nothing of it is in the profile's own data.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The summary; <code>items</code> empty when RENPHO is not connected or sent nothing yet.<span class="r-sig">{ connected: boolean, t: integer | null, items: object[] }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getRenphoRaw">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/renpho/raw</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">RENPHO's readings as RENPHO sent them</span>
+  </summary>
+  <div class="ep-body">
+<p>The profile's raw copy: per reading, <code>provider</code>, <code>external_id</code>, <code>external_timestamp</code> (ms), <code>synced_at</code> (ms) and <code>raw_provider_data</code>, every field RENPHO sent, unknown ones included.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The raw copy.<span class="r-sig">{ provider: string, measurements: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
   </div>
     </div>
   </div>

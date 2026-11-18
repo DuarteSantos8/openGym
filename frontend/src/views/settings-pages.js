@@ -58,6 +58,8 @@ export const PAGES = {
   themes: { title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', parent: 'look', mod: 'seasonal' },
   // The phone's health store, one page per platform (until 1.4.4 a section of Data & backup).
   'apple-health': { title: 'Apple Health', icon: 'heart', tint: 'var(--red)', parent: 'integrations', mod: 'health', kw: 'apple health healthkit heart rate weight scale watch sync workouts' },
+  // RENPHO read by the server (components/RenphoSource.jsx), a card in Integrations.
+  renpho: { title: 'RENPHO Health', icon: 'scale', tint: 'var(--teal)', parent: 'integrations', mod: 'health', kw: 'renpho scale weight body composition fat muscle segmental' },
   'health-connect': { title: 'Health Connect', icon: 'heart', tint: 'var(--red)', parent: 'integrations', mod: 'health', kw: 'health connect google fit samsung fitbit garmin heart rate weight scale watch sync workouts' },
 }
 export const PAGE_IDS = Object.keys(PAGES)
@@ -111,6 +113,8 @@ export function pageVisible(page, ctx) {
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
   if (page === 'apple-health') return !!ctx.ios
   if (page === 'health-connect') return !!ctx.mobile && !!ctx.android
+  // The server reads RENPHO: a profile signed in to one.
+  if (page === 'renpho') return !!ctx.user && !ctx.demo
   return page in PAGES
 }
 
@@ -316,6 +320,7 @@ export const SEARCH = [
   { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
+  { page: 'integrations', mod: 'health', title: 'RENPHO Health', net: true, icon: 'scale', tint: 'var(--teal)', kw: 'renpho scale weight body composition fat muscle segmental', when: c => !!c.user && !c.demo },
   { page: 'integrations', title: 'MCP server', net: true, icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
   { page: 'integrations', title: 'WebDAV backup', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic', when: c => !c.demo },
   { page: 'integrations', title: 'Calendar feed', net: true, icon: 'calendar', tint: 'var(--red)', mod: 'integrations', kw: 'calendar ics ical google outlook apple planned sessions feed subscribe', when: c => c.demo || !c.user || c.apiTokens },

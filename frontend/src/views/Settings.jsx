@@ -3,6 +3,7 @@ import { recordHintsOn } from '../lib/set-records.js'
 import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
+import RenphoSource from '../components/RenphoSource.jsx'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { readWatchPrefs, writeWatchPrefs } from '../lib/watch-settings.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, allowBirthDate } from '../lib/health-sync.js'
@@ -594,6 +595,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
+    // RENPHO read by the server, a card in Integrations.
+    renpho: () => <RenphoSource />,
     wear: () => <WearSettingsPage />,
     garmin: () => <GarminSettingsPage />,
     zepp: () => <ZeppSettingsPage />,

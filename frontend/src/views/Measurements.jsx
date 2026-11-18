@@ -18,6 +18,7 @@ import { nameIn } from '../lib/a11y-name.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import HealthBodyCard from '../components/HealthBodyCard.jsx'
+import RenphoBodyCard from '../components/RenphoBodyCard.jsx'
 import { Button, NumberField, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
@@ -333,6 +334,7 @@ export default function Measurements() {
     </div>
 
     <HealthBodyCard unit={S.unit} />
+    <RenphoBodyCard unit={S.unit} />
 
     {/* Check-in reminders (components/CheckinReminder.jsx): how often, bundled into one notification. */}
     <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow /></div>

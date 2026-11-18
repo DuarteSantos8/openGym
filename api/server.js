@@ -41,6 +41,8 @@ import { stampPut, highestStamp } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT, outboundLookup } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
+import { createRenphoService, reasonOf } from './providers/renpho/service.js';
+import { createRenphoClient, BASE_URL as RENPHO_DEFAULT_URL } from './providers/renpho/client.js';
 import { integrationRoutes } from './integrations/routes.js';
 import { buildIcs } from './integrations/calendar.js';
 import { deriveKey, seal as sealText, open as openSealed } from './integrations/crypto.js';
@@ -1595,6 +1597,8 @@ function removeAccount(u) {
   try { coachJobs.removeUser(u.id); } catch (e) { console.error('coach: could not remove the record of', u.id, e.message); }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
+  // The readings of a connected scale (RENPHO), kept beside the state.
+  try { fs.unlinkSync(providerFile('renpho', u.id)); } catch { /* none kept */ }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
   try { integrations.removeUser(u.id); } catch (e) { console.error('integrations: could not remove', u.id, e.message); }
   // Their grants, consents, roles and sharing log; as a trainer their name leaves members' logs.
@@ -2539,7 +2543,117 @@ function oauthRoutes() {
   };
 }
 
+/* ---------- RENPHO Health (api/providers/renpho) ----------
+ * A profile connects its RENPHO account in Settings → Integrations; the server reads the scale's
+ * readings every RENPHO_SYNC_HOURS (6 by default; 0 turns the timer off, "Sync now" still works)
+ * and keeps them in a file of the profile's own, never in its state. Body measurements shows them
+ * read-only (GET /api/renpho/summary). */
+const providerFile = (name, uid) => path.join(DATA, 'providers', name + '-' + String(uid).replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
+// RENPHO_BASE_URL: only if RENPHO moves its cloud (or for the tests' stand-in); https only.
+const RENPHO_BASE = (() => {
+  const v = String(process.env.RENPHO_BASE_URL || '').trim().replace(/\/$/, '');
+  if (!v) return RENPHO_DEFAULT_URL;
+  if (/^https:\/\//.test(v) || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(v)) return v;
+  console.error('RENPHO_BASE_URL ignored: not an https address');
+  return RENPHO_DEFAULT_URL;
+})();
+const RENPHO = createRenphoService({
+  client: createRenphoClient({ baseUrl: RENPHO_BASE }),
+  seal: obj => coachConfig.encrypt(obj), unseal: blob => coachConfig.decrypt(blob), save: () => saveDb(),
+  // Only a file that is not there yet is "nothing kept": one that cannot be read or parsed throws,
+  // so a sync never starts from nothing and writes over the readings in it.
+  readRaw: uid => {
+    let text;
+    try { text = fs.readFileSync(providerFile('renpho', uid), 'utf8'); }
+    catch (e) { if (e.code === 'ENOENT') return null; throw e; }
+    return JSON.parse(text);
+  },
+  writeRaw: (uid, obj) => {
+    fs.mkdirSync(path.join(DATA, 'providers'), { recursive: true, mode: 0o700 });
+    atomicWrite(providerFile('renpho', uid), JSON.stringify(obj), 0o600);
+  },
+  removeRaw: uid => fs.unlinkSync(providerFile('renpho', uid)),
+  log: (ev, uid, msg) => console.log(ev, uid, msg || ''),
+});
+// A sign-in is RENPHO's password check: a handful an hour is plenty for a person, and keeps this
+// server from being anyone's way to try passwords against RENPHO.
+const RENPHO_CONNECT_BURST = createWindow({ max: 10, windowMs: 3600000 });
+const RENPHO_SYNC_BURST = createWindow({ max: 60, windowMs: 3600000 });
+const RENPHO_EVERY_MS = (() => {
+  const h = Number(process.env.RENPHO_SYNC_HOURS ?? 6);
+  return Number.isFinite(h) && h > 0 ? h * 3600000 : 0;
+})();
+if (RENPHO_EVERY_MS) {
+  // One profile at a time, checked every ten minutes, so many profiles never hit RENPHO at once.
+  setInterval(() => {
+    const next = RENPHO.due(db.users, RENPHO_EVERY_MS)[0];
+    if (next) RENPHO.sync(next).catch(() => { /* kept on the row as its error */ });
+  }, 600000).unref();
+}
+const RENPHO_STATUS = { auth: 401, rejected: 401, 'no-friend': 409, 'friend-choice': 409, network: 502, format: 502, failed: 502 };
+
 const routes = {
+  // RENPHO Health: whether this profile is connected, when it last synced, what came.
+  'GET /api/renpho': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, RENPHO.status(user));
+  },
+  // Signs in to RENPHO with the account's e-mail and password; the first sync starts at once and
+  // the answer does not wait for it (GET /api/renpho says when it is done). `mode: 'friend'` signs
+  // in with a second account and imports the readings of its friend (`friendEmail`, or its only
+  // one), so the RENPHO app stays signed in to the main account.
+  'POST /api/renpho/connect': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const wait = RENPHO_CONNECT_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many sign-ins, try again later', code: 'busy', retryAfter: wait }, { 'Retry-After': String(wait) });
+    const body = await readBody(req);
+    if (typeof body.email !== 'string' || typeof body.password !== 'string' || !body.email.trim() || !body.password) return json(res, 400, { error: 'e-mail and password are needed', code: 'missing' });
+    if (body.areaCode != null && !/^[A-Za-z]{2}$/.test(String(body.areaCode))) return json(res, 400, { error: 'the area code is two letters', code: 'missing' });
+    if (body.mode != null && body.mode !== 'friend' && body.mode !== 'account') return json(res, 400, { error: 'mode is friend or account', code: 'missing' });
+    const friendEmail = typeof body.friendEmail === 'string' ? body.friendEmail.slice(0, 200) : '';
+    const zone = typeof body.zone === 'string' ? body.zone.slice(0, 64) : '';
+    try {
+      await RENPHO.connect(user, { email: body.email, password: body.password, areaCode: body.areaCode, mode: body.mode, friendEmail, zone });
+    } catch (e) {
+      const code = e.code === 'auth' ? 'auth' : e.code || 'failed';
+      const reason = reasonOf(e);
+      return json(res, RENPHO_STATUS[code] || 502, { error: e.message, code, ...(reason ? { reason } : {}) });
+    }
+    RENPHO.sync(user).catch(() => { /* kept on the row as its error */ });
+    json(res, 200, RENPHO.status(user));
+  },
+  // Sync now. The answer does not wait for RENPHO either.
+  'POST /api/renpho/sync': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!user.renpho) return json(res, 409, { error: 'RENPHO is not connected', code: 'not-connected' });
+    const wait = RENPHO_SYNC_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many syncs, try again later', code: 'busy', retryAfter: wait }, { 'Retry-After': String(wait) });
+    RENPHO.sync(user).catch(() => { /* kept on the row as its error */ });
+    json(res, 200, RENPHO.status(user));
+  },
+  'DELETE /api/renpho': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (user.renpho) RENPHO.disconnect(user);
+    json(res, 200, { ok: true });
+  },
+  // What Body measurements shows: per kind, the latest value and its change over about a month.
+  'GET /api/renpho/summary': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { connected: !!user.renpho, ...RENPHO.summary(user) });
+  },
+  // RENPHO's readings as RENPHO sent them, every field: the profile's own copy, to download.
+  'GET /api/renpho/raw': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    let raw = null;
+    try { raw = JSON.parse(fs.readFileSync(providerFile('renpho', user.id), 'utf8')); } catch { /* none yet */ }
+    json(res, 200, raw || { provider: 'renpho', measurements: {} });
+  },
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
   // what "unhealthy" is for. The 200 keeps the shape it had, plus the flag it is now asserting.

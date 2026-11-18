@@ -256,6 +256,10 @@ a{color:var(--acc-ink);text-decoration:none}
 :focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
+/* A text field anywhere, one inside those included (RENPHO's e-mail and password), takes its text again:
+   iOS WebKit carries -webkit-user-select:none down to the field, which then never gets the
+   keyboard or a paste. */
+input,textarea{-webkit-user-select:text;user-select:text}
 /* Text inside a row that gets typed somewhere else (the Zepp pairing code and address): a long
    press selects it, the copy button beside it is the quick way. */
 .lrow .zepp-copyable{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
@@ -1036,6 +1040,18 @@ body.chips-dragging *{cursor:inherit}
 .hc-body-cell b{font-size:var(--fs-title3);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label)}
 .hc-body-cell b i{font-style:normal;font-weight:400;font-size:var(--fs-footnote);color:var(--label-3)}
 .hc-body-s{font-size:var(--fs-caption);color:var(--label-3)}
+
+/* Segmental analysis (components/SegmentalAnalysis.jsx): left against right, per limb. */
+.seg-card{padding:12px 14px;margin-bottom:10px}
+.seg-h{font-weight:600;margin-bottom:8px}
+.seg-pair{margin-bottom:10px}
+.seg-bar{display:grid;grid-template-columns:44px 1fr 48px;align-items:center;gap:8px;margin-top:4px}
+.seg-track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.seg-track i{display:block;height:100%;border-radius:99px;background:var(--seg,var(--acc))}
+.seg-val{text-align:end;font-variant-numeric:tabular-nums}
+.seg-trunk{padding-top:6px;border-top:var(--hair) solid var(--sep)}
+.seg-imp{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-variant-numeric:tabular-nums}
+.seg-imp b{text-align:end}
 /* Daily form (v1.4.5, gm-insights): the check-in sheet before a workout (components/DailyCheckin.jsx)
    and the card in Stats (components/DailyFormCard.jsx). The scale is five equal pips in a tone-step
    track; the chosen one takes the accent. No borders, the surfaces step in tone. */

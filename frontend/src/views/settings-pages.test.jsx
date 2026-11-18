@@ -303,6 +303,8 @@ describe('the search lands on a row', () => {
     'zepp: Install the watch app', // a link to the install guide
     'integrations: Strava', 'integrations: openNutrition', // brand names, not translated: the Integrations page's own words find them
     'live: Effort', // reads "Effort (RIR)" once effort is on; "Effort per set" answers the word
+    // RENPHO's sign-in form (components/RenphoSource.jsx): fields of one sign-in, not settings; the page is found as RENPHO Health.
+    'renpho: Second account', 'renpho: E-mail', 'renpho: Password', 'renpho: Region', 'renpho: Connect RENPHO',
   ])
   // The other way round (#1105): every row a page shows can be found, so a new row cannot slip
   // past the search. A row that opens a page (a sub-page, or Zepp inside Watches) counts through

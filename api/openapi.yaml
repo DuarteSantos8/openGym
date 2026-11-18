@@ -215,6 +215,11 @@ tags:
       Settings → Integrations: outbound webhooks now, more providers later. Off unless the
       server runs with `INTEGRATIONS` (e.g. `INTEGRATIONS=webhook`); then a profile can add
       its own connections. Secrets are sealed at rest and shown once. See docs/INTEGRATIONS.md.
+  - name: renpho
+    description: >-
+      RENPHO Health on the profile: the server signs in to the RENPHO account, reads the scale's
+      readings every few hours (RENPHO_SYNC_HOURS) and keeps them beside the profile, never in its
+      data. Body measurements shows their summary, read-only.
 
 security:
   - cookieAuth: []
@@ -3237,6 +3242,165 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/renpho:
+    get:
+      tags: [renpho]
+      operationId: getRenpho
+      summary: The profile's RENPHO Health connection
+      description: |
+        `connected` false and nothing else when there is none. Otherwise the RENPHO e-mail, when it
+        was connected and last synced (ms), what the last sync did, its error if it failed (`code`:
+        `auth` when RENPHO no longer accepts the sign-in, `rejected`, `network`, `format`,
+        `failed`), whether one is running, the openGym types the readings carried (`fields`), the
+        RENPHO fields this version does not know (`unknown`, kept in the raw copy all the same) and
+        whether any segmental values came. Never the password or RENPHO's session.
+      responses:
+        '200':
+          description: The connection.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connected: { type: boolean }
+                  email: { type: string }
+                  connectedAt: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  lastSync: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  lastResult:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          measurements: { type: integer }
+                          added: { type: integer }
+                          updated: { type: integer }
+                          complete: { type: boolean }
+                  error:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          code: { type: string }
+                          message: { type: string }
+                          at: { type: integer }
+                  syncing: { type: boolean }
+                  fields: { type: array, items: { type: string } }
+                  unknown: { type: array, items: { type: string } }
+                  segmental: { type: boolean }
+                  mode: { type: string, enum: [account, friend], description: 'friend: a second account reads the main one through RENPHO friends.' }
+                  friend: { oneOf: [{ type: string }, { type: 'null' }], description: 'In friend mode, the e-mail (or name) of the friend whose readings come in.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [renpho]
+      operationId: deleteRenpho
+      summary: Disconnect RENPHO Health
+      description: Forgets the sign-in and the readings kept on the server.
+      responses:
+        '200': { description: Disconnected. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/renpho/connect:
+    post:
+      tags: [renpho]
+      operationId: connectRenpho
+      summary: Connect a RENPHO Health account
+      description: |
+        Signs in to RENPHO with the account's e-mail and password (sealed on the server with the
+        instance's encryption, used again only when RENPHO's session has expired). The first sync,
+        of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no
+        API: this uses the one the RENPHO Health app uses. RENPHO keeps one session per account, so
+        signing in with the account the app uses signs the app out; with `mode: friend` the e-mail
+        and password are those of a second account, a RENPHO friend of the main one, and the
+        friend's daily values come in instead (one per day, no segmental values).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+                areaCode: { type: string, description: 'Two letters, US by default.' }
+                mode: { type: string, enum: [account, friend], description: 'account by default.' }
+                friendEmail: { type: string, description: 'In friend mode, whose readings: needed when the account has more than one friend.' }
+                zone: { type: string, description: 'The profile time zone (an IANA name), which RENPHO groups readings into days by.' }
+      responses:
+        '200': { description: 'Connected; the same body as `GET /api/renpho`.' }
+        '400': { description: 'E-mail or password missing, or an area code that is not two letters (`code: missing`).' }
+        '401': { description: 'RENPHO did not accept the sign-in (`code: auth`).' }
+        '409': { description: 'Friend mode: the account has no friends (`code: no-friend`), or several and none matches `friendEmail` (`code: friend-choice`).' }
+        '429': { description: 'Too many sign-ins (`code: busy`).' }
+        '502': { description: 'RENPHO could not be reached or answered unexpectedly (`code: network`, `format`).' }
+
+  /api/renpho/sync:
+    post:
+      tags: [renpho]
+      operationId: syncRenpho
+      summary: Sync RENPHO Health now
+      description: |
+        Starts a sync and answers at once (`GET /api/renpho` says when it is done). Idempotent:
+        readings are matched by RENPHO's own id, so running it again adds nothing twice.
+      responses:
+        '200': { description: 'Started; the same body as `GET /api/renpho`.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: 'Not connected (`code: not-connected`).' }
+        '429': { description: 'Too many syncs (`code: busy`).' }
+
+  /api/renpho/summary:
+    get:
+      tags: [renpho]
+      operationId: getRenphoSummary
+      summary: The latest body composition values from RENPHO, for Body measurements
+      description: |
+        Per kind (body fat, lean, fat and muscle mass, water, bone, protein, visceral and
+        subcutaneous fat, BMR, metabolic age, the segmental values…), the latest value RENPHO sent,
+        when (ms), and its change against the reading closest to a month before (at least a week
+        older; `null` when there is none). Values in the units of `api/providers/renpho/composition.js`
+        (kg, %, kcal, years; segmental values in the scale's own). The weight is not here: it stays
+        with the weigh-ins. Read-only; nothing of it is in the profile's own data.
+      responses:
+        '200':
+          description: The summary; `items` empty when RENPHO is not connected or sent nothing yet.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connected: { type: boolean }
+                  t: { oneOf: [{ type: integer }, { type: 'null' }], description: The newest reading's time. }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type: { type: string }
+                        v: { type: number }
+                        t: { type: integer }
+                        change: { oneOf: [{ type: number }, { type: 'null' }] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/renpho/raw:
+    get:
+      tags: [renpho]
+      operationId: getRenphoRaw
+      summary: RENPHO's readings as RENPHO sent them
+      description: |
+        The profile's raw copy: per reading, `provider`, `external_id`, `external_timestamp` (ms),
+        `synced_at` (ms) and `raw_provider_data`, every field RENPHO sent, unknown ones included.
+      responses:
+        '200':
+          description: The raw copy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string }
+                  measurements: { type: object, additionalProperties: { type: object } }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/integrations:

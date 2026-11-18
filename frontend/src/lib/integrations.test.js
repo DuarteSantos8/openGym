@@ -45,6 +45,18 @@ describe('the directory', () => {
     expect(cardState('coach', ios)).toEqual({ status: 'off', action: 'connect' })
   })
 
+  it('RENPHO, read by the server, shows only to a profile signed in to one', () => {
+    expect(cardState('renpho', web)).toBeNull()
+    expect(cardState('renpho', { ...web, demo: true, user: { id: 'u' } })).toBeNull()
+    const user = { ...web, user: { id: 'u' } }
+    expect(cardState('renpho', { ...user, renpho: false })).toBeNull()
+    expect(cardState('renpho', user)).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('renpho', { ...user, renpho: { connected: false } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('renpho', { ...user, renpho: { connected: true } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('renpho', { ...user, renpho: { connected: true, error: 'auth' } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(directory({ ...user, mod: id => id !== 'health' }).flatMap(c => c.cards.map(x => x.id))).not.toContain('renpho')
+  })
+
   it('webhooks: hidden where the server does not offer them, except to its admin', () => {
     const user = { ...web, user: { id: 'u1' } }
     expect(cardState('webhook', user)).toBeNull()
@@ -67,6 +79,8 @@ describe('the directory', () => {
   it('every card says what it does, and the "works with" list has no Connect of its own', () => {
     for (const c of CARDS) { expect(c.desc).toBeTruthy(); expect(c.syncs.length).toBeGreaterThan(0) }
     expect(WORKS_WITH.map(w => w.name)).toEqual(['Garmin', 'COROS', 'Polar', 'Fitbit', 'Samsung Health', 'Oura', 'Withings', 'Renpho'])
+    // RENPHO alone also has a line of its own to the server (Settings → Integrations → RENPHO Health).
+    expect(WORKS_WITH.filter(w => w.direct).map(w => [w.name, w.direct])).toEqual([['Renpho', 'renpho']])
     expect(WORKS_WITH.every(w => ['hr', 'weight', 'both'].includes(w.reads))).toBe(true)
     expect(Object.keys(PILL)).toEqual(['connected', 'off', 'attention', 'device', 'server'])
   })

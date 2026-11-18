@@ -58,6 +58,7 @@ COPY coach ./coach
 COPY library ./library
 COPY oidc ./oidc
 COPY integrations ./integrations
+COPY providers ./providers
 COPY trainers ./trainers
 COPY sources ./sources
 ENV NODE_ENV=production

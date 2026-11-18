@@ -90,6 +90,7 @@ describe('the cards', () => {
     expect(pill('apple-health')).toBe('Not available on this device')
     expect(pill('health-connect')).toBe('Not available on this device')
     expect(action('apple-health')).toBeNull()
+    expect(card('renpho')).toBeNull()
     expect(pill('webhook')).toBe('Needs your server')
     expect(action('webhook')).toBeNull()
     expect(card('coach')).toBeNull()
@@ -152,6 +153,29 @@ describe('webhooks', () => {
   beforeEach(() => {
     mocks.user = { id: 'u1', name: 'Dana' }
     mocks.config = { integrations: { providers: ['webhook'] } }
+  })
+
+  it('RENPHO is a card of its own for a signed-in profile, and its chip connects there', async () => {
+    mocks.user = { id: 'u1' }
+    mocks.answers['/api/renpho'] = { connected: true, email: 'me@example.com' }
+    await mount()
+    expect(pill('renpho')).toBe('Connected')
+    act(() => action('renpho').click())
+    expect(mocks.navs).toEqual([['/settings/renpho']])
+    act(() => [...host.querySelectorAll('.intg-chip')].find(b => b.textContent === 'Renpho').click())
+    await showSheet()
+    act(() => sheetBtn('Connect RENPHO').click())
+    expect(mocks.navs.at(-1)).toEqual(['/settings/renpho'])
+    // A server without RENPHO: no card.
+    mocks.answers['/api/renpho'] = Object.assign(new Error('HTTP 404'), { status: 404 })
+    act(() => root.render(null))
+    await mount()
+    expect(card('renpho')).toBeNull()
+    // and its chip offers no connection that leads nowhere
+    act(() => [...host.querySelectorAll('.intg-chip')].find(b => b.textContent === 'Renpho').click())
+    await showSheet()
+    expect([...sheetHost.querySelectorAll('button')].some(b => b.textContent === 'Connect RENPHO')).toBe(false)
+    expect(sheetHost.textContent).toContain('has no direct line to openGym')
   })
 
   it('connect: the URL is checked here first, then the server answers with the secret, shown once', async () => {
