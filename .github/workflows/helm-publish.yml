@@ -13,9 +13,9 @@ name: Publish Helm chart
 #       repository: "oci://ghcr.io/duartesantos8"
 #
 # The published chart version is the app version from the release tag, not the development version in
-# helm/Chart.yaml, so a dependency pins the app it runs. Only that exact version is published: a
-# pinned dependency is the norm, and a second push (a moving X.Y or latest tag) trips an intermittent
-# "Tag ... not found" in helm's OCI push to GHCR (helm#30881, #31223). Moving tags need a retag tool.
+# helm/Chart.yaml, so a dependency pins the app it runs. Only that exact X.Y.Z version is published
+# (one chart per release, matching every historical tag; no moving X.Y/latest -- a second helm push
+# trips an intermittent "Tag ... not found", helm#30881, and a retag tool would be needed anyway).
 on:
   release:
     types: [published]
