@@ -201,6 +201,10 @@ describe('planSync', () => {
     expect([...ids].sort()).toEqual(['opengym-bw-2026-09-01', 'opengym-bw-2026-09-01-*', 'opengym-bw-2026-09-02', 'opengym-bw-2026-09-02-*', 'opengym-bw-2026-09-03', 'opengym-bw-2026-09-03-*', 'opengym-w-a', 'opengym-w-c'])
     expect(goneIds(null).size).toBe(0)
   })
+  it('goneIds: a reset takes the waist samples, and an out-of-range waist counts as cleared', () => {
+    const ids = goneIds({ resetIds: { measurements: ['2026-09-02|123'] }, measurements: [{ d: '2026-09-04', waist: 5000 }, { d: '2026-09-05', waist: 80 }] })
+    expect([...ids].sort()).toEqual(['opengym-waist-2026-09-02', 'opengym-waist-2026-09-04'])
+  })
 
   // #859: each weigh-in of a day is its own record, at its own time.
   describe('several weigh-ins a day', () => {

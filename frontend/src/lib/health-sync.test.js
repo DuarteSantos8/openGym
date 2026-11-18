@@ -376,6 +376,11 @@ describe('waist', () => {
     expect(file().waistAsked).toBe(true)
     expect(writes().flatMap(w => w.waists || [])).toEqual([])
   })
+  it('turned on with Health already granted: the waist is still asked once on the next sync', async () => {
+    h.platform = 'ios'; h.grantWaist = true; h.status = { status: 'available', granted: true, waist: false, calories: true }
+    await hs.enableHealth(withWaist())
+    expect(h.calls.filter(c => c[0] === 'request')).toEqual([['request', { read: [], write: ['waist'] }]])
+  })
   it('Android never sends a waist and never asks for one', async () => {
     on({ waist: false })
     await hs.loadHealth()

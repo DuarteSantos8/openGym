@@ -110,7 +110,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             if read.contains("exercise") { types.insert(HKObjectType.workoutType()) }
             var share: Set<HKSampleType> = []
             if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
-            if let write = call.getArray("write") as? [String], write.contains("waist"), let w = waist { share.insert(w); types.insert(w) }
+            if let write = call.getArray("write") as? [String], write.contains("waist"), let w = waist { share.insert(w) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
                 call.resolve(["granted": self.granted, "calories": self.caloriesGranted, "waist": self.waistGranted])
             }
@@ -227,7 +227,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                     _ = try? await self.delete(kcal, ids: sessions.map { $0 + "-kcal" })
                 }
                 if !weights.isEmpty { left += try await self.delete(self.bodyMass, ids: weights) }
-                if !waists.isEmpty, let w = self.waist { left += try await self.delete(w, ids: waists) }
+                if !waists.isEmpty { left += (self.waistGranted ? (try await self.delete(self.waist!, ids: waists)) : waists) }
                 call.resolve(["left": left])
             } catch {
                 self.fail(call, error)

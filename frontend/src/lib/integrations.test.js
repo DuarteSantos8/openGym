@@ -28,6 +28,10 @@ describe('the directory', () => {
     for (const k of ['readBody', 'readVitals', 'readSport']) expect(cardState('health-connect', { ...android, health: { status: 'available', [k]: true } }).status).toBe('connected')
   })
 
+  it('a phone reading only the waist counts as connected', () => {
+    expect(cardState('apple-health', { ...web, mobile: true, platform: 'ios', health: { status: 'available', readWaist: true } }).status).toBe('connected')
+  })
+
   it('a phone shows its own store only, by what the store says', () => {
     const android = { ...web, mobile: true, platform: 'android', health: { status: 'available', on: false } }
     expect(cardState('apple-health', android)).toBeNull()

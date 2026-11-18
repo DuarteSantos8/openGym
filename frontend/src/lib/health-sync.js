@@ -216,7 +216,8 @@ export async function enableHealth(S) {
   if (!granted) return { ok: false, reason: 'denied' }
   const h = await loadHealth()
   // The default ask includes active energy (optional: refusing it keeps the rest on).
-  await saveHealth({ ...h, on: true, error: null, kcalAsked: true, waistAsked: true })
+  // Already granted: the default ask was skipped, so the optional ones stay unasked for the next sync.
+  await saveHealth({ ...h, on: true, error: null, kcalAsked: !st.granted, waistAsked: !st.granted })
   await mirrorOn(true)
   const after = await syncHealth(S)
   return { ok: !after?.error, reason: after?.error || null, health: after }

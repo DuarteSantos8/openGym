@@ -107,7 +107,7 @@ export const PILL = {
 }
 
 // Every read counts: a phone that only reads vitals or sport is connected too.
-const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
+const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport || h.readWaist))
 const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healthOn(h) && h.readError === 'permission')))
 
 /**

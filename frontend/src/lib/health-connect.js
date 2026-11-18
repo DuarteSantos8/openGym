@@ -264,11 +264,12 @@ export function goneIds(S) {
   }
   for (const [k, at] of Object.entries(del.measurements || {})) if (Number(at) > 0) out.add('opengym-waist-' + k)
   // A check-in that stays but has no waist any more: its sample goes.
-  for (const e of S?.measurements || []) if (e?.d && e.waist == null) out.add('opengym-waist-' + e.d)
+  for (const e of S?.measurements || []) if (e?.d && (e.waist == null || !inMeasurementRange('waist', +e.waist))) out.add('opengym-waist-' + e.d)
   const reset = S?.resetIds && typeof S.resetIds === 'object' ? S.resetIds : {}
   for (const k of Array.isArray(reset.workouts) ? reset.workouts : []) out.add('opengym-w-' + k)
   // A weigh-in is named by its day and time there ("2026-09-17|1758…"); Health knows it by day.
   for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) { const d = String(k).split('|')[0]; out.add('opengym-bw-' + d); out.add('opengym-bw-' + d + '-*') }
+  for (const k of Array.isArray(reset.measurements) ? reset.measurements : []) out.add('opengym-waist-' + String(k).split('|')[0])
   return out
 }
 
