@@ -62,6 +62,12 @@ describe('exerciseHeart', () => {
     expect(heartLatest(s.slice(1), 'rest')).toEqual({ value: 110, delta: -14 })
   })
 
+  it('tells two older workouts without an id apart, by day and start', () => {
+    const old = (d, start) => ({ d, start, entries: [{ id: ROPE, target: { mode: 'time' }, sets: [{ done: true, sec: 60, hr: { avg: 150, max: 160 } }] }] })
+    const ids = exerciseHeart([old('2026-01-02', 1000), old('2026-01-03', 2000)], ROPE).sessions('t:60').map(x => x.id)
+    expect(new Set(ids).size).toBe(2)
+  })
+
   it('has nothing for an exercise without a reading', () => {
     expect(exerciseHeart(ws, '9999').formats).toEqual([])
     expect(exerciseHeart(null, ROPE).formats).toEqual([])

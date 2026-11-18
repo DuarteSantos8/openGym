@@ -319,3 +319,19 @@ describe('vitals (v1.4.5)', () => {
     expect((await hs.enableRead('vitals', getState, { apply })).reason).toBe('denied')
   })
 })
+
+describe('workoutSamples', () => {
+  it('draws the kept curve and the hub\'s readings together when they cover different parts', async () => {
+    vi.resetModules()
+    h.files.clear(); h.calls.length = 0; h.fail = null
+    const { workoutSamples, enableRead } = await import('./health-sync.js')
+    const { packCurve } = await import('./heart-history.js')
+    await enableRead('hr', () => ({ workouts: [] }))
+    // kept: the first two minutes; the hub: only the last two of a six-minute session
+    const w = { id: 'w', start: s(0), end: s(360), hrc: packCurve([[s(5), 100], [s(60), 110], [s(115), 120]], s(0), s(360)) }
+    h.hr = [[s(250), 140], [s(300), 150], [s(355), 160]]
+    const got = await workoutSamples(w)
+    expect(got.map(r => r[1])).toEqual([100, 110, 120, 140, 150, 160])
+  })
+})
+
