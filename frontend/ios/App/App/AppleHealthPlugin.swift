@@ -36,6 +36,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setEnabled", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readHeartRate", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readWaist", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readVitals", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWorkouts", returnType: CAPPluginReturnPromise),
@@ -45,6 +46,8 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     static let enabledKey = "healthEnabled"
     private let store = HKHealthStore()
     private var bodyMass: HKQuantityType { HKQuantityType.quantityType(forIdentifier: .bodyMass)! }
+    /// The waist of a Body measurements check-in (lib/health-connect.js waistRecord), written in cm.
+    private var waist: HKQuantityType? { HKQuantityType.quantityType(forIdentifier: .waistCircumference) }
 
     /// The estimated active energy of a workout logged on the phone (#724), lib/active-energy.js.
     private var activeEnergy: HKQuantityType? { HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) }
@@ -52,6 +55,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     private var shareTypes: Set<HKSampleType> {
         var types: Set<HKSampleType> = [HKObjectType.workoutType(), bodyMass]
         if let kcal = activeEnergy { types.insert(kcal) }
+        if let w = waist { types.insert(w) }
         return types
     }
     private var readTypes: Set<HKObjectType> {
@@ -69,13 +73,18 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         guard let kcal = activeEnergy else { return false }
         return store.authorizationStatus(for: kcal) == .sharingAuthorized
     }
+    /// Optional too: refused, the rest still goes in, without the waist.
+    private var waistGranted: Bool {
+        guard let w = waist else { return false }
+        return store.authorizationStatus(for: w) == .sharingAuthorized
+    }
 
     @objc func status(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.resolve(["status": "unsupported", "granted": false])
             return
         }
-        call.resolve(["status": "available", "granted": granted, "calories": caloriesGranted])
+        call.resolve(["status": "available", "granted": granted, "calories": caloriesGranted, "waist": waistGranted])
     }
 
     @objc override public func requestPermissions(_ call: CAPPluginCall) {
@@ -88,6 +97,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             var types: Set<HKObjectType> = []
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
             if read.contains("weight") { types.insert(bodyMass) }
+            if read.contains("waist"), let w = waist { types.insert(w) }
             // Body composition (v1.4.5): Apple Health has body fat and lean mass of the four.
             if read.contains("bodyFat"), let fat = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage) { types.insert(fat) }
             if read.contains("leanMass"), let lean = HKObjectType.quantityType(forIdentifier: .leanBodyMass) { types.insert(lean) }
@@ -100,13 +110,14 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             if read.contains("exercise") { types.insert(HKObjectType.workoutType()) }
             var share: Set<HKSampleType> = []
             if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
+            if let write = call.getArray("write") as? [String], write.contains("waist"), let w = waist { share.insert(w) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
-                call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
+                call.resolve(["granted": self.granted, "calories": self.caloriesGranted, "waist": self.waistGranted])
             }
             return
         }
         store.requestAuthorization(toShare: shareTypes, read: readTypes) { _, _ in
-            call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
+            call.resolve(["granted": self.granted, "calories": self.caloriesGranted, "waist": self.waistGranted])
         }
     }
 
@@ -148,6 +159,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func write(_ call: CAPPluginCall) {
         let sessions = (call.getArray("sessions") as? [[String: Any]]) ?? []
         let weights = (call.getArray("weights") as? [[String: Any]]) ?? []
+        let waists = (call.getArray("waists") as? [[String: Any]]) ?? []
         Task {
             do {
                 guard self.granted else { throw HKError(.errorAuthorizationDenied) }
@@ -179,6 +191,22 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                         }
                     }
                 }
+                if self.waistGranted {
+                    var samples: [(String, HKQuantitySample)] = []
+                    for w in waists {
+                        if let sample = self.waistSample(w) { samples.append(((w["id"] as? String) ?? "", sample)) } else { skipped.append((w["id"] as? String) ?? "") }
+                    }
+                    if !samples.isEmpty {
+                        do {
+                            try await self.store.save(samples.map { $0.1 })
+                        } catch {
+                            // One of them refused: each on its own, so the rest still go in.
+                            for (id, sample) in samples {
+                                do { try await self.store.save(sample) } catch { failed.append(id) }
+                            }
+                        }
+                    }
+                }
                 call.resolve(["skipped": skipped.filter { !$0.isEmpty }, "failed": failed.filter { !$0.isEmpty }])
             } catch {
                 self.fail(call, error)
@@ -189,6 +217,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func remove(_ call: CAPPluginCall) {
         let sessions = (call.getArray("sessions") as? [String]) ?? []
         let weights = (call.getArray("weights") as? [String]) ?? []
+        let waists = (call.getArray("waists") as? [String]) ?? []
         Task {
             do {
                 var left: [String] = []
@@ -198,6 +227,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                     _ = try? await self.delete(kcal, ids: sessions.map { $0 + "-kcal" })
                 }
                 if !weights.isEmpty { left += try await self.delete(self.bodyMass, ids: weights) }
+                if !waists.isEmpty { left += (self.waistGranted ? (try await self.delete(self.waist!, ids: waists)) : waists) }
                 call.resolve(["left": left])
             } catch {
                 self.fail(call, error)
@@ -232,6 +262,26 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                                        syncId: $0.metadata?[HKMetadataKeySyncIdentifier] as? String)
             }
             call.resolve(["records": HealthReadCore.weights(all)])
+        } failed: { self.fail(call, $0) }
+    }
+
+    /// Waists (cm) since `since`, as { t, cm, id, origin, clientId } (lib/health-read.js mergeWaists).
+    /// Not allowed reads nothing, as Apple Health keeps that private.
+    @objc func readWaist(_ call: CAPPluginCall) {
+        guard let since = call.getDouble("since") else { call.reject("since is needed", "failed"); return }
+        guard let type = waist else { call.resolve(["records": [[String: Any]]()]); return }
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: nil)
+        query(type, predicate) { found in
+            let rows: [[String: Any]] = found.compactMap { $0 as? HKQuantitySample }.map { sample in
+                var r: [String: Any] = [
+                    "t": sample.startDate.timeIntervalSince1970 * 1000,
+                    "cm": sample.quantity.doubleValue(for: .meterUnit(with: .centi)),
+                    "id": sample.uuid.uuidString, "origin": sample.sourceRevision.source.bundleIdentifier,
+                ]
+                if let sync = sample.metadata?[HKMetadataKeySyncIdentifier] as? String { r["clientId"] = sync }
+                return r
+            }
+            call.resolve(["records": rows])
         } failed: { self.fail(call, $0) }
     }
 
@@ -534,6 +584,16 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         let at = Date(timeIntervalSince1970: time / 1000)
         guard AppleHealthPlugin.fits(bodyMass, from: at, to: at) else { return nil }
         return HKQuantitySample(type: bodyMass, quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: kg),
+                                start: at, end: at, metadata: syncMetadata(id))
+    }
+
+    private func waistSample(_ w: [String: Any]) -> HKQuantitySample? {
+        guard let type = waist, let id = w["id"] as? String, !id.isEmpty,
+              let time = (w["time"] as? NSNumber)?.doubleValue, let cm = (w["cm"] as? NSNumber)?.doubleValue,
+              time > 0, time <= Date().timeIntervalSince1970 * 1000, cm.isFinite, cm > 0, cm < 500 else { return nil }
+        let at = Date(timeIntervalSince1970: time / 1000)
+        guard AppleHealthPlugin.fits(type, from: at, to: at) else { return nil }
+        return HKQuantitySample(type: type, quantity: HKQuantity(unit: .meterUnit(with: .centi), doubleValue: cm),
                                 start: at, end: at, metadata: syncMetadata(id))
     }
 

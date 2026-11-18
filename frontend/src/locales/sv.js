@@ -5950,4 +5950,7 @@ export default {
   "Hide": "Dölj",
   "Totals": "Totalt",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Genomförda pass, vägningar och din midja, bara från den här telefonen.",
+  "Read waist": "Läs midja",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "En midja sparad i Apple Hälsa fyller en tom dag. Det du skriver in själv vinner alltid.",
 }

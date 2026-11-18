@@ -5869,4 +5869,7 @@ export default {
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "تمرینات تمام‌شده، وزن‌کشی‌ها و دور کمر شما، فقط از این تلفن.",
+  "Read waist": "خواندن دور کمر",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "دور کمر ذخیره‌شده در Apple Health روز خالی را پر می‌کند. مقداری که خودتان وارد کنید همیشه برنده است.",
 }

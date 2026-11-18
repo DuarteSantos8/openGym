@@ -5869,4 +5869,7 @@ export default {
   "Hide": "Ẩn",
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Các buổi tập đã hoàn thành, số đo cân nặng và vòng eo, chỉ từ điện thoại này.",
+  "Read waist": "Đọc vòng eo",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Vòng eo lưu trong Apple Health sẽ điền vào ngày còn trống. Số bạn tự nhập luôn được ưu tiên.",
 };

@@ -5896,4 +5896,7 @@ export default {
   "Hide": "隱藏",
   "Totals": "總計",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "僅限這支手機上已完成的訓練、體重與腰圍紀錄。",
+  "Read waist": "讀取腰圍",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Apple 健康裡儲存的腰圍會補上空白的一天。你自己輸入的永遠優先。",
 }

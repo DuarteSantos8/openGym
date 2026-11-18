@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // object and an `apply` that runs the change on it (as useStore's update does).
 const h = vi.hoisted(() => {
   vi.stubEnv('VITE_MOBILE', '1')
-  return { files: new Map(), calls: [], platform: 'android', granted: { heartRate: true, weight: true }, hr: [], weights: [], fail: null }
+  return { files: new Map(), calls: [], platform: 'android', granted: { heartRate: true, weight: true }, hr: [], weights: [], waists: [], fail: null }
 })
 
 vi.mock('@capacitor/filesystem', () => ({
@@ -37,6 +37,10 @@ vi.mock('@capacitor/core', () => ({
       h.calls.push(['readWeights', arg])
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return { records: h.weights.filter(r => r.t >= arg.since) }
+    },
+    readWaist: async arg => {
+      h.calls.push(['readWaist', arg])
+      return { records: h.waists.filter(r => r.t >= arg.since) }
     },
     readBody: async arg => {
       h.calls.push(['readBody', arg])
@@ -71,7 +75,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
+  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.waists = []; h.fail = null
   S = { unit: 'kg', workouts: [workout('w1')], bodyweight: [] }
   applied = 0
   hs = await import('./health-sync.js')
@@ -152,6 +156,42 @@ describe('heart rate', () => {
     await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
     expect(reads('readHeartRate')).toHaveLength(1)
     expect(S.workouts[0].hr.src).toBe('hc')
+  })
+})
+
+describe('waists', () => {
+  it('fills the day\'s check-in, from all history, then from the newest seen, and once only', async () => {
+    h.platform = 'ios'
+    h.waists = [{ t: NOW - 2 * 3600e3, cm: 82.4, id: 'a1', origin: 'com.apple.Health', clientId: null }]
+    await hs.enableRead('waist', getState, { apply })
+    expect(h.calls[0]).toEqual(['request', { read: ['waist'], write: [] }])
+    expect(reads('readWaist')[0][1].since).toBe(0)
+    expect(S.measurements).toHaveLength(1)
+    expect(S.measurements[0]).toMatchObject({ d: '2026-10-15', waist: 82.4 })
+    expect(file().waCursor).toBe(NOW - 2 * 3600e3)
+    expect(Object.keys(file().waSeen)).toHaveLength(1)
+    await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
+    expect(reads('readWaist')[1][1].since).toBe(NOW - 2 * 3600e3 - 2 * 24 * 3600e3)
+    expect(applied).toBe(1)
+  })
+
+  it('turned off and on again, reads all history again', async () => {
+    h.platform = 'ios'
+    h.waists = [{ t: NOW - 2 * 3600e3, cm: 82.4, id: 'a1', origin: 'com.apple.Health', clientId: null }]
+    await hs.enableRead('waist', getState, { apply })
+    await hs.disableRead('waist')
+    expect(file().waCursor).toBe(0)
+    await hs.enableRead('waist', getState, { apply })
+    expect(reads('readWaist').at(-1)[1].since).toBe(0)
+  })
+})
+
+describe('waists on Android', () => {
+  it('never calls the missing native method', async () => {
+    h.waists = [{ t: NOW - 3600e3, cm: 82.4, id: 'a1', origin: 'x', clientId: null }]
+    await hs.enableRead('waist', getState, { apply })
+    expect(reads('readWaist')).toHaveLength(0)
+    expect(S.measurements).toBeUndefined()
   })
 })
 

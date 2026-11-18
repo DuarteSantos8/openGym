@@ -36,8 +36,8 @@ export const builtinUnit = key => { const k = BUILTIN.get(key)?.kind; return k =
 // The keys of a pair, for the one switch and the one chart: 'bp' → bpSys, bpDia, pulse.
 export const pairKeys = pair => MEASUREMENT_FIELDS.filter(f => f.pair === pair).map(f => f.key)
 export const BP_KEY = 'pair:bp'
-// What a reading may be: blood pressure and a pulse a person can actually have.
-const RANGE = { bpSys: [50, 260], bpDia: [30, 160], pulse: [25, 230] }
+// What a reading may be: a waist, blood pressure and a pulse a person can actually have.
+const RANGE = { waist: [20, 300], bpSys: [50, 260], bpDia: [30, 160], pulse: [25, 230] }
 export const inMeasurementRange = (key, v) => !RANGE[key] || (v >= RANGE[key][0] && v <= RANGE[key][1])
 // A check-in's own note ("after the holidays", "cuff on the left arm"), shown in the history and
 // the journal (lib/journal.js).
@@ -98,6 +98,7 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
   for (const key of MEASUREMENT_KEYS) entry[key] = valid(raw[key], builtinUnit(key))
   const note = typeof raw.note === 'string' ? raw.note.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, ' ').trim().slice(0, MEASUREMENT_NOTE_MAX) : ''
   if (note) entry.note = note
+  if (typeof raw.src === 'string' && raw.src) entry.src = raw.src   // read in from Health: never written back, loses a sync merge to a typed one
 
   const known = new Map(custom.map(c => [c.id, c]))
   const seen = new Set()

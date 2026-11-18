@@ -17,6 +17,7 @@ import { hrFromSamples, sanitizeHr } from './heart-rate.js'
 import { stampWorkout } from './sync-merge.js'
 import { isoOf } from './format.js'
 import { addWeighIn, readingsOf, timeOf, hashId } from './weigh-ins.js'
+import { emptyMeasurement, inMeasurementRange } from './measurements.js'
 
 export const LB_PER_KG = 2.2046226218
 // Weigh-ins outside this are a typo or another person's profile in the hub, not a body weight.
@@ -113,6 +114,49 @@ export function mergeWeighIns(S, records, { src, seen = {} } = {}) {
     const w = Math.round((unit === 'lb' ? r.kg * LB_PER_KG : r.kg) * 10) / 10
     addWeighIn(S, { d, at, w, t: r.t, id: rid, src, sid: r.id })
     seen[rid] = { id: r.id, t: r.t }
+    days.add(d)
+  }
+  return [...days].sort()
+}
+
+/**
+ * Waists from the hub (`records`: [{ t, cm, id, origin, clientId }], cm) put into the log `S`
+ * (mutated): a day's check-in with no waist gets it, a day with none gets a check-in holding only
+ * the waist. A waist typed in openGym is never replaced, and a day deleted in openGym after the
+ * sample was taken stays deleted. `seen` (as in mergeWeighIns, updated in place) remembers every
+ * sample looked at, so a waist cleared in openGym is not brought back. The latest sample of a day
+ * wins. Always stored in cm, whatever the profile shows. Returns the days changed.
+ */
+export function mergeWaists(S, records, { seen = {} } = {}) {
+  const fresh = []
+  for (const r of Array.isArray(records) ? records : []) {
+    if (!r || isOwnRecord(r)) continue
+    const t = Number(r.t), cm = Number(r.cm)
+    if (!(t > 0) || !Number.isFinite(cm) || !inMeasurementRange('waist', cm)) continue
+    fresh.push({ t, cm, id: r.id || null })
+  }
+  if (!fresh.length) return []
+  fresh.sort((a, b) => b.t - a.t)
+  if (!Array.isArray(S.measurements)) S.measurements = []
+  const deleted = S.deleted?.measurements && typeof S.deleted.measurements === 'object' ? S.deleted.measurements : {}
+  const days = new Set()
+  for (const r of fresh) {
+    const rid = hubReadingId(r)
+    if (seen[rid]) continue
+    const d = isoOf(new Date(r.t))
+    const day = S.measurements.find(e => e && e.d === d)
+    if (!day && Number(deleted[d]) > r.t) continue        // the day was removed in openGym after it was taken
+    seen[rid] = { id: r.id, t: r.t }
+    if (day && day.waist != null) continue                // typed in, or a later sample of this day got in first
+    const cm = Math.round(r.cm * 10) / 10
+    if (day) { day.waist = cm; day.t = Math.max(Date.now(), (Number(day.t) || 0) + 1) }
+    else {
+      const e = emptyMeasurement(d, S.customMeasurements)
+      e.waist = cm; e.t = r.t
+      e.src = 'health'   // a typed check-in of the day always beats this one in a sync merge, and it is never written back
+      S.measurements.push(e)
+      S.measurements.sort((a, b) => a.d.localeCompare(b.d))
+    }
     days.add(d)
   }
   return [...days].sort()

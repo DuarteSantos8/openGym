@@ -5,6 +5,7 @@
 // Write-only, and only on request: the user turns it on in Settings, on each phone. Every record
 // carries a client id of its own (a workout's id, a weigh-in's day), so writing it again replaces
 // it instead of adding a second one, and anything openGym wrote can be found and removed again.
+import { inMeasurementRange } from './measurements.js'
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
@@ -181,6 +182,15 @@ export function weightRecord(b, unit, r = null, now = Date.now()) {
   return { id: weightRecordId(b.d, r?.id), time, kg }
 }
 
+/** One waist record per check-in with a waist (cm), none for one read in from Health (`src`): at its time `t` if that is on day `d`, else at local noon of `d`. */
+export function waistRecord(e, now = Date.now()) {
+  const cm = Number(e?.waist)
+  if (!e?.d || e.src || e.waist == null || !Number.isFinite(cm) || !inMeasurementRange('waist', cm)) return null
+  const [y, m, d] = String(e.d).split('-').map(Number)
+  const time = Number(e.t) > 0 && isoOf(new Date(e.t)) === e.d ? e.t : new Date(y, m - 1, d, 12).getTime()
+  return healthTime(time, now) ? { id: 'opengym-waist-' + e.d, time, cm } : null
+}
+
 /** The hub's id of one weigh-in openGym wrote: its day, and its reading unless that is '0'. */
 export const weightRecordId = (d, rid) => 'opengym-bw-' + d + (rid != null && String(rid) !== '0' ? '-' + rid : '')
 
@@ -198,7 +208,7 @@ function localMorning(iso) {
 export const isImportedWorkout = w => w?.src === 'import' || /^iw[0-9a-z]+$/.test(String(w?.id || ''))
 
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = false, now = Date.now() }) {
+export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = false, waist = false, now = Date.now() }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   // `kcal`: the hub allows active energy, so every session carries its estimate. A change of that
   // permission changes the records, so the next sync writes them all again, with or without.
@@ -210,6 +220,7 @@ export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = f
     weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
       ? readingsOf(b).filter(r => !r.src).map(r => weightRecord(b, unit, r, now))
       : b?.src ? [] : [weightRecord(b, unit, null, now)])).filter(Boolean),
+    waists: waist ? (S?.measurements || []).map(e => waistRecord(e, now)).filter(Boolean) : [],
   }
 }
 
@@ -251,25 +262,29 @@ export function goneIds(S) {
     if (!b?.d || !b.gone || typeof b.gone !== 'object') continue
     for (const [rid, at] of Object.entries(b.gone)) if (Number(at) > 0) out.add(weightRecordId(b.d, rid))
   }
+  for (const [k, at] of Object.entries(del.measurements || {})) if (Number(at) > 0) out.add('opengym-waist-' + k)
+  // A check-in that stays but has no waist any more: its sample goes.
+  for (const e of S?.measurements || []) if (e?.d && (e.waist == null || !inMeasurementRange('waist', +e.waist))) out.add('opengym-waist-' + e.d)
   const reset = S?.resetIds && typeof S.resetIds === 'object' ? S.resetIds : {}
   for (const k of Array.isArray(reset.workouts) ? reset.workouts : []) out.add('opengym-w-' + k)
   // A weigh-in is named by its day and time there ("2026-09-17|1758…"); Health knows it by day.
   for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) { const d = String(k).split('|')[0]; out.add('opengym-bw-' + d); out.add('opengym-bw-' + d + '-*') }
+  for (const k of Array.isArray(reset.measurements) ? reset.measurements : []) out.add('opengym-waist-' + String(k).split('|')[0])
   return out
 }
 
 /**
  * What a sync has to do, given the records now and `written`, what this phone wrote before
- * ({ [id]: { k: 'session' | 'weight', h: recordKey } }). New and changed records are written,
+ * ({ [id]: { k: 'session' | 'weight' | 'waist', h: recordKey } }). New and changed records are written,
  * records that are gone from openGym (a deleted workout, a removed weigh-in) are removed.
  * With `gone` (goneIds), only a record on record as deleted is removed; one that is merely
  * missing stays written, and goes once its deletion arrives. Returns { sessions, weights,
  * remove: { sessions: [id], weights: [id] }, written } — `written` being what the phone has
  * written once the sync went through.
  */
-export function planSync({ sessions, weights }, written = {}, gone = null) {
+export function planSync({ sessions, weights, waists = [] }, written = {}, gone = null) {
   const next = {}
-  const out = { sessions: [], weights: [], remove: { sessions: [], weights: [] } }
+  const out = { sessions: [], weights: [], waists: [], remove: { sessions: [], weights: [], waists: [] } }
   const take = (list, k, into) => {
     for (const rec of list) {
       if (next[rec.id]) continue   // two workouts with one id: the first is the one written
@@ -280,11 +295,13 @@ export function planSync({ sessions, weights }, written = {}, gone = null) {
   }
   take(sessions, 'session', out.sessions)
   take(weights, 'weight', out.weights)
+  take(waists, 'waist', out.waists)
   for (const [id, was] of Object.entries(written || {})) {
     if (next[id]) continue
     if (gone && !isGone(gone, id)) { next[id] = was; continue }
     if (was?.k === 'session') out.remove.sessions.push(id)
     else if (was?.k === 'weight') out.remove.weights.push(id)
+    else if (was?.k === 'waist') out.remove.waists.push(id)
   }
   out.written = next
   return out
@@ -296,10 +313,11 @@ const isGone = (gone, id) => gone.has(id) || (/^opengym-bw-\d{4}-\d{2}-\d{2}-/.t
 
 /** Every record this phone wrote, by type — what "remove what openGym wrote" takes away. */
 export function writtenIds(written = {}) {
-  const out = { sessions: [], weights: [] }
+  const out = { sessions: [], weights: [], waists: [] }
   for (const [id, was] of Object.entries(written || {})) {
     if (was?.k === 'session') out.sessions.push(id)
     else if (was?.k === 'weight') out.weights.push(id)
+    else if (was?.k === 'waist') out.waists.push(id)
   }
   return out
 }

@@ -5868,4 +5868,7 @@ export default {
   "Hide": "Sembunyikan",
   "Totals": "Total",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Panah mengubah urutannya.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Sesi latihan yang selesai, catatan berat badan, dan lingkar pinggangmu, hanya dari ponsel ini.",
+  "Read waist": "Baca lingkar pinggang",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Lingkar pinggang yang tersimpan di Apple Health mengisi hari yang kosong. Yang kamu ketik sendiri selalu menang.",
 };

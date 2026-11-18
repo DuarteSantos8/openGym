@@ -310,8 +310,13 @@ default, each independent of writing and of the other:
   leaves them out); typed ones stand beside them, and the daily-value setting picks the day's number.
 - **Foreground only.** Reads run at launch, on resume and after saves, never in the background.
   No `READ_HEALTH_DATA_IN_BACKGROUND`, no `READ_HEALTH_DATA_HISTORY`; old workouts are not filled in.
-- **Device-local state** in `opengym-health.json`: `readHr`, `readWeight`, `wCursor`, `seen` (what
-  was imported, per hub sample), `hrTried` (when each recent workout was last read), `readError`.
+- **Device-local state** in `opengym-health.json`: `readHr`, `readWeight`, `readWaist`, `wCursor`, `seen` (what
+  was imported, per hub sample), `waCursor` and `waSeen` (the same for waists), `waistAsked` (the
+  waist write permission was asked once), `hrTried` (when each recent workout was last read), `readError`.
+- **Waist (iPhone only).** Each check-in's waist is written to Apple Health with the weigh-in when the
+  write switch is on. The **Read waist** switch (`readWaist`, `enableRead('waist')`) reads waists other
+  apps saved and fills a day that has none; a waist typed in a check-in always wins. See
+  `docs/dev/HEALTH_WAIST.md`.
 - **iPhone:** `AppleHealthPlugin.swift` `readHeartRate` / `readWeights` through `HKSampleQuery`;
   the plain-value conversion is `WatchCore/Sources/WatchCore/HealthReadCore.swift` (compiled into
   the app, tested by `swift test`). Apple Health never says whether reading was allowed, so a
