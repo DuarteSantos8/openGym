@@ -12,9 +12,9 @@ name: Publish Helm chart
 #       version: 1.4.5
 #       repository: "oci://ghcr.io/duartesantos8"
 #
-# Tags follow the image scheme so both say the same thing: a release publishes `X.Y.Z`, `X.Y` and
-# `latest` (all pointing at the same chart). The published chart version is the app version from the
-# release tag, not the development version in helm/Chart.yaml, so a dependency pins the app it runs.
+# The published chart version is the app version from the release tag, not the development version in
+# helm/Chart.yaml, so a dependency pins the app it runs. Only that exact version is published (a
+# pinned dependency is the norm; there is no `latest`, so no second binary like crane is needed).
 on:
   release:
     types: [published]
@@ -48,19 +48,8 @@ jobs:
         if: github.event_name == 'release'
         run: node scripts/ci/release-check.mjs "$GITHUB_REF_NAME"
 
-      - name: Install helm (crane for the extra tags)
-        run: |
-          set -euo pipefail
-          # helm pushes the chart to OCI; crane re-tags the same manifest as latest and X.Y.
-          # Static binaries, no install packages.
-          HLM=3.19.0; CRANE=0.22.1
-          curl -fsSL "https://get.helm.sh/helm-v${HLM}-linux-amd64.tar.gz" | tar xz
-          sudo mv linux-amd64/helm /usr/local/bin/helm
-          # go-containerregistry's asset names its x86 builds x86_64 (not amd64).
-          CRANE_ARCH="$(case "$(uname -m)" in x86_64) echo x86_64 ;; aarch64) echo arm64 ;; *) uname -m ;; esac)"
-          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE}/go-containerregistry_Linux_${CRANE_ARCH}.tar.gz" | tar xz crane
-          sudo mv crane /usr/local/bin/crane
-          helm version; crane --version
+      - name: Install helm
+        uses: Azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5.1.0
 
       - name: Lint and package
         run: |
@@ -78,9 +67,5 @@ jobs:
           set -euo pipefail
           REG="oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym"
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
-          TAG="${{ steps.version.outputs.version }}"
-          # helm tags with the chart version; latest and X.Y copy that same manifest.
-          helm push dist/opengym-${TAG}.tgz "$REG"
-          crane tag "$REG:${TAG}" "$REG:latest"
-          crane tag "$REG:${TAG}" "$REG:${TAG%.*}"
-          crane ls "oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym" | sed 's/^/  published: /'
+          helm push dist/opengym-${{ steps.version.outputs.version }}.tgz "$REG"
+          helm ls "$REG" --short | sed 's/^/  published: /'
