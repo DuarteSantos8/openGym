@@ -2826,6 +2826,11 @@ export default {
     "many": "Pridėti prie „{1}“",
     "other": "Pridėti prie „{1}“"
   },
+  "Changed in this workout": "Pakeista šioje treniruotėje",
+  "{0} swapped": { "one": "{0} pakeitimas", "few": "{0} pakeitimai", "many": "{0} pakeitimo", "other": "{0} pakeitimų" },
+  "new order": "nauja tvarka",
+  "Update “{0}”": "Atnaujinti „{0}“",
+  "Updated “{0}”": "Atnaujinta „{0}“",
   "Thinking about your question…": "Mąstau apie jūsų klausimą…",
   "This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.": "Tai demonstracinė versija, todėl aš neturiu AI modelio. Savo serveryje atsakau į klausimus, pvz., „{0}“, remdamasis jūsų planu, paskutinėmis sesijomis ir dabar atliekama treniruote.",
   "Advanced": "Išplėstiniai",

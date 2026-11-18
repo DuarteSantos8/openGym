@@ -2863,6 +2863,11 @@ export default {
   'Added to “{0}”': 'Додано до «{0}»',
   'Add it to “{1}”': 'Додати до «{1}»',
   'Add them to “{1}”': { one: 'Додати до «{1}»', few: 'Додати всі до «{1}»', many: 'Додати всі до «{1}»' },
+  'Changed in this workout': 'Змінено в цьому тренуванні',
+  '{0} swapped': { one: '{0} заміна', few: '{0} заміни', many: '{0} замін', other: '{0} заміни' },
+  'new order': 'новий порядок',
+  'Update “{0}”': 'Оновити «{0}»',
+  'Updated “{0}”': 'Оновлено «{0}»',
   'Thinking about your question…': 'Думаю над вашим запитанням…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Це демо, тож за мною немає моделі ШІ. На вашому власному сервері я відповідаю на запитання на кшталт «{0}», враховуючи ваш план, останні тренування і тренування, яке ви робите зараз.',
 

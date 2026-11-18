@@ -2869,6 +2869,11 @@ export default {
   'Added to “{0}”': 'Hozzáadva ehhez: „{0}”',
   'Add it to “{1}”': 'Hozzáadás ehhez: „{1}”',
   'Add them to “{1}”': 'Mind hozzáadása ehhez: „{1}”',
+  'Changed in this workout': 'Változott ebben az edzésben',
+  '{0} swapped': '{0} cserélve',
+  'new order': 'új sorrend',
+  'Update “{0}”': 'Frissítés: „{0}”',
+  'Updated “{0}”': 'Frissítve: „{0}”',
   'Thinking about your question…': 'Gondolkodom a kérdéseden…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Ez a demó, így nincs mögöttem MI-modell. A saját szervereden az olyan kérdésekre, mint „{0}”, a terved, a legutóbbi edzéseid és az épp folyó edzésed alapján válaszolok.',
 

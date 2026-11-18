@@ -1,5 +1,6 @@
 import { uid } from './format.js'
-import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows } from './history.js'
+import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows, cleanupSg } from './history.js'
+import { routineSlotIndex, replaceSlotExercise } from './routines.js'
 import { isSideSet, isWarmupRow, hasCompletedWork, modeForEntry } from './workout-model.js'
 
 // A saved workout is evidence of what was logged, not a live routine. Copy only its flat
@@ -144,36 +145,78 @@ export function saveSessionAsRoutine(state, session, name) {
   return routine.id
 }
 
-// An exercise added in the middle of a routine's session (#592) is stamped `addedInSession` by
-// the workout screen's Add exercise. Finishing offers to keep it in that routine for next time,
-// once, on the summary; nothing is written unless that offer is taken (addToRoutine).
-// One group per routine (a combined day can add to two), only exercises the routine does not
-// have yet and that had a completed set: a skipped one was not part of the workout. A swap keeps
-// its slot and is not an addition.
-export function routineAdditions(active, routines = []) {
-  const groups = new Map()
-  for (const entry of sessionEntries(active)) {
-    if (entry?.addedInSession !== true || !entry.rid || !(entry.sets || []).some(hasCompletedWork)) continue
-    const routine = (Array.isArray(routines) ? routines : []).find(r => r?.id === entry.rid)
-    if (!routine || !Array.isArray(routine.ex) || routine.ex.some(x => x?.id === entry.id)) continue
-    if (!groups.has(routine.id)) groups.set(routine.id, { routine, entries: [] })
-    const list = groups.get(routine.id).entries
-    if (!list.some(e => e.id === entry.id)) list.push(entry)
-  }
-  // The setup copied the way Save as routine copies it (copiedEntry): sets, reps and weight as
-  // done today, never what only described today's session.
-  return [...groups.values()].map(({ routine, entries }) => ({
-    routineId: routine.id, name: routine.name, ex: groupIds(entries.map(e => copiedEntry(e, routine))),
-  }))
+// What a routine's session changed in the routine's exercise list, offered on the finish summary:
+// exercises added (#592: stamped `addedInSession` by Add exercise, and copied the way Save as
+// routine copies them, copiedEntry), taken out or swapped, and the order they were done in.
+// Sets, reps, weight and rest stay as the routine has them (see routineChangesFromEntry).
+// `active` is the session as it stood at Save: the saved record drops an exercise with no ticked
+// set, and one left undone is not one taken out. Every slot of a routine is one entry when the
+// session starts (session-start.js), so a slot with no entry left was removed. `S` is the store
+// after the save, so a swapped-in exercise reads its weight from today (replaceSlotExercise).
+// One result per routine the session came from (a combined day can change two), none when the
+// session left it as it was or would leave it empty.
+export function routineChanges(active, S) {
+  const entries = sessionEntries(active)
+  const ids = [...new Set(entries.map(e => e?.rid).filter(Boolean))]
+  return ids.map(id => (Array.isArray(S?.routines) ? S.routines : []).find(r => r?.id === id))
+    .filter(r => Array.isArray(r?.ex))
+    .map(r => routineChange(entries.filter(e => e?.rid === r.id), r, S))
+    .filter(Boolean)
 }
 
-/** Append those exercises to the routine (a store draft), skipping any it has by now. Returns how many. */
-export function addToRoutine(routine, ex) {
-  if (!routine || !Array.isArray(routine.ex)) return 0
-  const fresh = (Array.isArray(ex) ? ex : []).filter(cfg => cfg?.id != null && !routine.ex.some(x => x?.id === cfg.id))
-  // groupIds again: a superset tag of the copies must not collide with one the routine has.
-  routine.ex.push(...groupIds(fresh.map(cfg => structuredClone(cfg))))
-  return fresh.length
+const isBackupOf = (slot, id) => (Array.isArray(slot?.subs) && slot.subs.includes(id))
+  || (slot?.subCfg && typeof slot.subCfg === 'object' && Object.prototype.hasOwnProperty.call(slot.subCfg, id))
+
+function routineChange(own, routine, S) {
+  // Only the routine's own entries match slots: an added second bench must not take the first's.
+  const planned = own.filter(e => e.addedInSession !== true)
+  const at = new Map(planned.map((e, k) => [e, routineSlotIndex(routine, planned, k)]))
+  const kept = new Set([...at.values()].filter(a => a >= 0))
+  const free = new Set(routine.ex.map((_, a) => a).filter(a => !kept.has(a)))
+  const out = []
+  const added = []
+  let swapped = 0
+  let moved = false
+  let last = -1
+  const take = (a, slot) => {
+    if (a < last) moved = true
+    last = a
+    out.push(slot)
+  }
+  const add = entry => {
+    if (!(entry.sets || []).some(hasCompletedWork) || routine.ex.some(x => x?.id === entry.id) || added.includes(entry.id)) return
+    added.push(entry.id)
+    out.push(copiedEntry(entry, routine))
+  }
+  own.forEach(entry => {
+    if (entry.addedInSession === true) { add(entry); return }
+    const a = at.get(entry)
+    if (a >= 0) { take(a, { ...routine.ex[a] }); return }
+    // Not the routine's exercise and not added: a swap. One of a slot's own backups (#649) is the
+    // plan working as meant, so that slot stays as it is, wherever the backup went.
+    const backup = [...free].find(b => isBackupOf(routine.ex[b], entry.id))
+    if (backup != null) { free.delete(backup); take(backup, { ...routine.ex[backup] }); return }
+    // Otherwise the slot it replaced is a removed one, best the one between its matched
+    // neighbours, else one done elsewhere in the order. Swapped after a set was ticked, the
+    // original stays beside it (active-exercise-swap.js), so there is no free slot and the new
+    // one reads as added, or as nothing when it is a backup of that original.
+    const next = planned.slice(planned.indexOf(entry) + 1).map(e => at.get(e)).find(b => b >= 0) ?? Infinity
+    const ofKept = routine.ex.some(slot => isBackupOf(slot, entry.id))
+    const slotAt = [...free].find(b => b > last && b < next) ?? (ofKept ? undefined : [...free][0])
+    if (slotAt == null) { if (!ofKept) add(entry); return }
+    free.delete(slotAt)
+    // Swapped in but never done: the slot stays as the routine has it, as one left undone does.
+    if (!(entry.sets || []).some(hasCompletedWork)) { take(slotAt, { ...routine.ex[slotAt] }); return }
+    swapped++
+    take(slotAt, replaceSlotExercise(routine.ex[slotAt], entry.id, S, routine.id))
+  })
+  const removed = free.size
+  if (!out.length || (!added.length && !removed && !swapped && !moved)) return null
+  // A session keeps its routine's superset tags (session-start.js), so a copy keeps a group it
+  // joined there, and a group left with one member is dissolved.
+  const ex = out.map(x => structuredClone(x))
+  cleanupSg(ex)
+  return { routineId: routine.id, name: routine.name, ex, added, removed, swapped, moved }
 }
 
 // "Routine from a past workout" on Plan (idea by @alexgrandasoto, #1010): someone who imported

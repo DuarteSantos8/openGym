@@ -2907,6 +2907,11 @@ export default {
   'Added to “{0}”': 'Tillagd i ”{0}”',
   'Add it to “{1}”': 'Lägg till den i ”{1}”',
   'Add them to “{1}”': 'Lägg till dem i ”{1}”',
+  'Changed in this workout': 'Ändrat i det här passet',
+  '{0} swapped': 'bytta: {0}',
+  'new order': 'ny ordning',
+  'Update “{0}”': 'Uppdatera ”{0}”',
+  'Updated “{0}”': '”{0}” uppdaterad',
   'Thinking about your question…': 'Funderar på din fråga…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Det här är demon, så det finns ingen AI-modell bakom mig. På din egen server svarar jag på frågor som ”{0}” utifrån din plan, dina senaste pass och passet du kör just nu.',
 

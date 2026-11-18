@@ -2945,6 +2945,11 @@ export default {
   'Added to “{0}”': '“{0}”-এ যোগ হয়েছে',
   'Add it to “{1}”': '“{1}”-এ যোগ করুন',
   'Add them to “{1}”': 'সবগুলো “{1}”-এ যোগ করুন',
+  'Changed in this workout': 'এই ওয়ার্কআউটে বদলেছে',
+  '{0} swapped': '{0}টি বদলানো',
+  'new order': 'নতুন ক্রম',
+  'Update “{0}”': '“{0}” আপডেট করুন',
+  'Updated “{0}”': '“{0}” আপডেট হয়েছে',
   'Thinking about your question…': 'আপনার প্রশ্ন নিয়ে ভাবছি…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'এটি ডেমো, তাই আমার পেছনে কোনো AI মডেল নেই। আপনার নিজের সার্ভারে আমি “{0}”-এর মতো প্রশ্নের উত্তর দিই আপনার প্ল্যান, সাম্প্রতিক সেশন আর এখন চলা ওয়ার্কআউট দেখে।',
 
