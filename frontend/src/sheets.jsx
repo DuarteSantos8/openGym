@@ -1716,8 +1716,6 @@ function ExerciseHistory({ exId }) {
     s.volume > 0 && t('Volume') + ' ' + fmtVol(s.volume, st.unit),
     s.e1rm != null && t('Est. 1RM') + ' ' + fmtNum(s.e1rm) + ' ' + st.unit,
   ].filter(Boolean).join(' · ')
-  // A session's card as a toggle on the heart tab (sessions with a reading in the format compared).
-  const pickable = (id, style) => (onHeart && pick.can(id) ? pickProps(pick, id, style) : {})
   return <>
     <h3 className={exerciseNameClass(ex)} style={{ marginBottom: 2 }}>{exerciseNameFor(ex)}</h3>
     <div className="muted small" style={{ marginBottom: 10 }}>{t('Exercise history')} · {tn('{0} session', '{0} sessions', h.total)}</div>
@@ -1744,11 +1742,22 @@ function ExerciseHistory({ exId }) {
     <FormVideosSection exId={exId} />
     </>}
     </div>
-    {/* The sessions stay in view under both tabs; on the heart tab a session's card picks or drops
-        it from the curves laid over each other. */}
+    {/* On the heart tab, every session with a reading in the format compared, within the window
+        picked (not only the last ten): a card picks or drops it from the curves laid over each other. */}
+    {onHeart ? <>
+      <h4 className="sec">{t('Sessions')}</h4>
+      <div className="list">
+        {pick.sessions.map(s => <div key={s.id} className="item" {...pickProps(pick, s.id)}>
+          <div className="grow">
+            <div className="tt">{fmtDate(s.d, true)}</div>
+            <div className="small dim" style={{ marginTop: 3 }}>♥ {t('Average {0} · Max {1} bpm', s.avg, s.max)}</div>
+          </div>
+        </div>)}
+      </div>
+    </> : <>
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
-      {h.sessions.map(s => <div key={s.id} className="item" style={{ alignItems: 'flex-start' }} {...pickable(s.id, { alignItems: 'flex-start' })}>
+      {h.sessions.map(s => <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>
         <div className="grow">
           <div className="tt">{fmtDate(s.d, true)} {s.pr && <span className="pr"><Icon name="trophy" />PR</span>}</div>
           <div className="ss">{(recs => s.sets.map((x, j) => <Fragment key={j}>{j > 0 && '  ·  '}{setLabel(exId, x, s.target, speedUnitOf(st))}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(exId)} />}</Fragment>))(recsOf(s))}</div>
@@ -1757,6 +1766,7 @@ function ExerciseHistory({ exId }) {
         {s.value != null && s.value > 0 && <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(s.value)} {unit}</b>}
       </div>)}
     </div>
+    </>}
   </>
 }
 // The rep-record table of the history sheet. Rows with nothing logged and nothing estimated stay
@@ -3854,7 +3864,8 @@ function WorkoutDetail({ w, close }) {
         {entryRows(g.units)}
       </div>
     }) : entryRows(groups[0]?.units || [])}
-    <SessionHeart w={w} nameOf={e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : (e.n || e.id))} />
+    {/* The saved record as it is now: a sync that brings the curve redraws an open card. */}
+    <SessionHeart w={st.workouts.find(x => sameWorkout(x, w)) || w} nameOf={e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : (e.n || e.id))} />
     {/* Progress photos and form-check videos: added and removed right here, on the saved record. */}
     <WorkoutMediaSection w={w} />
     <div className="small muted" style={{ margin: '4px 0 6px' }}>{t('Session note')}</div>

@@ -19,7 +19,7 @@
 //
 // The web build never gets here (MOBILE is a build-time flag).
 import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp, keepHeartCurve } from './health-read.js'
-import { curveReadings, packCurve, unpackCurve } from './heart-history.js'
+import { curveCovers, curveReadings, packCurve, unpackCurve } from './heart-history.js'
 import { mergeVitals } from './vitals.js'
 import { mergeHealthActivities } from './activities.js'
 import { isoOf } from './format.js'
@@ -325,14 +325,15 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
 
 /**
  * A finished workout's readings ([ms, bpm]) for the views that draw them: the curve kept with it
- * when it has one (any device, the web app too), else the hub's on the phone, kept for next time.
+ * when it covers the session (any device, the web app too), else the hub's on the phone, kept for
+ * next time when it is fuller; the kept part when the hub has nothing more.
  */
 export async function workoutSamples(w) {
-  const kept = unpackCurve(w?.hrc)
-  if (kept.length || !MOBILE) return kept
+  const kept = unpackCurve(w?.hrc, Number(w?.end))
+  if (!MOBILE || (kept.length && curveCovers(w?.hrc, w))) return kept
   const got = await readWorkoutHeart(w).catch(() => [])
   rememberCurve(w, got)
-  return got
+  return got.length > kept.length ? got : kept
 }
 
 /**
@@ -415,7 +416,9 @@ async function readOnce(getState, force, now, applyFn) {
     for (const w of S?.workouts || []) {
       const end = Number(w?.end), start = Number(w?.start)
       if (!w?.id || !(start > 0) || !(end > start) || now - end > HR_WINDOW_MS || end > now) continue
-      if (!lacksHeartRate(w) && w.hr?.src !== src && w.hrc) continue
+      // Done when the sets have their readings and the kept curve covers the session; a partial
+      // curve (a hub that synced late) is read again while the workout is recent.
+      if (!lacksHeartRate(w) && w.hr?.src !== src && curveCovers(w.hrc, w)) continue
       if (tried[w.id] && now - Number(tried[w.id]) < every) continue
       try {
         const res = await p.HC.readHeartRate({ from: start, to: end + 5 * 60e3 })

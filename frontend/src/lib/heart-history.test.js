@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { curveReadings, exerciseCurve, exerciseHeart, heartFormat, heartLatest, heartPoints, packCurve, parseFormat, setCurve, unpackCurve } from './heart-history.js'
+import { curveCovers, curveReadings, exerciseCurve, exerciseHeart, heartFormat, heartLatest, heartPoints, packCurve, parseFormat, setCurve, unpackCurve } from './heart-history.js'
 
 const DAY = 86400000
 const T0 = Date.UTC(2026, 10, 1, 9)
@@ -57,7 +57,9 @@ describe('exerciseHeart', () => {
     expect(heartPoints(s, 'avg').map(p => p.y)).toEqual([163, 150, 154])
     expect(heartPoints(s, 'rest').map(p => p.y)).toEqual([124, 110])
     expect(heartLatest(s, 'avg')).toEqual({ value: 154, delta: 4 })
-    expect(heartLatest(s, 'rest')).toEqual({ value: 110, delta: -14 })
+    // the last session has no rest reading: an older one is not shown as the last session's
+    expect(heartLatest(s, 'rest')).toEqual({ value: null, delta: null })
+    expect(heartLatest(s.slice(1), 'rest')).toEqual({ value: 110, delta: -14 })
   })
 
   it('has nothing for an exercise without a reading', () => {
@@ -91,6 +93,14 @@ describe('exerciseCurve', () => {
     expect(c.points.map(p => p.hr)).toEqual([107, 108, 109, 110, 111])
   })
 
+  it('leaves a session with sets of another format to the set-after-set curve', () => {
+    const timed = sec => ({ done: true, sec, at: at(9) })
+    const mixed = { ...w, entries: [{ id: ROPE, target: { mode: 'time' }, sets: [timed(60), { ...timed(30), at: at(11) }] }] }
+    expect(exerciseCurve(mixed, ROPE, samples, 190, 't:60')).toBeNull()
+    const same = { ...w, entries: [{ id: ROPE, target: { mode: 'time' }, sets: [timed(60), { ...timed(60), at: at(11) }] }] }
+    expect(exerciseCurve(same, ROPE, samples, 190, 't:60')).not.toBeNull()
+  })
+
   it('has no curve without readings or without the exercise', () => {
     expect(exerciseCurve(w, ROPE, [], 190)).toBeNull()
     expect(exerciseCurve(w, '9999', samples, 190)).toBeNull()
@@ -118,6 +128,8 @@ describe('packCurve', () => {
     expect(packCurve([[start - 1000, 120], [end + 1000, 130], [start + 1000, 300], [start + 2000, 110]], start, end)).toBeNull()
     expect(packCurve([], start, end)).toBeNull()
     expect(unpackCurve(null)).toEqual([])
+    // the last slot's reading stays inside the workout
+    expect(unpackCurve({ s: 1000, step: 5, v: [100, 110] }, 7000)).toEqual([[3500, 100], [7000, 110]])
     expect(unpackCurve({ s: 'x', v: [100] })).toEqual([])
   })
 
@@ -126,5 +138,17 @@ describe('packCurve', () => {
     const c = packCurve(hour, start, start + 3600000)
     expect(c.v).toHaveLength(720)
     expect(JSON.stringify(c).length).toBeLessThan(3500)
+  })
+})
+
+describe('curveCovers', () => {
+  const w = { start: 0, end: 600000 }
+  it('is true for a curve from the start to the end, within a minute', () => {
+    expect(curveCovers({ s: 30000, step: 5, v: new Array(110).fill(120) }, w)).toBe(true)
+  })
+  it('is false for a part of the session, or none', () => {
+    expect(curveCovers({ s: 0, step: 5, v: new Array(40).fill(120) }, w)).toBe(false)
+    expect(curveCovers(null, w)).toBe(false)
+    expect(curveCovers({ s: 0, step: 5, v: [120] }, { start: 5, end: 5 })).toBe(false)
   })
 })

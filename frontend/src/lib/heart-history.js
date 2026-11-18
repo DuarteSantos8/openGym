@@ -32,6 +32,17 @@ export function parseFormat(key) {
   return r ? { mode: 'reps', r: +r[1], w: +r[2] } : null
 }
 
+// The formats of every done work set of `exId` in `w`, read or not.
+function doneFormats(w, exId) {
+  const out = []
+  for (const e of w?.entries || []) {
+    if (String(e?.id) !== String(exId)) continue
+    const mode = modeOf(e.target || { id: e.id })
+    for (const s of e.sets || []) if (s?.done && !isWarmupRow(s) && !isSideSet(s)) out.push(heartFormat(s, mode))
+  }
+  return out
+}
+
 // The done work sets of `exId` in `w` with a heart reading, each with its format.
 function heartSets(w, exId) {
   const out = []
@@ -89,10 +100,15 @@ export function exerciseHeart(workouts, exId) {
 export const heartPoints = (sessions, measure) => sessions.filter(s => s[measure] != null)
   .map(s => ({ t: s.at, y: s[measure], d: s.d })).reverse()
 
-/** The last session's value of a measure and its change from the one before. */
+/**
+ * The last session's value of a measure and its change from the latest one before it that has
+ * it. Nothing when the last session has no such reading: an older one is not the last session's.
+ */
 export function heartLatest(sessions, measure) {
-  const [last, before] = sessions.filter(s => s[measure] != null)
-  return { value: last?.[measure] ?? null, delta: last && before ? last[measure] - before[measure] : null }
+  const last = sessions[0]
+  if (last?.[measure] == null) return { value: null, delta: null }
+  const before = sessions.slice(1).find(s => s[measure] != null)
+  return { value: last[measure], delta: before ? last[measure] - before[measure] : null }
 }
 
 /* ------------------------------------------------- one session's curve, to lay over others -- */
@@ -103,8 +119,11 @@ export function heartLatest(sessions, measure) {
  * come back to, so a later go follows straight on); stats { avg, max, high, n } as on the session's
  * card (lib/heart-steps.js heartStats, `high` the time in zones 4 and 5). null without a reading.
  */
-export function exerciseCurve(w, exId, samples, hrMax) {
+export function exerciseCurve(w, exId, samples, hrMax, key = null) {
   const entries = w?.entries || []
+  // The exercise's spans hold all its sets: with sets of another format among them (60 s and 30 s
+  // the same day), the curve would mix the two, so that session goes set after set (setCurve).
+  if (key && doneFormats(w, exId).some(k => k !== key)) return null
   const spans = exerciseSpans(w).filter(sp => sp.members.some(i => String(entries[i]?.id) === String(exId)))
   if (!spans.length || !Array.isArray(samples)) return null
   const points = [], parts = []
@@ -169,14 +188,29 @@ export function packCurve(samples, start, end, step = CURVE_STEP_S) {
   return { s: start + lead * ms, step, v: v.slice(lead) }
 }
 
-/** A kept curve back as readings ([ms, bpm]), each at the middle of its slot; [] for none. */
-export function unpackCurve(c) {
+/**
+ * A kept curve back as readings ([ms, bpm]), each at the middle of its slot, never past `end` (the
+ * workout's, so the last slot's reading stays inside it); [] for none.
+ */
+export function unpackCurve(c, end = Infinity) {
   if (!c || typeof c !== 'object' || !Array.isArray(c.v)) return []
   const s = Number(c.s), ms = (Number(c.step) || CURVE_STEP_S) * 1000
   if (!Number.isFinite(s)) return []
+  const last = Number(end) > s ? Number(end) : Infinity
   const out = []
-  c.v.forEach((bpm, i) => { if (bpm >= BPM_MIN && bpm <= BPM_MAX) out.push([s + i * ms + ms / 2, bpm]) })
+  c.v.forEach((bpm, i) => { if (bpm >= BPM_MIN && bpm <= BPM_MAX) out.push([Math.min(s + i * ms + ms / 2, last), bpm]) })
   return out
+}
+
+/**
+ * Whether a kept curve covers workout `w` from start to end, within a minute each side: a partial
+ * one (a hub that synced late) is read again while the workout is recent.
+ */
+export function curveCovers(c, w) {
+  const start = Number(w?.start), end = Number(w?.end)
+  if (!Array.isArray(c?.v) || !c.v.length || !(end > start)) return false
+  const ms = (Number(c.step) || CURVE_STEP_S) * 1000
+  return Number(c.s) <= start + 60e3 && Number(c.s) + c.v.length * ms >= end - 60e3
 }
 
 /** How many slots of a kept curve hold a reading. */

@@ -78,16 +78,20 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
   const [measure, setMeasure] = useState('avg')
   const shown = chosen.map(id => sessions.find(s => s.id === id))
 
-  // Each picked session's readings: { [workout id]: samples } (lib/health-sync.js workoutSamples).
+  // Each picked session's readings: { [workout id]: { ver, data } } (lib/health-sync.js
+  // workoutSamples), read again when its kept curve or its times change (a sync brought the curve).
   const [samples, setSamples] = useState({})
-  const wanted = chosen.join(',')
+  const verOf = w => `${w?.start}:${w?.end}:${w?.hrc?.s}:${w?.hrc?.v?.length || 0}`
+  const wanted = chosen.map(id => id + '@' + verOf(workouts.find(x => x?.id === id))).join(',')
   useEffect(() => {
-    if (!wanted) return
+    if (!chosen.length) return
     let open = true
     Promise.all(shown.map(async s => {
       const w = workouts.find(x => x?.id === s.id)
       if (!w?.start || !w?.end) return null
-      return [s.id, samples[s.id] || await workoutSamples(w)]
+      const ver = verOf(w)
+      const had = samples[s.id]
+      return [s.id, had && had.ver === ver ? had : { ver, data: await workoutSamples(w) }]
     })).then(rows => { if (open) setSamples(was => ({ ...was, ...Object.fromEntries(rows.filter(Boolean)) })) })
     return () => { open = false }
   }, [wanted])
@@ -96,7 +100,8 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
   const curves = shown.map(s => {
     const w = workouts.find(x => x?.id === s.id)
     const color = colorOf(s.id)
-    const fine = w && samples[s.id]?.length ? exerciseCurve(w, exId, samples[s.id], hrMax) : null
+    const got = samples[s.id]?.ver === verOf(w) ? samples[s.id].data : null
+    const fine = w && got?.length ? exerciseCurve(w, exId, got, hrMax, key) : null
     return { s, color, fine, sets: w ? setCurve(w, exId, key) : [] }
   })
   // Every shown session has the hub's curve: lay them out in time; otherwise set after set.

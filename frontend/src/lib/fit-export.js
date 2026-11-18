@@ -346,14 +346,15 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr, 
 
   // One record a second at most, inside the session, plausible readings only.
   const beats = []
+  const valid = []
   for (const r of Array.isArray(heart) ? heart : []) {
     const ms = Number(r?.[0]), bpm = Math.round(Number(r?.[1]))
     if (!(ms >= startMs && ms <= endMs) || !(bpm >= 25 && bpm <= 250)) continue
-    const at = fitTime(ms)
-    if (beats.length && beats[beats.length - 1][0] >= at) continue
-    beats.push([at, bpm])
+    valid.push([fitTime(ms), bpm])
   }
-  beats.sort((a, b) => a[0] - b[0])
+  // In time order first, so a reading that came out of order is kept; then one a second.
+  valid.sort((a, b) => a[0] - b[0])
+  for (const b of valid) if (!beats.length || beats[beats.length - 1][0] < b[0]) beats.push(b)
   for (const [at, bpm] of beats) msgs.push({ global: MSG.record, fields: [[253, 'uint32', at], [3, 'uint8', bpm]] })
   const hrAvg = beats.length ? beats.reduce((n, b) => n + b[1], 0) / beats.length : undefined
   const hrMax = beats.length ? Math.max(...beats.map(b => b[1])) : undefined

@@ -17,7 +17,7 @@ export default function SessionHeart ({ w, nameOf = e => e?.id }) {
     let open = true
     workoutSamples(w).then(r => { if (open) { setSamples(r); setCurve(heartCurve(r, w.start, w.end)) } }, () => {})
     return () => { open = false }
-  }, [w.start, w.end])
+  }, [w.start, w.end, w.hrc])
   if (!curve) return null
   const max = hrMaxOf(S) || DEFAULT_HR_MAX
   const steps = heartByExercise(w, samples, max)

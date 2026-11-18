@@ -187,6 +187,8 @@ describe('keepHeartCurve', () => {
     expect(s.workouts[0].hrc).toMatchObject({ s: T, step: 5 })
     expect(s.workouts[0].hrc.v).toHaveLength(10)
     expect(s.workouts[0]._ts).toBe(99)
+    // a field edit of its own, so a merge keeps it against a copy edited later
+    expect(s.workouts[0]._f).toMatchObject({ hrc: 99 })
   })
 
   it('replaces it only with a fuller one, and leaves the workout untouched otherwise', () => {

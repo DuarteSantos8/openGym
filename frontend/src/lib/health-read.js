@@ -14,7 +14,7 @@
 //   - an imported weigh-in carries `src` and is never written back to the hub (no ping-pong:
 //     lib/health-connect.js healthRecords leaves it out).
 import { hrFromSamples, sanitizeHr } from './heart-rate.js'
-import { stampWorkout } from './sync-merge.js'
+import { stampWorkout, stampEntry } from './sync-merge.js'
 import { curveReadings, packCurve } from './heart-history.js'
 import { isoOf } from './format.js'
 import { addWeighIn, readingsOf, timeOf, hashId } from './weigh-ins.js'
@@ -74,8 +74,10 @@ export function keepHeartCurve(S, wid, samples, now = Date.now()) {
   if (!w || !(Number(w.start) > 0) || !(Number(w.end) > Number(w.start))) return false
   const c = packCurve(samples, Number(w.start), Number(w.end))
   if (!c || curveReadings(c) <= curveReadings(w.hrc)) return false
+  const old = { ...w }
   w.hrc = c
-  stampWorkout(w, now)
+  // A field edit of its own (`_f.hrc`), so a merge keeps it even against a copy edited later.
+  stampEntry(old, w, now)
   return true
 }
 
