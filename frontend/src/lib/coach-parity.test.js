@@ -18,6 +18,8 @@ import { exOr, EXDB } from './exercises.js'
 import { muscleWeightsOf, loadOfWeeklyPlan } from './muscles.js'
 import { weightsOf as srvWeightsOf, weeklyPlanSets, sessionsOf } from '../../../api/coach/core/muscle-weights.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { DEFAULT_TARGETS, TARGET_MUSCLES, targetOf } from './muscle-targets.js'
+import { DEFAULT_TARGETS as srvTargets, targetOf as srvTargetOf } from '../../../api/coach/core/checks.js'
 
 // Real ids from the catalogue, so `eq`/`bp` are whatever the dataset actually says rather than
 // whatever this test assumed. 0001 is a bodyweight sit-up; the others are looked up the same way.
@@ -139,5 +141,14 @@ describe('muscle weights', () => {
     expect(s).toHaveLength(2)
     expect(s[1]).toEqual(weeklyPlanSets({ ...base, week: { 1: ['a', 'b'] } }))
     expect(sessionsOf(loop(4, ['a', 'b']))).toBeNull()
+  })
+})
+
+describe('muscle ranges', () => {
+  it('the defaults and the lookup agree, legacy slugs and bad values included', () => {
+    expect(srvTargets).toEqual(DEFAULT_TARGETS)
+    for (const mt of [undefined, { lats: [4, 8] }, { deltoids: [5, 9] }, { 'upper-back': [3, 7] }, { 'side-delts': [1, 2], deltoids: [5, 9] }, { chest: [9, 3] }, { chest: [1, 99] }, { chest: ['x', 4] }, { chest: [2.6, 7.4] }])
+      for (const slug of [...TARGET_MUSCLES, 'forearm'])
+        expect(srvTargetOf({ muscleTargets: mt }, slug)).toEqual(targetOf({ muscleTargets: mt }, slug))
   })
 })

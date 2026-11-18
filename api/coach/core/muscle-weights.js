@@ -4,7 +4,7 @@
 import { LIB_BY_ID } from './library.js';
 
 // frontend lib/muscles.js: MUSCLES, GENERIC, LEGACY, ALIAS, BY_BODYPART, SECONDARY.
-const MUSCLES = ['trapezius', 'front-delts', 'side-delts', 'rear-delts', 'chest', 'lats', 'upper-back', 'serratus', 'biceps', 'triceps', 'forearm', 'abs', 'obliques', 'lower-back', 'gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors', 'calves', 'tibialis'];
+export const MUSCLES = ['trapezius', 'front-delts', 'side-delts', 'rear-delts', 'chest', 'lats', 'upper-back', 'serratus', 'biceps', 'triceps', 'forearm', 'abs', 'obliques', 'lower-back', 'gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors', 'calves', 'tibialis'];
 const GENERIC = { deltoids: { 'front-delts': 1, 'side-delts': 0.6, 'rear-delts': 0.4 } };
 const LEGACY = { 'upper-back': ['lats', 'upper-back'] };
 const ALIAS = {
@@ -113,14 +113,14 @@ export function weightsOf(ex) {
 }
 
 // muscles.js loadOf / loadOfRoutine: a routine's effective sets per muscle.
-function routineSets(routine, custom) {
+function routineSets(routine, custom, primaryOnly = false) {
   const load = {};
   for (const c of routine?.ex || []) {
     const sets = c?.sets || 1;
     const hist = custom[c.id] || c;
     const src = hist?.muscleWeights ? hist : (LIB_BY_ID.get(c.id) || hist);
     const w = weightsOf(src);
-    for (const slug in w) if (w[slug] > 0) load[slug] = (load[slug] || 0) + w[slug] * sets;
+    for (const slug in w) if (primaryOnly ? w[slug] === 1 : w[slug] > 0) load[slug] = (load[slug] || 0) + w[slug] * sets;
   }
   return load;
 }
@@ -164,14 +164,15 @@ export function weeklyPlanSets(S) {
   return load;
 }
 
-/** One weights-by-sets map per planned weekday session (a combined day is one); null for a rotation. */
-export function sessionsOf(S) {
+/** One weights-by-sets map per planned weekday session (a combined day is one); null for a rotation.
+ *  `primaryOnly` keeps just the sets that hit a muscle as a primary (weight 1). */
+export function sessionsOf(S, primaryOnly = false) {
   const q = queueOf(S);
   if (S?.scheduleMode === 'rotation' || (q && S.rotation && q.rotationId === S.rotation.id)) return null;
   const routines = routineMap(S), custom = customOf(S);
   return Object.values(S?.week || {}).map(v => {
     const day = {};
-    for (const id of [].concat(v || [])) if (routines.has(id)) add(day, routineSets(routines.get(id), custom));
+    for (const id of [].concat(v || [])) if (routines.has(id)) add(day, routineSets(routines.get(id), custom, primaryOnly));
     return day;
   }).filter(d => Object.keys(d).length);
 }
