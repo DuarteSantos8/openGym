@@ -15,11 +15,14 @@ import com.getcapacitor.WebViewListener;
 public class MainActivity extends BridgeActivity {
     // How much of the status bar (or the camera cutout) and of the navigation bar lies over the
     // page, in CSS pixels, as last passed to it; and the bars themselves in window pixels,
-    // negative until the window has said.
+    // negative until the window has said. The right edge too: a phone on its side with three-button
+    // navigation has the bar there, where the tab bar then stands (body.tabbar-side, --sar).
     private float barTop = -1;
     private float barBottom = -1;
+    private float barRight = -1;
     private int barTopPx = -1;
     private int barBottomPx = -1;
+    private int barRightPx = -1;
     // How much of the page the soft keyboard covers, in CSS pixels; 0 while it is down.
     private float keyboard = 0;
 
@@ -90,7 +93,8 @@ public class MainActivity extends BridgeActivity {
      * env(safe-area-inset-*), and on some cold starts not even that, so the tab bar sat under the
      * navigation bar (with three buttons, a tap on a tab hit Home or Recents) and now and then the
      * header sat under the status bar. The window's own insets go to the page as --native-sat and
-     * --native-sab, which index.css takes over env() wherever they are larger.
+     * --native-sab (and --native-sar, the right edge, for the tab bar standing there), which
+     * index.css takes over env() wherever they are larger.
      *
      * Only the part of a bar that actually lies over the WebView is passed (#573): some systems
      * (a Fairphone on Murena OS) draw the app under the status bar before Android 15 too, and on
@@ -110,6 +114,7 @@ public class MainActivity extends BridgeActivity {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             barTopPx = bars.top;
             barBottomPx = bars.bottom;
+            barRightPx = bars.right;
             float density = v.getResources().getDisplayMetrics().density;
             // The keyboard still only from Android 15 on: older versions resize the window themselves.
             float kb = Build.VERSION.SDK_INT < 35 ? 0 : coveredByKeyboard(v, insets.getInsets(WindowInsetsCompat.Type.ime()).bottom) / density;
@@ -129,6 +134,7 @@ public class MainActivity extends BridgeActivity {
                 // writes them again (it skips an unchanged top/bottom).
                 barTop = -1;
                 barBottom = -1;
+                barRight = -1;
                 applyBars(view);
                 view.evaluateJavascript(keyboardScript(keyboard), null);
             }
@@ -144,6 +150,11 @@ public class MainActivity extends BridgeActivity {
     /** The same for a bottom bar, with the window `windowHeight` tall and the view ending at `viewBottom`. */
     static int overlapBottom(int barPx, int viewBottom, int windowHeight) {
         return Math.max(0, barPx - Math.max(0, windowHeight - viewBottom));
+    }
+
+    /** The same for a bar on the right, with the window `windowWidth` wide and the view ending at `viewRight`. */
+    static int overlapRight(int barPx, int viewRight, int windowWidth) {
+        return Math.max(0, barPx - Math.max(0, windowWidth - viewRight));
     }
 
     /**
@@ -163,24 +174,28 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void applyBars(WebView web) {
-        if (barTopPx < 0 || barBottomPx < 0 || web == null) return;
+        if (barTopPx < 0 || barBottomPx < 0 || barRightPx < 0 || web == null) return;
         int[] at = new int[2];
         web.getLocationInWindow(at);
         int windowHeight = web.getRootView().getHeight();
+        int windowWidth = web.getRootView().getWidth();
         float density = web.getResources().getDisplayMetrics().density;
         float top = overlapTop(barTopPx, at[1]) / density;
         float bottom = windowHeight > 0 ? overlapBottom(barBottomPx, at[1] + web.getHeight(), windowHeight) / density : 0;
-        if (top == barTop && bottom == barBottom) return;
+        float right = windowWidth > 0 ? overlapRight(barRightPx, at[0] + web.getWidth(), windowWidth) / density : 0;
+        if (top == barTop && bottom == barBottom && right == barRight) return;
         barTop = top;
         barBottom = bottom;
-        web.evaluateJavascript(barsScript(barTop, barBottom), null);
+        barRight = right;
+        web.evaluateJavascript(barsScript(barTop, barBottom, barRight), null);
     }
 
     /** Float.toString: a decimal point in every locale, where String.format could write a comma. */
-    static String barsScript(float top, float bottom) {
+    static String barsScript(float top, float bottom, float right) {
         return "(function(e){if(!e)return;"
                 + "e.style.setProperty('--native-sat','" + Float.toString(top) + "px');"
-                + "e.style.setProperty('--native-sab','" + Float.toString(bottom) + "px')"
+                + "e.style.setProperty('--native-sab','" + Float.toString(bottom) + "px');"
+                + "e.style.setProperty('--native-sar','" + Float.toString(right) + "px')"
                 + "})(document.documentElement)";
     }
 
