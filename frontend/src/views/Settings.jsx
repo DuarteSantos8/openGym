@@ -1451,14 +1451,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   /* ---------------- the root ---------------- */
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
-    home={() => nav('/home')} go={(hit) => {
+    go={(hit) => {
       if (hit.page === 'coach') { nav('/coach/setup'); return }
       if (hit.route) { nav(hit.route); return }
       nav('/settings/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
 
-function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
+function SettingsRoot({ ctx, preview, open, user, sync, go, entryKey }) {
   // The router's key for this history entry, taken once. From the router rather than
   // window.history: drawn under an edge swipe back the page is the entry before the current one.
   const [key] = useState(() => (entryKey && entryKey !== 'default' && entryKey !== 'back-preview' ? entryKey : window.history.state?.key || null))
@@ -1475,15 +1475,13 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   // The face: one's own picture (components/Avatar.jsx), else the name's first letter, else the icon.
   const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : null
+  // A tab of its own in the bar (components/TabBar.jsx), so no way back to Home above the title.
   const nav = useNavigate()
   // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
   // it the admin dashboard has no Coach card to land on.
   const config = useStore(s => s.config)
   const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
-    <div className="sp-nav">
-      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
-    </div>
     <h1 className="sp-root-title">{t('Settings')}</h1>
     <div className="sp-search">
       <SearchField value={q} onChange={e => set(e.target.value)} onClear={() => set('')}

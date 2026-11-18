@@ -28,7 +28,7 @@ describe('steps', () => {
       })
     }
     // the tab bar's own buttons, the gear and the back buttons
-    expect(STEPS.filter(s => s.go).map(s => s.anchor)).toEqual(['tab-plan', 'tab-library', 'tab-stats', 'tab-home', 'settings-gear'])
+    expect(STEPS.filter(s => s.go).map(s => s.anchor)).toEqual(['tab-plan', 'tab-library', 'tab-stats', 'tab-home', 'tab-settings'])
     // into the practice workout through the Start button, which the tour takes for itself
     expect(STEPS.find(s => s.id === 'start')).toMatchObject({ anchor: 'start', intercept: true, route: '/library' })
   })

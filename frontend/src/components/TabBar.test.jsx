@@ -41,7 +41,7 @@ describe('the tab bar across a store write', () => {
   it('keeps the very same buttons instead of rebuilding them every tick', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     const before = tabs()
-    expect(before).toHaveLength(5)
+    expect(before).toHaveLength(6)
 
     // What a rest does once a second: S is replaced, so everything reading it re-renders.
     act(() => { useStore.getState().update(s => { s.restSec = 91 }, false) })
@@ -63,10 +63,10 @@ describe('the tab bar across a store write', () => {
   })
 })
 
-// Settings → "Show connection status" off (#369, #330): a stuck sync shows as a dot on Home, the
-// tab Settings opens from, and the tab's name says it.
-describe('the connection dot on Home', () => {
-  const home = () => tabs()[0]
+// Settings → "Show connection status" off (#369, #330): a stuck sync shows as a dot on Settings,
+// where the connection lives, and the tab's name says it.
+describe('the connection dot on Settings', () => {
+  const home = () => tabs()[5]
   it('is there for a sync problem only while the banner is switched off', () => {
     const original = useStore.getState().sync
     try {
@@ -75,7 +75,7 @@ describe('the connection dot on Home', () => {
       expect(home().querySelector('.tab-dot')).toBeNull()
       act(() => { useStore.getState().update(s => { s.connStatus = false }, false) })
       expect(home().querySelector('.tab-dot')).not.toBeNull()
-      expect(home().getAttribute('aria-label')).toBe('Home, Connection problem')
+      expect(home().getAttribute('aria-label')).toBe('Settings, Connection problem')
       act(() => { useStore.setState({ sync: { status: 'ok', lastError: null, pending: false } }) })
       expect(home().querySelector('.tab-dot')).toBeNull()
       expect(home().getAttribute('aria-label')).toBeNull()
@@ -90,8 +90,8 @@ describe('the tab icons and labels', () => {
   const label = el => el.querySelector('span:last-child').textContent
   it('labels every tab and uses one icon per concept', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
-    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises'])
+    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell', 'gear'])
+    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises', 'Settings'])
 
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
     expect(icon(tabs()[2])).toBe('play')
@@ -118,13 +118,60 @@ describe('the tab icons and labels', () => {
   })
 })
 
+// A name wider than its tab makes every name smaller, by the same amount: one size of type across
+// the bar, not a smaller one under one icon (happy-dom has no layout, so the widths are given).
+describe('the names under the icons', () => {
+  it('share one size, the one the longest needs', () => {
+    const cw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    const sw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth')
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get() { return this.classList.contains('tab-l') ? 50 : 375 } })
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, get() { return this.textContent === 'Settings' ? 60 : 30 } })
+    host.style.fontSize = '10px'   // the bar's size (index.css)
+    try {
+      act(() => { root.render(<TabBar onStart={() => {}} />) })
+      // 10px × 48 / 60
+      expect(host.querySelector('#tabbar').style.getPropertyValue('--tab-fs')).toBe('8px')
+      // the five tabs and Start's word
+      expect(host.querySelectorAll('.tab-l')).toHaveLength(6)
+      host.querySelectorAll('.tab-l').forEach(el => expect(el.style.fontSize).toBe(''))
+    } finally {
+      if (cw) Object.defineProperty(HTMLElement.prototype, 'clientWidth', cw); else delete HTMLElement.prototype.clientWidth
+      if (sw) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', sw); else delete HTMLElement.prototype.scrollWidth
+    }
+  })
+  it('fits Start’s word too, and again when it changes or the bar first shows', () => {
+    const cw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    const sw = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth')
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get() { return this.classList.contains('tab-l') ? 50 : 375 } })
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, get() { return ({ Settings: 55, 'Edit workout': 60 })[this.textContent] || 30 } })
+    host.style.fontSize = '10px'
+    const fs = () => host.querySelector('#tabbar')?.style.getPropertyValue('--tab-fs')
+    try {
+      // signed out: no bar; signing in shows it, fitted
+      useStore.setState({ user: null })
+      act(() => { root.render(<TabBar onStart={() => {}} />) })
+      expect(host.querySelector('#tabbar')).toBeNull()
+      act(() => { useStore.setState({ user: { id: 1, name: 'test' } }) })
+      expect(fs()).toBe('8.7px')   // 10px × 48 / 55, for Settings
+      // a past workout opened for editing: Start reads "Edit workout", now the longest (10px × 48 / 60)
+      act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: 0, editingWorkoutId: 'w1' } }, false) })
+      expect(fs()).toBe('8px')
+      act(() => { useStore.getState().update(s => { s.active = null }, false) })
+      expect(fs()).toBe('8.7px')
+    } finally {
+      if (cw) Object.defineProperty(HTMLElement.prototype, 'clientWidth', cw); else delete HTMLElement.prototype.clientWidth
+      if (sw) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', sw); else delete HTMLElement.prototype.scrollWidth
+    }
+  })
+})
+
 // A screen without a tab of its own keeps the tab it was opened from lit. Check-in, Progress photos
 // and Body measurements lit none: Measurements moved under Stats (75a3b750) and the bar never heard.
 describe('the tab a screen without its own lights', () => {
   const lit = () => tabs().filter(b => b.classList.contains('on')).map(b => b.textContent)
   it.each([
     ['/history', 'Stats'], ['/structural-balance', 'Stats'], ['/progress-photos', 'Stats'], ['/measurements', 'Stats'],
-    ['/settings', 'Home'], ['/settings/units', 'Home'], ['/checkin', 'Home'], ['/muscles', 'Exercises'],
+    ['/settings', 'Settings'], ['/settings/units', 'Settings'], ['/checkin', 'Home'], ['/muscles', 'Exercises'],
   ])('%s lights %s', (pathname, tab) => {
     where.loc = { pathname }
     act(() => { root.render(<TabBar onStart={() => {}} />) })
