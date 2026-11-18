@@ -2,7 +2,7 @@
  * each behind its switch under "What the Coach sees" (core/categories.js). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { recordsOf, measurementsOf, healthOf, cleanVitals, rotationOf } from '../coach/core/context.js';
+import { muscleLoad, recordsOf, measurementsOf, healthOf, cleanVitals, rotationOf } from '../coach/core/context.js';
 import { shareOf, OPTIONAL_CATEGORIES } from '../coach/core/categories.js';
 import { build } from '../coach/core/payload.js';
 
@@ -81,4 +81,12 @@ test('the payload carries each block only when its switch is on, and never healt
   assert.deepEqual(all.health.vitals, { steps: { v: 8000 } });
   const create = build({ ...S, coach: { share: { health: true } } }, { handle: 'h'.repeat(16), kind: 'create', now: NOW });
   assert.equal(create.health, undefined, 'a new plan reads none of it');
+});
+
+test('muscles: counted like the Stats card, slugs, supporting muscles at 0.4, warm-ups nothing', () => {
+  const S = { workouts: [workout(0, '0025', [set(60, 5), set(60, 5), set(60, 5), { w: 20, r: 10, warmup: true, done: true }])] };
+  const m = muscleLoad(S, NOW);
+  assert.equal(m.find(x => x.muscle === 'chest').sets7d, 3);
+  assert.equal(m.find(x => x.muscle === 'triceps').sets7d, 1.2);
+  assert.ok(!m.some(x => x.muscle === 'pectorals'));
 });

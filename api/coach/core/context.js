@@ -14,6 +14,7 @@
  * No clock is read: `now` is handed in (epoch ms), so the server, the phone and the tests agree.
  */
 import { LIB_BY_ID } from './library.js';
+import { weightsOf } from './muscle-weights.js';
 
 const DAY = 86400000;
 const iso = ms => new Date(ms).toISOString().slice(0, 10);
@@ -32,10 +33,9 @@ const doneWork = s => s && typeof s === 'object' && !isWarm(s)
 export const MAX_MUSCLES = 24;
 
 /**
- * Work sets per target muscle (the catalogue's `tg`), over the last four weeks from `now`.
+ * Weighted work sets per muscle (a muscles.js slug), over the last four weeks from `now`.
  * `{ muscle, sets7d, weeklyAvg, sets72h, daysSince }`, the most trained first; muscles not
- * trained in four weeks are left out (absence is the signal). Exercises of the person's own carry
- * no muscle in the catalogue and are counted under their body part when they have one.
+ * trained in four weeks are left out (absence is the signal).
  */
 export function muscleLoad(S, now) {
   const end = Number.isFinite(now) ? now : Date.now();
@@ -47,23 +47,27 @@ export function muscleLoad(S, now) {
     if (!d || d < from28 || d > today) continue;
     for (const en of list(w.entries)) {
       const lib = LIB_BY_ID.get(en?.id);
-      const muscle = lib?.tg || (typeof custom.get(en?.id)?.bp === 'string' ? custom.get(en.id).bp.slice(0, 40) : null);
-      if (!muscle || lib?.bp === 'cardio') continue;
+      if (lib?.bp === 'cardio') continue;
+      const hist = custom.get(en?.id) || en;
       const n = list(en.sets).filter(doneWork).length;
       if (!n) continue;
-      const m = by.get(muscle) || { muscle, sets7d: 0, sets28d: 0, sets72h: 0, last: '' };
-      m.sets28d += n;
-      if (d >= from7) m.sets7d += n;
-      if (d >= from3) m.sets72h += n;
-      if (d > m.last) m.last = d;
-      by.set(muscle, m);
+      // The same weighting as the Stats card: a supporting muscle counts at 0.4 of a set.
+      for (const [muscle, wt] of Object.entries(weightsOf(hist?.muscleWeights ? hist : (lib || hist)))) {
+        if (!(wt > 0)) continue;
+        const m = by.get(muscle) || { muscle, sets7d: 0, sets28d: 0, sets72h: 0, last: '' };
+        m.sets28d += n * wt;
+        if (d >= from7) m.sets7d += n * wt;
+        if (d >= from3) m.sets72h += n * wt;
+        if (d > m.last) m.last = d;
+        by.set(muscle, m);
+      }
     }
   }
   return [...by.values()]
     .sort((a, b) => b.sets28d - a.sets28d || (a.muscle < b.muscle ? -1 : 1))
     .slice(0, MAX_MUSCLES)
     .map(m => ({
-      muscle: m.muscle, sets7d: m.sets7d, weeklyAvg: Math.round((m.sets28d / 4) * 10) / 10, sets72h: m.sets72h,
+      muscle: m.muscle, sets7d: r1(m.sets7d), weeklyAvg: r1(m.sets28d / 4), sets72h: r1(m.sets72h),
       daysSince: Math.max(0, Math.round((Date.parse(today + 'T12:00:00Z') - Date.parse(m.last + 'T12:00:00Z')) / DAY))
     }));
 }
