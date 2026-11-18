@@ -4797,7 +4797,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   const w = buildCompletedWorkout(A, {
     // The row the clock just wrote is not ticked, so sessionEnd does not see it: the workout ran
     // at least until the clock stopped.
-    end: past ? backfillEnd(A) : autoEnd || (tappedAt ? sessionEnd(A, tappedAt) : Math.max(sessionEnd(A), clockEnd || 0)),
+    end: past ? backfillEnd(A) : autoEnd || Math.max(tappedAt ? sessionEnd(A, tappedAt) : sessionEnd(A), clockEnd || 0),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),

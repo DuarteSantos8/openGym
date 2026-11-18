@@ -95,6 +95,16 @@ describe('finishing while a cardio set is timed', () => {
       expect(savedEnd()).toBeGreaterThanOrEqual(T0 + 35 * MIN)
     })
 
+    it('reaches to where the clock stopped on a watch’s Finish heard of late too', () => {
+      installLastTickAt10()
+      vi.setSystemTime(T0 + 5 * MIN)
+      useCardioClock.getState().start(0, 1)
+      vi.setSystemTime(T0 + 90 * MIN)
+      finishWorkoutNow({ end: T0 + 35 * MIN })
+      expect(useStore.getState().S.workouts.find(w => w.id === 'fin-end').entries[0].sets[1].min).toBe(30)
+      expect(savedEnd()).toBeGreaterThanOrEqual(T0 + 35 * MIN)
+    })
+
     it('is the last real work, as before, with no clock running', () => {
       installLastTickAt10()
       vi.setSystemTime(T0 + 35 * MIN)
