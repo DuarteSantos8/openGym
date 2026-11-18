@@ -3801,8 +3801,9 @@ function WorkoutDetail({ w, close }) {
   return <>
     <h3>{w.name}</h3>
     {/* The estimated active energy (lib/active-energy.js, #1368): the number Apple Health and Health
-        Connect get, marked as an estimate with ≈ since no watch measured it. */}
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : []), ...(kcal ? ['≈ ' + fmtNum(kcal) + ' kcal'] : [])].join(' · ')}</div>
+        Connect get, marked as an estimate with ≈ since no watch measured it. The body weight it used
+        follows in brackets when the line does not already show the workout's own. */}
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : []), ...(kcal ? ['≈ ' + fmtNum(kcal.kcal) + ' kcal' + (w.bw ? '' : ' (' + fmtWeight(kcal.weight, st.unit) + ')')] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
     <AutoEndedNote w={w} close={close} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}

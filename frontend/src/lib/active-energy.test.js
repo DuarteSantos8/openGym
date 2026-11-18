@@ -66,23 +66,44 @@ describe('kcalSoFar (the live tile)', () => {
     const run = { id: '0685', target: { mode: 'cardio' }, sets: [{ min: 60 }] }
     expect(kcalSoFar(S, live([run]), at(19))).toBe(Math.round((MET.running - 1) * 70))
   })
-  it('leaves out the time on pause', () => {
-    expect(kcalSoFar(S, live([walk()], { pausedMs: 30 * 60e3 }), at(19))).toBe(Math.round((MET.walking - 1) * 70 / 2))
+  // workout-pause.js: resuming moves `start` on by the pause and adds it to `pausedMs` for the
+  // record, so the pause is already out of the window; an open pause stops it at `pausedAt`.
+  it('leaves out a pause that was resumed, once', () => {
+    const resumed = live([walk()], { start: at(18, 30), pausedMs: 30 * 60e3 })   // 18:00, paused 30 min
+    expect(kcalSoFar(S, resumed, at(19, 30))).toBe(Math.round((MET.walking - 1) * 70))
   })
-  it('is null before the start', () => {
+  it('stops the clock while paused', () => {
+    const paused = live([walk()], { pausedAt: at(18, 30) })
+    expect(kcalSoFar(S, paused, at(20))).toBe(Math.round((MET.walking - 1) * 70 / 2))
+  })
+  it('switches to the saved estimate\'s type once a set is done', () => {
+    // A 20-minute walk logged, the lift after it not done yet: the rest of the hour counts as the
+    // saved workout would count it (walking), not as the planned lift.
+    const entries = [walk([{ min: 20, speed: 4, done: true }]), lift()]
+    const saved = activeKcal({ start: at(18), end: at(19), entries }, 70)
+    expect(kcalSoFar(S, live(entries), at(19))).toBe(saved)
+    expect(saved).toBe(Math.round((MET.walking - 1) * 70))
+  })
+  it('is null before the start, or with no time trained', () => {
     expect(kcalSoFar(S, live([walk()]), at(18))).toBeNull()
-    expect(kcalSoFar(S, live([walk()], { pausedMs: 2 * 3600e3 }), at(19))).toBeNull()
+    expect(kcalSoFar(S, live([walk()], { pausedAt: at(18) }), at(19))).toBeNull()
   })
 })
 
 describe('workoutKcal (the workout detail)', () => {
-  it('is the number the health records get', () => {
+  it('is the number the health records get, with the weight it used', () => {
     const w = workout([treadmill(60)], { bw: 70 })
-    expect(workoutKcal({ unit: 'kg' }, w)).toBe(activeKcal(w, 70))
+    expect(workoutKcal({ unit: 'kg' }, w)).toEqual({ kcal: activeKcal(w, 70), kg: 70, weight: 70 })
   })
-  it('uses the fallback body weight without a weigh-in', () => {
+  it('uses the fallback body weight without a weigh-in, and says so', () => {
     const w = workout([strength])
-    expect(workoutKcal({ unit: 'kg' }, w)).toBe(activeKcal(w, FALLBACK_KG))
+    expect(workoutKcal({ unit: 'kg' }, w)).toEqual({ kcal: activeKcal(w, FALLBACK_KG), kg: FALLBACK_KG, weight: FALLBACK_KG })
+  })
+  it('gives the weight in pounds for a profile in pounds', () => {
+    const w = workout([strength], { bw: 176 })   // lb
+    const got = workoutKcal({ unit: 'lb' }, w)
+    expect(got.weight).toBe(176)
+    expect(got.kcal).toBe(activeKcal(w, got.kg))
   })
   it('shows nothing for a session with nothing done, or no times', () => {
     expect(workoutKcal({ unit: 'kg' }, workout([{ ...strength, sets: [{ w: 60, r: 8 }] }]))).toBeNull()

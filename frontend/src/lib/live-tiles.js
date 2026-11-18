@@ -13,7 +13,8 @@ import { t } from './i18n.js'
 import { exerciseNameText, fmtNum, fmtVol } from './format.js'
 import { setLabel, supersetUnits, modeOf, isBw, EFFORT, effortOf, sessionVolume, exNoteFor } from './history.js'
 import { viewRow, exUnitTag, exUnitOf } from './ex-unit.js'
-import { isWarmupRow } from './workout-model.js'
+import { hasCompletedWork, isWarmupRow } from './workout-model.js'
+import { elapsedMs } from './workout-pause.js'
 import { speedUnitOf, fmtSpeed } from './speed.js'
 import { distUnitOf, fmtDist } from './distance.js'
 import { hasIncline, hasLevel } from './incline.js'
@@ -81,17 +82,20 @@ export function hrZone (bpm, S, now = Date.now()) {
 
 /**
  * A rough running kcal for the session so far: the estimate the finished workout gets
- * (activeKcal, the one written to Apple Health and Health Connect), over the time gone. Cardio
- * already logged counts at its own MET; the rest of the time at strength's once something was
- * lifted, else at the type the session is planned as, so an hour's walk reads as walking (#1368).
+ * (activeKcal, the one written to Apple Health and Health Connect), over the time trained.
+ * Until a set is done, the time counts at the type the session is planned as, so an hour's walk
+ * reads as walking from the first minute (#1368); from then on, at the type the saved estimate
+ * takes, so the two agree. Pauses are already out of `start` (workout-pause.js resumeWorkout), and
+ * an open pause stops the clock at `pausedAt`, as elapsedMs does.
  */
 export function kcalSoFar (S, A, now = Date.now()) {
   const start = num(A?.start)
-  if (!start || now <= start) return null
-  const end = now - (num(A?.pausedMs) || 0)
-  if (end <= start) return null
-  const v = activeKcal({ start, end, entries: A?.entries || [] }, bodyKgFor(S, A),
-    { restType: plannedType(A?.entries) || 'strength_training' })
+  const trained = elapsedMs(A, now)
+  if (!start || !(trained > 0)) return null
+  const entries = A?.entries || []
+  const started = entries.some(e => (e?.sets || []).some(hasCompletedWork))
+  const restType = started ? undefined : plannedType(entries) || 'strength_training'
+  const v = activeKcal({ start, end: start + trained, entries }, bodyKgFor(S, A), { restType })
   return v > 0 ? v : null
 }
 

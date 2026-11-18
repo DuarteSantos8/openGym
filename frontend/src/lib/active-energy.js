@@ -85,11 +85,13 @@ export function activeKcal(w, kg, { restType } = {}) {
 
 /**
  * The estimate a finished workout's detail shows (#1368): the same number written to Apple Health
- * and Health Connect, so the app and the health store agree. Null when there is nothing to show:
- * no start and end (imported history), or nothing done.
+ * and Health Connect, so the app and the health store agree, with the body weight it was worked
+ * out with (`kg`, and `weight` in the profile's unit, rounded) so the screen can say which. Null when there is nothing to show: no start and
+ * end (imported history), or nothing done.
  */
 export function workoutKcal(S, w) {
   if (!(w?.entries || []).some(e => (e.sets || []).some(hasCompletedWork))) return null
-  const v = activeKcal(w, bodyKgFor(S, w))
-  return v > 0 ? v : null
+  const kg = bodyKgFor(S, w)
+  const kcal = activeKcal(w, kg)
+  return kcal > 0 ? { kcal, kg, weight: Math.round(S?.unit === 'lb' ? kg * LB_PER_KG : kg) } : null
 }
