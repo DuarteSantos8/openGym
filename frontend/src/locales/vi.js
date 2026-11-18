@@ -4694,6 +4694,7 @@ export default {
   "Level {0}": "Mức {0}",
   "Rest before the next exercise": "Nghỉ trước bài tiếp theo",
   "After the last set of an exercise, while you walk to the next machine.": "Sau hiệp cuối của một bài, trong lúc bạn đi sang máy tiếp theo.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Dành cho các lần lặp tập từng bên một. Bài giữ vẫn giữ quãng nghỉ ngắn để đổi bên.",
   "The break after this exercise’s last set, to change machines before the next one.": "Quãng nghỉ sau hiệp cuối của bài này, để đổi máy trước bài tiếp theo.",
   "Archive": "Lưu trữ",
   "Folder": "Thư mục",

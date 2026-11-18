@@ -4683,6 +4683,7 @@ export default {
   "Level {0}": "Niveau {0}",
   "Rest before the next exercise": "Pause før næste øvelse",
   "After the last set of an exercise, while you walk to the next machine.": "Efter det sidste sæt i en øvelse, mens du går hen til næste maskine.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Til gentagelser, der tages én side ad gangen. Et hold beholder sin korte pause til at skifte side.",
   "The break after this exercise’s last set, to change machines before the next one.": "Pausen efter øvelsens sidste sæt, så du kan skifte maskine før den næste.",
   "Archive": "Arkiv",
   "Folder": "Mappe",

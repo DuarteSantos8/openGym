@@ -4728,6 +4728,7 @@ export default {
   "Level {0}": "Poziom {0}",
   "Rest before the next exercise": "Przerwa przed następnym ćwiczeniem",
   "After the last set of an exercise, while you walk to the next machine.": "Po ostatniej serii ćwiczenia, gdy idziesz do następnej maszyny.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Dla powtórzeń robionych po jednej stronie naraz. Izometria zachowuje swoją krótką przerwę na zmianę strony.",
   "The break after this exercise’s last set, to change machines before the next one.": "Przerwa po ostatniej serii tego ćwiczenia, by zmienić maszynę przed następnym.",
   "Archive": "Archiwum",
   "Folder": "Folder",

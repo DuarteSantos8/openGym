@@ -4693,6 +4693,7 @@ export default {
   "Level {0}": "Level {0}",
   "Rest before the next exercise": "Istirahat sebelum latihan berikutnya",
   "After the last set of an exercise, while you walk to the next machine.": "Setelah set terakhir sebuah latihan, selagi kamu pindah ke mesin berikutnya.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Untuk repetisi yang dikerjakan satu sisi demi satu sisi. Gerakan tahan tetap punya jeda singkatnya untuk berganti sisi.",
   "The break after this exercise’s last set, to change machines before the next one.": "Jeda setelah set terakhir latihan ini, untuk pindah mesin sebelum yang berikutnya.",
   "Archive": "Arsip",
   "Folder": "Folder",

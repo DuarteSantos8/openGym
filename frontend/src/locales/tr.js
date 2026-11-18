@@ -4728,6 +4728,7 @@ export default {
   "Level {0}": "Seviye {0}",
   "Rest before the next exercise": "Sonraki egzersizden önce dinlenme",
   "After the last set of an exercise, while you walk to the next machine.": "Bir egzersizin son setinden sonra, sıradaki makineye yürürken.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Her seferinde tek taraf yapılan tekrarlar için. Tutuş, taraf değiştirmek için kısa molasını korur.",
   "The break after this exercise’s last set, to change machines before the next one.": "Bu egzersizin son setinden sonraki mola, sıradakinden önce makine değiştirmek için.",
   "Archive": "Arşiv",
   "Folder": "Klasör",

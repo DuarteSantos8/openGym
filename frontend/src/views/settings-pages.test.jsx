@@ -364,7 +364,7 @@ describe('the search lands on a row', () => {
     expect(searchSettings('webdav', web, tr).map(h => h.title).sort()).toEqual(['Back up to WebDAV', 'WebDAV backup'])
     expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
     expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
-    for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['new exercises', 'New exercises start with'],
+    for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['unilateral', 'Rest between sides'], ['new exercises', 'New exercises start with'],
       ['timed holds', 'Timed holds start by themselves'], ['muscle map', 'Muscle map at the top'],
       ['pull-up volume', 'Count body weight in bodyweight lifts'], ['sport', 'Sport counts for the streak']]) {
       expect(searchSettings(q, web, tr).map(h => h.title), q).toContain(title)
@@ -454,7 +454,7 @@ describe('the pages', () => {
   it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
+    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest between sides', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
       'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.

@@ -4732,6 +4732,7 @@ export default {
   "Level {0}": "Уровень {0}",
   "Rest before the next exercise": "Отдых перед следующим упражнением",
   "After the last set of an exercise, while you walk to the next machine.": "После последнего подхода упражнения, пока идёшь к следующему тренажёру.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Для повторений, которые делаются по одной стороне. Удержание сохраняет свою короткую паузу на смену стороны.",
   "The break after this exercise’s last set, to change machines before the next one.": "Пауза после последнего подхода этого упражнения, чтобы перейти к другому тренажёру.",
   "Archive": "Архив",
   "Folder": "Папка",

@@ -4731,6 +4731,7 @@ export default {
   "Level {0}": "{0}. fokozat",
   "Rest before the next exercise": "Pihenő a következő gyakorlat előtt",
   "After the last set of an exercise, while you walk to the next machine.": "Egy gyakorlat utolsó sorozata után, amíg átsétálsz a következő géphez.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Oldalanként végzett ismétlésekhez. A tartás megtartja a rövid szünetét az oldalváltáshoz.",
   "The break after this exercise’s last set, to change machines before the next one.": "A szünet a gyakorlat utolsó sorozata után, hogy gépet válts a következő előtt.",
   "Archive": "Archívum",
   "Folder": "Mappa",

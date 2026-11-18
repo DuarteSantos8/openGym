@@ -4694,6 +4694,7 @@ export default {
   "Level {0}": "Úroveň {0}",
   "Rest before the next exercise": "Pauza před dalším cvikem",
   "After the last set of an exercise, while you walk to the next machine.": "Po poslední sérii cviku, než dojdeš k dalšímu stroji.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Pro opakování po jedné straně. Výdrž si nechá svou krátkou pauzu na přehození strany.",
   "The break after this exercise’s last set, to change machines before the next one.": "Pauza po poslední sérii tohoto cviku, abys stihl přejít k dalšímu stroji.",
   "Archive": "Archiv",
   "Folder": "Složka",

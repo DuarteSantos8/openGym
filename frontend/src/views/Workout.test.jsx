@@ -362,6 +362,11 @@ describe('Workout set completion flow', () => {
     await mount([lunge({})], 0, { active: { workoutView: 'focus' } })
     await click(container.querySelector('[data-focus-side="L"] button[aria-label="Complete left side"]'))
     expect(mocks.startRest).not.toHaveBeenCalled()
+    await unmount()
+    // the profile's break between sides, for an exercise without its own
+    await mount([lunge({})], 0, { sideRestSec: 15, active: { workoutView: 'focus' } })
+    await click(container.querySelector('[data-focus-side="L"] button[aria-label="Complete left side"]'))
+    expect(mocks.startRest).toHaveBeenLastCalledWith(15, 0, { kind: 'switch', forSet: 0 })
   })
 
   it('a per-side set with its own rest pauses that long between its sides (#853)', async () => {
