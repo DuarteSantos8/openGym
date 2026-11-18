@@ -15,6 +15,7 @@ import { effectiveRoutineIds } from './history.js'
 import { NUDGE_COPY, lineIndex, nudgeFor, nudgeMinute, toneOf } from './nudge.js'
 import { excusedOn } from './day-notes.js'
 import { stateJson } from './state-json.js'
+import { AUTO_BACKUP_KEEP, autoBackupKeepOf } from './backup-keep.js'
 import { buildCheckinNotifications, checkinNames, reminderOf, CHECKIN_WINDOW_DAYS, CHECKIN_ID_BASE } from './checkin-reminder.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
@@ -378,12 +379,13 @@ export async function printHtml(html, name, { paper = 'a4', footer } = {}) {
 //
 // The folder is ours alone (#161): until v1.3.9 the files landed in the Documents root, so a
 // sync app pointed at them had to carry the whole Documents folder along, and a year of daily
-// copies piled up there. Now each write keeps only the newest AUTO_BACKUP_KEEP in the folder.
+// copies piled up there. Now each write keeps only the newest few in the folder: AUTO_BACKUP_KEEP,
+// or the count picked in Settings (lib/backup-keep.js).
 // The root is never pruned: a manual export saved there carries the same name, and nothing
 // tells it apart from an old automatic copy, so those stay for the person to clear (Import
 // backup still reads either kind).
 export const AUTO_BACKUP_DIR = 'openGym'
-export const AUTO_BACKUP_KEEP = 14
+export { AUTO_BACKUP_KEEP }
 // Only the exact names writeAutoBackup gives its files are ever pruned; anything else someone
 // keeps in the folder is theirs.
 const AUTO_BACKUP_NAME = /^opengym-backup-\d{4}-\d{2}-\d{2}(-[2-9])?\.json$/
@@ -418,10 +420,10 @@ export async function writeAutoBackup(state) {
   }
   if (!name) return   // best effort — the private mirror in Directory.Data still has the data
   // Pruning waits for a successful write: a full disk must never cost the copies already there.
-  await pruneAutoBackups(fs, name)
+  await pruneAutoBackups(fs, name, autoBackupKeepOf(state))
 }
 
-async function pruneAutoBackups({ Filesystem, Directory }, written) {
+async function pruneAutoBackups({ Filesystem, Directory }, written, keep) {
   let files
   try { files = (await Filesystem.readdir({ path: AUTO_BACKUP_DIR, directory: Directory.Documents })).files || [] } catch (e) { return }
   const older = files
@@ -429,12 +431,12 @@ async function pruneAutoBackups({ Filesystem, Directory }, written) {
     .filter(f => typeof f === 'string' || f?.type !== 'directory')
     .map(f => (typeof f === 'string' ? f : f?.name))
     // The copy just written is never a candidate, even if a clock set back makes it sort
-    // below the others: it is one of the AUTO_BACKUP_KEEP whatever its date says.
+    // below the others: it is one of the copies kept whatever its date says.
     .filter(n => AUTO_BACKUP_NAME.test(n || '') && n !== written)
     // Newest first by the date in the name, which a sync app or a copy cannot disturb the way
     // it can a modification time.
     .sort().reverse()
-  for (const n of older.slice(AUTO_BACKUP_KEEP - 1)) {
+  for (const n of older.slice(keep - 1)) {
     try { await Filesystem.deleteFile({ path: `${AUTO_BACKUP_DIR}/${n}`, directory: Directory.Documents }) } catch (e) { /* one stuck file does not stop the rest */ }
   }
 }
@@ -522,7 +524,7 @@ async function writeToChosenFolder(state, day) {
     return false
   }
   // Pruning waits for a successful write, and only ever touches the app's own dated names.
-  try { await folderPlugin.prune({ uri: folder.uri, keep: AUTO_BACKUP_KEEP, pattern: AUTO_BACKUP_NAME.source, written: name }) } catch (e) { /* housekeeping */ }
+  try { await folderPlugin.prune({ uri: folder.uri, keep: autoBackupKeepOf(state), pattern: AUTO_BACKUP_NAME.source, written: name }) } catch (e) { /* housekeeping */ }
   return true
 }
 
