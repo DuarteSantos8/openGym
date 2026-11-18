@@ -113,4 +113,28 @@ describe('releaseWakeLock', () => {
     await foreground()
     expect(requests).toBe(1)         // and we did not start wanting it again
   })
+
+  // The workout (App.jsx) and the circuit player hold the screen on separately. The player
+  // closing, pausing or finishing used to switch it off for the rest of the workout.
+  it('keeps the lock while another holder still wants it', async () => {
+    requestWakeLock(); await settle()   // the workout
+    requestWakeLock(); await settle()   // the circuit player
+    releaseWakeLock(); await settle()   // the player closes
+    expect(released).toBe(0)
+    expect(live).not.toBeNull()
+    await background(); await foreground()
+    expect(live).not.toBeNull()          // still re-acquired after the phone was locked
+    releaseWakeLock(); await settle()   // the workout ends
+    expect(live).toBeNull()
+    await background(); await foreground()
+    expect(live).toBeNull()
+  })
+
+  it('a release with nothing held does not cancel the next request', async () => {
+    releaseWakeLock(); await settle()
+    requestWakeLock(); await settle()
+    expect(live).not.toBeNull()
+    releaseWakeLock(); await settle()
+    expect(live).toBeNull()
+  })
 })
