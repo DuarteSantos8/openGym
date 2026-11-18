@@ -4,7 +4,7 @@
  * (an allowlist: nothing is spread, every number is bounded), and each one is small on purpose,
  * so a review on a 3B model on a CPU box stays a review and not a reading exercise:
  *
- *   muscles     work sets per target muscle: the last 7 days, the 4-week weekly average, the
+ *   muscles     weighted work sets per muscle slug: the last 7 days, the 4-week weekly average, the
  *               last 72 hours and days since it was last trained. That is the recovery and the
  *               weekly volume picture the Stats screen draws, in numbers a model can cite.
  *   gym         the active gym's equipment (#808): what it can load, so a suggested weight or a
@@ -52,6 +52,7 @@ export function muscleLoad(S, now) {
       const n = list(en.sets).filter(doneWork).length;
       if (!n) continue;
       // The same weighting as the Stats card: a supporting muscle counts at 0.4 of a set.
+      // The entry with its own muscleWeights wins, then the library entry, then the custom or routine one.
       for (const [muscle, wt] of Object.entries(weightsOf(hist?.muscleWeights ? hist : (lib || hist)))) {
         if (!(wt > 0)) continue;
         const m = by.get(muscle) || { muscle, sets7d: 0, sets28d: 0, sets72h: 0, last: '' };

@@ -164,11 +164,11 @@ export function weeklyPlanSets(S) {
   return load;
 }
 
-/** One weights-by-sets map per planned weekday session (a combined day is one); null for a rotation.
+/** One weights-by-sets map per planned weekday session (a combined day is one); null for a rotation or a queue.
  *  `primaryOnly` keeps just the sets that hit a muscle as a primary (weight 1). */
 export function sessionsOf(S, primaryOnly = false) {
   const q = queueOf(S);
-  if (S?.scheduleMode === 'rotation' || (q && S.rotation && q.rotationId === S.rotation.id)) return null;
+  if (S?.scheduleMode === 'rotation' || q) return null; // a queue plan runs off the queue, not the week
   const routines = routineMap(S), custom = customOf(S);
   return Object.values(S?.week || {}).map(v => {
     const day = {};

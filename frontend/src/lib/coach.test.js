@@ -393,6 +393,13 @@ describe('accepting a subset', () => {
     expect(decisions.find(d => d.id === 'c2').status).toBe('rejected')
   })
 
+  it('keeps the evidence tag and its numbers on the decision', () => {
+    const s = JSON.parse(JSON.stringify(state()))
+    const refCheck = { id: 'volume-low:chest', muscle: 'chest', sets: 6, low: 10, high: 20 }
+    applyChangeSet(s, proposal([change({ id: 'c1', type: 'sets', after: 4, ref: 'volume', refCheck })]), ['c1'])
+    expect(s.coach.log.at(-1).decisions[0]).toMatchObject({ ref: 'volume', refCheck })
+  })
+
   it('refuses to apply a stale change even if it was ticked', () => {
     const s = JSON.parse(JSON.stringify(state()))
     const p = markStale(proposal([change()]), { ...s, routines: [{ id: 'r1', name: 'A', ex: [] }] })

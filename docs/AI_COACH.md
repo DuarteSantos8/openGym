@@ -747,4 +747,4 @@ professional. **It is not a doctor or a physiotherapist. If something hurts, ask
 
 ## The research behind it
 
-Every check and tip in the review card names the study it rests on. The same list is on one page, with the grade of each study and a PubMed link. Numbers no study backs are marked as our rule. See [COACH_EVIDENCE.md](COACH_EVIDENCE.md).
+A change in the review card can carry a tag that links to the studies it rests on. The same list is on one page, with the grade of each study and a PubMed link. Numbers no study backs are marked as our rule. See [COACH_EVIDENCE.md](COACH_EVIDENCE.md).

@@ -21,6 +21,12 @@ describe('EvidenceLine', () => {
     expect(h.textContent).toContain('Schoenfeld 2017')
     expect(h.querySelector('a').getAttribute('href')).toMatch(/docs\/COACH_EVIDENCE\.md#volume$/)
   })
+  it('volume-cap shows the stored numbers too', () => {
+    expect(render({ ref: 'volume-cap', refCheck: { id: 'volume-high:chest', muscle: 'chest', sets: 24, low: 10, high: 20 } }).textContent).toContain('Chest: 24 sets a week, your range 10 to 20')
+  })
+  it('sets-per-exercise names our rule', () => {
+    expect(render({ ref: 'sets-per-exercise' }).textContent).toContain('Krieger 2010, our rule')
+  })
   it('frequency and sets-per-exercise', () => {
     expect(render({ ref: 'frequency', refCheck: { muscle: 'chest', sessions: 1 } }).textContent).toContain('Chest: trained in one session a week')
     expect(render({ ref: 'sets-per-exercise', refCheck: { routine: 'A', exercise: 'x', sets: 5, cap: 4 } }).textContent).toContain('5 sets on this exercise')

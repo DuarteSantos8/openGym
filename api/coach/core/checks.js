@@ -25,11 +25,12 @@ const round1 = n => Math.round(n * 10) / 10;
 export function planChecks(S, profile) {
   const load = weeklyPlanSets(S);
   const low = [], high = [], freq = [], per = [];
-  const sessions = profile?.goal === 'strength' ? sessionsOf(S, true) : null; // null for a rotation
+  const sessions = profile?.goal === 'strength' ? sessionsOf(S, true) : null; // null for a rotation or a queue
   for (const muscle of MUSCLES) {
     const range = targetOf(S, muscle);
     if (!range) continue;
     const [lo, hi] = range, sets = round1(load[muscle] || 0);
+    // sets > 0: an untrained muscle is the lifter's choice, and listing them all would grow the prompt.
     if (sets > 0 && sets < lo) low.push({ id: `volume-low:${muscle}`, tag: 'volume', muscle, sets, low: lo, high: hi });
     if (sets > hi) high.push({ id: `volume-high:${muscle}`, tag: 'volume-cap', muscle, sets, low: lo, high: hi });
     if (sessions && sessions.filter(d => d[muscle] > 0).length === 1) freq.push({ id: `frequency:${muscle}`, tag: 'frequency', muscle, sessions: 1 });

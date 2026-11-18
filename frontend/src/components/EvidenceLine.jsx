@@ -11,7 +11,7 @@ const shortCite = s => s.grade === 'our rule' ? t('our rule') : `${s.cite.split(
 
 function checkText(ref, c) {
   if (!c) return null
-  if (ref === 'volume') return t('{0}: {1} sets a week, your range {2} to {3}', t(MUSCLE_NAME[c.muscle] || c.muscle), c.sets, c.low, c.high)
+  if (ref === 'volume' || ref === 'volume-cap') return t('{0}: {1} sets a week, your range {2} to {3}', t(MUSCLE_NAME[c.muscle] || c.muscle), c.sets, c.low, c.high)
   if (ref === 'frequency') return t('{0}: trained in one session a week', t(MUSCLE_NAME[c.muscle] || c.muscle))
   if (ref === 'sets-per-exercise') return t('{0} sets on this exercise', c.sets)
   return null

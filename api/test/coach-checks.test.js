@@ -37,6 +37,8 @@ test('frequency only for strength, only for a weekday plan', () => {
   assert.ok(!ids(planChecks(twice, { goal: 'strength' })).includes('frequency:chest'));
   const rot = { ...S, scheduleMode: 'rotation' };
   assert.ok(!ids(planChecks(rot, { goal: 'strength' })).some(i => i.startsWith('frequency')));
+  const queued = { ...S, routines: [{ id: 'a', ex: [{ id: '0025', sets: 3 }] }, { id: 'b', ex: [{ id: '0025', sets: 3 }] }], queue: { ids: ['b'], since: 1, startsOn: '2026-08-17' } };
+  assert.ok(!ids(planChecks(queued, { goal: 'strength' })).some(i => i.startsWith('frequency')));
 });
 
 test('a supporting muscle does not make a session count', () => {

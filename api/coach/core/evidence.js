@@ -29,6 +29,7 @@ export const EVIDENCE = {
     use: '2 to 4 sets per exercise; more on one exercise adds little',
     sources: [
       { cite: 'Krieger 2010, *J Strength Cond Res* 24(4):1150–1159', grade: 'SR/MA', finding: 'Several sets beat one set for size; 2 to 3 and 4 to 6 sets per exercise did not differ significantly.', pmid: '20300012', doi: '10.1519/JSC.0b013e3181d4d436' },
+      { cite: 'Cap of 4 sets, 3 for a beginner', grade: 'our rule', finding: 'The cap per exercise is our rule; no study sets it.' },
     ],
   },
   effort: {
@@ -90,7 +91,7 @@ export const EVIDENCE = {
     use: 'a short session is slower, not useless',
     sources: [
       { cite: 'Androulakis-Korakakis, Fisher & Steele 2020, *Sports Med* 50(4):751–765', grade: 'SR/MA', finding: 'A single set of 6 to 12 reps, 2 to 3 times a week, gives suboptimal but real strength gains in trained men.', pmid: '31797219', doi: '10.1007/s40279-019-01236-0' },
-      { cite: 'Nuzzo et al. 2024, *Sports Med* 54(5):1139–1162', grade: 'SR/MA', finding: 'Minimal-dose strategies (one session a week, single sets, short sessions) all raise strength in people who do not lift now.', pmid: '38509414', doi: '10.1007/s40279-024-02009-0' },
+      { cite: 'Nuzzo et al. 2024, *Sports Med* 54(5):1139–1162', grade: 'Review', finding: 'Minimal-dose strategies (one session a week, single sets, short sessions) all raise strength in people who do not lift now.', pmid: '38509414', doi: '10.1007/s40279-024-02009-0' },
     ],
   },
 };

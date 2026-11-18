@@ -141,6 +141,7 @@ describe('muscle weights', () => {
     expect(s).toHaveLength(2)
     expect(s[1]).toEqual(weeklyPlanSets({ ...base, week: { 1: ['a', 'b'] } }))
     expect(sessionsOf(loop(4, ['a', 'b']))).toBeNull()
+    expect(sessionsOf({ ...base, week: { 1: ['a'] }, queue: { ids: ['b', 'c'], since: 1, startsOn: '2026-08-17' } })).toBeNull()
   })
 })
 

@@ -1,6 +1,6 @@
 # The research behind the Coach
 
-The Coach only gives advice it can point to. Each plan check and each tip in the review card carries a tag, and the tag links to its section on this page.
+A change the Coach suggests can carry a tag, and the tag links to its section on this page.
 
 This page is the same list the app uses. It is copied from `api/coach/core/evidence.js`, so what you read here is what the Coach is allowed to cite. It is built on the coAIch evidence review, which first collected and checked these studies.
 
@@ -9,6 +9,7 @@ This page is the same list the app uses. It is copied from `api/coach/core/evide
 | Grade | Meaning |
 |---|---|
 | SR/MA | Systematic review or meta-analysis. Many studies pooled. |
+| Review | A narrative review or overview. Studies summarised, not pooled. |
 | RCT | Randomised controlled trial. One study, people split at random. |
 | OBS | Observational. Watched what people did, no random split. |
 | P | Position stand or expert consensus. |
@@ -52,6 +53,7 @@ What the Coach does with it: 2 to 4 sets per exercise; more on one exercise adds
 | Source | Grade | Finding | Link |
 |---|---|---|---|
 | Krieger 2010, *J Strength Cond Res* 24(4):1150-1159 | SR/MA | Several sets beat one set for size; 2 to 3 and 4 to 6 sets per exercise did not differ significantly. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/20300012/) |
+| Cap of 4 sets, 3 for a beginner | our rule | The cap per exercise is our rule; no study sets it. |  |
 
 ## effort
 
@@ -131,12 +133,13 @@ What the Coach does with it: a short session is slower, not useless.
 | Source | Grade | Finding | Link |
 |---|---|---|---|
 | Androulakis-Korakakis, Fisher & Steele 2020, *Sports Med* 50(4):751-765 | SR/MA | A single set of 6 to 12 reps, 2 to 3 times a week, gives suboptimal but real strength gains in trained men. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/31797219/) |
-| Nuzzo et al. 2024, *Sports Med* 54(5):1139-1162 | SR/MA | Minimal-dose strategies (one session a week, single sets, short sessions) all raise strength in people who do not lift now. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/38509414/) |
+| Nuzzo et al. 2024, *Sports Med* 54(5):1139-1162 | Review | Minimal-dose strategies (one session a week, single sets, short sessions) all raise strength in people who do not lift now. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/38509414/) |
 
 ## Our rules
 
 These numbers no study backs. They are our choice, and the Coach treats them that way.
 
 - **volume-cap**: The set ranges are a coaching band; no study sets them.
+- **sets-per-exercise**: The cap per exercise is our rule; no study sets it.
 - **rest**: The exact seconds of rest are our rule; no study sets them.
 - **deload**: How often to take an easy week is our rule; no study sets it.
