@@ -41,6 +41,8 @@ export function retimeWorkout(w, iso, time) {
   const duration = Math.max(0, (w.end ?? w.start) - w.start)
   const start = backfillStart(iso, time)
   const moved = { ...w, d: iso, start, end: start + duration }
+  // The heart curve kept with it (lib/heart-history.js) is in absolute time: it moves along.
+  if (w.hrc && Number.isFinite(Number(w.hrc.s))) moved.hrc = { ...w.hrc, s: Number(w.hrc.s) + (start - w.start) }
   if (w.id == null) moved.id = legacySyncKey(w)
   return moved
 }

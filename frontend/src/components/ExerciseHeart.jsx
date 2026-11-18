@@ -91,7 +91,7 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
       if (!w?.start || !w?.end) return null
       const ver = verOf(w)
       const had = samples[s.id]
-      return [s.id, had && had.ver === ver ? had : { ver, data: await workoutSamples(w) }]
+      return [s.id, had && had.ver === ver ? had : { ver, data: await workoutSamples(w, S) }]
     })).then(rows => { if (open) setSamples(was => ({ ...was, ...Object.fromEntries(rows.filter(Boolean)) })) })
     return () => { open = false }
   }, [wanted])
@@ -144,7 +144,7 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
       <div className="small" style={{ marginTop: 6 }}>
         {curves.map(c => <div key={c.s.id} className="row between exercise-heart-legend">
           <span className="row" style={{ gap: 6 }}><span className="exercise-heart-dot" style={{ background: c.color }} />{fmtDate(c.s.d, true)}</span>
-          <span className="muted">{c.fine ? heartStepText(c.fine.stats) : t('Average {0} · Max {1} bpm', c.s.avg, c.s.max)}</span>
+          <span className="muted">{timed ? heartStepText(c.fine.stats) : t('Average {0} · Max {1} bpm', c.s.avg, c.s.max)}</span>
         </div>)}
       </div>
     </>}

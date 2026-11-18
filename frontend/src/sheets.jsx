@@ -3752,7 +3752,7 @@ function WorkoutDetail({ w, close }) {
   // The session's heart rate for every way out (text, PDF, .fit): the curve kept with the workout,
   // else the phone's health hub's (lib/health-sync.js workoutSamples). null without a reading.
   const heartFor = async rec => {
-    const samples = await workoutSamples(rec)
+    const samples = await workoutSamples(rec, st)
     const curve = heartCurve(samples, rec.start, rec.end)
     const hrMax = hrMaxOf(st) || DEFAULT_HR_MAX
     return curve && { avg: curve.avg, max: curve.max, samples, hrMax, perMinute: heartPerMinute(samples, rec.start, rec.end),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { curveCovers, curveReadings, exerciseCurve, exerciseHeart, heartFormat, heartLatest, heartPoints, packCurve, parseFormat, setCurve, unpackCurve } from './heart-history.js'
+import { curveCovers, curveReadings, mergeCurves, exerciseCurve, exerciseHeart, heartFormat, heartLatest, heartPoints, packCurve, parseFormat, setCurve, unpackCurve } from './heart-history.js'
 
 const DAY = 86400000
 const T0 = Date.UTC(2026, 10, 1, 9)
@@ -105,6 +105,15 @@ describe('exerciseCurve', () => {
     expect(exerciseCurve(mixed, ROPE, samples, 190, 't:45')).toBeNull()
   })
 
+  it('starts a set after a per-side set at that set\'s later side, and joins sets back to back', () => {
+    const sides = { id: PUSH, sets: [{ done: true, sides: { L: { done: true, at: at(7) }, R: { done: true, at: at(8) } } }] }
+    const rope = { id: ROPE, target: { mode: 'time' }, sets: [{ done: true, sec: 60, at: at(9) }, { done: true, sec: 60, at: at(10) }] }
+    const c = exerciseCurve({ ...w, entries: [sides, rope] }, ROPE, samples, 190, 't:60')
+    // one span from +8 (the later side) to +10: readings at 8, 9 and 10, the one at 9 once
+    expect(c.span).toBe(2 * 60000)
+    expect(c.points.map(p => p.hr)).toEqual([108, 109, 110])
+  })
+
   it('has no curve without readings or without the exercise', () => {
     expect(exerciseCurve(w, ROPE, [], 190)).toBeNull()
     expect(exerciseCurve(w, '9999', samples, 190)).toBeNull()
@@ -154,5 +163,15 @@ describe('curveCovers', () => {
     expect(curveCovers({ s: 0, step: 5, v: new Array(40).fill(120) }, w)).toBe(false)
     expect(curveCovers(null, w)).toBe(false)
     expect(curveCovers({ s: 0, step: 5, v: [120] }, { start: 5, end: 5 })).toBe(false)
+  })
+})
+
+describe('mergeCurves', () => {
+  it('keeps the first curve\'s slots the second misses, the second winning where both have one', () => {
+    expect(mergeCurves({ s: 0, step: 5, v: [100, 110, 0, 130] }, { s: 5000, step: 5, v: [111, 121, 0, 141] })).toEqual({ s: 0, step: 5, v: [100, 111, 121, 130, 141] })
+  })
+  it('takes the one there is', () => {
+    expect(mergeCurves(null, { s: 0, step: 5, v: [100] })).toEqual({ s: 0, step: 5, v: [100] })
+    expect(mergeCurves({ s: 0, step: 5, v: [100] }, null)).toEqual({ s: 0, step: 5, v: [100] })
   })
 })

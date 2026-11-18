@@ -299,6 +299,12 @@ describe('the heart rate in a FIT workout', () => {
     expect([lap[15], lap[16]]).toEqual([123, 150])
   })
 
+  it('writes the readings and the sets in time order, as a device does', () => {
+    const times = d.messages.filter(m => m.global === MSG.record || m.global === MSG.set).map(m => (m.global === MSG.record ? m.f[253] : m.f[254]))
+    expect(times.length).toBeGreaterThan(3)
+    expect(times).toEqual([...times].sort((a, b) => a - b))
+  })
+
   it('keeps a reading that came out of order', () => {
     const shuffled = [[T0 + 70000, 150], [T0 + 10000, 100], [T0 + 130000, 120]]
     const r = decode(workoutFit(strength, { heart: shuffled }))

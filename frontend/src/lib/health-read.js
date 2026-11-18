@@ -15,7 +15,7 @@
 //     lib/health-connect.js healthRecords leaves it out).
 import { hrFromSamples, sanitizeHr } from './heart-rate.js'
 import { stampWorkout, stampEntry } from './sync-merge.js'
-import { curveReadings, packCurve } from './heart-history.js'
+import { curveReadings, mergeCurves, packCurve } from './heart-history.js'
 import { isoOf } from './format.js'
 import { addWeighIn, readingsOf, timeOf, hashId } from './weigh-ins.js'
 
@@ -72,7 +72,8 @@ export function mergeHeartRate(S, wid, samples, src, now = Date.now()) {
 export function keepHeartCurve(S, wid, samples, now = Date.now()) {
   const w = (S?.workouts || []).find(x => x && x.id === wid)
   if (!w || !(Number(w.start) > 0) || !(Number(w.end) > Number(w.start))) return false
-  const c = packCurve(samples, Number(w.start), Number(w.end))
+  // Merged slot by slot with the one kept, so a fuller read that misses a slot keeps it.
+  const c = mergeCurves(w.hrc, packCurve(samples, Number(w.start), Number(w.end)))
   if (!c || curveReadings(c) <= curveReadings(w.hrc)) return false
   const old = { ...w }
   w.hrc = c

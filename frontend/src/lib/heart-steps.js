@@ -19,7 +19,7 @@ const SAMPLE_MAX_MS = 15000
 const HIGH_SHARE = 0.8
 
 // A set's tick: its own, or the later side's for a per-side set.
-const tickOf = s => {
+export const tickOf = s => {
   if (!s) return 0
   if (s.done === true && Number(s.at) > 0) return Number(s.at)
   const sides = [s.sides?.L, s.sides?.R].filter(x => x?.done === true && Number(x.at) > 0).map(x => Number(x.at))
