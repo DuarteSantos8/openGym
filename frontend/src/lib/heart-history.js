@@ -32,15 +32,25 @@ export function parseFormat(key) {
   return r ? { mode: 'reps', r: +r[1], w: +r[2] } : null
 }
 
-// The formats of every done work set of `exId` in `w`, read or not.
-function doneFormats(w, exId) {
+// The spans ({ from, to }) of the done work sets of `exId` in `w` in format `key`: each from the
+// tick before it in the workout (any exercise's, or the start) to its own tick.
+function formatSpans(w, exId, key) {
+  const start = Number(w?.start) || 0
+  const ticks = []
+  for (const e of w?.entries || []) for (const s of e?.sets || []) if (s?.done && Number(s.at) > 0) ticks.push(Number(s.at))
+  ticks.sort((a, b) => a - b)
   const out = []
   for (const e of w?.entries || []) {
     if (String(e?.id) !== String(exId)) continue
     const mode = modeOf(e.target || { id: e.id })
-    for (const s of e.sets || []) if (s?.done && !isWarmupRow(s) && !isSideSet(s)) out.push(heartFormat(s, mode))
+    for (const s of e.sets || []) {
+      if (!s?.done || isWarmupRow(s) || isSideSet(s) || !(Number(s.at) > 0) || heartFormat(s, mode) !== key) continue
+      const to = Number(s.at)
+      const before = ticks.filter(x => x < to)
+      out.push({ from: before.length ? before[before.length - 1] : start, to })
+    }
   }
-  return out
+  return out.filter(sp => sp.to > sp.from).sort((a, b) => a.from - b.from)
 }
 
 // The done work sets of `exId` in `w` with a heart reading, each with its format.
@@ -118,13 +128,12 @@ export function heartLatest(sessions, measure) {
  * points [{ t, hr }], `t` the time since the exercise began (its spans laid end to end when it was
  * come back to, so a later go follows straight on); stats { avg, max, high, n } as on the session's
  * card (lib/heart-steps.js heartStats, `high` the time in zones 4 and 5). null without a reading.
+ * With a format `key`, only that format's sets: each from the tick before it (its rest included)
+ * to its own, laid end to end, so 60 s holds are never mixed with 30 s ones done the same day.
  */
 export function exerciseCurve(w, exId, samples, hrMax, key = null) {
   const entries = w?.entries || []
-  // The exercise's spans hold all its sets: with sets of another format among them (60 s and 30 s
-  // the same day), the curve would mix the two, so that session goes set after set (setCurve).
-  if (key && doneFormats(w, exId).some(k => k !== key)) return null
-  const spans = exerciseSpans(w).filter(sp => sp.members.some(i => String(entries[i]?.id) === String(exId)))
+  const spans = key ? formatSpans(w, exId, key) : exerciseSpans(w).filter(sp => sp.members.some(i => String(entries[i]?.id) === String(exId)))
   if (!spans.length || !Array.isArray(samples)) return null
   const points = [], parts = []
   let offset = 0

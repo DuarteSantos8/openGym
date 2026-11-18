@@ -93,12 +93,16 @@ describe('exerciseCurve', () => {
     expect(c.points.map(p => p.hr)).toEqual([107, 108, 109, 110, 111])
   })
 
-  it('leaves a session with sets of another format to the set-after-set curve', () => {
-    const timed = sec => ({ done: true, sec, at: at(9) })
-    const mixed = { ...w, entries: [{ id: ROPE, target: { mode: 'time' }, sets: [timed(60), { ...timed(30), at: at(11) }] }] }
-    expect(exerciseCurve(mixed, ROPE, samples, 190, 't:60')).toBeNull()
-    const same = { ...w, entries: [{ id: ROPE, target: { mode: 'time' }, sets: [timed(60), { ...timed(60), at: at(11) }] }] }
-    expect(exerciseCurve(same, ROPE, samples, 190, 't:60')).not.toBeNull()
+  it('keeps only the sets of the format asked for, each with the rest before it', () => {
+    // a 60 s set ticked at +9 min after push-ups at +7, a 30 s one at +11
+    const mixed = { ...w, entries: [
+      { id: PUSH, sets: [{ done: true, at: at(7) }] },
+      { id: ROPE, target: { mode: 'time' }, sets: [{ done: true, sec: 60, at: at(9) }, { done: true, sec: 30, at: at(11) }] }] }
+    const c = exerciseCurve(mixed, ROPE, samples, 190, 't:60')
+    expect(c.span).toBe(2 * 60000)
+    expect(c.points.map(p => p.hr)).toEqual([107, 108, 109])
+    expect(exerciseCurve(mixed, ROPE, samples, 190, 't:30').points.map(p => p.hr)).toEqual([109, 110, 111])
+    expect(exerciseCurve(mixed, ROPE, samples, 190, 't:45')).toBeNull()
   })
 
   it('has no curve without readings or without the exercise', () => {
