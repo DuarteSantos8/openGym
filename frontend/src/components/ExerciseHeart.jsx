@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { fmtDate, fmtNum } from '../lib/format.js'
 import { useStore } from '../store/useStore.js'
-import { exerciseCurve, exerciseHeart, heartLatest, heartPoints, parseFormat, setCurve } from '../lib/heart-history.js'
+import { curveVersion, exerciseCurve, exerciseHeart, heartLatest, heartPoints, parseFormat, setCurve } from '../lib/heart-history.js'
 import { heartStepText } from '../lib/heart-steps.js'
 import { workoutSamples } from '../lib/health-sync.js'
 import { syncKeyOf } from '../lib/workout-date.js'
@@ -82,7 +82,7 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
   // Each picked session's readings: { [workout id]: { ver, data } } (lib/health-sync.js
   // workoutSamples), read again when its kept curve or its times change (a sync brought the curve).
   const [samples, setSamples] = useState({})
-  const verOf = w => `${w?.start}:${w?.end}:${w?.hrc?.s}:${w?.hrc?.v?.length || 0}`
+  const verOf = w => `${w?.start}:${w?.end}:${curveVersion(w?.hrc)}`
   const wanted = chosen.map(id => id + '@' + verOf(workouts.find(x => x && syncKeyOf(x) === id))).join(',')
   useEffect(() => {
     if (!chosen.length) return
