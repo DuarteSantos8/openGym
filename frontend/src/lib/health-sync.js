@@ -427,8 +427,8 @@ async function readOnce(getState, force, now, applyFn) {
   // Waists (iPhone only): the same rhythm and cursor as weigh-ins, into the day's check-in.
   if (h.readWaist && p.platform === 'ios' && (force ? now - lastWaistRead >= RESUME_EVERY_MS : now - lastWaistRead >= READ_EVERY_MS)) {
     try {
-      // A year back, not a month: waists are few, and the chart's 1Y would otherwise show one month.
-      const since = h.waCursor > 0 ? Math.max(h.waCursor - WEIGHT_MARGIN_MS, now - WEIGHT_HISTORY_MS) : now - WEIGHT_HISTORY_MS
+      // All of Health's history the first time: waists are few, and Apple Health has no read window.
+      const since = h.waCursor > 0 ? h.waCursor - WEIGHT_MARGIN_MS : 0
       const res = await p.HC.readWaist({ since })
       lastWaistRead = now
       const records = Array.isArray(res?.records) ? res.records : []

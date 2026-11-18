@@ -160,12 +160,12 @@ describe('heart rate', () => {
 })
 
 describe('waists', () => {
-  it('fills the day\'s check-in, from a year back, then from the newest seen, and once only', async () => {
+  it('fills the day\'s check-in, from all history, then from the newest seen, and once only', async () => {
     h.platform = 'ios'
     h.waists = [{ t: NOW - 2 * 3600e3, cm: 82.4, id: 'a1', origin: 'com.apple.Health', clientId: null }]
     await hs.enableRead('waist', getState, { apply })
     expect(h.calls[0]).toEqual(['request', { read: ['waist'], write: [] }])
-    expect(reads('readWaist')[0][1].since).toBe(NOW - 365 * 24 * 3600e3)
+    expect(reads('readWaist')[0][1].since).toBe(0)
     expect(S.measurements).toHaveLength(1)
     expect(S.measurements[0]).toMatchObject({ d: '2026-10-15', waist: 82.4 })
     expect(file().waCursor).toBe(NOW - 2 * 3600e3)
@@ -175,14 +175,14 @@ describe('waists', () => {
     expect(applied).toBe(1)
   })
 
-  it('turned off and on again, looks a year back again', async () => {
+  it('turned off and on again, reads all history again', async () => {
     h.platform = 'ios'
     h.waists = [{ t: NOW - 2 * 3600e3, cm: 82.4, id: 'a1', origin: 'com.apple.Health', clientId: null }]
     await hs.enableRead('waist', getState, { apply })
     await hs.disableRead('waist')
     expect(file().waCursor).toBe(0)
     await hs.enableRead('waist', getState, { apply })
-    expect(reads('readWaist').at(-1)[1].since).toBe(NOW - 365 * 24 * 3600e3)
+    expect(reads('readWaist').at(-1)[1].since).toBe(0)
   })
 })
 
