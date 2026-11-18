@@ -96,8 +96,9 @@ let
     let
       config = evalConfig scenario.modules;
       # Force evaluation of the toplevel derivation path to ensure the config
-      # actually evaluates. Using builtins.seq ensures the value is evaluated
-      # before returning the empty failure list.
+      # actually evaluates. builtins.seq forces the drvPath thunk; if evaluation
+      # fails (e.g., due to a configuration error), the error propagates. On
+      # success, return the empty failure list for valid configurations.
       _ = builtins.seq config.system.build.toplevel.drvPath [ ];
     in
     [ ];

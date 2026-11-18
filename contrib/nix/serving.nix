@@ -75,7 +75,11 @@
     }
 
     handle /api/* {
-      reverse_proxy 127.0.0.1:${apiPort}
+      reverse_proxy 127.0.0.1:${apiPort} {
+        # Remove CF-Connecting-IP to prevent header spoofing.
+        # Keep only if a trusted upstream proxy (e.g., Cloudflare) sets it.
+        header_up -CF-Connecting-IP
+      }
     }
 
     handle {

@@ -188,9 +188,11 @@ buildNpmPackage {
             # Pass 2: Multiline dynamic imports - find import( and extract specifier
             # across line boundaries until closing )
             awk '
-              BEGIN { in_import=0; paren=0; spec="" }
+              BEGIN { in_import=0; paren=0 }
               {
-                line = $0
+                # Keep the original line for parenthesis counting
+                orig = $0
+                line = orig
                 # Check for import( starting on this line
                 if (!in_import && line ~ /import[[:space:]]*\(/) {
                   in_import = 1
@@ -202,15 +204,15 @@ buildNpmPackage {
                 }
                 # If we are in a multiline import (either just started or continuing), count parens and scan
                 if (in_import) {
-                  # Look for quoted relative specifiers
-                  while (match(line, /["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
+                  # Look for quoted relative specifiers on the original line
+                  while (match(orig, /["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
                     # Only print if we are inside the import( parens
                     if (paren > 0) print arr[1]
-                    line = substr(line, RSTART + RLENGTH)
+                    orig = substr(orig, RSTART + RLENGTH)
                   }
-                  # Count parens on this line (once per line)
-                  for (i=1; i<=length(line); i++) {
-                    c = substr(line, i, 1)
+                  # Count parens on the original unmodified line (once per line)
+                  for (i=1; i<=length($0); i++) {
+                    c = substr($0, i, 1)
                     if (c == "(") paren++
                     else if (c == ")") paren--
                   }
