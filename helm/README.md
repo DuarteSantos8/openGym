@@ -33,6 +33,27 @@ helm upgrade opengym ./helm -n fitness -f my-values.yaml
 helm test opengym -n fitness          # calls /api/health through the web container
 ```
 
+### As a published dependency (no clone)
+
+Each release also publishes the chart to OCI on GHCR, `oci://ghcr.io/duartesantos8/opengym`, with
+the tags `X.Y.Z`, `X.Y` and `latest` (all the same chart). Add it to your own `Chart.yaml` instead
+of cloning this repo:
+
+```yaml
+dependencies:
+  - name: opengym
+    version: "1.4.5"          # any published tag; the app version it runs
+    repository: "oci://ghcr.io/duartesantos8"
+```
+
+```bash
+helm dependency update            # or: helm pull oci://ghcr.io/duartesantos8/opengym --version 1.4.5
+helm install opengym . -n fitness --create-namespace -f my-values.yaml
+```
+
+The published version is the release (app) version, not the development version in `Chart.yaml`, so
+a pinned dependency names the app it runs.
+
 Pods restart on their own when the ConfigMap or Secret changes.
 
 ## Exposing it

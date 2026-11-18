@@ -1,0 +1,84 @@
+name: Publish Helm chart
+
+# The chart is published from a published release, never from a bare tag, for the same reason the
+# images are: a tag that is later deleted (the versioning rule consolidates unreleased tags) would
+# otherwise leave its chart behind in the registry. See issue #87.
+#
+# Where: OCI on GHCR, `oci://ghcr.io/duartesantos8/opengym` -- the registry the images already use.
+# A consumer adds it as a dependency instead of cloning this repo:
+#
+#   dependencies:
+#     - name: opengym
+#       version: 1.4.5
+#       repository: "oci://ghcr.io/duartesantos8"
+#
+# Tags follow the image scheme so both say the same thing: a release publishes `X.Y.Z`, `X.Y` and
+# `latest` (all pointing at the same chart). The published chart version is the app version from the
+# release tag, not the development version in helm/Chart.yaml, so a dependency pins the app it runs.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # On a release the ref is refs/tags/vX.Y.Z; a manual run has no tag, so it publishes the
+      # chart version that is in helm/Chart.yaml instead.
+      - name: Chart version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(sed -n 's/^version:[[:space:]]*\([^[:space:]]*\).*/\1/p' helm/Chart.yaml)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Versions agree with the release tag
+        if: github.event_name == 'release'
+        run: node scripts/ci/release-check.mjs "$GITHUB_REF_NAME"
+
+      - name: Install helm (crane for the extra tags)
+        run: |
+          set -euo pipefail
+          # helm pushes the chart to OCI; crane re-tags the same manifest as latest and X.Y.
+          # Static binaries, no install packages.
+          HLM=3.19.0; CRANE=0.20.3
+          curl -fsSL "https://get.helm.sh/helm-v${HLM}-linux-amd64.tar.gz" | tar xz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE}/go-containerregistry_Linux_amd64.tar.gz" | tar xz crane
+          sudo mv crane /usr/local/bin/crane
+          helm version; crane --version
+
+      - name: Lint and package
+        run: |
+          set -euo pipefail
+          helm lint helm/
+          helm package helm/ --version "${{ steps.version.outputs.version }}" --destination dist
+          ls -l dist
+
+      - name: Lowercase owner (registry names must be lowercase)
+        id: repo
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to GHCR
+        run: |
+          set -euo pipefail
+          REG="oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym"
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+          TAG="${{ steps.version.outputs.version }}"
+          # helm tags with the chart version; latest and X.Y copy that same manifest.
+          helm push dist/opengym-${TAG}.tgz "$REG"
+          crane tag "$REG:${TAG}" "$REG:latest"
+          crane tag "$REG:${TAG}" "$REG:${TAG%.*}"
+          crane ls "oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym" | sed 's/^/  published: /'
