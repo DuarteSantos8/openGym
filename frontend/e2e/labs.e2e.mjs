@@ -1,17 +1,27 @@
 // The openGym Next labs on the add-ons page, end to end in a real browser.
 import { test, expect, click, enterAsGuest, openRoute, workout, EX } from './fixtures.mjs'
 
+// The Progression lab sits folded under Advanced with the roadmap (release pass, Addons.jsx).
+const advanced = page => page.locator('details.addon-advanced')
+const openAdvanced = page => click(advanced(page).locator('summary'))
+
 test('a guest reaches the add-ons page and every lab is there', async ({ page }) => {
   await enterAsGuest(page)
   await openRoute(page, '/addons')
-  for (const h of ['Progression rule lab', 'Movement lab', '3D muscle map']) {
+  for (const h of ['Movement lab', '3D muscle map']) {
     await expect(page.getByRole('heading', { name: h })).toBeVisible()
   }
+  // folded away until asked for, then there
+  await expect(page.getByRole('heading', { name: 'Progression rule lab' })).toBeHidden()
+  await openAdvanced(page)
+  await expect(advanced(page)).toHaveAttribute('open', '')
+  await expect(page.getByRole('heading', { name: 'Progression rule lab' })).toBeVisible()
 })
 
 test('Progression lab: Simulate produces a session table and writes nothing', async ({ page }) => {
   await enterAsGuest(page)
   await openRoute(page, '/addons')
+  await openAdvanced(page)
   const before = await page.evaluate(() => localStorage.getItem('gym_state_v1'))
   const lab = page.locator('section[aria-labelledby="addon-prog-title"]')
   await click(lab.getByRole('button', { name: 'Simulate' }))
