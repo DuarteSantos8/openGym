@@ -70,3 +70,16 @@ describe('hrMaxOf', () => {
     expect(hrZone(137, S, now)).toBe(4)
   })
 })
+
+// The copied text's curve: one reading a minute, a gap where the hub had nothing.
+describe('heartPerMinute', () => {
+  it('averages each minute and leaves an empty one as null', () => {
+    const start = 1000
+    const samples = [[start + 10e3, 100], [start + 50e3, 110], [start + 130e3, 150], [start + 200e3, 300], [start + 179e3, 141]]
+    expect(heartPerMinute(samples, start, start + 3 * 60e3)).toEqual([105, null, 146])
+  })
+  it('is empty without a session', () => {
+    expect(heartPerMinute([[5, 100]], 10, 10)).toEqual([])
+    expect(heartPerMinute(null, 0, 60e3)).toEqual([])
+  })
+})

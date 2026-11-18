@@ -6059,4 +6059,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "歸你了。在手機上的 App 裡選擇：設定、外觀與首頁、App 圖示。",
   "Yours. Settings, Look & Home, App icon.": "歸你了。設定、外觀與首頁、App 圖示。",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym 有了一個妹妹。飲食、補充品和體重，像 openGym 一樣放在你自己的伺服器上，沒有廣告，也沒人偷看。目前是私人測試版，你來得很早。",
+  'Average bpm': '平均心率',
+  'Last session': '上次訓練',
+  '{0} in zones 4 and 5': '在第 4、5 區 {0}',
+  "Heart rate, one reading a minute (bpm)": "心率，每分鐘一個讀數（bpm）",
 }

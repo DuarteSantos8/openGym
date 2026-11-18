@@ -323,6 +323,29 @@ describe('a strength workout as FIT', () => {
   })
 })
 
+describe('the heart rate in a FIT workout', () => {
+  const heart = [[T0 - 5000, 90], [T0 + 10000, 100], [T0 + 10400, 101], [T0 + 70000, 150], [T0 + 130000, 120], [T0 + 200000, 400]]
+  const d = decode(workoutFit(strength, { heart }))
+
+  it('writes a record a reading, one a second, inside the session, plausible only', () => {
+    expect(of(d, MSG.record).map(r => [r[253], r[3]])).toEqual([[fitTime(T0 + 10000), 100], [fitTime(T0 + 70000), 150], [fitTime(T0 + 130000), 120]])
+    expect(fitCrc(workoutFit(strength, { heart }))).toBe(0)
+  })
+
+  it('gives the session and its lap their average and maximum', () => {
+    const [session] = of(d, MSG.session)
+    expect([session[16], session[17]]).toEqual([123, 150])
+    const [lap] = of(d, MSG.lap)
+    expect([lap[15], lap[16]]).toEqual([123, 150])
+  })
+
+  it('leaves them out without readings', () => {
+    const plain = decode(workoutFit(strength))
+    expect(of(plain, MSG.record)).toEqual([])
+    expect(of(plain, MSG.session)[0][16]).toBe(0xFF)
+  })
+})
+
 describe('a cardio workout as FIT', () => {
   const walk = { id: 'w2', d: '2026-10-09', start: T0, end: T0 + min(31), entries: [
     { id: TREADMILL, target: { mode: 'cardio' }, sets: [{ min: 10, speed: 5, done: true }, { min: 20, speed: 6, done: true }, { min: 5, speed: 4, done: false }] },

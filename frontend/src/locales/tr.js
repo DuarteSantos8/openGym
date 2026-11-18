@@ -6066,4 +6066,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Senin. Telefonundaki uygulamada seç: Ayarlar, Görünüm ve Ana sayfa, Uygulama simgesi.",
   "Yours. Settings, Look & Home, App icon.": "Senin. Ayarlar, Görünüm ve Ana sayfa, Uygulama simgesi.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym'in bir küçük kız kardeşi var. Yemek, takviyeler ve vücut ağırlığı, openGym gibi kendi sunucunda, reklamsız ve kimse okumadan. Kapalı betada ve sen erken geldin.",
+  'Average bpm': 'Ortalama bpm',
+  'Last session': 'Son antrenman',
+  '{0} in zones 4 and 5': 'Bölge 4 ve 5\'te {0}',
+  "Heart rate, one reading a minute (bpm)": "Nabız, dakikada bir ölçüm (bpm)",
 }

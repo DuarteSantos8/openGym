@@ -6077,4 +6077,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "เป็นของคุณแล้ว เลือกได้ในแอปบนมือถือ: ตั้งค่า, หน้าตาและหน้าหลัก, ไอคอนแอป",
   "Yours. Settings, Look & Home, App icon.": "เป็นของคุณแล้ว ตั้งค่า, หน้าตาและหน้าหลัก, ไอคอนแอป",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym มีน้องสาวแล้ว อาหาร อาหารเสริม และน้ำหนักตัว บนเซิร์ฟเวอร์ของคุณเองเหมือน openGym ไม่มีโฆษณา ไม่มีใครแอบดู ตอนนี้อยู่ในเบต้าแบบปิด และคุณมาก่อนใคร",
+  'Average bpm': 'bpm เฉลี่ย',
+  'Last session': 'เซสชันล่าสุด',
+  '{0} in zones 4 and 5': '{0} ในโซน 4 และ 5',
+  "Heart rate, one reading a minute (bpm)": "อัตราการเต้นของหัวใจ ค่าเดียวต่อนาที (bpm)",
 }

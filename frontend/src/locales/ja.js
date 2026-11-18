@@ -5999,4 +5999,10 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "あなたのものです。スマホのアプリで選んでください：設定、表示とホーム、アプリアイコン。",
   "Yours. Settings, Look & Home, App icon.": "あなたのものです。設定、表示とホーム、アプリアイコン。",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGymに妹ができました。食事、サプリ、体重を、openGymと同じく自分のサーバーで。広告なし、誰にも見られません。いまはプライベートベータで、あなたは一足早い参加者です。",
+  // Heart rate curve (#1243)
+  // Heart rate by exercise and in the exports (#1355)
+  "Average bpm": "平均 bpm",
+  "Last session": "前回のセッション",
+  "{0} in zones 4 and 5": "ゾーン4と5で{0}",
+  "Heart rate, one reading a minute (bpm)": "心拍数、1分ごとに1回の計測 (bpm)",
 }

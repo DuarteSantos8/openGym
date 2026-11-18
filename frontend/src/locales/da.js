@@ -6006,4 +6006,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Det er dit. Vælg det i appen på din telefon: Indstillinger, Udseende og Hjem, App-ikon.",
   "Yours. Settings, Look & Home, App icon.": "Det er dit. Indstillinger, Udseende og Hjem, App-ikon.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym har fået en lillesøster. Mad, kosttilskud og kropsvægt, på din egen server ligesom openGym, uden reklamer og uden nogen der kigger med. Den er i privat beta, og du er tidligt ude.",
+  "Average bpm": "Gns. puls",
+  "Last session": "Seneste træning",
+  "{0} in zones 4 and 5": "{0} i zone 4 og 5",
+  "Heart rate, one reading a minute (bpm)": "Puls, én måling i minuttet (bpm)",
 }

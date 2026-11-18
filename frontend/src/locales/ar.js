@@ -6121,4 +6121,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "إنها لك. اخترها في التطبيق على هاتفك: الإعدادات، المظهر والرئيسية، أيقونة التطبيق.",
   "Yours. Settings, Look & Home, App icon.": "إنها لك. الإعدادات، المظهر والرئيسية، أيقونة التطبيق.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "لـ openGym أخت صغيرة. الطعام والمكملات ووزن الجسم، على خادمك الخاص مثل openGym، بلا إعلانات ولا أحد يتطفّل. إنها في نسخة تجريبية خاصة، وأنت من الأوائل.",
+  'Average bpm': 'متوسط النبض',
+  'Last session': 'آخر جلسة',
+  '{0} in zones 4 and 5': '{0} في المنطقتين 4 و5',
+  "Heart rate, one reading a minute (bpm)": "نبض القلب، قراءة واحدة كل دقيقة (نبضة/دقيقة)",
 }

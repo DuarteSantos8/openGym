@@ -6063,4 +6063,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Він твій. Вибери його в застосунку на телефоні: Налаштування, Вигляд і Головна, Значок застосунку.",
   "Yours. Settings, Look & Home, App icon.": "Він твій. Налаштування, Вигляд і Головна, Значок застосунку.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "У openGym з’явилася молодша сестра. Їжа, добавки й вага тіла, на твоєму власному сервері, як openGym, без реклами й без сторонніх очей. Вона в закритій беті, і ти тут серед перших.",
+  'Average bpm': 'Середній пульс',
+  'Last session': 'Останнє тренування',
+  '{0} in zones 4 and 5': '{0} у зонах 4 і 5',
+  "Heart rate, one reading a minute (bpm)": "Пульс, одне значення на хвилину (уд/хв)",
 }

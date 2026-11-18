@@ -6031,4 +6031,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Milikmu. Pilih di aplikasi di ponselmu: Pengaturan, Tampilan & Beranda, Ikon aplikasi.",
   "Yours. Settings, Look & Home, App icon.": "Milikmu. Pengaturan, Tampilan & Beranda, Ikon aplikasi.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym punya adik perempuan. Makanan, suplemen, dan berat badan, di servermu sendiri seperti openGym, tanpa iklan dan tanpa ada yang mengintip. Masih beta privat, dan kamu datang lebih awal.",
+  "Average bpm": "Rata-rata bpm",
+  "Last session": "Sesi terakhir",
+  "{0} in zones 4 and 5": "{0} di zona 4 dan 5",
+  "Heart rate, one reading a minute (bpm)": "Detak jantung, satu bacaan per menit (bpm)",
 };

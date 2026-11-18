@@ -6066,4 +6066,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "यह आपका है। फ़ोन के ऐप में चुनें: सेटिंग्स, दिखावट और होम, ऐप आइकन।",
   "Yours. Settings, Look & Home, App icon.": "यह आपका है। सेटिंग्स, दिखावट और होम, ऐप आइकन।",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym की एक छोटी बहन है। खाना, सप्लीमेंट और शरीर का वज़न, openGym की तरह आपके अपने सर्वर पर, बिना विज्ञापन और बिना किसी के झाँके। यह प्राइवेट बीटा में है, और आप जल्दी आए हैं।",
+  'Average bpm': 'औसत bpm',
+  'Last session': 'पिछला सत्र',
+  '{0} in zones 4 and 5': 'ज़ोन 4 और 5 में {0}',
+  "Heart rate, one reading a minute (bpm)": "हृदय गति, हर मिनट एक माप (bpm)",
 }

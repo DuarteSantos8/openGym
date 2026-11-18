@@ -6066,4 +6066,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "É teu. Escolhe-o na app do telemóvel: Definições, Aspeto e Início, Ícone da app.",
   "Yours. Settings, Look & Home, App icon.": "É teu. Definições, Aspeto e Início, Ícone da app.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "O openGym tem uma irmã mais nova. Comida, suplementos e peso, no teu próprio servidor como o openGym, sem anúncios e sem ninguém a espreitar. Está em beta privada, e chegaste cedo.",
+  'Average bpm': 'bpm médio',
+  'Last session': 'Última sessão',
+  '{0} in zones 4 and 5': '{0} nas zonas 4 e 5',
+  "Heart rate, one reading a minute (bpm)": "Frequência cardíaca, uma leitura por minuto (bpm)",
 }

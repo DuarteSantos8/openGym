@@ -6032,4 +6032,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Của bạn. Chọn nó trong ứng dụng trên điện thoại: Cài đặt, Giao diện & Trang chủ, Biểu tượng ứng dụng.",
   "Yours. Settings, Look & Home, App icon.": "Của bạn. Cài đặt, Giao diện & Trang chủ, Biểu tượng ứng dụng.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym có một cô em gái. Ăn uống, thực phẩm bổ sung và cân nặng, trên máy chủ của riêng bạn như openGym, không quảng cáo và không ai nhòm ngó. Đang trong bản beta riêng, và bạn đến sớm đấy.",
+  "Average bpm": "Nhịp tim trung bình",
+  "Last session": "Buổi gần nhất",
+  "{0} in zones 4 and 5": "{0} ở vùng 4 và 5",
+  "Heart rate, one reading a minute (bpm)": "Nhịp tim, một lần đo mỗi phút (bpm)",
 };

@@ -4474,6 +4474,7 @@ export const PT_BR_OVERRIDES = {
   "{0} line still needs a look.": "{0} linha ainda precisa de uma olhada.",
   "{0} lines still need a look.": "{0} linhas ainda precisam de uma olhada.",
   "Save workout": "Salvar treino",
+  "{0} in zones 4 and 5": "{0} nas zonas 4 e 5",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

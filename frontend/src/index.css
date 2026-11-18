@@ -1497,6 +1497,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .hband.big{padding:2px 10px 8px}
 .heart-graph{width:100%;height:auto;display:block;flex:none}
 .hband.big .heart-graph{flex-basis:100%;margin-top:4px}
+.hband-scope{flex-basis:100%;margin-top:6px}
 .heart-graph-z{font-size:9px;fill:var(--label-2);font-variant-numeric:tabular-nums}
 button.live-hr{padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
 .whdr.stick .wprog-row{margin-bottom:2px}
@@ -4849,6 +4850,31 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* A finished workout's heart rate (components/SessionHeart.jsx) and an exercise's heart tab
+   (components/ExerciseHeart.jsx): the zones in the band's colours. */
+.session-heart { --z1: #42aeff; --z2: #47feed; --z3: #bdff01; --z4: #ff8c0e; --z5: #ff0e75;
+  display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; }
+.session-heart-steps { display: flex; flex-direction: column; gap: 4px; }
+.session-heart-steps .row { flex-wrap: wrap; column-gap: 8px; }
+.session-heart-steps .tt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-heart-steps .muted { margin-inline-start: auto; text-align: end; }
+.exercise-heart { --z1: #42aeff; --z2: #47feed; --z3: #bdff01; --z4: #ff8c0e; --z5: #ff0e75; }
+.exercise-heart .chip { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.exercise-heart-legend { flex-wrap: wrap; column-gap: 8px; }
+.exercise-heart-legend > .row { flex: none; white-space: nowrap; }
+.exercise-heart-legend .muted { margin-inline-start: auto; text-align: end; }
+.exercise-heart-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: 5px; flex: none; }
+.heart-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.heart-tiles button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 9px 10px; border: 0; border-radius: 12px; background: var(--surface); color: var(--label); font: inherit; text-align: start; box-shadow: inset 0 0 0 1.5px var(--tile-color, transparent); transition: transform 100ms ease-out, box-shadow 150ms ease-out; }
+.heart-tiles button:active { transform: scale(.97); }
+.heart-tiles b { font-size: 21px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; color: var(--tile-color, var(--label)); font-variant-numeric: tabular-nums; }
+.heart-tiles span { font-size: 12px; color: var(--label-2); }
+.heart-latest { display: flex; align-items: baseline; gap: 6px; padding: 2px 4px 8px; }
+.heart-latest span { font-size: 13px; color: var(--label-2); }
+.heart-latest b { font-size: 17px; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.heart-latest em { font-size: 13px; font-style: normal; font-weight: 600; color: var(--label-2); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .heart-tiles button { transition: none; } .heart-tiles button:active { transform: none; } }
 
 /* ---------------------------------------------------- translucency fallbacks -- */
 /* These two blocks must stay the LAST rules in this file. They reuse the plain selectors of the

@@ -6062,4 +6062,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Ji tavo. Pasirink ją programėlėje telefone: Nustatymai, Išvaizda ir namai, Programėlės piktograma.",
   "Yours. Settings, Look & Home, App icon.": "Ji tavo. Nustatymai, Išvaizda ir namai, Programėlės piktograma.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym turi mažąją sesę. Maistas, papildai ir kūno svoris, tavo paties serveryje kaip openGym, be reklamų ir be smalsių akių. Ji privačioje beta versijoje, o tu čia anksti.",
+  "Average bpm": "Vid. pulsas",
+  "Last session": "Paskutinė treniruotė",
+  "{0} in zones 4 and 5": "{0} 4 ir 5 zonose",
+  "Heart rate, one reading a minute (bpm)": "Pulsas, vienas matavimas per minutę (k./min)",
 }

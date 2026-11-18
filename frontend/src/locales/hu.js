@@ -6069,4 +6069,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "A tiéd. Válaszd ki a telefonos alkalmazásban: Beállítások, Megjelenés és Kezdőlap, Alkalmazásikon.",
   "Yours. Settings, Look & Home, App icon.": "A tiéd. Beállítások, Megjelenés és Kezdőlap, Alkalmazásikon.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "Az openGymnek van egy húga. Étel, étrend-kiegészítők és testsúly, a saját szervereden, mint az openGym, reklám és kíváncsi szemek nélkül. Zárt bétában van, és te korán érkeztél.",
+  'Average bpm': 'Átlag bpm',
+  'Last session': 'Utolsó edzés',
+  '{0} in zones 4 and 5': '{0} a 4. és 5. zónában',
+  "Heart rate, one reading a minute (bpm)": "Pulzus, percenként egy érték (bpm)",
 }

@@ -6066,4 +6066,8 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "归你了。在手机上的 App 里选择：设置、外观与首页、应用图标。",
   "Yours. Settings, Look & Home, App icon.": "归你了。设置、外观与首页、应用图标。",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym 有了一个妹妹。饮食、补剂和体重，像 openGym 一样放在你自己的服务器上，没有广告，也没人偷看。目前是私密测试版，你来得很早。",
+  'Average bpm': '平均心率',
+  'Last session': '上次训练',
+  '{0} in zones 4 and 5': '在第 4、5 区 {0}',
+  "Heart rate, one reading a minute (bpm)": "心率，每分钟一个读数（bpm）",
 }
