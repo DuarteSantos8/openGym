@@ -89,6 +89,9 @@ export function hrZone (bpm, S, now = Date.now()) {
  * an open pause stops the clock at `pausedAt`, as elapsedMs does.
  */
 export function kcalSoFar (S, A, now = Date.now()) {
+  // A session logged after the fact (backfill) or a saved workout being edited starts in the past:
+  // the clock since then is not time trained, so there is no running figure to show.
+  if (A?.backfill || A?.editingWorkoutId != null) return null
   const start = num(A?.start)
   const trained = elapsedMs(A, now)
   if (!start || !(trained > 0)) return null

@@ -84,6 +84,11 @@ describe('kcalSoFar (the live tile)', () => {
     expect(kcalSoFar(S, live(entries), at(19))).toBe(saved)
     expect(saved).toBe(Math.round((MET.walking - 1) * 70))
   })
+  it('shows nothing for a session logged after the fact, or a saved one being edited', () => {
+    // Their start is in the past: hours of clock, not of training (CodeRabbit on #1369).
+    expect(kcalSoFar(S, live([walk()], { start: at(8), backfill: { durationMin: 60 } }), at(19))).toBeNull()
+    expect(kcalSoFar(S, live([walk()], { start: at(8), editingWorkoutId: 'w0' }), at(19))).toBeNull()
+  })
   it('is null before the start, or with no time trained', () => {
     expect(kcalSoFar(S, live([walk()]), at(18))).toBeNull()
     expect(kcalSoFar(S, live([walk()], { pausedAt: at(18) }), at(19))).toBeNull()
@@ -93,17 +98,24 @@ describe('kcalSoFar (the live tile)', () => {
 describe('workoutKcal (the workout detail)', () => {
   it('is the number the health records get, with the weight it used', () => {
     const w = workout([treadmill(60)], { bw: 70 })
-    expect(workoutKcal({ unit: 'kg' }, w)).toEqual({ kcal: activeKcal(w, 70), kg: 70, weight: 70 })
+    expect(workoutKcal({ unit: 'kg' }, w)).toEqual({ kcal: activeKcal(w, 70), kg: 70, weight: 70, fromWorkout: true })
   })
   it('uses the fallback body weight without a weigh-in, and says so', () => {
     const w = workout([strength])
-    expect(workoutKcal({ unit: 'kg' }, w)).toEqual({ kcal: activeKcal(w, FALLBACK_KG), kg: FALLBACK_KG, weight: FALLBACK_KG })
+    expect(workoutKcal({ unit: 'kg' }, w)).toEqual({ kcal: activeKcal(w, FALLBACK_KG), kg: FALLBACK_KG, weight: FALLBACK_KG, fromWorkout: false })
   })
   it('gives the weight in pounds for a profile in pounds', () => {
     const w = workout([strength], { bw: 176 })   // lb
     const got = workoutKcal({ unit: 'lb' }, w)
     expect(got.weight).toBe(176)
+    expect(got.fromWorkout).toBe(true)
     expect(got.kcal).toBe(activeKcal(w, got.kg))
+  })
+  it('says which weight it used when the workout\'s own was turned down', () => {
+    // 500 kg is no body weight (bodyKgFor): the estimate takes the fallback, and the detail must
+    // show that, not the 500 the workout carries.
+    const got = workoutKcal({ unit: 'kg' }, workout([strength], { bw: 500 }))
+    expect(got).toEqual({ kcal: activeKcal(workout([strength]), FALLBACK_KG), kg: FALLBACK_KG, weight: FALLBACK_KG, fromWorkout: false })
   })
   it('shows nothing for a session with nothing done, or no times', () => {
     expect(workoutKcal({ unit: 'kg' }, workout([{ ...strength, sets: [{ w: 60, r: 8 }] }]))).toBeNull()
