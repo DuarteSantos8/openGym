@@ -189,9 +189,12 @@ const isBackupOf = (slot, id) => (Array.isArray(slot?.subs) && slot.subs.include
 const ticked = entry => (entry.sets || []).some(hasCompletedWork)
 
 // The routine slot a start record's place stands for now: the same exercise, twins by position,
-// so a slot added or moved on another device since does not shift it. -1 when it is gone.
+// so a slot added or moved on another device since does not shift it. -1 when it is gone, or
+// when that exercise's slots were added or taken out since: which one is which is then a guess,
+// and all of them stay as they are.
 function slotNow(routine, base, n) {
   const id = base[n]
+  if (base.filter(x => x === id).length !== routine.ex.filter(x => x?.id === id).length) return -1
   let twin = base.slice(0, n).filter(x => x === id).length
   return routine.ex.findIndex(x => x?.id === id && twin-- === 0)
 }

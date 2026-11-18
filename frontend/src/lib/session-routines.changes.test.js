@@ -89,6 +89,18 @@ describe('routineChanges', () => {
     expect(d).toMatchObject({ added: [CURL], removed: 0, swapped: 0, moved: false })
   })
 
+  it('leaves every slot of an exercise alone when another device changed how many it has', () => {
+    const r = routine([slot(BENCH, { reps: 5 }), slot(RAISE), slot(CURL)])
+    // A second bench added on another device, before the old one: which one went is unclear.
+    const now = routine([slot(BENCH, { reps: 10 }), slot(BENCH, { reps: 5 }), slot(RAISE), slot(CURL)])
+    expect(changes(take(start([r]), BENCH), [now])).toEqual([])
+    // What else changed still goes through.
+    const [c] = changes(take(take(start([r]), BENCH), RAISE), [now])
+    expect(ids(c)).toEqual([BENCH, BENCH, CURL])
+    expect(c.ex.map(x => x.reps)).toEqual([10, 5, 8])
+    expect(c).toMatchObject({ removed: 1, swapped: 0, moved: false })
+  })
+
   it('keeps the slot’s prescription on a swap, as the routine editor’s Replace does', () => {
     const r = routine([slot(BENCH), slot(RAISE, { sg: 'g1' }), slot(CURL, { sg: 'g1' })])
     const [c] = changes(swap(start([r]), RAISE, LEGCURL), [r])
