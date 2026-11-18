@@ -163,6 +163,7 @@ export async function startVoice ({ useStore, toast }) {
       await waitReady(useStore)
       // Whether weigh-ins come from the health store is known only once its file is read.
       await weighInSourceReady()
+      if (gone) return
       const res = await p.VoiceBridge.pending()
       const items = Array.isArray(res?.items) ? res.items : []
       if (!items.length) return
