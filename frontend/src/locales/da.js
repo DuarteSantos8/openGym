@@ -1362,7 +1362,7 @@ export default {
   "New equipment profile": "Ny udstyrsprofil",
   "Name it after where you train (like \"Home\" or \"Gym\"), then tick what you’ve got there.": "Navngiv den efter, hvor du træner (som \"Hjemme\" eller \"Center\"), og kryds så af, hvad du har dér.",
   "Profile name": "Profilnavn",
-  "Body-weight exercises are always available, unless they need a pull-up bar or a bench.": "Kropsvægtsøvelser er altid tilgængelige, medmindre de kræver en pull-up-stang eller en bænk.",
+  "Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.": "Fjern fluebenet ved kropsvægt for at skjule kropsvægtsøvelser her. En øvelse, der kræver en pull-up-stang eller en bænk, vises, når den er valgt.",
   "{0} of {1} exercises need equipment outside \"{2}\"": "{0} af {1} øvelser kræver udstyr uden for \"{2}\"",
   "Needs {0}, which isn’t in your active profile": "Kræver {0}, som ikke er i din aktive profil",
   "Filter by equipment": "Filtrér efter udstyr",

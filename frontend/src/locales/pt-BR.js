@@ -1366,7 +1366,7 @@ export const PT_BR_OVERRIDES = {
   'New equipment profile': 'Novo perfil de equipamentos',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Dê o nome do lugar onde você treina (tipo “Casa” ou “Academia”) e marque o que tem por lá.',
   'Profile name': 'Nome do perfil',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Os exercícios com o peso do corpo estão sempre disponíveis, a não ser que precisem de uma barra fixa ou de um banco.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Desmarque peso corporal para esconder aqui os exercícios com o peso do corpo. Um que precise de uma barra fixa ou de um banco aparece quando ele estiver marcado.',
   'bench': 'banco',
   'pull-up bar': 'barra fixa',
   '{0} of {1} exercises need equipment outside "{2}"': '{0} de {1} exercícios precisam de equipamentos fora de “{2}”',

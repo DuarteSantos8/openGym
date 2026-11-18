@@ -1274,7 +1274,7 @@ export default {
   'New equipment profile': 'Новый профиль инвентаря',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'Назовите его по месту тренировок (например, «Дом» или «Зал») и отметьте, что там есть.',
   'Profile name': 'Название профиля',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'Упражнения с собственным весом доступны всегда, если им не нужны турник или скамья.',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'Снимите отметку со «свой вес», чтобы скрыть здесь упражнения с собственным весом. Упражнение, которому нужны турник или скамья, видно, когда они отмечены.',
   '{0} of {1} exercises need equipment outside "{2}"': '{0} из {1} упражнений требуют инвентаря вне «{2}»',
   'Needs {0}, which isn’t in your active profile': 'Нужен инвентарь {0}, которого нет в активном профиле',
   'Filter by equipment': 'Фильтровать по инвентарю',

@@ -1168,7 +1168,7 @@ export default {
   'New equipment profile': 'โปรไฟล์อุปกรณ์ใหม่',
   'Name it after where you train (like "Home" or "Gym"), then tick what you’ve got there.': 'ตั้งชื่อตามที่ที่คุณฝึก (เช่น "บ้าน" หรือ "ยิม") แล้วติ๊กอุปกรณ์ที่มีอยู่ที่นั่น',
   'Profile name': 'ชื่อโปรไฟล์',
-  'Body-weight exercises are always available, unless they need a pull-up bar or a bench.': 'ท่าใช้น้ำหนักตัวใช้ได้เสมอ เว้นแต่ต้องใช้บาร์โหนหรือม้านั่ง',
+  'Untick body weight to hide body-weight exercises here. One that needs a pull-up bar or a bench shows when that is ticked.': 'เอาเครื่องหมายน้ำหนักตัวออกเพื่อซ่อนท่าใช้น้ำหนักตัวที่นี่ ท่าที่ต้องใช้บาร์โหนหรือม้านั่งจะแสดงเมื่อเลือกสิ่งนั้นไว้',
   '{0} of {1} exercises need equipment outside "{2}"': '{0} จาก {1} ท่าต้องใช้อุปกรณ์นอกเหนือจาก "{2}"',
   'Needs {0}, which isn’t in your active profile': 'ต้องใช้ {0} ซึ่งไม่มีในโปรไฟล์ที่ใช้งานอยู่',
   'Filter by equipment': 'กรองตามอุปกรณ์',
