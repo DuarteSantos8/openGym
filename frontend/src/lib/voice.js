@@ -17,7 +17,7 @@ import { MOBILE, nativePlatform } from './mobile.js'
 import { effectiveRoutines } from './history.js'
 import { isoOf, todayISO, fmtNum } from './format.js'
 import { t } from './i18n.js'
-import { weighInsFromHealth } from './weigh-in-source.js'
+import { weighInsFromHealth, weighInSourceReady } from './weigh-in-source.js'
 
 export const LB_PER_KG = 2.2046226218
 // What a spoken number may be. Below this it was a mishearing ("two"), above it the sheet's own cap.
@@ -161,6 +161,8 @@ export async function startVoice ({ useStore, toast }) {
     busy = true
     try {
       await waitReady(useStore)
+      // Whether weigh-ins come from the health store is known only once its file is read.
+      await weighInSourceReady()
       const res = await p.VoiceBridge.pending()
       const items = Array.isArray(res?.items) ? res.items : []
       if (!items.length) return

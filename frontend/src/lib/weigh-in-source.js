@@ -22,12 +22,17 @@ const set = h => {
 // pass at launch would then sync early.
 const readFile = () => readJsonFile(HEALTH_FILE)
 
+let started = Promise.resolve()
+/** Resolves once the startup read has landed (at once where it never started: the web, tests). */
+export const weighInSourceReady = () => started
+
 /** Starts following the read's switch (store/useStore.js, on the phones). */
 export function initWeighInSource(load = readFile, onChange = onHealthChange) {
   // A change told while the file is read is newer than what the read brings.
   let told = false
   onChange(h => { told = true; set(h) })
-  return Promise.resolve().then(load).then(h => { if (!told) set(h) }).catch(() => {})
+  started = Promise.resolve().then(load).then(h => { if (!told) set(h) }).catch(() => {})
+  return started
 }
 
 /** Whether weigh-ins come from the health store only, for profile `S`. */

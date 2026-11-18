@@ -206,4 +206,26 @@ describe('startVoice', () => {
       stop()
     } finally { tell({ readWeight: false }) }
   })
+  // Siri queues while the app is closed, so the drain at launch can start before the read lands.
+  it('waits for the startup read of weigh-ins before it drains', async () => {
+    let resolve
+    const read = initWeighInSource(() => new Promise(r => { resolve = r }), () => {})
+    try {
+      const m = await import('./voice.js')
+      const plugin = { pending: vi.fn(async () => ({ items: [pending({ id: 'p10', at: Date.now() - 60000, d: undefined })] })), clear: vi.fn(async () => {}) }
+      m._setVoicePluginForTest(plugin)
+      let state = { ready: true, S: { unit: 'kg', bodyweight: [] } }
+      const useStore = {
+        getState: () => ({ ...state, update: fn => { const S = structuredClone(state.S); fn(S); state = { ...state, S } } }),
+        subscribe: () => () => {},
+      }
+      const stop = await m.startVoice({ useStore, toast: vi.fn() })
+      await new Promise(r => setTimeout(r, 0))
+      resolve({ readWeight: true })
+      await read
+      await vi.waitFor(() => expect(plugin.clear).toHaveBeenCalledWith({ ids: ['p10'] }))
+      expect(state.S.bodyweight).toHaveLength(0)
+      stop()
+    } finally { await initWeighInSource(async () => ({ readWeight: false }), () => {}) }
+  })
 })
