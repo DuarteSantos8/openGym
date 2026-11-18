@@ -117,7 +117,8 @@ final class CueAudioLedgerTests: XCTestCase {
         XCTAssertEqual(CueAudioLedger.speechCap(text: "", rate: .nan), 3)
     }
 
-    /// A refused activation leaves nothing active (RestAlertPlugin's catch calls didDeactivate):
+    /// A refused activation leaves nothing active (RestAlertPlugin's catch calls didFailActivation):
+    /// the tone may still start the session when it plays, so its end lets the session go, and
     /// the next cue of the same shape, ambient or through the switch, tries the activation again.
     func testRefusedActivationIsTriedAgain() {
         for onSilent in [false, true] {
@@ -125,7 +126,9 @@ final class CueAudioLedgerTests: XCTestCase {
             let (first, step) = ledger.begin(.tone, onSilent: onSilent)
             guard case .activate = step else { return XCTFail("first cue activates") }
             ledger.didFailActivation()  // setActive(true) threw
-            _ = ledger.end(first)
+            XCTAssertNil(ledger.activeShape)
+            guard case .deactivate = ledger.end(first) else { return XCTFail("onSilent \(onSilent): let go") }
+            ledger.didDeactivate()
             let (_, again) = ledger.begin(.tone, onSilent: onSilent)
             guard case .activate(let shape) = again else { return XCTFail("onSilent \(onSilent): tried again") }
             XCTAssertEqual(shape, CueSessionShape.sounding(onSilent: onSilent, speechOnly: false))
