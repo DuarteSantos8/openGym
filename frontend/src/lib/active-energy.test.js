@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { activeKcal, bodyKgFor, FALLBACK_KG, MAX_HOURS, MET } from './active-energy.js'
+import { activeKcal, bodyKgFor, FALLBACK_KG, MAX_HOURS, MET, workoutKcal } from './active-energy.js'
+import { kcalSoFar } from './live-tiles.js'
 import { healthRecords } from './health-connect.js'
 
 // #724, D#917: a workout logged on the phone reached Apple Health and Health Connect with no
@@ -35,6 +36,57 @@ describe('activeKcal', () => {
   it('is null without a real start and end', () => {
     expect(activeKcal(workout([strength], { end: at(17) }), 80)).toBeNull()
     expect(activeKcal(workout([strength], { start: undefined }), 80)).toBeNull()
+  })
+  it('takes a stand-in type for the time not logged yet, unless something was lifted', () => {
+    expect(activeKcal(workout([]), 70, { restType: 'walking' })).toBe(Math.round((MET.walking - 1) * 70))
+    expect(activeKcal(workout([strength]), 70, { restType: 'walking' })).toBe(Math.round((MET.strength_training - 1) * 70))
+  })
+})
+
+// #1368: the live Calories tile counted every session at strength's MET, so an hour's walk read
+// 300 kcal live and 188 in Apple Health. It now runs the same estimate over the time gone.
+describe('kcalSoFar (the live tile)', () => {
+  const S = { unit: 'kg' }
+  const walk = (sets = [{ min: 60, speed: 4 }]) => ({ id: '2258', target: { mode: 'cardio' }, sets })
+  const lift = (done = false) => ({ id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done }] })
+  const live = (entries, extra = {}) => ({ start: at(18), entries, bw: 70, ...extra })
+
+  it('reads a walk in progress as walking, not strength training', () => {
+    expect(kcalSoFar(S, live([walk()]), at(19))).toBe(Math.round((MET.walking - 1) * 70))
+  })
+  it('agrees with what the finished walk is saved with', () => {
+    const sets = [{ min: 60, speed: 4, done: true }]
+    const finished = { ...live([walk(sets)]), end: at(19) }
+    expect(kcalSoFar(S, live([walk(sets)]), at(19))).toBe(activeKcal(finished, 70))
+  })
+  it('counts at strength before the first set of a lifting session', () => {
+    expect(kcalSoFar(S, live([lift()]), at(19))).toBe(Math.round((MET.strength_training - 1) * 70))
+  })
+  it('runs every cardio type at its own MET', () => {
+    const run = { id: '0685', target: { mode: 'cardio' }, sets: [{ min: 60 }] }
+    expect(kcalSoFar(S, live([run]), at(19))).toBe(Math.round((MET.running - 1) * 70))
+  })
+  it('leaves out the time on pause', () => {
+    expect(kcalSoFar(S, live([walk()], { pausedMs: 30 * 60e3 }), at(19))).toBe(Math.round((MET.walking - 1) * 70 / 2))
+  })
+  it('is null before the start', () => {
+    expect(kcalSoFar(S, live([walk()]), at(18))).toBeNull()
+    expect(kcalSoFar(S, live([walk()], { pausedMs: 2 * 3600e3 }), at(19))).toBeNull()
+  })
+})
+
+describe('workoutKcal (the workout detail)', () => {
+  it('is the number the health records get', () => {
+    const w = workout([treadmill(60)], { bw: 70 })
+    expect(workoutKcal({ unit: 'kg' }, w)).toBe(activeKcal(w, 70))
+  })
+  it('uses the fallback body weight without a weigh-in', () => {
+    const w = workout([strength])
+    expect(workoutKcal({ unit: 'kg' }, w)).toBe(activeKcal(w, FALLBACK_KG))
+  })
+  it('shows nothing for a session with nothing done, or no times', () => {
+    expect(workoutKcal({ unit: 'kg' }, workout([{ ...strength, sets: [{ w: 60, r: 8 }] }]))).toBeNull()
+    expect(workoutKcal({ unit: 'kg' }, workout([strength], { start: undefined }))).toBeNull()
   })
 })
 

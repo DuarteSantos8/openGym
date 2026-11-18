@@ -54,8 +54,10 @@ export function bodyKgFor(S, w) {
  * Estimated active kcal for a finished workout, rounded, or null without a start and end. Cardio
  * with its minutes logged counts those minutes at its own MET (and effort); the rest of the
  * session counts at strength training's MET, or the session's own type when nothing was lifted.
+ * `restType` stands in for that type while the workout still runs (kcalSoFar in live-tiles.js):
+ * nothing is done yet during the first walk of a session, so its planned type is all there is.
  */
-export function activeKcal(w, kg) {
+export function activeKcal(w, kg, { restType } = {}) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!(start > 0) || !(end > start) || !(kg > 0)) return null
   const hours = Math.min(MAX_HOURS, (end - start) / 3600e3)
@@ -74,9 +76,20 @@ export function activeKcal(w, kg) {
       kcal += (met * effortFactor(s.rpe) - 1) * kg * take
     }
   }
-  const type = sessionType(w)
+  const type = restType || sessionType(w)
   const lifted = done.some(e => exerciseType(e) === 'strength_training')
   const base = metOf(lifted ? 'strength_training' : type)
   kcal += (base - 1) * kg * Math.max(0, hours - cardioHours)
   return Math.max(0, Math.round(kcal))
+}
+
+/**
+ * The estimate a finished workout's detail shows (#1368): the same number written to Apple Health
+ * and Health Connect, so the app and the health store agree. Null when there is nothing to show:
+ * no start and end (imported history), or nothing done.
+ */
+export function workoutKcal(S, w) {
+  if (!(w?.entries || []).some(e => (e.sets || []).some(hasCompletedWork))) return null
+  const v = activeKcal(w, bodyKgFor(S, w))
+  return v > 0 ? v : null
 }

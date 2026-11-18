@@ -19,7 +19,8 @@ import { distUnitOf, fmtDist } from './distance.js'
 import { hasIncline, hasLevel } from './incline.js'
 import { activeGym, gymLabel, gymsOf } from './gym-inventory.js'
 import { sanitizeHr } from './heart-rate.js'
-import { bodyKgFor, MET } from './active-energy.js'
+import { activeKcal, bodyKgFor } from './active-energy.js'
+import { plannedType } from './health-connect.js'
 import { TILES } from './live-layout.js'
 import { recordBaseline, recordHint, recordHintText, recordHintsOn } from './set-records.js'
 import { sessionHistory } from './backfill.js'
@@ -78,14 +79,19 @@ export function hrZone (bpm, S, now = Date.now()) {
   return p >= 0.9 ? 5 : p >= 0.8 ? 4 : p >= 0.7 ? 3 : p >= 0.6 ? 2 : p >= 0.5 ? 1 : null
 }
 
-/** A rough running kcal for the session so far (strength training's MET for the time gone). */
+/**
+ * A rough running kcal for the session so far: the estimate the finished workout gets
+ * (activeKcal, the one written to Apple Health and Health Connect), over the time gone. Cardio
+ * already logged counts at its own MET; the rest of the time at strength's once something was
+ * lifted, else at the type the session is planned as, so an hour's walk reads as walking (#1368).
+ */
 export function kcalSoFar (S, A, now = Date.now()) {
   const start = num(A?.start)
   if (!start || now <= start) return null
-  const hours = Math.min(3, (now - start - (num(A?.pausedMs) || 0)) / 3600e3)
-  const met = num(MET?.strength_training) || 5
-  const kg = bodyKgFor(S, A)
-  const v = Math.round((met - 1) * kg * Math.max(0, hours))
+  const end = now - (num(A?.pausedMs) || 0)
+  if (end <= start) return null
+  const v = activeKcal({ start, end, entries: A?.entries || [] }, bodyKgFor(S, A),
+    { restType: plannedType(A?.entries) || 'strength_training' })
   return v > 0 ? v : null
 }
 
