@@ -188,13 +188,14 @@ buildNpmPackage {
             # Pass 2: Multiline dynamic imports - find import( and extract specifier
             # across line boundaries until closing )
             awk '
-              BEGIN { in_import=0; paren=0; in_comment=0 }
+              BEGIN { in_import=0; paren=0; in_comment=0; looking_for_spec=0 }
               {
                 # State variables preserved across lines
                 # in_import: 1 if we are inside an import() call
                 # paren: parenthesis nesting depth for the import() call
                 # in_comment: 1 if inside a /* ... */ block comment
                 # in_line_comment: 1 if inside a // line comment (reset each line)
+                # looking_for_spec: 1 if we have seen import( but not yet found the string literal
                 in_line_comment = 0
 
                 # Process the line character by character to track lexical state
@@ -204,7 +205,7 @@ buildNpmPackage {
                   next_c = (i < length($0)) ? substr($0, i+1, 1) : ""
 
                   # Handle line comment start
-                  if (!in_comment && !in_line_comment && c == "/" && next_c == "/") {
+                  if (!in_comment && !in_line_comment && c == "/" && next_c == "//") {
                     in_line_comment = 1
                     i += 2
                     continue
@@ -239,24 +240,34 @@ buildNpmPackage {
                       while (j <= length($0) && substr($0, j, 1) ~ /[[:space:]]/) j++
                       if (j <= length($0) && substr($0, j, 1) == "(") {
                         in_import = 1
+                        looking_for_spec = 1
                         paren = 1  # We've consumed the opening (
                         i = j + 1
-                        # Look for string literal immediately after import(
-                        while (i <= length($0) && substr($0, i, 1) ~ /[[:space:]]/) i++
-                        if (i <= length($0) && (substr($0, i, 1) == "\"" || substr($0, i, 1) == "\047")) {
-                          quote = substr($0, i, 1)
-                          i++
-                          start = i
-                          while (i <= length($0) && substr($0, i, 1) != quote) i++
-                          if (i <= length($0)) {
-                            spec = substr($0, start, i - start)
-                            if (spec ~ /^\./) print spec
-                            i++  # skip closing quote
-                          }
-                        }
                         continue
                       }
                     }
+                  }
+
+                  # If we are looking for the specifier after import(
+                  if (looking_for_spec) {
+                    # Skip whitespace
+                    while (i <= length($0) && substr($0, i, 1) ~ /[[:space:]]/) i++
+                    # Check for string literal
+                    if (i <= length($0) && (substr($0, i, 1) == "\"" || substr($0, i, 1) == "\047")) {
+                      quote = substr($0, i, 1)
+                      i++
+                      start = i
+                      while (i <= length($0) && substr($0, i, 1) != quote) i++
+                      if (i <= length($0)) {
+                        spec = substr($0, start, i - start)
+                        if (spec ~ /^\./) print spec
+                        i++  # skip closing quote
+                      }
+                      looking_for_spec = 0
+                      continue
+                    }
+                    # If not a string literal yet, keep looking on next lines
+                    # (but don't consume the character, let the main loop handle it)
                   }
 
                   # If we are in an import, track parentheses
@@ -266,6 +277,7 @@ buildNpmPackage {
                       paren--
                       if (paren == 0) {
                         in_import = 0
+                        looking_for_spec = 0
                       }
                     }
                   }
