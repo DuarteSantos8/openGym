@@ -2327,21 +2327,23 @@ function ActiveWorkout() {
       // only what I have yet to do"). The scroll anchor holds what is on screen while it folds,
       // and revealCur brings the next exercise up if it was left low on the screen. Only on new
       // progress, never on a re-tick, and never in the other layouts, where the marker stays put.
-      if (collapseOn && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
-        revealCur.current = true
-        update(s => { if (s.active) s.active.cur = nextUnit[0] })
-      }
-
-      // #1360: "Right away" does not wait for the rest. The tick that finishes the unit brings the
-      // next one up, and the rest keeps counting below it: the timer belongs to the exercise that
-      // started it (timer.forIdx, and startRest is called with this index below), so Skip and the
-      // +/- 15 s still aim at the exercise you just finished. When that rest does run out,
-      // advanceAfterTimedRest finds `cur` outside its unit and returns nothing, so this cannot
-      // fire twice. Focus already moved on the tick before this setting existed
-      // (FocusView.jsx onProgress), so it is unchanged; the list gets the marker only, because
-      // unlike the collapse above it does not ask for revealCur.
-      if (autoNextMode(useStore.getState().S.autoNextExercise) === 'now'
-        && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
+      //
+      // #1360: "Right away" moves the same marker on the same tick, so the two share one write:
+      // two updates for one move would clone the whole state twice and push it twice. It does not
+      // ask for revealCur, so in the list the marker moves and the screen does not — unless the
+      // exercise folded away as well, which is the collapse's own scroll.
+      //
+      // Focus is left out because it already moved on this tick before the setting existed
+      // (FocusView.jsx onProgress → advanceFocusUnit), and it re-reads `cur` to work out where to
+      // go. Moving it first would make Focus skip the exercise it was about to show: a pinned test
+      // with three exercises catches that. The rest keeps counting below the moved marker either
+      // way: it belongs to the exercise that started it (timer.forIdx, and startRest is called with
+      // this index below), so Skip and the +/- 15 s still aim at the one just finished. When that
+      // rest runs out, advanceAfterTimedRest finds `cur` outside its unit and returns nothing, so
+      // the move cannot happen twice.
+      const moveNow = !focusMode && autoNextMode(useStore.getState().S.autoNextExercise) === 'now'
+      if ((collapseOn || moveNow) && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
+        if (collapseOn) revealCur.current = true
         update(s => { if (s.active) s.active.cur = nextUnit[0] })
       }
 

@@ -483,6 +483,11 @@ describe('the pages', () => {
     // choosing Off leaves no key behind, the way the switch did
     act(() => seg()[0].click())
     expect(Object.hasOwn(mocks.S, 'autoNextExercise')).toBe(false)
+    // and choosing one of the two when's writes that choice, not a boolean
+    act(() => seg()[2].click())
+    expect(mocks.S.autoNextExercise).toBe('now')
+    act(() => seg()[1].click())
+    expect(mocks.S.autoNextExercise).toBe('rest')
   })
 
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {

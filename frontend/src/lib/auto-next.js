@@ -4,8 +4,6 @@
 //
 // A pure reader, because the screen that shows the choice and the screen that acts on it are not
 // the same file, and a value stored before this was a choice has to be read the old way.
-export const AUTO_NEXT = ['off', 'rest', 'now']
-
 // The row was a switch when it shipped, so profiles carry `true`. It keeps the behaviour its owner
 // turned on then: the move at the end of the rest. Same reading lib/sound.js:182 gives an old
 // rest-alert kind. Anything this app did not write is off, so a stray value cannot turn a
