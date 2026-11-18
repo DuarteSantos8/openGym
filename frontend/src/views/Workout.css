@@ -1,0 +1,56 @@
+/* Approved Workout retrofit. Scoped here so unrelated Settings work and the legacy phone/desktop
+   rules remain untouched; body-qualified selectors also win over later legacy index.css rules. */
+body .whdr .whdr-bar{align-items:flex-start;flex-wrap:wrap;gap:8px}
+body .whdr .whdr-mid{flex:1 1 180px;min-width:0}
+body .whdr .whdr-screen-title{margin:0;color:var(--label);font-size:1.375rem;line-height:1.15;letter-spacing:-.02em}
+body .whdr .whdr-name{font-size:1.0625rem;line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+body .whdr .whdr-mid .sub{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+body .whdr .iconbtn{min-width:48px;min-height:48px}
+body .whdr .whdr-options{width:auto;padding-inline:10px;gap:6px}
+body .whdr .whdr-options span{font-size:1.0625rem;line-height:1.2;white-space:normal}
+body .whdr .whdr-finish{min-height:48px;padding-block:10px;font-size:1.0625rem;white-space:normal}
+body .wk-position{margin:0 0 8px;color:var(--label-2);font-size:1.0625rem;font-weight:600;line-height:1.35}
+
+body .howto{min-height:64px}
+body .howto .howto-t,body .howto .howto-s{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+body .wk-acts button{min-height:48px;font-size:1.0625rem;line-height:1.25;white-space:normal}
+body .wk-acts button span{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere}
+body .upnext{min-height:64px}
+body .upnext .upnext-k,body .upnext .upnext-t{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+body .upnext .upnext-t{overflow:visible;text-overflow:clip}
+body .wk-end .wk-end-row{min-height:56px}
+body .wk-end .lrow-t,body .wk-end .lrow-s{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+body .setcard.roomy .setrow .chk{width:48px;height:48px}
+body .setcard.roomy .sethead .ck-sp{width:48px}
+body .wk-add.wk-add-wide{min-height:48px;font-size:1.0625rem}
+
+body:has(.wk-primary-dock) #app{padding-bottom:calc(116px + var(--sab))}
+body .wk-primary-dock{position:fixed;z-index:19;inset-inline:0;bottom:calc(12px + var(--sab));padding-inline:var(--pad);pointer-events:none}
+body .wk-primary-action{pointer-events:auto;display:block;width:min(100%,720px);min-height:58px;height:auto;margin:0 auto;padding:12px 20px;
+  font-size:1.125rem;line-height:1.3;white-space:normal;overflow-wrap:anywhere;box-shadow:0 10px 30px -12px rgba(0,0,0,.55)}
+
+/* The timer may grow to two rows at 200% text. Its height remains content-driven, and the existing
+   body.resting clearance leaves room for it; the primary logging dock unmounts while it is here. */
+body.no-tabbar #timer{height:auto;min-height:76px;flex-wrap:wrap;row-gap:8px}
+body.no-tabbar #timer .tclock{min-height:56px;min-width:112px}
+body.no-tabbar #timer .tclock .t{position:relative;min-width:5ch;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+body.no-tabbar #timer.rest .tclock .t::after{content:none}
+body.no-tabbar #timer .tclock .lbl{line-height:1.2;white-space:normal}
+body.no-tabbar #timer .acts{min-height:48px;flex-wrap:wrap;row-gap:8px}
+body.no-tabbar #timer .acts .btn{min-height:48px}
+/* These controls now have a real 48px target, so the legacy invisible .btn.sm extension would only
+   add phantom overflow to the dock's scroll metrics. The hidden Skip/Dismiss probes remain
+   measurable by width without extending the dock vertically. */
+body.no-tabbar #timer .acts .btn::before{inset:0}
+body.no-tabbar #timer .acts .skip>.skip-probe{height:0;overflow:hidden}
+
+@media (min-width:1000px){
+  body:has(.wk-primary-dock) #app{padding-bottom:0}
+  body .wk-primary-dock{position:static;margin-top:16px;padding:0;pointer-events:auto}
+  body .wk-primary-action{box-shadow:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  body .howto,body .wk-acts button,body .upnext,body .wk-primary-action{transition:none}
+  body .howto:active,body .wk-acts button:not(:disabled):active,body .wk-primary-action:active{transform:none}
+}
