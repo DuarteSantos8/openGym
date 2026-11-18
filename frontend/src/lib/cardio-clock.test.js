@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clockLabel, elapsedSec, minutesFor, parseRun, runAt } from './cardio-clock.js'
+import { clockLabel, elapsedSec, minutesFor, parseRun, runAt, runSec } from './cardio-clock.js'
 
 const T0 = 1_760_000_000_000
 
@@ -34,11 +34,31 @@ describe('minutesFor', () => {
 
 describe('clockLabel', () => {
   it('reads m:ss, and h:mm:ss past an hour', () => {
-    expect(clockLabel(T0, T0)).toBe('0:00')
-    expect(clockLabel(T0, T0 + 42_000)).toBe('0:42')
-    expect(clockLabel(T0, T0 + (12 * 60 + 5) * 1000)).toBe('12:05')
-    expect(clockLabel(T0, T0 + 3600_000)).toBe('1:00:00')
-    expect(clockLabel(T0, T0 + (3600 + 2 * 60 + 9) * 1000)).toBe('1:02:09')
+    expect(clockLabel(0)).toBe('0:00')
+    expect(clockLabel(42)).toBe('0:42')
+    expect(clockLabel(12 * 60 + 5)).toBe('12:05')
+    expect(clockLabel(3600)).toBe('1:00:00')
+    expect(clockLabel(3600 + 2 * 60 + 9)).toBe('1:02:09')
+  })
+})
+
+describe('runSec', () => {
+  const run = { wid: 'w1', idx: 0, i: 0, id: '2259', startedAt: T0 }
+  const min = m => m * 60_000
+  it('is the time since the start while the workout never paused', () => {
+    expect(runSec(run, { id: 'w1', start: T0 - min(5) }, T0 + min(3))).toBe(180)
+  })
+  it('leaves out the workout’s pauses after the start, a pause still running included', () => {
+    const A = { id: 'w1', start: T0, pauses: [{ from: T0 - min(10), to: T0 - min(8) }, { from: T0 + min(5), to: T0 + min(15) }] }
+    expect(runSec(run, A, T0 + min(25))).toBe(15 * 60)
+    // Paused now: the clock stands still at the pause.
+    const paused = { ...A, pausedAt: T0 + min(20) }
+    expect(runSec(run, paused, T0 + min(30))).toBe(10 * 60)
+    expect(runSec(run, paused, T0 + min(50))).toBe(10 * 60)
+  })
+  it('counts a pause only from the clock’s start', () => {
+    const A = { id: 'w1', start: T0 - min(20), pauses: [{ from: T0 - min(2), to: T0 + min(2) }] }
+    expect(runSec(run, A, T0 + min(10))).toBe(8 * 60)
   })
 })
 

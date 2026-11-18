@@ -26,7 +26,32 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+function install() {
+  const st = JSON.parse(JSON.stringify(DEF))
+  st.active = {
+    id: 'fin-clock', d: '2026-11-18', start: T0 - 30 * 60000, routineId: null, name: 'Cardio', bw: null, cur: 0,
+    entries: [{ id: '2259', target: { sets: 2, min: 20, speed: 5 }, sets: [{ min: 20, speed: 5, done: true, at: T0 }, { min: 20, speed: 5, done: false }] }],
+  }
+  useStore.setState({ S: st, user: null })
+  useCardioClock.getState().start(0, 1)
+}
+const savedRow = () => useStore.getState().S.workouts.find(w => w.id === 'fin-clock').entries[0].sets[1]
+
 describe('finishing while a cardio set is timed', () => {
+  it('stops it at the end a watch’s Finish gives, not when the phone hears of it', () => {
+    install()
+    vi.setSystemTime(T0 + 40 * 60000)
+    finishWorkoutNow({ end: T0 + 25 * 60000 })
+    expect(savedRow().min).toBe(25)
+  })
+
+  it('stops it where a workout that ended by itself ended', () => {
+    install()
+    vi.setSystemTime(T0 + 90 * 60000)
+    finishWorkoutNow({ end: T0 + 12 * 60000, auto: 'idle' })
+    expect(savedRow().min).toBe(12)
+  })
+
   it('writes the clock’s minutes to the saved row and clears the slot', () => {
     const st = JSON.parse(JSON.stringify(DEF))
     st.active = {

@@ -5,7 +5,7 @@
 // and across a reload, and the row's face reads the time off Date.now().
 import { create } from 'zustand'
 import { useStore } from './useStore.js'
-import { elapsedSec, minutesFor, parseRun, runAt } from '../lib/cardio-clock.js'
+import { minutesFor, parseRun, runAt, runSec } from '../lib/cardio-clock.js'
 import { settleSpeed } from '../lib/distance.js'
 
 export const CARDIO_CLOCK_KEY = 'gym_cardio_clock'
@@ -23,12 +23,13 @@ export const useCardioClock = create((set, get) => ({
     get().stop(now)
     set({ run: { wid: A.id, idx, i, id: e.id, startedAt: now } })
   },
-  // Stopped (■, a tick, Finish): the minutes go to the row, as if typed there.
+  // Stopped (■, a tick, Finish): the minutes go to the row, as if typed there. `now` is when it
+  // stopped, for a stop heard of late (a Log set on the Lock Screen, a Finish on the watch).
   stop(now = Date.now()) {
     const run = get().run
     if (!run) return
     set({ run: null })
-    const min = minutesFor(elapsedSec(run.startedAt, now))
+    const min = minutesFor(runSec(run, useStore.getState().S?.active, now))
     if (min == null) return
     useStore.getState().update(s => {
       const at = runAt(s.active, run)

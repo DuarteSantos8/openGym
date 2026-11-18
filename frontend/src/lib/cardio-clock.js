@@ -3,6 +3,7 @@
 // The run is { wid, idx, i, id, startedAt }: the workout, the entry (by place and exercise id)
 // and the set it times, and when it started. Rows have no id, so the place is what points at one.
 import { fmtClock } from './circuit-copy.js'
+import { pauseSpans, pausedBetween } from './workout-pause.js'
 
 /** Whole seconds since `startedAt`, never below 0 (a clock set back while it ran). */
 export function elapsedSec(startedAt, now = Date.now()) {
@@ -17,8 +18,17 @@ export function minutesFor(sec) {
   return n < 30 ? null : Math.max(1, Math.round(n / 60))
 }
 
+/** The seconds `run` has timed at `now`, leaving out the time its workout stood paused (#976).
+ *  The workout keeps its pauses itself (lib/workout-pause.js), so a pause from the watch, the
+ *  Lock Screen or before a reload counts the same as one from this phone. */
+export function runSec(run, active, now = Date.now()) {
+  const from = Number(run?.startedAt)
+  const paused = pausedBetween(pauseSpans(active, now), from, now)
+  return elapsedSec(from + paused, now)
+}
+
 /** What the min cell shows while the clock runs: 0:42, 12:05, 1:02:09. */
-export const clockLabel = (startedAt, now = Date.now()) => fmtClock(elapsedSec(startedAt, now))
+export const clockLabel = sec => fmtClock(sec)
 
 /** A stored run as it was saved, or null for anything that is not one. */
 export function parseRun(raw) {
