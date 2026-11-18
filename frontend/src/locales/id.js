@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Stopwatch",
   "Start timer": "Mulai timer",
   "Timer and stopwatch": "Timer dan stopwatch",
+  "Time’s up.": "Waktu habis.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Jam tangan",
   "Set once": "Atur sekali",

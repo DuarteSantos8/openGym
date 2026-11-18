@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "秒表",
   "Start timer": "开始计时",
   "Timer and stopwatch": "计时器和秒表",
+  "Time’s up.": "时间到。",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手表",
   "Set once": "设置一次",

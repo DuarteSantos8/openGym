@@ -6,8 +6,20 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+// `h.wheel`: what the wheel reads at Start while it is still turning (its readRef), before its
+// onChange has caught up. The real wheel is drawn either way.
+const h = vi.hoisted(() => ({ wheel: null }))
+vi.mock('./DurationWheel.jsx', async importOriginal => {
+  const m = await importOriginal()
+  const Wheel = m.default
+  return { ...m, default: props => {
+    if (h.wheel != null && props.readRef) props.readRef.current = () => h.wheel
+    return <Wheel {...props} readRef={h.wheel != null ? undefined : props.readRef} />
+  } }
+})
 
 import { HeaderStopwatch, workoutClockSheet } from './WorkoutClock.jsx'
+import { cues } from '../lib/spoken-cues.js'
 import { useUI, bindAuto, restoreRest, REST_KEY } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { useStopwatch } from '../store/useStopwatch.js'
@@ -46,6 +58,8 @@ afterEach(() => {
   useUI.getState().stopCountIn()
   useUI.setState({ sheets: [], work: null })
   useStore.setState({ S: originalS })
+  h.wheel = null
+  vi.restoreAllMocks()
   vi.useRealTimers()
 })
 
@@ -153,6 +167,29 @@ describe('workout Timer', () => {
     } finally { unbind() }
   })
 
+  it('after Skip the wheel is at the time that just ran', () => {
+    h.wheel = 75
+    open()
+    act(() => btn('Start timer').click())
+    expect(useUI.getState().timer.total).toBe(75)
+    act(() => btn('Skip').click())
+    expect(host.querySelector('.dw-read').textContent).toBe('1:15')
+  })
+
+  it('says nothing of the next set when it starts, and its end says the time is up', () => {
+    const said = vi.spyOn(cues, 'restStarted')
+    useStore.setState(st => ({ S: { ...st.S, timerSec: 20 } }))
+    open()
+    act(() => btn('Start timer').click())
+    expect(said).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(21_000))
+    expect(useUI.getState().toastMsg).toBe('Time’s up.')
+    act(() => useUI.getState().startRest(30, 0))   // a rest after a set still does both
+    expect(said).toHaveBeenCalledWith(0)
+    act(() => vi.advanceTimersByTime(31_000))
+    expect(useUI.getState().toastMsg).toBe('Rest’s over. Next set!')
+  })
+
   it('stays the Timer\'s countdown across a reload', () => {
     useStore.setState(st => ({ S: { ...st.S, timerSec: 60 } }))
     open()
@@ -185,6 +222,14 @@ describe('workout Stopwatch', () => {
     expect(host.querySelector('.wclock-sw').textContent).toBe('0:00.0')
     expect(JSON.parse(localStorage.getItem('gym_stopwatch_v1'))).toMatchObject({ session: 'w1', acc: 0, since: null })
     expect(useUI.getState().timer).toBeNull()   // nothing of it touches the rest timer
+  })
+
+  it('acts on the workout that is active now, not the one the sheet was opened in', () => {
+    open()
+    act(() => tab('Stopwatch').click())
+    act(() => useStore.setState(st => ({ S: { ...st.S, active: { id: 'w2', start: 2000, entries: [] } } })))
+    act(() => btn('Start').click())
+    expect(useStopwatch.getState().w).toMatchObject({ session: 'w2', since: Date.now() })
   })
 
   it('a new workout starts it from zero', () => {

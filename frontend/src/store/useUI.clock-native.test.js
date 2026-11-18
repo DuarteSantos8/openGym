@@ -43,7 +43,10 @@ describe('the workout Timer on the phone', () => {
     expect(lastAlert().cues?.length).toBeGreaterThan(0)
     useUI.getState().startRest(20, undefined, { clock: true })
     expect(lastAlert().cues).toBeUndefined()
+    const calls = armRestAlert.mock.calls.length, endsAt = useUI.getState().timer.endsAt
     useUI.getState().addRest(15)
+    expect(armRestAlert.mock.calls.length).toBe(calls + 1)
+    expect(armRestAlert.mock.calls.at(-1)[0]).toBe(endsAt + 15_000)
     expect(lastAlert().cues).toBeUndefined()
   })
 })

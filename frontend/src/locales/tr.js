@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Kronometre",
   "Start timer": "Zamanlayıcıyı başlat",
   "Timer and stopwatch": "Zamanlayıcı ve kronometre",
+  "Time’s up.": "Süre doldu.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Saatler",
   "Set once": "Bir kez ayarla",

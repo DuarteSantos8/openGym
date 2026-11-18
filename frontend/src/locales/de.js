@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Stoppuhr",
   "Start timer": "Timer starten",
   "Timer and stopwatch": "Timer und Stoppuhr",
+  "Time’s up.": "Die Zeit ist um.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Uhren",
   "Set once": "Einmal einstellen",

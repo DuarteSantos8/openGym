@@ -48,6 +48,7 @@ function TimerTab() {
   const go = () => {
     const now = read.current ? read.current() : v
     if (!(now > 0) || holding) return
+    setV(now)   // after Skip the wheel is back at the time that ran
     useStore.getState().update(s => { s.timerSec = now })
     // startRest ends a running rest first; `clock` keeps the countdown from leading into a hold.
     useUI.getState().startRest(now, undefined, { clock: true })
@@ -80,7 +81,9 @@ function Ring({ left, total, onMinus, onPlus, onSkip }) {
   </div>
 }
 
-function StopwatchTab({ session }) {
+function StopwatchTab() {
+  // The workout active now: another one started while the sheet is open gets its own stopwatch.
+  const session = useStore(s => s.S.active?.id ?? null)
   const w = ofSession(useStopwatch(s => s.w), session)
   const apply = useStopwatch(s => s.apply)
   const on = running(w)
@@ -96,13 +99,13 @@ function StopwatchTab({ session }) {
   </>
 }
 
-export function WorkoutClock({ session, tab: first = 'timer' }) {
+export function WorkoutClock({ tab: first = 'timer' }) {
   const [tab, setTab] = useState(first)
   return <>
     <Segmented value={tab} onChange={setTab}
       options={[{ value: 'timer', label: t('Timer') }, { value: 'stopwatch', label: t('Stopwatch') }]} />
     <div style={{ height: 12 }} />
-    {tab === 'timer' ? <TimerTab /> : <StopwatchTab session={session} />}
+    {tab === 'timer' ? <TimerTab /> : <StopwatchTab />}
     <div style={{ height: 8 }} />
   </>
 }
@@ -111,7 +114,7 @@ export function WorkoutClock({ session, tab: first = 'timer' }) {
 export function workoutClockSheet() {
   const session = useStore.getState().S.active?.id ?? null
   const tab = showing(ofSession(useStopwatch.getState().w, session)) ? 'stopwatch' : 'timer'
-  return useUI.getState().openSheet(() => <WorkoutClock session={session} tab={tab} />)
+  return useUI.getState().openSheet(() => <WorkoutClock tab={tab} />)
 }
 
 /** The stopwatch's time beside the header's clock button while it runs ("Stopwatch 1:05" spoken). */

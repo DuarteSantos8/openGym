@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "کرنومتر",
   "Start timer": "شروع تایمر",
   "Timer and stopwatch": "تایمر و کرنومتر",
+  "Time’s up.": "زمان تمام شد.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",
   "Set once": "یک‌بار تنظیم",

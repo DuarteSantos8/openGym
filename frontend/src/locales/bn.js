@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "স্টপওয়াচ",
   "Start timer": "টাইমার চালু করুন",
   "Timer and stopwatch": "টাইমার ও স্টপওয়াচ",
+  "Time’s up.": "সময় শেষ।",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ঘড়ি",
   "Set once": "একবার সেট করুন",

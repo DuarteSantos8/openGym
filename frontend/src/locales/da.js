@@ -6,6 +6,7 @@ export default {
   "Stopwatch": "Stopur",
   "Start timer": "Start timer",
   "Timer and stopwatch": "Timer og stopur",
+  "Time’s up.": "Tiden er gået.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",
   "Set once": "Indstil én gang",

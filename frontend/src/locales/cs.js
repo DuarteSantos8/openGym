@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Stopky",
   "Start timer": "Spustit časovač",
   "Timer and stopwatch": "Časovač a stopky",
+  "Time’s up.": "Čas vypršel.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Hodinky",
   "Set once": "Nastavit jednou",

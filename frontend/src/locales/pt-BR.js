@@ -9,6 +9,7 @@ export const PT_BR_OVERRIDES = {
   "Stopwatch": "Cronômetro",
   "Start timer": "Iniciar timer",
   "Timer and stopwatch": "Timer e cronômetro",
+  "Time’s up.": "Acabou o tempo.",
   // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
   "Set once": "Configurar uma vez",
   "Connections": "Conexões",

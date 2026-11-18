@@ -277,7 +277,7 @@ const runRest = (set, get) => {
       // on reopen reads like a bug. Only the loud parts (beep, vibration, flash) are gated.
       // The native alarm is left armed: this tick can come a little early, and with the screen
       // locked it never runs at all.
-      get().toast(t('Rest’s over. Next set!'))
+      get().toast(tm.clock ? t('Time’s up.') : t('Rest’s over. Next set!'))
       if (!MOBILE) maybeRestNotification()
       cancelPushRestTimer()
       stopRestTicking()
@@ -399,8 +399,8 @@ export const useUI = create((set, get) => ({
     set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}), ...(kind !== 'switch' && REST_KINDS.includes(rest) ? { rk: rest } : {}), ...(next ? { autoNext: next.label } : {}), ...(clock ? { clock: true } : {}) } })
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
-    // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js).
-    if (kind !== 'switch') cues.restStarted(forIdx)
+    // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js); the Timer is no rest before one.
+    if (kind !== 'switch' && !clock) cues.restStarted(forIdx)
   },
   // Holding the rest where it is — a longer break than planned, a machine to wait for, a phone
   // call (#193). Paused time does not count: the countdown stops, and so does everything that

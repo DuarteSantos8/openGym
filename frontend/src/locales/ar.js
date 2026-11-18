@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "ساعة إيقاف",
   "Start timer": "ابدأ المؤقّت",
   "Timer and stopwatch": "المؤقّت وساعة الإيقاف",
+  "Time’s up.": "انتهى الوقت.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "الساعات",
   "Set once": "تُضبط مرة واحدة",

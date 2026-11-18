@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "स्टॉपवॉच",
   "Start timer": "टाइमर शुरू करें",
   "Timer and stopwatch": "टाइमर और स्टॉपवॉच",
+  "Time’s up.": "समय पूरा हुआ।",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "घड़ियाँ",
   "Set once": "एक बार सेट करें",

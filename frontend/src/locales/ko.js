@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "스톱워치",
   "Start timer": "타이머 시작",
   "Timer and stopwatch": "타이머와 스톱워치",
+  "Time’s up.": "시간이 다 됐어요.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "워치",
   "Set once": "한 번만 설정",

@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Cronómetro",
   "Start timer": "Iniciar temporizador",
   "Timer and stopwatch": "Temporizador y cronómetro",
+  "Time’s up.": "Se acabó el tiempo.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Relojes",
   "Set once": "Una sola vez",

@@ -20,6 +20,12 @@ describe('workout stopwatch', () => {
     expect(showing(resetW(w))).toBe(false)
   })
 
+  it('a device clock set back never takes off time already counted', () => {
+    const w = { session: 'w1', since: 10_000, acc: 5000 }
+    expect(elapsed(w, 8000)).toBe(5000)
+    expect(stopW(w, 8000).acc).toBe(5000)
+  })
+
   it('a stopwatch of another workout reads as a fresh one', () => {
     const w = { session: 'w1', since: 1000, acc: 500 }
     expect(ofSession(w, 'w1')).toBe(w)

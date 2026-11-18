@@ -7,6 +7,7 @@ export default {
   "Stopwatch": "Cronometro",
   "Start timer": "Avvia timer",
   "Timer and stopwatch": "Timer e cronometro",
+  "Time’s up.": "Tempo scaduto.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Orologi",
   "Set once": "Da impostare una volta",

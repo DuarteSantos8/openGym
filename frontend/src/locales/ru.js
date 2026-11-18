@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Секундомер",
   "Start timer": "Запустить таймер",
   "Timer and stopwatch": "Таймер и секундомер",
+  "Time’s up.": "Время вышло.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Часы",
   "Set once": "Настраивается один раз",

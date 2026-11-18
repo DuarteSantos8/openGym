@@ -5,6 +5,7 @@ export default {
   "Stopwatch": "Stopper",
   "Start timer": "Időzítő indítása",
   "Timer and stopwatch": "Időzítő és stopper",
+  "Time’s up.": "Lejárt az idő.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Órák",
   "Set once": "Egyszer beállítandó",

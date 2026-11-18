@@ -6,8 +6,8 @@
 
 export const EMPTY = { session: null, since: null, acc: 0 }
 
-/** Milliseconds the stopwatch shows at `now`. */
-export const elapsed = (w, now) => Math.max(0, (w?.acc || 0) + (w?.since != null ? now - w.since : 0))
+/** Milliseconds the stopwatch shows at `now`. A device clock set back adds nothing, never takes off. */
+export const elapsed = (w, now) => Math.max(0, (w?.acc || 0) + (w?.since != null ? Math.max(0, now - w.since) : 0))
 export const running = w => w?.since != null
 /** Started, or stopped with time on it. */
 export const showing = w => running(w) || (w?.acc || 0) > 0
