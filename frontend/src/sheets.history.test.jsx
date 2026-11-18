@@ -143,6 +143,9 @@ describe('exercise history sheet', () => {
     act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Heart rate').click())
     expect(host.querySelector('.exercise-heart')).toBeTruthy()
     expect(host.textContent).not.toContain('Best:')
+    // the heart tab lists the sessions with a reading, the overview every session
+    expect(host.querySelectorAll('.list .item')).toHaveLength(1)
+    act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Overview').click())
     expect(host.querySelectorAll('.list .item')).toHaveLength(2)
   })
 

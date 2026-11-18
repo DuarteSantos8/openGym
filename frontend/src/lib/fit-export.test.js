@@ -339,6 +339,12 @@ describe('the heart rate in a FIT workout', () => {
     expect([lap[15], lap[16]]).toEqual([123, 150])
   })
 
+  it('keeps a reading that came out of order', () => {
+    const shuffled = [[T0 + 70000, 150], [T0 + 10000, 100], [T0 + 130000, 120]]
+    const r = decode(workoutFit(strength, { heart: shuffled }))
+    expect(of(r, MSG.record).map(x => x[3])).toEqual([100, 150, 120])
+  })
+
   it('leaves them out without readings', () => {
     const plain = decode(workoutFit(strength))
     expect(of(plain, MSG.record)).toEqual([])
