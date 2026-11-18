@@ -5914,4 +5914,6 @@ export default {
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
+  "Effort on warm-ups": "ความหนักในเซ็ตวอร์มอัพ",
+  "Rate warm-up sets too, not just work sets.": "ให้คะแนนเซ็ตวอร์มอัพด้วย ไม่ใช่แค่เซ็ตจริง",
 }

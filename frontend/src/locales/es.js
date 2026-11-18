@@ -5903,4 +5903,6 @@ export default {
   "Hide": "Ocultar",
   "Totals": "Totales",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Las flechas cambian el orden.",
+  "Effort on warm-ups": "Esfuerzo en el calentamiento",
+  "Rate warm-up sets too, not just work sets.": "Valora también las series de calentamiento, no solo las efectivas.",
 }

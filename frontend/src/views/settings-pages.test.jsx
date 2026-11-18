@@ -466,6 +466,20 @@ describe('the pages', () => {
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
   })
 
+  it('Effort on warm-ups shows only while effort is RIR or RPE, is on by default and writes S.warmupEffort', () => {
+    mount('workout')                                          // effort: 'none' from beforeEach
+    expect(rowTitled('Effort on warm-ups')).toBeUndefined()
+    expect(searchSettings('warm-ups', guestWeb, s => s).map(h => h.title)).not.toContain('Effort on warm-ups')
+    mocks.S.effort = 'rir'
+    mount('workout')
+    expect(titles().slice(titles().indexOf('Effort per set'), titles().indexOf('Effort per set') + 2)).toEqual(['Effort per set', 'Effort on warm-ups'])
+    const sw = rowTitled('Effort on warm-ups').querySelector('[role="switch"]')
+    expect(sw.getAttribute('aria-checked')).toBe('true')
+    act(() => sw.click())
+    expect(mocks.S.warmupEffort).toBe(false)
+    expect(searchSettings('warm-ups', { ...guestWeb, effortScale: true }, s => s).map(h => h.title)).toContain('Effort on warm-ups')
+  })
+
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
     bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
     mount('advanced')
