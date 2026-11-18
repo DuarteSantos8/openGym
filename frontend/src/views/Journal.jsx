@@ -232,7 +232,7 @@ export default function Journal() {
 
   return <div className="narrow journal">
     <div className="hdr">
-      <button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Progress')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Journal')}</h1>
         <div className="sub">{tn('{0} note', '{0} notes', all.length)}</div></div>
     </div>

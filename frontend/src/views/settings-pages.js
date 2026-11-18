@@ -264,6 +264,7 @@ export const SEARCH = [
   { page: 'equipment', title: 'Active gym', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym switch plates dumbbells bars per gym location', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },
   // Look & Home
+  { page: 'look', title: 'Look', icon: 'sparkles', tint: 'var(--acc)', kw: 'look style bold refined corners font ironvane', opts: ['Bold', 'Refined'] },
   { page: 'look', title: 'Theme', icon: 'moon', tint: 'var(--indigo)', kw: 'dark mode light mode theme appearance night', opts: ['Dark', 'Light', 'System'] },
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },

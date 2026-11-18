@@ -66,7 +66,7 @@ describe('API tokens page', () => {
     await click(byText(sheet, 'Make token'))
     expect(mocks.calls.at(-1)).toEqual(['/api/tokens', { name: 'API token', scopes: { workouts: 'view', plans: 'view', bodyweight: 'off', measurements: 'off', notes: 'off' }, days: 90 }])
     expect(sheet.querySelector('.intg-secret').textContent).toBe('ogt_' + 'x'.repeat(43))
-    expect(sheet.textContent).toContain('only time openGym shows it')
+    expect(sheet.textContent).toContain('only time Ironvane shows it')
     expect(host.textContent).toContain('Claude')
   })
 

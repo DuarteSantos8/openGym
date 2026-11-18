@@ -154,9 +154,9 @@ describe('Settings — reset everything', () => {
 })
 
 describe('Settings — footer', () => {
-  it('links the source code to its home on GitHub, on About & updates', () => {
+  it('links the source code to this build’s repository, on About & updates', () => {
     act(() => root.render(<Settings page="about" />))
     const link = [...host.querySelectorAll('a')].find(a => a.textContent === 'Source code')
-    expect(link.getAttribute('href')).toBe('https://github.com/DuarteSantos8/openGym')
+    expect(link.getAttribute('href')).toBe('https://github.com/sorensadrgit-art/openGym')
   })
 })

@@ -38,6 +38,16 @@ afterEach(() => {
 const tabs = () => [...host.querySelectorAll('#tabbar button')]
 
 describe('the tab bar across a store write', () => {
+  it('keeps the Ironvane lockup and announces only the current destination', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(host.querySelector('.tabbar-brand')?.textContent).toBe('Ironvane')
+    expect(tabs().map(b => b.getAttribute('aria-current'))).toEqual(['page', null, null, null, null])
+
+    where.loc = { pathname: '/library' }
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs().map(b => b.getAttribute('aria-current'))).toEqual([null, null, null, 'page', null])
+  })
+
   it('keeps the very same buttons instead of rebuilding them every tick', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     const before = tabs()
@@ -75,7 +85,7 @@ describe('the connection dot on Home', () => {
       expect(home().querySelector('.tab-dot')).toBeNull()
       act(() => { useStore.getState().update(s => { s.connStatus = false }, false) })
       expect(home().querySelector('.tab-dot')).not.toBeNull()
-      expect(home().getAttribute('aria-label')).toBe('Home, Connection problem')
+      expect(home().getAttribute('aria-label')).toBe('Today, Connection problem')
       act(() => { useStore.setState({ sync: { status: 'ok', lastError: null, pending: false } }) })
       expect(home().querySelector('.tab-dot')).toBeNull()
       expect(home().getAttribute('aria-label')).toBeNull()
@@ -90,8 +100,8 @@ describe('the tab icons and labels', () => {
   const label = el => el.querySelector('span:last-child').textContent
   it('labels every tab and uses one icon per concept', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
-    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises'])
+    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'dumbbell', 'chart'])
+    expect(tabs().map(label)).toEqual(['Today', 'Plan', 'Start', 'Library', 'Progress'])
 
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
     expect(icon(tabs()[2])).toBe('play')
@@ -123,8 +133,8 @@ describe('the tab icons and labels', () => {
 describe('the tab a screen without its own lights', () => {
   const lit = () => tabs().filter(b => b.classList.contains('on')).map(b => b.textContent)
   it.each([
-    ['/history', 'Stats'], ['/structural-balance', 'Stats'], ['/progress-photos', 'Stats'], ['/measurements', 'Stats'],
-    ['/settings', 'Home'], ['/settings/units', 'Home'], ['/checkin', 'Home'], ['/muscles', 'Exercises'],
+    ['/history', 'Progress'], ['/structural-balance', 'Progress'], ['/progress-photos', 'Progress'], ['/measurements', 'Progress'],
+    ['/settings', 'Today'], ['/settings/units', 'Today'], ['/checkin', 'Today'], ['/muscles', 'Library'],
   ])('%s lights %s', (pathname, tab) => {
     where.loc = { pathname }
     act(() => { root.render(<TabBar onStart={() => {}} />) })
@@ -134,6 +144,6 @@ describe('the tab a screen without its own lights', () => {
   it('Muscles opened from Stats lights Stats, the way its back button goes', () => {
     where.loc = { pathname: '/muscles', state: { from: '/stats' } }
     act(() => { root.render(<TabBar onStart={() => {}} />) })
-    expect(lit()).toEqual(['Stats'])
+    expect(lit()).toEqual(['Progress'])
   })
 })

@@ -32,10 +32,11 @@ const ANCHORS = ['today', 'start', 'plan-mode', 'plan-views', 'plan-menu', 'lib-
   'settings-look', 'settings-units', 'settings-data', 'tab-home', 'tab-plan', 'tab-stats', 'tab-library', 'settings-gear']
 const TABS = { 'tab-home': '/home', 'tab-plan': '/plan', 'tab-stats': '/stats', 'tab-library': '/library', 'settings-gear': '/settings' }
 let root, host, where, tapped, made
-function Screens({ skip = [] }) {
+function Screens({ skip = [], foldStats = false }) {
   const nav = useNavigate()
   where = useLocation().pathname
   const S = useStore(s => s.S)
+  const statsMoreOpen = useUI(s => !!s.statsMoreOpen)
   const rid = where.startsWith('/plan/r/') ? where.split('/').pop() : null
   const r = rid && S.routines.find(x => x.id === rid)
   const newRoutine = () => {
@@ -44,8 +45,13 @@ function Screens({ skip = [] }) {
     nav('/plan/r/' + id)
   }
   return <div>
-    {ANCHORS.filter(a => !skip.includes(a)).map(a => <button key={a} data-tour={a} aria-label={'the ' + a}
-      onClick={() => { tapped = a; if (TABS[a]) nav(TABS[a], { replace: true }) }}>{a}</button>)}
+    {ANCHORS.filter(a => !skip.includes(a)).map(a => {
+      const button = <button key={a} data-tour={a} aria-label={'the ' + a}
+        onClick={() => { tapped = a; if (TABS[a]) nav(TABS[a], { replace: true }) }}>{a}</button>
+      return foldStats && a === 'stats-tiles'
+        ? <details key={a} open={statsMoreOpen} onToggle={e => useUI.setState({ statsMoreOpen: e.currentTarget.open })}><summary>More</summary>{button}</details>
+        : button
+    })}
     {where === '/plan' && <button data-tour="plan-new" onClick={newRoutine}>new routine</button>}
     {where === '/library' && <button data-tour="lib-new" onClick={() => useUI.getState().openSheet(() => <ExForm />)}>create</button>}
     {r && <>
@@ -80,10 +86,19 @@ const step = () => document.querySelector('.tour')?.getAttribute('data-step')
 const btn = label => [...document.querySelectorAll('.tour-card button')].find(b => b.textContent === label)
 const anchor = name => document.querySelector(`[data-tour="${name}"]`)
 const click = async el => { await act(async () => { el.click() }); await settle() }
+// Next, then wait (up to 2 s) for the tour to reach the step expected after it. On a busy
+// machine one settle() is not always enough to reach the next anchor, a Next pressed before then
+// is lost, and a step whose anchor is missing (c-media in the stand-in form) shows for a moment
+// before the tour passes over it. Fails right here, naming both steps, if it never arrives.
+const nextTo = async id => {
+  await click(btn('Next'))
+  for (let i = 0; i < 40 && step() !== id; i++) await settle(50)
+  expect(step()).toBe(id)
+}
 const key = async (k, opts = {}) => { await act(async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, ...opts })) }); await settle(30) }
-const run = async (at, flow, path) => {
+const run = async (at, flow, path, props = {}) => {
   await act(async () => { openTour(flow ? { kind: 'run', at, flow } : { kind: 'run', at }) })
-  await render({}, path)
+  await render(props, path)
 }
 
 beforeEach(() => {
@@ -91,6 +106,7 @@ beforeEach(() => {
   _setAnchorWait(120)
   useStore.setState({ S: clone(DEF), user: null, ready: true })
   useUI.getState().closeAll()
+  useUI.setState({ statsMoreOpen: false })
   // Every stand-in anchor sits somewhere on screen; a test moves one by giving it a box of its own.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
     return this.dataset?.tour ? { top: 200, left: 20, width: 120, height: 40, bottom: 240, right: 140, x: 20, y: 200 } : { top: 0, left: 0, width: 0, height: 0, bottom: 0, right: 0, x: 0, y: 0 }
@@ -181,6 +197,15 @@ describe('the stops', () => {
     expect(step()).toBe('today')
     expect(readTour().at).toBe('today')
   })
+  it('opens a folded disclosure and synchronizes it before highlighting its target', async () => {
+    await run('stats', null, '/stats', { foldStats: true })
+    const details = document.querySelector('details')
+    expect(step()).toBe('stats')
+    expect(details.open).toBe(true)
+    expect(useUI.getState().statsMoreOpen).toBe(true)
+    expect(card().querySelector('.tour-sr').textContent).toContain('the stats-tiles')
+  })
+
   it('describes the highlighted element for a screen reader and moves focus to the card each time', async () => {
     await run('plan-menu')
     expect(card().getAttribute('role')).toBe('dialog')
@@ -497,11 +522,7 @@ describe('Create your own exercise', () => {
   }
   it('walks the real form, and Next past Create makes nothing', async () => {
     await toForm()
-    for (const id of ['c-bp', 'c-eq', 'c-save']) {   // no media field in the stand-in: passed over
-      await click(btn('Next'))
-      await settle(150)
-      expect(step()).toBe(id)
-    }
+    for (const id of ['c-bp', 'c-eq', 'c-save']) await nextTo(id)   // no media field in the stand-in: passed over
     await click(btn('Next'))
     await settle(300)
     expect(step()).toBe('c-done')
@@ -510,8 +531,7 @@ describe('Create your own exercise', () => {
   })
   it('the form’s own Create makes it, and the tour follows', async () => {
     await toForm()
-    for (let k = 0; k < 3; k++) await click(btn('Next'))
-    expect(step()).toBe('c-save')
+    for (const id of ['c-bp', 'c-eq', 'c-save']) await nextTo(id)
     await click(anchor('cx-save'))
     await settle(300)
     expect(useStore.getState().S.customEx.map(c => c.id)).toEqual(['cmine'])

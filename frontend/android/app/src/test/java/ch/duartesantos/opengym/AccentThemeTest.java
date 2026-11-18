@@ -27,6 +27,14 @@ public class AccentThemeTest {
     }
 
     @Test
+    public void ironvaneOrangeHasItsOwnOverlay() {
+        assertEquals(9, AccentTheme.presetFor("ironvane"));
+        assertEquals(9, AccentTheme.presetFor("#ff6b2c"));   // what the page sends for the preset
+        assertEquals(9, AccentTheme.DEFAULT_PRESET);
+        assertEquals(0xff6b2c, AccentTheme.COLORS[9]);
+    }
+
+    @Test
     public void widgetDarkensALightAccentOnWhiteOnly() {
         int brand = 0xFFA3E635, white = 0xFFFFFFFF, card = 0xFF1C1C1E;
         int onWhite = OpenGymWidgetProvider.readableOn(brand, white);

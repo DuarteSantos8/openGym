@@ -94,7 +94,7 @@ export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   // accent: the old iOS green on purpose. A loaded copy that never picked one (saved before accents,
   // a server document, a backup) keeps the green it always had; a new profile starts on the
-  // brand's green instead (freshState, lib/accent.js NEW_ACCENT).
+  // app's own colour instead (freshState, lib/accent.js NEW_ACCENT: Ironvane orange).
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
   rateGoal: null,
@@ -352,7 +352,7 @@ export function freshState() {
   // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
   // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
   s.streakRuleAsk = true
-  // The brand's green (1.4.5). DEF stays on the old green, so only a copy made here gets this.
+  // The app's own colour (Ironvane orange). DEF stays on the old green, so only a copy made here gets this.
   s.accent = NEW_ACCENT
   return s
 }

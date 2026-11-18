@@ -48,27 +48,27 @@
     }
     window.addEventListener('error', function (e) {
       var t = e && e.target;
-      if (t && t.tagName === 'SCRIPT') return fail('openGym could not start on this browser.', 'Could not load ' + (t.src || 'a script'));
+      if (t && t.tagName === 'SCRIPT') return fail('Ironvane could not start on this browser.', 'Could not load ' + (t.src || 'a script'));
       if (!e || !e.message) return;
       last = e.message + (e.filename ? ' at ' + e.filename.split('/').pop() + ':' + e.lineno : '');
-      if (/SyntaxError|Unexpected|Invalid regular expression/i.test(e.message)) fail('openGym could not start on this browser.', last);
+      if (/SyntaxError|Unexpected|Invalid regular expression/i.test(e.message)) fail('Ironvane could not start on this browser.', last);
     }, true);
     window.addEventListener('unhandledrejection', function (e) {
       var r = e && e.reason;
       if (r) last = String((r && r.message) || r);
     });
     setTimeout(function () {
-      fail(last ? 'openGym could not start on this browser.' : 'openGym is taking too long to start.', last);
+      fail(last ? 'Ironvane could not start on this browser.' : 'Ironvane is taking too long to start.', last);
     }, 10000);
   })();
 </script>
-<title>openGym</title>
+<title>Ironvane</title>
 <meta name="description" content="Personal gym & body weight tracker">
 <meta name="theme-color" content="#0c0e12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="openGym">
+<meta name="apple-mobile-web-app-title" content="Ironvane">
 <!-- use-credentials: browsers fetch the manifest without cookies, even same-origin; behind an auth
      proxy (Authelia, Cloudflare Access, Teleport…) that fetch is a login redirect and the Home Screen
      icon comes out generic. iOS 26 reads the icon from the manifest, so this is where it shows. -->
