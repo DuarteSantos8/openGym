@@ -194,19 +194,13 @@ buildNpmPackage {
                 # Check for import( starting on this line
                 if (!in_import && line ~ /import[[:space:]]*\(/) {
                   in_import = 1
-                  # Count parens on this line
-                  for (i=1; i<=length(line); i++) {
-                    c = substr(line, i, 1)
-                    if (c == "(") paren++
-                    else if (c == ")") paren--
-                  }
                   # Extract any quoted string after import(
                   while (match(line, /import[[:space:]]*\([[:space:]]*["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
                     print arr[1]
                     line = substr(line, RSTART + RLENGTH)
                   }
                 }
-                # If we are in a multiline import, continue scanning
+                # If we are in a multiline import (either just started or continuing), count parens and scan
                 if (in_import) {
                   # Look for quoted relative specifiers
                   while (match(line, /["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
@@ -214,7 +208,7 @@ buildNpmPackage {
                     if (paren > 0) print arr[1]
                     line = substr(line, RSTART + RLENGTH)
                   }
-                  # Count parens
+                  # Count parens on this line (once per line)
                   for (i=1; i<=length(line); i++) {
                     c = substr(line, i, 1)
                     if (c == "(") paren++

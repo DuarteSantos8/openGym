@@ -95,11 +95,10 @@ let
     scenario:
     let
       config = evalConfig scenario.modules;
-      # Just verify the config evaluates by checking a simple attribute that
-      # doesn't require forcing the full toplevel derivation.
-      # If this throws, the config has an evaluation error.
-      _ = config.system.build.toplevel;
-      # If we get here, the config evaluated successfully
+      # Force evaluation of the toplevel derivation path to ensure the config
+      # actually evaluates. Using builtins.seq ensures the value is evaluated
+      # before returning the empty failure list.
+      _ = builtins.seq config.system.build.toplevel.drvPath [ ];
     in
     [ ];
 
