@@ -28,6 +28,8 @@ const offEquipment = (ctx, id) => libraryHas(id) && !(ctx.offered && ctx.offered
 const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user does not have — use an exercise from the library provided in the payload`;
 import { glyphStr } from './glyphs.js';
 import { sortActions } from './ask-actions.js';
+import { TAGS } from './evidence.js';
+import { tagOfRef } from './checks.js';
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
 // implementation on the client to match; there is no default case anywhere.
@@ -411,6 +413,12 @@ export function validateReview(data, plan, ctx = {}) {
       before: currentOf(c.type, routine, planned, plan, target),
       after: c.after ?? null
     };
+    // A source is a tag or a check id from this payload; anything else is dropped, never fatal.
+    const refTag = typeof c.ref === 'string' ? (TAGS.includes(c.ref) ? c.ref : tagOfRef(c.ref, ctx.checks)) : null;
+    if (refTag) {
+      out.ref = refTag;
+      if (refTag !== c.ref) out.refCheck = { ...ctx.checks.find(k => k.id === c.ref) };
+    }
 
     // Per-type checks on `after`. `before` is not checked because it is not taken: it is read
     // off the plan above, which is the only copy either side should trust.

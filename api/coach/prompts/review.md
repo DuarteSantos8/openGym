@@ -90,3 +90,5 @@ A `week` change names **exactly one** routine (or `"rest"` / `null`) and **repla
 Only one `programme` change per review. Its targets name exercises of the plan (`exId`, with `routineId` when the same exercise is in several routines and only one should change); a new programme runs over the plan's own schedule and starts when the lifter starts it.
 
 `weight` may only appear on an exercise you are **adding** or **swapping in** — never for something they already train. Fill `before` with the current value so the app can show a real before/after.
+
+When a change rests on one of the research tags or on a `checks` entry, set `ref` to that tag or that check id. Leave `ref` out otherwise.

@@ -35,7 +35,8 @@ export const REVIEW_SCHEMA = {
           },
           before: ANY,
           after: ANY,
-          why: STR
+          why: STR,
+          ref: STR
         },
         required: ['type', 'why']
       }
