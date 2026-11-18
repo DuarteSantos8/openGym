@@ -260,8 +260,12 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let (id, step) = ledger.begin(kind, onSilent: onSilent)
         apply(step)
         // Whatever happened above, never sound in .soloAmbient (the session iOS starts an app in,
-        // and the one WebKit can leave behind): it stops the music. .ambient mixes with it.
-        if AVAudioSession.sharedInstance().category == .soloAmbient { RestAlertPlugin.mixWithMusic() }
+        // and the one WebKit can leave behind): it stops the music. A .playback shape the ledger
+        // holds is set again, so a sound meant to ring through the silent switch still does;
+        // anything else gets .ambient, which mixes with the music.
+        if AVAudioSession.sharedInstance().category == .soloAmbient {
+            if let shape = ledger.activeShape, shape.category == .playback { apply(.activate(shape)) } else { RestAlertPlugin.mixWithMusic() }
+        }
         return id
     }
 
@@ -280,8 +284,15 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 try session.setActive(true)
                 ledger.didActivate(shape)
             } catch {
-                // Played anyway, without the duck, in the mixing kind.
-                RestAlertPlugin.mixWithMusic()
+                // Played anyway, without the duck. A category that took stays (play() activates
+                // it, so an onSilent cue keeps .playback); otherwise the mixing kind, never
+                // .soloAmbient. The ledger records what is really set.
+                if session.category == shape.avCategory {
+                    ledger.didActivate(shape)
+                } else {
+                    RestAlertPlugin.mixWithMusic()
+                    ledger.didActivate(.resting)
+                }
             }
         case .deactivate(let grace):
             DispatchQueue.main.asyncAfter(deadline: .now() + grace) { self.letGo(attempt: 0) }

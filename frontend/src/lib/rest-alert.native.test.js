@@ -375,7 +375,9 @@ describe('iPhone: the rest tone never stops the music', () => {
     // at load, in letGo after the last sound of ours ended (Reddit, v1.4.5), when a sounding shape
     // is refused, and before any sound while the session is .soloAmbient (which stops the music)
     expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(4)
-    expect(swift).toMatch(/category == \.soloAmbient \{ RestAlertPlugin\.mixWithMusic\(\) \}/)
+    expect(swift).toMatch(/category == \.soloAmbient \{\s*if let shape = ledger\.activeShape, shape\.category == \.playback \{ apply\(\.activate\(shape\)\) \} else \{ RestAlertPlugin\.mixWithMusic\(\) \}/)
+    // a refused shape: the category that took stays (onSilent keeps .playback), else the mixing kind
+    expect(swift).toMatch(/if session\.category == shape\.avCategory \{\s*ledger\.didActivate\(shape\)\s*\} else \{\s*RestAlertPlugin\.mixWithMusic\(\)\s*ledger\.didActivate\(\.resting\)/)
     expect(swift).toMatch(/private func letGo\(attempt: Int\)[\s\S]*?setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)[\s\S]*?mixWithMusic/)
   })
 
