@@ -5982,4 +5982,7 @@ export default {
   "Hide": "লুকান",
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  // --- cardio set clock (#131) ---
+  "Start timing": "সময় গোনা শুরু করুন",
+  "Stop timing": "সময় গোনা থামান",
 }

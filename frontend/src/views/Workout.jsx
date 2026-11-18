@@ -34,6 +34,8 @@ import { circuitOf } from '../lib/circuit.js'
 import { circuitLine } from '../lib/circuit-copy.js'
 import CircuitCard from '../components/CircuitCard.jsx'
 import { useCircuit } from '../store/useCircuit.js'
+import { useCardioClock } from '../store/useCardioClock.js'
+import { clockLabel, runAt, runSec } from '../lib/cardio-clock.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
 import { SessionMapButton } from '../components/SessionMuscles.jsx'
@@ -160,6 +162,17 @@ const valueOf = (col, s) => (col.get ? col.get(s) : s?.[col.f])
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
 
+// A timed cardio set's minutes cell while its clock runs (store/useCardioClock.js). Only this
+// cell ticks each second, and it reads the time off the start, so a phone back from sleep is right.
+// The workout's pauses are left out, as from the written minutes.
+function CardioClockFace({ run, plain, label }) {
+  const [, tick] = useState(0)
+  useEffect(() => { const id = setInterval(() => tick(n => n + 1), 1000); return () => clearInterval(id) }, [])
+  return <div className={'stp w clock' + (plain ? ' plain' : '')} role="timer" aria-label={label}>
+    <span className="val"><span className="num">{clockLabel(runSec(run, useStore.getState().S.active))}</span></span>
+  </div>
+}
+
 // The next rung of a skill ladder, offered under the progression line: what it is, and Swap in
 // routine, which puts it in this exercise's slot from the next session on (today stays as it is).
 function LadderNext ({ entry, next }) {
@@ -198,6 +211,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   const update = useStore(s => s.update)
   const working = useUI(s => s.work)
   const restEnds = useUI(s => s.timer?.endsAt)
+  const clockRun = useCardioClock(s => s.run)
   const swipeHint = useUI(s => (s.swipeHint?.idx === entryIdx ? s.swipeHint : null))
   const setFlash = useUI(s => (s.setFlash?.idx === entryIdx ? s.setFlash : null))
   const optsId = useId()
@@ -897,20 +911,30 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // The set's colour tag: its shape in its colour, beside the number; said with the number.
   const tagMark = s => { const tag = setTagOf(s); return tag ? <span className="settag" style={{ '--tag': tag.color }} aria-hidden="true">{tag.shape}</span> : null }
   const failSay = (s, label) => { const tag = setTagOf(s); const l = isFailureSet(s) ? label + ', ' + t('Taken to failure') : label; return tag ? l + ', ' + setTagName(tag.id) : l }
+  // A cardio row can be timed as it is done (#131): ▶ counts up, ■ writes the minutes. It sits
+  // where a hold's ▶ does (`cgo` makes room for it, index.css). A past workout has no clock.
+  const clockGo = cardio && !editing && !S.active.backfill
+  const clockAt = clockGo ? runAt(S.active, clockRun) : null
+  const clockOn = i => !!clockAt && clockAt.idx === entryIdx && clockAt.i === i
   const plainRow = (s, i) => (
-    <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
+    <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (clockGo ? ' cgo' : '')}>
       <button type="button" className="n" aria-label={inEx(trendSay(i, failSay(s, setSay(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
       {/* Both words sit in the pill's one grid cell (::before/::after, hidden), so Left and
           Right are as wide as the longer of the two in every language and the inputs
           after them line up (#322). */}
       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span className="full">{sideTagOf(s)}</span><span className="short" aria-hidden="true">{s.side === 'L' ? t('L') : t('R')}</span></span>}
-      {cell(s, i, col1, 'w')}
+      {clockOn(i) ? <CardioClockFace run={clockRun} plain={!wc.steppers} label={inSet(s, i, col1.hd)} /> : cell(s, i, col1, 'w')}
       {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
       {/* A timed set is started, not typed: the timer counts the hold down and checks the
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
       {timed && !editing && <button className="setgo" aria-label={inSet(s, i, t('Start set'))} disabled={s.done || !!working}
         onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
+      {/* Like a hold's ▶, it waits while a hold runs; a clock already running can always stop. */}
+      {clockGo && (clockOn(i)
+        ? <button className="setgo" aria-label={inSet(s, i, t('Stop timing'))} onClick={() => useCardioClock.getState().stop()}><Icon name="stop" /></button>
+        : <button className="setgo" aria-label={inSet(s, i, t('Start timing'))} disabled={s.done || !!working}
+          onClick={() => useCardioClock.getState().start(entryIdx, i)}><Icon name="play" /></button>)}
       <Check checked={s.done} tour="tick" label={doneSay(s, i)} onChange={() => onToggle(i)} />
     </div>
   )
@@ -1008,10 +1032,10 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     <div className="card" style={{ marginTop: 12, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
-      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className={col2.dec ? 'r-sp dec' : 'r-sp'}>{cardio && !editing
+      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (clockGo ? ' cgo' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className={col2.dec ? 'r-sp dec' : 'r-sp'}>{cardio && !editing
         ? <button type="button" className="hd-swap" onClick={switchCardioBy} aria-label={byDist ? t('Log speed instead') : t('Log distance instead')}
           title={byDist ? t('Log speed instead') : t('Log distance instead')}>{col2.hd}<Icon name="swap" /></button>
-        : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp inc-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
+        : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp inc-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}{clockGo && <span className="ck-sp go-sp" />}<span className="ck-sp" /></div>
       <span id={optsId} className="vh">{t('Options: copy, remove')}</span>
       {entry.sets.map((s, i) => {
         const warm = isWarmupRow(s)
@@ -1132,6 +1156,9 @@ const shiftRowRefs = (idx, from, by) => {
   // The hold's saved owner (useUI.work.owner, what a reload brings it back to) moves with it.
   const wk = useUI.getState().work
   if (wk?.owner && wk.owner.idx === idx && wk.owner.i >= from) setUI({ work: { ...wk, owner: { ...wk.owner, i: wk.owner.i + by } } })
+  // So does a cardio set's running clock (store/useCardioClock.js).
+  const run = useCardioClock.getState().run
+  if (run && run.idx === idx && run.i >= from) useCardioClock.setState({ run: { ...run, i: run.i + by } })
   const rest = useUI.getState().timer
   if (rest && rest.forIdx === idx && rest.forSet != null && rest.forSet >= from) setUI({ timer: { ...rest, forSet: rest.forSet + by } })
 }
@@ -1158,6 +1185,8 @@ export function deleteActiveSet(idx, i, { editing = false } = {}) {
   let stopped = false
   const holdHere = ui.work && ((holdAt && holdAt.idx === idx && inSpan(holdAt.i)) || (ui.work.owner && ui.work.owner.idx === idx && inSpan(ui.work.owner.i)))
   if (holdHere) { holdAt = null; ui.stopWork(); stopped = true }
+  const run = useCardioClock.getState().run
+  if (run && run.idx === idx && inSpan(run.i)) { useCardioClock.getState().drop(); stopped = true }
   const rest = ui.timer
   if (rest && rest.forIdx === idx && inSpan(rest.forSet)) { ui.stopRest(); stopped = !rest.ready || stopped }
   shiftRowRefs(idx, start + count, -count)
@@ -1221,6 +1250,10 @@ export function removeActiveExercise(idx) {
   const rest = useUI.getState().timer
   if (rest && rest.forIdx === idx) useUI.getState().stopRest()
   else useUI.getState().shiftRestOwner(idx + 1, -1)
+  // A cardio set's clock goes with its exercise; one below it moves up a place.
+  const run = useCardioClock.getState().run
+  if (run && run.idx === idx) useCardioClock.getState().drop()
+  else if (run && run.idx > idx) useCardioClock.setState({ run: { ...run, idx: run.idx - 1 } })
   useStore.getState().update(s => {
     if (!s.active || !Array.isArray(s.active.entries)) return
     if (idx < 0 || idx >= s.active.entries.length) return
@@ -1278,6 +1311,15 @@ function ActiveWorkout() {
   const A = S.active
   const editing = !!A.editingWorkoutId
   const paused = isPaused(A)
+  // A cardio set's clock kept from another workout, or whose set is gone or was ticked some other
+  // way, is let go; one whose exercise moved in the list follows it there.
+  const clockRun = useCardioClock(s => s.run)
+  useEffect(() => {
+    if (!clockRun) return
+    const at = runAt(A, clockRun)
+    if (!at) useCardioClock.getState().drop()
+    else if (at.idx !== clockRun.idx) useCardioClock.setState({ run: { ...clockRun, idx: at.idx } })
+  }, [A, clockRun])
   // Paused here, by a reload of a paused workout or on another device (#976): the timers hold too.
   useEffect(() => { if (paused) useUI.getState().pauseAuto() }, [paused])
   // A past workout has no rest to time — the sets were done days ago. The work timer for
@@ -1630,7 +1672,12 @@ function ActiveWorkout() {
         : row)
     }
   })
-  const removeSet = idx => mutEntry(idx, e => { e.sets = removeLastSet(e.sets) })
+  const removeSet = idx => {
+    mutEntry(idx, e => { e.sets = removeLastSet(e.sets) })
+    // A clock on the row just removed would come back on the next set added there.
+    const run = useCardioClock.getState().run
+    if (run && run.idx === idx && run.i >= (useStore.getState().S.active?.entries?.[idx]?.sets?.length ?? 0)) useCardioClock.getState().drop()
+  }
   const addWarmup = idx => mutEntry(idx, e => {
     const m = modeOf({ ...(e.target || {}), id: e.id })
     const V = exView(S, e.id)
@@ -1677,6 +1724,11 @@ function ActiveWorkout() {
         const forIdx = moved.indices.indexOf(rest.forIdx)
         if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
       }
+      // A cardio set's clock goes with its exercise: by place, since the same exercise may be in
+      // the session twice.
+      const run = useCardioClock.getState().run
+      const runIdx = run ? moved.indices.indexOf(run.idx) : -1
+      if (runIdx >= 0 && runIdx !== run.idx) useCardioClock.setState({ run: { ...run, idx: runIdx } })
     }, true)
   }
 
@@ -1898,6 +1950,8 @@ function ActiveWorkout() {
         s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))
         s.active.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
+        const run = useCardioClock.getState().run
+        if (run && run.idx >= insertAt) useCardioClock.setState({ run: { ...run, idx: run.idx + 1 } })
       })
     }
     // The "+" on a picker row reads as "add this now" — routed through the same detail
@@ -1914,7 +1968,7 @@ function ActiveWorkout() {
   // the two got mixed up (#751).
   // Named for the watch first: gone from its snapshot it would look finished, and be saved to Apple Health (#776).
   // The watch's own Discard (confirmed there) runs this too.
-  const discardNow = () => { markDiscarded(useStore.getState().S.active?.id); update(s => { s.active = null }); stopRest(); stopWork(); nav('/home') }
+  const discardNow = () => { markDiscarded(useStore.getState().S.active?.id); update(s => { s.active = null }); stopRest(); stopWork(); useCardioClock.getState().drop(); nav('/home') }
   const discardWorkout = () => confirmSheet({
     title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
     onConfirm: discardNow,
@@ -2223,7 +2277,8 @@ function ActiveWorkout() {
     // Spoken cues (Settings → Timer alerts → Voice): the style's line for a record, or a clip.
     cues.record()
   }
-  const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+  // `at`: when a tick heard of late was made (the Lock Screen, a widget, the watch).
+  const toggle = (idx, i, side, { quiet = false, onFocusProgress, at } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -2231,6 +2286,10 @@ function ActiveWorkout() {
     if (typeof document !== 'undefined') { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) a.blur?.() }
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
+    // Ticked while its clock runs (here, the watch or the Lock Screen): the time goes in first.
+    const clock = useCardioClock.getState()
+    const clockAt = !editing && !side ? runAt(useStore.getState().S.active, clock.run) : null
+    if (clockAt && clockAt.idx === idx && clockAt.i === i) clock.stop(at || Date.now())
     let exJustDone = false, workoutDone = false, checked = false
     update(s => {
       const e = s.active.entries[idx]
@@ -2445,7 +2504,7 @@ function ActiveWorkout() {
       })
       if (!wasDone) {
         const before = useUI.getState().timer
-        toggleRef.current(idx, i, oneSide || undefined)
+        toggleRef.current(idx, i, oneSide || undefined, { at })
         // The rest is the watch's: it ends when the one the watch started for this set ends (or
         // there is none when the watch started none), counted from the tick at the wrist for a
         // watch that does not say (restLagSec), so a set done long ago starts no rest here now.
@@ -2506,7 +2565,7 @@ function ActiveWorkout() {
     setDone: (idx, i, { at }) => {
       const A = useStore.getState().S.active
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
-      tickRowRef.current(idx, i, { quiet: true })
+      tickRowRef.current(idx, i, { quiet: true, at })
       if (at) mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
     },
   }), [])
@@ -2518,7 +2577,7 @@ function ActiveWorkout() {
       // Log set on a hold that is running: the hold ends there, with what was held up to the tap.
       const wk = useUI.getState().work
       if (wk?.owner && wk.owner.idx === idx && wk.owner.i === i && useUI.getState().finishWorkEarly) { useUI.getState().finishWorkEarly(at || Date.now()); return }
-      tickRowRef.current(idx, i)
+      tickRowRef.current(idx, i, { at })
       if (!at) return
       mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
       // The rest this tick started began at the tap, which the Lock Screen has been counting

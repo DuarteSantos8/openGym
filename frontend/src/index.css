@@ -2163,6 +2163,39 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow .setgo::before{content:'';position:absolute;inset:-7px -3px}   /* 30px look, 44px tall; narrower sideways so it stays off the stepper and the tick */
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
+/* a cardio set's clock (#131) shows in its minutes cell while it runs, read-only */
+.setrow .stp.clock .val{align-items:center}
+.setrow .stp.clock .num{display:flex;align-items:center;justify-content:center;cursor:default;color:var(--acc-ink);font-variant-numeric:tabular-nums}
+/* Its ▶ is one more 30 px column on a cardio row, so these rows (`cgo`) give a little back where
+   the row is narrow. The incline keeps its −/+ from 360 px up. Sums at the default text size;
+   a row has the screen less 64 px in a plain card, and nested in a list unit or a superset card
+   less 92 above 404 px, in a superset in the list less 120 above 404 px and less 72 at 360-404.
+   - plain cardio row: number 24, minutes 84, speed 75, ▶ 30, tick 30, four 8 px gaps = 275 px.
+     It fits from 360 px in every card. Below, at 320 px (256), the gaps go to 4, the ▶ to 26 and
+     the minutes' and speed's button floors to 16: 247.
+   - with the incline or the level (eff3): 24, 77 + 72 + 66, 30, 30, five 6 px gaps = 329 px, so
+     the compact row (gaps 2, ▶ 26, minutes' and speed's floors 12) is 281. It applies up to
+     399 px in a plain card (296 at 360) and up to 448 px nested (292 in a superset in the list
+     at 412, 285 at 405). Below 360 px upstream's rule takes the incline's −/+
+     as well: 245 of 256 at 320.
+   The larger text sizes widen the numbers by up to 13 px and can still crowd the narrowest of
+   these, as the incline row without the ▶ already does there. */
+@media (max-width:399px){
+  .setrow.cgo.eff3,.sethead.cgo.eff3{gap:2px}
+  .setrow.cgo.eff3 .setgo,.sethead.cgo.eff3 .go-sp{width:26px}
+  .setrow.cgo.eff3 .stp.w:not(.plain),.setrow.cgo.eff3 .stp.r:not(.inc):not(.plain),.sethead.cgo.eff3:not(.plain) .w-sp,.sethead.cgo.eff3:not(.plain) .r-sp:not(.inc-sp){--btn-floor:12px}
+}
+@media (max-width:448px){
+  :is(.wl-unit,.ss-card) .setrow.cgo.eff3,:is(.wl-unit,.ss-card) .sethead.cgo.eff3{gap:2px}
+  :is(.wl-unit,.ss-card) .setrow.cgo.eff3 .setgo,:is(.wl-unit,.ss-card) .sethead.cgo.eff3 .go-sp{width:26px}
+  :is(.wl-unit,.ss-card) .setrow.cgo.eff3 .stp.w:not(.plain),:is(.wl-unit,.ss-card) .setrow.cgo.eff3 .stp.r:not(.inc):not(.plain),
+  :is(.wl-unit,.ss-card) .sethead.cgo.eff3:not(.plain) .w-sp,:is(.wl-unit,.ss-card) .sethead.cgo.eff3:not(.plain) .r-sp:not(.inc-sp){--btn-floor:12px}
+}
+@media (max-width:359px){
+  .setrow.cgo,.sethead.cgo{gap:4px}
+  .setrow.cgo .setgo,.sethead.cgo .go-sp{width:26px}
+  .setrow.cgo .stp.w:not(.plain),.setrow.cgo .stp.r:not(.inc):not(.plain),.sethead.cgo:not(.plain) .w-sp,.sethead.cgo:not(.plain) .r-sp:not(.inc-sp){--btn-floor:16px}
+}
 /* exercise-config sheet: three steppers side by side on narrow phones */
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}

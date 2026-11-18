@@ -5843,4 +5843,7 @@ export default {
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Start tidtagning",
+  "Stop timing": "Stop tidtagning",
 }

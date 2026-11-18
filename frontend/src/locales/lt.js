@@ -5899,4 +5899,7 @@ export default {
   "Hide": "Slėpti",
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Pradėti laiko matavimą",
+  "Stop timing": "Sustabdyti laiko matavimą",
 }

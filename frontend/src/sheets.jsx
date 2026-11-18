@@ -1,5 +1,6 @@
 import { tempoSheet } from './components/Tempo.jsx'
 import { useCircuit } from './store/useCircuit.js'
+import { useCardioClock } from './store/useCardioClock.js'
 import { CircuitResults } from './components/CircuitCard.jsx'
 import { normalizeTempo, repSec } from './lib/tempo.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
@@ -4764,9 +4765,25 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 // `end` and `auto` (lib/forgotten-workout.js): a workout that ended by itself is saved ending at
 // its last set plus the usual rest, marked as such, and can be reopened for 24 hours.
 export const finishWorkoutNow = (opts) => doFinishWorkout(opts && typeof opts === 'object' && !opts.nativeEvent ? opts : undefined)
+// When a workout finished with an `end` given ended: `autoEnd` for one that ended by itself, `tappedAt`
+// for a Finish tapped on a watch and heard of later; both null for a Finish here and now.
+function finishEnds(A, endAt, auto) {
+  const past = !!A?.backfill
+  if (!A || past || !(Number(endAt) > 0)) return { autoEnd: null, tappedAt: null }
+  const autoEnd = auto ? Math.max(Number(A.start) || 0, Math.min(Date.now(), Number(endAt))) : null
+  // Finish tapped on a watch at `endAt` and heard of later (no `auto`): the workout ended as if
+  // Finish had been tapped here at that moment, never before its last set.
+  const lastTick = Math.max(0, ...(A.entries || []).flatMap(e => e.sets || []).map(x => (x && x.done && Number.isFinite(x.at) ? x.at : 0)))
+  const tappedAt = !auto ? Math.max(Number(A.start) || 0, lastTick, Math.min(Date.now(), Number(endAt))) : null
+  return { autoEnd, tappedAt }
+}
 function doFinishWorkout({ end: endAt, auto } = {}) {
   // A circuit's clock still running (store/useCircuit.js) stops first, so its result is saved too.
   useCircuit.getState().wrapUp()
+  // So does a cardio set's clock (store/useCardioClock.js), at the workout's end: its minutes go
+  // to its row. The end is read first because the clock writes into the workout read below.
+  const { autoEnd, tappedAt } = finishEnds(S().active, endAt, auto)
+  const clockEnd = useCardioClock.getState().stop(autoEnd || tappedAt || Date.now())
   const st = S()
   const A = st.active
   if (!A) return
@@ -4777,13 +4794,10 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // (QA 1.3.9). The confirmed weights are left alone either way.
   // The decision itself is lib/finish-workout.js sessionPrs, shared with the live trophy.
   const { prs, e1prs } = past ? { prs: [], e1prs: [] } : sessionPrs(st, A.entries)
-  const autoEnd = !past && auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, Math.min(Date.now(), Number(endAt))) : null
-  // Finish tapped on a watch at `endAt` and heard of later (no `auto`): the workout ended as if
-  // Finish had been tapped here at that moment, never before its last set.
-  const lastTick = Math.max(0, ...(A.entries || []).flatMap(e => e.sets || []).map(x => (x && x.done && Number.isFinite(x.at) ? x.at : 0)))
-  const tappedAt = !past && !auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, lastTick, Math.min(Date.now(), Number(endAt))) : null
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : autoEnd || (tappedAt ? sessionEnd(A, tappedAt) : sessionEnd(A)),
+    // The row the clock just wrote is not ticked, so sessionEnd does not see it: the workout ran
+    // at least until the clock stopped.
+    end: past ? backfillEnd(A) : autoEnd || Math.max(tappedAt ? sessionEnd(A, tappedAt) : sessionEnd(A), clockEnd || 0),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
