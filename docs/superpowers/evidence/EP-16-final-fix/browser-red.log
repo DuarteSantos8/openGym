@@ -1,0 +1,1 @@
+RED reproduced naturally insecure HTTP: manual and confirmed lookup Save both fail; zero persisted rows. {'origin': 'http://172.17.0.4:5180', 'secure': False, 'randomUUID': 'undefined', 'getRandomValues': 'function'}

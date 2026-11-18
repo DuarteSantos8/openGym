@@ -3,6 +3,10 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 For people, the same map with diagrams is [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+> **openGym Next fork: first session?** Read [AGENTS.md](AGENTS.md) first. It says where to start,
+> which task to take ([docs/next/NEXT-STEPS.md](docs/next/NEXT-STEPS.md)) and the fork's hard rules
+> (draft PRs on the fork only, no telemetry, Safari 15.5 bundle guard). The rest of this file is upstream's.
+
 ## What this is
 
 openGym is a self-hosted gym and body-weight tracker. Two containers (`api` + `web`) plus a

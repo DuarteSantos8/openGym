@@ -1,0 +1,139 @@
+{
+  "module_off": "No Home tile, no diary route, no nutritionEntries key",
+  "crud_reload": "Add 60g/228kcal; edit amount 80g leaves 228kcal; delete retains payload; undo and reload restore visible row",
+  "servings_unknown": "1.5 cups \u00d7 200 mL = 300 mL, no grams; zero energy retained, protein/carbohydrate/fat omitted and unknown counts shown",
+  "light_widths": [
+    320,
+    390,
+    1280
+  ],
+  "offline_add": "Offline pear persisted locally with 50 kcal",
+  "offline_reconnect": "Second isolated browser loaded Offline pear from real API",
+  "device_b_offline_edit": "Protein changed to 12g offline",
+  "two_device_merge": {
+    "entries": 3,
+    "proteinG": 12,
+    "fatG": 7,
+    "responses": [
+      {
+        "status": 200,
+        "url": "http://localhost:5144/api/data"
+      },
+      {
+        "status": 200,
+        "url": "http://localhost:5144/api/data"
+      },
+      {
+        "status": 200,
+        "url": "http://localhost:5144/api/data"
+      }
+    ]
+  },
+  "real_409": {
+    "method": "Hold device B PUT before network, advance revision through device A UI, release B PUT",
+    "responses": [
+      {
+        "status": 409,
+        "url": "http://localhost:5144/api/data"
+      },
+      {
+        "status": 200,
+        "url": "http://localhost:5144/api/data"
+      },
+      {
+        "status": 200,
+        "url": "http://localhost:5144/api/data"
+      }
+    ],
+    "merged": {
+      "proteinG": 16,
+      "fatG": 11
+    },
+    "count": 3
+  },
+  "synced_module_closes_sheet": "Device A disabled module; device B polled real API, dismissed global Add form, no stale food saved",
+  "deleted_backup_import": "After actual Reset everything and onboarding Skip, import of deleted JSON leaves 2 visible / 3 retained",
+  "browser_backup": "Actual live JSON download=3. Delete then JSON download=2 visible/3 retained. Reset=0. Deleted backup import=2; deliberate live restore=3.",
+  "workout_module_on": {
+    "before": 4,
+    "after": 5,
+    "setDone": true
+  },
+  "workout_module_off": {
+    "before": 5,
+    "after": 6,
+    "setDone": true
+  },
+  "rtl_text_motion": {
+    "locale": "ar",
+    "direction": "rtl",
+    "textSize": "200%",
+    "width": 320,
+    "overflow": false,
+    "reducedMotion": true
+  },
+  "diagnostics_b": {
+    "exceptionsAndLogErrors": [],
+    "failedRequests": [
+      {
+        "error": "",
+        "blockedReason": "inspector"
+      },
+      {
+        "error": "",
+        "blockedReason": "inspector"
+      },
+      {
+        "error": "",
+        "blockedReason": "inspector"
+      },
+      {
+        "error": "",
+        "blockedReason": "inspector"
+      }
+    ]
+  },
+  "keyboard": {
+    "tabReachesAdd": true,
+    "enterOpensForm": true,
+    "focusMovesToLabel": true,
+    "outline": "solid"
+  },
+  "touch_targets": "All diary form inputs/selects/buttons >=44x44 CSS px",
+  "large_text_fix": "Summary grid now responds to rem size: 278,16,40,11 each remains one line at 320px RTL 200% text; no horizontal overflow",
+  "undated_browser": "Actual API returned a future row dated 2026-99-99 and a missing-day row. Both appear under Undated entries, read-only/deletable, while daily totals remain 278/16/40/11. Raw day unchanged.",
+  "final_browser_exceptions": [],
+  "diagnostics_a": {
+    "runtimeExceptions": [
+      "Uncaught"
+    ],
+    "failedRequests": [
+      {
+        "status": 409,
+        "url": "http://localhost:5144/api/data"
+      },
+      {
+        "status": 404,
+        "url": "http://localhost:5144/assets/Tour-CtfzFV9h.js"
+      },
+      {
+        "error": "net::ERR_ABORTED",
+        "blockedReason": null
+      },
+      {
+        "status": 404,
+        "url": "http://localhost:5144/assets/Tour-CtfzFV9h.js"
+      },
+      {
+        "error": "net::ERR_ABORTED",
+        "blockedReason": null
+      }
+    ]
+  },
+  "round1_narrow_crud": "Fresh a1639383 build: null retained across real Add/Edit/Delete/Undo; invalid oz/missing-count serving remains Unsupported with one unknown and excluded from suggestions; fractional0.024 visible at default weight decimals.",
+  "round1_precision_reload": "Actual Settings 0.25 button sets wdec2. Diary still shows0.024 serving and1.024 kcal after reload; null retained;320px no overflow.",
+  "round1_final_diagnostics": {
+    "runtimeExceptionsObserved": [],
+    "failedRequestsObserved": []
+  }
+}

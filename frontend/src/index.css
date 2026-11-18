@@ -63,6 +63,8 @@
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
   --pad:16px;
+  /* EP-02: --skel is the loading bar's base */
+  --skel:var(--surface-2);
   --icon-stroke:1.7;
 
   /* type scale (redesign 1.4.5, P1): the iPhone's text styles, in rem so a browser's text size
@@ -4742,3 +4744,59 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .upnext-k{font-size:var(--fs-caption);color:var(--label-2)}
 .upnext-t{font-weight:600;font-size:var(--fs-callout);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .upnext-c{flex:none;color:var(--label-3)}
+
+/* no overshoot: the sheet rises from the bottom edge, so a value past 1 would lift it off the edge */
+@supports (transition-timing-function:linear(0,1)){:root{--spring:linear(0,.6 12%,.88 26%,.97 40%,.995 56%,1 72%,1)}.sheet{animation-timing-function:var(--spring)}}
+/* EP-02 primitives (components/MetricCard, Skeleton, ErrorState). Existing tokens only. */
+.metric{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:start;animation:viewfade .16s var(--ease) both}
+button.metric{min-height:44px;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.metric-l{font-size:var(--fs-footnote);color:var(--label-2)}
+.metric-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+.metric-v{font-size:var(--fs-large);font-weight:600;letter-spacing:-.026em;line-height:1.1;font-variant-numeric:tabular-nums}
+.metric-u{font-size:var(--fs-callout);color:var(--label-2)}
+.metric-d{font-size:var(--fs-footnote);color:var(--label-2)}
+.skel{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.skel-line{display:block;height:14px;width:100%;border-radius:var(--r-sm);background:linear-gradient(90deg,var(--skel) 0%,var(--surface-3) 50%,var(--skel) 100%);background-size:200% 100%;animation:skelshine 1.4s linear infinite}
+@keyframes skelshine{from{background-position:200% 0}to{background-position:-200% 0}}
+.err-state .btn{min-height:44px}
+@media (prefers-reduced-motion: reduce){.metric,.skel-line,.sheet{animation:none!important}}
+
+/* ---------- Ironvane redesign, step 4: the exercise sheet ---------- */
+/* Animation · Yours (and later Video · Steps): which picture shows, above it. */
+.ex-media-seg{margin-bottom:10px}
+/* Last · Best · estimated 1RM: one tile each, the number big. */
+.ex-nums{display:grid;grid-template-columns:repeat(var(--n, 3), minmax(0, 1fr));gap:8px;margin:12px 0 4px}
+.ex-num{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;min-width:0;min-height:56px;
+  padding:10px 12px;border-radius:var(--r, 12px);background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+button.ex-num{cursor:pointer}
+button.ex-num:disabled{cursor:default}
+button.ex-num:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+button.ex-num:not(:disabled):active{transform:scale(var(--press-scale-sm))}
+.ex-num.on{box-shadow:inset 0 0 0 1.5px var(--acc-ink)}
+.ex-num-l{display:flex;align-items:center;gap:2px;font-size:var(--fs-caption);color:var(--label-2)}
+.ex-num-l .icn{font-size:12px;color:var(--label-3)}
+.ex-num-v{font-weight:700;font-size:var(--fs-callout);font-variant-numeric:tabular-nums;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;text-align:start}
+.ex-calc{margin-top:4px}
+/* How to do it: the description, the steps and the YouTube search in one card. */
+.ex-learn{margin-top:14px;padding:4px 14px 10px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.ex-learn h4.sec{margin-top:12px;padding:0}
+.ex-learn .exnote{margin-top:0;padding:0;background:none}
+.ex-learn .ex-yt{margin-top:6px}
+/* Add to this workout (wide) and Add to my plan. */
+/* Half and half rather than the mockup's 2:1: at a third of a phone, "Add to my plan" broke over
+   two or three lines. The filled button still reads as the main one. */
+.ex-acts{display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);gap:8px;margin:14px 0 4px}
+.ex-acts.one{grid-template-columns:minmax(0, 1fr)}
+.ex-acts .btn{margin:0;min-width:0}
+/* Setup for this exercise: folded, with what is inside named under the title. */
+.ex-setup{margin-top:14px;border-radius:var(--r-card, 14px);background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.ex-setup-h{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;
+  min-height:56px;padding:8px 14px;border-radius:var(--r-card, 14px)}
+.ex-setup-h:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.ex-setup-h>.icn{flex:none;color:var(--label-3)}
+.ex-setup-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ex-setup-t{font-weight:600}
+.ex-setup-s{font-size:var(--fs-footnote);color:var(--label-2)}
+.ex-setup-b{padding:0 14px 12px;border-top:var(--hair) solid var(--sep)}
