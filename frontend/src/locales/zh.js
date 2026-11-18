@@ -1,5 +1,10 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "计时器",
+  "Stopwatch": "秒表",
+  "Start timer": "开始计时",
+  "Timer and stopwatch": "计时器和秒表",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手表",
   "Set once": "设置一次",

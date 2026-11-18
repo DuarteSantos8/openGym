@@ -2,6 +2,11 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Timer",
+  "Stopwatch": "Cronometro",
+  "Start timer": "Avvia timer",
+  "Timer and stopwatch": "Timer e cronometro",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Orologi",
   "Set once": "Da impostare una volta",

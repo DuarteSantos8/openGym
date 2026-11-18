@@ -1,5 +1,10 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Таймер",
+  "Stopwatch": "Секундомір",
+  "Start timer": "Запустити таймер",
+  "Timer and stopwatch": "Таймер і секундомір",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Годинники",
   "Set once": "Налаштовується один раз",

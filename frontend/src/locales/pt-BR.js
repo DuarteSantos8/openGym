@@ -4,6 +4,11 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Timer",
+  "Stopwatch": "Cronômetro",
+  "Start timer": "Iniciar timer",
+  "Timer and stopwatch": "Timer e cronômetro",
   // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
   "Set once": "Configurar uma vez",
   "Connections": "Conexões",

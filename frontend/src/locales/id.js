@@ -1,5 +1,10 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Timer",
+  "Stopwatch": "Stopwatch",
+  "Start timer": "Mulai timer",
+  "Timer and stopwatch": "Timer dan stopwatch",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Jam tangan",
   "Set once": "Atur sekali",

@@ -1,5 +1,10 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Timer",
+  "Stopwatch": "Stoppuhr",
+  "Start timer": "Timer starten",
+  "Timer and stopwatch": "Timer und Stoppuhr",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Uhren",
   "Set once": "Einmal einstellen",

@@ -1,5 +1,10 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "تایمر",
+  "Stopwatch": "کرنومتر",
+  "Start timer": "شروع تایمر",
+  "Timer and stopwatch": "تایمر و کرنومتر",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",
   "Set once": "یک‌بار تنظیم",

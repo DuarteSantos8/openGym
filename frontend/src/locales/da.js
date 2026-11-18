@@ -1,6 +1,11 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Timer",
+  "Stopwatch": "Stopur",
+  "Start timer": "Start timer",
+  "Timer and stopwatch": "Timer og stopur",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",
   "Set once": "Indstil én gang",

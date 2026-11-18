@@ -1,4 +1,9 @@
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "計時器",
+  "Stopwatch": "碼錶",
+  "Start timer": "開始計時",
+  "Timer and stopwatch": "計時器與碼錶",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手錶",
   "Set once": "設定一次",

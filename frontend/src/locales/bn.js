@@ -1,5 +1,10 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "টাইমার",
+  "Stopwatch": "স্টপওয়াচ",
+  "Start timer": "টাইমার চালু করুন",
+  "Timer and stopwatch": "টাইমার ও স্টপওয়াচ",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ঘড়ি",
   "Set once": "একবার সেট করুন",

@@ -1,5 +1,10 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "타이머",
+  "Stopwatch": "스톱워치",
+  "Start timer": "타이머 시작",
+  "Timer and stopwatch": "타이머와 스톱워치",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "워치",
   "Set once": "한 번만 설정",

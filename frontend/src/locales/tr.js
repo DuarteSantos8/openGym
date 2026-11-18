@@ -1,5 +1,10 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Zamanlayıcı",
+  "Stopwatch": "Kronometre",
+  "Start timer": "Zamanlayıcıyı başlat",
+  "Timer and stopwatch": "Zamanlayıcı ve kronometre",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Saatler",
   "Set once": "Bir kez ayarla",
