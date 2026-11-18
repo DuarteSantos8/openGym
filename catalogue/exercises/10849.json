@@ -3,6 +3,7 @@
   "name": "pilates machine lying pelvic lift",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

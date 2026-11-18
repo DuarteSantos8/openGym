@@ -3,6 +3,7 @@
   "name": "assisted commando pull up",
   "bodyPart": "back",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

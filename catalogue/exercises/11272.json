@@ -3,12 +3,13 @@
   "name": "cable standing biceps curl to arnold press v. 3",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "biceps",
     "triceps",
     "upper chest",
-    "forearms"
+    "forearms",
+    "side delts"
   ],
   "category": "strength",
   "description": "A combo of a biceps curl flowing into an Arnold press with cables. It works arms and shoulders in one fluid move.",

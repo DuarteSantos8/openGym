@@ -12,13 +12,23 @@
 // down for a moment and never pauses it; the browser's elsewhere). Only while a workout runs and
 // the page is on screen: a locked phone keeps the end tone and the notification it always had.
 // useUI calls these at the moments above; what to say is worked out here, from the state.
+//
+// Settings → Timer alerts → Voice (v1.4.5) adds a voice, a speed and a pitch (lib/speech.js), a
+// style for the moments (lib/voice-styles.js: a line after the next set, at 10 s, at the end, on
+// the last set and on a record) and clips of one's own per moment (lib/voice-clips.js), played
+// instead of that moment's line. A clip and a spoken line never talk over each other: a line
+// waits for a clip to finish, and a clip for the lines before it (by an estimate of how long
+// they take to say, since a phone's voice only says when it took a line, not when it is done).
 import { isWarmupRow, isSideSet } from './workout-model.js'
 import { modeOf, supersetUnits } from './history.js'
 import { fmtNum } from './format.js'
 import { t, tn, tnf, exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
-import { speak, SPEECH_RATES, speechRateOf } from './speech.js'
+import { speak, voiceOpts } from './speech.js'
+import { pickLine, linesFor } from './voice-styles.js'
+import { pickClip, voiceClipsOf } from './voice-clips.js'
+import { MOBILE } from './mobile.js'
 
 /** Whether cues are on for this profile, and a workout is running. */
 export const cuesOn = S => S?.spokenCues === true && !!S?.active
@@ -100,6 +110,15 @@ export function restStartText(S, forIdx) {
   return setCueText(S, entry, next.i, { name })
 }
 
+/** Whether the next set (`next`, from nextSetAfter) is the last work set of its exercise. */
+export function isLastSet(active, next) {
+  const sets = active?.entries?.[next?.idx]?.sets || []
+  const s = sets[next?.i]
+  if (!s || isWarmupRow(s)) return false
+  // The other half of a per-side pair is the same set.
+  return !sets.some((x, j) => j !== next.i && notDone(x) && !isWarmupRow(x))
+}
+
 /* ------------------------------ the moments useUI calls ------------------------------ */
 
 let readStore = null
@@ -110,18 +129,94 @@ const live = () => {
   const S = readStore?.()
   return cuesOn(S) && !(typeof document !== 'undefined' && document.hidden) ? S : null
 }
+
+// About how long a line takes to say, in ms: enough for a clip not to start over it.
+export const speechMs = (text, rate = 1) => Math.round((350 + String(text || '').length * 65) / (rate > 0 ? rate : 1))
+const GAP = 150
+// The voice is heard whatever the end-of-rest sound and the ring/silent switch say (TestFlight
+// 11-08: "the voice can only be heard if I have the notification sound activated"). Spoken cues
+// are their own opt-in, so a lifter who switched them on wants to hear them, the iPhone on silent
+// included. On the iPhone that is the .playback session with mixWithOthers and duckOthers
+// (CueAudioLedger): music still only turns down for a line, it never stops.
+export const VOICE_ON_SILENT = true
+let freeAt = 0      // when everything handed over so far should be done
+let clipUntil = 0   // until when a clip is playing: a line waits for it
+
+const sayNow = (S, text, opts = {}) => {
+  const o = voiceOpts(S)
+  speak(text, { ...o, onSilent: VOICE_ON_SILENT, ...opts }).catch?.(() => {})
+  freeAt = Math.max(freeAt, Date.now()) + speechMs(text, o.rate)
+}
 const say = (S, text, opts = {}) => {
   if (!text) return
-  speak(text, { rate: SPEECH_RATES[speechRateOf(S)], onSilent: S.soundOnSilent === true, ...opts }).catch?.(() => {})
+  if (opts.queue === false) { clipUntil = 0; freeAt = Date.now(); sayNow(S, text, opts); return }
+  const wait = clipUntil - Date.now()
+  if (wait > 0) {
+    freeAt = Math.max(freeAt, clipUntil) + speechMs(text, voiceOpts(S).rate)
+    setTimeout(() => { const now = readStore?.() || S; speak(text, { ...voiceOpts(now), onSilent: VOICE_ON_SILENT, ...opts }).catch?.(() => {}) }, wait)
+    return
+  }
+  sayNow(S, text, opts)
 }
 
+// How a clip is played: the phone's own player in the apps (music ducks for it, as for the end
+// tone), Web Audio elsewhere or when that fails. Resolves false when the file is not here.
+let clipPlayer = async clip => {
+  const { mediaStore } = await import('./media-store.js')
+  if (!(await mediaStore.has(clip.m.hash))) return false
+  const tone = 'u:' + clip.m.hash
+  if (MOBILE) {
+    const { toneNative } = await import('./rest-alert.js')
+    if (await toneNative(tone, { onSilent: VOICE_ON_SILENT })) return true
+  }
+  const { playUserTone, unlock } = await import('./sound.js')
+  unlock(true)
+  return playUserTone(true, tone)
+}
+/** Test seam: how a clip is played. */
+export function _setClipPlayer(fn) { clipPlayer = fn }
+export function _resetCueQueue() { freeAt = 0; clipUntil = 0 }
+
+// A clip after whatever was said before it; `fallback`, the moment's line, if it cannot play.
+function playClip(S, clip, fallback) {
+  const now = Date.now()
+  const start = Math.max(now, freeAt, clipUntil)
+  const dur = Math.max(300, Math.round((Number(clip.m.dur) || 2) * 1000))
+  clipUntil = freeAt = start + dur + GAP
+  const go = () => {
+    Promise.resolve().then(() => clipPlayer(clip)).then(ok => {
+      if (ok) return
+      clipUntil = 0
+      if (fallback) say(S, fallback)
+    }, () => { clipUntil = 0; if (fallback) say(S, fallback) })
+  }
+  if (start > now) setTimeout(go, start - now); else go()
+}
+
+/** A moment: a clip of one's own when it has one, else a line of the style ('' says nothing). */
+function moment(S, name) {
+  const clip = pickClip(S, name)
+  if (clip) { playClip(S, clip, pickLine(S, name)); return }
+  say(S, pickLine(S, name))
+}
+const hasSomething = (S, name) => voiceClipsOf(S, name).length > 0 || linesFor(S, name).length > 0
+
 export const cues = {
-  /** A rest began after a set of entry `forIdx`. */
-  restStarted(forIdx) { const S = live(); if (S) say(S, restStartText(S, forIdx)) },
-  /** A rest's second ticked: "10 seconds" once, on rests long enough for it to help. */
-  restLeft(left, total) { if (left === 10 && total >= 20) { const S = live(); if (S) say(S, t('10 seconds')) } },
+  /** A rest began after a set of entry `forIdx`: the next set, then the style's line for it. */
+  restStarted(forIdx) {
+    const S = live()
+    if (!S) return
+    const next = nextSetAfter(S.active, forIdx)
+    if (!next) return
+    say(S, restStartText(S, forIdx))
+    moment(S, isLastSet(S.active, next) && hasSomething(S, 'lastSet') ? 'lastSet' : 'restStart')
+  },
+  /** A rest's second ticked: 10 s before the end once, on rests long enough for it to help. */
+  restLeft(left, total) { if (left === 10 && total >= 20) { const S = live(); if (S) moment(S, 'tenLeft') } },
   /** The rest ran out on screen. */
-  restOver() { const S = live(); if (S) say(S, t('Rest is over')) },
+  restOver() { const S = live(); if (S) moment(S, 'restOver') },
+  /** A set just earned a record trophy (views/Workout.jsx cheerRecord). */
+  record() { const S = live(); if (S) moment(S, 'record') },
   /** A count-in or the end of a hold: a number, cutting off whatever is still being said. */
   count(n) { if (n >= 1 && n <= 3) { const S = live(); if (S) say(S, String(n), { queue: false }) } },
   /** The count-in is over and the hold begins. */

@@ -3,12 +3,13 @@
   "name": "handstand shoulder press with wall (between benches)",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "trapezius",
     "core",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "A wall-supported handstand press between two benches for strong shoulders and triceps.",

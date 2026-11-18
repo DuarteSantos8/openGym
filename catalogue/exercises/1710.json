@@ -3,6 +3,7 @@
   "name": "assisted lying gluteus and piriformis stretch",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings"

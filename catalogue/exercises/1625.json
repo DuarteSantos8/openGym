@@ -3,10 +3,11 @@
   "name": "smith machine decline close grip bench press",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A close grip bench press on a decline bench in the smith machine. It builds the triceps and lower chest.",

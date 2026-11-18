@@ -17,6 +17,23 @@ describe('Japanese localization', () => {
     expect(ja['Replacing {0}']).toContain('{0}')
   })
 
+  it('preserves the review-corrected meanings and UI terminology', () => {
+    expect(ja['How did my last workout go?']).toBe('前回のトレーニングを振り返って')
+    expect(ja['How did my {0} session go?']).toBe('{0}のトレーニングを振り返って')
+    expect(ja['Missed reps last time. Same weight again ({0} of {1} to go).']).toContain('ディロードまであと{0}回／{1}回')
+    expect(ja['Your {0} best on {1}']).toBe('{0}年の{1}のベスト')
+    expect(ja['Progression']).toBe('プログレッション')
+    expect(ja['Load']).toBe('重量')
+    expect(ja['Max']).toBe('MAX')
+    expect(ja['Rest day']).toBe('休養日')
+  })
+
+  it('corrects exercise labels against the movement instructions', () => {
+    expect(jaExerciseNames['0410']).toBe('ダンベル・ブルガリアンスクワット')
+    expect(jaExerciseNames['0977']).toBe('バンド・フロントレイズ')
+    expect(jaExerciseNames['1321']).toContain('高いシート')
+  })
+
   it('translates common lifts using catalogue exercise IDs', () => {
     expect(jaExerciseNames['0025']).toContain('ベンチプレス')
     expect(jaExerciseNames['0031']).toContain('カール')

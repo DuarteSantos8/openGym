@@ -3,13 +3,14 @@
   "name": "handstand walk",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "upper back",
     "wrist extensors",
-    "forearms"
+    "forearms",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "An advanced bodyweight skill where you walk on your hands while inverted. It builds shoulder strength, balance and body control.",

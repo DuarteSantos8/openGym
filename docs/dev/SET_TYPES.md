@@ -206,3 +206,20 @@ failure. It is not a `type`, because a drop-set or a rest-pause set can be taken
   timed per-side pair) of a freshly built exercise. Choosing Greyskull in the sheet turns it on.
 - Imports: a Hevy or CSV "failure" set type becomes `failure: true`.
 
+
+## Cluster sets (1.4.5)
+
+A third planned shape, picked in the same "Set type" list: **Cluster**, `intensifier: { type:
+'cluster', size, restSec }`. Every work set keeps its reps and weight and is cut into mini-sets of
+`size` reps with `restSec` between them (9 by 3 is 3+3+3; a remainder under half a chunk goes onto
+the last one, `splitClusterReps`). It rides on the rest-pause row on purpose:
+
+```js
+{ type: 'restpause', cluster: true, w: 100, r: 9, clusters: [{ r: 3, restSec: 20 }, { r: 3, restSec: 20 }, { r: 3, restSec: 20 }] }
+```
+
+So `r` is the total, `clusters` its breakdown, and every reader that already handles rest-pause
+(volume, records, sync, the history line "100×3+3+3") is right without knowing the flag.
+`isClusterSet(set)` tells the two apart for the labels ("Mini-set 2", "+ Mini-set"). Unlike
+rest-pause it does not replace the set list: warm-ups, sets, back-off and progression stay as they
+were, only each set is done in pieces.

@@ -3,10 +3,11 @@
   "name": "barbell seated bradford rocky press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated press in which the bar moves between the front of the shoulders and just above the head, never fully locking out.",

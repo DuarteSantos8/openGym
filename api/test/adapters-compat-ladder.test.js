@@ -45,6 +45,7 @@ const RULES = {
   noJsonMode: [b => 'response_format' in b, 'response_format is not supported by this model'],
   completionTokens: [b => 'max_tokens' in b, "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead."],
   legacyTokens: [b => 'max_completion_tokens' in b, 'Unrecognized request argument supplied: max_completion_tokens'],
+  noStream: [b => 'stream' in b, 'Unknown field: stream'],
   noTemperature: [b => 'temperature' in b, "Unsupported value: 'temperature' does not support 0 with this model. Only the default (1) value is supported."]
 };
 
@@ -68,7 +69,8 @@ const reply = (status, body) => ({ ok: status >= 200 && status < 300, status, te
 let n = 0;
 // A fresh endpoint per test, so what one test taught the adapter never helps the next.
 const at = () => ({ provider: 'compatible', providerOptions: { compatible: { baseUrl: `https://gw${++n}.test/v1` } } });
-const ask = (cfg, f, extra = {}) => compatible.invoke({ cfg, prompt: 'P', system: 'S', schema: REVIEW_SCHEMA, env: {}, model: 'gpt-6.1-sol', fetch: f, ...extra });
+// The ladder is about the request shape, so these run unstreamed; the stream rung has its own test.
+const ask = (cfg, f, extra = {}) => compatible.invoke({ cfg, prompt: 'P', system: 'S', schema: REVIEW_SCHEMA, env: {}, model: 'gpt-6.1-sol', fetch: f, stream: false, ...extra });
 
 test('the request the phone sends a compatible endpoint, as a strict gateway sees it (#804)', async () => {
   const f = gateway([]);
@@ -263,4 +265,15 @@ test('a wrong guess of the token field is undone once, even against a remembered
   const r3 = await ask(at(), h, { model: 'gpt-5.4-mini' });
   assert.equal(r3.code, 1);
   assert.ok(h.calls.length <= 3, `${h.calls.length} calls`);
+});
+
+test('a strict gateway that refuses the stream flag generically loses the stream first, and it is remembered (#1035)', async () => {
+  const cfg = at();
+  const f = gateway(['noStream']);
+  const r = await compatible.invoke({ cfg, prompt: 'P', system: 'S', schema: REVIEW_SCHEMA, env: {}, model: 'gpt-6.1-sol', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(f.calls.map(c => !!c.body.stream), [true, false]);
+  assert.equal(f.calls[1].body.response_format.type, 'json_schema', 'nothing else was given up for it');
+  await compatible.invoke({ cfg, prompt: 'P', system: 'S', schema: REVIEW_SCHEMA, env: {}, model: 'gpt-6.1-sol', fetch: f });
+  assert.equal(f.calls[2].body.stream, undefined, 'the next job goes straight to the unstreamed request');
 });

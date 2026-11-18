@@ -11,20 +11,25 @@
  * Adding a provider is a file here plus a row in config.PROVIDERS. Nothing else in the
  * codebase — routes, jobs, payload, validation, UI — knows which one is configured.
  */
+import { fileURLToPath } from 'node:url';
 import { run } from './spawn.js';
 import claude from './claude.js';
 import codex from './codex.js';
 import anthropic from '../core/adapters/anthropic.js';
 import openai from '../core/adapters/openai.js';
 import gemini from '../core/adapters/gemini.js';
+import minimax from '../core/adapters/minimax.js';
+import openrouter from '../core/adapters/openrouter.js';
 import compatible from '../core/adapters/compatible.js';
+import chatgpt from './chatgpt.js';
+import { on as chatgptPlanOn } from '../chatgpt-plan.js';
 
 /**
  * The in-repo fake provider. Ships with the image on purpose: it is what CI drives, and it
  * lets an instance owner see the entire Coach loop — intake, proposal, apply, revert —
  * before deciding whether to connect a real account to it.
  */
-const FIXTURE = new URL('../fixture-cli.mjs', import.meta.url).pathname;
+const FIXTURE = fileURLToPath(new URL('../fixture-cli.mjs', import.meta.url));
 const fixture = {
   id: 'fixture',
   spawns: true,
@@ -45,6 +50,7 @@ const fixture = {
    lazily: on the default image the module loads, check() reports the runtime as absent, and
    isConnected() keeps the Coach out of /api/config entirely. Codex is here too, and unlike
    the SDK its runtime is a CLI binary, so its absence shows up as a spawn error from check(). */
-const ADAPTERS = { fixture, claude, codex, anthropic, openai, gemini, compatible };
+// chatgpt exactly when config.PROVIDERS has its row (COACH_CHATGPT_PLAN=on, a preview).
+const ADAPTERS = { fixture, claude, codex, anthropic, openai, gemini, minimax, openrouter, compatible, ...(chatgptPlanOn() ? { chatgpt } : {}) };
 export const adapterFor = provider => ADAPTERS[provider] || null;
 export default ADAPTERS;

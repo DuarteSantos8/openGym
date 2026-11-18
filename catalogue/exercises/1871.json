@@ -3,10 +3,11 @@
   "name": "lever triceps dip (plate loaded)",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "triceps-machine",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "Seated plate-loaded dip machine that builds the triceps.",

@@ -3,6 +3,7 @@
   "name": "pilates machine russian squat",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

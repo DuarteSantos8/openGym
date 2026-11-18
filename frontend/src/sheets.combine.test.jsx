@@ -67,3 +67,22 @@ describe('beginWorkout with a routine-id list', () => {
     expect(useStore.getState().S.active.routineIds).toEqual(['core'])
   })
 })
+
+describe('beginWorkout with leftovers first (#985)', () => {
+  it('puts the exercises the last session skipped first, with their own rid, and keeps today\'s routines', () => {
+    const lead = { key: 'w1', d: '2026-11-05', routines: [{ id: 'core', name: 'Core' }], ex: [{ rid: 'core', id: ids[2] }] }
+    act(() => beginWorkout(['strength'], null, { lead }))
+    const a = useStore.getState().S.active
+    expect(a.entries.map(e => [e.id, e.rid])).toEqual([[ids[2], 'core'], [ids[0], 'strength']])
+    expect(a.routineIds).toEqual(['strength'])
+    expect(a.name).toBe('Strength')
+  })
+  it('leftovers alone are named after their routine', () => {
+    const lead = { key: 'w1', d: '2026-11-05', routines: [{ id: 'core', name: 'Core' }], ex: [{ rid: 'core', id: ids[1] }] }
+    act(() => beginWorkout([], null, { lead }))
+    const a = useStore.getState().S.active
+    expect(a.name).toBe('Core')
+    expect(a.routineIds).toEqual([])
+    expect(a.entries.map(e => e.id)).toEqual([ids[1]])
+  })
+})

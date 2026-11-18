@@ -3,11 +3,11 @@
   "name": "roll shoulder back rotation lying on floor",
   "bodyPart": "shoulders",
   "equipment": "roller",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "rotator cuff",
     "upper back",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "mobility",
   "description": "Self-massage with a foam roller to ease tightness in the shoulder and upper back. Good before training or on rest days to loosen up.",

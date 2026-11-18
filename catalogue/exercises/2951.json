@@ -3,6 +3,7 @@
   "name": "lever horizontal leg press",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-press",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",
@@ -20,5 +21,23 @@
     "Lower slowly until your knees are bent about 90 degrees and repeat."
   ],
   "femaleVariant": "2377",
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
   "textSource": "opengym"
 }
