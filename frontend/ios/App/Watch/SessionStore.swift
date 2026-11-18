@@ -1011,6 +1011,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         heartPending += readings.map { [($0.0.timeIntervalSince1970 * 1000).rounded(), $0.1.rounded()] }
         // A quarter of an hour at most: the phone reads anything older back from Apple Health.
         if heartPending.count > 200 { heartPending.removeFirst(heartPending.count - 200) }
+        heartRetries = 0
         flushHeart()
     }
 
@@ -1032,9 +1033,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             DispatchQueue.main.async {
                 guard let self = self, self.heartPendingFor == wid else { return }
                 self.heartPending.insert(contentsOf: samples, at: 0)
+                // Tried again a few times on its own, so readings put back reach the phone even
+                // when no new reading or reconnection comes (a paused workout).
+                guard self.heartRetries < 3 else { return }
+                self.heartRetries += 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) { self.flushHeart() }
             }
         })
     }
+
+    /// Retries of a failed send since the last new reading (flushHeart): a few, then the next
+    /// reading or reconnection sends what waits.
+    private var heartRetries = 0
 
     /* ---------- the summary ---------- */
 
