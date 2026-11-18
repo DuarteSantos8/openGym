@@ -36,8 +36,8 @@ export const builtinUnit = key => { const k = BUILTIN.get(key)?.kind; return k =
 // The keys of a pair, for the one switch and the one chart: 'bp' → bpSys, bpDia, pulse.
 export const pairKeys = pair => MEASUREMENT_FIELDS.filter(f => f.pair === pair).map(f => f.key)
 export const BP_KEY = 'pair:bp'
-// What a reading may be: blood pressure and a pulse a person can actually have.
-const RANGE = { bpSys: [50, 260], bpDia: [30, 160], pulse: [25, 230] }
+// What a reading may be: a waist, blood pressure and a pulse a person can actually have.
+const RANGE = { waist: [20, 300], bpSys: [50, 260], bpDia: [30, 160], pulse: [25, 230] }
 export const inMeasurementRange = (key, v) => !RANGE[key] || (v >= RANGE[key][0] && v <= RANGE[key][1])
 // A check-in's own note ("after the holidays", "cuff on the left arm"), shown in the history and
 // the journal (lib/journal.js).
