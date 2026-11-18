@@ -27,7 +27,7 @@ import { activeProfile, exAvailable } from './equipment.js'
 import { fatigueOf, LB_TO_KG } from './recovery.js'
 import { FATIGUE_RECOVERING_BELOW } from './recovery-view.js'
 import { favIds } from './favourites.js'
-import { defaultConfig, lastBW } from './history.js'
+import { defaultConfig, lastBW, isPerSide } from './history.js'
 import { activityStimuli } from './activities.js'
 
 export const DURATIONS = [20, 40, 60]
@@ -96,12 +96,17 @@ export function pickConfig (S, e, compound) {
   return { ...base, sets: 3, reps, restSec: compound && loaded ? 120 : 75 }
 }
 
-/** The minutes a list of routine entries takes, roughly: work, rest and a minute and a half to set up each. */
+/** The minutes a list of routine entries takes, roughly: work, rest and a minute and a half to set up each.
+    A cardio entry (`min`, defaultConfig) is `sets` intervals of `min` minutes each. A per-side
+    hold (`side`) is held once per side, as buildWorkSets lays it out. */
 export function estimateMinutes (cfgs) {
   let sec = 0
   for (const c of cfgs) {
     const sets = Math.max(1, c.sets || 1)
-    const work = c.mode === 'time' ? (c.sec || 30) : Math.max(35, (c.reps || 10) * 4)
+    if (c.min > 0 && c.mode !== 'time' && !(c.reps > 0)) { sec += sets * c.min * 60 + (sets - 1) * (c.restSec || 90) + 90; continue }
+    // A per-side hold is held once per side (two rows a set); per-side reps are already the
+    // total for both sides (sideReps halves them), so only holds double.
+    const work = c.mode === 'time' ? (c.sec || 30) * (isPerSide(c) ? 2 : 1) : Math.max(35, (c.reps || 10) * 4)
     sec += sets * work + (sets - 1) * (c.restSec || 90) + 90
   }
   return Math.round(sec / 60)

@@ -135,6 +135,7 @@ const MODULE_KW = {
   watch: 'watch apple watch wear os zepp amazfit garmin wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
+  nutrition: 'nutrition food diary meals servings calories protein carbohydrate fat',
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
   coach: 'ai coach llm assistant review suggestions',
@@ -264,6 +265,7 @@ export const SEARCH = [
   { page: 'equipment', title: 'Active gym', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym switch plates dumbbells bars per gym location', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },
   // Look & Home
+  { page: 'look', title: 'Look', icon: 'sparkles', tint: 'var(--acc)', kw: 'look style bold refined corners font ironvane', opts: ['Bold', 'Refined'] },
   { page: 'look', title: 'Theme', icon: 'moon', tint: 'var(--indigo)', kw: 'dark mode light mode theme appearance night', opts: ['Dark', 'Light', 'System'] },
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },

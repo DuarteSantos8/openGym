@@ -44,7 +44,7 @@ describe('PhotoCamera', () => {
     const onUse = vi.fn(async () => {}), close = vi.fn()
     act(() => root.render(<PhotoCamera photos={[photo(1)]} close={close} onUse={onUse} />))
     await flush()
-    expect(host.textContent).toContain('The camera is switched off for openGym')
+    expect(host.textContent).toContain('The camera is switched off for Ironvane')
     const input = host.querySelector('input[type=file]')
     const f = new File(['x'], 'a.jpg', { type: 'image/jpeg' })
     Object.defineProperty(input, 'files', { value: [f], configurable: true })

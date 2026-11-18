@@ -36,8 +36,10 @@ describe('Stats sections (P5)', () => {
     mount()
     const parts = index().map(b => b.textContent)
     expect(parts.slice(0, 3)).toEqual(['Overview', 'Body', 'Lifts'])
-    // every part but the first has its heading, and Effort is offered only when its part is there
-    expect([...host.querySelectorAll('.stats-sect-h')].map(h => h.textContent)).toEqual(parts.slice(1))
+    // Lifts leads the approved screen; the other indexed parts keep their headings under More.
+    const headings = [...host.querySelectorAll('.stats-sect-h')].map(h => h.textContent)
+    expect(headings).toHaveLength(parts.length - 1)
+    expect(headings).toEqual(expect.arrayContaining(parts.slice(1)))
     expect(!!host.querySelector('#stats-effort')).toBe(parts.includes('Effort'))
     expect(host.querySelector('#stats-overview [data-tour="stats-tiles"]')).toBeTruthy()
     expect(host.querySelector('#stats-lifts [data-tour="stats-records"]')).toBeTruthy()
@@ -52,9 +54,26 @@ describe('Stats sections (P5)', () => {
     expect(index()[2].getAttribute('aria-pressed')).toBe('true')
     expect(into).toHaveBeenCalled()
     expect(window.location.hash).toBe('#/stats?section=lifts')
+    const overviewInto = vi.fn()
+    host.querySelector('#stats-overview').scrollIntoView = overviewInto
     act(() => index()[0].click())
+    expect(overviewInto).toHaveBeenCalledWith({ block: 'start', behavior: 'smooth' })
     expect(window.location.hash).toBe('#/stats')
   })
+  it('tracks Body after Lifts in document order while preserving button order', async () => {
+    mount()
+    const height = vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(10000)
+    const positions = { lifts: -500, overview: -300, body: 0, effort: 1000 }
+    for (const el of host.querySelectorAll('[data-stats-sect]')) {
+      el.getBoundingClientRect = () => ({ top: positions[el.dataset.statsSect] })
+    }
+    try {
+      await act(async () => { window.dispatchEvent(new Event('scroll')); await new Promise(r => setTimeout(r, 60)) })
+      expect(index()[1].getAttribute('aria-pressed')).toBe('true')
+      expect(index().slice(0, 3).map(b => b.textContent)).toEqual(['Overview', 'Body', 'Lifts'])
+    } finally { height.mockRestore() }
+  })
+
   it('opens on the part the address names', () => {
     window.history.replaceState(null, '', '#/stats?section=body')
     mount()

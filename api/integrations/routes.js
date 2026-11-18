@@ -58,6 +58,11 @@ export function integrationRoutes({ json, readBody, readSession, hub, audit = ()
       json(res, 200, await hub.retry(user.id, idOf(body)));
     }),
 
+    // The Extension Lab's food diary searching the profile's own NutriTrace foods. Read only.
+    'GET /api/integrations/nutritrace/foods': guard(async (req, res, user) => {
+      const q = new URL(req.url, 'http://x').searchParams.get('q') || '';
+      json(res, 200, await hub.query(user.id, 'nutritrace', 'foods', { q }));
+    }),
     'GET /api/integrations/oauth/start': async (req, res) => {
       const user = readSession(req);
       const provider = (new URL(req.url, 'http://x').searchParams.get('provider') || '').slice(0, 40);

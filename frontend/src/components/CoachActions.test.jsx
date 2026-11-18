@@ -67,9 +67,11 @@ describe('what the Coach sees', () => {
     useStore.setState({ config: { coach: { web: false } } })
     await act(async () => { root.render(<CoachSeesSection />) })
     const sw = [...host.querySelectorAll('[role="switch"]')]
-    expect(sw.map(s => s.getAttribute('aria-checked'))).toEqual(['true', 'true', 'false', 'false'])
-    expect(sw[3].disabled).toBe(true)
+    expect(sw.map(s => s.getAttribute('aria-checked'))).toEqual(['true', 'true', 'false', 'false', 'false'])
+    expect(sw[4].disabled).toBe(true)   // records, measurements, health, nutrition (fork, off), web
     await act(async () => { sw[2].click() })
     expect(useStore.getState().S.coach.share.health).toBe(true)
+    await act(async () => { sw[3].click() })
+    expect(useStore.getState().S.coach.share.nutrition).toBe(true)
   })
 })

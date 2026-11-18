@@ -18,10 +18,12 @@ export const DATA_CATEGORIES = Object.freeze([
 export const OPTIONAL_CATEGORIES = Object.freeze([
   Object.freeze({ id: 'records', on: true }),       // estimated 1RMs and their 12-week trend
   Object.freeze({ id: 'measurements', on: true }),  // body measurements, latest and eight weeks before
-  Object.freeze({ id: 'health', on: false })        // daily check-ins, phone vitals, blood pressure
+  Object.freeze({ id: 'health', on: false }),       // daily check-ins, phone vitals, blood pressure
+  // Fork (EP13-T02, docs/next/adr/0005): food-diary day totals only, never food names. Off like health.
+  Object.freeze({ id: 'nutrition', on: false })
 ]);
 
-/** The switches as they stand for a profile: { records, measurements, health }. */
+/** The switches as they stand for a profile: { records, measurements, health, nutrition }. */
 export function shareOf(S) {
   const set = S && S.coach && S.coach.share && typeof S.coach.share === 'object' ? S.coach.share : {};
   const out = {};

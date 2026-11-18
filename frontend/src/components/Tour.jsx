@@ -38,7 +38,7 @@ const COPY = {
   'plan-views': () => [t('Your routines'), t('Schedule says when, Routines says what. Build your own or grab a starter plan.')],
   'plan-body': () => [t('Muscles at a glance'), t('The little body shows what each day works, so leg day can’t hide.')],
   'plan-menu': () => [t('Programmes and sharing'), t('Programmes, starter plans and sharing a plan with a friend live behind this button.')],
-  'go-library': () => [t('The exercise library'), t('Every exercise is one tap away. Tap Exercises.')],
+  'go-library': () => [t('The exercise library'), t('Every exercise is one tap away. Tap Library.')],
   'lib-search': () => [t('Find any exercise'), t('Search thousands of exercises in your language. Star your favourites and they float to the top.')],
   'lib-filters': () => [t('Filter it down'), t('Narrow the list by body part, type or the equipment you have.')],
   start: () => [t('The big Start button'), t('It starts today’s plan, or lets you pick something else. Tap it for a practice run.')],
@@ -48,11 +48,11 @@ const COPY = {
   swipe: () => [t('Swipe a set'), t('Swipe a set sideways to copy or remove it. Its number opens even more.')],
   more: () => [t('The ⋯ menu'), t('Workout settings, layouts, notes and extra exercises hide in here.')],
   finish: () => [t('Finish line'), t('Finish saves the session and moves your weights along. This practice one just quietly disappears.')],
-  'go-stats': () => [t('Your progress'), t('Back home, practice over. Stats is where the gains pile up. Tap it.')],
+  'go-stats': () => [t('Your progress'), t('Practice over. Progress is where the gains pile up. Tap it.')],
   stats: () => [t('Your numbers'), t('Workouts, streaks and everything you’ve lifted. It fills up as you train.')],
   'stats-body': () => [t('Body map'), t('See which muscles got the work and which still need rest. Tap one for details.')],
   'stats-records': () => [t('Records'), t('Pick an exercise to see its best sets, estimated max and where it’s heading.')],
-  'go-home': () => [t('Settings are on Home'), t('Head back to Home first. Tap it.')],
+  'go-home': () => [t('Settings are on Today'), t('Head back to Today first. Tap it.')],
   'go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
   look: () => [t('Make it yours'), t('Theme, accent colour and what Home shows.')],
   units: () => [t('Units & language'), t('Kilos or pounds, and the language you like best.')],
@@ -72,10 +72,10 @@ const COPY = {
   'p-sched': () => [t('When do you train it?'), t('Tap Schedule to put it on a day.')],
   'p-day': () => [t('Pick a day'), t('Tap a weekday and choose your new routine. Two on one day works too.')],
   'p-loop': () => [t('Add it to the loop'), t('Tap Add and pick your new routine. The loop runs in that order.')],
-  'p-done': () => [t('That’s a plan'), t('Home shows it on its day and Start opens it. Change it any time right here.')],
+  'p-done': () => [t('That’s a plan'), t('Today shows it on its day and Start opens it. Change it any time right here.')],
 
   'c-intro': () => [t('Your own exercise'), t('Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.')],
-  'c-go': () => [t('The exercise library'), t('Custom exercises live with the rest. Tap Exercises.')],
+  'c-go': () => [t('The exercise library'), t('Custom exercises live with the rest. Tap Library.')],
   'c-new': () => [t('Create your own exercise'), t('It’s the first row of the list. Tap it.')],
   'c-name': () => [t('Name it'), t('Call it what you call it. Other names you add help the search find it.')],
   'c-bp': () => [t('Body part'), t('Pick one. Muscle groups are optional, but they feed the body map and muscle balance.')],
@@ -86,17 +86,17 @@ const COPY = {
   'c-done': () => [t('That’s the lot'), t('Search finds your exercises like any other, and they go into routines and workouts the same way.')],
 
   'e-intro': () => [t('Edit your data'), t('We swapped in a practice copy with a pretend workout and weigh-in. Poke at anything, nothing here sticks.')],
-  'e-go-home': () => [t('Weigh-ins first'), t('They’re on Home. Tap it.')],
+  'e-go-home': () => [t('Weigh-ins first'), t('They’re on Today. Tap it.')],
   'e-weighins': () => [t('Every weigh-in'), t('Tap All weigh-ins.')],
   'e-weighin': () => [t('Fix a weigh-in'), t('The bin deletes one, and Undo pops up right after. Wrong number? Log that day again and the new one wins.')],
-  'e-go-stats': () => [t('Now your workouts'), t('They live under Stats. Tap it.')],
+  'e-go-stats': () => [t('Now your workouts'), t('They live under Progress. Tap it.')],
   'e-history': () => [t('History'), t('Every workout you’ve logged. Tap the clock.')],
   'e-past': () => [t('Forgot one?'), t('Log a past workout with its own date and time. It counts like any other.')],
   'e-row': () => [t('Open a workout'), t('Here’s the pretend one. Tap it.')],
   'e-edit': () => [t('Edit a workout'), t('Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.')],
   'e-note': () => [t('Notes'), t('Rewrite the session note whenever.')],
   'e-options': () => [t('Workout options'), t('Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.')],
-  'e-back': () => [t('Back to Stats'), t('Tap back.')],
+  'e-back': () => [t('Back to Progress'), t('Tap back.')],
   'e-measure': () => [t('Measurements and photos'), t('Open a check-in to change or delete it. Progress photos work the same way.')],
   'e-routines': () => [t('Routines'), t('Change them any time in Plan. Past workouts keep what you actually did.')],
   'e-cant': () => [t('What you can’t edit'), t('An exercise’s history, records and progress are worked out from your workouts. Fix the workout and they follow.')],
@@ -104,7 +104,7 @@ const COPY = {
 
   'b-intro': () => [t('Export & import'), t('Where your data goes in and out. We only point, nothing runs until you tap it yourself.')],
   'b-up': () => [t('Up one level'), t('Tap back to Settings.')],
-  'b-go-home': () => [t('Settings are on Home'), t('Head back to Home first. Tap it.')],
+  'b-go-home': () => [t('Settings are on Today'), t('Head back to Today first. Tap it.')],
   'b-go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
   'b-data': () => [t('Data & backup'), t('Tap it.')],
   'b-export': () => [t('Back it all up'), t('One file with everything. Keep it somewhere safe, Import backup brings it back.')],
@@ -133,6 +133,13 @@ export function findAnchor(name) {
     return el
   }
   return null
+}
+
+/** Opens every closed disclosure (<details>) around a stop's element, so the spotlight never
+    points at a control the user cannot see or reach (Plan keeps its mode and menu under
+    Advanced and More). A screen that tracks its disclosures hears the toggle event as usual. */
+export function revealAnchor(el) {
+  for (let d = el?.parentElement?.closest('details'); d; d = d.parentElement?.closest('details')) if (!d.open) d.open = true
 }
 
 // What a screen reader hears the spotlight is on: the element's own name, kept short.
@@ -404,6 +411,7 @@ function Run({ at, flow = 'tour' }) {
       if (step.skip && passOver(step, ctxNow())) { go(dirRef.current); return }
       // Not there after all: an optional stop is passed over, any other one speaks from the middle.
       if (!el && step.anchor && step.optional) { go(dirRef.current); return }
+      revealAnchor(el)
       anchorRef.current = el
       if (el && !visiblePart(el.getBoundingClientRect(), bandBox(viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
       shownAt.current = Date.now()

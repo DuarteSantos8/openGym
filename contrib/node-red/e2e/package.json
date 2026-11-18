@@ -1,0 +1,8 @@
+{
+  "name": "opengym-node-red-e2e",
+  "private": true,
+  "description": "Runs the openGym webhook flow in a real Node-RED. Test-only; nothing here ships with openGym.",
+  "type": "module",
+  "scripts": { "e2e": "node run.mjs" },
+  "devDependencies": { "node-red": "5.0.9" }
+}

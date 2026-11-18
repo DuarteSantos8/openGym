@@ -15,6 +15,7 @@ import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
+import MetricCard from '../components/MetricCard.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
@@ -37,6 +38,7 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
+import { APP_NAME } from '../lib/brand.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -135,9 +137,10 @@ export default function Home() {
   const splitDay = apartSessions.length > 1
 
   return <div className="narrow">
+    {isOn(S, 'nutrition') && <button className="card btn" style={{ width: '100%', minHeight: 44, textAlign: 'start' }} onClick={() => nav('/nutrition')}>{t('Nutrition diary')}</button>}
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
-      <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      <div><h1>{user ? t('Hi {0}', user.name) : APP_NAME}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
     <TrainerNotice />
@@ -265,14 +268,9 @@ export default function Home() {
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
+          <MetricCard hideLabel label={t('Body weight')} value={fmtNum(bw.w)} unit={S.unit} delta={delta || 0}
+            deltaText={delta ? (delta > 0 ? '+' : '\u2212') + fmtNum(Math.abs(delta)) : undefined} deltaColor={delta ? bwDeltaColor(delta, bw.w, true) : undefined} />
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (

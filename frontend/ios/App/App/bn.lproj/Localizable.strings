@@ -2,14 +2,14 @@
 "Start workout" = "ওয়ার্কআউট শুরু করুন";
 "Starts today’s planned workout, or opens the one already running." = "আজকের প্ল্যান করা ওয়ার্কআউট শুরু করে, বা চলতি ওয়ার্কআউট খোলে।";
 "Log weight" = "ওজন লিখুন";
-"Logs your body weight without opening openGym." = "openGym না খুলেই আপনার ওজন লিখে রাখে।";
+"Logs your body weight without opening Ironvane." = "Ironvane না খুলেই আপনার ওজন লিখে রাখে।";
 "Weight" = "ওজন";
 "What’s your weight?" = "আপনার ওজন কত?";
 "Today’s workout" = "আজকের ওয়ার্কআউট";
 "Tells you what’s planned for today." = "আজ কী প্ল্যান আছে তা জানায়।";
 "Week streak" = "সপ্তাহের স্ট্রিক";
 "Tells you how many weeks in a row you trained." = "টানা কত সপ্তাহ ট্রেনিং করেছেন তা জানায়।";
-"Open openGym once, then ask me again." = "openGym একবার খুলুন, তারপর আবার জিজ্ঞেস করুন।";
+"Open Ironvane once, then ask me again." = "Ironvane একবার খুলুন, তারপর আবার জিজ্ঞেস করুন।";
 "You’re in the middle of %@." = "আপনি এখন %@ করছেন।";
 "You’re in the middle of a workout." = "আপনি এখন ওয়ার্কআউট করছেন।";
 "Your workout" = "আপনার ওয়ার্কআউট";

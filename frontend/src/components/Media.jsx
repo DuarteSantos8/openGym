@@ -30,7 +30,8 @@ export default function Media(p) {
   const own = useOwnMedia(p.ex)
   const links = youtubeLinks(p.notes).filter(url => !custom || youtubeId(url) !== youtubeId(p.ex?.url))
   // Yours or the animation, whichever the exercise shows first, with a switch on the picture.
-  const flip = own && p.ex?.gif ? <OwnMediaFlip exId={p.ex.id} showing={own.show} /> : null
+  // `noFlip`: the exercise sheet has its own switch above the picture.
+  const flip = own && p.ex?.gif && !p.noFlip ? <OwnMediaFlip exId={p.ex.id} showing={own.show} /> : null
   return <>
     {custom ? <CustomMedia {...p} />
       : own && (own.show === 'own' || !p.ex?.gif)

@@ -24,7 +24,10 @@ import { ACCENTS, ACCENT_INK } from './format.js'
 //   is laid over useStore's DEF, whose accent is this, so a profile that never picked one keeps the
 //   iOS green it always had and nothing changes under anyone on an update (accent.migration.test.js).
 //   An older app reading 'brand' does not know it and draws its own default, this same green.
-export const NEW_ACCENT = 'brand'
+export const NEW_ACCENT = 'ironvane'
+// Presets drawn through the own-colour path (no data-accent rules in index.css, no native style):
+// accentValue hands out their colour as '#rrggbb', which every consumer already takes.
+export const HEX_PRESETS = new Set(['ironvane'])
 export const DEFAULT_ACCENT = 'lime'
 export const CUSTOM = 'custom'
 
@@ -66,6 +69,7 @@ export function accentKey(S) {
  */
 export function accentValue(S) {
   const k = accentKey(S)
+  if (HEX_PRESETS.has(k)) return ACCENTS[k]
   return k === CUSTOM ? cleanHex(S.accentCustom) : k
 }
 

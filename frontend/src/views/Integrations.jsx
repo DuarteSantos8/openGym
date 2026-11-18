@@ -198,6 +198,14 @@ export default function IntegrationsPage({ android = false, ios = false }) {
 
   return <>
     <p className="sect-f intg-intro">{t('Only what you switch on talks to anything. The rest stays out of your way.')}</p>
+    <div className="sect-b">
+      <button type="button" className="lrow tap" onClick={() => nav('/addons')}>
+        <span className="lrow-i"><Icon name="dumbbell" /></span>
+        <span className="lrow-m"><span className="lrow-t">Extension lab</span>
+          <span className="lrow-s">Training insights, nutrition lookup and private activity-file preview</span>
+        </span><Icon name="chevronRight" />
+      </button>
+    </div>
     {server.error && <Section><Row icon="warning" iconTint="var(--orange)" title={t('Could not reach your server')} subtitle={t('Tap to try again')} onClick={() => server.load()} /></Section>}
     {dir.map(cat => <div key={cat.id}>
       <Section title={t(cat.title)}>

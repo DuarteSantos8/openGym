@@ -1,0 +1,5211 @@
+TAP version 13
+# Subtest: the request the phone sends a compatible endpoint, as a strict gateway sees it (\#804)
+ok 1 - the request the phone sends a compatible endpoint, as a strict gateway sees it (\#804)
+  ---
+  duration_ms: 3.367043
+  type: 'test'
+  ...
+# Subtest: a generic 400 for an open schema is answered with the strict copy and works (\#804)
+ok 2 - a generic 400 for an open schema is answered with the strict copy and works (\#804)
+  ---
+  duration_ms: 1.687757
+  type: 'test'
+  ...
+# Subtest: a generic 400 for a schema the gateway cannot take at all lands on plain JSON mode (\#804)
+ok 3 - a generic 400 for a schema the gateway cannot take at all lands on plain JSON mode (\#804)
+  ---
+  duration_ms: 2.192929
+  type: 'test'
+  ...
+# Subtest: a reasoning model behind a gateway that wants max_completion_tokens, said generically or in words (\#804)
+ok 4 - a reasoning model behind a gateway that wants max_completion_tokens, said generically or in words (\#804)
+  ---
+  duration_ms: 1.704537
+  type: 'test'
+  ...
+# Subtest: a model that refuses temperature 0 gets the request without it (\#804)
+ok 5 - a model that refuses temperature 0 gets the request without it (\#804)
+  ---
+  duration_ms: 1.527146
+  type: 'test'
+  ...
+# Subtest: a gateway that takes no response_format at all gets JSON asked for in the prompt only (\#804)
+ok 6 - a gateway that takes no response_format at all gets JSON asked for in the prompt only (\#804)
+  ---
+  duration_ms: 2.187579
+  type: 'test'
+  ...
+# Subtest: several refusals at once are worked through, and the try count stays bounded (\#804)
+ok 7 - several refusals at once are worked through, and the try count stays bounded (\#804)
+  ---
+  duration_ms: 0.925603
+  type: 'test'
+  ...
+# Subtest: the shape that worked is remembered per endpoint and model, so the next job asks once (\#804)
+ok 8 - the shape that worked is remembered per endpoint and model, so the next job asks once (\#804)
+  ---
+  duration_ms: 1.157684
+  type: 'test'
+  ...
+# Subtest: a profile handed in from elsewhere (the phone’s device file) is used from the first request (\#804)
+ok 9 - a profile handed in from elsewhere (the phone’s device file) is used from the first request (\#804)
+  ---
+  duration_ms: 1.905947
+  type: 'test'
+  ...
+# Subtest: when nothing works, the gateway’s own words come back, after a bounded number of tries (\#804)
+ok 10 - when nothing works, the gateway’s own words come back, after a bounded number of tries (\#804)
+  ---
+  duration_ms: 1.801636
+  type: 'test'
+  ...
+# Subtest: a 400 that names a parameter the request does not carry is not retried blindly
+ok 11 - a 400 that names a parameter the request does not carry is not retried blindly
+  ---
+  duration_ms: 0.717123
+  type: 'test'
+  ...
+# Subtest: OpenAI itself never walks the generic ladder: its errors name what is wrong
+ok 12 - OpenAI itself never walks the generic ladder: its errors name what is wrong
+  ---
+  duration_ms: 0.359241
+  type: 'test'
+  ...
+# Subtest: Azure OpenAI and OpenAI reasoning models get max_completion_tokens from the first request (\#869)
+ok 13 - Azure OpenAI and OpenAI reasoning models get max_completion_tokens from the first request (\#869)
+  ---
+  duration_ms: 1.873378
+  type: 'test'
+  ...
+# Subtest: the exact OpenAI 400 is answered once with the other field and remembered for that endpoint (\#869)
+ok 14 - the exact OpenAI 400 is answered once with the other field and remembered for that endpoint (\#869)
+  ---
+  duration_ms: 1.129256
+  type: 'test'
+  ...
+# Subtest: a wrong guess of the token field is undone once, even against a remembered swap (\#869)
+ok 15 - a wrong guess of the token field is undone once, even against a remembered swap (\#869)
+  ---
+  duration_ms: 1.398075
+  type: 'test'
+  ...
+# Subtest: the four HTTP adapters spawn nothing and need no runtime
+ok 16 - the four HTTP adapters spawn nothing and need no runtime
+  ---
+  duration_ms: 2.008377
+  type: 'test'
+  ...
+# Subtest: Anthropic: /v1/messages with the key in a header, the shared system prompt, and the text joined back
+ok 17 - Anthropic: /v1/messages with the key in a header, the shared system prompt, and the text joined back
+  ---
+  duration_ms: 2.993071
+  type: 'test'
+  ...
+# Subtest: OpenAI: chat completions in JSON mode, bearer auth, max_completion_tokens
+ok 18 - OpenAI: chat completions in JSON mode, bearer auth, max_completion_tokens
+  ---
+  duration_ms: 1.774117
+  type: 'test'
+  ...
+# Subtest: Gemini: generateContent with the key as a header — never ?key= — and JSON output requested
+ok 19 - Gemini: generateContent with the key as a header — never ?key= — and JSON output requested
+  ---
+  duration_ms: 1.256226
+  type: 'test'
+  ...
+# Subtest: compatible: the configured base URL, max_tokens, and no Authorization header when there is no key
+ok 20 - compatible: the configured base URL, max_tokens, and no Authorization header when there is no key
+  ---
+  duration_ms: 1.421285
+  type: 'test'
+  ...
+# Subtest: compatible: a base that already names its API version is used as the full prefix (\#437)
+ok 21 - compatible: a base that already names its API version is used as the full prefix (\#437)
+  ---
+  duration_ms: 3.809074
+  type: 'test'
+  ...
+# Subtest: compatible: a mount whose API has no version segment is reached on the 404 fallback and remembered (\#508)
+ok 22 - compatible: a mount whose API has no version segment is reached on the 404 fallback and remembered (\#508)
+  ---
+  duration_ms: 103.637668
+  type: 'test'
+  ...
+# Subtest: compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (\#508)
+ok 23 - compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (\#508)
+  ---
+  duration_ms: 2.036829
+  type: 'test'
+  ...
+# Subtest: compatible: no endpoint configured, or no model chosen, is a clean failure rather than a request
+ok 24 - compatible: no endpoint configured, or no model chosen, is a clean failure rather than a request
+  ---
+  duration_ms: 0.516353
+  type: 'test'
+  ...
+# Subtest: compatible: a server that rejects JSON mode gets the same request once more without it
+ok 25 - compatible: a server that rejects JSON mode gets the same request once more without it
+  ---
+  duration_ms: 1.699247
+  type: 'test'
+  ...
+# Subtest: compatible: a schema the provider cannot serve, wrapped by OpenRouter, is retried once in plain JSON mode
+ok 26 - compatible: a schema the provider cannot serve, wrapped by OpenRouter, is retried once in plain JSON mode
+  ---
+  duration_ms: 0.778913
+  type: 'test'
+  ...
+# Subtest: a provider error wrapped by OpenRouter reaches stderr in the provider’s own words
+ok 27 - a provider error wrapped by OpenRouter reaches stderr in the provider’s own words
+  ---
+  duration_ms: 0.948074
+  type: 'test'
+  ...
+# Subtest: a wrapped provider error that mentions tokens is still "provider", not "auth"
+ok 28 - a wrapped provider error that mentions tokens is still "provider", not "auth"
+  ---
+  duration_ms: 1.266485
+  type: 'test'
+  ...
+# Subtest: a wrapped provider error whose raw text is not JSON is passed through as it is
+ok 29 - a wrapped provider error whose raw text is not JSON is passed through as it is
+  ---
+  duration_ms: 0.407802
+  type: 'test'
+  ...
+# Subtest: a validator that rejects the flat schema on additionalProperties gets one strict copy of the same request (\#701)
+ok 30 - a validator that rejects the flat schema on additionalProperties gets one strict copy of the same request (\#701)
+  ---
+  duration_ms: 0.981934
+  type: 'test'
+  ...
+# Subtest: a validator that rejects the strict copy as well still falls back to plain JSON mode
+ok 31 - a validator that rejects the strict copy as well still falls back to plain JSON mode
+  ---
+  duration_ms: 0.778463
+  type: 'test'
+  ...
+# Subtest: an additionalProperties complaint about a request with no schema never invents a strict schema
+ok 32 - an additionalProperties complaint about a request with no schema never invents a strict schema
+  ---
+  duration_ms: 0.522712
+  type: 'test'
+  ...
+# Subtest: Gemini: the default is a current model, not one Google refuses new keys (\#758)
+ok 33 - Gemini: the default is a current model, not one Google refuses new keys (\#758)
+  ---
+  duration_ms: 0.169191
+  type: 'test'
+  ...
+# Subtest: a model the key cannot use is swapped once for the provider default it lists, and remembered (\#758)
+ok 34 - a model the key cannot use is swapped once for the provider default it lists, and remembered (\#758)
+  ---
+  duration_ms: 1.608757
+  type: 'test'
+  ...
+# Subtest: without the default in the list, the newest plain Flash the key lists is the one tried (\#758)
+ok 35 - without the default in the list, the newest plain Flash the key lists is the one tried (\#758)
+  ---
+  duration_ms: 1.102785
+  type: 'test'
+  ...
+# Subtest: when no other model works either, the error names the model and says where to change it (\#758)
+ok 36 - when no other model works either, the error names the model and says where to change it (\#758)
+  ---
+  duration_ms: 1.041694
+  type: 'test'
+  ...
+# Subtest: the swap is one try: a substitute that is refused as well ends the job, naming it (\#758)
+ok 37 - the swap is one try: a substitute that is refused as well ends the job, naming it (\#758)
+  ---
+  duration_ms: 0.697812
+  type: 'test'
+  ...
+# Subtest: a 400 that names an unknown model (OpenRouter) is a model problem too; other 400s are not (\#758)
+ok 38 - a 400 that names an unknown model (OpenRouter) is a model problem too; other 400s are not (\#758)
+  ---
+  duration_ms: 3.107782
+  type: 'test'
+  ...
+# Subtest: a missing key is "missing", like an absent CLI — no request is made
+ok 39 - a missing key is "missing", like an absent CLI — no request is made
+  ---
+  duration_ms: 0.20125
+  type: 'test'
+  ...
+# Subtest: 401 and 403 reach the pipeline as "auth"; other statuses as "provider"
+ok 40 - 401 and 403 reach the pipeline as "auth"; other statuses as "provider"
+  ---
+  duration_ms: 26.838853
+  type: 'test'
+  ...
+# Subtest: a transient status (429, 5xx, 529) is retried twice with the same request, then given up on
+ok 41 - a transient status (429, 5xx, 529) is retried twice with the same request, then given up on
+  ---
+  duration_ms: 7.670498
+  type: 'test'
+  ...
+# Subtest: an abort that lands during a retry pause sends nothing more and ends as a timeout
+ok 42 - an abort that lands during a retry pause sends nothing more and ends as a timeout
+  ---
+  duration_ms: 21.176042
+  type: 'test'
+  ...
+# Subtest: a body that is not JSON on an error yields its status, never the body itself
+ok 43 - a body that is not JSON on an error yields its status, never the body itself
+  ---
+  duration_ms: 7004.045131
+  type: 'test'
+  ...
+# Subtest: an answer cut off at the output limit fails as "provider", not as a half-parsed proposal
+ok 44 - an answer cut off at the output limit fails as "provider", not as a half-parsed proposal
+  ---
+  duration_ms: 2.474031
+  type: 'test'
+  ...
+# Subtest: a refusal, and a Gemini safety stop, are provider errors with the reason in stderr
+ok 45 - a refusal, and a Gemini safety stop, are provider errors with the reason in stderr
+  ---
+  duration_ms: 0.528741
+  type: 'test'
+  ...
+# Subtest: a fetch that throws names the host; an abort is a timeout
+ok 46 - a fetch that throws names the host; an abort is a timeout
+  ---
+  duration_ms: 41.787111
+  type: 'test'
+  ...
+# Subtest: models(): each list shape is read, sorted, and Gemini is filtered to generateContent
+ok 47 - models(): each list shape is read, sorted, and Gemini is filtered to generateContent
+  ---
+  duration_ms: 1.148154
+  type: 'test'
+  ...
+# Subtest: check(): without a key the runtime is ready and the key is what is missing; with one it lists models
+ok 48 - check(): without a key the runtime is ready and the key is what is missing; with one it lists models
+  ---
+  duration_ms: 0.360772
+  type: 'test'
+  ...
+# Subtest: check(): the Runtime line names the scheme the endpoint is really called with
+ok 49 - check(): the Runtime line names the scheme the endpoint is really called with
+  ---
+  duration_ms: 0.414392
+  type: 'test'
+  ...
+# Subtest: validateBaseUrl: http(s) only, no credentials, no query, trailing slash dropped
+ok 50 - validateBaseUrl: http(s) only, no credentials, no query, trailing slash dropped
+  ---
+  duration_ms: 0.521271
+  type: 'test'
+  ...
+# Subtest: validateBaseUrl: an Azure OpenAI Responses or deployment URL is answered with the v1 base to use (\#869)
+ok 51 - validateBaseUrl: an Azure OpenAI Responses or deployment URL is answered with the v1 base to use (\#869)
+  ---
+  duration_ms: 0.321512
+  type: 'test'
+  ...
+# Subtest: isPrivateHost / phoneMayCall: http:// from the phone only to the home network (\#913)
+ok 52 - isPrivateHost / phoneMayCall: http:// from the phone only to the home network (\#913)
+  ---
+  duration_ms: 1.020974
+  type: 'test'
+  ...
+# Subtest: models(): OpenAI’s list is cut to what Chat Completions can use; a compatible endpoint is not filtered
+ok 53 - models(): OpenAI’s list is cut to what Chat Completions can use; a compatible endpoint is not filtered
+  ---
+  duration_ms: 0.828213
+  type: 'test'
+  ...
+# Subtest: invoke sends the configured maxTokens override, and the adapter default when none is given
+ok 54 - invoke sends the configured maxTokens override, and the adapter default when none is given
+  ---
+  duration_ms: 0.873544
+  type: 'test'
+  ...
+# Subtest: compatible: configured extra headers ride on models, check and jobs — auth framing always wins
+ok 55 - compatible: configured extra headers ride on models, check and jobs — auth framing always wins
+  ---
+  duration_ms: 0.417562
+  type: 'test'
+  ...
+# Subtest: validateHeaders: small maps pass, framing names and junk do not
+ok 56 - validateHeaders: small maps pass, framing names and junk do not
+  ---
+  duration_ms: 0.485881
+  type: 'test'
+  ...
+# Subtest: every provider the config offers has an adapter, and vice versa
+ok 57 - every provider the config offers has an adapter, and vice versa
+  ---
+  duration_ms: 2.129319
+  type: 'test'
+  ...
+# Subtest: the Claude adapter is locked out of every tool the SDK could give it
+ok 58 - the Claude adapter is locked out of every tool the SDK could give it
+  ---
+  duration_ms: 0.201521
+  type: 'test'
+  ...
+# Subtest: an image built without the AI runtime reports it rather than crashing
+ok 59 - an image built without the AI runtime reports it rather than crashing
+  ---
+  duration_ms: 161.254199
+  type: 'test'
+  ...
+# Subtest: the fixture provider needs no credential and the Claude one names both it accepts
+ok 60 - the fixture provider needs no credential and the Claude one names both it accepts
+  ---
+  duration_ms: 0.222621
+  type: 'test'
+  ...
+# Subtest: the Codex credential cache is a sibling of ./data, never inside it
+ok 61 - the Codex credential cache is a sibling of ./data, never inside it
+  ---
+  duration_ms: 1.275955
+  type: 'test'
+  ...
+# Subtest: the Codex adapter runs with the three flags that keep host state out of a job
+ok 62 - the Codex adapter runs with the three flags that keep host state out of a job
+  ---
+  duration_ms: 0.366992
+  type: 'test'
+  ...
+# Subtest: a configured model is appended, and nothing else is
+ok 63 - a configured model is appended, and nothing else is
+  ---
+  duration_ms: 0.23414
+  type: 'test'
+  ...
+# Subtest: every adapter states whether it spawns a process — the privilege gate reads that, not an absence
+ok 64 - every adapter states whether it spawns a process — the privilege gate reads that, not an absence
+  ---
+  duration_ms: 0.190891
+  type: 'test'
+  ...
+# (node:11633) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a review the tick missed by a minute is still due
+ok 65 - a review the tick missed by a minute is still due
+  ---
+  duration_ms: 20.735499
+  type: 'test'
+  ...
+# Subtest: the minute itself is unchanged, and so is the week after it ran
+ok 66 - the minute itself is unchanged, and so is the week after it ran
+  ---
+  duration_ms: 3.143132
+  type: 'test'
+  ...
+# Subtest: before the slot is not due, however long ago the last one was
+ok 67 - before the slot is not due, however long ago the last one was
+  ---
+  duration_ms: 0.614592
+  type: 'test'
+  ...
+# Subtest: a box that was off over the slot runs the review when it comes back
+ok 68 - a box that was off over the slot runs the review when it comes back
+  ---
+  duration_ms: 0.605022
+  type: 'test'
+  ...
+# Subtest: the gates that already existed still hold
+ok 69 - the gates that already existed still hold
+  ---
+  duration_ms: 1.281945
+  type: 'test'
+  ...
+# Subtest: the slot is read on the user's clock, not the server's
+ok 70 - the slot is read on the user's clock, not the server's
+  ---
+  duration_ms: 0.952573
+  type: 'test'
+  ...
+# Subtest: the clocks going back does not make the week's review due eight hours early
+ok 71 - the clocks going back does not make the week's review due eight hours early
+  ---
+  duration_ms: 3.619193
+  type: 'test'
+  ...
+# Subtest: the clocks going forward are unchanged
+ok 72 - the clocks going forward are unchanged
+  ---
+  duration_ms: 1.214095
+  type: 'test'
+  ...
+# Subtest: a zone that never moves is unaffected
+ok 73 - a zone that never moves is unaffected
+  ---
+  duration_ms: 2.33095
+  type: 'test'
+  ...
+# Subtest: a push from before a badge keeps the badge, for the app and for an older writer
+ok 74 - a push from before a badge keeps the badge, for the app and for an older writer
+  ---
+  duration_ms: 5.1745
+  type: 'test'
+  ...
+# Subtest: an older app that never knew challenges keeps them
+ok 75 - an older app that never knew challenges keeps them
+  ---
+  duration_ms: 0.741302
+  type: 'test'
+  ...
+# Subtest: a reset starts over
+ok 76 - a reset starts over
+  ---
+  duration_ms: 0.22806
+  type: 'test'
+  ...
+# Subtest: the first picks of a month win, and the value stays small
+ok 77 - the first picks of a month win, and the value stays small
+  ---
+  duration_ms: 0.408933
+  type: 'test'
+  ...
+# Subtest: context: weekly sets, the last 72 hours and days since, per target muscle
+ok 78 - context: weekly sets, the last 72 hours and days since, per target muscle
+  ---
+  duration_ms: 1.476755
+  type: 'test'
+  ...
+# Subtest: context: the active gym loads by size only, never by name; challenges are this month’s, cleaned
+ok 79 - context: the active gym loads by size only, never by name; challenges are this month’s, cleaned
+  ---
+  duration_ms: 1.315395
+  type: 'test'
+  ...
+# Subtest: review payload: warm-ups, programmes, muscles, gym, challenges and the daily weigh-in value
+ok 80 - review payload: warm-ups, programmes, muscles, gym, challenges and the daily weigh-in value
+  ---
+  duration_ms: 14.580347
+  type: 'test'
+  ...
+# Subtest: the fingerprint of a plan does not move because it gained warm-up choices or programmes
+ok 81 - the fingerprint of a plan does not move because it gained warm-up choices or programmes
+  ---
+  duration_ms: 0.559433
+  type: 'test'
+  ...
+# Subtest: adapt payload: the running session indexed, the exercise asked about, like-for-like candidates
+ok 82 - adapt payload: the running session indexed, the exercise asked about, like-for-like candidates
+  ---
+  duration_ms: 4.771727
+  type: 'test'
+  ...
+# Subtest: validateAdapt: each type, against the open part of the session only
+ok 83 - validateAdapt: each type, against the open part of the session only
+  ---
+  duration_ms: 2.208758
+  type: 'test'
+  ...
+# Subtest: adapt pipeline: its own rules and schema reach the provider; a bad answer gets the one repair round
+ok 84 - adapt pipeline: its own rules and schema reach the provider; a bad answer gets the one repair round
+  ---
+  duration_ms: 1.557127
+  type: 'test'
+  ...
+# Subtest: the adapt schema survives the strict copy: every change field is a plain scalar
+ok 85 - the adapt schema survives the strict copy: every change field is a plain scalar
+  ---
+  duration_ms: 0.374622
+  type: 'test'
+  ...
+# Subtest: review: warm-up changes, explained and bounded
+ok 86 - review: warm-up changes, explained and bounded
+  ---
+  duration_ms: 2.74313
+  type: 'test'
+  ...
+# Subtest: review: a programme, new or revised, over exercises of the plan
+ok 87 - review: a programme, new or revised, over exercises of the plan
+  ---
+  duration_ms: 1.884847
+  type: 'test'
+  ...
+# Subtest: the system prompt stays a prompt: every task under 20k characters
+ok 88 - the system prompt stays a prompt: every task under 20k characters
+  ---
+  duration_ms: 0.588343
+  type: 'test'
+  ...
+# Subtest: ask payload: the question, the recent sessions, the chat so far
+ok 89 - ask payload: the question, the recent sessions, the chat so far
+  ---
+  duration_ms: 7.027718
+  type: 'test'
+  ...
+# Subtest: ask payload: the running session the phone sent is bounded like a logged one
+ok 90 - ask payload: the running session the phone sent is bounded like a logged one
+  ---
+  duration_ms: 1.280235
+  type: 'test'
+  ...
+# Subtest: validateAsk: one answer, no changes
+ok 91 - validateAsk: one answer, no changes
+  ---
+  duration_ms: 0.35714
+  type: 'test'
+  ...
+# Subtest: ask pipeline: the ask rules and schema reach the provider, and an answer comes back
+ok 92 - ask pipeline: the ask rules and schema reach the provider, and an answer comes back
+  ---
+  duration_ms: 1.113104
+  type: 'test'
+  ...
+# Subtest: forgetting a profile does not hand it a fresh daily cap
+ok 93 - forgetting a profile does not hand it a fresh daily cap
+  ---
+  duration_ms: 78.27083
+  type: 'test'
+  ...
+# Subtest: with nothing spent today, forget leaves no file at all
+ok 94 - with nothing spent today, forget leaves no file at all
+  ---
+  duration_ms: 1.062944
+  type: 'test'
+  ...
+# Subtest: the instance cap is reserved at enqueue, so a job still running already counts
+ok 95 - the instance cap is reserved at enqueue, so a job still running already counts
+  ---
+  duration_ms: 69.931969
+  type: 'test'
+  ...
+# coach: scheduled review queued for u-cadence
+# Subtest: the instance count is not bounded by the length of the job log
+ok 96 - the instance count is not bounded by the length of the job log
+  ---
+  duration_ms: 64.522028
+  type: 'test'
+  ...
+# Subtest: a job the daily caps refuse does not bind the instance credential
+ok 97 - a job the daily caps refuse does not bind the instance credential
+  ---
+  duration_ms: 6.900488
+  type: 'test'
+  ...
+# coach: scheduled review queued for u-cadence
+# coach: scheduled review queued for u-cadence-tz
+# Subtest: a scheduled review reads a batch of workouts once, not once per tick
+ok 98 - a scheduled review reads a batch of workouts once, not once per tick
+  ---
+  duration_ms: 131.907977
+  type: 'test'
+  ...
+# coach: scheduled review queued for u-cadence-unusable
+# Subtest: a workout the phone dated tomorrow is not re-read once the review has covered it
+ok 99 - a workout the phone dated tomorrow is not re-read once the review has covered it
+  ---
+  duration_ms: 63.368404
+  type: 'test'
+  ...
+# coach: scheduled review queued for u-cadence-unusable
+# coach: scheduled review queued for u-cadence-unusable
+# coach: scheduled review queued for u-cadence-pending
+# Subtest: an answer the model was paid for counts as the review, even when it was unusable
+ok 100 - an answer the model was paid for counts as the review, even when it was unusable
+  ---
+  duration_ms: 240.475874
+  type: 'test'
+  ...
+# coach: scheduled review queued for u-cadence-pending
+# Subtest: a proposal nobody has answered is not replaced by the next scheduled review
+ok 101 - a proposal nobody has answered is not replaced by the next scheduled review
+  ---
+  duration_ms: 185.926623
+  type: 'test'
+  ...
+# Subtest: a rejected answer tells the admin which rule broke, without quoting the plan
+ok 102 - a rejected answer tells the admin which rule broke, without quoting the plan
+  ---
+  duration_ms: 1.110495
+  type: 'test'
+  ...
+# Subtest: a profile that does not share sees nothing, whatever the others do
+ok 103 - a profile that does not share sees nothing, whatever the others do
+  ---
+  duration_ms: 2.35118
+  type: 'test'
+  ...
+# Subtest: below the minimum headcount there are no numbers, only how many are missing
+ok 104 - below the minimum headcount there are no numbers, only how many are missing
+  ---
+  duration_ms: 1.926038
+  type: 'test'
+  ...
+# Subtest: medians, headcounts and the requester's own numbers; warm-ups never count
+ok 105 - medians, headcounts and the requester's own numbers; warm-ups never count
+  ---
+  duration_ms: 1.951887
+  type: 'test'
+  ...
+# Subtest: a requester in pounds gets pounds back; the prompt always gets kilograms
+ok 106 - a requester in pounds gets pounds back; the prompt always gets kilograms
+  ---
+  duration_ms: 10.19043
+  type: 'test'
+  ...
+# Subtest: opting out takes effect immediately, cache or no cache
+ok 107 - opting out takes effect immediately, cache or no cache
+  ---
+  duration_ms: 2.191598
+  type: 'test'
+  ...
+# Subtest: the admin switch decides whether the prompt ever sees a cohort
+ok 108 - the admin switch decides whether the prompt ever sees a cohort
+  ---
+  duration_ms: 1.786798
+  type: 'test'
+  ...
+# Subtest: forgetting a profile takes it out of the room at once, cache or no cache
+ok 109 - forgetting a profile takes it out of the room at once, cache or no cache
+  ---
+  duration_ms: 0.852433
+  type: 'test'
+  ...
+# Subtest: three accounts that log the same made-up exercise cannot write into a fourth one's prompt
+ok 110 - three accounts that log the same made-up exercise cannot write into a fourth one's prompt
+  ---
+  duration_ms: 15.108708
+  type: 'test'
+  ...
+# Subtest: a flat v1.2.11 file is lifted onto its provider
+ok 111 - a flat v1.2.11 file is lifted onto its provider
+  ---
+  duration_ms: 4.144536
+  type: 'test'
+  ...
+# Subtest: a flat file whose provider was retired keeps nothing from it
+ok 112 - a flat file whose provider was retired keeps nothing from it
+  ---
+  duration_ms: 0.661253
+  type: 'test'
+  ...
+# Subtest: the new shape loads as-is, and unknown or hostile keys in the maps are dropped
+ok 113 - the new shape loads as-is, and unknown or hostile keys in the maps are dropped
+  ---
+  duration_ms: 1.861587
+  type: 'test'
+  ...
+# Subtest: switching provider keeps every key; each provider has its own model and binding
+ok 114 - switching provider keeps every key; each provider has its own model and binding
+  ---
+  duration_ms: 4.096356
+  type: 'test'
+  ...
+# Subtest: an OpenAI-compatible endpoint with no key is connected once it has a base URL
+ok 115 - an OpenAI-compatible endpoint with no key is connected once it has a base URL
+  ---
+  duration_ms: 2.851291
+  type: 'test'
+  ...
+# Subtest: jobEnv carries only the active provider's key under its own variable
+ok 116 - jobEnv carries only the active provider's key under its own variable
+  ---
+  duration_ms: 1.942338
+  type: 'test'
+  ...
+# Subtest: HTTP optional profile compatibility: PUT, 409, old writers, tombstones, reset and malformed records
+    # Subtest: initial unstamped PUT and a later stamped merge preserve zero-stamp fields
+    ok 1 - initial unstamped PUT and a later stamped merge preserve zero-stamp fields
+      ---
+      duration_ms: 75.937562
+      type: 'test'
+      ...
+    # Subtest: stale revision receives 409 and the exact optional record
+    ok 2 - stale revision receives 409 and the exact optional record
+      ---
+      duration_ms: 5.855753
+      type: 'test'
+      ...
+    # Subtest: an older unstamped writer omitting the whole collection preserves it
+    ok 3 - an older unstamped writer omitting the whole collection preserves it
+      ---
+      duration_ms: 18.129779
+      type: 'test'
+      ...
+    # Subtest: an older stamped writer omitting the whole collection preserves it
+    ok 4 - an older stamped writer omitting the whole collection preserves it
+      ---
+      duration_ms: 13.950223
+      type: 'test'
+      ...
+    # Subtest: unstamped writer omitting unknown fields within optional records preserves them
+    ok 5 - unstamped writer omitting unknown fields within optional records preserves them
+      ---
+      duration_ms: 15.37733
+      type: 'test'
+      ...
+    # Subtest: explicit tombstone remains hidden through an older writer and replay
+    ok 6 - explicit tombstone remains hidden through an older writer and replay
+      ---
+      duration_ms: 18.531281
+      type: 'test'
+      ...
+    # Subtest: malformed optional records cannot erase valid records or crash the server
+    ok 7 - malformed optional records cannot erase valid records or crash the server
+      ---
+      duration_ms: 9.340556
+      type: 'test'
+      ...
+    # Subtest: reset ids survive GET and suppress stale replay without reviving legacy unknown settings
+    ok 8 - reset ids survive GET and suppress stale replay without reviving legacy unknown settings
+      ---
+      duration_ms: 17.004235
+      type: 'test'
+      ...
+    # Subtest: F2 HTTP nutritionEntries: unstamped follow-up expands resetIds without changing epoch
+    ok 9 - F2 HTTP nutritionEntries: unstamped follow-up expands resetIds without changing epoch
+      ---
+      duration_ms: 19.696507
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP nutritionEntries noBase=false: repeated partial-stamp payload does not advance unchanged distance
+    ok 10 - F4 HTTP nutritionEntries noBase=false: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 27.287975
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP nutritionEntries noBase=true: repeated partial-stamp payload does not advance unchanged distance
+    ok 11 - F4 HTTP nutritionEntries noBase=true: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 19.499364
+      type: 'test'
+      ...
+    # Subtest: F2 HTTP activities: unstamped follow-up expands resetIds without changing epoch
+    ok 12 - F2 HTTP activities: unstamped follow-up expands resetIds without changing epoch
+      ---
+      duration_ms: 18.627812
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP activities noBase=false: repeated partial-stamp payload does not advance unchanged distance
+    ok 13 - F4 HTTP activities noBase=false: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 19.020734
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP activities noBase=true: repeated partial-stamp payload does not advance unchanged distance
+    ok 14 - F4 HTTP activities noBase=true: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 27.157784
+      type: 'test'
+      ...
+    # Subtest: F2 HTTP providerLinks: unstamped follow-up expands resetIds without changing epoch
+    ok 15 - F2 HTTP providerLinks: unstamped follow-up expands resetIds without changing epoch
+      ---
+      duration_ms: 15.340369
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP providerLinks noBase=false: repeated partial-stamp payload does not advance unchanged distance
+    ok 16 - F4 HTTP providerLinks noBase=false: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 21.972395
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP providerLinks noBase=true: repeated partial-stamp payload does not advance unchanged distance
+    ok 17 - F4 HTTP providerLinks noBase=true: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 30.963059
+      type: 'test'
+      ...
+    # Subtest: no-base HTTP nutritionEntries: edits both lexical directions while retaining omissions and deletions
+    ok 18 - no-base HTTP nutritionEntries: edits both lexical directions while retaining omissions and deletions
+      ---
+      duration_ms: 42.094792
+      type: 'test'
+      ...
+    # Subtest: no-base HTTP activities: edits both lexical directions while retaining omissions and deletions
+    ok 19 - no-base HTTP activities: edits both lexical directions while retaining omissions and deletions
+      ---
+      duration_ms: 45.650435
+      type: 'test'
+      ...
+    # Subtest: no-base HTTP providerLinks: edits both lexical directions while retaining omissions and deletions
+    ok 20 - no-base HTTP providerLinks: edits both lexical directions while retaining omissions and deletions
+      ---
+      duration_ms: 41.7915
+      type: 'test'
+      ...
+    # Subtest: a valid stamp map below MAX_BODY is accepted without argument-stack overflow
+    ok 21 - a valid stamp map below MAX_BODY is accepted without argument-stack overflow
+      ---
+      duration_ms: 978.463508
+      type: 'test'
+      ...
+    1..21
+ok 117 - HTTP optional profile compatibility: PUT, 409, old writers, tombstones, reset and malformed records
+  ---
+  duration_ms: 2066.082484
+  type: 'test'
+  ...
+# Subtest: instance mode: the first profile to spend the credential binds it
+ok 118 - instance mode: the first profile to spend the credential binds it
+  ---
+  duration_ms: 4.670807
+  type: 'test'
+  ...
+# Subtest: instance mode: an API key binds to nobody — every profile shares it
+ok 119 - instance mode: an API key binds to nobody — every profile shares it
+  ---
+  duration_ms: 1.011904
+  type: 'test'
+  ...
+# Subtest: instance mode: a second profile is refused, not warned
+ok 120 - instance mode: a second profile is refused, not warned
+  ---
+  duration_ms: 0.922792
+  type: 'test'
+  ...
+# Subtest: instance mode: the bound profile keeps working
+ok 121 - instance mode: the bound profile keeps working
+  ---
+  duration_ms: 1.009593
+  type: 'test'
+  ...
+# Subtest: per-profile mode: each profile answers for itself
+ok 122 - per-profile mode: each profile answers for itself
+  ---
+  duration_ms: 1.526716
+  type: 'test'
+  ...
+# Subtest: per-profile mode never refuses for sharing — that is what it is for
+ok 123 - per-profile mode never refuses for sharing — that is what it is for
+  ---
+  duration_ms: 0.889164
+  type: 'test'
+  ...
+# Subtest: a profile credential lives in its own file, not in synced state
+ok 124 - a profile credential lives in its own file, not in synced state
+  ---
+  duration_ms: 0.634582
+  type: 'test'
+  ...
+# Subtest: a profile id cannot escape the data directory
+ok 125 - a profile id cannot escape the data directory
+  ---
+  duration_ms: 0.342221
+  type: 'test'
+  ...
+# Subtest: clearing a profile credential removes it
+ok 126 - clearing a profile credential removes it
+  ---
+  duration_ms: 1.245886
+  type: 'test'
+  ...
+# Subtest: the fixture needs no account at all
+ok 127 - the fixture needs no account at all
+  ---
+  duration_ms: 0.615421
+  type: 'test'
+  ...
+# Subtest: accountFor names the account without revealing the token
+ok 128 - accountFor names the account without revealing the token
+  ---
+  duration_ms: 0.845993
+  type: 'test'
+  ...
+# Subtest: accountFor carries the refusal so the screen can state it
+ok 129 - accountFor carries the refusal so the screen can state it
+  ---
+  duration_ms: 0.701693
+  type: 'test'
+  ...
+# Subtest: jobEnv only ever carries the credential it was handed
+ok 130 - jobEnv only ever carries the credential it was handed
+  ---
+  duration_ms: 1.223644
+  type: 'test'
+  ...
+# Subtest: createDeviceLink
+    # Subtest: issues a code bound to the user, with an expiry, and keeps only its hash
+    ok 1 - issues a code bound to the user, with an expiry, and keeps only its hash
+      ---
+      duration_ms: 1.949257
+      type: 'test'
+      ...
+    # Subtest: lasts ten minutes unless told otherwise
+    ok 2 - lasts ten minutes unless told otherwise
+      ---
+      duration_ms: 0.268321
+      type: 'test'
+      ...
+    # Subtest: replaces any unused link for the same user
+    ok 3 - replaces any unused link for the same user
+      ---
+      duration_ms: 0.507902
+      type: 'test'
+      ...
+    # Subtest: leaves another user’s unused link alone
+    ok 4 - leaves another user’s unused link alone
+      ---
+      duration_ms: 0.392912
+      type: 'test'
+      ...
+    # Subtest: makes codes that differ
+    ok 5 - makes codes that differ
+      ---
+      duration_ms: 2.392879
+      type: 'test'
+      ...
+    1..5
+ok 131 - createDeviceLink
+  ---
+  duration_ms: 6.620326
+  type: 'suite'
+  ...
+# Subtest: findDeviceLink
+    # Subtest: finds the link however the code is typed, without using it up
+    ok 1 - finds the link however the code is typed, without using it up
+      ---
+      duration_ms: 0.311322
+      type: 'test'
+      ...
+    # Subtest: is single use once burned
+    ok 2 - is single use once burned
+      ---
+      duration_ms: 0.393141
+      type: 'test'
+      ...
+    # Subtest: refuses an expired link and drops it
+    ok 3 - refuses an expired link and drops it
+      ---
+      duration_ms: 0.329592
+      type: 'test'
+      ...
+    # Subtest: refuses a wrong code without touching other links, and ignores rows that are not links
+    ok 4 - refuses a wrong code without touching other links, and ignores rows that are not links
+      ---
+      duration_ms: 0.437831
+      type: 'test'
+      ...
+    1..4
+ok 132 - findDeviceLink
+  ---
+  duration_ms: 1.850538
+  type: 'suite'
+  ...
+# Subtest: dropDeviceLinks
+    # Subtest: drops only that user’s links and says whether any went
+    ok 1 - drops only that user’s links and says whether any went
+      ---
+      duration_ms: 0.374981
+      type: 'test'
+      ...
+    1..1
+ok 133 - dropDeviceLinks
+  ---
+  duration_ms: 0.484821
+  type: 'suite'
+  ...
+# Subtest: every root-level module server.js needs is on the Dockerfile COPY line
+ok 134 - every root-level module server.js needs is on the Dockerfile COPY line
+  ---
+  duration_ms: 7.424288
+  type: 'test'
+  ...
+# Subtest: the integrations directory is copied whole, like coach/
+ok 135 - the integrations directory is copied whole, like coach/
+  ---
+  duration_ms: 1.770825
+  type: 'test'
+  ...
+# Subtest: atomicWrite: bytes flushed, then the rename, then the directory
+ok 136 - atomicWrite: bytes flushed, then the rename, then the directory
+  ---
+  duration_ms: 7.150107
+  type: 'test'
+  ...
+# Subtest: server.js and media.js write through it
+ok 137 - server.js and media.js write through it
+  ---
+  duration_ms: 1.799447
+  type: 'test'
+  ...
+# Subtest: Anthropic: the pasted key travels as x-api-key, the rules are the cached system block, and the review lands
+ok 138 - Anthropic: the pasted key travels as x-api-key, the rules are the cached system block, and the review lands
+  ---
+  duration_ms: 113.845997
+  type: 'test'
+  ...
+# Subtest: OpenAI: bearer auth, json_schema response format, max_completion_tokens; "nothing to change" is its own outcome
+ok 139 - OpenAI: bearer auth, json_schema response format, max_completion_tokens; "nothing to change" is its own outcome
+  ---
+  duration_ms: 42.541083
+  type: 'test'
+  ...
+# Subtest: Gemini: x-goog-api-key header, generateContent, JSON mime type
+ok 140 - Gemini: x-goog-api-key header, generateContent, JSON mime type
+  ---
+  duration_ms: 42.003122
+  type: 'test'
+  ...
+# Subtest: an overloaded provider is retried and the job still succeeds
+ok 141 - an overloaded provider is retried and the job still succeeds
+  ---
+  duration_ms: 2044.582985
+  type: 'test'
+  ...
+# Subtest: a question asked in the chat comes back as an answer, not a plan (\#660)
+ok 142 - a question asked in the chat comes back as an answer, not a plan (\#660)
+  ---
+  duration_ms: 71.463443
+  type: 'test'
+  ...
+# Subtest: a wrong key is reported as an auth failure, with the provider's reason kept for the admin card
+ok 143 - a wrong key is reported as an auth failure, with the provider's reason kept for the admin card
+  ---
+  duration_ms: 16.006132
+  type: 'test'
+  ...
+# Subtest: an app that never heard of gyms rebuilds a profile without their lists: the server puts them back
+ok 144 - an app that never heard of gyms rebuilds a profile without their lists: the server puts them back
+  ---
+  duration_ms: 6.122095
+  type: 'test'
+  ...
+# Subtest: an older app that edits the plates writes the top-level list only, and every gym keeps its own
+ok 145 - an older app that edits the plates writes the top-level list only, and every gym keeps its own
+  ---
+  duration_ms: 0.788683
+  type: 'test'
+  ...
+# Subtest: the API stamps built-in aliases independently per exercise, including a clear
+ok 146 - the API stamps built-in aliases independently per exercise, including a clear
+  ---
+  duration_ms: 5.054669
+  type: 'test'
+  ...
+# Subtest: the API stamps each module on its own (Settings → Modules)
+ok 147 - the API stamps each module on its own (Settings → Modules)
+  ---
+  duration_ms: 0.858884
+  type: 'test'
+  ...
+# Subtest: a sealed value opens with the same key and place only
+ok 148 - a sealed value opens with the same key and place only
+  ---
+  duration_ms: 4.081826
+  type: 'test'
+  ...
+# Subtest: the signature verifies, and refuses another body, secret or an old timestamp
+ok 149 - the signature verifies, and refuses another body, secret or an old timestamp
+  ---
+  duration_ms: 0.974354
+  type: 'test'
+  ...
+# Subtest: connections are capped on the way in and the log keeps the newest 50
+ok 150 - connections are capped on the way in and the log keeps the newest 50
+  ---
+  duration_ms: 331.334183
+  type: 'test'
+  ...
+# Subtest: backoff doubles from 30 s up to 6 h, with a quarter of jitter either way
+ok 151 - backoff doubles from 30 s up to 6 h, with a quarter of jitter either way
+  ---
+  duration_ms: 0.295812
+  type: 'test'
+  ...
+# Subtest: a token bucket lets a burst through, then makes the rest wait their turn
+ok 152 - a token bucket lets a burst through, then makes the rest wait their turn
+  ---
+  duration_ms: 0.424332
+  type: 'test'
+  ...
+# Subtest: one key is delivered once, whoever queues it again and whenever
+ok 153 - one key is delivered once, whoever queues it again and whenever
+  ---
+  duration_ms: 6.960857
+  type: 'test'
+  ...
+# Subtest: a failure is retried on the backoff schedule, a Retry-After wins, and it gives up after the last attempt
+ok 154 - a failure is retried on the backoff schedule, a Retry-After wins, and it gives up after the last attempt
+  ---
+  duration_ms: 33.101567
+  type: 'test'
+  ...
+# Subtest: a refusal that will not change is not retried; a deferral spends no attempt
+ok 155 - a refusal that will not change is not retried; a deferral spends no attempt
+  ---
+  duration_ms: 17.094706
+  type: 'test'
+  ...
+# Subtest: the outbox rate limit holds jobs back without counting them as failures
+ok 156 - the outbox rate limit holds jobs back without counting them as failures
+  ---
+  duration_ms: 25.041936
+  type: 'test'
+  ...
+# Subtest: the outbox is bounded per profile and drops what a disconnect leaves behind
+ok 157 - the outbox is bounded per profile and drops what a disconnect leaves behind
+  ---
+  duration_ms: 567.544791
+  type: 'test'
+  ...
+# Subtest: webhook URLs: https to the internet only, unless the admin opened the home network
+ok 158 - webhook URLs: https to the internet only, unless the admin opened the home network
+  ---
+  duration_ms: 7.474998
+  type: 'test'
+  ...
+# INTEGRATIONS: "strava" is not an integration this server has, ignored
+# Subtest: the lookup refuses a name that resolves to a private address (DNS rebinding)
+ok 159 - the lookup refuses a name that resolves to a private address (DNS rebinding)
+  ---
+  duration_ms: 16.053481
+  type: 'test'
+  ...
+# Subtest: receiver answers in the outbox's words, and the URL is shown masked
+ok 160 - receiver answers in the outbox's words, and the URL is shown masked
+  ---
+  duration_ms: 1.512436
+  type: 'test'
+  ...
+# Subtest: a new recent workout is an event, a record another, an old or edited one is not
+ok 161 - a new recent workout is an event, a record another, an old or edited one is not
+  ---
+  duration_ms: 2.87538
+  type: 'test'
+  ...
+# Subtest: INTEGRATIONS decides what exists; unknown names are ignored
+ok 162 - INTEGRATIONS decides what exists; unknown names are ignored
+  ---
+  duration_ms: 1.664776
+  type: 'test'
+  ...
+# Subtest: connect, deliver signed, fail, retry and disconnect, end to end
+ok 163 - connect, deliver signed, fail, retry and disconnect, end to end
+  ---
+  duration_ms: 99.733053
+  type: 'test'
+  ...
+# Subtest: at most ten webhooks a profile, and quick taps are slowed down
+ok 164 - at most ten webhooks a profile, and quick taps are slowed down
+  ---
+  duration_ms: 105.160265
+  type: 'test'
+  ...
+# Subtest: a connection whose secrets no longer open says so instead of failing quietly
+ok 165 - a connection whose secrets no longer open says so instead of failing quietly
+  ---
+  duration_ms: 11.113394
+  type: 'test'
+  ...
+# Subtest: deleting a profile takes its connections and its queue with it
+ok 166 - deleting a profile takes its connections and its queue with it
+  ---
+  duration_ms: 16.528853
+  type: 'test'
+  ...
+# Subtest: no consent, no job — the gate is on the server, not the screen
+ok 167 - no consent, no job — the gate is on the server, not the screen
+  ---
+  duration_ms: 3.096911
+  type: 'test'
+  ...
+# Subtest: one job per profile at a time
+ok 168 - one job per profile at a time
+  ---
+  duration_ms: 74.135075
+  type: 'test'
+  ...
+# Subtest: the daily cap is enforced and reported as its own failure
+ok 169 - the daily cap is enforced and reported as its own failure
+  ---
+  duration_ms: 66.121164
+  type: 'test'
+  ...
+# Subtest: an answer that stays unusable fails cleanly and applies nothing
+ok 170 - an answer that stays unusable fails cleanly and applies nothing
+  ---
+  duration_ms: 118.035024
+  type: 'test'
+  ...
+# Subtest: a provider that crashes is reported, not retried behind the user's back
+ok 171 - a provider that crashes is reported, not retried behind the user's back
+  ---
+  duration_ms: 62.666731
+  type: 'test'
+  ...
+# Subtest: an expired proposal disappears on read rather than lingering forever
+ok 172 - an expired proposal disappears on read rather than lingering forever
+  ---
+  duration_ms: 66.453985
+  type: 'test'
+  ...
+# Subtest: forgetting a profile leaves no server-side residue
+ok 173 - forgetting a profile leaves no server-side residue
+  ---
+  duration_ms: 62.700151
+  type: 'test'
+  ...
+# Subtest: forgetting a profile mid-job cancels the call and frees its slot at once
+ok 174 - forgetting a profile mid-job cancels the call and frees its slot at once
+  ---
+  duration_ms: 142.862799
+  type: 'test'
+  ...
+# Subtest: a runtime that cannot be cancelled still has its late answer discarded after a forget
+ok 175 - a runtime that cannot be cancelled still has its late answer discarded after a forget
+  ---
+  duration_ms: 59.399138
+  type: 'test'
+  ...
+# Subtest: forgetting a profile whose job is still queued drops it before anything leaves
+ok 176 - forgetting a profile whose job is still queued drops it before anything leaves
+  ---
+  duration_ms: 327.95819
+  type: 'test'
+  ...
+# Subtest: consent withdrawn, or the Coach switched off, while a job waits: no payload leaves
+ok 177 - consent withdrawn, or the Coach switched off, while a job waits: no payload leaves
+  ---
+  duration_ms: 72.008686
+  type: 'test'
+  ...
+# coach: cleared 1 job(s) interrupted by restart
+# Subtest: a payload bigger than any real history is refused before the provider is called
+ok 178 - a payload bigger than any real history is refused before the provider is called
+  ---
+  duration_ms: 135.556711
+  type: 'test'
+  ...
+# Subtest: a job interrupted by a restart is reported as failed, not left spinning
+ok 179 - a job interrupted by a restart is reported as failed, not left spinning
+  ---
+  duration_ms: 7.162128
+  type: 'test'
+  ...
+# Subtest: the plan fingerprint moves when the plan does, and only then
+ok 180 - the plan fingerprint moves when the plan does, and only then
+  ---
+  duration_ms: 0.558172
+  type: 'test'
+  ...
+# Subtest: the fingerprint covers every field canonicalPlan reports, including the v1.2.4 three
+ok 181 - the fingerprint covers every field canonicalPlan reports, including the v1.2.4 three
+  ---
+  duration_ms: 0.540683
+  type: 'test'
+  ...
+# Subtest: a review job produces a checked change-set, and nothing is left unvalidated
+ok 182 - a review job produces a checked change-set, and nothing is left unvalidated
+  ---
+  duration_ms: 85.924939
+  type: 'test'
+  ...
+# Subtest: a create job produces a bundle the client can merge unchanged
+ok 183 - a create job produces a bundle the client can merge unchanged
+  ---
+  duration_ms: 61.081805
+  type: 'test'
+  ...
+# Subtest: a well-formed answer naming an exercise nobody has is refused, twice, and applies nothing
+ok 184 - a well-formed answer naming an exercise nobody has is refused, twice, and applies nothing
+  ---
+  duration_ms: 112.186482
+  type: 'test'
+  ...
+# Subtest: the one repair round rescues an answer the validator rejected
+ok 185 - the one repair round rescues an answer the validator rejected
+  ---
+  duration_ms: 119.104657
+  type: 'test'
+  ...
+# Subtest: "nothing to change" keeps the reason it gave, and proposes nothing
+ok 186 - "nothing to change" keeps the reason it gave, and proposes nothing
+  ---
+  duration_ms: 61.136705
+  type: 'test'
+  ...
+# Subtest: a refine carries the plan it is refining, and counts as the next iteration
+ok 187 - a refine carries the plan it is refining, and counts as the next iteration
+  ---
+  duration_ms: 121.320257
+  type: 'test'
+  ...
+# Subtest: the admin test-run completes a round trip without a user to spend
+ok 188 - the admin test-run completes a round trip without a user to spend
+  ---
+  duration_ms: 54.442139
+  type: 'test'
+  ...
+# Subtest: a job is refused outright when the privilege drop cannot be performed
+ok 189 - a job is refused outright when the privilege drop cannot be performed
+  ---
+  duration_ms: 1.243124
+  type: 'test'
+  ...
+# Subtest: the admin test-run answers to the same privilege gate, and spawns nothing without it
+ok 190 - the admin test-run answers to the same privilege gate, and spawns nothing without it
+  ---
+  duration_ms: 59.201207
+  type: 'test'
+  ...
+# Subtest: an HTTPS provider is not refused for lacking a privilege drop, and runs end to end through the queue
+ok 191 - an HTTPS provider is not refused for lacking a privilege drop, and runs end to end through the queue
+  ---
+  duration_ms: 37.069682
+  type: 'test'
+  ...
+# Subtest: a note is truncated to the admin's configured max, not clipped to the old 1000-char default (issue \#267)
+ok 192 - a note is truncated to the admin's configured max, not clipped to the old 1000-char default (issue \#267)
+  ---
+  duration_ms: 41.63907
+  type: 'test'
+  ...
+# Subtest: a job sends the admin's configured output cap, so a reasoning model is not cut off
+ok 193 - a job sends the admin's configured output cap, so a reasoning model is not cut off
+  ---
+  duration_ms: 42.327273
+  type: 'test'
+  ...
+# Subtest: a job that waited in the queue answers to the gate for the provider it actually runs on
+ok 194 - a job that waited in the queue answers to the gate for the provider it actually runs on
+  ---
+  duration_ms: 44.012009
+  type: 'test'
+  ...
+# Subtest: a job refused by the privilege gate does not bind the instance credential
+ok 195 - a job refused by the privilege gate does not bind the instance credential
+  ---
+  duration_ms: 3.545963
+  type: 'test'
+  ...
+# Subtest: the image keeps NGINX_PORT=80 for Docker
+ok 196 - the image keeps NGINX_PORT=80 for Docker
+  ---
+  duration_ms: 1.289876
+  type: 'test'
+  ...
+# Subtest: kubernetes/: the web container listens on an unprivileged port, and everything follows it
+ok 197 - kubernetes/: the web container listens on an unprivileged port, and everything follows it
+  ---
+  duration_ms: 2.71485
+  type: 'test'
+  ...
+# Subtest: helm/: NGINX_PORT and the container port are web.service.port, unprivileged by default
+ok 198 - helm/: NGINX_PORT and the container port are web.service.port, unprivileged by default
+  ---
+  duration_ms: 0.995394
+  type: 'test'
+  ...
+# Subtest: the body parts and muscles a note names, in a few languages, whole words only
+ok 199 - the body parts and muscles a note names, in a few languages, whole words only
+  ---
+  duration_ms: 1.943828
+  type: 'test'
+  ...
+# Subtest: a review note asking for core work gets a real choice of core exercises
+ok 200 - a review note asking for core work gets a real choice of core exercises
+  ---
+  duration_ms: 19.607736
+  type: 'test'
+  ...
+# Subtest: the profile goal counts as a focus too
+ok 201 - the profile goal counts as a focus too
+  ---
+  duration_ms: 2.892811
+  type: 'test'
+  ...
+# Subtest: a lane is spread over its exercises, not its first few
+ok 202 - a lane is spread over its exercises, not its first few
+  ---
+  duration_ms: 2.960052
+  type: 'test'
+  ...
+# Subtest: a plan that pins the whole budget still leaves room for alternatives
+ok 203 - a plan that pins the whole budget still leaves room for alternatives
+  ---
+  duration_ms: 4.556989
+  type: 'test'
+  ...
+# Subtest: a empty stored file is missing, not served, and replaced by the next upload
+ok 204 - a empty stored file is missing, not served, and replaced by the next upload
+  ---
+  duration_ms: 23.737031
+  type: 'test'
+  ...
+# Subtest: a truncated stored file is missing, not served, and replaced by the next upload
+ok 205 - a truncated stored file is missing, not served, and replaced by the next upload
+  ---
+  duration_ms: 20.87344
+  type: 'test'
+  ...
+# Subtest: a whole stored file is still taken as it is
+ok 206 - a whole stored file is still taken as it is
+  ---
+  duration_ms: 12.93582
+  type: 'test'
+  ...
+# Subtest: noteState marks a file the state stopped referencing and clears the mark when it is back
+ok 207 - noteState marks a file the state stopped referencing and clears the mark when it is back
+  ---
+  duration_ms: 13.416871
+  type: 'test'
+  ...
+# Subtest: noteState does nothing at all for a profile that never uploaded
+ok 208 - noteState does nothing at all for a profile that never uploaded
+  ---
+  duration_ms: 0.595992
+  type: 'test'
+  ...
+# Subtest: the hourly sweep keeps referenced files and removes the rest only after the grace
+ok 209 - the hourly sweep keeps referenced files and removes the rest only after the grace
+  ---
+  duration_ms: 6.545785
+  type: 'test'
+  ...
+# Subtest: a file nobody marked yet starts its grace at the first sweep that sees it unreferenced
+ok 210 - a file nobody marked yet starts its grace at the first sweep that sees it unreferenced
+  ---
+  duration_ms: 8.839934
+  type: 'test'
+  ...
+# Subtest: an explicit sweep (grace 0) removes every unreferenced file at once
+ok 211 - an explicit sweep (grace 0) removes every unreferenced file at once
+  ---
+  duration_ms: 4.179816
+  type: 'test'
+  ...
+# Subtest: a profile whose state cannot be read is never swept — missing, unparsable or throwing
+ok 212 - a profile whose state cannot be read is never swept — missing, unparsable or throwing
+  ---
+  duration_ms: 2.808272
+  type: 'test'
+  ...
+# Subtest: an unreadable .gc.json is no marks: the grace starts over and nothing is deleted for it
+ok 213 - an unreadable .gc.json is no marks: the grace starts over and nothing is deleted for it
+  ---
+  duration_ms: 7.282147
+  type: 'test'
+  ...
+# Subtest: .gc.json turned into a directory: the hourly sweep deletes nothing, noteState throws for the caller to catch
+ok 214 - .gc.json turned into a directory: the hourly sweep deletes nothing, noteState throws for the caller to catch
+  ---
+  duration_ms: 3.849366
+  type: 'test'
+  ...
+# Subtest: sweepAll with an empty db.users removes no folder and no file, and says so once
+ok 215 - sweepAll with an empty db.users removes no folder and no file, and says so once
+  ---
+  duration_ms: 3.799114
+  type: 'test'
+  ...
+# Subtest: sweepAll sweeps the profiles it is given, and only when their state reads
+ok 216 - sweepAll sweeps the profiles it is given, and only when their state reads
+  ---
+  duration_ms: 3.617634
+  type: 'test'
+  ...
+# Subtest: temp files: the hourly pass removes those older than an hour, boot removes them all
+ok 217 - temp files: the hourly pass removes those older than an hour, boot removes them all
+  ---
+  duration_ms: 1.520097
+  type: 'test'
+  ...
+# Subtest: dotfiles and unknown names are never blobs
+ok 218 - dotfiles and unknown names are never blobs
+  ---
+  duration_ms: 3.134432
+  type: 'test'
+  ...
+# Subtest: removeUser deletes the whole folder, and an id that sanitises to nothing is refused
+ok 219 - removeUser deletes the whole folder, and an id that sanitises to nothing is refused
+  ---
+  duration_ms: 1.613546
+  type: 'test'
+  ...
+# Subtest: under quota pressure the grace is one hour
+ok 220 - under quota pressure the grace is one hour
+  ---
+  duration_ms: 34.132461
+  type: 'test'
+  ...
+# Subtest: a new upload nobody references yet is marked, so the grace also covers a push that never comes
+ok 221 - a new upload nobody references yet is marked, so the grace also covers a push that never comes
+  ---
+  duration_ms: 16.527394
+  type: 'test'
+  ...
+# Subtest: a file referenced only by a workout is never swept, whatever the grace
+ok 222 - a file referenced only by a workout is never swept, whatever the grace
+  ---
+  duration_ms: 8.161231
+  type: 'test'
+  ...
+# Subtest: a photo taken off a workout is marked by the next state push and swept after the grace
+ok 223 - a photo taken off a workout is marked by the next state push and swept after the grace
+  ---
+  duration_ms: 13.339162
+  type: 'test'
+  ...
+# Subtest: a 30 MB upload streams through with a flat memory profile
+ok 224 - a 30 MB upload streams through with a flat memory profile
+  ---
+  duration_ms: 290.715868
+  type: 'test'
+  ...
+# Subtest: a client that hangs up mid-upload leaves no temp file and gives back its slot and reservation
+ok 225 - a client that hangs up mid-upload leaves no temp file and gives back its slot and reservation
+  ---
+  duration_ms: 51.306826
+  type: 'test'
+  ...
+# Subtest: an upload that stops sending is cut off after the idle time with 408
+ok 226 - an upload that stops sending is cut off after the idle time with 408
+  ---
+  duration_ms: 83.713002
+  type: 'test'
+  ...
+# Subtest: an upload without a length is capped while streaming, not after
+ok 227 - an upload without a length is capped while streaming, not after
+  ---
+  duration_ms: 7.001887
+  type: 'test'
+  ...
+# Subtest: a declared length over the cap is refused before a byte is read
+ok 228 - a declared length over the cap is refused before a byte is read
+  ---
+  duration_ms: 2.498641
+  type: 'test'
+  ...
+# Subtest: the file is stored as what it is: a JPEG declared as a GIF is a JPEG, over the image cap it is refused
+ok 229 - the file is stored as what it is: a JPEG declared as a GIF is a JPEG, over the image cap it is refused
+  ---
+  duration_ms: 11.558344
+  type: 'test'
+  ...
+# Subtest: a video declared as an image, SVG declared as PNG, and an unknown type are refused
+ok 230 - a video declared as an image, SVG declared as PNG, and an unknown type are refused
+  ---
+  duration_ms: 5.457861
+  type: 'test'
+  ...
+# Subtest: bytes that do not hash to their name are refused and leave nothing
+ok 231 - bytes that do not hash to their name are refused and leave nothing
+  ---
+  duration_ms: 11.040983
+  type: 'test'
+  ...
+# Subtest: videos: too long, unreadable, and a WebM that only the byte cap applies to
+ok 232 - videos: too long, unreadable, and a WebM that only the byte cap applies to
+  ---
+  duration_ms: 37.608575
+  type: 'test'
+  ...
+# Subtest: a file the server already has is answered as such and counted once
+ok 233 - a file the server already has is answered as such and counted once
+  ---
+  duration_ms: 50.695704
+  type: 'test'
+  ...
+# Subtest: a third upload at once is refused as busy
+ok 234 - a third upload at once is refused as busy
+  ---
+  duration_ms: 29.332723
+  type: 'test'
+  ...
+# Subtest: a refused upload is drained up to twice the largest cap, then cut off
+ok 235 - a refused upload is drained up to twice the largest cap, then cut off
+  ---
+  duration_ms: 2.245429
+  type: 'test'
+  ...
+# Subtest: the disk floor refuses an upload with 507 and holds no reservation afterwards
+ok 236 - the disk floor refuses an upload with 507 and holds no reservation afterwards
+  ---
+  duration_ms: 1.762977
+  type: 'test'
+  ...
+# Subtest: the shared fixture is there and has cases
+ok 237 - the shared fixture is there and has cases
+  ---
+  duration_ms: 1.466926
+  type: 'test'
+  ...
+# Subtest: referencedHashes: no state at all
+ok 238 - referencedHashes: no state at all
+  ---
+  duration_ms: 0.848072
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a state without customEx
+ok 239 - referencedHashes: a state without customEx
+  ---
+  duration_ms: 0.149401
+  type: 'test'
+  ...
+# Subtest: referencedHashes: customEx that is not a list
+ok 240 - referencedHashes: customEx that is not a list
+  ---
+  duration_ms: 0.10498
+  type: 'test'
+  ...
+# Subtest: referencedHashes: entries that are not exercises are skipped
+ok 241 - referencedHashes: entries that are not exercises are skipped
+  ---
+  duration_ms: 0.345971
+  type: 'test'
+  ...
+# Subtest: referencedHashes: an exercise without media
+ok 242 - referencedHashes: an exercise without media
+  ---
+  duration_ms: 0.128961
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a photo and its poster
+ok 243 - referencedHashes: a photo and its poster
+  ---
+  duration_ms: 0.138672
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a video without a poster
+ok 244 - referencedHashes: a video without a poster
+  ---
+  duration_ms: 0.087441
+  type: 'test'
+  ...
+# Subtest: referencedHashes: the same file on two exercises counts once
+ok 245 - referencedHashes: the same file on two exercises counts once
+  ---
+  duration_ms: 0.327792
+  type: 'test'
+  ...
+# Subtest: referencedHashes: an upper-case hash is not a hash
+ok 246 - referencedHashes: an upper-case hash is not a hash
+  ---
+  duration_ms: 0.502193
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a hash one character short is not a hash
+ok 247 - referencedHashes: a hash one character short is not a hash
+  ---
+  duration_ms: 0.169581
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a hash with a path in it is not a hash
+ok 248 - referencedHashes: a hash with a path in it is not a hash
+  ---
+  duration_ms: 0.07426
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a hash that is not a string
+ok 249 - referencedHashes: a hash that is not a string
+  ---
+  duration_ms: 0.05806
+  type: 'test'
+  ...
+# Subtest: referencedHashes: media that is not an object
+ok 250 - referencedHashes: media that is not an object
+  ---
+  duration_ms: 0.05274
+  type: 'test'
+  ...
+# Subtest: referencedHashes: each field counts on its own: a good poster under a malformed main hash is kept
+ok 251 - referencedHashes: each field counts on its own: a good poster under a malformed main hash is kept
+  ---
+  duration_ms: 0.061411
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a ref the client would not render (unknown mime) still keeps its file
+ok 252 - referencedHashes: a ref the client would not render (unknown mime) still keeps its file
+  ---
+  duration_ms: 0.06809
+  type: 'test'
+  ...
+# Subtest: referencedHashes: stray img/gif fields from a fork build are not references
+ok 253 - referencedHashes: stray img/gif fields from a fork build are not references
+  ---
+  duration_ms: 0.083991
+  type: 'test'
+  ...
+# Subtest: referencedHashes: customEx[].media and workouts[].media are the only sources: media-like fields elsewhere (a routine's exercise, a workout entry) do not count
+ok 254 - referencedHashes: customEx[].media and workouts[].media are the only sources: media-like fields elsewhere (a routine's exercise, a workout entry) do not count
+  ---
+  duration_ms: 0.069971
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a workout's photo and video with their posters
+ok 255 - referencedHashes: a workout's photo and video with their posters
+  ---
+  duration_ms: 0.08104
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a blob referenced only by a workout is kept (no customEx at all)
+ok 256 - referencedHashes: a blob referenced only by a workout is kept (no customEx at all)
+  ---
+  duration_ms: 0.06076
+  type: 'test'
+  ...
+# Subtest: referencedHashes: workouts that is not a list
+ok 257 - referencedHashes: workouts that is not a list
+  ---
+  duration_ms: 0.05038
+  type: 'test'
+  ...
+# Subtest: referencedHashes: workout entries that are not workouts are skipped
+ok 258 - referencedHashes: workout entries that are not workouts are skipped
+  ---
+  duration_ms: 0.05296
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a workout media field that is not a list does not count
+ok 259 - referencedHashes: a workout media field that is not a list does not count
+  ---
+  duration_ms: 0.048899
+  type: 'test'
+  ...
+# Subtest: referencedHashes: workout media items that are not refs are skipped, the others count
+ok 260 - referencedHashes: workout media items that are not refs are skipped, the others count
+  ---
+  duration_ms: 0.057
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a workout's list counts past the app's cap of six
+ok 261 - referencedHashes: a workout's list counts past the app's cap of six
+  ---
+  duration_ms: 0.055571
+  type: 'test'
+  ...
+# Subtest: referencedHashes: the same file on an exercise and on two workouts counts once
+ok 262 - referencedHashes: the same file on an exercise and on two workouts counts once
+  ---
+  duration_ms: 0.06054
+  type: 'test'
+  ...
+# Subtest: referencedHashes: the session in progress is not a source (the server never stores it)
+ok 263 - referencedHashes: the session in progress is not a source (the server never stores it)
+  ---
+  duration_ms: 1.381846
+  type: 'test'
+  ...
+# Subtest: referencedHashes: progress photos filed under a day (dayPhotos), a cleared one and junk among them
+ok 264 - referencedHashes: progress photos filed under a day (dayPhotos), a cleared one and junk among them
+  ---
+  duration_ms: 0.10084
+  type: 'test'
+  ...
+# Subtest: referencedHashes: dayPhotos that is not a map
+ok 265 - referencedHashes: dayPhotos that is not a map
+  ---
+  duration_ms: 0.074441
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a set's own form video and its poster count (workouts[].entries[].sets[].media)
+ok 266 - referencedHashes: a set's own form video and its poster count (workouts[].entries[].sets[].media)
+  ---
+  duration_ms: 0.094311
+  type: 'test'
+  ...
+# Subtest: referencedHashes: set media that is not a list, junk sets and junk entries are skipped
+ok 267 - referencedHashes: set media that is not a list, junk sets and junk entries are skipped
+  ---
+  duration_ms: 0.06714
+  type: 'test'
+  ...
+# Subtest: referencedHashes: a set video in the session in progress is not a source (the server never stores it)
+ok 268 - referencedHashes: a set video in the session in progress is not a source (the server never stores it)
+  ---
+  duration_ms: 0.04806
+  type: 'test'
+  ...
+# Subtest: never throws, whatever the state is
+ok 269 - never throws, whatever the state is
+  ---
+  duration_ms: 0.162432
+  type: 'test'
+  ...
+# Subtest: each of the seven stored types is recognised from its magic bytes
+ok 270 - each of the seven stored types is recognised from its magic bytes
+  ---
+  duration_ms: 3.549254
+  type: 'test'
+  ...
+# Subtest: every MP4 brand on the list is a video, and a brand nobody vouched for is not
+ok 271 - every MP4 brand on the list is a video, and a brand nobody vouched for is not
+  ---
+  duration_ms: 2.575371
+  type: 'test'
+  ...
+# Subtest: HEIC and AVIF stills are refused — the app re-encodes them, it never uploads them
+ok 272 - HEIC and AVIF stills are refused — the app re-encodes them, it never uploads them
+  ---
+  duration_ms: 0.815122
+  type: 'test'
+  ...
+# Subtest: SVG, HTML, PDF, ZIP, M4A audio and Matroska are refused
+ok 273 - SVG, HTML, PDF, ZIP, M4A audio and Matroska are refused
+  ---
+  duration_ms: 0.468362
+  type: 'test'
+  ...
+# Subtest: mp4Info reads the length from mvhd, version 0 and version 1
+ok 274 - mp4Info reads the length from mvhd, version 0 and version 1
+  ---
+  duration_ms: 1.542736
+  type: 'test'
+  ...
+# Subtest: mp4Info finds a moov that sits after the media data, even behind a 64-bit mdat
+ok 275 - mp4Info finds a moov that sits after the media data, even behind a 64-bit mdat
+  ---
+  duration_ms: 1.834626
+  type: 'test'
+  ...
+# Subtest: a fragmented file with no length in mvhd is read from mehd, and one with neither is unknown
+ok 276 - a fragmented file with no length in mvhd is read from mehd, and one with neither is unknown
+  ---
+  duration_ms: 0.846994
+  type: 'test'
+  ...
+# Subtest: mp4Info refuses what is not a well-formed file
+ok 277 - mp4Info refuses what is not a well-formed file
+  ---
+  duration_ms: 57.09767
+  type: 'test'
+  ...
+# Subtest: mp4Info gives up after 10k boxes instead of walking forever
+ok 278 - mp4Info gives up after 10k boxes instead of walking forever
+  ---
+  duration_ms: 72.748531
+  type: 'test'
+  ...
+# Subtest: the library slice leaves dumbbell lifts out when the person owns none
+ok 279 - the library slice leaves dumbbell lifts out when the person owns none
+  ---
+  duration_ms: 24.097443
+  type: 'test'
+  ...
+# Subtest: the Coach is told no dumbbells even when its own answer listed them
+ok 280 - the Coach is told no dumbbells even when its own answer listed them
+  ---
+  duration_ms: 12.089557
+  type: 'test'
+  ...
+# Subtest: a plan with a dumbbell lift goes back for repair, even with no equipment stated
+ok 281 - a plan with a dumbbell lift goes back for repair, even with no equipment stated
+  ---
+  duration_ms: 1.345615
+  type: 'test'
+  ...
+# Subtest: the job fetch waits as long as the job timeout, where a short-headers dispatcher gives up
+ok 282 - the job fetch waits as long as the job timeout, where a short-headers dispatcher gives up
+  ---
+  duration_ms: 3538.013865
+  type: 'test'
+  ...
+# Subtest: the dispatcher budget follows the job timeout and never drops below a minute plus grace
+ok 283 - the dispatcher budget follows the job timeout and never drops below a minute plus grace
+  ---
+  duration_ms: 0.528723
+  type: 'test'
+  ...
+# Subtest: an AbortController still wins over the transport budget
+ok 284 - an AbortController still wins over the transport budget
+  ---
+  duration_ms: 104.13428
+  type: 'test'
+  ...
+# Subtest: api/nudge-copy.js matches the frontend strings (node scripts/build-nudge-copy.mjs)
+ok 285 - api/nudge-copy.js matches the frontend strings (node scripts/build-nudge-copy.mjs)
+  ---
+  duration_ms: 218.608351
+  type: 'test'
+  ...
+# Subtest: when: 20:00, or 2 hours after a late reminder, and never after 21:30
+ok 286 - when: 20:00, or 2 hours after a late reminder, and never after 21:30
+  ---
+  duration_ms: 1.385166
+  type: 'test'
+  ...
+# Subtest: which: a planned day with nothing logged; not a rest day, not a trained day
+ok 287 - which: a planned day with nothing logged; not a rest day, not a trained day
+  ---
+  duration_ms: 1.345545
+  type: 'test'
+  ...
+# Subtest: back-off: quiet after 3 missed days in a row, back after the next workout
+ok 288 - back-off: quiet after 3 missed days in a row, back after the next workout
+  ---
+  duration_ms: 0.827314
+  type: 'test'
+  ...
+# Subtest: back-off: a profile with no workouts at all is not nagged for ever
+ok 289 - back-off: a profile with no workouts at all is not nagged for ever
+  ---
+  duration_ms: 0.20678
+  type: 'test'
+  ...
+# Subtest: coach week / rotation: the day right after a workout is rest, the second day off is a miss
+ok 290 - coach week / rotation: the day right after a workout is rest, the second day off is a miss
+  ---
+  duration_ms: 0.615172
+  type: 'test'
+  ...
+# Subtest: a noted day is excused: not nudged, and not counted towards the back-off
+ok 291 - a noted day is excused: not nudged, and not counted towards the back-off
+  ---
+  duration_ms: 1.146804
+  type: 'test'
+  ...
+# Subtest: a malformed state reads as nothing to nudge about
+ok 292 - a malformed state reads as nothing to nudge about
+  ---
+  duration_ms: 0.359231
+  type: 'test'
+  ...
+# Subtest: push text: by tone, one line per date, routine name filled in, localized
+ok 293 - push text: by tone, one line per date, routine name filled in, localized
+  ---
+  duration_ms: 2.5283
+  type: 'test'
+  ...
+# Subtest: nudge: a crafted state costs one pass, not one per day looked back on
+ok 294 - nudge: a crafted state costs one pass, not one per day looked back on
+  ---
+  duration_ms: 380.333841
+  type: 'test'
+  ...
+# Subtest: every route the server registers is in openapi.yaml, and nothing else is
+ok 295 - every route the server registers is in openapi.yaml, and nothing else is
+  ---
+  duration_ms: 7.94506
+  type: 'test'
+  ...
+# Subtest: every tag the spec uses is one the docs generator renders
+ok 296 - every tag the spec uses is one the docs generator renders
+  ---
+  duration_ms: 1.494296
+  type: 'test'
+  ...
+# Subtest: every error code the e-mail and password signup routes return is in their spec entry
+ok 297 - every error code the e-mail and password signup routes return is in their spec entry
+  ---
+  duration_ms: 2.754181
+  type: 'test'
+  ...
+# Subtest: the docs generator takes the website ?v= from index.html, and every page agrees
+ok 298 - the docs generator takes the website ?v= from index.html, and every page agrees
+  ---
+  duration_ms: 5.12972
+  type: 'test'
+  ...
+# Subtest: JSON is recovered from whatever the model wrapped it in
+ok 299 - JSON is recovered from whatever the model wrapped it in
+  ---
+  duration_ms: 2.49515
+  type: 'test'
+  ...
+# Subtest: an answer with no JSON in it fails rather than being guessed at
+ok 300 - an answer with no JSON in it fails rather than being guessed at
+  ---
+  duration_ms: 0.340281
+  type: 'test'
+  ...
+# Subtest: an answer may omit the contract version, but may not claim a different one
+ok 301 - an answer may omit the contract version, but may not claim a different one
+  ---
+  duration_ms: 0.257051
+  type: 'test'
+  ...
+# Subtest: addPasskeyRecord
+    # Subtest: attaches a credential to the existing user
+    ok 1 - attaches a credential to the existing user
+      ---
+      duration_ms: 1.565146
+      type: 'test'
+      ...
+    # Subtest: refuses a credential id that already exists
+    ok 2 - refuses a credential id that already exists
+      ---
+      duration_ms: 0.776164
+      type: 'test'
+      ...
+    # Subtest: keeps only a short list of short transport words
+    ok 3 - keeps only a short list of short transport words
+      ---
+      duration_ms: 0.484171
+      type: 'test'
+      ...
+    # Subtest: stops at 20 passkeys per profile
+    ok 4 - stops at 20 passkeys per profile
+      ---
+      duration_ms: 0.286401
+      type: 'test'
+      ...
+    1..4
+ok 302 - addPasskeyRecord
+  ---
+  duration_ms: 4.235417
+  type: 'suite'
+  ...
+# Subtest: listPasskeys
+    # Subtest: returns only this user’s credentials, without the public key
+    ok 1 - returns only this user’s credentials, without the public key
+      ---
+      duration_ms: 0.436142
+      type: 'test'
+      ...
+    1..1
+ok 303 - listPasskeys
+  ---
+  duration_ms: 0.731182
+  type: 'suite'
+  ...
+# Subtest: renamePasskeyRecord
+    # Subtest: names one of the user’s passkeys, and an empty name clears it
+    ok 1 - names one of the user’s passkeys, and an empty name clears it
+      ---
+      duration_ms: 0.361102
+      type: 'test'
+      ...
+    # Subtest: does not touch another user’s passkey
+    ok 2 - does not touch another user’s passkey
+      ---
+      duration_ms: 0.334032
+      type: 'test'
+      ...
+    1..2
+ok 304 - renamePasskeyRecord
+  ---
+  duration_ms: 1.017104
+  type: 'suite'
+  ...
+# Subtest: passkeyName
+    # Subtest: folds whitespace and control characters, and caps the length
+    ok 1 - folds whitespace and control characters, and caps the length
+      ---
+      duration_ms: 0.19717
+      type: 'test'
+      ...
+    # Subtest: drops invisible format characters that reorder or hide text, and keeps the joiners
+    ok 2 - drops invisible format characters that reorder or hide text, and keeps the joiners
+      ---
+      duration_ms: 0.347292
+      type: 'test'
+      ...
+    1..2
+ok 305 - passkeyName
+  ---
+  duration_ms: 0.867733
+  type: 'suite'
+  ...
+# Subtest: removePasskeyRecord
+    # Subtest: removes one of several passkeys
+    ok 1 - removes one of several passkeys
+      ---
+      duration_ms: 0.428503
+      type: 'test'
+      ...
+    # Subtest: refuses to remove the last passkey when nothing else signs the profile in
+    ok 2 - refuses to remove the last passkey when nothing else signs the profile in
+      ---
+      duration_ms: 0.142461
+      type: 'test'
+      ...
+    # Subtest: lets the last passkey go while a password still signs the profile in
+    ok 3 - lets the last passkey go while a password still signs the profile in
+      ---
+      duration_ms: 0.11572
+      type: 'test'
+      ...
+    # Subtest: does not let one user delete another’s passkey
+    ok 4 - does not let one user delete another’s passkey
+      ---
+      duration_ms: 1.485586
+      type: 'test'
+      ...
+    1..4
+ok 306 - removePasskeyRecord
+  ---
+  duration_ms: 2.341319
+  type: 'suite'
+  ...
+# Subtest: passkeyRemovalRefused
+    # Subtest: answers what removePasskeyRecord would, without removing anything
+    ok 1 - answers what removePasskeyRecord would, without removing anything
+      ---
+      duration_ms: 0.15566
+      type: 'test'
+      ...
+    1..1
+ok 307 - passkeyRemovalRefused
+  ---
+  duration_ms: 0.223882
+  type: 'suite'
+  ...
+# Subtest: a hash is a versioned scrypt string with its own salt, and only the password verifies
+ok 308 - a hash is a versioned scrypt string with its own salt, and only the password verifies
+  ---
+  duration_ms: 465.585091
+  type: 'test'
+  ...
+# Subtest: a hash with other parameters or another key length still verifies, and asks to be redone
+ok 309 - a hash with other parameters or another key length still verifies, and asks to be redone
+  ---
+  duration_ms: 435.468783
+  type: 'test'
+  ...
+# Subtest: the same passphrase typed with a composed or a combining accent is the same
+ok 310 - the same passphrase typed with a composed or a combining accent is the same
+  ---
+  duration_ms: 228.960641
+  type: 'test'
+  ...
+# Subtest: no stored hash, or a malformed one, never verifies — and still does the work
+ok 311 - no stored hash, or a malformed one, never verifies — and still does the work
+  ---
+  duration_ms: 609.483353
+  type: 'test'
+  ...
+# Subtest: policy: length first, then the passwords every script tries first
+ok 312 - policy: length first, then the passwords every script tries first
+  ---
+  duration_ms: 1.974397
+  type: 'test'
+  ...
+# Subtest: names compare folded and trimmed
+ok 313 - names compare folded and trimmed
+  ---
+  duration_ms: 0.197521
+  type: 'test'
+  ...
+# Subtest: reset codes: readable, compared on the hash, typed any way, dead after expiry
+ok 314 - reset codes: readable, compared on the hash, typed any way, dead after expiry
+  ---
+  duration_ms: 0.951414
+  type: 'test'
+  ...
+# Subtest: an intake posted with megabytes of text is cut to what the intake screen allows
+ok 315 - an intake posted with megabytes of text is cut to what the intake screen allows
+  ---
+  duration_ms: 32.475735
+  type: 'test'
+  ...
+# Subtest: a profile synced into the state is cut the same way, for a review and a debrief too
+ok 316 - a profile synced into the state is cut the same way, for a review and a debrief too
+  ---
+  duration_ms: 38.157207
+  type: 'test'
+  ...
+# Subtest: a profile of the wrong shape reads as absent instead of crashing or leaking an object
+ok 317 - a profile of the wrong shape reads as absent instead of crashing or leaking an object
+  ---
+  duration_ms: 2.528109
+  type: 'test'
+  ...
+# Subtest: weekdays are read as weekdays: nothing becomes Sunday, and zero days or minutes read as unset
+ok 318 - weekdays are read as weekdays: nothing becomes Sunday, and zero days or minutes read as unset
+  ---
+  duration_ms: 1.597186
+  type: 'test'
+  ...
+# Subtest: a real intake passes through unchanged
+ok 319 - a real intake passes through unchanged
+  ---
+  duration_ms: 2.049378
+  type: 'test'
+  ...
+# Subtest: names, the declined log and the meta codes are bounded too, since the state is the client's
+ok 320 - names, the declined log and the meta codes are bounded too, since the state is the client's
+  ---
+  duration_ms: 6.474794
+  type: 'test'
+  ...
+# Subtest: the limits match the intake screen
+ok 321 - the limits match the intake screen
+  ---
+  duration_ms: 0.753954
+  type: 'test'
+  ...
+# Subtest: every plan, log and id field is bounded too, for a create, a review and a debrief
+ok 322 - every plan, log and id field is bounded too, for a create, a review and a debrief
+  ---
+  duration_ms: 70.032729
+  type: 'test'
+  ...
+# Subtest: an id is cut, a policy outside the engine's five and a number that is not one read as absent
+ok 323 - an id is cut, a policy outside the engine's five and a number that is not one read as absent
+  ---
+  duration_ms: 2.117748
+  type: 'test'
+  ...
+# Subtest: the plan and the log a real app writes pass through exactly as before
+ok 324 - the plan and the log a real app writes pass through exactly as before
+  ---
+  duration_ms: 1.674226
+  type: 'test'
+  ...
+# Subtest: the cohort is bounded where it joins the payload, whoever built it
+ok 325 - the cohort is bounded where it joins the payload, whoever built it
+  ---
+  duration_ms: 2.40949
+  type: 'test'
+  ...
+# Subtest: the payload's NOTE_MAX is the app's NOTE_MAX
+ok 326 - the payload's NOTE_MAX is the app's NOTE_MAX
+  ---
+  duration_ms: 0.755193
+  type: 'test'
+  ...
+# Subtest: isWarmupSet agrees with the frontend isWarmupRow
+ok 327 - isWarmupSet agrees with the frontend isWarmupRow
+  ---
+  duration_ms: 0.439401
+  type: 'test'
+  ...
+# Subtest: readSession agrees with the frontend on an ordinary session
+ok 328 - readSession agrees with the frontend on an ordinary session
+  ---
+  duration_ms: 15.296759
+  type: 'test'
+  ...
+# Subtest: readSession agrees with the frontend on a bonus set logged beyond the plan
+ok 329 - readSession agrees with the frontend on a bonus set logged beyond the plan
+  ---
+  duration_ms: 15.26873
+  type: 'test'
+  ...
+# Subtest: readSession agrees with the frontend on an imported session with no plan of its own
+ok 330 - readSession agrees with the frontend on an imported session with no plan of its own
+  ---
+  duration_ms: 4.197186
+  type: 'test'
+  ...
+# Subtest: readSession agrees with the frontend on per-set aims under triple progression
+ok 331 - readSession agrees with the frontend on per-set aims under triple progression
+  ---
+  duration_ms: 7.249858
+  type: 'test'
+  ...
+# Subtest: the server handle is stable per uid, distinct across uids, and never the uid
+ok 332 - the server handle is stable per uid, distinct across uids, and never the uid
+  ---
+  duration_ms: 3.370633
+  type: 'test'
+  ...
+# Subtest: build refuses to run without a handle — a payload must never fall back to the uid
+ok 333 - build refuses to run without a handle — a payload must never fall back to the uid
+  ---
+  duration_ms: 1.066894
+  type: 'test'
+  ...
+# Subtest: payload never carries identity, credentials or device data
+ok 334 - payload never carries identity, credentials or device data
+  ---
+  duration_ms: 10.316809
+  type: 'test'
+  ...
+# Subtest: the same profile always gets the same handle, and two profiles never share one
+ok 335 - the same profile always gets the same handle, and two profiles never share one
+  ---
+  duration_ms: 12.630869
+  type: 'test'
+  ...
+# Subtest: review payload carries the plan, the window, effort and aggregates
+ok 336 - review payload carries the plan, the window, effort and aggregates
+  ---
+  duration_ms: 3.659154
+  type: 'test'
+  ...
+# Subtest: a stalling exercise shows up in the aggregates the way the engine counts it
+ok 337 - a stalling exercise shows up in the aggregates the way the engine counts it
+  ---
+  duration_ms: 3.142162
+  type: 'test'
+  ...
+# Subtest: a set that was never ticked off is a miss, not a gap
+ok 338 - a set that was never ticked off is a miss, not a gap
+  ---
+  duration_ms: 3.251603
+  type: 'test'
+  ...
+# Subtest: the review window is bounded even for someone with years of history
+ok 339 - the review window is bounded even for someone with years of history
+  ---
+  duration_ms: 2.34716
+  type: 'test'
+  ...
+# Subtest: creation payload carries working weights so baselines start from evidence
+ok 340 - creation payload carries working weights so baselines start from evidence
+  ---
+  duration_ms: 2.966572
+  type: 'test'
+  ...
+# Subtest: the library is filtered to the equipment someone actually has
+ok 341 - the library is filtered to the equipment someone actually has
+  ---
+  duration_ms: 10.623751
+  type: 'test'
+  ...
+# Subtest: the library slice is capped, balanced across body parts, deterministic, and keeps what the user trains
+ok 342 - the library slice is capped, balanced across body parts, deterministic, and keeps what the user trains
+  ---
+  duration_ms: 7.954452
+  type: 'test'
+  ...
+# Subtest: the lanes are weighted by what a plan is actually built from
+ok 343 - the lanes are weighted by what a plan is actually built from
+  ---
+  duration_ms: 1.776346
+  type: 'test'
+  ...
+# Subtest: stretches are dropped from the candidate pool but not from the catalogue
+ok 344 - stretches are dropped from the candidate pool but not from the catalogue
+  ---
+  duration_ms: 4.524248
+  type: 'test'
+  ...
+# Subtest: a first plan for someone who stated no equipment reaches the staple lifts
+ok 345 - a first plan for someone who stated no equipment reaches the staple lifts
+  ---
+  duration_ms: 2.047348
+  type: 'test'
+  ...
+# Subtest: equipment nobody in the library has still yields a usable library
+ok 346 - equipment nobody in the library has still yields a usable library
+  ---
+  duration_ms: 4.364087
+  type: 'test'
+  ...
+# Subtest: declined changes are carried forward so the Coach does not nag
+ok 347 - declined changes are carried forward so the Coach does not nag
+  ---
+  duration_ms: 3.578664
+  type: 'test'
+  ...
+# Subtest: a debrief payload carries one session, its predecessors of the same routine, and no library
+ok 348 - a debrief payload carries one session, its predecessors of the same routine, and no library
+  ---
+  duration_ms: 1.061334
+  type: 'test'
+  ...
+# Subtest: a set taken to failure reaches the coach as failure, a warm-up never does
+ok 349 - a set taken to failure reaches the coach as failure, a warm-up never does
+  ---
+  duration_ms: 0.516983
+  type: 'test'
+  ...
+# Subtest: an unknown workout id falls back to the latest session
+ok 350 - an unknown workout id falls back to the latest session
+  ---
+  duration_ms: 0.601263
+  type: 'test'
+  ...
+# Subtest: workoutMeta counts done work sets, keeps the stored volume and the PR count
+ok 351 - workoutMeta counts done work sets, keeps the stored volume and the PR count
+  ---
+  duration_ms: 0.40738
+  type: 'test'
+  ...
+# Subtest: the cohort rides along on a review and a debrief only when handed in
+ok 352 - the cohort rides along on a review and a debrief only when handed in
+  ---
+  duration_ms: 7.783321
+  type: 'test'
+  ...
+# Subtest: a refine with no plan to refine is a fresh plan with a note, never refine.previous = null
+ok 353 - a refine with no plan to refine is a fresh plan with a note, never refine.previous = null
+  ---
+  duration_ms: 3.974435
+  type: 'test'
+  ...
+# Subtest: a note/refine is capped at MAX_NOTE_CHARS, not the old 1000-char literal (issue \#267)
+ok 354 - a note/refine is capped at MAX_NOTE_CHARS, not the old 1000-char literal (issue \#267)
+  ---
+  duration_ms: 9.335355
+  type: 'test'
+  ...
+# Subtest: the last few chat lines travel as conversation — user text and Coach verdicts only, never the message being sent
+ok 355 - the last few chat lines travel as conversation — user text and Coach verdicts only, never the message being sent
+  ---
+  duration_ms: 5.353281
+  type: 'test'
+  ...
+# Subtest: a custom exercise's photo, video and link never reach the payload
+ok 356 - a custom exercise's photo, video and link never reach the payload
+  ---
+  duration_ms: 7.7511
+  type: 'test'
+  ...
+# Subtest: meta.lang is the language the app asked in, else the stored one
+ok 357 - meta.lang is the language the app asked in, else the stored one
+  ---
+  duration_ms: 6.503585
+  type: 'test'
+  ...
+# Subtest: a routine icon in the payload is an icon key or an emoji, never text
+ok 358 - a routine icon in the payload is an icon key or an emoji, never text
+  ---
+  duration_ms: 10.35317
+  type: 'test'
+  ...
+# Subtest: a workout's photos and videos never reach the payload
+ok 359 - a workout's photos and videos never reach the payload
+  ---
+  duration_ms: 5.110849
+  type: 'test'
+  ...
+# Subtest: a session note reaches the model whole, bounded only at the app's own cap
+ok 360 - a session note reaches the model whole, bounded only at the app's own cap
+  ---
+  duration_ms: 2.843411
+  type: 'test'
+  ...
+# Subtest: the app's active equipment profile stands in when the Coach was told no equipment
+ok 361 - the app's active equipment profile stands in when the Coach was told no equipment
+  ---
+  duration_ms: 10.862962
+  type: 'test'
+  ...
+# Subtest: the rules half of the prompt is byte-identical across jobs of the same task
+ok 362 - the rules half of the prompt is byte-identical across jobs of the same task
+  ---
+  duration_ms: 13.545062
+  type: 'test'
+  ...
+# Subtest: a repair round changes only the user half
+ok 363 - a repair round changes only the user half
+  ---
+  duration_ms: 3.741234
+  type: 'test'
+  ...
+# Subtest: buildPrompt is exactly the two parts joined, so the CLI adapters lose nothing
+ok 364 - buildPrompt is exactly the two parts joined, so the CLI adapters lose nothing
+  ---
+  duration_ms: 2.76613
+  type: 'test'
+  ...
+# Subtest: every task has a flat schema — no $ref, no anyOf/oneOf (llama.cpp grammar limits)
+ok 365 - every task has a flat schema — no $ref, no anyOf/oneOf (llama.cpp grammar limits)
+  ---
+  duration_ms: 0.356411
+  type: 'test'
+  ...
+# Subtest: the create schema requires what the week resolves through: a routine id, and a week
+ok 366 - the create schema requires what the week resolves through: a routine id, and a week
+  ---
+  duration_ms: 0.841024
+  type: 'test'
+  ...
+# Subtest: the create schema caps the two arrays the validator caps, so a repeating model stops
+ok 367 - the create schema caps the two arrays the validator caps, so a repeating model stops
+  ---
+  duration_ms: 0.094301
+  type: 'test'
+  ...
+# Subtest: older sessions in a review window are compacted, the recent ones keep full sets
+ok 368 - older sessions in a review window are compacted, the recent ones keep full sets
+  ---
+  duration_ms: 3.797455
+  type: 'test'
+  ...
+# Subtest: chat-completions spec: schema rides as json_schema, falls back to json_object, then none
+ok 369 - chat-completions spec: schema rides as json_schema, falls back to json_object, then none
+  ---
+  duration_ms: 0.378472
+  type: 'test'
+  ...
+# Subtest: core/prompts.js matches api/coach/prompts/*.md byte for byte
+ok 370 - core/prompts.js matches api/coach/prompts/*.md byte for byte
+  ---
+  duration_ms: 7.074818
+  type: 'test'
+  ...
+# Subtest: buildPrompt picks the task by kind and refine, and only adds the repair block when asked
+ok 371 - buildPrompt picks the task by kind and refine, and only adds the repair block when asked
+  ---
+  duration_ms: 0.820414
+  type: 'test'
+  ...
+# Subtest: provider declares finite per-instance and per-connection rate limits
+ok 372 - provider declares finite per-instance and per-connection rate limits
+  ---
+  duration_ms: 1.301635
+  type: 'test'
+  ...
+# Subtest: configuration does not contact a third party and keeps secrets out of public info
+ok 373 - configuration does not contact a third party and keeps secrets out of public info
+  ---
+  duration_ms: 5.433571
+  type: 'test'
+  ...
+# Subtest: redirect and unavailable response cannot be reported as successful delivery
+ok 374 - redirect and unavailable response cannot be reported as successful delivery
+  ---
+  duration_ms: 2.487701
+  type: 'test'
+  ...
+# Subtest: same job keeps its delivery identity across retries
+ok 375 - same job keeps its delivery identity across retries
+  ---
+  duration_ms: 0.428881
+  type: 'test'
+  ...
+# Subtest: existing webhook bounds timeout/response size and rejects private addresses at connect
+ok 376 - existing webhook bounds timeout/response size and rejects private addresses at connect
+  ---
+  duration_ms: 1.488566
+  type: 'test'
+  ...
+# Subtest: characterization: legacy generic network errors expose their message, so new adapters must sanitize them
+ok 377 - characterization: legacy generic network errors expose their message, so new adapters must sanitize them
+  ---
+  duration_ms: 0.238191
+  type: 'test'
+  ...
+# Subtest: characterization: connected means configured, and cross-user revoke fails closed
+ok 378 - characterization: connected means configured, and cross-user revoke fails closed
+  ---
+  duration_ms: 22.466047
+  type: 'test'
+  ...
+# Subtest: localizes every server-generated notification in pt-BR
+ok 379 - localizes every server-generated notification in pt-BR
+  ---
+  duration_ms: 1.888357
+  type: 'test'
+  ...
+# Subtest: keeps the existing English copy as the fallback
+ok 380 - keeps the existing English copy as the fallback
+  ---
+  duration_ms: 0.337272
+  type: 'test'
+  ...
+# Subtest: renders a routine glyph key as an emoji, never as its name
+ok 381 - renders a routine glyph key as an emoji, never as its name
+  ---
+  duration_ms: 0.228911
+  type: 'test'
+  ...
+# Subtest: leaves a literal emoji alone and falls back for anything else
+ok 382 - leaves a literal emoji alone and falls back for anything else
+  ---
+  duration_ms: 0.21919
+  type: 'test'
+  ...
+# Subtest: no queue: unchanged weekday/override behaviour
+ok 383 - no queue: unchanged weekday/override behaviour
+  ---
+  duration_ms: 2.207568
+  type: 'test'
+  ...
+# Subtest: queue: returns the first not-done session once startsOn is reached
+ok 384 - queue: returns the first not-done session once startsOn is reached
+  ---
+  duration_ms: 0.503163
+  type: 'test'
+  ...
+# Subtest: queue: waiting for startsOn falls back to the weekday answer
+ok 385 - queue: waiting for startsOn falls back to the weekday answer
+  ---
+  duration_ms: 0.20993
+  type: 'test'
+  ...
+# Subtest: queue: a session is done once a finished workout on it landed at/after since
+ok 386 - queue: a session is done once a finished workout on it landed at/after since
+  ---
+  duration_ms: 0.349912
+  type: 'test'
+  ...
+# Subtest: queue: a workout logged before "since" counts only when it is dated inside the week and its name still matches
+ok 387 - queue: a workout logged before "since" counts only when it is dated inside the week and its name still matches
+  ---
+  duration_ms: 0.579951
+  type: 'test'
+  ...
+# Subtest: queue: keeps slot order even when a later session is logged out of order
+ok 388 - queue: keeps slot order even when a later session is logged out of order
+  ---
+  duration_ms: 0.18048
+  type: 'test'
+  ...
+# Subtest: queue: complete week falls back to the weekday answer
+ok 389 - queue: complete week falls back to the weekday answer
+  ---
+  duration_ms: 0.308232
+  type: 'test'
+  ...
+# Subtest: queue: per-date overrides still win over the queue
+ok 390 - queue: per-date overrides still win over the queue
+  ---
+  duration_ms: 0.157821
+  type: 'test'
+  ...
+# Subtest: queue: a session whose routine was deleted is dropped; a missing startsOn means active now
+ok 391 - queue: a session whose routine was deleted is dropped; a missing startsOn means active now
+  ---
+  duration_ms: 18.195639
+  type: 'test'
+  ...
+# Subtest: pins: a session pinned to another day is skipped by the floating rule, and is that day's session when it comes
+ok 392 - pins: a session pinned to another day is skipped by the floating rule, and is that day's session when it comes
+  ---
+  duration_ms: 0.682803
+  type: 'test'
+  ...
+# Subtest: pins: a session pinned to the day asked about wins over the floating order
+ok 393 - pins: a session pinned to the day asked about wins over the floating order
+  ---
+  duration_ms: 0.26856
+  type: 'test'
+  ...
+# Subtest: pins: a pin on a past day is stale — the session floats again
+ok 394 - pins: a pin on a past day is stale — the session floats again
+  ---
+  duration_ms: 0.19556
+  type: 'test'
+  ...
+# Subtest: pins: a fulfilled pin reads as no override, so the day falls through to the next floating session or the weekday
+ok 395 - pins: a fulfilled pin reads as no override, so the day falls through to the next floating session or the weekday
+  ---
+  duration_ms: 1.592747
+  type: 'test'
+  ...
+# Subtest: pins: every remaining session pinned to other days — nothing floats, the weekday plan (or nothing) shows through
+ok 396 - pins: every remaining session pinned to other days — nothing floats, the weekday plan (or nothing) shows through
+  ---
+  duration_ms: 0.174531
+  type: 'test'
+  ...
+# Subtest: pins: 'rest' still wins over a pin, and a plain routine override is still single-pick
+ok 397 - pins: 'rest' still wins over a pin, and a plain routine override is still single-pick
+  ---
+  duration_ms: 0.16052
+  type: 'test'
+  ...
+# Subtest: pins: a pin dated before a future startsOn is honoured on its day; once the start day arrives the unmet pin is past, so the session floats
+ok 398 - pins: a pin dated before a future startsOn is honoured on its day; once the start day arrives the unmet pin is past, so the session floats
+  ---
+  duration_ms: 0.135701
+  type: 'test'
+  ...
+# Subtest: pinState: open for a session still to do, done once logged, null for anything else
+ok 399 - pinState: open for a session still to do, done once logged, null for anything else
+  ---
+  duration_ms: 0.17847
+  type: 'test'
+  ...
+# Subtest: pins: no queue — a dayPlan entry is the plain override it always was
+ok 400 - pins: no queue — a dayPlan entry is the plain override it always was
+  ---
+  duration_ms: 0.12194
+  type: 'test'
+  ...
+# Subtest: pins: with every remaining session pinned to other days, a coach pointer on the weekday stays hidden
+ok 401 - pins: with every remaining session pinned to other days, a coach pointer on the weekday stays hidden
+  ---
+  duration_ms: 0.215941
+  type: 'test'
+  ...
+# Subtest: a queue without startsOn starts on the day of the apply where the USER is (reminder.tz), UTC when unset or invalid
+ok 402 - a queue without startsOn starts on the day of the apply where the USER is (reminder.tz), UTC when unset or invalid
+  ---
+  duration_ms: 0.977213
+  type: 'test'
+  ...
+# Subtest: queue: a malformed queue falls back to the weekday plan for the reminder
+ok 403 - queue: a malformed queue falls back to the weekday plan for the reminder
+  ---
+  duration_ms: 0.277051
+  type: 'test'
+  ...
+# Subtest: queue: a rotation pass hides only the weekdays it covers
+ok 404 - queue: a rotation pass hides only the weekdays it covers
+  ---
+  duration_ms: 0.13336
+  type: 'test'
+  ...
+# Subtest: queue: a strict pass (the app's "Start new pass") ignores a same-named workout from before since
+ok 405 - queue: a strict pass (the app's "Start new pass") ignores a same-named workout from before since
+  ---
+  duration_ms: 0.160071
+  type: 'test'
+  ...
+# Subtest: queue: a crafted state of any shape is read in time linear in its size
+ok 406 - queue: a crafted state of any shape is read in time linear in its size
+  ---
+  duration_ms: 52.580413
+  type: 'test'
+  ...
+# Subtest: backoff: the free failures cost nothing, then each one doubles the pause up to the cap
+ok 407 - backoff: the free failures cost nothing, then each one doubles the pause up to the cap
+  ---
+  duration_ms: 4.093406
+  type: 'test'
+  ...
+# Subtest: backoff: a success or a quiet spell after the pause starts the count over
+ok 408 - backoff: a success or a quiet spell after the pause starts the count over
+  ---
+  duration_ms: 0.442232
+  type: 'test'
+  ...
+# Subtest: backoff: the map stays bounded, and a locked key is the last to be evicted
+ok 409 - backoff: the map stays bounded, and a locked key is the last to be evicted
+  ---
+  duration_ms: 0.381841
+  type: 'test'
+  ...
+# Subtest: backoff: sweep drops keys that are neither locked nor recent
+ok 410 - backoff: sweep drops keys that are neither locked nor recent
+  ---
+  duration_ms: 0.247311
+  type: 'test'
+  ...
+# Subtest: window: a fixed budget per key, and how long until it refills
+ok 411 - window: a fixed budget per key, and how long until it refills
+  ---
+  duration_ms: 0.449801
+  type: 'test'
+  ...
+# Subtest: backoff: attempts counted before their answer — a burst started at once is refused after the allowance
+ok 412 - backoff: attempts counted before their answer — a burst started at once is refused after the allowance
+  ---
+  duration_ms: 0.340161
+  type: 'test'
+  ...
+# Subtest: backoff: undo takes an attempt back, and the pause it started with it — once
+ok 413 - backoff: undo takes an attempt back, and the pause it started with it — once
+  ---
+  duration_ms: 0.34007
+  type: 'test'
+  ...
+# Subtest: backoff: undo never lifts a pause the failures left still earn, or one it did not start
+ok 414 - backoff: undo never lifts a pause the failures left still earn, or one it did not start
+  ---
+  duration_ms: 0.231311
+  type: 'test'
+  ...
+# Subtest: backoff: attempts side by side that are all taken back leave no pause, in any order
+ok 415 - backoff: attempts side by side that are all taken back leave no pause, in any order
+  ---
+  duration_ms: 0.716733
+  type: 'test'
+  ...
+# Subtest: backoff: a flood of fresh keys pushes out its own kind, not a count halfway to its pause
+ok 416 - backoff: a flood of fresh keys pushes out its own kind, not a count halfway to its pause
+  ---
+  duration_ms: 17.491646
+  type: 'test'
+  ...
+# Subtest: backoff: a key marked keep is never evicted, even when everything else has more to lose
+ok 417 - backoff: a key marked keep is never evicted, even when everything else has more to lose
+  ---
+  duration_ms: 1.078354
+  type: 'test'
+  ...
+# Subtest: \#471: the change list from the issue revises the pending plan instead of failing the job
+ok 418 - \#471: the change list from the issue revises the pending plan instead of failing the job
+  ---
+  duration_ms: 12.394477
+  type: 'test'
+  ...
+# Subtest: \#471: the plan validator still judges what comes out — an off-equipment swap goes to repair
+ok 419 - \#471: the plan validator still judges what comes out — an off-equipment swap goes to repair
+  ---
+  duration_ms: 4.480517
+  type: 'test'
+  ...
+# Subtest: \#471: a change list that cannot be placed exactly asks for the whole plan on the repair round
+ok 420 - \#471: a change list that cannot be placed exactly asks for the whole plan on the repair round
+  ---
+  duration_ms: 4.223126
+  type: 'test'
+  ...
+# Subtest: \#471: only exercise-level changes are placed; anything wider is left to the repair round
+ok 421 - \#471: only exercise-level changes are placed; anything wider is left to the repair round
+  ---
+  duration_ms: 0.329492
+  type: 'test'
+  ...
+# Subtest: \#471: the refine rules carry the plan format and say a change list is not an answer
+ok 422 - \#471: the refine rules carry the plan format and say a change list is not an answer
+  ---
+  duration_ms: 3.143112
+  type: 'test'
+  ...
+# Subtest: a stamped write keeps restOff as sent
+ok 423 - a stamped write keeps restOff as sent
+  ---
+  duration_ms: 2.955961
+  type: 'test'
+  ...
+# Subtest: an app from before it, writing its copy of the routine, does not take it away
+ok 424 - an app from before it, writing its copy of the routine, does not take it away
+  ---
+  duration_ms: 1.908108
+  type: 'test'
+  ...
+# Subtest: a review follow-up keeps the suggested replacement after a long training summary
+ok 425 - a review follow-up keeps the suggested replacement after a long training summary
+  ---
+  duration_ms: 9.090905
+  type: 'test'
+  ...
+# Subtest: long conversations remain bounded and exclude proposal and error payloads
+ok 426 - long conversations remain bounded and exclude proposal and error payloads
+  ---
+  duration_ms: 3.874025
+  type: 'test'
+  ...
+# Subtest: \#313: the review rules state that an incoming exercise must not already be in the routine
+ok 427 - \#313: the review rules state that an incoming exercise must not already be in the routine
+  ---
+  duration_ms: 1.391096
+  type: 'test'
+  ...
+# Subtest: \#313: the repair round names the rule and the offending id, and a corrected answer goes through
+ok 428 - \#313: the repair round names the rule and the offending id, and a corrected answer goes through
+  ---
+  duration_ms: 3.033612
+  type: 'test'
+  ...
+# Subtest: \#313: repeating the duplicate in the repair round still fails as unusable, never applies it
+ok 429 - \#313: repeating the duplicate in the repair round still fails as unusable, never applies it
+  ---
+  duration_ms: 0.392102
+  type: 'test'
+  ...
+# Subtest: \#471: the reported swap goes through on a plan that already had routines before the Coach added its own
+ok 430 - \#471: the reported swap goes through on a plan that already had routines before the Coach added its own
+  ---
+  duration_ms: 16.420254
+  type: 'test'
+  ...
+# Subtest: \#471: and on the Coach's plan alone, which never reached the cap, it went through already
+ok 431 - \#471: and on the Coach's plan alone, which never reached the cap, it went through already
+  ---
+  duration_ms: 7.225108
+  type: 'test'
+  ...
+# Subtest: \#471: a plan already past the cap can still be changed in place, and shrunk
+ok 432 - \#471: a plan already past the cap can still be changed in place, and shrunk
+  ---
+  duration_ms: 5.30206
+  type: 'test'
+  ...
+# Subtest: \#471: what the cap is for still holds — a review cannot grow a plan past seven routines
+ok 433 - \#471: what the cap is for still holds — a review cannot grow a plan past seven routines
+  ---
+  duration_ms: 11.445635
+  type: 'test'
+  ...
+# Subtest: sinceDay reads epoch ms, digit strings and ISO strings
+ok 434 - sinceDay reads epoch ms, digit strings and ISO strings
+  ---
+  duration_ms: 2.43455
+  type: 'test'
+  ...
+# Subtest: a review long after the last one reads from it on
+ok 435 - a review long after the last one reads from it on
+  ---
+  duration_ms: 0.381072
+  type: 'test'
+  ...
+# Subtest: a review right after the last one still gets enough sessions
+ok 436 - a review right after the last one still gets enough sessions
+  ---
+  duration_ms: 0.296521
+  type: 'test'
+  ...
+# Subtest: no last review: the whole window, as before
+ok 437 - no last review: the whole window, as before
+  ---
+  duration_ms: 0.211901
+  type: 'test'
+  ...
+# Subtest: the admin card is told which providers hold a key, and switching never drops one
+ok 438 - the admin card is told which providers hold a key, and switching never drops one
+  ---
+  duration_ms: 59.086618
+  type: 'test'
+  ...
+# Subtest: a key filed for a provider that does not take one, or an unknown provider, is refused
+ok 439 - a key filed for a provider that does not take one, or an unknown provider, is refused
+  ---
+  duration_ms: 0.939833
+  type: 'test'
+  ...
+# Subtest: the compatible endpoint: base URL is validated, a keyless endpoint counts as connected, and models come from it
+ok 440 - the compatible endpoint: base URL is validated, a keyless endpoint counts as connected, and models come from it
+  ---
+  duration_ms: 16.416933
+  type: 'test'
+  ...
+# Subtest: the card does not run a runtime to ask its version when the privilege drop cannot be performed
+ok 441 - the card does not run a runtime to ask its version when the privilege drop cannot be performed
+  ---
+  duration_ms: 3.303893
+  type: 'test'
+  ...
+# Subtest: the disclosure names the provider and the same five categories the payload builds from
+ok 442 - the disclosure names the provider and the same five categories the payload builds from
+  ---
+  duration_ms: 0.809603
+  type: 'test'
+  ...
+# Subtest: the disclosure says which host a job would go to, and nothing more of the URL
+ok 443 - the disclosure says which host a job would go to, and nothing more of the URL
+  ---
+  duration_ms: 1.012844
+  type: 'test'
+  ...
+# Subtest: a debrief is enqueued as its own kind, and the cohort routes gate on the admin switch and the opt-in
+ok 444 - a debrief is enqueued as its own kind, and the cohort routes gate on the admin switch and the opt-in
+  ---
+  duration_ms: 74.933969
+  type: 'test'
+  ...
+# coach: stored key for compatible cleared, endpoint host changed
+# Subtest: Ask the Coach mid-workout: the running session goes along, changes come back for that session only
+ok 445 - Ask the Coach mid-workout: the running session goes along, changes come back for that session only
+  ---
+  duration_ms: 62.817312
+  type: 'test'
+  ...
+# Subtest: an admin can raise the Coach message length past the old 1000-char default, clamped to a sane range
+ok 446 - an admin can raise the Coach message length past the old 1000-char default, clamped to a sane range
+  ---
+  duration_ms: 3.046821
+  type: 'test'
+  ...
+# Subtest: the Coach-off guard names its class beside the words, on every guarded user route
+ok 447 - the Coach-off guard names its class beside the words, on every guarded user route
+  ---
+  duration_ms: 1.534017
+  type: 'test'
+  ...
+# Subtest: an admin can raise the Coach output cap for a reasoning model, clamped to a sane range
+ok 448 - an admin can raise the Coach output cap for a reasoning model, clamped to a sane range
+  ---
+  duration_ms: 2.342598
+  type: 'test'
+  ...
+# Subtest: an admin can store extra headers for the compatible endpoint; framing names are refused
+ok 449 - an admin can store extra headers for the compatible endpoint; framing names are refused
+  ---
+  duration_ms: 2.977171
+  type: 'test'
+  ...
+# Subtest: a stored key is dropped when the endpoint moves to another host, kept when only the path does
+ok 450 - a stored key is dropped when the endpoint moves to another host, kept when only the path does
+  ---
+  duration_ms: 2.181348
+  type: 'test'
+  ...
+# Subtest: removes the account and everything attached to it, and ends the session
+ok 451 - removes the account and everything attached to it, and ends the session
+  ---
+  duration_ms: 826.228867
+  type: 'test'
+  ...
+# Subtest: needs the account name typed back
+ok 452 - needs the account name typed back
+  ---
+  duration_ms: 642.868524
+  type: 'test'
+  ...
+# Subtest: needs a session, and a request from another origin is refused
+ok 453 - needs a session, and a request from another origin is refused
+  ---
+  duration_ms: 513.061515
+  type: 'test'
+  ...
+# Subtest: the last admin cannot leave while other profiles remain, proof or not
+ok 454 - the last admin cannot leave while other profiles remain, proof or not
+  ---
+  duration_ms: 562.079134
+  type: 'test'
+  ...
+# Subtest: the delete sheet learns of the last-admin refusal before it asks for any proof
+ok 455 - the delete sheet learns of the last-admin refusal before it asks for any proof
+  ---
+  duration_ms: 626.252301
+  type: 'test'
+  ...
+# Subtest: alone on the instance the last admin is not blocked
+ok 456 - alone on the instance the last admin is not blocked
+  ---
+  duration_ms: 493.204869
+  type: 'test'
+  ...
+# Subtest: an admin can leave while another admin remains
+ok 457 - an admin can leave while another admin remains
+  ---
+  duration_ms: 634.628263
+  type: 'test'
+  ...
+# Subtest: the only profile on the instance can delete itself, admin or not
+ok 458 - the only profile on the instance can delete itself, admin or not
+  ---
+  duration_ms: 599.86732
+  type: 'test'
+  ...
+# Subtest: a paired phone: the pairing is the proof without a password, the password with one
+ok 459 - a paired phone: the pairing is the proof without a password, the password with one
+  ---
+  duration_ms: 802.134229
+  type: 'test'
+  ...
+# Subtest: a browser never gets the phone’s pass: no proof, no delete
+ok 460 - a browser never gets the phone’s pass: no proof, no delete
+  ---
+  duration_ms: 484.053114
+  type: 'test'
+  ...
+# Subtest: a browser cookie replayed as a Bearer is still a cookie: no device pass
+ok 461 - a browser cookie replayed as a Bearer is still a cookie: no device pass
+  ---
+  duration_ms: 550.51913
+  type: 'test'
+  ...
+# Subtest: needs proof that the owner is here: missing or wrong, nothing is removed
+ok 462 - needs proof that the owner is here: missing or wrong, nothing is removed
+  ---
+  duration_ms: 647.614844
+  type: 'test'
+  ...
+# Subtest: with password sign-in off, a password proves nothing
+ok 463 - with password sign-in off, a password proves nothing
+  ---
+  duration_ms: 534.195717
+  type: 'test'
+  ...
+# Subtest: removes the account and everything attached to it
+ok 464 - removes the account and everything attached to it
+  ---
+  duration_ms: 572.987274
+  type: 'test'
+  ...
+# Subtest: their session stops working immediately
+ok 465 - their session stops working immediately
+  ---
+  duration_ms: 522.167319
+  type: 'test'
+  ...
+# Subtest: refuses the two deletions that cannot be undone
+ok 466 - refuses the two deletions that cannot be undone
+  ---
+  duration_ms: 545.94089
+  type: 'test'
+  ...
+# Subtest: the owner can delete another admin
+ok 467 - the owner can delete another admin
+  ---
+  duration_ms: 558.76284
+  type: 'test'
+  ...
+# Subtest: an admin who is not the owner cannot delete the owner or clear the log
+ok 468 - an admin who is not the owner cannot delete the owner or clear the log
+  ---
+  duration_ms: 511.108956
+  type: 'test'
+  ...
+# Subtest: only the owner appoints and removes admins, and can hand the role on
+ok 469 - only the owner appoints and removes admins, and can hand the role on
+  ---
+  duration_ms: 538.307051
+  type: 'test'
+  ...
+# Subtest: an admin cannot delete another admin
+ok 470 - an admin cannot delete another admin
+  ---
+  duration_ms: 521.041055
+  type: 'test'
+  ...
+# Subtest: says so plainly when the account is not there, and needs an admin
+ok 471 - says so plainly when the account is not there, and needs an admin
+  ---
+  duration_ms: 472.95273
+  type: 'test'
+  ...
+# Subtest: GET /api/admin/user opens a profile whose stored state predates the entry filter
+ok 472 - GET /api/admin/user opens a profile whose stored state predates the entry filter
+  ---
+  duration_ms: 534.972359
+  type: 'test'
+  ...
+# Subtest: GET /api/admin/user leaves a workout's photos and videos out
+ok 473 - GET /api/admin/user leaves a workout's photos and videos out
+  ---
+  duration_ms: 514.931172
+  type: 'test'
+  ...
+# Subtest: the user list and the disable switch survive the same document
+ok 474 - the user list and the disable switch survive the same document
+  ---
+  duration_ms: 554.293866
+  type: 'test'
+  ...
+# Subtest: a pull shows as the last sync, in the list and the drill-down
+ok 475 - a pull shows as the last sync, in the list and the drill-down
+  ---
+  duration_ms: 559.353814
+  type: 'test'
+  ...
+# Subtest: wrong pairing codes are all answered, but only a few of them reach the audit log
+ok 476 - wrong pairing codes are all answered, but only a few of them reach the audit log
+  ---
+  duration_ms: 615.983152
+  type: 'test'
+  ...
+# Subtest: junk passkey sign-ins and sign-ups are answered but not each written to the audit log
+ok 477 - junk passkey sign-ins and sign-ups are answered but not each written to the audit log
+  ---
+  duration_ms: 662.0964
+  type: 'test'
+  ...
+# Subtest: minting a pairing code retires the profile's previous one
+ok 478 - minting a pairing code retires the profile's previous one
+  ---
+  duration_ms: 580.143665
+  type: 'test'
+  ...
+# Subtest: malformed and non-object JSON bodies are a 400 with no stack trace, on every route
+ok 479 - malformed and non-object JSON bodies are a 400 with no stack trace, on every route
+  ---
+  duration_ms: 645.768208
+  type: 'test'
+  ...
+# Subtest: a body over the 5 MiB cap is a 413 that every client gets to read, and nothing is written
+ok 480 - a body over the 5 MiB cap is a 413 that every client gets to read, and nothing is written
+  ---
+  duration_ms: 798.048495
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: an array is not a document, and null entries never reach the disk
+ok 481 - PUT /api/data: an array is not a document, and null entries never reach the disk
+  ---
+  duration_ms: 563.23094
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: a document nested too deep to store is a 400, not a 500, and nothing is written
+ok 482 - PUT /api/data: a document nested too deep to store is a 400, not a 500, and nothing is written
+  ---
+  duration_ms: 622.819011
+  type: 'test'
+  ...
+# Subtest: POST /api/push/rest-timer: a missing or invalid `seconds` is a 400, never a 1-second timer
+ok 483 - POST /api/push/rest-timer: a missing or invalid `seconds` is a 400, never a 1-second timer
+  ---
+  duration_ms: 592.665114
+  type: 'test'
+  ...
+# Subtest: a client that hangs up mid-body costs one log line and no stack
+ok 484 - a client that hangs up mid-body costs one log line and no stack
+  ---
+  duration_ms: 1187.299775
+  type: 'test'
+  ...
+# Subtest: GET /api/config: the login flags are public, the Coach block needs a session
+ok 485 - GET /api/config: the login flags are public, the Coach block needs a session
+  ---
+  duration_ms: 601.512258
+  type: 'test'
+  ...
+# Subtest: a session always gets the key, so the client can tell "no Coach" from "not signed in"
+ok 486 - a session always gets the key, so the client can tell "no Coach" from "not signed in"
+  ---
+  duration_ms: 568.422239
+  type: 'test'
+  ...
+# Subtest: no Coach configured: no block for anyone, signed in or not
+ok 487 - no Coach configured: no block for anyone, signed in or not
+  ---
+  duration_ms: 537.243591
+  type: 'test'
+  ...
+# Subtest: GET /api/config: DEFAULT_LANG is public when set, absent when unset or malformed (\#303)
+ok 488 - GET /api/config: DEFAULT_LANG is public when set, absent when unset or malformed (\#303)
+  ---
+  duration_ms: 1607.434075
+  type: 'test'
+  ...
+# Subtest: the pairing preflight from https://localhost is answered by openGym with that origin allowed
+ok 489 - the pairing preflight from https://localhost is answered by openGym with that origin allowed
+  ---
+  duration_ms: 534.69768
+  type: 'test'
+  ...
+# Subtest: the pairing preflight from capacitor://localhost is answered by openGym with that origin allowed
+ok 490 - the pairing preflight from capacitor://localhost is answered by openGym with that origin allowed
+  ---
+  duration_ms: 544.604989
+  type: 'test'
+  ...
+# Subtest: a preflight that asks for private-network access gets it
+ok 491 - a preflight that asks for private-network access gets it
+  ---
+  duration_ms: 526.344219
+  type: 'test'
+  ...
+# Subtest: a website on another origin gets no private-network access
+ok 492 - a website on another origin gets no private-network access
+  ---
+  duration_ms: 530.806566
+  type: 'test'
+  ...
+# Subtest: a Bearer header that authenticates nothing does not switch the origin check off
+ok 493 - a Bearer header that authenticates nothing does not switch the origin check off
+  ---
+  duration_ms: 590.108726
+  type: 'test'
+  ...
+# Subtest: the paired app still gets through from its own origin
+ok 494 - the paired app still gets through from its own origin
+  ---
+  duration_ms: 557.569239
+  type: 'test'
+  ...
+# Subtest: a paired phone whose token is dead is told it is signed out, not that its origin is wrong
+ok 495 - a paired phone whose token is dead is told it is signed out, not that its origin is wrong
+  ---
+  duration_ms: 520.084696
+  type: 'test'
+  ...
+# Subtest: PUT /api/data keeps the reset stamp when a write lacks it or carries an older one
+ok 496 - PUT /api/data keeps the reset stamp when a write lacks it or carries an older one
+  ---
+  duration_ms: 556.385515
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: a profile never reset gets no stamp
+ok 497 - PUT /api/data: a profile never reset gets no stamp
+  ---
+  duration_ms: 558.700404
+  type: 'test'
+  ...
+# Subtest: GET /api/data/rev tracks PUT /api/data
+ok 498 - GET /api/data/rev tracks PUT /api/data
+  ---
+  duration_ms: 583.381429
+  type: 'test'
+  ...
+# Subtest: GET/PUT /api/data: revisions, conditional writes and the legacy overwrite
+ok 499 - GET/PUT /api/data: revisions, conditional writes and the legacy overwrite
+  ---
+  duration_ms: 577.805478
+  type: 'test'
+  ...
+# Subtest: PUT /api/data refuses an empty object, which would wipe the profile and keep counting
+ok 500 - PUT /api/data refuses an empty object, which would wipe the profile and keep counting
+  ---
+  duration_ms: 565.616992
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: write ids, their ancestry, and a stale write id refused at a reused revision
+ok 501 - PUT /api/data: write ids, their ancestry, and a stale write id refused at a reused revision
+  ---
+  duration_ms: 574.231664
+  type: 'test'
+  ...
+# Subtest: db.json cut short with no previous version: the server refuses to start and keeps the file
+ok 502 - db.json cut short with no previous version: the server refuses to start and keeps the file
+  ---
+  duration_ms: 520.945779
+  type: 'test'
+  ...
+# Subtest: db.json cut short after a save: the copy kept with it is used, and every account is still there
+ok 503 - db.json cut short after a save: the copy kept with it is used, and every account is still there
+  ---
+  duration_ms: 1233.688679
+  type: 'test'
+  ...
+# Subtest: db.json unreadable after a sign-up: the copy kept is the last save, so the new profile is still there
+ok 504 - db.json unreadable after a sign-up: the copy kept is the last save, so the new profile is still there
+  ---
+  duration_ms: 1277.075087
+  type: 'test'
+  ...
+# Subtest: an unreadable state file is a 503 on GET and PUT, and is not replaced
+ok 505 - an unreadable state file is a 503 on GET and PUT, and is not replaced
+  ---
+  duration_ms: 524.327333
+  type: 'test'
+  ...
+# Subtest: normalizeEmail folds and checks the way sign-in compares; maskEmail keeps two characters
+ok 506 - normalizeEmail folds and checks the way sign-in compares; maskEmail keeps two characters
+  ---
+  duration_ms: 133.728426
+  type: 'test'
+  ...
+# Subtest: with PASSWORD_LOGIN off the e-mail routes are 404s, sign-in by e-mail too, and admins see no address
+ok 507 - with PASSWORD_LOGIN off the e-mail routes are 404s, sign-in by e-mail too, and admins see no address
+  ---
+  duration_ms: 607.959105
+  type: 'test'
+  ...
+# Subtest: signs in by e-mail in any of the three fields, case-insensitively; the name still works
+ok 508 - signs in by e-mail in any of the three fields, case-insensitively; the name still works
+  ---
+  duration_ms: 1519.531192
+  type: 'test'
+  ...
+# Subtest: a wrong password, an unknown address and an address without a password get the one answer; nothing logs the address
+ok 509 - a wrong password, an unknown address and an address without a password get the one answer; nothing logs the address
+  ---
+  duration_ms: 977.911172
+  type: 'test'
+  ...
+# Subtest: a profile name with an "@" in it still signs in by name
+ok 510 - a profile name with an "@" in it still signs in by name
+  ---
+  duration_ms: 696.96147
+  type: 'test'
+  ...
+# Subtest: wrong passwords by name and by e-mail count against the one account: switching does not reset the pause
+ok 511 - wrong passwords by name and by e-mail count against the one account: switching does not reset the pause
+  ---
+  duration_ms: 3018.68238
+  type: 'test'
+  ...
+# Subtest: a wrong current password given to change the address counts toward the same account pause
+ok 512 - a wrong current password given to change the address counts toward the same account pause
+  ---
+  duration_ms: 1398.871861
+  type: 'test'
+  ...
+# Subtest: setting, changing and removing the address needs the owner’s proof, never the session alone
+ok 513 - setting, changing and removing the address needs the owner’s proof, never the session alone
+  ---
+  duration_ms: 1194.08722
+  type: 'test'
+  ...
+# Subtest: an address is unique across profiles, case-insensitively, and never another password holder’s name
+ok 514 - an address is unique across profiles, case-insensitively, and never another password holder’s name
+  ---
+  duration_ms: 2100.745454
+  type: 'test'
+  ...
+# Subtest: on an invite-only instance signup says nothing about addresses without a valid invite, and a refusal keeps the invite
+ok 515 - on an invite-only instance signup says nothing about addresses without a valid invite, and a refusal keeps the invite
+  ---
+  duration_ms: 859.036709
+  type: 'test'
+  ...
+# Subtest: asking over and over whether an address is in use runs into a pause
+ok 516 - asking over and over whether an address is in use runs into a pause
+  ---
+  duration_ms: 4700.381074
+  type: 'test'
+  ...
+# Subtest: signing up with an address as the name counts against the address like the e-mail field
+ok 517 - signing up with an address as the name counts against the address like the e-mail field
+  ---
+  duration_ms: 4922.097742
+  type: 'test'
+  ...
+# Subtest: a reset code is redeemed with the e-mail as well as with the name
+ok 518 - a reset code is redeemed with the e-mail as well as with the name
+  ---
+  duration_ms: 2122.721034
+  type: 'test'
+  ...
+# Subtest: the admin user list and drill-down show the address to admins only
+ok 519 - the admin user list and drill-down show the address to admins only
+  ---
+  duration_ms: 691.601796
+  type: 'test'
+  ...
+# Subtest: the first password registration on an empty instance is the admin, the second is not
+ok 520 - the first password registration on an empty instance is the admin, the second is not
+  ---
+  duration_ms: 1076.342634
+  type: 'test'
+  ...
+# Subtest: the first passkey registration on an empty instance is the admin, the second is not
+ok 521 - the first passkey registration on an empty instance is the admin, the second is not
+  ---
+  duration_ms: 606.63093
+  type: 'test'
+  ...
+# Subtest: unset or FIRST_USER_ADMIN=0 leaves the first profile an ordinary one
+ok 522 - unset or FIRST_USER_ADMIN=0 leaves the first profile an ordinary one
+  ---
+  duration_ms: 3748.907301
+  type: 'test'
+  ...
+# Subtest: an instance that already has profiles promotes nobody on upgrade or on a new registration
+ok 523 - an instance that already has profiles promotes nobody on upgrade or on a new registration
+  ---
+  duration_ms: 786.470607
+  type: 'test'
+  ...
+# Subtest: an ADMIN_UIDS admin stays an admin, and does not make the next profile one
+ok 524 - an ADMIN_UIDS admin stays an admin, and does not make the next profile one
+  ---
+  duration_ms: 690.553897
+  type: 'test'
+  ...
+# Subtest: a writable data directory answers 200, and says so
+ok 525 - a writable data directory answers 200, and says so
+  ---
+  duration_ms: 631.048687
+  type: 'test'
+  ...
+# Subtest: a data directory the server cannot write to is 503, not healthy
+ok 526 - a data directory the server cannot write to is 503, not healthy
+  ---
+  duration_ms: 5875.608373
+  type: 'test'
+  ...
+# Subtest: with INTEGRATIONS unset the routes are there but off, and /api/config says nothing
+ok 527 - with INTEGRATIONS unset the routes are there but off, and /api/config says nothing
+  ---
+  duration_ms: 1439.022782
+  type: 'test'
+  ...
+# Subtest: a webhook: refused targets, connect, a workout delivered signed, test, log and disconnect
+ok 528 - a webhook: refused targets, connect, a workout delivered signed, test, log and disconnect
+  ---
+  duration_ms: 1849.471861
+  type: 'test'
+  ...
+# Subtest: without the home network opened, a LAN receiver is refused
+ok 529 - without the home network opened, a LAN receiver is refused
+  ---
+  duration_ms: 700.489288
+  type: 'test'
+  ...
+# Subtest: a cross-site form cannot sign the victim into the attacker's account
+ok 530 - a cross-site form cannot sign the victim into the attacker's account
+  ---
+  duration_ms: 845.140669
+  type: 'test'
+  ...
+# Subtest: the passkey routes are origin-checked, even with a JSON body
+ok 531 - the passkey routes are origin-checked, even with a JSON body
+  ---
+  duration_ms: 848.881504
+  type: 'test'
+  ...
+# Subtest: a body not declared as JSON is refused before anything reads it
+ok 532 - a body not declared as JSON is refused before anything reads it
+  ---
+  duration_ms: 789.846236
+  type: 'test'
+  ...
+# Subtest: the app's own sign-in still works, charset and all, and body-less posts are untouched
+ok 533 - the app's own sign-in still works, charset and all, and body-less posts are untouched
+  ---
+  duration_ms: 751.78942
+  type: 'test'
+  ...
+# Subtest: a valid Bearer, even the attacker's own, does not switch the origin check off on the passkey routes
+ok 534 - a valid Bearer, even the attacker's own, does not switch the origin check off on the passkey routes
+  ---
+  duration_ms: 679.58574
+  type: 'test'
+  ...
+# Subtest: a valid Bearer does not switch the origin check off on the password and device-code routes
+ok 535 - a valid Bearer does not switch the origin check off on the password and device-code routes
+  ---
+  duration_ms: 661.311889
+  type: 'test'
+  ...
+# Subtest: every media route wants a session
+ok 536 - every media route wants a session
+  ---
+  duration_ms: 680.341632
+  type: 'test'
+  ...
+# Subtest: an upload is served back whole, with the headers that keep it from ever being a page
+ok 537 - an upload is served back whole, with the headers that keep it from ever being a page
+  ---
+  duration_ms: 701.857426
+  type: 'test'
+  ...
+# Subtest: another profile's file is exactly as missing as one that was never uploaded
+ok 538 - another profile's file is exactly as missing as one that was never uploaded
+  ---
+  duration_ms: 756.644128
+  type: 'test'
+  ...
+# Subtest: refusals: a wrong hash, SVG, a video posing as an image — each leaves nothing on disk
+ok 539 - refusals: a wrong hash, SVG, a video posing as an image — each leaves nothing on disk
+  ---
+  duration_ms: 690.363342
+  type: 'test'
+  ...
+# Subtest: a declared length over the cap is answered before the body is sent
+ok 540 - a declared length over the cap is answered before the body is sent
+  ---
+  duration_ms: 727.308366
+  type: 'test'
+  ...
+# Subtest: a body more than twice its kind's cap still gets its 413, not a reset
+ok 541 - a body more than twice its kind's cap still gets its 413, not a reset
+  ---
+  duration_ms: 702.905011
+  type: 'test'
+  ...
+# Subtest: the cap of what the bytes are applies, and the quota says how full it is
+ok 542 - the cap of what the bytes are applies, and the quota says how full it is
+  ---
+  duration_ms: 686.639298
+  type: 'test'
+  ...
+# Subtest: a video longer than MEDIA_VIDEO_MAX_SEC is refused, and a broken one too
+ok 543 - a video longer than MEDIA_VIDEO_MAX_SEC is refused, and a broken one too
+  ---
+  duration_ms: 615.263943
+  type: 'test'
+  ...
+# Subtest: an upload without Content-Length works, and is cut off at the cap while it streams
+ok 544 - an upload without Content-Length works, and is cut off at the cap while it streams
+  ---
+  duration_ms: 603.265037
+  type: 'test'
+  ...
+# Subtest: the same file from two devices at once: one file, counted once
+ok 545 - the same file from two devices at once: one file, counted once
+  ---
+  duration_ms: 693.240345
+  type: 'test'
+  ...
+# Subtest: a cross-site browser upload is refused; a paired phone with its bearer token is not
+ok 546 - a cross-site browser upload is refused; a paired phone with its bearer token is not
+  ---
+  duration_ms: 554.491827
+  type: 'test'
+  ...
+# Subtest: the hourly budget answers 429 with Retry-After, and is recorded once
+ok 547 - the hourly budget answers 429 with Retry-After, and is recorded once
+  ---
+  duration_ms: 633.919936
+  type: 'test'
+  ...
+# Subtest: a third upload while two are in flight is refused as busy
+ok 548 - a third upload while two are in flight is refused as busy
+  ---
+  duration_ms: 869.044256
+  type: 'test'
+  ...
+# Subtest: 507 when the disk has less free than MEDIA_MIN_FREE_MB
+ok 549 - 507 when the disk has less free than MEDIA_MIN_FREE_MB
+  ---
+  duration_ms: 572.602159
+  type: 'test'
+  ...
+# Subtest: /missing answers from the caller's own folder and refuses what is not a list of hashes
+ok 550 - /missing answers from the caller's own folder and refuses what is not a list of hashes
+  ---
+  duration_ms: 596.838763
+  type: 'test'
+  ...
+# Subtest: a state push starts the grace of a dropped file, and /sweep removes it at once
+ok 551 - a state push starts the grace of a dropped file, and /sweep removes it at once
+  ---
+  duration_ms: 672.021464
+  type: 'test'
+  ...
+# Subtest: /sweep with a state that does not parse removes nothing
+ok 552 - /sweep with a state that does not parse removes nothing
+  ---
+  duration_ms: 590.140576
+  type: 'test'
+  ...
+# Subtest: the sweep route has its own budget of 10 an hour
+ok 553 - the sweep route has its own budget of 10 an hour
+  ---
+  duration_ms: 589.188633
+  type: 'test'
+  ...
+# Subtest: PUT /api/data still answers 200 when the media bookkeeping fails
+ok 554 - PUT /api/data still answers 200 when the media bookkeeping fails
+  ---
+  duration_ms: 594.058382
+  type: 'test'
+  ...
+# Subtest: folders are 0700 and files 0600, and an admin deleting the profile removes its folder
+ok 555 - folders are 0700 and files 0600, and an admin deleting the profile removes its folder
+  ---
+  duration_ms: 650.285001
+  type: 'test'
+  ...
+# Subtest: /api/config carries the caps; MEDIA_UPLOADS=0 takes the block and every route away
+ok 556 - /api/config carries the caps; MEDIA_UPLOADS=0 takes the block and every route away
+  ---
+  duration_ms: 1132.329899
+  type: 'test'
+  ...
+# Subtest: boot removes the temp files of uploads the previous process was receiving
+ok 557 - boot removes the temp files of uploads the previous process was receiving
+  ---
+  duration_ms: 521.993484
+  type: 'test'
+  ...
+# Subtest: a trickled body is cut after the body deadline on every route but a signed-in upload
+ok 558 - a trickled body is cut after the body deadline on every route but a signed-in upload
+  ---
+  duration_ms: 2762.737033
+  type: 'test'
+  ...
+# Subtest: server.js gives a slow upload half an hour, not node's default five minutes
+ok 559 - server.js gives a slow upload half an hour, not node's default five minutes
+  ---
+  duration_ms: 3.746034
+  type: 'test'
+  ...
+# Subtest: needs a session: a paired phone’s token or a cookie
+ok 560 - needs a session: a paired phone’s token or a cookie
+  ---
+  duration_ms: 764.682899
+  type: 'test'
+  ...
+# Subtest: a day trained or noted is done; a planned day with nothing is still nudged
+ok 561 - a day trained or noted is done; a planned day with nothing is still nudged
+  ---
+  duration_ms: 673.759147
+  type: 'test'
+  ...
+# Subtest: says nothing of the workouts, and nothing of anyone else
+ok 562 - says nothing of the workouts, and nothing of anyone else
+  ---
+  duration_ms: 738.457429
+  type: 'test'
+  ...
+# Subtest: a date that is not one is refused
+ok 563 - a date that is not one is refused
+  ---
+  duration_ms: 774.580469
+  type: 'test'
+  ...
+# Subtest: fires once on the evening of a missed planned day, in the user's zone
+ok 564 - fires once on the evening of a missed planned day, in the user's zone
+  ---
+  duration_ms: 2154.937884
+  type: 'test'
+  ...
+# Subtest: silent outside the evening, on a rest day, on a trained day, and when switched off
+ok 565 - silent outside the evening, on a rest day, on a trained day, and when switched off
+  ---
+  duration_ms: 7061.268531
+  type: 'test'
+  ...
+# Subtest: no push subscription, or a workout on screen right now: no nudge
+ok 566 - no push subscription, or a workout on screen right now: no nudge
+  ---
+  duration_ms: 3441.932805
+  type: 'test'
+  ...
+# Subtest: a write from the LAN address names ORIGIN in the log and the answer
+ok 567 - a write from the LAN address names ORIGIN in the log and the answer
+  ---
+  duration_ms: 735.427831
+  type: 'test'
+  ...
+# Subtest: a page on another site gets the same refusal, and the log does not advise changing ORIGIN
+ok 568 - a page on another site gets the same refusal, and the log does not advise changing ORIGIN
+  ---
+  duration_ms: 575.766822
+  type: 'test'
+  ...
+# Subtest: a passkey made at another address is refused with the same code
+ok 569 - a passkey made at another address is refused with the same code
+  ---
+  duration_ms: 595.015798
+  type: 'test'
+  ...
+# Subtest: logout/all invalidates the account's outstanding pairing codes and nobody else's
+ok 570 - logout/all invalidates the account's outstanding pairing codes and nobody else's
+  ---
+  duration_ms: 781.868703
+  type: 'test'
+  ...
+# Subtest: minting a pairing code asks the owner proof: a session alone gets none
+ok 571 - minting a pairing code asks the owner proof: a session alone gets none
+  ---
+  duration_ms: 678.340001
+  type: 'test'
+  ...
+# Subtest: the list is the caller’s own passkeys, without key material, and says when one is the last way in
+ok 572 - the list is the caller’s own passkeys, without key material, and says when one is the last way in
+  ---
+  duration_ms: 828.555005
+  type: 'test'
+  ...
+# Subtest: adding a passkey needs proof, excludes the ones the profile has, and the new one signs in
+ok 573 - adding a passkey needs proof, excludes the ones the profile has, and the new one signs in
+  ---
+  duration_ms: 744.98945
+  type: 'test'
+  ...
+# Subtest: another profile’s passkey, or a challenge minted for another profile, adds nothing
+ok 574 - another profile’s passkey, or a challenge minted for another profile, adds nothing
+  ---
+  duration_ms: 751.227055
+  type: 'test'
+  ...
+# Subtest: signing out everywhere between the proof and the new passkey ends the ceremony
+ok 575 - signing out everywhere between the proof and the new passkey ends the ceremony
+  ---
+  duration_ms: 699.091542
+  type: 'test'
+  ...
+# Subtest: the current password proves an addition while the instance offers password sign-in
+ok 576 - the current password proves an addition while the instance offers password sign-in
+  ---
+  duration_ms: 945.861902
+  type: 'test'
+  ...
+# Subtest: with PASSWORD_LOGIN off only a passkey proves anything; a stored password is ignored
+ok 577 - with PASSWORD_LOGIN off only a passkey proves anything; a stored password is ignored
+  ---
+  duration_ms: 749.53001
+  type: 'test'
+  ...
+# Subtest: wrong current passwords on the way to a passkey count toward the sign-in pause
+ok 578 - wrong current passwords on the way to a passkey count toward the sign-in pause
+  ---
+  duration_ms: 1376.898345
+  type: 'test'
+  ...
+# Subtest: a profile has at most MAX_PASSKEYS passkeys
+ok 579 - a profile has at most MAX_PASSKEYS passkeys
+  ---
+  duration_ms: 592.843091
+  type: 'test'
+  ...
+# Subtest: renaming touches only the caller’s own passkey
+ok 580 - renaming touches only the caller’s own passkey
+  ---
+  duration_ms: 672.678472
+  type: 'test'
+  ...
+# Subtest: removing: never the last way in, never someone else’s, audited, and it stops that passkey signing in
+ok 581 - removing: never the last way in, never someone else’s, audited, and it stops that passkey signing in
+  ---
+  duration_ms: 712.195565
+  type: 'test'
+  ...
+# Subtest: removing a passkey needs proof made for it: none, another profile’s passkey, another ceremony’s challenge or a spent one remove nothing
+ok 582 - removing a passkey needs proof made for it: none, another profile’s passkey, another ceremony’s challenge or a spent one remove nothing
+  ---
+  duration_ms: 729.669764
+  type: 'test'
+  ...
+# Subtest: a proof is spent by the removal it was made for, and a replayed one removes nothing
+ok 583 - a proof is spent by the removal it was made for, and a replayed one removes nothing
+  ---
+  duration_ms: 602.012308
+  type: 'test'
+  ...
+# Subtest: wrong current passwords given to remove a passkey count toward the sign-in pause, and are audited as such
+ok 584 - wrong current passwords given to remove a passkey count toward the sign-in pause, and are audited as such
+  ---
+  duration_ms: 1518.607239
+  type: 'test'
+  ...
+# Subtest: the current password proves a removal too, while password sign-in is on
+ok 585 - the current password proves a removal too, while password sign-in is on
+  ---
+  duration_ms: 739.429412
+  type: 'test'
+  ...
+# Subtest: removing the password and the last passkey at the same time leaves one of them
+ok 586 - removing the password and the last passkey at the same time leaves one of them
+  ---
+  duration_ms: 742.718636
+  type: 'test'
+  ...
+# Subtest: a password is a way in only while the instance offers password sign-in
+ok 587 - a password is a way in only while the instance offers password sign-in
+  ---
+  duration_ms: 1285.710867
+  type: 'test'
+  ...
+# Subtest: a password-only profile keeps its password until a passkey is added, and then may drop it
+ok 588 - a password-only profile keeps its password until a passkey is added, and then may drop it
+  ---
+  duration_ms: 1056.713468
+  type: 'test'
+  ...
+# Subtest: a device link: made with proof, kept only as a hash, redeemed once by a new passkey that signs the device in
+ok 589 - a device link: made with proof, kept only as a hash, redeemed once by a new passkey that signs the device in
+  ---
+  duration_ms: 709.71693
+  type: 'test'
+  ...
+# Subtest: a password-only profile can make a link with its password, and the phone gets a passkey
+ok 590 - a password-only profile can make a link with its password, and the phone gets a passkey
+  ---
+  duration_ms: 727.003556
+  type: 'test'
+  ...
+# Subtest: an expired link, a replaced link and a link of a disabled profile are all just wrong
+ok 591 - an expired link, a replaced link and a link of a disabled profile are all just wrong
+  ---
+  duration_ms: 562.577347
+  type: 'test'
+  ...
+# Subtest: removing a passkey drops an unused code, so one made with it just before adds nothing afterwards
+ok 592 - removing a passkey drops an unused code, so one made with it just before adds nothing afterwards
+  ---
+  duration_ms: 686.79377
+  type: 'test'
+  ...
+# Subtest: a newer link replaces the older one, and signing out everywhere or a new password drops it
+ok 593 - a newer link replaces the older one, and signing out everywhere or a new password drops it
+  ---
+  duration_ms: 990.30495
+  type: 'test'
+  ...
+# Subtest: a link redeemed after the owner signed out everywhere mid-ceremony makes no passkey
+ok 594 - a link redeemed after the owner signed out everywhere mid-ceremony makes no passkey
+  ---
+  duration_ms: 631.362975
+  type: 'test'
+  ...
+# Subtest: two devices racing with one code: exactly one gets the passkey and the session
+ok 595 - two devices racing with one code: exactly one gets the passkey and the session
+  ---
+  duration_ms: 667.992528
+  type: 'test'
+  ...
+# Subtest: a challenge from one ceremony does not finish the other, nor a link of another profile
+ok 596 - a challenge from one ceremony does not finish the other, nor a link of another profile
+  ---
+  duration_ms: 865.362286
+  type: 'test'
+  ...
+# Subtest: wrong codes pause link redemption for the address, and only that
+ok 597 - wrong codes pause link redemption for the address, and only that
+  ---
+  duration_ms: 733.424883
+  type: 'test'
+  ...
+# Subtest: link redemption keeps the origin check; the account routes do too
+ok 598 - link redemption keeps the origin check; the account routes do too
+  ---
+  duration_ms: 696.723582
+  type: 'test'
+  ...
+# Subtest: a Settings or device-link challenge never finishes a sign-up, a sign-in or a proof — and the code stays good once
+ok 599 - a Settings or device-link challenge never finishes a sign-up, a sign-in or a proof — and the code stays good once
+  ---
+  duration_ms: 691.351528
+  type: 'test'
+  ...
+# Subtest: passkey sign-up and sign-in refusals carry a code the app can translate
+ok 600 - passkey sign-up and sign-in refusals carry a code the app can translate
+  ---
+  duration_ms: 583.990663
+  type: 'test'
+  ...
+# Subtest: deleting the account: a passkey of its own proves it, someone else’s does not
+ok 601 - deleting the account: a passkey of its own proves it, someone else’s does not
+  ---
+  duration_ms: 589.361313
+  type: 'test'
+  ...
+# Subtest: with PASSWORD_LOGIN off every password route is a 404 and /api/config says nothing
+ok 602 - with PASSWORD_LOGIN off every password route is a 404 and /api/config says nothing
+  ---
+  duration_ms: 797.989765
+  type: 'test'
+  ...
+# Subtest: signs in with the right password, case-insensitively by profile name, like a passkey does
+ok 603 - signs in with the right password, case-insensitively by profile name, like a passkey does
+  ---
+  duration_ms: 794.993196
+  type: 'test'
+  ...
+# Subtest: a wrong password and an unknown name get the same answer, after the same work
+ok 604 - a wrong password and an unknown name get the same answer, after the same work
+  ---
+  duration_ms: 1895.879619
+  type: 'test'
+  ...
+# Subtest: five wrong passwords pause the name, whoever sends them, and the pause says how long
+ok 605 - five wrong passwords pause the name, whoever sends them, and the pause says how long
+  ---
+  duration_ms: 2229.073013
+  type: 'test'
+  ...
+# Subtest: twenty failures from one address pause that address for every name; others are unaffected
+ok 606 - twenty failures from one address pause that address for every name; others are unaffected
+  ---
+  duration_ms: 3720.047956
+  type: 'test'
+  ...
+# Subtest: guesses sent all at once are checked only up to the pause, per name and per address
+ok 607 - guesses sent all at once are checked only up to the pause, per name and per address
+  ---
+  duration_ms: 2428.550484
+  type: 'test'
+  ...
+# Subtest: the owner signing in while guesses are in flight is not counted against the name
+ok 608 - the owner signing in while guesses are in flight is not counted against the name
+  ---
+  duration_ms: 1851.581016
+  type: 'test'
+  ...
+# Subtest: the burst budget answers 429 with Retry-After on the password routes
+ok 609 - the burst budget answers 429 with Retry-After on the password routes
+  ---
+  duration_ms: 921.678343
+  type: 'test'
+  ...
+# Subtest: without TRUST_PROXY a forwarded address is ignored: the socket is who is counted
+ok 610 - without TRUST_PROXY a forwarded address is ignored: the socket is who is counted
+  ---
+  duration_ms: 739.880037
+  type: 'test'
+  ...
+# Subtest: a flood from a shared address leaves passkey sign-in, registration and pairing working
+ok 611 - a flood from a shared address leaves passkey sign-in, registration and pairing working
+  ---
+  duration_ms: 3222.897141
+  type: 'test'
+  ...
+# Subtest: the password routes keep the origin check: no login CSRF
+ok 612 - the password routes keep the origin check: no login CSRF
+  ---
+  duration_ms: 803.673816
+  type: 'test'
+  ...
+# Subtest: registration with a password: policy, unique names among password holders, and the invite
+ok 613 - registration with a password: policy, unique names among password holders, and the invite
+  ---
+  duration_ms: 1631.648407
+  type: 'test'
+  ...
+# Subtest: setting a first password needs a passkey made for it, not just a session
+ok 614 - setting a first password needs a passkey made for it, not just a session
+  ---
+  duration_ms: 922.464348
+  type: 'test'
+  ...
+# Subtest: changing a password takes the current one and signs out every other session
+ok 615 - changing a password takes the current one and signs out every other session
+  ---
+  duration_ms: 1450.429103
+  type: 'test'
+  ...
+# Subtest: sign-ins with the old password still running during a change get no lasting session (current hash)
+ok 616 - sign-ins with the old password still running during a change get no lasting session (current hash)
+  ---
+  duration_ms: 2610.953552
+  type: 'test'
+  ...
+# Subtest: sign-ins with the old password still running during a change get no lasting session (older parameters hash)
+ok 617 - sign-ins with the old password still running during a change get no lasting session (older parameters hash)
+  ---
+  duration_ms: 2366.354313
+  type: 'test'
+  ...
+# Subtest: sign-ins still running when an admin resets the password answer 401, not a server error
+ok 618 - sign-ins still running when an admin resets the password answer 401, not a server error
+  ---
+  duration_ms: 845.298312
+  type: 'test'
+  ...
+# Subtest: wrong current passwords count toward the same pause as wrong sign-ins
+ok 619 - wrong current passwords count toward the same pause as wrong sign-ins
+  ---
+  duration_ms: 1351.952485
+  type: 'test'
+  ...
+# Subtest: the last way in is never removed
+ok 620 - the last way in is never removed
+  ---
+  duration_ms: 1060.915492
+  type: 'test'
+  ...
+# Subtest: removing the password needs proof made for it: the password itself or a passkey assertion, nothing less
+ok 621 - removing the password needs proof made for it: the password itself or a passkey assertion, nothing less
+  ---
+  duration_ms: 1296.853301
+  type: 'test'
+  ...
+# Subtest: wrong passwords given to remove the password count toward the same pause as wrong sign-ins
+ok 622 - wrong passwords given to remove the password count toward the same pause as wrong sign-ins
+  ---
+  duration_ms: 1406.811121
+  type: 'test'
+  ...
+# Subtest: an admin reset: a one-time code that ends the old password, works once, and expires
+ok 623 - an admin reset: a one-time code that ends the old password, works once, and expires
+  ---
+  duration_ms: 1047.979243
+  type: 'test'
+  ...
+# Subtest: a pending reset keeps the name: nobody can take it until the code is used or expires
+ok 624 - a pending reset keeps the name: nobody can take it until the code is used or expires
+  ---
+  duration_ms: 935.828737
+  type: 'test'
+  ...
+# Subtest: registering a name while its reset code is redeemed leaves one password holder, the reset profile
+ok 625 - registering a name while its reset code is redeemed leaves one password holder, the reset profile
+  ---
+  duration_ms: 923.080518
+  type: 'test'
+  ...
+# Subtest: wrong reset codes for a name do not lock out its real code, and do not touch the password count
+ok 626 - wrong reset codes for a name do not lock out its real code, and do not touch the password count
+  ---
+  duration_ms: 3566.723764
+  type: 'test'
+  ...
+# Subtest: a disabled account is refused even with the right password
+ok 627 - a disabled account is refused even with the right password
+  ---
+  duration_ms: 616.293924
+  type: 'test'
+  ...
+# Subtest: navigated, closed and no reason at all drop the athlete at once
+ok 628 - navigated, closed and no reason at all drop the athlete at once
+  ---
+  duration_ms: 611.62728
+  type: 'test'
+  ...
+# Subtest: hidden keeps the athlete listed for 45 s after the mark, then drops them
+ok 629 - hidden keeps the athlete listed for 45 s after the mark, then drops them
+  ---
+  duration_ms: 545.820443
+  type: 'test'
+  ...
+# Subtest: a heartbeat after hidden (a phone locked between sets) clears the mark
+ok 630 - a heartbeat after hidden (a phone locked between sets) clears the mark
+  ---
+  duration_ms: 539.855752
+  type: 'test'
+  ...
+# Subtest: the 70 s expiry after the last heartbeat applies whatever the hidden mark says
+ok 631 - the 70 s expiry after the last heartbeat applies whatever the hidden mark says
+  ---
+  duration_ms: 516.452961
+  type: 'test'
+  ...
+# Subtest: a second hidden with no heartbeat between does not stretch the grace
+ok 632 - a second hidden with no heartbeat between does not stretch the grace
+  ---
+  duration_ms: 509.391933
+  type: 'test'
+  ...
+# Subtest: hidden with no row (it arrived after closed) lists nobody
+ok 633 - hidden with no row (it arrived after closed) lists nobody
+  ---
+  duration_ms: 542.870073
+  type: 'test'
+  ...
+# Subtest: a hidden that lands after a later heartbeat cannot drop an athlete who keeps heartbeating
+ok 634 - a hidden that lands after a later heartbeat cannot drop an athlete who keeps heartbeating
+  ---
+  duration_ms: 1050.23275
+  type: 'test'
+  ...
+# Subtest: no ALLOWED_PRIVATE_IPS keeps every private address blocked
+ok 635 - no ALLOWED_PRIVATE_IPS keeps every private address blocked
+  ---
+  duration_ms: 562.320989
+  type: 'test'
+  ...
+# Subtest: allowed CIDR blocks, ranges and single addresses open only what they name
+ok 636 - allowed CIDR blocks, ranges and single addresses open only what they name
+  ---
+  duration_ms: 582.408658
+  type: 'test'
+  ...
+# Subtest: an invalid entry is reported and ignored while valid ones still apply
+ok 637 - an invalid entry is reported and ignored while valid ones still apply
+  ---
+  duration_ms: 526.478941
+  type: 'test'
+  ...
+# Subtest: a rest on a device without a subscription rings no other device
+ok 638 - a rest on a device without a subscription rings no other device
+  ---
+  duration_ms: 3174.983045
+  type: 'test'
+  ...
+# Subtest: a rest on a subscribed device rings that device and nobody else
+ok 639 - a rest on a subscribed device rings that device and nobody else
+  ---
+  duration_ms: 3070.370354
+  type: 'test'
+  ...
+# Subtest: subscribe refuses every spelling of a private IP literal and accepts public ones
+ok 640 - subscribe refuses every spelling of a private IP literal and accepts public ones
+  ---
+  duration_ms: 725.8934
+  type: 'test'
+  ...
+# Subtest: a private literal already stored as an endpoint is refused at send time, never connected to, and dropped
+ok 641 - a private literal already stored as an endpoint is refused at send time, never connected to, and dropped
+  ---
+  duration_ms: 592.174409
+  type: 'test'
+  ...
+# Subtest: an unwritable ./data cannot take the process down through the rest timer nobody awaits
+ok 642 - an unwritable ./data cannot take the process down through the rest timer nobody awaits
+  ---
+  duration_ms: 3121.687859
+  type: 'test'
+  ...
+# Subtest: a push that was delivered is a 200 even when only the prune save failed
+ok 643 - a push that was delivered is a 200 even when only the prune save failed
+  ---
+  duration_ms: 542.757366
+  type: 'test'
+  ...
+# Subtest: an oversized endpoint or key is refused and nothing is stored
+ok 644 - an oversized endpoint or key is refused and nothing is stored
+  ---
+  duration_ms: 545.935288
+  type: 'test'
+  ...
+# Subtest: a real-sized subscription still works
+ok 645 - a real-sized subscription still works
+  ---
+  duration_ms: 510.372881
+  type: 'test'
+  ...
+# Subtest: an oversized row from an older db.json is dropped at boot
+ok 646 - an oversized row from an older db.json is dropped at boot
+  ---
+  duration_ms: 480.910416
+  type: 'test'
+  ...
+# Subtest: status tells whether the server holds the endpoint; subscribe is an upsert that keeps created and stores the device id
+ok 647 - status tells whether the server holds the endpoint; subscribe is an upsert that keeps created and stores the device id
+  ---
+  duration_ms: 593.764077
+  type: 'test'
+  ...
+# Subtest: a row stored without a device id: status says so, and the owner re-sending it gives it one
+ok 648 - a row stored without a device id: status says so, and the owner re-sending it gives it one
+  ---
+  duration_ms: 531.131982
+  type: 'test'
+  ...
+# Subtest: a re-send without a usable device id keeps the id the row has
+ok 649 - a re-send without a usable device id keeps the id the row has
+  ---
+  duration_ms: 619.364906
+  type: 'test'
+  ...
+# Subtest: a rest started on a device whose row has no id rings that row, never another device's (\#348)
+ok 650 - a rest started on a device whose row has no id rings that row, never another device's (\#348)
+  ---
+  duration_ms: 5571.458358
+  type: 'test'
+  ...
+# Subtest: another account cannot take over a subscription without its keys; the same browser can
+ok 651 - another account cannot take over a subscription without its keys; the same browser can
+  ---
+  duration_ms: 530.582132
+  type: 'test'
+  ...
+# Subtest: a rest timer belongs to the device that set it: another device cancelling does not silence it
+ok 652 - a rest timer belongs to the device that set it: another device cancelling does not silence it
+  ---
+  duration_ms: 10526.741102
+  type: 'test'
+  ...
+# Subtest: an account keeps at most five rest timers; the oldest give way
+ok 653 - an account keeps at most five rest timers; the oldest give way
+  ---
+  duration_ms: 3017.674055
+  type: 'test'
+  ...
+# Subtest: rest timers and test pushes are throttled per account
+ok 654 - rest timers and test pushes are throttled per account
+  ---
+  duration_ms: 607.138784
+  type: 'test'
+  ...
+# Subtest: a path that only normalizes into a route is refused
+ok 655 - a path that only normalizes into a route is refused
+  ---
+  duration_ms: 492.061294
+  type: 'test'
+  ...
+# Subtest: GET /api/me renews a phone token past half its life, never a cookie replayed as one
+ok 656 - GET /api/me renews a phone token past half its life, never a cookie replayed as one
+  ---
+  duration_ms: 535.743896
+  type: 'test'
+  ...
+# Subtest: an admin makes a recovery code on an instance without password sign-in; it adds a passkey once and signs the device in
+ok 657 - an admin makes a recovery code on an instance without password sign-in; it adds a passkey once and signs the device in
+  ---
+  duration_ms: 653.225428
+  type: 'test'
+  ...
+# Subtest: who may make one for whom
+ok 658 - who may make one for whom
+  ---
+  duration_ms: 552.478065
+  type: 'test'
+  ...
+# Subtest: a wrong code says nothing about anyone, and is counted like a reset code
+ok 659 - a wrong code says nothing about anyone, and is counted like a reset code
+  ---
+  duration_ms: 579.140509
+  type: 'test'
+  ...
+# Subtest: a profile full of passkeys still gets back in: the one used longest ago makes room
+ok 660 - a profile full of passkeys still gets back in: the one used longest ago makes room
+  ---
+  duration_ms: 555.672577
+  type: 'test'
+  ...
+# Subtest: recover.js asks the running server for the owner’s code, by name or by id
+ok 661 - recover.js asks the running server for the owner’s code, by name or by id
+  ---
+  duration_ms: 782.840804
+  type: 'test'
+  ...
+# Subtest: the admin socket is private, and recover.js says so when no server runs
+ok 662 - the admin socket is private, and recover.js says so when no server runs
+  ---
+  duration_ms: 568.83454
+  type: 'test'
+  ...
+# Subtest: PUT /api/data refuses a state whose workouts or routines is not an array
+ok 663 - PUT /api/data refuses a state whose workouts or routines is not an array
+  ---
+  duration_ms: 552.440216
+  type: 'test'
+  ...
+# Subtest: a non-array workouts on disk is logged and skipped by the reminder tick; the next user still fires
+ok 664 - a non-array workouts on disk is logged and skipped by the reminder tick; the next user still fires
+  ---
+  duration_ms: 1011.798588
+  type: 'test'
+  ...
+# Subtest: a reminder whose minute passed 3 minutes ago still fires — once
+ok 665 - a reminder whose minute passed 3 minutes ago still fires — once
+  ---
+  duration_ms: 2616.384943
+  type: 'test'
+  ...
+# Subtest: a reminder 20 minutes past is not delivered late, and a day already trained is skipped
+ok 666 - a reminder 20 minutes past is not delivered late, and a day already trained is skipped
+  ---
+  duration_ms: 4971.671605
+  type: 'test'
+  ...
+# Subtest: a null entry in workouts or routines does not cost that profile its reminder
+ok 667 - a null entry in workouts or routines does not cost that profile its reminder
+  ---
+  duration_ms: 1104.303551
+  type: 'test'
+  ...
+# Subtest: a day that owed nothing is asked again once the state file changes
+ok 668 - a day that owed nothing is asked again once the state file changes
+  ---
+  duration_ms: 2284.726619
+  type: 'test'
+  ...
+# Subtest: a disabled profile gets no reminder
+ok 669 - a disabled profile gets no reminder
+  ---
+  duration_ms: 2455.131205
+  type: 'test'
+  ...
+# Subtest: the cache holds at most 64 users, and the least recently polled is the one dropped
+ok 670 - the cache holds at most 64 users, and the least recently polled is the one dropped
+  ---
+  duration_ms: 641.184196
+  type: 'test'
+  ...
+# Subtest: an entry nobody has polled for longer than the TTL is dropped
+ok 671 - an entry nobody has polled for longer than the TTL is dropped
+  ---
+  duration_ms: 879.537468
+  type: 'test'
+  ...
+# Subtest: a poll right after a sync reports the revision that sync returned, not the one before it
+ok 672 - a poll right after a sync reports the revision that sync returned, not the one before it
+  ---
+  duration_ms: 592.502976
+  type: 'test'
+  ...
+# Subtest: the poll really is reading through the stat cache
+ok 673 - the poll really is reading through the stat cache
+  ---
+  duration_ms: 573.390851
+  type: 'test'
+  ...
+# Subtest: the three hot-path state reads all go through readStateCached
+ok 674 - the three hot-path state reads all go through readStateCached
+  ---
+  duration_ms: 3.782445
+  type: 'test'
+  ...
+# Subtest: a bearer token past half its lifetime gets a fresh one from /api/me; a younger one and a cookie do not
+ok 675 - a bearer token past half its lifetime gets a fresh one from /api/me; a younger one and a cookie do not
+  ---
+  duration_ms: 549.059817
+  type: 'test'
+  ...
+# Subtest: revocation still works: an old session version is refused, and "sign out everywhere" ends a renewed token
+ok 676 - revocation still works: an old session version is refused, and "sign out everywhere" ends a renewed token
+  ---
+  duration_ms: 510.779157
+  type: 'test'
+  ...
+# Subtest: an unparseable request target is a 400, and the server keeps answering afterwards
+ok 677 - an unparseable request target is a 400, and the server keeps answering afterwards
+  ---
+  duration_ms: 526.82838
+  type: 'test'
+  ...
+# Subtest: page and watch meet in the mailbox, and only there
+ok 678 - page and watch meet in the mailbox, and only there
+  ---
+  duration_ms: 589.839547
+  type: 'test'
+  ...
+# Subtest: unpairing the last watch empties the mailbox
+ok 679 - unpairing the last watch empties the mailbox
+  ---
+  duration_ms: 510.360697
+  type: 'test'
+  ...
+# Subtest: Dec 1 from 18:00: one push per user and year, only to whoever is owed one, and never again
+ok 680 - Dec 1 from 18:00: one push per user and year, only to whoever is owed one, and never again
+  ---
+  duration_ms: 4082.383039
+  type: 'test'
+  ...
+# Subtest: switched on again before the evening, the opted-out user is owed one after all
+ok 681 - switched on again before the evening, the opted-out user is owed one after all
+  ---
+  duration_ms: 1186.278172
+  type: 'test'
+  ...
+# Subtest: a set note reaches the Coach with its workout, cut to 140 characters
+ok 682 - a set note reaches the Coach with its workout, cut to 140 characters
+  ---
+  duration_ms: 10.985573
+  type: 'test'
+  ...
+# Subtest: a set without a note reads exactly as before
+ok 683 - a set without a note reads exactly as before
+  ---
+  duration_ms: 9.235416
+  type: 'test'
+  ...
+# Subtest: the Coach payload (create) carries nothing of a set's form video
+ok 684 - the Coach payload (create) carries nothing of a set's form video
+  ---
+  duration_ms: 8.255322
+  type: 'test'
+  ...
+# Subtest: the Coach payload (review) carries nothing of a set's form video
+ok 685 - the Coach payload (review) carries nothing of a set's form video
+  ---
+  duration_ms: 4.675688
+  type: 'test'
+  ...
+# Subtest: the Coach payload (ask) carries nothing of a set's form video
+ok 686 - the Coach payload (ask) carries nothing of a set's form video
+  ---
+  duration_ms: 0.518402
+  type: 'test'
+  ...
+# Subtest: the Coach payload (debrief) carries nothing of a set's form video
+ok 687 - the Coach payload (debrief) carries nothing of a set's form video
+  ---
+  duration_ms: 0.345952
+  type: 'test'
+  ...
+# Subtest: a filmed set reads exactly like the same set unfilmed
+ok 688 - a filmed set reads exactly like the same set unfilmed
+  ---
+  duration_ms: 5.758262
+  type: 'test'
+  ...
+# Subtest: dayPhotos is a stamped map on the server too
+ok 689 - dayPhotos is a stamped map on the server too
+  ---
+  duration_ms: 0.818424
+  type: 'test'
+  ...
+# Subtest: a document from before the new fields is stored as it was sent
+ok 690 - a document from before the new fields is stored as it was sent
+  ---
+  duration_ms: 3.229663
+  type: 'test'
+  ...
+# Subtest: an app from before them, writing over a document that has them, does not take them away
+ok 691 - an app from before them, writing over a document that has them, does not take them away
+  ---
+  duration_ms: 1.665176
+  type: 'test'
+  ...
+# Subtest: their files are kept by the clean-up
+ok 692 - their files are kept by the clean-up
+  ---
+  duration_ms: 0.325121
+  type: 'test'
+  ...
+# Subtest: the fields stay through a PUT from the app that wrote them and from an older app
+ok 693 - the fields stay through a PUT from the app that wrote them and from an older app
+  ---
+  duration_ms: 4.456807
+  type: 'test'
+  ...
+# Subtest: a document without them comes out without them
+ok 694 - a document without them comes out without them
+  ---
+  duration_ms: 0.754983
+  type: 'test'
+  ...
+# Subtest: an older app editing another workout leaves these alone
+ok 695 - an older app editing another workout leaves these alone
+  ---
+  duration_ms: 0.451202
+  type: 'test'
+  ...
+# Subtest: the session heart rate and the imported weigh-in mark stay through every writer
+ok 696 - the session heart rate and the imported weigh-in mark stay through every writer
+  ---
+  duration_ms: 0.491071
+  type: 'test'
+  ...
+# Subtest: an older app that drops the session heart rate on another edit gets it put back
+ok 697 - an older app that drops the session heart rate on another edit gets it put back
+  ---
+  duration_ms: 0.543661
+  type: 'test'
+  ...
+# Subtest: add/add keeps both ids
+ok 698 - add/add keeps both ids
+  ---
+  duration_ms: 3.823035
+  type: 'test'
+  ...
+# Subtest: add/edit keeps independent records and the edit
+ok 699 - add/edit keeps independent records and the edit
+  ---
+  duration_ms: 0.891153
+  type: 'test'
+  ...
+# Subtest: different-field edits both survive
+ok 700 - different-field edits both survive
+  ---
+  duration_ms: 2.123278
+  type: 'test'
+  ...
+# Subtest: edit/delete retains merge evidence but hides a deleted record
+ok 701 - edit/delete retains merge evidence but hides a deleted record
+  ---
+  duration_ms: 0.559531
+  type: 'test'
+  ...
+# Subtest: delete/re-add uses the existing negative tombstone convention
+ok 702 - delete/re-add uses the existing negative tombstone convention
+  ---
+  duration_ms: 0.574223
+  type: 'test'
+  ...
+# Subtest: deletion replay cannot resurrect an entry or remove a later re-add
+ok 703 - deletion replay cannot resurrect an entry or remove a later re-add
+  ---
+  duration_ms: 0.584532
+  type: 'test'
+  ...
+# Subtest: same change replay is idempotent
+ok 704 - same change replay is idempotent
+  ---
+  duration_ms: 0.448821
+  type: 'test'
+  ...
+# Subtest: equal timestamps and id collisions resolve per field, independent of argument order
+ok 705 - equal timestamps and id collisions resolve per field, independent of argument order
+  ---
+  duration_ms: 0.561323
+  type: 'test'
+  ...
+# Subtest: field deletion wins an equal-stamp tie and replay preserves it
+ok 706 - field deletion wins an equal-stamp tie and replay preserves it
+  ---
+  duration_ms: 0.782512
+  type: 'test'
+  ...
+# Subtest: all three-device permutations and groupings converge, including edit/delete
+ok 707 - all three-device permutations and groupings converge, including edit/delete
+  ---
+  duration_ms: 4.453117
+  type: 'test'
+  ...
+# Subtest: older record missing a field cannot erase a stamped newer field
+ok 708 - older record missing a field cannot erase a stamped newer field
+  ---
+  duration_ms: 0.441412
+  type: 'test'
+  ...
+# Subtest: older backup replay respects deletion unless explicitly restored
+ok 709 - older backup replay respects deletion unless explicitly restored
+  ---
+  duration_ms: 0.452801
+  type: 'test'
+  ...
+# Subtest: resetAt/resetIds hides only reset entries, without losing tombstone evidence
+ok 710 - resetAt/resetIds hides only reset entries, without losing tombstone evidence
+  ---
+  duration_ms: 0.543413
+  type: 'test'
+  ...
+# Subtest: a legacy reset without resetIds suppresses older optional records
+ok 711 - a legacy reset without resetIds suppresses older optional records
+  ---
+  duration_ms: 0.273281
+  type: 'test'
+  ...
+# Subtest: invalid optional records are ignored safely
+ok 712 - invalid optional records are ignored safely
+  ---
+  duration_ms: 0.2265
+  type: 'test'
+  ...
+# Subtest: deletion replay after a third-device merge remains hidden
+ok 713 - deletion replay after a third-device merge remains hidden
+  ---
+  duration_ms: 0.458981
+  type: 'test'
+  ...
+# Subtest: F2 nutritionEntries: same-epoch reset expansion hides learned ids and survives stale replay
+ok 714 - F2 nutritionEntries: same-epoch reset expansion hides learned ids and survives stale replay
+  ---
+  duration_ms: 1.290644
+  type: 'test'
+  ...
+# Subtest: F2 nutritionEntries: nonpreferred same-epoch reset cannot erase preferred records
+ok 715 - F2 nutritionEntries: nonpreferred same-epoch reset cannot erase preferred records
+  ---
+  duration_ms: 0.379321
+  type: 'test'
+  ...
+# Subtest: F4 nutritionEntries: unchanged partial stamps survive replay and a third-device edit
+ok 716 - F4 nutritionEntries: unchanged partial stamps survive replay and a third-device edit
+  ---
+  duration_ms: 0.761823
+  type: 'test'
+  ...
+# Subtest: F2 activities: same-epoch reset expansion hides learned ids and survives stale replay
+ok 717 - F2 activities: same-epoch reset expansion hides learned ids and survives stale replay
+  ---
+  duration_ms: 1.351555
+  type: 'test'
+  ...
+# Subtest: F2 activities: nonpreferred same-epoch reset cannot erase preferred records
+ok 718 - F2 activities: nonpreferred same-epoch reset cannot erase preferred records
+  ---
+  duration_ms: 0.15456
+  type: 'test'
+  ...
+# Subtest: F4 activities: unchanged partial stamps survive replay and a third-device edit
+ok 719 - F4 activities: unchanged partial stamps survive replay and a third-device edit
+  ---
+  duration_ms: 0.372032
+  type: 'test'
+  ...
+# Subtest: F2 providerLinks: same-epoch reset expansion hides learned ids and survives stale replay
+ok 720 - F2 providerLinks: same-epoch reset expansion hides learned ids and survives stale replay
+  ---
+  duration_ms: 0.590762
+  type: 'test'
+  ...
+# Subtest: F2 providerLinks: nonpreferred same-epoch reset cannot erase preferred records
+ok 721 - F2 providerLinks: nonpreferred same-epoch reset cannot erase preferred records
+  ---
+  duration_ms: 0.153042
+  type: 'test'
+  ...
+# Subtest: F4 providerLinks: unchanged partial stamps survive replay and a third-device edit
+ok 722 - F4 providerLinks: unchanged partial stamps survive replay and a third-device edit
+  ---
+  duration_ms: 0.19801
+  type: 'test'
+  ...
+# Subtest: an older app's push over the current revision keeps the records and gets its changes stamped
+ok 723 - an older app's push over the current revision keeps the records and gets its changes stamped
+  ---
+  duration_ms: 4.78431
+  type: 'test'
+  ...
+# Subtest: a planner's queue and removed routine are stamped; a field it does not send is left alone
+ok 724 - a planner's queue and removed routine are stamped; a field it does not send is left alone
+  ---
+  duration_ms: 1.381405
+  type: 'test'
+  ...
+# Subtest: the app stamps its own changes: only the records are joined
+ok 725 - the app stamps its own changes: only the records are joined
+  ---
+  duration_ms: 0.971784
+  type: 'test'
+  ...
+# Subtest: an entry held against a removal on record is kept, marked as added back
+ok 726 - an entry held against a removal on record is kept, marked as added back
+  ---
+  duration_ms: 0.526361
+  type: 'test'
+  ...
+# Subtest: a reset keeps its own records; a replace without baseRev keeps the stored ones
+ok 727 - a reset keeps its own records; a replace without baseRev keeps the stored ones
+  ---
+  duration_ms: 0.407711
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: an older app's push does not wipe the records, and its delete is stamped
+ok 728 - PUT /api/data: an older app's push does not wipe the records, and its delete is stamped
+  ---
+  duration_ms: 583.821093
+  type: 'test'
+  ...
+# Subtest: an older app saving a routine keeps the pyramid it does not know
+ok 729 - an older app saving a routine keeps the pyramid it does not know
+  ---
+  duration_ms: 1.239754
+  type: 'test'
+  ...
+# Subtest: an older app keeps the fields it does not know everywhere: settings, entries, sets
+ok 730 - an older app keeps the fields it does not know everywhere: settings, entries, sets
+  ---
+  duration_ms: 1.297416
+  type: 'test'
+  ...
+# Subtest: a set taken out of the middle is not guessed at, and the app's own pushes are left as sent
+ok 731 - a set taken out of the middle is not guessed at, and the app's own pushes are left as sent
+  ---
+  duration_ms: 1.352896
+  type: 'test'
+  ...
+# Subtest: a reset from an older app is not refilled from the profile it wiped
+ok 732 - a reset from an older app is not refilled from the profile it wiped
+  ---
+  duration_ms: 0.469472
+  type: 'test'
+  ...
+# Subtest: an older app back from offline does not set back settings, plan days or entry fields changed after its copy
+ok 733 - an older app back from offline does not set back settings, plan days or entry fields changed after its copy
+  ---
+  duration_ms: 1.018565
+  type: 'test'
+  ...
+# Subtest: an older app that read the latest change still changes it, and one that sends no record goes through
+ok 734 - an older app that read the latest change still changes it, and one that sends no record goes through
+  ---
+  duration_ms: 1.133124
+  type: 'test'
+  ...
+# Subtest: an older app's push never gets the write ids stamped as settings, and an old such stamp goes
+ok 735 - an older app's push never gets the write ids stamped as settings, and an old such stamp goes
+  ---
+  duration_ms: 0.933154
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: a document the server corrected for an older app is one revision further than it was told
+ok 736 - PUT /api/data: a document the server corrected for an older app is one revision further than it was told
+  ---
+  duration_ms: 538.972908
+  type: 'test'
+  ...
+# Subtest: an older app that adds an exercise to a routine with one of them twice keeps the pyramids of the others
+ok 737 - an older app that adds an exercise to a routine with one of them twice keeps the pyramids of the others
+  ---
+  duration_ms: 0.784213
+  type: 'test'
+  ...
+# Subtest: an older app changing the same setting, plan day and routine field twice in a row keeps the second change
+ok 738 - an older app changing the same setting, plan day and routine field twice in a row keeps the second change
+  ---
+  duration_ms: 5.790202
+  type: 'test'
+  ...
+# Subtest: a stamp the server gave one older app still holds against another that read an older copy
+ok 739 - a stamp the server gave one older app still holds against another that read an older copy
+  ---
+  duration_ms: 4.534918
+  type: 'test'
+  ...
+# Subtest: an older app's own next change goes through after another device wrote in between; its old copy coming back does not
+ok 740 - an older app's own next change goes through after another device wrote in between; its old copy coming back does not
+  ---
+  duration_ms: 1.611047
+  type: 'test'
+  ...
+# Subtest: a field with no history of its earlier values (stamped before it was kept) is put back as before
+ok 741 - a field with no history of its earlier values (stamped before it was kept) is put back as before
+  ---
+  duration_ms: 0.290101
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: an older app's two changes of one setting in a row both land, and the note stays on the server
+ok 742 - PUT /api/data: an older app's two changes of one setting in a row both land, and the note stays on the server
+  ---
+  duration_ms: 547.08737
+  type: 'test'
+  ...
+# Subtest: an unstamped push keeps the Coach lines another device added, and an Undo stays used
+ok 743 - an unstamped push keeps the Coach lines another device added, and an Undo stays used
+  ---
+  duration_ms: 1.409996
+  type: 'test'
+  ...
+# Subtest: a plan referencing an unknown exercise is rejected, not quietly trimmed
+ok 744 - a plan referencing an unknown exercise is rejected, not quietly trimmed
+  ---
+  duration_ms: 3.418373
+  type: 'test'
+  ...
+# Subtest: a plan naming a machine the person does not have goes back for repair
+ok 745 - a plan naming a machine the person does not have goes back for repair
+  ---
+  duration_ms: 1.973019
+  type: 'test'
+  ...
+# Subtest: a plan may reference a custom exercise it defines in the same answer
+ok 746 - a plan may reference a custom exercise it defines in the same answer
+  ---
+  duration_ms: 0.261781
+  type: 'test'
+  ...
+# Subtest: a routine icon key survives whole, in a created plan and in an added routine
+ok 747 - a routine icon key survives whole, in a created plan and in an added routine
+  ---
+  duration_ms: 0.653162
+  type: 'test'
+  ...
+# Subtest: a flag is one pair of regional indicators, not a run of them spelling a word; legacy icon keys survive (\#311)
+ok 748 - a flag is one pair of regional indicators, not a run of them spelling a word; legacy icon keys survive (\#311)
+  ---
+  duration_ms: 1.037544
+  type: 'test'
+  ...
+# Subtest: the week may only point at routines the plan actually defines
+ok 749 - the week may only point at routines the plan actually defines
+  ---
+  duration_ms: 0.227481
+  type: 'test'
+  ...
+# Subtest: proposed baselines are capped at what the lifter has actually handled
+ok 750 - proposed baselines are capped at what the lifter has actually handled
+  ---
+  duration_ms: 0.298121
+  type: 'test'
+  ...
+# Subtest: a plan that ignores the requested number of training days is rejected
+ok 751 - a plan that ignores the requested number of training days is rejected
+  ---
+  duration_ms: 0.217221
+  type: 'test'
+  ...
+# Subtest: an unknown progression policy is rejected
+ok 752 - an unknown progression policy is rejected
+  ---
+  duration_ms: 0.420512
+  type: 'test'
+  ...
+# Subtest: a created plan carries the rep ceiling and the two flags through unchanged
+ok 753 - a created plan carries the rep ceiling and the two flags through unchanged
+  ---
+  duration_ms: 0.555053
+  type: 'test'
+  ...
+# Subtest: triple progression and its set ceiling survive a created plan
+ok 754 - triple progression and its set ceiling survive a created plan
+  ---
+  duration_ms: 0.303921
+  type: 'test'
+  ...
+# Subtest: unilateral reps are a total across both sides, so an odd one is refused
+ok 755 - unilateral reps are a total across both sides, so an odd one is refused
+  ---
+  duration_ms: 0.248821
+  type: 'test'
+  ...
+# Subtest: a rep ceiling below its own floor is refused at both ends
+ok 756 - a rep ceiling below its own floor is refused at both ends
+  ---
+  duration_ms: 0.330242
+  type: 'test'
+  ...
+# Subtest: a review cannot prescribe an odd total on a per-side exercise
+ok 757 - a review cannot prescribe an odd total on a per-side exercise
+  ---
+  duration_ms: 0.21906
+  type: 'test'
+  ...
+# Subtest: an invented change type does nothing at all
+ok 758 - an invented change type does nothing at all
+  ---
+  duration_ms: 0.151011
+  type: 'test'
+  ...
+# Subtest: every change must target something that exists
+ok 759 - every change must target something that exists
+  ---
+  duration_ms: 0.23364
+  type: 'test'
+  ...
+# Subtest: a change without a rationale is rejected
+ok 760 - a change without a rationale is rejected
+  ---
+  duration_ms: 0.152711
+  type: 'test'
+  ...
+# Subtest: values are type-checked per change type
+ok 761 - values are type-checked per change type
+  ---
+  duration_ms: 0.754952
+  type: 'test'
+  ...
+# Subtest: cardio on a non-cardio exercise keeps its mode, minutes and pace (\#640)
+ok 762 - cardio on a non-cardio exercise keeps its mode, minutes and pace (\#640)
+  ---
+  duration_ms: 1.078365
+  type: 'test'
+  ...
+# Subtest: an added routine with a null or junk entry goes back for repair instead of crashing
+ok 763 - an added routine with a null or junk entry goes back for repair instead of crashing
+  ---
+  duration_ms: 0.322501
+  type: 'test'
+  ...
+# Subtest: adding an exercise requires a real library id
+ok 764 - adding an exercise requires a real library id
+  ---
+  duration_ms: 0.340071
+  type: 'test'
+  ...
+# Subtest: an added exercise may declare itself bodyweight, per-side and capped
+ok 765 - an added exercise may declare itself bodyweight, per-side and capped
+  ---
+  duration_ms: 0.285281
+  type: 'test'
+  ...
+# Subtest: a reorder must be a permutation of what is already there
+ok 766 - a reorder must be a permutation of what is already there
+  ---
+  duration_ms: 0.269551
+  type: 'test'
+  ...
+# Subtest: a superset needs a partner that is not itself
+ok 767 - a superset needs a partner that is not itself
+  ---
+  duration_ms: 0.200032
+  type: 'test'
+  ...
+# Subtest: a new routine is refused whole when it names an exercise nobody has
+ok 768 - a new routine is refused whole when it names an exercise nobody has
+  ---
+  duration_ms: 0.293781
+  type: 'test'
+  ...
+# Subtest: before is read off the plan, never taken from the answer
+ok 769 - before is read off the plan, never taken from the answer
+  ---
+  duration_ms: 0.270431
+  type: 'test'
+  ...
+# Subtest: a week change may only schedule a routine that exists, rest, or nothing
+ok 770 - a week change may only schedule a routine that exists, rest, or nothing
+  ---
+  duration_ms: 0.29479
+  type: 'test'
+  ...
+# Subtest: "nothing to change" is a first-class answer, and so is an empty change list
+ok 771 - "nothing to change" is a first-class answer, and so is an empty change list
+  ---
+  duration_ms: 0.140339
+  type: 'test'
+  ...
+# Subtest: advice-only notes survive but carry no change
+ok 772 - advice-only notes survive but carry no change
+  ---
+  duration_ms: 0.208642
+  type: 'test'
+  ...
+# Subtest: one bad change fails the whole set — nothing is ever half-applied
+ok 773 - one bad change fails the whole set — nothing is ever half-applied
+  ---
+  duration_ms: 0.136021
+  type: 'test'
+  ...
+# Subtest: every allowed change type has a validator that accepts a well-formed instance
+ok 774 - every allowed change type has a validator that accepts a well-formed instance
+  ---
+  duration_ms: 0.836454
+  type: 'test'
+  ...
+# Subtest: two routines cannot answer to the same id
+ok 775 - two routines cannot answer to the same id
+  ---
+  duration_ms: 0.221371
+  type: 'test'
+  ...
+# Subtest: an auto-assigned routine id cannot collide with an explicit one
+ok 776 - an auto-assigned routine id cannot collide with an explicit one
+  ---
+  duration_ms: 0.148509
+  type: 'test'
+  ...
+# Subtest: one exercise cannot appear twice in the same routine
+ok 777 - one exercise cannot appear twice in the same routine
+  ---
+  duration_ms: 0.118851
+  type: 'test'
+  ...
+# Subtest: a plan with no week at all does not satisfy a requested day count
+ok 778 - a plan with no week at all does not satisfy a requested day count
+  ---
+  duration_ms: 0.285041
+  type: 'test'
+  ...
+# Subtest: a starting weight is dropped when there is nothing logged to justify it
+ok 779 - a starting weight is dropped when there is nothing logged to justify it
+  ---
+  duration_ms: 0.207351
+  type: 'test'
+  ...
+# Subtest: a starting weight survives only where that exercise has actually been lifted
+ok 780 - a starting weight survives only where that exercise has actually been lifted
+  ---
+  duration_ms: 0.19463
+  type: 'test'
+  ...
+# Subtest: a starting weight above what they have handled is pulled back down to it
+ok 781 - a starting weight above what they have handled is pulled back down to it
+  ---
+  duration_ms: 0.17526
+  type: 'test'
+  ...
+# Subtest: a custom exercise may not claim a library id
+ok 782 - a custom exercise may not claim a library id
+  ---
+  duration_ms: 0.20917
+  type: 'test'
+  ...
+# Subtest: ids that are prototype keys are refused
+ok 783 - ids that are prototype keys are refused
+  ---
+  duration_ms: 0.204382
+  type: 'test'
+  ...
+# Subtest: a load step has an upper bound
+ok 784 - a load step has an upper bound
+  ---
+  duration_ms: 0.193582
+  type: 'test'
+  ...
+# Subtest: a debrief keeps summary, a clamped whole-number score and the three short lists
+ok 785 - a debrief keeps summary, a clamped whole-number score and the three short lists
+  ---
+  duration_ms: 0.360992
+  type: 'test'
+  ...
+# Subtest: a debrief without a score, or with every list empty, is refused
+ok 786 - a debrief without a score, or with every list empty, is refused
+  ---
+  duration_ms: 0.22826
+  type: 'test'
+  ...
+# Subtest: a debrief carrying changes, or answering "nochange", is refused rather than trimmed
+ok 787 - a debrief carrying changes, or answering "nochange", is refused rather than trimmed
+  ---
+  duration_ms: 0.211851
+  type: 'test'
+  ...
+# Subtest: a debrief score outside 1-10 is clamped, not refused
+ok 788 - a debrief score outside 1-10 is clamped, not refused
+  ---
+  duration_ms: 0.218251
+  type: 'test'
+  ...
+# Subtest: a plan's custom exercises lose any media or link the model put on them
+ok 789 - a plan's custom exercises lose any media or link the model put on them
+  ---
+  duration_ms: 0.250362
+  type: 'test'
+  ...
+# Subtest: \#313: a swap onto an exercise already in the routine, alone, goes back for repair naming the rule and the id
+ok 790 - \#313: a swap onto an exercise already in the routine, alone, goes back for repair naming the rule and the id
+  ---
+  duration_ms: 0.478842
+  type: 'test'
+  ...
+# Subtest: \#313: alongside sound changes, the duplicate is dropped and the rest reaches the screen
+ok 791 - \#313: alongside sound changes, the duplicate is dropped and the rest reaches the screen
+  ---
+  duration_ms: 0.478772
+  type: 'test'
+  ...
+# Subtest: \#313: a duplicate is not dropped when another change in the routine names what it swapped out or brought in
+ok 792 - \#313: a duplicate is not dropped when another change in the routine names what it swapped out or brought in
+  ---
+  duration_ms: 1.773098
+  type: 'test'
+  ...
+# Subtest: \#313: a duplicate next to a change that is wrong for another reason is reported with it, not dropped
+ok 793 - \#313: a duplicate next to a change that is wrong for another reason is reported with it, not dropped
+  ---
+  duration_ms: 0.287331
+  type: 'test'
+  ...
+# Subtest: \#313: a duplicate beside only restatements of the plan is not passed off as "no change"
+ok 794 - \#313: a duplicate beside only restatements of the plan is not passed off as "no change"
+  ---
+  duration_ms: 0.21658
+  type: 'test'
+  ...
+# Subtest: \#313: a duplicate is still reported when another change fails only in company
+ok 795 - \#313: a duplicate is still reported when another change fails only in company
+  ---
+  duration_ms: 0.202321
+  type: 'test'
+  ...
+# Subtest: \#313: two changes bringing the same exercise into one routine are refused together
+ok 796 - \#313: two changes bringing the same exercise into one routine are refused together
+  ---
+  duration_ms: 0.199881
+  type: 'test'
+  ...
+# Subtest: \#313: an exId from another routine is refused with that routine's own ids
+ok 797 - \#313: an exId from another routine is refused with that routine's own ids
+  ---
+  duration_ms: 0.118139
+  type: 'test'
+  ...
+# Subtest: a routine glyph is an icon key or an emoji, never words the next prompt would carry (\#311)
+ok 798 - a routine glyph is an icon key or an emoji, never words the next prompt would carry (\#311)
+  ---
+  duration_ms: 0.415722
+  type: 'test'
+  ...
+# Subtest: names the configured values when the RP ID does not match
+ok 799 - names the configured values when the RP ID does not match
+  ---
+  duration_ms: 1.313074
+  type: 'test'
+  ...
+# Subtest: does the same for an origin mismatch, on login and on registration
+ok 800 - does the same for an origin mismatch, on login and on registration
+  ---
+  duration_ms: 0.26885
+  type: 'test'
+  ...
+# Subtest: leaves an unrelated verification failure alone
+ok 801 - leaves an unrelated verification failure alone
+  ---
+  duration_ms: 1.761217
+  type: 'test'
+  ...
+# Subtest: does not throw on a missing or empty error
+ok 802 - does not throw on a missing or empty error
+  ---
+  duration_ms: 0.167011
+  type: 'test'
+  ...
+# Subtest: a refused write names the setting that fixes it when the browser is just at another address
+ok 803 - a refused write names the setting that fixes it when the browser is just at another address
+  ---
+  duration_ms: 0.414521
+  type: 'test'
+  ...
+# Subtest: a page on another site is not told to change ORIGIN
+ok 804 - a page on another site is not told to change ORIGIN
+  ---
+  duration_ms: 0.24879
+  type: 'test'
+  ...
+# Subtest: an Origin header cannot add a line or a suggestion of its own
+ok 805 - an Origin header cannot add a line or a suggestion of its own
+  ---
+  duration_ms: 0.224752
+  type: 'test'
+  ...
+# Subtest: tells an origin or RP ID mismatch apart from other verify errors
+ok 806 - tells an origin or RP ID mismatch apart from other verify errors
+  ---
+  duration_ms: 0.16105
+  type: 'test'
+  ...
+# Subtest: warmup pings the compatible endpoint once per chat kind, with the real rules prefix
+ok 807 - warmup pings the compatible endpoint once per chat kind, with the real rules prefix
+  ---
+  duration_ms: 8.567323
+  type: 'test'
+  ...
+# Subtest: a code is one-shot, ten minutes long, one per profile, and typed any which way
+ok 808 - a code is one-shot, ten minutes long, one per profile, and typed any which way
+  ---
+  duration_ms: 2.498469
+  type: 'test'
+  ...
+# Subtest: a link is a hashed token that ends with the sessions, the account, or 90 idle days
+ok 809 - a link is a hashed token that ends with the sessions, the account, or 90 idle days
+  ---
+  duration_ms: 1.436526
+  type: 'test'
+  ...
+# Subtest: a profile keeps its newest few links, names are tidied
+ok 810 - a profile keeps its newest few links, names are tidied
+  ---
+  duration_ms: 1.087144
+  type: 'test'
+  ...
+# Subtest: the mailbox keeps the page's snapshot as it was sent, if it is one
+ok 811 - the mailbox keeps the page's snapshot as it was sent, if it is one
+  ---
+  duration_ms: 0.984423
+  type: 'test'
+  ...
+# Subtest: events queue in order, once each; the page acknowledges them out
+ok 812 - events queue in order, once each; the page acknowledges them out
+  ---
+  duration_ms: 2.056018
+  type: 'test'
+  ...
+# Subtest: a full queue takes no more, and says which it did not take
+ok 813 - a full queue takes no more, and says which it did not take
+  ---
+  duration_ms: 1.671877
+  type: 'test'
+  ...
+# Subtest: due on Dec 1 from 18:00 to the end of the day, server time, and never else
+ok 814 - due on Dec 1 from 18:00 to the end of the day, server time, and never else
+  ---
+  duration_ms: 3.111372
+  type: 'test'
+  ...
+# Subtest: the summary is a few small facts whatever the state holds
+ok 815 - the summary is a few small facts whatever the state holds
+  ---
+  duration_ms: 6.232544
+  type: 'test'
+  ...
+# Subtest: owed once per user and year, with a workout that year, not switched off, not planned on a phone
+ok 816 - owed once per user and year, with a workout that year, not switched off, not planned on a phone
+  ---
+  duration_ms: 0.276551
+  type: 'test'
+  ...
+# Subtest: the push is fixed words and the year: nothing from the profile rides along
+ok 817 - the push is fixed words and the year: nothing from the profile rides along
+  ---
+  duration_ms: 0.345601
+  type: 'test'
+  ...
+# Subtest: api/wrapped-copy.js matches the frontend strings (node scripts/build-wrapped-copy.mjs)
+ok 818 - api/wrapped-copy.js matches the frontend strings (node scripts/build-wrapped-copy.mjs)
+  ---
+  duration_ms: 167.680747
+  type: 'test'
+  ...
+1..818
+# tests 854
+# suites 9
+# pass 854
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 147729.636559

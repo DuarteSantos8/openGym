@@ -94,7 +94,7 @@ export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   // accent: the old iOS green on purpose. A loaded copy that never picked one (saved before accents,
   // a server document, a backup) keeps the green it always had; a new profile starts on the
-  // brand's green instead (freshState, lib/accent.js NEW_ACCENT).
+  // app's own colour instead (freshState, lib/accent.js NEW_ACCENT: Ironvane orange).
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
   rateGoal: null,
@@ -352,7 +352,7 @@ export function freshState() {
   // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
   // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
   s.streakRuleAsk = true
-  // The brand's green (1.4.5). DEF stays on the old green, so only a copy made here gets this.
+  // The app's own colour (Ironvane orange). DEF stays on the old green, so only a copy made here gets this.
   s.accent = NEW_ACCENT
   return s
 }
@@ -383,7 +383,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || (st.nutritionEntries || []).length || Object.keys(st.deleted?.nutritionEntries || {}).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -1337,7 +1337,7 @@ export const useStore = create((set, get) => {
     reached()
     let asked = false
     const askAbout = async extras => {
-      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup) || typeof ask !== 'function') return false
+      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup || extras.nutritionEntries) || typeof ask !== 'function') return false
       asked = true
       return !!(await ask(extras))
     }
@@ -1346,7 +1346,7 @@ export const useStore = create((set, get) => {
     // the server's, so the next pull still brings in what changed.
     const reread = async () => {
       if (!asked) return
-      try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
+      try { const r = await api('/api/data'); if (r && Object.hasOwn(r, 'state')) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
       const copy = sanitizeAccent(Object.assign(clone(DEF), state))
@@ -1356,8 +1356,10 @@ export const useStore = create((set, get) => {
       confirmed(get().S)
     }
     const S0 = get().S
-    if (!state) {
-      const push = hasData(S0) && (!alwaysAsk || sameAccount || await askAbout(localExtras(S0, null)))
+    // A device-link decision uses the same inventory split and fresh server read even when
+    // the account has no document yet. Only an unasked/new-account adoption takes this shortcut.
+    if (!state && (!alwaysAsk || sameAccount)) {
+      const push = hasData(S0)
       if (gone()) return STALE
       releaseAdopt()
       if (hasData(get().S) && !push) {
@@ -1443,17 +1445,23 @@ export const useStore = create((set, get) => {
   // A copy's workouts, weigh-ins and custom exercises split by the names a sign-in recorded when it
   // began (`pre`, see setUser): `before` holds what was there then, `later` — null when nothing
   // is — what was logged since, with the custom exercises its workouts use, in this copy's unit.
-  const ADOPT_FIELDS = ['workouts', 'bodyweight', 'customEx']
+  const ADOPT_FIELDS = ['workouts', 'bodyweight', 'customEx', 'nutritionEntries']
   const splitByPre = (S, pre) => {
     const before = { ...S }
     const later = { _ts: S._ts, unit: S.unit, ...(S.unitSet ? { unitSet: S.unitSet } : {}) }
     let any = false
     for (const f of ADOPT_FIELDS) {
+      if (f === 'nutritionEntries' && !Array.isArray(S[f])) continue
       const had = new Set(Array.isArray(pre?.[f]) ? pre[f] : [])
       const xs = Array.isArray(S[f]) ? S[f].filter(x => x != null) : []
-      before[f] = xs.filter(x => had.has(entryKey(f, x)))
-      later[f] = xs.filter(x => !had.has(entryKey(f, x)))
+      const key = x => f === 'nutritionEntries' ? x.id : entryKey(f, x)
+      before[f] = xs.filter(x => had.has(key(x)))
+      later[f] = xs.filter(x => !had.has(key(x)))
       if (later[f].length) any = true
+      if (f === 'nutritionEntries' && later[f].length && S.deleted?.[f]) {
+        const ids = new Set(later[f].map(e => e.id))
+        later.deleted = { [f]: Object.fromEntries(Object.entries(S.deleted[f]).filter(([id]) => ids.has(id))) }
+      }
     }
     if (!any) return { before, later: null }
     const used = new Set(later.workouts.flatMap(w => (Array.isArray(w?.entries) ? w.entries : []).map(e => e?.id)))

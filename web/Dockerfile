@@ -84,6 +84,11 @@ COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
 # catalogue/media/NOTICE.md. They ship inside the image; nothing is downloaded at start-up.
 COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
+# Start/end drawings by Greg Priday (Everkinetic), CC BY-SA 4.0: see catalogue/photos/NOTICE.md.
+COPY catalogue/photos/ /usr/share/nginx/html/exercise-photos/
+# Demonstration videos (Wikimedia Commons, CC BY / CC BY-SA) and step-by-step photos (U.S. Army
+# ATP 7-22.02, public domain): see catalogue/demos/NOTICE.md.
+COPY catalogue/demos/ /usr/share/nginx/html/exercise-demos/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
@@ -118,7 +123,7 @@ ENV MCP_PORT=3100
 # device talks to the provider the person chose, an Ollama on their LAN included, and the update
 # check asks GitHub. Behind a proxy that injects a script of its own (analytics), set this to a
 # policy that allows it, or to "frame-ancestors 'none'" for the old header.
-ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-G6hveK3W3qL6wotsg9mMbpCvPnzXurSHhi8Jb3TS2Vc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-OUK6dHvh5Q1gdM6i79uVScdmnlIShIbs7qM60Q5tsxc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as
