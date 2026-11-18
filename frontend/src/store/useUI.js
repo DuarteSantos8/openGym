@@ -65,9 +65,10 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   const { S } = useStore.getState()
   // The rest before a hold that starts by itself: its end is the count-in, and the alerts after
   // it (go, hold done, the next ones) are booked with it, for a phone that stays locked.
-  const next = useUI.getState().timer?.clock ? null : autoPeek()   // the workout Timer leads into no hold
+  const clock = !!useUI.getState().timer?.clock   // the workout Timer: no hold after it, no next set to name
+  const next = clock ? null : autoPeek()
   const chain = next ? chainCues({ start: 'rest', at: endsAt, name: next.label, plan: next.plan, forecast: autoForecast(next), words: autoWords }) : null
-  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
+  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : clock ? t('Time’s up.') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer

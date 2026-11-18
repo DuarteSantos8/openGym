@@ -49,4 +49,18 @@ describe('the workout Timer on the phone', () => {
     expect(armRestAlert.mock.calls.at(-1)[0]).toBe(endsAt + 15_000)
     expect(lastAlert().cues).toBeUndefined()
   })
+
+  it('ends with "Time’s up." on the lock screen, where a rest after a set keeps its own title', () => {
+    unbind()   // no hold next: a plain rest
+    useUI.getState().startRest(20, 0)
+    const restTitle = lastAlert().title
+    expect(restTitle).toBeTruthy()
+    expect(restTitle).not.toBe('Time’s up.')
+    useUI.getState().startRest(20, undefined, { clock: true })
+    expect(lastAlert()).toMatchObject({ title: 'Time’s up.', countdownTitle: 'Rest' })
+    useUI.getState().addRest(15)
+    expect(lastAlert().title).toBe('Time’s up.')
+    useUI.getState().startRest(20, 0)
+    expect(lastAlert().title).toBe(restTitle)
+  })
 })
