@@ -18,7 +18,7 @@
 // no background or history permission is asked for. What it decides is in lib/health-read.js.
 //
 // The web build never gets here (MOBILE is a build-time flag).
-import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp } from './health-read.js'
+import { mergeHeartRate, mergeWeighIns, mergeWaists, lacksHeartRate, mergeBodyComp } from './health-read.js'
 import { mergeVitals } from './vitals.js'
 import { mergeHealthActivities } from './activities.js'
 import { isoOf } from './format.js'
@@ -32,7 +32,7 @@ import { speedUnitOf } from './speed.js'
 export const HEALTH_FILE = 'opengym-health.json'
 // How many ids of records the store refused are remembered (syncOnce, `refused`).
 export const REFUSED_MAX = 50
-const OFF = { on: false, kcalAsked: false, waistAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
+const OFF = { on: false, kcalAsked: false, waistAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, readWaist: false, waCursor: 0, waSeen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -57,7 +57,7 @@ export async function loadHealth() {
   if (cached) return cached
   const f = await readJsonFile(HEALTH_FILE)
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), body: map(f.body), vitals: map(f.vitals) } : { ...OFF }
+  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), waSeen: map(f.waSeen), body: map(f.body), vitals: map(f.vitals) } : { ...OFF }
   return cached
 }
 const saveHealth = h => { cached = h; return writeJsonFile(HEALTH_FILE, h) }
@@ -295,6 +295,7 @@ let applyRef = null
 let readRunning = null
 let lastWeightRead = 0
 let lastBodyRead = 0
+let lastWaistRead = 0
 let lastVitalsRead = 0
 let lastSportRead = 0
 
@@ -306,11 +307,11 @@ export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']
 // Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts (a run from Strava or the watch,
 // a padel match) as activities. One permission: the store's exercise sessions / workouts.
 export const SPORT_READS = ['exercise']
-const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : kind === 'sport' ? 'readSport' : 'readWeight')
-const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
+const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : kind === 'sport' ? 'readSport' : kind === 'waist' ? 'readWaist' : 'readWeight')
+const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport || h.readWaist))
 
 /**
- * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body' | 'vitals' | 'sport'): asks for that read permission
+ * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body' | 'vitals' | 'sport' | 'waist'): asks for that read permission
  * only, then reads once. Resolves with { ok, reason }; reason 'denied' when it was not granted.
  */
 export async function enableRead(kind, getState, { apply = null } = {}) {
@@ -318,7 +319,7 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
   if (!p) return { ok: false, reason: 'unsupported' }
   const st = await p.HC.status().catch(() => ({ status: 'unsupported' }))
   if (st.status !== 'available') return { ok: false, reason: st.status }
-  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : kind === 'vitals' ? 'vitals' : kind === 'sport' ? 'exercise' : 'weight'
+  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : kind === 'vitals' ? 'vitals' : kind === 'sport' ? 'exercise' : kind === 'waist' ? 'waist' : 'weight'
   // The history permission only where Health Connect has it (status says so); Apple Health has none.
   const history = kind === 'weight' && p.platform !== 'ios' && st.history === true
   const read = kind === 'body' ? BODY_READS : kind === 'vitals' ? VITAL_READS : kind === 'sport' ? SPORT_READS : history ? [perm, 'history'] : [perm]
@@ -420,6 +421,24 @@ async function readOnce(getState, force, now, applyFn) {
       const newest = records.reduce((m, r) => Math.max(m, Number(r?.t) || 0), 0)
       if (newest > h.wCursor) h.wCursor = newest
     } catch (e) { fail(e) }
+  }
+
+  // Waists (iPhone only): the same rhythm and cursor as weigh-ins, into the day's check-in.
+  if (h.readWaist && (force ? now - lastWaistRead >= RESUME_EVERY_MS : now - lastWaistRead >= READ_EVERY_MS)) {
+    try {
+      const since = h.waCursor > 0 ? Math.max(h.waCursor - WEIGHT_MARGIN_MS, now - WEIGHT_FIRST_MS) : now - WEIGHT_FIRST_MS
+      const res = await p.HC.readWaist({ since })
+      lastWaistRead = now
+      const records = Array.isArray(res?.records) ? res.records : []
+      const seen = { ...(h.waSeen || {}) }
+      const before = { ...seen }
+      if (records.length) apply(probe => mergeWaists(probe, records, { seen }).length > 0,
+        s => { mergeWaists(s, records, { seen: { ...before } }) })
+      for (const [d, v] of Object.entries(seen)) if (now - Number(v?.t) > SEEN_KEEP_MS) delete seen[d]
+      h.waSeen = seen
+      const newest = records.reduce((m, r) => Math.max(m, Number(r?.t) || 0), 0)
+      if (newest > h.waCursor) h.waCursor = newest
+    } catch (e) { if (!error) fail(e) }
   }
 
   // Body composition: as the hub has it, into this phone's file only (lib/health-read.js). From the

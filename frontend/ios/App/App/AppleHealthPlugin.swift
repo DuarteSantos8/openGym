@@ -36,6 +36,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setEnabled", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readHeartRate", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readWaist", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readVitals", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWorkouts", returnType: CAPPluginReturnPromise),
@@ -96,6 +97,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             var types: Set<HKObjectType> = []
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
             if read.contains("weight") { types.insert(bodyMass) }
+            if read.contains("waist"), let w = waist { types.insert(w) }
             // Body composition (v1.4.5): Apple Health has body fat and lean mass of the four.
             if read.contains("bodyFat"), let fat = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage) { types.insert(fat) }
             if read.contains("leanMass"), let lean = HKObjectType.quantityType(forIdentifier: .leanBodyMass) { types.insert(lean) }
@@ -260,6 +262,26 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                                        syncId: $0.metadata?[HKMetadataKeySyncIdentifier] as? String)
             }
             call.resolve(["records": HealthReadCore.weights(all)])
+        } failed: { self.fail(call, $0) }
+    }
+
+    /// Waists (cm) since `since`, as { t, cm, id, origin, clientId } (lib/health-read.js mergeWaists).
+    /// Not allowed reads nothing, as Apple Health keeps that private.
+    @objc func readWaist(_ call: CAPPluginCall) {
+        guard let since = call.getDouble("since") else { call.reject("since is needed", "failed"); return }
+        guard let type = waist else { call.resolve(["records": [[String: Any]]()]); return }
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: nil)
+        query(type, predicate) { found in
+            let rows: [[String: Any]] = found.compactMap { $0 as? HKQuantitySample }.map { sample in
+                var r: [String: Any] = [
+                    "t": sample.startDate.timeIntervalSince1970 * 1000,
+                    "cm": sample.quantity.doubleValue(for: .meterUnit(with: .centi)),
+                    "id": sample.uuid.uuidString, "origin": sample.sourceRevision.source.bundleIdentifier,
+                ]
+                if let sync = sample.metadata?[HKMetadataKeySyncIdentifier] as? String { r["clientId"] = sync }
+                return r
+            }
+            call.resolve(["records": rows])
         } failed: { self.fail(call, $0) }
     }
 
