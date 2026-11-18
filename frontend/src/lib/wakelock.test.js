@@ -85,6 +85,16 @@ describe('requestWakeLock', () => {
     expect(live).not.toBeNull()
   })
 
+  it('a new hold retries after the browser refused the last request', async () => {
+    reject = true
+    requestWakeLock(); await settle()   // the workout, refused (Low Power Mode)
+    expect(live).toBeNull()
+    reject = false
+    requestWakeLock(); await settle()   // the circuit player starts
+    expect(requests).toBe(2)
+    expect(live).not.toBeNull()
+  })
+
   it('survives a rejection and retries when the document comes back', async () => {
     reject = true
     requestWakeLock(); await settle()

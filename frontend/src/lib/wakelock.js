@@ -37,9 +37,8 @@ async function acquire() {
 const onVisible = () => { if (document.visibilityState === 'visible') acquire() }
 
 export function requestWakeLock() {
-  if (holders++) return
-  document.addEventListener('visibilitychange', onVisible)
-  acquire()
+  if (!holders++) document.addEventListener('visibilitychange', onVisible)
+  acquire()   // a new hold tries again even when the browser refused the last request
 }
 
 export function releaseWakeLock() {
