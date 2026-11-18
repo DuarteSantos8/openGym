@@ -55,6 +55,13 @@ export const ATP_FIGURES = {
   '14-2': ['0043'], '14-3': ['0032'], '14-5': ['0116'], '14-6': ['0025'], '14-10': ['0047'],
   '14-13': ['0027'], '14-14': ['2393'], '14-16': ['4408'], '14-18': ['5631'], '14-21': ['0375'],
   '15-3': ['0586'], '15-4': ['1590'], '15-7': ['0603'], '15-8': ['0590'], '15-11': ['1350'], '15-14': ['0607'],
+  // Release pass: more of the manual's single-exercise figures, each checked by eye (same movement
+  // and equipment). Figures that mix two tools in one sequence (barbell and kettlebell) stay out.
+  '4-1': ['4051'], '5-17': ['3928'], '9-4': ['1354'],
+  '13-1': ['4089'], '13-2': ['3733'], '13-4': ['0801'], '13-8': ['6156'],
+  '14-7': ['0289'], '14-9': ['0033'], '14-15': ['0120'], '14-17': ['1200'], '14-23': ['0294'],
+  '15-1': ['2267'], '15-5': ['0584'], '15-9': ['0198'], '15-16': ['0576', '0577'],
+  '16-7': ['1398'], '16-8': ['1511'],
 }
 
 const LICENSES = { 'CC BY-SA 4.0': 'CC-BY-SA-4.0', 'CC BY-SA 3.0': 'CC-BY-SA-3.0', 'CC BY 3.0': 'CC-BY-3.0', 'CC BY 4.0': 'CC-BY-4.0', CC0: 'CC0-1.0' }
@@ -116,6 +123,26 @@ for i, p in enumerate(d):
         if pix.alpha or pix.n > 3: pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
         f = f'{out}/atp-{m.group(1)}.png'; pix.save(f)
         found[m.group(1)] = {'png': f, 'label': m.group(2).strip(), 'page': i + 1}
+# A figure drawn as several tiles (or as vector art) has no single picture above its caption:
+# render the page between the text above it and the caption instead.
+for i, p in enumerate(d):
+    blocks = p.get_text('blocks')
+    caps = sorted((b[1], b[3], m.group(1), m.group(2).strip()) for b in blocks for m in [re.match(r'Figure (\d+-\d+)\.\s*(.+)', b[4].strip().replace('\n', ' '))] if m)
+    prev = p.rect.y0 + 40
+    for y0, y1, fig, label in caps:
+        if fig in want and fig not in found and not label.endswith('..'):
+            # The figure's own frame when it has one, else the space between the text and the caption.
+            frames = [dr['rect'] for dr in p.get_drawings() if dr['rect'].width > 150 and dr['rect'].height > 60 and dr['rect'].y0 >= prev - 2 and dr['rect'].y1 <= y1 + 2]
+            if frames:
+                clip = max(frames, key=lambda r: r.y1) + (-2, -2, 2, 2)
+            else:
+                text = [b[3] for b in blocks if b[3] <= y0 - 2 and b[1] >= prev - 1 and len(b[4]) > 60]
+                top = max(text + [prev, p.rect.y0 + 60])
+                clip = pymupdf.Rect(p.rect.x0 + 30, top + 2, p.rect.x1 - 30, y0 - 1)
+            if clip.height >= 60:
+                f = f'{out}/atp-{fig}.png'; p.get_pixmap(clip=clip, dpi=150).save(f)
+                found[fig] = {'png': f, 'label': label, 'page': i + 1}
+        prev = y1
 print(json.dumps(found))
 `
 
@@ -126,13 +153,28 @@ async function main() {
   const catDir = path.join(ROOT, 'catalogue/exercises')
   const cat = Object.fromEntries(fs.readdirSync(catDir).filter(f => f.endsWith('.json')).map(f => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(catDir, f), 'utf8'))]))
   for (const id of [...VIDEOS.map(v => v.id), ...Object.values(ATP_FIGURES).flat()]) if (!cat[id]) throw new Error('not in the catalogue: ' + id)
+  // DEMOS_REUSE_VIDEOS=1 keeps the videos already built (Commons rate-limits a full refetch) and
+  // redoes only the photos.
+  const reuse = process.env.DEMOS_REUSE_VIDEOS === '1'
+  const old = reuse ? JSON.parse(fs.readFileSync(path.join(OUT, 'index.json'), 'utf8')) : null
+  const keep = path.join(CACHE, 'kept-videos')
+  if (reuse) {
+    fs.rmSync(keep, { recursive: true, force: true }); fs.mkdirSync(keep, { recursive: true })
+    for (const f of fs.readdirSync(path.join(OUT, 'files')).filter(f => f.startsWith('video-'))) fs.copyFileSync(path.join(OUT, 'files', f), path.join(keep, f))
+  }
   fs.rmSync(OUT, { recursive: true, force: true })
   fs.mkdirSync(path.join(OUT, 'files'), { recursive: true })
   const index = {}
   const add = (id, e) => { (index[id] ||= []).push(e) }
 
-  const info = await commonsInfo(VIDEOS.map(v => v.file))
-  for (const v of VIDEOS) {
+  if (reuse) {
+    for (const [id, list] of Object.entries(old)) for (const e of list) if (e.kind === 'video') {
+      for (const f of [e.f, e.poster]) fs.copyFileSync(path.join(keep, path.basename(f)), path.join(OUT, f))
+      add(id, e)
+    }
+  }
+  const info = reuse ? {} : await commonsInfo(VIDEOS.map(v => v.file))
+  for (const v of reuse ? [] : VIDEOS) {
     const m = info[v.file]
     if (!m || LICENSES[m.lic] !== v.license) throw new Error(`${v.file}: licence is now "${m?.lic}", expected ${v.license}`)
     const src = get(m.url, path.join(CACHE, v.id + path.extname(m.url)))
