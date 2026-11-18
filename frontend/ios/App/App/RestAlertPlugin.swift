@@ -285,11 +285,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 ledger.didActivate(shape)
             } catch {
                 // Played anyway, without the duck. A category that took stays (play() activates
-                // it, so an onSilent cue keeps .playback); otherwise the mixing kind, never
-                // .soloAmbient. The ledger records what is really set.
-                if session.category == shape.avCategory {
-                    ledger.didActivate(shape)
-                } else {
+                // it, so an onSilent cue keeps .playback), but the activation failed, so the
+                // ledger does not count it as active and the next matching cue tries again.
+                // A category that did not take falls back to the mixing kind, never .soloAmbient.
+                if session.category != shape.avCategory {
                     RestAlertPlugin.mixWithMusic()
                     ledger.didActivate(.resting)
                 }
