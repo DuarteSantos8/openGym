@@ -2,6 +2,7 @@
 import { readingsOf } from './weigh-ins.js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { convertWeight, parseSpokenWeight, importPendingWeighIns, todayRoutineIds, loggedLine, weightInRange } from './voice.js'
+import { initWeighInSource } from './weigh-in-source.js'
 
 // Weigh-ins Siri logged with the app closed (ios/App/App/VoiceIntents.swift VoicePending), and
 // what Assistant hands over in a link: brought in once, in the profile's unit, on the right day.
@@ -181,5 +182,28 @@ describe('startVoice', () => {
     expect(state.S.bodyweight).toHaveLength(1)
     expect(toast).toHaveBeenCalledWith('78.2 kg logged by Siri')
     stop()
+  })
+  // #1088: while weigh-ins come from the health store, what Siri heard is cleared, not logged, and
+  // not kept for later either (a weight logged weeks after it was said would be wrong).
+  it('drops what is pending while weigh-ins come from the health store', async () => {
+    let tell
+    await initWeighInSource(async () => ({ readWeight: true }), cb => { tell = cb })
+    try {
+      const m = await import('./voice.js')
+      // its own id: the case above left p1 among the ids already seen
+      const plugin = { pending: vi.fn(async () => ({ items: [pending({ id: 'p9', at: Date.now() - 60000, d: undefined })] })), clear: vi.fn(async () => {}) }
+      m._setVoicePluginForTest(plugin)
+      let state = { ready: true, S: { unit: 'kg', bodyweight: [] } }
+      const useStore = {
+        getState: () => ({ ...state, update: fn => { const S = structuredClone(state.S); fn(S); state = { ...state, S } } }),
+        subscribe: () => () => {},
+      }
+      const toast = vi.fn()
+      const stop = await m.startVoice({ useStore, toast })
+      await vi.waitFor(() => expect(plugin.clear).toHaveBeenCalledWith({ ids: ['p9'] }))
+      expect(state.S.bodyweight).toHaveLength(0)
+      expect(toast).not.toHaveBeenCalled()
+      stop()
+    } finally { tell({ readWeight: false }) }
   })
 })
