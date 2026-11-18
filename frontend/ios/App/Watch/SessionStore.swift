@@ -1011,6 +1011,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         heartPending += readings.map { [($0.0.timeIntervalSince1970 * 1000).rounded(), $0.1.rounded()] }
         // A quarter of an hour at most: the phone reads anything older back from Apple Health.
         if heartPending.count > 200 { heartPending.removeFirst(heartPending.count - 200) }
+        flushHeart()
+    }
+
+    /// The readings waiting go to the phone when it can be reached: after each new one, and when the
+    /// phone comes back in reach or the session comes up (a paused workout sends no new reading).
+    /// Only for the workout they were measured for. Main queue.
+    private func flushHeart() {
+        guard !isDemo, WCSession.isSupported(), !heartPending.isEmpty else { return }
+        let wid = state.workout?.id
+        guard heartPendingFor == wid else { heartPending = []; heartPendingFor = wid; return }
         guard WCSession.default.activationState == .activated, WCSession.default.isReachable else { return }
         let samples = heartPending
         heartPending = []
@@ -1693,7 +1703,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func sessionReachabilityDidChange(_ session: WCSession) {
         updateLink()
         // Back in reach: what it may have missed goes now, quickly, as a message.
-        if session.isReachable { DispatchQueue.main.async { self.flush(reconnect: true) } }
+        if session.isReachable { DispatchQueue.main.async { self.flush(reconnect: true); self.flushHeart() } }
     }
 
     func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
@@ -1767,7 +1777,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // The phone's latest snapshot: also what a watch app opened mid-workout picks the session up from.
         receive(session.receivedApplicationContext)
-        DispatchQueue.main.async { self.flushOutbox() }
+        DispatchQueue.main.async { self.flushOutbox(); self.flushHeart() }
         sendStatus()
         updateLink()
     }
