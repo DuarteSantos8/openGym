@@ -73,6 +73,7 @@ function MeasurementLog({ sourceDate, close }) {
     }
     const base = source ? normalizeMeasurementEntry(source, S.customMeasurements) : emptyMeasurement(date, S.customMeasurements)
     base.d = date
+    delete base.src   // an edit makes the check-in the user's own again
     base.t = source && date === source.d ? source.t : (date === todayISO() ? Date.now() : new Date(date + 'T12:00:00').getTime())
     for (const field of fields) {
       const raw = values[field.key]

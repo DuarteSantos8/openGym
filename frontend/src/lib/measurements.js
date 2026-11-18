@@ -98,6 +98,7 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
   for (const key of MEASUREMENT_KEYS) entry[key] = valid(raw[key], builtinUnit(key))
   const note = typeof raw.note === 'string' ? raw.note.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, ' ').trim().slice(0, MEASUREMENT_NOTE_MAX) : ''
   if (note) entry.note = note
+  if (typeof raw.src === 'string' && raw.src) entry.src = raw.src   // read in from Health: never written back, loses a sync merge to a typed one
 
   const known = new Map(custom.map(c => [c.id, c]))
   const seen = new Set()

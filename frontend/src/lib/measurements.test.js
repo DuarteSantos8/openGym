@@ -186,3 +186,13 @@ describe('the length unit (#932)', async () => {
     expect(measurementSeries({ ...S, measureUnit: null }, 'waist')[0].y).toBeCloseTo(31.5, 1)
   })
 })
+
+describe('a check-in read from Health', () => {
+  it('keeps its src through normalizing, and a blank one is dropped', () => {
+    const s = normalizeMeasurementsState({ measurements: [
+      { d: '2026-10-14', t: 1, waist: 82.4, src: 'health' },
+      { d: '2026-10-15', t: 1, waist: 80, src: '' },
+    ] })
+    expect(s.measurements.map(e => e.src)).toEqual(['health', undefined])
+  })
+})
