@@ -424,7 +424,7 @@ async function readOnce(getState, force, now, applyFn) {
   }
 
   // Waists (iPhone only): the same rhythm and cursor as weigh-ins, into the day's check-in.
-  if (h.readWaist && (force ? now - lastWaistRead >= RESUME_EVERY_MS : now - lastWaistRead >= READ_EVERY_MS)) {
+  if (h.readWaist && p.platform === 'ios' && (force ? now - lastWaistRead >= RESUME_EVERY_MS : now - lastWaistRead >= READ_EVERY_MS)) {
     try {
       const since = h.waCursor > 0 ? Math.max(h.waCursor - WEIGHT_MARGIN_MS, now - WEIGHT_FIRST_MS) : now - WEIGHT_FIRST_MS
       const res = await p.HC.readWaist({ since })

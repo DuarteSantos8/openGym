@@ -176,6 +176,15 @@ describe('waists', () => {
   })
 })
 
+describe('waists on Android', () => {
+  it('never calls the missing native method', async () => {
+    h.waists = [{ t: NOW - 3600e3, cm: 82.4, id: 'a1', origin: 'x', clientId: null }]
+    await hs.enableRead('waist', getState, { apply })
+    expect(reads('readWaist')).toHaveLength(0)
+    expect(S.measurements).toBeUndefined()
+  })
+})
+
 describe('weigh-ins', () => {
   const rec = (hAgo, kg, extra = {}) => ({ t: NOW - hAgo * 3600e3, kg, id: 'r' + hAgo, origin: 'com.withings.wiscale2', clientId: null, ...extra })
 

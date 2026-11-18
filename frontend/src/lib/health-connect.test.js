@@ -296,6 +296,7 @@ describe('waist records', () => {
   })
   it('skips an out-of-range waist and a time in the far future', () => {
     expect(waistRecord({ d: '2026-11-10', waist: 5 })).toBeNull()
+    expect(waistRecord({ d: '2026-11-10', waist: 80, src: 'health' })).toBeNull()
     expect(waistRecord({ d: '2026-11-10', waist: 'x' })).toBeNull()
     expect(waistRecord({ d: '2031-01-01', waist: 80 }, opts.now)).toBeNull()
   })

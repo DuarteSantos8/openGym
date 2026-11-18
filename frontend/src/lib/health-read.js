@@ -153,6 +153,7 @@ export function mergeWaists(S, records, { seen = {} } = {}) {
     else {
       const e = emptyMeasurement(d, S.customMeasurements)
       e.waist = cm; e.t = r.t
+      e.src = 'health'   // a typed check-in of the day always beats this one in a sync merge, and it is never written back
       S.measurements.push(e)
       S.measurements.sort((a, b) => a.d.localeCompare(b.d))
     }

@@ -182,10 +182,10 @@ export function weightRecord(b, unit, r = null, now = Date.now()) {
   return { id: weightRecordId(b.d, r?.id), time, kg }
 }
 
-/** One waist record per check-in with a waist (cm): at its time `t` if that is on day `d`, else at local noon of `d`. */
+/** One waist record per check-in with a waist (cm), none for one read in from Health (`src`): at its time `t` if that is on day `d`, else at local noon of `d`. */
 export function waistRecord(e, now = Date.now()) {
   const cm = Number(e?.waist)
-  if (!e?.d || e.waist == null || !Number.isFinite(cm) || !inMeasurementRange('waist', cm)) return null
+  if (!e?.d || e.src || e.waist == null || !Number.isFinite(cm) || !inMeasurementRange('waist', cm)) return null
   const [y, m, d] = String(e.d).split('-').map(Number)
   const time = Number(e.t) > 0 && isoOf(new Date(e.t)) === e.d ? e.t : new Date(y, m - 1, d, 12).getTime()
   return healthTime(time, now) ? { id: 'opengym-waist-' + e.d, time, cm } : null

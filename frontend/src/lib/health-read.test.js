@@ -193,12 +193,13 @@ describe('mergeWaists', () => {
     expect(mergeWaists(S, [wrec(14, 7, 82.44)])).toEqual(['2026-10-14'])
     expect(S.measurements[0].waist).toBe(82.4)
     expect(S.measurements[0].t).toBeGreaterThan(old)
+    expect(S.measurements[0].src).toBeUndefined()
   })
 
   it('makes a check-in holding only the waist on a day with none', () => {
     const S = { measurements: [], customMeasurements: [] }
     mergeWaists(S, [wrec(14, 7, 82.4)])
-    expect(S.measurements).toEqual([{ ...emptyMeasurement('2026-10-14'), waist: 82.4, t: at(14, 7) }])
+    expect(S.measurements).toEqual([{ ...emptyMeasurement('2026-10-14'), waist: 82.4, t: at(14, 7), src: 'health' }])
   })
 
   it('keeps a waist typed in openGym', () => {
