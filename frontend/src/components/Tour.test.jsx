@@ -25,7 +25,7 @@ import { useStore, DEF } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { beginWorkout } from '../sheets.jsx'
 import { openTour, closeTour, tourState, readTour, noteStep, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID } from '../lib/tour.js'
-import Tour, { _setAnchorWait } from './Tour.jsx'
+import Tour, { _setAnchorWait, revealAnchor } from './Tour.jsx'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const ANCHORS = ['today', 'start', 'plan-mode', 'plan-views', 'plan-menu', 'lib-search', 'lib-filters', 'set', 'tick', 'swipe', 'workout-more', 'finish', 'stats-tiles',
@@ -80,6 +80,15 @@ const step = () => document.querySelector('.tour')?.getAttribute('data-step')
 const btn = label => [...document.querySelectorAll('.tour-card button')].find(b => b.textContent === label)
 const anchor = name => document.querySelector(`[data-tour="${name}"]`)
 const click = async el => { await act(async () => { el.click() }); await settle() }
+// Next, then wait (up to 2 s) for the tour to reach the step expected after it. On a busy
+// machine one settle() is not always enough to reach the next anchor, a Next pressed before then
+// is lost, and a step whose anchor is missing (c-media in the stand-in form) shows for a moment
+// before the tour passes over it. Fails right here, naming both steps, if it never arrives.
+const nextTo = async id => {
+  await click(btn('Next'))
+  for (let i = 0; i < 40 && step() !== id; i++) await settle(50)
+  expect(step()).toBe(id)
+}
 const key = async (k, opts = {}) => { await act(async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, ...opts })) }); await settle(30) }
 const run = async (at, flow, path) => {
   await act(async () => { openTour(flow ? { kind: 'run', at, flow } : { kind: 'run', at }) })
@@ -497,11 +506,7 @@ describe('Create your own exercise', () => {
   }
   it('walks the real form, and Next past Create makes nothing', async () => {
     await toForm()
-    for (const id of ['c-bp', 'c-eq', 'c-save']) {   // no media field in the stand-in: passed over
-      await click(btn('Next'))
-      await settle(150)
-      expect(step()).toBe(id)
-    }
+    for (const id of ['c-bp', 'c-eq', 'c-save']) await nextTo(id)   // no media field in the stand-in: passed over
     await click(btn('Next'))
     await settle(300)
     expect(step()).toBe('c-done')
@@ -510,8 +515,7 @@ describe('Create your own exercise', () => {
   })
   it('the form’s own Create makes it, and the tour follows', async () => {
     await toForm()
-    for (let k = 0; k < 3; k++) await click(btn('Next'))
-    expect(step()).toBe('c-save')
+    for (const id of ['c-bp', 'c-eq', 'c-save']) await nextTo(id)
     await click(anchor('cx-save'))
     await settle(300)
     expect(useStore.getState().S.customEx.map(c => c.id)).toEqual(['cmine'])
@@ -522,5 +526,23 @@ describe('Create your own exercise', () => {
     await act(async () => { useUI.getState().closeAll() })
     await settle(500)
     expect(step()).toBe('c-new')
+  })
+})
+
+// Plan keeps its mode switch and its menu under Advanced and More, closed on a fresh visit: a stop
+// there opens the disclosures around it, or it would point at a control nobody can see or reach.
+describe('revealAnchor', () => {
+  it('opens every closed disclosure around the element and leaves an open one as it is', () => {
+    document.body.innerHTML = '<details id="outer"><summary>More</summary><details id="inner" open><summary>x</summary>'
+      + '<details id="deep"><summary>y</summary><button data-tour="plan-menu">Plan options</button></details></details></details>'
+      + '<details id="other"><summary>z</summary></details>'
+    revealAnchor(document.querySelector('[data-tour="plan-menu"]'))
+    expect(['outer', 'inner', 'deep'].map(id => document.getElementById(id).open)).toEqual([true, true, true])
+    expect(document.getElementById('other').open).toBe(false)
+  })
+  it('does nothing without an element or a disclosure', () => {
+    expect(() => revealAnchor(null)).not.toThrow()
+    document.body.innerHTML = '<button id="b">B</button>'
+    expect(() => revealAnchor(document.getElementById('b'))).not.toThrow()
   })
 })

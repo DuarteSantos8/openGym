@@ -29,7 +29,7 @@ describe('the connector consent screen', () => {
     const assign = vi.fn()
     Object.defineProperty(window, 'location', { value: { ...window.location, assign }, writable: true })
     await mount('r1')
-    expect(host.textContent).toContain('Claude wants to use your openGym')
+    expect(host.textContent).toContain('Claude wants to use your Ironvane')
     expect(host.textContent).toContain('claude.ai')
     await act(async () => { btn('Allow').click() })
     const approve = calls.find(c => c.path === '/api/oauth/approve')

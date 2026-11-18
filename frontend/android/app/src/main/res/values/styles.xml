@@ -91,4 +91,11 @@
         <item name="android:colorControlActivated">#ffd60a</item>
         <item name="android:textColorHighlight">#66ffd60a</item>
     </style>
+    <style name="Accent.Ironvane" parent="">
+        <item name="colorAccent">#ff6b2c</item>
+        <item name="colorControlActivated">#ff6b2c</item>
+        <item name="android:colorAccent">#ff6b2c</item>
+        <item name="android:colorControlActivated">#ff6b2c</item>
+        <item name="android:textColorHighlight">#66ff6b2c</item>
+    </style>
 </resources>

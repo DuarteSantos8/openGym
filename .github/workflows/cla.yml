@@ -24,9 +24,31 @@ jobs:
     # Comments on plain issues (the pinned CLA issue #554) are not pull requests: the action
     # would look for a PR with that number and fail. Those are recorded by cla-issue.yml.
     if: (github.event_name == 'issue_comment' && github.event.issue.pull_request && (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA')) || github.event_name == 'pull_request_target'
+    # Serialize writes to the cla-signatures branch with cla-issue.yml. Job level, so comments the
+    # `if` skips never enter the group, and queue: max keeps every pending run (the default keeps
+    # one and cancels the rest, which could drop a signature or a required check).
+    concurrency:
+      group: cla-signatures
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - name: Initialize CLA signatures branch if needed
+        run: |
+          if git ls-remote --exit-code --heads origin cla-signatures >/dev/null; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan cla-signatures
+          mkdir -p signatures
+          printf '{"signedContributors":[]}\n' > signatures/cla.json
+          git add signatures/cla.json
+          git commit -m 'Initialize CLA signatures'
+          git push origin HEAD:refs/heads/cla-signatures || git fetch origin refs/heads/cla-signatures
       - uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08 # v2.6.1, pinned: this job holds a write token
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

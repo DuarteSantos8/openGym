@@ -1,0 +1,74 @@
+/* Approved Plan layout. Scoped selectors preserve the existing schedule and routine behavior. */
+.iv-plan.narrow{max-width:860px;width:100%;margin:0 auto}
+.iv-plan .hdr .sub,.iv-plan .sec,.iv-plan .sect-f,.iv-plan .item .tt,.iv-plan .item .ss,.iv-plan .small,.iv-plan .empty,.iv-plan .plan-folder,.iv-plan .plan-mode-locked,.iv-plan .lrow-s{font-size:var(--fs-body)}
+.iv-plan-more,.iv-plan-advanced{border-bottom:var(--hair) solid var(--sep)}
+.iv-plan-more{margin:0 0 16px}
+.iv-plan-more>summary,.iv-plan-advanced>summary{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-size:var(--fs-body);font-weight:600;list-style:none}
+.iv-plan-more>summary::-webkit-details-marker,.iv-plan-advanced>summary::-webkit-details-marker{display:none}
+.iv-plan-more>summary::after,.iv-plan-advanced>summary::after{content:'+';font-size:var(--fs-title3);color:var(--acc-ink)}
+.iv-plan-more[open]>summary::after,.iv-plan-advanced[open]>summary::after{content:'−'}
+.iv-plan-more-actions{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 16px}
+.iv-plan-more-actions .btn{width:auto;min-height:48px;font-size:var(--fs-body);white-space:nowrap}
+.iv-plan .plan-views button{min-height:48px;font-size:var(--fs-body)}
+/* Separate the choices without changing the shared Segmented component or its keyboard model. */
+.iv-plan .plan-views,.iv-plan .plan-mode .seg-inline{gap:8px}
+.iv-plan .plan-views .seg-sel,.iv-plan .plan-mode .seg-inline .seg-sel{width:calc((100% - 12px)/2);transform:translateX(calc((100% + 8px)*var(--i)))}
+[dir="rtl"] .iv-plan .plan-views .seg-sel,[dir="rtl"] .iv-plan .plan-mode .seg-inline .seg-sel{transform:translateX(calc((-100% - 8px)*var(--i)))}
+.iv-plan .prog-strip{min-height:52px;font-size:var(--fs-body)}
+.iv-plan-advanced{margin:20px 0 4px}
+.iv-plan-advanced-body{padding-top:16px}
+.iv-plan .plan-mode .lrow{flex-wrap:wrap;row-gap:12px}
+.iv-plan .plan-mode .lrow-t{white-space:normal}
+.iv-plan .plan-mode .seg-inline{flex:1 1 260px;max-width:100%}
+.iv-plan .plan-mode .seg-inline button{min-height:48px;font-size:var(--fs-body)}
+.iv-plan .plan-link{margin-top:16px}
+.iv-plan .plan-link .lrow{min-height:56px}
+.iv-plan-today .plan-sec-h{margin-top:4px}
+.iv-plan .plan-sec-h{gap:8px}
+.iv-plan .plan-sec-h .btn,.iv-plan .plan-routines-bar .btn{width:auto;min-height:48px;font-size:var(--fs-body)}
+.iv-plan .sec{overflow-wrap:anywhere}
+.iv-plan-today-list{gap:10px}
+.iv-plan-today-routine{display:contents}
+.iv-plan-today-group{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 12px;border-radius:var(--r-card);background:var(--surface)}
+.iv-plan-today-group .btn{width:auto;min-height:48px;font-size:var(--fs-body)}
+.iv-plan-today-ex{min-height:56px;gap:12px}
+.iv-plan .plan-order{width:32px;height:32px;font-size:var(--fs-body)}
+.iv-plan-rest{margin:0 0 8px}
+.iv-plan .plan-day,.iv-plan .plan-routine,.iv-plan .rotation-row{min-height:64px;gap:10px}
+.iv-plan .plan-routine,.iv-plan .rotation-row{flex-wrap:wrap}
+.iv-plan .plan-day-n{min-width:38px;font-size:var(--fs-body)}
+.iv-plan .plan-day-n.today{color:var(--label);background:var(--surface-3);border-radius:8px;box-shadow:inset 0 0 0 1px var(--acc-ink)}
+.iv-plan .plan-day .grow,.iv-plan .plan-routine .grow,.iv-plan .rotation-row .grow{min-width:0}
+.iv-plan .plan-day .tt,.iv-plan .plan-day .ss,.iv-plan .plan-routine .tt,.iv-plan .plan-routine .ss,.iv-plan .rotation-row .tt,.iv-plan .rotation-row .ss{overflow-wrap:anywhere;line-height:1.35}
+.iv-plan .plan-textbtn{min-width:48px;min-height:48px;padding:10px 8px;display:inline-flex;align-items:center;justify-content:center;font-size:var(--fs-body)}
+.iv-plan .plan-textbtn::before{inset:0}
+.iv-plan .plan-sec-acts{gap:8px!important}
+.iv-plan .rotation>.row .btn{min-height:48px;font-size:var(--fs-body)}
+.iv-plan .plan-minus{width:auto;min-width:48px;height:48px;padding:8px 12px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:var(--fs-body);color:#000}
+.iv-plan .plan-minus::before{display:none}
+.iv-plan .plan-handle{order:19;min-width:72px;min-height:48px;margin:0;padding:8px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--label-2);font-size:var(--fs-body)}
+.iv-plan .plan-move-btns{order:20;flex:1 1 100%;display:flex;flex-wrap:wrap;gap:8px;padding-top:4px}
+.iv-plan .plan-move-btns .btn{width:auto;flex:1 1 132px;min-height:48px;font-size:var(--fs-body)}
+/* Keep the session name on the first row; destructive and drag controls wrap below it. */
+.iv-plan .rotation-row:has(.plan-minus) .grow{flex:1 1 140px}
+.iv-plan .rotation-row .plan-minus{order:18}
+.iv-plan .rotation-row .plan-handle{order:19}
+.iv-plan .plan-folder{min-height:56px}
+.iv-plan .plan-day:focus-visible,.iv-plan .plan-routine[role="button"]:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px;border-radius:var(--r-card)}
+:root[data-theme="light"] .iv-plan .btn.tinted,:root[data-theme="light"] .iv-plan .btn.plain,:root[data-theme="light"] .iv-plan .plan-textbtn,:root[data-theme="light"] .iv-plan-more>summary::after,:root[data-theme="light"] .iv-plan-advanced>summary::after{color:#873006}
+.iv-plan-start{margin:12px 0 4px}
+.iv-plan-start .btn{min-height:56px;font-size:var(--fs-body);font-weight:600}
+.iv-plan-today-sum{margin-top:2px;color:var(--label-2)}
+.iv-plan-today-ex{width:100%;text-align:start;font:inherit;color:inherit}
+.iv-plan-today-ex .grow{display:flex;flex-direction:column;min-width:0}
+.iv-plan-today-ex .ss{color:var(--label-2)}
+.iv-plan-today-ex:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px}
+@media (max-width:560px){
+  .iv-plan .plan-day .bm-mini-wrap,.iv-plan .plan-routine .bm-mini-wrap,.iv-plan .rotation-row .bm-mini-wrap{max-width:48px}
+  .iv-plan .plan-mode-locked{margin-inline-start:0;text-align:start}
+}
+@media (min-width:1000px){
+  .iv-plan .list{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){.iv-plan *,.iv-plan *::before,.iv-plan *::after{transition:none!important;animation:none!important}}
+.iv-plan-today-group .iv-plan-done{margin-inline-start:8px;vertical-align:middle}

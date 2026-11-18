@@ -1756,30 +1756,49 @@ function RepRecords({ rows, unit, assisted }) {
 export const exerciseHistorySheet = exId => ui().openSheet(close => <ExerciseHistory exId={exId} close={close} />)
 
 /* ============================ add to routine ============================ */
+// One exercise, or several picked together in Library: the routine is chosen once, then each
+// exercise gets its own sets, reps and weight in turn. Closing one of those stops there; the ones
+// already confirmed stay added.
 function AddToRoutine({ ex, close }) {
   const st = useStore(s => s.S)
+  const list = Array.isArray(ex) ? ex : [ex]
+  const names = list.map(e => exerciseNameText(e)).join(', ')
   const pick = rid => {
     close()
     const isNew = rid === '_new'
-    exConfigSheet(ex, null, cfg => {
-      update(s => {
-        let r = isNew ? { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] } : s.routines.find(x => x.id === rid)
-        if (isNew) s.routines.push(r)
-        if (r) r.ex.push({ id: ex.id, ...cfg })
-      })
-      const r = isNew ? S().routines[S().routines.length - 1] : st.routines.find(x => x.id === rid)
-      toast(t('“{0}” added to {1}', exerciseNameText(ex), r ? r.name : t('routine')))
+    const routineId = isNew ? uid() : rid
+    const added = []
+    const done = () => {
+      const r = S().routines.find(x => x.id === routineId)
+      toast(t('“{0}” added to {1}', added.map(e => exerciseNameText(e)).join(', '), r ? r.name : t('routine')))
       if (isNew && r) nav('/plan/r/' + r.id)
-    }, null, isNew ? null : st.routines.find(x => x.id === rid))
+    }
+    const step = i => {
+      if (i >= list.length) { done(); return }
+      const e = list[i]
+      exConfigSheet(e, null, cfg => {
+        update(s => {
+          let r = s.routines.find(x => x.id === routineId)
+          if (!r && isNew) { r = { id: routineId, name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }; s.routines.push(r) }
+          if (r) r.ex.push({ id: e.id, ...cfg })
+        })
+        added.push(e)
+        // The next exercise's sheet opens once this one has closed.
+        if (i + 1 < list.length) setTimeout(() => step(i + 1), 0)
+        else done()
+      }, null, isNew ? null : st.routines.find(x => x.id === rid))
+    }
+    step(0)
   }
+  const one = list.length === 1
   return <>
-    <h3 className={exerciseNameClass(ex)}>{t('Add “{0}”', exerciseNameFor(ex))}</h3>
+    <h3 className={one ? exerciseNameClass(list[0]) : ''}>{t('Add “{0}”', one ? exerciseNameFor(list[0]) : names)}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick a routine. Sets, reps and weight come next.')}</div>
     <div className="list">
       {st.routines.map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
+        {list.some(e => r.ex.some(x => x.id === e.id)) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
       </div>)}
       <div className="item" {...tappable(() => pick('_new'))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="plusCircle" /></span>
         <div className="grow"><div className="tt">{t('New routine')}</div><div className="ss">{t('Create one and start with this exercise')}</div></div><Icon name="plus" className="chev" /></div>

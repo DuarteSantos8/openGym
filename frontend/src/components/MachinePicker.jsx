@@ -104,13 +104,13 @@ export function notAtMyGym(profileId, ex) {
 }
 
 /** The small "Not at my gym" button beside a machine exercise, when there is one to take out. */
-export function NotHereButton({ profile, ex, onDone }) {
+export function NotHereButton({ profile, ex, onDone, showLabel = false }) {
   const kind = removableKind(profile, ex)
   if (!kind) return null
   const label = t('Not at my gym: {0}', KIND_BY_ID[kind].label())
   // One per row of a list, so a screen reader hears the exercise first (P4).
   return <button type="button" className="iconbtn mk-not" aria-label={nameIn(exerciseNameText(ex), label)} title={label}
     onClick={ev => { ev.stopPropagation(); if (notAtMyGym(profile.id, ex)) onDone?.() }}>
-    <Icon name="machineOff" />
+    <Icon name="machineOff" />{showLabel && <span>{label}</span>}
   </button>
 }

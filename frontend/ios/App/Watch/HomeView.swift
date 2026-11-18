@@ -56,7 +56,7 @@ struct HomeView: View {
                     Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
                         .font(.system(.headline, design: .rounded))
                         .multilineTextAlignment(.center)
-                    Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
+                    Text(fresh ? LocalizedStringKey("Open Ironvane on your iPhone once and your routines show up here.")
                          : LocalizedStringKey("Start one on your iPhone and it shows up here."))
                         .font(.footnote)
                         .foregroundStyle(Theme.label2)

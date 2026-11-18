@@ -2,14 +2,14 @@
 "Start workout" = "Почати тренування";
 "Starts today’s planned workout, or opens the one already running." = "Починає тренування на сьогодні або відкриває те, що вже триває.";
 "Log weight" = "Записати вагу";
-"Logs your body weight without opening openGym." = "Записує твою вагу, не відкриваючи openGym.";
+"Logs your body weight without opening Ironvane." = "Записує твою вагу, не відкриваючи Ironvane.";
 "Weight" = "Вага";
 "What’s your weight?" = "Скільки ти важиш?";
 "Today’s workout" = "Тренування на сьогодні";
 "Tells you what’s planned for today." = "Каже, що заплановано на сьогодні.";
 "Week streak" = "Серія тижнів";
 "Tells you how many weeks in a row you trained." = "Каже, скільки тижнів поспіль ти тренувався.";
-"Open openGym once, then ask me again." = "Відкрий openGym один раз, а тоді спитай знову.";
+"Open Ironvane once, then ask me again." = "Відкрий Ironvane один раз, а тоді спитай знову.";
 "You’re in the middle of %@." = "Ти зараз на тренуванні: %@.";
 "You’re in the middle of a workout." = "Ти зараз на тренуванні.";
 "Your workout" = "Твоє тренування";

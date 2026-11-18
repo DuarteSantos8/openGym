@@ -4661,3 +4661,84 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* ------------------------------------------------------------ Ironvane looks --
+   Settings → Look (lib/look.js). Bold is the default: tighter corners, and Space Grotesk (bundled
+   below, SIL OFL 1.1, assets/fonts/SpaceGrotesk-OFL.txt) for page titles, set in upper case, and
+   for the numbers you read at a glance: the logged weight and reps, the rest timer, a card's big
+   figure. Refined is the look from before, so nothing here applies to it. Only geometry and type
+   change: colours stay with the theme and the accent, and so does every contrast check. */
+@font-face{
+  font-family:'Space Grotesk';font-style:normal;font-display:swap;font-weight:300 700;
+  src:url('./assets/fonts/space-grotesk-latin-wght-normal.woff2') format('woff2-variations'),url('./assets/fonts/space-grotesk-latin-wght-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'Space Grotesk';font-style:normal;font-display:swap;font-weight:300 700;
+  src:url('./assets/fonts/space-grotesk-latin-ext-wght-normal.woff2') format('woff2-variations'),url('./assets/fonts/space-grotesk-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+:root[data-look="bold"]{
+  --r-sm:4px; --r:6px; --r-lg:8px; --r-xl:12px; --r-card:8px;
+  /* Latin only: other scripts fall through to the system face, glyph by glyph. */
+  --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+}
+:root[data-look="bold"] .hdr h1{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.01em;font-weight:700}
+:root[data-look="bold"] .stp{border-radius:var(--r)}
+:root[data-look="bold"] .stp .num,
+:root[data-look="bold"] #timer .t,
+:root[data-look="bold"] .card .big,
+:root[data-look="bold"] .stat-v{font-family:var(--font-display);font-variant-numeric:tabular-nums}
+:root[data-look="bold"] .sheet h3{font-family:var(--font-display);letter-spacing:0}
+
+/* ---------- Ironvane redesign, step 3: workout logging ---------- */
+/* How to do it: one card above the sets, opening the exercise sheet (video, steps, cues). */
+.howto{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;
+  margin-top:10px;padding:10px 12px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep);min-height:56px}
+.howto:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.howto:active{transform:scale(var(--press-scale-sm))}
+.howto-play{flex:none;width:52px;height:36px;border-radius:var(--r-sm, 8px);background:#000;color:#fff;
+  display:flex;align-items:center;justify-content:center}
+.howto-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.howto-t{font-weight:600;font-size:var(--fs-callout)}
+.howto-s{font-size:var(--fs-footnote);color:var(--label-2)}
+.howto-c{flex:none;color:var(--label-3)}
+/* Last time's set, lined up with the row it is for. The card measures itself: below 300 px of
+   row width the steppers need the room, so the column steps aside (the "Last time" line above
+   the card still says it). */
+.setcard.roomy{container-type:inline-size}
+.setrow .last,.sethead .last-sp{display:none;flex:none;width:44px;text-align:center;font-size:var(--fs-footnote);
+  color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sethead .last-sp{font-size:var(--fs-caption)}
+/* Shown only where the card reports its width: a WebView without container queries (iOS 15)
+   keeps the column hidden instead of squeezing the row. */
+@container (min-width: 300px){.setrow .last,.sethead .last-sp{display:block}}
+/* Done, on the Cards page: a square on the thumb side, filled when ticked; the tap area stays
+   44 px (::before). It grows to 36 px only in the plain two-column rows, where the room is: an
+   effort, per-side or timed row keeps the 30 px its tuned widths count on. */
+.setcard.roomy .setrow .chk{border-radius:var(--r-sm, 10px)}
+.setcard.roomy .setrow:not(.side):not(.eff3):not(.timed) .chk{width:36px;height:36px}
+.setcard.roomy .sethead:not(.per-side):not(.eff3):not(.timed) .ck-sp{width:36px}
+/* Add set: the whole width under the sets, dashed, so it reads as "one more row". */
+.wk-add.wk-add-wide{display:flex;width:100%;justify-content:center;margin-inline-start:0;margin-top:4px;
+  border-radius:var(--r, 12px);outline:1.5px dashed var(--sep);outline-offset:-1.5px}
+/* Note · Plates · Swap · More: one row of equal buttons under the card. */
+.wk-acts{display:grid;grid-template-columns:repeat(var(--n, 4), minmax(0, 1fr));gap:8px;margin-top:10px}
+.wk-acts button{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:6px 4px;
+  display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r, 12px);
+  background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep);
+  font-size:var(--fs-footnote);font-weight:600;color:var(--label)}
+.wk-acts button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-acts button:disabled{opacity:.45;cursor:default}
+.wk-acts button:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.wk-acts button:not(:disabled):active{transform:scale(var(--press-scale-sm))}
+/* Up next: the next page's exercise and its sets, one tap to it. */
+.upnext{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;
+  margin-bottom:10px;padding:12px 14px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.upnext:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.upnext-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.upnext-k{font-size:var(--fs-caption);color:var(--label-2)}
+.upnext-t{font-weight:600;font-size:var(--fs-callout);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upnext-c{flex:none;color:var(--label-3)}

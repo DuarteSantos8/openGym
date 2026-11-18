@@ -119,6 +119,8 @@ import { offlineBuild } from '../lib/build-caps.js'
 import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
 import ReminderSounds from '../components/ReminderSounds.jsx'
 import DisplayRows from '../components/DisplayRows.jsx'
+import { APP_NAME, SOURCE_URL, UPSTREAM_URL } from '../lib/brand.js'
+import { lookOf } from '../lib/look.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, a row per page under four headings
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -1068,6 +1070,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     look: () => <>
       <Section footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
+        {/* Ironvane's two looks (lib/look.js): Bold, the default, or Refined, the softer one. */}
+        <Row icon="sparkles" iconTint="var(--acc)" title={t('Look')} subtitle={lookOf(S) === 'bold' ? t('Sharp corners, bold titles and numbers.') : t('Soft corners, quieter type.')}>
+          <Segmented
+            className="seg-inline"
+            options={[
+              { value: 'bold', label: t('Bold') },
+              { value: 'refined', label: t('Refined') },
+            ]}
+            value={lookOf(S)}
+            onChange={v => update(s => { if (v === 'refined') s.look = 'refined'; else s.look = 'bold' })}
+          />
+        </Row>
         <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
           <Segmented
             className="seg-inline"
@@ -1091,7 +1105,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             emoji for those who like them (components/Glyph.jsx). Synced like the theme. */}
         <Row icon="sparkles" iconTint="var(--orange)" title={t('Icons')} subtitle={t('The flame, the medals and friends.')}>
           <Segmented className="seg-inline"
-            options={[{ value: 'opengym', label: 'openGym' }, { value: 'emoji', label: t('Emoji') }]}
+            options={[{ value: 'opengym', label: APP_NAME }, { value: 'emoji', label: t('Emoji') }]}
             value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
             onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
         </Row>
@@ -1347,8 +1361,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           build there is no address bar and no about box, so without this there is no way to tell
           which build you are running, or whether an update actually installed. */}
       <div className="dim small sp-version">
-        openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
+        {APP_NAME} v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
+        <a href={UPSTREAM_URL} target="_blank" rel="noopener"><span>{t('Based on openGym')}</span></a><br />
+        <a href={SOURCE_URL} target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
         {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated.
             The spans keep each link's words above its neighbours' 44 px tap targets (index.css). */}
         Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener"><span>Gym visual</span></a>, gymvisual.com.
@@ -1482,7 +1497,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
     <div className="sp-nav">
-      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
+      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Today')}><Icon name="chevronLeft" /><span>{t('Today')}</span></button>
     </div>
     <h1 className="sp-root-title">{t('Settings')}</h1>
     <div className="sp-search">
@@ -1518,7 +1533,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
-      <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
+      <div className="dim small sp-version">{APP_NAME} v{__APP_VERSION__}</div>
     </>}
   </div>
 }

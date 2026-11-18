@@ -10,16 +10,32 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: cla-signatures
-  cancel-in-progress: false
-
 jobs:
   record:
     if: github.event.issue.number == 554 && !github.event.issue.pull_request
+    # Shares the cla-signatures queue with cla.yml (see there). Job level so other comments skip it.
+    concurrency:
+      group: cla-signatures
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - name: Initialize CLA signatures branch if needed
+        run: |
+          if git ls-remote --exit-code --heads origin cla-signatures >/dev/null; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan cla-signatures
+          mkdir -p signatures
+          printf '{"signedContributors":[]}\n' > signatures/cla.json
+          git add signatures/cla.json
+          git commit -m 'Initialize CLA signatures'
+          git push origin HEAD:refs/heads/cla-signatures || git fetch origin refs/heads/cla-signatures
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: cla-signatures
