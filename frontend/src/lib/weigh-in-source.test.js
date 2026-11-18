@@ -30,6 +30,28 @@ describe('weigh-ins from the health store only', () => {
     expect(weighInsFromHealth({})).toBe(true)
   })
 
+  // A change told while the file is still being read is newer than what the read brings.
+  it('keeps a change told before the startup read resolves', async () => {
+    let resolve
+    const read = initWeighInSource(() => new Promise(r => { resolve = r }), cb => { tell = cb })
+    await Promise.resolve()
+    tell({ readWeight: true })
+    resolve({ readWeight: false })
+    await read
+    expect(weighInsFromHealth({})).toBe(true)
+  })
+
+  it('takes the startup read when no change was told before it', async () => {
+    let resolve
+    const read = initWeighInSource(() => new Promise(r => { resolve = r }), cb => { tell = cb })
+    await Promise.resolve()
+    resolve({ readWeight: true })
+    await read
+    expect(weighInsFromHealth({})).toBe(true)
+    tell({ readWeight: false })
+    expect(weighInsFromHealth({})).toBe(false)
+  })
+
   it('blocks a plain Log with the line, and the check-in goes on without a weight', async () => {
     await start({ readWeight: true })
     const say = vi.fn()

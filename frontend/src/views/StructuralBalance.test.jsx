@@ -165,7 +165,9 @@ describe('StructuralBalance view', () => {
       useStore.setState({ S, user: null })
       const host = render()
       const rdl = host.querySelector('[data-role-id="romanianDeadlift"]')
-      expect(rdl.textContent).toContain('Log your body weight to score this lift.')
+      // it says where the weigh-in comes from instead of asking to log one
+      expect(rdl.textContent).toContain('Weigh-ins come from Health Connect only.')
+      expect(rdl.textContent).not.toContain('Log your body weight to score this lift.')
       expect([...rdl.querySelectorAll('button')].some(b => b.textContent.includes('Log body weight'))).toBe(false)
     } finally { tell({ readWeight: false }) }
   })

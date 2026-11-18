@@ -1202,11 +1202,19 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   await checkLink()
   // Apple Health on the watch follows the phone's own Apple Health switch (Settings → Data).
-  let healthOn = false, offHealth = () => {}
+  // The read of weigh-ins too: on, the watch asks for no weigh-in before a workout (watchExtras).
+  let healthOn = false, readWeight = false, offHealth = () => {}
   if (health) try {
     const hs = await import('./health-sync.js')
-    healthOn = !!(await hs.loadHealth())?.on
-    offHealth = hs.onHealthChange(h => { if (!!h?.on !== healthOn) { healthOn = !!h?.on; schedule() } })
+    const h0 = await hs.loadHealth()
+    healthOn = !!h0?.on
+    readWeight = !!h0?.readWeight
+    offHealth = hs.onHealthChange(h => {
+      if (!!h?.on === healthOn && !!h?.readWeight === readWeight) return
+      healthOn = !!h?.on
+      readWeight = !!h?.readWeight
+      schedule()
+    })
   } catch { /* no Apple Health here: the watch measures nothing */ }
   const send = async () => {
     tm = null

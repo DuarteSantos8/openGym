@@ -24,8 +24,10 @@ const readFile = () => readJsonFile(HEALTH_FILE)
 
 /** Starts following the read's switch (store/useStore.js, on the phones). */
 export function initWeighInSource(load = readFile, onChange = onHealthChange) {
-  onChange(set)
-  return Promise.resolve().then(load).then(set).catch(() => {})
+  // A change told while the file is read is newer than what the read brings.
+  let told = false
+  onChange(h => { told = true; set(h) })
+  return Promise.resolve().then(load).then(h => { if (!told) set(h) }).catch(() => {})
 }
 
 /** Whether weigh-ins come from the health store only, for profile `S`. */

@@ -5,7 +5,7 @@ import { countedS } from '../lib/counted-log.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn } from '../lib/a11y-name.js'
-import { useWeighInsFromHealth } from '../lib/weigh-in-source.js'
+import { useWeighInsFromHealth, weighInSourceLine } from '../lib/weigh-in-source.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { exercisePicker, bwSheet } from '../sheets.jsx'
@@ -80,7 +80,7 @@ export default function StructuralBalance() {
                   <span className={exId ? exerciseNameClass(exOr(exId)) : ''} data-exercise-name>{name}</span>{r.isOverridden ? ` · ${t('Custom')}` : ''}
                 </span>
                 {r.needsBodyweight && <span className="small" data-needs-bodyweight style={{ display: 'block', color: 'var(--label-2)' }}>
-                  {t('Log your body weight to score this lift.')}
+                  {typedWeighIns ? t('Log your body weight to score this lift.') : weighInSourceLine()}
                 </span>}
                 {r.needsAnchor && <span className="small" data-needs-anchor style={{ display: 'block', color: 'var(--label-2)' }}>
                   {t('Log the anchor lift to score this one.')}
