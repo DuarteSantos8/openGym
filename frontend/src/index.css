@@ -4833,3 +4833,4 @@ button.ex-num:not(:disabled):active{transform:scale(var(--press-scale-sm))}
 }
 /* First time on an exercise (release pass): the hint sits where "Last time" would. */
 .firsttime{margin:0 0 6px;line-height:1.35;color:var(--label-2)}
+:root[data-theme="light"] .intg-pill.connected{color:#166a30}

@@ -229,9 +229,11 @@ describe('English-name switches with every exercise-name pack', () => {
     })
   }
 
-  it('de: an exercise the partial pack does not cover is unaffected by either switch', () => {
-    const names = packFor('de')
-    const ex = EXDB.find(e => !names[e.id])
+  it('de: an exercise the pack does not cover is unaffected by either switch', () => {
+    // The German pack now names every exercise, so take one out to stand for a partial pack.
+    const ex = EXDB[0]
+    const names = { ...packFor('de') }
+    delete names[ex.id]
     for (const [showEn, enOnly] of [[true, false], [false, false], [true, true]]) {
       _setLangState('de', {}, null, names, showEn, enOnly)
       expect(exerciseNameFor(ex)).toBe(ex.n)
