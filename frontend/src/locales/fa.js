@@ -1,5 +1,8 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} کیلوکالری",
+  "≈ {0} kcal ({1})": "≈ {0} کیلوکالری ({1})",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",
   "Set once": "یک‌بار تنظیم",

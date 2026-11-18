@@ -1,5 +1,8 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} kcal",
+  "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Đồng hồ",
   "Set once": "Đặt một lần",
