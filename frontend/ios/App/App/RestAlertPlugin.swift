@@ -286,10 +286,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             } catch {
                 // Played anyway, without the duck. A category that took stays (play() activates
                 // it, so an onSilent cue keeps .playback); one that did not falls back to the
-                // mixing kind, never .soloAmbient. Either way nothing is active for the ledger,
-                // so the next cue, matching or not, tries the activation again.
+                // mixing kind, never .soloAmbient. The next cue tries the activation again, and
+                // the session is still let go once nothing sounds (CueAudioLedger.holdsSession).
                 if session.category != shape.avCategory { RestAlertPlugin.mixWithMusic() }
-                ledger.didDeactivate()
+                ledger.didFailActivation()
             }
         case .deactivate(let grace):
             DispatchQueue.main.asyncAfter(deadline: .now() + grace) { self.letGo(attempt: 0) }
@@ -299,7 +299,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     /// Music back up: the session goes inactive with notifyOthersOnDeactivation once nothing of
     /// ours sounds, retried while the system still calls it busy, then back to the resting kind.
     private func letGo(attempt: Int) {
-        guard ledger.isIdle, ledger.activeShape != nil else { return }
+        guard ledger.isIdle, ledger.holdsSession else { return }
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
         } catch {

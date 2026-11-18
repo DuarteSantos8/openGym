@@ -66,8 +66,13 @@ public struct CueAudioLedger {
 
     private var open: [Int: Open] = [:]
     private var nextId = 0
-    /// The shape the session was last made active in, nil while it is not active.
+    /// The shape the session was last made active in, nil while it is not active (or when an
+    /// activation was refused, so the next cue tries again).
     public private(set) var activeShape: CueSessionShape?
+    /// Whether the session may still be active and has to be let go once nothing sounds: set by
+    /// an activation, kept through a refused one (the shape before it may still be active, and
+    /// play() can activate a category that took), cleared only by a real deactivation.
+    public private(set) var holdsSession = false
 
     /// A short gap between two cues (a tone, then the line after it) keeps the music down instead
     /// of letting it jump up and back.
@@ -101,7 +106,7 @@ public struct CueAudioLedger {
     /// A sound ended (or was cut off). Unknown or already-ended ids change nothing.
     public mutating func end(_ id: Int) -> CueSessionStep {
         guard open.removeValue(forKey: id) != nil else { return .none }
-        return open.isEmpty && activeShape != nil ? .deactivate(grace: CueAudioLedger.grace) : .none
+        return open.isEmpty && holdsSession ? .deactivate(grace: CueAudioLedger.grace) : .none
     }
 
     /// Every sound of one kind ended at once (hush, a flush that cut the lines off).
@@ -109,20 +114,25 @@ public struct CueAudioLedger {
         let before = open.count
         open = open.filter { kind != nil && $0.value.kind != kind }
         guard open.count != before else { return .none }
-        return open.isEmpty && activeShape != nil ? .deactivate(grace: CueAudioLedger.grace) : .none
+        return open.isEmpty && holdsSession ? .deactivate(grace: CueAudioLedger.grace) : .none
     }
 
     /// The session went active in this shape (setActive(true) succeeded).
-    public mutating func didActivate(_ shape: CueSessionShape) { activeShape = shape }
+    public mutating func didActivate(_ shape: CueSessionShape) { activeShape = shape; holdsSession = true }
+
+    /// setActive(true) was refused: no shape counts as active, so the next cue tries again, but
+    /// the session is still let go once nothing sounds.
+    public mutating func didFailActivation() { activeShape = nil; holdsSession = true }
 
     /// The session is not active any more: deactivated by us, or by the system (an interruption,
     /// the app leaving the screen). Sounds still open stay open and reactivate on the next begin.
-    public mutating func didDeactivate() { activeShape = nil }
+    public mutating func didDeactivate() { activeShape = nil; holdsSession = false }
 
     /// Everything forgotten: the system took the session (a call), nothing of ours plays now.
     public mutating func reset() {
         open = [:]
         activeShape = nil
+        holdsSession = false
     }
 
     /// A deactivation can fail while some audio is still rendering (busy). Try again after these

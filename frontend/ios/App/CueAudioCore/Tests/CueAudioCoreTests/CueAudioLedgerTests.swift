@@ -124,7 +124,7 @@ final class CueAudioLedgerTests: XCTestCase {
             var ledger = CueAudioLedger()
             let (first, step) = ledger.begin(.tone, onSilent: onSilent)
             guard case .activate = step else { return XCTFail("first cue activates") }
-            ledger.didDeactivate()  // setActive(true) threw
+            ledger.didFailActivation()  // setActive(true) threw
             _ = ledger.end(first)
             let (_, again) = ledger.begin(.tone, onSilent: onSilent)
             guard case .activate(let shape) = again else { return XCTFail("onSilent \(onSilent): tried again") }
@@ -138,8 +138,25 @@ final class CueAudioLedgerTests: XCTestCase {
         let (_, step) = ledger.begin(.tone, onSilent: true)
         guard case .activate(let shape) = step else { return XCTFail("activates") }
         ledger.didActivate(shape)
-        ledger.didDeactivate()  // reapplied, setActive(true) threw
-        let (_, again) = ledger.begin(.tone, onSilent: true)
+        ledger.didFailActivation()  // reapplied, setActive(true) threw
+        let (id, again) = ledger.begin(.tone, onSilent: true)
         guard case .activate = again else { return XCTFail("tried again") }
+        _ = id
+    }
+
+    /// A session already active when a new activation is refused (a spoken line, then a tone)
+    /// is still let go once nothing sounds, so the music comes back up.
+    func testRefusedActivationStillLetsGo() {
+        var ledger = CueAudioLedger()
+        let (line, step) = ledger.begin(.speech, onSilent: true)
+        guard case .activate(let shape) = step else { return XCTFail("activates") }
+        ledger.didActivate(shape)
+        let (tone, next) = ledger.begin(.tone, onSilent: true)
+        if case .activate = next { ledger.didFailActivation() }
+        XCTAssertTrue(ledger.holdsSession)
+        _ = ledger.end(line)
+        guard case .deactivate = ledger.end(tone) else { return XCTFail("let go") }
+        ledger.didDeactivate()
+        XCTAssertFalse(ledger.holdsSession)
     }
 }
