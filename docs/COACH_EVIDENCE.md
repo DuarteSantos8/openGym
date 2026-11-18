@@ -61,7 +61,6 @@ What the Coach does with it: big lifts stop 1 to 3 reps short; failure adds fati
 
 | Source | Grade | Finding | Link |
 |---|---|---|---|
-| Robinson et al. 2024, *Sports Med* 54(9):2209-2231 | SR/MA | Size gains rise as sets end closer to failure; strength is similar across a wide range of reps in reserve. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/38970765/) |
 | Refalo et al. 2023, *Sports Med* 53(3):649-665 (online 2022) | SR/MA | Going to momentary failure is not better than stopping short for size. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/36334240/) |
 | Refalo et al. 2024, *J Sports Sci* 42(1):85-101 | RCT | In trained lifters, quad growth was the same at failure or 1 to 2 reps short; failure caused more fatigue. | [PubMed](https://pubmed.ncbi.nlm.nih.gov/38393985/) |
 

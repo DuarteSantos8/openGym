@@ -35,7 +35,6 @@ export const EVIDENCE = {
   effort: {
     use: 'big lifts stop 1 to 3 reps short; failure adds fatigue, not growth',
     sources: [
-      { cite: 'Robinson et al. 2024, *Sports Med* 54(9):2209–2231', grade: 'SR/MA', finding: 'Size gains rise as sets end closer to failure; strength is similar across a wide range of reps in reserve.', pmid: '38970765', doi: '10.1007/s40279-024-02069-2' },
       { cite: 'Refalo et al. 2023, *Sports Med* 53(3):649–665 (online 2022)', grade: 'SR/MA', finding: 'Going to momentary failure is not better than stopping short for size.', pmid: '36334240', doi: '10.1007/s40279-022-01784-y' },
       { cite: 'Refalo et al. 2024, *J Sports Sci* 42(1):85–101', grade: 'RCT', finding: 'In trained lifters, quad growth was the same at failure or 1 to 2 reps short; failure caused more fatigue.', pmid: '38393985', doi: '10.1080/02640414.2024.2321021' },
     ],

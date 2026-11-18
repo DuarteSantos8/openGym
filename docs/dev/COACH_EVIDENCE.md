@@ -65,7 +65,7 @@ First tags (source → what the Coach may use it for):
 | `volume-cap` | Baz-Valle 2022 (SR/MA); the band itself is a coaching band (our rule) | stacking sets past the range adds little |
 | `frequency` | Pelland 2025, Currier 2026, Schoenfeld 2019 (all SR/MA) | twice a week per muscle helps strength; size depends on weekly sets, not on how they are spread |
 | `sets-per-exercise` | Krieger 2010 (SR/MA) | 2 to 4 sets per exercise; more on one exercise adds little |
-| `effort` | Robinson 2024, Refalo 2023 (SR/MA), Refalo 2024 (RCT) | big lifts stop 1 to 3 reps short; failure adds fatigue, not growth |
+| `effort` | Refalo 2023 (SR/MA), Refalo 2024 (RCT); Robinson 2024 dropped: it finds size gains rise nearer failure | big lifts stop 1 to 3 reps short; failure adds fatigue, not growth |
 | `rep-range` | Schoenfeld 2017b, Lopez 2021 (SR/MA) | size grows across wide rep ranges; heavy loads for strength |
 | `progression` | Plotkin 2022, Chaves 2024 (RCT) | adding reps or adding load both work |
 | `split` | Ramos-Campo 2024 (SR/MA) | split and full body do equally well; pick by days available |
