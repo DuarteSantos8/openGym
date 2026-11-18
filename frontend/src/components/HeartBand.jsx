@@ -66,7 +66,7 @@ export default function HeartBand({ A }) {
   const big = view === 'big'
   const marks = A.entries.flatMap(e => e.sets.filter(s => s.done && s.at > origin).map(s => s.at - origin))
   // What the button shows, then what it does: VoiceOver reads the reading, not only "Expand".
-  const label = [t('Heart rate'), last && `${last.bpm} ${t('bpm')}`, zone > 0 && `Z${zone}`,
+  const label = [t('Heart rate'), last && `${last.bpm} ${t('bpm')}`, zone > 0 && t('Zone {0}', zone),
     big && curve && t('Average {0} · Max {1} bpm', curve.avg, curve.max), big ? t('Collapse') : t('Expand')].filter(Boolean).join(', ')
   return (
     <div className={'hband' + (big ? ' big' : '')}>
