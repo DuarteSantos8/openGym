@@ -195,6 +195,27 @@ describe('startWatchSync', () => {
     } finally { vi.useRealTimers() }
   })
   // #1088: the read of weigh-ins on means no weigh-in before a workout, on the watch too, at once.
+  it('tells the watch again when the startup read of weigh-ins lands after the first snapshot', async () => {
+    vi.useFakeTimers()
+    try {
+      const b = bridge()
+      _setWatchPluginForTest(b)
+      let resolve
+      const read = initWeighInSource(() => new Promise(r => { resolve = r }), () => {})
+      const stop = await startWatchSync({ useStore: store({ S: S0 }), useUI: ui })
+      await vi.runAllTimersAsync()
+      const sent = () => JSON.parse(b.sendSnapshot.mock.calls.at(-1)[0].json).settings
+      expect(sent().weighIn).toBe(true)
+      resolve({ readWeight: true })
+      await read
+      await vi.runAllTimersAsync()
+      expect(sent().weighIn).toBe(false)
+      stop()
+    } finally { vi.useRealTimers() }
+    // back to off for the cases after this one
+    await initWeighInSource(async () => ({ readWeight: false }), () => {})
+  })
+
   it('tells the watch again when the read of weigh-ins changes', async () => {
     vi.useFakeTimers()
     try {
