@@ -136,6 +136,7 @@ import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 import { isOn } from './lib/modules.js'
+import { weighInBlocked, weighInSourceLine } from './lib/weigh-in-source.js'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
 import DailyCheckin from './components/DailyCheckin.jsx'
@@ -472,6 +473,7 @@ function BwSheet({ required, onDone, close, initial, edit }) {
   </>
 }
 export function bwSheet(opts = {}) {
+  if (weighInBlocked(S(), opts, () => toast(weighInSourceLine()))) return null
   const h = ui().openSheet(close => <BwSheet {...opts} close={close} />, { locked: !!opts.required })
   return h
 }

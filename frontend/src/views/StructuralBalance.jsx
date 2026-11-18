@@ -5,6 +5,7 @@ import { countedS } from '../lib/counted-log.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn } from '../lib/a11y-name.js'
+import { useWeighInsFromHealth } from '../lib/weigh-in-source.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { exercisePicker, bwSheet } from '../sheets.jsx'
@@ -28,6 +29,7 @@ export default function StructuralBalance() {
   const nav = useNavigate()
   // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
   const S = countedS(useStore(s => s.S))
+  const typedWeighIns = !useWeighInsFromHealth(S)
   const update = useStore(s => s.update)
   // Own keys only: a synced or imported id such as "constructor" would otherwise find an
   // Object.prototype member and take the screen down.
@@ -91,7 +93,7 @@ export default function StructuralBalance() {
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {/* One set of these per lift, so each says which lift it is for (P4). */}
-              {r.needsBodyweight && <Button size="sm" variant="ghost" icon="plus" aria-label={nameIn(t(role.label), t('Log body weight'))} onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
+              {r.needsBodyweight && typedWeighIns && <Button size="sm" variant="ghost" icon="plus" aria-label={nameIn(t(role.label), t('Log body weight'))} onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
               <Button size="sm" variant="ghost" icon="pencil" aria-label={nameIn(t(role.label), t('Change exercise'))} onClick={() => changeExercise(role)}>{t('Change exercise')}</Button>
               {r.isOverridden && <Button size="sm" variant="ghost" aria-label={nameIn(t(role.label), t('Use default exercise'))} onClick={() => clearOverride(role)}>{t('Use default exercise')}</Button>}
             </div>

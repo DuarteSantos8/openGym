@@ -5903,4 +5903,7 @@ export default {
   "Hide": "隐藏",
   "Totals": "总计",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "称重记录只来自 Health Connect。",
+  "Weigh-ins come from Apple Health only.": "称重记录只来自 Apple 健康。",
 }

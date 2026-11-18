@@ -5843,4 +5843,7 @@ export default {
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Vejninger kommer kun fra Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Vejninger kommer kun fra Apple Health.",
 }

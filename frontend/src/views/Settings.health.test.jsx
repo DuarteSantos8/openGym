@@ -238,6 +238,23 @@ describe('Settings — reading back', () => {
     expect(row('Open Health Connect')).toBeTruthy()
   })
 
+  // #1088: while on, typed weigh-ins are off, and the row says where they come from.
+  it('says the read is the only source of weigh-ins while it is on', async () => {
+    const sub = 'Your smart scale’s weigh-ins land here. One you type in yourself always wins.'
+    await mount()
+    expect(row('Weigh-ins from other apps').textContent).toContain(sub)
+    await act(async () => { sw('Weigh-ins from other apps').click() })
+    expect(row('Weigh-ins from other apps').textContent).toContain('Weigh-ins come from Health Connect only.')
+    expect(row('Weigh-ins from other apps').textContent).not.toContain(sub)
+    mocks.android = false
+    mocks.status = { status: 'available', granted: false, platform: 'ios' }
+    await mount()
+    expect(row('Weigh-ins from other apps').textContent).toContain('Weigh-ins come from Apple Health only.')
+    mocks.S = { ...mocks.S, modules: { health: false } }
+    await mount()
+    expect(row('Weigh-ins from other apps').textContent).toContain(sub)
+  })
+
   it('says so when the permission was not granted', async () => {
     mocks.readGrant = false
     await mount()

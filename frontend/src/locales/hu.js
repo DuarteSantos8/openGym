@@ -5906,4 +5906,7 @@ export default {
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "A mérések csak a Health Connectből érkeznek.",
+  "Weigh-ins come from Apple Health only.": "A mérések csak az Apple Egészségből érkeznek.",
 }

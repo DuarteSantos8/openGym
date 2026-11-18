@@ -5914,4 +5914,7 @@ export default {
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "บันทึกน้ำหนักมาจาก Health Connect เท่านั้น",
+  "Weigh-ins come from Apple Health only.": "บันทึกน้ำหนักมาจาก Apple Health เท่านั้น",
 }

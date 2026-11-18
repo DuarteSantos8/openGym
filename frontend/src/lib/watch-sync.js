@@ -34,6 +34,7 @@
 import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
+import { weighInsFromHealth } from './weigh-in-source.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
@@ -1095,7 +1096,8 @@ export function watchExtras (S, show = {}) {
   const bw = Array.isArray(S?.bodyweight) && S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null
   return {
     lang,
-    weighIn: S?.weighIn !== false,
+    // no weigh-in to ask for while weigh-ins come from the health store only (#1088)
+    weighIn: S?.weighIn !== false && !weighInsFromHealth(S),
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),

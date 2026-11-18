@@ -5,6 +5,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION, watchExtras } from './watch-sync.js'
 import { readWatchPrefs } from './watch-settings.js'
+import { initWeighInSource } from './weigh-in-source.js'
 
 const state = (over = {}) => ({
   unit: 'kg', restSec: 90, workouts: [], routines: [],
@@ -320,6 +321,21 @@ describe('patching a saved workout', () => {
     expect(s.workouts[0].entries[0].sets[0]).toMatchObject({ w: 65, r: 6, at: 3000 })
     expect(recount).toHaveBeenCalledTimes(2)
     expect(s.workouts[0].vol).toBe(1)
+  })
+})
+
+// #1088: weigh-ins from the health store only, so the watch does not ask for one either.
+describe('the weigh-in before a workout on the watch', () => {
+  it('is asked for unless switched off or read from the health store', async () => {
+    let tell
+    await initWeighInSource(async () => ({ readWeight: false }), cb => { tell = cb })
+    expect(watchExtras({}).weighIn).toBe(true)
+    expect(watchExtras({ weighIn: false }).weighIn).toBe(false)
+    tell({ readWeight: true })
+    try {
+      expect(watchExtras({}).weighIn).toBe(false)
+      expect(watchExtras({ modules: { health: false } }).weighIn).toBe(true)
+    } finally { tell({ readWeight: false }) }
   })
 })
 

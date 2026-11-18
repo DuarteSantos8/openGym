@@ -5913,4 +5913,7 @@ export default {
   "Hide": "Nascondi",
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Le pesate arrivano solo da Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Le pesate arrivano solo da Apple Salute.",
 }

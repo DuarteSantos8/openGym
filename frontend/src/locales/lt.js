@@ -5899,4 +5899,7 @@ export default {
   "Hide": "Slėpti",
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Svorio matavimai ateina tik iš Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Svorio matavimai ateina tik iš Apple Health.",
 }
