@@ -786,14 +786,14 @@ function applyEach (events, getState, now = Date.now()) {
         // workout gets the row with the set in it, in one change (ensureWatchSet), as a set for a
         // workout already saved does. Only an exercise this phone does not know is let go of.
         else if (!A.editingWorkoutId && appHandlers?.ensureSet) {
-          appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
+          const taken = appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev)) !== false
           // The rest the watch started for it is the phone's too, as for a set the screen ticks.
           if (uiRef && (ev.restEnd === 0 || num(ev.restEnd))) {
             const t = uiRef.getState().timer
             const step = watchTickRest({ before: t, timer: t, at: num(ev.at), restEnd: num(ev.restEnd), restAt: restAtFor(A.id), now })
-            // The workout Timer's countdown (components/WorkoutClock.jsx) is no rest after this set:
-            // it goes, as a set ticked here replaces it, so the rest is a rest (next set, holds, cues).
-            if (t?.clock && num(step?.align)) uiRef.getState().stopRest()
+            // The workout Timer's countdown (components/WorkoutClock.jsx) is no rest after a set taken
+            // here: it goes, as a set ticked here replaces it, so the rest is a rest (next set, holds, cues).
+            if (taken && t?.clock && num(step?.align)) uiRef.getState().stopRest()
             applyRestStep(uiRef, step, { wid: A.id, at: num(ev.at) || now })
           }
         }
