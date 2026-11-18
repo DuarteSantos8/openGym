@@ -121,6 +121,19 @@ describe('routineChanges', () => {
     expect(c).toMatchObject({ removed: 1 })
   })
 
+  it('puts an addition done after a twin after the last slot of that exercise', () => {
+    const r = routine([slot(BENCH), slot(RAISE), slot(RAISE), slot(CURL)])
+    const a = start([r])
+    a.entries.splice(3, 0, entry(LEGCURL, 'r1', { addedInSession: true }))
+    const [c] = changes(a, [r])
+    expect(ids(c)).toEqual([BENCH, RAISE, RAISE, LEGCURL, CURL])
+    expect(c).toMatchObject({ added: [LEGCURL], removed: 0, moved: false })
+    // Done after the first raise too: still after the last one, where no guess is needed.
+    const b = start([r])
+    b.entries.splice(2, 0, entry(LEGCURL, 'r1', { addedInSession: true }))
+    expect(ids(changes(b, [r])[0])).toEqual([BENCH, RAISE, RAISE, LEGCURL, CURL])
+  })
+
   it('keeps an order set on another device when the workout kept its own', () => {
     const r = routine([slot(BENCH), slot(RAISE), slot(CURL)])
     const now = routine([slot(RAISE), slot(BENCH), slot(CURL)])

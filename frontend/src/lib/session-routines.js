@@ -204,12 +204,15 @@ function routineChange(own, routine, S, base) {
   // In the order done: a slot of the routine ({ a, slot }) followed by what was added after it.
   const lead = []
   const groups = []
+  // What was added after a twin, by the routine slot it goes after (see slotNow).
+  const after = new Map()
+  let target = lead
   const added = []
   let swapped = 0
   const add = entry => {
     if (!ticked(entry) || routine.ex.some(x => x?.id === entry.id) || added.includes(entry.id)) return
     added.push(entry.id)
-    ;(groups.length ? groups.at(-1).adds : lead).push(copiedEntry(entry, routine))
+    target.push(copiedEntry(entry, routine))
   }
   // An exercise taken out and added again, then done, is its own slot still: the first place of
   // the start record with that exercise and no entry left takes it.
@@ -235,12 +238,19 @@ function routineChange(own, routine, S, base) {
     }
     used.add(n)
     const a = slotNow(routine, base, n)
-    if (a < 0) continue
+    if (a < 0) {
+      // A twin stays where it is, but what was done after it goes after the last slot of that
+      // exercise: which twin it was would be a guess.
+      const last = routine.ex.findLastIndex(x => x?.id === base[n])
+      if (last >= 0) { if (!after.has(last)) after.set(last, []); target = after.get(last) }
+      continue
+    }
     const old = routine.ex[a]
     // Its own exercise, one of its backups (#649), or a swap never done: the slot as it is.
     const same = entry.id === old.id || isBackupOf(old, entry.id) || !ticked(entry)
     if (!same) swapped++
     groups.push({ n, a, slot: same ? { ...old } : replaceSlotExercise(old, entry.id, S, routine.id), adds: [] })
+    target = groups.at(-1).adds
   }
   const gone = new Set(known ? base.map((_, n) => n).filter(n => !used.has(n)).map(n => slotNow(routine, base, n)).filter(a => a >= 0) : [])
   // Against the order the session started in: an order set on another device meanwhile is kept
@@ -254,7 +264,7 @@ function routineChange(own, routine, S, base) {
   let next = 0
   routine.ex.forEach((x, a) => {
     if (gone.has(a)) return
-    if (!places.has(a)) { out.push({ ...x }); return }
+    if (!places.has(a)) { out.push({ ...x }, ...(after.get(a) || [])); return }
     if (next === 0) out.push(...lead)
     const g = groups[next++]
     out.push(g.slot, ...g.adds)
