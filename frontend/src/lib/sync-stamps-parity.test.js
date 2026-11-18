@@ -3,9 +3,28 @@
    its own changes (an older app, an API planner) must hold in this side's merge. */
 import { describe, expect, it } from 'vitest'
 import * as S from '../../../api/sync-stamps.js'
-import { highestStamp, mergeDeletions, mergeEdits, mergeStates, stampChange, stampEntry, stampEdits, stampRestore } from './sync-merge.js'
+import { highestStamp, mergeDeletions, mergeEdits, mergeStates, stampChange, stampEntry, stampEdits, stampRestore, stampOptionalCollections, visibleOptionalEntries } from './sync-merge.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
+it('optional stamping preserves malformed retained elements during unrelated edits on both sides', () => {
+  const raw = [null, false, 17, [], { opaque: true }]
+  const prev = { nutritionEntries: [...raw, { id: 'food', label: 'Before', _ts: 10, _f: { label: 10 } }] }
+  const next = clone(prev); next.nutritionEntries.at(-1).label = 'After'
+  const client = clone(next), server = clone(next)
+  stampOptionalCollections(prev, client, 20); S.stampOptionalCollections(prev, server, 20)
+  expect(client.nutritionEntries.slice(0, raw.length)).toEqual(raw)
+  expect(server.nutritionEntries).toEqual(client.nutritionEntries)
+  expect(visibleOptionalEntries(client, 'nutritionEntries').map(e => e.id)).toEqual(['food'])
+  expect(client.nutritionEntries.at(-1)._f).toEqual({ label: 20 })
+  const unchanged = clone(prev), serverUnchanged = clone(prev)
+  stampOptionalCollections(prev, unchanged, 30); S.stampOptionalCollections(prev, serverUnchanged, 30)
+  expect(unchanged).toEqual(prev); expect(serverUnchanged).toEqual(prev)
+  for (const stamp of [stampOptionalCollections, S.stampOptionalCollections]) {
+    const legacy = { workouts: [], _ts: 7 }, before = JSON.stringify(legacy)
+    stamp(clone(legacy), legacy, 20)
+    expect(JSON.stringify(legacy)).toBe(before)
+  }
+})
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296 } }
 
 describe('api/sync-stamps.js matches sync-merge.js', () => {
@@ -135,3 +154,22 @@ describe('the write ids are no setting', () => {
   })
 })
 
+
+describe('optional collection helper parity', () => {
+  it('uses identical field merge, deletion, stamping and projection rules on both sides', async () => {
+    const C = await import('./sync-merge.js')
+    expect(S.OPTIONAL_COLLECTIONS).toEqual(C.OPTIONAL_COLLECTIONS)
+    for (const key of C.OPTIONAL_COLLECTIONS) for (let seed = 1; seed <= 100; seed++) {
+      const R = rng(seed), time = () => Math.floor(R() * 4) + 1
+      const entry = () => ({ id: 'a', schemaVersion: 1, value: Math.floor(R() * 4), _ts: time(), _f: { value: time(), schemaVersion: 1 } })
+      const a = { [key]: [entry()], deleted: { [key]: { a: R() < 0.5 ? 3 : -3 } } }
+      const b = { [key]: [entry(), { id: 'b', value: seed, _ts: 1 }], deleted: { [key]: { a: R() < 0.5 ? 4 : -4 } } }
+      expect(S.mergeOptionalEntries(a[key], b[key])).toEqual(C.mergeOptionalEntries(a[key], b[key]))
+      expect(S.mergeOptionalCollections(a, b, {})).toEqual(C.mergeOptionalCollections(a, b, {}))
+      expect(S.visibleOptionalEntries(a, key)).toEqual(C.visibleOptionalEntries(a, key))
+      expect(S.stampOptionalCollections(a, clone(b), 20)).toEqual(C.stampOptionalCollections(a, clone(b), 20))
+      expect(S.highestStamp(a)).toBe(C.highestStamp(a))
+      expect(S.mergeDeletions(a.deleted, b.deleted)).toEqual(C.mergeDeletions(a.deleted, b.deleted))
+    }
+  })
+})

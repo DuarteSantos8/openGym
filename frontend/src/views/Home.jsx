@@ -15,6 +15,7 @@ import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
+import MetricCard from '../components/MetricCard.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
@@ -134,10 +135,13 @@ export default function Home() {
   const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
 
-  return <div className="narrow">
+  return <div className="narrow iv-home">
+    {isOn(S, 'nutrition') && <button className="card btn" style={{ width: '100%', minHeight: 44, textAlign: 'start' }} onClick={() => nav('/nutrition')}>{t('Nutrition diary')}</button>}
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
-      <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      {/* The page's own name, as the tab bar and the sidebar call it: the brand is already in the
+          sidebar and on the boot screen, and "IRONVANE" told a newcomer nothing about the page. */}
+      <div><h1>{user ? t('Hi {0}', user.name) : t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
     <TrainerNotice />
@@ -255,24 +259,20 @@ export default function Home() {
       </div>
     )}
 
-    {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
-        (components/StreakRule.jsx). */}
-    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
+    {/* A new profile picks how forgiving its streak is, once (components/StreakRule.jsx), but only
+        after its first logged workout: before that there is no streak to be forgiving about, and a
+        first visit already has the welcome card to read (release pass). */}
+    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && S.workouts.length > 0 && <StreakRuleWelcome />}
 
-    {on('body') && S.showWeightCard !== false && <div className="card">
+    {on('body') && S.showWeightCard !== false && <div className="card iv-home-body">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
       <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
+          <MetricCard hideLabel label={t('Body weight')} value={fmtNum(bw.w)} unit={S.unit} delta={delta || 0}
+            deltaText={delta ? (delta > 0 ? '+' : '\u2212') + fmtNum(Math.abs(delta)) : undefined} deltaColor={delta ? bwDeltaColor(delta, bw.w, true) : undefined} />
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (
@@ -310,10 +310,10 @@ export default function Home() {
       <StreakParty S={S} info={streak} tally={tally} />
       {/* Settings → Look & Home → Weekly sets on Home (lib/muscle-targets.js): the muscle with
           the most room this week, one tap from the Stats card. */}
-      {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
-      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
+      {/* Straight to the logged-week muscle card under More, not Planned or Exercise progress. */}
+      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?focus=weekly-muscle')} />}
     </div>
       // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
-      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?focus=weekly-muscle')} /></div>}
   </div>
 }

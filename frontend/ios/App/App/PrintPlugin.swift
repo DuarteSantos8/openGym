@@ -84,7 +84,7 @@ public class PrintPlugin: CAPPlugin, CAPBridgedPlugin, WKNavigationDelegate {
 
         let info = UIPrintInfo(dictionary: nil)
         info.outputType = .general
-        info.jobName = call.getString("name") ?? "openGym"
+        info.jobName = call.getString("name") ?? "Ironvane"
 
         let controller = UIPrintInteractionController.shared
         controller.printInfo = info

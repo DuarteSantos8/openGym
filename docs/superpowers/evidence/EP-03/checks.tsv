@@ -1,0 +1,12 @@
+evidence	exit	result
+frontend-full	not captured (outer 143)	7952 passed; 1 timeout; 663 files
+media-sync-isolated	0	31 passed; 1 file
+helper-fixtures-final	0	23 passed; 1 file
+build	0	built
+locales	0	19 locales; 3618 keys each
+source-strings	0	2964 strings
+api-full	0	854 passed; 9 suites
+mcp-full	0	140 passed; 6 files
+catalogue	0	5632 exercises current
+coach-assets	0	5632 exercises; 8 prompts current
+api-docs	0	92 endpoints; 32 schemas current

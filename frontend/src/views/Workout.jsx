@@ -11,7 +11,7 @@ import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnits, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
@@ -126,8 +126,10 @@ function StartChooser() {
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
     <div style={{ height: 14 }} />
-    <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
-    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
+    {/* With no routines yet, the quickest way in is to just lift: freestyle leads and a plan is the
+        second choice, so a first visit is one tap from a workout (release pass). */}
+    <Button icon="shuffle" variant={S.routines.length ? undefined : 'primary'} onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
+    {!S.routines.length && <><div style={{ height: 10 }} /><Button onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
   </div>
 }
 
@@ -660,6 +662,21 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // The same exercise twice in one session (squats, then back-off squats at the end): its place
   // in the session goes with the name, "5. Squat", as the routine editor does it.
   const several = !!(compact || listed)
+  // Ironvane redesign, step 3 (workout logging): the one-exercise page — not a superset's or the
+  // list view's blocks, not the compact view — gets the How-to card, a Last column in the set rows
+  // and the Note · Plates · Swap · More row under the sets.
+  const roomy = !compact && !listed && !dense
+  // What each work set lifted last time ("60×8"), in the row it lines up with: last time's work
+  // sets in order (lib/history.js lastEntryFor keeps work sets only), warm-ups skipped. Only in
+  // plain reps rows with two columns; a narrow card hides it (index.css, container query).
+  const showLast = roomy && mode === 'reps' && !col3 && !perSide && !timed && !!last?.sets?.length
+  const lastAt = i => {
+    if (isWarmupRow(entry.sets[i])) return ''
+    const k = entry.sets.slice(0, i + 1).filter(x => !isWarmupRow(x)).length - 1
+    const p = last.sets[k]
+    if (!p || !(p.r > 0)) return ''
+    return p.w > 0 ? fmtNum(p.w) + '×' + p.r : String(p.r)
+  }
   const exSay = S.active.entries.filter(x => x.id === entry.id).length > 1 ? `${entryIdx + 1}. ${exerciseNameText(ex)}` : exerciseNameText(ex)
   const inEx = label => (several ? label + ', ' + said(exSay) : label)
   const inSet = (s, i, label, side) => inEx(nameIn(setSay(s, i, side), label))
@@ -904,6 +921,9 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
           Right are as wide as the longer of the two in every language and the inputs
           after them line up (#322). */}
       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span>{sideTagOf(s)}</span></span>}
+      {/* Said by the "Last time" line above the card; the column is for the eye. */}
+      {/* Its own left-to-right island, as on the "Last time" line: in Arabic 60×8 must not read 8×60. */}
+      {showLast && <span className="last" aria-hidden="true"><bdi dir="ltr">{lastAt(i)}</bdi></span>}
       {cell(s, i, col1, 'w')}
       {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
@@ -1005,10 +1025,16 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     {/* The skill ladder (lib/ladders.js): the next rung, and one tap to put it in the routine. */}
     {plan?.kind === 'ladder' && plan.next && EXIDX[plan.next] && <LadderNext entry={entry} next={plan.next} />}
     </>}
-    <div className="card" style={{ marginTop: 12, marginBottom: 0 }}>
+    {roomy && <button type="button" className="howto" onClick={() => exerciseDetailSheet(ex)}>
+      <span className="howto-play" aria-hidden="true"><Icon name="play" /></span>
+      <span className="howto-m"><span className="howto-t">{t('How to do it')}</span>
+        <span className="howto-s">{t('Video, steps and form cues')}</span></span>
+      <Icon name="chevronRight" className="howto-c" />
+    </button>}
+    <div className={'card setcard' + (roomy ? ' roomy' : '')} style={{ marginTop: 12, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
-      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className={col2.dec ? 'r-sp dec' : 'r-sp'}>{cardio && !editing
+      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" />{showLast && <span className="last-sp">{t('Last')}</span>}<span className="w-sp">{col1.hd}</span>{col2 && <span className={col2.dec ? 'r-sp dec' : 'r-sp'}>{cardio && !editing
         ? <button type="button" className="hd-swap" onClick={switchCardioBy} aria-label={byDist ? t('Log speed instead') : t('Log distance instead')}
           title={byDist ? t('Log speed instead') : t('Log distance instead')}>{col2.hd}<Icon name="swap" /></button>
         : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp inc-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
@@ -1107,8 +1133,16 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
         <Button className="wk-add" size="sm" icon="sunrise" aria-label={several ? inEx(t('Add warm-up set')) : undefined} onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
         <Button className="wk-add" size="sm" icon="minus" aria-label={several ? inEx(t('Remove set')) : undefined} disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
         <Button className="wk-add" size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>
-      </div> : <Button className="wk-add" size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>}
+      </div> : <Button className={'wk-add' + (roomy ? ' wk-add-wide' : '')} size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>}
     </div>
+    {/* What you reach for between sets, under the sets where the thumb is: the note, the plates,
+        a swap when the machine is taken, and everything else (the same ⋯ menu as the header). */}
+    {roomy && <div className="wk-acts" style={{ '--n': 2 + (plateLoading ? 1 : 0) + (onSwap ? 1 : 0) }}>
+      <button type="button" onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /><span>{t('Note')}</span></button>
+      {plateLoading && <button type="button" onClick={() => barWeightSheet(entry.id, cfg)}><Icon name="plate" /><span>{t('Plates')}</span></button>}
+      {onSwap && <button type="button" disabled={busy} onClick={onSwap}><Icon name="swap" /><span>{t('Swap')}</span></button>}
+      <button type="button" aria-label={inEx(t('Exercise options'))} title={t('Exercise options')} onClick={openMore}><Icon name="more" /></button>
+    </div>}
   </>
 }
 
@@ -2873,11 +2907,27 @@ function ActiveWorkout() {
     </>) : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout. Add your first exercise and off you go.')}</div>}
 
     <div style={{ height: 12 }} />
-    {!listMode && <div className="row">
+    {/* Up next (redesign step 3): what the next page holds, one tap to it. */}
+    {!listMode && unitIdx >= 0 && (() => {
+      // Where Next goes, so the card names what a tap opens: with "Skip completed exercises" on,
+      // a finished exercise next in line is passed over here too (lib/supersetFlow.js).
+      const to = stepUnitIndex(A.entries, units, unitIdx, 1, skipDone)
+      if (to < 0 || to === unitIdx) return null
+      const nx = units[to]
+      // Work sets as the workout counts them: a left/right set is two (lib/history.js setUnits).
+      const n = nx.reduce((a, j) => a + (A.entries[j]?.sets || []).filter(x => !isWarmupRow(x)).reduce((m, x) => m + setUnits(x), 0), 0)
+      return <button type="button" className="upnext" onClick={() => navigateUnit(1)}>
+        <span className="upnext-m"><span className="upnext-k">{t('Up next')}</span>
+          <span className="upnext-t">{nx.map(j => exerciseNameText(exOr(A.entries[j].id))).join(' + ')} · {tn('{0} set', '{0} sets', n)}</span></span>
+        <Icon name="chevronRight" className="upnext-c" />
+      </button>
+    })()}
+    {/* One exercise has nowhere to step to: two greyed-out buttons only read as broken. */}
+    {!listMode && units.length > 1 && <div className="row">
       <Button icon="chevronLeft" disabled={unitIdx <= 0} onClick={() => navigateUnit(-1)}>{t('Prev')}</Button>
       <Button trailingIcon="chevronRight" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => navigateUnit(1)}>{t('Next')}</Button>
     </div>}
-    {!listMode && <div style={{ height: 10 }} />}
+    {!listMode && units.length > 1 && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
     {/* The end of the workout (redesign 1.4.5, P3): adding an exercise and the session's note are
         one inset list of two rows, not two centred text buttons 40px apart, so the finish button

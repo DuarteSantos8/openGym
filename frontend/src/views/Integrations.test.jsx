@@ -99,7 +99,7 @@ describe('the cards', () => {
     act(() => host.querySelector('.intg-chip').click())
     await showSheet()
     expect(sheetHost.textContent).toContain('Garmin saves to Apple Health on iPhone or Health Connect on Android.')
-    expect(sheetHost.textContent).toContain('Install the openGym app on your phone to use this.')
+    expect(sheetHost.textContent).toContain('Install the Ironvane app on your phone to use this.')
     // Screen readers hear the name and the state in one go.
     expect(card('webhook').querySelector('.intg-open').getAttribute('aria-label')).toBe('Webhooks, Needs your server')
   })

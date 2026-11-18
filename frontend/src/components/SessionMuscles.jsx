@@ -30,7 +30,7 @@ export function SessionMapButton({ entries, body }) {
   if (!any(load.planned)) return null
   return <button type="button" className="iconbtn whdr-map" data-session-map aria-label={t('What this session hits')}
     title={t('What this session hits')} onClick={sessionMusclesSheet}>
-    <BodyMap className="bm-mini bm-session" levels={levels} body={body} />
+    <BodyMap className="bm-mini bm-session" levels={levels} body={body} decorative />
   </button>
 }
 

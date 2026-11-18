@@ -1,0 +1,14 @@
+/* "How to do it" on the exercise sheet (components/ExercisePictures.jsx) */
+.expics{margin:12px 0 4px;display:flex;flex-direction:column;gap:10px}
+.expics-title{font-size:13px;font-weight:650;margin:0;color:var(--label-2,#98a1aa)}
+.expics figure{margin:0}
+.expics figcaption{margin-top:4px;font-size:var(--fs-caption);line-height:1.35;color:var(--label-2,#98a1aa);overflow-wrap:anywhere}
+.expics figcaption a{color:inherit;text-decoration:underline}
+.expics figcaption strong{display:block;font-weight:650;color:var(--label,#e8eaed)}
+.expics-cap{display:block}
+.expics-video video{display:block;width:100%;height:auto;max-height:55vh;background:#000;border-radius:10px;object-fit:contain}
+.expics-seq img{display:block;width:100%;height:auto;background:#fff;border-radius:10px}
+.expics-strip{list-style:none;margin:0;padding:0 0 4px;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory}
+.expics-strip li{flex:0 0 auto;scroll-snap-align:start}
+.expics-strip figure{width:200px}
+.expics-strip img{display:block;width:200px;height:200px;object-fit:contain;background:#fff;border-radius:10px}

@@ -1,0 +1,33 @@
+{
+ "base": "http://127.0.0.1:5198",
+ "motion": "no-preference",
+ "results": {
+  "metricPresent": false,
+  "workout_open": true,
+  "tab_reaches_set_done": {
+   "tabStopsFromInitialFocus": 18
+  },
+  "set_done_persisted": {
+   "pointerdownToVisibleDoneMs": 78.4,
+   "pointerdownToStoredDoneMs": 78.4
+  },
+  "set_done_under_250ms": [
+   78.39999999850988,
+   78.39999999850988
+  ],
+  "taps_to_log_one_set": 2,
+  "taps_within_workout_for_one_set": 1,
+  "rest_timer_visible": "1:30\nRest\n15s\n15s\nSkip",
+  "rest_timer_counts_down": [
+   "1:30\nRest\n15s\n15s\nSkip",
+   "1:29\nRest\n15s\n15s\nSkip"
+  ],
+  "saved_workout_added": {
+   "before": 4,
+   "after": 5
+  },
+  "persists_after_reload": true,
+  "no_unexpected_console_errors": []
+ },
+ "failed": []
+}

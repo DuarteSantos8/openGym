@@ -131,14 +131,17 @@ describe('exercise history sheet', () => {
   it('is reachable from the exercise detail sheet once there is history', () => {
     exerciseDetailSheet(EXIDX[EX])
     const before = renderTop()
-    expect([...before.querySelectorAll('button')].some(b => b.textContent === 'History')).toBe(false)
+    // Last, on the sheet's numbers, opens the history: there is none yet, so it stays shut.
+    const lastTile = h => h.querySelector('.ex-nums button.ex-num')
+    expect(lastTile(before).disabled).toBe(true)
 
     useStore.setState(s => ({ S: { ...s.S, workouts: [session(0, [{ w: 60, r: 5, done: true }])] } }))
     useUI.setState({ sheets: [] })
     exerciseDetailSheet(EXIDX[EX])
     const host = renderTop()
-    const btn = [...host.querySelectorAll('button')].find(b => b.textContent === 'History')
-    expect(btn).toBeTruthy()
+    const btn = lastTile(host)
+    expect(btn.disabled).toBe(false)
+    expect(btn.getAttribute('aria-label')).toBe('History: 60×5')
     act(() => { btn.click() })
     expect(useUI.getState().sheets).toHaveLength(2)
     const top = renderTop()

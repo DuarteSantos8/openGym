@@ -75,6 +75,7 @@ import Home from './views/Home.jsx'
 import { tintCss } from './lib/streak-icons.js'
 import Plan from './views/Plan.jsx'
 import Workout from './views/Workout.jsx'
+import { lookOf } from './lib/look.js'
 
 // Screens most sessions never open (the Coach, the admin dashboard, photos, measurements, the
 // balance check) are their own chunks rather than part of the code every start parses: ~200 KB
@@ -95,6 +96,7 @@ const Admin = lazyView(() => import('./views/Admin.jsx'))
 const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
 const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
+const Nutrition = lazyView(() => import('./views/Nutrition.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const Assistants = lazyView(() => import('./views/Assistants.jsx'))
@@ -117,6 +119,8 @@ const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
 const Community = lazyView(() => import('./views/Community.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
+// Large optional add-on libraries are not prefetched with the core application.
+const Addons = lazy(() => import('./views/Addons.jsx'))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
 const loadTour = () => import('./components/Tour.jsx')
 const Tour = lazy(loadTour)
@@ -217,6 +221,8 @@ function Shell() {
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
   useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
+  // Settings → Look: Bold (the default) or Refined (lib/look.js, index.css [data-look]).
+  useEffect(() => { document.documentElement.dataset.look = lookOf(S) }, [S.look])
   // Settings → Icons → your own streak flame and freeze: the tints around them come from their
   // colour (lib/streak-icons.js tintCss), one <style> per page, emptied on Reset to default.
   const ownTints = tintCss({ flameIcon: S.flameIcon, freezeIcon: S.freezeIcon })
@@ -415,6 +421,8 @@ function Shell() {
       <Route path="/journal" element={<Journal />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {isOn(S, 'nutrition') && <Route path="/nutrition" element={<Nutrition />} />}
+      <Route path="/addons" element={<Suspense fallback={null}><Addons /></Suspense>} />
       {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
       <Route path="/connect/:id" element={<Connect />} />
       {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}

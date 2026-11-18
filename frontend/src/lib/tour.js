@@ -41,13 +41,10 @@ const KEY = 'gym_tour_v1'
 export const STEPS = [
   { id: 'today', route: '/home', anchor: 'today' },
   { id: 'go-plan', route: '/home', anchor: 'tab-plan', go: '/plan' },
-  { id: 'plan-mode', route: '/plan', anchor: 'plan-mode' },
   { id: 'plan-views', route: '/plan', anchor: 'plan-views' },
   { id: 'plan-body', route: '/plan', anchor: 'plan-body', when: c => c.plannedDays, optional: true },
-  { id: 'plan-menu', route: '/plan', anchor: 'plan-menu' },
   { id: 'go-library', route: '/plan', anchor: 'tab-library', go: '/library' },
   { id: 'lib-search', route: '/library', anchor: 'lib-search' },
-  { id: 'lib-filters', route: '/library', anchor: 'lib-filters' },
   { id: 'start', route: '/library', anchor: 'start', intercept: true },
   { id: 'set', route: '/workout', anchor: 'set', sandbox: 'practice' },
   { id: 'tick', route: '/workout', anchor: 'tick', sandbox: 'practice', tap: true },
@@ -57,14 +54,12 @@ export const STEPS = [
   { id: 'finish', route: '/workout', anchor: 'finish', sandbox: 'practice' },
   { id: 'go-stats', route: '/home', anchor: 'tab-stats', go: '/stats' },
   { id: 'stats', route: '/stats', anchor: 'stats-tiles' },
-  { id: 'stats-body', route: '/stats', anchor: 'stats-body', when: c => c.balance, optional: true },
-  { id: 'stats-records', route: '/stats', anchor: 'stats-records', when: c => c.workouts, optional: true },
   { id: 'go-home', route: '/stats', anchor: 'tab-home', go: '/home' },
   { id: 'go-settings', route: '/home', anchor: 'settings-gear', go: '/settings' },
-  // Top to bottom, as the Settings screen lists them (#1105).
-  { id: 'units', route: '/settings', anchor: 'settings-units' },
+  // One Settings stop: the look (text size, theme), the thing a new person most needs to find.
+  // The release pass cut the tour from 22 stops to the ones a first workout needs; units, data,
+  // the plan's mode and menu, the Library filters and the Stats detail are found where they live.
   { id: 'look', route: '/settings', anchor: 'settings-look' },
-  { id: 'data', route: '/settings', anchor: 'settings-data' },
   { id: 'done', route: null, anchor: null },
 ]
 

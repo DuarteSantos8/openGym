@@ -58,7 +58,7 @@ export default function Tools() {
   const latest = key => { for (let i = (S.measurements || []).length - 1; i >= 0; i--) { const v = Number(S.measurements[i]?.[key]); if (v > 0) return v } return null }
 
   return <>
-    <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
+    <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Progress')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Tools')}</h1>
         <div className="sub">{t('Calculators, already filled in from your log.')}</div></div></div>
     <PercentCard S={S} lifts={lifts} unit={unit} formula={formula} />

@@ -20,7 +20,9 @@ beforeEach(() => {
   host = document.createElement('div'); document.body.append(host); root = createRoot(host)
 })
 afterEach(() => { act(() => root.unmount()); host.remove(); registerCustom([]); registerExerciseAliases({}) })
-const render = () => act(() => root.render(useUI.getState().sheets.at(-1).render(() => {})))
+// The exercise sheet folds what you set once under "Setup for this exercise" (redesign step 4).
+const openSetup = host => { const h = host.querySelector('.ex-setup-h[aria-expanded="false"]'); if (h) act(() => h.click()); return host }
+const render = () => { act(() => root.render(useUI.getState().sheets.at(-1).render(() => {}))); openSetup(host) }
 const type = (el, value) => act(() => {
   Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, value)
   el.dispatchEvent(new Event('input', { bubbles: true }))
