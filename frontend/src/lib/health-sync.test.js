@@ -25,6 +25,7 @@ vi.mock('@capacitor/core', () => ({
     status: async () => ({ ...h.status }),
     requestPermissions: async arg => {
       h.calls.push(arg ? ['request', arg] : ['request'])
+      if (arg?.write?.includes('waist')) { h.status.waist = h.grantWaist; return { granted: h.status.granted, waist: h.grantWaist } }
       if (arg?.write?.includes('calories')) { h.status.calories = h.grantKcal; return { granted: h.status.granted, calories: h.grantKcal } }
       h.status.granted = h.grant; return { granted: h.grant }
     },
@@ -109,7 +110,7 @@ describe('keeping in step', () => {
     h.calls = []
     await hs.syncHealth({ ...state([workout('w2', 18)]), deleted: { workouts: { w1: at(20, 9) } } })
     expect(writes()).toEqual([])
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [], waists: [] }])
     expect(Object.keys(file().written)).toEqual(['opengym-w-w2'])
   })
   it('remembers a refused permission, keeps what it has, and clears it once allowed again', async () => {
@@ -146,7 +147,7 @@ describe('deleting in openGym', () => {
     const edited = { ...workout('w2', 18), name: 'Push, heavier' }
     await hs.syncHealth({ ...state([edited], [bw(18, 79)]), deleted: { workouts: { w1: at(20, 9) }, bodyweight: { '2026-09-17': at(20, 9) } } })
     expect(writes().map(w => w.sessions.map(s => s.title))).toEqual([['Push, heavier']])
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'], waists: [] }])
     expect(Object.keys(file().written).sort()).toEqual(['opengym-bw-2026-09-18', 'opengym-w-w2'])
   })
 
@@ -166,7 +167,7 @@ describe('deleting in openGym', () => {
     await hs.syncHealth(state([workout('w2', 18)]))              // the merge has not brought the record yet
     expect(removes()).toEqual([])
     await hs.syncHealth({ ...state([workout('w2', 18)]), deleted: { workouts: { w1: at(21, 9) } } })
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [], waists: [] }])
   })
 
   it('a deletion while it was off goes once it is on again', async () => {
@@ -177,7 +178,7 @@ describe('deleting in openGym', () => {
     await hs.syncHealth(after)
     expect(h.calls.filter(c => c[0] === 'remove')).toEqual([])
     await hs.enableHealth(after)
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [], waists: [] }])
     expect(file().written).toEqual({})
   })
 
@@ -192,7 +193,7 @@ describe('deleting in openGym', () => {
     await hs.enableHealth(state([workout('w1', 17)], [bw(17, 80)]))
     h.calls = []
     await hs.syncHealth({ ...state([]), resetAt: at(22, 9), resetIds: { workouts: ['w1'], bodyweight: ['2026-09-17|' + at(17, 7)] } })
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'], waists: [] }])
   })
 
   it('a refused removal is tried again on the next sync, and one Apple Health kept is not forgotten', async () => {
@@ -206,13 +207,13 @@ describe('deleting in openGym', () => {
     h.left = ['opengym-w-w2']                                   // say the watch's copy stayed
     h.calls = []
     await hs.syncHealth(gone)
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1', 'opengym-w-w2'], weights: [] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1', 'opengym-w-w2'], weights: [], waists: [] }])
     expect(Object.keys(file().written)).toEqual(['opengym-w-w2'])
     expect(file().error).toBeNull()
     h.left = null
     h.calls = []
     await hs.syncHealth(gone)
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w2'], weights: [] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w2'], weights: [], waists: [] }])
     expect(file().written).toEqual({})
   })
 })
@@ -230,7 +231,7 @@ describe('turning it off', () => {
   it('or remove exactly what it wrote', async () => {
     await hs.enableHealth(state([workout('w1', 17)], [{ d: '2026-09-17', w: 80, t: at(17, 7) }]))
     await hs.disableHealth({ removeWritten: true })
-    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] }])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'], waists: [] }])
     expect(file()).toMatchObject({ on: false, written: {} })
   })
 })
@@ -352,5 +353,41 @@ describe('records the stores refuse', () => {
     await hs.syncHealth(state([...bad, workout('ok', 18)], [{ d: '2026-09-17', w: 8000, t: at(17, 7) }, { d: '2026-09-18', w: 80, t: at(18, 7) }]))
     expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-ok'])
     expect(writes()[0].weights.map(s => s.id)).toEqual(['opengym-bw-2026-09-18'])
+  })
+})
+
+// The waist (iPhone only): written with each check-in once Apple Health allows it.
+describe('waist', () => {
+  const entry = { d: '2026-09-17', t: at(17, 7), waist: 82.5 }
+  const withWaist = () => ({ ...state([]), measurements: [entry] })
+  const on = (status, extra = {}) => { h.status = { status: 'available', granted: true, ...status }; h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {}, kcalAsked: true, ...extra })) }
+  it('iPhone, allowed: the check-in goes out as a waist record', async () => {
+    h.platform = 'ios'; on({ waist: true })
+    await hs.loadHealth()
+    await hs.syncHealth(withWaist())
+    expect(writes()[0].waists).toMatchObject([{ id: 'opengym-waist-2026-09-17', cm: 82.5 }])
+  })
+  it('iPhone, not allowed: asks once while the app is on screen, never again', async () => {
+    h.platform = 'ios'; h.grantWaist = false; on({ waist: false })
+    await hs.loadHealth()
+    await hs.syncHealth(withWaist())
+    await hs.syncHealth(withWaist())
+    expect(h.calls.filter(c => c[0] === 'request')).toEqual([['request', { read: [], write: ['waist'] }]])
+    expect(file().waistAsked).toBe(true)
+    expect(writes().flatMap(w => w.waists || [])).toEqual([])
+  })
+  it('Android never sends a waist and never asks for one', async () => {
+    on({ waist: false })
+    await hs.loadHealth()
+    await hs.syncHealth({ ...withWaist(), workouts: [workout('w1', 17)] })
+    expect(h.calls.filter(c => c[0] === 'request')).toEqual([])
+    expect(writes()).toHaveLength(1)
+    expect(writes()[0].waists || []).toEqual([])
+  })
+  it('a waist cleared in the log is removed from Apple Health', async () => {
+    h.platform = 'ios'; on({ waist: true }, { written: { 'opengym-waist-2026-09-17': { k: 'waist', h: 'x' } } })
+    await hs.loadHealth()
+    await hs.syncHealth({ ...state([]), measurements: [{ d: '2026-09-17', t: at(17, 7) }] })
+    expect(removes()[0].waists).toEqual(['opengym-waist-2026-09-17'])
   })
 })

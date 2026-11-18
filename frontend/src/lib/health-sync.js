@@ -32,7 +32,7 @@ import { speedUnitOf } from './speed.js'
 export const HEALTH_FILE = 'opengym-health.json'
 // How many ids of records the store refused are remembered (syncOnce, `refused`).
 export const REFUSED_MAX = 50
-const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
+const OFF = { on: false, kcalAsked: false, waistAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -138,14 +138,28 @@ async function kcalAllowed(p, h) {
   return { kcal: res?.calories === true, h: out }
 }
 
+// The same for the waist (iPhone only: Health Connect has no waist type).
+async function waistAllowed(p, h) {
+  if (p.platform !== 'ios') return { waist: false, h }
+  const st = await p.HC.status().catch(() => null)
+  if (st?.waist === true) return { waist: true, h }
+  const onScreen = typeof document === 'undefined' || document.visibilityState !== 'hidden'
+  if (st?.waist !== false || !st.granted || h.waistAsked || !onScreen) return { waist: false, h }
+  const res = await p.HC.requestPermissions({ read: [], write: ['waist'] }).catch(() => null)
+  const out = { ...h, waistAsked: true }
+  await saveHealth(out)
+  return { waist: res?.waist === true, h: out }
+}
+
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
   const allowed = await kcalAllowed(p, h)
-  h = allowed.h
+  const wa = await waistAllowed(p, allowed.h)
+  h = wa.h
   // Segments (the sets, #816) only for Health Connect. Adding them rewrites each workout once.
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), kcal: allowed.kcal, segments: p.platform === 'android' }), h.written, goneIds(S))
-  const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), kcal: allowed.kcal, waist: wa.waist, segments: p.platform === 'android' }), h.written, goneIds(S))
+  const nothing = !plan.sessions.length && !plan.weights.length && !plan.waists.length && !plan.remove.sessions.length && !plan.remove.weights.length && !plan.remove.waists.length
   if (nothing) {
     if (!h.error) return h
     // Nothing to write, but the last attempt failed: clear it once Health Connect says yes again.
@@ -158,8 +172,8 @@ async function syncOnce(S, h) {
   }
   let out = { ...h }
   try {
-    if (plan.sessions.length || plan.weights.length) {
-      const res = await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+    if (plan.sessions.length || plan.weights.length || plan.waists.length) {
+      const res = await p.HC.write({ sessions: plan.sessions, weights: plan.weights, waists: plan.waists })
       // Each record is written on its own (v1.4.5): one the store refused (`failed`) or the native
       // side found invalid (`skipped`) never fails the rest, and is kept as written like them, so
       // it is not tried again at every sync and every launch; it is once it changes in the log
@@ -172,7 +186,7 @@ async function syncOnce(S, h) {
       out.written = { ...kept, ...plan.written }
     }
     let written = plan.written
-    if (plan.remove.sessions.length || plan.remove.weights.length) {
+    if (plan.remove.sessions.length || plan.remove.weights.length || plan.remove.waists.length) {
       // Apple Health answers what it could not take out (`left`: one the watch saved that the
       // phone may not delete): kept as written, so the next sync tries again.
       const res = await p.HC.remove(plan.remove)
@@ -202,7 +216,7 @@ export async function enableHealth(S) {
   if (!granted) return { ok: false, reason: 'denied' }
   const h = await loadHealth()
   // The default ask includes active energy (optional: refusing it keeps the rest on).
-  await saveHealth({ ...h, on: true, error: null, kcalAsked: true })
+  await saveHealth({ ...h, on: true, error: null, kcalAsked: true, waistAsked: true })
   await mirrorOn(true)
   const after = await syncHealth(S)
   return { ok: !after?.error, reason: after?.error || null, health: after }
@@ -218,7 +232,7 @@ export async function disableHealth({ removeWritten = false } = {}) {
   const h = await loadHealth()
   if (removeWritten) {
     const ids = writtenIds(h.written)
-    if (ids.sessions.length || ids.weights.length) {
+    if (ids.sessions.length || ids.weights.length || ids.waists.length) {
       const p = await plugin()
       if (!p) throw new Error('unavailable')
       await p.HC.remove(ids)
