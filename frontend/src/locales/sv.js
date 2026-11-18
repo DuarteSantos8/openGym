@@ -2912,6 +2912,7 @@ export default {
   'new order': 'ny ordning',
   'Update “{0}”': 'Uppdatera ”{0}”',
   'Updated “{0}”': '”{0}” uppdaterad',
+  '“{0}” changed in the meantime, so it was left as it is.': '”{0}” har ändrats under tiden, så den lämnades som den är.',
   'Thinking about your question…': 'Funderar på din fråga…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Det här är demon, så det finns ingen AI-modell bakom mig. På din egen server svarar jag på frågor som ”{0}” utifrån din plan, dina senaste pass och passet du kör just nu.',
 

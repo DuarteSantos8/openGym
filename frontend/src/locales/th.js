@@ -2882,6 +2882,7 @@ export default {
   'new order': 'ลำดับใหม่',
   'Update “{0}”': 'อัปเดต “{0}”',
   'Updated “{0}”': 'อัปเดต “{0}” แล้ว',
+  '“{0}” changed in the meantime, so it was left as it is.': '“{0}” เปลี่ยนไปในระหว่างนี้ จึงปล่อยไว้ตามเดิม',
   'Thinking about your question…': 'กำลังคิดเรื่องคำถามของคุณ…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'นี่คือเดโม จึงไม่มีโมเดล AI อยู่เบื้องหลัง บนเซิร์ฟเวอร์ของคุณเอง ฉันจะตอบคำถามอย่าง “{0}” โดยใช้แผน เซสชันล่าสุด และการออกกำลังกายที่คุณกำลังทำอยู่',
 

@@ -2831,6 +2831,7 @@ export default {
   "new order": "nauja tvarka",
   "Update “{0}”": "Atnaujinti „{0}“",
   "Updated “{0}”": "Atnaujinta „{0}“",
+  "“{0}” changed in the meantime, so it was left as it is.": "„{0}“ tuo metu pasikeitė, todėl palikta, kaip yra.",
   "Thinking about your question…": "Mąstau apie jūsų klausimą…",
   "This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.": "Tai demonstracinė versija, todėl aš neturiu AI modelio. Savo serveryje atsakau į klausimus, pvz., „{0}“, remdamasis jūsų planu, paskutinėmis sesijomis ir dabar atliekama treniruote.",
   "Advanced": "Išplėstiniai",

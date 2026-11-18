@@ -2871,6 +2871,7 @@ export default {
   'new order': 'नया क्रम',
   'Update “{0}”': '“{0}” अपडेट करें',
   'Updated “{0}”': '“{0}” अपडेट हो गया',
+  '“{0}” changed in the meantime, so it was left as it is.': '“{0}” इस बीच बदल गया, इसलिए उसे वैसा ही छोड़ दिया गया।',
   'Thinking about your question…': 'आपके सवाल पर सोच रहा हूँ…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'यह डेमो है, इसलिए मेरे पीछे कोई AI मॉडल नहीं है। आपके अपने सर्वर पर मैं “{0}” जैसे सवालों का जवाब आपकी योजना, पिछले सेशन और अभी चल रहे वर्कआउट के आधार पर देता हूँ।',
 

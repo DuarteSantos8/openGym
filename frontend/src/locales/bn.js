@@ -2950,6 +2950,7 @@ export default {
   'new order': 'নতুন ক্রম',
   'Update “{0}”': '“{0}” আপডেট করুন',
   'Updated “{0}”': '“{0}” আপডেট হয়েছে',
+  '“{0}” changed in the meantime, so it was left as it is.': '“{0}” এর মধ্যে বদলে গেছে, তাই যেমন ছিল তেমনই রাখা হয়েছে।',
   'Thinking about your question…': 'আপনার প্রশ্ন নিয়ে ভাবছি…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'এটি ডেমো, তাই আমার পেছনে কোনো AI মডেল নেই। আপনার নিজের সার্ভারে আমি “{0}”-এর মতো প্রশ্নের উত্তর দিই আপনার প্ল্যান, সাম্প্রতিক সেশন আর এখন চলা ওয়ার্কআউট দেখে।',
 

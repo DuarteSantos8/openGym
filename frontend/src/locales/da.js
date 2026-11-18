@@ -2862,6 +2862,7 @@ export default {
   "new order": "ny rækkefølge",
   "Update “{0}”": "Opdatér “{0}”",
   "Updated “{0}”": "“{0}” opdateret",
+  "“{0}” changed in the meantime, so it was left as it is.": "“{0}” er ændret i mellemtiden, så den blev ladt være.",
   "Thinking about your question…": "Tænker over dit spørgsmål…",
   "This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.": "Det her er demoen, så der er ingen AI-model bag mig. På din egen server svarer jeg på spørgsmål som “{0}” ud fra din plan, dine seneste træninger og den træning, du er i gang med lige nu.",
   "Advanced": "Avanceret",

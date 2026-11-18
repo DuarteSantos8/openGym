@@ -2856,6 +2856,7 @@ export default {
   "new order": "urutan baru",
   "Update “{0}”": "Perbarui “{0}”",
   "Updated “{0}”": "“{0}” diperbarui",
+  "“{0}” changed in the meantime, so it was left as it is.": "“{0}” sudah berubah sementara itu, jadi dibiarkan apa adanya.",
   "Thinking about your question…": "Memikirkan pertanyaan kamu…",
   "This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.": "Ini demo, jadi tidak ada model AI di belakang saya. Di servermu sendiri, saya menjawab pertanyaan seperti “{0}” dengan rencanamu, sesi terakhir kamu, dan latihan yang kamu lakukan saat ini.",
   "Advanced": "Lanjutan",

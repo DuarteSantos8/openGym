@@ -2868,6 +2868,7 @@ export default {
   'new order': 'nové pořadí',
   'Update “{0}”': 'Aktualizovat „{0}“',
   'Updated “{0}”': 'Sestava „{0}“ aktualizována',
+  '“{0}” changed in the meantime, so it was left as it is.': 'Sestava „{0}“ se mezitím změnila, takže zůstala, jak je.',
   'Thinking about your question…': 'Přemýšlím o tvé otázce…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': "Tohle je ukázka, takže za mnou není žádný model AI. Na tvém vlastním serveru odpovídám na otázky jako „{0}“ podle tvého plánu, posledních tréninků a tréninku, který právě děláš.",
   'Advanced': 'Pokročilé',

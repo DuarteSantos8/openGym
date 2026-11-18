@@ -2871,6 +2871,7 @@ export default {
   'new order': 'nova ordem',
   'Update “{0}”': 'Atualizar «{0}»',
   'Updated “{0}”': 'Rotina «{0}» atualizada',
+  '“{0}” changed in the meantime, so it was left as it is.': '«{0}» mudou entretanto, por isso ficou como está.',
   'Thinking about your question…': 'A pensar na tua pergunta…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Isto é a demo, por isso não há nenhum modelo de IA por trás de mim. No teu próprio servidor respondo a perguntas como “{0}” com o teu plano, as tuas últimas sessões e o treino que estás a fazer agora.',
 

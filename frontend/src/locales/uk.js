@@ -2868,6 +2868,7 @@ export default {
   'new order': 'новий порядок',
   'Update “{0}”': 'Оновити «{0}»',
   'Updated “{0}”': 'Оновлено «{0}»',
+  '“{0}” changed in the meantime, so it was left as it is.': '«{0}» тим часом змінилася, тож її залишено як є.',
   'Thinking about your question…': 'Думаю над вашим запитанням…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Це демо, тож за мною немає моделі ШІ. На вашому власному сервері я відповідаю на запитання на кшталт «{0}», враховуючи ваш план, останні тренування і тренування, яке ви робите зараз.',
 

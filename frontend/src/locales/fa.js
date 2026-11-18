@@ -2804,6 +2804,7 @@ export default {
   "new order": "ترتیب جدید",
   "Update “{0}”": "«{0}» را به‌روز کنید",
   "Updated “{0}”": "«{0}» به‌روز شد",
+  "“{0}” changed in the meantime, so it was left as it is.": "«{0}» در این فاصله تغییر کرده، پس همان‌طور که هست ماند.",
   "Thinking about your question…": "در حال فکر کردن به سوال شما…",
   "This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.": "این یک نسخه نمایشی است و مدل هوش مصنوعی فعال نیست. در سرور شخصی‌تان می‌توانم به سوالاتی مثل «{0}» بر اساس برنامه، جلسات گذشته و تمرین جاری شما پاسخ دهم.",
   "Advanced": "پیشرفته",

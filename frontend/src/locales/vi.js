@@ -2868,6 +2868,7 @@ export default {
   'new order': 'thứ tự mới',
   'Update “{0}”': 'Cập nhật “{0}”',
   'Updated “{0}”': 'Đã cập nhật “{0}”',
+  '“{0}” changed in the meantime, so it was left as it is.': '“{0}” đã thay đổi trong lúc đó, nên được giữ nguyên.',
   'Thinking about your question…': 'Đang suy nghĩ về câu hỏi của bạn…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Đây là bản demo, nên không có mô hình AI nào phía sau tôi. Trên máy chủ của riêng bạn, tôi sẽ trả lời các câu hỏi như “{0}” dựa trên kế hoạch, các buổi tập gần đây và buổi tập bạn đang làm.',
   'Advanced': 'Nâng cao',

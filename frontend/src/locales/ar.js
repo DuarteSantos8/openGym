@@ -2925,6 +2925,7 @@ export default {
   'new order': 'ترتيب جديد',
   'Update “{0}”': 'حدِّث «{0}»',
   'Updated “{0}”': 'تم تحديث «{0}»',
+  '“{0}” changed in the meantime, so it was left as it is.': 'تغيّر «{0}» في هذه الأثناء، لذا تُرك كما هو.',
   'Thinking about your question…': 'أفكر في سؤالك…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'هذا هو العرض التجريبي، لذا لا يوجد نموذج ذكاء اصطناعي خلفي. على خادمك الخاص أجيب عن أسئلة مثل «{0}» بالاعتماد على خطتك وجلساتك الأخيرة والتمرين الذي تقوم به الآن.',
 

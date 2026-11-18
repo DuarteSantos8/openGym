@@ -2891,6 +2891,7 @@ export default {
   'new order': 'neue Reihenfolge',
   'Update “{0}”': '„{0}“ aktualisieren',
   'Updated “{0}”': '„{0}“ aktualisiert',
+  '“{0}” changed in the meantime, so it was left as it is.': '„{0}“ wurde inzwischen geändert und bleibt deshalb, wie sie ist.',
   'Thinking about your question…': 'Ich denke über deine Frage nach…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Das ist die Demo, hinter mir steckt also kein KI-Modell. Auf deinem eigenen Server beantworte ich Fragen wie „{0}“ mit deinem Plan, deinen letzten Einheiten und dem Training, das du gerade machst.',
 

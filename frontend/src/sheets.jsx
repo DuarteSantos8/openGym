@@ -99,7 +99,7 @@ import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork, isSideSet } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
-import { saveSessionAsRoutine, routineFromSession, routineChanges } from './lib/session-routines.js'
+import { saveSessionAsRoutine, routineFromSession, routineChanges, noteRoutineStart } from './lib/session-routines.js'
 import { shareRoutineSheet } from './components/RoutineShare.jsx'
 import { youtubeSearchUrl } from './lib/youtube.js'
 import { openExternal } from './components/CustomMedia.jsx'
@@ -4054,6 +4054,8 @@ export function beginWorkout(routineIds, bw, { id = null, start = null, lead = n
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
     }
+    // The slots it starts with, so the finish can tell one taken out from one never here (#592).
+    noteRoutineStart(s.active)
   })
   // "Go lighter" from the check-in (lib/daily-form.js): today's numbers only, said so.
   if (lighter) {
@@ -4242,6 +4244,7 @@ function AddRoutineToSession({ close }) {
     const entries = buildSessionEntries(sessionHistory(st), r).map(e => ({ ...e, rid: r.id }))
     update(s => {
       if (!s.active) return
+      noteRoutineStart(s.active, entries)
       // A session kept out of progression as a whole (the header ⋮) keeps the routine's
       // exercises out too, the same as an exercise added on its own.
       s.active.entries.push(...entries.map(e => joinSessionNoProg(s.active, e)))
@@ -4681,6 +4684,7 @@ function KeepInRoutine({ session }) {
     // On the store as it is now, read outside update(): the draft would copy every workout.
     const now = routineChanges(session, S()).find(x => x.routineId === c.routineId)
     let before = null
+    const wrote = JSON.stringify(now?.ex)
     update(s => {
       const r = now && s.routines.find(x => x.id === c.routineId)
       if (!r) return
@@ -4692,7 +4696,15 @@ function KeepInRoutine({ session }) {
     ui().toast(t('Routine updated'), {
       action: t('Undo'),
       onAction: () => {
-        update(s => { const r = s.routines.find(x => x.id === c.routineId); if (r) r.ex = before })
+        // Only over what Update wrote: an edit made since, here or on another device, stays.
+        let kept = false
+        update(s => {
+          const r = s.routines.find(x => x.id === c.routineId)
+          if (!r) return
+          if (JSON.stringify(r.ex) !== wrote) { kept = true; return }
+          r.ex = before
+        })
+        if (kept) { ui().toast(t('“{0}” changed in the meantime, so it was left as it is.', c.name)); return }
         setDone(x => ({ ...x, [c.routineId]: false }))
       },
     })
