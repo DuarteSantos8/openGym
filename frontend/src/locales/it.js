@@ -5913,4 +5913,10 @@ export default {
   "Hide": "Nascondi",
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} serie a settimana, il tuo intervallo è da {2} a {3}",
+  "{0}: trained in one session a week": "{0}: allenato in una sola sessione a settimana",
+  "{0} sets on this exercise": "{0} serie su questo esercizio",
+  "Based on {0}": "Basato su {0}",
+  "our rule": "nostra regola",
 }

@@ -5869,4 +5869,10 @@ export default {
   "Hide": "Skrýt",
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} sérií týdně, tvůj rozsah je {2} až {3}",
+  "{0}: trained in one session a week": "{0}: trénováno v jednom tréninku týdně",
+  "{0} sets on this exercise": "{0} sérií v tomto cviku",
+  "Based on {0}": "Podle {0}",
+  "our rule": "naše pravidlo",
 }

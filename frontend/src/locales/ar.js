@@ -5958,4 +5958,10 @@ export default {
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} مجموعة في الأسبوع، ونطاقك من {2} إلى {3}",
+  "{0}: trained in one session a week": "{0}: تتدرب عليها في جلسة واحدة في الأسبوع",
+  "{0} sets on this exercise": "{0} مجموعات في هذا التمرين",
+  "Based on {0}": "بناءً على {0}",
+  "our rule": "قاعدتنا",
 }

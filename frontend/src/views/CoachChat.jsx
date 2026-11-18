@@ -47,6 +47,7 @@ import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
+import EvidenceLine from '../components/EvidenceLine.jsx'
 import '../coach.css'
 import { isoRun } from '../lib/bidi.js'
 
@@ -520,6 +521,7 @@ function ChangeRow({ c, S, stale, badge, children }) {
       <div className="pcard-chg-w">{c.why}</div>
       {/* What the change means at the gym, in the app's own words (lib/coach.js changeMeaning). */}
       {changeMeaning(c) && <div className="pcard-chg-m small dim">{changeMeaning(c)}</div>}
+      <EvidenceLine change={c} />
       {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
     </div>
     {badge}

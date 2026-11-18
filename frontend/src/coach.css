@@ -314,6 +314,8 @@
 .adapt-wait{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:8px 0}
 .adapt-ended{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .pcard-chg-m{margin-top:4px;line-height:1.4}
+.pcard-chg-e{margin-top:4px;line-height:1.4}
+.pcard-chg-e a{color:inherit;text-decoration:underline}
 .adapt-reasons .chip{text-transform:none}
 
 /* The Coach setup's provider cards (views/CoachSetup.jsx): big, tappable, one line each. */

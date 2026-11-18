@@ -5903,4 +5903,10 @@ export default {
   "Hide": "Gizle",
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: haftada {1} set, senin aralığın {2} ile {3}",
+  "{0}: trained in one session a week": "{0}: haftada tek antrenmanda çalışıldı",
+  "{0} sets on this exercise": "Bu harekette {0} set",
+  "Based on {0}": "Dayanağı: {0}",
+  "our rule": "kendi kuralımız",
 }
