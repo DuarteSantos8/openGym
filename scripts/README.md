@@ -16,6 +16,7 @@ want. Run them from the repository root with Node 22 unless noted.
 | `catalogue/stage-media.mjs` | Copies the stills and animations next to a built app (`npm run build:mobile`, the demo) |
 | `android/check-fdroid.sh` | The F-Droid build has nothing from Google Play services, Firebase or ML Kit (classpath, manifest, plugin list) |
 | `ci/fork-mr-pipelines.py` | GitLab mirror only: starts pipelines for merge requests from forks |
+| `ci/ui-layout.mjs` | The demo build in a real browser, phone and desktop, with a rest timer running: fails when a floating action sits under the timer or the tab bar, or a screen logs an error. Saves screenshots (the `ui-layout` CI artifact). Needs `playwright-core` installed outside the project (`PLAYWRIGHT_DIR`) |
 
 ## Used when you change something
 

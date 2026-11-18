@@ -37,7 +37,7 @@ const go = async to => { await act(async () => router.navigate(to)) }
 describe('root tab history', () => {
   it('does not accumulate a back stack when switching tabs repeatedly', async () => {
     for (let i = 0; i < 3; i++) {
-      for (const label of ['Plan', 'Stats', 'Exercises', 'Home']) await tap(label)
+      for (const label of ['Plan', 'Progress', 'Library', 'Today']) await tap(label)
     }
     await tap('Plan')
     expect(router.state.location.pathname).toBe('/plan')
@@ -47,10 +47,10 @@ describe('root tab history', () => {
 
   it('ignores a tap on the current root, but clears a tab query when returning to its root', async () => {
     const key = router.state.location.key
-    await tap('Home')
+    await tap('Today')
     expect(router.state.location.key).toBe(key)
     await go('/stats?range=month')
-    await tap('Stats')
+    await tap('Progress')
     expect(router.state.location.pathname).toBe('/stats')
     expect(router.state.location.search).toBe('')
   })
