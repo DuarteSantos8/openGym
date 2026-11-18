@@ -17,6 +17,7 @@ import { MOBILE, nativePlatform } from './mobile.js'
 import { effectiveRoutines } from './history.js'
 import { isoOf, todayISO, fmtNum } from './format.js'
 import { t } from './i18n.js'
+import { weighInsFromHealth, weighInSourceReady } from './weigh-in-source.js'
 
 export const LB_PER_KG = 2.2046226218
 // What a spoken number may be. Below this it was a mishearing ("two"), above it the sheet's own cap.
@@ -93,9 +94,9 @@ function cleanPending (p, now) {
 /**
  * Brings pending weigh-ins into the state `s` (mutated; inside the store's update). `seen` holds
  * the ids brought in before. Returns { logged: [{ id, d, w, unit }], ids }: `ids` is every id that
- * was looked at, used or not, so the phone can forget them all.
+ * was looked at, used or not, so the phone can forget them all. `drop` logs none of them.
  */
-export function importPendingWeighIns (s, items, { now = Date.now(), seen = [] } = {}) {
+export function importPendingWeighIns (s, items, { now = Date.now(), seen = [], drop = false } = {}) {
   const unit = unitOf(s.unit)
   if (!Array.isArray(s.bodyweight)) s.bodyweight = []
   const done = new Set(seen)
@@ -104,7 +105,7 @@ export function importPendingWeighIns (s, items, { now = Date.now(), seen = [] }
   for (const raw of Array.isArray(items) ? items : []) {
     if (raw && typeof raw.id === 'string' && raw.id) ids.push(raw.id)
     const p = cleanPending(raw, now)
-    if (p) list.push(p)
+    if (p && !drop) list.push(p)
   }
   list.sort((a, b) => a.at - b.at)
   for (const p of list) {
@@ -160,11 +161,15 @@ export async function startVoice ({ useStore, toast }) {
     busy = true
     try {
       await waitReady(useStore)
+      // Whether weigh-ins come from the health store is known only once its file is read.
+      await weighInSourceReady()
+      if (gone) return
       const res = await p.VoiceBridge.pending()
       const items = Array.isArray(res?.items) ? res.items : []
       if (!items.length) return
       let out = { logged: [], ids: [] }
-      useStore.getState().update(s => { out = importPendingWeighIns(s, items, { seen: readSeen() }) })
+      // Weigh-ins from the health store only (#1088): what Siri heard is cleared, not kept for later.
+      useStore.getState().update(s => { out = importPendingWeighIns(s, items, { seen: readSeen(), drop: weighInsFromHealth(s) }) })
       writeSeen(out.ids)
       await p.VoiceBridge.clear({ ids: out.ids })
       const last = out.logged[out.logged.length - 1]

@@ -5869,4 +5869,7 @@ export default {
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "وزن‌کشی‌ها فقط از Health Connect می‌آیند.",
+  "Weigh-ins come from Apple Health only.": "وزن‌کشی‌ها فقط از Apple Health می‌آیند.",
 }

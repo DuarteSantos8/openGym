@@ -5868,4 +5868,7 @@ export default {
   "Hide": "Sembunyikan",
   "Totals": "Total",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Panah mengubah urutannya.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Catatan berat badan hanya datang dari Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Catatan berat badan hanya datang dari Apple Health.",
 };

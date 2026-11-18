@@ -34,6 +34,7 @@
 import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
+import { weighInsFromHealth, subscribe as onWeighInSource } from './weigh-in-source.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
@@ -1095,7 +1096,8 @@ export function watchExtras (S, show = {}) {
   const bw = Array.isArray(S?.bodyweight) && S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null
   return {
     lang,
-    weighIn: S?.weighIn !== false,
+    // no weigh-in to ask for while weigh-ins come from the health store only (#1088)
+    weighIn: S?.weighIn !== false && !weighInsFromHealth(S),
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
@@ -1341,6 +1343,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // exercise names in the snapshot change with it too).
   let offLang = () => {}
   try { offLang = onLangChange(() => schedule()) } catch { /* a test without i18n */ }
+  // Weigh-ins read from the health store: the watch asks for no weigh-in before a workout (watchExtras).
+  const offWeighIns = onWeighInSource(schedule)
   const sub = await p.WatchBridge.addListener('watchEvent', () => { drainWatchEvents() })
   // The link itself changed (the session finished activating after launch, a watch was paired, the
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.
@@ -1370,7 +1374,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); offWeighIns(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

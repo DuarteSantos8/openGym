@@ -5900,4 +5900,7 @@ export default {
   "Hide": "Сховати",
   "Totals": "Підсумки",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Зважування надходять лише з Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Зважування надходять лише з Apple Здоров’я.",
 }

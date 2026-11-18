@@ -102,6 +102,7 @@ import { libraryOn } from '../lib/shared-api.js'
 import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
+import { weighInSourceLine } from '../lib/weigh-in-source.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -2253,7 +2254,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         <Switch checked={!!h.readHr} disabled={busy} onChange={toggleRead('hr')} />
       </Row>
       <Row icon="scale" iconTint="var(--teal)" title={t('Weigh-ins from other apps')}
-        subtitle={t('Your smart scale’s weigh-ins land here. One you type in yourself always wins.')}>
+        subtitle={h.readWeight && isOn(S, 'health') ? weighInSourceLine(ios) : t('Your smart scale’s weigh-ins land here. One you type in yourself always wins.')}>
         <Switch checked={!!h.readWeight} disabled={busy} onChange={toggleRead('weight')} />
       </Row>
       <Row icon="scale" iconTint="var(--purple)" title={t('Body composition from your scale')}

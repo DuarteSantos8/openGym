@@ -5903,4 +5903,7 @@ export default {
   "Hide": "Gizle",
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Tartımlar yalnızca Health Connect’ten gelir.",
+  "Weigh-ins come from Apple Health only.": "Tartımlar yalnızca Apple Sağlık’tan gelir.",
 }
