@@ -23,6 +23,7 @@ import { nameIn, said } from '../lib/a11y-name.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor, restKindAfter } from '../lib/supersetFlow.js'
+import { autoNextMode } from '../lib/auto-next.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -1333,14 +1334,15 @@ function ActiveWorkout() {
   }, [A.id])
   // Cards and Focus: when the rest after a timed exercise's last set runs out, the next exercise
   // comes up on its own (#532, lib/supersetFlow.js advanceAfterTimedRest), and after any exercise
-  // with Settings → Workout → "Next exercise when the rest ends" on (#1017). Once per rest.
+  // with Settings → Workout → "Move to the next exercise: When the rest ends" on (#1017). Once per
+  // rest. "Right away" is not here: it moves on the tick itself, where the rest starts.
   useEffect(() => {
     const readyRest = useUI.getState().timer
     if (readyRestEnds === undefined || !readyRest?.ready || listMode || editing) return
     const live = useStore.getState().S.active
     if (!live) return
-    // #1017: with "Next exercise when the rest ends" on, weighted work moves on too.
-    const every = useStore.getState().S.autoNextExercise === true
+    // #1017: with "When the rest ends" on, weighted work moves on too.
+    const every = autoNextMode(useStore.getState().S.autoNextExercise) === 'rest'
     const timed = idx => every || modeOf({ ...(live.entries[idx]?.target || {}), id: live.entries[idx]?.id }) === 'time'
     const to = advanceAfterTimedRest(live.entries, supersetUnits(live.entries), readyRest.forIdx, live.cur, timed)
     if (to != null) update(s => { if (s.active && s.active.cur === live.cur) s.active.cur = to })
@@ -2327,6 +2329,19 @@ function ActiveWorkout() {
       // progress, never on a re-tick, and never in the other layouts, where the marker stays put.
       if (collapseOn && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
         revealCur.current = true
+        update(s => { if (s.active) s.active.cur = nextUnit[0] })
+      }
+
+      // #1360: "Right away" does not wait for the rest. The tick that finishes the unit brings the
+      // next one up, and the rest keeps counting below it: the timer belongs to the exercise that
+      // started it (timer.forIdx, and startRest is called with this index below), so Skip and the
+      // +/- 15 s still aim at the exercise you just finished. When that rest does run out,
+      // advanceAfterTimedRest finds `cur` outside its unit and returns nothing, so this cannot
+      // fire twice. Focus already moved on the tick before this setting existed
+      // (FocusView.jsx onProgress), so it is unchanged; the list gets the marker only, because
+      // unlike the collapse above it does not ask for revealCur.
+      if (autoNextMode(useStore.getState().S.autoNextExercise) === 'now'
+        && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
         update(s => { if (s.active) s.active.cur = nextUnit[0] })
       }
 

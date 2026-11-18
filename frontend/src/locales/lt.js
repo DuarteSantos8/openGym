@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "Gumos, nuo kurių pradeda kiekviena serija",
   "Metres": "Metrai",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Kitas pratimas pasibaigus poilsiui",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Kortelėse ir Fokuse kitas pratimas atsiranda pats, kai baigiasi poilsis po paskutinės serijos. Rankos lieka magnezijoje.",
+  "Move to the next exercise": "Eiti prie kito pratimo",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "Kortelėse kitas pratimas atsiranda pats be paspaudimo. Rankos lieka magnezijoje.",
+  "When the rest ends": "Pasibaigus poilsiui",
+  "Right away": "Iš karto",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Klipas skamba vietoj frazės. Čia galima iki {0}, kiekvienas iki {1} s. Jūsų klipai lieka jūsų: jie sinchronizuojami tik su jūsų įrenginiais ir niekam nebendrinami.",
   "Add a line": "Pridėti frazę",

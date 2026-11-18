@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "الأشرطة التي تبدأ بها كل مجموعة",
   "Metres": "أمتار",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "التمرين التالي عند انتهاء الراحة",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "في البطاقات والتركيز، يظهر التمرين التالي من تلقاء نفسه عندما تنتهي الراحة بعد آخر مجموعة. يداك تبقيان على المغنيسيوم.",
+  "Move to the next exercise": "الانتقال إلى التمرين التالي",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "في البطاقات، يظهر التمرين التالي دون لمس. يداك تبقيان على المغنيسيوم.",
+  "When the rest ends": "عند انتهاء الراحة",
+  "Right away": "فورًا",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "يُشغَّل المقطع بدل الجملة. حتى {0} مقاطع هنا، {1} ثانية لكل منها. مقاطعك تبقى لك: تتزامن مع أجهزتك فقط ولا تُشارَك أبدًا.",
   "Add a line": "أضف جملة",

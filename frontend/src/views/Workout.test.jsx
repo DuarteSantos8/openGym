@@ -3024,7 +3024,7 @@ describe('workout controls: the more menu and the set menu', () => {
     mocks.timer = null
   })
 
-  // #1017: "Next exercise when the rest ends" does the same for weighted work, not mid-superset.
+  // #1017: "When the rest ends" does the same for weighted work, not mid-superset.
   it('with next exercise when the rest ends on, weighted work moves on too; a running rest or the last exercise does not', async () => {
     await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: true })
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 125 }
@@ -3043,6 +3043,114 @@ describe('workout controls: the more menu and the set menu', () => {
     await rerender()
     expect(mocks.S.active.cur).toBe(0)
     mocks.timer = null
+  })
+
+  // #1360: the row gained a third setting. "Right away" moves on the moment the last set is
+  // ticked and lets the rest keep running underneath, instead of waiting for it.
+  it('with right away on, the next exercise comes up on the tick and the rest still starts', async () => {
+    await mount([exercise('plain-bench', [false, false]), exercise('plain-row', [false])], 0, { autoNextExercise: 'now' })
+    await toggleSet(0)
+    await rerender()
+    // a set in the middle of the exercise: there is nothing to move to yet
+    expect(mocks.S.active.cur).toBe(0)
+    await toggleSet(1)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+    // the move does not cut the rest short. It starts, and stays aimed at the exercise just
+    // finished (its second argument), so Skip and the +/- 15 s still belong to that one.
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, expect.objectContaining({ forSet: 1 }))
+  })
+
+  it('with right away on, the rest ending does not move on a second time', async () => {
+    await mount([exercise('plain-bench', [true, false]), exercise('plain-row', [false]), exercise('plain-curl', [false])], 0, { autoNextExercise: 'now' })
+    await toggleSet(1)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+    // the rest of the exercise just finished runs out: it has no unit left to advance
+    mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 128 }
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+    mocks.timer = null
+  })
+
+  it('with right away on, a rest ending does not pull you out of a finished exercise you went back to', async () => {
+    // The move already happened. Coming back to look at the finished exercise is not a reason to
+    // be dragged away again when its rest runs out, which is what "when the rest ends" is for.
+    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: 'now' })
+    mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 129 }
+    await rerender()
+    expect(mocks.S.active.cur).toBe(0)
+    mocks.timer = null
+  })
+
+  // "Next" is the next unit with work left, cycling back to the front: the same reading the rest
+  // end gives (advanceAfterTimedRest calls nextUnfinishedUnit), so the two settings agree.
+  it('with right away on, finishing the last exercise brings up what is still open', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [true, false])], 1, { autoNextExercise: 'now' })
+    await toggleSet(1)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(0)
+  })
+
+  it('with right away on, nothing moves when the session is done', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [true])], 0, { autoNextExercise: 'now' })
+    await toggleSet(0)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(0)
+  })
+
+  it('with right away on, a superset still waits for its whole round', async () => {
+    const session = () => [
+      exercise('superset-a', [false], { sg: 'group', asked: true }),
+      exercise('superset-b', [false], { sg: 'group', asked: true }),
+      exercise('plain-curl', [false]),
+    ]
+    await mount(session(), 0, { autoNextExercise: 'now' })
+    // the round is half done: the marker goes to the partner, as it does with the setting off
+    await toggleSet(0)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+    // the round is over: the unit after the superset comes up, rest running
+    await toggleSet(1)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(2)
+  })
+
+  // Focus has moved on the tick since the view was built (7b0b450f4), whatever this row says:
+  // one exercise on screen at a time, and it is gone the moment it is done. Pinned here so the
+  // reason this row does not touch FocusView.jsx is written down somewhere.
+  it('focus moves on the tick on its own, with the row off as well as on', async () => {
+    for (const value of [undefined, 'now']) {
+      await mount([exercise('plain-bench', [true, false]), exercise('plain-row', [false])], 0,
+        { autoNextExercise: value, active: { workoutView: 'focus' } })
+      await click(buttonNamed('Complete set'))
+      await rerender()
+      expect(mocks.S.active.cur, String(value)).toBe(1)
+      await unmount()
+    }
+  })
+
+  it('with right away on in the list, the marker moves and the finished exercise stays open', async () => {
+    await mount([exercise('plain-bench', [false, false]), exercise('plain-row', [false])], 0,
+      { autoNextExercise: 'now', active: { workoutView: 'list' } })
+    await toggleSet(0)
+    await toggleSet(1)
+    await rerender()
+    expect(mocks.S.active.cur).toBe(1)
+    // nothing folds away here (that is the other setting's doing), and the screen is not dragged
+    // to the new marker: only "collapse completed" asks for that scroll.
+    expect([...container.querySelectorAll('.wl-unit')][0].querySelector('.wl-summary')).toBeNull()
+  })
+
+  it('reads the new "when the rest ends" the way the old switch was read', async () => {
+    for (const value of [true, 'rest']) {
+      await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: value })
+      await toggleSet(0)
+      await rerender()
+      // ticking the last set of the current exercise moves nothing on its own
+      expect(mocks.S.active.cur).toBe(0)
+      await unmount()
+    }
   })
 
   // #523: "Skip completed exercises" makes Next hop over a finished exercise in Cards.

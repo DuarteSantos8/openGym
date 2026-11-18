@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "बैंड जिनसे हर सेट शुरू होता है",
   "Metres": "मीटर",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "आराम ख़त्म होते ही अगला व्यायाम",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "कार्ड और फ़ोकस में आख़िरी सेट के बाद का आराम ख़त्म होते ही अगला व्यायाम अपने आप आ जाता है। हाथ चॉक पर ही रहें।",
+  "Move to the next exercise": "अगले व्यायाम पर बढ़ो",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "कार्ड में अगला व्यायाम बिना टाप किए अपने आप आ जाता है। हाथ चॉक पर ही रहें।",
+  "When the rest ends": "आराम ख़त्म होते ही",
+  "Right away": "तुरंत",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "लाइन की जगह क्लिप चलती है। यहाँ {0} तक, हर एक {1} सेकंड की। आपकी क्लिप्स आपकी ही रहती हैं: सिर्फ़ आपके अपने डिवाइस पर सिंक होती हैं और कभी शेयर नहीं होतीं।",
   "Add a line": "लाइन जोड़ें",

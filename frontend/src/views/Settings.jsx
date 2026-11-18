@@ -83,6 +83,7 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import { autoNextMode } from '../lib/auto-next.js'
 import LiveWidgetSettings, { LiveWidgetCustomise } from '../components/LiveWidgetSettings.jsx'
 import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
@@ -686,12 +687,17 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Skip completed exercises')} checked={S.skipCompleted === true}
             onChange={v => update(s => { if (v) s.skipCompleted = true; else delete s.skipCompleted })} />
         </Row>
-        {/* #1017: what a timed exercise already does (#532), for every exercise: once the rest
-            after its last set runs out, the next exercise comes up without a tap. */}
-        <Row icon="chevronRight" iconTint="var(--teal)" title={t('Next exercise when the rest ends')}
-          subtitle={t('In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.')}>
-          <Switch aria-label={t('Next exercise when the rest ends')} checked={S.autoNextExercise === true}
-            onChange={v => update(s => { if (v) s.autoNextExercise = true; else delete s.autoNextExercise })} />
+        {/* #1017: what a timed exercise already does (#532), for every exercise. #1360 split the
+            when in two: wait for the rest to run out, or move on the moment the last set is ticked
+            and let the rest keep counting underneath. A profile that carries the old switch reads
+            as "when the rest ends", the behaviour its owner turned on (lib/auto-next.js).
+            Focus moves on the tick on its own whatever this says (FocusView.jsx onProgress). */}
+        <Row icon="chevronRight" iconTint="var(--teal)" title={t('Move to the next exercise')}
+          subtitle={t('In Cards, the next exercise comes up without a tap. Hands stay on the chalk.')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 'off', label: t('Off') }, { value: 'rest', label: t('When the rest ends') }, { value: 'now', label: t('Right away') }]}
+            value={autoNextMode(S.autoNextExercise)}
+            onChange={v => update(s => { if (v === 'off') delete s.autoNextExercise; else s.autoNextExercise = v })} />
         </Row>
       </Section>
       <Section title={t('Before and during')}>

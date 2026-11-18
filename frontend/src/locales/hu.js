@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "Gumik, amikkel minden sorozat indul",
   "Metres": "Méter",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Következő gyakorlat a pihenő végén",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Kártyák és Fókusz nézetben a következő gyakorlat magától előjön, amint lejár az utolsó sorozat utáni pihenő. A kéz maradhat a magnéziában.",
+  "Move to the next exercise": "Lépj a következő gyakorlatra",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "Kártyák nézetben a következő gyakorlat egyetlen koppintás nélkül magától előjön. A kéz maradhat a magnéziában.",
+  "When the rest ends": "A pihenő végén",
+  "Right away": "Azonnal",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Egy klip a mondat helyett szól. Itt legfeljebb {0} lehet, egyenként {1} mp. A klipjeid a tieid maradnak: csak a saját eszközeidre szinkronizálódnak, és sosem osztjuk meg őket.",
   "Add a line": "Mondat hozzáadása",

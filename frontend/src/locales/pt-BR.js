@@ -68,8 +68,10 @@ export const PT_BR_OVERRIDES = {
   "Bands every set starts with": "Bandas com que cada série começa",
   "Metres": "Metros",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Próximo exercício ao fim do descanso",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Em Cartões e Foco, o próximo exercício aparece sozinho quando acaba o descanso depois da última série. As mãos ficam no magnésio.",
+  "Move to the next exercise": "Passar para o próximo exercício",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "Em Cartões, o próximo exercício aparece sozinho sem tocar. As mãos ficam no magnésio.",
+  "When the rest ends": "No fim do descanso",
+  "Right away": "Na hora",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "No lugar da frase, toca um clipe. Até {0} aqui, {1} segundos cada. Seus clipes são seus: sincronizam com seus próprios dispositivos e nunca são compartilhados.",
   "Add a line": "Adicionar uma frase",

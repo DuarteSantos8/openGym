@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "ยางยืดที่ทุกเซ็ตเริ่มต้น",
   "Metres": "เมตร",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "ไปท่าถัดไปเมื่อพักครบ",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "ในโหมดการ์ดและโฟกัส ท่าถัดไปจะขึ้นมาเองเมื่อเวลาพักหลังเซ็ตสุดท้ายหมด มือไม่ต้องละจากชอล์ก",
+  "Move to the next exercise": "ไปท่าถัดไป",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "ในโหมดการ์ด ท่าถัดไปจะขึ้นมาเองโดยไม่ต้องแตะ มือไม่ต้องละจากชอล์ก",
+  "When the rest ends": "เมื่อพักครบ",
+  "Right away": "ทันที",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "คลิปจะเล่นแทนประโยคนี้ ที่นี่ได้สูงสุด {0} คลิป คลิปละ {1} วินาที คลิปของคุณเป็นของคุณ: ซิงก์เฉพาะอุปกรณ์ของคุณเอง และไม่มีวันถูกแชร์",
   "Add a line": "เพิ่มประโยค",

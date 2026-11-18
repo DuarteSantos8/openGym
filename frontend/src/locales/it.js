@@ -53,8 +53,10 @@ export default {
   "Bands every set starts with": "Elastici con cui parte ogni serie",
   "Metres": "Metri",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Esercizio successivo a fine recupero",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "In Schede e Focus, l’esercizio successivo arriva da solo quando finisce il recupero dopo l’ultima serie. Le mani restano nella magnesite.",
+  "Move to the next exercise": "Passa all’esercizio successivo",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "In Schede, l’esercizio successivo arriva da solo senza toccare. Le mani restano nella magnesite.",
+  "When the rest ends": "A fine recupero",
+  "Right away": "Subito",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Al posto della frase parte un clip. Fino a {0} qui, {1} secondi ciascuno. I tuoi clip restano tuoi: si sincronizzano solo sui tuoi dispositivi e non vengono mai condivisi.",
   "Add a line": "Aggiungi una frase",
