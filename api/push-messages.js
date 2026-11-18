@@ -5,6 +5,8 @@ const COPY = {
   en: {
     restTitle: 'Rest over 💪',
     restBody: 'Time for your next set.',
+    timerTitle: 'Time’s up ⏱️',
+    timerBody: 'Your timer has finished.',
     testBody: 'Test notification ✅ This is what alerts look like.',
     dayFallbackTitle: 'Workout planned today',
     dayRoutineSuffix: 'today',
@@ -13,6 +15,8 @@ const COPY = {
   'pt-BR': {
     restTitle: 'Descanso terminado 💪',
     restBody: 'Hora da próxima série.',
+    timerTitle: 'Acabou o tempo ⏱️',
+    timerBody: 'Seu timer terminou.',
     testBody: 'Notificação de teste ✅ É assim que os alertas aparecem.',
     dayFallbackTitle: 'Treino planejado para hoje',
     dayRoutineSuffix: 'hoje',
@@ -21,6 +25,8 @@ const COPY = {
   id: {
     restTitle: 'Istirahat selesai 💪',
     restBody: 'Saatnya set berikutnya.',
+    timerTitle: 'Waktu habis ⏱️',
+    timerBody: 'Timer kamu sudah selesai.',
     testBody: 'Notifikasi uji coba ✅ Begini tampilan notifikasinya.',
     dayFallbackTitle: 'Jadwal latihan hari ini',
     dayRoutineSuffix: 'hari ini',
@@ -29,6 +35,8 @@ const COPY = {
   cs: {
     restTitle: 'Pauza skončila 💪',
     restBody: 'Čas na další sérii.',
+    timerTitle: 'Čas vypršel ⏱️',
+    timerBody: 'Časovač doběhl.',
     testBody: 'Testovací oznámení ✅ Takhle vypadají upozornění.',
     dayFallbackTitle: 'Dnes máš v plánu trénink',
     dayRoutineSuffix: 'dnes',
@@ -59,9 +67,11 @@ export function routineEmoji(value) {
 }
 
 /** The end of a rest. `next` is the set waiting ("Bench press, 80 kg × 8"), already in the
- *  person's language from the app; without one the body says it in general words. */
-export function restTimerPush(lang, next = null) {
+ *  person's language from the app; without one the body says it in general words. `timer`: the
+ *  workout's own Timer ran out, not a rest, so the push says that and names no set. */
+export function restTimerPush(lang, next = null, { timer = false } = {}) {
   const copy = copyFor(lang);
+  if (timer) return { title: copy.timerTitle, body: copy.timerBody, tag: 'rest-timer' };
   const line = cleanNext(next);
   return { title: copy.restTitle, body: line || copy.restBody, tag: 'rest-timer' };
 }

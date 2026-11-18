@@ -45,7 +45,8 @@ const autoMustWait = () => {
 // timer this browser's own: a desktop tab finishing its rest on screen used to cancel the
 // alert the phone in the gym was waiting for, because the server held one timer per account.
 // `next` names the set waiting ("Bench press, 80 kg × 8"), which the push carries as its body.
-const pushRestTimer = (sec, next = '') => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId(), ...(next ? { next } : {}) }) }).catch(() => {}) }
+// `timer`: the workout Timer's countdown, whose push says the time is up instead.
+const pushRestTimer = (sec, next = '', timer = false) => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId(), ...(next ? { next } : {}), ...(timer ? { timer: true } : {}) }) }).catch(() => {}) }
 // The set this rest is for, in a line (lib/rest-next.js): read when the end is booked or shown,
 // so a set edited during the rest is named as it now stands.
 const nextLine = () => { try { return restNextLine(useStore.getState().S, useUI.getState().timer?.forIdx) } catch { return '' } }
@@ -60,19 +61,19 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   // The tour's practice workout (useStore enterTourSandbox) rests on screen only.
   if (useStore.getState().tourSandbox) return
   const switching = kind === 'switch'
-  const line = switching ? '' : nextLine()
-  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line); return }
+  const clock = !!useUI.getState().timer?.clock   // the workout Timer: no hold after it, no next set to name
+  const line = switching || clock ? '' : nextLine()
+  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line, clock); return }
   const { S } = useStore.getState()
   // The rest before a hold that starts by itself: its end is the count-in, and the alerts after
   // it (go, hold done, the next ones) are booked with it, for a phone that stays locked.
-  const clock = !!useUI.getState().timer?.clock   // the workout Timer: no hold after it, no next set to name
   const next = clock ? null : autoPeek()
   const chain = next ? chainCues({ start: 'rest', at: endsAt, name: next.label, plan: next.plan, forecast: autoForecast(next), words: autoWords }) : null
   armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : clock ? t('Time’s up.') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
-      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line)
+      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line, clock)
     })
 }
 
@@ -112,7 +113,8 @@ const restAlertsOn = async reg => {
   try { return !!(await reg?.pushManager?.getSubscription?.()) } catch { return false }
 }
 
-const maybeRestNotification = async () => {
+// `title` is read from the countdown that ended, before the awaits below: by then another may run.
+const maybeRestNotification = async title => {
   if (!notificationsSupported()) return
   if (!document.hidden && document.visibilityState !== 'hidden') return
   try {
@@ -126,7 +128,6 @@ const maybeRestNotification = async () => {
     // iOS ignores the tag replacement (issue #172): close the previous one by hand, as the
     // worker does on a push, or the end of a rest leaves two banners stacked there.
     try { for (const n of (await reg?.getNotifications?.({ tag: 'rest-timer' })) || []) n.close() } catch { /* no getNotifications: the tag is all there is */ }
-    const title = restOverTitle(nextLine())
     if (reg?.showNotification) { reg.showNotification(title, opts); return }
     new Notification(title, opts)
   } catch {
@@ -279,7 +280,7 @@ const runRest = (set, get) => {
       // The native alarm is left armed: this tick can come a little early, and with the screen
       // locked it never runs at all.
       get().toast(tm.clock ? t('Time’s up.') : t('Rest’s over. Next set!'))
-      if (!MOBILE) maybeRestNotification()
+      if (!MOBILE) maybeRestNotification(tm.clock ? t('Time’s up.') : restOverTitle(nextLine()))
       cancelPushRestTimer()
       stopRestTicking()
       set({ timer: { ...tm, left: 0, ready: true } })

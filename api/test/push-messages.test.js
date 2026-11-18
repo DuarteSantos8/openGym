@@ -20,6 +20,19 @@ test('localizes every server-generated notification in pt-BR', () => {
   });
 });
 
+test('the workout Timer\'s end says the time is up and names no next set', () => {
+  assert.deepEqual(restTimerPush('en', 'Bench press, 80 kg × 8', { timer: true }), {
+    title: 'Time’s up ⏱️',
+    body: 'Your timer has finished.',
+    tag: 'rest-timer',
+  });
+  for (const lang of ['pt-BR', 'id', 'cs']) {
+    const p = restTimerPush(lang, null, { timer: true });
+    assert.notEqual(p.title, restTimerPush(lang).title);
+    assert.ok(p.body);
+  }
+});
+
 test('localizes every server-generated notification in id', () => {
   assert.deepEqual(restTimerPush('id'), {
     title: 'Istirahat selesai 💪',
