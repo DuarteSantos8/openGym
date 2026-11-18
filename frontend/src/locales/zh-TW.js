@@ -2859,6 +2859,12 @@ export default {
   'Added to “{0}”': '已加入「{0}」',
   'Add it to “{1}”': '加入「{1}」',
   'Add them to “{1}”': '全部加入「{1}」',
+  'Changed in this workout': '本次訓練有變動',
+  '{0} swapped': '替換 {0} 個',
+  'new order': '新順序',
+  'Update “{0}”': '更新「{0}」',
+  'Updated “{0}”': '已更新「{0}」',
+  '“{0}” changed in the meantime, so it was left as it is.': '「{0}」在這期間已有變動，所以維持原樣。',
   'Thinking about your question…': '正在思考你的問題…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': '這是展示版，我背後沒有 AI 模型。在你自己的伺服器上，我會根據你的計畫、最近幾次訓練和你正在進行的訓練，回答像「{0}」這樣的問題。',
 

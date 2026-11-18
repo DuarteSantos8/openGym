@@ -2870,6 +2870,12 @@ export default {
   'Added to “{0}”': 'Добавлено в «{0}»',
   'Add it to “{1}”': 'Добавить в «{1}»',
   'Add them to “{1}”': { one: 'Добавить в «{1}»', few: 'Добавить все в «{1}»', many: 'Добавить все в «{1}»' },
+  'Changed in this workout': 'Изменено в этой тренировке',
+  '{0} swapped': { one: '{0} замена', few: '{0} замены', many: '{0} замен', other: '{0} замены' },
+  'new order': 'новый порядок',
+  'Update “{0}”': 'Обновить «{0}»',
+  'Updated “{0}”': 'Обновлено: «{0}»',
+  '“{0}” changed in the meantime, so it was left as it is.': '«{0}» за это время изменилась, поэтому её оставили как есть.',
   'Thinking about your question…': 'Думаю над вашим вопросом…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Это демо, поэтому за мной нет модели ИИ. На вашем собственном сервере я отвечаю на вопросы вроде «{0}», учитывая ваш план, последние тренировки и тренировку, которую вы делаете сейчас.',
 
