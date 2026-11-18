@@ -34,7 +34,7 @@ export function initWeighInSource(load = readFile, onChange = onHealthChange) {
 export const weighInsFromHealth = S => reading && isOn(S, 'health')
 
 const snap = () => reading
-/** Calls `cb` whenever weigh-ins start or stop coming from the health store only. */
+/** Calls `cb` when the read's switch changes. Not on a Health module pause, so follow the profile too (as runLink does). */
 export const subscribe = cb => { subs.add(cb); return () => subs.delete(cb) }
 export function useWeighInsFromHealth(S) {
   return useSyncExternalStore(subscribe, snap, snap) && isOn(S, 'health')
