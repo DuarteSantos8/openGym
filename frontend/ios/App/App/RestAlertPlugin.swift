@@ -259,6 +259,9 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     private func beginSound(_ kind: CueAudioLedger.Kind, onSilent: Bool) -> Int {
         let (id, step) = ledger.begin(kind, onSilent: onSilent)
         apply(step)
+        // Whatever happened above, never sound in .soloAmbient (the session iOS starts an app in,
+        // and the one WebKit can leave behind): it stops the music. .ambient mixes with it.
+        if AVAudioSession.sharedInstance().category == .soloAmbient { RestAlertPlugin.mixWithMusic() }
         return id
     }
 
@@ -277,7 +280,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 try session.setActive(true)
                 ledger.didActivate(shape)
             } catch {
-                // Played anyway, without the duck; the session stays the mixing kind it was.
+                // Played anyway, without the duck, in the mixing kind.
+                RestAlertPlugin.mixWithMusic()
             }
         case .deactivate(let grace):
             DispatchQueue.main.asyncAfter(deadline: .now() + grace) { self.letGo(attempt: 0) }

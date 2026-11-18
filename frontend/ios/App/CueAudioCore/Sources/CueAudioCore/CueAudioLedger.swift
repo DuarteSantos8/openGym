@@ -27,11 +27,14 @@ public struct CueSessionShape: Equatable {
 
     /// While something sounds. `onSilent` (Settings → "Play even on silent") rings through the
     /// switch; `speechOnly` picks the spoken-prompt mode, which only .playback offers.
+    /// Without it the sound is plain .ambient: iOS takes duckOthers only with .playback (and
+    /// .playAndRecord, .multiRoute), so .ambient with it was refused and the sound played in the
+    /// session iOS starts every app in, .soloAmbient, which stops the music.
     public static func sounding(onSilent: Bool, speechOnly: Bool) -> CueSessionShape {
         if onSilent {
             return CueSessionShape(category: .playback, mode: speechOnly ? .voicePrompt : .standard, mixWithOthers: true, duckOthers: true)
         }
-        return CueSessionShape(category: .ambient, mode: .standard, mixWithOthers: false, duckOthers: true)
+        return CueSessionShape(category: .ambient, mode: .standard, mixWithOthers: false, duckOthers: false)
     }
 
     /// True for every shape that leaves other apps playing (the whole point of this file).

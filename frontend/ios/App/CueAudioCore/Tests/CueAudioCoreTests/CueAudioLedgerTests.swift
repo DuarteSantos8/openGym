@@ -20,7 +20,8 @@ final class CueAudioLedgerTests: XCTestCase {
             for speechOnly in [false, true] {
                 let s = CueSessionShape.sounding(onSilent: onSilent, speechOnly: speechOnly)
                 XCTAssertTrue(s.mixes, "onSilent \(onSilent) speech \(speechOnly)")
-                XCTAssertTrue(s.duckOthers)
+                // Ducking only where iOS allows it: .playback.
+                XCTAssertEqual(s.duckOthers, onSilent)
                 XCTAssertEqual(s.category, onSilent ? .playback : .ambient)
             }
         }
