@@ -378,8 +378,8 @@ describe('iPhone: the rest tone never stops the music', () => {
     expect(swift).toMatch(/category == \.soloAmbient \{\s*if let shape = ledger\.activeShape, shape\.category == \.playback \{ apply\(\.activate\(shape\)\) \} else \{ RestAlertPlugin\.mixWithMusic\(\) \}/)
     // a refused activation: the category that took stays (onSilent keeps .playback) and is not
     // recorded as active, so the next cue tries again; a refused category gets the mixing kind
-    expect(swift).toMatch(/\} catch \{[^}]*?if session\.category != shape\.avCategory \{\s*RestAlertPlugin\.mixWithMusic\(\)\s*ledger\.didActivate\(\.resting\)/)
-    expect(swift).not.toMatch(/\} catch \{[^}]*?ledger\.didActivate\(shape\)/)
+    expect(swift).toMatch(/\} catch \{[^}]*?if session\.category != shape\.avCategory \{ RestAlertPlugin\.mixWithMusic\(\) \}\s*ledger\.didDeactivate\(\)/)
+    expect(swift).not.toMatch(/\} catch \{[^}]*?ledger\.didActivate\(/)
     expect(swift).toMatch(/private func letGo\(attempt: Int\)[\s\S]*?setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)[\s\S]*?mixWithMusic/)
   })
 
