@@ -5958,4 +5958,7 @@ export default {
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "التمارين المنتهية وقياسات الوزن والخصر، من هذا الهاتف فقط.",
+  "Read waist": "قراءة الخصر",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "الخصر المحفوظ في Apple صحتي يملأ اليوم الفارغ. وما تكتبه بنفسك يفوز دائمًا.",
 }

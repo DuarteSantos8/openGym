@@ -22,10 +22,10 @@ const mocks = vi.hoisted(() => {
   state.readGrant = true
   state.enableRead = vi.fn(async kind => {
     if (!state.readGrant) return { ok: false, reason: 'denied' }
-    state.health = { ...state.health, [kind === 'hr' ? 'readHr' : 'readWeight']: true }
+    state.health = { ...state.health, [kind === 'hr' ? 'readHr' : kind === 'waist' ? 'readWaist' : 'readWeight']: true }
     return { ok: true, health: state.health }
   })
-  state.disableRead = vi.fn(async kind => { state.health = { ...state.health, [kind === 'hr' ? 'readHr' : 'readWeight']: false }; return state.health })
+  state.disableRead = vi.fn(async kind => { state.health = { ...state.health, [kind === 'hr' ? 'readHr' : kind === 'waist' ? 'readWaist' : 'readWeight']: false }; return state.health })
   state.allowBirthDate = vi.fn(async () => {})
   state.menuSheet = vi.fn()
   state.toast = vi.fn()
@@ -164,6 +164,23 @@ describe('Settings — Apple Health', () => {
     expect(mocks.enableHealth).toHaveBeenCalledTimes(1)
     expect(mocks.toast).toHaveBeenCalledWith('Writing to Apple Health')
     expect(row('Open Apple Health')).toBeTruthy()
+  })
+
+  it('offers Read waist on the iPhone, and says the waist is written too', async () => {
+    await mount()
+    expect(row('Write to Apple Health').textContent).toContain('Finished workouts, weigh-ins and your waist, from this phone only.')
+    const sw = row('Read waist').querySelector('[role="switch"]')
+    expect(sw.getAttribute('aria-checked')).toBe('false')
+    await act(async () => { sw.click() })
+    expect(mocks.enableRead).toHaveBeenCalledWith('waist', expect.any(Function))
+    expect(row('Read waist').querySelector('[role="switch"]').getAttribute('aria-checked')).toBe('true')
+  })
+
+  it('leaves Read waist out on Android', async () => {
+    mocks.android = true
+    mocks.status = { status: 'available', granted: false }
+    await mount()
+    expect(row('Read waist')).toBeUndefined()
   })
 
   it('asks in Apple Health words before turning it off', async () => {

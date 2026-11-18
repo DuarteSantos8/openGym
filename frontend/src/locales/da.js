@@ -5843,4 +5843,7 @@ export default {
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Færdige træninger, vejninger og din talje, kun fra denne telefon.",
+  "Read waist": "Læs talje",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "En talje gemt i Apple Health udfylder en tom dag. Den, du selv skriver, vinder altid.",
 }

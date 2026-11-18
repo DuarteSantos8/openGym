@@ -2227,7 +2227,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
     } catch { toast(c.failed) }
     setBusy(false)
   }
-  const reading = h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport
+  const reading = h.readHr || h.readWeight || h.readBody || h.readWaist || h.readVitals || h.readSport
 
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
   const askOff = () => menuSheet({
@@ -2243,7 +2243,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
     <Section title={c.section}
       footer={[h.on && c.footer, h.on && ios && airpods && t('AirPods Pro 3 or Powerbeats Pro 2 in? Your iPhone measures the heart rate for every set, unless your Apple Watch is already on it.'), reading && (h.readWeight && h.wHistory ? t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.') : t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last 30 days. Older workouts stay as they are.'))].filter(Boolean).join(' ') || null}>
       <Row icon="heart" iconTint="var(--red)" title={c.write}
-        subtitle={t('Finished workouts and weigh-ins, from this phone only.')}>
+        subtitle={ios ? t('Finished workouts, weigh-ins and your waist, from this phone only.') : t('Finished workouts and weigh-ins, from this phone only.')}>
         <Switch checked={!!h.on} disabled={busy} onChange={v => (v ? turnOn() : askOff())} />
       </Row>
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
@@ -2260,6 +2260,10 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={ios ? t('Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.') : t('Body fat, lean mass, bone mass, body water and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.')}>
         <Switch checked={!!h.readBody} disabled={busy} onChange={toggleRead('body')} />
       </Row>
+      {ios && <Row icon="scale" iconTint="var(--teal)" title={t('Read waist')}
+        subtitle={t('A waist saved in Apple Health fills an empty day. One you type in yourself always wins.')}>
+        <Switch checked={!!h.readWaist} disabled={busy} onChange={toggleRead('waist')} />
+      </Row>}
       {/* Vitals (v1.4.5, lib/vitals.js): what the Daily form card and the check-in use. Explained
           before the system's own dialog, which asks for each of the four on its own. */}
       <Row icon="moon" iconTint="var(--indigo)" title={t('Sleep, resting heart rate, HRV and steps')}
@@ -2289,7 +2293,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
       </Row>}
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
-        onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readVitals ? 'vitals' : 'sport')(true)} />}
+        onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readWaist ? 'waist' : h.readVitals ? 'vitals' : 'sport')(true)} />}
       {(h.on || reading) && <Row icon="list" iconTint="var(--blue)" title={c.open}
         accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
     </Section>

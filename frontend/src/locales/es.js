@@ -5903,4 +5903,7 @@ export default {
   "Hide": "Ocultar",
   "Totals": "Totales",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Las flechas cambian el orden.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Entrenamientos terminados, pesajes y tu cintura, solo desde este teléfono.",
+  "Read waist": "Leer cintura",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Una cintura guardada en Apple Health rellena un día vacío. La que escribes tú siempre gana.",
 }

@@ -5982,4 +5982,7 @@ export default {
   "Hide": "লুকান",
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "শেষ করা ওয়ার্কআউট, ওজন আর কোমরের মাপ, শুধু এই ফোন থেকে।",
+  "Read waist": "কোমর পড়ুন",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Apple Health-এ সেভ করা কোমরের মাপ খালি দিনে বসে। আপনার নিজের লেখা মাপ সবসময় জেতে।",
 }

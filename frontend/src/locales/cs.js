@@ -5869,4 +5869,7 @@ export default {
   "Hide": "Skrýt",
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Dokončené tréninky, vážení a pas, jen z tohoto telefonu.",
+  "Read waist": "Číst pas",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Pas uložený v Apple Health vyplní prázdný den. Ten, který zadáš sám, vyhrává vždy.",
 }
