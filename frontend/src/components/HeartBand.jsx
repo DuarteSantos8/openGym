@@ -75,7 +75,7 @@ export default function HeartBand({ A }) {
         <span className="hband-now">
           <span className="hband-heart" aria-hidden="true">♥</span>
           <b>{last ? last.bpm : '–'}</b><small>{t('bpm')}</small>
-          {zone > 0 && <span className="hband-zone" style={zoneStyle}>Z{zone}</span>}
+          {zone > 0 && <span className="hband-zone" style={zoneStyle}>{t('Zone {0}', zone)}</span>}
         </span>
         {big
           ? curve && <span className="hband-avg">{t('Average {0} · Max {1} bpm', curve.avg, curve.max)}</span>
