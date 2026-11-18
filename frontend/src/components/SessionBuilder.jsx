@@ -7,6 +7,7 @@ import { exOr } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { groupOfTerm } from '../lib/muscle-filter.js'
 import { buildSession, swapPick, sessionRoutine, DURATIONS } from '../lib/session-builder.js'
+import { gymsOf, gymLabel, switchGym } from '../lib/gym-inventory.js'
 import { startBuiltSession, exerciseDetailSheet } from '../sheets.jsx'
 import { nav } from '../lib/nav.js'
 import { Thumb } from './Media.jsx'
@@ -46,11 +47,19 @@ export function SessionBuilder ({ terms, close }) {
     nav('/plan/r/' + r.id)
   }
   const empty = !session.picks.length
+  // Two or more gyms: say where you are right here. Picking one makes it the active gym and turns
+  // the equipment filter on, so the session is built from what that place has.
+  const gyms = gymsOf(S)
+  const gymId = S.equipFilterOn ? S.activeEquipId : ''
+  const pickGym = id => { setSwaps([]); update(s => { switchGym(s, id); s.equipFilterOn = true }) }
   return <div className="sb" data-session-builder>
     <h3 style={{ marginBottom: 2 }}>{t('Session for {0}', title)}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>
       {session.profileName ? t('Built from what “{0}” has.', session.profileName) : t('Built from the whole library. Pick a gym in Settings to narrow it.')}
     </div>
+    {gyms.length > 1 && <div style={{ marginBottom: 10 }}>
+      <Segmented value={gymId || ''} onChange={pickGym} options={gyms.map(g => ({ value: g.id, label: gymLabel(g) }))} />
+    </div>}
     <Segmented value={String(minutes)} onChange={v => { setSwaps([]); setMinutes(Number(v)) }}
       options={DURATIONS.map(m => ({ value: String(m), label: t('{0} min', m) }))} />
     {session.tired.length > 0 && <div className="sb-note small" data-sb-tired>

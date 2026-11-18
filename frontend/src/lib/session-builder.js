@@ -78,6 +78,13 @@ const NEEDS_BALL = /exercise ball|stability ball|swiss ball|bosu/i
 const BIG = new Set(['chest', 'lats', 'upper-back', 'quadriceps', 'gluteal', 'hamstring'])
 export const capOf = (m, alone) => (alone ? 4 : BIG.has(m) ? 3 : 2)
 
+/** Per-muscle fatigue as of `now`, the way the builder reads it; {} when the history cannot be read. */
+export function fatigueNow (S, now = Date.now()) {
+  const bw = Array.isArray(S?.bodyweight) ? lastBW(S) : null
+  const bodyweightKg = bw && bw.w > 0 ? (S.unit === 'lb' ? bw.w * LB_TO_KG : bw.w) : undefined
+  try { return fatigueOf(S?.workouts || [], now, { bodyweightKg, unit: S?.unit, activities: activityStimuli(S, now) }) || {} } catch { return {} }
+}
+
 /** The muscles the session is for: the filter's, minus the tired ones (unless that is all of them). */
 export function targetMuscles (terms, fatigue = {}) {
   const named = new Set((terms || []).filter(x => typeof x === 'string' && !x.startsWith('group:')))
@@ -112,10 +119,7 @@ export function estimateMinutes (cfgs) {
  * `today` keep it pure for tests. `exclude` holds ids to leave out (a pick swapped away).
  */
 export function buildSession (S, { terms = [], minutes = 40, seed = 1, now = Date.now(), today = null, exclude = [] } = {}) {
-  const bw = Array.isArray(S?.bodyweight) ? lastBW(S) : null
-  const bodyweightKg = bw && bw.w > 0 ? (S.unit === 'lb' ? bw.w * LB_TO_KG : bw.w) : undefined
-  let fatigue = {}
-  try { fatigue = fatigueOf(S?.workouts || [], now, { bodyweightKg, unit: S?.unit, activities: activityStimuli(S, now) }) || {} } catch { fatigue = {} }
+  const fatigue = fatigueNow(S, now)
   const { muscles, tired, fresh, allTired } = targetMuscles(terms, fatigue)
   const profile = activeProfile(S)
   const out = { picks: [], minutes: 0, muscles, tired: allTired ? [] : tired, allTired, profileName: profile?.name || null }
