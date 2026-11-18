@@ -5902,4 +5902,8 @@ export default {
   "Average {0} · Max {1} bpm": "औसत {0} · अधिकतम {1} bpm",
   "Heart rate curve": "हृदय गति वक्र",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "प्रगति पट्टी के नीचे एक पंक्ति, जब तक आपकी Apple Watch इसे मापती है। पूरे सत्र के लिए टैप करें।",
+  'Average bpm': 'औसत bpm',
+  'Last session': 'पिछला सत्र',
+  '{0} in zones 4 and 5': 'ज़ोन 4 और 5 में {0}',
+  "Heart rate, one reading a minute (bpm)": "हृदय गति, हर मिनट एक माप (bpm)",
 }

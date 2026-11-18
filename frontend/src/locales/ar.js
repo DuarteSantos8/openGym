@@ -5957,4 +5957,8 @@ export default {
   "Average {0} · Max {1} bpm": "المتوسط {0} · الأقصى {1} نبضة/د",
   "Heart rate curve": "منحنى النبض",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "سطر تحت شريط التقدّم بينما تقيسه Apple Watch. المسه لرؤية الحصة كاملة.",
+  'Average bpm': 'متوسط النبض',
+  'Last session': 'آخر جلسة',
+  '{0} in zones 4 and 5': '{0} في المنطقتين 4 و5',
+  "Heart rate, one reading a minute (bpm)": "نبض القلب، قراءة واحدة كل دقيقة (نبضة/دقيقة)",
 }

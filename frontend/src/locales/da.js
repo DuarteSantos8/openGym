@@ -5842,4 +5842,8 @@ export default {
   "Average {0} · Max {1} bpm": "Gns. {0} · maks. {1} bpm",
   "Heart rate curve": "Pulskurve",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "En linje under statuslinjen, mens dit Apple Watch måler den. Tryk for hele træningen.",
+  "Average bpm": "Gns. puls",
+  "Last session": "Seneste træning",
+  "{0} in zones 4 and 5": "{0} i zone 4 og 5",
+  "Heart rate, one reading a minute (bpm)": "Puls, én måling i minuttet (bpm)",
 }

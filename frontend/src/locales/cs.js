@@ -5868,4 +5868,8 @@ export default {
   "Average {0} · Max {1} bpm": "Průměr {0} · max {1} tepů/min",
   "Heart rate curve": "Křivka tepu",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Řádek pod ukazatelem postupu, dokud ho Apple Watch měří. Klepni pro celý trénink.",
+  "Average bpm": "Průměrný tep",
+  "Last session": "Poslední trénink",
+  "{0} in zones 4 and 5": "{0} v zónách 4 a 5",
+  "Heart rate, one reading a minute (bpm)": "Tep, jedna hodnota za minutu (tepů/min)",
 }

@@ -5902,4 +5902,8 @@ export default {
   "Average {0} · Max {1} bpm": "Moyenne {0} · Max {1} bpm",
   "Heart rate curve": "Courbe du pouls",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Une ligne sous la barre de progression pendant que ton Apple Watch le mesure. Touche-la pour toute la séance.",
+  'Average bpm': 'BPM moyen',
+  'Last session': 'Dernière séance',
+  '{0} in zones 4 and 5': '{0} en zones 4 et 5',
+  "Heart rate, one reading a minute (bpm)": "Pouls, une mesure par minute (bpm)",
 }

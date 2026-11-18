@@ -5981,4 +5981,8 @@ export default {
   "Average {0} · Max {1} bpm": "গড় {0} · সর্বোচ্চ {1} bpm",
   "Heart rate curve": "হৃদস্পন্দনের রেখা",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "অগ্রগতি দণ্ডের নিচে একটি লাইন, যতক্ষণ আপনার Apple Watch এটি মাপে। পুরো সেশন দেখতে ট্যাপ করুন।",
+  'Average bpm': 'গড় bpm',
+  'Last session': 'শেষ সেশন',
+  '{0} in zones 4 and 5': 'জোন ৪ ও ৫-এ {0}',
+  "Heart rate, one reading a minute (bpm)": "হৃদস্পন্দন, প্রতি মিনিটে একটি মান (bpm)",
 }

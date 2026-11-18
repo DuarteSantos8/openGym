@@ -5895,4 +5895,8 @@ export default {
   "Average {0} · Max {1} bpm": "平均 {0} · 最高 {1} bpm",
   "Heart rate curve": "心率曲線",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch 測量時，在進度條下方顯示一行。輕點查看整場訓練。",
+  'Average bpm': '平均心率',
+  'Last session': '上次訓練',
+  '{0} in zones 4 and 5': '在第 4、5 區 {0}',
+  "Heart rate, one reading a minute (bpm)": "心率，每分鐘一個讀數（bpm）",
 }

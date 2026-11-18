@@ -5899,4 +5899,8 @@ export default {
   "Average {0} · Max {1} bpm": "Середнє {0} · Макс. {1} уд/хв",
   "Heart rate curve": "Крива пульсу",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Рядок під смугою прогресу, поки Apple Watch його вимірює. Торкнися — і побачиш усе тренування.",
+  'Average bpm': 'Середній пульс',
+  'Last session': 'Останнє тренування',
+  '{0} in zones 4 and 5': '{0} у зонах 4 і 5',
+  "Heart rate, one reading a minute (bpm)": "Пульс, одне значення на хвилину (уд/хв)",
 }

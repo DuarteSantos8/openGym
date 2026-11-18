@@ -5868,4 +5868,8 @@ export default {
   "Average {0} · Max {1} bpm": "میانگین {0} · بیشینه {1} ضربان در دقیقه",
   "Heart rate curve": "منحنی ضربان قلب",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "یک خط زیر نوار پیشرفت تا وقتی Apple Watch آن را اندازه می‌گیرد. برای کل جلسه رویش بزن.",
+  "Average bpm": "میانگین ضربان",
+  "Last session": "آخرین جلسه",
+  "{0} in zones 4 and 5": "{0} در ناحیه‌های ۴ و ۵",
+  "Heart rate, one reading a minute (bpm)": "ضربان قلب، یک خوانش در دقیقه (ضربان در دقیقه)",
 }

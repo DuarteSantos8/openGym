@@ -3,10 +3,12 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
 import { heartCurve } from '../lib/heart-rate.js'
+import { currentSpanStart } from '../lib/heart-steps.js'
 import { readWorkoutHeart } from '../lib/health-sync.js'
 import { hrMaxOf, hrZone, DEFAULT_HR_MAX } from '../lib/live-tiles.js'
 import { feedHeart, heartOrigin, heartView, lastHeart, onSessionHeart, sessionHeart, setHeartView, watchCurve } from '../lib/session-heart.js'
 import Icon from './Icon.jsx'
+import { Segmented } from './ui.jsx'
 import HeartGraph from './HeartGraph.jsx'
 
 /** The session's heart rate as it comes in (lib/session-heart.js), and the band's size. */
@@ -20,6 +22,10 @@ export function useSessionHeart() {
   }, [])
   return { heart, view }
 }
+
+// What the curve covers: the exercise in progress (from the end of the one before it, its rest
+// included) or the whole workout. Kept for the page's life, the exercise by default.
+let scopeNow = 'ex'
 
 // The band and the header's ♥ both change the size: one place tells both.
 const viewListeners = new Set()
@@ -36,6 +42,8 @@ export default function HeartBand({ A }) {
   const S = useStore(s => s.S)
   const { heart, view } = useSessionHeart()
   const [now, setNow] = useState(Date.now)
+  const [scope, setScope] = useState(scopeNow)
+  const pickScope = v => { scopeNow = v; setScope(v) }
   useEffect(() => {
     const tick = setInterval(() => { if (!document.hidden) setNow(Date.now()) }, 5000)
     return () => clearInterval(tick)
@@ -57,8 +65,14 @@ export default function HeartBand({ A }) {
   }, [A?.id, A?.start, A?.pausedMs])
 
   if (!watchCurve(heart, A?.id) || view === 'pill') return null
-  const origin = heartOrigin(A)
-  const curve = heartCurve(heart.samples, origin, Math.max(now, heart.samples[heart.samples.length - 1][0]))
+  const whole = heartOrigin(A)
+  // The exercise's curve once it has a reading of its own; until then, the workout's.
+  const exFrom = currentSpanStart(A, whole)
+  const end = Math.max(now, heart.samples[heart.samples.length - 1][0])
+  const exCurve = heartCurve(heart.samples, exFrom, end)
+  const onEx = scope === 'ex' && !!exCurve
+  const origin = onEx ? exFrom : whole
+  const curve = onEx ? exCurve : heartCurve(heart.samples, whole, end)
   const last = lastHeart(heart, now)
   const max = hrMaxOf(S) || DEFAULT_HR_MAX
   const zone = last ? hrZone(last.bpm, S) || 0 : 0
@@ -84,6 +98,8 @@ export default function HeartBand({ A }) {
       {!big && <button type="button" className="iconbtn hband-fold" aria-label={t('Show less')} title={t('Show less')}
         onClick={() => showHeartView('pill')}><Icon name="chevronUp" /></button>}
       {big && curve && <HeartGraph samples={curve.points} max={max} zone={zone} marks={marks} />}
+      {big && exFrom > whole && <Segmented className="seg-inline hband-scope" value={scope} onChange={pickScope}
+        options={[{ value: 'ex', label: t('Exercise') }, { value: 'all', label: t('Workout') }]} />}
     </div>
   )
 }

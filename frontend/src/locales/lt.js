@@ -5898,4 +5898,8 @@ export default {
   "Average {0} · Max {1} bpm": "Vid. {0} · daug. {1} k./min",
   "Heart rate curve": "Pulso kreivė",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Eilutė po pažangos juosta, kol Apple Watch jį matuoja. Paliesk, kad matytum visą treniruotę.",
+  "Average bpm": "Vid. pulsas",
+  "Last session": "Paskutinė treniruotė",
+  "{0} in zones 4 and 5": "{0} 4 ir 5 zonose",
+  "Heart rate, one reading a minute (bpm)": "Pulsas, vienas matavimas per minutę (k./min)",
 }

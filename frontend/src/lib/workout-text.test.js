@@ -116,4 +116,16 @@ describe('workoutText exercise names per language', () => {
     _setLangState('en', {}, null, null)
     expect(nameLine()).toBe('Barbell Bench Press')
   })
+
+  // A workout copied for a chat: the heart rate as numbers, the session's and a reading a minute.
+  it('adds the heart rate when the hub had it', () => {
+    const w = {
+      id: 'w2', d: '2026-11-09', start: 0, end: 3 * 60000, name: 'Push', vol: 0,
+      entries: [{ id: 'pushup', target: { mode: 'reps' }, sets: [{ w: 0, r: 12, done: true }] }],
+    }
+    const text = workoutText(w, { unit: 'kg', nameOf: e => e.id, heart: { avg: 140, max: 172, perMinute: [120, null, 165] } })
+    expect(text).toContain('Heart rate: Average 140 · Max 172 bpm')
+    expect(text).toContain('Heart rate, one reading a minute (bpm):\n120 – 165')
+    expect(workoutText(w, { unit: 'kg', nameOf: e => e.id })).not.toContain('Heart rate')
+  })
 })

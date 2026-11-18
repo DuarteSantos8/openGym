@@ -72,6 +72,83 @@ describe('exercise history sheet', () => {
     expect(host.textContent).toContain('70 kg')
   })
 
+  it('compares the heart on sets of one format and lays the last sessions over each other', () => {
+    const timed = (i, sets) => ({ ...session(i, []), entries: [{ id: EX, target: { mode: 'time', sec: 60 }, sets }] })
+    const set = (sec, avg, max, rest) => ({ sec, done: true, hr: { avg, max }, ...(rest ? { restHr: { avg: rest, max: rest + 4 } } : {}) })
+    useStore.setState(s => ({ S: { ...s.S, workouts: [
+      timed(0, [set(60, 160, 176, 120), set(60, 164, 180, 126)]),
+      timed(2, [set(60, 150, 170, 112), set(30, 140, 150)]),
+      timed(4, [set(60, 152, 171)]),
+      timed(6, [set(30, 138, 149)]),
+    ] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Heart rate').click())
+    const heart = host.querySelector('.exercise-heart')
+    expect(heart).toBeTruthy()
+    // 1:00 is in three sessions, 0:30 in two: 1:00 first and picked
+    const formats = [...heart.querySelectorAll('.chips')[0].querySelectorAll('button')]
+    expect(formats.map(b => b.textContent)).toEqual(['1:00', '0:30'])
+    expect(formats[0].getAttribute('aria-pressed')).toBe('true')
+    // the tiles show the last session: 152 average, 171 max, no rest reading
+    expect([...heart.querySelectorAll('.heart-tiles b')].map(b => b.textContent)).toEqual(['152', '171', '–'])
+    // the last three sessions laid over each other at first, set after set without a kept curve,
+    // and their cards in the list below marked as picked
+    expect(host.querySelectorAll('[data-pick][aria-pressed="true"]')).toHaveLength(3)
+    expect(heart.querySelectorAll('svg.heart-graph polyline')).toHaveLength(1)
+    expect(heart.querySelectorAll('svg.heart-graph circle')).toHaveLength(4)
+    // the other format compares its own sets only
+    act(() => formats[1].click())
+    expect([...heart.querySelectorAll('.heart-tiles b')].map(b => b.textContent)).toEqual(['138', '149', '–'])
+  })
+
+  it('keeps the heart on its own tab, the sessions in view under both', () => {
+    useStore.setState(s => ({ S: { ...s.S, workouts: [
+      session(0, [{ w: 60, r: 5, done: true }]),
+      session(2, [{ w: 60, r: 5, done: true, hr: { avg: 150, max: 170 } }]),
+    ] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    expect([...host.querySelectorAll('.seg button')].map(b => b.textContent).slice(0, 2)).toEqual(['Overview', 'Heart rate'])
+    expect(host.querySelector('.exercise-heart')).toBeNull()
+    expect(host.textContent).toContain('Best:')
+    act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Heart rate').click())
+    expect(host.querySelector('.exercise-heart')).toBeTruthy()
+    expect(host.textContent).not.toContain('Best:')
+    expect(host.querySelectorAll('.list .item')).toHaveLength(2)
+  })
+
+  it('has no tabs for an exercise without a heart reading', () => {
+    useStore.setState(s => ({ S: { ...s.S, workouts: [session(0, [{ w: 60, r: 5, done: true }])] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    expect([...host.querySelectorAll('.seg button')].map(b => b.textContent)).not.toContain('Heart rate')
+  })
+
+  it('picks the sessions to lay over each other from their cards in the list, within a window of time', () => {
+    const now = Date.now()
+    const timed = (daysAgo, avg) => ({ id: 'd' + daysAgo, d: new Date(now - daysAgo * DAY).toISOString().slice(0, 10), start: now - daysAgo * DAY, end: now - daysAgo * DAY + 3600000,
+      name: 'Intervals', entries: [{ id: EX, target: { mode: 'time', sec: 60 }, sets: [{ sec: 60, done: true, hr: { avg, max: avg + 10 } }] }] })
+    useStore.setState(s => ({ S: { ...s.S, workouts: [1, 5, 9, 40, 70, 200].map((d, i) => timed(d, 140 + i)) } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Heart rate').click())
+    const dots = () => host.querySelectorAll('svg.heart-graph circle').length
+    const cards = () => [...host.querySelectorAll('[data-pick]')]
+    expect(cards()).toHaveLength(6)
+    expect(dots()).toBe(3)
+    // dropping the newest, then picking the one two hundred days back
+    act(() => cards()[0].click())
+    expect(dots()).toBe(2)
+    act(() => cards().at(-1).click())
+    expect(dots()).toBe(3)
+    expect(cards().at(-1).getAttribute('aria-pressed')).toBe('true')
+    // the last month only: three sessions to pick from, the last three picked again
+    act(() => [...host.querySelectorAll('.exercise-heart .seg button')].find(b => b.textContent === '1M').click())
+    expect(cards()).toHaveLength(3)
+    expect(dots()).toBe(3)
+  })
+
   it('offers a Bodyweight curve only with two sessions that have a body weight, and Best becomes a percentage', () => {
     const rel = (i, w, bw) => ({ ...session(i, [{ w, r: 5, done: true }]), bw })
     useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [session(0, [{ w: 60, r: 5, done: true }]), session(2, [{ w: 70, r: 5, done: true }])] } }))

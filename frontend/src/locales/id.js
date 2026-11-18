@@ -5867,4 +5867,8 @@ export default {
   "Average {0} · Max {1} bpm": "Rata-rata {0} · Maks {1} bpm",
   "Heart rate curve": "Kurva detak jantung",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Satu baris di bawah bilah kemajuan selama Apple Watch-mu mengukurnya. Ketuk untuk seluruh sesi.",
+  "Average bpm": "Rata-rata bpm",
+  "Last session": "Sesi terakhir",
+  "{0} in zones 4 and 5": "{0} di zona 4 dan 5",
+  "Heart rate, one reading a minute (bpm)": "Detak jantung, satu bacaan per menit (bpm)",
 };

@@ -5905,4 +5905,8 @@ export default {
   "Average {0} · Max {1} bpm": "Átlag {0} · Max. {1} bpm",
   "Heart rate curve": "Pulzusgörbe",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Egy sor a folyamatjelző alatt, amíg az Apple Watch méri. Koppints rá az egész edzésért.",
+  'Average bpm': 'Átlag bpm',
+  'Last session': 'Utolsó edzés',
+  '{0} in zones 4 and 5': '{0} a 4. és 5. zónában',
+  "Heart rate, one reading a minute (bpm)": "Pulzus, percenként egy érték (bpm)",
 }
