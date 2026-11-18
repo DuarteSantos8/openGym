@@ -128,6 +128,8 @@ const prefetchViews = () => {
   if (typeof globalThis.requestIdleCallback === 'function') globalThis.requestIdleCallback(run, { timeout: 4000 })
   else setTimeout(run, 1500)
 }
+import { initMusicReturn } from './lib/music/index.js'
+import MusicDock from './components/MusicDock.jsx'
 
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
@@ -273,6 +275,12 @@ function Shell() {
     if (MOBILE || !user || !ready) return
     syncPushSubscription().catch(() => {})
   }, [user?.id, ready])
+  // Back from Spotify's sign-in (Settings → Features → Music player): the page's own address in a
+  // browser, the app's opengym://spotify link on the phone (lib/music/index.js).
+  useEffect(() => initMusicReturn(ok => {
+    useUI.getState().toast(ok ? t('Spotify connected') : t('Could not connect to Spotify.'))
+    window.dispatchEvent(new Event('opengym:spotify'))
+  }), [])
   // Opened from a device-link QR code (#95): once boot knows who is here, the sheet that redeems
   // it opens by itself — over the sign-in screen, or over the app for a guest or a signed-in
   // browser. Once per visit; closed, the code stays for the sign-in screen's own button.
@@ -455,6 +463,7 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {!noTabs && <MusicDock />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
       <RestTimer />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}

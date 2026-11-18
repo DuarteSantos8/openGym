@@ -143,6 +143,7 @@ const TAGS = {
   // A tag missing from this map renders nowhere at all, silently, so every tag in the
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
+  music: { title: 'Music', side: 'Spotify on the account, for the workout' },
   integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
   tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
   mcp: { title: 'MCP connector', side: 'OAuth sign-in for Claude &amp; ChatGPT (MCP)' },

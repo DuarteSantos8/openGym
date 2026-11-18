@@ -45,6 +45,7 @@ import { integrationRoutes } from './integrations/routes.js';
 import { buildIcs } from './integrations/calendar.js';
 import { deriveKey, seal as sealText, open as openSealed } from './integrations/crypto.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { spotifyConfig, createSpotify, ACTIONS as SPOTIFY_ACTIONS } from './music/spotify.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 import { createOrgStore } from './trainers/org-store.js';
 import { trainerRoutes } from './trainers/routes.js';
@@ -2181,6 +2182,28 @@ try { MEDIA.cleanTmp(); } catch (e) { console.error('media: boot cleanup failed'
 // Per profile, not per address: every upload is signed in, and behind a proxy one address can be
 // a whole household. The hourly budget is generous (an import of a backup re-uploads everything
 // at once); the two-in-flight cap in media.js is what keeps one phone from holding many sockets.
+/* ---------- Spotify on the account (api/music/spotify.js) ----------
+ * Offered when the operator set SPOTIFY_CLIENT_ID. Each profile connects its own Spotify account
+ * once; every device signed in to it then shows and steers what plays in a workout's music bar. */
+const SPOTIFY_CFG = spotifyConfig(process.env, ORIGIN);
+// The cookie that ties a browser's Spotify sign-in to the browser that started it.
+const SPOTIFY_BIND = 'og_spotify_bind';
+const SPOTIFY = SPOTIFY_CFG && createSpotify(SPOTIFY_CFG, {
+  seal: obj => coachConfig.encrypt(obj), unseal: blob => coachConfig.decrypt(blob), save: () => saveDb()
+});
+// A tap is one request; a thumb on Next for an hour is not a person.
+const SPOTIFY_BURST = createWindow({ max: 600, windowMs: 3600000 });
+const SPOTIFY_STATUS = { auth: 409, premium: 403, device: 404, busy: 429 };
+function spotifyFailure(res, e) {
+  if (!e || !e.code) { console.error('spotify', e); return json(res, 502, { error: 'spotify did not answer', code: 'failed' }); }
+  json(res, SPOTIFY_STATUS[e.code] || 502, { error: e.message, code: e.code });
+}
+// Where a browser goes back to after the sign-in: the app's own page on this instance, nowhere else.
+function spotifyBack(v) {
+  const s = String(v || '');
+  try { const u = new URL(s); return u.origin === new URL(ORIGIN).origin ? u.origin + u.pathname : null; } catch { return null; }
+}
+
 const MEDIA_BURST = createWindow({ max: MEDIA_LIMITS.uploadsPerHour, windowMs: 3600000 });
 // Deleting everything unreferenced is what "Reset everything" does; ten an hour is plenty.
 const MEDIA_SWEEPS = createWindow({ max: 10, windowMs: 3600000 });
@@ -3223,6 +3246,79 @@ const routes = {
     }
     const done = commitState(user.id, cur, body.state, { overRead: body.baseRev != null && body.baseRev === curRev, stamped: body.stamped === true });
     json(res, done.status, done.body);
+  },
+
+  // Spotify on the account. `available` false: the instance offers no Spotify (no Client ID), and
+  // the app falls back to a Spotify app of the person's own on each device.
+  'GET /api/music/spotify': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 200, { available: false, connected: false });
+    json(res, 200, SPOTIFY.status(user));
+  },
+  // The sign-in address. `app: true` from the phone app, which comes back by its opengym://spotify
+  // link; a browser sends `back`, its own address on this instance.
+  'POST /api/music/spotify/connect': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const body = await readBody(req);
+    const app = body.app === true;
+    const { url, bind } = SPOTIFY.start(user, { app, back: spotifyBack(body.back) });
+    // A browser's way back has to come to this browser (music/spotify.js start): Lax, not the
+    // session's SameSite, since Spotify's redirect is a navigation from another site.
+    json(res, 200, { url }, app ? {} : { 'Set-Cookie': `${SPOTIFY_BIND}=${bind}; Path=/api/music/spotify; Max-Age=600; HttpOnly;${SECURE} SameSite=Lax` });
+  },
+  // Spotify sends the browser here after the sign-in, with no session of ours necessarily (the phone
+  // app signs in through the system browser): the state it carries says whose sign-in it was.
+  'GET /api/music/spotify/callback': async (req, res) => {
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const q = new URL(req.url, 'http://x').searchParams;
+    const binds = cookieValues(req, SPOTIFY_BIND);
+    const r = await SPOTIFY.finish(q, id => db.users.find(u => u.id === id && !u.disabled), { bind: binds.length === 1 ? binds[0] : null });
+    if (!r) return json(res, 400, { error: 'unknown or expired sign-in' });
+    const done = r.ok ? 'connected' : 'failed';
+    // The phone app redeems its one-time code with its own session (POST /api/music/spotify/redeem).
+    const to = r.app
+      ? (r.ok ? 'opengym://spotify?handoff=' + encodeURIComponent(r.handoff) : 'opengym://spotify?failed=1')
+      : (r.back || ORIGIN.replace(/\/$/, '') + '/') + '?spotify=' + done + '#/settings/features';
+    res.writeHead(302, { Location: to, 'Cache-Control': 'no-store', 'Set-Cookie': `${SPOTIFY_BIND}=; Path=/api/music/spotify; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax` });
+    res.end();
+  },
+  // The phone app back from Spotify's sign-in with the one-time code of its link: saved on this
+  // profile only if this profile started that sign-in.
+  'POST /api/music/spotify/redeem': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const body = await readBody(req);
+    if (!(await SPOTIFY.redeem(user, body.handoff))) return json(res, 400, { error: 'unknown or expired sign-in', code: 'failed' });
+    json(res, 200, SPOTIFY.status(user));
+  },
+  'DELETE /api/music/spotify': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (SPOTIFY) SPOTIFY.disconnect(user);
+    else { delete user.spotify; saveDb(); }
+    json(res, 200, { ok: true });
+  },
+  // What plays on the account now: { track } with null when nothing does.
+  'GET /api/music/spotify/player': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    try { json(res, 200, { track: await SPOTIFY.nowPlaying(user) }); } catch (e) { spotifyFailure(res, e); }
+  },
+  // { action: play | pause | next | previous } on the device that plays the account.
+  'POST /api/music/spotify/player': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (!SPOTIFY) return json(res, 404, { error: 'spotify is not offered on this instance' });
+    const body = await readBody(req);
+    if (!Object.hasOwn(SPOTIFY_ACTIONS, body.action)) return json(res, 400, { error: 'unknown action' });
+    const wait = SPOTIFY_BURST.take(user.id);
+    if (wait) return json(res, 429, { error: 'too many requests', code: 'busy', retryAfter: wait }, { 'Retry-After': String(wait) });
+    try { await SPOTIFY.control(user, body.action); json(res, 200, { ok: true }); } catch (e) { spotifyFailure(res, e); }
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),

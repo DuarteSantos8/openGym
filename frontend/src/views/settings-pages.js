@@ -23,6 +23,7 @@ export const PAGES = {
   units: { title: 'Units & language', icon: 'ruler', tint: 'var(--teal)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
+  features: { title: 'Features', icon: 'slider', tint: 'var(--pink)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)', mod: 'coach' },
   // The phones' watch pages under one row (#1105); the web has Zepp only, so its row stays on the root.
   watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
@@ -66,7 +67,7 @@ export const PAGE_IDS = Object.keys(PAGES)
 // what openGym talks to, then housekeeping. Whether a row shows is onRoot's call.
 export const ROOT_GROUPS = [
   { title: 'Training', ids: ['workout', 'alerts', 'plan', 'reminders'] },
-  { title: 'Set once', ids: ['units', 'equipment', 'look', 'modules'] },
+  { title: 'Set once', ids: ['units', 'equipment', 'look', 'features', 'modules'] },
   { title: 'Connections', ids: ['watches', 'zepp', 'integrations', 'coach'] },
   { ids: ['data', 'about'] },
 ]
@@ -292,6 +293,9 @@ export const SEARCH = [
   { page: 'look', title: 'Motion', icon: 'sparkles', tint: 'var(--teal)', kw: 'reduce motion animation animations accessibility calm still vestibular', opts: ['Like the phone', 'Less'] },
   { page: 'look', title: 'Text size', icon: 'note', tint: 'var(--blue)', kw: 'text size font fonts letters type typeface bigger larger smaller tiny huge big small scale dynamic accessibility zoom read reading eyes glasses', opts: ['Smallest', 'Small', 'Default', 'Large', 'Larger', 'Largest'], tkw: () => t('font text size bigger smaller letters') },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
+  // Features
+  { page: 'features', title: 'Music bar', icon: 'music', tint: 'var(--pink)', kw: 'music bar spotify apple music show hide turn on off enable disable' },
+  { page: 'features', title: 'Music player', icon: 'music', tint: 'var(--pink)', kw: 'music spotify apple music song songs playlist player track skip next pause', when: c => c.musicBar },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
   { page: 'data', title: 'Export with photos & videos (.zip)', icon: 'share', tint: 'var(--blue)', kw: 'zip media export backup', when: c => c.hasMedia },

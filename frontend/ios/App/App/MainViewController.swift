@@ -58,6 +58,8 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(AppIconPlugin())
         bridge?.registerPluginInstance(NfcTagsPlugin())
         bridge?.registerPluginInstance(VoiceBridgePlugin())
+        // The Music app's player for the workout's music bar (lib/music/apple-music.js).
+        bridge?.registerPluginInstance(MusicPlayerPlugin())
         WidgetPreview.runIfAsked()
         NotificationCenter.default.addObserver(self, selector: #selector(textSizeChanged),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)

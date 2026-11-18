@@ -90,7 +90,7 @@ const settle = async () => {
 const guestWeb = {
   user: null, mobile: false, android: false, demo: false, wakeOK: true, hasMedia: false, pwOn: false, webauthn: false,
   sound: true, playOnSilent: false, canVibrate: true, vibrate: true, profiles: true, nameLang: false,
-  pushOK: false, reminderOn: false, nudge: false, autoBackup: false, synced: false, installTip: true, androidWeb: false,
+  pushOK: false, reminderOn: false, nudge: false, autoBackup: false, synced: false, installTip: true, androidWeb: false, musicBar: true,
   // the test browser (happy-dom) is neither Android nor Apple, so the page shows the desktop install tip
   desktopWeb: true,
 }
@@ -102,8 +102,9 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
     // #1105: what you change each week, then what you set once, then connections (option C)
-    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Features', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
     expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
+    expect(rowTitled('Features').querySelector('.lrow-v').textContent).toBe('Off')
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -442,7 +443,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'live', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'features', 'integrations', 'live', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).
@@ -488,6 +489,23 @@ describe('the pages', () => {
     act(() => sw.click())
     expect(mocks.S.collapseCompleted).toBe(true)
     expect('collapseCompleted' in mocks.S.active).toBe(false)
+  })
+
+  it('Features turns the music bar off and on, and the player chosen stays for when it is back', () => {
+    mocks.S.music = 'spotify'
+    mount('features')
+    const sw = () => rowTitled('Music bar').querySelector('[role="switch"]')
+    expect(sw().getAttribute('aria-checked')).toBe('true')
+    expect(titles()).toContain('Music player')
+    act(() => sw().click())
+    expect(mocks.S.musicBar).toBe(false)
+    expect(mocks.S.music).toBe('spotify')
+    mount('features')
+    expect(titles()).not.toContain('Music player')
+    act(() => sw().click())
+    expect('musicBar' in mocks.S).toBe(false)
+    mount('features')
+    expect(titles()).toContain('Music player')
   })
 
   it('the Fine-tuning switches write S.wc as the old Workout controls sheet did', () => {

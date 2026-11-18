@@ -89,6 +89,8 @@ import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
 import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
+import MusicSettings from '../components/MusicSettings.jsx'
+import { musicBarOn, musicSource } from '../lib/music/index.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
@@ -479,7 +481,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     nfc: nfcOK, gymReminder,
-    autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
+    autoBackup: !!S.autoBackup, musicBar: musicBarOn(S), synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
     integrations: config?.integrations?.providers || [],
     trainers: !!config?.trainers?.on,
     apiTokens: !!config?.api_tokens,
@@ -505,6 +507,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
     modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
+    features: () => (musicBarOn(S) && musicSource(S) ? { spotify: 'Spotify', apple: 'Apple Music' }[musicSource(S)] : t('Off')),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
     integrations: () => '',
@@ -759,6 +762,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
+
+    // Things to turn on and off. The music bar is the first; its player and Spotify rows sit under
+    // its switch, and stay set while it is off.
+    features: () => <MusicSettings />,
 
     advanced: () => {
       // S.wc overlays DEF.wc, so a profile from before these switches existed reads as the lean default.

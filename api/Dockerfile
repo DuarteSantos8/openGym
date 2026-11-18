@@ -57,6 +57,7 @@ COPY server.js push-messages.js nudge.js nudge-copy.js wrapped.js wrapped-copy.j
 COPY coach ./coach
 COPY library ./library
 COPY oidc ./oidc
+COPY music ./music
 COPY integrations ./integrations
 COPY trainers ./trainers
 COPY sources ./sources

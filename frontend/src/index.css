@@ -260,6 +260,10 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
    press selects it, the copy button beside it is the quick way. */
 .lrow .zepp-copyable{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 .lrow .zepp-copyable+.btn.sm,.lrow-m+.btn.sm{margin-inline-start:8px;flex:none}
+/* A text field anywhere, one inside those included (a settings row's Spotify Client ID), takes its text again:
+   iOS WebKit carries -webkit-user-select:none down to the field, which then never gets the
+   keyboard or a paste. */
+input,textarea{-webkit-user-select:text;user-select:text}
 
 /* icons inherit colour and optical size from their context */
 .icn{
@@ -756,6 +760,12 @@ h4.sec{
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
 }
+/* The music bar docked above the tab bar on every other screen (components/MusicDock.jsx), the
+   rest of its look with MusicBar's further down. Here, before the Reduce Transparency block, so
+   that block's opaque fill wins over this frosted one (the same specificity, the later rule). */
+.music-dock{position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(84px + var(--sab));z-index:45;animation:slideup var(--med) var(--ease)}
+.music-dock .musicbar{margin:0;background:var(--surface);background:color-mix(in srgb,var(--surface) 97%,transparent);-webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);box-shadow:0 10px 30px -10px rgba(0,0,0,.55)}
+body.has-music-dock #app{padding-bottom:calc(150px + var(--sab))}
 /* The setting itself, read directly. The @supports fallback above only fires where backdrop-filter
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
@@ -768,6 +778,8 @@ h4.sec{
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
   .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
+  /* The music bar docked above the tab bar (components/MusicDock.jsx). */
+  .music-dock .musicbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -1366,6 +1378,18 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}
 .wvol{flex:none;font-size:var(--fs-caption);line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* The music bar (components/MusicBar.jsx): what plays under the progress line, one compact row. */
+.musicbar{display:flex;align-items:center;gap:10px;margin:-6px 0 14px;padding:6px 6px 6px 8px;border-radius:14px;background:var(--surface)}
+.whdr.stick .musicbar{margin:0 0 10px}
+.mb-art{flex:none;width:36px;height:36px;border-radius:8px;object-fit:cover;display:grid;place-items:center;background:var(--surface-2);color:var(--pink)}
+.mb-art svg{width:20px;height:20px}
+.mb-txt{flex:1;min-width:0}
+.mb-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-sub{font-size:12px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-sub.warn{color:var(--orange);white-space:normal}
+.mb-acts{flex:none;display:flex;align-items:center;gap:2px}
+.mb-acts .iconbtn{width:36px;height:36px;background:transparent}
+.mb-acts .mb-play{background:var(--surface-2);border-radius:99px}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
@@ -3346,6 +3370,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
+  /* The docked music bar, beside the rest bar's place. */
+  .music-dock{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
+  body.has-music-dock #app{padding-bottom:calc(200px + var(--sab))}
 }
 
 /* ------------------------------------------------------- gym check-in -- */

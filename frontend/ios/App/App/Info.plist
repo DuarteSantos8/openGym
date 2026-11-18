@@ -89,6 +89,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Used to show the song the Music app is playing at the top of a workout, with buttons to pause it or skip to the next one.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSAppTransportSecurity</key>
