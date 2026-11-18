@@ -342,7 +342,7 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
 export async function disableRead(kind) {
   if (readRunning) await readRunning.catch(() => {})
   const h = await loadHealth()
-  const out = kind === 'hr' ? { ...h, readHr: false, hrTried: {} } : { ...h, [readKey(kind)]: false }
+  const out = kind === 'hr' ? { ...h, readHr: false, hrTried: {} } : kind === 'waist' ? { ...h, readWaist: false, waCursor: 0 } : { ...h, [readKey(kind)]: false }
   if (!anyRead(out)) out.readError = null
   await saveHealth(out)
   told(out)
@@ -427,7 +427,8 @@ async function readOnce(getState, force, now, applyFn) {
   // Waists (iPhone only): the same rhythm and cursor as weigh-ins, into the day's check-in.
   if (h.readWaist && p.platform === 'ios' && (force ? now - lastWaistRead >= RESUME_EVERY_MS : now - lastWaistRead >= READ_EVERY_MS)) {
     try {
-      const since = h.waCursor > 0 ? Math.max(h.waCursor - WEIGHT_MARGIN_MS, now - WEIGHT_FIRST_MS) : now - WEIGHT_FIRST_MS
+      // A year back, not a month: waists are few, and the chart's 1Y would otherwise show one month.
+      const since = h.waCursor > 0 ? Math.max(h.waCursor - WEIGHT_MARGIN_MS, now - WEIGHT_HISTORY_MS) : now - WEIGHT_HISTORY_MS
       const res = await p.HC.readWaist({ since })
       lastWaistRead = now
       const records = Array.isArray(res?.records) ? res.records : []
