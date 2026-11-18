@@ -196,16 +196,18 @@ describe('a watch\'s rest event', () => {
     })
   }
 
-  it('a set the phone cannot take (an exercise it does not know) leaves the Timer as it is', async () => {
-    const S = S1(), u = timerUi({ ...RUNNING })
-    const stop = await linked(u, S)
-    bindWatchActions({ setDone: vi.fn() })
-    bindWatchAppActions({ ensureSet: () => false })
-    applyEvents([missingRow], () => ({ S }), T)
-    expect(u.calls).not.toContainEqual(['stop'])
-    expect(u.timer.clock).toBe(true)
-    stop()
-  })
+  for (const [name, restEnd] of [['a rest ahead', T + 90_000], ['no rest', 0], ['a rest over already', T - 5000]]) {
+    it(`a set the phone cannot take (an exercise it does not know) leaves the Timer as it is (${name})`, async () => {
+      const S = S1(), u = timerUi({ ...RUNNING })
+      const stop = await linked(u, S)
+      bindWatchActions({ setDone: vi.fn() })
+      bindWatchAppActions({ ensureSet: () => false })
+      applyEvents([{ ...missingRow, restEnd }], () => ({ S }), T)
+      expect(u.calls).toEqual([])
+      expect(u.timer).toEqual(RUNNING)
+      stop()
+    })
+  }
 
   it('a +15 there moves a running Timer and keeps it the Timer', async () => {
     const S = S1(), u = timerUi({ ...RUNNING })

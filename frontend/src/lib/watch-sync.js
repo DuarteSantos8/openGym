@@ -788,7 +788,8 @@ function applyEach (events, getState, now = Date.now()) {
         else if (!A.editingWorkoutId && appHandlers?.ensureSet) {
           const taken = appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev)) !== false
           // The rest the watch started for it is the phone's too, as for a set the screen ticks.
-          if (uiRef && (ev.restEnd === 0 || num(ev.restEnd))) {
+          // A set not taken here has no rest here: the workout Timer runs on untouched.
+          if (uiRef && (ev.restEnd === 0 || num(ev.restEnd)) && (taken || !uiRef.getState().timer?.clock)) {
             const t = uiRef.getState().timer
             const step = watchTickRest({ before: t, timer: t, at: num(ev.at), restEnd: num(ev.restEnd), restAt: restAtFor(A.id), now })
             // The workout Timer's countdown (components/WorkoutClock.jsx) is no rest after a set taken
