@@ -1,0 +1,429 @@
+diff --git a/frontend/src/views/Workout.jsx b/frontend/src/views/Workout.jsx
+index b36be2c144c9445fa0d738cd2c5190bf4823d935..553bff521452b25ecf890547aed3f403495c1782 100644
+--- a/frontend/src/views/Workout.jsx
++++ b/frontend/src/views/Workout.jsx
+@@ -1,4 +1,5 @@
+ import { Fragment, useEffect, useId, useRef, useState } from 'react'
++import './Workout.css'
+ import SwipeCards from '../components/SwipeCards.jsx'
+ import SwipeRow from '../components/SwipeRow.jsx'
+ import { useNavigate } from 'react-router-dom'
+@@ -11,7 +12,7 @@ import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
+ import { usesBar } from '../lib/bar.js'
+ import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
+ import { plateText } from '../lib/plate-text.js'
+-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnits, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
++import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+ import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
+ import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
+ import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
+@@ -920,8 +921,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
+           after them line up (#322). */}
+       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span>{sideTagOf(s)}</span></span>}
+       {/* Said by the "Last time" line above the card; the column is for the eye. */}
+-      {/* Its own left-to-right island, as on the "Last time" line: in Arabic 60×8 must not read 8×60. */}
+-      {showLast && <span className="last" aria-hidden="true"><bdi dir="ltr">{lastAt(i)}</bdi></span>}
++      {showLast && <span className="last" aria-hidden="true">{lastAt(i)}</span>}
+       {cell(s, i, col1, 'w')}
+       {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
+       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
+@@ -1139,7 +1139,13 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
+       <button type="button" onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /><span>{t('Note')}</span></button>
+       {plateLoading && <button type="button" onClick={() => barWeightSheet(entry.id, cfg)}><Icon name="plate" /><span>{t('Plates')}</span></button>}
+       {onSwap && <button type="button" disabled={busy} onClick={onSwap}><Icon name="swap" /><span>{t('Swap')}</span></button>}
+-      <button type="button" aria-label={inEx(t('Exercise options'))} title={t('Exercise options')} onClick={openMore}><Icon name="more" /></button>
++      <button
++        type="button"
++        aria-label={inEx(t('More'))}
++        title={t('Exercise options')}
++        onClick={openMore}>
++        <Icon name="more" /><span>{t('More')}</span>
++      </button>
+     </div>}
+   </>
+ }
+@@ -1307,6 +1313,7 @@ function ActiveWorkout() {
+   const workKey = useUI(s => s.work?.endsAt)
+   const timerKey = useUI(s => s.timer && `${s.timer.endsAt}:${s.timer.forIdx ?? ''}`)
+   const readyRestEnds = useUI(s => (s.timer?.ready ? s.timer.endsAt : undefined))
++  const timerBlocking = useUI(s => !!(s.timer || s.work || s.countIn))
+   const A = S.active
+   const editing = !!A.editingWorkoutId
+   const paused = isPaused(A)
+@@ -2426,6 +2433,45 @@ function ActiveWorkout() {
+       onCancel: () => toggle(idx, i, side, opts),
+     })
+   }
++  const allSetsDone = A.entries.length > 0 && A.entries.every(e => e.sets.length > 0 && e.sets.every(s => s.done))
++  let primaryAction = null
++  if (!editing && !timerBlocking && A.entries.length) {
++    if (allSetsDone) {
++      primaryAction = {
++        kind: 'finish',
++        label: t('Finish workout'),
++        onClick: () => finishWorkoutSheet({ onDiscard: discardWorkout })
++      }
++    } else {
++      let next = null
++      for (const idx of unit) {
++        const i = A.entries[idx]?.sets.findIndex(s => !s.done) ?? -1
++        if (i >= 0) {
++          next = { idx, i, row: A.entries[idx].sets[i] }
++          break
++        }
++      }
++      if (next) {
++        const timedSet = modeAt(next.idx) === 'time'
++        const side = !timedSet && next.row.sides
++          ? (!next.row.sides.L?.done ? 'L' : 'R')
++          : undefined
++        primaryAction = {
++          kind: timedSet ? 'start' : 'log',
++          label: (timedSet ? t('Start') : t('Log set')) + ' ' + setNumberAt(A.entries[next.idx].sets, next.i),
++          onClick: () => timedSet
++            ? startTimed(next.idx, next.i)
++            : checkedToggle(next.idx, next.i, side),
++        }
++      } else if (nextUnfinishedUnit(A.entries, units, cur)) {
++        primaryAction = {
++          kind: 'next',
++          label: t('Next'),
++          onClick: advanceFocusUnit
++        }
++      }
++    }
++  }
+   // The Apple Watch ticks sets through this same toggle (lib/watch-sync.js): the weight and reps it
+   // logged go into the row first, then the tick runs as if tapped here (rest, high-water mark, the
+   // end-of-workout sheet). A row already ticked only takes the numbers.
+@@ -2754,12 +2800,22 @@ function ActiveWorkout() {
+       {editing
+         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
+         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
+-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
++      <div className="whdr-mid">
++        <h1 className="whdr-screen-title">{t('Workout')}</h1>
++        <div className="whdr-name">{A.name}</div>
++        <div className="sub">
++          {(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>}
++          · {t('{0} sets', done + '/' + total)} · {t('Auto-save')}
++          {!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}
++        </div>
++        {gymShown && (gymSwitchable
+         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
+         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
+       {!chipRow && sessionMap}
+-      <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
+-      <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
++      <button className="iconbtn whdr-options" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}>
++        <Icon name="more" /><span>{t('Workout options')}</span>
++      </button>
++      <button className="btn ghost pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
+         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
+     </div>
+     {/* The volume so far rides at the end of the progress bar (#774): one line that never wraps,
+@@ -2846,9 +2902,12 @@ function ActiveWorkout() {
+         })}
+       </div>
+     ) : <>
+-      {/* The chips stand in for "Exercise 2 / 5": the number is on the current chip, and the
+-          others say what is done and what is waiting (#323). */}
+-      {chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
++      <div className="wk-position">
++        {isSuperset
++          ? t('Superset {0} / {1}', unitIdx + 1, units.length)
++          : t('Exercise {0} / {1}', unitIdx + 1, units.length)}
++      </div>
++      {chipRow}
+       {/* A circuit's clock: one tap opens the full-screen player (components/CircuitPlayer.jsx). */}
+       <CircuitCard unit={unit} />
+       <SwipeCards index={unitIdx} count={units.length} revision={A}
+@@ -2906,14 +2965,9 @@ function ActiveWorkout() {
+ 
+     <div style={{ height: 12 }} />
+     {/* Up next (redesign step 3): what the next page holds, one tap to it. */}
+-    {!listMode && unitIdx >= 0 && (() => {
+-      // Where Next goes, so the card names what a tap opens: with "Skip completed exercises" on,
+-      // a finished exercise next in line is passed over here too (lib/supersetFlow.js).
+-      const to = stepUnitIndex(A.entries, units, unitIdx, 1, skipDone)
+-      if (to < 0 || to === unitIdx) return null
+-      const nx = units[to]
+-      // Work sets as the workout counts them: a left/right set is two (lib/history.js setUnits).
+-      const n = nx.reduce((a, j) => a + (A.entries[j]?.sets || []).filter(x => !isWarmupRow(x)).reduce((m, x) => m + setUnits(x), 0), 0)
++    {!listMode && unitIdx >= 0 && unitIdx < units.length - 1 && (() => {
++      const nx = units[unitIdx + 1]
++      const n = nx.reduce((a, j) => a + (A.entries[j]?.sets.filter(x => !isWarmupRow(x)).length || 0), 0)
+       return <button type="button" className="upnext" onClick={() => navigateUnit(1)}>
+         <span className="upnext-m"><span className="upnext-k">{t('Up next')}</span>
+           <span className="upnext-t">{nx.map(j => exerciseNameText(exOr(A.entries[j].id))).join(' + ')} · {tn('{0} set', '{0} sets', n)}</span></span>
+@@ -2968,10 +3022,21 @@ function ActiveWorkout() {
+     {(() => {
+       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
+       const allDone = A.entries.length > 0 && exDone === A.entries.length
+-      return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
+-        {editing ? t('Save changes') : allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
+-      </button>
++      return (editing || !allDone || !primaryAction)
++        ? <button className={(allDone ? 'btn primary' : 'btn ghost dim') + ' wk-finish'} onClick={finishWorkout}>
++          {editing ? t('Save changes') : allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
++        </button>
++        : null
+     })()}
++    {primaryAction && <div className="wk-primary-dock">
++      <button
++        type="button"
++        className="btn primary wk-primary-action"
++        data-action={primaryAction.kind}
++        onClick={primaryAction.onClick}>
++        {primaryAction.label}
++      </button>
++    </div>}
+     <div className="workout-end-spacer" />
+   </WorkoutScrollAnchor>
+ }
+diff --git a/frontend/src/views/Workout.redesign.test.jsx b/frontend/src/views/Workout.redesign.test.jsx
+index 23ae608ecf4e093220496b59b4e5a3238a01a95f..b0af94b06ace45be781d5a0b6eb6ece1e4e3860b 100644
+--- a/frontend/src/views/Workout.redesign.test.jsx
++++ b/frontend/src/views/Workout.redesign.test.jsx
+@@ -19,15 +19,14 @@ let root, container
+ beforeEach(() => { useUI.setState({ sheets: [], toastMsg: '', timer: null, work: null }) })
+ afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null })
+ 
+-function mount({ view = 'cards', history = true, patch = {}, entries } = {}) {
++function mount({ view = 'cards', history = true } = {}) {
+   const S = clone(DEF)
+-  Object.assign(S, { unit: 'kg', workoutView: view }, patch)
++  Object.assign(S, { unit: 'kg', workoutView: view })
+   if (history) S.workouts = [{ id: 'w1', d: '2026-10-01', name: 'Push', entries: [{ id: BENCH, sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 7, done: true }] }] }]
+   S.active = { id: 'a', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, workoutView: view, entries: [
+     { id: BENCH, target: { mode: 'reps', sets: 3, reps: 8 }, sets: [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }] },
+     { id: SQUAT, target: { mode: 'reps', sets: 2, reps: 5 }, sets: [{ w: 100, r: 5, done: false }, { w: 100, r: 5, done: false }] },
+   ] }
+-  if (entries) S.active.entries = entries(S.active.entries)
+   useStore.setState({ S, user: null })
+   container = document.createElement('div')
+   document.body.appendChild(container)
+@@ -51,7 +50,8 @@ describe('workout logging (redesign step 3)', () => {
+     mount()
+     expect(container.querySelector('.howto')?.textContent).toContain('How to do it')
+     const acts = [...container.querySelectorAll('.wk-acts button')]
+-    expect(acts.map(b => b.textContent || b.getAttribute('aria-label'))).toEqual(['Note', 'Plates', 'Swap', 'Exercise options'])
++    expect(acts.map(b => b.textContent || b.getAttribute('aria-label')))
++      .toEqual(['Note', 'Plates', 'Swap', 'More'])
+     expect(container.querySelector('.wk-add.wk-add-wide')).not.toBeNull()
+   })
+   it('the action row and How-to open their sheets', () => {
+@@ -76,23 +76,6 @@ describe('workout logging (redesign step 3)', () => {
+     expect(useStore.getState().S.active.cur).toBe(1)
+     expect(container.querySelector('.upnext')).toBeNull()   // the last page has nothing up next
+   })
+-  it('with Skip completed on, Up next names the exercise Next actually opens', () => {
+-    const DIPS = '0251'
+-    mount({ patch: { skipCompleted: true }, entries: es => [es[0], { ...es[1], sets: es[1].sets.map(x => ({ ...x, done: true })) },
+-      { id: DIPS, target: { mode: 'reps', sets: 1, reps: 10 }, sets: [{ w: 0, r: 10, done: false }] }] })
+-    const up = container.querySelector('.upnext')
+-    expect(up.textContent).toMatch(/1 set\b/)
+-    act(() => up.click())
+-    expect(useStore.getState().S.active.cur).toBe(2)
+-  })
+-  it('Up next counts a left/right set as two, as the workout does', () => {
+-    mount({ entries: es => [es[0], { ...es[1], sets: [{ w: 20, r: 20, done: false, sides: { L: { w: 20, r: 10, done: false }, R: { w: 20, r: 10, done: false } } }] }] })
+-    expect(container.querySelector('.upnext').textContent).toMatch(/2 sets/)
+-  })
+-  it('keeps last time’s numbers left to right inside the Last column', () => {
+-    mount()
+-    expect(container.querySelector('.setrow .last bdi')?.getAttribute('dir')).toBe('ltr')
+-  })
+   it('the list view keeps its rows as they were', () => {
+     mount({ view: 'list' })
+     expect(container.querySelector('.howto')).toBeNull()
+diff --git a/frontend/src/views/Workout.test.jsx b/frontend/src/views/Workout.test.jsx
+index 9ab7e460aabf7b71eeb7c738256c65e38b79239e..417b9c282df870875b0d9865ced82c472948d34e 100644
+--- a/frontend/src/views/Workout.test.jsx
++++ b/frontend/src/views/Workout.test.jsx
+@@ -2780,7 +2780,7 @@ describe('exercise chips at the top of the workout (#323)', () => {
+   const chip = n => chips()[n - 1]
+   const session = () => [exercise('bench', [true, true]), exercise('fly', [true, false], { sg: 'pair' }), exercise('row', [false], { sg: 'pair' }), exercise('squat', [false])]
+ 
+-  it('shows one chip per unit with its state in Cards, a superset as one, in place of "Exercise N / M"', async () => {
++  it('shows one chip per unit with its state in Cards alongside the written Exercise N / M position', async () => {
+     await mount(session(), 3)
+     expect(chips().map(c => c.className)).toEqual(['wchip done', 'wchip partial', 'wchip todo cur'])
+     expect(chip(3).getAttribute('aria-current')).toBe('step')
+@@ -2791,7 +2791,7 @@ describe('exercise chips at the top of the workout (#323)', () => {
+     expect(chip(3).getAttribute('aria-label')).toMatch(/^Exercise 3: .+ \(Not started yet\)$/)
+     expect(chip(2).querySelector('[data-icon="link"]')).toBeTruthy()
+     expect(container.querySelector('nav.wchips').getAttribute('aria-label')).toBe('Exercises in this workout')
+-    expect(container.textContent).not.toContain('Exercise 3 / 3')
++    expect(container.querySelector('.wk-position')?.textContent).toBe('Exercise 3 / 3')
+   })
+ 
+   it('jumps to the tapped exercise in Cards, and only on a tap', async () => {
+diff --git a/frontend/src/views/Workout.css b/frontend/src/views/Workout.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..e2194ade3d1035a3c8df782b5f6c4a6f822ca2a6
+--- /dev/null
++++ b/frontend/src/views/Workout.css
+@@ -0,0 +1,56 @@
++/* Approved Workout retrofit. Scoped here so unrelated Settings work and the legacy phone/desktop
++   rules remain untouched; body-qualified selectors also win over later legacy index.css rules. */
++body .whdr .whdr-bar{align-items:flex-start;flex-wrap:wrap;gap:8px}
++body .whdr .whdr-mid{flex:1 1 180px;min-width:0}
++body .whdr .whdr-screen-title{margin:0;color:var(--label);font-size:1.375rem;line-height:1.15;letter-spacing:-.02em}
++body .whdr .whdr-name{font-size:1.0625rem;line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
++body .whdr .whdr-mid .sub{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
++body .whdr .iconbtn{min-width:48px;min-height:48px}
++body .whdr .whdr-options{width:auto;padding-inline:10px;gap:6px}
++body .whdr .whdr-options span{font-size:1.0625rem;line-height:1.2;white-space:normal}
++body .whdr .whdr-finish{min-height:48px;padding-block:10px;font-size:1.0625rem;white-space:normal}
++body .wk-position{margin:0 0 8px;color:var(--label-2);font-size:1.0625rem;font-weight:600;line-height:1.35}
++
++body .howto{min-height:64px}
++body .howto .howto-t,body .howto .howto-s{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
++body .wk-acts button{min-height:48px;font-size:1.0625rem;line-height:1.25;white-space:normal}
++body .wk-acts button span{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere}
++body .upnext{min-height:64px}
++body .upnext .upnext-k,body .upnext .upnext-t{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
++body .upnext .upnext-t{overflow:visible;text-overflow:clip}
++body .wk-end .wk-end-row{min-height:56px}
++body .wk-end .lrow-t,body .wk-end .lrow-s{font-size:1.0625rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
++body .setcard.roomy .setrow .chk{width:48px;height:48px}
++body .setcard.roomy .sethead .ck-sp{width:48px}
++body .wk-add.wk-add-wide{min-height:48px;font-size:1.0625rem}
++
++body:has(.wk-primary-dock) #app{padding-bottom:calc(116px + var(--sab))}
++body .wk-primary-dock{position:fixed;z-index:19;inset-inline:0;bottom:calc(12px + var(--sab));padding-inline:var(--pad);pointer-events:none}
++body .wk-primary-action{pointer-events:auto;display:block;width:min(100%,720px);min-height:58px;height:auto;margin:0 auto;padding:12px 20px;
++  font-size:1.125rem;line-height:1.3;white-space:normal;overflow-wrap:anywhere;box-shadow:0 10px 30px -12px rgba(0,0,0,.55)}
++
++/* The timer may grow to two rows at 200% text. Its height remains content-driven, and the existing
++   body.resting clearance leaves room for it; the primary logging dock unmounts while it is here. */
++body.no-tabbar #timer{height:auto;min-height:76px;flex-wrap:wrap;row-gap:8px}
++body.no-tabbar #timer .tclock{min-height:56px;min-width:112px}
++body.no-tabbar #timer .tclock .t{position:relative;min-width:5ch;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
++body.no-tabbar #timer.rest .tclock .t::after{content:none}
++body.no-tabbar #timer .tclock .lbl{line-height:1.2;white-space:normal}
++body.no-tabbar #timer .acts{min-height:48px;flex-wrap:wrap;row-gap:8px}
++body.no-tabbar #timer .acts .btn{min-height:48px}
++/* These controls now have a real 48px target, so the legacy invisible .btn.sm extension would only
++   add phantom overflow to the dock's scroll metrics. The hidden Skip/Dismiss probes remain
++   measurable by width without extending the dock vertically. */
++body.no-tabbar #timer .acts .btn::before{inset:0}
++body.no-tabbar #timer .acts .skip>.skip-probe{height:0;overflow:hidden}
++
++@media (min-width:1000px){
++  body:has(.wk-primary-dock) #app{padding-bottom:0}
++  body .wk-primary-dock{position:static;margin-top:16px;padding:0;pointer-events:auto}
++  body .wk-primary-action{box-shadow:none}
++}
++
++@media (prefers-reduced-motion:reduce){
++  body .howto,body .wk-acts button,body .upnext,body .wk-primary-action{transition:none}
++  body .howto:active,body .wk-acts button:not(:disabled):active,body .wk-primary-action:active{transform:none}
++}
+diff --git a/frontend/src/views/Workout.accessibility.test.jsx b/frontend/src/views/Workout.accessibility.test.jsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..49a915a07f006b03fef3f1f7cef79c30053accc3
+--- /dev/null
++++ b/frontend/src/views/Workout.accessibility.test.jsx
+@@ -0,0 +1,100 @@
++// @vitest-environment happy-dom
++import React, { act } from 'react'
++import { createRoot } from 'react-dom/client'
++import { MemoryRouter } from 'react-router-dom'
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
++import Workout from './Workout.jsx'
++import { DEF, useStore } from '../store/useStore.js'
++import { useUI } from '../store/useUI.js'
++
++vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
++vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
++globalThis.IS_REACT_ACT_ENVIRONMENT = true
++const clone = value => JSON.parse(JSON.stringify(value))
++const BENCH = '0025', SQUAT = '0043'
++let root, container
++
++beforeEach(() => {
++  useUI.setState({ sheets: [], toastMsg: '', timer: null, work: null, countIn: null })
++})
++afterEach(() => {
++  if (root) act(() => root.unmount())
++  container?.remove()
++  root = container = null
++})
++
++function mount({ allDone = false } = {}) {
++  const S = clone(DEF)
++  Object.assign(S, { unit: 'kg', workoutView: 'cards' })
++  S.active = {
++    id: 'a', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Push', bw: null,
++    cur: 0, workoutView: 'cards', entries: [
++      { id: BENCH, target: { mode: 'reps', sets: 3, reps: 8 }, sets: [
++        { w: 60, r: 8, done: allDone }, { w: 60, r: 8, done: allDone }, { w: 60, r: 8, done: allDone },
++      ] },
++      { id: SQUAT, target: { mode: 'reps', sets: 2, reps: 5 }, sets: [
++        { w: 100, r: 5, done: allDone }, { w: 100, r: 5, done: allDone },
++      ] },
++    ],
++  }
++  useStore.setState({ S, user: null })
++  container = document.createElement('div')
++  document.body.appendChild(container)
++  root = createRoot(container)
++  act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
++}
++
++const primary = () => container.querySelector('.wk-primary-action')
++const click = element => act(() => element.click())
++const clearTimer = () => act(() => useUI.setState({ timer: null, work: null, countIn: null }))
++
++describe('workout accessibility retrofit', () => {
++  it('shows a clear screen title, workout name, auto-save status, position and Up next', () => {
++    mount()
++    expect(container.querySelector('h1')?.textContent).toBe('Workout')
++    expect(container.querySelector('.whdr-name')?.textContent).toBe('Push')
++    expect(container.querySelector('.whdr-mid .sub')?.textContent).toContain('Auto-save')
++    expect(container.querySelector('.wk-position')?.textContent).toBe('Exercise 1 / 2')
++    expect(container.querySelector('.upnext')?.textContent).toContain('Up next')
++  })
++
++  it('logs three sets, advances, logs the final exercise and opens Finish from one primary action', () => {
++    mount()
++    for (const label of ['Log set 1', 'Log set 2', 'Log set 3']) {
++      expect(primary()?.textContent).toBe(label)
++      click(primary())
++      clearTimer()
++    }
++    expect(primary()?.textContent).toBe('Next')
++    click(primary())
++    expect(useStore.getState().S.active.cur).toBe(1)
++    for (const label of ['Log set 1', 'Log set 2']) {
++      expect(primary()?.textContent).toBe(label)
++      click(primary())
++      clearTimer()
++    }
++    expect(primary()?.textContent).toBe('Finish workout')
++    act(() => useUI.getState().closeAll())
++    click(primary())
++    expect(useUI.getState().sheets.length).toBeGreaterThan(0)
++  })
++
++  it('keeps More visibly labelled and yields the primary action while a timer is active', () => {
++    mount()
++    const more = [...container.querySelectorAll('.wk-acts button')].at(-1)
++    expect(more.textContent).toBe('More')
++    expect(more.getAttribute('aria-label')).toBe('More')
++    expect(primary()).not.toBeNull()
++    act(() => useUI.setState({ timer: { endsAt: Date.now() + 30000 } }))
++    expect(primary()).toBeNull()
++    clearTimer()
++    expect(primary()?.textContent).toBe('Log set 1')
++  })
++
++  it('does not render a duplicate bottom Finish once every set is done', () => {
++    mount({ allDone: true })
++    expect(primary()?.textContent).toBe('Finish workout')
++    expect(container.querySelector('.wk-finish')).toBeNull()
++    expect(container.querySelector('.whdr-finish')?.className).toContain('ghost')
++  })
++})

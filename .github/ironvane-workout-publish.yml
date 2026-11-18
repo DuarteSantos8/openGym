@@ -1,0 +1,53 @@
+name: Transfer verified Workout retrofit
+on:
+  push:
+    branches:
+      - redesign/7-workout-accessibility
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: startsWith(github.event.head_commit.message, 'Transfer verified Workout retrofit')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: redesign/7-workout-accessibility
+          fetch-depth: 0
+      - name: Apply and verify the accepted Workout scope
+        env:
+          BASE: f31caa5f18623463b44bb2a8248456aef2e64bad
+          BRANCH: redesign/7-workout-accessibility
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "$BASE"
+          git apply --check .github/ironvane-workout-publish.patch
+          git apply .github/ironvane-workout-publish.patch
+          git rm .github/ironvane-workout-publish.yml .github/ironvane-workout-publish.patch
+          git add \
+            frontend/src/views/Workout.jsx \
+            frontend/src/views/Workout.css \
+            frontend/src/views/Workout.accessibility.test.jsx \
+            frontend/src/views/Workout.redesign.test.jsx \
+            frontend/src/views/Workout.test.jsx
+          git reset --soft "$BASE"
+          printf '%s\n' \
+            frontend/src/views/Workout.accessibility.test.jsx \
+            frontend/src/views/Workout.css \
+            frontend/src/views/Workout.jsx \
+            frontend/src/views/Workout.redesign.test.jsx \
+            frontend/src/views/Workout.test.jsx > /tmp/ironvane-expected-paths
+          git diff --cached --name-only > /tmp/ironvane-actual-paths
+          diff -u /tmp/ironvane-expected-paths /tmp/ironvane-actual-paths
+          test "$(git rev-parse :frontend/src/views/Workout.jsx)" = 553bff521452b25ecf890547aed3f403495c1782
+          test "$(git rev-parse :frontend/src/views/Workout.css)" = e2194ade3d1035a3c8df782b5f6c4a6f822ca2a6
+          test "$(git rev-parse :frontend/src/views/Workout.accessibility.test.jsx)" = 49a915a07f006b03fef3f1f7cef79c30053accc3
+          test "$(git rev-parse :frontend/src/views/Workout.redesign.test.jsx)" = b0af94b06ace45be781d5a0b6eb6ece1e4e3860b
+          test "$(git rev-parse :frontend/src/views/Workout.test.jsx)" = 417b9c282df870875b0d9865ced82c472948d34e
+          git diff --cached --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "Workout: make logging clear and accessible" \
+            -m "Publish the approved Workout accessibility and usability retrofit." \
+            -m "Co-Authored-By: Kimi K3.1 <noreply@moonshot.ai>"
+          git push --force-with-lease="refs/heads/$BRANCH:$GITHUB_SHA" origin "HEAD:refs/heads/$BRANCH"
