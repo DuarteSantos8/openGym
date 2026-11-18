@@ -32,7 +32,8 @@ export const startTimeOf = w => {
 // key the sync gives it (`workoutKey` in sync-merge.js). That is also what a move or an edit
 // freezes as its id — so a sheet still holding the copy from before that (the detail sheet, when
 // a sync brings the frozen record in while it is open) still finds its workout.
-const syncKeyOf = w => (w?.id != null ? w.id : legacySyncKey(w))
+/** What tells one saved workout from another: its id, or day and start for an older one without. */
+export const syncKeyOf = w => (w?.id != null ? w.id : legacySyncKey(w))
 export const sameWorkout = (a, b) => syncKeyOf(a) === syncKeyOf(b)
 
 // The workout as it is after the move: same session, new position in time. The duration is
@@ -41,8 +42,21 @@ export function retimeWorkout(w, iso, time) {
   const duration = Math.max(0, (w.end ?? w.start) - w.start)
   const start = backfillStart(iso, time)
   const moved = { ...w, d: iso, start, end: start + duration }
-  // The heart curve kept with it (lib/heart-history.js) is in absolute time: it moves along.
-  if (w.hrc && Number.isFinite(Number(w.hrc.s))) moved.hrc = { ...w.hrc, s: Number(w.hrc.s) + (start - w.start) }
+  // What is in absolute time moves along by as much: the sets' ticks (a per-side set's sides too),
+  // so the exercises still line up with the session, and the heart curve kept with it
+  // (lib/heart-history.js).
+  const by = start - w.start
+  const shift = x => (x && Number(x.at) > 0 ? { ...x, at: Number(x.at) + by } : x)
+  // Only what has a tick is copied; an entry without one stays the very same object.
+  const ticked = s => Number(s?.at) > 0 || Object.values(s?.sides || {}).some(x => Number(x?.at) > 0)
+  if (by && Array.isArray(w.entries) && w.entries.some(e => (e?.sets || []).some(ticked))) {
+    moved.entries = w.entries.map(e => (Array.isArray(e?.sets) && e.sets.some(ticked) ? { ...e, sets: e.sets.map(s => {
+      if (!ticked(s)) return s
+      const t = shift(s)
+      return t?.sides ? { ...t, sides: Object.fromEntries(Object.entries(t.sides).map(([k, v]) => [k, shift(v)])) } : t
+    }) } : e))
+  }
+  if (w.hrc && Number.isFinite(Number(w.hrc.s))) moved.hrc = { ...w.hrc, s: Number(w.hrc.s) + by }
   if (w.id == null) moved.id = legacySyncKey(w)
   return moved
 }

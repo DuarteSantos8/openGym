@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore.js'
 import { exerciseCurve, exerciseHeart, heartLatest, heartPoints, parseFormat, setCurve } from '../lib/heart-history.js'
 import { heartStepText } from '../lib/heart-steps.js'
 import { workoutSamples } from '../lib/health-sync.js'
+import { syncKeyOf } from '../lib/workout-date.js'
 import { DEFAULT_HR_MAX, ZONE_FLOOR, ZONES, hrMaxOf } from '../lib/live-tiles.js'
 import LineChart from './LineChart.jsx'
 import { Segmented } from './ui.jsx'
@@ -82,12 +83,12 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
   // workoutSamples), read again when its kept curve or its times change (a sync brought the curve).
   const [samples, setSamples] = useState({})
   const verOf = w => `${w?.start}:${w?.end}:${w?.hrc?.s}:${w?.hrc?.v?.length || 0}`
-  const wanted = chosen.map(id => id + '@' + verOf(workouts.find(x => x?.id === id))).join(',')
+  const wanted = chosen.map(id => id + '@' + verOf(workouts.find(x => x && syncKeyOf(x) === id))).join(',')
   useEffect(() => {
     if (!chosen.length) return
     let open = true
     Promise.all(shown.map(async s => {
-      const w = workouts.find(x => x?.id === s.id)
+      const w = workouts.find(x => x && syncKeyOf(x) === s.id)
       if (!w?.start || !w?.end) return null
       const ver = verOf(w)
       const had = samples[s.id]
@@ -98,7 +99,7 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
 
   if (!key) return null
   const curves = shown.map(s => {
-    const w = workouts.find(x => x?.id === s.id)
+    const w = workouts.find(x => x && syncKeyOf(x) === s.id)
     const color = colorOf(s.id)
     const got = samples[s.id]?.ver === verOf(w) ? samples[s.id].data : null
     const fine = w && got?.length ? exerciseCurve(w, exId, got, hrMax, key) : null

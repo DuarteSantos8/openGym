@@ -6,6 +6,7 @@ import { modeOf } from './history.js'
 import { isSideSet, isWarmupRow } from './workout-model.js'
 import { sanitizeHr } from './heart-rate.js'
 import { exerciseSpans, heartStats, tickOf } from './heart-steps.js'
+import { syncKeyOf } from './workout-date.js'
 
 const BPM_MIN = 25
 const BPM_MAX = 250
@@ -106,7 +107,8 @@ export function exerciseHeart(workouts, exId) {
     if (!mine.length) return []
     const rests = mine.map(s => s.rest).filter(Boolean)
     return [{
-      id: w.id, d: w.d, at: w.start || Date.parse(w.d) || 0, n: mine.length,
+      // An older workout without an id has its day and start instead (workout-date.js).
+      id: syncKeyOf(w), d: w.d, at: w.start || Date.parse(w.d) || 0, n: mine.length,
       avg: Math.round(mine.reduce((n, s) => n + s.hr.avg, 0) / mine.length),
       max: Math.max(...mine.map(s => s.hr.max)),
       rest: rests.length ? Math.round(rests.reduce((n, r) => n + r.avg, 0) / rests.length) : null,

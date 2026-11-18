@@ -19,7 +19,7 @@
 //
 // The web build never gets here (MOBILE is a build-time flag).
 import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp, keepHeartCurve } from './health-read.js'
-import { curveCovers, curveReadings, packCurve, unpackCurve } from './heart-history.js'
+import { curveCovers, curveReadings, mergeCurves, packCurve, unpackCurve } from './heart-history.js'
 import { mergeVitals } from './vitals.js'
 import { mergeHealthActivities } from './activities.js'
 import { isoOf } from './format.js'
@@ -334,9 +334,10 @@ export async function workoutSamples(w, S = null) {
   // `S`, the profile: with Health switched off there, nothing is read nor kept.
   const got = await readWorkoutHeart(w, S).catch(() => [])
   rememberCurve(w, got)
-  // Compared at the kept curve's resolution (5 s slots), not raw readings against slots.
-  const fuller = curveReadings(packCurve(got, Number(w?.start), Number(w?.end))) > curveReadings(w?.hrc)
-  return fuller ? got : kept
+  // The hub's readings and the kept curve together, slot by slot (5 s), so two partial reads that
+  // cover different parts of the session both count.
+  const both = mergeCurves(w?.hrc, packCurve(got, Number(w?.start), Number(w?.end)))
+  return curveReadings(both) > curveReadings(w?.hrc) ? unpackCurve(both, Number(w?.end)) : kept
 }
 
 /**
@@ -347,7 +348,8 @@ export async function workoutSamples(w, S = null) {
  */
 export function rememberCurve(w, samples, now = Date.now()) {
   if (!applyRef || !w?.id || !Array.isArray(samples) || !samples.length) return false
-  const c = packCurve(samples, Number(w.start), Number(w.end))
+  // Kept when it adds slots to the curve the workout has (merged, as keepHeartCurve does).
+  const c = mergeCurves(w.hrc, packCurve(samples, Number(w.start), Number(w.end)))
   const curve = !!c && curveReadings(c) > curveReadings(w.hrc)
   const sets = lacksHeartRate(w)
   if (!curve && !sets) return false

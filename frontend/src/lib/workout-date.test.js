@@ -47,6 +47,16 @@ describe('retimeWorkout', () => {
     expect(startTimeOf(moved)).toBe('07:30')
     expect(moved.end - moved.start).toBe(47 * 60000)
   })
+  it('moves the sets\' ticks by as much, a per-side set\'s sides too', () => {
+    const before = w('a', '2026-03-10', '18:00', 47)
+    before.entries = [{ id: 'bench', sets: [{ done: true, at: before.start + 60000 }, { done: true, sides: { L: { done: true, at: before.start + 120000 }, R: { done: true, at: before.start + 180000 } } }, { done: false }] }]
+    const moved = retimeWorkout(before, '2026-02-01', '07:30')
+    const [a, b, c] = moved.entries[0].sets
+    expect(a.at - moved.start).toBe(60000)
+    expect([b.sides.L.at - moved.start, b.sides.R.at - moved.start]).toEqual([120000, 180000])
+    expect(c).toEqual({ done: false })
+    expect(before.entries[0].sets[0].at - before.start).toBe(60000)
+  })
   it('moves the heart curve kept with it by as much', () => {
     const before = { ...w('a', '2026-03-10', '18:00', 47), hrc: { s: 0, step: 5, v: [100] } }
     before.hrc.s = before.start + 60000
