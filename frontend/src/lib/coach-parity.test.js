@@ -105,6 +105,10 @@ describe('muscle weights', () => {
       { id: 'c2', n: 'Mine', bp: 'chest', muscleWeights: { chest: 1, triceps: 0.5 } },
       { id: 'c3', n: 'Odd', bp: 'nonsense' },
       { id: 'c4', n: 'Shoulders', bp: 'shoulders', tg: 'shoulders', sm: ['upper back'], mv: 2 },
+      { id: 'c6', n: 'Deleted', bp: 'back', muscleSnapshot: { mv: 2, bp: 'chest', muscleWeights: { quadriceps: 1, 'upper-back': 0.5 } } },
+      { id: 'c7', n: 'Snap groups', muscleSnapshot: { muscleGroups: ['biceps', 'shoulders'] } },
+      { id: 'c8', n: 'Groups', bp: 'back', muscleGroups: ['chest', 'triceps'] },
+      { id: 'c9', n: 'Muscles', muscles: 'abs' },
       { id: 'c5', n: 'Parts', primaries: ['chest'], secondaries: ['triceps'] },
     ]) expect(srvWeightsOf(ex)).toEqual(muscleWeightsOf(ex))
   })

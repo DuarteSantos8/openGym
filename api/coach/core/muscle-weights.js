@@ -53,12 +53,29 @@ const partsOf = ex => {
   const secondary = pick(['secondaries', 'secondaryMuscles', 'secondary']);
   return primary !== null || secondary !== null ? { primary: arrayOf(primary), secondary: arrayOf(secondary) } : null;
 };
+// muscles.js metadataOf: an entry with no muscle fields of its own is weighed by its muscleSnapshot.
+const DIRECT = ['muscleGroups', 'muscles', 'targetMuscles', 'muscleWeights', 'primaries', 'primaryMuscles', 'primary', 'secondaries', 'secondaryMuscles', 'secondary'];
+const metadataOf = ex => {
+  const direct = DIRECT.some(k => has(ex, k)) || [ex.tg, ex.mg, ...arrayOf(ex.sm)].some(v => v != null && v !== '');
+  const snap = ex.muscleSnapshot;
+  return !direct && snap && typeof snap === 'object' && !Array.isArray(snap) ? snap : ex;
+};
+// muscles.js explicitGroupsOf: a plain list of groups, each counted in full.
+const groupsOf = ex => {
+  for (const k of ['muscleGroups', 'muscles', 'targetMuscles']) {
+    if (has(ex, k)) { const g = arrayOf(ex[k]); return g.length ? g : null; }
+  }
+  return null;
+};
 // muscles.js isLegacy: only a custom exercise saved before the 1.4.5 shoulder/lats split.
 const isLegacy = ex => ex.mv !== 2 && LIB_BY_ID.get(ex.id) !== ex && !(!ex.custom && !ex.muscleWeights && LIB_BY_ID.has(ex.id));
 
+// lean: old exercise ids (frontend EXALIAS) are not resolved here, so a routine naming one weighs nothing; copy EXALIAS in when the app renames a catalogue id a saved routine can still hold.
 /** muscles.js muscleWeightsOf: { slug: weight } for one exercise (a catalogue entry or a custom one). */
 export function weightsOf(ex) {
   if (!ex || typeof ex !== 'object') return {};
+  const src = metadataOf(ex);
+  if (src !== ex) return weightsOf(src);
   const legacy = isLegacy(ex);
   if (ex.muscleWeights && typeof ex.muscleWeights === 'object' && !Array.isArray(ex.muscleWeights)) {
     const snap = {};
@@ -85,7 +102,8 @@ export function weightsOf(ex) {
   if (parts && [...parts.primary, ...parts.secondary].some(canonicalMuscle)) {
     parts.primary.forEach(m => add(m, 1));
     parts.secondary.forEach(m => add(m, SECONDARY));
-  } else {
+  } else if (groupsOf(ex)) groupsOf(ex).forEach(m => add(m, 1));
+  else {
     add(ex.tg, 1);
     add(ex.mg, SECONDARY);
     arrayOf(ex.sm).forEach(m => add(m, SECONDARY));
