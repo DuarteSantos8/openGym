@@ -930,7 +930,7 @@ function shapeRows(sets, cfg, grid) {
   }
   return [warmup, work]
 }
-export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
+export function workoutVolume(w, { warmups = false, bodyweight = 0, bodyLoadFor = e => bodyLoadOf(e?.id) } = {}) {
   let v = 0
   // Count each completed limb at its own load, including drops. A rest-pause side's r already
   // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
@@ -949,7 +949,8 @@ export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
   // share less the machine's help (never below 0). Reps sets only; a hold has no tonnage.
   ;(Array.isArray(w?.entries) ? w.entries : []).forEach(e => {
     const f = volumeFactor(e)
-    const body = bodyweight > 0 ? bodyLoadOf(e?.id) : null
+    // Readers can resolve saved entry meaning; existing consumers keep ID-based rules.
+    const body = bodyweight > 0 ? bodyLoadFor(e) : null
     const own = body ? bodyweight * body.share : 0
     ;(Array.isArray(e?.sets) ? e.sets : []).forEach(s => {
       if (!warmups && isWarmupRow(s)) return
