@@ -283,9 +283,11 @@ test('RENPHO through a second account: the friend\'s daily values, and the app s
   await new Promise(r => f.server.listen(0, '127.0.0.1', r));
   t.after(() => f.server.close());
   const url = `http://127.0.0.1:${f.server.address().port}`;
-  // Noon UTC today: the two weigh-ins an hour apart stay on one date whatever the hour the test runs.
+  // The last noon UTC that has passed: the two weigh-ins an hour apart stay on one date whatever the
+  // hour the test runs, and nothing lies ahead of the fake's clock (Date.now()).
   const day = 86400, today = new Date();
-  const now = Math.floor(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 12) / 1000);
+  const noon = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 12);
+  const now = Math.floor((noon > Date.now() ? noon - day * 1000 : noon) / 1000);
   const main = f.accounts['a@example.com'];
   f.accounts['tech@example.com'] = { password: 'tech-pass', id: '9300000000000000003', rows: [], friends: [] };
   // Two weigh-ins on one day (the friend pages keep the last), one 3 days back, one 40 days back
