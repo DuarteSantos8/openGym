@@ -82,8 +82,19 @@ function BuiltinMedia({ ex, id, compact, minimizable, sayAs }) {
     if (anim.still) return
     setPlaying(p => !p)
   }
+  // In the detail sheet the picture itself pauses/plays. Give that visible action a keyboard and
+  // screen-reader path too; minimizable workout media already has its own separate real button.
+  const mediaAction = !minimizable && !anim.still
+  const onMediaKey = e => {
+    if (!mediaAction || (e.key !== 'Enter' && e.key !== ' ')) return
+    e.preventDefault()
+    onTap()
+  }
   return (
-    <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '') + (failed === 'all' ? ' broken' : '')} id={id} onClick={onTap}>
+    <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '') + (failed === 'all' ? ' broken' : '')} id={id} onClick={onTap}
+      role={mediaAction ? 'button' : undefined} tabIndex={mediaAction ? 0 : undefined}
+      aria-label={mediaAction ? nameIn(exerciseNameText(ex), playing ? t('tap to pause') : t('tap to play')) : undefined}
+      onKeyDown={onMediaKey}>
       {failed === 'all'
         ? <div className="exmedia-x"><Icon name="dumbbell" /></div>
         : showGif && clip && clipSrc
