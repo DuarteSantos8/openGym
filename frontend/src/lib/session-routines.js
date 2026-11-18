@@ -188,15 +188,14 @@ const isBackupOf = (slot, id) => (Array.isArray(slot?.subs) && slot.subs.include
   || (slot?.subCfg && typeof slot.subCfg === 'object' && Object.prototype.hasOwnProperty.call(slot.subCfg, id))
 const ticked = entry => (entry.sets || []).some(hasCompletedWork)
 
-// The routine slot a start record's place stands for now: the same exercise, twins by position,
-// so a slot added or moved on another device since does not shift it. -1 when it is gone, or
-// when that exercise's slots were added or taken out since: which one is which is then a guess,
-// and all of them stay as they are.
+// The routine slot a start record's place stands for now: the one slot with that exercise, so a
+// slot added or moved on another device since does not shift it. -1 when it is gone, or when the
+// exercise has more than one slot, at the start or now: which one is which is then a guess (a
+// device may have moved or added one), and all of them stay as they are.
 function slotNow(routine, base, n) {
   const id = base[n]
-  if (base.filter(x => x === id).length !== routine.ex.filter(x => x?.id === id).length) return -1
-  let twin = base.slice(0, n).filter(x => x === id).length
-  return routine.ex.findIndex(x => x?.id === id && twin-- === 0)
+  if (base.filter(x => x === id).length !== 1 || routine.ex.filter(x => x?.id === id).length !== 1) return -1
+  return routine.ex.findIndex(x => x?.id === id)
 }
 
 function routineChange(own, routine, S, base) {
@@ -212,11 +211,22 @@ function routineChange(own, routine, S, base) {
     added.push(entry.id)
     ;(groups.length ? groups.at(-1).adds : lead).push(copiedEntry(entry, routine))
   }
+  // An exercise taken out and added again, then done, is its own slot still: the first place of
+  // the start record with that exercise and no entry left takes it.
+  const refill = new Map()
+  if (known) {
+    const present = new Set(own.map(e => e.fromSlot))
+    for (const entry of own) {
+      if (entry.addedInSession !== true || !ticked(entry)) continue
+      const n = base.findIndex((id, k) => id === entry.id && !present.has(k))
+      if (n >= 0) { present.add(n); refill.set(entry, n) }
+    }
+  }
   for (const entry of own) {
-    if (entry.addedInSession === true) { add(entry); continue }
+    if (entry.addedInSession === true && !refill.has(entry)) { add(entry); continue }
     // A session started before the record: only its additions are read.
     if (!known) continue
-    const n = entry.fromSlot
+    const n = refill.has(entry) ? refill.get(entry) : entry.fromSlot
     if (!Number.isInteger(n) || n < 0 || n >= base.length) {
       // Swapped after a set was ticked, the original stays beside it (active-exercise-swap.js) and
       // the new one is an addition, or nothing when it is one of the routine's backups.
@@ -230,11 +240,15 @@ function routineChange(own, routine, S, base) {
     // Its own exercise, one of its backups (#649), or a swap never done: the slot as it is.
     const same = entry.id === old.id || isBackupOf(old, entry.id) || !ticked(entry)
     if (!same) swapped++
-    groups.push({ a, slot: same ? { ...old } : replaceSlotExercise(old, entry.id, S, routine.id), adds: [] })
+    groups.push({ n, a, slot: same ? { ...old } : replaceSlotExercise(old, entry.id, S, routine.id), adds: [] })
   }
   const gone = new Set(known ? base.map((_, n) => n).filter(n => !used.has(n)).map(n => slotNow(routine, base, n)).filter(a => a >= 0) : [])
-  const moved = groups.some((g, i) => i > 0 && g.a < groups[i - 1].a)
-  // The slots done fill their own places in the order done; the rest stay where they are.
+  // Against the order the session started in: an order set on another device meanwhile is kept
+  // unless the workout itself changed it.
+  const moved = groups.some((g, i) => i > 0 && g.n < groups[i - 1].n)
+  // The slots done fill their own places, in the order done when that changed; the rest stay
+  // where they are. An addition follows the exercise it was done after.
+  if (!moved) groups.sort((x, y) => x.a - y.a)
   const places = new Set(groups.map(g => g.a))
   const out = []
   let next = 0

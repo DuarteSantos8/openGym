@@ -57,11 +57,19 @@ describe('routineChanges', () => {
     expect(c.ex[0]).toEqual(slot(BENCH))
   })
 
-  it('does not add a second bench the routine has, even with the planned one taken out', () => {
-    const r = routine([slot(BENCH), slot(RAISE)])
+  it('reads a bench taken out and added again as the bench’s own slot, and never adds a second', () => {
+    const r = routine([slot(BENCH, { reps: 5 }), slot(RAISE)])
+    // Done again, after the raise: the slot as the routine has it, in the new place.
     const [c] = changes(add(take(start([r]), BENCH), BENCH), [r])
-    expect(ids(c)).toEqual([RAISE])
-    expect(c).toMatchObject({ added: [], removed: 1 })
+    expect(ids(c)).toEqual([RAISE, BENCH])
+    expect(c.ex[1]).toEqual(slot(BENCH, { reps: 5 }))
+    expect(c).toMatchObject({ added: [], removed: 0, swapped: 0, moved: true })
+    // Added again but never done: taken out, as before.
+    const [d] = changes(add(take(start([r]), BENCH), BENCH, { sets: undone() }), [r])
+    expect(ids(d)).toEqual([RAISE])
+    expect(d).toMatchObject({ added: [], removed: 1 })
+    // With the planned bench still in the session, a second one is not added.
+    expect(changes(add(start([r]), BENCH), [r])).toEqual([])
   })
 
   it('takes out an exercise removed from the workout, not one left undone', () => {
@@ -99,6 +107,35 @@ describe('routineChanges', () => {
     expect(ids(c)).toEqual([BENCH, BENCH, CURL])
     expect(c.ex.map(x => x.reps)).toEqual([10, 5, 8])
     expect(c).toMatchObject({ removed: 1, swapped: 0, moved: false })
+  })
+
+  it('leaves twins alone: which of two benches went is a guess', () => {
+    const r = routine([slot(BENCH, { reps: 5 }), slot(BENCH, { reps: 10 }), slot(RAISE), slot(CURL)])
+    // Another device swapped the two bench slots; the workout took out the first bench.
+    const now = routine([slot(BENCH, { reps: 10 }), slot(BENCH, { reps: 5 }), slot(RAISE), slot(CURL)])
+    expect(changes(take(start([r]), BENCH), [now])).toEqual([])
+    expect(changes(take(start([r]), BENCH), [r])).toEqual([])
+    // Other changes still go through.
+    const [c] = changes(take(take(start([r]), BENCH), RAISE), [now])
+    expect(c.ex.map(x => [x.id, x.reps])).toEqual([[BENCH, 10], [BENCH, 5], [CURL, 8]])
+    expect(c).toMatchObject({ removed: 1 })
+  })
+
+  it('keeps an order set on another device when the workout kept its own', () => {
+    const r = routine([slot(BENCH), slot(RAISE), slot(CURL)])
+    const now = routine([slot(RAISE), slot(BENCH), slot(CURL)])
+    expect(changes(start([r]), [now])).toEqual([])
+    // An addition goes after the exercise it was done after, in the order the routine has now.
+    const [c] = changes(add(order(start([r]), [BENCH, RAISE, CURL]), LEGCURL), [now])
+    expect(ids(c)).toEqual([RAISE, BENCH, CURL, LEGCURL])
+    expect(c).toMatchObject({ added: [LEGCURL], moved: false })
+    const a = start([r])
+    a.entries.splice(1, 0, entry(LEGCURL, 'r1', { addedInSession: true }))
+    expect(ids(changes(a, [now])[0])).toEqual([RAISE, BENCH, LEGCURL, CURL])
+    // The workout's own new order still wins for the slots it did.
+    const [d] = changes(order(start([r]), [CURL, BENCH, RAISE]), [now])
+    expect(ids(d)).toEqual([CURL, BENCH, RAISE])
+    expect(d).toMatchObject({ moved: true })
   })
 
   it('keeps the slot’s prescription on a swap, as the routine editor’s Replace does', () => {
