@@ -15,13 +15,15 @@ describe('the system bars on Android', () => {
   it('the stylesheet takes the larger of env() and what the app passes', () => {
     expect(css).toMatch(/--sat:max\(env\(safe-area-inset-top,0px\),var\(--native-sat,0px\)\);/)
     expect(css).toMatch(/--sab:max\(env\(safe-area-inset-bottom,0px\),var\(--native-sab,0px\)\);/)
+    expect(css).toMatch(/--sar:max\(env\(safe-area-inset-right,0px\),var\(--native-sar,0px\)\);/)
   })
 
   it('nothing reads env(safe-area-inset-*) around the two variables', () => {
     const dir = new URL('../', import.meta.url)
     for (const f of readdirSync(dir).filter(n => n.endsWith('.css'))) {
       const uses = read('../' + f).match(/env\(safe-area-inset-[a-z]+/g) || []
-      expect({ f, uses }).toEqual({ f, uses: f === 'index.css' ? ['env(safe-area-inset-bottom', 'env(safe-area-inset-top'] : [] })
+      // The right edge too, for the tab bar that stands there (--sar, with --native-sar).
+      expect({ f, uses }).toEqual({ f, uses: f === 'index.css' ? ['env(safe-area-inset-bottom', 'env(safe-area-inset-top', 'env(safe-area-inset-right'] : [] })
     }
   })
 
@@ -29,6 +31,7 @@ describe('the system bars on Android', () => {
     expect(activity).toMatch(/WindowInsetsCompat\.Type\.systemBars\(\) \| WindowInsetsCompat\.Type\.displayCutout\(\)/)
     expect(activity).toContain("'--native-sat'")
     expect(activity).toContain("'--native-sab'")
+    expect(activity).toContain("'--native-sar'")
     // In CSS pixels, not the device's.
     expect(activity).toMatch(/getDisplayMetrics\(\)\.density/)
   })
@@ -36,7 +39,7 @@ describe('the system bars on Android', () => {
   it('passes them again to every page that loads', () => {
     expect(activity).toMatch(/addWebViewListener[\s\S]*onPageLoaded[\s\S]*applyBars\(view\)/)
     // applyBars skips an unchanged top/bottom; a new document still has no variables.
-    expect(activity).toMatch(/onPageLoaded\(WebView view\) \{[\s\S]*?barTop = -1;[\s\S]*?barBottom = -1;[\s\S]*?applyBars\(view\)/)
+    expect(activity).toMatch(/onPageLoaded\(WebView view\) \{[\s\S]*?barTop = -1;[\s\S]*?barBottom = -1;[\s\S]*?barRight = -1;[\s\S]*?applyBars\(view\)/)
   })
 
   // The first version set its listener on the WebView, which replaced the WebView's own: env()
