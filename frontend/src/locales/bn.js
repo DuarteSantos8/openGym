@@ -5982,4 +5982,6 @@ export default {
   "Hide": "লুকান",
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  "Effort on warm-ups": "ওয়ার্ম-আপে পরিশ্রম",
+  "Rate warm-up sets too, not just work sets.": "শুধু ওয়ার্কিং সেট নয়, ওয়ার্ম-আপ সেটেরও মান দিন।",
 }

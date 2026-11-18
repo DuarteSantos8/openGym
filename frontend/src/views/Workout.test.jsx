@@ -1517,6 +1517,40 @@ describe('effort cell (colour-coded RIR/RPE quick picker)', () => {
   })
 })
 
+describe('effort on warm-ups (Settings → Workout)', () => {
+  const ramp = () => exercise('plain-bench', [false, false], {
+    sets: [{ w: 30, r: 5, done: false, phase: 'warmup', rir: 3 }, { w: 60, r: 5, done: false }],
+  })
+  // the list and compact layouts say the exercise after the set ("Set 1: RIR, Bench")
+  const effortNames = () => [...container.querySelectorAll('.setrow button')].map(b => b.getAttribute('aria-label')).filter(n => /: RIR(,|$)/.test(n || '')).map(n => n.split(',')[0])
+
+  it('gives a warm-up row its effort cell by default', async () => {
+    await mount([ramp()], 0, { effort: 'rir' })
+    expect(effortNames()).toEqual(['Warm-up 1: RIR', 'Set 1: RIR'])
+  })
+
+  it.each(['cards', 'list', 'compact'])('switched off, leaves a warm-up row only a blank slot in the %s layout', async view => {
+    await mount([ramp()], 0, { effort: 'rir', warmupEffort: false, active: { workoutView: view } })
+    expect(effortNames()).toEqual(['Set 1: RIR'])
+    // the slot keeps the warm-up's weight and reps lined up with the work set's
+    const warmRow = container.querySelector('.setrow')
+    expect(warmRow.querySelector('.effcell[aria-hidden="true"]')).toBeTruthy()
+    expect(warmRow.className).toContain('eff3')
+    // what was logged on the warm-up stays stored, only not drawn
+    expect(mocks.S.active.entries[0].sets[0].rir).toBe(3)
+  })
+
+  it('Focus follows: no effort button on a warm-up when off, one on the work set', async () => {
+    await mount([ramp()], 0, { effort: 'rir', warmupEffort: false, active: { workoutView: 'focus' } })
+    expect(container.querySelector('.focus-effort')).toBeNull()
+    await click(buttonNamed('Next set'))
+    expect(container.querySelector('.focus-effort')).toBeTruthy()
+    await unmount()
+    await mount([ramp()], 0, { effort: 'rir', active: { workoutView: 'focus' } })
+    expect(container.querySelector('.focus-effort').textContent).toBe('3')
+  })
+})
+
 describe('superset flow survives an exercise being removed mid-session', () => {
   // removeActiveExercise splices A.entries, shifting every index above the removal down.
   // The high-water marks are index-keyed, so without re-baselining the shifted exercise

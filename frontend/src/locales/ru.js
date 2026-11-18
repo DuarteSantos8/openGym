@@ -5907,4 +5907,6 @@ export default {
   "Hide": "Скрыть",
   "Totals": "Итоги",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
+  "Effort on warm-ups": "Усилие в разминке",
+  "Rate warm-up sets too, not just work sets.": "Оценивайте и разминочные подходы, а не только рабочие.",
 }

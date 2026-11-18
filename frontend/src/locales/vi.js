@@ -5869,4 +5869,6 @@ export default {
   "Hide": "Ẩn",
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
+  "Effort on warm-ups": "Độ gắng sức khi khởi động",
+  "Rate warm-up sets too, not just work sets.": "Chấm cả hiệp khởi động, không chỉ hiệp chính.",
 };

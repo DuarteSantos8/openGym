@@ -5896,4 +5896,6 @@ export default {
   "Hide": "隱藏",
   "Totals": "總計",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
+  "Effort on warm-ups": "熱身組自覺強度",
+  "Rate warm-up sets too, not just work sets.": "熱身組也評分，不只是正式組。",
 }

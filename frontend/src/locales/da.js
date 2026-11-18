@@ -5843,4 +5843,6 @@ export default {
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  "Effort on warm-ups": "Indsats på opvarmning",
+  "Rate warm-up sets too, not just work sets.": "Vurder også opvarmningssæt, ikke kun arbejdssæt.",
 }

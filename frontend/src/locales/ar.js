@@ -5958,4 +5958,6 @@ export default {
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
+  "Effort on warm-ups": "الجهد في الإحماء",
+  "Rate warm-up sets too, not just work sets.": "قيّم مجموعات الإحماء أيضًا، لا مجموعات العمل فقط.",
 }

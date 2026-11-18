@@ -5868,4 +5868,6 @@ export default {
   "Hide": "Sembunyikan",
   "Totals": "Total",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Panah mengubah urutannya.",
+  "Effort on warm-ups": "Tingkat usaha saat pemanasan",
+  "Rate warm-up sets too, not just work sets.": "Nilai juga set pemanasan, bukan hanya set utama.",
 };

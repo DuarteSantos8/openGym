@@ -5923,4 +5923,6 @@ export default {
   "Hide": "Ausblenden",
   "Totals": "Summen",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Die Pfeile ändern die Reihenfolge.",
+  "Effort on warm-ups": "Anstrengung beim Aufwärmen",
+  "Rate warm-up sets too, not just work sets.": "Bewerte auch Aufwärmsätze, nicht nur Arbeitssätze.",
 }

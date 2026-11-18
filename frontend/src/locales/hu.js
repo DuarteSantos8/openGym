@@ -5906,4 +5906,6 @@ export default {
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
+  "Effort on warm-ups": "Megerőltetés bemelegítésnél",
+  "Rate warm-up sets too, not just work sets.": "Értékeld a bemelegítő sorozatokat is, ne csak a munkasorozatokat.",
 }

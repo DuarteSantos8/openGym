@@ -5913,4 +5913,6 @@ export default {
   "Hide": "Nascondi",
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
+  "Effort on warm-ups": "Sforzo nel riscaldamento",
+  "Rate warm-up sets too, not just work sets.": "Valuta anche le serie di riscaldamento, non solo quelle allenanti.",
 }

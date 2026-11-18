@@ -5899,4 +5899,6 @@ export default {
   "Hide": "Slėpti",
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  "Effort on warm-ups": "Pastangos apšilimo metu",
+  "Rate warm-up sets too, not just work sets.": "Vertink ir apšilimo serijas, ne tik darbo serijas.",
 }
