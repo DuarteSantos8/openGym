@@ -53,10 +53,12 @@ jobs:
           set -euo pipefail
           # helm pushes the chart to OCI; crane re-tags the same manifest as latest and X.Y.
           # Static binaries, no install packages.
-          HLM=3.19.0; CRANE=0.20.3
+          HLM=3.19.0; CRANE=0.22.1
           curl -fsSL "https://get.helm.sh/helm-v${HLM}-linux-amd64.tar.gz" | tar xz
           sudo mv linux-amd64/helm /usr/local/bin/helm
-          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE}/go-containerregistry_Linux_amd64.tar.gz" | tar xz crane
+          # go-containerregistry's asset names its x86 builds x86_64 (not amd64).
+          CRANE_ARCH="$(case "$(uname -m)" in x86_64) echo x86_64 ;; aarch64) echo arm64 ;; *) uname -m ;; esac)"
+          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE}/go-containerregistry_Linux_${CRANE_ARCH}.tar.gz" | tar xz crane
           sudo mv crane /usr/local/bin/crane
           helm version; crane --version
 
