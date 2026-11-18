@@ -296,11 +296,13 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private func startQuery(from start: Date) {
         guard let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
         let predicate = HKQuery.predicateForSamples(withStart: start, end: nil, options: .strictStartDate)
-        let handler: (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] _, added, _, _, _ in
+        let handler: (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] q, added, _, _, _ in
             guard let self = self else { return }
             let readings = (added as? [HKQuantitySample] ?? []).map { ($0.endDate, $0.quantity.doubleValue(for: self.bpm)) }
             guard !readings.isEmpty else { return }
-            DispatchQueue.main.async { self.add(readings) }
+            // Only while this query is the workout's: a reading queued as one workout ended is not
+            // passed on as the next one's.
+            DispatchQueue.main.async { guard self.query === q else { return }; self.add(readings) }
         }
         let q = HKAnchoredObjectQuery(type: type, predicate: predicate, anchor: nil, limit: HKObjectQueryNoLimit, resultsHandler: handler)
         q.updateHandler = handler
@@ -455,7 +457,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
               let stats = workoutBuilder.statistics(for: hrType),
               let value = stats.mostRecentQuantity()?.doubleValue(for: bpm) else { return }
         let at = stats.mostRecentQuantityDateInterval()?.end ?? Date()
-        DispatchQueue.main.async { self.add([(at, value)]) }
+        DispatchQueue.main.async { guard workoutBuilder === self.builder else { return }; self.add([(at, value)]) }
     }
 
     /// CI's screenshots (SessionStore.startDemo): a measuring session with a workout's readings.
