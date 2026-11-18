@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "Band awal setiap set",
   "Metres": "Meter",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Latihan berikutnya saat istirahat selesai",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Di Kartu dan Fokus, latihan berikutnya muncul sendiri begitu istirahat setelah set terakhir habis. Tangan tetap di kapur.",
+  "Move to the next exercise": "Lanjut ke latihan berikutnya",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "Di Kartu, latihan berikutnya muncul sendiri tanpa diketuk. Tangan tetap di kapur.",
+  "When the rest ends": "Saat istirahat selesai",
+  "Right away": "Langsung",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Klip diputar sebagai ganti kalimat. Maksimal {0} di sini, masing-masing {1} detik. Klipmu tetap milikmu: hanya disinkronkan ke perangkatmu sendiri dan tidak pernah dibagikan.",
   "Add a line": "Tambah kalimat",

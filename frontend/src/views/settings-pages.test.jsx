@@ -455,7 +455,7 @@ describe('the pages', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
     expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
-      'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
+      'Collapse completed exercises', 'Skip completed exercises', 'Move to the next exercise', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
@@ -464,6 +464,34 @@ describe('the pages', () => {
     mount('advanced')
     expect(titles()).toEqual(['Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+  })
+
+  // #1360: the row became a choice, so a profile that carries the switch it replaces has to keep
+  // the behaviour its owner turned on rather than fall to Off (lib/auto-next.js).
+  it('offers when to move on, and reads a saved switch as "when the rest ends"', () => {
+    const seg = () => [...rowTitled('Move to the next exercise').querySelectorAll('.seg button')]
+    const on = () => seg().find(b => b.getAttribute('aria-pressed') === 'true')?.textContent
+    mount('workout')
+    expect(seg().map(b => b.textContent)).toEqual(['Off', 'When the rest ends', 'Right away'])
+    expect(on()).toBe('Off')
+    mocks.S.autoNextExercise = true
+    mount('workout')
+    expect(on()).toBe('When the rest ends')
+    mocks.S.autoNextExercise = 'now'
+    mount('workout')
+    expect(on()).toBe('Right away')
+    // three settings on this page offer an "Off", so the name says which one it belongs to
+    expect(seg().map(b => b.getAttribute('aria-label'))).toEqual([
+      'Move to the next exercise: Off', 'Move to the next exercise: When the rest ends',
+      'Move to the next exercise: Right away'])
+    // choosing Off leaves no key behind, the way the switch did
+    act(() => seg()[0].click())
+    expect(Object.hasOwn(mocks.S, 'autoNextExercise')).toBe(false)
+    // and choosing one of the two when's writes that choice, not a boolean
+    act(() => seg()[2].click())
+    expect(mocks.S.autoNextExercise).toBe('now')
+    act(() => seg()[1].click())
+    expect(mocks.S.autoNextExercise).toBe('rest')
   })
 
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
@@ -636,6 +664,8 @@ describe('searchSettings', () => {
       expect(first('Feste Woche')).toBe('How you train')
       expect(first('Wochenstart')).toBe('Week starts on')
       expect(first('kompakt')).toBe('Layout')
+      // #1360: the choices of a segmented row are searchable in the app language too
+      expect(first('Sofort')).toBe('Move to the next exercise')
       expect(first('wischen')).toBe('Swipe actions')
       expect(first('Geste')).toBe('Swipe actions')
       await setLang('ar')

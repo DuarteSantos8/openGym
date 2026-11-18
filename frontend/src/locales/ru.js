@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "Резинки, с которых начинается каждый подход",
   "Metres": "Метры",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Следующее упражнение после отдыха",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "В Карточках и Фокусе следующее упражнение появляется само, когда закончится отдых после последнего подхода. Руки остаются в магнезии.",
+  "Move to the next exercise": "Переход к следующему упражнению",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "В Карточках следующее упражнение появляется само, без нажатия. Руки остаются в магнезии.",
+  "When the rest ends": "После отдыха",
+  "Right away": "Сразу",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Клип звучит вместо фразы. Здесь можно до {0}, каждый до {1} с. Ваши клипы остаются вашими: они синхронизируются только с вашими устройствами и никому не передаются.",
   "Add a line": "Добавить фразу",

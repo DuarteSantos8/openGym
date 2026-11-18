@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "کش‌هایی که هر ست با آن شروع می‌شود",
   "Metres": "متر",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "تمرین بعدی وقتی استراحت تمام شد",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "در چیدمان کارت و تمرکز، وقتی استراحتِ بعد از آخرین ست تمام شود، تمرین بعدی خودش می‌آید. دست‌ها روی پودر منیزیم می‌مانند.",
+  "Move to the next exercise": "به تمرین بعدی برو",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "در چیدمان کارت، تمرین بعدی بدون لمس خودش می‌آید. دست‌ها روی پودر منیزیم می‌مانند.",
+  "When the rest ends": "وقتی استراحت تمام شد",
+  "Right away": "فورًا",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "به‌جای این جمله، یک کلیپ پخش می‌شود. اینجا تا {0} کلیپ، هرکدام {1} ثانیه. کلیپ‌هایتان مال خودتان می‌ماند: فقط با دستگاه‌های خودتان همگام می‌شود و هرگز به اشتراک گذاشته نمی‌شود.",
   "Add a line": "افزودن جمله",

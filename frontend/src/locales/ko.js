@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "모든 세트의 시작 밴드",
   "Metres": "미터",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "휴식이 끝나면 다음 운동으로",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "카드와 포커스에서 마지막 세트 후 휴식이 끝나면 다음 운동이 알아서 떠요. 손은 초크에 그대로 두세요.",
+  "Move to the next exercise": "다음 운동으로 넘어가기",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "카드에서는 다음 운동이 따로 누르지 않아도 나와요. 손은 초크에 그대로 두세요.",
+  "When the rest ends": "휴식이 끝나면",
+  "Right away": "바로",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "대사 대신 클립이 재생돼요. 여기엔 최대 {0}개, 각 {1}초까지. 클립은 내 것 그대로예요: 내 기기끼리만 동기화되고 절대 공유되지 않아요.",
   "Add a line": "대사 추가",

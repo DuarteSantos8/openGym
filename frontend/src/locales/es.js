@@ -51,8 +51,10 @@ export default {
   "Bands every set starts with": "Bandas con las que empieza cada serie",
   "Metres": "Metros",
   // --- next exercise when the rest ends (#1017) ---
-  "Next exercise when the rest ends": "Siguiente ejercicio al acabar el descanso",
-  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "En Tarjetas y Enfoque, el siguiente ejercicio aparece solo cuando termina el descanso tras la última serie. Las manos, en el magnesio.",
+  "Move to the next exercise": "Pasar al siguiente ejercicio",
+  "In Cards, the next exercise comes up without a tap. Hands stay on the chalk.": "En Tarjetas, el siguiente ejercicio aparece solo, sin tocar. Las manos, en el magnesio.",
+  "When the rest ends": "Al acabar el descanso",
+  "Right away": "Enseguida",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Un clip suena en lugar de la frase. Hasta {0} aquí, de {1} segundos cada uno. Tus clips son tuyos: se sincronizan con tus propios dispositivos y nunca se comparten.",
   "Add a line": "Añadir una frase",
