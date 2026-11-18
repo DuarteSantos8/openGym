@@ -744,3 +744,7 @@ Coach UI exists anywhere in the client.
 The Coach programs training; it does not practise medicine. It is told never to diagnose, to
 stay conservative when someone describes pain rather than soreness, and to recommend a
 professional. **It is not a doctor or a physiotherapist. If something hurts, ask one.**
+
+## The research behind it
+
+Every check and tip in the review card names the study it rests on. The same list is on one page, with the grade of each study and a PubMed link. Numbers no study backs are marked as our rule. See [COACH_EVIDENCE.md](COACH_EVIDENCE.md).

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { planChecks, tagOfRef } from '../coach/core/checks.js';
 import { EVIDENCE, TAGS } from '../coach/core/evidence.js';
 
@@ -88,4 +89,10 @@ test('every source is cited, graded and has a PubMed id unless it is our rule', 
       if (s.grade !== 'our rule') assert.match(s.pmid, /^\d{7,9}$/, s.cite);
     }
   }
+});
+
+test('the docs page has a heading per tag and lists every study', () => {
+  const page = readFileSync(new URL('../../docs/COACH_EVIDENCE.md', import.meta.url), 'utf8');
+  for (const tag of TAGS) assert.ok(page.includes(`\n## ${tag}\n`), tag);
+  for (const e of Object.values(EVIDENCE)) for (const s of e.sources) if (s.pmid) assert.ok(page.includes(s.pmid), s.pmid);
 });
