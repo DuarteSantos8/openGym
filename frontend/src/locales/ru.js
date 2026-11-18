@@ -5907,4 +5907,7 @@ export default {
   "Hide": "Скрыть",
   "Totals": "Итоги",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Запустить секундомер",
+  "Stop timing": "Остановить секундомер",
 }

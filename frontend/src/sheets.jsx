@@ -1,5 +1,6 @@
 import { tempoSheet } from './components/Tempo.jsx'
 import { useCircuit } from './store/useCircuit.js'
+import { useCardioClock } from './store/useCardioClock.js'
 import { CircuitResults } from './components/CircuitCard.jsx'
 import { normalizeTempo, repSec } from './lib/tempo.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
@@ -4767,6 +4768,8 @@ export const finishWorkoutNow = (opts) => doFinishWorkout(opts && typeof opts ==
 function doFinishWorkout({ end: endAt, auto } = {}) {
   // A circuit's clock still running (store/useCircuit.js) stops first, so its result is saved too.
   useCircuit.getState().wrapUp()
+  // So does a cardio set's clock (store/useCardioClock.js): its minutes go to its row.
+  useCardioClock.getState().stop()
   const st = S()
   const A = st.active
   if (!A) return

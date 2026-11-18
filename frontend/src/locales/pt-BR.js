@@ -4328,6 +4328,9 @@ export const PT_BR_OVERRIDES = {
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
   // Arrange your own Home and Stats (#1119)
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Iniciar o cronômetro",
+  "Stop timing": "Parar o cronômetro",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
