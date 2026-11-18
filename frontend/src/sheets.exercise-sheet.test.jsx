@@ -11,6 +11,7 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { exerciseDetailSheet } from './sheets.jsx'
 import { EXIDX } from './lib/exercises.js'
+import { resetPictureIndex, DEMO_BASE } from './lib/exercise-pictures.js'
 
 vi.mock('./lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 bindUI(useUI)
@@ -26,7 +27,15 @@ beforeEach(() => {
   useUI.setState({ sheets: [], toastMsg: '' })
   host = document.createElement('div'); document.body.append(host); root = createRoot(host)
 })
-afterEach(() => { act(() => root.unmount()); host.remove() })
+afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); resetPictureIndex() })
+// Demonstration media for the bench press only (catalogue/demos/index.json's shape).
+const DEMOS = { [BENCH]: [
+  { kind: 'video', f: 'files/video-0025.mp4', poster: 'files/video-0025.webp', w: 720, h: 1280, license: 'CC-BY-SA-4.0', author: 'Your Move', source: 'https://example.org/v' },
+  { kind: 'image', pose: 'sequence', f: 'files/atp-14-6.webp', caption: 'Figure 14-6', license: 'PD-USGov', author: 'U.S. Army (ATP 7-22.02)', source: 'https://example.org/atp' },
+] }
+const withDemos = () => vi.stubGlobal('fetch', vi.fn(async url => ({ ok: true, json: async () => (String(url).startsWith(DEMO_BASE) ? DEMOS : {}) })))
+const settle = () => act(async () => { await new Promise(r => setTimeout(r, 0)) })
+
 const patch = p => useStore.setState(s => ({ S: { ...s.S, ...p } }))
 const open = id => {
   exerciseDetailSheet(EXIDX[id])
@@ -112,6 +121,23 @@ describe('the exercise sheet (redesign step 4)', () => {
     expect(host.querySelector('.own-flip')).toBeNull()      // the sheet's switch replaces the flip
     act(() => [...seg.querySelectorAll('button')][0].click())
     expect(useStore.getState().S.exMedia[BENCH].show).toBe('stock')
+  })
+  it('offers Video and Steps when the exercise has demonstrations, credited under each', async () => {
+    withDemos()
+    open(BENCH)
+    await settle()
+    const seg = host.querySelector('.ex-media-seg')
+    expect([...seg.querySelectorAll('button')].map(b => b.textContent)).toEqual(['Video', 'Steps', 'Animation'])
+    act(() => [...seg.querySelectorAll('button')][0].click())
+    const v = host.querySelector('.expics-video video')
+    expect(v.getAttribute('src')).toBe(DEMO_BASE + 'files/video-0025.mp4')
+    expect(host.querySelector('.expics-title')).toBeNull()        // the switch names it
+    expect(host.querySelector('.expics figcaption').textContent).toContain('Your Move')
+    act(() => [...seg.querySelectorAll('button')][1].click())
+    expect(host.querySelector('.expics-video')).toBeNull()
+    expect(host.querySelector('.expics-seq img').getAttribute('src')).toBe(DEMO_BASE + 'files/atp-14-6.webp')
+    act(() => [...seg.querySelectorAll('button')][2].click())
+    expect(host.querySelector('.expics')).toBeNull()
   })
   it('shows no switch with only the animation', () => {
     open(BENCH)

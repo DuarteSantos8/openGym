@@ -26,6 +26,7 @@ import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, AWAY_PLANS } from './lib/starter.js'
 import OwnExerciseMedia from './components/OwnExerciseMedia.jsx'
 import Media, { Thumb } from './components/Media.jsx'
+import ExercisePictures, { useDemoMedia } from './components/ExercisePictures.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { FormVideosSection } from './components/SetVideo.jsx'
@@ -189,8 +190,8 @@ export function addDeviceSetupMessage(routines) {
 export function askAddDeviceData(extras) {
   const logged = extras.workouts || extras.bodyweight || extras.customEx
   return new Promise(resolve => confirmSheet({
-    title: logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
-    message: logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
+    title: extras.nutritionEntries ? t('Add this device’s data to your profile?') : logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
+    message: extras.nutritionEntries ? t('This device has {0} nutrition entries logged while signed out. Add them and any other local entries, or keep the profile as it is on the server.', extras.nutritionEntries) : logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
     confirmText: t('Add them'), cancelText: t('Keep profile as is'),
     onConfirm: () => resolve(true), onCancel: () => resolve(false), locked: true
   }))
@@ -544,7 +545,7 @@ function WeighIns() {
         <div className="row between" style={{ margin: '16px 2px 4px', gap: 8 }}>
           <span className="small" style={{ fontWeight: 600 }}>{t('Week of {0}', fmtDate(w.key))}</span>
           <span className="small row" style={{ gap: 8 }}>
-            {moved && <span className="row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(w.delta, w.avg) }}>
+            {moved && <span className="row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(w.delta, w.avg, true) }}>
               <Icon name={w.delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />{fmtNum(Math.abs(w.delta))}
             </span>}
             <span className="muted" style={{ whiteSpace: 'nowrap' }}>{t('Average {0}', fmtNum(w.avg) + ' ' + st.unit)}</span>
@@ -937,11 +938,12 @@ function HevyImportSheet({ close }) {
 }
 
 /* ============================ target weight ============================ */
-export function bwDeltaColor(delta, currentW) {
+// `ink`: the text-safe pair (--acc-ink / --red-ink, 4.5:1 on the light theme) for small text.
+export function bwDeltaColor(delta, currentW, ink = false) {
   if (!delta) return 'var(--label-2)'
   if (!S().targetW) return 'var(--label)'
   const up = S().targetW > currentW
-  return (delta > 0) === up ? 'var(--acc-ink)' : 'var(--red-ink)'
+  return (delta > 0) === up ? (ink ? 'var(--acc-ink)' : 'var(--acc)') : (ink ? 'var(--red-ink)' : 'var(--red)')
 }
 function GoalSheet({ close }) {
   const st = S()
@@ -1552,19 +1554,37 @@ function lastTopSet(exId, last, st) {
   return setLabel(exId, top, last.target, speedUnitOf(st))
 }
 
-// The picture at the top, and which one shows. Today an exercise can have the catalogue's
-// animation and a photo or video of your own (lib/ex-media.js); with both, a switch above the
-// picture picks one, the same choice the flip on the picture made (it stays on the workout's
-// picture). Demonstration videos and step photos join the switch as their own segments.
+// The picture at the top, and which one shows: Video (a demonstration clip), Steps (photos of the
+// movement, start to end), the catalogue's Animation, and Yours (your own photo or video, lib/ex-media.js).
+// Only what the exercise has is offered; with one there is no switch. Video and Steps come from
+// catalogue/demos and catalogue/photos (components/ExercisePictures.jsx), free licences, credited
+// under each file. Animation / Yours is the same choice the flip on the picture made, and is kept
+// (setExMediaShow); Video / Steps hold for the session, so the next sheet opens on them too.
+let demoPick = null
 function ExerciseMediaSwitch({ ex }) {
   const entry = useStore(s => (ex && !isCustomEx(ex) ? s.S.exMedia?.[ex.id] : undefined))
   const own = !isCustomEx(ex) && entry ? exMediaOf({ exMedia: { [ex.id]: entry } }, ex.id) : null
-  const segs = [ex.gif && { value: 'stock', label: t('Animation') }, own && { value: 'own', label: t('Yours') }].filter(Boolean)
-  const showing = own && (own.show === 'own' || !ex.gif) ? 'own' : 'stock'
+  const demo = useDemoMedia(ex)
+  const hasSteps = !!demo && (demo.sequences.length > 0 || demo.steps.length > 0)
+  const [pick, setPick] = useState(demoPick)
+  const segs = [
+    demo?.video && { value: 'video', label: t('Video') },
+    hasSteps && { value: 'steps', label: t('Steps') },
+    ex.gif && { value: 'stock', label: t('Animation') },
+    own && { value: 'own', label: t('Yours') },
+  ].filter(Boolean)
+  const picture = own && (own.show === 'own' || !ex.gif) ? 'own' : 'stock'
+  const showing = segs.some(sg => sg.value === pick) ? pick : picture
+  const choose = v => {
+    if (v === 'video' || v === 'steps') { demoPick = v; setPick(v); return }
+    demoPick = null; setPick(null)
+    update(s => { setExMediaShow(s, ex.id, v) })
+  }
   return <>
-    {segs.length > 1 && <Segmented className="ex-media-seg" options={segs} value={showing}
-      onChange={v => update(s => { setExMediaShow(s, ex.id, v) })} />}
-    <Media ex={ex} noFlip />
+    {segs.length > 1 && <Segmented className="ex-media-seg" options={segs} value={showing} onChange={choose} />}
+    {showing === 'video' || showing === 'steps'
+      ? <ExercisePictures ex={ex} only={showing} media={demo} />
+      : <Media ex={ex} noFlip />}
   </>
 }
 

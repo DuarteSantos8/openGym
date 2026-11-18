@@ -14,8 +14,33 @@ const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 // [fewer, more] words at the ends of the scale and `countLabel(n)` a day's tooltip.
 export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChange, counts, legend, countLabel }) {
   const wrapRef = useRef(null)
+  const aligned = useRef(false)
   const [localMetric, setLocalMetric] = useState(() => normalizeMetric(selectedMetric ?? S?.heatmapMetric))
-  useEffect(() => { if (wrapRef.current) wrapRef.current.scrollLeft = wrapRef.current.scrollWidth }, [])
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || aligned.current) return
+    // A closed disclosure has no layout width. Align once its contents first have layout.
+    const align = () => {
+      if (aligned.current || !wrap.clientWidth) return
+      wrap.scrollLeft = wrap.scrollWidth
+      aligned.current = true
+      observer?.disconnect()
+    }
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(align)
+    observer?.observe(wrap)
+    const disclosures = []
+    for (let el = wrap.parentElement; el; el = el.parentElement) {
+      if (el.tagName === 'DETAILS') {
+        disclosures.push(el)
+        el.addEventListener('toggle', align)
+      }
+    }
+    align()
+    return () => {
+      observer?.disconnect()
+      disclosures.forEach(el => el.removeEventListener('toggle', align))
+    }
+  }, [])
 
   const metric = normalizeMetric(selectedMetric ?? localMetric)
   const metricValue = counts ? 'n' : metric === 'vol' ? 'vol' : 'min'

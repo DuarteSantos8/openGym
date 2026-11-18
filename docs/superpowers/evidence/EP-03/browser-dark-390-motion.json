@@ -1,0 +1,215 @@
+{
+  "theme": "dark",
+  "viewport": 390,
+  "viewportHeight": 1000,
+  "reducedMotion": false,
+  "documentOverflow": false,
+  "cardOverflow": false,
+  "ranges": [
+    {
+      "text": "1W1M3M1YAll",
+      "overflow": false,
+      "buttons": [
+        {
+          "label": "1W",
+          "width": 61.390625,
+          "clipped": false
+        },
+        {
+          "label": "1M",
+          "width": 61.40625,
+          "clipped": false
+        },
+        {
+          "label": "3M",
+          "width": 61.390625,
+          "clipped": false
+        },
+        {
+          "label": "1Y",
+          "width": 61.40625,
+          "clipped": false
+        },
+        {
+          "label": "All",
+          "width": 61.40625,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "text": "1W1M3M1YAll",
+      "overflow": false,
+      "buttons": [
+        {
+          "label": "1W",
+          "width": 61.390625,
+          "clipped": false
+        },
+        {
+          "label": "1M",
+          "width": 61.40625,
+          "clipped": false
+        },
+        {
+          "label": "3M",
+          "width": 61.390625,
+          "clipped": false
+        },
+        {
+          "label": "1Y",
+          "width": 61.40625,
+          "clipped": false
+        },
+        {
+          "label": "All",
+          "width": 61.40625,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "text": "1W1M3M1YAll",
+      "overflow": false,
+      "buttons": [
+        {
+          "label": "1W",
+          "width": 61.390625,
+          "clipped": false
+        },
+        {
+          "label": "1M",
+          "width": 61.40625,
+          "clipped": false
+        },
+        {
+          "label": "3M",
+          "width": 61.390625,
+          "clipped": false
+        },
+        {
+          "label": "1Y",
+          "width": 61.40625,
+          "clipped": false
+        },
+        {
+          "label": "All",
+          "width": 61.40625,
+          "clipped": false
+        }
+      ]
+    }
+  ],
+  "caption": "Volume per session (kg)",
+  "rows": [
+    [
+      "Fri, 13 Nov 2026",
+      "1",
+      "250"
+    ],
+    [
+      "Fri, 13 Nov 2026",
+      "2",
+      "490"
+    ],
+    [
+      "Sat, 14 Nov 2026",
+      "1",
+      "300"
+    ]
+  ],
+  "note": "Included 3 sessions; excluded 3: 1 timed/cardio, 1 without completed reps or positive volume, and 1 without exercise set details.",
+  "focus": {
+    "text": "1W",
+    "visible": true,
+    "outline": "rgb(48, 209, 88) solid 2px"
+  },
+  "mediaElements": [],
+  "screenshots": [
+    "top-set-dark-390-motion.png",
+    "volume-dark-390-motion.png",
+    "volume-lb-dark-390-motion.png",
+    "volume-empty-dark-390-motion.png",
+    "volume-offline-dark-390-motion.png"
+  ],
+  "keyboardTabs": {
+    "toChart": 31,
+    "toVolumeShiftTab": 34,
+    "to1W": 32
+  },
+  "accessibleTable": [
+    {
+      "role": "table",
+      "name": "Volume per session (kg)"
+    },
+    {
+      "role": "rowheader",
+      "name": "Fri, 13 Nov 2026"
+    },
+    {
+      "role": "rowheader",
+      "name": "Fri, 13 Nov 2026"
+    },
+    {
+      "role": "rowheader",
+      "name": "Sat, 14 Nov 2026"
+    },
+    {
+      "role": "columnheader",
+      "name": "Date"
+    },
+    {
+      "role": "columnheader",
+      "name": "Sets"
+    },
+    {
+      "role": "columnheader",
+      "name": "Volume (kg)"
+    }
+  ],
+  "pinnedRows": [
+    "Fri, 13 Nov 20261551.2",
+    "Fri, 13 Nov 202621,080.3",
+    "Sat, 14 Nov 20261661.4"
+  ],
+  "emptyRange": true,
+  "offlineAllRows": [
+    "Thu, 1 Oct 20261440.9"
+  ],
+  "consoleErrors": [
+    {
+      "entry": {
+        "source": "network",
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "timestamp": 1794649043376.102,
+        "url": "http://localhost:5177/api/me",
+        "networkRequestId": "11060.294"
+      }
+    },
+    {
+      "entry": {
+        "source": "network",
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "timestamp": 1794649043377.946,
+        "url": "http://localhost:5177/api/me",
+        "networkRequestId": "11060.295"
+      }
+    }
+  ],
+  "failedRequests": [
+    {
+      "method": "Network.responseReceived",
+      "url": "http://localhost:5177/api/me",
+      "status": 401,
+      "error": null
+    },
+    {
+      "method": "Network.responseReceived",
+      "url": "http://localhost:5177/api/me",
+      "status": 401,
+      "error": null
+    }
+  ]
+}

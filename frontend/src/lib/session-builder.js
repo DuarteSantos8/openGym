@@ -98,13 +98,15 @@ export function pickConfig (S, e, compound) {
 
 /** The minutes a list of routine entries takes, roughly: work, rest and a minute and a half to set up each.
     A cardio entry (`min`, defaultConfig) is `sets` intervals of `min` minutes each. A per-side
-    entry (`side`) does its work once per side, as buildWorkSets lays it out. */
+    hold (`side`) is held once per side, as buildWorkSets lays it out. */
 export function estimateMinutes (cfgs) {
   let sec = 0
   for (const c of cfgs) {
     const sets = Math.max(1, c.sets || 1)
     if (c.min > 0 && c.mode !== 'time' && !(c.reps > 0)) { sec += sets * c.min * 60 + (sets - 1) * (c.restSec || 90) + 90; continue }
-    const work = (c.mode === 'time' ? (c.sec || 30) : Math.max(35, (c.reps || 10) * 4)) * (isPerSide(c) ? 2 : 1)
+    // A per-side hold is held once per side (two rows a set); per-side reps are already the
+    // total for both sides (sideReps halves them), so only holds double.
+    const work = c.mode === 'time' ? (c.sec || 30) * (isPerSide(c) ? 2 : 1) : Math.max(35, (c.reps || 10) * 4)
     sec += sets * work + (sets - 1) * (c.restSec || 90) + 90
   }
   return Math.round(sec / 60)

@@ -1,0 +1,17 @@
+{
+  "commit": "ffcf68ea",
+  "priorWorkouts": 1,
+  "offlineSet": {
+    "w": 40,
+    "r": 10,
+    "done": true,
+    "at": 1794606322898
+  },
+  "savedWorkouts": 2,
+  "volumes": [
+    400,
+    800
+  ],
+  "reload": "PASS",
+  "active": null
+}

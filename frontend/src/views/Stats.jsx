@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { scrollToTop } from '../lib/scroll-top.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { countedS } from '../lib/counted-log.js'
 import { dayPhotosOf, serverTakesDayPhotos } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
+import { exerciseVolumeSeries } from '../lib/exercise-volume.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, tn, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
 import { nameIn } from '../lib/a11y-name.js'
@@ -55,18 +56,43 @@ import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
 import { activityStimuli } from '../lib/activities.js'
 import { isoRun } from '../lib/bidi.js'
+import './Stats.css'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
 
 // The date range buttons under Body weight, and since issue #511 under Exercise progress too.
 // In days, 0 = everything; a function because the labels follow the current language.
-const rangeOptions = () => [{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]
+const rangeOptions = () => [{ value: 7, label: '1W' }, { value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]
 // Where a range starts, in ms. Worked out once per pick rather than from each render's clock, so
 // the memoised chart arrays below keep their identity (LineChart drops its hover on a new one).
 const rangeStart = days => (days ? Date.now() - days * 86400000 : 0)
 // Recent workouts on Overview: three, then History has them all.
 const RECENT_ROWS = 3
+
+// Month-to-date, not a rolling 30 days. Consistency is the share of elapsed calendar weeks with
+// at least one logged workout; unknown imported durations contribute to the count, not to Time.
+export function monthSummary(workouts, today = todayISO(), weekStart = 1) {
+  const first = today.slice(0, 7) + '-01'
+  const month = (workouts || []).filter(w => {
+    const day = workoutDay(w)
+    return day && day >= first && day <= today
+  })
+  const activeMs = month.reduce((sum, w) => sum + (Number.isFinite(w.start) && Number.isFinite(w.end) && w.end > w.start ? w.end - w.start : 0), 0)
+  const elapsed = new Set()
+  const cursor = new Date(first + 'T12:00:00')
+  const end = new Date(today + 'T12:00:00')
+  while (cursor <= end) {
+    elapsed.add(weekKey(isoOf(cursor), weekStart))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  const trained = new Set(month.map(w => weekKey(workoutDay(w), weekStart)))
+  return {
+    workouts: month.length,
+    activeMs,
+    consistency: elapsed.size ? Math.round(trained.size / elapsed.size * 100) : 0,
+  }
+}
 
 // Which muscles the training in a window actually hit — and, the point of the card,
 // which ones it keeps missing. Shading is relative within the window (lib/muscles.js).
@@ -250,7 +276,7 @@ function MusclesCard({ S, planFocus = false }) {
   // Counting only the sets taken near failure turns the bars from "where did the volume go" into
   // "where did the stimulus go". Offered only when the window holds ratings at all, since with
   // none the hard view would just be empty and read as "you trained nothing".
-  const rated = inWin.some(w => w.entries.some(e => e.sets.some(s => s.done && isHardSet(s))))
+  const rated = inWin.some(w => (w.entries || []).some(e => (e.sets || []).some(s => s.done && isHardSet(s))))
   const on = !planned && !weekly && hard && rated
   const done = loadOfWorkouts(inWin, on ? isHardSet : null)
   const plan = loadOfWeeklyPlan(S)
@@ -527,9 +553,7 @@ export function StatsIndex({ sections }) {
     setCur(v)
     quietUntil.current = Date.now() + 900
     const behavior = smooth ? 'smooth' : 'auto'
-    // The same way up as the back-to-top button: a glide WebKit drops is finished as a jump.
-    if (v === 'overview') { if (smooth) scrollToTop(); else window.scrollTo?.({ top: 0, behavior }) }
-    else document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
+    document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
     try {
       const base = (window.location.hash || '#/stats').split('?')[0]
       window.history.replaceState(window.history.state, '', base + (v === 'overview' ? '' : '?section=' + v))
@@ -548,6 +572,8 @@ export function StatsIndex({ sections }) {
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(settle); window.removeEventListener('touchstart', mark); window.removeEventListener('wheel', mark) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
+    const targets = [...document.querySelectorAll('[data-stats-sect]')]
+      .filter(el => sections.some(x => x.value === el.dataset.statsSect))
     let raf = 0
     const spy = () => {
       raf = 0
@@ -559,12 +585,11 @@ export function StatsIndex({ sections }) {
       const bar = document.querySelector('.stats-index')
       const line = (bar ? bar.getBoundingClientRect().bottom : 0) + 24
       let on = 'overview'
-      for (const x of sections) {
-        const el = document.getElementById('stats-' + x.value)
-        if (el && el.getBoundingClientRect().top <= line) on = x.value
+      for (const el of targets) {
+        if (el.getBoundingClientRect().top <= line) on = el.dataset.statsSect
       }
       // the last part may be too short to reach the line: at the very bottom it is the one read
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) on = sections[sections.length - 1].value
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) on = targets.at(-1)?.dataset.statsSect || on
       setCur(c => (c === on ? c : on))
     }
     const onScroll = () => { if (!raf) raf = window.requestAnimationFrame(spy) }
@@ -587,13 +612,19 @@ export default function Stats() {
   // opens on Planned and scrolls into view. The router is a HashRouter, so the query sits in the
   // hash; the scroll waits a frame for the page's own scroll-to-top on navigation to happen first.
   const [planFocus] = useState(() => /[?&]focus=weekly-volume\b/.test(typeof window === 'undefined' ? '' : window.location.hash || ''))
+  const [sectionFocus] = useState(() => /[?&]section=(?:overview|body|effort)\b/.test(typeof window === 'undefined' ? '' : window.location.hash || ''))
+  // Keep advanced analytics open across the lazy-shell remount that can follow a sheet. Deep
+  // links into a folded section force it open so their target is visible and scrollable.
+  const moreOpen = useUI(s => !!s.statsMoreOpen) || planFocus || sectionFocus
   useEffect(() => {
     if (!planFocus) return
     const frame = window.requestAnimationFrame(() => document.getElementById('weekly-volume')?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }))
     return () => window.cancelAnimationFrame(frame)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [exId, setExId] = useState(null)
-  const [exMetric, setExMetric] = useState('top')
+  // Lead with estimated 1RM when the logged exercise supports it; other modes still fall back
+  // to their existing top-set chart and keep every metric choice in the Chart picker.
+  const [exMetric, setExMetric] = useState('e1rm')
   // What the Body weight view measures the lift by: 'e1rm' (default) or the heaviest set.
   const [relBasis, setRelBasis] = useState('e1rm')
   // Exercise progress over a date range (issue #511), All by default. Only the chart follows it:
@@ -613,7 +644,8 @@ export default function Stats() {
   const bw30 = S.bodyweight.filter(b => weighInAt(b) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
   const workouts = S.workouts
-  const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
+  const month = monthSummary(workouts, todayISO(), weekStartOf(S))
+  const monthW = month.workouts
   const lifetime = lifetimeVolume(S)
   const totals = useMemo(() => lifetimeTotals(S), [S.workouts]) // eslint-disable-line react-hooks/exhaustive-deps
   const likeness = likenessOf(S.unit === 'lb' ? lifetime * LB_KG : lifetime)
@@ -634,7 +666,7 @@ export default function Stats() {
     }, 0) : 0
     return { mode, entries: sameMode, rows: sameMode.flatMap(item => item.rows), best }
   }
-  const entryOf = id => workouts.flatMap(w => w.entries).find(e => e.id === id)
+  const entryOf = id => workouts.flatMap(w => w.entries || []).find(e => e.id === id)
   const listOf = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
   const firstAvailable = (...values) => {
     for (const value of values) {
@@ -689,7 +721,7 @@ export default function Stats() {
     }
     return { mx: 0, unit: S.unit }
   }
-  const exHist = [...new Set(workouts.flatMap(w => w.entries.map(e => e.id)))].filter(id => EXIDX[id] || nameOf(id) !== id)
+  const exHist = [...new Set(workouts.flatMap(w => (w.entries || []).map(e => e.id)))].filter(id => EXIDX[id] || nameOf(id) !== id)
   const exCurrent = Object.fromEntries(exHist.map(id => [id, currentOf(id)]))
   exHist.sort((a, b) => exCurrent[b].mx - exCurrent[a].mx || nameOf(a).localeCompare(nameOf(b)))
   const curEx = exId && exHist.includes(exId) ? exId : exHist[0] || null
@@ -826,6 +858,19 @@ export default function Stats() {
   const onE1 = showE1 && exMetric === 'e1rm'
   const onEff = showEff && exMetric === 'effort'
   const onMax = showMax && exMetric === 'max'
+  // Availability is all-time so an empty selected range can still explain its exclusions.
+  // Volume alone uses local calendar-day windows; the existing metrics keep their ranges.
+  const allVolume = useMemo(() => {
+    if (curMode !== 'reps') return null
+    // Like curMode, eligibility follows the latest saved occurrence. Earlier
+    // ordinary load stays historical volume; assisted occurrences are filtered.
+    const latest = S.workouts.flatMap(w => entriesForExercise(w, curEx)).at(-1)
+    return isAssisted(latest || curEx) ? null : exerciseVolumeSeries(S, curEx)
+  }, [S, curEx, curMode])
+  const showVolume = allVolume?.included > 0
+  const onVolume = showVolume && exMetric === 'volume'
+  const volume = useMemo(() => onVolume && exRange
+    ? exerciseVolumeSeries(S, curEx, { days: exRange }) : allVolume, [S, curEx, exRange, onVolume, allVolume])
   const topPts = exPts.map((p, i) => ({
     t: p.t, y: p.y, d: p.d,
     // 0 RIR (nothing left) is a full dot, 4+ a faint one; unrated sessions keep the plain line.
@@ -834,7 +879,7 @@ export default function Stats() {
   })).filter(inExRange)
   const chartPts = onSets ? perSetChart.anchors : onRel ? relChartPts : onMax ? maxChartPts : onEff ? effPts : onE1 ? e1ChartPts : topPts
   // A line needs two workouts. A range that holds fewer says so, instead of a lone dot or an empty box.
-  const rangeTooShort = exRange !== 0 && chartPts.length < 2
+  const rangeTooShort = !onVolume && exRange !== 0 && chartPts.length < 2
   // The chart menu (stats redesign): the metrics were a segmented control of five or six options
   // that ran past the card ("Bod…") with a second one under it for the body weight basis. Now it is
   // one row that opens a sheet, and the basis is two entries of the same list.
@@ -844,9 +889,10 @@ export default function Stats() {
   if (showE1) exOpts.push({ value: 'e1rm', label: t('Est. 1RM') })
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
   if (showMax) exOpts.push({ value: 'max', label: t('Max reps') })
+  if (showVolume) exOpts.push({ value: 'volume', label: t('Volume') })
   if (relBoth) exOpts.push({ value: 'bw-e1rm', label: t('Bodyweight') + ' · ' + t('Est. 1RM') }, { value: 'bw-top', label: t('Bodyweight') + ' · ' + t('Top set') })
   else if (showRel) exOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
-  const exMetricValue = onRel ? (relBoth ? 'bw-' + relUsed : 'bodyweight') : onMax ? 'max' : onEff ? 'effort' : onE1 ? 'e1rm' : onSets ? 'sets' : 'top'
+  const exMetricValue = onVolume ? 'volume' : onRel ? (relBoth ? 'bw-' + relUsed : 'bodyweight') : onMax ? 'max' : onEff ? 'effort' : onE1 ? 'e1rm' : onSets ? 'sets' : 'top'
   const pickMetric = v => {
     if (v.startsWith('bw-')) { setRelBasis(v.slice(3)); setExMetric('bodyweight') } else setExMetric(v)
   }
@@ -909,18 +955,124 @@ export default function Stats() {
     <div className="sect-b stats-links" data-stats-links>{linkRows}</div>
   </>
 
-  return <>
-    <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Progress')}</h1><div className="sub">{t('Records & history')}</div></div>
-      <div className="row" style={{ gap: 8 }}>
-        <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
-        <button className="iconbtn" data-tour="stats-history" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
-      </div></div>
+  return <div className="iv-stats">
+    <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Progress')}</h1><div className="sub">{t('Records & history')}</div></div></div>
 
+    <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
+      <h2 className="stats-sect-h" id="stats-h-lifts">{t('Lifts')}</h2>
+    <div className="card" data-tour="stats-records">
+      <SeasonDeco spot="stats-peek" />
+      <h2>{t('Exercise progress')}</h2>
+      {exHist.length ? <>
+        {/* What to chart, as one grouped list: the exercise, then the chart of it. */}
+        <div className="sect-b ex-pick">
+          <SelectRow title={t('Exercise')} sheetTitle={t('Exercise progress')} value={curEx} onChange={setExId} stackedValue
+            options={exHist.map(id => ({ value: id, label: (EXIDX[id] ? exerciseNameText(EXIDX[id]) : nameOf(id)) + (exCurrent[id].mx ? ' · ' + fmtNum(exCurrent[id].shown ?? exCurrent[id].mx) + ' ' + exCurrent[id].unit : '') }))}
+            search={{
+              placeholder: t('Search…'),
+              label: t('Search…'),
+              emptyLabel: t('No match'),
+              match: (option, query) => matchExercise(matcherOf(option.value), query),
+            }} />
+          {exOpts.length > 1 && <SelectRow title={t('Chart')} value={exMetricValue} onChange={pickMetric} options={exOpts} />}
+        </div>
+        <Segmented className="seg-range" of={t('Exercise progress')} value={exRange} onChange={setExRange} options={rangeOptions()} />
+        <div className="chart">
+          {onVolume
+            ? volume.points.length
+              ? <LineChart points={volume.points} h={150} unit={volume.unit} />
+              : <div className="empty small">{t('No exercise volume in this period.')}</div>
+            : rangeTooShort
+            ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
+            : onSets
+            ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : XS.unit} />
+            : onRel
+            ? <LineChart points={relChartPts} h={150} unit="% BW" />
+            : onMax
+            ? <LineChart points={maxChartPts} h={150} unit={t('reps')} />
+            : onEff
+            ? <LineChart points={effPts} h={150} unit={hd} color="var(--gold-ink)" invert={kind === 'rir'} yHint={{ hi: t('Harder') }} tickPrefix={hd + ' '} />
+            : <LineChart points={chartPts} h={150} unit={exUnit} />}
+        </div>
+        {onVolume ? <>
+          <p className="small dim ex-note">{t('Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.', volume.included, volume.excluded, volume.reasons.timedOrCardio, volume.reasons.noVolume, volume.reasons.missingDetails)}</p>
+          <table className="small" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'start', fontVariantNumeric: 'tabular-nums' }}>
+            <caption style={{ textAlign: 'start', paddingBlock: 8 }}>{t('Volume per session ({0})', volume.unit)}</caption>
+            <thead><tr>
+              <th scope="col" style={{ paddingBlock: 8 }}>{t('Date')}</th>
+              <th scope="col" style={{ paddingInline: 8 }}>{t('Sets')}</th>
+              <th scope="col" style={{ textAlign: 'end' }}>{t('Volume ({0})', volume.unit)}</th>
+            </tr></thead>
+            <tbody>{volume.points.map((p, i) => <tr key={i} style={{ borderTop: 'var(--hair) solid var(--sep)' }}>
+              <th scope="row" style={{ paddingBlock: 10, fontWeight: 'normal' }}>{fmtDate(p.d, true, true)}</th>
+              <td style={{ paddingInline: 8 }}>{p.sets}</td>
+              <td style={{ textAlign: 'end' }}>{fmtNum(p.y)}</td>
+            </tr>)}</tbody>
+          </table>
+        </> : <>
+        {exLegend && <ChartLegend className="ex-legend" items={perSetChart.ns.map(n => ({ key: n, mark: 'dot', color: SET_COLORS[n - 1], label: t('Set {0}', n) }))} />}
+        <div className="small ex-cap">
+          <span className="dim">{onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onRel ? (relUsed === 'top' ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')) : onMax ? t('Most reps in a Max set per workout') : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}</span>
+          {onRel ? <> · {t('Best:')}{' '}<b>{fmtNum(Math.max(0, ...relPts.map(p => p.y * 100)))} % BW</b></>
+            : onMax ? <> · {t('Best:')}{' '}<b>{maxBest} {t('reps')}</b></>
+            : onEff || onSets ? '' : <> · {t('Best:')}{' '}<b>{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? XS.unit : exUnit}</b></>}
+        </div>
+        {onRel && !rangeTooShort && (() => {
+          const inRange = relPts.filter(p => p.t >= exFrom)
+          const first = inRange[0], last = inRange[inRange.length - 1]
+          return <div className="small dim ex-note">
+            {t('Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.', fmtNum(first.bw) + ' ' + XS.unit, fmtNum(last.bw) + ' ' + XS.unit)}
+          </div>
+        })()}
+        {onSets && (perSet.drop || perSet.hidden > 0) && <div className="small dim ex-note">
+          {perSet.drop && t('Where you most often drop off: set {0} ({1} of {2} workouts)', perSet.drop.n, perSet.drop.count, perSet.drop.of)}
+          {perSet.drop && perSet.hidden > 0 ? ' · ' : ''}
+          {perSet.hidden > 0 && t('Only the first {0} sets are drawn.', perSet.ns.length)}
+        </div>}
+        {onE1 && <div className="small dim ex-note">
+          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', isoRun(fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r), fmtDate(e1Best.d, true))}
+        </div>}
+        {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim ex-note">
+          {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}
+        </div>}
+        <div className="ex-days" data-ex-days>{exList.map((p, i) => {
+          const top = topSetOf(p.sets)
+          const rir = top && effortOn ? rirOf(top) : null
+          return <div key={i} className="ex-day" {...tappable(() => exerciseHistorySheet(curEx))}>
+            <span className="ex-day-d">{fmtDate(p.d, true)}</span>
+            <span className="ex-day-s">{top ? setLabel(curEx, strip(top), p.target, speedUnit) : ''}</span>
+            <span className="ex-day-e">{rir != null && <span className="ex-eff" style={{ '--m': 1 - Math.min(4, Math.max(0, rir)) / 4 }}>{hd} {fmtNum(toScale(kind, rir))}</span>}</span>
+          </div>
+        })}</div>
+        </>}
+      </> : <div className="muted small">{t('Finish your first workout and your progress curves will show up here.')}</div>}
+    </div>
+    </section>
+
+    <section className="iv-stats-month" aria-labelledby="iv-stats-month-heading">
+      <h2 id="iv-stats-month-heading">{t('This month')}</h2>
+      <div className="kpis iv-stats-month-grid" data-month-summary>
+        <div className="tile"><div className="l">{t('Workouts')}</div><div className="v">{month.workouts}</div></div>
+        <div className="tile"><div className="l">{t('Time')}</div><div className="v">{fmtDur(month.activeMs)}</div></div>
+        <div className="tile"><div className="l">{t('Consistency')}</div><div className="v">{month.consistency}<span className="iv-stats-unit">%</span></div></div>
+      </div>
+    </section>
+
+    <details className="iv-stats-more" open={moreOpen}
+      onToggle={e => useUI.setState({ statsMoreOpen: e.currentTarget.open })}>
+      <summary>{t('More')}</summary>
+      <div className="iv-stats-more-body">
+        <div className="iv-stats-report"><Button variant="tinted" icon="note" onClick={reportSheet}>{t('Performance report')}</Button></div>
     {/* The page in four parts (redesign 1.4.5, P5), each with its own heading, and a sticky index
         that jumps to them and follows the scroll. It is still one page: every card is where a
         scroll finds it. /stats?section=lifts (and body, effort) opens on that part. */}
     <StatsIndex sections={sections} />
 
+    {(workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MusclesCard S={S} planFocus={planFocus} />}
+    {/* Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in. */}
+    {workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} />}
+    {!effortOn && timeCard && <ExerciseTimeCard S={S} />}
+    {!bodyOn && statsLinks}
     <section className="stats-sect" id="stats-overview" data-stats-sect="overview" aria-label={t('Overview')}>
     {/* The headline numbers as one divided card: three across, the lifetime total under them at
         full width (a few hundred sessions make a long number). The week streak is not a tile any
@@ -928,7 +1080,7 @@ export default function Stats() {
     <div className={'kpis' + (bodyOn ? '' : ' two')} data-tour="stats-tiles">
       <div className="tile"><div className="l">{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l">{t('This month')}</div><div className="v">{monthW}</div></div>
-      {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
+      {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0, true) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). */}
       {/* With the rest of the all-time sums under it (Discord, 10-22), and a size to picture. */}
@@ -991,85 +1143,16 @@ export default function Stats() {
       {statsLinks}
     </section>}
 
-    <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
-      <h2 className="stats-sect-h" id="stats-h-lifts">{t('Lifts')}</h2>
-    <div className="card" data-tour="stats-records">
-      <SeasonDeco spot="stats-peek" />
-      <h2>{t('Exercise progress')}</h2>
-      {exHist.length ? <>
-        {/* What to chart, as one grouped list: the exercise, then the chart of it. */}
-        <div className="sect-b ex-pick">
-          <SelectRow title={t('Exercise')} sheetTitle={t('Exercise progress')} value={curEx} onChange={setExId} stackedValue
-            options={exHist.map(id => ({ value: id, label: (EXIDX[id] ? exerciseNameText(EXIDX[id]) : nameOf(id)) + (exCurrent[id].mx ? ' · ' + fmtNum(exCurrent[id].shown ?? exCurrent[id].mx) + ' ' + exCurrent[id].unit : '') }))}
-            search={{
-              placeholder: t('Search…'),
-              label: t('Search…'),
-              emptyLabel: t('No match'),
-              match: (option, query) => matchExercise(matcherOf(option.value), query),
-            }} />
-          {exOpts.length > 1 && <SelectRow title={t('Chart')} value={exMetricValue} onChange={pickMetric} options={exOpts} />}
-        </div>
-        <Segmented className="seg-range" of={t('Exercise progress')} value={exRange} onChange={setExRange} options={rangeOptions()} />
-        <div className="chart">
-          {rangeTooShort
-            ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
-            : onSets
-            ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : XS.unit} />
-            : onRel
-            ? <LineChart points={relChartPts} h={150} unit="% BW" />
-            : onMax
-            ? <LineChart points={maxChartPts} h={150} unit={t('reps')} />
-            : onEff
-            ? <LineChart points={effPts} h={150} unit={hd} color="var(--gold-ink)" invert={kind === 'rir'} yHint={{ hi: t('Harder') }} tickPrefix={hd + ' '} />
-            : <LineChart points={chartPts} h={150} unit={exUnit} />}
-        </div>
-        {exLegend && <ChartLegend className="ex-legend" items={perSetChart.ns.map(n => ({ key: n, mark: 'dot', color: SET_COLORS[n - 1], label: t('Set {0}', n) }))} />}
-        <div className="small ex-cap">
-          <span className="dim">{onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onRel ? (relUsed === 'top' ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')) : onMax ? t('Most reps in a Max set per workout') : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}</span>
-          {onRel ? <> · {t('Best:')}{' '}<b>{fmtNum(Math.max(0, ...relPts.map(p => p.y * 100)))} % BW</b></>
-            : onMax ? <> · {t('Best:')}{' '}<b>{maxBest} {t('reps')}</b></>
-            : onEff || onSets ? '' : <> · {t('Best:')}{' '}<b>{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? XS.unit : exUnit}</b></>}
-        </div>
-        {onRel && !rangeTooShort && (() => {
-          const inRange = relPts.filter(p => p.t >= exFrom)
-          const first = inRange[0], last = inRange[inRange.length - 1]
-          return <div className="small dim ex-note">
-            {t('Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.', fmtNum(first.bw) + ' ' + XS.unit, fmtNum(last.bw) + ' ' + XS.unit)}
-          </div>
-        })()}
-        {onSets && (perSet.drop || perSet.hidden > 0) && <div className="small dim ex-note">
-          {perSet.drop && t('Where you most often drop off: set {0} ({1} of {2} workouts)', perSet.drop.n, perSet.drop.count, perSet.drop.of)}
-          {perSet.drop && perSet.hidden > 0 ? ' · ' : ''}
-          {perSet.hidden > 0 && t('Only the first {0} sets are drawn.', perSet.ns.length)}
-        </div>}
-        {onE1 && <div className="small dim ex-note">
-          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', isoRun(fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r), fmtDate(e1Best.d, true))}
-        </div>}
-        {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim ex-note">
-          {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}
-        </div>}
-        <div className="ex-days" data-ex-days>{exList.map((p, i) => {
-          const top = topSetOf(p.sets)
-          const rir = top && effortOn ? rirOf(top) : null
-          return <div key={i} className="ex-day" {...tappable(() => exerciseHistorySheet(curEx))}>
-            <span className="ex-day-d">{fmtDate(p.d, true)}</span>
-            <span className="ex-day-s">{top ? setLabel(curEx, strip(top), p.target, speedUnit) : ''}</span>
-            <span className="ex-day-e">{rir != null && <span className="ex-eff" style={{ '--m': 1 - Math.min(4, Math.max(0, rir)) / 4 }}>{hd} {fmtNum(toScale(kind, rir))}</span>}</span>
-          </div>
-        })}</div>
-      </> : <div className="muted small">{t('Finish your first workout and your progress curves will show up here.')}</div>}
-    </div>
-    {(workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MusclesCard S={S} planFocus={planFocus} />}
-    {/* Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in. */}
-    {workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} />}
-    {!effortOn && timeCard && <ExerciseTimeCard S={S} />}
-    {!bodyOn && statsLinks}
-    </section>
-
     {hasEffortSect && <section className="stats-sect" id="stats-effort" data-stats-sect="effort" aria-labelledby="stats-h-effort">
       <h2 className="stats-sect-h" id="stats-h-effort">{t('Effort')}</h2>
     {effortCard && <EffortCard S={S} />}
     {timeCard && <ExerciseTimeCard S={S} />}
     </section>}
-  </>
+    </div>
+    </details>
+    <div className="iv-stats-primary"><Button variant="primary" icon="history"
+      aria-label={t('All') + ' ' + t('Workouts')} onClick={() => nav('/history')}>
+      {t('All')} {t('Workouts')}
+    </Button></div>
+  </div>
 }
