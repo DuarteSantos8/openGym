@@ -188,36 +188,89 @@ buildNpmPackage {
             # Pass 2: Multiline dynamic imports - find import( and extract specifier
             # across line boundaries until closing )
             awk '
-              BEGIN { in_import=0; paren=0 }
+              BEGIN { in_import=0; paren=0; in_comment=0 }
               {
-                # Keep the original line for parenthesis counting
-                orig = $0
-                line = orig
-                # Check for import( starting on this line
-                if (!in_import && line ~ /import[[:space:]]*\(/) {
-                  in_import = 1
-                  # Extract any quoted string after import(
-                  while (match(line, /import[[:space:]]*\([[:space:]]*["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
-                    print arr[1]
-                    line = substr(line, RSTART + RLENGTH)
+                # State variables preserved across lines
+                # in_import: 1 if we are inside an import() call
+                # paren: parenthesis nesting depth for the import() call
+                # in_comment: 1 if inside a /* ... */ block comment
+                # in_line_comment: 1 if inside a // line comment (reset each line)
+                in_line_comment = 0
+
+                # Process the line character by character to track lexical state
+                i = 1
+                while (i <= length($0)) {
+                  c = substr($0, i, 1)
+                  next_c = (i < length($0)) ? substr($0, i+1, 1) : ""
+
+                  # Handle line comment start
+                  if (!in_comment && !in_line_comment && c == "/" && next_c == "/") {
+                    in_line_comment = 1
+                    i += 2
+                    continue
                   }
-                }
-                # If we are in a multiline import (either just started or continuing), count parens and scan
-                if (in_import) {
-                  # Look for quoted relative specifiers on the original line
-                  while (match(orig, /["'"'"'](\.[^"'"'"']+)["'"'"']/, arr)) {
-                    # Only print if we are inside the import( parens
-                    if (paren > 0) print arr[1]
-                    orig = substr(orig, RSTART + RLENGTH)
+
+                  # Handle block comment start
+                  if (!in_comment && !in_line_comment && c == "/" && next_c == "*") {
+                    in_comment = 1
+                    i += 2
+                    continue
                   }
-                  # Count parens on the original unmodified line (once per line)
-                  for (i=1; i<=length($0); i++) {
-                    c = substr($0, i, 1)
+
+                  # Handle block comment end
+                  if (in_comment && c == "*" && next_c == "/") {
+                    in_comment = 0
+                    i += 2
+                    continue
+                  }
+
+                  # Skip if in any comment
+                  if (in_comment || in_line_comment) {
+                    i++
+                    continue
+                  }
+
+                  # Check for import( when not already in an import
+                  if (!in_import && c == "i") {
+                    # Check if "import(" starts here
+                    if (substr($0, i, 6) == "import") {
+                      j = i + 6
+                      # Skip whitespace
+                      while (j <= length($0) && substr($0, j, 1) ~ /[[:space:]]/) j++
+                      if (j <= length($0) && substr($0, j, 1) == "(") {
+                        in_import = 1
+                        paren = 1  # We've consumed the opening (
+                        i = j + 1
+                        # Look for string literal immediately after import(
+                        while (i <= length($0) && substr($0, i, 1) ~ /[[:space:]]/) i++
+                        if (i <= length($0) && (substr($0, i, 1) == "\"" || substr($0, i, 1) == "\047")) {
+                          quote = substr($0, i, 1)
+                          i++
+                          start = i
+                          while (i <= length($0) && substr($0, i, 1) != quote) i++
+                          if (i <= length($0)) {
+                            spec = substr($0, start, i - start)
+                            if (spec ~ /^\./) print spec
+                            i++  # skip closing quote
+                          }
+                        }
+                        continue
+                      }
+                    }
+                  }
+
+                  # If we are in an import, track parentheses
+                  if (in_import) {
                     if (c == "(") paren++
-                    else if (c == ")") paren--
+                    else if (c == ")") {
+                      paren--
+                      if (paren == 0) {
+                        in_import = 0
+                      }
+                    }
                   }
-                  # If parens balanced, we are done
-                  if (paren == 0) in_import = 0
+
+                  i++
                 }
               }
             ' "$file" 2>/dev/null || true

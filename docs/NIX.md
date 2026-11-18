@@ -174,7 +174,9 @@ module (where `config` is in scope) so the store paths resolve from the module's
         handle /api/* {
           reverse_proxy 127.0.0.1:${toString config.services.opengym.apiPort} {
             # Remove CF-Connecting-IP to prevent header spoofing.
-            # Keep only if a trusted upstream proxy (e.g., Cloudflare) sets it.
+            # Keep only if a trusted upstream proxy (e.g., Cloudflare) sets it
+            # and the origin accepts requests only through that proxy
+            # (e.g., via Cloudflare Tunnel with no public origin listener).
             header_up -CF-Connecting-IP
           }
         }
@@ -455,7 +457,7 @@ matches the API's own, so leaving them alone changes nothing.
 | `uploads.minFreeMb` | `ints.unsigned` | `512` | Uploads stop below this much free disk space, in MB. `0` = no floor. |
 | `uploads.imageMaxMb` | `ints.unsigned` | `2` | Max size for a photo and its thumbnails, in MB. |
 | `uploads.gifMaxMb` | `ints.unsigned` | `8` | Max size for an animated GIF, in MB. |
-| `uploads.videoMaxMb` | `ints.unsigned` | `100` | Max size for a video, in MB. |
+| `uploads.videoMaxMb` | `ints.unsigned` | `100` | Max size for a video, in MB. Note: nginx defaults to a 10 MB request-body limit. To allow uploads up to this size, set `client_max_body_size` on the openGym vhost or `/api/` location (e.g., `client_max_body_size 100M;`) when using the module-managed nginx. |
 | `uploads.videoMaxSec` | `ints.unsigned` | `60` | Maximum video length, in seconds. |
 | `uploads.gcGraceDays` | `ints.unsigned` | `14` | Days an unused upload is kept before garbage collection. |
 | `uploads.perHour` | `ints.unsigned` | `600` | Uploads permitted per profile per hour. |
