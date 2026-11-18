@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSession, swapPick, sessionRoutine, targetMuscles, estimateMinutes, capOf } from './session-builder.js'
+import { buildSession, swapPick, addPick, sessionRoutine, targetMuscles, estimateMinutes, capOf } from './session-builder.js'
 import { EXIDX } from './exercises.js'
 import { musclesOf } from './muscles.js'
 import { exAvailable } from './equipment.js'
@@ -76,6 +76,16 @@ describe('session builder', () => {
     const r = sessionRoutine(out, { id: 'r1', name: 'Lats + Biceps' })
     expect(r.ex.map(e => e.id)).toEqual(out.picks.map(p => p.id))
     expect(r.ex[0]).toMatchObject({ sets: expect.any(Number), mode: 'reps' })
+  })
+
+  it('adds an exercise at the end with its own sets, and ignores one already in the session', () => {
+    const s = buildSession(base(), opts({ terms: ['chest'], minutes: 40 }))
+    const extra = Object.values(EXIDX).find(e => e.cat === 'strength' && !s.picks.some(p => p.id === e.id))
+    const out = addPick(base(), s, extra)
+    expect(out.picks.map(p => p.id)).toEqual([...s.picks.map(p => p.id), extra.id])
+    expect(out.picks.at(-1).cfg).toMatchObject({ id: extra.id, sets: 3 })
+    expect(out.minutes).toBe(estimateMinutes(out.picks.map(p => p.cfg)))
+    expect(addPick(base(), out, extra)).toBe(out)
   })
 
   it('a different seed can shuffle the picks', () => {

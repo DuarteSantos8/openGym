@@ -219,6 +219,16 @@ export function swapPick (S, session, index, opts = {}) {
   return { ...session, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
 }
 
+/** `ex` added to the end of the session, with the sets and rest a built pick of its kind gets; the session as is when it is already in. */
+export function addPick (S, session, ex) {
+  if (!ex || session.picks.some(p => p.id === ex.id)) return session
+  const w = musclesOf(ex)
+  const main = Object.keys(w).filter(m => w[m] >= 1)
+  const compound = COMPOUND.test(ex.n || '') || main.length >= 2
+  const picks = [...session.picks, { id: ex.id, cfg: pickConfig(S, ex, compound), muscles: main, compound, why: [] }]
+  return { ...session, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
+}
+
 /** A routine made of the session: the picks' entries, a name from the muscles. */
 export function sessionRoutine (session, { id, name, emoji = 'figureStrength' }) {
   return { id, name, emoji, ex: session.picks.map(p => ({ ...p.cfg })) }
