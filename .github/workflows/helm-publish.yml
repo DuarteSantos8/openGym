@@ -43,9 +43,9 @@ jobs:
         run: |
           set -euo pipefail
           V="${{ steps.version.outputs.version }}"
-          app=$(sed -n 's/^appVersion:[[:space:]]*//p' helm/Chart.yaml | sed 's/#.*//; s/"//g; s/[[:space:]]*//g')
+          app=$(sed -n 's/^appVersion:[[:space:]]*//p' helm/Chart.yaml | sed "s/#.*//; s/[\"'']//g; s/[[:space:]]*//g")
           [ "$app" = "$V" ] || { echo "helm/Chart.yaml appVersion is $app, the release is $V" >&2; exit 1; }
-          for t in $(sed -n 's/^[[:space:]]*tag:[[:space:]]*//p' helm/values.yaml | sed 's/#.*//; s/"//g; s/[[:space:]]*//g'); do
+          for t in $(sed -n 's/^[[:space:]]*tag:[[:space:]]*//p' helm/values.yaml | sed "s/#.*//; s/[\"'']//g; s/[[:space:]]*//g"); do
             [ "$t" = "$V" ] || { echo "an image tag in helm/values.yaml is $t, the release is $V" >&2; exit 1; }
           done
           echo "Chart appVersion and both image tags are $V"
