@@ -20,7 +20,7 @@
 // of your favourites", "Fits Home gym" in the reader's language (components/SessionBuilder.jsx).
 // `cfg` is a routine entry ({ id, sets, reps | sec, weight, mode, restSec }), so the session can
 // be started at once or saved as a routine.
-import { allExercises, everydayScore, isClassicEx, isCardio, isHold, isBodyweightEq, isLoadedEq, isCustomEx } from './exercises.js'
+import { allExercises, isDistanceEx, everydayScore, isClassicEx, isCardio, isHold, isBodyweightEq, isLoadedEq, isCustomEx } from './exercises.js'
 import { musclesOf, MUSCLE_NAME } from './muscles.js'
 import { shownMuscles } from './muscle-filter.js'
 import { activeProfile, exAvailable } from './equipment.js'
@@ -107,6 +107,8 @@ export function pickConfig (S, e, compound) {
 export function estimateMinutes (cfgs) {
   let sec = 0
   for (const c of cfgs) {
+    // Cardio is a block of minutes, not sets.
+    if (c.min > 0) { sec += c.min * 60 + 90; continue }
     const sets = Math.max(1, c.sets || 1)
     const work = c.mode === 'time' ? (c.sec || 30) : Math.max(35, (c.reps || 10) * 4)
     sec += sets * work + (sets - 1) * (c.restSec || 90) + 90
@@ -225,7 +227,7 @@ export function addPick (S, session, ex) {
   const w = musclesOf(ex)
   const main = Object.keys(w).filter(m => w[m] >= 1)
   const compound = COMPOUND.test(ex.n || '') || main.length >= 2
-  const picks = [...session.picks, { id: ex.id, cfg: pickConfig(S, ex, compound), muscles: main, compound, why: [] }]
+  const picks = [...session.picks, { id: ex.id, cfg: isCardio(ex) || isDistanceEx(ex) ? { ...defaultConfig(ex.id, undefined, S), id: ex.id } : pickConfig(S, ex, compound), muscles: main, compound, why: [] }]
   return { ...session, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
 }
 

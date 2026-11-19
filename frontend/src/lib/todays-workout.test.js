@@ -11,7 +11,7 @@ const base = () => ({ unit: 'kg', workouts: [], routines: [], customEx: [], body
 const idOf = re => Object.values(EXIDX).find(e => re.test(e.n))?.id
 const done = (re, daysAgo) => {
   const t = NOW - daysAgo * 86400000
-  return { id: 'w' + daysAgo + re.source, d: new Date(t).toISOString().slice(0, 10), start: t, entries: [{ id: idOf(re), sets: [1, 2, 3].map(() => ({ reps: 8, w: 80, done: true })) }] }
+  return { id: 'w' + daysAgo + re.source, d: new Date(t).toISOString().slice(0, 10), start: t, entries: [{ id: idOf(re), sets: [1, 2, 3].map(() => ({ r: 8, w: 80, done: true })) }] }
 }
 
 describe("today's workout", () => {

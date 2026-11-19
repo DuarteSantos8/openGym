@@ -30,41 +30,45 @@ export function SessionBuilder ({ terms: initial, close }) {
   const update = useStore(s => s.update)
   const [minutes, setMinutes] = useState(40)
   const [seed, setSeed] = useState(1)
-  const [swaps, setSwaps] = useState([])   // [index, seed] swaps and [index, null] removals and [exercise id, 'add'] additions in order, replayed over the base
+  const [swaps, setSwaps] = useState([])   // [exercise id, seed] swaps, [exercise id, null] removals and [exercise id, 'add'] additions, in order, replayed over the base
   const session = useMemo(() => {
     let out = buildSession(S, { terms, minutes, seed })
     // Every exercise a slot has already shown stays out of it, so repeated taps walk on
     // through the alternatives instead of flipping between two; a removed one stays out of all.
     const seen = out.picks.map(() => [])
     const gone = []
-    for (const [i, sd] of swaps) {
+    // An edit names the exercise it was made on, so one whose exercise is no longer in the
+    // session (the base moved under it) is dropped instead of landing on a neighbour.
+    for (const [id, sd] of swaps) {
       if (sd === 'add') {
-        out = addPick(S, out, exOr(i))
+        out = addPick(S, out, exOr(id))
         seen.push([])
         continue
       }
+      const i = out.picks.findIndex(p => p.id === id)
+      if (i < 0) continue
       if (sd === null) {
-        gone.push(out.picks[i].id)
+        gone.push(id)
         const picks = out.picks.filter((_, k) => k !== i)
         seen.splice(i, 1)
         out = { ...out, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
         continue
       }
-      seen[i].push(out.picks[i].id)
+      seen[i].push(id)
       out = swapPick(S, out, i, { seed: sd, exclude: [...seen[i], ...gone] })
     }
     return out
   }, [S.workouts, S.equipProfiles, S.activeEquipId, S.equipFilterOn, S.bench, S.dumbbells, S.customEx, S.favEx, terms, minutes, seed, swaps]) // eslint-disable-line react-hooks/exhaustive-deps
   const title = terms.map(termName).join(' + ')
   const shuffle = () => { setSwaps([]); setSeed(x => x + 1) }
-  const swapOne = i => setSwaps(list => [...list, [i, seed * 31 + list.length + 7]])
+  const swapOne = i => setSwaps(list => [...list, [session.picks[i].id, seed * 31 + list.length + 7]])
   const addOne = () => {
     const sheet = exercisePicker(ex => { sheet.close(); setSwaps(list => [...list, [ex.id, 'add']]) }, { title: t('Add exercise') })
   }
   // The focus: tap a group to add it or take it off; the last one stays.
   const toggleFocus = term => { const next = toggleTerm(terms, term); if (next.length) { setSwaps([]); setTerms(next) } }
   const focusTerms = [...MUSCLE_GROUPS.map(g => groupTerm(g.id)), ...terms.filter(x => !groupOfTerm(x))]
-  const removeOne = i => setSwaps(list => [...list, [i, null]])
+  const removeOne = i => setSwaps(list => [...list, [session.picks[i].id, null]])
   const start = () => startBuiltSession(session.picks.map(p => p.cfg), title, close)
   const save = () => {
     const r = sessionRoutine(session, { id: uid(), name: title })

@@ -88,6 +88,15 @@ describe('session builder', () => {
     expect(addPick(base(), out, extra)).toBe(out)
   })
 
+  it('adds a cardio exercise as minutes, not sets and reps', () => {
+    const s = buildSession(base(), opts({ terms: ['chest'], minutes: 40 }))
+    const run = Object.values(EXIDX).find(e => e.bp === 'cardio' && /treadmill/i.test(e.n))
+    const out = addPick(base(), s, run)
+    expect(out.picks.at(-1).cfg).toMatchObject({ id: run.id, min: expect.any(Number) })
+    expect(out.picks.at(-1).cfg.reps).toBeUndefined()
+    expect(out.minutes).toBeGreaterThan(s.minutes + 20)
+  })
+
   it('a different seed can shuffle the picks', () => {
     const seen = new Set()
     for (let seed = 1; seed <= 6; seed++) seen.add(buildSession(base(), opts({ terms: ['group:shoulders'], seed })).picks.map(p => p.id).join())
