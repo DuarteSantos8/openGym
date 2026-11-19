@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  // Home: build today's session from the most rested muscles
+  "Today’s workout": "今天的训练",
 }

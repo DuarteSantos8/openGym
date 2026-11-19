@@ -5862,4 +5862,6 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // Home: build today's session from the most rested muscles
+  "Today’s workout": "Latihan hari ini",
 };
