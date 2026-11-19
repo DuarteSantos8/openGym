@@ -241,14 +241,13 @@ export function curveCovers(c, w) {
 }
 
 /**
- * A short fingerprint of a kept curve's start, step and readings, so a cache of what was read
- * for it notices any change, a filled gap of the same length included; '' for none.
+ * A kept curve's start, step and every reading as one string, so a cache of what was read for it
+ * notices any change, a filled gap of the same length included; '' for none. The full content,
+ * not a hash: two different curves never share a version (an hour is 720 slots, a few kB).
  */
 export function curveVersion(c) {
   if (!c || !Array.isArray(c.v)) return ''
-  let h = 0
-  for (const x of c.v) h = (Math.imul(h, 31) + (Number(x) | 0)) | 0
-  return `${c.s}:${c.step || CURVE_STEP_S}:${c.v.length}:${(h >>> 0).toString(36)}`
+  return `${c.s}:${c.step || CURVE_STEP_S}:${c.v.join(',')}`
 }
 
 /**
