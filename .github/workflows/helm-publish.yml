@@ -1,22 +1,5 @@
 name: Publish Helm chart
 
-# The chart is published from a published release, never from a bare tag, for the same reason the
-# images are: a tag that is later deleted (the versioning rule consolidates unreleased tags) would
-# otherwise leave its chart behind in the registry. See issue #87.
-#
-# Where: OCI on GHCR -- the registry the images already use. helm appends the chart name on push, so
-# `helm push ... oci://ghcr.io/duartesantos8/opengym` lands the chart at `opengym/opengym`. A consumer
-# adds it as a dependency instead of cloning this repo:
-#
-#   dependencies:
-#     - name: opengym
-#       version: 1.4.5
-#       repository: "oci://ghcr.io/duartesantos8/opengym"   # helm appends the name
-#
-# The published chart version is the app version from the release tag, not the development version in
-# helm/Chart.yaml, so a dependency pins the app it runs. Only that exact X.Y.Z version is published
-# (one chart per release, matching every historical tag; no moving X.Y/latest -- a second helm push
-# trips an intermittent "Tag ... not found", helm#30881, and a retag tool would be needed anyway).
 on:
   release:
     types: [published]
@@ -69,5 +52,4 @@ jobs:
           set -euo pipefail
           REG="oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym"
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
-          # helm push prints what it pushed, and the single exact-version push is the reliable one.
           helm push dist/opengym-${{ steps.version.outputs.version }}.tgz "$REG"
