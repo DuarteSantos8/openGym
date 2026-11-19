@@ -263,8 +263,8 @@ export default function Home() {
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
     {on('motivation') && <WrappedHomeCard S={S} />}
 
-    {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). */}
-    {on('health') && <RecoveryHint S={S} />}
+    {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). Desktop has its own Recovery card. */}
+    {on('health') && !desktop && <RecoveryHint S={S} />}
 
     {/* A deload week now or next, or a lighter week suggested (lib/deload-cycle.js). */}
     <DeloadCard S={S} />
