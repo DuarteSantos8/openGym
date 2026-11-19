@@ -24,6 +24,7 @@ want. Run them from the repository root with Node 22 unless noted.
 | `build-hevy-id-map.mjs` | Regenerates `frontend/src/lib/hevy-id-map.js` after Hevy adds templates (needs a Hevy API key) |
 | `store/feature-graphic.mjs` | Renders the Google Play feature graphic (`fastlane/.../featureGraphic.png`) from `store/feature-graphic.html` and a Home screenshot of the plain build (headless Chrome, Roboto) |
 | `de-name-rules.mjs` | The German exercise-name rules. `frontend/src/lib/exercise-names.test.js` holds every German name to them |
+| `coach-evals/run.mjs` | After changing the Coach's instructions: runs six made-up lifters through a real Coach review (OpenRouter key) and marks the answers, exact checks plus an AI judge. `--dry` checks the lifters with no AI call |
 | `catalogue/migration-check.mjs` | Before a catalogue change ships: compares old and new catalogue on copies of real profiles |
 
 Frontend-only helpers (locale checks, bundle size, the service worker stamp) live in

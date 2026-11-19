@@ -56,3 +56,6 @@ frontend/ios/App/WatchCore/.build/
 /dist/
 .wrangler/
 .taste-skill/
+
+# Coach eval runs (scripts/coach-evals/run.mjs): answers from an AI provider, kept on this machine
+scripts/coach-evals/runs/
