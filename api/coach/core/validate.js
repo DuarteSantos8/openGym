@@ -827,7 +827,8 @@ function answerGaps(data, ctx, keptChecks) {
   }
   const texts = [data.summary, data.reading, ...(Array.isArray(data.notes) ? data.notes : []), ...changes.map(c => c && c.why), ...keptChecks.map(k => k.why)].filter(isStr);
   if (ctx.numbers) {
-    const allowed = numbersOf(changes.map(c => c && [c.before, c.after]), new Set(ctx.numbers));
+    // Sizes only: "-16.7%" and "down 16.7%" both copy -16.7. The model's "before" is not the data, so only its "after" counts.
+    const allowed = new Set([...ctx.numbers, ...numbersOf(changes.map(c => c && c.after))].map(Math.abs));
     const stray = new Set();
     texts.forEach(t => (t.replace(/\d{4}-\d{2}-\d{2}/g, ' ').match(/\d+(?:[.,]\d+)?/g) || []).forEach(m => {
       const n = Number(m.replace(',', '.'));
@@ -836,11 +837,11 @@ function answerGaps(data, ctx, keptChecks) {
     }));
     if (stray.size) gaps.push(`numbers not in the data: ${[...stray].slice(0, 8).join(', ')}. Copy each number exactly as the data gives it (27.3 stays 27.3, never "about 27%"), or leave it out`);
   }
-  // A whole name, not part of a longer id: "frequency:chest" never matches inside "frequency:chest-day".
-  const named = name => texts.some(t => new RegExp(`(?<![\\w:-])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w:-])`).test(t));
-  const leaked = (ctx.fields || []).filter(named);
+  // A whole name: a check id never matches inside a longer one ("frequency:chest-day"); a field may end at a colon ("trendPct: 16.7").
+  const named = tail => name => texts.some(t => new RegExp(`(?<![\\w:-])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!${tail})`).test(t));
+  const leaked = (ctx.fields || []).filter(named('\\w'));
   if (leaked.length) gaps.push(`app field names in the text: ${leaked.slice(0, 8).join(', ')}. Say what each means in plain words ("the trend", not "trendPct"), never the name itself`);
-  const ids = [...new Set((ctx.checks || []).flatMap(c => [c.id, ...(c.tag.includes('-') ? [c.tag] : [])]))].filter(named);
+  const ids = [...new Set((ctx.checks || []).flatMap(c => [c.id, ...(c.tag.includes('-') ? [c.tag] : [])]))].filter(named('[\\w:-]'));
   if (ids.length) gaps.push(`check names in the text: ${ids.slice(0, 8).join(', ')}. They go in "ref" only; in the text say it in plain words ("chest is trained once a week")`);
   return gaps;
 }

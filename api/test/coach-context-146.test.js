@@ -83,6 +83,15 @@ test('the payload carries each block only when its switch is on, and never healt
   assert.equal(create.health, undefined, 'a new plan reads none of it');
 });
 
+test('muscles: a custom exercise reads like the Stats card (its own weights, else today\'s definition, else the snapshot)', () => {
+  const own = { ...workout(1, 'c1', [set(20, 10)]) }; own.entries[0].muscleWeights = { biceps: 1 };
+  const snap = { ...workout(2, 'c1', [set(20, 10)]) }; snap.entries[0].muscleSnapshot = { muscleWeights: { quadriceps: 1 } };
+  const gone = { ...workout(3, 'c2', [set(20, 10)]) }; gone.entries[0].muscleSnapshot = { muscleWeights: { calves: 1 } };
+  const m = muscleLoad({ customEx: [{ id: 'c1', n: 'Mine', muscleWeights: { lats: 1 } }], workouts: [own, snap, gone] }, NOW);
+  const sets = slug => m.find(x => x.muscle === slug)?.sets7d || 0;
+  assert.deepEqual([sets('biceps'), sets('lats'), sets('quadriceps'), sets('calves')], [1, 1, 0, 1]);
+});
+
 test('muscles: counted like the Stats card, slugs, supporting muscles at 0.4, warm-ups nothing', () => {
   const S = { workouts: [workout(0, '0025', [set(60, 5), set(60, 5), set(60, 5), { w: 20, r: 10, warmup: true, done: true }])] };
   const m = muscleLoad(S, NOW);

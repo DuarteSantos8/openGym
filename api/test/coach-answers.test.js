@@ -60,6 +60,16 @@ test('a check id or a code-style tag in the text is sent back; the plain words p
   assert.equal(validateReview({ summary: 'Six sets per exercise is past 4.', changes: [cut('Back to 4.')] }, plan, strict).ok, true);
 });
 
+test('review comments: a field before a colon, a minus sign, and a made-up "before"', () => {
+  const ctx = { ...strict, fields: ['trendPct'], numbers: numbersOf({ records: [{ trendPct: -16.7 }] }) };
+  assert.match(validateReview({ summary: 'trendPct: down.', changes: [cut('Cut it.')] }, plan, ctx).errors.join(), /app field names in the text: trendPct/);
+  // A copied number keeps passing whether the text writes its sign or says "down".
+  assert.equal(validateReview({ summary: 'Bench is at -16.7% and down 16.7% on the month.', changes: [cut('Back to 4.')] }, plan, ctx).ok, true);
+  // The model's own "before" is replaced by the plan's; it may not vouch for a number in the text.
+  const inflated = { ...cut('Reduce your 37 sets.'), before: 37 };
+  assert.match(validateReview({ summary: 'S.', changes: [inflated] }, plan, ctx).errors.join(), /numbers not in the data: 37/);
+});
+
 test('without answerChecks nothing changes (the ask job and old callers)', () => {
   assert.equal(validateReview({ nochange: true, reading: 'Up 99%.' }, plan, { checks }).ok, true);
 });

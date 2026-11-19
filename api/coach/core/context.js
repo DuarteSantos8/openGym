@@ -48,7 +48,8 @@ export function muscleLoad(S, now) {
     for (const en of list(w.entries)) {
       const lib = LIB_BY_ID.get(en?.id);
       if (lib?.bp === 'cardio') continue;
-      const hist = custom.get(en?.id) || en;
+      // As the Stats card (muscles.js loadOf): the entry's own weights, else today's definition, else its snapshot.
+      const hist = en?.muscleWeights ? en : custom.get(en?.id) || en;
       const n = list(en.sets).filter(doneWork).length;
       if (!n) continue;
       // The same weighting as the Stats card: a supporting muscle counts at 0.4 of a set.

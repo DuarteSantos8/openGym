@@ -61,7 +61,7 @@ function exactChecks(l, attempt, rawRefs, rawKept = []) {
   const tagged = texts.find(t => TAG_TEXT.test(t));
   add('no-tag-in-text', !tagged, tagged ? tagged.match(TAG_TEXT)[0] : '');
   const { library, ...sent } = payloadOf(l);
-  const field = fieldsOf(sent).find(f => texts.some(t => new RegExp(`\\b${f}\\b`).test(t)));
+  const field = fieldsOf(sent).find(f => texts.some(t => new RegExp(`(?<!\\w)${f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\w)`).test(t)));
   add('no-field-in-text', !field, field || '');
   const kept = changes.map(c => c.refCheck?.id || c.ref).filter(Boolean);
   const dropped = rawRefs.filter(r => !changes.some(c => c.ref === r || c.refCheck?.id === r));
@@ -69,7 +69,7 @@ function exactChecks(l, attempt, rawRefs, rawKept = []) {
   const e = l.expect;
   // A `kept` reason ("why the plan stays") answers a check as well as a change citing it does.
   const answered = [...kept, ...(attempt.ok ? rawKept : [])];
-  if (e.cite) add('cites', answered.some(r => e.cite.some(want => r === want || (want.endsWith(':') && r.startsWith(want)))), `wanted ${e.cite.join(' or ')}; got ${answered.join(', ') || 'none'}`);
+  if (e.cite) add('cites', answered.some(r => e.cite.some(want => r === want || (want.endsWith(':') && (r.startsWith(want) || r === want.slice(0, -1))))), `wanted ${e.cite.join(' or ')}; got ${answered.join(', ') || 'none'}`);
   if (e.touches) add('touches', changes.some(c => e.touches.includes(c.target?.exId) || e.touches.includes(c.after?.id)), `wanted a change on ${e.touches.join(', ')}`);
   if (e.adds) add('adds', changes.some(c => e.adds.includes(bpOf(c.after?.id)) || (c.type === 'sets' && e.adds.includes(bpOf(c.target?.exId)))), `wanted more ${e.adds.join(', ')} work`);
   if (e.calm) add('calm', changes.length <= 2, `${changes.length} changes`);
@@ -121,7 +121,8 @@ async function judge(model, l, payload, attempt) {
   // Everything the coach got except the exercise list, so the judge can tell a copied number from a worked-out one.
   const { library: _l, ...data } = payload;
   const user = `Lifter: ${l.story}\n\nHow the coach was told to read the data:\n${READING}\n\nThe app's data the coach was given: ${JSON.stringify(data)}\n\nThe coach's answer: ${JSON.stringify(answer)}`;
-  const r = await ask(model, STANDARD, user);
+  // A judge that fails (network, quota) marks this review unjudged; it never loses the run.
+  const r = await ask(model, STANDARD, user).catch(e => ({ status: `error ${String(e?.message || e).slice(0, 120)}`, text: '' }));
   const v = extractJSON(r.text).value;
   return v && Number.isFinite(v.score) ? { score: v.score, pass: !!v.pass, notes: String(v.notes || '') } : { score: null, pass: false, notes: `judge failed: ${r.status}` };
 }
@@ -166,7 +167,7 @@ for (const l of lifters) {
       const r = await base.invoke(o);
       const v = extractJSON(r.text || '').value;
       rawRefs.length = 0;
-      (v?.changes || []).forEach(c => typeof c?.ref === 'string' && rawRefs.push(c.ref));
+      (Array.isArray(v?.changes) ? v.changes : []).forEach(c => typeof c?.ref === 'string' && rawRefs.push(c.ref));
       rawKept.length = 0;
       (Array.isArray(v?.kept) ? v.kept : []).forEach(k => typeof k?.ref === 'string' && rawKept.push(k.ref));
       return r;
