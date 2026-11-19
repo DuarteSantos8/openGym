@@ -3326,7 +3326,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #app .list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   #modal-root .list,#app .narrow .list{display:flex;flex-direction:column}
   .narrow{max-width:640px;margin:0 auto}
-  .tiles{grid-template-columns:repeat(4,1fr)}
+  .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
   .cols .tiles,.center .tiles{grid-template-columns:1fr 1fr}   /* a 300px dialog has no room for four */
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;

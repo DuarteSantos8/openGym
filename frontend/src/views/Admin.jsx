@@ -513,14 +513,14 @@ export default function Admin() {
   const gymsCard = (desktop ? adminSections(config).some(([id]) => id === 'gyms') : trainersOn) && <GymsCard users={users || []} tick={tick} />
   // The desktop table: every user, or on the overview the few who synced last.
   const usersTable = list => <div className="adm-table">
-    <div className="adm-tr adm-th" aria-hidden="true"><span>User</span><span>Role</span><span>Status</span><span className="num">Workouts</span><span>Last workout</span><span>Last sync</span><span /></div>
+    <div className="adm-tr adm-th" aria-hidden="true"><span>User</span><span className="c-role">Role</span><span>Status</span><span className="num">Workouts</span><span className="c-last">Last workout</span><span>Last sync</span><span /></div>
     {list.map(u => <button key={u.id} className="adm-tr" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
       <span className="adm-who"><span className={'adm-av' + (u.live ? ' live' : '')} aria-hidden="true">{initials(u.name)}</span>
         <span className="adm-who-t"><b>{u.name}</b><span>{u.live ? 'training now' + (u.live.name ? ' · ' + u.live.name : '') : u.email || (u.hasPush ? 'push notifications on' : '')}</span></span></span>
-      <span>{u.admin ? <span className="adm-pill acc">{u.owner ? 'owner' : 'admin'}</span> : <span className="dim">member</span>}</span>
+      <span className="c-role">{u.admin ? <span className="adm-pill acc">{u.owner ? 'owner' : 'admin'}</span> : <span className="dim">member</span>}</span>
       <span><StatusPill u={u} /></span>
       <span className="num">{u.workouts}</span>
-      <span className="dim">{u.lastWorkout ? fmtDate(u.lastWorkout) : '–'}</span>
+      <span className="dim c-last">{u.lastWorkout ? fmtDate(u.lastWorkout) : '–'}</span>
       <span className="dim">{rel(u.lastSync)}</span>
       <Icon name="chevronRight" className="chev" />
     </button>)}

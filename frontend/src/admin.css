@@ -167,11 +167,24 @@
 .adm-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;align-items:start}
 .adm-cols>.card{margin-bottom:0}
 
-.adm-table{margin:0 -16px -16px;border-top:var(--hair) solid var(--sep)}
+/* The table sizes itself to its card (a container query, not the window): the overview's half-width
+   card and the full-width Users page get different columns. Wide enough shows everything (>=800px),
+   then Last workout goes, then Role. Columns shrink (minmax(0,..)), text cells ellipsise, and as a
+   last resort the table scrolls inside its card instead of spilling out. */
+.adm-table{margin:0 -16px -16px;border-top:var(--hair) solid var(--sep);container-type:inline-size;overflow-x:auto}
 .adm-tr{
-  display:grid;grid-template-columns:minmax(220px,2.4fr) 92px 120px 84px 120px 100px 20px;
+  display:grid;grid-template-columns:minmax(0,1fr) 92px 120px 84px 120px 100px 20px;
   align-items:center;column-gap:14px;width:100%;min-height:60px;padding:8px 16px;
   border-bottom:var(--hair) solid var(--sep);text-align:start;font-size:14px;cursor:pointer
+}
+.adm-tr>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@container (max-width:799px){
+  .adm-tr{grid-template-columns:minmax(0,1fr) 92px 120px 84px 100px 20px}
+  .adm-tr .c-last{display:none}
+}
+@container (max-width:659px){
+  .adm-tr{grid-template-columns:minmax(0,1fr) 104px 72px 84px 16px;column-gap:10px;padding-inline:12px}
+  .adm-tr .c-role{display:none}
 }
 .adm-tr:last-child{border-bottom:0}
 .adm-tr:not(.adm-th):hover{background:var(--surface-2)}

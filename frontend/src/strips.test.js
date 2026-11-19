@@ -21,7 +21,7 @@ const all = FILES.flatMap(f => rules(readFileSync(here(f), 'utf8')).map(r => ({ 
 const shared = all.find(r => /overflow-y:\s*hidden/.test(r.body) && /touch-action:\s*pan-x pan-y/.test(r.body))
 const sharedSel = shared ? shared.sel.split(',').map(s => s.trim()) : []
 // Scroll areas that are not strips of chips or cards (a wide table, a code block) may scroll both ways.
-const NOT_A_STRIP = new Set([])
+const NOT_A_STRIP = new Set(['.adm-table'])   // the desktop admin users table, a safety net inside its card
 
 describe('sideways strips', () => {
   it('have one shared rule', () => {
