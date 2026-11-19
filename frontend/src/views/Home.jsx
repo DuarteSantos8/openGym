@@ -2,7 +2,7 @@ import TrainerNotice from '../components/TrainerNotice.jsx'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive, setsDone, workoutDay, workoutDuration, workoutVolume, supersetUnits, unitOf, setUnitsTotal } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive, setsDone, workoutDay, newestWorkouts, workoutDuration, workoutVolume, supersetUnits, unitOf, setUnitsTotal } from '../lib/history.js'
 import { streakInfo } from '../lib/streak.js'
 import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { StreakRuleWelcome } from '../components/StreakRule.jsx'
@@ -56,10 +56,10 @@ export default function Home() {
   // The six most tired muscles, for the desktop Recovery card. Only worked out on a wide window:
   // a phone never shows it, and the model walks the whole history.
   const recovery = useMemo(() => {
-    if (!desktop || !S.workouts.length) return null
+    if (!desktop || !isOn(S, 'health') || !S.workouts.length) return null
     const f = fatigueOf(S.workouts, Date.now(), { bodyweightKg: profileBodyweightKg(S), unit: S.unit })
     return MUSCLES.map(m => [m, f[m] || 0]).sort((a, b) => b[1] - a[1]).slice(0, 6)
-  }, [desktop, S.workouts, S.bodyweight, S.unit])
+  }, [desktop, S.modules, S.workouts, S.bodyweight, S.unit])
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
@@ -99,7 +99,7 @@ export default function Home() {
     // In a rotation the weekdays plan nothing (lib/rotation.js); only what was done shows (desktop).
     const fixedWeek = scheduleModeOf(S) !== 'rotation'
     const eff = fixedWeek && effectiveRoutineIds(S, iso).length > 0, ovr = S.dayPlan[iso] !== undefined, done = doneDays.has(iso)
-    const dayName = !desktop ? '' : done ? S.workouts.filter(w => w.d === iso).map(w => w.name).filter(Boolean).join(' + ')
+    const dayName = !desktop ? '' : done ? S.workouts.filter(w => workoutDay(w) === iso).map(w => w.name).filter(Boolean).join(' + ')
       : eff ? effectiveRoutines(S, iso).map(r => r.name).join(' + ') : ''
     // A day off with a note (#261) reads as excused, not as a plan that went by.
     const dot = done ? ' done' : dayNoteOf(S, iso) ? ' noted' : ovr && eff ? ' ovr' : eff ? ' plan' : ''
@@ -364,7 +364,7 @@ export default function Home() {
   // training and the last sessions. The check-in sits in the sidebar there. A phone keeps the
   // single column below, in its own order.
   if (desktop) {
-    const lastW = S.workouts.at(-1)
+    const [lastW] = newestWorkouts(S.workouts, 1)
     // Within the last week a weekday says it ("Wed"); further back, the date.
     const dayOrDate = iso => (todayISO() > iso && (new Date(todayISO()) - new Date(iso)) < 6 * 86400000
       ? t(DAYS[new Date(iso + 'T12:00:00').getDay()]) : fmtDate(iso))
@@ -377,7 +377,7 @@ export default function Home() {
       [year.reduce((n, w) => n + (w.prs?.length || 0), 0), t('PRs')],
       [streak.current, t('Week streak')],
     ]
-    const recent = S.workouts.slice(-6).reverse().filter(w => Array.isArray(w.entries))
+    const recent = newestWorkouts(S.workouts, 6).filter(w => Array.isArray(w.entries))
     return <div className="home-desk">
       <div className="hdr">
         <SeasonDeco spot="header-bats" />
@@ -391,7 +391,7 @@ export default function Home() {
       <TrainerNotice />
       {noticeCards}
       {welcomeCard}
-      <div className="home-cols">
+      <div className={'home-cols' + (!on('motivation') && S.homeMuscleSets !== true ? ' no-side' : '') + (!(on('health') && recovery) ? ' no-rec' : '')}>
         {weekCard}
         {on('motivation') ? <div className="card dk-streak">
           <SeasonDeco spot="home-streak" />
@@ -402,15 +402,15 @@ export default function Home() {
           <StreakParty S={S} info={streak} tally={tally} />
           <div className="dk-kv">
             {upNext && <div className="row between"><span className="muted">{t('Next session')}</span><b>{t(DAYS[upNext.weekday])} · {upNext.routine.name}</b></div>}
-            {lastW && <div className="row between"><span className="muted">{t('Last workout')}</span><span>{dayOrDate(lastW.d)} · {lastW.name}</span></div>}
+            {lastW && <div className="row between"><span className="muted">{t('Last workout')}</span><span>{dayOrDate(workoutDay(lastW))} · {lastW.name}</span></div>}
           </div>
           {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
           <Button size="sm" icon="calendar" onClick={() => calendarSheet()}>{t('Calendar')}</Button>
-        </div> : <div className="dk-side">
-          {S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+        </div> : S.homeMuscleSets === true && <div className="dk-side">
+          <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>
         </div>}
         {weightCard}
-        {recovery && <div className="card">
+        {on('health') && recovery && <div className="card">
           <div className="row between"><h2 style={{ margin: 0 }}>{t('Recovery')}</h2>
             <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/stats')}>{t('Open')}</Button></div>
           <div className="muted small" style={{ margin: '2px 0 8px' }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
@@ -435,7 +435,7 @@ export default function Home() {
         <div className="dk-tr dk-th" aria-hidden="true"><span>{t('Workout')}</span><span>{t('Date')}</span><span className="num">{t('Duration')}</span><span className="num">{t('Sets')}</span><span className="num">{t('Volume')}</span><span className="num">{t('PRs')}</span></div>
         {recent.map(w => <button key={w.id} className="dk-tr" onClick={() => workoutDetailSheet(w)}>
           <b>{w.name}</b>
-          <span className="muted">{fmtDate(w.d, true)}</span>
+          <span className="muted">{fmtDate(workoutDay(w), true)}</span>
           <span className="num muted">{durPart(workoutDuration(w))[0] || '–'}</span>
           <span className="num">{setsDone(w)}</span>
           <span className="num"><b>{fmtVol(w.vol ?? workoutVolume(w), S.unit)}</b></span>

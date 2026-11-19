@@ -3404,6 +3404,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   /* Home as a dashboard (views/Home.jsx `desktop`): two columns, the year's heatmap below */
   .home-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
   .home-cols>.card{margin:0}
+  /* Nothing in the side cell, or no Recovery card: the neighbouring card takes the whole row. */
+  .home-cols.no-side>:first-child,.home-cols.no-rec>:last-child{grid-column:1/-1}
   .home-desk .card h2{font-size:16px;font-weight:600;letter-spacing:-.012em;color:var(--label);text-transform:none}
   .home-desk .hdr-actions .btn{width:auto}
   /* the week as seven tiles (the design's "This week"): weekday, date, a filled dot for done and
