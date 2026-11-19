@@ -3488,7 +3488,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   }
   #app .wo-timer #timer .tclock{align-items:center}
   #app .wo-timer #timer .t{font-size:40px}
-  #app .wo-timer #timer .acts{justify-content:space-between;flex-wrap:wrap}
+  /* One line, never wrapped: RestTimer's useSkipFits measures what is left beside the other buttons
+     and turns Skip into its icon when its label does not fit, which a wrapping row would hide by
+     pushing the label onto a second line. Rest is about 250 px of 394, count-in and hold hold one or
+     two buttons. */
+  #app .wo-timer #timer .acts{justify-content:space-between;flex-wrap:nowrap}
 }
 
 /* ------------------------------------------------------- gym check-in -- */
