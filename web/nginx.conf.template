@@ -57,7 +57,7 @@ server {
         # the DNS the platform actually provides: on Kubernetes that is the kube-dns/CoreDNS
         # service address (`kubectl -n kube-system get svc kube-dns`, commonly 10.96.0.10).
         resolver ${RESOLVER} valid=10s ipv6=off;
-        set $api_upstream http://${BACKEND}:${PORT};
+        set $api_upstream http://${BACKEND}:${API_PORT};
         # With a URI after the host, a proxy_pass built from variables sends that URI verbatim;
         # an empty one (the map's no-match case) sends the request's own target, as before.
         proxy_pass $api_upstream$api_request_uri;
@@ -109,7 +109,7 @@ server {
     # 404 unless MCP=on.
     location ~ ^(\Q${BASE_PATH}\E)?/\.well-known/(oauth-authorization-server|oauth-protected-resource|openid-configuration)(\Q${BASE_PATH}\E)?(/mcp)?$ {
         resolver ${RESOLVER} valid=10s ipv6=off;
-        set $api_upstream http://${BACKEND}:${PORT};
+        set $api_upstream http://${BACKEND}:${API_PORT};
         proxy_pass $api_upstream$api_request_uri;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -139,7 +139,7 @@ server {
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
         resolver ${RESOLVER} valid=10s ipv6=off;
-        set $api_upstream http://${BACKEND}:${PORT};
+        set $api_upstream http://${BACKEND}:${API_PORT};
         # The same mapped target as the block above: under a prefix the upload has to reach the
         # API's /api/media/... route too.
         proxy_pass $api_upstream$api_request_uri;

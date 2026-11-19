@@ -20,7 +20,7 @@ metadata:
     {{- include "helm.labels" . | nindent 4 }}
 data:
   NGINX_PORT: {{ .Values.web.service.port | quote }}
-  PORT: {{ .Values.api.service.port | quote }}
+  API_PORT: {{ .Values.api.service.port | quote }}
   # Both containers share the pod's network, so the API is on localhost.
   BACKEND: "127.0.0.1"
   {{- range $k, $v := .Values.web.env }}

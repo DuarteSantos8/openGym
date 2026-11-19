@@ -76,7 +76,7 @@ spec:
             # also means nginx never needs RESOLVER (Docker's DNS by default) to find it.
             - name: BACKEND
               value: 127.0.0.1
-            - name: PORT
+            - name: API_PORT
               value: "3000"
           ports:
             - containerPort: 8080
