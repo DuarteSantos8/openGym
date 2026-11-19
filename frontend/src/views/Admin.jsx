@@ -14,7 +14,7 @@ import AdminCoach from './AdminCoach.jsx'
 import AdminCommunity from './AdminCommunity.jsx'
 import AdminOidc from '../components/AdminOidc.jsx'
 import { useDesktop } from '../lib/use-desktop.js'
-import { adminSections, adminSectionOf } from '../lib/admin-sections.js'
+import { adminSections, shownAdminSection } from '../lib/admin-sections.js'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
@@ -436,7 +436,7 @@ export default function Admin() {
     if (desktop && loc.pathname === '/admin') { nav('/admin/coach', { replace: true }); return }
     const tm = setTimeout(() => coachRef.current?.scrollIntoView({ block: 'start' }), 50)
     return () => clearTimeout(tm)
-  }, [toCoach])
+  }, [toCoach, desktop, loc.pathname, nav])
   const user = useStore(s => s.user)
   const openSheet = useUI(s => s.openSheet)
   const [users, setUsers] = useState(null)
@@ -508,7 +508,9 @@ export default function Admin() {
   </div>
   const invitesCard = <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
   const auditCard = <AuditCard tick={tick} owner={viewerOwner} />
-  const gymsCard = trainersOn && <GymsCard users={users || []} tick={tick} />
+  // A wide window's Gyms section exists by the app's config (lib/admin-sections.js, the sidebar
+  // has no users list to ask), so the card follows the same flag there; the phone keeps the list's.
+  const gymsCard = (desktop ? adminSections(config).some(([id]) => id === 'gyms') : trainersOn) && <GymsCard users={users || []} tick={tick} />
   // The desktop table: every user, or on the overview the few who synced last.
   const usersTable = list => <div className="adm-table">
     <div className="adm-tr adm-th" aria-hidden="true"><span>User</span><span>Role</span><span>Status</span><span className="num">Workouts</span><span>Last workout</span><span>Last sync</span><span /></div>
@@ -530,8 +532,7 @@ export default function Admin() {
   // training, the last people to sync and the invite codes; the other sections one card each.
   if (desktop) {
     const offered = adminSections(config)
-    const asked = adminSectionOf(loc.pathname)
-    const section = offered.some(([id]) => id === asked) ? asked : 'overview'
+    const section = shownAdminSection(loc.pathname, config)
     const recent = [...(users || [])].sort((a, b) => (b.lastSync || 0) - (a.lastSync || 0)).slice(0, 5)
     return <div className="adm-desk">
       {header(offered.find(([id]) => id === section)[1])}
