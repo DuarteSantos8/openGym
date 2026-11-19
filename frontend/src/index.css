@@ -3477,7 +3477,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .wo-sum>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;font-size:14px;border-bottom:var(--hair) solid var(--sep)}
   .wo-sum>div:last-child{border-bottom:0}
   .wo-sum span{color:var(--label-2);flex:none}
-  .wo-sum b{font-weight:600;text-align:end;min-width:0;overflow-wrap:anywhere;text-transform:capitalize}
+  .wo-sum b{font-weight:600;text-align:end;min-width:0;overflow-wrap:anywhere}
   .wo-timer:empty{display:none}
   /* The rest bar in its column: a card in the flow instead of a bar over the page. Two ids, so it
      outranks every floating #timer rule above whatever their body classes. */

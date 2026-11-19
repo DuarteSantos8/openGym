@@ -2943,7 +2943,7 @@ function ActiveWorkout() {
     <div className="card wo-sum">
       <div><span>{t('Sets')}</span><b>{done}/{total}</b></div>
       <div><span>{t('Volume')}</span><b>{fmtVol(vol, S.unit)}</b></div>
-      {nextUnit && <div><span>{t('Up next')}</span><b>{nextUnit.map(idx => exerciseNameFor(exOr(A.entries[idx].id))).join(' + ')}</b></div>}
+      {nextUnit && <div><span>{t('Up next')}</span><b>{nextUnit.map(idx => <Fragment key={idx}>{idx === nextUnit[0] ? '' : ' + '}<span className={exerciseNameClass(exOr(A.entries[idx].id))}>{exerciseNameFor(exOr(A.entries[idx].id))}</span></Fragment>)}</b></div>}
     </div>
   </aside>
 
