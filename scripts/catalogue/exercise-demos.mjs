@@ -41,6 +41,17 @@ export const VIDEOS = [
   { id: '5099', file: 'Kettlebell Farmer Walks.webm', license: 'CC-BY-SA-4.0' },
   // Commons licence review passed (YouTube import). Cut to four clean repetitions between title cards.
   { id: '0739', file: 'Hip Sled - How to perform a 45 degree leg press.webm', license: 'CC-BY-3.0', start: 51, duration: 4 },
+  // FitnessScape's short demonstrations (CC BY 3.0 as published on YouTube, imported to Commons
+  // without a licence review; the owner accepted them, 18 Nov 2026). Each was checked by eye
+  // against its exercise; the clip's own title card stays in. Their bench press and squat are
+  // left out, since 0025 and 0043 already have a clip.
+  { id: '0032', file: 'Deadlift - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '1162', file: 'Shoulder press - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0047', file: 'Incline press - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0027', file: 'Bent-over row - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0652', file: 'Pull-ups - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '9819', file: 'Hanging crunches - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0472', file: 'Leg raises - exercise demonstration video.webm', license: 'CC-BY-3.0' },
 ]
 
 /** ATP 7-22.02 figure number -> catalogue ids it shows (checked by eye against the figure). */
@@ -89,7 +100,10 @@ unlimited; photos developed by the U.S. Army Center for Initial Military Trainin
 Government they are in the public domain in the United States. **Changes:** scaled to at most 1200 px
 wide and re-encoded as WebP. The U.S. Army does not endorse openGym.
 
-Left out on purpose: Commons clips whose licence was never reviewed (short YouTube imports), the National
+FitnessScape's clips are YouTube imports marked CC BY 3.0 whose Commons licence review is still open; they
+were accepted on that marking and are removed if the review finds otherwise.
+
+Left out on purpose: other unreviewed Commons YouTube imports, the National
 Institute on Aging's "Get Fit for Life" (its photos carry no credits, so their origin cannot be
 established), and Pexels/Pixabay-style stock libraries (their licences forbid redistributing the files
 as part of a collection like this one).
@@ -173,11 +187,13 @@ async function main() {
       add(id, e)
     }
   }
-  const info = reuse ? {} : await commonsInfo(VIDEOS.map(v => v.file))
-  for (const v of reuse ? [] : VIDEOS) {
+  // Reusing: only clips not built yet are fetched.
+  const todo = reuse ? VIDEOS.filter(v => !(old[v.id] || []).some(e => e.kind === 'video')) : VIDEOS
+  const info = todo.length ? await commonsInfo(todo.map(v => v.file)) : {}
+  for (const v of todo) {
     const m = info[v.file]
     if (!m || LICENSES[m.lic] !== v.license) throw new Error(`${v.file}: licence is now "${m?.lic}", expected ${v.license}`)
-    const src = get(m.url, path.join(CACHE, v.id + path.extname(m.url)))
+    const src = get(m.url, path.join(CACHE, v.id + path.extname(new URL(m.url).pathname)))  // the url carries a query
     const f = `files/video-${v.id}.mp4`, poster = `files/video-${v.id}.webp`
     const cut = v.start != null ? ['-ss', String(v.start), '-t', String(v.duration)] : []
     execFileSync(ffmpeg, ['-y', '-loglevel', 'error', ...cut, '-i', src, '-an', '-vf', "scale='min(iw,1280)':'min(ih,1280)':force_original_aspect_ratio=decrease:force_divisible_by=2,fps=30",

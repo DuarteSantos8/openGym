@@ -55,6 +55,18 @@
    "source": "https://commons.wikimedia.org/wiki/File:CrossFit_Burpee.webm"
   }
  ],
+ "1162": [
+  {
+   "kind": "video",
+   "f": "files/video-1162.mp4",
+   "poster": "files/video-1162.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Shoulder_press_-_exercise_demonstration_video.webm"
+  }
+ ],
  "1200": [
   {
    "kind": "image",
@@ -355,6 +367,18 @@
    "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=144"
   }
  ],
+ "9819": [
+  {
+   "kind": "video",
+   "f": "files/video-9819.mp4",
+   "poster": "files/video-9819.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Hanging_crunches_-_exercise_demonstration_video.webm"
+  }
+ ],
  "11648": [
   {
    "kind": "image",
@@ -389,6 +413,16 @@
  ],
  "0027": [
   {
+   "kind": "video",
+   "f": "files/video-0027.mp4",
+   "poster": "files/video-0027.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Bent-over_row_-_exercise_demonstration_video.webm"
+  },
+  {
    "kind": "image",
    "pose": "sequence",
    "f": "files/atp-14-13.webp",
@@ -399,6 +433,16 @@
   }
  ],
  "0032": [
+  {
+   "kind": "video",
+   "f": "files/video-0032.mp4",
+   "poster": "files/video-0032.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Deadlift_-_exercise_demonstration_video.webm"
+  },
   {
    "kind": "image",
    "pose": "sequence",
@@ -442,6 +486,16 @@
   }
  ],
  "0047": [
+  {
+   "kind": "video",
+   "f": "files/video-0047.mp4",
+   "poster": "files/video-0047.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Incline_press_-_exercise_demonstration_video.webm"
+  },
   {
    "kind": "image",
    "pose": "sequence",
@@ -516,6 +570,18 @@
    "license": "PD-USGov",
    "author": "U.S. Army (ATP 7-22.02)",
    "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=194"
+  }
+ ],
+ "0472": [
+  {
+   "kind": "video",
+   "f": "files/video-0472.mp4",
+   "poster": "files/video-0472.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Leg_raises_-_exercise_demonstration_video.webm"
   }
  ],
  "0514": [
@@ -640,6 +706,16 @@
   }
  ],
  "0652": [
+  {
+   "kind": "video",
+   "f": "files/video-0652.mp4",
+   "poster": "files/video-0652.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Pull-ups_-_exercise_demonstration_video.webm"
+  },
   {
    "kind": "image",
    "pose": "sequence",

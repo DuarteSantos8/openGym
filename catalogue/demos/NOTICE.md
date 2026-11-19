@@ -15,7 +15,10 @@ unlimited; photos developed by the U.S. Army Center for Initial Military Trainin
 Government they are in the public domain in the United States. **Changes:** scaled to at most 1200 px
 wide and re-encoded as WebP. The U.S. Army does not endorse openGym.
 
-Left out on purpose: Commons clips whose licence was never reviewed (short YouTube imports), the National
+FitnessScape's clips are YouTube imports marked CC BY 3.0 whose Commons licence review is still open; they
+were accepted on that marking and are removed if the review finds otherwise.
+
+Left out on purpose: other unreviewed Commons YouTube imports, the National
 Institute on Aging's "Get Fit for Life" (its photos carry no credits, so their origin cannot be
 established), and Pexels/Pixabay-style stock libraries (their licences forbid redistributing the files
 as part of a collection like this one).
@@ -25,12 +28,18 @@ as part of a collection like this one).
 | 0025 barbell bench press | `files/video-0025.mp4` | Your Move | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Barbell_bench_press_exercise_demonstration.webm |
 | 0025 barbell bench press | `files/video-0025.webp` | Your Move | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Barbell_bench_press_exercise_demonstration.webm |
 | 0025 barbell bench press | `files/atp-14-6.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=182 |
+| 0027 barbell bent over row | `files/video-0027.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Bent-over_row_-_exercise_demonstration_video.webm |
+| 0027 barbell bent over row | `files/video-0027.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Bent-over_row_-_exercise_demonstration_video.webm |
 | 0027 barbell bent over row | `files/atp-14-13.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=188 |
+| 0032 barbell deadlift | `files/video-0032.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Deadlift_-_exercise_demonstration_video.webm |
+| 0032 barbell deadlift | `files/video-0032.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Deadlift_-_exercise_demonstration_video.webm |
 | 0032 barbell deadlift | `files/atp-14-3.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=180 |
 | 0033 barbell decline bench press | `files/atp-14-9.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=184 |
 | 0043 barbell full squat | `files/video-0043.mp4` | Your Move | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Barbell_back_squat_exercise_demonstration.webm |
 | 0043 barbell full squat | `files/video-0043.webp` | Your Move | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Barbell_back_squat_exercise_demonstration.webm |
 | 0043 barbell full squat | `files/atp-14-2.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=179 |
+| 0047 barbell incline bench press | `files/video-0047.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Incline_press_-_exercise_demonstration_video.webm |
+| 0047 barbell incline bench press | `files/video-0047.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Incline_press_-_exercise_demonstration_video.webm |
 | 0047 barbell incline bench press | `files/atp-14-10.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=184 |
 | 0116 barbell straight leg deadlift | `files/atp-14-5.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=181 |
 | 0120 barbell upright row | `files/atp-14-15.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=190 |
@@ -38,6 +47,8 @@ as part of a collection like this one).
 | 0289 dumbbell bench press | `files/atp-14-7.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=183 |
 | 0294 dumbbell biceps curl | `files/atp-14-23.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=196 |
 | 0375 dumbbell pullover | `files/atp-14-21.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=194 |
+| 0472 hanging leg raise | `files/video-0472.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Leg_raises_-_exercise_demonstration_video.webm |
+| 0472 hanging leg raise | `files/video-0472.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Leg_raises_-_exercise_demonstration_video.webm |
 | 0514 jump squat | `files/atp-5-1.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=72 |
 | 0528 kettlebell double push press | `files/atp-13-9.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=175 |
 | 0576 lever chest press | `files/atp-15-16.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=212 |
@@ -49,6 +60,8 @@ as part of a collection like this one).
 | 0607 lever triceps extension | `files/atp-15-14.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=210 |
 | 0612 lunge | `files/atp-3-10.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=47 |
 | 0630 mountain climber | `files/atp-5-3.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=73 |
+| 0652 pull-up | `files/video-0652.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Pull-ups_-_exercise_demonstration_video.webm |
+| 0652 pull-up | `files/video-0652.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Pull-ups_-_exercise_demonstration_video.webm |
 | 0652 pull-up | `files/atp-6-3.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=98 |
 | 0662 push-up | `files/atp-3-13.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=49 |
 | 0739 sled 45° leg press | `files/video-0739.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Hip_Sled_-_How_to_perform_a_45_degree_leg_press.webm |
@@ -60,6 +73,8 @@ as part of a collection like this one).
 | 1143 suspender squat | `files/atp-10-4.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=143 |
 | 1160 burpee | `files/video-1160.mp4` | Taco fleur | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:CrossFit_Burpee.webm |
 | 1160 burpee | `files/video-1160.webp` | Taco fleur | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:CrossFit_Burpee.webm |
+| 1162 barbell standing military press | `files/video-1162.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Shoulder_press_-_exercise_demonstration_video.webm |
+| 1162 barbell standing military press | `files/video-1162.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Shoulder_press_-_exercise_demonstration_video.webm |
 | 11648 floor w raise | `files/atp-4-11.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=66 |
 | 1200 push press | `files/atp-14-17.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=191 |
 | 1204 cable one arm lat pulldown | `files/video-1204.mp4` | Your Move | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Lat_pulldown_exercise_demonstration.webm |
@@ -91,3 +106,5 @@ as part of a collection like this one).
 | 6156 kettlebell bent over row | `files/atp-13-8.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=174 |
 | 6211 bicycle crunch | `files/atp-5-12.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=81 |
 | 6232 suspender biceps curl | `files/atp-10-5.webp` | U.S. Army (ATP 7-22.02) | Public domain (U.S. Government work) | https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=144 |
+| 9819 hanging knee raise | `files/video-9819.mp4` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Hanging_crunches_-_exercise_demonstration_video.webm |
+| 9819 hanging knee raise | `files/video-9819.webp` | FitnessScape | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:Hanging_crunches_-_exercise_demonstration_video.webm |
