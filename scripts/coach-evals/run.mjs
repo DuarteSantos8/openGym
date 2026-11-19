@@ -25,6 +25,7 @@ import { LIBRARY } from '../../api/coach/core/library.js';
 import openrouter from '../../api/coach/core/adapters/openrouter.js';
 import claude, { LOCKDOWN } from '../../api/coach/adapters/claude.js';
 import { PROMPTS } from '../../api/coach/core/prompts.js';
+import { fieldsOf } from '../../api/coach/core/validate.js';
 import { LIFTERS } from './lifters.mjs';
 
 const arg = name => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : null; };
@@ -59,6 +60,9 @@ function exactChecks(l, attempt, rawRefs, rawKept = []) {
   // The tag belongs in `ref`; in the text it is jargon ("volume-cap", "volume-low:lats").
   const tagged = texts.find(t => TAG_TEXT.test(t));
   add('no-tag-in-text', !tagged, tagged ? tagged.match(TAG_TEXT)[0] : '');
+  const { library, ...sent } = payloadOf(l);
+  const field = fieldsOf(sent).find(f => texts.some(t => new RegExp(`\\b${f}\\b`).test(t)));
+  add('no-field-in-text', !field, field || '');
   const kept = changes.map(c => c.refCheck?.id || c.ref).filter(Boolean);
   const dropped = rawRefs.filter(r => !changes.some(c => c.ref === r || c.refCheck?.id === r));
   add('no-made-up-ref', !dropped.length, dropped.join(', '));

@@ -784,7 +784,7 @@ export function validateReview(data, plan, ctx = {}) {
 /* The app counts, the Coach answers (COACH_EVIDENCE.md). Two things the validator holds a review
    to on its first try: every kind of plan check (too few sets, once a week, too many on one
    exercise, over the range) gets an answer, a change citing one of its checks or a `kept` reason,
-   and the text carries no number the payload does not hold. Per kind, not per check: a real plan
+   and the text carries no number the payload does not hold and none of its field names. Per kind, not per check: a real plan
    on the default ranges has ten of them, and ten "kept" notes would bury the review. The repair
    round lets both through (ctx.answerChecks false): they cost a better review, never the job. */
 export const KEPT_MAX = 4;
@@ -806,6 +806,16 @@ export function numbersOf(value, out = new Set()) {
   return out;
 }
 
+/** The code-style keys in a JSON value (trendPct, sets7d, coach_contract): names the lifter never sees. */
+export function fieldsOf(value, out = new Set()) {
+  if (Array.isArray(value)) value.forEach(v => fieldsOf(v, out));
+  else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) {
+    if (/[a-z][A-Z]|_|\d[a-z]/.test(k)) out.add(k);
+    fieldsOf(v, out);
+  }
+  return [...out];
+}
+
 function answerGaps(data, ctx, keptChecks) {
   const gaps = [];
   const changes = Array.isArray(data.changes) ? data.changes : [];
@@ -815,17 +825,19 @@ function answerGaps(data, ctx, keptChecks) {
     const ids = ctx.checks.filter(c => c.tag === tag).map(c => `"${c.id}"`);
     gaps.push(`the ${tag} checks (${ids.slice(0, 4).join(', ')}) have no answer: give at least one a change with that "ref", or add { "ref": "<one of them>", "why": "<one plain sentence on why the plan stays>" } to "kept"`);
   }
+  const texts = [data.summary, data.reading, ...(Array.isArray(data.notes) ? data.notes : []), ...changes.map(c => c && c.why), ...keptChecks.map(k => k.why)].filter(isStr);
   if (ctx.numbers) {
     const allowed = numbersOf(changes.map(c => c && [c.before, c.after]), new Set(ctx.numbers));
-    const texts = [data.summary, data.reading, ...(Array.isArray(data.notes) ? data.notes : []), ...changes.map(c => c && c.why), ...keptChecks.map(k => k.why)];
     const stray = new Set();
-    texts.filter(isStr).forEach(t => (t.replace(/\d{4}-\d{2}-\d{2}/g, ' ').match(/\d+(?:[.,]\d+)?/g) || []).forEach(m => {
+    texts.forEach(t => (t.replace(/\d{4}-\d{2}-\d{2}/g, ' ').match(/\d+(?:[.,]\d+)?/g) || []).forEach(m => {
       const n = Number(m.replace(',', '.'));
       // lean: any whole number to 10 passes (sets, reps, weeks, days); tighten if evals show made-up small counts.
       if (!(Number.isInteger(n) && n <= 10) && !allowed.has(n)) stray.add(m);
     }));
     if (stray.size) gaps.push(`numbers not in the data: ${[...stray].slice(0, 8).join(', ')}. Copy each number exactly as the data gives it (27.3 stays 27.3, never "about 27%"), or leave it out`);
   }
+  const leaked = (ctx.fields || []).filter(f => texts.some(t => new RegExp(`\\b${f}\\b`).test(t)));
+  if (leaked.length) gaps.push(`app field names in the text: ${leaked.slice(0, 8).join(', ')}. Say what each means in plain words ("the trend", not "trendPct"), never the name itself`);
   return gaps;
 }
 

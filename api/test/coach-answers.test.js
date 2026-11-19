@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateReview, numbersOf } from '../coach/core/validate.js';
+import { validateReview, numbersOf, fieldsOf } from '../coach/core/validate.js';
 
 // The review's first try must answer every plan check and copy its numbers (COACH_EVIDENCE.md).
 const plan = { routines: [{ id: 'up', name: 'Upper', ex: [{ id: '0025', sets: 6, reps: 8 }] }] };
@@ -41,6 +41,16 @@ test('a number the data does not hold is sent back; copied ones, dates and small
   assert.match(bad.errors.join(), /numbers not in the data: 17, 25/);
   const good = validateReview({ summary: 'Across 32 sessions from 2026-09-21, bench is up 16.7% to 88.7 kg.', changes: [cut('Six sets is past 4; drop 2.')] }, plan, strict);
   assert.equal(good.ok, true, JSON.stringify(good.errors));
+});
+
+test('an app field name in the text is sent back; plain words that are also keys pass', () => {
+  const payload = { records: [{ trendPct: 16.7, best: 88.7 }], muscles: { sets7d: 4 }, coach_contract: 'x', '1': 2 };
+  assert.deepEqual(fieldsOf(payload), ['trendPct', 'sets7d', 'coach_contract']);
+  const ctx = { ...strict, fields: fieldsOf(payload) };
+  const bad = validateReview({ summary: 'Your trendPct on bench is 16.7 and sets7d is fine.', changes: [cut('Cut it.')] }, plan, ctx);
+  assert.equal(bad.ok, false);
+  assert.match(bad.errors.join(), /app field names in the text: trendPct, sets7d/);
+  assert.equal(validateReview({ summary: 'Your best bench is up 16.7%.', changes: [cut('Six sets is past 4.')] }, plan, ctx).ok, true);
 });
 
 test('without answerChecks nothing changes (the ask job and old callers)', () => {

@@ -15,7 +15,7 @@ import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
 import { classifyFailure, redact } from './failure.js';
-import { validatePlan, validateReview, validateDebrief, validateAsk, validateAdapt, numbersOf } from './validate.js';
+import { validatePlan, validateReview, validateDebrief, validateAsk, validateAdapt, numbersOf, fieldsOf } from './validate.js';
 import { isChangeList, changesOntoPlan } from './refine-changes.js';
 
 /**
@@ -83,7 +83,7 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     ? validateReview(parsed.value, payload.plan, {
         customIds, equipment, offered, noDumbbells, machines, checks: payload.checks || [],
         // Asked once: the repair round takes an unanswered check or a stray number as it is.
-        answerChecks: !repair, numbers: reviewNumbers(payload)
+        answerChecks: !repair, numbers: reviewNumbers(payload), fields: reviewFields(payload)
       })
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
@@ -106,8 +106,9 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   return { ok: true, result: { ...result, ...sources }, ...(checked.kind && checked.kind !== kind ? { kind: checked.kind } : {}) };
 }
 
-// The numbers a review may quote: the payload's, minus the exercise list.
+// The numbers a review may quote, and the field names it may not: the payload's, minus the exercise list.
 const reviewNumbers = ({ library, ...rest }) => numbersOf(rest);
+const reviewFields = ({ library, ...rest }) => fieldsOf(rest);
 
 /** The whole loop: one attempt, then one repair round if the answer was fixable (FR-48). */
 export async function runPipeline(opts) {
