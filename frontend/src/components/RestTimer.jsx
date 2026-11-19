@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
@@ -99,6 +100,10 @@ export default function RestTimer() {
   const autoSay = useUI(s => s.autoSay)
   const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork, goNow, stopAuto } = useUI()
   const on = countIn || work || timer
+  // A wide window's workout keeps a column for the bar (useUI timerSlot): it sits there as a card
+  // instead of floating over the page. Same element, same buttons, only the place differs.
+  const slot = useUI(s => s.timerSlot)
+  const place = node => (slot ? createPortal(node, slot) : node)
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
   // The page keeps room at its bottom for the bar (index.css body.resting), so the last set and
@@ -117,7 +122,7 @@ export default function RestTimer() {
   if (countIn) {
     const n = countIn.left ?? countIn.total
     const name = countIn.owner?.label || ''
-    return <>{say}
+    return <>{say}{place(
       <div id="timer" className={'countin auto' + (countIn.paused ? ' paused' : '')}>
         <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
         <div className="tclock">
@@ -128,14 +133,14 @@ export default function RestTimer() {
           <Button size="sm" variant="primary" icon="play" onClick={goNow}>{t('Go now')}</Button>
         </div>
         <AutoRow paused={countIn.paused} />
-      </div>
+      </div>)}
     </>
   }
   // The bar shrinks by transform, not width: a width transition lays the page out again on every
   // frame of every rest (~45 layouts a second), a scaled bar is the compositor's alone.
 
   // A hold that runs itself trades Cancel for the chain's row: Restart and Stop auto cover it.
-  if (work) return <>{say}
+  if (work) return <>{say}{place(
     <div id="timer" className={'working' + (work.auto ? ' auto' : '') + (work.paused ? ' paused' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <div className="tclock">
@@ -147,7 +152,7 @@ export default function RestTimer() {
         <Button size="sm" variant="primary" icon="check" onClick={() => finishWorkEarly()}>{t('Done')}</Button>
       </div>
       {work.auto && <AutoRow paused={work.paused} />}
-    </div>
+    </div>)}
   </>
   // −15 and +15 sit together in number-line order; Skip is pushed to the far edge, away from the
   // button you tap to buy more time. Pause sits between them as an icon (#193): it holds the
@@ -160,7 +165,7 @@ export default function RestTimer() {
   // A rest before a hold that starts by itself says which one, and offers Stop auto under the
   // rest's own buttons (which keep their places: Pause, +15 s and Skip are the chain's for a rest).
   const autoNext = !timer.ready && timer.autoNext
-  return <>{say}
+  return <>{say}{place(
     <div id="timer" data-tour="rest" style={{ '--rest-p': pct / 100 }} className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <SeasonDeco spot="rest-timer" workout />
@@ -192,6 +197,6 @@ export default function RestTimer() {
           <Button size="sm" icon="xmark" onClick={stopAuto}>{t('Stop auto')}</Button>
         </div>
       )}
-    </div>
+    </div>)}
   </>
 }

@@ -2,18 +2,20 @@ import TrainerNotice from '../components/TrainerNotice.jsx'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive, setsDone, workoutDay, newestWorkouts, workoutDuration, workoutVolume, supersetUnits, unitOf, setUnitsTotal } from '../lib/history.js'
 import { streakInfo } from '../lib/streak.js'
 import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { StreakRuleWelcome } from '../components/StreakRule.jsx'
-import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
+import { fmtNum, fmtDate, fmtVol, durPart, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet, workoutDetailSheet } from '../sheets.jsx'
 import { startOrPreview, startPickerSheet } from '../components/StartSheets.jsx'
 import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
+import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
+import Elapsed from '../components/Elapsed.jsx'
 import CardHead from '../components/CardHead.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
@@ -37,6 +39,10 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
+import { useDesktop } from '../lib/use-desktop.js'
+import { fatigueOf } from '../lib/recovery.js'
+import { fatigueStateOf, fatigueLabel, profileBodyweightKg } from '../lib/recovery-view.js'
+import { MUSCLES, MUSCLE_NAME } from '../lib/muscles.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -46,6 +52,14 @@ export default function Home() {
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
+  const desktop = useDesktop()
+  // The six most tired muscles, for the desktop Recovery card. Only worked out on a wide window:
+  // a phone never shows it, and the model walks the whole history.
+  const recovery = useMemo(() => {
+    if (!desktop || !isOn(S, 'health') || !S.workouts.length) return null
+    const f = fatigueOf(S.workouts, Date.now(), { bodyweightKg: profileBodyweightKg(S), unit: S.unit })
+    return MUSCLES.map(m => [m, f[m] || 0]).sort((a, b) => b[1] - a[1]).slice(0, 6)
+  }, [desktop, S.modules, S.workouts, S.bodyweight, S.unit])
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
@@ -82,11 +96,16 @@ export default function Home() {
   for (let i = 0; i < 7; i++) {
     const d = new Date(wkStart); d.setDate(wkStart.getDate() + i)
     const iso = isoOf(d)
-    const eff = effectiveRoutineIds(S, iso).length > 0, ovr = S.dayPlan[iso] !== undefined, done = doneDays.has(iso)
+    // In a rotation the weekdays plan nothing (lib/rotation.js); only what was done shows (desktop).
+    const fixedWeek = scheduleModeOf(S) !== 'rotation'
+    const eff = fixedWeek && effectiveRoutineIds(S, iso).length > 0, ovr = S.dayPlan[iso] !== undefined, done = doneDays.has(iso)
+    const dayName = !desktop ? '' : done ? S.workouts.filter(w => workoutDay(w) === iso).map(w => w.name).filter(Boolean).join(' + ')
+      : eff ? effectiveRoutines(S, iso).map(r => r.name).join(' + ') : ''
     // A day off with a note (#261) reads as excused, not as a plan that went by.
     const dot = done ? ' done' : dayNoteOf(S, iso) ? ' noted' : ovr && eff ? ' ovr' : eff ? ' plan' : ''
     strip.push(<div key={i} className={'wday' + (iso === todayISO() ? ' today' : '')} {...tappable(() => dayOverrideSheet(iso))}>
-      <div className="lbl">{t(DAYS[d.getDay()])}</div><div className="num">{d.getDate()}</div><div className={'dot' + dot} /></div>)
+      <div className="lbl">{t(DAYS[d.getDay()])}</div><div className="num">{d.getDate()}</div><div className={'dot' + dot} />
+      {desktop && <div className="nm" title={dayName}>{dayName}</div>}</div>)
   }
   const wkEnd = new Date(wkStart); wkEnd.setDate(wkStart.getDate() + 6)
   const wkLabel = weekOffset === 0 ? t('This week') : `${wkStart.getDate()} ${wkStart.toLocaleDateString(dateLocale(), { month: 'short' })} – ${wkEnd.getDate()} ${wkEnd.toLocaleDateString(dateLocale(), { month: 'short' })}`
@@ -134,29 +153,37 @@ export default function Home() {
   const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
 
-  return <div className="narrow">
+  const header = <>
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
     <TrainerNotice />
-
+  </>
+  const weekCard = <>
     <div className="card">
       {/* A running programme (lib/programmes.js) wrote this week's plan: where it stands, one tap from its screen. */}
       {progChip && <button type="button" className="chip ichip prog-chip" onClick={() => nav('/plan/programmes')}><Icon name="calendar" /><span>{progChip}</span></button>}
       {/* A coach week runs by order, not by weekday, so its progress row stands in for the
           seven dots (components/QueueRow.jsx). The today row below stays as it is: the queue's
           next session reaches it through effectiveRoutineIds like any planned routine. */}
-      {rotating ? (queue ? <QueueRow S={S} today={todayISO()} onStart={onQueueStart} managed={managedQueue} /> : <div className="empty">
+      {rotating && (queue ? <QueueRow S={S} today={todayISO()} onStart={onQueueStart} managed={managedQueue} /> : <div className="empty">
         {t('No rotation yet. Add routines to it in Plan.')}
         <div style={{ marginTop: 10 }}><Button size="sm" variant="tinted" onClick={() => nav('/plan')}>{t('Set up in Plan')}</Button></div>
-      </div>) : <>
-        <div className="row between" style={{ marginBottom: 8 }}>
+      </div>)}
+      {(!rotating || desktop) && <>
+        {desktop ? <div className="row between wk-head">
+          <h2>{wkLabel}</h2>
+          <div className="row" style={{ gap: 4 }}>
+            <button className="iconbtn" onClick={() => setWeekOffset(w => w - 1)} aria-label={t('Previous week')}><Icon name="chevronLeft" /></button>
+            <button className="iconbtn" onClick={() => setWeekOffset(w => w + 1)} aria-label={t('Next week')}><Icon name="chevronRight" /></button>
+          </div>
+        </div> : <div className="row between" style={{ marginBottom: 8 }}>
           <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 'var(--fs-subhead)' }} onClick={() => setWeekOffset(w => w - 1)} aria-label={t('Previous week')}><Icon name="chevronLeft" /></button>
           <div className="small muted" style={{ fontWeight: 500 }}>{wkLabel}</div>
           <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 'var(--fs-subhead)' }} onClick={() => setWeekOffset(w => w + 1)} aria-label={t('Next week')}><Icon name="chevronRight" /></button>
-        </div>
+        </div>}
         <div className="week">{strip}</div>
       </>}
       {/* The week's plan as a countdown (#753, lib/week-left.js): "2 of 4 left this week". */}
@@ -196,7 +223,12 @@ export default function Home() {
             <div className="ttl">{S.active ? (editingSaved ? S.active.name : t('{0} (in progress)', S.active.name))
               : doneToday ? (doneToday.name ? t('{0} (done)', doneToday.name) : t('Workout done'))
               : routine ? todayName : t('Rest day')}{todayOvr && routine && !doneToday ? ' · ' + t('rescheduled') : ''}</div>
-            {next && !doneToday && <div className="ss">{t('Next session: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
+            {desktop && S.active && !editingSaved && S.active.entries.length > 0 && (() => {
+              const units = supersetUnits(S.active.entries)
+              const at = units.indexOf(unitOf(units, S.active.cur || 0)) + 1
+              return <div className="ss">{t('Exercise {0} / {1}', at, units.length)} · {t('{0} sets', setsDoneActive(S.active) + '/' + setUnitsTotal(S.active.entries))} · <Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></div>
+            })()}
+            {next && !doneToday && !desktop && <div className="ss">{t('Next session: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
           </div>
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange-ink)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
@@ -212,7 +244,7 @@ export default function Home() {
           and your other routines) is only reachable on a day with nothing planned. The one other
           way in, "Choose a different workout" on the weigh-in sheet, does not exist when the
           weigh-in is switched off. This is that door, and it starts nothing on its own. */}
-      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+      {!S.active && !desktop && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
         <Button size="sm" variant="ghost" className="dim" icon="swap" onClick={startPickerSheet}>
           {t('Choose a different workout')}
         </Button>
@@ -220,6 +252,8 @@ export default function Home() {
       <SeasonDeco spot="home-hero" />
     </div>
 
+  </>
+  const noticeCards = <>
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />
 
@@ -229,8 +263,8 @@ export default function Home() {
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
     {on('motivation') && <WrappedHomeCard S={S} />}
 
-    {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). */}
-    {on('health') && <RecoveryHint S={S} />}
+    {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). Desktop has its own Recovery card. */}
+    {on('health') && !desktop && <RecoveryHint S={S} />}
 
     {/* A deload week now or next, or a lighter week suggested (lib/deload-cycle.js). */}
     <DeloadCard S={S} />
@@ -238,6 +272,8 @@ export default function Home() {
     {/* This month's three challenges and how far you are (lib/challenges.js). */}
     <ChallengesCard S={S} />
 
+  </>
+  const checkInCard = <>
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
     {on('checkin') && (
@@ -247,6 +283,8 @@ export default function Home() {
       </div>
     )}
 
+  </>
+  const welcomeCard = <>
     {!S.routines.length && !S.active && (
       <div className="card">
         <CardHead icon="calendar" title={t('Welcome!')} sub={t('Set up your weekly routine to get going, or grab a ready-made starter plan.')} />
@@ -255,6 +293,8 @@ export default function Home() {
       </div>
     )}
 
+  </>
+  const weightCard = <>
     {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
         (components/StreakRule.jsx). */}
     {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
@@ -297,6 +337,8 @@ export default function Home() {
       </>}
     </div>}
 
+  </>
+  const streakCard = <>
     {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
         party banner are buttons of their own beside it, not inside a card that is a button. */}
     {on('motivation') ? <div className="card tap-host streak-card">
@@ -315,5 +357,101 @@ export default function Home() {
     </div>
       // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
       : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+  </>
+
+  // A wide window (lib/use-desktop.js) lays Home out as a dashboard (index.css .home-desk): what
+  // to do now with the week beside the streak, body weight beside recovery, then the year of
+  // training and the last sessions. The check-in sits in the sidebar there. A phone keeps the
+  // single column below, in its own order.
+  if (desktop) {
+    const [lastW] = newestWorkouts(S.workouts, 1)
+    // Within the last week a weekday says it ("Wed"); further back, the date.
+    const dayOrDate = iso => (todayISO() > iso && (new Date(todayISO()) - new Date(iso)) < 6 * 86400000
+      ? t(DAYS[new Date(iso + 'T12:00:00').getDay()]) : fmtDate(iso))
+    const upNext = !(rotating && !plannerQueue) ? nextTrainingDay(S, todayISO()) : null
+    const yearFrom = isoOf(new Date(Date.now() - 365 * 86400000))
+    const year = S.workouts.filter(w => (workoutDay(w) || '') >= yearFrom)
+    const kpis = [
+      [year.length, t('Workouts')],
+      [fmtNum(Math.round(year.reduce((n, w) => n + workoutDuration(w), 0) / 3600000)), t('Hours')],
+      [year.reduce((n, w) => n + (w.prs?.length || 0), 0), t('PRs')],
+      [streak.current, t('Week streak')],
+    ]
+    const recent = newestWorkouts(S.workouts, 6).filter(w => Array.isArray(w.entries))
+    return <div className="home-desk">
+      <div className="hdr">
+        <SeasonDeco spot="header-bats" />
+        <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+        <div className="hdr-actions">
+          {!S.active && <Button icon="swap" onClick={startPickerSheet}>{t('Choose a different workout')}</Button>}
+          {S.active ? <Button variant="primary" icon="play" onClick={() => nav('/workout')}>{editingSaved ? t('Edit') : t('Resume')} · {S.active.name}</Button>
+            : routine && !doneToday && <Button variant="primary" icon="play" onClick={onToday}>{t('Start')} · {todayName}</Button>}
+        </div>
+      </div>
+      <TrainerNotice />
+      {noticeCards}
+      {welcomeCard}
+      <div className={'home-cols' + (!on('motivation') && S.homeMuscleSets !== true ? ' no-side' : '') + (!(on('health') && recovery) ? ' no-rec' : '')}>
+        {weekCard}
+        {on('motivation') ? <div className="card dk-streak">
+          <SeasonDeco spot="home-streak" />
+          <div className="dk-streak-t"><StreakFlame lit={streak.current > 0} />{t('{0} week streak', streak.current)}</div>
+          <div className="muted small">{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</div>
+          {(streak.best > 0 || streak.freezes > 0) && <div className="muted small streak-meta-line"><StreakMeta info={streak} /></div>}
+          {plannedPerWeek > 0 && <div className="dk-bar"><i style={{ width: Math.min(100, doneThisWeek / plannedPerWeek * 100) + '%' }} /></div>}
+          <StreakParty S={S} info={streak} tally={tally} />
+          <div className="dk-kv">
+            {upNext && <div className="row between"><span className="muted">{t('Next session')}</span><b>{t(DAYS[upNext.weekday])} · {upNext.routine.name}</b></div>}
+            {lastW && <div className="row between"><span className="muted">{t('Last workout')}</span><span>{dayOrDate(workoutDay(lastW))} · {lastW.name}</span></div>}
+          </div>
+          {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
+          <Button size="sm" icon="calendar" onClick={() => calendarSheet()}>{t('Calendar')}</Button>
+        </div> : S.homeMuscleSets === true && <div className="dk-side">
+          <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>
+        </div>}
+        {weightCard}
+        {on('health') && recovery && <div className="card">
+          <div className="row between"><h2 style={{ margin: 0 }}>{t('Recovery')}</h2>
+            <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/stats')}>{t('Open')}</Button></div>
+          <div className="muted small" style={{ margin: '2px 0 8px' }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
+          {recovery.map(([m, v]) => <div key={m} className={'dk-rec ' + fatigueStateOf(v)}>
+            <span>{t(MUSCLE_NAME[m])}</span>
+            <div className="dk-bar"><i style={{ width: Math.min(100, v * 100) + '%' }} /></div>
+            <span className="tag nocap">{fatigueLabel(v)}</span>
+          </div>)}
+        </div>}
+      </div>
+      {S.workouts.length > 0 && <div className="card">
+        <h2>{t('Activity (last 12 months)')}</h2>
+        <div className="dk-kpis">{kpis.map(([v, l]) => <div key={l}><b>{v}</b><span>{l}</span></div>)}</div>
+        <Heatmap S={S}
+          metric={S.heatmapMetric === 'vol' ? 'vol' : 'time'}
+          onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
+          onDay={iso => calendarSheet(iso)} />
+      </div>}
+      {recent.length > 0 && <div className="card dk-recent">
+        <div className="row between"><h2 style={{ margin: 0 }}>{t('Recent workouts')}</h2>
+          <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('Progress & history')}</Button></div>
+        <div className="dk-tr dk-th" aria-hidden="true"><span>{t('Workout')}</span><span>{t('Date')}</span><span className="num">{t('Duration')}</span><span className="num">{t('Sets')}</span><span className="num">{t('Volume')}</span><span className="num">{t('PRs')}</span></div>
+        {recent.map(w => <button key={w.id} className="dk-tr" onClick={() => workoutDetailSheet(w)}>
+          <b>{w.name}</b>
+          <span className="muted">{fmtDate(workoutDay(w), true)}</span>
+          <span className="num muted">{durPart(workoutDuration(w))[0] || '–'}</span>
+          <span className="num">{setsDone(w)}</span>
+          <span className="num"><b>{fmtVol(w.vol ?? workoutVolume(w), S.unit)}</b></span>
+          <span className="num">{w.prs?.length ? <span className="tag nocap" style={{ color: 'var(--yellow)' }}>{w.prs.length}</span> : ''}</span>
+        </button>)}
+      </div>}
+    </div>
+  }
+
+  return <div className="narrow">
+    {header}
+    {weekCard}
+    {noticeCards}
+    {checkInCard}
+    {welcomeCard}
+    {weightCard}
+    {streakCard}
   </div>
 }

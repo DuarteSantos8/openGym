@@ -1,5 +1,6 @@
-import { FATIGUE_STATES, fatigueHalfLifeOf } from './recovery.js'
+import { FATIGUE_STATES, fatigueHalfLifeOf, LB_TO_KG } from './recovery.js'
 import { dateLocale } from './i18n-core.js'
+import { t } from './i18n.js'
 
 /**
  * Select the consumer-facing fatigue state for one numeric recovery value.
@@ -106,4 +107,20 @@ export function fmtReadyAt(at, now = Date.now()) {
     if (sameDay) return time
     return new Intl.DateTimeFormat(dateLocale(), { weekday: 'short' }).format(d) + ' ' + time
   } catch { return d.toISOString().slice(11, 16) }
+}
+
+// The one label for a fatigue value, in the current language.
+export function fatigueLabel(value) {
+  const state = fatigueStateOf(value)
+  return t(state === 'ready' ? 'Ready' : state === 'recovering' ? 'Recovering' : 'Fatigued')
+}
+
+// The user's own last registered bodyweight, in kg: the body-mass part of a bodyweight
+// exercise's load for fatigue and for estimated effort, so both read the same set the same way.
+export function profileBodyweightKg(S) {
+  const entries = S.bodyweight || []
+  if (!entries.length) return null
+  const last = entries.slice().sort((a, b) => String(a.d).localeCompare(String(b.d))).at(-1)
+  if (!last || !(last.w > 0)) return null
+  return S.unit === 'lb' ? last.w * LB_TO_KG : last.w
 }

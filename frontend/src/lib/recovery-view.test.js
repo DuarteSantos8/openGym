@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { FATIGUE_STATES, fatigueHalfLifeOf, fatigueOf, strengthOf } from './recovery.js'
-import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn, recoveryEtas, fmtRecoveryShort, fmtReadyAt } from './recovery-view.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn, recoveryEtas, fmtRecoveryShort, fmtReadyAt, fatigueLabel, profileBodyweightKg } from './recovery-view.js'
+import { LB_TO_KG } from './recovery.js'
 import { MUSCLES, levelsOf } from './muscles.js'
 
 const FATIGUE_BANDS = [
@@ -119,5 +120,36 @@ describe('recovery in hours per muscle', () => {
     expect(fmtRecoveryShort(72 * 3600000)).toMatch(/^~3\s?d/)
     expect(fmtReadyAt(Date.parse('2026-11-05T15:07:00'), now)).toBe('15:00')
     expect(fmtReadyAt(Date.parse('2026-11-06T07:02:00'), now)).toMatch(/^Fri\w* 0?7:00$/)
+  })
+})
+
+describe('fatigueLabel', () => {
+  it('names each state in plain words', () => {
+    expect(fatigueLabel(0)).toBe('Ready')
+    expect(fatigueLabel(1)).toBe('Fatigued')
+    for (const v of [0, 0.2, 0.5, 0.9, 1.5]) {
+      expect(fatigueLabel(v)).toBe({ ready: 'Ready', recovering: 'Recovering', fatigued: 'Fatigued' }[fatigueStateOf(v)])
+    }
+  })
+  it('goes from Ready through Recovering to Fatigued as the value grows', () => {
+    const seen = [0, 0.1, 0.3, 0.5, 0.7, 1].map(fatigueLabel)
+    expect(seen[0]).toBe('Ready')
+    expect(seen.at(-1)).toBe('Fatigued')
+    expect(new Set(seen).has('Recovering')).toBe(true)
+  })
+})
+
+describe('profileBodyweightKg', () => {
+  it('is null without a usable weigh-in', () => {
+    expect(profileBodyweightKg({})).toBeNull()
+    expect(profileBodyweightKg({ bodyweight: [] })).toBeNull()
+    expect(profileBodyweightKg({ bodyweight: [{ d: '2026-01-01', w: 0 }] })).toBeNull()
+  })
+  it('reads the latest weigh-in by date, not by position', () => {
+    const S = { unit: 'kg', bodyweight: [{ d: '2026-03-01', w: 82 }, { d: '2026-01-01', w: 90 }] }
+    expect(profileBodyweightKg(S)).toBe(82)
+  })
+  it('converts pounds to kilograms', () => {
+    expect(profileBodyweightKg({ unit: 'lb', bodyweight: [{ d: '2026-01-01', w: 200 }] })).toBeCloseTo(200 * LB_TO_KG, 6)
   })
 })

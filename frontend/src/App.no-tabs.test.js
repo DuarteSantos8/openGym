@@ -10,6 +10,10 @@ describe('the tab bar', () => {
   it('stays away from the first-launch onboarding', () => {
     const cond = app.match(/const noTabs = ([^\n]+)/)?.[1] || ''
     expect(cond).toContain('needsMobileOnboarding')
-    expect(app).toMatch(/\{!noTabs && <TabBar /)
+    // The desktop sidebar (lib/use-desktop.js) is shown on more routes than the phone's tab bar,
+    // but not on the first-launch steps either.
+    const show = app.match(/const showTabs = ([^\n]+)/)?.[1] || ''
+    expect(show).toMatch(/desktop \? !\(needsMobileOnboarding \|\| permSteps\) : !noTabs/)
+    expect(app).toMatch(/\{showTabs && <TabBar /)
   })
 })

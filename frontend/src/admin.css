@@ -159,3 +159,41 @@
 .adm-tip{display:flex;gap:8px;align-items:flex-start}
 .adm-tip svg{flex:none;color:var(--yellow);margin-top:2px}
 .adm-tip a{color:var(--acc)}
+
+/* ---------- wide window (views/Admin.jsx `desktop`) ---------- */
+/* One section per page (/admin/<section>, picked in the sidebar). The overview puts the last
+   people to sync beside the invite codes. */
+.adm-desk{min-width:0}
+.adm-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;align-items:start}
+.adm-cols>.card{margin-bottom:0}
+
+/* The table sizes itself to its card (a container query, not the window): the overview's half-width
+   card and the full-width Users page get different columns. Wide enough shows everything (>=800px),
+   then Last workout goes, then Role. Columns shrink (minmax(0,..)), text cells ellipsise, and as a
+   last resort the table scrolls inside its card instead of spilling out. */
+.adm-table{margin:0 -16px -16px;border-top:var(--hair) solid var(--sep);container-type:inline-size;overflow-x:auto}
+.adm-tr{
+  display:grid;grid-template-columns:minmax(0,1fr) 92px 120px 84px 120px 100px 20px;
+  align-items:center;column-gap:14px;width:100%;min-height:60px;padding:8px 16px;
+  border-bottom:var(--hair) solid var(--sep);text-align:start;font-size:14px;cursor:pointer
+}
+.adm-tr>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@container (max-width:799px){
+  .adm-tr{grid-template-columns:minmax(0,1fr) 92px 120px 84px 100px 20px}
+  .adm-tr .c-last{display:none}
+}
+@container (max-width:659px){
+  .adm-tr{grid-template-columns:minmax(0,1fr) 104px 72px 84px 16px;column-gap:10px;padding-inline:12px}
+  .adm-tr .c-role{display:none}
+}
+.adm-tr:last-child{border-bottom:0}
+.adm-tr:not(.adm-th):hover{background:var(--surface-2)}
+.adm-th{min-height:38px;font-size:12.5px;font-weight:500;color:var(--label-2);cursor:default}
+.adm-tr .num{text-align:end;font-weight:600}
+.adm-tr .chev{color:var(--label-3);font-size:14px}
+.adm-who{display:flex;align-items:center;gap:10px;min-width:0}
+.adm-who-t{display:flex;flex-direction:column;min-width:0}
+.adm-who-t b{font-weight:600}
+.adm-who-t span{font-size:12.5px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-av{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--surface-3)}
+.adm-av.live{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--acc)}

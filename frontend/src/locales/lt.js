@@ -5893,4 +5893,7 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // --- desktop Home: the streak card ---
+  "Next session": "Kita sesija",
+  "Calendar": "Kalendorius",
 }

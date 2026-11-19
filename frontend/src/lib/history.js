@@ -1015,6 +1015,16 @@ export function workoutDay(w) {
   return null
 }
 
+// The newest `n` workouts, latest first: by calendar day, then by start time. The list is not
+// promised to be date-sorted (imports, merges from another device), so Home reads it through this.
+export function newestWorkouts(workouts, n = Infinity) {
+  const key = w => [workoutDay(w) || '', timestampOf(w?.start) ?? 0]
+  return (Array.isArray(workouts) ? workouts : []).filter(w => w && workoutDay(w))
+    .map((w, i) => [w, key(w), i])
+    .sort((a, b) => (b[1][0] > a[1][0] ? 1 : b[1][0] < a[1][0] ? -1 : b[1][1] - a[1][1] || b[2] - a[2]))
+    .slice(0, n).map(x => x[0])
+}
+
 // Duration is derived from the completed session timestamps rather than a cached display value.
 export function workoutDuration(w) {
   const start = timestampOf(w?.start)
