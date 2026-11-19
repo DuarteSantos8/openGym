@@ -13,7 +13,7 @@ import { retapTab } from '../lib/scroll-top.js'
 import { coachAvailable } from '../lib/coach.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
-import { adminSections, adminSectionOf } from '../lib/admin-sections.js'
+import { adminSections, shownAdminSection } from '../lib/admin-sections.js'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -90,7 +90,7 @@ export default function TabBar({ onStart, onPick, desktop = false }) {
   // Admin on a wide window is a console of its own: the sidebar holds its sections and a way back
   // to the app, none of the app's tabs.
   if (desktop && cur === 'admin') {
-    const section = adminSectionOf(loc.pathname)
+    const section = shownAdminSection(loc.pathname, config)
     return (
       <nav id="tabbar" aria-label="Admin">
         <div className="side-brand"><span className="side-logo"><Icon name="shield" /></span>Admin</div>
@@ -132,7 +132,7 @@ export default function TabBar({ onStart, onPick, desktop = false }) {
         <div className="side-gap" />
         {S.checkIn !== false && <Tab active={cur === 'checkin'} icon="qr" label={t('Check in')} onClick={() => nav('/checkin')} />}
         {user?.admin && <Tab active={cur === 'admin'} icon="shield" label="Admin" onClick={() => nav('/admin')} />}
-        <Tab active={cur === 'settings'} icon="gear" label={t('Settings')} dot={trouble} onClick={() => nav('/settings')} />
+        <Tab active={cur === 'settings'} icon="gear" label={t('Settings')} dot={trouble} onClick={() => nav('/settings')} tour="settings-gear" />
       </>}
     </nav>
   )
