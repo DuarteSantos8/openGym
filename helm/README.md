@@ -47,10 +47,13 @@ dependencies:
 ```
 
 ```bash
+# As a dependency of your own chart, then install that chart:
 helm dependency update
-# or pull it straight: for helm pull the chart name must be in the path (it is not appended)
-helm pull oci://ghcr.io/duartesantos8/opengym/opengym --version 1.4.5
 helm install opengym . -n fitness --create-namespace -f my-values.yaml
+
+# Or pull it straight and install the archive (no parent chart; the chart name is in the path):
+helm pull oci://ghcr.io/duartesantos8/opengym/opengym --version 1.4.5
+helm install opengym ./opengym-1.4.5.tgz -n fitness --create-namespace -f my-values.yaml
 ```
 
 The published version is the release (app) version, not the development version in `Chart.yaml`, so

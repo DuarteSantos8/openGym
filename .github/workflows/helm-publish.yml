@@ -36,6 +36,20 @@ jobs:
       - name: Install helm
         uses: Azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5.1.0
 
+      # A stale appVersion or image tag would ship a chart that runs an older app version, so pin
+      # them to the release. Release-only: a manual run keeps the version in helm/Chart.yaml.
+      - name: Chart images match the release
+        if: github.event_name == 'release'
+        run: |
+          set -euo pipefail
+          V="${{ steps.version.outputs.version }}"
+          app=$(sed -n 's/^appVersion:[[:space:]]*//p' helm/Chart.yaml | sed 's/#.*//; s/"//g; s/[[:space:]]*//g')
+          [ "$app" = "$V" ] || { echo "helm/Chart.yaml appVersion is $app, the release is $V" >&2; exit 1; }
+          for t in $(sed -n 's/^[[:space:]]*tag:[[:space:]]*//p' helm/values.yaml | sed 's/#.*//; s/"//g; s/[[:space:]]*//g'); do
+            [ "$t" = "$V" ] || { echo "an image tag in helm/values.yaml is $t, the release is $V" >&2; exit 1; }
+          done
+          echo "Chart appVersion and both image tags are $V"
+
       - name: Lint and package
         run: |
           set -euo pipefail
