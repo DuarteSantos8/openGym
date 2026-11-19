@@ -188,6 +188,10 @@ describe('curveVersion', () => {
     expect(curveVersion({ s: 6000, step: 5, v: [120, 0, 140] })).not.toBe(a)
     expect(curveVersion(null)).toBe('')
   })
+  it('tells apart curves a 32-bit hash would confuse', () => {
+    // (120 * 31 + 0) * 31 + 140 === (116 * 31 + 124) * 31 + 140
+    expect(curveVersion({ s: 1000, step: 5, v: [116, 124, 140] })).not.toBe(curveVersion({ s: 1000, step: 5, v: [120, 0, 140] }))
+  })
 })
 
 describe('mergeCurves', () => {
