@@ -836,8 +836,12 @@ function answerGaps(data, ctx, keptChecks) {
     }));
     if (stray.size) gaps.push(`numbers not in the data: ${[...stray].slice(0, 8).join(', ')}. Copy each number exactly as the data gives it (27.3 stays 27.3, never "about 27%"), or leave it out`);
   }
-  const leaked = (ctx.fields || []).filter(f => texts.some(t => new RegExp(`\\b${f}\\b`).test(t)));
+  // A whole name, not part of a longer id: "frequency:chest" never matches inside "frequency:chest-day".
+  const named = name => texts.some(t => new RegExp(`(?<![\\w:-])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w:-])`).test(t));
+  const leaked = (ctx.fields || []).filter(named);
   if (leaked.length) gaps.push(`app field names in the text: ${leaked.slice(0, 8).join(', ')}. Say what each means in plain words ("the trend", not "trendPct"), never the name itself`);
+  const ids = [...new Set((ctx.checks || []).flatMap(c => [c.id, ...(c.tag.includes('-') ? [c.tag] : [])]))].filter(named);
+  if (ids.length) gaps.push(`check names in the text: ${ids.slice(0, 8).join(', ')}. They go in "ref" only; in the text say it in plain words ("chest is trained once a week")`);
   return gaps;
 }
 

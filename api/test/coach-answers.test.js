@@ -53,6 +53,13 @@ test('an app field name in the text is sent back; plain words that are also keys
   assert.equal(validateReview({ summary: 'Your best bench is up 16.7%.', changes: [cut('Six sets is past 4.')] }, plan, ctx).ok, true);
 });
 
+test('a check id or a code-style tag in the text is sent back; the plain words pass', () => {
+  const bad = validateReview({ summary: 'Bench is past the cap (sets-per-exercise:up:0025).', changes: [cut('Too many sets-per-exercise.')] }, plan, strict);
+  assert.equal(bad.ok, false);
+  assert.match(bad.errors.join(), /check names in the text: sets-per-exercise:up:0025, sets-per-exercise\./);
+  assert.equal(validateReview({ summary: 'Six sets per exercise is past 4.', changes: [cut('Back to 4.')] }, plan, strict).ok, true);
+});
+
 test('without answerChecks nothing changes (the ask job and old callers)', () => {
   assert.equal(validateReview({ nochange: true, reading: 'Up 99%.' }, plan, { checks }).ok, true);
 });
