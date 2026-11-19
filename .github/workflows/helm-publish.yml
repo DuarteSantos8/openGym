@@ -1,0 +1,70 @@
+name: Publish Helm chart
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # On a release the ref is refs/tags/vX.Y.Z; a manual run has no tag, so it publishes the
+      # chart version that is in helm/Chart.yaml instead.
+      - name: Chart version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(sed -n 's/^version:[[:space:]]*\([^[:space:]]*\).*/\1/p' helm/Chart.yaml)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Versions agree with the release tag
+        if: github.event_name == 'release'
+        run: node scripts/ci/release-check.mjs "$GITHUB_REF_NAME"
+
+      - name: Install helm
+        uses: Azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5.1.0
+
+      # A stale appVersion or image tag would ship a chart that runs an older app version, so pin
+      # them to the release. Release-only: a manual run keeps the version in helm/Chart.yaml.
+      - name: Chart images match the release
+        if: github.event_name == 'release'
+        run: |
+          set -euo pipefail
+          V="${{ steps.version.outputs.version }}"
+          # helm decodes the scalar, so a quoted or unquoted appVersion compares the same.
+          app=$(helm show chart ./helm | sed -n 's/^appVersion:[[:space:]]*//p')
+          [ "$app" = "$V" ] || { echo "helm/Chart.yaml appVersion is $app, the release is $V" >&2; exit 1; }
+          for t in $(sed -n 's/^[[:space:]]*tag:[[:space:]]*//p' helm/values.yaml | sed "s/#.*//; s/[\"'']//g; s/[[:space:]]*//g"); do
+            [ "$t" = "$V" ] || { echo "an image tag in helm/values.yaml is $t, the release is $V" >&2; exit 1; }
+          done
+          echo "Chart appVersion and both image tags are $V"
+
+      - name: Lint and package
+        run: |
+          set -euo pipefail
+          helm lint helm/
+          helm package helm/ --version "${{ steps.version.outputs.version }}" --destination dist
+          ls -l dist
+
+      - name: Lowercase owner (registry names must be lowercase)
+        id: repo
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to GHCR
+        run: |
+          set -euo pipefail
+          REG="oci://ghcr.io/${{ steps.repo.outputs.owner }}/opengym"
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+          helm push dist/opengym-${{ steps.version.outputs.version }}.tgz "$REG"
