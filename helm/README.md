@@ -35,19 +35,21 @@ helm test opengym -n fitness          # calls /api/health through the web contai
 
 ### As a published dependency (no clone)
 
-Each release also publishes the chart to OCI on GHCR, `oci://ghcr.io/duartesantos8/opengym`, tagged
-with the app version (e.g. `1.4.5`); a dependency pins the app it runs. Add it to your own
-`Chart.yaml` instead of cloning this repo:
+Each release also publishes the chart to OCI on GHCR, at `oci://ghcr.io/duartesantos8/opengym/opengym`,
+tagged with the app version (e.g. `1.4.5`); a dependency pins the app it runs. The chart name `opengym`
+is part of the path. Add it to your own `Chart.yaml` instead of cloning this repo:
 
 ```yaml
 dependencies:
   - name: opengym
     version: "1.4.5"          # any published tag; the app version it runs
-    repository: "oci://ghcr.io/duartesantos8"
+    repository: "oci://ghcr.io/duartesantos8/opengym"   # helm appends the chart name -> .../opengym/opengym
 ```
 
 ```bash
-helm dependency update            # or: helm pull oci://ghcr.io/duartesantos8/opengym --version 1.4.5
+helm dependency update
+# or pull it straight: for helm pull the chart name must be in the path (it is not appended)
+helm pull oci://ghcr.io/duartesantos8/opengym/opengym --version 1.4.5
 helm install opengym . -n fitness --create-namespace -f my-values.yaml
 ```
 

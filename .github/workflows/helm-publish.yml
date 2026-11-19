@@ -4,13 +4,14 @@ name: Publish Helm chart
 # images are: a tag that is later deleted (the versioning rule consolidates unreleased tags) would
 # otherwise leave its chart behind in the registry. See issue #87.
 #
-# Where: OCI on GHCR, `oci://ghcr.io/duartesantos8/opengym` -- the registry the images already use.
-# A consumer adds it as a dependency instead of cloning this repo:
+# Where: OCI on GHCR -- the registry the images already use. helm appends the chart name on push, so
+# `helm push ... oci://ghcr.io/duartesantos8/opengym` lands the chart at `opengym/opengym`. A consumer
+# adds it as a dependency instead of cloning this repo:
 #
 #   dependencies:
 #     - name: opengym
 #       version: 1.4.5
-#       repository: "oci://ghcr.io/duartesantos8"
+#       repository: "oci://ghcr.io/duartesantos8/opengym"   # helm appends the name
 #
 # The published chart version is the app version from the release tag, not the development version in
 # helm/Chart.yaml, so a dependency pins the app it runs. Only that exact X.Y.Z version is published
