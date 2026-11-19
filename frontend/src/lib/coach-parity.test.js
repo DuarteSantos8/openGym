@@ -14,7 +14,12 @@
 import { describe, it, expect } from 'vitest'
 import { modeOf as uiModeOf, isBw as uiIsBw, isPerSide as uiIsPerSide } from './history.js'
 import { modeOf as srvModeOf, isBw as srvIsBw, isPerSide as srvIsPerSide } from '../../../api/coach/core/payload.js'
-import { exOr } from './exercises.js'
+import { exOr, EXDB } from './exercises.js'
+import { muscleWeightsOf, loadOfWeeklyPlan } from './muscles.js'
+import { weightsOf as srvWeightsOf, weeklyPlanSets, sessionsOf } from '../../../api/coach/core/muscle-weights.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { DEFAULT_TARGETS, TARGET_MUSCLES, targetOf } from './muscle-targets.js'
+import { DEFAULT_TARGETS as srvTargets, targetOf as srvTargetOf } from '../../../api/coach/core/checks.js'
 
 // Real ids from the catalogue, so `eq`/`bp` are whatever the dataset actually says rather than
 // whatever this test assumed. 0001 is a bodyweight sit-up; the others are looked up the same way.
@@ -87,5 +92,64 @@ describe('routine glyphs', () => {
       expect(glyphStr(g)).toBe(g)
       expect(glyphOf(g)).toBe(g)
     })
+  })
+})
+
+describe('muscle weights', () => {
+  it('every catalogue exercise weighs the same on both sides', () => {
+    const bad = EXDB.filter(e => JSON.stringify(srvWeightsOf(LIB_BY_ID.get(e.id))) !== JSON.stringify(muscleWeightsOf(exOr(e.id)))).map(e => e.id)
+    expect(bad).toEqual([])
+  })
+
+  it('custom exercises weigh the same on both sides', () => {
+    for (const ex of [
+      { id: 'c1', n: 'My row', bp: 'back' },
+      { id: 'c2', n: 'Mine', bp: 'chest', muscleWeights: { chest: 1, triceps: 0.5 } },
+      { id: 'c3', n: 'Odd', bp: 'nonsense' },
+      { id: 'c4', n: 'Shoulders', bp: 'shoulders', tg: 'shoulders', sm: ['upper back'], mv: 2 },
+      { id: 'c6', n: 'Deleted', bp: 'back', muscleSnapshot: { mv: 2, bp: 'chest', muscleWeights: { quadriceps: 1, 'upper-back': 0.5 } } },
+      { id: 'c7', n: 'Snap groups', muscleSnapshot: { muscleGroups: ['biceps', 'shoulders'] } },
+      { id: 'c8', n: 'Groups', bp: 'back', muscleGroups: ['chest', 'triceps'] },
+      { id: 'c9', n: 'Muscles', muscles: 'abs' },
+      { id: 'c5', n: 'Parts', primaries: ['chest'], secondaries: ['triceps'] },
+    ]) expect(srvWeightsOf(ex)).toEqual(muscleWeightsOf(ex))
+  })
+
+  const routines = [
+    { id: 'a', ex: [{ id: '0025', sets: 3 }, { id: 'c1', sets: 2 }] },
+    { id: 'b', ex: [{ id: '0043', sets: 4 }, { id: '0027' }] },
+    { id: 'c', ex: [{ id: '0001', sets: 2 }] },
+  ]
+  const customEx = [{ id: 'c1', n: 'My row', bp: 'back', muscleWeights: { lats: 1, biceps: 0.5 } }]
+  const base = { routines, customEx }
+  const loop = (target, ids) => ({ ...base, weekTarget: target, rotation: { id: 'rot', sequence: ['a', 'b', 'rest', 'c'], label: '' },
+    queue: { ids, since: 1, startsOn: '2026-08-17', rotationId: 'rot' } })
+
+  it('the planned week matches the Stats card', () => {
+    for (const S of [
+      { ...base, week: { 1: ['a'], 3: ['b'], 5: ['c'] } },
+      { ...base, week: { 1: ['a'], 3: ['a', 'b'], 5: ['gone'] } },
+      { ...base, week: { 1: ['a'] }, queue: { ids: ['b', 'c'], since: 1, startsOn: '2026-08-17' } },
+      loop(4, ['a', 'b', 'c']),
+      loop(null, ['a', 'b', 'c']),
+    ]) expect(weeklyPlanSets(S)).toEqual(loadOfWeeklyPlan(S))
+  })
+
+  it('sessionsOf gives one map per weekday session, none for a rotation', () => {
+    const S = { ...base, week: { 1: ['a'], 3: ['a', 'b'], 5: ['gone'] } }
+    const s = sessionsOf(S)
+    expect(s).toHaveLength(2)
+    expect(s[1]).toEqual(weeklyPlanSets({ ...base, week: { 1: ['a', 'b'] } }))
+    expect(sessionsOf(loop(4, ['a', 'b']))).toBeNull()
+    expect(sessionsOf({ ...base, week: { 1: ['a'] }, queue: { ids: ['b', 'c'], since: 1, startsOn: '2026-08-17' } })).toBeNull()
+  })
+})
+
+describe('muscle ranges', () => {
+  it('the defaults and the lookup agree, legacy slugs and bad values included', () => {
+    expect(srvTargets).toEqual(DEFAULT_TARGETS)
+    for (const mt of [undefined, { lats: [4, 8] }, { deltoids: [5, 9] }, { 'upper-back': [3, 7] }, { 'side-delts': [1, 2], deltoids: [5, 9] }, { chest: [9, 3] }, { chest: [1, 99] }, { chest: ['x', 4] }, { chest: [2.6, 7.4] }])
+      for (const slug of [...TARGET_MUSCLES, 'forearm'])
+        expect(srvTargetOf({ muscleTargets: mt }, slug)).toEqual(targetOf({ muscleTargets: mt }, slug))
   })
 })

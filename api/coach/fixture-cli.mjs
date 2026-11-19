@@ -66,7 +66,7 @@ if (MODE === 'unknown-exercise') {
 }
 
 if (MODE === 'nochange' || (kind === 'review' && !(P.window?.workouts || []).length)) {
-  out({ coach_contract: 1, nochange: true, reading: 'Not enough new training to read anything into yet — keep logging and ask again in a week.' });
+  out({ coach_contract: 1, nochange: true, reading: 'Not enough new training to read anything into yet — keep logging and ask again in a week.', kept: kept() });
 }
 
 if (kind === 'create') {
@@ -156,7 +156,11 @@ out({
   summary: changes.length ? 'One change: a little more volume where you are clearly ready for it.' : 'Plan looks right for now.',
   evidence: { from: P.window?.from || null, to: P.window?.to || null, sessions: (P.window?.workouts || []).length },
   changes,
-  notes: ['Body weight has been flat for four weeks — if the goal is to gain, that is the lever, not the plan.']
+  notes: ['Body weight has been flat for four weeks — if the goal is to gain, that is the lever, not the plan.'],
+  kept: kept()
 });
+
+// One answer per kind of plan check, as the validator asks of a review's first try.
+function kept() { return [...new Set((P.checks || []).map(c => c.tag))].map(ref => ({ ref, why: 'The plan stays as it is for now.' })); }
 
 function out(obj) { process.stdout.write(JSON.stringify(obj, null, 2) + '\n'); process.exit(0); }

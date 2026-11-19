@@ -146,7 +146,8 @@ async function holdingProvider() {
   const close = () => { cfg.save({ provider: 'fixture' }); server.close(); server.closeAllConnections(); };
   return { seen, held, until, answer, use, close };
 }
-const NOCHANGE = '{"coach_contract":1,"nochange":true,"reading":"Steady."}';
+// A sound first answer gives every kind of plan check an answer (validate.js answerGaps).
+const NOCHANGE = JSON.stringify({ coach_contract: 1, nochange: true, reading: 'Steady.', kept: ['volume', 'frequency', 'sets-per-exercise', 'volume-cap'].map(ref => ({ ref, why: 'The plan stays.' })) });
 /** The job's own end, as opposed to status() going quiet: the instance log gains its line. */
 async function logged(n) {
   const t = Date.now() + 15000;
@@ -505,7 +506,7 @@ test('an HTTPS provider is not refused for lacking a privilege drop, and runs en
     req.on('end', () => {
       seen.push({ url: req.url, auth: req.headers.authorization, body: JSON.parse(body || '{}') });
       res.setHeader('content-type', 'application/json');
-      res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: '{"coach_contract":1,"nochange":true,"reading":"Steady as she goes."}' } }] }));
+      res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: NOCHANGE.replace('"Steady."', '"Steady as she goes."') } }] }));
     });
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -520,7 +521,7 @@ test('an HTTPS provider is not refused for lacking a privilege drop, and runs en
     const s = await settle(uid);
     assert.equal(s.job, null);
     assert.equal(lastOutcome(uid).outcome, 'nochange');
-    assert.equal(lastOutcome(uid).reading, 'Steady as she goes.');
+    assert.match(lastOutcome(uid).reading, /^Steady as she goes\./);
     assert.equal(seen.length, 1);
     assert.equal(seen[0].url, '/v1/chat/completions');
     assert.equal(seen[0].auth, undefined, 'no key configured, so no Authorization header');

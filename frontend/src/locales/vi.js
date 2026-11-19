@@ -5869,4 +5869,10 @@ export default {
   "Hide": "Ẩn",
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} hiệp mỗi tuần, khoảng của bạn là {2} đến {3}",
+  "{0}: trained in one session a week": "{0}: chỉ tập trong một buổi mỗi tuần",
+  "{0} sets on this exercise": "{0} hiệp cho bài này",
+  "Based on {0}": "Dựa trên {0}",
+  "our rule": "quy tắc của chúng tôi",
 };

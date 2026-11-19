@@ -105,3 +105,9 @@ test('the Gemini request carries responseSchema only when the schema fits its su
   const none = geminiSpec.body({ prompt: 'P', system: null, maxTokens: 100 }).generationConfig;
   assert.equal('responseSchema' in none, false);
 });
+
+test('a review change may carry a ref, and may leave it out', () => {
+  const p = REVIEW_SCHEMA.properties.changes.items;
+  assert.deepEqual(p.properties.ref, { type: 'string' });
+  assert.deepEqual(p.required, ['type', 'why']);
+});

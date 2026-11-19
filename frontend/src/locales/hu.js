@@ -5906,4 +5906,10 @@ export default {
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: heti {1} széria, a te sávod {2} és {3} között van",
+  "{0}: trained in one session a week": "{0}: hetente egy edzésen dolgozod",
+  "{0} sets on this exercise": "{0} széria ebben a gyakorlatban",
+  "Based on {0}": "Forrás: {0}",
+  "our rule": "saját szabályunk",
 }

@@ -5903,4 +5903,10 @@ export default {
   "Hide": "숨기기",
   "Totals": "합계",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: 주당 {1}세트, 내 범위는 {2}~{3}세트",
+  "{0}: trained in one session a week": "{0}: 주 1회 세션에서만 훈련",
+  "{0} sets on this exercise": "이 운동 {0}세트",
+  "Based on {0}": "근거: {0}",
+  "our rule": "자체 규칙",
 }

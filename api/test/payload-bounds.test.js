@@ -223,3 +223,11 @@ test('the cohort is bounded where it joins the payload, whoever built it', () =>
     assert.equal(p.cohort.exercises[1].median, 60);
   }
 });
+
+test('library slices never carry the muscle fields the weighting reads', async () => {
+  const { librarySlice, swapSlice } = await import('../coach/core/library.js');
+  const S = { customEx: [{ id: 'c1', n: 'Mine', bp: 'chest', mg: 'chest', sm: ['triceps'], muscleWeights: { chest: 1 } }] };
+  for (const e of [...librarySlice(S, []), ...swapSlice(S, [], '0025')]) {
+    for (const k of ['mg', 'sm', 'primaries', 'secondaries', 'muscleWeights']) assert.ok(!(k in e), `${e.id} has ${k}`);
+  }
+});

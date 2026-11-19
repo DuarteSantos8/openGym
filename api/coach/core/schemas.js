@@ -35,12 +35,17 @@ export const REVIEW_SCHEMA = {
           },
           before: ANY,
           after: ANY,
-          why: STR
+          why: STR,
+          ref: STR
         },
         required: ['type', 'why']
       }
     },
-    notes: STRINGS
+    notes: STRINGS,
+    kept: {
+      type: 'array',
+      items: { type: 'object', properties: { ref: STR, why: STR }, required: ['ref', 'why'] }
+    }
   },
   required: ['coach_contract']
 };

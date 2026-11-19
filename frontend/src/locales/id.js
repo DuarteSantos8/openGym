@@ -5868,4 +5868,10 @@ export default {
   "Hide": "Sembunyikan",
   "Totals": "Total",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Panah mengubah urutannya.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} set per minggu, rentangmu {2} sampai {3}",
+  "{0}: trained in one session a week": "{0}: dilatih dalam satu sesi per minggu",
+  "{0} sets on this exercise": "{0} set pada latihan ini",
+  "Based on {0}": "Berdasarkan {0}",
+  "our rule": "aturan kami",
 };

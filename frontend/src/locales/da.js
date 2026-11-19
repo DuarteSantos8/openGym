@@ -5843,4 +5843,10 @@ export default {
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} sæt om ugen, dit område er {2} til {3}",
+  "{0}: trained in one session a week": "{0}: trænet i ét pas om ugen",
+  "{0} sets on this exercise": "{0} sæt på denne øvelse",
+  "Based on {0}": "Bygger på {0}",
+  "our rule": "vores regel",
 }

@@ -62,7 +62,9 @@ const ANSWER = JSON.stringify({
     after: { id: '0194' },
     why: 'You said you do not have a leverage machine, and the Monday routine assigned in your week includes a lever overhand triceps dip. Cable overhead triceps extensions are in your available library and avoid the unavailable leverage machine.'
   }],
-  notes: []
+  notes: [],
+  // A sound first answer gives every kind of plan check an answer (validate.js answerGaps).
+  kept: ['volume', 'frequency', 'sets-per-exercise', 'volume-cap'].map(ref => ({ ref, why: 'The plan stays as it is for now.' }))
 }, null, 2);
 
 function stub(answers) {

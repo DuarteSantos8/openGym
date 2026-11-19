@@ -5900,4 +5900,10 @@ export default {
   "Hide": "Сховати",
   "Totals": "Підсумки",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} підходів на тиждень, твій діапазон від {2} до {3}",
+  "{0}: trained in one session a week": "{0}: тренується на одному занятті на тиждень",
+  "{0} sets on this exercise": "{0} підходів у цій вправі",
+  "Based on {0}": "На основі: {0}",
+  "our rule": "наше правило",
 }

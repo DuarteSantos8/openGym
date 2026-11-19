@@ -5903,4 +5903,10 @@ export default {
   "Hide": "छिपाएँ",
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: हफ़्ते में {1} सेट, आपकी सीमा {2} से {3}",
+  "{0}: trained in one session a week": "{0}: हफ़्ते में एक सेशन में किया गया",
+  "{0} sets on this exercise": "इस व्यायाम में {0} सेट",
+  "Based on {0}": "{0} पर आधारित",
+  "our rule": "हमारा नियम",
 }

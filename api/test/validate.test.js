@@ -793,3 +793,32 @@ test('a plan note is held to a cue or two', () => {
   assert.equal(r.ok, true);
   assert.ok(r.bundle.routines[0].ex[0].note.length <= 301);
 });
+
+/* ---------------- a review change may cite a source (Task 4) ---------------- */
+
+test('a review ref: a tag is kept, a check id becomes its tag with the check copied, anything else is dropped', () => {
+  const chk = { id: 'volume-low:lats', tag: 'volume', muscle: 'lats', sets: 4, low: 10, high: 20 };
+  const run = (ref, checks = []) => validateReview({ changes: [change({ ref })] }, PLAN, { checks }).proposal.changes[0];
+  assert.equal(run('progression').ref, 'progression');
+  assert.equal('refCheck' in run('progression'), false);
+  const hit = run('volume-low:lats', [chk]);
+  assert.equal(hit.ref, 'volume');
+  assert.deepEqual(hit.refCheck, chk);
+  assert.notEqual(hit.refCheck, chk);
+  for (const [ref, checks] of [['volume-low:lats', []], ['Schoenfeld 2017', [chk]], ['Volume', [chk]], [42, [chk]], [undefined, [chk]]]) {
+    const r = validateReview({ changes: [change({ ref })] }, PLAN, { checks });
+    assert.equal(r.ok, true);
+    assert.equal(r.proposal.changes.length, 1);
+    assert.equal('ref' in r.proposal.changes[0], false);
+    assert.equal('refCheck' in r.proposal.changes[0], false);
+  }
+});
+
+test('the common prompt names every evidence tag with its use line and no study details', async () => {
+  const { PROMPTS } = await import('../coach/core/prompts.js');
+  const { EVIDENCE, TAGS } = await import('../coach/core/evidence.js');
+  for (const t of TAGS) assert.ok(PROMPTS.common.includes(`\`${t}\`: ${EVIDENCE[t].use}`), t);
+  const section = PROMPTS.common.split('## What the research says')[1];
+  assert.ok(section && section.split(/\s+/).length <= 400);
+  assert.doesNotMatch(section, /PMID|doi|\b(19|20)\d\d\b/i);
+});
