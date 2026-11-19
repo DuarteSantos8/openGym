@@ -41,7 +41,11 @@ export const REVIEW_SCHEMA = {
         required: ['type', 'why']
       }
     },
-    notes: STRINGS
+    notes: STRINGS,
+    kept: {
+      type: 'array',
+      items: { type: 'object', properties: { ref: STR, why: STR }, required: ['ref', 'why'] }
+    }
   },
   required: ['coach_contract']
 };

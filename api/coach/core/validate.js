@@ -327,8 +327,11 @@ export function validatePlan(data, ctx = {}) {
  */
 export function validateReview(data, plan, ctx = {}) {
   if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
+  const keptChecks = keptOf(data, ctx.checks);
+  const gaps = ctx.answerChecks ? answerGaps(data, ctx, keptChecks) : [];
   if (data.nochange) {
-    return { ok: true, nochange: true, reading: clampText(data.reading || data.summary || '', 4000) };
+    if (gaps.length) return fail(gaps);
+    return { ok: true, nochange: true, reading: withKept(clampText(data.reading || data.summary || '', 4000), keptChecks) };
   }
   const errors = [];
   const routines = new Map((plan?.routines || []).map(r => [r.id, r]));
@@ -749,7 +752,7 @@ export function validateReview(data, plan, ctx = {}) {
     errors.push(`the plan would end up with more than the ${MAX_ROUTINES} routines allowed`);
   }
 
-  if (errors.length) return fail([...errors, ...dropped]);
+  if (errors.length || gaps.length) return fail([...errors, ...dropped, ...gaps]);
 
   // Everything that was proposed turned out to duplicate an exercise or restate the plan. With
   // a duplicate among them this is not an honest "no change" — the summary still describes the
@@ -758,7 +761,7 @@ export function validateReview(data, plan, ctx = {}) {
   if (!kept.length) {
     // An empty change list and "no changes" are the same outcome; treat it as the latter
     // rather than showing someone an empty proposal screen (FR-25).
-    return { ok: true, nochange: true, reading: clampText(data.summary || data.reading || '', 4000) };
+    return { ok: true, nochange: true, reading: withKept(clampText(data.summary || data.reading || '', 4000), keptChecks) };
   }
   return {
     ok: true,
@@ -773,9 +776,57 @@ export function validateReview(data, plan, ctx = {}) {
         sessions: isInt(data.evidence?.sessions, 0, 10000) ? data.evidence.sessions : null
       },
       changes: kept,
-      notes: (Array.isArray(data.notes) ? data.notes : []).filter(isStr).slice(0, 6).map(n => clampText(n, 1500))
+      notes: [...(Array.isArray(data.notes) ? data.notes : []).filter(isStr).slice(0, 6).map(n => clampText(n, 1500)), ...keptChecks.map(k => k.why)]
     }
   };
+}
+
+/* The app counts, the Coach answers (COACH_EVIDENCE.md). Two things the validator holds a review
+   to on its first try: every kind of plan check (too few sets, once a week, too many on one
+   exercise, over the range) gets an answer, a change citing one of its checks or a `kept` reason,
+   and the text carries no number the payload does not hold. Per kind, not per check: a real plan
+   on the default ranges has ten of them, and ten "kept" notes would bury the review. The repair
+   round lets both through (ctx.answerChecks false): they cost a better review, never the job. */
+export const KEPT_MAX = 4;
+// The kind a ref answers: a check id from this payload, or a tag one of its checks carries.
+const kindOf = (ref, checks) => (checks || []).find(c => c.id === ref || c.tag === ref)?.tag || null;
+function keptOf(data, checks) {
+  return (Array.isArray(data.kept) ? data.kept : [])
+    .filter(k => k && kindOf(k.ref, checks) && isStr(k.why))
+    .slice(0, KEPT_MAX)
+    .map(k => ({ ref: k.ref, why: clampText(k.why.trim(), 300) }));
+}
+const withKept = (reading, kept) => [reading, ...kept.map(k => k.why)].filter(Boolean).join(' ');
+
+/** Every number in a JSON value (numeric leaves only), as the set the Coach may copy from. */
+export function numbersOf(value, out = new Set()) {
+  if (typeof value === 'number' && Number.isFinite(value)) out.add(value);
+  else if (Array.isArray(value)) value.forEach(v => numbersOf(v, out));
+  else if (value && typeof value === 'object') Object.values(value).forEach(v => numbersOf(v, out));
+  return out;
+}
+
+function answerGaps(data, ctx, keptChecks) {
+  const gaps = [];
+  const changes = Array.isArray(data.changes) ? data.changes : [];
+  const answered = new Set([...changes.map(c => c && c.ref), ...keptChecks.map(k => k.ref)].map(r => kindOf(r, ctx.checks)));
+  for (const tag of new Set((ctx.checks || []).map(c => c.tag))) {
+    if (answered.has(tag)) continue;
+    const ids = ctx.checks.filter(c => c.tag === tag).map(c => `"${c.id}"`);
+    gaps.push(`the ${tag} checks (${ids.slice(0, 4).join(', ')}) have no answer: give at least one a change with that "ref", or add { "ref": "<one of them>", "why": "<one plain sentence on why the plan stays>" } to "kept"`);
+  }
+  if (ctx.numbers) {
+    const allowed = numbersOf(changes.map(c => c && [c.before, c.after]), new Set(ctx.numbers));
+    const texts = [data.summary, data.reading, ...(Array.isArray(data.notes) ? data.notes : []), ...changes.map(c => c && c.why), ...keptChecks.map(k => k.why)];
+    const stray = new Set();
+    texts.filter(isStr).forEach(t => (t.replace(/\d{4}-\d{2}-\d{2}/g, ' ').match(/\d+(?:[.,]\d+)?/g) || []).forEach(m => {
+      const n = Number(m.replace(',', '.'));
+      // lean: any whole number to 10 passes (sets, reps, weeks, days); tighten if evals show made-up small counts.
+      if (!(Number.isInteger(n) && n <= 10) && !allowed.has(n)) stray.add(m);
+    }));
+    if (stray.size) gaps.push(`numbers not in the data: ${[...stray].slice(0, 8).join(', ')}. Copy each number exactly as the data gives it (27.3 stays 27.3, never "about 27%"), or leave it out`);
+  }
+  return gaps;
 }
 
 /**

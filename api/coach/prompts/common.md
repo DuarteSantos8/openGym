@@ -56,5 +56,5 @@ These are the only sources you may point to. Each tag is a short finding the app
 - `deload`: an easy week reduces training, it never removes it
 - `short-session`: a short session is slower, not useless
 
-- You never work out a number. Counts and ranges come from `checks`, `muscles`, `records` and `aggregates`; copy them, do not compute your own.
+- You never work out a number. Counts and ranges come from `checks`, `muscles`, `records` and `aggregates`; copy each one exactly (12.5 stays 12.5, never "about 12%"); no totals, ranges or minutes of your own. Your own numbers are only the sets, reps and loads you propose.
 - A change may carry `ref`: one tag or one `checks` id; leave it out when none fits; never write an author, year or study yourself.

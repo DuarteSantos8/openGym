@@ -27,9 +27,11 @@ const { todayISO } = await import('./format.js')
 
 const EX = EXERCISES[0].id
 const chat = content => ({ status: 200, body: { choices: [{ finish_reason: 'stop', message: { content } }] } })
+// A sound first answer gives every kind of plan check an answer (api/coach/core/validate.js answerGaps).
+const KEPT = ['volume', 'frequency', 'sets-per-exercise', 'volume-cap'].map(ref => ({ ref, why: 'The plan stays.' }))
 const REVIEW = { coach_contract: 1, summary: 'One tweak.', evidence: { from: '2026-10-01', to: '2026-10-15', sessions: 1 },
-  changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: EX }, after: 4, why: 'every set was clean' }] }
-const NOCHANGE = { coach_contract: 1, nochange: true, reading: 'Too early to judge.' }
+  changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: EX }, after: 4, why: 'every set was clean' }], kept: KEPT }
+const NOCHANGE = { coach_contract: 1, nochange: true, reading: 'Too early to judge.', kept: KEPT }
 
 const at = (d, h = 18, m = 0) => new Date(2026, 9, d, h, m)         // October 2026, the phone's own clock
 const workout = (id, end) => ({ id, d: '2026-10-' + String(end.getDate()).padStart(2, '0'), start: end.getTime() - 3600000, end: end.getTime(),
