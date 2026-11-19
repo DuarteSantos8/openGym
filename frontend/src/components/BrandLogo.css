@@ -6,3 +6,5 @@
 .ironvane-lockup-iron{color:#eef1f6}
 .ironvane-lockup-vane{color:#ff6b2c}
 :root[data-theme="light"] .ironvane-lockup-iron{color:#12151b}
+/* Light theme: the vane a shade deeper so the wordmark keeps 3:1 on the pale sidebar. */
+:root[data-theme="light"] .ironvane-lockup-vane{color:#e8590c}

@@ -17,7 +17,10 @@ describe('Brazilian Portuguese locale', () => {
   test('matches the source key set and preserves interpolation placeholders', () => {
     expect(Object.keys(ptBR).sort()).toEqual(Object.keys(pt).sort())
     for (const [source, translated] of Object.entries(ptBR)) {
-      expect(placeholders(translated), source).toEqual(placeholders(source))
+      // A plural entry is an object of forms; each form keeps the source's placeholders.
+      for (const form of (translated && typeof translated === 'object' ? Object.values(translated) : [translated])) {
+        expect(placeholders(form), source).toEqual(placeholders(source))
+      }
     }
   })
 

@@ -4823,3 +4823,16 @@ button.ex-num:not(:disabled):active{transform:scale(var(--press-scale-sm))}
 .text-big .today-row .ttl,.text-big .item .tt{-webkit-line-clamp:4}
 .text-big .item .tt,.text-big .item .ss{white-space:normal}
 .text-big .chips:not(.wchips){flex-wrap:wrap;overflow:visible;touch-action:auto}
+/* Today on a wide screen (release pass): the cards flow into two columns instead of a 640 px
+   strip in the middle of a monitor. Columns, not a grid, so cards of different heights pack
+   without gaps; the DOM order (and what a screen reader reads) stays the phone's. */
+@media (min-width:1240px){
+  #app .narrow.iv-home{max-width:1040px;columns:2;column-gap:16px}
+  #app .narrow.iv-home>*{break-inside:avoid}
+  #app .narrow.iv-home>.hdr{column-span:all}
+}
+/* First time on an exercise (release pass): the hint sits where "Last time" would. */
+.firsttime{margin:0 0 6px;line-height:1.35;color:var(--label-2)}
+:root[data-theme="light"] .intg-pill.connected{color:#166a30}
+/* Light theme: an unselected segment's label on the grey track reaches 4.5:1 (it sat at 4.45). */
+:root[data-theme="light"] .seg button:not(.on){color:#5c5c63}

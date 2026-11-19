@@ -21,14 +21,14 @@ const alerts = () => [...host.querySelectorAll('[role="alert"]')].map(a => a.tex
 describe('the progression rule lab (EP09, simulation only)', () => {
   it('runs the example rule against openGym over 12 weeks and finds no difference', async () => {
     await mount(); await simulate()
-    expect(host.querySelector('[data-summary]').textContent).toMatch(/Matches openGym on every week/)
+    expect(host.querySelector('[data-summary]').textContent).toMatch(/Matches Ironvane on every week/)
     expect(host.querySelectorAll('tbody tr')).toHaveLength(12)
     expect(alerts()).toEqual([])
   })
 
   it('shows the native deload a stateless rule cannot express as a difference', async () => {
     await mount(); await setVal('Session outcomes', 'HMMMHHHH'); await simulate()
-    expect(host.querySelector('[data-summary]').textContent).toMatch(/^\d+ weeks? of \d+ differs? from openGym\.$/)
+    expect(host.querySelector('[data-summary]').textContent).toMatch(/^\d+ of \d+ weeks? differs? from Ironvane\.$/)
     expect(host.textContent).toMatch(/\(deload\)/)
     expect(host.querySelectorAll('tbody tr[data-diverges]').length).toBeGreaterThan(0)
   })

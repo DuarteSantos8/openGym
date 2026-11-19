@@ -79,7 +79,7 @@
 <body>
 <!-- The boot screen: painted with the HTML, before any script runs, so the gap between the
      native splash and the first real screen is the logo loading its plates instead of a black
-     page. Same dark and lime as the native splash. lib/boot.js takes it away the moment the
+     page. Same dark and Ironvane orange as the native splash. lib/boot.js takes it away the moment the
      app can draw, so it never adds a wait. -->
 <style>
   #boot{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#0c0e12;transition:opacity .22s ease-out}
@@ -92,7 +92,7 @@
   #boot .in{animation-delay:.22s}
   #boot .outer{animation-delay:.36s}
   #boot .db{animation:boot-rep 1.25s ease-in-out .75s infinite}
-  #boot ellipse{fill:#a3e635;opacity:.12;animation:boot-shadow 1.25s ease-in-out .75s infinite}
+  #boot ellipse{fill:#ff6b2c;opacity:.12;animation:boot-shadow 1.25s ease-in-out .75s infinite}
   @keyframes boot-bar{from{transform:scaleX(0)}}
   @keyframes boot-plate{from{transform:translateX(-40px);opacity:0}}
   @keyframes boot-plate-r{from{transform:translateX(40px);opacity:0}}
@@ -102,7 +102,7 @@
   #boot.fail div{max-width:340px;font:15px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#e6e8ec;text-align:center}
   #boot.fail .h{font-size:19px;font-weight:600;margin:0 0 8px}
   #boot.fail code{display:block;margin:14px 0 18px;padding:10px;border-radius:10px;background:#1a1d24;color:#a9b0bc;font-size:12px;text-align:left;word-break:break-word;-webkit-user-select:text;user-select:text}
-  #boot.fail button{font:inherit;font-weight:600;color:#0c0e12;background:#a3e635;border:0;border-radius:12px;min-height:44px;padding:0 28px}
+  #boot.fail button{font:inherit;font-weight:600;color:#0c0e12;background:#ff6b2c;border:0;border-radius:12px;min-height:44px;padding:0 28px}
   @media (prefers-reduced-motion:reduce){
     #boot .bar,#boot .pl,#boot .pr,#boot ellipse{animation:none}
     #boot .db{animation:boot-breathe 1.6s ease-in-out infinite}
@@ -112,7 +112,7 @@
 <div id="boot" aria-hidden="true">
   <svg viewBox="80 140 352 250">
     <ellipse cx="256" cy="372" rx="150" ry="9"/>
-    <g class="db" fill="#a3e635">
+    <g class="db" fill="#ff6b2c">
       <rect class="bar" x="80" y="242" width="352" height="28"/>
       <rect class="pl in" x="131" y="169" width="47" height="174"/>
       <rect class="pr in" x="334" y="169" width="47" height="174"/>
