@@ -5955,4 +5955,6 @@ export default {
   "Beginner": "มือใหม่",
   "Intermediate": "ระดับกลาง",
   "Elite": "ระดับแนวหน้า",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "ขั้นสูง",
 }

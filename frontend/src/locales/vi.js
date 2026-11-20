@@ -5910,4 +5910,6 @@ export default {
   "Beginner": "Mới bắt đầu",
   "Intermediate": "Trung cấp",
   "Elite": "Thượng thặng",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "Nâng cao",
 };

@@ -5944,4 +5944,6 @@ export default {
   "Beginner": "शुरुआती",
   "Intermediate": "मध्यम",
   "Elite": "एलीट",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "उन्नत",
 }

@@ -7,9 +7,16 @@ import { fmtDate } from '../lib/format.js'
 import { MUSCLES, MUSCLE_NAME } from '../lib/muscles.js'
 import { EXIDX } from '../lib/exercises.js'
 import {
-  SKILLS, BRANCHES, SKILL_FAMILIES, TIER_NAME, TIER_COLOR, TIER_ROMAN, haveOf, skillStatus, missingBefore,
+  SKILLS, BRANCHES, SKILL_FAMILIES, TIER_NAME, TIER_KEY, TIER_COLOR, TIER_ROMAN, haveOf, skillStatus, missingBefore,
   skillsAfter, withSkill, withoutSkill, earnedSkills, withEarned, newlyHad, provedNames, countOf, familyIds, openSkills, muscleIds, muscleLevels, treeItems, treeGrid,
 } from '../lib/skill-tree.js'
+
+// A tier's name in the active language: its own key where the plain English word means
+// something else in the packs ('Advanced', the settings word), else the plain name.
+export const tierName = n => {
+  const k = TIER_KEY[n], v = k && t(k)
+  return v && v !== k ? v : t(TIER_NAME[n])
+}
 import BodyMap from '../components/BodyMap.jsx'
 import { Thumb } from '../components/Media.jsx'
 import Icon from '../components/Icon.jsx'
@@ -114,10 +121,10 @@ function SkillList({ have, fam }) {
 function SkillRow({ have, id, where }) {
   const s = SKILLS[id], st = skillStatus(have, id)
   return <button className={'skt-row ' + st} style={{ '--c': TIER_COLOR[s.tier] }} onClick={() => skillSheet(id)}
-    aria-label={`${s.name}, ${stateWord(st)}, ${t(TIER_NAME[s.tier])}`}>
+    aria-label={`${s.name}, ${stateWord(st)}, ${tierName(s.tier)}`}>
     <StateIcon st={st} />
     <span className="skt-row-name"><span>{s.name}</span>{where && <span className="small muted">{t(FAM[s.fam].name)} · {s.branch}</span>}</span>
-    <span className="skt-tier">{t(TIER_NAME[s.tier])}</span>
+    <span className="skt-tier">{tierName(s.tier)}</span>
   </button>
 }
 
@@ -237,7 +244,7 @@ function Tree({ have, fam, up = false, seed = null, onBack, onFull }) {
           const unfold = () => setOpen(o => ({ ...o, [it.branch]: true }))
           const name = it.kind === 'skill' ? sk.name : it.kind === 'done' ? t('{0} had', it.ids.length) : t('{0} more', it.ids.length)
           return <button key={it.key} className={'skt-node ' + it.kind + ' ' + s} style={{ left: p.x - 37, top: p.y - R, '--c': TIER_COLOR[sk.tier], ...grow(g.pos[it.key].row) }}
-            aria-label={it.kind === 'skill' ? `${sk.name}, ${stateWord(s)}, ${t(TIER_NAME[sk.tier])}` : `${name}, ${it.branch}`}
+            aria-label={it.kind === 'skill' ? `${sk.name}, ${stateWord(s)}, ${tierName(sk.tier)}` : `${name}, ${it.branch}`}
             onClick={it.kind === 'skill' ? () => skillSheet(sk.id) : unfold}>
             <span className="skt-node-c">
               {it.kind === 'skill' ? (ex ? <span className="skt-node-img"><Thumb ex={ex} /></span> : <Icon name={s === 'done' ? 'check' : s === 'open' ? 'star' : 'lock'} />)
@@ -274,7 +281,7 @@ function SkillSheet({ id: first, close }) {
       <button className="iconbtn" disabled={!next} onClick={() => next && setId(next)} aria-label={t('Next')}><Icon name="chevronRight" /></button>
     </div>
     {ex && <button className="skt-sheet-ex" onClick={() => exerciseDetailSheet(ex)}><Thumb ex={ex} /><span className="small muted">{t('Open the exercise')}</span><Icon name="chevronRight" /></button>}
-    <div className="row" style={{ gap: 8 }}><span className="skt-tier">{t(TIER_NAME[s.tier])}</span><span className="small muted">{t(FAM[s.fam].name)}</span></div>
+    <div className="row" style={{ gap: 8 }}><span className="skt-tier">{tierName(s.tier)}</span><span className="small muted">{t(FAM[s.fam].name)}</span></div>
     <h3 className="skt-sheet-name">{s.name}</h3>
     <div className={'small skt-sheet-state ' + st}>{st === 'done' ? t('Yours since {0}', fmtDate(have[id], true, true)) : st === 'open' ? t('Open: you have what comes before') : t('Locked')}</div>
     <div className="card skt-facts">

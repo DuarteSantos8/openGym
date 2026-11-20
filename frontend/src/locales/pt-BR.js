@@ -4373,6 +4373,8 @@ export const PT_BR_OVERRIDES = {
   "Beginner": "Iniciante",
   "Intermediate": "Intermediário",
   "Elite": "Elite",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "Avançado",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -5944,4 +5944,6 @@ export default {
   "Beginner": "Başlangıç",
   "Intermediate": "Orta seviye",
   "Elite": "Elit",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "İleri",
 }
