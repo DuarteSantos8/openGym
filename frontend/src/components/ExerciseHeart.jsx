@@ -6,6 +6,7 @@ import { curveVersion, exerciseCurve, exerciseHeart, heartLatest, heartPoints, p
 import { heartStepText } from '../lib/heart-steps.js'
 import { workoutSamples } from '../lib/health-sync.js'
 import { syncKeyOf } from '../lib/workout-date.js'
+import { isOn } from '../lib/modules.js'
 import { DEFAULT_HR_MAX, ZONE_FLOOR, ZONES, hrMaxOf } from '../lib/live-tiles.js'
 import LineChart from './LineChart.jsx'
 import { Segmented } from './ui.jsx'
@@ -82,7 +83,9 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
   // Each picked session's readings: { [workout id]: { ver, data } } (lib/health-sync.js
   // workoutSamples), read again when its kept curve or its times change (a sync brought the curve).
   const [samples, setSamples] = useState({})
-  const verOf = w => `${w?.start}:${w?.end}:${curveVersion(w?.hrc)}`
+  // Health switched on or off reads them again too (off: only the curve kept with the workout).
+  const healthOn = isOn(S, 'health')
+  const verOf = w => `${healthOn}:${w?.start}:${w?.end}:${curveVersion(w?.hrc)}`
   const wanted = chosen.map(id => id + '@' + verOf(workouts.find(x => x && syncKeyOf(x) === id))).join(',')
   useEffect(() => {
     if (!chosen.length) return

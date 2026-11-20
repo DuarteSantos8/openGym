@@ -34,19 +34,23 @@ export function parseFormat(key) {
 }
 
 // The spans ({ from, to }) of the done work sets of `exId` in `w` in format `key`: each from the
-// tick before it in the workout (any exercise's, or the start) to its own tick.
+// tick before it in the workout (any exercise's, or the start) to its own tick. Only ticks inside
+// the session count, as on the session's card (heart-steps.js exerciseSpans); none without a start.
 function formatSpans(w, exId, key) {
-  const start = Number(w?.start) || 0
+  const start = Number(w?.start)
+  if (!(start > 0)) return []
+  const end = Number(w?.end) || Date.now()
+  const inside = at => at > start && at <= end
   // Every set's tick as the session's card reads it (a per-side set's later side).
   const ticks = []
-  for (const e of w?.entries || []) for (const s of e?.sets || []) { const at = tickOf(s); if (at > 0) ticks.push(at) }
+  for (const e of w?.entries || []) for (const s of e?.sets || []) { const at = tickOf(s); if (inside(at)) ticks.push(at) }
   ticks.sort((a, b) => a - b)
   const out = []
   for (const e of w?.entries || []) {
     if (String(e?.id) !== String(exId)) continue
     const mode = modeOf(e.target || { id: e.id })
     for (const s of e.sets || []) {
-      if (!s?.done || isWarmupRow(s) || isSideSet(s) || !(Number(s.at) > 0) || heartFormat(s, mode) !== key) continue
+      if (!s?.done || isWarmupRow(s) || isSideSet(s) || !inside(Number(s.at)) || heartFormat(s, mode) !== key) continue
       const to = Number(s.at)
       const before = ticks.filter(x => x < to)
       out.push({ from: before.length ? before[before.length - 1] : start, to })
@@ -214,11 +218,18 @@ export function packCurve(samples, start, end, step = CURVE_STEP_S) {
  */
 export function unpackCurve(c, end = Infinity) {
   if (!c || typeof c !== 'object' || !Array.isArray(c.v)) return []
-  const s = Number(c.s), ms = (Number(c.step) || CURVE_STEP_S) * 1000
-  if (!Number.isFinite(s)) return []
+  const step = Number(c.step) || CURVE_STEP_S
+  const s = Number(c.s), ms = step * 1000
+  if (!Number.isFinite(s) || !(step > 0)) return []
   const last = Number(end) > s ? Number(end) : Infinity
   const out = []
-  c.v.forEach((bpm, i) => { if (bpm >= BPM_MIN && bpm <= BPM_MAX) out.push([Math.min(s + i * ms + ms / 2, last), bpm]) })
+  c.v.forEach((bpm, i) => {
+    // A slot that starts at or after the end is left out (the workout was made shorter after the
+    // curve was kept); only the one across the end is pulled in to it.
+    const from = s + i * ms
+    if (from >= last) return
+    if (bpm >= BPM_MIN && bpm <= BPM_MAX) out.push([Math.min(from + ms / 2, last), bpm])
+  })
   return out
 }
 
@@ -256,11 +267,12 @@ export function curveVersion(c) {
  * be missing; curves of different steps are not merged (`b` wins).
  */
 export function mergeCurves(a, b) {
-  const ok = c => c && Array.isArray(c.v) && Number.isFinite(Number(c.s))
+  const ok = c => c && Array.isArray(c.v) && Number.isFinite(Number(c.s)) && (Number(c.step) || CURVE_STEP_S) > 0
   if (!ok(a)) return ok(b) ? b : null
   if (!ok(b)) return a
   const step = Number(b.step) || CURVE_STEP_S
-  if ((Number(a.step) || CURVE_STEP_S) !== step) return b
+  // Curves of different steps, or a day or more apart (not the same workout), are not merged.
+  if ((Number(a.step) || CURVE_STEP_S) !== step || Math.abs(Number(a.s) - Number(b.s)) >= 864e5) return b
   const ms = step * 1000
   const s = Math.min(Number(a.s), Number(b.s))
   const at = (c, i) => Math.round((Number(c.s) - s) / ms) + i
