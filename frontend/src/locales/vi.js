@@ -5863,4 +5863,9 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Collapse": "Thu gọn",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Trung bình {0} · Tối đa {1} bpm",
+  "Heart rate curve": "Đường nhịp tim",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Một dòng dưới thanh tiến trình khi Apple Watch đo. Chạm để xem cả buổi tập.",
 };

@@ -5862,4 +5862,9 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Collapse": "Ciutkan",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Rata-rata {0} · Maks {1} bpm",
+  "Heart rate curve": "Kurva detak jantung",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Satu baris di bawah bilah kemajuan selama Apple Watch-mu mengukurnya. Ketuk untuk seluruh sesi.",
 };

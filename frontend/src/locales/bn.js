@@ -5976,4 +5976,9 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Collapse": "গুটিয়ে নিন",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "গড় {0} · সর্বোচ্চ {1} bpm",
+  "Heart rate curve": "হৃদস্পন্দনের রেখা",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "অগ্রগতি দণ্ডের নিচে একটি লাইন, যতক্ষণ আপনার Apple Watch এটি মাপে। পুরো সেশন দেখতে ট্যাপ করুন।",
 }

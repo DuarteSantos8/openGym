@@ -5897,4 +5897,9 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  "Collapse": "Zwiń",
+  "bpm": "ud./min",
+  "Average {0} · Max {1} bpm": "Średnio {0} · Maks. {1} bpm",
+  "Heart rate curve": "Krzywa tętna",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Linia pod paskiem postępu, gdy Apple Watch mierzy tętno. Dotknij, by zobaczyć cały trening.",
 }

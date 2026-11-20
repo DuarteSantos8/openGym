@@ -5901,4 +5901,9 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  "Collapse": "Свернуть",
+  "bpm": "уд/мин",
+  "Average {0} · Max {1} bpm": "Среднее {0} · Макс. {1} уд/мин",
+  "Heart rate curve": "Кривая пульса",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Строка под полосой прогресса, пока Apple Watch его измеряют. Нажми — и увидишь всю тренировку.",
 }

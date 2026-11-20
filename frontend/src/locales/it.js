@@ -5907,4 +5907,9 @@ export default {
   "Preview on": "Anteprima su",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un po’ più corto",
+  "Collapse": "Comprimi",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Media {0} · Max {1} bpm",
+  "Heart rate curve": "Curva del battito",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Una riga sotto la barra di avanzamento mentre il tuo Apple Watch lo misura. Toccala per tutta la sessione.",
 }

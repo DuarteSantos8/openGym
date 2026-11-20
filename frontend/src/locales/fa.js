@@ -5863,4 +5863,9 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Collapse": "جمع کردن",
+  "bpm": "ضربان در دقیقه",
+  "Average {0} · Max {1} bpm": "میانگین {0} · بیشینه {1} ضربان در دقیقه",
+  "Heart rate curve": "منحنی ضربان قلب",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "یک خط زیر نوار پیشرفت تا وقتی Apple Watch آن را اندازه می‌گیرد. برای کل جلسه رویش بزن.",
 }

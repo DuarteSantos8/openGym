@@ -207,6 +207,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
         }
         health.onStatus = { [weak self] in self?.sendStatus() }
+        health.onReadings = { [weak self] r in self?.sendHeart(r) }
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         if !isDemo { center.requestAuthorization(options: [.alert, .sound]) { _, _ in } }
@@ -950,6 +951,56 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         holdStartedAt = nil
     }
 
+    /// Readings the phone has not had yet: with the wrist down watchOS holds messages back, and these
+    /// go with the next one that can, so the curve on the phone has no hole where the arm was down.
+    private var heartPending: [[Double]] = []
+    /// The workout those readings were measured for: another one starts the list again.
+    private var heartPendingFor: String?
+
+    /// Each heart-rate reading of the workout, for the curve on the phone's workout screen: a
+    /// message, not an event. A page asleep reads what it missed back from Apple Health.
+    private func sendHeart(_ readings: [(Date, Double)]) {
+        guard !isDemo, WCSession.isSupported() else { return }
+        let wid = state.workout?.id
+        if wid != heartPendingFor { heartPending = []; heartPendingFor = wid }
+        heartPending += readings.map { [($0.0.timeIntervalSince1970 * 1000).rounded(), $0.1.rounded()] }
+        // A quarter of an hour at most: the phone reads anything older back from Apple Health.
+        if heartPending.count > 200 { heartPending.removeFirst(heartPending.count - 200) }
+        heartRetries = 0
+        flushHeart()
+    }
+
+    /// The readings waiting go to the phone when it can be reached: after each new one, and when the
+    /// phone comes back in reach or the session comes up (a paused workout sends no new reading).
+    /// Only for the workout they were measured for. Main queue.
+    private func flushHeart() {
+        guard !isDemo, WCSession.isSupported(), !heartPending.isEmpty else { return }
+        let wid = state.workout?.id
+        guard heartPendingFor == wid else { heartPending = []; heartPendingFor = wid; return }
+        guard WCSession.default.activationState == .activated, WCSession.default.isReachable else { return }
+        let samples = heartPending
+        heartPending = []
+        // The workout they belong to, and this watch's clock gap (the one its events carry), so the
+        // phone files them under the right workout and on its own clock.
+        var message: [String: Any] = ["heart": samples, "off": off]
+        if let wid = wid { message["wid"] = wid }
+        WCSession.default.sendMessage(message, replyHandler: nil, errorHandler: { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self = self, self.heartPendingFor == wid else { return }
+                self.heartPending.insert(contentsOf: samples, at: 0)
+                // Tried again a few times on its own, so readings put back reach the phone even
+                // when no new reading or reconnection comes (a paused workout).
+                guard self.heartRetries < 3 else { return }
+                self.heartRetries += 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) { self.flushHeart() }
+            }
+        })
+    }
+
+    /// Retries of a failed send since the last new reading (flushHeart): a few, then the next
+    /// reading or reconnection sends what waits.
+    private var heartRetries = 0
+
     /* ---------- the summary ---------- */
 
     /// The heart rate and calories of the session that just ended, when Apple Health has them.
@@ -1529,7 +1580,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func sessionReachabilityDidChange(_ session: WCSession) {
         updateLink()
         // Back in reach: what it may have missed goes now, quickly, as a message.
-        if session.isReachable { DispatchQueue.main.async { self.flush(reconnect: true) } }
+        if session.isReachable { DispatchQueue.main.async { self.flush(reconnect: true); self.flushHeart() } }
     }
 
     func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
@@ -1590,7 +1641,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // The phone's latest snapshot: also what a watch app opened mid-workout picks the session up from.
         receive(session.receivedApplicationContext)
-        DispatchQueue.main.async { self.flushOutbox() }
+        DispatchQueue.main.async { self.flushOutbox(); self.flushHeart() }
         sendStatus()
         updateLink()
     }

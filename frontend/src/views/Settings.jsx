@@ -720,6 +720,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('Sleep, energy, soreness and stress in four taps before you train. On a rough day it offers to go lighter.')}>
           <Switch aria-label={t('Daily check-in')} checked={S.dailyForm === true} onChange={v => update(s => { s.dailyForm = v })} />
         </Row>}
+        {/* The watch's heart rate as a curve under the progress bar (components/HeartBand.jsx):
+            the iPhone app with the Apple Watch, the only one that streams its readings. */}
+        {ios && on('watch') && on('health') && <Row icon="heart" iconTint="var(--red)" title={t('Heart rate curve')}
+          subtitle={t('A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.')}>
+          <Switch aria-label={t('Heart rate curve')} checked={S.heartCurve !== false} onChange={v => update(s => { s.heartCurve = v })} />
+        </Row>}
         {(wakeOK || !MOBILE) && (
           <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Keep screen awake')}
             subtitle={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : t('Not supported in this browser.')}>
