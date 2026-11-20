@@ -71,6 +71,26 @@ describe('steps', () => {
     logStation(logged, st[1], 0, { sec: 30, at: 2 })
     expect(logged[0].sets.map(s => [s.side, s.sec, s.done])).toEqual([['L', 30, true], ['R', 30, true]])
   })
+  it('a per-side hold with the side rest off keeps the gap out of the round (#1394)', () => {
+    const entries = [{
+      id: 'plank',
+      target: { mode: 'time', sec: 30, side: true, sideRestOff: true, sets: 1 },
+      sets: [{ sec: 30, side: 'L', done: false }, { sec: 30, side: 'R', done: false }],
+    }]
+    const st = stationsOf(entries, [0], c => c.mode)
+    expect(st.map(s => s.afterRest)).toEqual([0, undefined])
+    const all = steps({ mode: 'circuit', rounds: 1, gap: 15 }, st)
+    expect(all.map(s => s.k + (s.side ? 'S' : '') + (s.sec ?? '-'))).toEqual(['prep' + PREP_SEC, 'workS30', 'workS30'])
+  })
+  it('a timed per-side station keeps a saved row that carries no side tag (#1394)', () => {
+    const entries = [{
+      id: 'plank',
+      target: { mode: 'time', sec: 30, side: true, sets: 1 },
+      sets: [{ sec: 45 }, { w: 0 }],
+    }]
+    const st = stationsOf(entries, [0], c => c.mode)
+    expect(st.map(s => [s.side, s.sec])).toEqual([['L', 45], ['R', 45]])
+  })
   it('circuit: stations, the gap between them, the round rest, no rest after the last round', () => {
     const cfg = { mode: 'circuit', rounds: 2, gap: 15, roundRest: 60 }
     const st = [S(1), S(2, 'time', { sec: 30 })]

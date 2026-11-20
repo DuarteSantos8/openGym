@@ -159,7 +159,7 @@ export function stationsOf(entries, unit, modeOf) {
     const perSide = mode === 'time' && !!target.side
     const sides = perSide ? ['L', 'R'] : [undefined]
     sides.forEach((side, slot) => {
-      const mine = side ? (rows.find(s => !s.done && s.side === side) || rows.find(s => s.side === side) || {}) : null
+      const mine = side ? (rows.find(s => !s.done && s.side === side) || rows.find(s => s.side === side) || null) : null
       const first = mine || rows.find(s => !s.done) || rows[0] || {}
       out.push({
         idx,
@@ -202,8 +202,10 @@ function roundSegments(cfg, stations) {
   const segs = []
   list.forEach((s, m) => {
     segs.push({ k: 'work', m })
-    if (s.afterRest > 0) segs.push({ k: 'rest', m, sec: s.afterRest, side: true })
-    else if (cfg.gap > 0 && m < list.length - 1) segs.push({ k: 'rest', m, sec: cfg.gap })
+    // A side rest that is set at all wins over the station gap, zero included (#1394).
+    if (s.afterRest != null) {
+      if (s.afterRest > 0) segs.push({ k: 'rest', m, sec: s.afterRest, side: true })
+    } else if (cfg.gap > 0 && m < list.length - 1) segs.push({ k: 'rest', m, sec: cfg.gap })
   })
   if (cfg.roundRest > 0) segs.push({ k: 'rest', m: 0, sec: cfg.roundRest, round: true })
   return segs
