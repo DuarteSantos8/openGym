@@ -81,7 +81,11 @@ extension View {
     /// Liquid Glass behind a control on watchOS 26 (tinted when given), `fill` before 26 and in Always On.
     @ViewBuilder func glass<S: Shape>(_ shape: S, tint: Color? = nil, fill: Color, dimmed: Bool) -> some View {
         if #available(watchOS 26, *), !dimmed {
-            glassEffect(tint.map { Glass.regular.tint($0).interactive() } ?? .regular.interactive(), in: shape)
+            // Not .interactive(): nearly every glass here is a button's, and an interactive glass takes
+            // the touch for its own bounce, so a tap now and then never reached the button (the keypad's
+            // ✓ on an Ultra, 2026-11-20). The press shows through the button styles instead (PressStyle,
+            // PrimaryButtonStyle, RowButtonStyle, OutlineCapsule).
+            glassEffect(tint.map { Glass.regular.tint($0) } ?? .regular, in: shape)
         } else {
             background(shape.fill(fill))
         }
@@ -113,6 +117,19 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
+/// A plain button that shows it was pressed: dimmed and a touch smaller while the finger is on it.
+/// The glass's own bounce did that before it stopped taking the touch (glass above).
+struct PressStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.6 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
 /// A quieter choice: a grey row, like a row in the app's grouped lists.
 struct RowButtonStyle: ButtonStyle {
     var tint: Color = .white
@@ -129,7 +146,7 @@ struct RowButtonStyle: ButtonStyle {
                    fill: dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
             .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
-            .opacity(enabled ? 1 : 0.35)
+            .opacity(enabled ? (configuration.isPressed ? 0.6 : 1) : 0.35)   // the glass ignores `fill`: the press shows here
     }
 }
 
@@ -173,7 +190,7 @@ struct RoundButton: View {
                     .glass(Circle(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
                     .overlay(Circle().stroke(accent, lineWidth: dimmed ? 2 : 0))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressStyle())
             .accessibilityLabel(label)
             if caption { label.font(.caption2.weight(.bold)).foregroundStyle(dimmed ? Color.secondary : accent).lineLimit(1) }
         }
@@ -198,7 +215,7 @@ struct EdgeButton: View {
                 .overlay(Circle().stroke(Theme.dim, lineWidth: dimmed ? 1 : 0))
                 .contentShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .accessibilityLabel(label)
     }
 }
