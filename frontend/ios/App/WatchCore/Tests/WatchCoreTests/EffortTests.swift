@@ -105,6 +105,10 @@ final class EffortDialTests: XCTestCase {
         d.change(at: t.addingTimeInterval(4))
         XCTAssertFalse(d.settleDue(at: t.addingTimeInterval(5)))
         XCTAssertTrue(d.settleDue(at: t.addingTimeInterval(9)))
+        d.sent()
+        d.touch(at: t.addingTimeInterval(8))
+        XCTAssertFalse(d.settleDue(at: t.addingTimeInterval(9)), "a touch at the end of the scale keeps it armed")
+        XCTAssertFalse(d.sendDue(at: t.addingTimeInterval(9)), "and sends nothing")
     }
 
     func testLettingGoSaysWhetherAValueIsStillWaiting() {

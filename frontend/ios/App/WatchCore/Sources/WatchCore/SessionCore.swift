@@ -557,6 +557,8 @@ struct EffortDial: Equatable {
     private var touched = Date.distantPast
 
     mutating func arm(at t: Date) { armed = true; unsent = false; touched = t }
+    /// A touch that moved nothing (a disc at the end of the scale): only the settle counts from now.
+    mutating func touch(at t: Date) { touched = t }
     /// The value moved: the settle and the send count from now.
     mutating func change(at t: Date) { touched = t; unsent = true }
     /// A value that waits to go out has waited long enough.

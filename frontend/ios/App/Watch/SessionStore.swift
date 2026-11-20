@@ -98,7 +98,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// A hold's seconds, for the set up next (the crown turns it).
     @Published var seconds: Double = 0 { didSet { if seconds != oldValue { ackRestOver() } } }
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
-    var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
+    var effortKind: String? { Effort.range(state.settings.effort) != nil ? state.settings.effort : nil }
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
@@ -455,6 +455,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         fixR = n.r ?? 0
         fixSec = n.sec ?? 0
         fixEffort = nil
+        fixDial = EffortDial()
     }
 
     /// Whether the numbers on a set being fixed differ from what was logged.
@@ -476,6 +477,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if ref == lastLogged, let r = fixEffort { lastRated = r }
         viewing = nil
         fixFrom = nil
+        fixDial = EffortDial()
         noteActivity()
         Haptics.done()
         loadTargets()
@@ -496,20 +498,119 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return !e.isCardio && !e.sets[ref.set].warmup
     }
 
-    /// A chip: the set just done gets this effort (the setDone again, its numbers as logged).
+    /// A chip: the set just done gets this effort (the setDone again, its numbers as logged), and the
+    /// capsule arms so the Crown or − / + can move it by half a step (WatchCore EffortDial).
     func rateLast(_ v: Double) {
-        guard touchAllowed, let kind = effortKind, let ref = lastLogged, let w = workout,
+        guard touchAllowed, sendRating(v, click: true) else { return }
+        armRating()
+    }
+
+    /// The setDone again with this effort; false when there is no such set to rate.
+    @discardableResult private func sendRating(_ v: Double, click: Bool) -> Bool {
+        guard let kind = effortKind, let ref = lastLogged, let w = workout,
               w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set),
-              let n = SetFix.logged(w.entries[ref.entry].sets[ref.set], side: lastSide) else { return }
+              let n = SetFix.logged(w.entries[ref.entry].sets[ref.set], side: lastSide) else { return false }
         ackRestOver()
         let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: lastSide, to: n,
                                            effort: Effort.Rating(kind: kind, value: v),
                                            now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, off: off)
-        guard let ev = event else { return }
+        guard let ev = event else { return false }
         send(event: ev)
         state = next
         lastRated = v
-        WKInterfaceDevice.current().play(.click)
+        if click { WKInterfaceDevice.current().play(.click) }
+        return true
+    }
+
+    /// The rating dial: armed by a chip (or a tap on the settled capsule), settled 5 s after the last touch.
+    @Published private(set) var dial = EffortDial()
+    /// The same on a set being fixed, where Save is what sends.
+    @Published private(set) var fixDial = EffortDial()
+
+    private func armRating() {
+        let now = Date()
+        dial.arm(at: now)
+        touchLock.lock(at: now) // the discs sit where the chip just was: a double tap must not nudge
+        after(EffortDial.settle) { if self.dial.settleDue(at: Date()) { self.letGoOfRating() } }
+    }
+
+    /// A tap on the settled capsule.
+    func rearmRating() {
+        guard touchAllowed, lastRated != nil else { return }
+        armRating()
+    }
+
+    /// The Crown or a disc: `steps` half steps. The phone gets one update 0.6 s after the last change.
+    func nudgeRating(_ steps: Int, disc: Bool) {
+        guard dial.armed, let kind = effortKind, let cur = lastRated else { return }
+        let to = Effort.nudged(kind, cur, by: steps, clear: false) ?? cur
+        let now = Date()
+        if to == cur {
+            dial.touch(at: now)
+            if disc { Haptics.stop() }
+        } else {
+            lastRated = to
+            dial.change(at: now)
+            if disc { WKInterfaceDevice.current().play(.click) } // the Crown clicks by itself
+            after(EffortDial.send) { if self.dial.sendDue(at: Date()), let v = self.lastRated { self.dial.sent(); self.sendRating(v, click: false) } }
+        }
+        after(EffortDial.settle) { if self.dial.settleDue(at: Date()) { self.letGoOfRating() } }
+    }
+
+    /// Settled, or the page changed, the wrist went down, the rest ended: the value that waits goes out now.
+    private func letGoOfRating() {
+        if dial.disarm(), let v = lastRated { sendRating(v, click: false) }
+    }
+
+    /// Wrist down or another page: both dials let go.
+    func letGoOfEffort() {
+        letGoOfRating()
+        _ = fixDial.disarm()
+    }
+
+    /// The rest ended (Skip, its own end): a leftover Crown turn must not land in the set page's number.
+    private func restEndedUnderDial() {
+        guard dial.armed else { return }
+        letGoOfRating()
+        touchLock.lockCrown(at: Date())
+    }
+
+    var crownAllowed: Bool { touchLock.crownAllows(at: Date()) }
+
+    func armFixEffort() {
+        guard touchAllowed else { return }
+        let now = Date()
+        fixDial.arm(at: now)
+        touchLock.lock(at: now)
+        after(EffortDial.settle) { if self.fixDial.settleDue(at: Date()) { _ = self.fixDial.disarm() } }
+    }
+
+    /// The Crown or a disc on a set being fixed: a step below the floor clears it back to "–" (left as it was).
+    func nudgeFixEffort(_ steps: Int, disc: Bool) {
+        guard fixDial.armed, let kind = effortKind else { return }
+        let to = Effort.nudged(kind, fixEffort, by: steps, clear: true)
+        let now = Date()
+        if to == fixEffort {
+            fixDial.touch(at: now)
+            if disc { Haptics.stop() }
+        } else {
+            fixEffort = to
+            fixDial.change(at: now)
+            if disc { WKInterfaceDevice.current().play(.click) }
+        }
+        after(EffortDial.settle) { if self.fixDial.settleDue(at: Date()) { _ = self.fixDial.disarm() } }
+    }
+
+    private func after(_ seconds: TimeInterval, _ work: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds + 0.05, execute: work)
+    }
+
+    /// The crown glyph pulses the first time the capsule ever arms on this watch, to say halves exist.
+    func takeEffortPulse() -> Bool {
+        let key = "effortDialPulsed"
+        guard !UserDefaults.standard.bool(forKey: key) else { return false }
+        UserDefaults.standard.set(true, forKey: key)
+        return true
     }
 
     /// ‹ on the rest: the set just done, open to be fixed while the rest runs on.
@@ -526,6 +627,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func closeFix() {
         viewing = nil
         fixFrom = nil
+        fixDial = EffortDial()
     }
 
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
@@ -765,6 +867,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         lastLogged = SetRef(entry: ei, set: si)
         lastSide = side
         lastRated = nil
+        dial = EffortDial()
         lastStep = 1
         if to != ei { state.entryIndex = to }
         loadTargets()
@@ -1453,6 +1556,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// phone: the lifter's own Skip is skipRestAndGo, which does.
     func skipRest() {
         ackRestOver()
+        restEndedUnderDial()
         closeRest(at: Date())
         restTimer?.invalidate()
         restEndsAt = nil
@@ -1471,6 +1575,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // long ago while the app was away starts nothing (#884: a hold nobody saw start would be
         // logged at full length).
         let onTime = Date().timeIntervalSince(end) < 5
+        restEndedUnderDial()
         if onTime { restOver() }
         touchLock.lock(at: Date())
         closeRest(at: end)
@@ -1941,7 +2046,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.health.setDemoHeartRate(128)
                 self.workoutSeenAt = Date().addingTimeInterval(-(24 * 60 + 10))
                 if let n = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init), screen == "effort" { self.lastRated = n }
+                // CI: the capsule armed, for good (a settle far off), to look at it.
+                if screen == "effort", ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmed") { self.dial.arm(at: .distantFuture) }
                 if let n = SessionStore.argument("-OpenGymWatchUnsynced").flatMap(Int.init) { self.unsentSets = n }
+            }
+            if screen == "fix" {
+                self.state.settings.effort = "rir"
+                self.fixEffort = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init)
+                if ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmed") { self.fixDial.arm(at: .distantFuture) }
             }
             if screen == "hold" { self.startHold() }
             // CI clips of the motion: Done tapped, a fast Crown spin, a rest's last seconds.
@@ -2031,6 +2143,8 @@ enum Haptics {
     static func count() { play([(0, .click)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
+    /// A disc tapped at the end of the scale: a light tick, no step.
+    static func stop() { play([(0, .directionUp)]) }
 }
 
 private extension Array {
