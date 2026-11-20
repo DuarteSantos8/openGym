@@ -50,6 +50,8 @@ import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import LinkSign, { showLinkSign } from '../components/LinkSign.jsx'
 import HeartBand from '../components/HeartBand.jsx'
+import { MOBILE } from '../lib/mobile.js'
+import { platformNow } from '../lib/platform-now.js'
 import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -2838,8 +2840,9 @@ function ActiveWorkout() {
       ? <div className="wprog-row"><div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
         <span className="wvol" data-session-volume>{fmtVol(vol, S.unit)}</span></div>
       : <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>}
-    {/* The Apple Watch's heart rate through the session, one line until it is opened. Off in Settings → Workout. */}
-    {!(A.backfill || editing) && isOn(S, 'health') && S.heartCurve !== false && <HeartBand A={A} />}
+    {/* The Apple Watch's heart rate through the session, one line until it is opened: the iPhone app
+        only, the one the watch streams to. Off in Settings → Workout. */}
+    {!(A.backfill || editing) && MOBILE && platformNow() === 'ios' && isOn(S, 'watch') && isOn(S, 'health') && S.heartCurve !== false && <HeartBand A={A} />}
     {/* In the list the chips ride in the pinned header, so any exercise is one tap away from
         anywhere in a long stack. */}
     {listMode && chipRow}

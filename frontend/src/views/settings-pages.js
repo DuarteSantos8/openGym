@@ -180,7 +180,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Preview before starting', icon: 'list', tint: 'var(--blue)', kw: 'preview look first before start routine exercises weights confirm' },
   { page: 'workout', title: 'Daily check-in', icon: 'moon', tint: 'var(--indigo)', mod: 'health', kw: 'check in checkin daily form readiness sleep energy soreness sore stress mood lighter deload tired how do you feel watch wrist' },
   { page: 'workout', title: 'Weigh in before workouts', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'body weight weigh scale start' },
-  { page: 'workout', title: 'Heart rate curve', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'heart rate pulse bpm curve graph zones watch live during workout band line hide' },
+  { page: 'workout', title: 'Heart rate curve', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'heart rate pulse bpm curve graph zones watch live during workout band line hide', when: c => c.ios && (!c.mod || c.mod('watch')) },
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
   { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
