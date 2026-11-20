@@ -23,10 +23,11 @@ final class PhoneRestAlarmTests: XCTestCase {
     }
 
     func testASetTickedOnTheWatchBringsItsRest() {
+        // A new rest: the Lock Screen counts it down, the old alarm (named for the set just done) only comes down.
         let tick: [String: Any] = ["type": "setDone", "wid": "w1", "restEnd": now + 90_000, "at": now, "off": 0.0]
-        XCTAssertEqual(PhoneRestAlarm.change(tick, wid: "w1", since: since, now: now)?.end, now + 90_000)
+        XCTAssertEqual(PhoneRestAlarm.change(tick, wid: "w1", since: since, now: now), .init(at: now, end: now + 90_000, sameRest: false))
         let none: [String: Any] = ["type": "setDone", "wid": "w1", "restEnd": 0.0, "at": now, "off": 0.0]
-        XCTAssertEqual(PhoneRestAlarm.change(none, wid: "w1", since: since, now: now), .init(at: now, end: nil), "no rest after it")
+        XCTAssertEqual(PhoneRestAlarm.change(none, wid: "w1", since: since, now: now), .init(at: now, end: nil, sameRest: false), "no rest after it")
         let fix: [String: Any] = ["type": "setDone", "wid": "w1", "at": now, "off": 0.0]
         XCTAssertNil(PhoneRestAlarm.change(fix, wid: "w1", since: since, now: now), "a fixed set changes no rest")
     }

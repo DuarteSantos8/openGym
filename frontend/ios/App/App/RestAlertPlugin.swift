@@ -409,10 +409,15 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             let wid = UserDefaults.standard.string(forKey: WatchBridgePlugin.idleWidKey)
             guard let c = PhoneRestAlarm.change(ev, wid: wid, since: p.since, now: Date().timeIntervalSince1970 * 1000) else { return }
             self.withdraw()
-            if let end = c.end {
+            if c.sameRest, let end = c.end {
                 self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
                 self.post()
+            } else if c.sameRest, !p.cues.isEmpty {
+                // Skip before a hold that starts by itself: its count-in now, the chain after it (as restSkipped).
+                self.pending = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.post()
             } else {
+                // A Skip, or a set ticked at the wrist: that set's new rest is the page's to book when it wakes, named for the next set.
                 self.pending = nil
             }
             if #available(iOS 17.0, *), let wid = wid { Task { await LiveActivityTick.followWatchRest(wid: wid, end: c.end) } }

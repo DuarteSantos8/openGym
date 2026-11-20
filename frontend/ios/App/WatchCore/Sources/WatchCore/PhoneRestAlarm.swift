@@ -2,18 +2,21 @@ import Foundation
 
 /*
  * The iPhone's rest alarm while its page sleeps (the phone locked in a pocket): the watch's +15,
- * −15 or Skip (a `rest` event) and the rest a set ticked at the wrist starts (a `setDone`'s
- * `restEnd`) move the alarm the page booked, so the phone rings when the watch does, not at the
- * old end. The page applies the same event when it wakes (lib/watch-sync.js); this only keeps the
+ * −15 or Skip (a `rest` event) moves the alarm the page booked, so the phone rings when the watch
+ * does, not at the old end; the rest a set ticked at the wrist starts (a `setDone`'s `restEnd`)
+ * takes it away. The page applies the same event when it wakes (lib/watch-sync.js); this only keeps the
  * alarm in step until then. Compiled into the iPhone app (App.xcodeproj, RestAlertPlugin), tested
  * in PhoneRestAlarmTests.
  */
 enum PhoneRestAlarm {
     /// The watch's change: when it was made and the rest's new end (ms, the phone's clock), nil
     /// for no rest any more (Skip, −15 to nothing, a set with no rest after it, or one over already).
+    /// `sameRest`: +15, −15 or Skip on the rest the alarm is for, which moves with it; false for a
+    /// set ticked at the wrist, whose new rest the old alarm (named for that set) only comes down for.
     struct Change: Equatable {
         let at: Double
         let end: Double?
+        var sameRest = true
     }
 
     /// Beyond this the watch's clock is wrong, not off: left as it is (watch-sync.js MAX_OFF_MS).
@@ -37,8 +40,9 @@ enum PhoneRestAlarm {
             guard let e = num(ev["restEnd"]) else { return nil }
             end = e > 0 ? e : nil
         }
-        guard let e = end, e - off > now + 500 else { return Change(at: t - off, end: nil) }
-        return Change(at: t - off, end: e - off)
+        let same = type == "rest"
+        guard let e = end, e - off > now + 500 else { return Change(at: t - off, end: nil, sameRest: same) }
+        return Change(at: t - off, end: e - off, sameRest: same)
     }
 
     private static func num(_ v: Any?) -> Double? {
