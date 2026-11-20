@@ -40,7 +40,12 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
     and no `hr`, so the phone keeps the set's heart rate. A long press on Done skips the set.
   - Rest (on the set page): the time big, a draining bar, Up next with what to load, effort chips
     (RIR 0/1/2/3+ or RPE 10/9/8/≤7, as the phone logs), −15 s / Skip / +15 s, which ignore taps for
-    a second after Done. ‹ opens the set just done to fix it while the rest runs on.
+    a second after Done. ‹ opens the set just done to fix it while the rest runs on. A chip rates
+    the whole value at once and arms its capsule, `(−) RIR 1.5 (+)`: the − and + buttons (always
+    there, many watches have no rotary) and the rotary move it by 0.5 inside RIR 0 to 5 / RPE 6 to 10.
+    A burst of steps is sent once, 0.6 s after the last; 5 s after the last touch the capsule settles
+    to `RIR 1.5 ✓` and a tap arms it again. In the fix view the effort pill arms the same way, from
+    `–` the first step lands on RIR 2 / RPE 8, and one step below the floor clears it.
   - Hold: the seconds left big, a teal bar whose last 5 s turn orange, a tick for each of the last
     three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
     phone: a 3-2-1 after the rest, then the hold.

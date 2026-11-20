@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -97,6 +98,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
@@ -132,6 +134,7 @@ import ch.duartesantos.opengym.wear.SetNav
 import ch.duartesantos.opengym.wear.SetRef
 import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
+import ch.duartesantos.opengym.wear.TouchLock
 import ch.duartesantos.opengym.wear.HeldRemoval
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
@@ -561,7 +564,9 @@ fun SetPanel(onScreen: Boolean) {
         return
     }
     val focus = remember { FocusRequester() }
-    LaunchedEffect(ref, fixing, onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
+    // The effort being fixed, armed: its capsule holds the crown (and gives it back when it settles).
+    var effortArmed by remember(ref, fixing) { mutableStateOf(false) }
+    LaunchedEffect(ref, fixing, onScreen, ambient, effortArmed) { if (onScreen && !ambient && !effortArmed) try { focus.requestFocus() } catch (_: Exception) {} }
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
     // The exercise's animation beside its name, as on the Apple Watch (the phone's "show animations").
@@ -632,7 +637,8 @@ fun SetPanel(onScreen: Boolean) {
                             maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     }
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu, onPill = { pill = it })
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu, onPill = { pill = it },
+                        effortArmed = effortArmed, onEffortArmed = { effortArmed = it })
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (sides && !tight) SideSwitch(fix?.side)
                     if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
@@ -656,7 +662,7 @@ fun SetPanel(onScreen: Boolean) {
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
-                    if (effortLine && effortKind != null) FixEffort(effortKind, fix)
+                    if (effortLine && effortKind != null) FixEffort(effortKind, fix, effortArmed, { effortArmed = it })
                     if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 12.sp, lines = 1)
                 }
             }
@@ -682,20 +688,22 @@ fun SetPanel(onScreen: Boolean) {
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
                       effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false,
-                      onPill: (Rect) -> Unit = {}) {
+                      onPill: (Rect) -> Unit = {}, effortArmed: Boolean = false, onEffortArmed: (Boolean) -> Unit = {}) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
+    // The effort armed on this line takes all of it (as it grows over "Done" on the Apple Watch).
+    val grown = fixing && effortArmed && effortInline != null
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
         // With the L/R switch here, the pill shrinks (and loses its "n/of") rather than push the switch out.
-        SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
+        if (!grown) SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
         if (sideSwitch) SideSwitch(fix?.side)
-        else if (fixing && effortInline != null) FixEffort(effortInline, fix)
+        else if (fixing && effortInline != null) FixEffort(effortInline, fix, effortArmed, onEffortArmed, if (grown) Modifier.weight(1f) else Modifier)
         else if (fixing) Tag(stringResource(R.string.done), a.accent)
         if (partner != null && !fixing) PartnerLine(partner, small = true)
-        if (fixing && rest != null) {
+        if (fixing && rest != null && !grown) {
             // The rest runs on while a set is fixed: its time stays in sight.
             val now = rememberNow()
             Text(clock(kotlin.math.ceil(rest.leftMs(now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
@@ -757,22 +765,28 @@ private fun SideSwitch(side: String?) {
     }
 }
 
-/** The effort on a set being fixed: a tap goes through the quick ratings and back to as it was. */
+/** The effort on a set being fixed: a tap arms it like the rest's capsule; one step below the floor clears it to "–". */
 @Composable
-private fun FixEffort(kind: String, fix: Fix?) {
+private fun FixEffort(kind: String, fix: Fix?, armed: Boolean, onArmed: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val a = LocalAccent.current
     val v = fix?.effort
+    if (armed) {
+        ArmedEffort(kind, v, 30.dp, ticks = false, clear = true, onSettle = { onArmed(false) }, modifier = modifier,
+            onStep = { d ->
+                // read live: a fast turn steps twice before the screen has the first
+                val f = WearStore.fix.value
+                val n = Effort.step(kind, f?.effort, d, true)
+                (f != null && n != f.effort).also { if (it) WearStore.editFix(f!!.copy(effort = n)) }
+            })
+        return
+    }
     val color = v?.let { Og.effortColor(Effort.band(kind, it), a.accent) } ?: Og.Label2
     Box(
         Modifier.heightIn(min = 26.dp).clip(CircleShape).background(color.copy(alpha = 0.18f))
-            .combinedClickable(role = Role.Button) {
-                val chips = Effort.chips(kind)
-                val i = v?.let { chips.indexOf(it) } ?: -1
-                fix?.let { WearStore.editFix(it.copy(effort = if (i < 0) chips.first() else chips.getOrNull(i + 1))) }
-            }.padding(horizontal = 10.dp),
+            .combinedClickable(role = Role.Button) { onArmed(true) }.padding(horizontal = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text("${Effort.name(kind)} ${v?.let { Effort.chipLabel(kind, it) } ?: "–"}", color = color, fontSize = 12.sp,
+        Text("${Effort.name(kind)} ${v?.let { Effort.valueLabel(it) } ?: "–"}", color = color, fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold, style = Og.Number)
     }
 }
@@ -951,8 +965,9 @@ fun RestView(rest: Rest) {
             }
             // A fixed place for the effort, so rating it moves nothing below.
             // Round: the chips sit low, where the circle narrows; at a large font their outer corners met the edge (45 mm emulator).
-            if (rate) Box(Modifier.fillMaxWidth().padding(horizontal = if (round) 10.dp else 0.dp).height(if (roomy) 46.dp else 30.dp).alpha(if (dim) 0f else 1f), contentAlignment = Alignment.Center) {
-                if (!dim) EffortChips(roomy)
+            // Always On: only a rating already made stays, as a thin outline.
+            if (rate) Box(Modifier.fillMaxWidth().padding(horizontal = if (round) 10.dp else 0.dp).height(if (roomy) 46.dp else 30.dp).alpha(if (dim && rated == null) 0f else 1f), contentAlignment = Alignment.Center) {
+                if (!dim || rated != null) EffortChips(roomy)
             }
             if (next) UpNext(roomy)
         }
@@ -1000,38 +1015,136 @@ private fun UpNext(roomy: Boolean) {
     }
 }
 
-/** "RIR · How hard was that set?" and four chips; once rated, the rating in a small capsule that opens the chips again. */
+/**
+ * "RIR · How hard was that set?" and four chips. A chip rates the whole value at once and arms the capsule:
+ * - / + (and the rotary, where the watch has one) move it by half a step; a burst of steps goes out once.
+ * Five seconds after the last touch it settles to "RIR 1.5 ✓" (one tap arms it again).
+ */
 @Composable
 private fun EffortChips(roomy: Boolean) {
     val s by WearStore.state.collectAsState()
     val rated by WearStore.lastRated.collectAsState()
-    val last by WearStore.lastLogged.collectAsState()
+    val lastNow by WearStore.lastLogged.collectAsState()
     val a = LocalAccent.current
+    val dim = LocalAmbient.current
     val kind = s.settings.effort ?: "rir"
-    var again by remember(last) { mutableStateOf(false) }
-    val r = rated
-    if (r != null && !again) {
-        val c = Og.effortColor(Effort.band(kind, r), a.accent)
-        Row(
-            Modifier.heightIn(min = 28.dp).clip(CircleShape).background(c.copy(alpha = 0.18f))
-                .combinedClickable(role = Role.Button) { again = true }.padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("${Effort.name(kind)} ${Effort.chipLabel(kind, r)}", color = c, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, style = Og.Number)
-            Spacer(Modifier.width(4.dp)); Glyph(G.CHECK, c, 10.dp)
-        }
-    } else Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    val h = if (roomy) 38.dp else 30.dp
+    val last = lastNow      // this set, kept: a burst still going out when the next set is done must not rate that one
+    var armed by remember(last) { mutableStateOf(false) }
+    val cur = remember(last) { mutableStateOf(rated) }
+    val pending = remember(last) { mutableStateOf<Double?>(null) }
+    fun send() { pending.value?.let { pending.value = null; WearStore.rateLast(it, last, tap = false) } }
+    LaunchedEffect(pending.value) { if (pending.value != null) { kotlinx.coroutines.delay(Effort.SEND_MS); send() } }
+    // Any exit sends at once: the page leaves, the rest ends. A rest ending under a turn also kills the crown for a moment.
+    DisposableEffect(last) { onDispose { send(); if (armed) WearStore.lockCrown() } }
+    LaunchedEffect(dim) { if (dim) { send(); armed = false } }   // wrist down
+    val v = cur.value ?: rated
+    if (v == null) Column(horizontalAlignment = Alignment.CenterHorizontally) {
         if (roomy) Quiet("${Effort.name(kind)} · " + stringResource(R.string.how_hard), 12.sp, lines = 1)
         Row(Modifier.fillMaxWidth().padding(horizontal = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            for (v in Effort.chips(kind)) {
-                val c = Og.effortColor(Effort.band(kind, v), a.accent)
+            for (c in Effort.chips(kind)) {
+                val color = Og.effortColor(Effort.band(kind, c), a.accent)
                 Box(
-                    Modifier.weight(1f).height(28.dp).clip(CircleShape).background(c.copy(alpha = 0.18f))
-                        .combinedClickable(role = Role.Button) { WearStore.rateLast(v); again = false }
-                        .semantics { contentDescription = "${Effort.name(kind)} ${Effort.chipLabel(kind, v)}" },
+                    Modifier.weight(1f).height(28.dp).clip(CircleShape).background(color.copy(alpha = 0.18f))
+                        .combinedClickable(role = Role.Button) { if (WearStore.rateLast(c, last)) { cur.value = c; armed = true } }
+                        .semantics { contentDescription = "${Effort.name(kind)} ${Effort.chipLabel(kind, c)}" },
                     contentAlignment = Alignment.Center,
-                ) { Text(Effort.chipLabel(kind, v), color = c, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, style = Og.Number) }
+                ) { Text(Effort.chipLabel(kind, c), color = color, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, style = Og.Number) }
             }
+        }
+    }
+    else if (armed && !dim) ArmedEffort(kind, v, h, ticks = roomy, clear = false, onSettle = { send(); armed = false },
+        onStep = { d ->
+            val n = Effort.step(kind, cur.value, d, false)
+            (n != null && n != cur.value).also { if (it) { cur.value = n; pending.value = n } }
+        })
+    else {
+        val c = Og.effortColor(Effort.band(kind, v), a.accent)
+        val big = LocalDensity.current.fontScale > 1.3f
+        val said = stringResource(R.string.effort) + ", " + Effort.name(kind) + " " + Effort.valueLabel(v) + ". " + stringResource(R.string.tap_to_change)
+        // Full width, like the chips it replaces; the whole row is the target.
+        Row(
+            Modifier.fillMaxWidth().height(h).clip(CircleShape).background(if (dim) Color.Transparent else c.copy(alpha = 0.18f))
+                .border(if (dim) 1.dp else 1.5.dp, c.copy(alpha = if (dim) 1f else 0.6f), CircleShape)
+                .combinedClickable(enabled = !dim, role = Role.Button) { armed = true }
+                .semantics { contentDescription = said },
+            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text((if (big) "" else Effort.name(kind) + " ") + Effort.valueLabel(v), color = c.copy(alpha = if (dim) 0.85f else 1f), fontSize = 16.sp,
+                fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
+            Spacer(Modifier.width(6.dp)); Glyph(G.CHECK, c, 12.dp)
+        }
+    }
+}
+
+/**
+ * An effort being moved: (-) RIR 1.5 (+) in a capsule. The - and + are always here, since many watches have no
+ * rotary; where there is one it moves the value too, by half a step, while this is on screen. `onStep` says whether
+ * the value moved (at an end it does not: a light buzz). Lets go five seconds after the last touch (`onSettle`).
+ * TalkBack gets one adjustable node, not the two buttons.
+ */
+@Composable
+private fun ArmedEffort(kind: String, v: Double?, h: Dp, ticks: Boolean, clear: Boolean, onStep: (Int) -> Boolean, onSettle: () -> Unit,
+                        modifier: Modifier = Modifier) {
+    val view = LocalView.current
+    val c = v?.let { Og.effortColor(Effort.band(kind, it), LocalAccent.current.accent) } ?: Og.Label2
+    val shown = v?.let { Effort.valueLabel(it) } ?: "–"
+    val big = LocalDensity.current.fontScale > 1.3f
+    val effort = stringResource(R.string.effort)
+    // The thumb that armed this is still down: the buttons wait a second.
+    val lock = remember { TouchLock().also { it.lock(System.currentTimeMillis()) } }
+    var touched by remember { mutableIntStateOf(0) }
+    LaunchedEffect(touched) { kotlinx.coroutines.delay(Effort.SETTLE_MS); onSettle() }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { try { focus.requestFocus() } catch (_: Exception) {} }
+    fun step(d: Int, button: Boolean) {
+        touched++
+        WearStore.ackRestOver()
+        if (!onStep(d) || button) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+    }
+    val adjust = adjustActions { d -> step(d, false) }
+    val disc = h - 2.dp
+    Row(
+        modifier.fillMaxWidth().height(h).clip(CircleShape).background(c.copy(alpha = 0.18f)).border(2.dp, c, CircleShape)
+            .crown(focus) { step(it, false) }
+            .semantics(mergeDescendants = true) {
+                contentDescription = effort
+                stateDescription = Effort.name(kind) + " " + shown
+                if (adjust != null) customActions = adjust
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        EffortDisc(false, c, disc, Effort.step(kind, v, -1, clear) == v, lock) { step(-1, true) }
+        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Text((if (big) "" else Effort.name(kind) + " ") + shown, color = c, fontSize = 16.sp, fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
+            // 1 and 1.5 share a colour: the tick says which. Only where there is the height for it.
+            if (ticks) {
+                val (n, at) = Effort.ticks(kind, v)
+                Canvas(Modifier.fillMaxWidth(0.8f).height(5.dp)) {
+                    val gap = size.width / (n - 1)
+                    for (i in 0 until n) {
+                        val tall = i == at
+                        drawLine(if (tall) c else c.copy(alpha = 0.4f), Offset(i * gap, if (tall) 0f else size.height * 0.45f), Offset(i * gap, size.height),
+                            1.5.dp.toPx(), StrokeCap.Round)
+                    }
+                }
+            }
+        }
+        EffortDisc(true, c, disc, Effort.step(kind, v, 1, clear) == v, lock) { step(1, true) }
+    }
+}
+
+/** A circle drawn as a stroke, concentric with the capsule's end, with - or + in it. The tap area is 44 dp wide, reaching inward. */
+@Composable
+private fun EffortDisc(plus: Boolean, color: Color, size: Dp, atEnd: Boolean, lock: TouchLock, onClick: () -> Unit) {
+    val ink = color.copy(alpha = if (atEnd) 0.35f else 1f)
+    Box(
+        Modifier.width(44.dp).fillMaxHeight().combinedClickable(role = Role.Button) { if (lock.allows(System.currentTimeMillis())) onClick() }
+            .clearAndSetSemantics {},
+        contentAlignment = if (plus) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Box(Modifier.padding(horizontal = 1.dp).size(size).border(1.5.dp, ink, CircleShape), contentAlignment = Alignment.Center) {
+            Glyph(if (plus) G.PLUS else G.MINUS, ink, size * 0.5f)
         }
     }
 }
