@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "Подход %lld · %@ будет потерян";
 "Set %lld removed" = "Подход %lld удалён";
 "at the end" = "в конце";
+"Crown: half steps" = "Digital Crown: полшага";
+"Highest" = "Максимум";
+"Lowest" = "Минимум";

@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "เซต %lld · %@ จะหายไป";
 "Set %lld removed" = "ลบเซต %lld แล้ว";
 "at the end" = "ท้ายสุด";
+"Crown: half steps" = "Digital Crown: ครึ่งขั้น";
+"Highest" = "สูงสุด";
+"Lowest" = "ต่ำสุด";

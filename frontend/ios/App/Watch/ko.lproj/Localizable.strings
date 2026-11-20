@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "%lld세트 · %@ 사라짐";
 "Set %lld removed" = "%lld세트 삭제됨";
 "at the end" = "맨 끝에";
+"Crown: half steps" = "Digital Crown: 반 단계";
+"Highest" = "최고";
+"Lowest" = "최저";

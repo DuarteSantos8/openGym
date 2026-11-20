@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "المجموعة %lld · %@ ستُفقد";
 "Set %lld removed" = "تمت إزالة المجموعة %lld";
 "at the end" = "في النهاية";
+"Crown: half steps" = "Digital Crown: نصف خطوة";
+"Highest" = "الأعلى";
+"Lowest" = "الأدنى";

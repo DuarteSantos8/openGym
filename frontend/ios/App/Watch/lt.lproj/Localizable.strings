@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "%lld serija · %@ bus prarasta";
 "Set %lld removed" = "Pašalinta %lld serija";
 "at the end" = "pabaigoje";
+"Crown: half steps" = "Digital Crown: pusės žingsnio";
+"Highest" = "Didžiausia";
+"Lowest" = "Mažiausia";

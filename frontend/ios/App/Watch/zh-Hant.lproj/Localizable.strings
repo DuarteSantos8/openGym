@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "第 %lld 組 · %@ 將遺失";
 "Set %lld removed" = "已刪除第 %lld 組";
 "at the end" = "在末尾";
+"Crown: half steps" = "數位錶冠：半步";
+"Highest" = "最高";
+"Lowest" = "最低";

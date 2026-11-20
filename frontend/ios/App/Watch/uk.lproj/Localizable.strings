@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "Підхід %lld · %@ буде втрачено";
 "Set %lld removed" = "Підхід %lld видалено";
 "at the end" = "у кінці";
+"Crown: half steps" = "Digital Crown: пів кроку";
+"Highest" = "Максимум";
+"Lowest" = "Мінімум";
