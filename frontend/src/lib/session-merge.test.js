@@ -32,9 +32,18 @@ describe('buildCombinedEntries', () => {
     expect(buildCombinedEntries(st, null)).toMatchObject({ entries: [], routineIds: [] })
   })
 
-  it('a single-element list matches the plain buildSessionEntries path (bar the rid stamp)', () => {
-    const combined = buildCombinedEntries(st, ['r1']).entries.map(({ rid, ...e }) => e)
+  it('a single-element list matches the plain buildSessionEntries path (bar the rid and slot stamps)', () => {
+    const combined = buildCombinedEntries(st, ['r1']).entries.map(({ rid, slotAt, ...e }) => e)
     expect(combined).toEqual(buildSessionEntries(st, st.routines[0]))
+  })
+
+  it('stamps each entry with its slot in its own routine, and keeps the routines as they started', () => {
+    const { entries, startSlots } = buildCombinedEntries(st, ['r1', 'rehab'])
+    for (const rid of ['r1', 'rehab']) {
+      const own = entries.filter(e => e.rid === rid)
+      expect(own.map(e => e.slotAt)).toEqual(own.map((_, i) => i))
+      expect(startSlots[rid]).toEqual(st.routines.find(r => r.id === rid).ex.map(x => x.id))
+    }
   })
 
   it('carries an excluded routine’s per-entry noProg through the merge', () => {

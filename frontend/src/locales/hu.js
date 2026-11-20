@@ -5900,4 +5900,16 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Csere: {0} → {1}',
+  'Removed: {0}': 'Eltávolítva: {0}',
+  'Added: {0}': 'Hozzáadva: {0}',
+  'Order changed': 'Megváltozott a sorrend',
+  '“{0}” updated': '„{0}” frissítve',
+  'The routine changed since, so it stays as it is.': 'A rutin azóta megváltozott, így marad, ahogy van.',
+  '“{0}” already matches this workout.': '„{0}” már megegyezik ezzel az edzéssel.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'Legközelebb a rutin ezekkel a változásokkal indul. Ez az edzés úgy marad, ahogy rögzítetted.',
+  'Changed from your routine': 'Eltér a rutinodtól',
+  '“{0}” now matches this workout': '„{0}” most már megegyezik ezzel az edzéssel',
+  'Update “{0}”': '„{0}” frissítése',
 }

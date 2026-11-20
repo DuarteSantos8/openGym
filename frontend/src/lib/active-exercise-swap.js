@@ -20,7 +20,8 @@ export function swapActiveExercise(active, index, replacement, {
   const current = active.entries[index]
   if (!hasLoggedSet(current)) {
     const metadata = Object.fromEntries(Object.entries(current).filter(([key]) => (
-      !['id', 'target', 'plan', 'planned', 'carried', 'sets', 'sg'].includes(key)
+      // `swapPlan` described the plan of the exercise being replaced (lib/routine-update.js).
+      !['id', 'target', 'plan', 'planned', 'carried', 'sets', 'sg', 'swapPlan'].includes(key)
     )))
     active.entries[index] = { ...metadata, ...replacement, ...(current.sg ? { sg: current.sg } : {}) }
     active.cur = index
@@ -40,6 +41,8 @@ export function swapActiveExercise(active, index, replacement, {
     // A swap does not change which routine the slot belongs to — carry its `rid` the same
     // way `sg` is carried, so a combined session's WorkoutDetail groups stay contiguous.
     ...(current.rid ? { rid: current.rid } : {}),
+    // Nor which slot of it: the replacement is what that slot became (lib/routine-update.js).
+    ...(Number.isInteger(current.slotAt) ? { slotAt: current.slotAt } : {}),
     ...(keepGroup ? { sg: current.sg } : {})
   })
   active.cur = insertAt

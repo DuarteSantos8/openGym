@@ -4326,6 +4326,18 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Troca: {0} → {1}',
+  'Removed: {0}': 'Removido: {0}',
+  'Added: {0}': 'Adicionado: {0}',
+  'Order changed': 'Ordem alterada',
+  '“{0}” updated': '“{0}” atualizada',
+  'The routine changed since, so it stays as it is.': 'A rotina mudou desde então, então fica como está.',
+  '“{0}” already matches this workout.': '“{0}” já corresponde a este treino.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'Da próxima vez, a rotina começa com essas mudanças. Este treino fica como você registrou.',
+  'Changed from your routine': 'Diferente da sua rotina',
+  '“{0}” now matches this workout': '“{0}” agora corresponde a este treino',
+  'Update “{0}”': 'Atualizar “{0}”',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

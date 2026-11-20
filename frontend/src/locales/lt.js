@@ -5893,4 +5893,16 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  "Swap: {0} → {1}": "Pakeista: {0} → {1}",
+  "Removed: {0}": "Pašalinta: {0}",
+  "Added: {0}": "Pridėta: {0}",
+  "Order changed": "Pakeista tvarka",
+  "“{0}” updated": "„{0}“ atnaujinta",
+  "The routine changed since, so it stays as it is.": "Programa nuo to laiko pasikeitė, todėl lieka tokia, kokia yra.",
+  "“{0}” already matches this workout.": "„{0}“ jau atitinka šią treniruotę.",
+  "Next time, the routine starts with these changes. This workout stays as you logged it.": "Kitą kartą programa prasidės su šiais pakeitimais. Ši treniruotė lieka tokia, kokią užrašėte.",
+  "Changed from your routine": "Kitaip nei jūsų programoje",
+  "“{0}” now matches this workout": "„{0}“ dabar atitinka šią treniruotę",
+  "Update “{0}”": "Atnaujinti „{0}“",
 }

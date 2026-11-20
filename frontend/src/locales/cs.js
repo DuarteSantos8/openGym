@@ -5863,4 +5863,16 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Výměna: {0} → {1}',
+  'Removed: {0}': 'Odebráno: {0}',
+  'Added: {0}': 'Přidáno: {0}',
+  'Order changed': 'Změněné pořadí',
+  '“{0}” updated': '„{0}“ aktualizováno',
+  'The routine changed since, so it stays as it is.': 'Sestava se mezitím změnila, takže zůstává, jak je.',
+  '“{0}” already matches this workout.': '„{0}“ už odpovídá tomuto tréninku.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'Příště sestava začne s těmito změnami. Tento trénink zůstane, jak jste ho zapsali.',
+  'Changed from your routine': 'Změněno oproti sestavě',
+  '“{0}” now matches this workout': '„{0}“ teď odpovídá tomuto tréninku',
+  'Update “{0}”': 'Aktualizovat „{0}“',
 }

@@ -5862,4 +5862,16 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
-};
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  "Swap: {0} → {1}": "Tukar: {0} → {1}",
+  "Removed: {0}": "Dihapus: {0}",
+  "Added: {0}": "Ditambahkan: {0}",
+  "Order changed": "Urutan berubah",
+  "“{0}” updated": "“{0}” diperbarui",
+  "The routine changed since, so it stays as it is.": "Rutinitas sudah berubah sejak itu, jadi tetap seperti sekarang.",
+  "“{0}” already matches this workout.": "“{0}” sudah sesuai dengan latihan ini.",
+  "Next time, the routine starts with these changes. This workout stays as you logged it.": "Lain kali, rutinitas dimulai dengan perubahan ini. Latihan ini tetap seperti yang kamu catat.",
+  "Changed from your routine": "Berbeda dari rutinitasmu",
+  "“{0}” now matches this workout": "“{0}” sekarang sesuai dengan latihan ini",
+  "Update “{0}”": "Perbarui “{0}”",
+}

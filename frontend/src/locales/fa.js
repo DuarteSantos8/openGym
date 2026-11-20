@@ -5863,4 +5863,16 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  "Swap: {0} → {1}": "جایگزینی: {0} ← {1}",
+  "Removed: {0}": "حذف شد: {0}",
+  "Added: {0}": "اضافه شد: {0}",
+  "Order changed": "ترتیب تغییر کرد",
+  "“{0}” updated": "«{0}» به‌روزرسانی شد",
+  "The routine changed since, so it stays as it is.": "روتین از آن زمان تغییر کرده، پس همان‌طور که هست می‌ماند.",
+  "“{0}” already matches this workout.": "«{0}» از قبل با این تمرین یکی است.",
+  "Next time, the routine starts with these changes. This workout stays as you logged it.": "دفعهٔ بعد روتین با این تغییرها شروع می‌شود. این تمرین همان‌طور که ثبتش کردی می‌ماند.",
+  "Changed from your routine": "متفاوت با روتین تو",
+  "“{0}” now matches this workout": "«{0}» حالا با این تمرین یکی است",
+  "Update “{0}”": "به‌روزرسانی «{0}»",
 }

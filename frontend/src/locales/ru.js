@@ -5901,4 +5901,16 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Замена: {0} → {1}',
+  'Removed: {0}': 'Убрано: {0}',
+  'Added: {0}': 'Добавлено: {0}',
+  'Order changed': 'Порядок изменён',
+  '“{0}” updated': '«{0}» обновлена',
+  'The routine changed since, so it stays as it is.': 'Программа с тех пор изменилась, поэтому остаётся как есть.',
+  '“{0}” already matches this workout.': '«{0}» уже совпадает с этой тренировкой.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'В следующий раз программа начнётся с этими изменениями. Эта тренировка останется такой, как вы её записали.',
+  'Changed from your routine': 'Не так, как в программе',
+  '“{0}” now matches this workout': '«{0}» теперь совпадает с этой тренировкой',
+  'Update “{0}”': 'Обновить «{0}»',
 }

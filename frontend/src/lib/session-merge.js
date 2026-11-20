@@ -16,8 +16,12 @@ import { buildSessionEntries } from './session-start.js'
  * - concatenates each routine's entries in list order
  * - stamps `entry.rid` = that routine's id on every entry
  *
- * Returns `{ entries, routineIds, routines }` — `routineIds` / `routines` are the resolved,
- * de-duplicated list, so a caller stores exactly what was built.
+ * - stamps `entry.slotAt` = the routine slot it was built from, and returns those routines'
+ *   exercises as `startSlots` for `active.startSlots`, so the finish summary can tell what the
+ *   session swapped, dropped or reordered (lib/routine-update.js)
+ *
+ * Returns `{ entries, routineIds, routines, startSlots }` — `routineIds` / `routines` are the
+ * resolved, de-duplicated list, so a caller stores exactly what was built.
  */
 export function buildCombinedEntries(st, routineIds) {
   const seen = new Set()
@@ -26,9 +30,18 @@ export function buildCombinedEntries(st, routineIds) {
     .map(id => (st.routines || []).find(r => r.id === id))
     .filter(Boolean)
   const entries = routines.flatMap(r =>
-    buildSessionEntries(st, r).map(e => ({ ...e, rid: r.id }))
+    buildSessionEntries(st, r).map((e, i) => ({ ...e, rid: r.id, slotAt: i }))
   )
-  return { entries, routineIds: routines.map(r => r.id), routines }
+  return { entries, routineIds: routines.map(r => r.id), routines, startSlots: startSlotsOf(routines) }
+}
+
+/** The routines' exercises at the start of a session, as `active.startSlots` keeps them. */
+export function startSlotsOf(routines) {
+  const out = {}
+  for (const r of Array.isArray(routines) ? routines : []) {
+    if (r?.id != null && Array.isArray(r.ex)) out[r.id] = r.ex.map(x => x?.id ?? null)
+  }
+  return out
 }
 
 /**

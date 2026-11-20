@@ -5863,4 +5863,16 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
-};
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Đổi: {0} → {1}',
+  'Removed: {0}': 'Đã bỏ: {0}',
+  'Added: {0}': 'Đã thêm: {0}',
+  'Order changed': 'Đã đổi thứ tự',
+  '“{0}” updated': 'Đã cập nhật “{0}”',
+  'The routine changed since, so it stays as it is.': 'Lịch tập đã thay đổi từ lúc đó, nên giữ nguyên như hiện tại.',
+  '“{0}” already matches this workout.': '“{0}” đã khớp với buổi tập này.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'Lần sau, lịch tập bắt đầu với những thay đổi này. Buổi tập này giữ nguyên như bạn đã ghi.',
+  'Changed from your routine': 'Khác với lịch tập của bạn',
+  '“{0}” now matches this workout': '“{0}” giờ đã khớp với buổi tập này',
+  'Update “{0}”': 'Cập nhật “{0}”',
+}

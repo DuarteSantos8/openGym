@@ -62,5 +62,6 @@ export function leadEntries(S, lead) {
   if (!lead?.ex?.length) return []
   const want = new Set(lead.ex.map(x => `${x.rid}|${x.id}`))
   const rids = [...new Set(lead.ex.map(x => x.rid))]
-  return buildCombinedEntries(S, rids).entries.filter(e => want.has(`${e.rid}|${e.id}`))
+  // Leftovers of another day stand for no slot of today's routines (lib/routine-update.js).
+  return buildCombinedEntries(S, rids).entries.filter(e => want.has(`${e.rid}|${e.id}`)).map(({ slotAt: _slot, ...e }) => e)
 }
