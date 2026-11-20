@@ -150,6 +150,11 @@ module Actions {
     function followTick() {
         var t = Core.ptick;
         Core.ptick = null;
+        // The set this hold runs for was logged on the phone (its own hold ended first): that is
+        // this hold's end too, not a second set on the one after it (Discord Mircuz).
+        if (G.hold != null && !Core.same(G.hold[2], upNow())) {
+            holdCancel();
+        }
         var s = G.state;
         var e = t == null ? null : Core.entryAt(s, t[0]);
         if (e == null) {
@@ -218,9 +223,22 @@ module Actions {
         G.hcd = null;
         Motion.stop();
         var sec = Ed.target();
-        G.hold = [System.getTimer(), sec == null || sec < 1 ? 30 : sec];
+        G.hold = [System.getTimer(), sec == null || sec < 1 ? 30 : sec, upNow()];
         Workout.newSet();
         WatchUi.requestUpdate();
+    }
+
+    //! The set up now, as "<exercise id>#<set><side>", or null: what a hold is for.
+    (:big)
+    function upNow() {
+        var s = G.state;
+        var e = Core.entryAt(s, s["pos"]);
+        var si = Core.setIndex(s, s["pos"]);
+        if (e == null || si == null) {
+            return null;
+        }
+        var sd = Core.sideUp(Core.dictOf(Core.arrOf(e["sets"])[si]));
+        return Core.strOf(e["id"]) + "#" + si + (sd == null ? "" : sd);
     }
 
     (:small)

@@ -55,7 +55,9 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
   with a Garmin link has protocol 2, so the other watches' first rules (a rest end followed once,
   the echo of the watch's own) are not on the Garmin.
 - A set ticked on the phone moves the watch on as its own Done would, on whichever exercise
-  (`Core.ptick`, `Actions.followTick`, #1149), and the phone moving to another exercise with every
+  (`Core.ptick`, `Actions.followTick`, #1149). A hold running here whose set the phone logged
+  meanwhile (the phone's own hold ended first) ends with it, unlogged, so one hold is one set
+  (`Actions.upNow`, the set a hold is for). And the phone moving to another exercise with every
   set from the watch in moves the watch too (#1066). A workout logged here with the phone away
   drains a few sets at a time: until the phone has them all, the watch keeps its own exercises
   rather than jumping back to the phone's window.
