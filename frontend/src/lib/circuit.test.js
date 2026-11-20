@@ -9,7 +9,7 @@ import { setSupersetMeta } from './superset-meta.js'
 import { cleanupSg } from './history.js'
 
 const S = (id, mode = 'reps', extra = {}) => ({ idx: Number(id), id: String(id), mode, reps: 10, w: 0, sec: 0, ...extra })
-const steps = (cfg, st) => Array.from({ length: Math.min(60, stepCount(cfg, st.length)) }, (_, i) => stepAt(cfg, st, i))
+const steps = (cfg, st) => Array.from({ length: Math.min(60, stepCount(cfg, st.length, st)) }, (_, i) => stepAt(cfg, st, i))
 
 describe('cleanCircuit', () => {
   it('drops anything that is not a circuit', () => {
@@ -52,6 +52,25 @@ describe('group storage', () => {
 })
 
 describe('steps', () => {
+  it('a timed per-side hold is two stations, so both sides run inside the round (#1394)', () => {
+    // Side Plank: time, 1 set, 30 s, per side, the default 10 s between sides.
+    const entries = [{
+      id: 'plank',
+      target: { mode: 'time', sec: 30, side: true, sets: 1 },
+      sets: [{ sec: 30, side: 'L', done: false }, { sec: 30, side: 'R', done: false }],
+    }]
+    const st = stationsOf(entries, [0], c => c.mode)
+    expect(st.map(s => [s.side, s.sec, s.slot, s.slots, s.afterRest])).toEqual([['L', 30, 0, 2, 10], ['R', 30, 1, 2, undefined]])
+
+    const all = steps({ mode: 'circuit', rounds: 1 }, st)
+    expect(all.map(s => s.k + (s.side ? 'S' : '') + (s.sec ?? '-'))).toEqual(['prep' + PREP_SEC, 'workS30', 'restS10', 'workS30'])
+
+    // Both sides land in the session as their own rows, in order.
+    const logged = [{ id: 'plank', sets: [{ sec: 30, side: 'L', done: false }, { sec: 30, side: 'R', done: false }] }]
+    logStation(logged, st[0], 0, { sec: 30, at: 1 })
+    logStation(logged, st[1], 0, { sec: 30, at: 2 })
+    expect(logged[0].sets.map(s => [s.side, s.sec, s.done])).toEqual([['L', 30, true], ['R', 30, true]])
+  })
   it('circuit: stations, the gap between them, the round rest, no rest after the last round', () => {
     const cfg = { mode: 'circuit', rounds: 2, gap: 15, roundRest: 60 }
     const st = [S(1), S(2, 'time', { sec: 30 })]

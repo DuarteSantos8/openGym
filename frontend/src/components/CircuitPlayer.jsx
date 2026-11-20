@@ -201,6 +201,8 @@ function Running({ S, run, close }) {
     <span className="vh" aria-live="polite">{word} {nameOf(focusSt?.id)}</span>
     <section className="cp-station" aria-label={showRest ? t('Up next') : nameOf(focusSt?.id)}>
       {showRest && <span className="cp-kicker">{t('Up next')}</span>}
+      {/* A per-side hold (#1394): which side this step is, on the work and on what comes next. */}
+      {focusSt?.side && <span className="cp-kicker">{focusSt.side === 'L' ? t('Left') : t('Right')}</span>}
       {ex && <div className="cp-media"><Media ex={ex} compact /></div>}
       <h2 className="cp-name">{nameOf(focusSt?.id)}</h2>
       {repsStation ? <div className="cp-reps">

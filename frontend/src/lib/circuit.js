@@ -143,40 +143,83 @@ export function roundsPerStation(cfg, stations) {
 /**
  * The stations of a group in a running session: what each one asks for in one round. `mode` is
  * the exercise's own (reps, time, cardio); `sec` a timed station's own length in a circuit/AMRAP.
+ *
+ * A timed hold with "per side" (#1394) is two stations, left and right, each with its own
+ * step: the hold is done once per side, so one station per round would run it once. `slot` and
+ * `slots` say where each side's row sits in the round, which is how logStation writes two rows.
  */
 export function stationsOf(entries, unit, modeOf) {
-  return (unit || []).map(idx => {
+  const out = []
+  for (const idx of unit || []) {
     const e = entries?.[idx] || {}
     const rows = (e.sets || []).filter(s => !isWarmupRow(s))
-    const first = rows.find(s => !s.done) || rows[0] || {}
     const target = e.target || {}
     const mode = modeOf ? modeOf({ ...target, id: e.id }) : (target.mode || 'reps')
-    return {
-      idx,
-      id: e.id,
-      mode,
-      reps: Math.max(0, Math.round(Number(first.r ?? target.reps) || 0)),
-      w: Number(first.w) || 0,
-      sec: Math.max(0, Math.round(Number(first.sec ?? target.sec) || 0)),
-      // A carry or a sled station (#1011): its metres per round.
-      m: Math.max(0, Math.round(Number(first.m ?? target.m) || 0)),
-      // Rows already ticked before the clock started (by hand, or a run before this one): the
-      // run's rounds are written after them, never over them.
-      base: rows.filter(s => s.done).length,
-    }
+    const base = rows.filter(s => s.done).length
+    const perSide = mode === 'time' && !!target.side
+    const sides = perSide ? ['L', 'R'] : [undefined]
+    sides.forEach((side, slot) => {
+      const mine = side ? (rows.find(s => !s.done && s.side === side) || rows.find(s => s.side === side) || {}) : null
+      const first = mine || rows.find(s => !s.done) || rows[0] || {}
+      out.push({
+        idx,
+        id: e.id,
+        mode,
+        reps: Math.max(0, Math.round(Number(first.r ?? target.reps) || 0)),
+        w: Number(first.w) || 0,
+        sec: Math.max(0, Math.round(Number(first.sec ?? target.sec) || 0)),
+        // A carry or a sled station (#1011): its metres per round.
+        m: Math.max(0, Math.round(Number(first.m ?? target.m) || 0)),
+        // Rows already ticked before the clock started (by hand, or a run before this one): the
+        // run's rounds are written after them, never over them.
+        base,
+        ...(side ? { side } : {}),
+        slot,
+        slots: sides.length,
+        // The break between the two sides of a hold, as the exercise's own settings say.
+        ...(side === 'L' ? { afterRest: sideRestOf(target) } : {}),
+      })
+    })
+  }
+  return out
+}
+
+/** The brief pause between the sides of a per-side hold: its own number, else the 10 s switch. */
+function sideRestOf(target) {
+  if (target?.sideRestOff === true) return 0
+  const own = Math.round(Number(target?.sideRestSec)) || 0
+  return own > 0 ? own : 10
+}
+
+/**
+ * One circuit round as the steps it really is: each station's work, the gap after it (or the break
+ * between the sides of a hold, #1394), and the round rest at the end when the group has one.
+ */
+function roundSegments(cfg, stations) {
+  // A caller that only has the station count (a routine's rows before a run) still gets the
+  // right shape: numbered stations with no per-side break, which only a station can carry.
+  const list = Array.isArray(stations) ? stations : Array.from({ length: Math.max(0, stations || 0) }, () => ({}))
+  const segs = []
+  list.forEach((s, m) => {
+    segs.push({ k: 'work', m })
+    if (s.afterRest > 0) segs.push({ k: 'rest', m, sec: s.afterRest, side: true })
+    else if (cfg.gap > 0 && m < list.length - 1) segs.push({ k: 'rest', m, sec: cfg.gap })
   })
+  if (cfg.roundRest > 0) segs.push({ k: 'rest', m: 0, sec: cfg.roundRest, round: true })
+  return segs
 }
 
 /** How many steps the run has (Infinity for AMRAP, which ends on its cap). */
-export function stepCount(cfg, n) {
+export function stepCount(cfg, n, stations) {
   if (!cfg || !n) return 0
   if (cfg.mode === 'amrap') return Infinity
-  return 1 + bodyCount(cfg, n)
+  return 1 + bodyCount(cfg, n, stations)
 }
 const warmOf = cfg => (cfg.program === 'runwalk' ? RUNWALK_WARM : 0)
-function bodyCount(cfg, n) {
+function bodyCount(cfg, n, stations) {
   if (cfg.mode === 'emom') return cfg.count
-  if (cfg.mode === 'circuit') return cfg.rounds * n + (cfg.gap > 0 ? cfg.rounds * (n - 1) : 0) + Math.max(0, cfg.rounds - 1) * (cfg.roundRest > 0 ? 1 : 0)
+  // The round rest is in every round but the last one.
+  if (cfg.mode === 'circuit') return cfg.rounds * roundSegments(cfg, stations || n).length - (cfg.roundRest > 0 ? 1 : 0)
   // intervals: work and rest after every work but the last; the warm-up walk first
   return (warmOf(cfg) ? 1 : 0) + cfg.rounds * n + (cfg.rest > 0 ? cfg.rounds * n - 1 : 0)
 }
@@ -188,7 +231,7 @@ function bodyCount(cfg, n) {
  */
 export function stepAt(cfg, stations, i) {
   const n = stations?.length || 0
-  if (!cfg || !n || i < 0 || i >= stepCount(cfg, n)) return null
+  if (!cfg || !n || i < 0 || i >= stepCount(cfg, n, stations)) return null
   if (i === 0) return { k: 'prep', m: 0, r: 0, sec: PREP_SEC }
   let j = i - 1
   const own = m => { const s = stations[m]; return s && (s.mode === 'time' && s.sec > 0) ? s.sec : null }
@@ -198,15 +241,13 @@ export function stepAt(cfg, stations, i) {
   }
   if (cfg.mode === 'emom') return { k: 'work', m: j % n, r: Math.floor(j / n), sec: cfg.every, emom: true }
   if (cfg.mode === 'circuit') {
-    const gap = cfg.gap > 0
-    const rr = cfg.roundRest > 0
-    const perRound = n + (gap ? n - 1 : 0)
-    const block = perRound + (rr ? 1 : 0)
-    const r = Math.floor(j / block)
-    const p = j % block
-    if (p === perRound) return { k: 'rest', m: 0, r: r + 1, sec: cfg.roundRest, round: true }
-    if (!gap) return { k: 'work', m: p, r, sec: own(p) }
-    return p % 2 === 0 ? { k: 'work', m: p / 2, r, sec: own(p / 2) } : { k: 'rest', m: (p + 1) / 2, r, sec: cfg.gap }
+    const segs = roundSegments(cfg, stations)
+    const r = Math.floor(j / segs.length)
+    const seg = segs[j % segs.length]
+    if (seg.k === 'work') return { k: 'work', m: seg.m, r, sec: own(seg.m), ...(stations[seg.m]?.side ? { side: stations[seg.m].side } : {}) }
+    return seg.round
+      ? { k: 'rest', m: seg.m, r: r + 1, sec: seg.sec, round: true }
+      : { k: 'rest', m: seg.m, r, sec: seg.sec, ...(seg.side ? { side: true } : {}) }
   }
   // intervals
   const warm = warmOf(cfg)
@@ -236,7 +277,7 @@ export function nextWorkAfter(cfg, stations, i) {
 export function plannedLength(cfg, stations) {
   if (!cfg) return null
   if (cfg.mode === 'amrap') return cfg.cap
-  const total = stepCount(cfg, stations.length)
+  const total = stepCount(cfg, stations.length, stations)
   let sec = 0
   for (let i = 1; i < total; i++) { const s = stepAt(cfg, stations, i); if (s.sec == null) return null; sec += s.sec }
   return sec
@@ -416,7 +457,8 @@ export function logStation(entries, station, r, { reps, w, sec, at }) {
   if (!e) return
   if (!Array.isArray(e.sets)) e.sets = []
   const workIdx = () => e.sets.map((s, i) => (isWarmupRow(s) ? -1 : i)).filter(i => i >= 0)
-  const at0 = (Number(station.base) || 0) + r
+  // A per-side hold has one row per side per round (#1394): left, right, left, right.
+  const at0 = (Number(station.base) || 0) + r * (station.slots || 1) + (station.slot || 0)
   let rows = workIdx()
   while (rows.length <= at0) {
     const last = rows.length ? e.sets[rows[rows.length - 1]] : {}
@@ -427,6 +469,8 @@ export function logStation(entries, station, r, { reps, w, sec, at }) {
   const row = e.sets[rows[at0]]
   row.done = true
   row.at = at
+  // A hold's sides are separate rows, so each keeps its own duration and label.
+  if (station.side) row.side = station.side
   if (station.mode === 'time') row.sec = Math.max(1, Math.round(sec))
   else if (station.mode === 'cardio') row.min = Math.max(0.1, Math.round(sec / 6) / 10)
   else if (station.mode === 'distance') { if (station.m > 0 && !(row.m > 0)) row.m = station.m }
@@ -472,7 +516,7 @@ export function runResult(run, { partialReps = 0, name = '' } = {}) {
   const { roundRest: _rr, ...cfg } = run.cfg
   const clean = String(name || '').trim().slice(0, 40)
   return {
-    sg: run.sg, mode: run.cfg.mode, ids: run.stations.map(s => s.id), rounds, extra, roundTimes, sec, cfg,
+    sg: run.sg, mode: run.cfg.mode, ids: [...new Set(run.stations.map(s => s.id))], rounds, extra, roundTimes, sec, cfg,
     ended: run.ended || 'stopped', ...(clean ? { name: clean } : {}),
     stations: run.stations.map((s, m) => ({ id: s.id, done: work.filter(x => x.m === m).length })),
   }
