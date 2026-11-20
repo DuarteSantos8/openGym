@@ -269,7 +269,12 @@ function placeItems(items, start, end) {
       if (x.chained && units.length) units[units.length - 1].push(x)
       else units.push([x])
     }
-    const ordered = units.map((u, i) => [u, i]).sort((a, b) => (a[0][0].at ?? 0) - (b[0][0].at ?? 0) || a[1] - b[1]).flatMap(([u]) => u)
+    // By tick, then by place in the list (the two sides of a set share their tick). A unit led by
+    // a drop with no set ahead of it has no tick and goes first.
+    const tickOf = u => u[0].at ?? 0
+    const ordered = units.map((u, i) => [u, i])
+      .sort((a, b) => tickOf(a[0]) - tickOf(b[0]) || a[1] - b[1])
+      .flatMap(([u]) => u)
     let cursor = start
     const placed = ordered.map(x => {
       const tick = x.chained ? cursor + x.len : Math.max(x.at, cursor)
