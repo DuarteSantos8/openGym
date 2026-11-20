@@ -22,7 +22,8 @@ export default function HeartGraph ({ samples, max, zone = 0, span = 0, marks = 
     return H - (share - ZONE_FLOOR) / (1 - ZONE_FLOOR) * H
   }
   const last = samples[samples.length - 1]
-  const width = span || Math.max(MIN_SPAN_MS, last?.t || 0)
+  // Wide enough for a set ticked after the last reading (they come a few seconds late).
+  const width = span || Math.max(MIN_SPAN_MS, last?.t || 0, ...marks)
   const x = ms => GUTTER + ms / width * (W - GUTTER - 6)
   return (
     <svg className="heart-graph" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t('Heart rate')} direction="ltr">
@@ -34,7 +35,7 @@ export default function HeartGraph ({ samples, max, zone = 0, span = 0, marks = 
           <text x={GUTTER - 6} y={top + BAND / 2 + 3.5} textAnchor="end" className="heart-graph-z">{Math.round(zoneShare(z) * max)}</text>
         </g>
       })}
-      {marks.map(ms => <line key={ms} x1={x(ms)} x2={x(ms)} y1="0" y2={H} stroke="var(--label)" strokeOpacity=".3" strokeWidth="1" />)}
+      {marks.map((ms, i) => <line key={i} x1={x(ms)} x2={x(ms)} y1="0" y2={H} stroke="var(--label)" strokeOpacity=".3" strokeWidth="1" />)}
       {samples.length > 1 && <polyline points={samples.map(s => `${x(s.t).toFixed(1)},${y(s.hr).toFixed(1)}`).join(' ')}
         fill="none" stroke="var(--label)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
       {last && !span && <circle cx={x(last.t)} cy={y(last.hr)} r="4" fill="var(--label)" stroke="var(--bg)" strokeWidth="2" />}

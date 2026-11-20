@@ -258,6 +258,11 @@ describe('the search lands on a row', () => {
     expect(titles('record hints', { ...guestWeb, recordHints: false })).not.toContain('Record hints')
     expect(titles('rests', { ...guestWeb, mobile: true, ios: true })).toContain('+15 s on rests')
     expect(titles('rests', { ...guestWeb, mobile: true, android: true })).not.toContain('+15 s on rests')
+    // The heart curve is the Apple Watch's, streamed to the iPhone app: not on Android or the web.
+    expect(titles('heart rate curve', { ...guestWeb, mobile: true, ios: true })).toContain('Heart rate curve')
+    expect(titles('heart rate curve', { ...guestWeb, mobile: true, ios: true, mod: id => id !== 'watch' })).not.toContain('Heart rate curve')
+    expect(titles('heart rate curve', { ...guestWeb, mobile: true, android: true })).not.toContain('Heart rate curve')
+    expect(titles('heart rate curve', guestWeb)).not.toContain('Heart rate curve')
     for (const q of ['voice', 'gym reminder']) {
       const keys = searchSettings(q, { ...guestWeb, mobile: true, spokenCues: true }, s => s).map(h => h.page + ':' + h.title)
       expect(keys.length, q).toBe(new Set(keys).size)
@@ -455,7 +460,7 @@ describe('the pages', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
     expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
-      'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Heart rate curve', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
+      'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
