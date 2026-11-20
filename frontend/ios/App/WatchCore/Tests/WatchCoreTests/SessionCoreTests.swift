@@ -228,4 +228,17 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: 0, side: "L"))
         XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 0, side: "R"), "the other side's hold is a new one")
     }
+
+    // A set removed on the phone during the hold moves the places: the hold's own set is found by its id.
+    func testAHoldFindsItsSetByIdAfterTheOnesBeforeItMove() {
+        var a = row(60, 8); a.sid = "a"
+        var b = row(60, 8); b.sid = "b"
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [a, b])))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"))
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [b])))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"), "still open, now at place 0")
+        var bDone = b; bDone.done = true; bDone.at = 3000
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [bDone])))
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"))
+    }
 }

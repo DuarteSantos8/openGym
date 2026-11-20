@@ -96,7 +96,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
     /// The set a hold runs for: if the phone logs it first, the hold is over (SessionCore.holdOpen).
-    private var holdFor: (entry: Int, set: Int, side: String?)?
+    private var holdFor: (entry: Int, set: Int, side: String?, sid: String?)?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
     @Published private(set) var summary: WorkoutSummary?
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
@@ -633,7 +633,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // The phone logged the set this hold runs for (its own hold ended first): this one ends with
             // it, unlogged, instead of logging the set after it.
-            if let h = self.holdFor, !SessionCore.holdOpen(self.state, entry: h.entry, set: h.set, side: h.side) { self.stopHold() }
+            if let h = self.holdFor, !SessionCore.holdOpen(self.state, entry: h.entry, set: h.set, side: h.side, sid: h.sid) { self.stopHold() }
             // The newest of them takes the watch to the set after it, on whichever exercise (#1101,
             // the twin of Wear's #1165): not while a set is open to be fixed or a hold runs here.
             if let last = ticks.last, self.viewing == nil, self.holdEndsAt == nil, self.holdCountFrom == nil,
@@ -921,7 +921,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let end = now.addingTimeInterval(seconds)
         holdStartedAt = now
         holdEndsAt = end
-        if let si = setIndex { holdFor = (entryIndex, si, entry?.sets[si].sideUp) }
+        if let si = setIndex { holdFor = (entryIndex, si, entry?.sets[si].sideUp, entry?.sets[si].sid) }
         Haptics.start()
         holdTimer?.invalidate()
         holdTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in

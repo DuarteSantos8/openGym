@@ -302,9 +302,14 @@ enum SessionCore {
     /// Whether a hold started for set `si` (and `side`, on a per-side set) of exercise `ei` still has its
     /// set to log. The phone logs a hold of its own first with "Timed holds start by themselves", and a
     /// hold ending here then would log the set after it, so the hold is over when this is false.
-    static func holdOpen(_ s: SessionState, entry ei: Int, set si: Int, side: String?) -> Bool {
-        guard let w = s.workout, w.entries.indices.contains(ei), w.entries[ei].sets.indices.contains(si) else { return false }
-        let row = w.entries[ei].sets[si]
+    /// The set is found by its id when it has one (a set added or removed on the phone moves the places),
+    /// else by place.
+    static func holdOpen(_ s: SessionState, entry ei: Int, set si: Int, side: String?, sid: String? = nil) -> Bool {
+        guard let w = s.workout else { return false }
+        let row: SetRow?
+        if let sid { row = w.entries.lazy.flatMap(\.sets).first { $0.sid == sid } }
+        else { row = w.entries.indices.contains(ei) && w.entries[ei].sets.indices.contains(si) ? w.entries[ei].sets[si] : nil }
+        guard let row else { return false }
         return !row.done && row.sideUp == side
     }
 
