@@ -72,6 +72,9 @@ describe('a slot moved to another rung', () => {
     expect(slotOnRung({ ...hold, id: 'sk-adv-tuck-front-lever' }, 'sk-adv-tuck-front-lever', {}).sec).toBe(rungEntry(lever, {}).sec)
     const mine = { ...reps, id: 'sk-adv-tuck-fl-row', reps: 8, repsMin: 6 }
     expect(slotOnRung(mine, mine.id, {})).toMatchObject({ reps: 8, repsMin: 6 })
+    // moved up a rung of the same way: the new rung's id, its own range or its hold reset
+    expect(slotOnRung({ ...mine, id: row }, 'sk-adv-tuck-fl-row', {})).toMatchObject({ id: 'sk-adv-tuck-fl-row', reps: 8, repsMin: 6 })
+    expect(slotOnRung({ ...hold, id: 'sk-tuck-front-lever', sec: 25 }, 'sk-adv-tuck-front-lever', {})).toMatchObject({ id: 'sk-adv-tuck-front-lever', sec: rungEntry(lever, {}).sec })
     expect(slotOnRung(mine, mine.id, {}, { fresh: true })).toMatchObject({ reps: rungEntry(row, {}).reps, repsMin: rungEntry(row, {}).repsMin })
   })
 })

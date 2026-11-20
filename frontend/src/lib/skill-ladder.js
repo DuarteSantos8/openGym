@@ -43,7 +43,7 @@ export function slotOnRung(slot, id, S = null, { fresh = false } = {}) {
     const { reps: _r, repsMin: _m, sec: _s, secTop: _t, mode: _o, ...kept } = cur
     return { ...kept, ...entry, sets: cur.sets || entry.sets }
   }
-  return entry.mode === 'time' ? { ...cur, sec: entry.sec } : { ...cur }
+  return entry.mode === 'time' ? { ...cur, id, sec: entry.sec } : { ...cur, id }
 }
 
 const BODY_PART = { hpull: 'back', vpull: 'back', vpush: 'shoulders', hpush: 'chest', core: 'waist', legs: 'upper legs' }
