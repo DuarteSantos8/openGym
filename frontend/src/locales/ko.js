@@ -5897,4 +5897,13 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Collapse": "접기",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "평균 {0} · 최대 {1} bpm",
+  "Heart rate curve": "심박수 곡선",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch가 측정하는 동안 진행 막대 아래에 한 줄로 표시돼요. 탭하면 운동 전체를 볼 수 있어요.",
+  'Average bpm': '평균 bpm',
+  'Last session': '지난 세션',
+  '{0} in zones 4 and 5': '4·5구간에서 {0}',
+  "Heart rate, one reading a minute (bpm)": "심박수, 1분마다 한 번 측정 (bpm)",
 }

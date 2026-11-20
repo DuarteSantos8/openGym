@@ -5944,4 +5944,13 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  "Collapse": "Fäll ihop",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Snitt {0} · Max {1} bpm",
+  "Heart rate curve": "Pulskurva",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "En rad under förloppsfältet medan din Apple Watch mäter den. Tryck för hela passet.",
+  'Average bpm': 'Snitt-bpm',
+  'Last session': 'Senaste passet',
+  '{0} in zones 4 and 5': '{0} i zon 4 och 5',
+  "Heart rate, one reading a minute (bpm)": "Puls, ett värde per minut (bpm)",
 }

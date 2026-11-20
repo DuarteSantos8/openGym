@@ -2,7 +2,7 @@
 // fills what is missing (the Apple Watch's own reading is never replaced), weigh-ins typed into
 // openGym always win, openGym's own records are never read back, nothing imported is written back.
 import { describe, expect, it } from 'vitest'
-import { isOwnRecord, mergeHeartRate, mergeWeighIns, lacksHeartRate, hubReadingId } from './health-read.js'
+import { isOwnRecord, mergeHeartRate, mergeWeighIns, lacksHeartRate, hubReadingId, keepHeartCurve } from './health-read.js'
 import { removeWeighIn } from './weigh-ins.js'
 import { healthRecords, planSync } from './health-connect.js'
 import { mergeBodyweight, mergeStates, stampChange } from './sync-merge.js'
@@ -173,5 +173,46 @@ describe('a typed weigh-in beats an imported one in a sync merge', () => {
     const S = { bodyweight: [{ d: '2026-10-15', w: 80, t: at(15, 7), src: 'hc' }] }
     logWeighIn(S, 81, at(15, 7))
     expect(S.bodyweight[0].ins.map(r => [r.at, r.w, r.src || null])).toEqual([['07:00', 80, 'hc'], ['07:00', 81, null]])
+  })
+})
+
+describe('keepHeartCurve', () => {
+  const T = Date.UTC(2026, 10, 2, 9)
+  const S = () => ({ workouts: [{ id: 'w', start: T, end: T + 600000, entries: [], _ts: 1 }] })
+  const read = n => Array.from({ length: n }, (_, i) => [T + i * 5000, 120 + i])
+
+  it('keeps the curve with a workout that has none, stamped so a sync keeps it', () => {
+    const s = S()
+    expect(keepHeartCurve(s, 'w', read(10), 99)).toBe(true)
+    expect(s.workouts[0].hrc).toMatchObject({ s: T, step: 5 })
+    expect(s.workouts[0].hrc.v).toHaveLength(10)
+    expect(s.workouts[0]._ts).toBe(99)
+    // a field edit of its own, so a merge keeps it against a copy edited later
+    expect(s.workouts[0]._f).toMatchObject({ hrc: 99 })
+  })
+
+  it('keeps a slot the fuller read leaves out', () => {
+    const s = S()
+    keepHeartCurve(s, 'w', [[T, 100], [T + 5000, 101]], 99)
+    // a later read with more readings but none in the first slot
+    expect(keepHeartCurve(s, 'w', read(10).slice(1), 200)).toBe(true)
+    expect(s.workouts[0].hrc.v[0]).toBe(100)
+    expect(s.workouts[0].hrc.v).toHaveLength(10)
+  })
+
+  it('replaces it only with a fuller one, and leaves the workout untouched otherwise', () => {
+    const s = S()
+    keepHeartCurve(s, 'w', read(10), 99)
+    expect(keepHeartCurve(s, 'w', read(6), 200)).toBe(false)
+    expect(s.workouts[0]._ts).toBe(99)
+    expect(keepHeartCurve(s, 'w', read(20), 300)).toBe(true)
+    expect(s.workouts[0].hrc.v).toHaveLength(20)
+  })
+
+  it('does nothing for an unknown or unfinished workout', () => {
+    expect(keepHeartCurve(S(), 'x', read(10))).toBe(false)
+    const open = { workouts: [{ id: 'w', start: T, entries: [] }] }
+    expect(keepHeartCurve(open, 'w', read(10))).toBe(false)
+    expect(open.workouts[0].hrc).toBeUndefined()
   })
 })

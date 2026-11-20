@@ -18,7 +18,8 @@
 // no background or history permission is asked for. What it decides is in lib/health-read.js.
 //
 // The web build never gets here (MOBILE is a build-time flag).
-import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp } from './health-read.js'
+import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp, keepHeartCurve } from './health-read.js'
+import { curveCovers, curveReadings, mergeCurves, packCurve, unpackCurve } from './heart-history.js'
 import { mergeVitals } from './vitals.js'
 import { mergeHealthActivities } from './activities.js'
 import { isoOf } from './format.js'
@@ -322,6 +323,63 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
   return { ok: true, reason: null, health: cached }
 }
 
+/**
+ * A finished workout's readings ([ms, bpm]) for the views that draw them: the curve kept with it
+ * when it covers the session (any device, the web app too), else the hub's on the phone, kept for
+ * next time when it is fuller; the kept part when the hub has nothing more.
+ */
+export async function workoutSamples(w, S = null) {
+  const kept = unpackCurve(w?.hrc, Number(w?.end))
+  if (!MOBILE || (kept.length && curveCovers(w?.hrc, w))) return kept
+  // `S`, the profile: with Health switched off there, nothing is read nor kept.
+  const got = await readWorkoutHeart(w, S).catch(() => [])
+  rememberCurve(w, got)
+  // The hub's readings and the kept curve together, slot by slot (5 s), so two partial reads that
+  // cover different parts of the session both count.
+  const both = mergeCurves(w?.hrc, packCurve(got, Number(w?.start), Number(w?.end)))
+  return curveReadings(both) > curveReadings(w?.hrc) ? unpackCurve(both, Number(w?.end)) : kept
+}
+
+/**
+ * Keeps the curve of workout `w` read from the hub (`samples`) with it, when it has none or a
+ * thinner one, and gives its sets without a heart rate theirs (lib/health-read.js mergeHeartRate):
+ * the history views call it after a read, so older sessions (and ones brought in from another
+ * app) get theirs too, past the day the background read covers.
+ */
+export function rememberCurve(w, samples, now = Date.now()) {
+  if (!applyRef || !w?.id || !Array.isArray(samples) || !samples.length) return false
+  // Kept when it adds slots to the curve the workout has (merged, as keepHeartCurve does).
+  const c = mergeCurves(w.hrc, packCurve(samples, Number(w.start), Number(w.end)))
+  const curve = !!c && curveReadings(c) > curveReadings(w.hrc)
+  const lacks = lacksHeartRate(w)
+  if (!curve && !lacks) return false
+  const apply = applyRef
+  nativePlatform().then(platform => {
+    // Tried on a copy first: a set the readings cannot fill (one outside them, a warm-up) must not
+    // rewrite the log. Every write is a new list of workouts, which a history view can read as a
+    // reason to read its sessions again, and so on.
+    const sets = lacks && mergeHeartRate({ workouts: [JSON.parse(JSON.stringify(w))] }, w.id, samples, srcOf(platform), now)
+    if (!curve && !sets) return
+    apply(s => {
+      if (sets) mergeHeartRate(s, w.id, samples, srcOf(platform), now)
+      if (curve) keepHeartCurve(s, w.id, samples, now)
+    })
+  }).catch(() => {})
+  return true
+}
+
+/**
+ * The heart rate of a workout (finished or still running) as the hub has it, [[ms, bpm]], to draw and not to keep.
+ * Empty without a hub, with the read switched off, or when it fails: the graph just does not show.
+ */
+export async function readWorkoutHeart(w, S = null) {
+  if (S && !isOn(S, 'health')) return []
+  const p = await plugin()
+  if (!p || !(await loadHealth()).readHr) return []
+  const res = await p.HC.readHeartRate({ from: w.start, to: w.end }).catch(() => null)
+  return Array.isArray(res?.samples) ? res.samples : []
+}
+
 /** Turns a read off. What it already brought in stays in the log, as the user's data. */
 export async function disableRead(kind) {
   if (readRunning) await readRunning.catch(() => {})
@@ -370,13 +428,17 @@ async function readOnce(getState, force, now, applyFn) {
     for (const w of S?.workouts || []) {
       const end = Number(w?.end), start = Number(w?.start)
       if (!w?.id || !(start > 0) || !(end > start) || now - end > HR_WINDOW_MS || end > now) continue
-      if (!lacksHeartRate(w) && w.hr?.src !== src) continue
+      // Done when the sets have their readings and the kept curve covers the session; a partial
+      // curve (a hub that synced late) is read again while the workout is recent.
+      if (!lacksHeartRate(w) && w.hr?.src !== src && curveCovers(w.hrc, w)) continue
       if (tried[w.id] && now - Number(tried[w.id]) < every) continue
       try {
         const res = await p.HC.readHeartRate({ from: start, to: end + 5 * 60e3 })
         tried[w.id] = now
         const samples = Array.isArray(res?.samples) ? res.samples : []
         if (samples.length) apply(s => mergeHeartRate(s, w.id, samples, src, now))
+        // The curve too, so the web app and the other devices can draw it (lib/heart-history.js).
+        if (samples.length) apply(s => keepHeartCurve(s, w.id, samples, now))
       } catch (e) { fail(e); break }
     }
     h.hrTried = tried

@@ -14,7 +14,8 @@
 //   - an imported weigh-in carries `src` and is never written back to the hub (no ping-pong:
 //     lib/health-connect.js healthRecords leaves it out).
 import { hrFromSamples, sanitizeHr } from './heart-rate.js'
-import { stampWorkout } from './sync-merge.js'
+import { stampWorkout, stampEntry } from './sync-merge.js'
+import { curveReadings, mergeCurves, packCurve } from './heart-history.js'
 import { isoOf } from './format.js'
 import { addWeighIn, readingsOf, timeOf, hashId } from './weigh-ins.js'
 
@@ -61,6 +62,24 @@ export function mergeHeartRate(S, wid, samples, src, now = Date.now()) {
   }
   if (changed) stampWorkout(w, now)
   return changed
+}
+
+/**
+ * The session's curve (lib/heart-history.js packCurve) kept with workout `wid` in the log `S`
+ * (mutated), so every device can draw it: set when the workout has none, or replaced by a fuller
+ * one (a hub that synced late). Stamped as edited. Returns whether anything changed.
+ */
+export function keepHeartCurve(S, wid, samples, now = Date.now()) {
+  const w = (S?.workouts || []).find(x => x && x.id === wid)
+  if (!w || !(Number(w.start) > 0) || !(Number(w.end) > Number(w.start))) return false
+  // Merged slot by slot with the one kept, so a fuller read that misses a slot keeps it.
+  const c = mergeCurves(w.hrc, packCurve(samples, Number(w.start), Number(w.end)))
+  if (!c || curveReadings(c) <= curveReadings(w.hrc)) return false
+  const old = { ...w }
+  w.hrc = c
+  // A field edit of its own (`_f.hrc`), so a merge keeps it even against a copy edited later.
+  stampEntry(old, w, now)
+  return true
 }
 
 /** Whether a workout still has sets the hub could fill: one done and without a heart rate. */

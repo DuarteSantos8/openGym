@@ -5908,4 +5908,13 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Collapse": "ย่อ",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "เฉลี่ย {0} · สูงสุด {1} bpm",
+  "Heart rate curve": "กราฟอัตราการเต้นของหัวใจ",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "หนึ่งบรรทัดใต้แถบความคืบหน้าขณะที่ Apple Watch วัดอยู่ แตะเพื่อดูทั้งเซสชัน",
+  'Average bpm': 'bpm เฉลี่ย',
+  'Last session': 'เซสชันล่าสุด',
+  '{0} in zones 4 and 5': '{0} ในโซน 4 และ 5',
+  "Heart rate, one reading a minute (bpm)": "อัตราการเต้นของหัวใจ ค่าเดียวต่อนาที (bpm)",
 }

@@ -5897,4 +5897,13 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Collapse": "Daralt",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Ortalama {0} · Maks. {1} bpm",
+  "Heart rate curve": "Nabız eğrisi",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch ölçerken ilerleme çubuğunun altında bir satır. Tüm antrenman için dokun.",
+  'Average bpm': 'Ortalama bpm',
+  'Last session': 'Son antrenman',
+  '{0} in zones 4 and 5': 'Bölge 4 ve 5\'te {0}',
+  "Heart rate, one reading a minute (bpm)": "Nabız, dakikada bir ölçüm (bpm)",
 }

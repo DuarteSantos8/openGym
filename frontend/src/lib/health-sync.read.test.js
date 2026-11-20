@@ -304,3 +304,48 @@ describe('vitals (v1.4.5)', () => {
     expect((await hs.enableRead('vitals', getState, { apply })).reason).toBe('denied')
   })
 })
+
+describe('workoutSamples', () => {
+  it('draws the kept curve and the hub\'s readings together when they cover different parts', async () => {
+    vi.resetModules()
+    h.files.clear(); h.calls.length = 0; h.fail = null
+    const { workoutSamples, enableRead } = await import('./health-sync.js')
+    const { packCurve } = await import('./heart-history.js')
+    await enableRead('hr', () => ({ workouts: [] }))
+    // kept: the first two minutes; the hub: only the last two of a six-minute session
+    const w = { id: 'w', start: s(0), end: s(360), hrc: packCurve([[s(5), 100], [s(60), 110], [s(115), 120]], s(0), s(360)) }
+    h.hr = [[s(250), 140], [s(300), 150], [s(355), 160]]
+    const got = await workoutSamples(w)
+    expect(got.map(r => r[1])).toEqual([100, 110, 120, 140, 150, 160])
+  })
+})
+
+// A history view that reads a session wrote to the log even when the read added nothing (a set
+// the readings cannot fill), and every write is a new list of workouts, which a view can take as a
+// reason to read again: a read that adds nothing writes nothing.
+describe('a history view keeping what it read', () => {
+  const tick = () => new Promise(r => setTimeout(r, 0))
+  it('writes nothing when the readings fill no set and add nothing to the curve', async () => {
+    const { packCurve } = await import('./heart-history.js')
+    const later = dense(300, 600, 120)
+    const w = workout('w2', 600, { hr: { avg: 120, max: 120, src: 'hc', n: later.length }, hrc: packCurve(later, s(0), s(600)) })
+    // its set has its rest's reading already, and none of its own in the readings (it ended at 100 s)
+    w.entries[0].sets[0].restHr = { avg: 110, max: 115 }
+    S.workouts.push(w)
+    hs.initHealthSync(getState, apply)
+    expect(hs.rememberCurve(w, later)).toBe(true)   // its set at 100 s has no reading: worth a try
+    await tick(); await tick()
+    expect(applied).toBe(0)
+  })
+  it('writes when they fill a set', async () => {
+    const { packCurve } = await import('./heart-history.js')
+    const all = dense(0, 600, 120)
+    const w = workout('w3', 600, { hr: { avg: 120, max: 120, src: 'hc', n: all.length }, hrc: packCurve(all, s(0), s(600)) })
+    S.workouts.push(w)
+    hs.initHealthSync(getState, apply)
+    hs.rememberCurve(w, all)
+    await tick(); await tick()
+    expect(applied).toBe(1)
+    expect(S.workouts.find(x => x.id === 'w3').entries[0].sets[0].hr).toBeTruthy()
+  })
+})
