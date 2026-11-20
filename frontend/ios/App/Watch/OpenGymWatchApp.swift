@@ -73,7 +73,6 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var dimmed
-    @Environment(\.scenePhase) private var scenePhase
 
     /// Which whole screen is up: a change fades (Motion), never cuts.
     private enum Screen: Hashable { case weighIn, summary, countdown, home, prompt, session }

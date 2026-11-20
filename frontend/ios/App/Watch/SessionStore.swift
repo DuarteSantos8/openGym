@@ -222,10 +222,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             WCSession.default.activate()
         }
         // A removal whose Undo time the app did not live through: it goes out now (review 2026-11-12).
-        if !isDemo, let d = UserDefaults.standard.data(forKey: Self.heldKey) {
-            UserDefaults.standard.removeObject(forKey: Self.heldKey)
-            if let ev = try? JSONSerialization.jsonObject(with: d) as? [String: Any] { send(event: ev) }
+        // (In init `state`'s didSet does not run: saved here.)
+        let held = SetMenu.held(state)
+        for id in held {
+            let (next, ev) = SetMenu.release(state, id: id)
+            state = next
+            if let ev = ev { send(event: ev) }
         }
+        if !held.isEmpty && !isDemo { save() }
     }
 
     /* ---------- the heart-rate sensor in a workout nobody finishes (SensorPlan) ---------- */
@@ -593,9 +597,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.heardFromPhone = true
                 if !self.isDemo { UserDefaults.standard.set(true, forKey: SessionStore.heardKey) }
             }
-            // Undo would put back the state from before the removal and lose this snapshot (the phone
-            // may even have ended the workout): the removal goes out now instead (review 2026-11-12).
-            self.flushRemoval()
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
@@ -827,13 +828,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     struct RemovedSet: Equatable { var setNumber: Int; var w: Double?; var r: Double?; var until: Date }
     @Published private(set) var removed: RemovedSet?
     @Published private(set) var toast: String?
+    /// The held removal (its edit in state.edits waits for Undo), and the store's pointers from before it.
     private var undoWindow = UndoWindow()
-    /// The removal's event and the state before it, while Undo can still take it back.
-    private var held: (event: Event, before: SessionState, refs: Refs)?
-    private static let heldKey = "heldRemoval"
+    private var heldRefs: Refs?
 
     /// The store's own pointers at sets, by row: a menu edit that moves or takes out rows moves them too.
-    private struct Refs { var lastLogged: SetRef?; var lastRated: Double?; var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date)?
+    private struct Refs { var lastLogged: SetRef?; var lastRated: Double?; var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date, sid: String?)?
         var picked: [Int: Int]; var viewing: SetRef?; var fixFrom: SetFix.Numbers?; var menuFor: SetRef? }
     private var refs: Refs {
         get { Refs(lastLogged: lastLogged, lastRated: lastRated, restAfter: restAfter, picked: picked, viewing: viewing, fixFrom: fixFrom, menuFor: menuFor) }
@@ -844,7 +844,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// After a menu edit on entry `ei` (the last of state.edits): the set the rest, the effort chips, the fix
     /// and the page point at is the same set, at its new row; a removed one is let go (review 2026-11-12).
     private func follow(from old: SessionState, entry ei: Int) {
-        guard let pe = state.edits?.last, let w = old.workout, let moved = SetMenu.apply(pe, on: w, entry: ei)?.1 else { return }
+        guard let pe = state.edits?.last, let w = old.workout, let moved = SetMenu.apply(pe, on: w)?.1 else { return }
         func to(_ si: Int) -> Int? { moved.indices.contains(si) ? moved[si] : si }
         if let r = lastLogged, r.entry == ei {
             lastLogged = to(r.set).map { SetRef(entry: ei, set: $0) }
@@ -860,10 +860,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var undoTimer: Timer?
 
     /// A menu change goes out and shows at once; a refused one (the menu would not offer it) does nothing.
+    /// It names its set by the set's id, so a removal still held for Undo needs no flush first.
     @discardableResult
     private func applyEdit(_ r: (SessionState, Event?), entry ei: Int) -> Bool {
         guard let event = r.1 else { return false }
-        flushRemoval()
         send(event: event)
         let old = state
         state = r.0
@@ -890,18 +890,19 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return true
     }
 
-    /// Takes the set out at once and holds the event for 4 s, so Undo can still cancel it.
+    /// Takes the set out at once and holds its event for 4 s, so Undo can still cancel it. The held
+    /// removal is an edit like any other (replayed over snapshots, kept across a relaunch).
     func removeSet(entry: Int, set: Int) {
         guard touchAllowed, menuAvailable, let row = workout?.entries[safe: entry]?.sets[safe: set] else { return }
-        let (next, event) = SetMenu.removeSet(state, entry: entry, set: set, at: Self.nowMs(), id: UUID().uuidString)
-        guard let ev = event, let pe = next.edits?.last else { return }
-        flushRemoval()
-        let now = Date()
+        let id = UUID().uuidString
         let number = SetNav.place(workout!.entries[entry], set).n   // as the page's pill counts it, before the row is gone
-        held = (ev, state, refs)
-        // Kept on disk too: if the app dies before the Undo time is over, the removal still reaches the phone.
-        if !isDemo, let d = try? JSONSerialization.data(withJSONObject: ev) { UserDefaults.standard.set(d, forKey: Self.heldKey) }
-        undoWindow.begin(pe, at: now)
+        // One at a time: an earlier removal still held goes out first.
+        flushRemoval()
+        let before = refs
+        guard let next = SetMenu.removeSet(state, entry: entry, set: set, at: Self.nowMs(), id: id) else { return }
+        let now = Date()
+        heldRefs = before
+        undoWindow.begin(id, at: now)
         let old = state
         state = next
         follow(from: old, entry: entry)
@@ -913,33 +914,31 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         Haptics.skip()
     }
 
-    /// Undo: the state as it was (its edit list has no removal), nothing sent.
+    /// Undo: the set back in its place, nothing sent.
     func undoRemove() {
-        guard let h = held else { return }
+        guard let id = undoWindow.id else { return }
         undoWindow.undo()
-        held = nil
-        state = h.before
-        refs = h.refs
+        state = SetMenu.undo(state, id: id)
+        if let r = heldRefs { refs = r }
         clearRemoval()
         loadTargets()
         Haptics.mark()
     }
 
-    private func sendDueRemoval() { if undoWindow.due(at: Date()) != nil { sendHeld() } }
+    private func sendDueRemoval() { if let id = undoWindow.due(at: Date()) { sendHeld(id) } }
 
     /// The Undo time is over, or the app left the screen: the removal goes to the phone now.
-    func flushRemoval() { if undoWindow.flush() != nil { sendHeld() } }
+    func flushRemoval() { if let id = undoWindow.flush() { sendHeld(id) } }
 
-    private func sendHeld() {
-        let h = held
-        held = nil
+    private func sendHeld(_ id: String) {
         clearRemoval()
-        if let h = h { send(event: h.event) }
+        let (next, ev) = SetMenu.release(state, id: id)
+        state = next
+        if let ev = ev { send(event: ev) }
     }
 
     private func clearRemoval() {
-        undoTimer?.invalidate(); undoTimer = nil; removed = nil
-        UserDefaults.standard.removeObject(forKey: Self.heldKey)
+        undoTimer?.invalidate(); undoTimer = nil; removed = nil; heldRefs = nil
     }
 
     private func say(_ text: String) {
@@ -1838,7 +1837,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "done", "spin", "rest-end", "rate", "plus15", "synced", "marked", "next", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "tap-done", "spin", "rest-end", "rate", "plus15", "synced", "marked", "next", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "set-failure", "set-both", "set-crowded":
                 // Set types: the page with the "…" button and the Failure / Drop tags.
                 self.picked[0] = 2
@@ -1857,6 +1856,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     if screen == "menu" || screen == "menu-both" || screen == "menu-hint" || screen == "menu-hold" { w.entries[0].sets[2].failure = true }
                     if screen == "menu-both" { w.entries[0].sets[2].drop = 50 }
                     if screen == "menu-warmup" { w.entries[0].sets[2].warmup = true }
+                    // Remove needs the set's id, as the phone would have sent it.
+                    w.entries[0].sets[2].sid = "s2"
                     self.state.workout = w
                 }
                 if screen == "removed" { self.removeSet(entry: 0, set: 2); self.undoTimer?.invalidate() }
@@ -1944,7 +1945,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             if screen == "hold" { self.startHold() }
             // CI clips of the motion: Done tapped, a fast Crown spin, a rest's last seconds.
-            if screen == "done" { DispatchQueue.main.asyncAfter(deadline: .now() + 7) { self.completeSet() } }
+            if screen == "tap-done" { DispatchQueue.main.asyncAfter(deadline: .now() + 7) { self.completeSet() } }
             if screen == "spin" {
                 for i in 0..<6 { DispatchQueue.main.asyncAfter(deadline: .now() + 7 + Double(i) * 0.12) { self.weight += 2.5 } }
             }
