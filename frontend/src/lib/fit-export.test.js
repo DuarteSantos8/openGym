@@ -280,6 +280,15 @@ describe('a strength workout as FIT', () => {
     expect(rests).toEqual([60, 110, 60, 110, 60])
   })
 
+  it('keeps the list\'s order when ticks after the end send the sets back to the even spread', () => {
+    const late = { id: 'late-order', d: '2026-10-09', start: T0, end: T0 + min(2), entries: [
+      { id: BENCH, target: { mode: 'reps' }, sets: [{ w: 60, r: 5, done: true, at: T0 + min(4) }] },
+      { id: PLANK, target: { mode: 'time' }, sets: [{ sec: 30, w: 0, done: true, at: T0 + min(3) }] },
+    ] }
+    const act = of(decode(workoutFit(late)), MSG.set).filter(x => x[5] === 1)
+    expect(act.map(x => x[7])).toEqual([0, CATEGORY.plank])
+  })
+
   it('does not let ticks bunched after the end stretch the session', () => {
     const late = { id: 'late', d: '2026-10-09', start: T0, end: T0 + min(10), entries: [
       { id: BENCH, target: { mode: 'reps' }, sets: [5, 5, 5].map(r => ({ w: 60, r, done: true, at: T0 + min(60) })) },

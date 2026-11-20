@@ -258,9 +258,9 @@ function itemsOf(w, exOf) {
 // turn, which the list, exercise after exercise, does not say). A set ends at its tick and
 // starts its length earlier, but not before the one ahead of it ended: the gaps are the rests.
 // Ticks that do not leave the sets room (a log caught up after the session, all in one go) say
-// nothing about when they happened, and those sets are spread like the ones below. Without ticks
-// the sets share the session evenly: back to back when their lengths fill it, otherwise with the
-// same rest after each one (a drop follows its set at once).
+// nothing about when they happened, and those sets are spread like the ones below, in the
+// list's order. Without ticks the sets share the session evenly: back to back when their
+// lengths fill it, otherwise with the same rest after each one (a drop follows its set at once).
 function placeItems(items, start, end) {
   if (!items.length) return []
   if (items.every(x => x.at != null || x.chained)) {
@@ -269,9 +269,9 @@ function placeItems(items, start, end) {
       if (x.chained && units.length) units[units.length - 1].push(x)
       else units.push([x])
     }
-    items = units.map((u, i) => [u, i]).sort((a, b) => (a[0][0].at ?? 0) - (b[0][0].at ?? 0) || a[1] - b[1]).flatMap(([u]) => u)
+    const ordered = units.map((u, i) => [u, i]).sort((a, b) => (a[0][0].at ?? 0) - (b[0][0].at ?? 0) || a[1] - b[1]).flatMap(([u]) => u)
     let cursor = start
-    const placed = items.map(x => {
+    const placed = ordered.map(x => {
       const tick = x.chained ? cursor + x.len : Math.max(x.at, cursor)
       const s = x.chained ? cursor : Math.max(cursor, tick - x.len)
       const e = Math.max(tick, s + x.len)
