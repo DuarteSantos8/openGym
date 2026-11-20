@@ -1,7 +1,7 @@
 import { EXDB, EXALIAS } from './exercises-data.js'
 import MUSCLE_MAP from './exercise-muscle-map.json' with { type: 'json' }
 import V13_IDS from './catalogue-v13-ids.json' with { type: 'json' }
-import { t, getVersion, exerciseNameSearchText } from './i18n-core.js'
+import { t, getVersion, exerciseNameSearchText, bindOwnExercise } from './i18n-core.js'
 import { exerciseAliases, aliasSnapshot } from './exercise-aliases.js'
 
 export { EXDB }
@@ -106,6 +106,8 @@ export const isBuiltinEx = ex => BUILTIN.has(ex)
 // broken thumbnail. A built-in catalogue entry is never custom, even if a custom one shadows its id.
 export const isCustomEx = ex => !!ex && typeof ex === 'object' && !BUILTIN.has(ex) &&
   (ex.custom === true || customIds.has(ex.id))
+// The name of your own exercise is shown as typed (lib/i18n-core.js exerciseNameClass).
+bindOwnExercise(isCustomEx)
 
 // The stored list with the flag put back on every entry that lost it — the same array when
 // nothing is missing, so a copy that is already right is never rewritten. The entry keeps its own

@@ -20,6 +20,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
+import { exerciseNameText } from '../lib/format.js'
 import { mediaOf, cleanUrl, linkKind } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { fetchToStore, mayFetch } from '../lib/media-sync.js'
@@ -135,7 +137,7 @@ export function LinkCard({ url, compact, mini }) {
 
 /* ------------------------------------------------------------------ the big picture ------- */
 
-export default function CustomMedia({ ex, id, compact, minimizable }) {
+export default function CustomMedia({ ex, id, compact, minimizable, sayAs }) {
   const gifSize = useStore(s => s.S.gifSize)
   const update = useStore(s => s.update)
   // The workout's list layout, from the store: only the workout card is minimizable.
@@ -147,7 +149,8 @@ export default function CustomMedia({ ex, id, compact, minimizable }) {
   const mini = !!minimizable && gifSize === 'mini'
   const toggleSize = e => { e.stopPropagation(); update(s => { s.gifSize = mini ? 'full' : 'mini' }) }
   const toggle = minimizable
-    ? <button className="giftoggle" onClick={toggleSize}><Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}</button>
+    // named like the catalogue's (Media.jsx): "My Curl: Minimize", one per exercise in a list (P4)
+    ? <button className="giftoggle" aria-label={nameIn(sayAs || exerciseNameText(ex), mini ? t('Expand') : t('Minimize'))} onClick={toggleSize}><Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}</button>
     : null
   const cls = 'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '')
   const name = exerciseNameFor(ex)

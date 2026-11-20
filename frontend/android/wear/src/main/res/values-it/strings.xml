@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, it. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_set">Aggiungi serie</string>
-    <string name="add_short">Aggiungi</string>
+    <string name="add_birth_year">Aggiungi l’anno di nascita nell’app sul telefono</string>
     <string name="added_weight">Peso aggiunto</string>
     <string name="all_done_q">Hai finito?</string>
     <string name="all_sets_done">Tutte le serie fatte</string>
     <string name="all_synced">Tutto sincronizzato</string>
     <string name="allow">Consenti</string>
+    <string name="avg">media</string>
+    <string name="band_over">da %1$d in su</string>
+    <string name="band_to">da %1$d a %2$d</string>
+    <string name="band_under">sotto %1$d</string>
     <string name="body_weight">Peso corporeo</string>
     <string name="bodyweight">Corpo libero</string>
     <string name="calories">Calorie</string>
@@ -18,13 +21,10 @@
     <string name="discard_workout">Scarta allenamento</string>
     <string name="discard_workout_q">Scartare allenamento?</string>
     <string name="done">Fatto</string>
-    <string name="drop_set">Drop set</string>
-    <string name="drop_tag">Drop</string>
     <string name="edit">Modifica</string>
     <string name="effort">Sforzo</string>
     <string name="ended_on_phone">Terminato sul telefono</string>
     <string name="exercises">Esercizi</string>
-    <string name="failure_tag">Cedimento</string>
     <string name="finish_and_save">Termina e salva</string>
     <string name="finish_now">Termina ora</string>
     <string name="finish_workout">Termina allenamento</string>
@@ -44,6 +44,7 @@
     <string name="left_gym">Sembra che tu sia uscito dalla palestra</string>
     <string name="less">Meno</string>
     <string name="log_on_phone">Questo si registra sul telefono.</string>
+    <string name="max">max</string>
     <string name="media_louder">Più forte</string>
     <string name="media_next">Brano successivo</string>
     <string name="media_now_playing">In riproduzione</string>
@@ -54,9 +55,16 @@
     <string name="media_prev">Brano precedente</string>
     <string name="media_quieter">Più piano</string>
     <string name="media_title">Musica</string>
+    <string name="min">min</string>
     <string name="more">Più</string>
+    <string name="muscles">Muscoli</string>
+    <string name="n_more">+%1$d altri</string>
+    <string name="n_sets">%1$s serie</string>
     <string name="next_set_btn">Serie successiva</string>
+    <string name="no_age_set">Età non impostata</string>
+    <string name="no_effort_yet">Nessuno sforzo valutato</string>
     <string name="no_set_for">Nessuna serie da %1$d min. Ci sei ancora?</string>
+    <string name="no_sets_yet">Ancora nessuna serie</string>
     <string name="no_workout">Nessun allenamento in corso</string>
     <string name="none">Nessuno</string>
     <string name="not_now">Non ora</string>
@@ -71,9 +79,6 @@
     <string name="prs">Record</string>
     <string name="quick_checkin">Check-in veloce</string>
     <string name="quick_start">Avvio rapido</string>
-    <string name="remove_set">Rimuovi serie</string>
-    <string name="remove_short">Rimuovi</string>
-    <string name="removed">Rimossa</string>
     <string name="reps">Rip.</string>
     <string name="rest">Riposo</string>
     <string name="rest_day">Niente in programma. Decidi tu.</string>
@@ -82,9 +87,7 @@
     <string name="routines">Routine</string>
     <string name="save">Salva</string>
     <string name="save_and_start">Salva e inizia</string>
-    <string name="set_menu">Menu della serie</string>
     <string name="set_of">Serie %1$d di %2$d</string>
-    <string name="set_of_tags">Serie %1$d di %2$d, %3$s</string>
     <string name="sets">Serie</string>
     <string name="sets_of">%1$d serie su %2$d</string>
     <string name="skip">Salta</string>
@@ -101,9 +104,7 @@
     <string name="tap_to_change">Tocca per cambiarlo.</string>
     <string name="tile_desc">La tua costanza e il piano di oggi.</string>
     <string name="time">Tempo</string>
-    <string name="to_failure">A cedimento</string>
     <string name="today">Oggi</string>
-    <string name="undo">Annulla</string>
     <string name="up_next">Prossima</string>
     <string name="up_next_set">%1$s, serie %2$d</string>
     <string name="volume">Volume</string>
@@ -113,4 +114,7 @@
     <string name="weight">Peso</string>
     <string name="workout">Allenamento</string>
     <string name="workout_saved">Allenamento salvato</string>
+    <string name="zone_current">attuale</string>
+    <string name="zone_n">Zona %1$d</string>
+    <string name="zones">Zone</string>
 </resources>

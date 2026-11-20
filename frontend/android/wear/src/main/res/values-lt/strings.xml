@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, lt. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_set">Pridėti seriją</string>
-    <string name="add_short">Pridėti</string>
+    <string name="add_birth_year">Įrašyk gimimo metus telefono programėlėje</string>
     <string name="added_weight">Papildomas svoris</string>
     <string name="all_done_q">Viskas?</string>
     <string name="all_sets_done">Visos serijos atliktos</string>
     <string name="all_synced">Viskas sinchronizuota</string>
     <string name="allow">Leisti</string>
+    <string name="avg">vid.</string>
+    <string name="band_over">%1$d ir daugiau</string>
+    <string name="band_to">nuo %1$d iki %2$d</string>
+    <string name="band_under">žemiau %1$d</string>
     <string name="body_weight">Kūno svoris</string>
     <string name="bodyweight">Kūno svoris</string>
     <string name="calories">Kalorijos</string>
@@ -18,13 +21,10 @@
     <string name="discard_workout">Atšaukti treniruotę</string>
     <string name="discard_workout_q">Atsisakyti treniruotės?</string>
     <string name="done">Atlikta</string>
-    <string name="drop_set">Drop setas</string>
-    <string name="drop_tag">Drop</string>
     <string name="edit">Redaguoti</string>
     <string name="effort">Pastangos</string>
     <string name="ended_on_phone">Baigta telefone</string>
     <string name="exercises">Pratimai</string>
-    <string name="failure_tag">Nesėkmė</string>
     <string name="finish_and_save">Baigti ir išsaugoti</string>
     <string name="finish_now">Baigti dabar</string>
     <string name="finish_workout">Užbaigti treniruotę</string>
@@ -44,6 +44,7 @@
     <string name="left_gym">Atrodo, kad išėjai iš sporto salės</string>
     <string name="less">Mažiau</string>
     <string name="log_on_phone">Šitą įrašyk telefone.</string>
+    <string name="max">maks.</string>
     <string name="media_louder">Garsiau</string>
     <string name="media_next">Kitas takelis</string>
     <string name="media_now_playing">Dabar groja</string>
@@ -54,9 +55,16 @@
     <string name="media_prev">Ankstesnis takelis</string>
     <string name="media_quieter">Tyliau</string>
     <string name="media_title">Muzika</string>
+    <string name="min">min.</string>
     <string name="more">Daugiau</string>
+    <string name="muscles">Raumenys</string>
+    <string name="n_more">+%1$d daugiau</string>
+    <string name="n_sets">Serijų: %1$s</string>
     <string name="next_set_btn">Kita serija</string>
+    <string name="no_age_set">Amžius nenustatytas</string>
+    <string name="no_effort_yet">Dar neįvertinta jokio krūvio</string>
     <string name="no_set_for">Jau %1$d min. be serijos. Dar treniruojatės?</string>
+    <string name="no_sets_yet">Dar nėra serijų</string>
     <string name="no_workout">Treniruotė nevyksta</string>
     <string name="none">Nėra</string>
     <string name="not_now">Ne dabar</string>
@@ -71,9 +79,6 @@
     <string name="prs">Rekordai</string>
     <string name="quick_checkin">Greitas pasisvėrimas</string>
     <string name="quick_start">Greitas startas</string>
-    <string name="remove_set">Pašalinti seriją</string>
-    <string name="remove_short">Pašalinti</string>
-    <string name="removed">Pašalinta</string>
     <string name="reps">Kartojimai</string>
     <string name="rest">Poilsis</string>
     <string name="rest_day">Nieko nesuplanuota. Tu sprendi.</string>
@@ -82,9 +87,7 @@
     <string name="routines">Programos</string>
     <string name="save">Išsaugoti</string>
     <string name="save_and_start">Įrašyti ir pradėti treniruotę</string>
-    <string name="set_menu">Serijos meniu</string>
     <string name="set_of">Serija %1$d iš %2$d</string>
-    <string name="set_of_tags">Serija %1$d iš %2$d, %3$s</string>
     <string name="sets">Serijos</string>
     <string name="sets_of">%1$d iš %2$d serijų</string>
     <string name="skip">Praleisti</string>
@@ -101,9 +104,7 @@
     <string name="tap_to_change">Bakstelėkite, kad pakeistumėte.</string>
     <string name="tile_desc">Tavo serija ir šiandienos planas.</string>
     <string name="time">Laikas</string>
-    <string name="to_failure">Iki visiško išsekimo</string>
     <string name="today">Šiandien</string>
-    <string name="undo">Atšaukti</string>
     <string name="up_next">Kitas</string>
     <string name="up_next_set">%1$s, serija %2$d</string>
     <string name="volume">Tūris</string>
@@ -113,4 +114,7 @@
     <string name="weight">Svoris</string>
     <string name="workout">Treniruotė</string>
     <string name="workout_saved">Treniruotė išsaugota</string>
+    <string name="zone_current">dabartinė</string>
+    <string name="zone_n">%1$d zona</string>
+    <string name="zones">Zonos</string>
 </resources>

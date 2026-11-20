@@ -1,12 +1,14 @@
 # openGym in Google Play and the App Store
 
-openGym ships to phones three ways, all from the same code and the same version number:
+openGym ships to phones three ways, and to watches two more, all from the same code and the same version number:
 
 | | Where | Who installs updates | Built where |
 |---|---|---|---|
 | Android APK | GitHub release, opengym.ch | the app itself (Settings → About) | release machine |
 | Android, Google Play | Play Store | Google Play | release machine |
 | iPhone (+ Apple Watch) | App Store, TestFlight beta | the App Store | Mac runner (compile) + release machine (finish, sign, upload) |
+| Wear OS watch | Play Store (Wear OS closed test), `openGym-Wear-X.Y.Z.apk` on the GitHub release | Google Play, or by hand for the APK | release machine (`scripts/android/build-wear.sh`) |
+| Garmin watch | [Connect IQ Store](https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08) | Garmin Connect | release machine (`openGym.iq`, uploaded by hand, see GARMIN.md) |
 
 The two Android builds are flavours of one Gradle project (`frontend/android/app/build.gradle`):
 `sideload` keeps the updater (InstallPlugin, `REQUEST_INSTALL_PACKAGES`), `play` leaves both out,
@@ -56,6 +58,12 @@ scripts/android/build-release.sh $K/opengym-release.keystore $K/keystore.pass $K
 #    SHA256SUMS) for the GitHub release (APK_ONLY=1: only these),
 #    openGym-X.Y.Z.aab for Google Play
 ```
+
+Put them on the GitHub release with `scripts/android/upload-release.sh vX.Y.Z ~/release`, never
+with a hand-typed file list: it uploads every APK with its `.sha256` and `SHA256SUMS`, then checks
+the release (`scripts/ci/release-assets-check.mjs`). The in-app updater refuses an APK without its
+`.sha256`, which is what happened to v1.4.5. Publish the draft only after it says ok; the
+"Release files" workflow checks once more when the release is published.
 
 Each is built from its own phone build: the **Standard** APK with the box-free 180 px animations
 built in (`quality/180`, about 315 MB), the **Plus** APK with 240 px (`quality/240`, about

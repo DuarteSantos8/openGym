@@ -25,7 +25,7 @@ export default function KitChips ({ value, onChange, known = [], label }) {
     {value.length < KIT_MAX && <form className="kit-add" onSubmit={e => { e.preventDefault(); add() }}>
       <input className="input" value={draft} maxLength={KIT_NAME_MAX} placeholder={t('Name your own, like “Sandbag”')}
         aria-label={t('Add your own kit')} onChange={e => setDraft(e.target.value)} enterKeyHint="done" />
-      <button type="submit" className="iconbtn" aria-label={t('Add')} disabled={!cleanKitName(draft)}><Icon name="plus" /></button>
+      <button type="submit" className="iconbtn" aria-label={t('Add your own kit')} disabled={!cleanKitName(draft)}><Icon name="plus" /></button>
     </form>}
   </div>
 }

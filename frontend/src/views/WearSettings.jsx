@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, lastHeardAt } from '../lib/watch-settings.js'
 import { wearStatus } from '../lib/watch-sync.js'
 import { getChannel } from '../lib/channel.js'
 import { wearView, wearWatchLine, WEAR_DOCS } from '../lib/wear-view.js'
@@ -53,8 +53,10 @@ export default function WearSettingsPage ({ api = { status: wearStatus, channel:
   const view = wearView(wear, channel)
   const there = view.key === 'on-watch' || view.key === 'on-watch-away'
   // With the app on the watch: when it last checked in, or that it has not yet.
-  const heardLine = !there ? '' : heard?.at
-    ? t('Last heard from the watch: {0}', fmtAgo(heard.at))
+  // (its newest set, rest or status that reached this phone, #1151)
+  const heardAt = lastHeardAt(heard)
+  const heardLine = !there ? '' : heardAt
+    ? t('Last heard from the watch: {0}', fmtAgo(heardAt))
     : t('The watch hasn’t checked in yet. Open openGym on it once.')
 
   return <>

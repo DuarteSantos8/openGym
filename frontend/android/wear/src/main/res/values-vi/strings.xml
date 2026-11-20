@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, vi. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_set">Thêm hiệp</string>
-    <string name="add_short">Thêm</string>
+    <string name="add_birth_year">Thêm năm sinh trong ứng dụng trên điện thoại</string>
     <string name="added_weight">Tạ thêm</string>
     <string name="all_done_q">Xong chưa?</string>
     <string name="all_sets_done">Đã xong tất cả hiệp</string>
     <string name="all_synced">Đã đồng bộ tất cả</string>
     <string name="allow">Cho phép</string>
+    <string name="avg">TB</string>
+    <string name="band_over">từ %1$d trở lên</string>
+    <string name="band_to">%1$d đến %2$d</string>
+    <string name="band_under">dưới %1$d</string>
     <string name="body_weight">Thể trọng</string>
     <string name="bodyweight">Thể trọng</string>
     <string name="calories">Calo</string>
@@ -18,13 +21,10 @@
     <string name="discard_workout">Hủy buổi tập</string>
     <string name="discard_workout_q">Hủy buổi tập?</string>
     <string name="done">Xong</string>
-    <string name="drop_set">Drop set</string>
-    <string name="drop_tag">Drop</string>
     <string name="edit">Chỉnh sửa</string>
     <string name="effort">Độ gắng sức</string>
     <string name="ended_on_phone">Đã kết thúc trên điện thoại</string>
     <string name="exercises">Bài tập</string>
-    <string name="failure_tag">Kiệt sức</string>
     <string name="finish_and_save">Hoàn thành và lưu</string>
     <string name="finish_now">Kết thúc ngay</string>
     <string name="finish_workout">Kết thúc buổi tập</string>
@@ -44,6 +44,7 @@
     <string name="left_gym">Hình như bạn đã rời phòng tập</string>
     <string name="less">Ít</string>
     <string name="log_on_phone">Bài này ghi trên điện thoại nhé.</string>
+    <string name="max">tối đa</string>
     <string name="media_louder">To hơn</string>
     <string name="media_next">Bài tiếp</string>
     <string name="media_now_playing">Đang phát</string>
@@ -54,9 +55,16 @@
     <string name="media_prev">Bài trước</string>
     <string name="media_quieter">Nhỏ hơn</string>
     <string name="media_title">Nhạc</string>
+    <string name="min">tối thiểu</string>
     <string name="more">Nhiều</string>
+    <string name="muscles">Nhóm cơ</string>
+    <string name="n_more">+%1$d nữa</string>
+    <string name="n_sets">%1$s hiệp</string>
     <string name="next_set_btn">Hiệp tiếp theo</string>
+    <string name="no_age_set">Chưa đặt tuổi</string>
+    <string name="no_effort_yet">Chưa đánh giá mức nỗ lực</string>
     <string name="no_set_for">Đã %1$d phút không có hiệp nào. Bạn còn tập không?</string>
+    <string name="no_sets_yet">Chưa có hiệp nào</string>
     <string name="no_workout">Không có buổi tập nào đang chạy</string>
     <string name="none">Không</string>
     <string name="not_now">Để sau</string>
@@ -71,9 +79,6 @@
     <string name="prs">PR</string>
     <string name="quick_checkin">Ghi nhận nhanh</string>
     <string name="quick_start">Bắt đầu nhanh</string>
-    <string name="remove_set">Xóa hiệp</string>
-    <string name="remove_short">Xóa</string>
-    <string name="removed">Đã xóa</string>
     <string name="reps">Reps</string>
     <string name="rest">Nghỉ</string>
     <string name="rest_day">Không có kế hoạch. Tùy bạn.</string>
@@ -82,9 +87,7 @@
     <string name="routines">Lịch tập</string>
     <string name="save">Lưu</string>
     <string name="save_and_start">Lưu &amp; bắt đầu buổi tập</string>
-    <string name="set_menu">Menu hiệp</string>
     <string name="set_of">Hiệp %1$d / %2$d</string>
-    <string name="set_of_tags">Hiệp %1$d / %2$d, %3$s</string>
     <string name="sets">Hiệp</string>
     <string name="sets_of">%1$d / %2$d hiệp</string>
     <string name="skip">Bỏ qua</string>
@@ -101,9 +104,7 @@
     <string name="tap_to_change">Chạm để thay đổi.</string>
     <string name="tile_desc">Chuỗi tuần của bạn và kế hoạch hôm nay.</string>
     <string name="time">Thời gian</string>
-    <string name="to_failure">Tập đến ngưỡng thất bại (Failure)</string>
     <string name="today">Hôm nay</string>
-    <string name="undo">Hoàn tác</string>
     <string name="up_next">Tiếp theo</string>
     <string name="up_next_set">%1$s, hiệp %2$d</string>
     <string name="volume">Tổng khối lượng</string>
@@ -113,4 +114,7 @@
     <string name="weight">Mức tạ</string>
     <string name="workout">Buổi tập</string>
     <string name="workout_saved">Đã lưu buổi tập</string>
+    <string name="zone_current">hiện tại</string>
+    <string name="zone_n">Vùng %1$d</string>
+    <string name="zones">Vùng</string>
 </resources>

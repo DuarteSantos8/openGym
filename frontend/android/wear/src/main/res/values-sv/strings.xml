@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, sv. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_set">Lägg till set</string>
-    <string name="add_short">Lägg till</string>
+    <string name="add_birth_year">Lägg till ditt födelseår i telefonappen</string>
     <string name="added_weight">Extra vikt</string>
     <string name="all_done_q">Klar?</string>
     <string name="all_sets_done">Alla set klara</string>
     <string name="all_synced">Allt synkat</string>
     <string name="allow">Tillåt</string>
+    <string name="avg">snitt</string>
+    <string name="band_over">%1$d och uppåt</string>
+    <string name="band_to">%1$d till %2$d</string>
+    <string name="band_under">under %1$d</string>
     <string name="body_weight">Kroppsvikt</string>
     <string name="bodyweight">Kroppsvikt</string>
     <string name="calories">Kalorier</string>
@@ -18,13 +21,10 @@
     <string name="discard_workout">Släng passet</string>
     <string name="discard_workout_q">Släng passet?</string>
     <string name="done">Klar</string>
-    <string name="drop_set">Dropset</string>
-    <string name="drop_tag">Drop</string>
     <string name="edit">Redigera</string>
     <string name="effort">Ansträngning</string>
     <string name="ended_on_phone">Avslutat på telefonen</string>
     <string name="exercises">Övningar</string>
-    <string name="failure_tag">Utmattning</string>
     <string name="finish_and_save">Avsluta och spara</string>
     <string name="finish_now">Avsluta nu</string>
     <string name="finish_workout">Avsluta passet</string>
@@ -44,6 +44,7 @@
     <string name="left_gym">Ser ut som att du har lämnat gymmet</string>
     <string name="less">Mindre</string>
     <string name="log_on_phone">Logga det här på telefonen.</string>
+    <string name="max">max</string>
     <string name="media_louder">Högre</string>
     <string name="media_next">Nästa låt</string>
     <string name="media_now_playing">Spelas nu</string>
@@ -54,9 +55,16 @@
     <string name="media_prev">Föregående låt</string>
     <string name="media_quieter">Tystare</string>
     <string name="media_title">Musik</string>
+    <string name="min">min</string>
     <string name="more">Mer</string>
+    <string name="muscles">Muskler</string>
+    <string name="n_more">+%1$d till</string>
+    <string name="n_sets">%1$s set</string>
     <string name="next_set_btn">Nästa set</string>
+    <string name="no_age_set">Ingen ålder angiven</string>
+    <string name="no_effort_yet">Ingen ansträngning betygsatt än</string>
     <string name="no_set_for">Inget set på %1$d min. Kör du fortfarande?</string>
+    <string name="no_sets_yet">Inga set än</string>
     <string name="no_workout">Inget pass pågår</string>
     <string name="none">Ingen</string>
     <string name="not_now">Inte nu</string>
@@ -71,9 +79,6 @@
     <string name="prs">Personbästan</string>
     <string name="quick_checkin">Snabb incheckning</string>
     <string name="quick_start">Snabbstart</string>
-    <string name="remove_set">Ta bort set</string>
-    <string name="remove_short">Ta bort</string>
-    <string name="removed">Borttagen</string>
     <string name="reps">Reps</string>
     <string name="rest">Vila</string>
     <string name="rest_day">Inget planerat. Ditt val.</string>
@@ -82,9 +87,7 @@
     <string name="routines">Rutiner</string>
     <string name="save">Spara</string>
     <string name="save_and_start">Spara och starta passet</string>
-    <string name="set_menu">Setmeny</string>
     <string name="set_of">Set %1$d av %2$d</string>
-    <string name="set_of_tags">Set %1$d av %2$d, %3$s</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d av %2$d set</string>
     <string name="skip">Hoppa över</string>
@@ -101,9 +104,7 @@
     <string name="tap_to_change">Tryck för att ändra.</string>
     <string name="tile_desc">Din svit och dagens plan.</string>
     <string name="time">Tid</string>
-    <string name="to_failure">Till failure</string>
     <string name="today">Idag</string>
-    <string name="undo">Ångra</string>
     <string name="up_next">Härnäst</string>
     <string name="up_next_set">%1$s, set %2$d</string>
     <string name="volume">Volym</string>
@@ -113,4 +114,7 @@
     <string name="weight">Vikt</string>
     <string name="workout">Pass</string>
     <string name="workout_saved">Passet sparat</string>
+    <string name="zone_current">aktuell</string>
+    <string name="zone_n">Zon %1$d</string>
+    <string name="zones">Zoner</string>
 </resources>

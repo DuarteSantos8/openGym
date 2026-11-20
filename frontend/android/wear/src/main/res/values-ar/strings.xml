@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ar. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_set">إضافة مجموعة</string>
-    <string name="add_short">إضافة</string>
+    <string name="add_birth_year">أضف سنة ميلادك في تطبيق الهاتف</string>
     <string name="added_weight">وزن إضافي</string>
     <string name="all_done_q">هل انتهيت؟</string>
     <string name="all_sets_done">اكتملت كل المجموعات</string>
     <string name="all_synced">تمت مزامنة كل شيء</string>
     <string name="allow">السماح</string>
+    <string name="avg">المتوسط</string>
+    <string name="band_over">%1$d فأكثر</string>
+    <string name="band_to">من %1$d إلى %2$d</string>
+    <string name="band_under">أقل من %1$d</string>
     <string name="body_weight">وزن الجسم</string>
     <string name="bodyweight">وزن الجسم</string>
     <string name="calories">السعرات</string>
@@ -18,13 +21,10 @@
     <string name="discard_workout">تجاهل التمرين</string>
     <string name="discard_workout_q">تجاهل التمرين؟</string>
     <string name="done">تم</string>
-    <string name="drop_set">دروب سِت</string>
-    <string name="drop_tag">دروب</string>
     <string name="edit">تعديل</string>
     <string name="effort">الجهد</string>
     <string name="ended_on_phone">انتهى على الهاتف</string>
     <string name="exercises">التمارين</string>
-    <string name="failure_tag">فشل</string>
     <string name="finish_and_save">إنهاء وحفظ</string>
     <string name="finish_now">إنهاء الآن</string>
     <string name="finish_workout">إنهاء التمرين</string>
@@ -44,6 +44,7 @@
     <string name="left_gym">يبدو أنك غادرت النادي</string>
     <string name="less">أقل</string>
     <string name="log_on_phone">سجّل هذا على هاتفك.</string>
+    <string name="max">الأقصى</string>
     <string name="media_louder">أعلى</string>
     <string name="media_next">المقطع التالي</string>
     <string name="media_now_playing">قيد التشغيل</string>
@@ -54,9 +55,16 @@
     <string name="media_prev">المقطع السابق</string>
     <string name="media_quieter">أخفض</string>
     <string name="media_title">الموسيقى</string>
+    <string name="min">الأدنى</string>
     <string name="more">أكثر</string>
+    <string name="muscles">العضلات</string>
+    <string name="n_more">+%1$d أخرى</string>
+    <string name="n_sets">%1$s مجموعات</string>
     <string name="next_set_btn">المجموعة التالية</string>
+    <string name="no_age_set">لم يُحدَّد العمر</string>
+    <string name="no_effort_yet">لم يُقيَّم أي جهد بعد</string>
     <string name="no_set_for">لا مجموعة منذ %1$d دقيقة. ما زلت تتمرن؟</string>
+    <string name="no_sets_yet">لا مجموعات بعد</string>
     <string name="no_workout">لا يوجد تمرين جارٍ</string>
     <string name="none">بدون</string>
     <string name="not_now">ليس الآن</string>
@@ -71,9 +79,6 @@
     <string name="prs">الأرقام القياسية</string>
     <string name="quick_checkin">تحديث سريع</string>
     <string name="quick_start">بدء سريع</string>
-    <string name="remove_set">إزالة المجموعة</string>
-    <string name="remove_short">إزالة</string>
-    <string name="removed">تمت الإزالة</string>
     <string name="reps">التكرارات</string>
     <string name="rest">راحة</string>
     <string name="rest_day">لا شيء مخطط. القرار لك.</string>
@@ -82,9 +87,7 @@
     <string name="routines">الروتينات</string>
     <string name="save">حفظ</string>
     <string name="save_and_start">حفظ وبدء التمرين</string>
-    <string name="set_menu">قائمة المجموعة</string>
     <string name="set_of">المجموعة %1$d من %2$d</string>
-    <string name="set_of_tags">المجموعة %1$d من %2$d, %3$s</string>
     <string name="sets">المجموعات</string>
     <string name="sets_of">%1$d من %2$d مجموعات</string>
     <string name="skip">تخطّي</string>
@@ -101,9 +104,7 @@
     <string name="tap_to_change">اضغط للتغيير.</string>
     <string name="tile_desc">سلسلتك وخطة اليوم.</string>
     <string name="time">الوقت</string>
-    <string name="to_failure">حتى الفشل العضلي</string>
     <string name="today">اليوم</string>
-    <string name="undo">تراجع</string>
     <string name="up_next">التالي</string>
     <string name="up_next_set">%1$s، المجموعة %2$d</string>
     <string name="volume">حجم التدريب</string>
@@ -113,4 +114,7 @@
     <string name="weight">الوزن</string>
     <string name="workout">التمرين</string>
     <string name="workout_saved">تم حفظ التمرين</string>
+    <string name="zone_current">الحالي</string>
+    <string name="zone_n">النطاق %1$d</string>
+    <string name="zones">النطاقات</string>
 </resources>
