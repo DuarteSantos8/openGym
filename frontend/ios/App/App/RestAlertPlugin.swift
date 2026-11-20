@@ -54,6 +54,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let sound: Bool
         let tone: String
         var cues: [Cue] = []
+        /// When this end was set (ms): a watch's change older than it is left alone (PhoneRestAlarm).
+        var since: Double = Date().timeIntervalSince1970 * 1000
     }
     private var pending: Pending?
     /// The tones playing now, by their CueAudioLedger id (an end tone, an own clip, a hype clip).
@@ -82,6 +84,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
         // The Live Activity's Stop auto: the chain's alerts after this one are not rung.
         nc.addObserver(self, selector: #selector(autoStopped), name: LiveActivityQueue.autoStopped, object: nil)
+        // The watch's +15, −15, Skip or a set's rest, with the page asleep: this alert moves with it.
+        nc.addObserver(self, selector: #selector(watchRest(_:)), name: WatchLink.eventStored, object: nil)
         nc.addObserver(self, selector: #selector(audioInterrupted(_:)), name: AVAudioSession.interruptionNotification, object: nil)
         // Written ahead, off the main thread: the first rest then finds its sound file there.
         DispatchQueue.global(qos: .utility).async { RestTone.kinds.forEach { _ = RestTone.soundFile($0) } }
@@ -392,6 +396,26 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             self.pending = p
             self.withdraw()
             if UIApplication.shared.applicationState != .active { self.post() }
+        }
+    }
+
+    /// The rest changed on the watch while the page sleeps (the phone locked in a pocket): the alert
+    /// rings when the watch's rest ends, or not at all after a Skip there, instead of at the old end.
+    /// The page books its own again when it wakes and applies the same event. In front, the page does it.
+    @objc private func watchRest(_ note: Notification) {
+        guard let ev = note.userInfo?["event"] as? [String: Any] else { return }
+        DispatchQueue.main.async {
+            guard UIApplication.shared.applicationState != .active, let p = self.pending else { return }
+            let wid = UserDefaults.standard.string(forKey: WatchBridgePlugin.idleWidKey)
+            guard let c = PhoneRestAlarm.change(ev, wid: wid, since: p.since, now: Date().timeIntervalSince1970 * 1000) else { return }
+            self.withdraw()
+            if let end = c.end {
+                self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.post()
+            } else {
+                self.pending = nil
+            }
+            if #available(iOS 17.0, *), let wid = wid { Task { await LiveActivityTick.followWatchRest(wid: wid, end: c.end) } }
         }
     }
 

@@ -783,6 +783,30 @@ enum LiveActivityTick {
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
+    /// The watch moved or ended the rest while the page sleeps (RestAlertPlugin.watchRest): the
+    /// countdown follows it. Nothing is queued: the page applies the watch's own event when it wakes.
+    static func followWatchRest(wid: String, end: Double?, now: Date = Date()) async {
+        let tap = LiveTap("watchRest")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
+        let state = activity.content.state
+        // A running rest only: a paused one has no alert to move, a hold is not a rest.
+        guard activity.attributes.pv != true, state.restEndsAt != nil else { return }
+        var next = state
+        if let end = end {
+            next.restEndsAt = end
+            let left = ((end - now.timeIntervalSince1970 * 1000) / 1000).rounded(.up)
+            next.restTotal = max(state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0, left)
+        } else {
+            next.restEndsAt = nil
+            next.restLeft = nil
+            next.restTotal = nil
+        }
+        tap.willUpdate()
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
+    }
+
     /// A tap the page does all of: queued, and Pause shows as paused right away.
     static func queueOnly(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
         guard ["prev", "warm", "addSet", "pause"].contains(kind) else { return }

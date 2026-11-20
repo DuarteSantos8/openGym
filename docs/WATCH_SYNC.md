@@ -173,6 +173,13 @@ coming to the front or being cold-launched (its restored rest has the stamp it h
 a rest; a Skip on the phone ends the watch's (#1149); +15 and Skip from the watch reach the phone;
 a tick from a watch that was away does not take away a rest started on the phone since.
 
+**The iPhone locked:** its page sleeps, so the watch's events wait in the queue file until it
+wakes. The rest alarm the page booked (and the Live Activity's countdown) would ring at the old
+end meanwhile, so the native side moves them itself: a new `rest` event, or a tick's `restEnd`,
+newer than when the alarm was booked moves it to the watch's end (on the phone's clock, `off`
+taken off) or takes it away (`WatchCore/PhoneRestAlarm.swift`, `RestAlertPlugin.watchRest`). The
+page applies the same event by the rules above when it wakes and books its own.
+
 **Protocol 1** (and a phone without `restAt`): a rest end in a snapshot is followed once
 (`RestMath.phoneRest`); the first snapshot that acks the watch's own latest tick carries the
 phone's copy of the rest the watch already runs and is remembered, not followed, so a +15 or Skip
