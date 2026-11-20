@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
+  "Set once": "Configurar uma vez",
+  "Connections": "Conexões",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Only in the detailed look.": "Só na visualização detalhada.",
   "Your note for this exercise": "Sua nota para este exercício",
@@ -4323,6 +4326,8 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // Arrange your own Home and Stats (#1119)
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

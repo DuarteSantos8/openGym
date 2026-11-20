@@ -28,6 +28,7 @@
 "Start without weighing in" = "Indítás mérés nélkül";
 "Body weight" = "Testsúly";
 "Effort" = "Megerőltetés";
+"Muscles" = "Izmok";
 "None" = "Nincs";
 "Exercises" = "Gyakorlatok";
 "Save" = "Mentés";
@@ -48,6 +49,7 @@
 "Taken to failure" = "Bukásig";
 "Drop set" = "Drop szett";
 "More" = "Több";
+"Back" = "Vissza";
 "Set %lld" = "%lld. sorozat";
 "Add set" = "Hozzáadás";
 "Warm-up disc" = "Warm-up";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "Még nincs értékelt erőfeszítés";
 "max" = "max.";
 "min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Kapcsold be az Apple Egészséget az iPhone-on, és az openGym a pihenők és tartások alatt is a képernyőn marad.";
+"No sets yet" = "Még nincs sorozat";
+"+%lld more" = "+%lld további";
+"%@ sets" = "%@ sorozat";
 "Failure" = "Kudarc";
 "Drop" = "Drop";
 "Set %lld added" = "%lld. sorozat hozzáadva";

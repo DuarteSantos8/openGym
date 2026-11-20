@@ -1,5 +1,9 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Hodinky",
+  "Set once": "Nastavit jednou",
+  "Connections": "Propojení",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Poslední série: {0}",
   "Your note for this exercise": "Tvoje poznámka k tomuto cviku",
@@ -5857,4 +5861,12 @@ export default {
   "Own setup for {0}": "Vlastní nastavení pro {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Řídí se hlavní stránkou. Zapni to a vyber si detaily a tlačítka pro tento typ podle sebe.",
   "Preview on": "Náhled na",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "kratší",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Přizpůsobit",
+  "Collapsed": "Sbalené",
+  "Hide": "Skrýt",
+  "Totals": "Součty",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
 }

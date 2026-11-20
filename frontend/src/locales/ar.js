@@ -1,5 +1,9 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "الساعات",
+  "Set once": "تُضبط مرة واحدة",
+  "Connections": "الاتصالات",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخر مجموعة: {0}",
   "Your note for this exercise": "ملاحظتك لهذا التمرين",
@@ -5946,4 +5950,12 @@ export default {
   "Own setup for {0}": "إعداد خاص لـ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "يتبع الصفحة الرئيسية. شغّل هذا لتختار تفاصيل هذا النوع وأزراره بنفسك.",
   "Preview on": "المعاينة على",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "أقصر قليلًا",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "تخصيص",
+  "Collapsed": "مطوية",
+  "Hide": "إخفاء",
+  "Totals": "الإجماليات",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
 }

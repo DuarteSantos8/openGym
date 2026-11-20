@@ -1,5 +1,9 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "घड़ियाँ",
+  "Set once": "एक बार सेट करें",
+  "Connections": "कनेक्शन",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "पिछला सेट: {0}",
   "Your note for this exercise": "इस एक्सरसाइज़ के लिए आपका नोट",
@@ -5891,4 +5895,12 @@ export default {
   "Own setup for {0}": "{0} के लिए अपना सेटअप",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "मुख्य पेज के हिसाब से चलता है। इस प्रकार के लिए डिटेल और बटन खुद चुनने के लिए इसे चालू करें।",
   "Preview on": "प्रीव्यू यहां",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "थोड़ा छोटा",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "अनुकूलित करें",
+  "Collapsed": "समेटा हुआ",
+  "Hide": "छिपाएँ",
+  "Totals": "कुल",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
 }

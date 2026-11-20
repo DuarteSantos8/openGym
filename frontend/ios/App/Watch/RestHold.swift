@@ -31,7 +31,10 @@ struct RestView: View {
     var body: some View {
         GeometryReader { g in
             let roomy = g.size.height >= Self.roomyHeight && !typeSize.isAccessibilitySize
-            let buttonHeight: CGFloat = store.canRateLast ? 38 : Theme.tap // the effort chips need the 6 pt
+            let buttonHeight: CGFloat = roomy ? 38 : 36
+            // Paused on the phone: only Skip (it ends the phone's rest too); −15 and +15 stand greyed out
+            // until the phone's Resume brings the rest back.
+            let paused = store.restPausedAt != nil
             VStack(spacing: 3) {
                 // Level with the system clock (the page has no title to push it down): the ‹ glass circle,
                 // and the heart rate just left of the clock. The row is always there, so the first reading moves nothing.
@@ -57,8 +60,8 @@ struct RestView: View {
                     // 3.5: a timeline's first entry counts as already shown, so 3 would never fire.
                     TimelineView(.explicit([3.5, 3, 2, 1].map { end.addingTimeInterval(-$0) })) { ctx in
                         let left = end.timeIntervalSince(ctx.date > Date() ? Date() : ctx.date) // before its first entry ctx.date is that future entry, not now
-                        let last = left > 0.5 && left < 3.5 ? Int(left.rounded()) : 0
-                        Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+                        let last = !paused && left > 0.5 && left < 3.5 ? Int(left.rounded()) : 0
+                        countdown
                             .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
                             .foregroundStyle((last > 0 ? Theme.orange : accent).opacity(dimmed ? 0.75 : 1))
                             .lineLimit(1)
@@ -102,7 +105,7 @@ struct RestView: View {
                     let tap = changeTap
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) { if changeTap == tap { change = 0 } }
                 }
-                if store.show.restRing {
+                if store.show.restRing && store.restPausedAt == nil {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
                         .frame(height: 4)
                         .padding(.horizontal, 4)
@@ -115,32 +118,66 @@ struct RestView: View {
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "−15 s"))
+                    .disabled(paused).opacity(paused ? 0.35 : 1)
                     Button { store.skipRestAndGo() } label: {
-                        Text("Skip").font(.system(.callout, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: .infinity)
+                        // The word when it fits whole, else the symbol: "Überspringen" and "Пропустить" were
+                        // cut to "Überspring…" between ±15 on a 40 mm.
+                        ViewThatFits(in: .horizontal) {
+                            Text("Skip").font(.system(.callout, design: .rounded).weight(.semibold)).lineLimit(1).fixedSize()
+                            Text("Skip").font(.system(.footnote, design: .rounded).weight(.semibold)).lineLimit(1).fixedSize()
+                            Image(systemName: "forward.end.fill").font(.system(.callout, design: .rounded).weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
+                    .accessibilityLabel(Text("Skip"))
                     Button { store.addRest(15) } label: {
                         Text(verbatim: "+15").font(.system(.body, design: .rounded).weight(.bold)).frame(width: 40)
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "+15 s"))
+                    .disabled(paused).opacity(paused ? 0.35 : 1)
                 }
+                // In from the edges: with Up next off the row sits low, where the screen's corners round off.
+                .padding(.horizontal, 4)
                 .opacity(dimmed ? 0 : 1)
                 // Always On hides the chips but keeps their place, so the screen is the same one
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
+                        // In from the edges like the ±15 row: on a 42 mm Series 12 the 0 and 3+ chips ran
+                        // under the display's rounded edge (fine in a screenshot, cut on the wrist).
+                        .padding(.horizontal, 4)
                 }
-                // With the chips: Up next on one line, so the countdown keeps its room on every case size.
-                if store.show.showNext { upNext(roomy: roomy, name: !store.canRateLast).padding(.top, 2) }
+                if store.show.showNext { upNext(roomy: roomy, name: true, bigCase: g.size.height >= Self.roomyHeight).padding(.top, 2) }
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
             .overlay(alignment: .bottomLeading) { // the toolbar badges are hidden here (SessionBadges)
-                SyncPill().padding(.leading, 4).padding(.bottom, 14)
+                SyncPill().padding(.leading, 16).padding(.bottom, 14) // clear of the rounded bottom corner
             }
         }
         .ignoresSafeArea(edges: [.top, .bottom])
         .padding(.horizontal, 2)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+        // The rest's end even if its timer never fired (the app was away then, #1101): the set page
+        // comes back instead of a countdown standing at 0:00.
+        .task(id: end) {
+            let wait = end.timeIntervalSinceNow
+            if wait > 0 { try? await Task.sleep(nanoseconds: UInt64(min(wait, 3600) * 1_000_000_000) + 50_000_000) }
+            guard !Task.isCancelled else { return }
+            store.restRanOutIfDue()
+        }
+    }
+
+    /// The time left, counting down; standing still while the phone has the rest paused.
+    @ViewBuilder private var countdown: some View {
+        if let paused = store.restPausedAt {
+            Text(verbatim: RestMath.clock(end.timeIntervalSince(paused)))
+                .accessibilityLabel(Text("Rest"))
+                .accessibilityValue(Text(verbatim: RestMath.clock(end.timeIntervalSince(paused))))
+        } else {
+            Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+                .accessibilityLabel(Text("Rest"))
+        }
     }
 
     private var upNextLabel: some View {
@@ -149,16 +186,11 @@ struct RestView: View {
     }
 
     /// "Up next" in the accent, the set after it ("Bench Press, set 3 · Left") and what to load (#911).
-    @ViewBuilder private func upNext(roomy: Bool, name: Bool) -> some View {
+    @ViewBuilder private func upNext(roomy: Bool, name: Bool, bigCase: Bool) -> some View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 4) {
-                    upNextLabel
-                    if !name, let numbers = store.nextSetNumbers { Text(verbatim: numbers).font(TypeScale.second.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.label2).lineLimit(1).minimumScaleFactor(0.85) }
-                    Spacer(minLength: 4)
-                    if name { RestReadouts() } // with the chips the load needs the width; the time is on Metrics
-                }
-                if name && !typeSize.isAccessibilitySize {
+                HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
+                if name { // at accessibility sizes too: the countdown above gives way (it fills what is left)
                     Group {
                         if let side = store.sideUp {
                             Text("\(e.name), set \(Int64(SetNav.place(e, si).n))") + Text(verbatim: " · ")
@@ -173,17 +205,18 @@ struct RestView: View {
                     .truncationMode(.middle)
                     .minimumScaleFactor(0.85)
                 }
-                if name, let numbers = store.nextSetNumbers {
+                if let numbers = store.nextSetNumbers {
                     Text(verbatim: numbers)
                         .font(TypeScale.second.weight(.semibold).monospacedDigit())
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
+                        // The lowest line, where the 45-49 mm screens round off: "62.5 kg × 8" lost its 6 there.
+                        .padding(.leading, bigCase ? 10 : 0) // by the case, not the text size (roomy is off at the largest sizes)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 4)
-            .fixedSize(horizontal: false, vertical: true) // the countdown gives way, not these lines (they shrank with the effort chips)
+            .padding(.horizontal, 4) // trailing too: the workout time sat on the right edge (42 mm Series 12)
         }
     }
 }
@@ -229,7 +262,6 @@ struct RestReadouts: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: true, vertical: false)
-                .accessibilityLabel(Text("Time"))
         }
     }
 }
@@ -260,6 +292,8 @@ struct EffortChips: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The tapped chip grows into the rated capsule, and back (Direction B).
     private var morph: Animation? { reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.62) }
+    /// The label's line grows with the text size (it is footnote, allowed up to accessibility2).
+    @ScaledMetric(relativeTo: .footnote) private var labelHeight: CGFloat = 22
 
     /// The exercise and set the chips rate: the one just done.
     private var rated: Text? {
@@ -270,7 +304,7 @@ struct EffortChips: View {
     }
 
     var body: some View {
-        content.frame(height: (label ? 22 : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
+        content.frame(height: (label ? labelHeight : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
     }
 
     @ViewBuilder private var content: some View {

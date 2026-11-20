@@ -119,6 +119,12 @@ describe('exercise rows with a trailing button', () => {
     const host = render(<Library />)
     const row = [...host.querySelectorAll('.list .item.tap-host')][0]
     expect(row.getAttribute('role')).toBeNull()
+    // Forty rows, forty plus buttons: each says which exercise it adds (P4), the tooltip stays short.
+    const adds = [...host.querySelectorAll('.lib-add')]
+    expect(adds.length).toBeGreaterThan(5)
+    expect(new Set(adds.map(b => b.getAttribute('aria-label'))).size).toBe(adds.length)
+    expect(adds[0].getAttribute('aria-label')).toBe(`Add “${row.querySelector('.tt').textContent.replace(/\b\w/g, c => c.toUpperCase())}” to my plan`)
+    expect(adds[0].title).toBe('Add to my plan')
     act(() => row.querySelector('.lib-add').click())
     const afterAdd = useUI.getState().sheets.slice()
     expect(afterAdd.length).toBeLessThanOrEqual(1)

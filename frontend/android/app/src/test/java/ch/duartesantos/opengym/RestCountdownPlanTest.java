@@ -101,4 +101,34 @@ public class RestCountdownPlanTest {
         assertTrue(RestCountdownPlan.alreadyRang(end, end, false));
         assertFalse(RestCountdownPlan.alreadyRang(end + 1_000, end, false));
     }
+
+    @Test
+    public void withTheAppOpenTheCountdownLeavesTheEndToThePageWhichRingsIt() {
+        // Android 1.4.5: the card's countdown reached the end first, claimed it and kept quiet
+        // because the app was in front; the page's tone a few hundred ms later was refused as
+        // already rung. Beeps for the last seconds, then silence (reported by mail, 2026-11-17).
+        RestCountdownPlan.EndLedger ledger = new RestCountdownPlan.EndLedger();
+        long end = 1_800_000_000_000L;
+        assertFalse(ledger.claimNative(end, true));
+        assertTrue(ledger.claimPage(end + 400));
+        // and once the page rang it, an alarm landing after the app went away stays quiet (#1007)
+        assertFalse(ledger.claimNative(end, false));
+        assertTrue(ledger.pageRang(end));
+    }
+
+    @Test
+    public void inTheBackgroundTheEndRingsOnceWhoeverComesFirst() {
+        long end = 1_800_000_000_000L;
+        // countdown and exact alarm at the same instant: one rings
+        RestCountdownPlan.EndLedger both = new RestCountdownPlan.EndLedger();
+        assertTrue(both.claimNative(end, false));
+        assertFalse(both.claimNative(end, false));
+        assertFalse(both.pageRang(end));
+        // the alarm rang, then the WebView thaws and catches up: no second chime (#1007)
+        RestCountdownPlan.EndLedger thaw = new RestCountdownPlan.EndLedger();
+        assertTrue(thaw.claimNative(end, false));
+        assertFalse(thaw.claimPage(end + 1_500));
+        // the next rest is its own end
+        assertTrue(thaw.claimPage(end + 90_000));
+    }
 }

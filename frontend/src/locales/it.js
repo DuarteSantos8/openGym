@@ -2,6 +2,10 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Orologi",
+  "Set once": "Da impostare una volta",
+  "Connections": "Connessioni",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ultima serie: {0}",
   "Your note for this exercise": "La tua nota per questo esercizio",
@@ -5901,4 +5905,12 @@ export default {
   "Own setup for {0}": "Scelte proprie per {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue la pagina principale. Attivalo per scegliere tu i dettagli e i pulsanti di questo tipo.",
   "Preview on": "Anteprima su",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "un po’ più corto",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Personalizza",
+  "Collapsed": "Compressa",
+  "Hide": "Nascondi",
+  "Totals": "Totali",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
 }

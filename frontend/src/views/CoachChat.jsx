@@ -27,7 +27,7 @@ import { scheduleModeOf } from '../lib/rotation.js'
 import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
-  markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
+  markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, decisionBody, logEntry,
   changeTitle, changeValues, changeMeaning, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
@@ -38,7 +38,9 @@ import { ActionCards, Sources } from '../components/CoachActions.jsx'
 import { CoachSeesSection } from '../components/CoachSees.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
-import { EXIDX } from '../lib/exercises.js'
+import { EXIDX, isCustomEx } from '../lib/exercises.js'
+// The Coach names exercises in English, title-cased by its CSS: your own keep the casing you typed.
+const typed = id => (isCustomEx(EXIDX[id]) ? ' nocap' : '')
 import { activeProfile } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
@@ -58,7 +60,9 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
+  const gate = useCoachGate()
+  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -67,7 +71,6 @@ export default function CoachChat() {
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
 
-  const gate = useCoachGate()
   const ok = gate.ok
   const ready = ok && hasConsent(S) && !!S.coach?.profile
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
@@ -129,13 +132,22 @@ export default function CoachChat() {
         ...(Array.isArray(pending.sources) && pending.sources.length ? { sources: pending.sources.slice(0, 8) } : {})
       })
     })
-    resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
+    resolvePending({ id: pending.id, accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
   }, [pending?.id, !!job])
+
+  // A card decided here that the server still lists (its resolve was lost, say offline): the same
+  // answer again, when the chat opens or the server's card changes. The id keeps a late one harmless.
+  useEffect(() => {
+    const decided = pending && (S.coach?.log || []).find(l => l.proposalId === pending.id)
+    if (decided) resolvePending(decisionBody(decided)).catch(() => {}).finally(refresh)
+  }, [pending?.id])
 
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
   if (!ready) return null
   const coach = S.coach || emptyCoach()
+  // Decided here but the server has not caught up yet: the card must not come back for a second tap.
+  const live = pending && !(coach.log || []).some(l => l.proposalId === pending.id) ? pending : null
   const community = !!config?.coach?.community && !DEMO && !(MOBILE && coachMode === 'byok')
 
   const send = async () => {
@@ -148,7 +160,7 @@ export default function CoachChat() {
       // answer that there is no workout to look at, which is how people got stuck. Anything else
       // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
       // review the whole plan. A review is the chip and the menu's, as it always was.
-      if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
+      if (live?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
       else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
@@ -194,7 +206,7 @@ export default function CoachChat() {
   const showHistory = () => openSheet(close => <HistorySheet S={S} close={close} openSheet={openSheet} />)
   const showCohort = () => openSheet(() => <CohortSheet S={S} update={update} toast={toast} />)
 
-  const idle = !job && !pending
+  const idle = !job && !live
   const menu = () => openSheet(close => <div className="chat-menu">
     <h3>{t('Coach')}</h3>
     <div className="sect-b">
@@ -224,8 +236,8 @@ export default function CoachChat() {
     }
   })
 
-  const status = job || pending?.kind === 'ask' ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
-  const placeholder = pending?.kind === 'create'
+  const status = job || pending?.kind === 'ask' ? t('thinking…') : live ? t('has a suggestion for you') : t('here when you need it')
+  const placeholder = live?.kind === 'create'
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
 
@@ -247,14 +259,14 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && pending.kind === 'adapt' && <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
-        <AdaptProposal p={pending} onDone={refresh} />
+      {live && !job && live.kind === 'adapt' && <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
+        <AdaptProposal p={live} onDone={refresh} />
       </div>}
-      {pending && !job && pending.kind !== 'ask' && pending.kind !== 'adapt' && (pending.kind === 'create'
-        ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
-        : pending.kind === 'debrief'
-          ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
-          : <ReviewCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />)}
+      {live && !job && live.kind !== 'ask' && live.kind !== 'adapt' && (live.kind === 'create'
+        ? <PlanCard p={live} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
+        : live.kind === 'debrief'
+          ? <DebriefCard p={live} S={S} update={update} toast={toast} refresh={refresh} />
+          : <ReviewCard p={live} S={S} update={update} toast={toast} refresh={refresh} />)}
 
       <div ref={endRef} />
     </div>
@@ -366,9 +378,8 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
-      resolvePending({ accepted: ['plan'] }).catch(() => {})
+      resolvePending({ id: p.id, accepted: ['plan'] }).catch(() => {}).finally(refresh)
       toast(t('Your plan is live'))
-      refresh()
     } catch (e) { toast(e.message || t('That proposal can’t be read.')) }
   }
   const discard = () => confirmSheet({
@@ -376,8 +387,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
     confirmText: t('Discard'), danger: true,
     onConfirm: () => {
       update(s => { const ref = recordDismissal(s, p); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Discarded. Tell me what was off and I will build a different one.') }) })
-      resolvePending({ dismissed: true }).catch(() => {})
-      refresh()
+      resolvePending({ id: p.id, dismissed: true }).catch(() => {}).finally(refresh)
     }
   })
 
@@ -424,7 +434,7 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
   <div className="pcard-rt-h"><b><Icon name={glyphOf(r.emoji)} />{r.name}</b><span>{tn('{0} exercise', '{0} exercises', r.ex.length)}</span></div>
   {!!r.why && <div className="pcard-why">{r.why}</div>}
   {r.ex.map((e, i) => <div key={i} className="pcard-ex">
-    <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
+    <div className="pcard-ex-r"><span className={'pcard-ex-n' + typed(e.id)}>{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
     {!!e.why && <div className="pcard-ex-w">{e.why}</div>}
     {/* What the routine keeps (#1003): the cue shown under the exercise in every workout, and
         the backups a swap offers first. */}
@@ -449,9 +459,8 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         const res = applyChangeSet(s, marked, ids)
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: tn('Applied {0} change to your plan.', 'Applied {0} changes to your plan.', ids.length) })
       })
-      resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
+      resolvePending({ id: p.id, accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {}).finally(refresh)
       toast(tn('{0} change applied', '{0} changes applied', ids.length))
-      refresh()
     } catch (e) { toast(e.message || t('Could not apply those changes')) }
   }
   const discard = () => confirmSheet({
@@ -459,8 +468,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
     confirmText: t('Dismiss'), danger: true,
     onConfirm: () => {
       update(s => { const ref = recordDismissal(s, marked); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Got it. I won’t suggest these again without new evidence.') }) })
-      resolvePending({ dismissed: true }).catch(() => {})
-      refresh()
+      resolvePending({ id: p.id, dismissed: true }).catch(() => {}).finally(refresh)
     }
   })
 
@@ -553,13 +561,13 @@ function Insights({ S, window: win, compact }) {
           {bw.delta > 0 ? '+' : ''}{fmtNum(bw.delta)} {S.unit}{bw.goal != null ? ` · ${t('goal')} ${fmtNum(bw.goal)}` : ''}
         </span>
       </div>
-      <div className="chart"><LineChart points={bw.points} h={compact ? 96 : 120} unit={S.unit} goal={bw.goal} axes={!compact} /></div>
+      <div className="chart"><LineChart points={bw.points} h={compact ? 96 : 120} unit={S.unit} goal={bw.goal} axes={!compact} ariaLabel={t('Body weight')} /></div>
     </div>}
 
     {!!ins.strength.length && <div className="ins-block">
       <div className="ins-h"><span>{t('Estimated 1RM')}</span><span className="dim">{t('first → last session')}</span></div>
       {ins.strength.map(x => <div key={x.id} className="ins-row">
-        <span className="ins-row-n">{x.name}</span>
+        <span className={'ins-row-n' + typed(x.id)}>{x.name}</span>
         <span className="ins-row-v"><span className="tag">{fmtNum(x.first)}</span><Icon name="chevronRight" /><span className="tag acc">{fmtNum(x.last)}</span></span>
         <span className={'ins-delta' + (x.delta > 0 ? ' up' : x.delta < 0 ? ' down' : '')}>{x.delta > 0 ? '▲' : x.delta < 0 ? '▼' : '•'} {Math.abs(x.pct)}%</span>
       </div>)}
@@ -604,7 +612,7 @@ function DebriefBody({ p, S }) {
       {!!live.lifts.length && <div className="ins-block">
         <div className="ins-h"><span>{t('Best set, estimated 1RM')}</span></div>
         {live.lifts.slice(0, 6).map(x => <div key={x.id} className="ins-row">
-          <span className="ins-row-n">{x.name} <span className="dim">{isoRun(`${fmtNum(x.w)}×${x.r}`)}</span></span>
+          <span className={'ins-row-n' + typed(x.id)}>{x.name} <span className="dim">{isoRun(`${fmtNum(x.w)}×${x.r}`)}</span></span>
           <span className="ins-row-v"><span className="tag acc">{fmtNum(x.est)}</span></span>
           {x.prev != null && <span className={'ins-delta' + (x.est > x.prev ? ' up' : x.est < x.prev ? ' down' : '')}>{x.est > x.prev ? '▲' : x.est < x.prev ? '▼' : '•'} {fmtNum(Math.abs(x.est - x.prev))}</span>}
         </div>)}
@@ -625,9 +633,8 @@ const scoreWord = s => s >= 9 ? t('Excellent session') : s >= 7 ? t('Good sessio
 function DebriefCard({ p, S, update, toast, refresh }) {
   const done = () => {
     update(s => { const ref = recordDebrief(s, p); appendChat(s, { role: 'coach', kind: 'debrief', ref, text: '' }) })
-    resolvePending({ accepted: ['debrief'] }).catch(() => {})
+    resolvePending({ id: p.id, accepted: ['debrief'] }).catch(() => {}).finally(refresh)
     toast(t('Kept in your Coach history'))
-    refresh()
   }
   return <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
     <div className="pcard">

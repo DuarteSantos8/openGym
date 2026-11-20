@@ -1,5 +1,9 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Relógios",
+  "Set once": "Definir uma vez",
+  "Connections": "Ligações",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Última série: {0}",
   "Your note for this exercise": "A tua nota para este exercício",
@@ -5891,4 +5895,12 @@ export default {
   "Own setup for {0}": "Configuração própria para {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Liga isto para escolheres tu os detalhes e os botões deste tipo.",
   "Preview on": "Pré-visualizar em",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "um pouco mais curto",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Personalizar",
+  "Collapsed": "Recolhido",
+  "Hide": "Ocultar",
+  "Totals": "Totais",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. As setas mudam a ordem.",
 }

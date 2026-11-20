@@ -74,9 +74,8 @@ public final class RestAlert {
     private static final long[] VIBRATE = new long[] {0, 200, 100, 200, 100, 400};
 
     private static AudioTrack current;
-    private static long firedFor;
-    // Whether the end in firedFor was played by the page (RestAlertPlugin.tone with its `at`).
-    private static boolean firedByPage;
+    // The end that rang last, and whether the page played it (RestAlertPlugin.tone with its `at`).
+    private static final RestCountdownPlan.EndLedger ledger = new RestCountdownPlan.EndLedger();
     // The end of the rest booked last (schedule, updateAlarm, chainNext): an alarm for another
     // end is a left-over one (#995). 0 after cancel, and after the process restarted.
     private static volatile long bookedAt;
@@ -306,27 +305,20 @@ public final class RestAlert {
     /**
      * One alert per end: the countdown and an exact alarm reach the same end in the same instant,
      * and the page may have played it on screen already (#1007: a WebView that thawed late chimed
-     * a second time after the alarm). Near enough counts when the page is one of the two.
+     * a second time after the alarm). Near enough counts when the page is one of the two. With
+     * the app on screen nothing is claimed here: the page plays that end (see EndLedger).
      */
-    private static synchronized boolean claim(long at) {
-        if (RestCountdownPlan.alreadyRang(at, firedFor, firedByPage)) return false;
-        firedFor = at;
-        firedByPage = false;
-        return true;
+    private static synchronized boolean claim(long at, boolean appInFront) {
+        return ledger.claimNative(at, appInFront);
     }
 
     /** The page is about to play the end of `at` itself: false when this end already rang. */
     static synchronized boolean claimForPage(long at) {
-        if (RestCountdownPlan.alreadyRang(at, firedFor, true)) return false;
-        if (at > 0) {
-            firedFor = at;
-            firedByPage = true;
-        }
-        return true;
+        return ledger.claimPage(at);
     }
 
     private static synchronized boolean pageRang(long at) {
-        return firedByPage && RestCountdownPlan.alreadyRang(at, firedFor, true);
+        return ledger.pageRang(at);
     }
 
     /** Runs off the main thread. Holds the CPU until the tone has finished. */
@@ -341,11 +333,6 @@ public final class RestAlert {
         if (verdict == RestCountdownPlan.REBOOK) {
             Log.w("openGym", "rest alarm came " + (at - System.currentTimeMillis()) + " ms early, booked again");
             rebook(ctx, intent, at);
-            return;
-        }
-        if (!claim(at)) {
-            // The page rang this end on screen: the card is the only thing left to take down.
-            if (pageRang(at)) stopCountdown(ctx);
             return;
         }
         PowerManager.WakeLock cpu = null;
@@ -366,12 +353,16 @@ public final class RestAlert {
                 // Called off or replaced while it waited (skip, a new rest).
                 if (booked > 0 && bookedAt != booked) return;
             }
-            // The app is on screen: the page has chimed, buzzed and flashed the end itself, and
-            // its bar says Ready. A tone and a banner on top would say it twice. Asking the page
-            // to hush this alarm instead raced it: the page's last tick and this alarm land in
-            // the same few milliseconds, and whichever came first decided.
-            if (RestAlertPlugin.appInFront()) {
-                stopCountdown(ctx);
+            // The app is on screen: the page chimes, buzzes and flashes the end itself, and its
+            // bar says Ready. A tone and a banner on top would say it twice. Asking the page to
+            // hush this alarm instead raced it: the page's last tick and this alarm land in the
+            // same few milliseconds, and whichever came first decided. So this end is not
+            // claimed here, and the page's tone (RestAlertPlugin.tone) still gets to ring it.
+            boolean inFront = RestAlertPlugin.appInFront();
+            if (!claim(at, inFront)) {
+                // In front, or the page rang this end on screen: the card is all that is left.
+                // Otherwise the countdown and the alarm both reached it and the other one rings.
+                if (inFront || pageRang(at)) stopCountdown(ctx);
                 return;
             }
             pokeScreen(ctx);

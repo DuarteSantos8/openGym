@@ -28,6 +28,7 @@
 "Start without weighing in" = "شروع بدون وزن‌کشی";
 "Body weight" = "وزن بدن";
 "Effort" = "شدت";
+"Muscles" = "عضلات";
 "None" = "هیچ‌کدام";
 "Exercises" = "تمرینات";
 "Save" = "ذخیره";
@@ -48,6 +49,7 @@
 "Taken to failure" = "تا ناتوانی";
 "Drop set" = "دراپ‌ست";
 "More" = "بیشتر";
+"Back" = "برگشت";
 "Set %lld" = "ست %lld";
 "Add set" = "افزودن";
 "Warm-up disc" = "گرم‌کردن";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "هنوز شدتی ثبت نشده";
 "max" = "بیشینه";
 "min" = "کمینه";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Apple Health را در iPhone روشن کن تا openGym هنگام استراحت و نگه‌داشتن روی صفحه بماند.";
+"No sets yet" = "هنوز ستی نیست";
+"+%lld more" = "+%lld مورد دیگر";
+"%@ sets" = "%@ ست";
 "Failure" = "شکست";
 "Drop" = "دراپ";
 "Set %lld added" = "ست %lld اضافه شد";

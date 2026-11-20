@@ -1,5 +1,9 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "워치",
+  "Set once": "한 번만 설정",
+  "Connections": "연결",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",
@@ -5891,4 +5895,12 @@ export default {
   "Own setup for {0}": "{0} 전용 설정",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "메인 페이지를 따릅니다. 이 유형의 세부 정보와 버튼을 직접 고르려면 켜세요.",
   "Preview on": "미리 볼 화면",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "조금 짧게",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "맞춤 설정",
+  "Collapsed": "접힘",
+  "Hide": "숨기기",
+  "Totals": "합계",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
 }

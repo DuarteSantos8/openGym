@@ -28,6 +28,7 @@
 "Start without weighing in" = "เริ่มโดยไม่ชั่งน้ำหนัก";
 "Body weight" = "น้ำหนักตัว";
 "Effort" = "ความหนัก";
+"Muscles" = "กล้ามเนื้อ";
 "None" = "ไม่มี";
 "Exercises" = "ท่าออกกำลังกาย";
 "Save" = "บันทึก";
@@ -48,6 +49,7 @@
 "Taken to failure" = "จนหมดแรง";
 "Drop set" = "ดรอปเซ็ต";
 "More" = "มาก";
+"Back" = "กลับ";
 "Set %lld" = "เซ็ต %lld";
 "Add set" = "เพิ่ม";
 "Warm-up disc" = "วอร์มอัพ";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "ยังไม่ได้ให้คะแนนความหนัก";
 "max" = "สูงสุด";
 "min" = "ต่ำสุด";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "เปิด Apple Health บน iPhone แล้ว openGym จะอยู่บนหน้าจอตลอดช่วงพักและท่าค้าง";
+"No sets yet" = "ยังไม่มีเซ็ต";
+"+%lld more" = "+%lld อื่นๆ";
+"%@ sets" = "%@ เซ็ต";
 "Failure" = "หมดแรง";
 "Drop" = "ดรอป";
 "Set %lld added" = "เพิ่มเซต %lld แล้ว";

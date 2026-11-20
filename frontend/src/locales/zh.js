@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手表",
+  "Set once": "设置一次",
+  "Connections": "连接",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",
@@ -5891,4 +5895,12 @@ export default {
   "Own setup for {0}": "{0}的专属设置",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟随主页面。打开它，就能自己为这个类型挑选细节和按钮。",
   "Preview on": "预览位置",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "缩短一点",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自定义",
+  "Collapsed": "已折叠",
+  "Hide": "隐藏",
+  "Totals": "总计",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
 }

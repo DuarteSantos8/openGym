@@ -36,11 +36,12 @@ final class SetNavTests: XCTestCase {
         XCTAssertNil(event["hr"], "the phone keeps the set's heart rate")
         XCTAssertNil(event["sec"])
         // only the keys a setDone already has
-        let known: Set<String> = ["id", "type", "wid", "exId", "entryIdx", "setIdx", "at", "w", "r", "sec", "side", "hr", "rpe", "rir"]
+        let known: Set<String> = ["id", "type", "wid", "exId", "entryIdx", "setIdx", "at", "w", "r", "sec", "side", "hr", "rpe", "rir", "off", "sid"]
         XCTAssertTrue(Set(event.keys).isSubset(of: known))
         XCTAssertEqual(s.workout?.entries[0].sets[0].w, 62.5)
         XCTAssertEqual(s.workout?.entries[0].sets[0].done, true)
-        XCTAssertEqual(s.pending[SessionCore.key("b", 0)]?.id, "fix1", "kept until the phone has it")
+        XCTAssertEqual(s.pending[SessionCore.rowKey(sid: nil, entry: 0, exId: "b", set: 0)]?.id, "fix1", "kept until the phone has it")
+        XCTAssertNil(event["restEnd"], "a fix starts no rest and moves none")
     }
 
     func testOnlyALoggedSetCanBeFixedAndNeverCardio() {
@@ -108,6 +109,10 @@ final class SetNavTests: XCTestCase {
         XCTAssertTrue(CrownWheel.choices(step: 0.1, range: 0...10, current: 7.3).contains(7.3), "no float drift off the grid")
         XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 8).count, 201)
         XCTAssertEqual(CrownWheel.choices(step: 0, range: 0...10, current: 3), [3])
+        let hold = CrownWheel.choices(step: 5, range: 1...3600, current: 45)
+        XCTAssertEqual(Array(hold.prefix(3)), [1, 5, 10]); XCTAssertTrue(hold.contains(45)); XCTAssertFalse(hold.contains(46))
+        XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 201).last, 201, "a synced 201 opens on 201, not on 0")
+        XCTAssertEqual(CrownWheel.choices(step: 1e-6, range: 0...700, current: 60), [60], "a bogus phone step builds no giant wheel")
     }
 
     func testLastTimeKeepsOneLoadAndTheReps() {

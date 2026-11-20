@@ -3,7 +3,8 @@
 // watch's events applied once each through the workout screen's own actions, drained from the
 // native queue and acknowledged only when done.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION } from './watch-sync.js'
+import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION, watchExtras } from './watch-sync.js'
+import { readWatchPrefs } from './watch-settings.js'
 
 const state = (over = {}) => ({
   unit: 'kg', restSec: 90, workouts: [], routines: [],
@@ -41,6 +42,10 @@ describe('the snapshot', () => {
     expect(buildSnapshot({ unit: 'kg' })).toEqual({ v: SNAPSHOT_VERSION, unit: 'kg', restSec: 0, active: null, ready: null })
     expect(buildSnapshot(state(), { timer: { endsAt: 5, paused: true } }).active.rest).toBeNull()
     expect(buildSnapshot(state(), { timer: { endsAt: 5, ready: true } }).active.rest).toBeNull()
+    // #1149: a paused rest says so, so the watch keeps its countdown; a skipped one (no timer) does not
+    expect(buildSnapshot(state(), { timer: { endsAt: 5, paused: true } }).active.restPaused).toBe(true)
+    expect(buildSnapshot(state(), { timer: null }).active).not.toHaveProperty('restPaused')
+    expect(buildSnapshot(state(), { timer: { endsAt: 5, ready: true } }).active).not.toHaveProperty('restPaused')
     expect(buildSnapshot(state({ unit: 'lb' })).active.unit).toBe('lb')
   })
 
@@ -235,6 +240,16 @@ describe('the workout\'s animations for the watch', () => {
     expect(clipsFor({ active: null }, {})).toEqual([])
   })
 
+  it('names a clip for Wear OS only from a 180 px build, and only an animated WebP in the package', async () => {
+    const { wearClip } = await import('./watch-sync.js')
+    expect(wearClip('exercise-media/clip/0001.webp', 180)).toBe(true)
+    expect(wearClip('exercise-media/clip/0001.webp', 240)).toBe(false)   // the Plus APK
+    expect(wearClip('exercise-media/clip/0001.webp', 360)).toBe(false)   // the HD APK
+    expect(wearClip('exercise-media/clip/0001.mp4', 180)).toBe(false)
+    expect(wearClip('../secret.webp', 180)).toBe(false)
+    expect(wearClip('https://example.com/a.webp', 180)).toBe(false)
+  })
+
   it('or the downloaded 240 px pack of the figure, when it is there', async () => {
     const { clipsFor } = await import('./watch-sync.js')
     const packs = { 'anim-240-male': { state: 'ready', base: 'opengym-pack://anim-240-male' } }
@@ -305,5 +320,24 @@ describe('patching a saved workout', () => {
     expect(s.workouts[0].entries[0].sets[0]).toMatchObject({ w: 65, r: 6, at: 3000 })
     expect(recount).toHaveBeenCalledTimes(2)
     expect(s.workouts[0].vol).toBe(1)
+  })
+})
+
+describe('the birth year for the watch zones', () => {
+  const y = new Date().getFullYear()
+  it('sends a year that gives an age of 10 to 100', () => {
+    expect(watchExtras({ birthYear: y - 38 }).birthYear).toBe(y - 38)
+    expect(watchExtras({ birthYear: String(y - 10) }).birthYear).toBe(y - 10)
+    expect(watchExtras({ birthYear: y - 100 }).birthYear).toBe(y - 100)
+  })
+  it('sends nothing for no year, a junk year or an age outside 10 to 100', () => {
+    for (const birthYear of [undefined, null, 'abc', 0, y - 9, y - 101, y + 1]) expect(watchExtras({ birthYear })).not.toHaveProperty('birthYear')
+  })
+  it('sends nothing when the zones are off on the watch', () => {
+    expect(watchExtras({ birthYear: y - 38 }, { zones: false })).not.toHaveProperty('birthYear')
+    expect(watchExtras({ birthYear: y - 38 }, { zones: true }).birthYear).toBe(y - 38)
+    // the stored prefs keep the switch, so the off reaches watchExtras
+    const off = readWatchPrefs({ getItem: () => JSON.stringify({ show: { zones: false } }) }).show
+    expect(watchExtras({ birthYear: y - 38 }, off)).not.toHaveProperty('birthYear')
   })
 })

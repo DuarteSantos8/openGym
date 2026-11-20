@@ -1,5 +1,9 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Годинники",
+  "Set once": "Налаштовується один раз",
+  "Connections": "Підключення",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Останній підхід: {0}",
   "Your note for this exercise": "Твоя нотатка до цієї вправи",
@@ -5888,4 +5892,12 @@ export default {
   "Own setup for {0}": "Власний набір для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Як на головній сторінці. Увімкни, щоб самостійно вибрати деталі й кнопки для цього типу.",
   "Preview on": "Попередній перегляд на",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "трохи коротше",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Налаштувати",
+  "Collapsed": "Згорнута",
+  "Hide": "Сховати",
+  "Totals": "Підсумки",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
 }

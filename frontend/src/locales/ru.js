@@ -1,5 +1,9 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Часы",
+  "Set once": "Настраивается один раз",
+  "Connections": "Подключения",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Последний подход: {0}",
   "Your note for this exercise": "Твоя заметка к этому упражнению",
@@ -5895,4 +5899,12 @@ export default {
   "Own setup for {0}": "Свой набор для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Как на главной странице. Включи, чтобы самостоятельно выбрать детали и кнопки для этого типа.",
   "Preview on": "Предпросмотр на",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "чуть покороче",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Настроить",
+  "Collapsed": "Свёрнута",
+  "Hide": "Скрыть",
+  "Totals": "Итоги",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
 }

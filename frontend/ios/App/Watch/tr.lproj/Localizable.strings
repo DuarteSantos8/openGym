@@ -28,6 +28,7 @@
 "Start without weighing in" = "Tartılmadan başla";
 "Body weight" = "Vücut ağırlığı";
 "Effort" = "Zorluk";
+"Muscles" = "Kaslar";
 "None" = "Yok";
 "Exercises" = "Egzersizler";
 "Save" = "Kaydet";
@@ -48,6 +49,7 @@
 "Taken to failure" = "Tükenişe kadar";
 "Drop set" = "Drop set";
 "More" = "Çok";
+"Back" = "Geri";
 "Set %lld" = "Set %lld";
 "Add set" = "Ekle";
 "Warm-up disc" = "Isınma";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "Henüz çaba puanlanmadı";
 "max" = "maks.";
 "min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone’da Apple Sağlık’ı aç, openGym dinlenmelerde ve tutuşlarda ekranda kalsın.";
+"No sets yet" = "Henüz set yok";
+"+%lld more" = "+%lld daha";
+"%@ sets" = "%@ set";
 "Failure" = "Tükeniş";
 "Drop" = "Drop";
 "Set %lld added" = "%lld. set eklendi";

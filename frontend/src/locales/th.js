@@ -1,5 +1,9 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "นาฬิกา",
+  "Set once": "ตั้งครั้งเดียว",
+  "Connections": "การเชื่อมต่อ",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "เซ็ตที่แล้ว: {0}",
   "Your note for this exercise": "โน้ตของคุณสำหรับท่านี้",
@@ -5902,4 +5906,12 @@ export default {
   "Own setup for {0}": "ตั้งค่าเฉพาะสำหรับ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "ทำตามหน้าหลัก เปิดเพื่อเลือกรายละเอียดและปุ่มของประเภทนี้เอง",
   "Preview on": "ดูตัวอย่างบน",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "สั้นลงหน่อย",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "ปรับแต่ง",
+  "Collapsed": "ย่อไว้",
+  "Hide": "ซ่อน",
+  "Totals": "ยอดรวม",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
 }

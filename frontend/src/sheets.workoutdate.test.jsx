@@ -217,7 +217,7 @@ describe('changing the duration of a saved workout', () => {
     const before = history()[1]
     const host = render(() => workoutDurationSheet(before))
     act(() => { type(host.querySelector('input.num'), '50') })
-    act(() => { host.querySelector('button[aria-label="Decrease"]').click() })
+    act(() => { host.querySelector('button[aria-label*=": Decrease"]').click() })
     act(() => { button(host, 'Save').click() })
 
     const after = history()[1]

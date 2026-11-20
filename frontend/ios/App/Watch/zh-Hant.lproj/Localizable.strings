@@ -28,6 +28,7 @@
 "Start without weighing in" = "不量體重直接開始";
 "Body weight" = "體重";
 "Effort" = "強度表現";
+"Muscles" = "肌肉";
 "None" = "無";
 "Exercises" = "動作庫";
 "Save" = "儲存";
@@ -48,6 +49,7 @@
 "Taken to failure" = "做到力竭";
 "Drop set" = "遞減組";
 "More" = "較多";
+"Back" = "返回";
 "Set %lld" = "第 %lld 組";
 "Add set" = "新增";
 "Warm-up disc" = "熱身組";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "尚未評定強度";
 "max" = "最高";
 "min" = "最低";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "在 iPhone 上開啟 Apple 健康，休息和靜態支撐時 openGym 就會一直留在螢幕上。";
+"No sets yet" = "還沒有組";
+"+%lld more" = "還有 %lld 個";
+"%@ sets" = "%@ 組";
 "Failure" = "力竭";
 "Drop" = "遞減";
 "Set %lld added" = "已新增第 %lld 組";

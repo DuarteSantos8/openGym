@@ -25,7 +25,7 @@ struct SessionView: View {
             TabView(selection: $store.tab) {
                 OverviewPage().tag(SessionTab.overview)
                 LivePage().tag(SessionTab.set)
-                MetricsStack().tag(SessionTab.metrics)
+                MetricsStack(health: store.health).tag(SessionTab.metrics)
                 MusicPage().tag(SessionTab.music)
             }
             .tabViewStyle(.page)
@@ -384,14 +384,21 @@ struct OverviewPage: View {
         ScrollView {
             if let w = store.workout {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: w.name)
-                        .font(TypeScale.title)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    let p = store.progress
-                    if p.total > 0 {
-                        Text("\(p.done) of \(p.total) sets").font(TypeScale.second).foregroundStyle(Theme.label2)
+                    // The workout's name sits in the screen's top corner, where the round display bites
+                    // (a Series 12 42 mm cut it, mail 11-12): the system's own inset for this case
+                    // size, three lines, and a little smaller before it is cut.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: w.name)
+                            .font(.system(.headline, design: .rounded))
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
+                        let p = store.progress
+                        if p.total > 0 {
+                            Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                        }
                     }
+                    .scenePadding(.horizontal)
                     ForEach(Overview.rows(w, current: store.entryIndex), id: \.index) { row in
                         if row.supersetStart {
                             Label { Text("Superset") } icon: { Image(systemName: "link") }
@@ -405,6 +412,9 @@ struct OverviewPage: View {
                     }
                     SyncLine()
                         .padding(.top, 6)
+                        .padding(.leading, 4)
+                    HealthOffHint(health: store.health)
+                        .padding(.top, 4)
                         .padding(.leading, 4)
                     HoldToFinish { store.finish() }
                         .padding(.top, 6)
@@ -434,6 +444,22 @@ struct OverviewPage: View {
     }
 }
 
+/// With Apple Health off no workout session runs, and watchOS treats openGym like any other app:
+/// it may go back to the clock mid-rest or mid-hold (#883). Said once, quietly, on the Overview.
+struct HealthOffHint: View {
+    @ObservedObject var health: WorkoutManager // a nested object: the store does not republish it
+
+    var body: some View {
+        if !health.enabled {
+            Label { Text("Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.") }
+                icon: { Image(systemName: "heart.text.square") }
+                .font(.system(.caption2, design: .rounded))
+                .foregroundStyle(Theme.label2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
 /// One exercise on the Overview: its mark (on now, done, still to do), its name and its sets.
 struct OverviewRowView: View {
     @EnvironmentObject var store: SessionStore
@@ -449,8 +475,8 @@ struct OverviewRowView: View {
                     Text(verbatim: row.name)
                         .font(TypeScale.body)
                         .foregroundStyle(row.finished ? Theme.label2 : Color.white)
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.85)
+                        .lineLimit(4)
+                        .minimumScaleFactor(0.75)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: "\(row.done)/\(row.total)")
                         .font(TypeScale.second.monospacedDigit())

@@ -122,6 +122,18 @@ describe('an incoming routine link', () => {
     expect(m.navs.at(-1)).toBe('/plan/r/' + m.S.routines[1].id)
   })
 
+  it('shows a friend’s own exercise as they typed it, and catalogue names in their casing', async () => {
+    m.S.customEx = [{ id: 'c-turm', n: 'am Turm', bp: 'back', eq: 'cable', custom: true }]
+    const pull = { id: 'r2', name: 'Pull', ex: [{ id: 'c-turm', sets: 3, reps: 10, weight: 40 }, { id: BENCH, sets: 3, reps: 8, weight: 80 }] }
+    const payload = await encodePayload(routineLinkBundle(m.S, pull, { weights: true }))
+    m.S.customEx = []
+    expect(await openRoutinePayload(payload)).toBe(true)
+    await openSheet()
+    const names = [...host.querySelectorAll('.item .tt')]
+    expect(names.map(n => n.textContent)).toEqual(['am Turm', 'Barbell Bench Press'])
+    // no CSS on top that would title-case it again
+    expect(names.every(n => !n.classList.contains('capitalize'))).toBe(true)
+  })
   it('says why a broken or newer link does not open', async () => {
     expect(await openRoutinePayload('1.j.bm9wZQ')).toBe(false)
     expect(m.toasts.at(-1)).toBe('This routine link is broken or cut off.')

@@ -28,6 +28,7 @@
 "Start without weighing in" = "Inizia senza pesarti";
 "Body weight" = "Peso corporeo";
 "Effort" = "Sforzo";
+"Muscles" = "Muscoli";
 "None" = "Nessuno";
 "Exercises" = "Esercizi";
 "Save" = "Salva";
@@ -48,6 +49,7 @@
 "Taken to failure" = "A cedimento";
 "Drop set" = "Drop set";
 "More" = "Più";
+"Back" = "Indietro";
 "Set %lld" = "Serie %lld";
 "Add set" = "Aggiungi";
 "Warm-up disc" = "Warm-up";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "Nessuno sforzo valutato";
 "max" = "max";
 "min" = "min";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Attiva Apple Salute sull’iPhone e openGym resta sullo schermo durante recuperi e tenute.";
+"No sets yet" = "Ancora nessuna serie";
+"+%lld more" = "+%lld altri";
+"%@ sets" = "%@ serie";
 "Failure" = "Cedimento";
 "Drop" = "Drop";
 "Set %lld added" = "Serie %lld aggiunta";

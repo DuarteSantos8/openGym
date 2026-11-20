@@ -86,6 +86,8 @@ struct SetPanel: View {
     @ViewBuilder
     private func layout(_ entry: Entry, ref: SetRef, unit: String, fixing: Bool, height: CGFloat) -> some View {
         let row = entry.sets[ref.set]
+        // A tag row (side, warm-up, bands) under the name: the name gets two lines at most (SetPage name).
+        let tagged = row.sideUp != nil || row.sides != nil || row.warmup || !(row.band ?? "").isEmpty
         let fit = room(entry, ref: ref, row: row, fixing: fixing, height: height)
         let partnerLine = fit.partner
         let lastLine = fit.last
@@ -99,13 +101,23 @@ struct SetPanel: View {
                         ClipView(clip: clip, animating: store.tab == .set).frame(width: 28, height: 28)
                     }
                     // Big and left-aligned, as Apple Workout names the exercise (the set number is in the top row).
-                    Text(verbatim: entry.name)
-                        .font(TypeScale.title)
-                        .lineLimit(twoLines ? 2 : 1)
-                        .minimumScaleFactor(0.7)
-                        .fixedSize(horizontal: false, vertical: true)
+                    // A long name is never cut with "…" (a German compound on a 42 mm, mail 11-12): on one
+                    // line at 22 or 18 pt when it fits the width, else on up to three smaller lines, the
+                    // boxes under it giving way (a 41-letter German compound beside the clip on a 40 mm
+                    // was still cut on its second line); only past three lines does it shrink further.
+                    // A third line only when no tag row (side, warm-up, bands) sits under the name: with one,
+                    // three lines ran up into the set pill on a 40 mm.
+                    ViewThatFits(in: .horizontal) {
+                        exerciseName(entry.name, size: 22, lines: 1)
+                        exerciseName(entry.name, size: 18, lines: 1)
+                        exerciseName(entry.name, size: twoLines ? 18 : 16, lines: tagged ? 2 : 3)
+                            .minimumScaleFactor(0.6)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                .padding(.leading, 5) // 10 pt from the edge, as on every page
+                .padding(.leading, 8) // in line with the set pill beside the clock
+                // No trailing inset: 4 pt there sent "Bulgarian Split Squat with Dumbbells" onto a third
+                // line on a 40 mm per-side set, where it ran up into the set pill.
                 .frame(maxWidth: .infinity, alignment: .leading)
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
@@ -161,6 +173,13 @@ struct SetPanel: View {
         let last = hasLast && spare >= 14
         if last { spare -= 14 }
         return (partner, last, spare >= 20)
+    }
+
+    /// The exercise's name at one size; one line is used only when it fits whole (ViewThatFits).
+    private func exerciseName(_ name: String, size: CGFloat, lines: Int) -> some View {
+        Text(verbatim: name)
+            .font(.system(size: size, weight: .bold, design: .rounded))
+            .lineLimit(lines)
     }
 
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
@@ -324,7 +343,10 @@ struct SetPanel: View {
             } else if entry.isTimed {
                 Button { store.startHold() } label: {
                     Label { Text("Start hold") } icon: { Image(systemName: "play.fill") }
+                        // As Done: the symbol alone at the largest text sizes (it was "Star…" on a 40 mm).
+                        .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                 }
+                .accessibilityLabel(Text("Start hold"))
                 .buttonStyle(PrimaryButtonStyle())
             } else if entry.isCardio {
                 Spacer()
@@ -566,9 +588,11 @@ struct ExerciseDonePanel: View {
         VStack(spacing: 6) {
             if let e = store.entry {
                 Text(verbatim: e.name)
-                    .font(TypeScale.title)
-                    .lineLimit(2)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.7)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Image(systemName: left ? "forward.circle" : "checkmark.circle.fill")
                 .font(.system(size: 34))
@@ -582,7 +606,7 @@ struct ExerciseDonePanel: View {
             Spacer(minLength: 2)
             HStack(spacing: 4) {
                 ArrowButton(left: true, enabled: store.canStep(-1)) { store.step(-1) }
-                Button { store.tab = .overview } label: { Text("Overview") }
+                Button { store.tab = .overview } label: { Text("Overview").lineLimit(1).minimumScaleFactor(0.6) }
                     .buttonStyle(RowButtonStyle())
                 ArrowButton(left: false, enabled: store.canStep(1)) { store.step(1) }
             }

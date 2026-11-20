@@ -28,6 +28,7 @@
 "Start without weighing in" = "Почати без зважування";
 "Body weight" = "Вага тіла";
 "Effort" = "Зусилля";
+"Muscles" = "М’язи";
 "None" = "Немає";
 "Exercises" = "Вправи";
 "Save" = "Зберегти";
@@ -48,6 +49,7 @@
 "Taken to failure" = "До відмови";
 "Drop set" = "Дроп-сет";
 "More" = "Більше";
+"Back" = "Назад";
 "Set %lld" = "Підхід %lld";
 "Add set" = "Додати";
 "Warm-up disc" = "Розминка";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "Зусилля ще не оцінено";
 "max" = "макс.";
 "min" = "мін.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Увімкни Apple Здоров’я на iPhone, і openGym залишатиметься на екрані під час відпочинку та утримань.";
+"No sets yet" = "Підходів ще немає";
+"+%lld more" = "ще %lld";
+"%@ sets" = "Підходів: %@";
 "Failure" = "Відмова";
 "Drop" = "Дроп";
 "Set %lld added" = "Підхід %lld додано";

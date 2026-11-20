@@ -83,6 +83,25 @@ export function writeWatchStatus(ev, storage = globalThis.localStorage) {
   return next
 }
 
+// The newest thing a watch did that reached this phone (#1151): the time of its newest event that
+// was applied here, on the phone's clock (lib/watch-sync.js). Not when the page got round to it,
+// which can be much later than when it reached the phone: the time it happened at the wrist, so
+// "last heard" never says more recent than it was.
+const WATCH_HEARD_KEY = 'gym_watch_heard'
+export function readWatchHeard (storage = globalThis.localStorage) {
+  const v = Number(read(WATCH_HEARD_KEY, storage))
+  return Number.isFinite(v) && v > 0 ? v : 0
+}
+/** A watch's event made at `at` was applied here: remembered when it is the newest (never in the future). */
+export function noteWatchHeard (at, now = Date.now(), storage = globalThis.localStorage) {
+  const t = Math.min(Number(at) || 0, now)
+  if (!(t > 0) || t <= readWatchHeard(storage)) return
+  try { storage?.setItem(WATCH_HEARD_KEY, JSON.stringify(t)) } catch { /* shown again next time */ }
+  emit()
+}
+/** When the watch was last heard from: its status (sent at each launch) or its newest event, whichever is later. */
+export const lastHeardAt = (status = readWatchStatus(), storage = globalThis.localStorage) => Math.max(Number(status?.at) || 0, readWatchHeard(storage))
+
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
 export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show } })
 

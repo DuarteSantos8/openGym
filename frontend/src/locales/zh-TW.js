@@ -1,4 +1,8 @@
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手錶",
+  "Set once": "設定一次",
+  "Connections": "連線",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",
@@ -5884,4 +5888,12 @@ export default {
   "Own setup for {0}": "{0}的專屬設定",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟隨主頁面。開啟它，就能自己為這個類型挑選細節和按鈕。",
   "Preview on": "預覽位置",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "縮短一點",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "自訂",
+  "Collapsed": "已摺疊",
+  "Hide": "隱藏",
+  "Totals": "總計",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
 }

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: this phone's choices for its watch, per device, never in the profile.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS } from './watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt } from './watch-settings.js'
 import { applyEvents, bindWatchAppActions, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -50,5 +50,27 @@ describe('what the watch shows', () => {
     expect(settingsForWatch().show).toEqual(readWatchPrefs().show)
     localStorage.setItem('gym_watch_v1', JSON.stringify({ show: { hr: 'yes', rest: 'spiral' } }))
     expect(readWatchPrefs().show).toEqual({ ...SHOW_DEFAULTS })
+  })
+})
+
+// #1151: "Last heard from the watch" was the watch's status, sent when its app starts, so a watch
+// logging sets for an hour still read "an hour ago". Now its newest event that reached the phone
+// counts too, by the time it was made at the wrist (never later than that, never in the future).
+describe('when the watch was last heard from', () => {
+  const T = 1_800_000_000_000
+  it('its newest event applied here counts, by its own time, never in the future', () => {
+    writeWatchStatus({ health: 'on', version: '1.4.5', at: T - 3600e3 })
+    expect(lastHeardAt()).toBe(T - 3600e3)
+    bindWatchAppActions({})
+    applyEvents([{ id: 'h1', type: 'stillHere', wid: 'w0', at: T - 60_000 }], () => ({ S: { active: null, workouts: [] } }), T)
+    expect(readWatchHeard()).toBe(T - 60_000)
+    expect(lastHeardAt()).toBe(T - 60_000)
+    noteWatchHeard(T - 120_000, T)
+    expect(readWatchHeard()).toBe(T - 60_000)
+    noteWatchHeard(T + 60_000, T)
+    expect(readWatchHeard()).toBe(T)
+    // a newer status still wins, and a status never loses to an event (its own check is untouched)
+    writeWatchStatus({ health: 'on', version: '1.4.5', at: T + 10 })
+    expect(lastHeardAt()).toBe(T + 10)
   })
 })

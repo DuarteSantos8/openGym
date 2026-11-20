@@ -1,5 +1,9 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Órák",
+  "Set once": "Egyszer beállítandó",
+  "Connections": "Kapcsolatok",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Utolsó sorozat: {0}",
   "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",
@@ -5894,4 +5898,12 @@ export default {
   "Own setup for {0}": "Saját beállítás ehhez: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "A főoldalt követi. Kapcsold be, hogy magad válaszd ki a részleteket és a gombokat ehhez a típushoz.",
   "Preview on": "Előnézet itt",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "kicsit rövidebben",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Testreszabás",
+  "Collapsed": "Összecsukva",
+  "Hide": "Elrejtés",
+  "Totals": "Összesítők",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
 }

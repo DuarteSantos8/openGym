@@ -1,5 +1,9 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Laikrodžiai",
+  "Set once": "Nustatoma kartą",
+  "Connections": "Ryšiai",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Paskutinė serija: {0}",
   "Your note for this exercise": "Tavo pastaba šiam pratimui",
@@ -5887,4 +5891,12 @@ export default {
   "Own setup for {0}": "Savas rinkinys: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Seka pagrindinį puslapį. Įjunk, kad šio tipo detales ir mygtukus parinktum savaip.",
   "Preview on": "Peržiūra",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "šiek tiek trumpiau",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tinkinti",
+  "Collapsed": "Suskleista",
+  "Hide": "Slėpti",
+  "Totals": "Sumos",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
 }

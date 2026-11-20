@@ -1,5 +1,9 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Klockor",
+  "Set once": "Ställ in en gång",
+  "Connections": "Anslutningar",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Senaste set: {0}",
   "Your note for this exercise": "Din anteckning för den här övningen",
@@ -5938,4 +5942,12 @@ export default {
   "Own setup for {0}": "Egen inställning för {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Följer huvudsidan. Slå på det här för att själv välja detaljer och knappar för den här typen.",
   "Preview on": "Förhandsvisa på",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "kortare",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Anpassa",
+  "Collapsed": "Hopfälld",
+  "Hide": "Dölj",
+  "Totals": "Totalt",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
 }

@@ -1,6 +1,10 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Ure",
+  "Set once": "Indstil én gang",
+  "Connections": "Forbindelser",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Sidste sæt: {0}",
   "Your note for this exercise": "Din note til denne øvelse",
@@ -5831,4 +5835,12 @@ export default {
   "Own setup for {0}": "Egen opsætning for {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Følger hovedsiden. Slå det til for selv at vælge detaljer og knapper for denne type.",
   "Preview on": "Forhåndsvisning på",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "lidt kortere",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Tilpas",
+  "Collapsed": "Foldet sammen",
+  "Hide": "Skjul",
+  "Totals": "Totaler",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
 }

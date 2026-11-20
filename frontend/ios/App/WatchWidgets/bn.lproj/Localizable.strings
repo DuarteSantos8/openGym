@@ -28,6 +28,7 @@
 "Start without weighing in" = "ওজন না মেপেই শুরু করুন";
 "Body weight" = "শরীরের ওজন";
 "Effort" = "পরিশ্রম";
+"Muscles" = "পেশি";
 "None" = "কিছু না";
 "Exercises" = "ব্যায়াম";
 "Save" = "সেভ করুন";
@@ -48,6 +49,7 @@
 "Taken to failure" = "ফেইলিউর পর্যন্ত করা";
 "Drop set" = "ড্রপ সেট";
 "More" = "বেশি";
+"Back" = "ফিরে যান";
 "Set %lld" = "সেট %lld";
 "Add set" = "যোগ করুন";
 "Warm-up disc" = "ওয়ার্ম-আপ";
@@ -91,6 +93,10 @@
 "No effort rated yet" = "এখনো কোনো পরিশ্রম রেট করা হয়নি";
 "max" = "সর্বোচ্চ";
 "min" = "সর্বনিম্ন";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone-এ Apple Health চালু করো, তাহলে বিশ্রাম আর হোল্ডের সময় openGym স্ক্রিনে থাকবে।";
+"No sets yet" = "এখনো কোনো সেট নেই";
+"+%lld more" = "+%lld আরও";
+"%@ sets" = "%@ সেট";
 "Failure" = "ফেইলিওর";
 "Drop" = "ড্রপ";
 "Set %lld added" = "সেট %lld যোগ হয়েছে";

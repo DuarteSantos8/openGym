@@ -1,5 +1,9 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ساعت‌ها",
+  "Set once": "یک‌بار تنظیم",
+  "Connections": "اتصال‌ها",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخرین ست: {0}",
   "Your note for this exercise": "یادداشت تو برای این حرکت",
@@ -5857,4 +5861,12 @@ export default {
   "Own setup for {0}": "تنظیم جدا برای {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "از صفحه اصلی پیروی می‌کند. این را روشن کن تا جزئیات و دکمه‌های این نوع را خودت انتخاب کنی.",
   "Preview on": "پیش‌نمایش روی",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "کمی کوتاه‌تر",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "سفارشی‌سازی",
+  "Collapsed": "جمع‌شده",
+  "Hide": "پنهان",
+  "Totals": "مجموع‌ها",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
 }

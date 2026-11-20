@@ -1,5 +1,9 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Saatler",
+  "Set once": "Bir kez ayarla",
+  "Connections": "Bağlantılar",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",
@@ -5891,4 +5895,12 @@ export default {
   "Own setup for {0}": "{0} için kendi ayarı",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Ana sayfayı izler. Bu türün ayrıntılarını ve düğmelerini kendin seçmek için bunu aç.",
   "Preview on": "Önizleme yeri",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "biraz daha kısa",
+  // Arrange your own Home and Stats (#1119)
+  "Customize": "Özelleştir",
+  "Collapsed": "Daraltılmış",
+  "Hide": "Gizle",
+  "Totals": "Toplamlar",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
 }
