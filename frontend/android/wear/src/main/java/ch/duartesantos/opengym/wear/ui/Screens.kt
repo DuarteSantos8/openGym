@@ -40,6 +40,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -475,7 +476,7 @@ fun LivePage(onScreen: Boolean) {
                         onCancel = { WearStore.stopHoldCount() })
                 }
                 "hold" -> hold?.let { HoldView(it.startedAt, it.endsAt) }
-                "rest" -> rest?.let { RestView(it) }
+                "rest" -> rest?.let { RestView(it, onScreen) }
                 "set" -> SetPanel(onScreen)
                 else -> DonePanel(s)
             }
@@ -892,10 +893,12 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
 /* ---------- the rest ---------- */
 
 @Composable
-fun RestView(rest: Rest) {
+fun RestView(rest: Rest, onScreen: Boolean = true) {
     val s by WearStore.state.collectAsState()
     val last by WearStore.lastLogged.collectAsState()
     val rated by WearStore.lastRated.collectAsState()
+    // Here, not in the chips: a small watch keeps the effort row for an armed capsule, Up next comes back when it settles.
+    val effortArmed = remember(last) { mutableStateOf(false) }
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val now = rememberNow()
@@ -919,7 +922,7 @@ fun RestView(rest: Rest) {
         val both = roomy || maxHeight.value >= 224 + (LocalDensity.current.fontScale - 1f) * 62
         // Always On: no chips to tap, so Up next takes their place on a watch without room for both
         // (40 mm emulator: the hidden chips left the screen empty where release-1.4.5 showed what's next).
-        val rate = WearStore.canRateLast() && (both || (rated == null && !dim))
+        val rate = WearStore.canRateLast() && (both || ((rated == null || effortArmed.value) && !dim))
         val next = s.settings.show?.showNext != false && (both || !rate)
         // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
@@ -967,7 +970,7 @@ fun RestView(rest: Rest) {
             // Round: the chips sit low, where the circle narrows; at a large font their outer corners met the edge (45 mm emulator).
             // Always On: only a rating already made stays, as a thin outline.
             if (rate) Box(Modifier.fillMaxWidth().padding(horizontal = if (round) 10.dp else 0.dp).height(if (roomy) 46.dp else 30.dp).alpha(if (dim && rated == null) 0f else 1f), contentAlignment = Alignment.Center) {
-                if (!dim || rated != null) EffortChips(roomy)
+                if (!dim || rated != null) EffortChips(roomy, effortArmed, onScreen)
             }
             if (next) UpNext(roomy)
         }
@@ -1021,7 +1024,7 @@ private fun UpNext(roomy: Boolean) {
  * Five seconds after the last touch it settles to "RIR 1.5 ✓" (one tap arms it again).
  */
 @Composable
-private fun EffortChips(roomy: Boolean) {
+private fun EffortChips(roomy: Boolean, armedState: MutableState<Boolean>, onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     val rated by WearStore.lastRated.collectAsState()
     val lastNow by WearStore.lastLogged.collectAsState()
@@ -1030,14 +1033,14 @@ private fun EffortChips(roomy: Boolean) {
     val kind = s.settings.effort ?: "rir"
     val h = if (roomy) 38.dp else 30.dp
     val last = lastNow      // this set, kept: a burst still going out when the next set is done must not rate that one
-    var armed by remember(last) { mutableStateOf(false) }
+    var armed by armedState
     val cur = remember(last) { mutableStateOf(rated) }
     val pending = remember(last) { mutableStateOf<Double?>(null) }
     fun send() { pending.value?.let { pending.value = null; WearStore.rateLast(it, last, tap = false) } }
     LaunchedEffect(pending.value) { if (pending.value != null) { kotlinx.coroutines.delay(Effort.SEND_MS); send() } }
     // Any exit sends at once: the page leaves, the rest ends. A rest ending under a turn also kills the crown for a moment.
     DisposableEffect(last) { onDispose { send(); if (armed) WearStore.lockCrown() } }
-    LaunchedEffect(dim) { if (dim) { send(); armed = false } }   // wrist down
+    LaunchedEffect(dim, onScreen) { if (dim || !onScreen) { send(); armed = false } }   // wrist down, another page
     val v = cur.value ?: rated
     if (v == null) Column(horizontalAlignment = Alignment.CenterHorizontally) {
         if (roomy) Quiet("${Effort.name(kind)} · " + stringResource(R.string.how_hard), 12.sp, lines = 1)
@@ -1139,8 +1142,8 @@ private fun ArmedEffort(kind: String, v: Double?, h: Dp, ticks: Boolean, clear: 
 private fun EffortDisc(plus: Boolean, color: Color, size: Dp, atEnd: Boolean, lock: TouchLock, onClick: () -> Unit) {
     val ink = color.copy(alpha = if (atEnd) 0.35f else 1f)
     Box(
-        Modifier.width(44.dp).fillMaxHeight().combinedClickable(role = Role.Button) { if (lock.allows(System.currentTimeMillis())) onClick() }
-            .clearAndSetSemantics {},
+        // hidden first in the chain, so the click below is hidden too (TalkBack moves it with More and Less)
+        Modifier.clearAndSetSemantics {}.width(44.dp).fillMaxHeight().combinedClickable(role = Role.Button) { if (lock.allows(System.currentTimeMillis())) onClick() },
         contentAlignment = if (plus) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
         Box(Modifier.padding(horizontal = 1.dp).size(size).border(1.5.dp, ink, CircleShape), contentAlignment = Alignment.Center) {

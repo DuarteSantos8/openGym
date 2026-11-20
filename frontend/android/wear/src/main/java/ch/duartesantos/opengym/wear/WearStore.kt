@@ -454,7 +454,7 @@ object WearStore {
      */
     fun rateLast(v: Double, ref: SetRef? = lastLogged.value, tap: Boolean = true): Boolean {
         if (tap) ackRestOver()
-        if (!touchAllowed()) return false
+        if (tap && !touchAllowed()) return false      // a burst going out as the rest ends (the page locks touches then) still lands
         val kind = _state.value.settings.effort ?: return false
         if (ref == null || ref != lastLogged.value) return false
         val row = _state.value.workout?.entries?.getOrNull(ref.entry)?.sets?.getOrNull(ref.set) ?: return false
