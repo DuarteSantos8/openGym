@@ -31,6 +31,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.ui.layout.layout
+import ch.duartesantos.opengym.wear.PillFit
+import ch.duartesantos.opengym.wear.SetRow
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -61,6 +68,7 @@ import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
@@ -267,11 +275,64 @@ fun ArrowButton(left: Boolean, enabled: Boolean, onClick: () -> Unit) {
     }
 }
 
-/** A word in a small capsule: "Warm-up", "Left", "Superset". */
+/** A word in a small capsule: "Warm-up", "Left", "Superset". In Always On: the outline at full colour, no fill. */
 @Composable
-fun Tag(text: String, color: Color) {
-    Box(Modifier.clip(CircleShape).background(color.copy(alpha = 0.18f)).padding(horizontal = 6.dp, vertical = 1.dp)) {
-        Text(text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+fun Tag(text: String, color: Color, mixedCase: Boolean = false) {
+    val dim = LocalAmbient.current
+    Box(Modifier.clip(CircleShape).background(if (dim) Color.Transparent else color.copy(alpha = 0.18f))
+        .then(if (dim) Modifier.border(1.dp, color, CircleShape) else Modifier).padding(horizontal = 6.dp, vertical = 1.dp)) {
+        Text(if (mixedCase) text else text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+    }
+}
+
+/**
+ * "2/3" and the set's tags (warm-up, failure, drop) on the set page. With `menu` it is a dark capsule ending in "•••" that opens
+ * the set menu; without, "Set 2 of 3" and the tags as plain text. The number "n/of" goes whenever the tags do not fit beside it.
+ * The capsule is drawn 26 dp tall in an 18 dp slot (the line it replaces keeps its height). A slot that small cannot hear taps
+ * outside itself, so the capsule reports its bounds (`onBounds`) and the screen above takes the 48 dp tap.
+ */
+@Composable
+fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, modifier: Modifier = Modifier, onBounds: (Rect) -> Unit = {}, onClick: () -> Unit) {
+    val dim = LocalAmbient.current
+    val tags = buildList {
+        if (row.warmup) add(stringResource(R.string.warmup) to Og.Warmup)
+        if (row.failure == true) add(stringResource(R.string.failure_tag) to Og.Red)
+        if (row.drop != null || row.drops != null) add(stringResource(R.string.drop_tag) to Og.Purple)
+    }
+    val place = if (menu) "$n/$of" else stringResource(R.string.set_of, n, of)
+    val said = if (tags.isEmpty()) stringResource(R.string.set_of, n, of)
+    else stringResource(R.string.set_of_tags, n, of, tags.joinToString(", ") { it.first })
+    val menuName = stringResource(R.string.set_menu)
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier) {
+        fun wide(t: String, st: TextStyle) = with(density) { measurer.measure(t, st, maxLines = 1, softWrap = false).size.width.toDp() }
+        val chips = tags.sumOf { wide(it.first, TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)).value.toDouble() + 14 }.dp
+        val need = chips + wide(place, TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold)) + (if (menu) 38.dp else 0.dp)
+        val showPlace = PillFit.showPlace(tags.size, need.value, maxWidth.value)
+        Row(
+            Modifier.wrapContentWidth(unbounded = true)
+                .layout { m, c ->
+                    val p = m.measure(c); val h = 18.dp.roundToPx()
+                    layout(p.width, h) { p.place(0, (h - p.height) / 2) }
+                }
+                .onGloballyPositioned { onBounds(it.boundsInRoot()) }
+                .clearAndSetSemantics {
+                    contentDescription = said
+                    if (menu) { role = Role.Button; onClick(menuName) { onClick(); true } }
+                }
+                .then(if (menu) Modifier.height(26.dp).clip(CircleShape)
+                    .background(if (dim) Color.Transparent else Og.Surface)
+                    .then(if (dim) Modifier.border(1.dp, Color(0xFF666666), CircleShape) else Modifier)
+                    .combinedClickable(onClick = onClick)
+                    .padding(horizontal = 8.dp) else Modifier),
+            horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (showPlace) Text(place, color = if (menu) Og.Text else Og.Label2, fontSize = if (menu) 13.sp else 12.sp,
+                fontWeight = if (menu) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
+            for ((t, c) in tags) Tag(t, c, mixedCase = true)
+            if (menu && !dim) Text("•••", color = Og.Label2, fontSize = 16.sp, maxLines = 1)
+        }
     }
 }
 
@@ -289,7 +350,7 @@ fun Quiet(text: String, size: TextUnit = 12.sp, modifier: Modifier = Modifier, l
 @Composable
 fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, modifier: Modifier = Modifier,
               tint: Color = LocalAccent.current.accent, showLabel: Boolean = true, onAdjust: ((Int) -> Unit)? = null,
-              onClick: () -> Unit) {
+              onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     val adjust = adjustActions(onAdjust)
     val dim = LocalAmbient.current
     val shape = RoundedCornerShape(12.dp)
@@ -304,7 +365,8 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
                 dim -> Modifier.border(1.dp, Og.Surface2, shape)
                 else -> Modifier
             })
-            .combinedClickable(role = Role.Button, onClick = onClick)
+            .combinedClickable(role = Role.Button, onLongClickLabel = onLongClick?.let { stringResource(R.string.set_menu) },
+                onLongClick = onLongClick, onClick = onClick)
             .semantics {
                 contentDescription = label
                 stateDescription = if (unit != null) "$value $unit" else value

@@ -4,6 +4,8 @@
 "Start workout" = "Antrenmana başla";
 "Done" = "Bitti";
 "Warm-up" = "Isınma";
+"Remove" = "Kaldır";
+"Undo" = "Geri al";
 "Reps" = "Tekrar";
 "Rest" = "Dinlenme";
 "Skip" = "Atla";
@@ -44,7 +46,13 @@
 "Looks like you left the gym" = "Salondan çıkmışsın gibi görünüyor";
 "Keep going" = "Devam et";
 "Finish now" = "Şimdi bitir";
+"Taken to failure" = "Tükenişe kadar";
+"Drop set" = "Drop set";
+"More" = "Çok";
 "Back" = "Geri";
+"Set %lld" = "Set %lld";
+"Add set" = "Ekle";
+"Warm-up disc" = "Isınma";
 "Last time: %@" = "Geçen sefer: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Bir süredir kayıt yok. Bitirdiysen %@ saatinde kendiliğinden biter, son setinde kaydedilir.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Antrenman şimdi bitsin mi? Yoksa %@ saatinde kendiliğinden biter.";
@@ -89,3 +97,10 @@
 "No sets yet" = "Henüz set yok";
 "+%lld more" = "+%lld daha";
 "%@ sets" = "%@ set";
+"Failure" = "Tükeniş";
+"Drop" = "Drop";
+"Set %lld added" = "%lld. set eklendi";
+"Hold 1 s to remove" = "Kaldırmak için 1 sn basılı tut";
+"Set %lld · %@ is lost" = "%lld. set · %@ kaybolur";
+"Set %lld removed" = "%lld. set kaldırıldı";
+"at the end" = "sonda";

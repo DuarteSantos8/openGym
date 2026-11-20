@@ -41,7 +41,8 @@ import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange, t } from './i18n.js'
 import { loadOf, MUSCLES, MUSCLE_NAME } from './muscles.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
-import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
+import { isWarmupRow, isSideSet, syncSideAggregate, isFailureSet, isDropSet, dropsOf, isRestPauseSet, isClusterSet } from './workout-model.js'
+import { applyWatchMark } from './watch-marks.js'
 import { bestSetFor } from './exercise-history.js'
 import { weightIncrement } from './progression.js'
 import { sessionHistory } from './backfill.js'
@@ -237,7 +238,10 @@ export const setStamp = s => Math.max(num(s?.at) || 0, num(s?.eat) || 0)
 export function editedDoneRows (prev, next) {
   const out = []
   if (!prev || !next || prev.id !== next.id || !Array.isArray(next.entries) || !Array.isArray(prev.entries)) return out
-  const nums = s => JSON.stringify([s.w, s.r, s.sec, s.sides?.L?.w, s.sides?.L?.r, s.sides?.R?.w, s.sides?.R?.r, s.rpe, s.rir])
+  // The marks too, so a watch's older mark does not undo one changed here (markWatchSet).
+  // lean: a mark changed here on a set not done yet gets no `eat`, so a late watch mark can still undo
+  // it; stamp those too if a late watch mark is reported to undo a phone mark.
+  const nums = s => JSON.stringify([s.w, s.r, s.sec, s.sides?.L?.w, s.sides?.L?.r, s.sides?.R?.w, s.sides?.R?.r, s.rpe, s.rir, !!isWarmupRow(s), !!isFailureSet(s), dropsOf(isSideSet(s) ? s.sides.L : s).length])
   next.entries.forEach((e, i) => (e?.sets || []).forEach((s, j) => {
     if (!s?.done) return
     const hit = sidOk(s.sid) ? rowBySid(prev, s.sid) : (prev.entries[i]?.id === e.id ? [i, j] : null)
@@ -315,6 +319,8 @@ const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true })
 // One set as the watch shows it. A per-side set (a unilateral exercise) carries its two sides,
 // each ticked on its own; `done` is both.
 function watchSet (s) {
+  // A per-side drop set keeps its drops on each side (syncSideAggregate), not on the row.
+  const drops = isSideSet(s) ? dropsOf(s.sides.L) : dropsOf(s)
   return {
     w: num(s.w), r: num(s.r), sec: num(s.sec), done: !!s.done, warmup: !!isWarmupRow(s),
     // the row's own id (#1162): what the watch names it by in its events
@@ -326,6 +332,12 @@ function watchSet (s) {
     // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
     ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
     ...(num(s.m) > 0 ? { m: num(s.m) } : {}),
+    // Set marks (set types): the watch shows them and offers a drop only where the phone would.
+    ...(isFailureSet(s) ? { failure: true } : {}),
+    ...(isDropSet(s) || drops.length ? { drop: num(drops[0]?.w) ?? 0, drops: drops.length } : {}),
+    // One half of a timed per-side pair (setSpanAt): the watch's menu treats the pair as one set.
+    ...(s.side === 'L' || s.side === 'R' ? { side: s.side } : {}),
+    ...(isRestPauseSet(s) || isClusterSet(s) ? { rp: true } : {}),
   }
 }
 
@@ -665,6 +677,23 @@ export function removeWatchSet (s, ev) {
   return true
 }
 
+/**
+ * A mark the watch's set menu switched (warm-up, failure, drop), on the row it names: by its id,
+ * else by its place. Each mark only when sent, as the phone's own menu would apply it
+ * (watch-marks.js). The later change wins, as for a tick: a mark older than the row's last edit
+ * here does nothing. Returns whether the workout changed.
+ */
+export function markWatchSet (s, ev) {
+  const A = s?.active
+  if (!A || !Array.isArray(A.entries) || A.editingWorkoutId) return false
+  const hit = rowOf(A, ev)
+  if (!hit) return false
+  if (num(ev.at) != null && num(ev.at) < (num(A.entries[hit[0]].sets[hit[1]]?.eat) || 0)) return false
+  const mark = {}
+  for (const k of ['warmup', 'failure', 'drop']) if (typeof ev[k] === 'boolean') mark[k] = ev[k]
+  return applyWatchMark(s, hit[0], hit[1], mark)
+}
+
 /* ---------- which workouts the watch has (lib/phone-workout.js) ---------- */
 
 // Workouts the watch said it runs: it sent a heart rate for them, or anything at all about them
@@ -707,7 +736,7 @@ function claim (ev) {
  */
 // The events about one workout: they wait for a watch-started workout's start, and they tell that
 // the watch runs that workout.
-const WORKOUT_EVENTS = ['setDone', 'setHr', 'finish', 'discard', 'rest', 'addSet', 'removeSet']
+const WORKOUT_EVENTS = ['setDone', 'setHr', 'finish', 'discard', 'rest', 'addSet', 'removeSet', 'setMark']
 export function applyEvents (events, getState, now) {
   if (!Array.isArray(events)) return []
   // What the watch's events change in the workout is the watch's activity, not the phone's.
@@ -807,6 +836,10 @@ function applyEach (events, getState, now = Date.now()) {
         // The watch's set menu (#1139, #1185), by the set's id (#1162).
         if (!appHandlers?.edit) break
         if (!A.editingWorkoutId) appHandlers.edit(s => (ev.type === 'addSet' ? addWatchSet(s, ev) : removeWatchSet(s, ev)))
+      } else if (ev.type === 'setMark' && ours) {
+        // A warm-up, failure or drop mark from the watch's set menu, by the set's id (#1162).
+        if (!appHandlers?.edit) break
+        if (!A.editingWorkoutId) appHandlers.edit(s => markWatchSet(s, ev))
       } else if (ev.type === 'weighIn') {
         // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
         // day, as the phone's own check-in makes one (today's replaces today's).
@@ -1223,7 +1256,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       snap.now = Date.now()
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
-      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), setMenu: true, forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
       // Forgotten workouts: the phone left the gym during this workout (the watch asks at once).
       if (snap.active?.id) {
         const f = readForgottenState(snap.active.id)

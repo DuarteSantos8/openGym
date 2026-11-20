@@ -138,11 +138,11 @@ extension View {
     /// Hung just above the page's top, so the page keeps its height and its layout.
     func metricsTitle(_ title: Text, _ color: Color) -> some View {
         overlay(alignment: .topLeading) {
-            title.font(.system(size: 15, weight: .semibold, design: .rounded))
-                .textCase(.uppercase)
+            title.font(TypeScale.title)
                 .foregroundStyle(color)
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .accessibilityAddTraits(.isHeader)
+                .padding(.leading, 4) // 10 pt from the edge, as on every page
                 .clearOfPageDots()
                 .alignmentGuide(.top) { $0[.bottom] }
         }
@@ -368,8 +368,6 @@ struct EffortPage: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.dynamicTypeSize) private var type
-    @ScaledMetric(relativeTo: .body) private var nameScaled: CGFloat = 16
-    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 18
 
     private func one(_ v: Double) -> String { ((v * 10).rounded() / 10).formatted(.number.precision(.fractionLength(1))) }
 
@@ -383,30 +381,30 @@ struct EffortPage: View {
                     let color = Effort.color(kind, r.value)
                     HStack(spacing: 6) {
                         Text(verbatim: r.name)
-                            .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                            .font(TypeScale.body)
                             .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
                             .lineLimit(2).minimumScaleFactor(0.8)
                             .fixedSize(horizontal: false, vertical: true) // wrap a long name before shrinking it
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text(verbatim: one(r.value))
-                            .font(.system(size: min(chipScaled, 24), weight: .heavy, design: .rounded).monospacedDigit())
+                            .font(TypeScale.body.monospacedDigit())
                             .foregroundStyle(dimmed ? color : .black)
-                            .padding(.horizontal, 6).frame(minWidth: 38, minHeight: 24)
+                            .padding(.horizontal, 8).frame(minWidth: 38).frame(height: TypeScale.pill)
                             .background(Capsule().fill(dimmed ? Color.clear : color))
                             .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1.5 : 0))
                     }
                     .padding(.leading, 8).padding(.trailing, 3).padding(.vertical, 3)
                     // Rows share the page's height (a long name gets its second line), never taller than 56 pt.
                     .frame(minHeight: 34, maxHeight: 56)
-                    .background(RoundedRectangle(cornerRadius: 16).fill(dimmed ? Color.clear : Theme.dim))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
+                    .background(RoundedRectangle(cornerRadius: Theme.radius).fill(dimmed ? Color.clear : Theme.dim))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(verbatim: r.name))
                     .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(one(r.value))"))
                 }
             } else {
                 Text("No effort rated yet")
-                    .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                    .font(TypeScale.body)
                     .foregroundStyle(.secondary)
             }
         }
@@ -635,19 +633,18 @@ struct SummaryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
-                        Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                            .foregroundStyle(accent)
-                            .accessibilityHidden(true)
+                        // A record: the mark bounces and sparks go out, at the top where the summary opens (Direction B).
+                        SavedMark(symbol: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill", color: accent, record: !summary.prs.isEmpty)
                         Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                            .font(.system(.headline, design: .rounded))
+                            .font(TypeScale.title)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text(verbatim: summary.name).font(.footnote).foregroundStyle(Theme.label2)
+                    Text(verbatim: summary.name).font(TypeScale.second).foregroundStyle(Theme.label2)
                     if let d = summary.duration {
                         VStack(alignment: .leading, spacing: -2) {
-                            Text("Time").font(.caption2).foregroundStyle(Theme.label2)
+                            Text("Time").font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
                             Text(verbatim: SummaryView.duration(d, locale: locale))
-                                .font(.system(size: 32, weight: .semibold, design: .rounded).monospacedDigit())
+                                .font(.system(size: TypeScale.number, weight: .semibold, design: .rounded).monospacedDigit())
                                 .foregroundStyle(Theme.yellow)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
@@ -663,9 +660,9 @@ struct SummaryView: View {
                     if !summary.prs.isEmpty {
                         VStack(alignment: .leading, spacing: 2) {
                             Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(Theme.yellow) }
-                                .font(.caption.weight(.semibold))
+                                .font(TypeScale.label).textCase(.uppercase)
                             ForEach(summary.prs, id: \.self) { name in
-                                Text(verbatim: name).font(.footnote)
+                                Text(verbatim: name).font(TypeScale.body)
                             }
                         }
                         .accessibilityElement(children: .combine)
@@ -688,7 +685,7 @@ struct SummaryView: View {
                         .padding(.top, 4)
                         .id("done")
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 10) // 10 pt from the edge, as on every page
                 // The title starts under the clock, not beside it (it ran into the time on 41 mm).
                 .padding(.top, 14)
             }
@@ -702,8 +699,8 @@ struct SummaryView: View {
 
     private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(Theme.label2)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
+            label.font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
+            value.font(TypeScale.title.monospacedDigit()).foregroundStyle(color)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -718,5 +715,43 @@ struct SummaryView: View {
         f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
         f.unitsStyle = .short
         return f.string(from: max(60, seconds)) ?? ""
+    }
+}
+
+/// The summary's mark: when a record was set it bounces once and a short burst of sparks goes out
+/// behind it (Direction B, owner 2026-11-11). Once, on arrival; still with Reduce Motion or the wrist down.
+struct SavedMark: View {
+    let symbol: String
+    let color: Color
+    let record: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var burst = false
+    private static let colors = [Theme.yellow, Theme.orange, Theme.green]
+
+    var body: some View {
+        Image(systemName: symbol).foregroundStyle(color)
+            .symbolEffect(.bounce, value: burst)
+            .background {
+                ZStack {
+                    ForEach(0..<10, id: \.self) { i in
+                        let a = Double(i) / 10 * 2 * .pi
+                        Circle().fill(Self.colors[i % 3])
+                            .frame(width: 5, height: 5)
+                            .offset(x: burst ? cos(a) * 26 : 0, y: burst ? sin(a) * 26 : 0)
+                            .scaleEffect(burst ? 0.5 : 1)
+                            // Bright on the way out, then gone: a fade from the start hid them.
+                            .opacity(burst ? 0 : 1)
+                            .animation(.easeIn(duration: 0.3).delay(0.3), value: burst)
+                    }
+                }
+                .opacity(reduceMotion || dimmed || !record ? 0 : 1)
+                .allowsHitTesting(false)
+            }
+            .onAppear {
+                guard record, !reduceMotion, !dimmed else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { withAnimation(.easeOut(duration: 0.6)) { burst = true } }
+            }
+            .accessibilityHidden(true)
     }
 }

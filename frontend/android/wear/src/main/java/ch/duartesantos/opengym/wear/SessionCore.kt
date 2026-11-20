@@ -54,6 +54,11 @@ data class SessionState(
     val synced: Boolean = false,
     /** Today's effort ratings made here, by SessionCore.effortKey (the Apple Watch's efforts, for the Effort page). */
     val efforts: Map<String, Double>? = null,
+    /**
+     * Set menu edits made here (SetMenu: marks, sets added or taken out), in the order made, until the
+     * phone has applied them (`acked`): replayed over every snapshot before the ticks.
+     */
+    val edits: List<PendingEdit> = emptyList(),
 )
 
 /** The end of a workout, on one screen. */
@@ -128,7 +133,7 @@ object SessionCore {
         // The phone applied the start: it had this workout, whatever its snapshot shows now.
         if (s.startedHere != null && s.startId != null && s.startId in acked) s = s.copy(startedHere = null, startId = null)
         // Ticks the phone applied: its copy of those sets is the one that counts from now on.
-        if (acked.isNotEmpty()) s = s.copy(pending = s.pending.filterValues { it.id == null || it.id !in acked })
+        if (acked.isNotEmpty()) s = s.copy(pending = s.pending.filterValues { it.id == null || it.id !in acked }, edits = s.edits.filter { it.id !in acked })
         val wid = s.workout?.id
         val droppedThere = wid != null && snap.discarded?.contains(wid) == true
         if (droppedThere && wid == s.startedHere) s = s.copy(startedHere = null)
@@ -137,23 +142,26 @@ object SessionCore {
         if (next0 == null || (next0.id != null && s.finishedHere.contains(next0.id))) {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed) return s
-            return s.copy(workout = null, pending = emptyMap(), efforts = null)
+            return s.copy(workout = null, pending = emptyMap(), efforts = null, edits = emptyList())
         }
         val same = next0.id != null && next0.id == wid
         if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null, startId = null)
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
-        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = next0.cur)
+        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, edits = emptyList(), entryIndex = next0.cur)
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         val was = s0.workout?.cur
         if (same && was != null && was != next0.cur) s = s.copy(entryIndex = next0.cur)
 
+        // The watch's set menu edits the phone has not applied yet, in the order made (a tick may be on
+        // a set one added or moved); a held removal too, so a snapshot does not end its Undo (#1162).
+        val replayed = SetMenu.replay(s.edits, next0)
         val pending = s.pending.toMutableMap()
         // The phone's `at` is on its clock, a pending tick's on this watch's: `off` brings them together.
         fun shownAtOrAfter(row0: SetRow, p: PendingTick) = (row0.at ?: Double.POSITIVE_INFINITY) + off >= p.at
-        val entries = next0.entries.mapIndexed { ei, e ->
-            val nth = nthOf(next0.entries, ei)
+        val entries = replayed.entries.mapIndexed { ei, e ->
+            val nth = nthOf(replayed.entries, ei)
             e.copy(sets = e.sets.mapIndexed { si, row0 ->
                 var row = row0
                 keysOf(row0, e.id, nth, si, null).firstOrNull { pending.containsKey(it) }?.let { k ->
@@ -171,7 +179,7 @@ object SessionCore {
                 row
             })
         }
-        val next = next0.copy(entries = entries)
+        val next = replayed.copy(entries = entries)
         // The phone put an exercise in, took one out or moved one (its own `cur` staying put): the
         // watch stays on the exercise it shows, wherever that is now. By the row's index alone the
         // set page would change exercise under the thumb, and Done would log the wrong one.
@@ -346,7 +354,7 @@ object SessionCore {
     fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String, bw: Double? = null): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,
             entries = session.entries, start = at, healthType = session.healthType, muscleNames = session.muscleNames)
-        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = 0)
+        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), efforts = null, edits = emptyList(), entryIndex = 0)
         val event = buildJsonObject {
             put("id", id); put("type", "start")
             put("routineIds", JsonArray(session.routineIds.map { JsonPrimitive(it) }))
@@ -361,7 +369,7 @@ object SessionCore {
     fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
-            workout = null, pending = emptyMap(), skipped = emptyList(), efforts = null, startedHere = null, startId = null,
+            workout = null, pending = emptyMap(), skipped = emptyList(), efforts = null, edits = emptyList(), startedHere = null, startId = null,
             finishedHere = if (w.id != null) (s0.finishedHere + w.id).takeLast(5) else s0.finishedHere,
         )
         val event = buildJsonObject {

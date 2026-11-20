@@ -146,6 +146,12 @@ data class SetRow(
     val sides: Sides? = null,
     /** The set's id (protocol 2, #1162): events name it, pending ticks are kept by it. */
     val sid: String? = null,
+    /** Set menu marks (#1139): taken to failure, a drop (weight / count), rest-pause, the side of a one-sided set. */
+    val failure: Boolean? = null,
+    val drop: Double? = null,
+    val drops: Int? = null,
+    val rp: Boolean? = null,
+    val side: String? = null,
 ) {
     /** The side up next on a per-side set ("L", then "R"), or null. */
     val sideUp: String? get() = sides?.let { if (!it.L.done) "L" else if (!it.R.done) "R" else null }
@@ -170,6 +176,8 @@ data class WatchSettings(
     val forgotten: ForgottenSettings? = null,
     /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
     val birthYear: Int? = null,
+    /** The phone's set menu switch (#1139); no menu unless true. */
+    val setMenu: Boolean? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */

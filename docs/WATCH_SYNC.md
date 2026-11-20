@@ -40,8 +40,9 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `setDone` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid?`, `w?`, `r?`, `sec?`, `side?`, `at`, `hr?`, `rpe?`/`rir?`, `restEnd?` | the workout screen's own tick; of two changes of one set the later wins (`at` against the set's stamp, below); `restEnd`: the end of the rest the watch started for this tick (watch clock, ms), `0` for none (protocol 2) |
 | `setHr` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid?`, `hr?`, `restHr?` | heart rate onto that set, running or saved |
 | `rest` | `wid`, `endsAt` (ms, watch clock) or `null`, `at` | +15, −15 or Skip on the watch (`null`: Skip, or −15 to nothing): the phone's rest follows when `at` is newer than its own last change (protocol 2) |
-| `addSet` | `wid`, `exId`, `entryIdx`, `sid` (the watch's own, e.g. `w-<uuid>`), `after?` (a set's id), `w?`, `r?`, `sec?`, `at` | a row like the exercise's last, after `after` or at the end, with that id; once only (#1139, #1185: ready on the phone, no watch sends it in 1.4.5, the set menu comes in 1.4.6) |
+| `addSet` | `wid`, `exId`, `entryIdx`, `sid` (the watch's own, e.g. `w-<uuid>`), `after?` (a set's id), `w?`, `r?`, `sec?`, `at` | a row like the exercise's last, after `after` or at the end, with that id; once only (the watches' set menu, 1.4.6: #1139, #1185) |
 | `removeSet` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid`, `at` | that row out, unless it is done (or the exercise's only row): then nothing, and the next snapshot shows it again |
+| `setMark` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid`, `warmup?`, `failure?`, `drop?`, `at` | that row's marks, each one only when sent; the later `at` wins, as for a tick |
 | `finish` | `wid`, `at`, `idle?`, `left?` | Finish and save, ending at `at`; an idle finish is checked against the phone's own log first |
 | `discard` | `wid`, `at` | the workout screen's Discard |
 | `stillHere` | `wid`, `at` | "Keep going" on the forgotten-workout question |
@@ -124,6 +125,14 @@ Each set row carries its id (`sid`) and, as `at`, the later of its tick and the 
 numbers on the phone (`setStamp`: a done set edited on the phone is stamped `eat`), so a weight
 corrected on the phone after the tick is not undone by an older fix from the wrist.
 
+For the watches' set menu (1.4.6, #1139, #1185) each row may carry `failure` (taken to failure),
+`drop` (the first drop's weight, 0 when none is set yet) with `drops` (how many), `side` (`"L"` or
+`"R"`: one half of a timed per-side pair, which the phone treats as one set) and `rp` (a rest-pause
+or cluster set: no drop and no warm-up for it), and `settings.setMenu: true` says the phone takes
+`setMark`, `addSet` and `removeSet`; without it a watch hides its set menu. A done set whose marks
+change on the phone is stamped `eat` like one whose numbers change. `garminSnapshot` leaves these
+row fields out (a Garmin has no set menu).
+
 The running workout may carry `pausedAt` (ms) while it is paused on the phone (#976): the watch's
 clock stands at that moment. On resume the field goes and `start` moves on by the pause, so the
 watch needs nothing else. The rest screen's "Next" shows the next set's weight and reps from the
@@ -182,7 +191,7 @@ pressed right after Done stands.
 
 Every row of the running workout has an id (`sid`), given by the phone the moment the row exists
 (a copied row gets a new one; of two rows with one id the first keeps it) and saved with the
-workout. A watch names a set by it in `setDone`, `setHr`, `addSet` (`after`) and `removeSet`, and
+workout. A watch names a set by it in `setDone`, `setHr`, `addSet` (`after`), `removeSet` and `setMark`, and
 makes one up for a set it adds. The phone applies an event to the row with that id, wherever it is
 now; a row with that id that is gone gets a row of its own (at its old place when that is past the
 last row, else at the end), never the place another set holds. Without `sid`, as before: by
@@ -259,7 +268,7 @@ a rest timer with store/useUI.js's rules, the iPhone's queue file, WatchConnecti
 watch) and a port of the watch apps (protocol 1 or 2, a clock `skew`, `W.addWatch()` for a second
 one, `W.coldLaunch` for a phone app woken by a watch's message). `watch-sync.sim.test.js` and
 `watch-sync.sim2.test.js` play gym situations on it (the rest from either side, clocks off, Finish
-and Discard with the other side away, edits, set ids and the set menu, supersets, two watches);
+and Discard with the other side away, edits, set ids and the set menu (a set added, taken out or marked), supersets, two watches);
 `watch-sync.rest.test.js` tests the phone's pieces one by one. `watch-sync.property.test.js` plays
 seeded random ones (rests, edits, the set menu, discards, skew, a second watch, protocol 1) and
 checks that every set logged anywhere is saved exactly once, that phone and watch show the same
