@@ -254,6 +254,13 @@ describe('Stats redesign', () => {
     expect(rule('.slegend-m.band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
     expect(rule('.sbar-v')).toMatch(/font-variant-numeric:tabular-nums/)
   })
+  it('every fill is the same thickness, whether or not its row has a target band (#1395)', () => {
+    // A row without a range used to keep the fill at the full 8px track while a row with one
+    // pulled it in to 4px, so the band-less rows (adductors, traps) read as taller bars.
+    expect(rule('.sbar-f')).toMatch(/inset-block:2px/)
+    expect(rule('.sbar-f')).toMatch(/border-radius:3px/)
+    expect(rule('.sbar-row:has(.sbar-band) .sbar-f')).toBe('')
+  })
   it('tapped rows are 44px and fill on press; nothing physical, no px type', () => {
     expect(rule('.sbar-row.tap')).toMatch(/min-height:44px/)
     expect(rule('.sbar-row.tap:active')).toMatch(/var\(--press-fill\)/)

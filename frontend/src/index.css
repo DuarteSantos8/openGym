@@ -3772,10 +3772,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .sbar-n{min-width:0;font-size:var(--fs-subhead);line-height:var(--lh-small);overflow-wrap:break-word}
 .sbar-row.on .sbar-n{font-weight:600}
 .sbar-t{position:relative;height:8px;border-radius:4px;background:var(--surface-2)}
-.sbar-f{position:absolute;inset-block:0;inset-inline-start:0;border-radius:4px;background:var(--label-2)}
+/* The fill sits 2px inside the track on every row, not only where there is a band: a band-less row
+   at the full 8px read as a taller bar next to its neighbours (#1395). */
+.sbar-f{position:absolute;inset-block:2px;inset-inline-start:0;border-radius:3px;background:var(--label-2)}
 .sbar-band{position:absolute;inset-block:0;background:rgba(48,209,88,.22);background:color-mix(in srgb,var(--green-ink) 22%,transparent)}
 :root[data-theme="light"] .sbar-band{background:rgba(26,127,55,.18);background:color-mix(in srgb,var(--green-ink) 18%,transparent)}
-.sbar-row:has(.sbar-band) .sbar-f{inset-block:2px;border-radius:3px}
 .sbar-tick{position:absolute;inset-block:-3px;width:2px;border-radius:1px;background:var(--label)}
 .sbar-row.acc .sbar-f{background:var(--acc)}
 .sbar-row.in .sbar-f{background:var(--green-ink)}
