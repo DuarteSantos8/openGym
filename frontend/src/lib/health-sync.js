@@ -351,13 +351,20 @@ export function rememberCurve(w, samples, now = Date.now()) {
   // Kept when it adds slots to the curve the workout has (merged, as keepHeartCurve does).
   const c = mergeCurves(w.hrc, packCurve(samples, Number(w.start), Number(w.end)))
   const curve = !!c && curveReadings(c) > curveReadings(w.hrc)
-  const sets = lacksHeartRate(w)
-  if (!curve && !sets) return false
+  const lacks = lacksHeartRate(w)
+  if (!curve && !lacks) return false
   const apply = applyRef
-  nativePlatform().then(platform => apply(s => {
-    if (sets) mergeHeartRate(s, w.id, samples, srcOf(platform), now)
-    if (curve) keepHeartCurve(s, w.id, samples, now)
-  })).catch(() => {})
+  nativePlatform().then(platform => {
+    // Tried on a copy first: a set the readings cannot fill (one outside them, a warm-up) must not
+    // rewrite the log. Every write is a new list of workouts, which a history view can read as a
+    // reason to read its sessions again, and so on.
+    const sets = lacks && mergeHeartRate({ workouts: [JSON.parse(JSON.stringify(w))] }, w.id, samples, srcOf(platform), now)
+    if (!curve && !sets) return
+    apply(s => {
+      if (sets) mergeHeartRate(s, w.id, samples, srcOf(platform), now)
+      if (curve) keepHeartCurve(s, w.id, samples, now)
+    })
+  }).catch(() => {})
   return true
 }
 
