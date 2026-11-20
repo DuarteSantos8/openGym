@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "Vista previa en",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un poco más corto",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Cambio: {0} → {1}',
+  'Removed: {0}': 'Quitado: {0}',
+  'Added: {0}': 'Añadido: {0}',
+  'Order changed': 'Orden cambiado',
+  '“{0}” updated': '«{0}» actualizada',
+  'The routine changed since, so it stays as it is.': 'La rutina ha cambiado desde entonces, así que se queda como está.',
+  '“{0}” already matches this workout.': '«{0}» ya coincide con este entreno.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'La próxima vez, la rutina empieza con estos cambios. Este entreno se queda como lo registraste.',
+  'Changed from your routine': 'Distinto de tu rutina',
+  '“{0}” now matches this workout': '«{0}» ya coincide con este entreno',
+  'Update “{0}”': 'Actualizar «{0}»',
 }

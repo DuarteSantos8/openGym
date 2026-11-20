@@ -5976,4 +5976,16 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'বদল: {0} → {1}',
+  'Removed: {0}': 'বাদ: {0}',
+  'Added: {0}': 'যোগ: {0}',
+  'Order changed': 'ক্রম বদলেছে',
+  '“{0}” updated': '“{0}” আপডেট হয়েছে',
+  'The routine changed since, so it stays as it is.': 'এর মধ্যে রুটিনটি বদলেছে, তাই যেমন আছে তেমনই থাকছে।',
+  '“{0}” already matches this workout.': '“{0}” আগে থেকেই এই ওয়ার্কআউটের সাথে মেলে।',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'পরের বার রুটিন এই পরিবর্তনগুলো নিয়ে শুরু হবে। এই ওয়ার্কআউট যেমন লগ করেছেন তেমনই থাকবে।',
+  'Changed from your routine': 'আপনার রুটিন থেকে বদলেছে',
+  '“{0}” now matches this workout': '“{0}” এখন এই ওয়ার্কআউটের সাথে মেলে',
+  'Update “{0}”': '“{0}” আপডেট করুন',
 }

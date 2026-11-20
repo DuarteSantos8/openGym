@@ -5908,4 +5908,16 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'สลับ: {0} → {1}',
+  'Removed: {0}': 'นำออก: {0}',
+  'Added: {0}': 'เพิ่ม: {0}',
+  'Order changed': 'เปลี่ยนลำดับ',
+  '“{0}” updated': 'อัปเดต “{0}” แล้ว',
+  'The routine changed since, so it stays as it is.': 'รูทีนเปลี่ยนไปแล้วตั้งแต่นั้น จึงคงไว้ตามเดิม',
+  '“{0}” already matches this workout.': '“{0}” ตรงกับการออกกำลังกายนี้อยู่แล้ว',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'ครั้งหน้ารูทีนจะเริ่มด้วยการเปลี่ยนแปลงเหล่านี้ การออกกำลังกายนี้ยังคงตามที่คุณบันทึกไว้',
+  'Changed from your routine': 'ต่างจากรูทีนของคุณ',
+  '“{0}” now matches this workout': 'ตอนนี้ “{0}” ตรงกับการออกกำลังกายนี้แล้ว',
+  'Update “{0}”': 'อัปเดต “{0}”',
 }

@@ -114,12 +114,13 @@ import { buildSessionEntries, buildPlannedEntry, buildSessionEntry, plannedConfi
 import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
-import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { buildCombinedEntries, deriveSessionName, startSlotsOf } from './lib/session-merge.js'
+import { sessionRoutinePlans, rewriteRoutine, rewritesRoutine, applyRoutineUpdate, swapOwnPlan } from './lib/routine-update.js'
 import { leadEntries } from './lib/leftovers.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
-import { stampWorkout } from './lib/sync-merge.js'
+import { stampWorkout, markEntryUndone } from './lib/sync-merge.js'
 import { hrLabel } from './lib/heart-rate.js'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
@@ -2231,6 +2232,19 @@ export function swapActiveWorkoutToBackup(index, backupId) {
   commitActiveSwap(index, ex, cfg)
 }
 
+function swapPlanOf(st, current, id, cfg) {
+  if (!slotRoutineOf(st, current)) return {}
+  const slot = { ...plannedConfigOf(current), id: current.id }
+  const own = swapOwnPlan({ ...cfg, id }, [
+    replaceSlotExercise(slot, id, st, current.rid),
+    (current.target?.subs || []).includes(id) ? backupSlotConfig(slot, id, st, current.rid, x => !!EXIDX[x]) : null,
+    pickedExerciseConfig(id, undefined, st),
+    defaultConfig(id, undefined, st),
+  ])
+  return own ? { swapPlan: own } : {}
+}
+const slotRoutineOf = (st, entry) => (entry?.rid && Number.isInteger(entry.slotAt) ? (st.routines || []).find(r => r.id === entry.rid) : null) || null
+
 function commitActiveSwap(index, ex, cfg) {
   const st = S()
   const current = st.active?.entries?.[index]
@@ -2251,6 +2265,9 @@ function commitActiveSwap(index, ex, cfg) {
     // prescription (above): one kept out by hand keeps the marker and its Undo on the card,
     // and an Undo must leave numbers that are right to count.
     ...(current.noProg === true ? { noProg: true } : {}),
+    // Sets and reps the swap chose itself, rather than the slot's carried over, a backup's or the
+    // exercise's defaults it was offered: the finish summary's Update routine keeps those.
+    ...(swapPlanOf(st, current, ex.id, cfg)),
   }
 
   const apply = options => {
@@ -4046,6 +4063,8 @@ export function beginWorkout(routineIds, bw, { id = null, start = null, lead = n
       routineIds: rids,
       name: routines.length ? deriveSessionName(routines.map(r => r.name)) : first.length ? deriveSessionName(lead.routines.map(r => r.name)) : t('Freestyle'),
       bw: bw || null, cur: 0, entries,
+      // The routines as they were at the start, for the summary's Update routine (lib/routine-update.js).
+      ...(rids.length ? { startSlots: built.startSlots } : {}),
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
@@ -4235,9 +4254,11 @@ function AddRoutineToSession({ close }) {
   if (!active) return null
   const inSession = new Set([].concat(active.routineIds || []))
   const add = r => {
-    const entries = buildSessionEntries(sessionHistory(st), r).map(e => ({ ...e, rid: r.id }))
+    const entries = buildCombinedEntries(sessionHistory(st), [r.id]).entries
     update(s => {
       if (!s.active) return
+      // Its exercises at this moment, the way the session's first routines were kept at the start.
+      if (s.active.startSlots) s.active.startSlots = { ...s.active.startSlots, ...startSlotsOf([r]) }
       // A session kept out of progression as a whole (the header ⋮) keeps the routine's
       // exercises out too, the same as an exercise added on its own.
       s.active.entries.push(...entries.map(e => joinSessionNoProg(s.active, e)))
@@ -4685,8 +4706,113 @@ function KeepInRoutine({ additions }) {
   </div>
 }
 
-function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
+// "Update routine" (lib/routine-update.js): the session swapped, dropped or reordered exercises
+// of the routine it came from, and one tap, after a look at what it would change, makes the
+// routine match. The workout itself is never touched; leaving the summary changes nothing.
+const knownEx = id => !!EXIDX[id]
+const routineRewrite = (st, plan) => {
+  const routine = (st.routines || []).find(r => r.id === plan.routineId)
+  return routine ? rewriteRoutine(routine, plan, st, { known: knownEx }) : null
+}
+const exName = id => EXIDX[id] ? exerciseNameText(EXIDX[id]) : String(id)
+// "Swap: Cable pulldown → Pull-up", "Removed: Hammer curl", "Added: Lateral raise", "Order changed".
+const changeText = c => c.kind === 'swap' ? t('Swap: {0} → {1}', exName(c.from), exName(c.to))
+  : c.kind === 'remove' ? t('Removed: {0}', exName(c.id))
+    : c.kind === 'add' ? t('Added: {0}', exName(c.id))
+      : t('Order changed')
+const CHANGE_ICON = { swap: 'swap', remove: 'minus', add: 'plusCircle', order: 'chevronsUpDown' }
+
+/** Writes the update into the routine, as one change with its Undo. False when there is nothing left to do. */
+export function updateRoutineFromSession(plan, { onUndo } = {}) {
+  const st = useStore.getState()
+  const routine = st.S.routines.find(r => r.id === plan.routineId)
+  if (!routine) return false
+  const before = structuredClone(routine.ex)
+  const base = Number(routine._f?.ex) || 0
+  let changes = null
+  // Through the store's update, so the routine is stamped like any other edit and other devices
+  // merge it (lib/sync-merge.js stampRoutines).
+  st.update(s => {
+    const r = s.routines.find(x => x.id === plan.routineId)
+    if (r) changes = applyRoutineUpdate(r, plan, s, { known: knownEx })
+  })
+  if (!changes) return false
+  const now = useStore.getState().S.routines.find(r => r.id === plan.routineId)
+  const after = JSON.stringify(now?.ex)
+  const del = Number(now?._f?.ex) || 0
+  ui().toast(t('“{0}” updated', routine.name), { action: t('Undo'), onAction: () => {
+    if (undoRoutineUpdate({ routineId: plan.routineId, before, after, base, del })) onUndo?.()
+  } })
+  return true
+}
+// Undo puts the exercises back exactly, while they are still what the update left; a change
+// made since (another device, the routine editor) is not thrown away for it.
+function undoRoutineUpdate({ routineId, before, after, base, del }) {
+  const routine = S().routines.find(r => r.id === routineId)
+  if (!routine || JSON.stringify(routine.ex) !== after) { toast(t('The routine changed since, so it stays as it is.')); return false }
+  update(s => {
+    const r = s.routines.find(x => x.id === routineId)
+    if (!r) return
+    r.ex = structuredClone(before)
+    if (del) markEntryUndone(r, 'ex', base, del)
+  })
+  return true
+}
+
+function UpdateRoutinePreview({ plan, close, onDone }) {
   const st = useStore(s => s.S)
+  const result = routineRewrite(st, plan)
+  const routine = st.routines.find(r => r.id === plan.routineId)
+  if (!result || !routine) return <>
+    <h3>{t('Update routine')}</h3>
+    <p className="muted">{t('“{0}” already matches this workout.', routine?.name || plan.name)}</p>
+    <Button onClick={close}>{t('Close')}</Button>
+  </>
+  const confirm = () => {
+    close()
+    if (updateRoutineFromSession(plan, { onUndo: () => onDone(false) })) onDone(true)
+  }
+  return <div data-update-routine-preview>
+    <h3>{t('Update “{0}”?', routine.name)}</h3>
+    <p className="muted">{t('Next time, the routine starts with these changes. This workout stays as you logged it.')}</p>
+    <div className="list" style={{ marginBottom: 14 }}>
+      {result.changes.map((c, i) => <div key={i} className="item row" style={{ gap: 10 }}>
+        <Icon name={CHANGE_ICON[c.kind]} />
+        <span className="grow">{changeText(c)}</span>
+      </div>)}
+    </div>
+    <Button variant="primary" onClick={confirm}>{t('Update routine')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </div>
+}
+
+function UpdateRoutine({ plans }) {
+  const st = useStore(s => s.S)
+  const [done, setDone] = useState({})
+  if (!plans?.length) return null
+  const preview = p => ui().openSheet(close => <UpdateRoutinePreview plan={p} close={close} onDone={ok => setDone(x => ({ ...x, [p.routineId]: ok }))} />)
+  return <div style={{ textAlign: 'start', marginBottom: 14 }} data-update-routine>
+    <h4 className="sec">{t('Changed from your routine')}</h4>
+    {plans.map(p => {
+      const name = st.routines.find(r => r.id === p.routineId)?.name || p.name
+      if (done[p.routineId]) return <div key={p.routineId} className="small accent row" style={{ gap: 6, marginBottom: 8 }}><Icon name="checkCircle" /><span>{t('“{0}” now matches this workout', name)}</span></div>
+      const result = routineRewrite(st, p)
+      if (!result) return null
+      return <div key={p.routineId} style={{ marginBottom: 8 }}>
+        <div className="small dim" style={{ marginBottom: 6 }}>{result.changes.map(changeText).join(' · ')}</div>
+        <Button icon="repeat" onClick={() => preview(p)}>{t('Update “{0}”', name)}</Button>
+      </div>
+    })}
+  </div>
+}
+
+function FinishSummary({ w, prs, e1prs = [], additions = [], plans = [], close }) {
+  const st = useStore(s => s.S)
+  // The routines the session changed more than by additions, decided once: the offer stays put
+  // after it is taken. Their additions are part of that update, not offered on their own.
+  const [updates] = useState(() => plans.filter(p => rewritesRoutine(routineRewrite(S(), p))))
+  const kept = additions.filter(a => !updates.some(p => p.routineId === a.routineId))
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     {/* Sticky, so the summary can be left from the top however far it has been scrolled. */}
     <div className="fin-x"><button type="button" className="iconbtn" aria-label={t('Close')} onClick={() => closeThenNav(close, '/home')}><Icon name="xmark" /></button></div>
@@ -4718,7 +4844,8 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
     <div style={{ height: 14 }} />
     <LastAndNext st={st} w={w} />
     <CardioDone st={st} w={w} />
-    <KeepInRoutine additions={additions} />
+    <UpdateRoutine plans={updates} />
+    <KeepInRoutine additions={kept} />
     {/* The moment for a progress photo or the clip of a set: the workout is already saved, so
         what is added here goes straight onto its record. */}
     <div style={{ textAlign: 'start' }}><WorkoutMediaSection w={w} hint /></div>
@@ -4791,6 +4918,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
   // Read before the session is gone: the summary offers these to their routines (#592).
   const additions = past ? [] : routineAdditions(A, st.routines)
+  // And what it swapped, dropped or reordered in them: Update routine, on the summary.
+  const plans = past ? [] : sessionRoutinePlans(A, st.routines)
   let shown = w
   update(s => {
     if (past) {
@@ -4825,7 +4954,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // into s.active, which is gone. What it held is not logged, like any set left unchecked.
   useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
-  ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} close={close} />, { kind: 'center', locked: true, wide: true })
+  ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} plans={plans} close={close} />, { kind: 'center', locked: true, wide: true })
 }
 
 /**

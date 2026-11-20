@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': '교체: {0} → {1}',
+  'Removed: {0}': '삭제: {0}',
+  'Added: {0}': '추가: {0}',
+  'Order changed': '순서 변경',
+  '“{0}” updated': '“{0}” 업데이트됨',
+  'The routine changed since, so it stays as it is.': '그사이 루틴이 바뀌어서 그대로 둘게요.',
+  '“{0}” already matches this workout.': '“{0}”은(는) 이미 이번 운동과 같아요.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': '다음 번에는 이 변경 사항으로 루틴이 시작돼요. 이번 운동은 기록한 그대로 남아요.',
+  'Changed from your routine': '루틴과 달라진 점',
+  '“{0}” now matches this workout': '이제 “{0}”이(가) 이번 운동과 같아요',
+  'Update “{0}”': '“{0}” 업데이트',
 }

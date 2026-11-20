@@ -5897,4 +5897,16 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Finish summary: Update routine from this workout (swaps, removals, order)
+  'Swap: {0} → {1}': 'Değişti: {0} → {1}',
+  'Removed: {0}': 'Çıkarıldı: {0}',
+  'Added: {0}': 'Eklendi: {0}',
+  'Order changed': 'Sıra değişti',
+  '“{0}” updated': '“{0}” güncellendi',
+  'The routine changed since, so it stays as it is.': 'Rutin o zamandan beri değişti, bu yüzden olduğu gibi kalıyor.',
+  '“{0}” already matches this workout.': '“{0}” zaten bu antrenmanla aynı.',
+  'Next time, the routine starts with these changes. This workout stays as you logged it.': 'Bir dahaki sefere rutin bu değişikliklerle başlar. Bu antrenman kaydettiğin gibi kalır.',
+  'Changed from your routine': 'Rutininden farklı',
+  '“{0}” now matches this workout': '“{0}” artık bu antrenmanla aynı',
+  'Update “{0}”': '“{0}” rutinini güncelle',
 }

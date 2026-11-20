@@ -61,7 +61,8 @@ function perSideWeight(row) {
   return weights.length ? Math.max(...weights) : null
 }
 
-function copiedEntry(entry, source) {
+// Also how an update from the finish summary sets up an added exercise (lib/routine-update.js).
+export function copiedEntry(entry, source) {
   const rows = Array.isArray(entry?.sets) ? entry.sets : []
   const work = rows.filter(row => !isWarmupRow(row))
   // A saved entry can retain planned rows after an early finish. Match history.js lastEntryFor:
