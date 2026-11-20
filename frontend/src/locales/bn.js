@@ -6187,4 +6187,6 @@ export default {
   "Beginner": "বিগিনার",
   "Intermediate": "ইন্টারমিডিয়েট",
   "Elite": "এলিট",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "উন্নত",
 }

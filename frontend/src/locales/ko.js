@@ -6108,4 +6108,6 @@ export default {
   "Beginner": "초급",
   "Intermediate": "중급",
   "Elite": "엘리트",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "고급",
 }

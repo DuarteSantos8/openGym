@@ -6101,4 +6101,6 @@ export default {
   "Beginner": "入門",
   "Intermediate": "中級",
   "Elite": "菁英",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "進階",
 }

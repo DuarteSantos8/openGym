@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SKILLS, SKILL_IDS, BRANCHES, SKILL_FAMILIES, TIER_NAME, haveOf, skillStatus, missingBefore, skillsAfter, withSkill, withoutSkill, countOf, familyIds, openSkills, muscleLevels, muscleIds, treeItems, treeGrid, skillOfExercise, earnedSkills, withEarned, newlyHad } from './skill-tree.js'
+import { SKILLS, SKILL_IDS, BRANCHES, SKILL_FAMILIES, TIER_NAME, TIER_KEY, haveOf, skillStatus, missingBefore, skillsAfter, withSkill, withoutSkill, countOf, familyIds, openSkills, muscleLevels, muscleIds, treeItems, treeGrid, skillOfExercise, earnedSkills, withEarned, newlyHad } from './skill-tree.js'
 import { SKILL_LOGGED } from './skill-tree-data.js'
 import { mergeStampedMap } from './sync-merge.js'
 import { MUSCLES } from './muscles.js'
@@ -28,7 +28,7 @@ describe('the names on the screen', () => {
   it('has every family and every tier in every locale pack', () => {
     expect(Object.keys(packs).length).toBeGreaterThan(20)
     for (const [file, pack] of Object.entries(packs))
-      for (const key of [...SKILL_FAMILIES.map(f => f.name), ...Object.values(TIER_NAME)]) expect(pack[key], file + ': ' + key).toBeTruthy()
+      for (const key of [...SKILL_FAMILIES.map(f => f.name), ...Object.values(TIER_NAME), ...Object.values(TIER_KEY)]) expect(pack[key], file + ': ' + key).toBeTruthy()
   })
 })
 

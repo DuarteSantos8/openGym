@@ -6111,4 +6111,6 @@ export default {
   "Beginner": "Kezdő",
   "Intermediate": "Középhaladó",
   "Elite": "Elit",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "Haladó",
 }

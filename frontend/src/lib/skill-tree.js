@@ -22,6 +22,9 @@ import { isWarmupRow } from './workout-model.js'
 export { SKILL_FAMILIES }
 
 export const TIER_NAME = { 1: 'Beginner', 2: 'Intermediate', 3: 'Advanced', 4: 'Elite' }
+/** A tier's own key where its English name has another sense in the packs ('Advanced' is the
+ *  settings word there): views/Skills.jsx shows it when the language has it, else TIER_NAME. */
+export const TIER_KEY = { 3: 'Advanced (skill tier)' }
 export const TIER_COLOR = { 1: 'var(--teal)', 2: 'var(--blue)', 3: 'var(--purple)', 4: 'var(--orange)' }
 export const TIER_ROMAN = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' }
 

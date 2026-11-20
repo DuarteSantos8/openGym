@@ -6105,4 +6105,6 @@ export default {
   "Beginner": "Початківець",
   "Intermediate": "Середній рівень",
   "Elite": "Еліта",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "Просунутий",
 }

@@ -6104,4 +6104,6 @@ export default {
   "Beginner": "Pradedantysis",
   "Intermediate": "Vidutinio lygio",
   "Elite": "Elitinis",
+  // The skill tier, not the settings sense of "Advanced" (views/Skills.jsx tierName)
+  "Advanced (skill tier)": "Pažengęs",
 }
