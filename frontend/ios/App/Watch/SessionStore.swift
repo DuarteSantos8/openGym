@@ -616,6 +616,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// ‹ on the rest: the set just done, open to be fixed while the rest runs on.
     func fixLast() {
         guard let ref = lastLogged else { return }
+        letGoOfRating() // the fix view's boxes take the Crown
         open(ref)
         if let side = lastSide, viewing != nil { setFixSide(side) }
     }
@@ -1075,6 +1076,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func openMenu() {
         guard menuShown, touchAllowed, let ref = shownRef else { return }
+        letGoOfEffort() // the Crown must not move a rating hidden under the menu
         lockTouches()
         Haptics.mark()
         menuFor = ref

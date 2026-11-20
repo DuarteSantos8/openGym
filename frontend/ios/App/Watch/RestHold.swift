@@ -472,6 +472,7 @@ struct EffortArmed: View {
         .offset(y: ticks && words ? -2 : 0) // room for the ticks under the digits
         .frame(maxWidth: .infinity)
         .overlay(alignment: .bottom) { if ticks, words, let v = value { tickStrip(color, v, r).padding(.bottom, 1) } }
+        .allowsHitTesting(false) // the − disc's hit area runs under it
     }
 
     /// One tick per half step across the scale, the current one taller: 1 and 1.5 share a colour, the tick tells them apart.
@@ -506,7 +507,8 @@ struct EffortArmed: View {
                 .opacity(dim ? 0.3 : 1)
             }
             .frame(width: disc + inset, height: height, alignment: minus ? .leading : .trailing)
-            .contentShape(Rectangle())
+            // 44 x 34 at least: the hit runs on in under the value (which takes no touches), and a hair past a 32 pt pill.
+            .contentShape(Rectangle().size(width: 44, height: max(height, 34)).offset(x: minus ? 0 : disc + inset - 44, y: min(0, (height - 34) / 2)))
         }
         .buttonStyle(.plain)
     }

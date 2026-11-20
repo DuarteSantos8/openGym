@@ -71,8 +71,6 @@ struct SetPanel: View {
                 if SessionStore.demoScreen?.hasPrefix("menu") == true, store.menuFor == nil { store.lockTouches(); store.menuFor = ref }
             }
             .onChange(of: ref) { _ in pickCrown(entry) }
-            // The armed effort holds the Crown; when it settles the box has it back.
-            .onChange(of: store.fixDial.armed) { _, armed in focus = armed ? nil : selected }
             .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
@@ -317,7 +315,8 @@ struct SetPanel: View {
     @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false, size: CGFloat, compact: Bool) -> some View {
         // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
         // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
-        if selected == field && !dimmed {
+        // While the effort is armed it holds the Crown: no box shows the crown glyph; when it settles the box takes it back.
+        if selected == field && !dimmed && !store.fixDial.armed {
             CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
                      value: value, unit: unit, label: label, tint: tint, plus: plus, size: size, compact: compact, focus: $focus,
                      apply: { set(field, $0) }, tap: { keypad = field })
@@ -325,7 +324,7 @@ struct SetPanel: View {
                                            nudge: nudge, edit: { keypad = field }))
         } else {
             NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false, size: size, compact: compact)
-                .onTapGesture { selected = field; focus = field }
+                .onTapGesture { store.letGoOfEffort(); selected = field; focus = field }
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
                                            nudge: nudge, edit: { keypad = field }))
         }
