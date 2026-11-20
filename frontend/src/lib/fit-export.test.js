@@ -264,6 +264,22 @@ describe('a strength workout as FIT', () => {
     expect(s2.at(-1)[254]).toBe(fitTime(T0 + 30000))
   })
 
+  it('places a circuit\'s sets in the order they were ticked, with the rests between them', () => {
+    // Three rounds of bench then plank, logged exercise after exercise: the ticks alternate.
+    const round = k => T0 + min(4 * k)
+    const circuit = { id: 'circuit', d: '2026-11-19', start: T0, end: T0 + min(12), entries: [
+      { id: BENCH, target: { mode: 'reps' }, sets: [1, 2, 3].map(k => ({ w: 60, r: 10, done: true, at: round(k) - min(2) })) },
+      { id: PLANK, target: { mode: 'time' }, sets: [1, 2, 3].map(k => ({ sec: 40, w: 0, done: true, at: round(k) - 20000 })) },
+    ] }
+    const s = of(decode(workoutFit(circuit)), MSG.set)
+    const act = s.filter(x => x[5] === 1)
+    expect(act.map(x => x[7])).toEqual([0, CATEGORY.plank, 0, CATEGORY.plank, 0, CATEGORY.plank])
+    expect(act.map(x => x[254])).toEqual([1, 2, 3].flatMap(k => [fitTime(round(k) - min(2)), fitTime(round(k) - 20000)]))
+    // Each rest is the real gap, not the session shared out evenly.
+    const rests = s.filter(x => x[5] === 0).map(x => x[0] / 1000)
+    expect(rests).toEqual([60, 110, 60, 110, 60])
+  })
+
   it('does not let ticks bunched after the end stretch the session', () => {
     const late = { id: 'late', d: '2026-10-09', start: T0, end: T0 + min(10), entries: [
       { id: BENCH, target: { mode: 'reps' }, sets: [5, 5, 5].map(r => ({ w: 60, r, done: true, at: T0 + min(60) })) },
