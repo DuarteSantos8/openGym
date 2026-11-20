@@ -5929,4 +5929,12 @@ export default {
   "See every skill as a tree": "以樹狀圖查看全部技能",
   "Tree view": "樹狀圖",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "你已有 {0} 個自己的階梯，已達上限。刪除一個才能加入這條分支。",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "水平拉",
+  "Vertical pull": "垂直拉",
+  "Vertical push": "垂直推",
+  "Horizontal push": "水平推",
+  "Beginner": "入門",
+  "Intermediate": "中級",
+  "Elite": "菁英",
 }

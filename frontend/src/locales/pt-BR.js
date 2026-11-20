@@ -4365,6 +4365,14 @@ export const PT_BR_OVERRIDES = {
   "See every skill as a tree": "Ver todas as habilidades em árvore",
   "Tree view": "Árvore",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Você já tem {0} escadas suas, o máximo. Apague uma para adicionar este ramo.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Puxada horizontal",
+  "Vertical pull": "Puxada vertical",
+  "Vertical push": "Empurrão vertical",
+  "Horizontal push": "Empurrão horizontal",
+  "Beginner": "Iniciante",
+  "Intermediate": "Intermediário",
+  "Elite": "Elite",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

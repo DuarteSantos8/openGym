@@ -355,7 +355,7 @@ export const SKILL_EXERCISE = {
   'Shoulder Bridge': '2863',
   'Wall Plank': '7389',
   'Handstand': '3302',
-  'HS PU': '0471',
+  'Wall HS PU': '0471',
   'Incline Push Up': '0493',
   'Push Up': '0662',
   'Diamond Push Up': '0283',

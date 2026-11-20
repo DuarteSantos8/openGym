@@ -7,8 +7,7 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
 import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
-import { isHoldRung } from '../lib/skill-ladder.js'
-import { rungEntry } from '../components/Ladders.jsx'
+import { slotOnRung } from '../lib/skill-ladder.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
@@ -177,13 +176,8 @@ function LadderNext ({ entry, next }) {
       if (i < 0) return
       const cur = r.ex[i]
       // Back to the bottom of the range on the new rung, the rule kept.
-      r.ex[i] = { ...replaceSlotExercise(cur, next, s, r.id), prog: cur.prog || 'ladder' }
       // From a hold to reps or back (a front lever, then a front lever pull): the rung's own way in.
-      const hold = isHoldRung(s, next)
-      if (hold !== (modeOf(cur) === 'time')) {
-        const { reps: _r, repsMin: _m, sec: _s, mode: _o, ...kept } = r.ex[i]
-        r.ex[i] = { ...kept, ...rungEntry(next, s), sets: cur.sets || 3 }
-      } else if (hold) r.ex[i] = { ...r.ex[i], sec: rungEntry(next, s).sec }
+      r.ex[i] = slotOnRung({ ...replaceSlotExercise(cur, next, s, r.id), prog: cur.prog || 'ladder' }, next, s)
     })
     setDone(true)
     useUI.getState().toast(t('{0} is in {1} from next time.', exerciseNameText(EXIDX[next]), routine.name))

@@ -5902,4 +5902,12 @@ export default {
   "See every skill as a tree": "Xem mọi kỹ năng dạng cây",
   "Tree view": "Cây",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Bạn đã có {0} thang riêng, mức tối đa. Xóa một thang để thêm nhánh này.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Kéo ngang",
+  "Vertical pull": "Kéo dọc",
+  "Vertical push": "Đẩy dọc",
+  "Horizontal push": "Đẩy ngang",
+  "Beginner": "Mới bắt đầu",
+  "Intermediate": "Trung cấp",
+  "Elite": "Thượng thặng",
 };

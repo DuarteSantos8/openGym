@@ -5932,4 +5932,12 @@ export default {
   "See every skill as a tree": "Visi įgūdžiai medžiu",
   "Tree view": "Medis",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Jau turi {0} savo kopėčias, daugiau negalima. Ištrink vienas, kad pridėtum šią šaką.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Horizontalus traukimas",
+  "Vertical pull": "Vertikalus traukimas",
+  "Vertical push": "Vertikalus stūmimas",
+  "Horizontal push": "Horizontalus stūmimas",
+  "Beginner": "Pradedantysis",
+  "Intermediate": "Vidutinio lygio",
+  "Elite": "Elitinis",
 }

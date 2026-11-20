@@ -104,6 +104,9 @@ export function withoutSkill(map, id, now = Date.now()) {
 
 const SKILL_OF_EXERCISE = {}
 for (const [name, exIds] of Object.entries(SKILL_LOGGED)) for (const x of exIds) SKILL_OF_EXERCISE[x] = skillId(name)
+// A skill's own catalogue exercise (the rung a branch trains it on, lib/skill-ladder.js) shows it
+// too, unless the list above already gives that exercise to a skill.
+for (const [name, x] of Object.entries(SKILL_EXERCISE)) if (!SKILL_OF_EXERCISE[x]) SKILL_OF_EXERCISE[x] = skillId(name)
 
 export const repsToHave = tier => (tier >= 3 ? 1 : 5)
 export const secondsToHave = tier => (tier === 1 ? 20 : 10)

@@ -5936,4 +5936,12 @@ export default {
   "See every skill as a tree": "सभी कौशल पेड़ के रूप में देखें",
   "Tree view": "पेड़",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "आपके पास पहले से {0} अपनी सीढ़ियाँ हैं, यही अधिकतम है। यह शाखा जोड़ने के लिए एक हटाएँ।",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "हॉरिज़ॉन्टल पुल",
+  "Vertical pull": "वर्टिकल पुल",
+  "Vertical push": "वर्टिकल पुश",
+  "Horizontal push": "हॉरिज़ॉन्टल पुश",
+  "Beginner": "शुरुआती",
+  "Intermediate": "मध्यम",
+  "Elite": "एलीट",
 }

@@ -5936,4 +5936,12 @@ export default {
   "See every skill as a tree": "Tüm becerileri ağaç olarak gör",
   "Tree view": "Ağaç",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Zaten {0} kendi merdivenin var, en fazlası bu. Bu dalı eklemek için birini sil.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Yatay çekme",
+  "Vertical pull": "Dikey çekme",
+  "Vertical push": "Dikey itme",
+  "Horizontal push": "Yatay itme",
+  "Beginner": "Başlangıç",
+  "Intermediate": "Orta seviye",
+  "Elite": "Elit",
 }
