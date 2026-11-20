@@ -104,6 +104,7 @@ final class CueAudioLedgerTests: XCTestCase {
         l.reset()
         XCTAssertTrue(l.isIdle)
         XCTAssertNil(l.activeShape)
+        XCTAssertFalse(l.holdsSession)
         XCTAssertEqual(l.end(a.id), .none)
     }
 
@@ -135,16 +136,27 @@ final class CueAudioLedgerTests: XCTestCase {
         }
     }
 
-    /// A shape set again over .soloAmbient that is refused also leaves nothing active.
+    /// A shape set again over .soloAmbient that is refused also leaves nothing active, and the
+    /// session is still let go.
     func testReappliedShapeRefusedIsTriedAgain() {
-        var ledger = CueAudioLedger()
-        let (_, step) = ledger.begin(.tone, onSilent: true)
-        guard case .activate(let shape) = step else { return XCTFail("activates") }
-        ledger.didActivate(shape)
-        ledger.didFailActivation()  // reapplied, setActive(true) threw
-        let (id, again) = ledger.begin(.tone, onSilent: true)
-        guard case .activate = again else { return XCTFail("tried again") }
-        _ = id
+        var l = CueAudioLedger()
+        let first = l.begin(.tone, onSilent: true)
+        l.didActivate(activated(first.step)!)
+        l.didFailActivation()  // reapplied, setActive(true) threw
+        XCTAssertTrue(l.holdsSession)
+        let again = l.begin(.tone, onSilent: true)
+        XCTAssertNotNil(activated(again.step), "tried again")
+        _ = l.end(first.id)
+        XCTAssertTrue(isDeactivate(l.end(again.id)))
+    }
+
+    /// Hushing the spoken lines after their activation was refused still lets the session go.
+    func testHushAfterRefusedActivationLetsGo() {
+        var l = CueAudioLedger()
+        let line = l.begin(.speech, onSilent: true)
+        XCTAssertNotNil(activated(line.step))
+        l.didFailActivation()
+        XCTAssertTrue(isDeactivate(l.endAll(.speech)))
     }
 
     /// A session already active when a new activation is refused (a spoken line, then a tone)

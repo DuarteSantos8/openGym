@@ -28,8 +28,9 @@ public struct CueSessionShape: Equatable {
     /// While something sounds. `onSilent` (Settings → "Play even on silent") rings through the
     /// switch; `speechOnly` picks the spoken-prompt mode, which only .playback offers.
     /// Without it the sound is plain .ambient: iOS takes duckOthers only with .playback (and
-    /// .playAndRecord, .multiRoute), so .ambient with it was refused and the sound played in the
-    /// session iOS starts every app in, .soloAmbient, which stops the music.
+    /// .playAndRecord, .multiRoute), so .ambient with it was refused and the sound played in
+    /// whatever category the session had, .soloAmbient (iOS starts every app in it) stopping the
+    /// music.
     public static func sounding(onSilent: Bool, speechOnly: Bool) -> CueSessionShape {
         if onSilent {
             return CueSessionShape(category: .playback, mode: speechOnly ? .voicePrompt : .standard, mixWithOthers: true, duckOthers: true)
@@ -71,7 +72,8 @@ public struct CueAudioLedger {
     public private(set) var activeShape: CueSessionShape?
     /// Whether the session may still be active and has to be let go once nothing sounds: set by
     /// an activation, kept through a refused one (the shape before it may still be active, and
-    /// play() can activate a category that took), cleared only by a real deactivation.
+    /// play() can activate a category that took), cleared by a deactivation (or by giving up
+    /// after the system kept calling the session busy) and by reset().
     public private(set) var holdsSession = false
 
     /// A short gap between two cues (a tone, then the line after it) keeps the music down instead

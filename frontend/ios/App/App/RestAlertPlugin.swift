@@ -192,7 +192,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                     call.reject("could not play the tone")
                     return
                 }
-                // Plays over the user's music, which ducks for it and never stops (CueAudioLedger).
+                // Plays over the user's music and never stops it; the music ducks for it only with
+                // "Play even on silent" (CueAudioLedger).
                 let id = self.beginSound(.tone, onSilent: onSilent)
                 self.players[id] = p
                 p.play()
