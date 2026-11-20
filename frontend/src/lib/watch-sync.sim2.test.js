@@ -474,6 +474,26 @@ describe('a set\'s identity (#1162) and the watch\'s set menu', () => {
     expect(sets.map(s => `${s.done ? 'x' : '-'}${s.w}x${s.r}`)).toEqual(['x20x9', 'x25x6'])
     expect(W.watch.workout.entries[1].sets.map(s => `${s.done ? 'x' : '-'}${s.w}x${s.r}`)).toEqual(['x20x9', 'x25x6'])
   })
+
+  it('a mark made on the watch before a tick, the phone away: both arrive, the saved set has the mark once', async () => {
+    const wid = W.phone.start('r1')
+    await W.run(1000)
+    W.setNear(false)
+    W.watch.mark(1, 0, { failure: true })
+    expect(W.watch.workout.entries[1].sets[0].failure).toBe(true)
+    W.watch.tick(1, 0, { w: 20, r: 7 })
+    await W.run(5000)
+    W.setNear(true)
+    await W.settle()
+    expect(W.phone.S.active.entries[1].sets.map(s => !!s.failure)).toEqual([true, false])
+    expect(W.watch.workout.entries[1].sets.map(s => !!s.failure)).toEqual([true, false])
+    W.phone.finish()
+    await W.settle()
+    atRest()
+    const sets = saved(wid).entries.flatMap(e => e.sets)
+    expect(sets.filter(s => s.failure).map(s => `${s.w}x${s.r}`)).toEqual(['20x7'])
+    expect(doneOf(saved(wid))).toEqual(['0001#0:20x7'])
+  })
 })
 
 describe('supersets, holds and circuits', () => {

@@ -102,7 +102,9 @@ export function garminTotals (active) {
 const slim = (e, ...keys) => { const o = { ...e }; for (const k of keys) delete o[k]; return o }
 // A routine's row as the watch reads it: a missing key is null or no, so nulls and noes stay home
 // (the bridges leave nulls out anyway; counted here they cost a long routine its exercises).
-const leanRow = row => Object.fromEntries(Object.entries(row || {}).filter(([, v]) => v != null && v !== false))
+// The set menu's marks stay out: a Garmin has no set menu, and its bytes are short.
+const noMenu = ({ failure, drop, drops, side, rp, ...row } = {}) => row
+const leanRow = row => Object.fromEntries(Object.entries(noMenu(row || {})).filter(([, v]) => v != null && v !== false))
 const nameOnly = r => ({ routineIds: r.routineIds || [], name: r.name || '', entries: [] })
 
 /**
@@ -138,7 +140,7 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
     const { progress, volume } = garminTotals(A)
     // The Garmin watch has no Muscles page: the muscle weights and names would only cost bytes.
     const { entries, muscleNames, ...rest } = A
-    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...slim(entries[i], 'muscles'), i })) }
+    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...slim(entries[i], 'muscles'), sets: (entries[i].sets || []).map(noMenu), i })) }
   }
   const R = snap?.ready
   if (R) {
