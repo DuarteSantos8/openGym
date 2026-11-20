@@ -50,6 +50,14 @@ describe('the Garmin snapshot', () => {
     expect(garminLook()).toEqual({})
   })
 
+  it('leaves the set menu\'s marks out of the rows (a Garmin has no set menu)', () => {
+    const snap = wearSnap()
+    snap.active.entries[0].sets[0] = { ...snap.active.entries[0].sets[0], failure: true, drop: 40, drops: 1, side: 'L', rp: true, sid: 'sa' }
+    const set = garminSnapshot(snap).active.entries[0].sets[0]
+    expect(['failure', 'drop', 'drops', 'side', 'rp'].filter(k => k in set)).toEqual([])
+    expect(set.sid).toBe('sa')
+  })
+
   it('sends the exercise up now and the one after it, not the whole workout', () => {
     const A = { cur: 1, unit: 'kg', entries: [ex('a', [row(true)]), ex('b', [row(true), row(false)]), ex('c', [row(false)]), ex('d', [row(false)])] }
     expect(garminWindow(A)).toEqual([1, 2])

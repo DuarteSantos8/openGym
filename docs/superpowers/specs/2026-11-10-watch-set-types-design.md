@@ -66,30 +66,27 @@ All optional, omitted when false, so older watch apps ignore them.
 
 ### Watch → phone (events, same queue/ack as `setDone`)
 
-Each carries `id, wid, exId, entryIdx, at` like `setDone` (`SessionCore.tick`), and the phone resolves the entry with
-`entryIndexOf`.
+Rebuilt on 1.4.6's set ids (protocol 2, #1162). The protocol lives in
+[docs/WATCH_SYNC.md](../../WATCH_SYNC.md) ("Watch → phone: events" and "A set's identity"); this spec no longer
+defines it. In short:
 
-| type | extra fields | phone applies |
-|---|---|---|
-| `setMark` | `setIdx`, `w`, `r`, `done` (the set as the watch saw it, to check identity) and one of `warmup: Bool`, `failure: Bool`, `drop: Bool` | the rule above for that one toggle |
-| `addSet` | — | `addSet(idx)` |
-| `removeSet` | `setIdx`, `w`, `r`, `done` | `removeSetAt(idx, setIdx)` |
+- Add and Remove are the existing `addSet` / `removeSet` events, handled by `addWatchSet` / `removeWatchSet` in
+  `lib/watch-sync.js`. Add goes at the end of the exercise with a `sid` the watch makes up (`w-<uuid>`). The phone
+  never takes out a done set, one with a side done, or an exercise's only row, so the watch does not offer those.
+- Marks are one new event, `setMark` (`wid, exId, entryIdx, setIdx, sid, warmup?, failure?, drop?, at`): the row
+  by its `sid` (by place without one), each mark only when sent, the later `at` wins as for a tick
+  (`markWatchSet`, applied with `watch-marks.js`, the phone's own menu rules).
+- No identity check by `w`, `r`, `done`: the set's id is its identity.
 
-**Set identity guard:** before `setMark`/`removeSet`, the phone checks the row at `setIdx` still matches the event's
-`w`, `r` and `done` (in the exercise's unit). If not, it does nothing and acks the event (the next snapshot puts the
-watch right). This prevents index drift from hitting the wrong set.
+Undo for Remove is local: the watch shows "Set 2 removed · Undo" for 4 s and **only then** sends `removeSet`. The held
+removal waits in the watch's edits like any other, replayed over every snapshot, so a snapshot does not end the Undo.
+If the watch app is closed during the window, the removal is sent the next time it starts.
 
-Undo for Remove is local: the watch shows "Set 2 removed · Undo" for 4 s and **only then** queues `removeSet`. Undo
-in that window sends nothing. If the watch app is closed/backgrounded during the window, the removal is sent at once
-(what the lifter saw is what is saved).
+The watch applies each change to its own state at once and keeps it (`edits`) until the phone acks it, replayed over
+each snapshot in the watch's order before its ticks. For Warm-up the watch moves the row the way
+`makeWarmupAt`/`makeWorkAt` do; the row keeps its `sid`, so a pending tick follows it.
 
-The watch applies each change to its own state at once (optimistic, like `tick`) and keeps it pending until a phone
-snapshot reflects it (same pending pattern as ticks), so an older snapshot in flight does not flash it back.
-For Warm-up the watch must move the row the same way `makeWarmupAt`/`makeWorkAt` do (port that logic to WatchCore
-with tests) so indices agree before the next snapshot.
-
-Older phone (no handler for the new types): the events must be acked and dropped, not block the queue. **Builder:
-check how `applyEvents` treats an unknown type (it reaches `applied.push`: good) and keep it so.**
+Older phone (no `settings.setMenu`): the watch hides the menu. An unknown type is acked and dropped by `applyEvents`.
 
 ## The watch UI (as drawn in the approved mockup)
 
@@ -162,7 +159,7 @@ Found in the code (now part of the spec):
 - The identity guard compares in the exercise's shown unit (`viewRow`/`shownWeight`), and for side sets uses the
   watch's view (`w` = heavier side, `r` = sum, as `markSide`).
 
-My calls (marked as such):
+My calls (marked as such). 1, 2 and 4 are superseded by the set ids (see the protocol section above):
 1. **Phone refusal and later ticks** (my call): the watch mirrors the phone's acceptance rules, so a refusal only
    happens when the phone was edited at the same moment. Known limit, not fixed now: a tick queued after a refused
    structural event may land on the shifted row until the next snapshot. `lean:` comment where it lives; upgrade
