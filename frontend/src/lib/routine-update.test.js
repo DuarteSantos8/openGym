@@ -6,7 +6,7 @@ import { swapActiveExercise } from './active-exercise-swap.js'
 // "Update routine from this workout": what a finished session did to its routine, and the
 // routine rewritten to match. Exercises: 0198 cable pulldown, 0652 pull-up (bodyweight),
 // 0027 barbell row, 0861 cable seated row, 0313 dumbbell hammer curl, 0025 barbell bench,
-// 0314 dumbbell incline bench, 0201 cable pushdown, 0334 dumbbell lateral raise.
+// 0314 dumbbell incline bench, 0201 cable pushdown, 0334 dumbbell lateral raise, 0463 plank (a hold).
 const clone = v => JSON.parse(JSON.stringify(v))
 const DEF = { unit: 'kg', workouts: [], routines: [], exWeights: {} }
 const ticked = (n = 2, w = 40) => Array.from({ length: n }, () => ({ w, r: 10, done: true }))
@@ -75,6 +75,18 @@ describe('sessionRoutinePlans', () => {
     active.entries[1].sets = open()
     expect(planFor(active, [routine]).slots[0]).toMatchObject({ from: '0198', to: '0198', pos: 0 })
   })
+
+  it('a routine whose own exercises all went still counts as trained by one added and done', () => {
+    const routine = { id: 'r1', name: 'Solo', ex: [{ id: '0198', sets: 3, reps: 10, weight: 40 }, { id: '0027', sets: 3, reps: 8, weight: 60 }] }
+    const raise = { id: '0334', rid: 'r1', addedInSession: true, target: { sets: 2, reps: 15, weight: 8 }, sets: ticked(2, 8) }
+    const active = { ...plain(routine), entries: [clone(raise)] }
+    const plan = planFor(active, [routine])
+    expect(plan.slots.map(s => s.to)).toEqual([null, null])
+    const out = rewriteRoutine(routine, plan, clone(DEF))
+    expect(out.changes).toEqual([{ kind: 'remove', id: '0198' }, { kind: 'remove', id: '0027' }, { kind: 'add', id: '0334' }])
+    expect(ids(out.ex)).toEqual(['0334'])
+    expect(rewritesRoutine(out)).toBe(true)
+  })
 })
 
 describe('rewriteRoutine', () => {
@@ -107,6 +119,17 @@ describe('rewriteRoutine', () => {
     const out = rewriteRoutine(routine, planFor(active, [routine]), clone(DEF))
     expect(out.ex[0]).toMatchObject({ id: '0861', sets: 5, reps: 6, restSec: 90, prog: 'double' })
     // A plan with no range has no bottom to keep.
+    expect(out.ex[0].repsMin).toBeUndefined()
+  })
+
+  it('a swap into another mode keeps that mode and its numbers', () => {
+    const routine = pull()
+    // A row slot swapped for a plank held 3 × 30 s.
+    const own = swapOwnPlan({ id: '0463', sets: 3, sec: 30, weight: 0, mode: 'time' }, [{ ...routine.ex[0], id: '0463' }])
+    const active = { ...plain(routine), entries: [entry('0463', 0, { swapPlan: own }), entry('0027', 1), entry('0313', 2)] }
+    const out = rewriteRoutine(routine, planFor(active, [routine]), clone(DEF))
+    expect(out.ex[0]).toMatchObject({ id: '0463', mode: 'time', sets: 3, sec: 30, restSec: 90 })
+    expect(out.ex[0].reps).toBeUndefined()
     expect(out.ex[0].repsMin).toBeUndefined()
   })
 
@@ -250,6 +273,22 @@ describe('rewriteRoutine', () => {
     expect(out.ex.map(x => [x.id, x.sets])).toEqual([['0313', 3], ['0201', 3], ['0334', 2]])
   })
 
+  it('leaves twins alone when the routine took one out or added one while the session ran', () => {
+    const routine = { id: 'r1', name: 'Arms', ex: [{ id: '0313', sets: 3, reps: 12, weight: 14 }, { id: '0201', sets: 3, reps: 12, weight: 20 }, { id: '0313', sets: 2, reps: 20, weight: 8 }] }
+    // The first curl swapped for a lateral raise in the session, the second done as planned.
+    const active = { ...plain(routine), entries: [entry('0334', 0), entry('0201', 1), entry('0313', 2)] }
+    const plan = planFor(active, [routine])
+    // Meanwhile the routine lost its first curl: which curl is left can't be told by its id, so
+    // the surviving one is not taken for the swapped one, and that edit stands.
+    const lost = clone(routine)
+    lost.ex.splice(0, 1)
+    expect(rewriteRoutine(lost, plan, clone(DEF))).toBeNull()
+    // Nor when a third curl was put in front.
+    const more = clone(routine)
+    more.ex.unshift({ id: '0313', sets: 1, reps: 30, weight: 5 })
+    expect(rewriteRoutine(more, plan, clone(DEF))).toBeNull()
+  })
+
   it('never empties a routine', () => {
     const routine = { id: 'r1', name: 'Solo', ex: [{ id: '0198', sets: 3, reps: 10, weight: 40 }, { id: '0027', sets: 3, reps: 8, weight: 60 }] }
     const active = { ...plain(routine), entries: [entry('0198', 0)] }
@@ -284,6 +323,10 @@ describe('swapOwnPlan', () => {
     expect(swapOwnPlan({ id: '0861', sets: 3, reps: 10, weight: 0 }, [slot, { id: '0861', sets: 3, reps: 10 }])).toBeNull()
   })
   it('is the plan without its weight when the swap set its own', () => {
-    expect(swapOwnPlan({ id: '0861', sets: 5, reps: 5, weight: 70 }, [slot, { id: '0861', sets: 3, reps: 10 }])).toEqual({ sets: 5, reps: 5 })
+    expect(swapOwnPlan({ id: '0861', sets: 5, reps: 5, weight: 70 }, [slot, { id: '0861', sets: 3, reps: 10 }])).toEqual({ mode: 'reps', sets: 5, reps: 5 })
+  })
+  it('is the plan of a swap into another mode than the slot, even the defaults it was offered', () => {
+    const plank = { id: '0463', sets: 3, sec: 45, weight: 0, mode: 'time' }
+    expect(swapOwnPlan(plank, [{ ...slot, id: '0463' }, plank])).toEqual({ mode: 'time', sets: 3, sec: 45 })
   })
 })

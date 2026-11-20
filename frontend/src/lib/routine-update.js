@@ -26,11 +26,11 @@ import { copiedEntry } from './session-routines.js'
 
 const done = entry => Array.isArray(entry?.sets) && entry.sets.some(hasCompletedWork)
 
-// A plan as the session start reads it (sets, reps, the range, seconds, metres), without the
-// weight: history decides the weight either way (replaceSlotExercise).
+// A plan as the session start reads it (its mode, sets, reps, the range, seconds, metres),
+// without the weight: history decides the weight either way (replaceSlotExercise).
 function planOf(cfg) {
   const { weight: _weight, ...plan } = plannedOf(cfg)
-  return plan
+  return { mode: modeOf(cfg), ...plan }
 }
 const samePlan = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
@@ -39,12 +39,16 @@ const samePlan = (a, b) => JSON.stringify(a) === JSON.stringify(b)
  * offered: the slot's own carried over, a backup's, or the exercise's defaults that the swap
  * sheet opens with. Only a plan of its own outlives the session in an update; otherwise the
  * new exercise takes over the slot's sets, reps and range, the way the routine editor's Replace
- * does.
+ * does. The first of `offered` is the slot carried over: a swap into another mode than that one
+ * (a row slot swapped for a plank) keeps its plan even when it was offered, since the slot's
+ * settings have nowhere to hold seconds for reps.
  */
 export function swapOwnPlan(cfg, offered = []) {
   if (!cfg || cfg.id == null) return null
   const mine = planOf(cfg)
-  const took = (Array.isArray(offered) ? offered : []).some(o => o && typeof o === 'object' && samePlan(planOf({ ...o, id: cfg.id }), mine))
+  const list = (Array.isArray(offered) ? offered : []).filter(o => o && typeof o === 'object')
+  if (list.length && planOf({ ...list[0], id: cfg.id }).mode !== mine.mode) return mine
+  const took = list.some(o => samePlan(planOf({ ...o, id: cfg.id }), mine))
   return took ? null : mine
 }
 
@@ -84,7 +88,8 @@ export function sessionRoutinePlans(active, routines) {
       const plan = e.id !== from && e.swapPlan && typeof e.swapPlan === 'object' ? { plan: { ...e.swapPlan } } : {}
       return { from, to: e.id, pos, ...plan }
     })
-    if (!slots.some(s => s.to != null)) continue
+    // An exercise added and done counts too: every slot dropped for one new lift is a change.
+    if (!slots.some(s => s.to != null) && !added.length) continue
     out.push({
       routineId: rid, name: routine.name, start: [...start], slots,
       added: added.map(pos => ({ pos, cfg: copiedEntry(entries[pos], routine) })),
@@ -95,19 +100,29 @@ export function sessionRoutinePlans(active, routines) {
 
 // Where each exercise of the routine at the start sits in the routine now, or -1: the n-th bench
 // press then is the n-th bench press now. An exercise the routine lost or swapped while the
-// session ran has no place, and the edit made there stands.
+// session ran has no place, and the edit made there stands. Nor has an exercise the routine has
+// more or fewer of than at the start: which twin went or came can't be told by the id, and
+// taking the wrong one would put the session's change on a slot it never trained.
 function placesNow(start, ex) {
+  const count = (list, id) => list.filter(x => (x && typeof x === 'object' ? x.id : x) === id).length
   const taken = new Set()
   return start.map(id => {
+    if (count(start, id) !== count(ex, id)) return -1
     const j = ex.findIndex((x, k) => !taken.has(k) && x?.id === id)
     if (j >= 0) taken.add(j)
     return j
   })
 }
 
-// The plan a swap set of its own, on the slot that the new exercise took over.
+// The plan a swap set of its own, on the slot that the new exercise took over. A swap into
+// another mode brings it, and the old mode's numbers go with the old exercise (cardio is
+// replaceSlotExercise's to switch).
 function withPlan(cfg, plan) {
   const out = { ...cfg, sets: plan.sets ?? cfg.sets }
+  if (plan.mode && plan.mode !== modeOf(out) && plan.mode !== 'cardio' && modeOf(out) !== 'cardio') {
+    for (const key of ['reps', 'repsMin', 'repsMax', 'setsMax', 'sec', 'm']) delete out[key]
+    out.mode = plan.mode
+  }
   const mode = modeOf(out)
   for (const key of ['reps', 'repsMin', 'setsMax']) {
     if (mode !== 'reps') break
