@@ -714,6 +714,15 @@ The App-Store build has no server of its own, so the Coach there is a choice mad
   reasoning model needs raised, and the maximum message length, with the same ranges the
   server clamps to.
 
+  A **compatible endpoint** gets the admin card's **Extra headers** field too (#1292): one
+  `Name: value` per line under the address, for a gateway that routes by a header (opencode Go's
+  `x-opencode-session`) and answers a model list but refuses the job without it. It goes with the
+  model list (which is what **Test it** asks for) and with every job, under the server's own limits:
+  at most eight, and `Authorization` or `Content-Type` are refused because auth framing always wins.
+  The map is kept with the base URL in the phone's own settings file and never in the training state
+  `S`, so it rides no sync and no JSON export. That file is plain text, not the secure store the key
+  goes to, so these values are routing aids rather than a place for a secret.
+
   Automatic reviews (weekly, or after every few workouts) run on the phone too, by the server's
   rule (`api/coach/core/due.js`), but only while the app is open: there is no server to run them
   and an app does not run JavaScript while it is closed. So a review that is due runs right after

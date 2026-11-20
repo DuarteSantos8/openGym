@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "额外请求头",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "可选。每行一个“名称: 值”，会随发往此端点的每个请求一起发送。切勿使用 Authorization 或 Content-Type。",
 }

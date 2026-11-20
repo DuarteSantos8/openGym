@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "Další hlavičky",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Volitelné. Jeden řádek Název: hodnota, posílá se s každým požadavkem na tento koncový bod. Nikdy Authorization ani Content-Type.",
 }

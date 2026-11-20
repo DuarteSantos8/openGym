@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "추가 헤더",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "선택 사항. 줄당 하나씩 이름: 값 형식으로 입력하며 이 엔드포인트로의 모든 요청에 함께 전송됩니다. Authorization이나 Content-Type는 사용할 수 없습니다.",
 }

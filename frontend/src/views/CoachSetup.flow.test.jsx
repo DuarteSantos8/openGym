@@ -218,7 +218,7 @@ describe('CoachSetup — bringing your own key', () => {
     await mount(); await settle(); await openByok()
     expect(field('password').getAttribute('placeholder')).toContain('(saved)')
     await click(btn('Test it')); await settle()
-    expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null }, 'sk-saved')
+    expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null, headers: null }, 'sk-saved')
   })
 
   it('a typed key wins over the saved one and is never read back out of storage', async () => {
@@ -226,7 +226,7 @@ describe('CoachSetup — bringing your own key', () => {
     await mount(); await settle(); await openByok()
     typeIn(field('password'), '  sk-typed  ')
     await click(btn('Test it')); await settle()
-    expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null }, 'sk-typed')
+    expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null, headers: null }, 'sk-typed')
   })
 
   it('the OpenAI-compatible endpoint needs no key at all', async () => {
@@ -235,7 +235,7 @@ describe('CoachSetup — bringing your own key', () => {
     typeIn(field('text'), 'https://ollama.lan:11434/')
     await click(btn('Test it')); await settle()
     expect(mocks.toast).not.toHaveBeenCalled()
-    expect(localModels).toHaveBeenCalledWith({ provider: 'compatible', baseUrl: 'https://ollama.lan:11434' }, null)
+    expect(localModels).toHaveBeenCalledWith({ provider: 'compatible', baseUrl: 'https://ollama.lan:11434', headers: null }, null)
   })
 
   it('turns down a base URL that is not one, before anything is loaded', async () => {
@@ -337,7 +337,7 @@ describe('CoachSetup — listing the models', () => {
 
     vi.mocked(localModels).mockResolvedValue({ ok: true, models: [HTTP_PROVIDERS.gemini.defaultModel] })
     await click(btn('Test it')); await settle()
-    expect(localModels).toHaveBeenLastCalledWith({ provider: 'gemini', baseUrl: null }, 'sk-1')
+    expect(localModels).toHaveBeenLastCalledWith({ provider: 'gemini', baseUrl: null, headers: null }, 'sk-1')
     expect(host.querySelector('select').value).toBe(HTTP_PROVIDERS.gemini.defaultModel)
   })
 })
@@ -355,7 +355,7 @@ describe('CoachSetup — saving', () => {
   it('writes the mode, the provider and the chosen model, then stores the key and leaves', async () => {
     await listed(null, ['claude-opus-5'])
     await click(btn('Save and use the Coach')); await settle()
-    expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'byok', provider: 'anthropic', model: 'claude-opus-5', baseUrl: null })
+    expect(mocks.setCoachLocal).toHaveBeenCalledWith({ mode: 'byok', provider: 'anthropic', model: 'claude-opus-5', baseUrl: null, headers: null })
     expect(setApiKey).toHaveBeenCalledWith('sk-1')
     expect(mocks.toast).toHaveBeenCalledWith('The Coach is on')
     expect(mocks.nav).toHaveBeenCalledWith('/coach')
@@ -366,7 +366,7 @@ describe('CoachSetup — saving', () => {
     pickModel('llama-3.3')
     await click(btn('Save and use the Coach')); await settle()
     expect(mocks.setCoachLocal).toHaveBeenCalledWith({
-      mode: 'byok', provider: 'compatible', model: 'llama-3.3', baseUrl: 'https://ollama.lan:11434'
+      mode: 'byok', provider: 'compatible', model: 'llama-3.3', baseUrl: 'https://ollama.lan:11434', headers: null
     })
     expect(setApiKey).not.toHaveBeenCalled()
   })
@@ -469,5 +469,81 @@ describe('CoachSetup — turning it off', () => {
     await mount(); await openByok()
     expect(chip('OpenAI API').classList.contains('on')).toBe(true)
     expect(field('password').getAttribute('placeholder')).toBe('sk-…')
+  })
+})
+
+/* Extra static headers for an OpenAI-compatible gateway (issue #1292): the phone's own setup gets
+   the field the server admin's card already has. The rules are the core's (validateHeaders), so what
+   the screen has to get right is where the field appears, what it refuses, and that what it accepts
+   reaches both the test call and the saved configuration. */
+describe('CoachSetup — extra headers for a gateway', () => {
+  const ta = () => host.querySelector('textarea')
+  const typeInArea = (el, value) => act(() => {
+    Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value').set.call(el, value)
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  const blur = el => act(() => el.dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
+  const toEndpoint = async () => { await mount(); await openByok(); await click(chip('OpenAI-compatible endpoint')) }
+  const withModels = () => vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['llama-t'] })
+
+  it('offers the field for an endpoint you point at, and nowhere else', async () => {
+    await mount(); await openByok()
+    expect(ta()).toBe(null)                                  // OpenAI, Anthropic … have a fixed host
+    await click(chip('OpenAI-compatible endpoint'))
+    expect(ta()).toBeTruthy()
+  })
+
+  it('sends a typed header on the test call and saves it with the rest', async () => {
+    withModels()
+    await toEndpoint()
+    typeIn(field('text'), 'https://gw.example.com/v1')
+    typeInArea(ta(), 'x-opencode-session: sess-1'); blur(ta())
+    await click(btn('Test it')); await settle()
+    expect(localModels).toHaveBeenCalledWith({ provider: 'compatible', baseUrl: 'https://gw.example.com/v1', headers: { 'x-opencode-session': 'sess-1' } }, null)
+    await pickModel('llama-t')
+    await click(btn('Save and use the Coach')); await settle()
+    expect(mocks.setCoachLocal).toHaveBeenCalledWith(expect.objectContaining({
+      provider: 'compatible', baseUrl: 'https://gw.example.com/v1', headers: { 'x-opencode-session': 'sess-1' }
+    }))
+  })
+
+  it('refuses a header that would speak over the key, and keeps the old text', async () => {
+    await toEndpoint()
+    typeInArea(ta(), 'x-title: demo'); blur(ta())
+    typeInArea(ta(), 'Authorization: Bearer stolen'); blur(ta())
+    expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('reserved'))
+    expect(ta().value).toBe('x-title: demo')
+    expect(mocks.setCoachLocal).not.toHaveBeenCalled()
+  })
+
+  it('refuses a line that is not Name: value, rather than sending a request that cannot work', async () => {
+    await toEndpoint()
+    typeInArea(ta(), 'no-colon-here'); blur(ta())
+    expect(mocks.toast).toHaveBeenCalledWith(expect.stringContaining('Name: value'))
+    expect(ta().value).toBe('')
+  })
+
+  it('clears what is stored when the field is emptied', async () => {
+    withModels()
+    mocks.coachLocal = { mode: 'byok', provider: 'compatible', model: 'llama-t', baseUrl: 'https://gw.example.com/v1', headers: { 'x-opencode-session': 'sess-1' }, limits: null }
+    await toEndpoint()
+    expect(ta().value).toBe('x-opencode-session: sess-1')     // what is stored shows again
+    typeInArea(ta(), ''); blur(ta())
+    await click(btn('Test it')); await settle()
+    expect(localModels).toHaveBeenCalledWith({ provider: 'compatible', baseUrl: 'https://gw.example.com/v1', headers: null }, null)
+  })
+
+  it('carries them to no other provider: choosing a fixed endpoint clears the map', async () => {
+    // The headers were stored for the gateway. Switching to a provider with a host of its own must
+    // not take a routing header meant for someone else along to api.openai.com.
+    vi.mocked(localModels).mockResolvedValue({ ok: true, models: [HTTP_PROVIDERS.openai.defaultModel] })
+    mocks.coachLocal = { mode: 'byok', provider: 'compatible', model: 'llama-t', baseUrl: 'https://gw.example.com/v1', headers: { 'x-opencode-session': 'sess-1' }, limits: null }
+    await mount(); await openByok()
+    await click(chip('OpenAI API'))
+    typeIn(field('password'), 'sk-test-1')
+    await click(btn('Test it')); await settle()
+    expect(localModels).toHaveBeenCalledWith({ provider: 'openai', baseUrl: null, headers: null }, 'sk-test-1')
+    await click(btn('Save and use the Coach')); await settle()
+    expect(mocks.setCoachLocal).toHaveBeenCalledWith(expect.objectContaining({ provider: 'openai', headers: null }))
   })
 })

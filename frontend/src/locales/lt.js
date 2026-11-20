@@ -5893,4 +5893,7 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "Papildomos antraštės",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Neprivaloma. Po vieną antraštę Pavadinimas: reikšmė eilutėje, siunčiamą su kiekviena užklausa į šį galinį tašką. Niekada ne Authorization ir ne Content-Type.",
 }

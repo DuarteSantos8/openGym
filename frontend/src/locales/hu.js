@@ -5900,4 +5900,7 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "További fejlécek",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Opcionális. Soronként egy Név: érték, minden kéréshez mellékelve ehhez a végponthoz. Soha nem Authorization vagy Content-Type.",
 }

@@ -18,12 +18,13 @@ import { MOBILE } from '../lib/mobile.js'
 import { CATEGORY_TEXT } from '../lib/coach.js'
 import { getApiKey, setApiKey, clearApiKey } from '../lib/coach-secrets.js'
 import { coachLimits, clampCoachLimit, COACH_LIMITS } from '../lib/coach-device.js'
-import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl, phoneMayCall, providerOfKey, priceTier } from '../../../api/coach/core/providers.js'
+import { HTTP_PROVIDERS, HTTP_PROVIDER_IDS, baseUrlFor, validateBaseUrl, phoneMayCall, providerOfKey, priceTier, validateHeaders } from '../../../api/coach/core/providers.js'
 import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
+import { headersToText, parseHeadersText } from '../lib/coach-headers.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import Icon from '../components/Icon.jsx'
-import { Section, Row, Button, TextField } from '../components/ui.jsx'
+import { Section, Row, Button, TextField, TextArea } from '../components/ui.jsx'
 
 // Literal t() calls, so check-source-strings sees the three lines; t(s) over a list of keys hid them.
 const STEPS = () => [t('Loading the exercise catalogue…'), t('Checking the endpoint…'), t('Ready')]
@@ -65,6 +66,10 @@ export default function CoachSetup() {
   const [choice, setChoice] = useState(null)              // 'server' | 'byok' | null
   const [provider, setProvider] = useState(coachLocal?.provider || 'anthropic')
   const [baseUrl, setBaseUrl] = useState(coachLocal?.baseUrl || '')
+  // The extra static headers as typed, in the textarea's own format (#1292): the same rules the
+  // server admin's card uses, so the same parser and the same validateHeaders(). A typo reads here,
+  // where it was typed, instead of as a 400 from the gateway after the first job.
+  const [headersText, setHeadersText] = useState(headersToText(coachLocal?.headers))
   const [model, setModel] = useState(coachLocal?.model || '')
   const [key, setKey] = useState('')
   const [hasKey, setHasKey] = useState(false)
@@ -107,6 +112,19 @@ export default function CoachSetup() {
     nav('/coach')
   }
 
+  // The endpoint headers as typed, under the core's own rules (providers.js validateHeaders: at most
+  // eight, token-shaped names, and never one that would speak over the key or the framing). Returns
+  // { headers }, null when the field is empty, or { error } to show where it was typed. Only a
+  // provider you point at an address of your own has the field, so only one is asked about it. One
+  // function for the three moments that ask: on blur, on "List models" and on saving.
+  const headersFromDraft = text => {
+    if (!meta.baseUrl) return { headers: null }
+    const p = parseHeadersText(text)
+    if (p.error) return { error: p.error }
+    const v = validateHeaders(p.headers)
+    return v.ok ? { headers: v.value } : { error: v.error }
+  }
+
   // The lazy load, and the reachability check, as three real steps.
   // `typed`: a key just pasted, tested before React has the state for it (the Gemini flow).
   const prepare = async (typed) => {
@@ -118,12 +136,14 @@ export default function CoachSetup() {
     if (meta.baseUrl && !meta.defaultBase && !v.value) return toast(t('Enter the endpoint URL'))
     if (v.value && !phoneMayCall(v.value)) return toast(cleartextRefused())
     if (!meta.keyOptional && !fresh.trim() && !hasKey) return toast(t('Enter your API key'))
+    const h = headersFromDraft(headersText)
+    if (h.error) return toast(h.error)
     setBusy(true); setStep(0)
     try {
       const local = await import('../lib/coach-local.js')
       setStep(1)
       const k = fresh.trim() || await getApiKey()
-      const r = await local.localModels({ provider, baseUrl: v.value }, k)
+      const r = await local.localModels({ provider, baseUrl: v.value, headers: h.headers }, k)
       if (!r.ok) { setStep(-1); toast(t('Could not reach the provider: {0}', r.error)); return }
       setModels(r.models)
       setPrices(r.prices || null)
@@ -146,12 +166,17 @@ export default function CoachSetup() {
     if (!chosen) return toast(t('Pick a model'))
     // The endpoint can still be edited after the models were listed.
     if (v.value && !phoneMayCall(v.value)) return toast(cleartextRefused())
+    // And the headers with it: the same check "List models" made, so what is stored is what was
+    // proven to work. A provider with a fixed endpoint stores none, so a gateway's routing header
+    // can never follow the choice of provider to a host that never asked for it.
+    const h = headersFromDraft(headersText)
+    if (h.error) return toast(h.error)
     setBusy(true)
     try {
       // The mode first, the key second: the settings file is the cheap, reliable write, the
       // key goes through the platform's secure store, which is the step that can misbehave.
       // Either way the user hears what happened instead of watching a greyed-out button (#42).
-      await setCoachLocal({ mode: 'byok', provider, model: chosen, baseUrl: meta.baseUrl ? v.value : null })
+      await setCoachLocal({ mode: 'byok', provider, model: chosen, baseUrl: meta.baseUrl ? v.value : null, headers: h.headers })
       if (key.trim()) { await setApiKey(key.trim()); setHasKey(true); setKey('') }
       toast(t('The Coach is on'))
       nav('/coach')
@@ -289,6 +314,23 @@ export default function CoachSetup() {
         <div style={{ padding: '8px 12px' }}>
           <TextField value={baseUrl} placeholder="https://ollama.example.com" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onChange={e => setBaseUrl(e.target.value)} />
+        </div>
+        {/* A gateway that routes by a header (opencode Go's `x-opencode-session`) is otherwise out of
+            reach for a phone on its own: its model list answers, the job comes back a 400. Same field,
+            same rules and same refusal as the server admin's card, so one gateway works either way
+            (#1292). Checked on blur, because a line that is not Name: value cannot be sent. */}
+        <div style={{ padding: '0 12px 10px' }}>
+          <div className="small dim" style={{ marginBottom: 4 }}>{t('Extra headers')}</div>
+          <TextArea key={headersText} defaultValue={headersText} rows={2} placeholder="x-opencode-session: 550e8400-…"
+            autoCapitalize="none" autoCorrect="off" spellCheck={false}
+            onBlur={e => {
+              const text = e.target.value
+              if (text === headersText) return
+              const h = headersFromDraft(text)
+              if (h.error) { toast(h.error); e.target.value = headersText; return }
+              setHeadersText(text)
+            }} />
+          <div className="muted small" style={{ marginTop: 6 }}>{t('Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.')}</div>
         </div>
       </Section>}
 

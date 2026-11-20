@@ -16,7 +16,7 @@ const FILE = 'opengym-coach.json'
 
 export const COACH_MODES = ['off', 'server', 'byok']
 
-const DEFAULTS = { mode: 'off', provider: null, model: null, baseUrl: null, handle: null, daily: null, pending: null, reviewedAt: null, limits: null, compat: null }
+const DEFAULTS = { mode: 'off', provider: null, model: null, baseUrl: null, headers: null, handle: null, daily: null, pending: null, reviewedAt: null, limits: null, compat: null }
 
 /* The three dials the BYOK setup screen's "Advanced" exposes, with the same ranges the server's
    admin card clamps to (api/coach/config.js). That file is node-only — it reads ./data and
@@ -59,8 +59,14 @@ export async function saveCoachDevice(patch) {
   await writeJsonFile(FILE, next)
   return next
 }
+// `headers` is in here because it is configuration like `baseUrl`: the extra static headers an
+// OpenAI-compatible gateway demands to route the request (#1292), which the setup screen has to be
+// able to show again. The device file is where that belongs: it never enters S, so it rides no sync
+// and no JSON export, and it is the only place the map is kept. It is a plain file, not the secure
+// store the key goes to, so the values are routing aids rather than secrets — same as the server's
+// admin card, which stores them in plaintext next to its baseUrl.
 /** The part of it a UI may show: never the pending proposal, never the handle. */
-export const coachDeviceSettings = d => d ? { mode: d.mode, provider: d.provider, model: d.model, baseUrl: d.baseUrl, limits: coachLimits(d) } : null
+export const coachDeviceSettings = d => d ? { mode: d.mode, provider: d.provider, model: d.model, baseUrl: d.baseUrl, headers: d.headers ?? null, limits: coachLimits(d) } : null
 
 // Test seam.
 export function _resetCoachDevice() { cache = null }
