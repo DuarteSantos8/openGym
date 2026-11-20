@@ -6100,4 +6100,12 @@ export default {
   "See every skill as a tree": "Voir tous les skills en arbre",
   "Tree view": "Arbre",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Tu as déjà {0} échelles à toi, le maximum. Supprimes-en une pour ajouter cette branche.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Tirage horizontal",
+  "Vertical pull": "Tirage vertical",
+  "Vertical push": "Poussée verticale",
+  "Horizontal push": "Poussée horizontale",
+  "Beginner": "Débutant",
+  "Intermediate": "Intermédiaire",
+  "Elite": "Élite",
 }

@@ -6111,4 +6111,12 @@ export default {
   "See every skill as a tree": "ดูทักษะทั้งหมดเป็นแผนผังต้นไม้",
   "Tree view": "แผนผังต้นไม้",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "คุณมีบันไดของตัวเอง {0} อันแล้ว ซึ่งเป็นจำนวนสูงสุด ลบหนึ่งอันเพื่อเพิ่มสายนี้",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "ดึงแนวนอน",
+  "Vertical pull": "ดึงแนวตั้ง",
+  "Vertical push": "ดันแนวตั้ง",
+  "Horizontal push": "ดันแนวนอน",
+  "Beginner": "มือใหม่",
+  "Intermediate": "ระดับกลาง",
+  "Elite": "ระดับแนวหน้า",
 }

@@ -6147,4 +6147,12 @@ export default {
   "See every skill as a tree": "Se alla färdigheter som ett träd",
   "Tree view": "Träd",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Du har redan {0} egna stegar, det är max. Ta bort en för att lägga till den här grenen.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Horisontellt drag",
+  "Vertical pull": "Vertikalt drag",
+  "Vertical push": "Vertikal press",
+  "Horizontal push": "Horisontell press",
+  "Beginner": "Nybörjare",
+  "Intermediate": "Medelnivå",
+  "Elite": "Elit",
 }

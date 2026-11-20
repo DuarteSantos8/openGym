@@ -6179,4 +6179,12 @@ export default {
   "See every skill as a tree": "সব দক্ষতা গাছ হিসেবে দেখুন",
   "Tree view": "গাছ",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "আপনার ইতিমধ্যে {0}টি নিজের সিঁড়ি আছে, এটাই সর্বোচ্চ। এই শাখা যোগ করতে একটি মুছুন।",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "অনুভূমিক পুল",
+  "Vertical pull": "উল্লম্ব পুল",
+  "Vertical push": "উল্লম্ব পুশ",
+  "Horizontal push": "অনুভূমিক পুশ",
+  "Beginner": "বিগিনার",
+  "Intermediate": "ইন্টারমিডিয়েট",
+  "Elite": "এলিট",
 }

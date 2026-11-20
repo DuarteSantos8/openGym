@@ -6066,4 +6066,12 @@ export default {
   "See every skill as a tree": "Zobrazit všechny dovednosti jako strom",
   "Tree view": "Strom",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Už máš {0} vlastních žebříků, víc nejde. Smaž jeden, abys přidal tuto větev.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Horizontální tahy",
+  "Vertical pull": "Vertikální tahy",
+  "Vertical push": "Vertikální tlaky",
+  "Horizontal push": "Horizontální tlaky",
+  "Beginner": "Začátečník",
+  "Intermediate": "Středně pokročilý",
+  "Elite": "Elita",
 }

@@ -6,11 +6,14 @@
 import { BRANCHES, SKILLS, haveOf, skillOfExercise } from './skill-tree.js'
 import { ownLadders, saveLadder, OWN_MAX, STEPS_MAX } from './ladders.js'
 import { isHold } from './exercises.js'
+import { modeOf } from './history.js'
+import { LADDER_TOP, LADDER_BOTTOM, LADDER_SEC_BOTTOM } from './progression.js'
 
-// Static positions are held, everything that moves is counted: a Front Lever is a hold, a Front
-// Lever Row, a Planche PU or a Dragon Flag are reps.
-const HOLD = /\b(lever|l-sit|v-sit|planche|flag|hang|handstand|hs|manna|support|cross|maltese|hollow|stand|bridge|plank)\b/i
-const MOVES = /\b(pu|push[ -]?ups?|pull[ -]?ups?|pulls?|rows?|raises?|dips?|squats?|press|pullout|to|t2b|curls?|wheel|muscle[ -]?ups?|skin|negs?|walk|dragon|360°?)\b/i
+// Static positions are held, everything that moves is counted: a Front Lever, a Sup Hold, an Adv
+// Tuck PL (planche) or a Bridge / Wheel are holds, a Front Lever Row, a Planche PU or a Dragon
+// Flag are reps.
+const HOLD = /\b(lever|l-sit|v-sit|planche|pl|flag|hang|handstand|headstand|hs|manna|support|cross|maltese|hollow|hold|stand|bridge|plank)\b/i
+const MOVES = /\b(pu|push[ -]?ups?|pull[ -]?ups?|pulls?|rows?|raises?|dips?|squats?|press|pullout|to|t2b|curls?|muscle[ -]?ups?|skin|negs?|walk|dragon|360°?)\b/i
 export const isHoldSkill = name => HOLD.test(String(name)) && !MOVES.test(String(name))
 
 /** Whether exercise `id` is trained as a hold: its own flag, or the skill it shows (lib/skill-tree.js),
@@ -19,6 +22,28 @@ export function isHoldRung(S, id) {
   if (isHold(id)) return true
   const skill = skillOfExercise(S, id)
   return !!skill && isHoldSkill(SKILLS[skill].name)
+}
+
+/** A rung as it starts in a routine: three sets climbing from 5 to 12 reps on the ladder rule,
+ *  or for a hold (a lever, an L-sit) from 10 to 30 seconds. */
+export const rungEntry = (id, S = null) => (isHoldRung(S, id)
+  ? { id, sets: 3, sec: LADDER_SEC_BOTTOM, weight: 0, mode: 'time', bodyweight: true, prog: 'ladder' }
+  : { id, sets: 3, reps: LADDER_TOP, repsMin: LADDER_BOTTOM, weight: 0, mode: 'reps', bodyweight: true, prog: 'ladder' })
+
+/**
+ * Routine slot `slot` put on rung `id`, its sets kept. A slot that changes way, from reps to a
+ * hold or back (a front lever row, then a front lever), starts the rung afresh and keeps nothing
+ * of the other way: no reps on a hold, no seconds on reps. `fresh` starts it afresh either way;
+ * without it a slot that keeps its way keeps its own rep range, and a hold starts at the bottom.
+ */
+export function slotOnRung(slot, id, S = null, { fresh = false } = {}) {
+  const cur = slot || {}
+  const entry = rungEntry(id, S)
+  if (fresh || (entry.mode === 'time') !== (modeOf(cur) === 'time')) {
+    const { reps: _r, repsMin: _m, sec: _s, secTop: _t, mode: _o, ...kept } = cur
+    return { ...kept, ...entry, sets: cur.sets || entry.sets }
+  }
+  return entry.mode === 'time' ? { ...cur, sec: entry.sec } : { ...cur }
 }
 
 const BODY_PART = { hpull: 'back', vpull: 'back', vpush: 'shoulders', hpush: 'chest', core: 'waist', legs: 'upper legs' }
@@ -45,7 +70,9 @@ export function skillExercise(id) {
 export function branchRungs(S, bi) {
   const ids = BRANCHES[bi].ids
   const have = haveOf(S)
-  const first = Math.max(0, ids.findIndex(id => !have[id]))
+  // With every skill had, the branch's end: its last rungs, not its first.
+  const at = ids.findIndex(id => !have[id])
+  const first = at < 0 ? ids.length : at
   const from = Math.max(0, Math.min(first - 2, ids.length - STEPS_MAX))
   const own = Array.isArray(S?.customEx) ? S.customEx : []
   const rungs = ids.slice(from, from + STEPS_MAX).map(skill => {
@@ -55,7 +82,6 @@ export function branchRungs(S, bi) {
     const create = skillExercise(skill)
     return { skill, ex: create.id, create }
   })
-  const at = ids.findIndex(id => !have[id])
   return { rungs, rung: at < 0 ? rungs.length - 1 : Math.min(rungs.length - 1, Math.max(0, at - from)) }
 }
 

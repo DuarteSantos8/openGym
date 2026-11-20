@@ -5,7 +5,7 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { exOr } from '../lib/exercises.js'
-import { isHoldRung } from '../lib/skill-ladder.js'
+import { isHoldRung, rungEntry, slotOnRung } from '../lib/skill-ladder.js'
 import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
 import { LADDER_TOP, LADDER_BOTTOM, LADDER_SEC_TOP, LADDER_SEC_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
@@ -32,11 +32,6 @@ const NAME = {
 }
 export const ladderName = l => (l.own ? l.name : NAME[l.id]?.() || l.id)
 
-/** A rung as it starts in a routine: three sets climbing from 5 to 12 reps on the ladder rule,
- *  or for a hold (a lever, an L-sit) from 10 to 30 seconds. */
-export const rungEntry = (id, S = null) => (isHoldRung(S, id)
-  ? { id, sets: 3, sec: LADDER_SEC_BOTTOM, weight: 0, mode: 'time', bodyweight: true, prog: 'ladder' }
-  : { id, sets: 3, reps: LADDER_TOP, repsMin: LADDER_BOTTOM, weight: 0, mode: 'reps', bodyweight: true, prog: 'ladder' })
 
 export function TrainIt ({ ladder, rung, close }) {
   const S = useStore(s => s.S)
@@ -50,7 +45,7 @@ export function TrainIt ({ ladder, rung, close }) {
       if (!r) { r = { id: uid(), name: ladderName(ladder), emoji: DEFAULT_GLYPH, ex: [] }; s.routines.push(r) }
       // A rung of this ladder already in the routine moves up instead of a second one joining.
       const at = r.ex.findIndex(e => ladder.steps.includes(e.id))
-      if (at >= 0) r.ex[at] = { ...r.ex[at], ...rungEntry(id, s), sets: r.ex[at].sets || 3 }
+      if (at >= 0) r.ex[at] = slotOnRung(r.ex[at], id, s, { fresh: true })
       else r.ex.push(rungEntry(id, s))
       name = r.name
     })

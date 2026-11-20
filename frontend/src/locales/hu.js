@@ -6103,4 +6103,12 @@ export default {
   "See every skill as a tree": "Minden képesség fában",
   "Tree view": "Fa",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Már {0} saját létrád van, ez a maximum. Törölj egyet, hogy hozzáadd ezt az ágat.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Vízszintes húzás",
+  "Vertical pull": "Függőleges húzás",
+  "Vertical push": "Függőleges nyomás",
+  "Horizontal push": "Vízszintes nyomás",
+  "Beginner": "Kezdő",
+  "Intermediate": "Középhaladó",
+  "Elite": "Elit",
 }

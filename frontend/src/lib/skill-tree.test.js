@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SKILLS, SKILL_IDS, BRANCHES, SKILL_FAMILIES, haveOf, skillStatus, missingBefore, skillsAfter, withSkill, withoutSkill, countOf, familyIds, openSkills, muscleLevels, muscleIds, treeItems, treeGrid, skillOfExercise, earnedSkills, withEarned, newlyHad } from './skill-tree.js'
+import { SKILLS, SKILL_IDS, BRANCHES, SKILL_FAMILIES, TIER_NAME, haveOf, skillStatus, missingBefore, skillsAfter, withSkill, withoutSkill, countOf, familyIds, openSkills, muscleLevels, muscleIds, treeItems, treeGrid, skillOfExercise, earnedSkills, withEarned, newlyHad } from './skill-tree.js'
 import { SKILL_LOGGED } from './skill-tree-data.js'
 import { mergeStampedMap } from './sync-merge.js'
 import { MUSCLES } from './muscles.js'
@@ -18,6 +18,17 @@ describe('the data', () => {
   it('names only muscles the body map draws, and catalogue exercises that exist', () => {
     for (const b of BRANCHES) for (const m of b.muscles) expect(MUSCLES, b.name).toContain(m)
     for (const id of SKILL_IDS) if (SKILLS[id].ex) expect(EXIDX[SKILLS[id].ex], id).toBeTruthy()
+  })
+})
+
+describe('the names on the screen', () => {
+  // views/Skills.jsx shows them through t(f.name) and t(TIER_NAME[…]), out of the source checker's
+  // sight: a name missing from a pack would stay English there.
+  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+  it('has every family and every tier in every locale pack', () => {
+    expect(Object.keys(packs).length).toBeGreaterThan(20)
+    for (const [file, pack] of Object.entries(packs))
+      for (const key of [...SKILL_FAMILIES.map(f => f.name), ...Object.values(TIER_NAME)]) expect(pack[key], file + ': ' + key).toBeTruthy()
   })
 })
 

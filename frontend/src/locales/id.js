@@ -6065,4 +6065,12 @@ export default {
   "See every skill as a tree": "Lihat semua keahlian sebagai pohon",
   "Tree view": "Pohon",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Kamu sudah punya {0} tangga sendiri, itu batasnya. Hapus satu untuk menambahkan cabang ini.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Tarikan horizontal",
+  "Vertical pull": "Tarikan vertikal",
+  "Vertical push": "Dorongan vertikal",
+  "Horizontal push": "Dorongan horizontal",
+  "Beginner": "Pemula",
+  "Intermediate": "Menengah",
+  "Elite": "Elite",
 };

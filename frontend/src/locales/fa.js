@@ -6066,4 +6066,12 @@ export default {
   "See every skill as a tree": "دیدن همه مهارت‌ها به شکل درخت",
   "Tree view": "درخت",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "از قبل {0} نردبان خودت را داری که حداکثر است. یکی را حذف کن تا این شاخه اضافه شود.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "کشش افقی",
+  "Vertical pull": "کشش عمودی",
+  "Vertical push": "فشار عمودی",
+  "Horizontal push": "فشار افقی",
+  "Beginner": "مبتدی",
+  "Intermediate": "متوسط",
+  "Elite": "نخبه",
 }

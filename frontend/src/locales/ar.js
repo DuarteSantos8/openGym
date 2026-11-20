@@ -6155,4 +6155,12 @@ export default {
   "See every skill as a tree": "عرض كل المهارات كشجرة",
   "Tree view": "شجرة",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "لديك بالفعل {0} سلالم خاصة بك، وهذا الحد الأقصى. احذف واحدًا لإضافة هذا الفرع.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "سحب أفقي",
+  "Vertical pull": "سحب عمودي",
+  "Vertical push": "دفع عمودي",
+  "Horizontal push": "دفع أفقي",
+  "Beginner": "مبتدئ",
+  "Intermediate": "متوسط",
+  "Elite": "نخبة",
 }

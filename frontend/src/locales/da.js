@@ -6040,4 +6040,12 @@ export default {
   "See every skill as a tree": "Se alle færdigheder som et træ",
   "Tree view": "Træ",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "Du har allerede {0} egne stiger, det er max. Slet en for at tilføje denne gren.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "Vandret træk",
+  "Vertical pull": "Lodret træk",
+  "Vertical push": "Lodret pres",
+  "Horizontal push": "Vandret pres",
+  "Beginner": "Begynder",
+  "Intermediate": "Øvet",
+  "Elite": "Elite",
 }

@@ -6100,4 +6100,12 @@ export default {
   "See every skill as a tree": "모든 기술을 트리로 보기",
   "Tree view": "트리",
   "You have {0} ladders of your own, the most there can be. Remove one to add this branch.": "이미 내 사다리가 {0}개로 최대예요. 이 가지를 추가하려면 하나를 지우세요.",
+  // Skill trees: the families and the tiers (lib/skill-tree-data.js, lib/skill-tree.js)
+  "Horizontal pull": "수평 당기기",
+  "Vertical pull": "수직 당기기",
+  "Vertical push": "수직 밀기",
+  "Horizontal push": "수평 밀기",
+  "Beginner": "초급",
+  "Intermediate": "중급",
+  "Elite": "엘리트",
 }
