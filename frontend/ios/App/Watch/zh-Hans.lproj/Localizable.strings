@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "第 %lld 组 · %@ 将丢失";
 "Set %lld removed" = "已删除第 %lld 组";
 "at the end" = "在末尾";
+"Crown: half steps" = "数码表冠：半步";
+"Highest" = "最高";
+"Lowest" = "最低";

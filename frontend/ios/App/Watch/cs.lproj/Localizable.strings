@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "Série %lld · %@ se ztratí";
 "Set %lld removed" = "Série %lld odebrána";
 "at the end" = "na konci";
+"Crown: half steps" = "Digital Crown: půlkroky";
+"Highest" = "Maximum";
+"Lowest" = "Minimum";

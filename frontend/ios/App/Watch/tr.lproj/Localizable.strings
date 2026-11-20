@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "%lld. set · %@ kaybolur";
 "Set %lld removed" = "%lld. set kaldırıldı";
 "at the end" = "sonda";
+"Crown: half steps" = "Digital Crown: yarım adım";
+"Highest" = "En yüksek";
+"Lowest" = "En düşük";

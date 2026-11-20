@@ -204,7 +204,7 @@ struct SetPanel: View {
             if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
-            if fixing { Tag(text: Text("Done"), color: store.accent) }
+            if fixing, !store.fixDial.armed { Tag(text: Text("Done"), color: store.accent) }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
                     .font(TypeScale.second)
@@ -244,30 +244,29 @@ struct SetPanel: View {
         }
     }
 
-    /// The effort on a set being fixed: a tap goes through the quick ratings and back to as it was.
-    private func fixEffort(_ kind: String) -> some View {
+    /// The effort on a set being fixed: a pill that a tap arms (EffortArmed, over DONE, which hides meanwhile).
+    @ViewBuilder private func fixEffort(_ kind: String) -> some View {
         let v = store.fixEffort
         let color = v.map { Effort.color(kind, $0) } ?? Theme.label2
-        return Button {
-            let chips = Effort.chips(kind)
-            if let cur = v, let i = chips.firstIndex(of: cur) {
-                store.fixEffort = i + 1 < chips.count ? chips[i + 1] : nil
-            } else {
-                store.fixEffort = chips.first
+        if store.fixDial.armed && !dimmed {
+            EffortArmed(kind: kind, value: v, clear: true, height: 32, disc: 28, ticks: false, size: 15,
+                        nudge: { store.nudgeFixEffort($0, disc: false) }, discNudge: { store.nudgeFixEffort($0, disc: true) })
+                .frame(maxWidth: 140, minHeight: 24, maxHeight: 24) // it grows past the row by 4 pt each way, so nothing under it moves
+        } else {
+            Button { store.armFixEffort() } label: {
+                Text(verbatim: "\(Effort.name(kind)) \(v.map(Effort.valueLabel) ?? "–")")
+                    .font(TypeScale.label.monospacedDigit())
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 10)
+                    .frame(minHeight: 24)
+                    .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
+                    .contentShape(Rectangle().inset(by: -6)) // 44 x 36 to hit
             }
-            WKInterfaceDevice.current().play(.click)
-        } label: {
-            Text(verbatim: "\(Effort.name(kind)) \(v.map { Effort.chipLabel(kind, $0) } ?? "–")")
-                .font(TypeScale.label.monospacedDigit())
-                .foregroundStyle(color)
-                .padding(.horizontal, 10)
-                .frame(minHeight: 24)
-                .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("Effort"))
+            .accessibilityValue(v.map { Text(verbatim: "\(Effort.name(kind)) \(Effort.valueLabel($0))") } ?? Text("None"))
+            .accessibilityHint(Text("Tap to change it."))
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text("Effort"))
-        .accessibilityValue(v.map { Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, $0))") } ?? Text("None"))
-        .accessibilityHint(Text("Tap to change it."))
     }
 
     /// The boxes: weight and reps; reps and the added weight on a bodyweight set; a hold's seconds.
@@ -316,7 +315,8 @@ struct SetPanel: View {
     @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false, size: CGFloat, compact: Bool) -> some View {
         // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
         // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
-        if selected == field && !dimmed {
+        // While the effort is armed it holds the Crown: no box shows the crown glyph; when it settles the box takes it back.
+        if selected == field && !dimmed && !store.fixDial.armed {
             CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
                      value: value, unit: unit, label: label, tint: tint, plus: plus, size: size, compact: compact, focus: $focus,
                      apply: { set(field, $0) }, tap: { keypad = field })
@@ -324,7 +324,7 @@ struct SetPanel: View {
                                            nudge: nudge, edit: { keypad = field }))
         } else {
             NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false, size: size, compact: compact)
-                .onTapGesture { selected = field; focus = field }
+                .onTapGesture { store.letGoOfEffort(); selected = field; focus = field }
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
                                            nudge: nudge, edit: { keypad = field }))
         }
@@ -539,6 +539,7 @@ struct CrownBox: View {
     var focus: FocusState<NumberField?>.Binding
     let apply: (Double) -> Void
     let tap: () -> Void
+    @EnvironmentObject var store: SessionStore
     @State private var index = 0
 
     var body: some View {
@@ -550,7 +551,11 @@ struct CrownBox: View {
                                   sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
             .onTapGesture(perform: tap) // a second tap: the keypad, as before
             .onAppear { index = choices.firstIndex(of: value) ?? 0; focus.wrappedValue = field }
-            .onChange(of: index) { i in if choices.indices.contains(i), choices[i] != value { apply(choices[i]) } }
+            .onChange(of: index) { i in
+                // Just after a rest ended under an armed effort the leftover turn goes nowhere (0.6 s).
+                guard store.crownAllowed else { index = choices.firstIndex(of: value) ?? index; return }
+                if choices.indices.contains(i), choices[i] != value { apply(choices[i]) }
+            }
             .onChange(of: value) { v in if let i = choices.firstIndex(of: v), i != index { index = i } } // the keypad typed over it
     }
 }

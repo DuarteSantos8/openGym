@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "%lld. sorozat · %@ elvész";
 "Set %lld removed" = "%lld. sorozat törölve";
 "at the end" = "a végén";
+"Crown: half steps" = "Digital Crown: fél lépések";
+"Highest" = "Maximum";
+"Lowest" = "Minimum";

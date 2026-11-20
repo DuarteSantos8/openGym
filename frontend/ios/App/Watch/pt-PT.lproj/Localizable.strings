@@ -104,3 +104,6 @@
 "Set %lld · %@ is lost" = "Série %lld · %@ perde-se";
 "Set %lld removed" = "Série %lld removida";
 "at the end" = "no fim";
+"Crown: half steps" = "Digital Crown: meios passos";
+"Highest" = "Máximo";
+"Lowest" = "Mínimo";

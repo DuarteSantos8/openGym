@@ -29,6 +29,7 @@ struct SessionView: View {
                 MusicPage().tag(SessionTab.music)
             }
             .tabViewStyle(.page)
+            .onChange(of: store.tab) { _ in store.letGoOfEffort() } // another page: the Crown is the page's again
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     // On a hold or its countdown the pill stays beside the clock (review 2026-11-12).
@@ -42,6 +43,7 @@ struct SessionView: View {
         }
         // Wrist down on the Overview: the set is what the next glance is for.
         .onChange(of: dimmed) { down in
+            if down { store.letGoOfEffort() }
             if down && (store.tab == .overview || store.tab == .music) { store.tab = .set }
         }
     }

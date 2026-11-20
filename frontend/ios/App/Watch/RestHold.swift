@@ -141,9 +141,9 @@ struct RestView: View {
                 // In from the edges: with Up next off the row sits low, where the screen's corners round off.
                 .padding(.horizontal, 4)
                 .opacity(dimmed ? 0 : 1)
-                // Always On hides the chips but keeps their place, so the screen is the same one
+                // Always On hides the chips (a rating stays, as an outline) but keeps their place, so the screen is the same one
                 if store.canRateLast {
-                    EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
+                    EffortChips(label: roomy, tall: roomy)
                         // In from the edges like the ±15 row: on a 42 mm Series 12 the 0 and 3+ chips ran
                         // under the display's rounded edge (fine in a screenshot, cut on the wrist).
                         .padding(.horizontal, 4)
@@ -281,17 +281,15 @@ struct OutlineCapsule: ButtonStyle {
     }
 }
 
-/// "RIR · Bench Press, set 2" and four round chips outlined in their effort colour; once rated,
-/// the rating in a small capsule that opens the chips again.
+/// "RIR · Bench Press, set 2" and four round chips outlined in their effort colour. A chip rates the
+/// whole value at once and arms the capsule (EffortArmed), where the Crown and − / + move it by half
+/// a step; after 5 s it settles to "RIR 1.5 ✓", and a tap on that arms it again.
 struct EffortChips: View {
     @EnvironmentObject var store: SessionStore
     let label: Bool // the "RIR · exercise" line above the chips
     let tall: Bool // 38 pt chips; 34 where the screen is short
-    @State private var again = false
-    @Namespace private var chip
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    /// The tapped chip grows into the rated capsule, and back (Direction B).
-    private var morph: Animation? { reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.62) }
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
     /// The label's line grows with the text size (it is footnote, allowed up to accessibility2).
     @ScaledMetric(relativeTo: .footnote) private var labelHeight: CGFloat = 22
 
@@ -304,60 +302,215 @@ struct EffortChips: View {
     }
 
     var body: some View {
-        content.frame(height: (label ? labelHeight : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
+        content.frame(height: (label ? labelHeight : 0) + (tall ? 38 : 34)) // fixed: the capsule must not move what is below
     }
 
     @ViewBuilder private var content: some View {
         let kind = store.effortKind ?? "rir"
-        if let rated = store.lastRated, !again {
-            Button { withAnimation(morph) { again = true } } label: {
-                HStack(spacing: 4) {
-                    Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, rated))")
-                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
-                }
-                .font(.system(.footnote, design: .rounded).weight(.bold).monospacedDigit())
-                .foregroundStyle(Effort.color(kind, rated))
-                .padding(.horizontal, 10)
-                .frame(minHeight: tall ? 38 : 34)
-                .glass(Capsule(), tint: Effort.color(kind, rated).opacity(0.35), fill: Effort.color(kind, rated).opacity(0.18), dimmed: false)
-                .matchedGeometryEffect(id: rated, in: chip)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Effort"))
-            .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, rated))"))
-            .accessibilityHint(Text("Tap to change it."))
-        } else {
-            VStack(spacing: 2) {
-                if label {
-                    (Text(verbatim: "\(Effort.name(kind)) · ") + (self.rated ?? Text("How hard was that set?")))
-                        .font(.system(.footnote, design: .rounded).weight(.bold))
-                        .foregroundStyle(Theme.label2)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .minimumScaleFactor(0.85)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, 4)
-                }
+        let height: CGFloat = tall ? 38 : 34
+        VStack(spacing: 2) {
+            if label { labelLine(kind) }
+            if let v = store.lastRated {
+                if store.dial.armed && !dimmed {
+                    EffortArmed(kind: kind, value: v, clear: false, height: height, disc: tall ? 31 : 28, ticks: true, size: 21,
+                                nudge: { store.nudgeRating($0, disc: false) }, discNudge: { store.nudgeRating($0, disc: true) })
+                } else { settled(kind, v, height) }
+            } else {
                 HStack(spacing: 4) {
                     ForEach(Effort.chips(kind), id: \.self) { v in
-                        Button {
-                            withAnimation(morph) { store.rateLast(v); again = false }
-                        } label: {
+                        Button { store.rateLast(v) } label: {
                             Text(verbatim: Effort.chipLabel(kind, v))
                                 .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
                                 .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity, minHeight: tall ? 38 : 34, maxHeight: tall ? 38 : 34)
+                                .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
                                 .overlay(Capsule().strokeBorder(Effort.color(kind, v), lineWidth: 1.5))
                                 .contentShape(Capsule())
-                                .matchedGeometryEffect(id: v, in: chip)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, v))"))
                     }
                 }
+                .opacity(dimmed ? 0 : 1) // Always On: the chips go, their place stays
+                .allowsHitTesting(!dimmed)
             }
-            .onChange(of: store.lastLogged) { _ in again = false }
         }
+    }
+
+    /// Over the chips and the settled capsule: which set it rates. Over the armed capsule: what the Crown does.
+    @ViewBuilder private func labelLine(_ kind: String) -> some View {
+        Group {
+            if store.dial.armed && !dimmed, let v = store.lastRated {
+                Label { Text("Crown: half steps") } icon: { Image(systemName: "digitalcrown.arrow.clockwise.fill") }
+                    .foregroundStyle(Effort.color(kind, v))
+            } else {
+                (Text(verbatim: "\(Effort.name(kind)) · ") + (self.rated ?? Text("How hard was that set?")))
+                    .foregroundStyle(Theme.label2)
+                    .opacity(dimmed ? 0 : 1)
+            }
+        }
+        .font(.system(.footnote, design: .rounded).weight(.bold))
+        .lineLimit(1)
+        .truncationMode(.middle)
+        .minimumScaleFactor(0.85)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 4)
+    }
+
+    /// The rating, full row width like the chips it replaces. Always On: a 1 pt outline and text at 85 %.
+    private func settled(_ kind: String, _ v: Double, _ height: CGFloat) -> some View {
+        let color = Effort.color(kind, v)
+        return Button { store.rearmRating() } label: {
+            HStack(spacing: 4) {
+                Text(verbatim: "\(Effort.name(kind)) \(Effort.valueLabel(v))")
+                Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
+            }
+            .font(.system(size: 16, weight: .bold, design: .rounded).monospacedDigit())
+            .foregroundStyle(color.opacity(dimmed ? 0.85 : 1))
+            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+            .background(Capsule().fill(dimmed ? Color.clear : color.opacity(0.18)))
+            .overlay(Capsule().strokeBorder(color.opacity(dimmed ? 0.85 : 0.6), lineWidth: dimmed ? 1 : 1.5))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .allowsHitTesting(!dimmed)
+        .accessibilityLabel(Text("Effort"))
+        .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(Effort.valueLabel(v))"))
+        .accessibilityHint(Text("Tap to change it."))
+    }
+}
+
+/// The armed rating: (−) RIR 1.5 [crown] (+), a true capsule with the − and + as drawn discs concentric with
+/// its ends. The Crown (one detent, half a step) and the discs move `value`; while it is on screen it holds the
+/// Crown's focus, so the Crown cannot page. `value` nil is the fix view's "not rated" (`clear`: a step below the
+/// floor gets back to it). Used by the rest (EffortChips) and the fix view (SetPanel).
+struct EffortArmed: View {
+    @EnvironmentObject var store: SessionStore
+    let kind: String
+    let value: Double?
+    let clear: Bool
+    let height: CGFloat
+    let disc: CGFloat // drawn; the hit area is 44 pt wide
+    let ticks: Bool
+    let size: CGFloat
+    let nudge: (Int) -> Void // the Crown's detents
+    let discNudge: (Int) -> Void
+    @State private var index = 0
+    @State private var pulsing = false
+    @FocusState private var focused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        let color = value.map { Effort.color(kind, $0) } ?? Theme.label2
+        let r = Effort.range(kind) ?? 0...0
+        let inset = (height - disc) / 2
+        HStack(spacing: 0) {
+            discButton(minus: true, color: color, inset: inset, dim: value.map { !clear && $0 <= r.lowerBound } ?? false)
+            center(color, r)
+            discButton(minus: false, color: color, inset: inset, dim: value.map { $0 >= r.upperBound } ?? false)
+        }
+        .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+        .background(Capsule().fill(color.opacity(0.18)))
+        .overlay(Capsule().strokeBorder(color, lineWidth: 2))
+        .shadow(color: color.opacity(0.35), radius: 4)
+        .focusable()
+        .focusEffectDisabled()
+        .focused($focused)
+        .digitalCrownRotation(detent: $index, from: 0, through: Effort.slots(kind, clear: clear), by: 1,
+                              sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+        .onChange(of: index) { _, i in
+            let d = i - Effort.slot(kind, value, clear: clear)
+            if d != 0 { nudge(d) }
+        }
+        .onChange(of: value) { _, v in index = Effort.slot(kind, v, clear: clear) } // a disc moved it, or the stop held it
+        .onAppear {
+            index = Effort.slot(kind, value, clear: clear)
+            focused = true
+            // The first time ever: the crown glyph pulses once, to say halves exist (never with Reduce Motion).
+            guard !reduceMotion, store.takeEffortPulse() else { return }
+            pulsing = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { pulsing = false }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Effort"))
+        .accessibilityValue(spoken(r))
+        .accessibilityAdjustableAction { d in
+            switch d {
+            case .increment: nudge(1)
+            case .decrement: nudge(-1)
+            @unknown default: break
+            }
+        }
+    }
+
+    /// "RIR 1.5", and at an end of the scale "RIR 5, Highest".
+    private func spoken(_ r: ClosedRange<Double>) -> Text {
+        guard let v = value else { return Text("None") }
+        let say = Text(verbatim: "\(Effort.name(kind)) \(Effort.valueLabel(v))")
+        if v >= r.upperBound { return say + Text(verbatim: ". ") + Text("Highest") }
+        if v <= r.lowerBound && !clear { return say + Text(verbatim: ". ") + Text("Lowest") }
+        return say
+    }
+
+    private func center(_ color: Color, _ r: ClosedRange<Double>) -> some View {
+        let words = !typeSize.isAccessibilitySize
+        return HStack(spacing: 4) {
+            if words { Text(verbatim: Effort.name(kind)).font(.system(size: 12, weight: .bold, design: .rounded)).frame(minWidth: 22, alignment: .trailing) }
+            Text(verbatim: value.map(Effort.valueLabel) ?? "–")
+                .font(.system(size: size, weight: .bold, design: .rounded).monospacedDigit())
+                .contentTransition(.numericText(value: value ?? 0))
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: value) // the one motion: the value rolls
+            if words {
+                Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 13))
+                    .symbolEffect(.pulse, isActive: pulsing)
+                    .frame(minWidth: 20, alignment: .leading)
+            }
+        }
+        .foregroundStyle(color)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+        .offset(y: ticks && words ? -2 : 0) // room for the ticks under the digits
+        .frame(maxWidth: .infinity)
+        .overlay(alignment: .bottom) { if ticks, words, let v = value { tickStrip(color, v, r).padding(.bottom, 1) } }
+        .allowsHitTesting(false) // the − disc's hit area runs under it
+    }
+
+    /// One tick per half step across the scale, the current one taller: 1 and 1.5 share a colour, the tick tells them apart.
+    private func tickStrip(_ color: Color, _ v: Double, _ r: ClosedRange<Double>) -> some View {
+        let n = Effort.slots(kind, clear: false)
+        let at = Effort.slot(kind, v, clear: false)
+        return HStack(spacing: 3) {
+            ForEach(0...n, id: \.self) { i in
+                Capsule().fill(i == at ? color : Color.white.opacity(0.35)).frame(width: 1.5, height: i == at ? 5 : 2.5)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// A disc drawn as strokes (a circle, a bar or two), 44 pt wide to hit, not shown to VoiceOver (the capsule is adjustable).
+    private func discButton(minus: Bool, color: Color, inset: CGFloat, dim: Bool) -> some View {
+        Button {
+            guard store.touchAllowed else { return }
+            discNudge(minus ? -1 : 1)
+        } label: {
+            // The hit area is 44 wide: it runs on under the value, which takes the room between the discs.
+            ZStack(alignment: minus ? .leading : .trailing) {
+                Color.clear.frame(width: 44, height: height)
+                ZStack {
+                    Circle().fill(color.opacity(0.25))
+                    Capsule().frame(width: disc * 0.4, height: 2.5)
+                    if !minus { Capsule().frame(width: 2.5, height: disc * 0.4) }
+                }
+                .foregroundStyle(Color.white)
+                .frame(width: disc, height: disc)
+                .padding(minus ? .leading : .trailing, inset)
+                .opacity(dim ? 0.3 : 1)
+            }
+            .frame(width: disc + inset, height: height, alignment: minus ? .leading : .trailing)
+            // 44 x 34 at least: the hit runs on in under the value (which takes no touches), and a hair past a 32 pt pill.
+            .contentShape(Rectangle().size(width: 44, height: max(height, 34)).offset(x: minus ? 0 : disc + inset - 44, y: min(0, (height - 34) / 2)))
+        }
+        .buttonStyle(.plain)
     }
 }
 
