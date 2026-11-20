@@ -1,18 +1,20 @@
 import Foundation
 
-/// A removal waits `seconds` for Undo before it is sent. One at a time: a second removal flushes the first.
+/// A removal waits `seconds` for Undo before it is sent (SetMenu.release). One at a time: a second
+/// removal sends the first. Meanwhile it is a held edit in the state, replayed over snapshots.
 struct UndoWindow: Equatable {
     static let seconds: TimeInterval = 4
-    private(set) var edit: PendingEdit?
+    /// The held edit's id.
+    private(set) var id: String?
     private(set) var started = Date.distantPast
 
-    mutating func begin(_ e: PendingEdit, at t: Date) { edit = e; started = t }
+    mutating func begin(_ id: String, at t: Date) { self.id = id; started = t }
     /// Undo pressed: nothing will be sent.
-    mutating func undo() { edit = nil }
+    mutating func undo() { id = nil }
     /// The edit once its time is up, once.
-    mutating func due(at t: Date) -> PendingEdit? {
+    mutating func due(at t: Date) -> String? {
         t.timeIntervalSince(started) >= UndoWindow.seconds ? flush() : nil
     }
     /// The edit now (the app left the screen), once.
-    mutating func flush() -> PendingEdit? { defer { edit = nil }; return edit }
+    mutating func flush() -> String? { defer { id = nil }; return id }
 }
