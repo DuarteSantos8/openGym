@@ -44,11 +44,11 @@ The Wear app follows #1139's spec (`docs/superpowers/specs/2026-11-10-watch-set-
 
 | Control | Shown / enabled when | Event |
 |---|---|---|
-| Warm-up | mode `reps`; to make one: the set can be a warm-up and another work set remains; set not done | `setMark` `warmup` |
+| Warm-up | mode `reps`; to make one: the set can be a warm-up and another work set remains (a done set too, as on the phone) | `setMark` `warmup` |
 | Failure | not a warm-up; mode not `cardio` | `setMark` `failure` |
 | Drop | not a warm-up; mode `reps`; not rest-pause (`rp`) | `setMark` `drop` |
 | Add set | not cardio | `addSet` (a copy of the last set at the END of the exercise) |
-| Remove | the exercise has more than one set | `removeSet` |
+| Remove | not done (no side done), not the only set, not half of a pair, and the phone has named it (`sid`) | `removeSet` |
 
 Warm-up locks Failure and Drop (dimmed, dashed, a lock), and making a set a warm-up clears them, as on the phone.
 A drop set with 2+ drops is edited on the phone: the Drop row shows on and is locked (the phone's `applyWatchMark`
@@ -56,19 +56,19 @@ only turns Drop off when exactly one drop exists, and the Apple Watch locks it t
 
 ## Data between phone and watch
 
-Exactly #1139's protocol, so the phone needs no Wear-specific code:
+Rebuilt on release-1.4.6's set ids (2026-11-20): the protocol is `docs/WATCH_SYNC.md` ("A set's identity" and the
+event table), the same as the Apple Watch's (#1139), so the phone needs no Wear-specific code. In short:
 
-- Snapshot set fields (optional): `failure`, `drop`, `drops`, `rp`, `side`; `settings.setMenu` says the phone
+- Snapshot set fields (optional): `sid`, `failure`, `drop`, `drops`, `rp`, `side`; `settings.setMenu` says the phone
   understands the events. **No `settings.setMenu`, no menu**: the pill shows "Set 2 of 3" as today (tags still show).
-- Watch → phone events `setMark`, `addSet`, `removeSet`, each with `id, wid, exId, entryIdx, at` like `setDone`,
-  and for `setMark`/`removeSet` the identity fields `setIdx, w, r, done`. The phone checks identity and drops a
-  stale event (the next snapshot puts the watch right).
-- The watch applies each change to its own state at once and keeps it pending until a snapshot reflects it (the
-  `SessionCore` pending pattern used for ticks), so a late snapshot can't flash it back. Warm-up moves the row the way
-  the phone's `makeWarmupAt`/`makeWorkAt` do, ported to Kotlin with tests, so indexes agree before the next snapshot.
-- Undo for Remove is local: the watch queues `removeSet` only when the 4 s Undo ends. If the app goes to the
-  background or is closed during those 4 s, the removal is sent at once (what the lifter saw is what is saved), and
-  a phone snapshot during the window sends it at once too (#1139's rule).
+- `setMark` (`warmup`, `failure` or `drop`), and release's own `addSet` / `removeSet`, name the set by its `sid`
+  (by its place only while the phone has sent none). Add makes a `w-<uuid>` id and goes at the end.
+- Each change shows on the watch at once and is kept in `SessionState.edits` until acked, replayed over every
+  snapshot before the ticks (SetMenu.replay), so a late snapshot cannot flash it back.
+- Remove is offered as the phone's `removeWatchSet` takes it: not done, no side done, not the only row, not half
+  of a pair, and with a `sid`. Its event waits 4 s for Undo as a held edit (also replayed); it goes out when the
+  time is over, when the app leaves the screen, or at the next launch. Other events need no flush first: they
+  name their own set.
 
 ## The watch UI (as drawn in the approved mockup)
 
@@ -118,9 +118,8 @@ Words come from the phone's packs where they exist ("Warm-up", "Taken to failure
 
 ## Answers to the builder check (2026-11-13)
 
-1. **Other actions during Remove's 4 s Undo:** any other event the watch queues (Done, a mark, Add) sends the
-   pending `removeSet` first, so the phone sees events in the order the lifter made them and indexes agree. Navigation
-   stays free. (My call: matches #1139's "a phone update sends the removal at once"; tested for order.)
+1. **Other actions during Remove's 4 s Undo:** superseded by the set ids (2026-11-20): every event names its set by
+   its `sid`, so nothing has to be flushed first, and a snapshot does not end the Undo (the held removal is replayed).
 2. **#1139 may still change:** build to `fork/watch/set-types` as it is, with the field names and event shapes in one
    small codec spot so a change there is cheap. Checks are JVM tests against #1139's shapes (port its test cases); an
    end-to-end check with a phone build of #1139 is a device step for the lifter. (My call.)
@@ -130,7 +129,8 @@ Words come from the phone's packs where they exist ("Warm-up", "Taken to failure
 4. **Where the menu opens:** the live set page and the fix-a-logged-set page, as on the Apple Watch after the lifter's
    wrist test (2026-11-11): marks on a done set apply at once; Warm-up on a done set follows the phone's rule. Not from
    the keypad. (Lifter's Apple decision, carried over.)
-5. **Current set after Add/Remove:** port #1139's remap of index-keyed state (pending, skipped, effort, picked): Add
+5. **Current set after Add/Remove:** port #1139's remap of index-keyed state (skipped sets without an id, efforts,
+   picked; pending ticks are keyed by the set's id and need none): Add
    never moves the current set; Remove of an earlier set shifts it down by one; removing the current set selects the
    next open set. (My call: mirrors #1139.)
 6. **Strings:** reuse phone and Apple Watch keys through `wear-strings.mjs`; any new key goes into every language

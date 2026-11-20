@@ -89,9 +89,13 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
+- **The set menu** (1.4.6, #1185): tap the set pill (or long-press a number box) to mark the
+  set as warm-up, failure or drop, add a set at the end, or remove one that is not done yet
+  (with 4 s to Undo). The same events as the Apple Watch, by the set's id (docs/WATCH_SYNC.md).
+  It shows only when the phone handles it.
+
 Still not on Wear OS: calories saved to Health Connect (#724, #1173; the watch shows them),
-marking a set as warm-up, failure or drop and adding or removing sets from the watch (#1185),
-and a Settings page on the watch (the phone's settings apply). #1173 and #1185 are planned for 1.4.6.
+and a Settings page on the watch (the phone's settings apply). #1173 is planned for 1.4.6.
 
 ### Screenshots
 

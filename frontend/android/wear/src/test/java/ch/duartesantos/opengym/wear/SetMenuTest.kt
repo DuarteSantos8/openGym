@@ -1,10 +1,12 @@
 package ch.duartesantos.opengym.wear
 
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.double
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
+import kotlinx.serialization.json.long
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -12,43 +14,40 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** The set menu's model (WatchCore SetMenuTests.swift on this port, from #1139). */
+/** The set menu's model, case for case with WatchCore's SetMenuTests.swift (#1139), by the set's id (protocol 2). */
 class SetMenuTest {
-    @Test fun testOldSnapshotDecodes() {
+    private fun row(done: Boolean = false, warmup: Boolean = false, sid: String? = null, w: Double = 60.0) =
+        SetRow(w = w, r = 8.0, done = done, warmup = warmup, sid = sid)
+    private fun entry(sets: List<SetRow>, mode: String = "reps") = Entry(id = "x", name = "X", mode = mode, sets = sets)
+    private fun workout(sets: List<SetRow>, id: String = "w1") =
+        ActiveWorkout(id = id, name = "Push", unit = "kg", cur = 0, restSec = 90.0, entries = listOf(entry(sets)))
+    private fun state(sets: List<SetRow>) = SessionState(workout = workout(sets), settings = WatchSettings(setMenu = true))
+    private fun snap(w: ActiveWorkout, acked: List<String>? = null) = Snapshot(v = 1, unit = "kg", restSec = 90.0, active = w, acked = acked)
+    private fun rows(s: SessionState) = s.workout!!.entries[0].sets
+    private fun JsonObject.str(k: String) = this[k]?.jsonPrimitive?.content
+    /** Three sets the phone has named. */
+    private val abc get() = listOf(row(sid = "a"), row(sid = "b", w = 50.0), row(sid = "c", w = 70.0))
+
+    @Test fun oldSnapshotDecodes() {
         val snap = Snapshot.parse("""{"v":1,"active":{"id":"w","name":"A","entries":[{"id":"e","sets":[{"w":50,"r":5}]}]}}""")!!
-        val row = snap.active!!.entries[0].sets[0]
-        assertNull(row.failure); assertNull(row.drop); assertNull(row.drops); assertNull(row.rp); assertNull(row.side)
+        val r = snap.active!!.entries[0].sets[0]
+        assertNull(r.failure); assertNull(r.drop); assertNull(r.drops); assertNull(r.rp); assertNull(r.side)
         assertNull(snap.settings?.setMenu)
     }
 
-    @Test fun testNewFieldsDecode() {
+    @Test fun newFieldsDecode() {
         val snap = Snapshot.parse(
             """{"v":1,"settings":{"setMenu":true},"active":{"id":"w","name":"A","entries":[{"id":"e","sets":[{"w":50,"r":5,"failure":true,"drop":50,"drops":2,"rp":true,"side":"L"}]}]}}""",
         )!!
-        val row = snap.active!!.entries[0].sets[0]
-        assertEquals(true, row.failure); assertEquals(50.0, row.drop!!, 0.0); assertEquals(2, row.drops)
-        assertEquals(true, row.rp); assertEquals("L", row.side)
+        val r = snap.active!!.entries[0].sets[0]
+        assertEquals(true, r.failure); assertEquals(50.0, r.drop!!, 0.0); assertEquals(2, r.drops)
+        assertEquals(true, r.rp); assertEquals("L", r.side)
         assertEquals(true, snap.settings!!.setMenu)
     }
 
-    @Test fun testAStateSavedWithoutEditsStillLoads() {
-        val s = WireJson.decodeFromString<SessionState>("""{"unit":"kg","entryIndex":1}""")
-        assertTrue(s.edits.isEmpty())
-        val edit = PendingEdit("i", "e", "mark", setIdx = 0, kind = "drop", on = true, w = 60.0, r = 8.0, done = true, entryIdx = 1)
-        val back = WireJson.decodeFromString<SessionState>(WireJson.encodeToString(s.copy(edits = listOf(edit))))
-        assertEquals(listOf(edit), back.edits)
-    }
-
-    private fun row(done: Boolean = false, warmup: Boolean = false) = SetRow(w = 60.0, r = 8.0, done = done, warmup = warmup)
-    private fun entry(sets: List<SetRow>, mode: String = "reps") = Entry(id = "x", name = "X", mode = mode, sets = sets)
-    private fun workout(sets: List<SetRow>, id: String = "w1") = ActiveWorkout(id = id, name = "Push", unit = "kg", cur = 0, restSec = 90.0, entries = listOf(entry(sets)))
-    private fun state(sets: List<SetRow>) = SessionState(workout = workout(sets), settings = WatchSettings(setMenu = true))
-    private fun rows(s: SessionState) = s.workout!!.entries[0].sets
-    private fun tick(w: Double, r: Double, at: Double) = PendingTick(w = w, r = r, at = at)
-    private fun snap(w: ActiveWorkout, acked: List<String>? = null) = Snapshot(v = 1, unit = "kg", restSec = 90.0, active = w, acked = acked)
-
     @Test fun workSetOffersAllThree() {
-        assertEquals(MenuOffer(Disc.OFF, Disc.OFF, Disc.OFF, canAdd = true, canRemove = true), SetMenu.offer(entry(listOf(row(), row())), 0))
+        assertEquals(MenuOffer(Disc.OFF, Disc.OFF, Disc.OFF, canAdd = true, canRemove = true),
+            SetMenu.offer(entry(listOf(row(sid = "a"), row(sid = "b"))), 0))
     }
 
     @Test fun warmupLocksFailureAndDrop() {
@@ -68,14 +67,12 @@ class SetMenuTest {
         assertEquals(Disc.LOCKED, op.warmup); assertEquals(Disc.HIDDEN, op.drop)
     }
 
-    // Swift wins: the Swift test asserts the switch is off (offered) on a done set.
     @Test fun doneSetHasAWarmupSwitch() {
         assertEquals(Disc.OFF, SetMenu.offer(entry(listOf(row(done = true), row())), 0).warmup)
     }
 
     @Test fun twoDropsLockTheDropDisc() {
-        val o = SetMenu.offer(entry(listOf(row().copy(drop = 50.0, drops = 2), row())), 0)
-        assertEquals(Disc.LOCKED, o.drop)
+        assertEquals(Disc.LOCKED, SetMenu.offer(entry(listOf(row().copy(drop = 50.0, drops = 2), row())), 0).drop)
     }
 
     @Test fun failureMarkShowsOn() {
@@ -90,42 +87,81 @@ class SetMenuTest {
     }
 
     @Test fun onlySetCannotBeRemoved() {
-        assertFalse(SetMenu.offer(entry(listOf(row())), 0).canRemove)
+        assertFalse(SetMenu.offer(entry(listOf(row(sid = "a"))), 0).canRemove)
+    }
+
+    // What the phone's removeWatchSet takes: never a done set, nor one with a side done, nor one it has not named.
+    @Test fun removeIsNotOfferedOnADoneSet() {
+        assertFalse(SetMenu.offer(entry(listOf(row(done = true, sid = "a"), row(sid = "b"))), 0).canRemove)
+        val half = row(sid = "a").copy(sides = Sides(SideRow(20.0, 8.0, done = true), SideRow(20.0, 8.0, done = false)))
+        assertFalse(SetMenu.offer(entry(listOf(half, row(sid = "b"))), 0).canRemove)
+        assertFalse(SetMenu.offer(entry(listOf(row(), row())), 0).canRemove)
+        assertTrue(SetMenu.offer(entry(listOf(row(sid = "a"), row(sid = "b"))), 0).canRemove)
     }
 
     @Test fun menuNeedsThePhonesFlag() {
-        var s = SessionState()
-        assertFalse(SetMenu.available(s))
-        s = s.copy(settings = s.settings.copy(setMenu = true)); assertTrue(SetMenu.available(s))
-        s = s.copy(settings = s.settings.copy(setMenu = false)); assertFalse(SetMenu.available(s))
+        assertFalse(SetMenu.available(SessionState()))
+        assertTrue(SetMenu.available(SessionState(settings = WatchSettings(setMenu = true))))
+        assertFalse(SetMenu.available(SessionState(settings = WatchSettings(setMenu = false))))
     }
 
-    @Test fun failureMarkEmitsEventAndShowsAtOnce() {
-        val (s, ev) = SetMenu.mark(state(listOf(row(done = true), row())), 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
-        assertEquals(true, rows(s)[0].failure)
+    /* ---------- edits on the watch's own state, by the set's id ---------- */
+
+    @Test fun aMarkGoesOutByItsSetsId() {
+        val (s, ev) = SetMenu.mark(state(abc), 0, 1, MarkKind.FAILURE, true, 5.0, "m1")
+        assertEquals(true, rows(s)[1].failure)
         val e = ev!!
-        fun str(k: String) = e[k]!!.jsonPrimitive.content
-        assertEquals("m1", str("id")); assertEquals("setMark", str("type")); assertEquals("w1", str("wid")); assertEquals("x", str("exId"))
-        assertEquals("0", str("entryIdx")); assertEquals("0", str("setIdx")); assertEquals(5.0, e["at"]!!.jsonPrimitive.double, 0.0)
-        assertEquals(60.0, e["w"]!!.jsonPrimitive.double, 0.0); assertEquals(8.0, e["r"]!!.jsonPrimitive.double, 0.0)
-        assertEquals("true", str("done")); assertEquals("true", str("failure"))
-        assertEquals(11, e.size)
-        assertEquals(listOf(PendingEdit("m1", "x", "mark", setIdx = 0, kind = "failure", on = true, w = 60.0, r = 8.0, done = true, entryIdx = 0, row = 0)), s.edits)
+        assertEquals("m1", e.str("id")); assertEquals("setMark", e.str("type"))
+        assertEquals("w1", e.str("wid")); assertEquals("x", e.str("exId"))
+        assertEquals(0, e["entryIdx"]!!.jsonPrimitive.int); assertEquals(1, e["setIdx"]!!.jsonPrimitive.int); assertEquals("b", e.str("sid"))
+        assertEquals(5L, e["at"]!!.jsonPrimitive.long); assertEquals(true, e["failure"]!!.jsonPrimitive.boolean)
+        assertEquals(9, e.size)   // no w, r or done: the id is the set's identity (PhoneLink adds `off`)
     }
 
-    @Test fun warmupMovesTheRowAndRemapsKeys() {
-        val s0 = state(listOf(row(done = true), SetRow(w = 40.0, r = 10.0), row())).copy(
-            pending = mapOf("x#0" to tick(60.0, 8.0, 1.0)), skipped = listOf("x#1", "x#2"),
-        )
-        val (s, ev) = SetMenu.mark(s0, 0, 1, MarkKind.WARMUP, true, 5.0, "m1")
-        assertNotNull(ev); assertEquals("true", ev!!["warmup"]!!.jsonPrimitive.content)
-        assertEquals(listOf(40.0, 60.0, 60.0), rows(s).map { it.w })
-        assertTrue(rows(s)[0].warmup)
-        assertEquals(setOf("x#1"), s.pending.keys)
-        assertEquals(listOf("x#0", "x#2"), s.skipped)
+    @Test fun anEditSurvivesASnapshotWithoutItAndGoesOnceAcked() {
+        val (s1, _) = SetMenu.mark(state(abc), 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
+        val s2 = SessionCore.applySnapshot(s1, snap(workout(abc)))
+        assertEquals(true, rows(s2)[0].failure); assertEquals(1, s2.edits.size)
+        val s3 = SessionCore.applySnapshot(s2, snap(workout(abc), acked = listOf("m1")))
+        assertNull(rows(s3)[0].failure); assertTrue(s3.edits.isEmpty())
+    }
+
+    @Test fun aMarkFollowsItsSetWhereverThePhoneMovedIt() {
+        val (s1, _) = SetMenu.mark(state(abc), 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
+        val moved = workout(listOf(abc[1], abc[2], abc[0]))   // the phone moved "a" to the end
+        assertEquals(listOf(false, false, true), rows(SessionCore.applySnapshot(s1, snap(moved))).map { it.failure == true })
+    }
+
+    @Test fun aMarkWithoutAnIdFallsBackToItsPlace() {
+        val (s1, ev) = SetMenu.mark(state(listOf(row(), row(w = 50.0))), 0, 1, MarkKind.FAILURE, true, 5.0, "m1")
+        assertNull(ev!!["sid"])
+        val s2 = SessionCore.applySnapshot(s1, snap(workout(listOf(row(), row(w = 50.0)))))
+        assertEquals(listOf(false, true), rows(s2).map { it.failure == true })
+    }
+
+    @Test fun aWarmupMoveKeepsTheSetsIdAndItsPendingTickFollows() {
+        val s0 = state(abc).copy(skipped = listOf("s:c"))
+        val (t, _) = SessionCore.tick(s0, 0, 1, w = 50.0, r = 8.0, at = 4.0, id = "t1")   // "b" done here
+        val (s1, ev) = SetMenu.mark(t, 0, 1, MarkKind.WARMUP, true, 5.0, "m1")
+        assertEquals(true, ev!!["warmup"]!!.jsonPrimitive.boolean)
+        assertEquals(listOf("b", "a", "c"), rows(s1).map { it.sid }); assertTrue(rows(s1)[0].warmup)
+        assertEquals(listOf("s:c"), s1.skipped)
+        assertNotNull(s1.pending["s:b"])
+        // the phone has neither yet: the move is replayed, and the tick lands on "b" where it is now
+        val s2 = SessionCore.applySnapshot(s1, snap(workout(abc)))
+        assertEquals(listOf("b", "a", "c"), rows(s2).map { it.sid })
+        assertEquals(listOf(true, false, false), rows(s2).map { it.done })
         // and back: it becomes the first work set, where it is already
-        val (b, _) = SetMenu.mark(s, 0, 0, MarkKind.WARMUP, false, 6.0, "m2")
-        assertEquals(listOf(40.0, 60.0, 60.0), rows(b).map { it.w }); assertFalse(rows(b)[0].warmup)
+        val (b, _) = SetMenu.mark(s2, 0, 0, MarkKind.WARMUP, false, 6.0, "m2")
+        assertEquals(listOf("b", "a", "c"), rows(b).map { it.sid }); assertFalse(rows(b)[0].warmup)
+    }
+
+    @Test fun aWarmupMoveRemapsSkippedAndEfforts() {
+        // sets without an id are skipped by their place; efforts are always by place
+        val s0 = state(listOf(row(), row(w = 50.0), row(w = 70.0))).copy(skipped = listOf("n0:x#0"), efforts = mapOf("x@0#0" to 8.0))
+        val (s, _) = SetMenu.mark(s0, 0, 2, MarkKind.WARMUP, true, 5.0, "m1")   // the 70 to the top
+        assertEquals(listOf(70.0, 60.0, 50.0), rows(s).map { it.w })
+        assertEquals(listOf("n0:x#1"), s.skipped); assertEquals(mapOf("x@0#1" to 8.0), s.efforts)
     }
 
     @Test fun warmupOffGoesToTheEdgeOfTheWarmups() {
@@ -135,13 +171,14 @@ class SetMenuTest {
     }
 
     @Test fun warmupClearsFailureAndDrop() {
-        val (s, _) = SetMenu.mark(state(listOf(row().copy(failure = true), row())), 0, 0, MarkKind.WARMUP, true, 5.0, "m1")
+        val (s, _) = SetMenu.mark(state(listOf(row(sid = "a").copy(failure = true), row())), 0, 0, MarkKind.WARMUP, true, 5.0, "m1")
         assertTrue(rows(s)[0].warmup); assertNull(rows(s)[0].failure); assertNull(rows(s)[0].drop); assertNull(rows(s)[0].drops)
+        assertEquals("a", rows(s)[0].sid)
     }
 
     @Test fun dropOnShowsDropWithoutAWeight() {
         val (s, ev) = SetMenu.mark(state(listOf(row(), row())), 0, 0, MarkKind.DROP, true, 5.0, "m1")
-        assertEquals("true", ev!!["drop"]!!.jsonPrimitive.content)
+        assertEquals(true, ev!!["drop"]!!.jsonPrimitive.boolean)
         assertEquals(1, rows(s)[0].drops); assertNull(rows(s)[0].drop)
         val o = SetMenu.offer(s.workout!!.entries[0], 0)
         assertEquals(Disc.ON, o.drop); assertEquals(Disc.LOCKED, o.warmup)
@@ -149,262 +186,144 @@ class SetMenuTest {
         assertNull(rows(off)[0].drops); assertNull(rows(off)[0].drop)
     }
 
-    @Test fun addAppendsACopyOfTheLastSet() {
-        val last = SetRow(w = 70.0, r = 6.0, done = true, at = 3.0, failure = true)
-        val (s, ev) = SetMenu.addSet(state(listOf(row(done = true), row(done = true), row(), last)), 0, 5.0, "a1")
-        assertEquals(5, rows(s).size)
-        assertEquals(SetRow(w = 70.0, r = 6.0), rows(s)[4])
-        assertEquals("addSet", ev!!["type"]!!.jsonPrimitive.content); assertNull(ev["setIdx"]); assertEquals(6, ev.size)
-        assertEquals("add", s.edits.first().op)
+    @Test fun addAppendsACopyOfTheLastSetWithAnIdOfItsOwn() {
+        val last = SetRow(w = 70.0, r = 6.0, done = true, at = 3.0, sid = "c", failure = true)
+        val (s, ev) = SetMenu.addSet(state(listOf(row(done = true, sid = "a"), last)), 0, 5.0, "a1")
+        assertEquals(3, rows(s).size)
+        val n = rows(s)[2]
+        val sid = n.sid!!
+        assertTrue(sid.startsWith("w-")); assertTrue(sid.length <= 40)   // the phone's sidOk
+        assertEquals(SetRow(w = 70.0, r = 6.0, done = false, warmup = false, at = null, sid = sid), n)
+        val e = ev!!
+        assertEquals("addSet", e.str("type")); assertEquals(sid, e.str("sid"))
+        assertEquals(70.0, e["w"]!!.jsonPrimitive.double, 0.0); assertEquals(6.0, e["r"]!!.jsonPrimitive.double, 0.0)
+        assertNull(e["setIdx"]); assertNull(e["after"])   // at the end of the exercise
     }
 
-    @Test fun removeDeletesTheRowAndItsPendingTick() {
-        val s0 = state(listOf(row(done = true), row(done = true), row())).copy(
-            pending = mapOf("x#0" to tick(60.0, 8.0, 1.0), "x#1" to tick(60.0, 8.0, 2.0)), skipped = listOf("x#2"),
-        )
-        val (s, ev) = SetMenu.removeSet(s0, 0, 1, 5.0, "r1")
-        assertEquals(2, rows(s).size)
-        assertEquals(setOf("x#0"), s.pending.keys); assertEquals(listOf("x#1"), s.skipped)
-        assertEquals("removeSet", ev!!["type"]!!.jsonPrimitive.content); assertEquals("1", ev["setIdx"]!!.jsonPrimitive.content)
-        assertEquals("true", ev["done"]!!.jsonPrimitive.content); assertEquals(60.0, ev["w"]!!.jsonPrimitive.double, 0.0)
+    @Test fun addOnASetWithSidesResetsBothSides() {
+        val sided = row(done = true, sid = "a").copy(sides = Sides(SideRow(20.0, 8.0, done = true), SideRow(20.0, 8.0, done = true)))
+        val (s, _) = SetMenu.addSet(state(listOf(sided)), 0, 5.0, "a1")
+        assertEquals(Sides(SideRow(20.0, 8.0, done = false), SideRow(20.0, 8.0, done = false)), rows(s)[1].sides)
     }
 
-    @Test fun refusedMarkEmitsNothing() {
+    @Test fun aTickOnAWatchAddedSetIsKeyedByItsIdAndLands() {
+        val (s1, ev) = SetMenu.addSet(state(abc), 0, 5.0, "a1", sid = "w-new")
+        assertEquals("w-new", ev!!.str("sid"))
+        val (s2, _) = SessionCore.tick(s1, 0, 3, w = 70.0, r = 8.0, at = 6.0, id = "t1")
+        assertNotNull(s2.pending["s:w-new"])
+        val s3 = SessionCore.applySnapshot(s2, snap(workout(abc)))   // the phone has neither yet
+        assertEquals(listOf("a", "b", "c", "w-new"), rows(s3).map { it.sid })
+        assertEquals(listOf(false, false, false, true), rows(s3).map { it.done })
+        // the phone added it (once) and has the tick
+        val there = abc + row(done = true, sid = "w-new", w = 70.0).copy(at = 7.0)
+        val s4 = SessionCore.applySnapshot(s3, snap(workout(there), acked = listOf("a1", "t1")))
+        assertEquals(4, rows(s4).size); assertTrue(s4.edits.isEmpty()); assertTrue(s4.pending.isEmpty())
+    }
+
+    @Test fun aHeldRemovalIsReplayedAndUndoPutsTheSetBack() {
+        // the third set has no id yet: skipped by its place, and that place moves with the removal
+        val sets = listOf(row(sid = "a"), row(sid = "b", w = 50.0), row(w = 70.0))
+        val s0 = state(sets).copy(skipped = listOf("n0:x#2"))
+        val s1 = SetMenu.removeSet(s0, 0, 1, 5.0, "r1")!!
+        assertEquals(listOf("a", null), rows(s1).map { it.sid }); assertEquals(listOf("n0:x#1"), s1.skipped)
+        assertEquals(listOf("r1"), SetMenu.held(s1))
+        // a snapshot meanwhile does not bring it back, nor end the Undo
+        val s2 = SessionCore.applySnapshot(s1, snap(workout(sets)))
+        assertEquals(listOf("a", null), rows(s2).map { it.sid }); assertEquals(listOf("r1"), SetMenu.held(s2))
+        // Undo: the set in its place, nothing to send
+        val u = SetMenu.undo(s2, "r1")
+        assertEquals(listOf("a", "b", null), rows(u).map { it.sid }); assertTrue(u.edits.isEmpty()); assertEquals(listOf("n0:x#2"), u.skipped)
+        // or its time is over: it goes out, by the set's id, and stays until acked
+        val (s3, ev) = SetMenu.release(s2, "r1")
+        assertEquals("removeSet", ev!!.str("type")); assertEquals("b", ev.str("sid")); assertEquals(1, ev["setIdx"]!!.jsonPrimitive.int)
+        assertEquals(emptyList<String>(), SetMenu.held(s3)); assertNull(s3.edits.first().row)
+        assertEquals(listOf("a", null), rows(SessionCore.applySnapshot(s3, snap(workout(sets)))).map { it.sid })
+        assertNull(SetMenu.release(s3, "r1").second)   // once
+    }
+
+    @Test fun aRemovalThePhoneRefusedComesBack() {
+        val s1 = SetMenu.removeSet(state(abc), 0, 1, 5.0, "r1")!!
+        val (s2, _) = SetMenu.release(s1, "r1")
+        // the phone ticked "b" meanwhile: it is not taken out there, nor here
+        val there = abc.toMutableList().also { it[1] = it[1].copy(done = true, at = 6.0) }
+        assertEquals(listOf("a", "b", "c"), rows(SessionCore.applySnapshot(s2, snap(workout(there)))).map { it.sid })
+    }
+
+    @Test fun refusedEditsDoNothing() {
         val s0 = state(listOf(row(warmup = true), row()))
         val (s, ev) = SetMenu.mark(s0, 0, 1, MarkKind.WARMUP, true, 5.0, "m1")
         assertNull(ev); assertEquals(s0, s)
-        assertNull(SetMenu.removeSet(state(listOf(row())), 0, 0, 5.0, "r1").second)
+        assertNull(SetMenu.removeSet(state(listOf(row(sid = "a"))), 0, 0, 5.0, "r1"))
+        assertNull(SetMenu.removeSet(state(listOf(row(done = true, sid = "a"), row(sid = "b"))), 0, 0, 5.0, "r1"))
         assertNull(SetMenu.mark(state(listOf(row(), row())), 0, 0, MarkKind.FAILURE, false, 5.0, "m2").second)
     }
 
+    @Test fun anUnknownKindOrMissingOnIsRefused() {
+        val w = workout(abc)
+        assertNull(SetMenu.apply(PendingEdit("m1", "setMark", "w1", "x", 0, setIdx = 0, sid = "a", kind = "rp", on = true, at = 5.0), w))
+        assertNull(SetMenu.apply(PendingEdit("m1", "setMark", "w1", "x", 0, setIdx = 0, sid = "a", kind = "failure", at = 5.0), w))
+    }
+
     @Test fun aTimedPerSidePairIsOneSet() {
-        fun half(side: String) = SetRow(sec = 30.0, side = side)
-        val s0 = state(listOf(half("L"), half("R"))).let { it.copy(workout = it.workout!!.copy(entries = listOf(it.workout!!.entries[0].copy(mode = "time")))) }
-        val o = SetMenu.offer(s0.workout!!.entries[0], 1)
+        fun half(side: String) = SetRow(sec = 30.0, sid = side, side = side)
+        val w0 = ActiveWorkout(id = "w1", name = "Push", unit = "kg", cur = 0, restSec = 90.0, entries = listOf(entry(listOf(half("L"), half("R")), mode = "time")))
+        val s0 = SessionState(workout = w0, settings = WatchSettings(setMenu = true))
+        val o = SetMenu.offer(w0.entries[0], 1)
         assertFalse(o.canAdd); assertFalse(o.canRemove)
         val (s, ev) = SetMenu.mark(s0, 0, 1, MarkKind.FAILURE, true, 5.0, "m1")
         assertNotNull(ev)
-        assertEquals(listOf<Boolean?>(true, true), rows(s).map { it.failure })
+        assertEquals(listOf(true, true), rows(s).map { it.failure })
     }
 
     @Test fun anEditOnTheSecondCopyOfAnExerciseStaysThere() {
-        val s0 = state(listOf(row(), row())).let { it.copy(workout = it.workout!!.copy(entries = it.workout!!.entries + entry(listOf(row(), row())))) }
-        val (s1, ev) = SetMenu.mark(s0, 1, 0, MarkKind.FAILURE, true, 5.0, "m1")
-        assertNotNull(ev)
-        assertNull(s1.workout!!.entries[0].sets[0].failure)
-        assertEquals(true, s1.workout!!.entries[1].sets[0].failure)
-        // replayed over the phone's snapshot (without the edit), it lands on the same copy
-        val replayed = SetMenu.apply(s1.edits.single(), s0.workout!!)!!.first
-        assertNull(replayed.entries[0].sets[0].failure); assertEquals(true, replayed.entries[1].sets[0].failure)
-    }
-
-    // Edits stay until the phone has them (SessionCore.applySnapshot)
-
-    @Test fun olderSnapshotDoesNotRevertAnEdit() {
-        val (s1, _) = SetMenu.mark(state(listOf(row(), row())), 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
-        val s2 = SessionCore.applySnapshot(s1, snap(workout(listOf(row(), row()))))
-        assertEquals(true, rows(s2)[0].failure); assertEquals(1, s2.edits.size)
-        val s3 = SessionCore.applySnapshot(s2, snap(workout(listOf(row(), row())), acked = listOf("m1")))
-        assertNull(rows(s3)[0].failure); assertTrue(s3.edits.isEmpty())
-    }
-
-    // Swift checks SetMenu.replay here; this port has no replay (applySnapshot replays itself), so apply is checked.
-    @Test fun replaySkipsAnEditWhoseSetChanged() {
-        val (s1, _) = SetMenu.mark(state(listOf(row(), row())), 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
-        val changed = workout(listOf(SetRow(w = 65.0, r = 8.0), row()))
-        assertNull(SetMenu.apply(s1.edits.single(), changed))
-        val s2 = SessionCore.applySnapshot(s1, snap(changed))
-        assertNull(rows(s2)[0].failure); assertTrue(s2.edits.isEmpty())
-    }
-
-    @Test fun replayKeepsAnAddAndARemoveUntilAcked() {
-        val (a, _) = SetMenu.addSet(state(listOf(row(), row())), 0, 5.0, "a1")
-        assertEquals(3, rows(SessionCore.applySnapshot(a, snap(workout(listOf(row(), row()))))).size)
-        val b0 = state(listOf(row(), SetRow(w = 50.0, r = 8.0)))
-        val (b, _) = SetMenu.removeSet(b0, 0, 1, 5.0, "r1")
-        val older = SessionCore.applySnapshot(b, snap(b0.workout!!))
-        assertEquals(listOf(60.0), rows(older).map { it.w })
-    }
-
-    // Ticks made after an unapplied add or remove are keyed in the watch's rows.
-
-    @Test fun aTickAfterARemoveStaysOnItsSet() {
-        val s0 = state(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
-        val (s1, _) = SetMenu.removeSet(s0, 0, 1, 5.0, "r1")
-        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 70.0, r = 6.0, at = 6.0, id = "t1")
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!)) // the phone has neither yet
-        assertEquals(listOf(60.0, 70.0), rows(s3).map { it.w })
-        assertEquals(listOf(false, true), rows(s3).map { it.done })
-        assertEquals(1, s3.edits.size)
-    }
-
-    @Test fun aTickOnAnAddedSetStays() {
-        val s0 = state(listOf(row(), row()))
-        val (s1, _) = SetMenu.addSet(s0, 0, 5.0, "a1")
-        val (s2, _) = SessionCore.tick(s1, 0, 2, w = 60.0, r = 8.0, at = 6.0, id = "t1")
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertEquals(listOf(false, false, true), rows(s3).map { it.done })
-        assertNotNull(s3.pending["x#2"])
-    }
-
-    @Test fun aMarkAfterATickOnTheSameSetStays() {
-        val s0 = state(listOf(row(), row()))
-        val (s1, _) = SessionCore.tick(s0, 0, 0, w = 60.0, r = 8.0, at = 5.0, id = "t1")
-        val (s2, _) = SetMenu.mark(s1, 0, 0, MarkKind.FAILURE, true, 6.0, "m1")
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertTrue(rows(s3)[0].done); assertEquals(true, rows(s3)[0].failure)
-    }
-
-    @Test fun aTickAfterAWarmupMoveStaysOnItsSet() {
-        val s0 = state(listOf(row(), SetRow(w = 40.0, r = 10.0), row()))
-        val (s1, _) = SetMenu.mark(s0, 0, 1, MarkKind.WARMUP, true, 5.0, "m1") // 40 moves to the top
-        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 60.0, r = 8.0, at = 6.0, id = "t1") // the first work set
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertEquals(listOf(40.0, 60.0, 60.0), rows(s3).map { it.w })
-        assertEquals(listOf(false, true, false), rows(s3).map { it.done })
+        val w0 = ActiveWorkout(id = "w1", name = "Push", unit = "kg", cur = 0, restSec = 90.0,
+            entries = listOf(entry(listOf(row(sid = "a"), row(sid = "b"))), entry(listOf(row(sid = "c"), row(sid = "d")))))
+        val (s1, _) = SetMenu.mark(SessionState(workout = w0, settings = WatchSettings(setMenu = true)), 1, 0, MarkKind.FAILURE, true, 5.0, "m1")
+        val s2 = SessionCore.applySnapshot(s1, snap(w0))
+        assertNull(s2.workout!!.entries[0].sets[0].failure)
+        assertEquals(true, s2.workout!!.entries[1].sets[0].failure)
     }
 
     @Test fun aNewWorkoutDropsTheEdits() {
         val (s1, _) = SetMenu.mark(state(listOf(row(), row())), 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
         assertTrue(SessionCore.applySnapshot(s1, snap(workout(listOf(row(), row()), id = "w2"))).edits.isEmpty())
-        assertTrue(SessionCore.finish(s1, at = 9.0, id = "f1").first.edits.isEmpty())
-        assertTrue(SessionCore.applySnapshot(s1, Snapshot()).edits.isEmpty())
-        val ready = ReadySession(name = "Legs", entries = listOf(entry(listOf(row()))))
-        assertTrue(SessionCore.start(s1, ready, "w3", 9.0, "s1").first.edits.isEmpty())
+        assertTrue(SessionCore.finish(s1, 9.0, "f1").first.edits.isEmpty())
     }
 
-    // Found missing in the Task 2 review
+    @Test fun editsSurviveARelaunch() {
+        val s1 = SetMenu.removeSet(state(abc), 0, 1, 5.0, "r1")!!
+        val back = WireJson.decodeFromString<SessionState>(WireJson.encodeToString(s1))
+        assertEquals(s1, back); assertEquals(listOf("r1"), SetMenu.held(back))
+    }
+
+    @Test fun aStateSavedWithoutEditsStillLoads() {
+        assertTrue(WireJson.decodeFromString<SessionState>("""{"unit":"kg","entryIndex":1}""").edits.isEmpty())
+    }
+
+    /* ---------- the store's pointers, the pill, the Undo window ---------- */
 
     @Test fun remapSetOutOfRangeLeavesTheSet() {
         assertEquals(5, SetMenu.remapSet(5, listOf(0, null)))
         assertNull(SetMenu.remapSet(1, listOf(0, null)))
     }
 
-    @Test fun aTrialRunAppliesDespiteAChangedSet() {
-        val pe = PendingEdit("m1", "x", "mark", setIdx = 0, kind = "failure", on = true, w = 60.0, r = 8.0, done = false, entryIdx = 0)
-        val changed = workout(listOf(SetRow(w = 65.0, r = 5.0), row()))
-        assertNull(SetMenu.apply(pe, changed))
-        assertEquals(true, SetMenu.apply(pe, changed, sameSet = false)!!.first.entries[0].sets[0].failure)
+    @Test fun refsFollowARemove() {
+        val moved = SetMenu.apply(SetMenu.removeSet(state(abc), 0, 0, 5.0, "r1")!!.edits.last(), workout(abc))!!.second
+        assertEquals(SetRef(0, 1), SetMenu.follow(SetRef(0, 2), 0, moved))
+        assertNull(SetMenu.follow(SetRef(0, 0), 0, moved))
+        assertEquals(SetRef(1, 2), SetMenu.follow(SetRef(1, 2), 0, moved))   // another exercise: untouched
+        assertNull(SetMenu.follow(null, 0, moved))
     }
 
-    @Test fun aStaleEntryIdxFallsBackToTheFirstCopy() {
-        val w = workout(listOf(row())).let { it.copy(entries = listOf(Entry(id = "y", name = "Y", sets = listOf(row()))) + it.entries + it.entries) }
-        assertEquals(1, PendingEdit("i", "x", "add", entryIdx = 0).entry(w))
-        assertEquals(1, PendingEdit("i", "x", "add", entryIdx = 7).entry(w))
-        assertEquals(2, PendingEdit("i", "x", "add", entryIdx = 2).entry(w))
-        assertNull(PendingEdit("i", "z", "add", entryIdx = 0).entry(w))
+    @Test fun thePageStaysOnItsSetWhenAWarmupMovesRows() {
+        // rows: warm-up, A, B. B becomes a warm-up and moves to row 1; A goes to row 2.
+        val w0 = workout(listOf(row(warmup = true), SetRow(w = 60.0, r = 8.0), SetRow(w = 70.0, r = 8.0)))
+        val (s1, _) = SetMenu.mark(SessionState(workout = w0, settings = WatchSettings(setMenu = true)), 0, 2, MarkKind.WARMUP, true, 5.0, "m1")
+        val moved = SetMenu.apply(s1.edits.last(), w0)!!.second
+        assertEquals(SetRef(0, 2), SetMenu.follow(SetRef(0, 1), 0, moved))   // A: still A
+        assertEquals(SetRef(0, 1), SetMenu.follow(SetRef(0, 2), 0, moved))   // B: still B
+        assertEquals(SetRef(0, 0), SetMenu.follow(SetRef(0, 0), 0, moved))
     }
-
-    @Test fun addOnASetWithSidesResetsBothSides() {
-        val sides = Sides(SideRow(w = 20.0, r = 8.0, done = true), SideRow(w = 20.0, r = 8.0, done = true))
-        val (s, _) = SetMenu.addSet(state(listOf(row(done = true).copy(sides = sides))), 0, 5.0, "a1")
-        assertEquals(Sides(SideRow(w = 20.0, r = 8.0), SideRow(w = 20.0, r = 8.0)), rows(s)[1].sides)
-    }
-
-    @Test fun anUnknownKindOrMissingOnIsRefused() {
-        val w = workout(listOf(row(), row()))
-        assertNull(SetMenu.apply(PendingEdit("i", "x", "mark", setIdx = 0, kind = "band", on = true, w = 60.0, r = 8.0, done = false), w))
-        assertNull(SetMenu.apply(PendingEdit("i", "x", "mark", setIdx = 0, kind = "failure", w = 60.0, r = 8.0, done = false), w))
-    }
-
-    // Task 3 review: a repeated exercise, and the watch's own tick after an edit
-
-    @Test fun aTickFollowsItsSetWhenThePhoneRefusesTheRemove() {
-        val s0 = state(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
-        val (s1, _) = SetMenu.removeSet(s0, 0, 1, 5.0, "r1")
-        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 70.0, r = 6.0, at = 6.0, id = "t1")
-        // the phone changed the 50 to 55 first: the remove no longer fits and goes
-        val changed = workout(listOf(row(), SetRow(w = 55.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
-        val s3 = SessionCore.applySnapshot(s2, snap(changed))
-        assertEquals(listOf(false, false, true), rows(s3).map { it.done })
-        assertTrue(s3.edits.isEmpty())
-        assertNotNull(s3.pending["x#2"])
-        val s4 = SessionCore.applySnapshot(s3, snap(changed))
-        assertEquals(listOf(55.0, 70.0), rows(s4).drop(1).map { it.w })
-        assertEquals(listOf(false, false, true), rows(s4).map { it.done })
-    }
-
-    @Test fun aMarkOnATickedAddedSetSurvivesAnOlderSnapshot() {
-        val s0 = state(listOf(row(), row()))
-        val (s1, _) = SetMenu.addSet(s0, 0, 5.0, "a1")
-        val (s2, _) = SetMenu.mark(s1, 0, 2, MarkKind.FAILURE, true, 6.0, "m1")
-        val (s3, _) = SessionCore.tick(s2, 0, 2, w = 60.0, r = 8.0, at = 7.0, id = "t1")
-        val s4 = SessionCore.applySnapshot(s3, snap(s0.workout!!))
-        assertEquals(listOf(false, false, true), rows(s4).map { it.done })
-        assertEquals(true, rows(s4)[2].failure)
-        assertEquals(2, s4.edits.size)
-    }
-
-    private fun twice(sets: List<SetRow>) = state(sets).let { it.copy(workout = it.workout!!.copy(entries = listOf(entry(sets), entry(sets)))) }
-
-    @Test fun anEditOnTheSecondCopyLeavesTheFirstCopysKeys() {
-        val s0 = twice(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
-        val (s1, _) = SessionCore.tick(s0, 0, 1, w = 50.0, r = 8.0, at = 5.0, id = "t1")
-        val s2 = SessionCore.skip(s1, 0, 2)
-        val (s3, _) = SetMenu.removeSet(s2, 1, 1, 6.0, "r1")
-        assertNotNull(s3.pending["x#1"]); assertEquals(listOf("x#2"), s3.skipped)
-        val (s4, _) = SetMenu.mark(s3, 1, 1, MarkKind.WARMUP, true, 7.0, "m1")
-        assertNotNull(s4.pending["x#1"]); assertEquals(listOf("x#2"), s4.skipped)
-    }
-
-    @Test fun aRemoveOnTheSecondCopyLeavesTheFirstCopysTick() {
-        val s0 = twice(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
-        val (s1, _) = SetMenu.removeSet(s0, 1, 1, 5.0, "r1")
-        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 50.0, r = 8.0, at = 6.0, id = "t1")
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertEquals(listOf(false, true, false), s3.workout!!.entries[0].sets.map { it.done })
-        assertEquals(listOf(60.0, 70.0), s3.workout!!.entries[1].sets.map { it.w })
-        assertEquals(1, s3.edits.size)
-    }
-
-    @Test fun aTickOnTheFirstCopyKeepsAMarkOnTheSecond() {
-        val s0 = twice(listOf(row(), row()))
-        val (s1, _) = SetMenu.mark(s0, 1, 0, MarkKind.FAILURE, true, 5.0, "m1")
-        val (s2, _) = SessionCore.tick(s1, 0, 0, w = 60.0, r = 8.0, at = 6.0, id = "t1")
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertTrue(s3.workout!!.entries[0].sets[0].done); assertNull(s3.workout!!.entries[0].sets[0].failure)
-        assertFalse(s3.workout!!.entries[1].sets[0].done); assertEquals(true, s3.workout!!.entries[1].sets[0].failure)
-        assertEquals(1, s3.edits.size)
-    }
-
-    @Test fun aTickAfterAMarkOnTheSameSetKeepsTheMark() {
-        val s0 = state(listOf(row(), row()))
-        val (s1, _) = SetMenu.mark(s0, 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
-        val (s2, _) = SessionCore.tick(s1, 0, 0, w = 62.5, r = 7.0, at = 6.0, id = "t1")
-        assertEquals(PendingEdit("m1", "x", "mark", 0, "failure", true, 62.5, 7.0, true, 0, row = 0), s2.edits.single())
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertTrue(rows(s3)[0].done); assertEquals(true, rows(s3)[0].failure); assertEquals(1, s3.edits.size)
-    }
-
-    @Test fun aTickOnAMovedWarmupKeepsTheMove() {
-        val s0 = state(listOf(row(), SetRow(w = 40.0, r = 10.0), row()))
-        val (s1, _) = SetMenu.mark(s0, 0, 1, MarkKind.WARMUP, true, 5.0, "m1") // 40 moves to the top
-        val (s2, _) = SessionCore.tick(s1, 0, 0, w = 40.0, r = 10.0, at = 6.0, id = "t1") // the warm-up itself
-        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
-        assertEquals(listOf(40.0, 60.0, 60.0), rows(s3).map { it.w })
-        assertEquals(listOf(true, false, false), rows(s3).map { it.warmup })
-        assertEquals(listOf(true, false, false), rows(s3).map { it.done })
-        assertEquals(setOf("x#0"), s3.pending.keys); assertEquals(1, s3.edits.size)
-    }
-
-    @Test fun anEditsRowFollowsLaterMoves() {
-        val s0 = state(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 40.0, r = 10.0)))
-        val (s1, _) = SetMenu.mark(s0, 0, 1, MarkKind.FAILURE, true, 5.0, "m1")
-        val (s2, _) = SetMenu.mark(s1, 0, 2, MarkKind.WARMUP, true, 6.0, "m2") // 40 to the top: 50 goes to row 2
-        assertEquals(listOf<Int?>(2, 0), s2.edits.map { it.row })
-        val (s3, _) = SetMenu.removeSet(s2, 0, 2, 7.0, "r1")
-        assertEquals(listOf<Int?>(null, 0, null), s3.edits.map { it.row })
-    }
-
-    /* ---------- Undo, the order events leave in, the refs that follow an edit ---------- */
-
-    private fun held(id: String = "r1"): HeldRemoval {
-        val s0 = state(listOf(row(), row(), row()))
-        val (_, ev) = SetMenu.removeSet(s0, 0, 1, 5.0, id)
-        return HeldRemoval(ev.toString(), WireJson.encodeToString(s0), setNumber = 2, w = 60.0, r = 8.0, unit = "kg")
-    }
-    private fun ev(id: String): Event = buildJsonObject { put("id", id) }
-    private fun Event.id() = this["id"]!!.jsonPrimitive.content
 
     @Test fun pillDropsThePlaceOnlyWhenTheTagsDoNotFit() {
         assertTrue(PillFit.showPlace(0, 500f, 100f))
@@ -413,57 +332,15 @@ class SetMenuTest {
         assertTrue(PillFit.showPlace(2, 172f, 172f))
     }
 
+    private fun held(id: String = "r1") = HeldRemoval(id, setNumber = 2, w = 60.0, r = 8.0, unit = "kg")
+
     @Test fun undoCancels() {
         val u = UndoWindow(); u.begin(held()); u.undo()
         assertNull(u.flush())
     }
 
     @Test fun flushReturnsItOnce() {
-        val h = held()
-        val u = UndoWindow(); u.begin(h)
-        assertEquals(h, u.flush()); assertNull(u.flush())
-    }
-
-    @Test fun aHeldRemovalIsSentBeforeTheNextEvent() {
-        val u = UndoWindow(); u.begin(held("r1"))
-        // Done on another set during the Undo time: the removal goes first, once
-        assertEquals(listOf("r1", "t1"), SetMenu.order(u.flush(), ev("t1")).map { it.id() })
-        assertEquals(listOf("t2"), SetMenu.order(u.flush(), ev("t2")).map { it.id() })
-        // the removal itself is not sent twice
-        assertEquals(listOf("r1"), SetMenu.order(held("r1"), ev("r1")).map { it.id() })
-    }
-
-    @Test fun aHeldRemovalSurvivesARestart() {
-        val h = held("r1")
-        val back = WireJson.decodeFromString<HeldRemoval>(WireJson.encodeToString(h))
-        assertEquals(h, back)
-        assertEquals("removeSet", back.toEvent()["type"]!!.jsonPrimitive.content)
-        assertEquals(1, back.toEvent()["setIdx"]!!.jsonPrimitive.content.toInt())
-        // Undo puts back the rows as they were
-        assertEquals(3, WireJson.decodeFromString<SessionState>(back.before).workout!!.entries[0].sets.size)
-        assertEquals(listOf("r1", "t1"), SetMenu.order(back, ev("t1")).map { it.id() })
-    }
-
-    @Test fun refsFollowARemove() {
-        val s0 = state(listOf(row(), row(), row()))
-        val (s1, _) = SetMenu.removeSet(s0, 0, 0, 5.0, "r1")
-        val moved = SetMenu.apply(s1.edits.last(), s0.workout!!, entry = 0)!!.second
-        assertEquals(SetRef(0, 1), SetMenu.follow(SetRef(0, 2), 0, moved))
-        assertNull(SetMenu.follow(SetRef(0, 0), 0, moved))
-        assertEquals(SetRef(1, 2), SetMenu.follow(SetRef(1, 2), 0, moved))   // another exercise: untouched
-        assertNull(SetMenu.follow(null, 0, moved))
-        // the shown set removed: nothing picked, the next open set comes up
-        assertEquals(0, SessionCore.setIndex(s1, 0, SetMenu.follow(SetRef(0, 0), 0, moved)?.set))
-    }
-
-    @Test fun thePageStaysOnItsSetWhenAWarmupMovesRows() {
-        // rows: warm-up, A, B. B becomes a warm-up and moves to row 1; A goes to row 2.
-        val s0 = state(listOf(row(warmup = true), SetRow(w = 60.0, r = 8.0), SetRow(w = 70.0, r = 8.0)))
-        val (s1, _) = SetMenu.mark(s0, 0, 2, MarkKind.WARMUP, true, 5.0, "m1")
-        assertEquals(70.0, rows(s1)[1].w!!, 0.0)
-        val moved = SetMenu.apply(s1.edits.last(), s0.workout!!, entry = 0)!!.second
-        assertEquals(SetRef(0, 2), SetMenu.follow(SetRef(0, 1), 0, moved))   // A: still A
-        assertEquals(SetRef(0, 1), SetMenu.follow(SetRef(0, 2), 0, moved))   // B: still B
-        assertEquals(SetRef(0, 0), SetMenu.follow(SetRef(0, 0), 0, moved))
+        val u = UndoWindow(); u.begin(held())
+        assertEquals("r1", u.flush()?.id); assertNull(u.flush())
     }
 }
