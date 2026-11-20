@@ -196,7 +196,7 @@ struct SetPanel: View {
                         .frame(minHeight: 24)
                         .glass(Capsule(), tint: store.fixSide == side ? Theme.teal : nil, fill: store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18), dimmed: dimmed)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressStyle())
                 .accessibilityAddTraits(store.fixSide == side ? AccessibilityTraits.isSelected : AccessibilityTraits())
             }
         }
@@ -222,7 +222,7 @@ struct SetPanel: View {
                 .frame(minHeight: 24)
                 .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .accessibilityLabel(Text("Effort"))
         .accessibilityValue(v.map { Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, $0))") } ?? Text("None"))
         .accessibilityHint(Text("Tap to change it."))
@@ -481,7 +481,7 @@ struct ArrowButton: View {
                 .glass(RoundedRectangle(cornerRadius: 10, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .disabled(!enabled)
         .accessibilityLabel(left ? Text("Previous set") : Text("Next set"))
     }
@@ -565,7 +565,7 @@ struct KeypadView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressStyle())
                     .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
                     .accessibilityLabel(Text("Cancel"))
                     display
@@ -584,8 +584,9 @@ struct KeypadView: View {
                         .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
                         .glass(Capsule(), tint: pad.fits(range) ? accent : nil, fill: dimmed || !pad.fits(range) ? Color.clear : accent, dimmed: dimmed || !pad.fits(range))
                         .overlay(Capsule().stroke(accent, lineWidth: pad.fits(range) && !dimmed ? 0 : 1.5))
+                        .contentShape(Capsule())   // the whole capsule, not only its glyph, takes the tap
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressStyle())
                 .disabled(!pad.fits(range))
                 .accessibilityLabel(Text("Save"))
             }
@@ -628,10 +629,10 @@ struct KeypadView: View {
             .font(.system(size: 22, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+            .glass(RoundedRectangle(cornerRadius: 12, style: .continuous), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .glass(RoundedRectangle(cornerRadius: 12, style: .continuous), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
+        .buttonStyle(PressStyle())
         .opacity(off ? 0 : 1)
         .disabled(off)
         .accessibilityLabel(key == "⌫" ? Text(verbatim: "⌫") : Text(verbatim: key))
