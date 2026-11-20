@@ -99,6 +99,7 @@ export default function Library() {
     <div className="hdr lib-hdr"><SeasonDeco spot="header-bats" /><div><h1>{t('Exercises')}</h1></div>
       <div className="row lib-hdr-btns" style={{ gap: 6 }}>
         {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
+        <Button size="sm" variant="tinted" icon="trophy" onClick={() => nav('/skills')}>{t('Skills')}</Button>
         <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
         {/* Bodyweight skill chains, easiest to hardest (components/Ladders.jsx). */}
         <Button size="sm" variant="tinted" icon="stairs" onClick={laddersSheet} data-ladders>{t('Ladders')}</Button>

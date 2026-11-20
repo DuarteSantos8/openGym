@@ -54,6 +54,7 @@ import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './li
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
+import { earnedSkills, withEarned, newlyHad, provedNames } from './lib/skill-tree.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import GymHiddenLine from './components/GymHiddenLine.jsx'
@@ -4792,6 +4793,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // Read before the session is gone: the summary offers these to their routines (#592).
   const additions = past ? [] : routineAdditions(A, st.routines)
   let shown = w
+  let unlocked = ''
   update(s => {
     if (past) {
       // Its start and end are in the past; the stamp says when it was logged, which is what a
@@ -4817,7 +4819,13 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
     // A rotation pass this app manages starts its next pass the moment the last session lands
     // (lib/rotation.js). A planner's queue is left alone: it completes and waits for its writer.
     refillAfter(s, w)
+    // The skill trees fill in from what this session showed (lib/skill-tree.js).
+    const earned = earnedSkills({ workouts: [w], customEx: s.customEx })
+    const skills = withEarned(s.skills, earned)
+    const gained = newlyHad(s.skills, skills)
+    if (gained.length) { s.skills = skills; unlocked = provedNames(gained, earned) }
   })
+  if (unlocked) toast(t('Unlocked from your sessions: {0}', unlocked))
   useStore.getState().autoBackupNow()
   useUI.getState().stopRest()
   // A hold still counting (a plank left unchecked, then Finish early) goes with the workout, as
