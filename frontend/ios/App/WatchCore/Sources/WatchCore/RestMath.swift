@@ -92,8 +92,11 @@ extension Effort {
     static func chipLabel(_ kind: String, _ v: Double) -> String {
         if kind == "rpe" && v <= 7 { return "≤7" }
         if kind == "rir" && v >= 3 { return "3+" }
-        return v.rounded() == v ? String(SafeNum.int(v)) : String(v)
+        return valueLabel(v)
     }
+
+    /// A rating as it reads: "1.5" with the point in every language, "3" for a whole one.
+    static func valueLabel(_ v: Double) -> String { v.rounded() == v ? String(SafeNum.int(v)) : String(v) }
 }
 
 /*
