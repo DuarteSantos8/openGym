@@ -207,4 +207,25 @@ final class SessionCoreTests: XCTestCase {
         after.entries[0].sets[0] = SessionCore.markSide(w.entries[0].sets[0], "L", w: 20, r: 10, at: 2000)
         XCTAssertEqual(SessionCore.phoneTicks(before, after).map(\.at), [2000])
     }
+    // Discord Mircuz (Garmin #1403): with "Timed holds start by themselves" the phone and the watch each run
+    // the hold. The phone's ends first and logs set 0; the watch's hold must then end unlogged, not log set 1.
+    func testAHoldTheSnapshotShowsDoneOnThePhoneIsOver() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8)])))
+        let ref = (entry: 0, set: SessionCore.setIndex(s, entry: 0)!)
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: ref.entry, set: ref.set, side: nil))
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8, done: true, at: 1), row(60, 8)])))
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1, "the set a hold ending now would log")
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: ref.entry, set: ref.set, side: nil))
+    }
+
+    func testAHoldOnOneSideEndsWhenThePhoneLoggedThatSide() {
+        var w = workout("p1", sets: [row(20, 0)])
+        w.entries[0].sets[0].sides = Sides(L: SideRow(w: 20, r: 10, done: false), R: SideRow(w: 20, r: 10, done: false))
+        var s = SessionCore.applySnapshot(SessionState(), snap(w))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 0, side: "L"))
+        w.entries[0].sets[0] = SessionCore.markSide(w.entries[0].sets[0], "L", w: 20, r: 10, at: 2000)
+        s = SessionCore.applySnapshot(s, snap(w))
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: 0, side: "L"))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 0, side: "R"), "the other side's hold is a new one")
+    }
 }

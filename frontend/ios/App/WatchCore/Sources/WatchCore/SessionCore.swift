@@ -299,6 +299,15 @@ enum SessionCore {
         return to < count && to != s.entryIndex ? to : nil
     }
 
+    /// Whether a hold started for set `si` (and `side`, on a per-side set) of exercise `ei` still has its
+    /// set to log. The phone logs a hold of its own first with "Timed holds start by themselves", and a
+    /// hold ending here then would log the set after it, so the hold is over when this is false.
+    static func holdOpen(_ s: SessionState, entry ei: Int, set si: Int, side: String?) -> Bool {
+        guard let w = s.workout, w.entries.indices.contains(ei), w.entries[ei].sets.indices.contains(si) else { return false }
+        let row = w.entries[ei].sets[si]
+        return !row.done && row.sideUp == side
+    }
+
     /// Where to go after a set of exercise `ei` (set `si`) was done, and whether a rest comes first.
     ///   per-side set with a side to go   the same exercise, no rest (the other side now)
     ///   superset                          the next exercise of the group in turn; the rest only
