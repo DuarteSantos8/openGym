@@ -99,7 +99,7 @@ export default function HeartBand({ A }) {
       {!big && <button type="button" className="iconbtn hband-fold" aria-label={t('Show less')} title={t('Show less')}
         onClick={() => showHeartView('pill')}><Icon name="chevronUp" /></button>}
       {big && curve && <HeartGraph samples={curve.points} max={max} zone={zone} marks={marks} />}
-      {big && exFrom > whole && <Segmented className="seg-inline hband-scope" value={scope} onChange={pickScope}
+      {big && exFrom > whole && exCurve && <Segmented className="seg-inline hband-scope" value={scope} onChange={pickScope}
         options={[{ value: 'ex', label: t('Exercise') }, { value: 'all', label: t('Workout') }]} />}
     </div>
   )

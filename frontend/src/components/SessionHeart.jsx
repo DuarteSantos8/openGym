@@ -3,6 +3,8 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { heartCurve } from '../lib/heart-rate.js'
 import { workoutSamples } from '../lib/health-sync.js'
+import { curveVersion } from '../lib/heart-history.js'
+import { isOn } from '../lib/modules.js'
 import { hrMaxOf, DEFAULT_HR_MAX } from '../lib/live-tiles.js'
 import { exerciseSpans, heartByExercise, heartStepText } from '../lib/heart-steps.js'
 import HeartGraph from './HeartGraph.jsx'
@@ -17,7 +19,8 @@ export default function SessionHeart ({ w, nameOf = e => e?.id }) {
     let open = true
     workoutSamples(w, S).then(r => { if (open) { setSamples(r); setCurve(heartCurve(r, w.start, w.end)) } }, () => {})
     return () => { open = false }
-  }, [w.start, w.end, w.hrc])
+  // Read again when the kept curve really changes (a sync copies it, the same) or Health is switched.
+  }, [w.start, w.end, curveVersion(w.hrc), isOn(S, 'health')])
   if (!curve) return null
   const max = hrMaxOf(S) || DEFAULT_HR_MAX
   const steps = heartByExercise(w, samples, max)

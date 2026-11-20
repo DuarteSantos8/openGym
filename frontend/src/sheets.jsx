@@ -141,7 +141,7 @@ import { recoverySheet, RecoveryRow } from './components/RecoverySheet.jsx'
 import { activityDays, activitiesOn, mergeImportedActivities } from './lib/activities.js'
 import { activitySheet, ActivityRow } from './components/ActivitySheet.jsx'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
-import { copyText } from './lib/clipboard.js'
+import { copyTextLater } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 import { isOn } from './lib/modules.js'
@@ -3830,10 +3830,11 @@ function WorkoutDetail({ w, close, again }) {
       steps: heartByExercise(rec, samples, hrMax) }
   }
   // Copied with the note as it stands in the box, which may not be saved yet, and the heart rate.
+  // The copy starts within the tap (copyTextLater), the heart rate read meanwhile.
   const copyAsText = async () => {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
-    const heart = await heartFor(rec)
-    toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), state: st, heart })) ? t('Copied') : t('Could not copy'))
+    const text = heartFor(rec).then(heart => workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), state: st, heart }))
+    toast(await copyTextLater(text) ? t('Copied') : t('Could not copy'))
   }
   // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data.
   const exportFit = async () => {

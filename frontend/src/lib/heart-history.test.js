@@ -120,6 +120,16 @@ describe('exerciseCurve', () => {
     expect(c.points.map(p => p.hr)).toEqual([108, 109, 110])
   })
 
+  it('takes only the ticks inside the session, and nothing without a start', () => {
+    const late = { ...w, entries: [
+      { id: PUSH, sets: [{ done: true, at: at(7) }] },
+      { id: ROPE, target: { mode: 'time' }, sets: [{ done: true, sec: 60, at: at(9) }, { done: true, sec: 60, at: at(25) }] }] }
+    // the set ticked after the end (+25 min, the session ends at +20) is not part of the curve
+    expect(exerciseCurve(late, ROPE, samples, 190, 't:60').span).toBe(2 * 60000)
+    const { start, ...noStart } = late
+    expect(exerciseCurve(noStart, ROPE, samples, 190, 't:60')).toBeNull()
+  })
+
   it('has no curve without readings or without the exercise', () => {
     expect(exerciseCurve(w, ROPE, [], 190)).toBeNull()
     expect(exerciseCurve(w, '9999', samples, 190)).toBeNull()
@@ -149,6 +159,15 @@ describe('packCurve', () => {
     expect(unpackCurve(null)).toEqual([])
     // the last slot's reading stays inside the workout
     expect(unpackCurve({ s: 1000, step: 5, v: [100, 110] }, 7000)).toEqual([[3500, 100], [7000, 110]])
+  })
+  it('leaves out what was kept past a workout made shorter since, and a curve with no step forward', () => {
+    // three hours kept, the workout then set to one hour: no reading piles up at its end
+    const start = 1e12, end = start + 3600e3
+    const out = unpackCurve({ s: start, step: 5, v: new Array(3 * 720).fill(120) }, end)
+    expect(out.length).toBe(720)
+    expect(out.every(([ms]) => ms <= end)).toBe(true)
+    expect(out.filter(([ms]) => ms === end).length).toBeLessThanOrEqual(1)
+    expect(unpackCurve({ s: start, step: -5, v: [120, 121] })).toEqual([])
     expect(unpackCurve({ s: 'x', v: [100] })).toEqual([])
   })
 
@@ -197,6 +216,11 @@ describe('curveVersion', () => {
 describe('mergeCurves', () => {
   it('keeps the first curve\'s slots the second misses, the second winning where both have one', () => {
     expect(mergeCurves({ s: 0, step: 5, v: [100, 110, 0, 130] }, { s: 5000, step: 5, v: [111, 121, 0, 141] })).toEqual({ s: 0, step: 5, v: [100, 111, 121, 130, 141] })
+  })
+  it('does not merge curves a day or more apart, nor one with no step forward', () => {
+    const b = { s: 864e5, step: 5, v: [120] }
+    expect(mergeCurves({ s: 0, step: 5, v: [100] }, b)).toBe(b)
+    expect(mergeCurves({ s: 0, step: -5, v: [100] }, b)).toBe(b)
   })
   it('takes the one there is', () => {
     expect(mergeCurves(null, { s: 0, step: 5, v: [100] })).toEqual({ s: 0, step: 5, v: [100] })

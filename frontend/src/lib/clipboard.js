@@ -25,3 +25,20 @@ export async function copyText(text) {
     return false
   }
 }
+
+/**
+ * Copies text that is still being put together (the health hub read first). WebKit lets a page
+ * write to the clipboard only during the tap, so where it can the write starts then, with the
+ * text to come (a ClipboardItem of a promise); elsewhere the text is copied once it is there.
+ */
+export async function copyTextLater(textPromise) {
+  const text = Promise.resolve(textPromise)
+  try {
+    if (typeof ClipboardItem === 'function' && navigator.clipboard?.write) {
+      const blob = text.then(v => new Blob([v], { type: 'text/plain' }))
+      await navigator.clipboard.write([new ClipboardItem({ 'text/plain': blob })])
+      return true
+    }
+  } catch { /* refused, or no ClipboardItem of a promise here: the plain copy below */ }
+  try { return await copyText(await text) } catch { return false }
+}
