@@ -193,6 +193,11 @@ object WearStore {
     /** The set on the set page: the one being fixed, else the one up next. */
     fun shownRef(): SetRef? = fix.value?.ref ?: setIndex()?.let { SetRef(entryIndex, it) }
     fun touchAllowed() = touchLock.allows(now())
+
+    /** The crown is dead for a moment after a rest ends under an armed effort: the leftover turn moves nothing. */
+    private val crownLock = TouchLock()
+    fun lockCrown() = crownLock.lock(now(), Effort.CROWN_LOCK_MS)
+    fun crownAllowed() = crownLock.allows(now())
     fun canStep(d: Int) = target(d) != null
 
     /** When the workout started (the phone's start, else when this watch first had it). */
@@ -442,21 +447,26 @@ object WearStore {
         if (side != null && fix.value != null) setFixSide(side)
     }
 
-    /** A chip during the rest: the set just done gets this effort (its setDone again, as logged). */
-    fun rateLast(v: Double) {
-        ackRestOver()
-        if (!touchAllowed()) return
-        val kind = _state.value.settings.effort ?: return
-        val ref = lastLogged.value ?: return
-        val row = _state.value.workout?.entries?.getOrNull(ref.entry)?.sets?.getOrNull(ref.set) ?: return
-        val n = SetFix.logged(row, lastSide) ?: return
+    /**
+     * The set just done gets this effort (its setDone again, as logged): a chip, or a burst of half steps sent once.
+     * `ref` is the set the screen meant; a set done since is not rated by an old value. `tap` false is the burst's
+     * own send: no buzz, and it does not silence the rest-over reminder. False if nothing was sent.
+     */
+    fun rateLast(v: Double, ref: SetRef? = lastLogged.value, tap: Boolean = true): Boolean {
+        if (tap) ackRestOver()
+        if (!touchAllowed()) return false
+        val kind = _state.value.settings.effort ?: return false
+        if (ref == null || ref != lastLogged.value) return false
+        val row = _state.value.workout?.entries?.getOrNull(ref.entry)?.sets?.getOrNull(ref.set) ?: return false
+        val n = SetFix.logged(row, lastSide) ?: return false
         val (next, event) = SetFix.correct(_state.value, ref.entry, ref.set, lastSide, n, EffortRating(kind, v),
             now().toDouble(), UUID.randomUUID().toString(), clockOff())
-        event ?: return
+        event ?: return false
         PhoneLink.send(app, event)
         commit(next)
         lastRated.value = v
-        Haptics.tick(app)
+        if (tap) Haptics.tick(app)
+        return true
     }
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */

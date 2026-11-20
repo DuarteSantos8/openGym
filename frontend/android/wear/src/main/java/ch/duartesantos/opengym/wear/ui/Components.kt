@@ -87,6 +87,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.wear.compose.material3.Text
 import ch.duartesantos.opengym.wear.R
 import ch.duartesantos.opengym.wear.SyncState
+import ch.duartesantos.opengym.wear.WearStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -546,6 +547,7 @@ fun Modifier.crown(focus: FocusRequester, onStep: (Int) -> Unit): Modifier {
     var acc = 0f
     return this
         .onRotaryScrollEvent { e ->
+            if (!WearStore.crownAllowed()) return@onRotaryScrollEvent true
             acc += e.verticalScrollPixels
             val notch = 40f
             while (abs(acc) >= notch) {
