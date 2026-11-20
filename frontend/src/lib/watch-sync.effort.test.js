@@ -37,6 +37,10 @@ describe('the rating on a watch event', () => {
     expect(effortFrom({ rir: 2 })).toEqual({ rir: 2 })
     expect(effortFrom({ rpe: 7.74 })).toEqual({ rpe: 7.5 })
     expect(effortFrom({ rir: 0 })).toEqual({ rir: 0 })
+    // the watch's half steps (Crown / discs) land as they are
+    expect(effortFrom({ rir: 1.5 })).toEqual({ rir: 1.5 })
+    expect(effortFrom({ rir: 5 })).toEqual({ rir: 5 })
+    expect(effortFrom({ rpe: 6.5 })).toEqual({ rpe: 6.5 })
     expect(effortFrom({ rpe: 11 })).toEqual({})
     expect(effortFrom({ rir: -1 })).toEqual({})
     expect(effortFrom({ rpe: 'x' })).toEqual({})
@@ -66,6 +70,12 @@ describe('the rating on a watch event', () => {
     expect(s.workouts[0].entries[0].sets[0]).toEqual({ w: 60, r: 8, done: true, at: 2000, rpe: 9 })
     patchSetIn(s, { wid: 'w', exId: '0025', entryIdx: 0, setIdx: 1 }, { done: true, w: 50, r: 5, at: 1000, rpe: 9 }, vi.fn(), { ifNewer: 1000 })
     expect(s.workouts[0].entries[0].sets[1].rpe).toBe(7)
+  })
+
+  it('a re-rating from the watch (RIR 1, then 1.5) replaces the first one', () => {
+    const s = { active: { id: 'w', entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true, at: 1000, rir: 1 }] }] } }
+    patchSetIn(s, { wid: 'w', exId: '0025', entryIdx: 0, setIdx: 0 }, { done: true, w: 60, r: 8, at: 1001, rir: 1.5 }, vi.fn())
+    expect(s.active.entries[0].sets[0].rir).toBe(1.5)
   })
 
   it('a per-side set keeps the rating on its side', () => {
