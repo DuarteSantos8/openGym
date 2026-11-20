@@ -5862,4 +5862,7 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "Header tambahan",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Opsional. Satu baris Nama: nilai, dikirim bersama setiap permintaan ke endpoint ini. Jangan pernah Authorization atau Content-Type.",
 };

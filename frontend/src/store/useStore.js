@@ -1548,7 +1548,7 @@ export const useStore = create((set, get) => {
     // Never persisted: the code is good for minutes and belongs to this one visit.
     linkCode: null,
     // Mobile build only: how the Coach runs on this phone — { mode: 'off'|'server'|'byok',
-    // provider, model, baseUrl } from lib/coach-device.js. Never the key, never a proposal.
+    // provider, model, baseUrl, headers } from lib/coach-device.js. Never the key, never a proposal.
     coachLocal: null,
     async setCoachLocal(patch) {
       set({ coachLocal: coachDeviceSettings(await saveCoachDevice(patch)) })

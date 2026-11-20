@@ -65,7 +65,15 @@ export const guardedFetch = (url, init) => (phoneMayCall(url)
   ? nativeFetch(url, init)
   : Promise.reject(new Error(t('Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.'))))
 
-const cfgOf = d => ({ provider: d.provider, providerOptions: d.baseUrl ? { [d.provider]: { baseUrl: d.baseUrl } } : {} })
+// The phone's own provider configuration, in the shape the core reads. `headers` rides along with
+// `baseUrl` (#1292): the extra static headers a gateway needs to route the request, which
+// extraHeadersFor() merges into the model list and every job before the auth framing, so the core
+// sends them exactly as it does for a self-hosted instance. Only the endpoint this map was typed for
+// gets them, because the map is keyed by provider.
+const cfgOf = d => ({
+  provider: d.provider,
+  providerOptions: d.baseUrl ? { [d.provider]: { baseUrl: d.baseUrl, ...(d.headers ? { headers: d.headers } : {}) } } : {}
+})
 const envOf = (d, key) => (key ? { [HTTP_PROVIDERS[d.provider].apiKeyEnv]: key } : {})
 
 function mintHandle() {

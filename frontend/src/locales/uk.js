@@ -5894,4 +5894,7 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "Додаткові заголовки",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Необов'язково. Заголовок Назва: значення в окремому рядку, надсилається з кожним запитом до цієї кінцевої точки. Ніколи не Authorization і не Content-Type.",
 }

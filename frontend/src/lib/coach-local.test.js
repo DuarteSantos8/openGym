@@ -24,7 +24,7 @@ vi.mock('./capacitor-fetch.js', () => ({
 }))
 
 const local = await import('./coach-local.js')
-const { _resetCoachDevice, loadCoachDevice, saveCoachDevice, COACH_LIMITS } = await import('./coach-device.js')
+const { _resetCoachDevice, loadCoachDevice, saveCoachDevice, coachDeviceSettings, COACH_LIMITS } = await import('./coach-device.js')
 const { applyChangeSet, markStale, planHash } = await import('./coach.js')
 const { todayISO } = await import('./format.js')
 const { EXERCISES } = await import('../../../api/coach/core/library-data.js')
@@ -350,5 +350,78 @@ describe('Ask the Coach mid-workout, on a phone with its own key', () => {
     // Read: the slot gives back what was waiting before the question.
     await local.localResolve({ accepted: ['a0'] })
     expect((await local.localStatus()).pending).toBeNull()
+  })
+})
+
+/* Extra static headers for an OpenAI-compatible gateway (issue #1292): where the phone keeps them. */
+describe('the device file keeps the endpoint headers', () => {
+  beforeEach(() => { _resetCoachDevice(); device.data = null })
+
+  it('saves them and reads them back, so the setup screen can show them again', async () => {
+    await saveCoachDevice({ mode: 'byok', provider: 'compatible', baseUrl: 'https://gw.example.com/v1', headers: { 'x-opencode-session': 'sess-1' } })
+    expect((await loadCoachDevice()).headers).toEqual({ 'x-opencode-session': 'sess-1' })
+    // the part the UI may show carries them, or the screen could never prefill the field
+    expect(coachDeviceSettings(await loadCoachDevice()).headers).toEqual({ 'x-opencode-session': 'sess-1' })
+  })
+
+  it('reads as no headers for a device file written before the field existed', async () => {
+    device.data = { mode: 'byok', provider: 'compatible', baseUrl: 'https://gw.example.com/v1' }
+    expect((await loadCoachDevice()).headers).toBeNull()
+    expect(coachDeviceSettings(await loadCoachDevice()).headers).toBeNull()
+  })
+
+  it('clears them when the field is emptied', async () => {
+    await saveCoachDevice({ headers: { 'x-opencode-session': 'sess-1' } })
+    await saveCoachDevice({ headers: null })
+    expect((await loadCoachDevice()).headers).toBeNull()
+  })
+})
+
+/* What the endpoint headers do on the wire (issue #1292): the core already sends them, the phone
+   has to hand them over. The compatible adapter is the OpenAI-shaped one, so the same assertions
+   as the OpenAI tests above apply, with the gateway's routing header beside the bearer. */
+describe('the endpoint headers reach the wire', () => {
+  const GW = { mode: 'byok', provider: 'compatible', model: 'llama-t', baseUrl: 'https://gw.example.com/v1', headers: { 'x-opencode-session': 'sess-1' } }
+  const setup = (over = {}) => { _resetCoachDevice(); local._resetLocal(); device.data = { ...GW, ...over }; wire.calls = []; secret.key = 'sk-test-1' }
+  const job = () => wire.calls.find(c => c.url.endsWith('/chat/completions'))
+
+  it('sends them on the model list and on the job, next to the bearer', async () => {
+    setup()
+    wire.answer = { status: 200, body: { data: [{ id: 'llama-t' }] } }
+    const r = await local.localModels({ provider: 'compatible', baseUrl: GW.baseUrl, headers: GW.headers }, 'sk-test-1')
+    expect(r.ok).toBe(true)
+    expect(wire.calls[0].init.headers['x-opencode-session']).toBe('sess-1')
+    setup()
+    wire.answer = chat(JSON.stringify(review))
+    await local.localReview(state(), 'shoulder')
+    await settle()
+    expect(job().init.headers['x-opencode-session']).toBe('sess-1')
+    expect(job().init.headers.authorization).toBe('Bearer sk-test-1')
+  })
+
+  it('sends nothing extra when none were configured, exactly as before the field existed', async () => {
+    setup({ headers: null })
+    wire.answer = chat(JSON.stringify(review))
+    await local.localReview(state(), 'shoulder')
+    await settle()
+    expect(Object.keys(job().init.headers).sort()).toEqual(['accept', 'authorization', 'content-type'])
+  })
+
+  it('never lets a stored header override the auth framing', async () => {
+    setup({ headers: { authorization: 'Bearer stolen', 'x-title': 'demo' } })
+    wire.answer = chat(JSON.stringify(review))
+    await local.localReview(state(), 'shoulder')
+    await settle()
+    expect(job().init.headers.authorization).toBe('Bearer sk-test-1')
+    expect(job().init.headers['x-title']).toBe('demo')
+  })
+
+  it('is the endpoint’s own: a provider with no base URL carries no map at all', async () => {
+    setup({ provider: 'openai', baseUrl: null })
+    wire.answer = chat(JSON.stringify(review))
+    await local.localReview(state(), 'shoulder')
+    await settle()
+    expect(wire.calls[0].url).toBe('https://api.openai.com/v1/chat/completions')
+    expect(Object.keys(job().init.headers).sort()).toEqual(['accept', 'authorization', 'content-type'])
   })
 })

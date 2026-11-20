@@ -4326,6 +4326,10 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // BYOK setup: the gateway-header field (#1292). The label reads the same here; the hint keeps
+  // "solicitação", the word this pack uses where pt-PT says "pedido".
+  "Extra headers": "Cabeçalhos adicionais",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Opcional. Um cabeçalho Nome: valor por linha, enviado em cada solicitação para este endpoint. Nunca Authorization nem Content-Type.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

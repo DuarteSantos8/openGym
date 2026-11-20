@@ -5,6 +5,7 @@ import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
+import { headersToText, parseHeadersText } from '../lib/coach-headers.js'
 
 /* The operator's side of the Coach, laid out as a guided setup: one master switch, numbered
    steps that each say what they are for, and everything an owner rarely needs folded away
@@ -25,27 +26,6 @@ const rel = ts => {
   if (s < 3600) return Math.floor(s / 60) + ' min ago'
   if (s < 86400) return Math.floor(s / 3600) + ' h ago'
   return Math.floor(s / 86400) + ' d ago'
-}
-
-// Extra static headers for the endpoint, one `Name: value` per line — e.g. a gateway's
-// routing/session header (opencode Go's `x-opencode-session`). Parsed client-side so a
-// typo reads as a message on the card, not a 400 the admin has to decode. Empty clears.
-export const headersToText = h => h && typeof h === 'object'
-  ? Object.entries(h).map(([k, v]) => `${k}: ${v}`).join('\n')
-  : ''
-export function parseHeadersText(text) {
-  const lines = String(text || '').split('\n').map(l => l.trim()).filter(Boolean)
-  if (!lines.length) return { headers: null }
-  const out = {}
-  for (const line of lines) {
-    const i = line.indexOf(':')
-    if (i < 1) return { error: `not a Name: value line: ${line.slice(0, 40)}` }
-    const name = line.slice(0, i).trim()
-    const value = line.slice(i + 1).trim()
-    if (!name || !value) return { error: `not a Name: value line: ${line.slice(0, 40)}` }
-    out[name] = value
-  }
-  return { headers: out }
 }
 
 // Which chips go under which heading. Runtime-backed providers are the ones that need the

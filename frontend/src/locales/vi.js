@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // BYOK setup: a gateway that routes by header (#1292). The rules are the server's, so the words say what is refused.
+  "Extra headers": "Tiêu đề bổ sung",
+  "Optional. One Name: value per line, sent with every request to this endpoint. Never Authorization or Content-Type.": "Không bắt buộc. Mỗi dòng một tiêu đề Tên: giá trị, được gửi cùng mọi yêu cầu tới endpoint này. Không bao giờ dùng Authorization hoặc Content-Type.",
 };
