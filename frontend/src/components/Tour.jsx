@@ -387,7 +387,7 @@ function Run({ at, flow = 'tour' }) {
     if (!tutorial) noteStep(step.id)
     sandboxFor(step.sandbox)
     if (!step.sheet && useUI.getState().sheets.length) useUI.getState().closeAll()
-    entryRef.current = { customEx: (useStore.getState().S.customEx || []).length }
+    entryRef.current = { customEx: (useStore.getState().S.customEx || []).length, routines: (useStore.getState().S.routines || []).map(r => r.id) }
     const route = routeOf(step, { made: madeRef.current })
     if (route && pathRef.current !== route) nav(route, { replace: true })
     // A way to a screen that is already on has nothing to show, nor a stop whose own rule says so.
@@ -491,7 +491,12 @@ function Run({ at, flow = 'tour' }) {
   // A way to another screen: on once the user got there (the tab, the gear, the back button).
   useEffect(() => {
     if (!ready || !step.go || !reached(step, loc.pathname)) return
-    if (step.id === 'p-new') madeRef.current = loc.pathname.split('/').pop()
+    if (step.id === 'p-new') {
+      // The screen is the user's on this stop: a routine already there opened is not the new one.
+      const id = loc.pathname.split('/').pop()
+      if (entryRef.current.routines?.includes(id)) return
+      madeRef.current = id
+    }
     go(1)
   }, [ready, i, loc.pathname])
 
