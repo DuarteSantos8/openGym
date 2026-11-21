@@ -273,47 +273,42 @@ struct OverviewPage: View {
 }
 
 /// The workout's own note, under Finish: "Add session note" to dictate one, or the note itself (two
-/// lines) to say it again. The text field opens the system input (dictation, Scribble, keyboard);
-/// Cancel changes nothing, an emptied text clears the note. Apart from Discard, a hold away from Finish.
+/// lines) to say it again. The tap opens the system input (dictation, Scribble, keyboard); Cancel
+/// changes nothing, and what is said replaces the note. Apart from Discard, a hold away from Finish.
 struct NoteField: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
-    @State private var text = ""
 
     var body: some View {
         let shown = store.noteShown
         let label = shown.isEmpty ? "Add session note" : "Edit session note"
-        // What is drawn is ours (the icon, the note in two lines); the system text field lies over it, unseen,
-        // and takes the tap: the system's own field box would not carry the note's lines.
-        HStack(alignment: .center, spacing: 8) {
-            Image(systemName: shown.isEmpty ? "mic.fill" : "note.text")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(accent)
-                .frame(width: 20)
-            Group {
-                if shown.isEmpty { Text(LocalizedStringKey(label)) } else { Text(verbatim: shown) }
+        // TextFieldLink is the system's own button for text input: an invisible TextField laid over the row took no tap on a real watch.
+        TextFieldLink(prompt: Text(LocalizedStringKey(label))) {
+            HStack(alignment: .center, spacing: 8) {
+                Image(systemName: shown.isEmpty ? "mic.fill" : "note.text")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 20)
+                Group {
+                    if shown.isEmpty { Text(LocalizedStringKey(label)) } else { Text(verbatim: shown) }
+                }
+                .font(.system(.footnote, design: .rounded).weight(.semibold))
+                .foregroundStyle(.white)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .font(.system(.footnote, design: .rounded).weight(.semibold))
-            .lineLimit(2)
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .accessibilityHidden(true)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(Theme.surface))
-        .overlay(
-            TextField(LocalizedStringKey(label), text: $text)
-                .opacity(0.01)
-                .onSubmit { store.saveNote(text) }
-                .accessibilityLabel(Text(LocalizedStringKey(label)))
-                .accessibilityValue(Text(verbatim: shown))
-        )
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(Theme.surface))
+            .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
+        } onSubmit: { store.saveNote($0) }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(LocalizedStringKey(label)))
+        .accessibilityValue(Text(verbatim: shown))
         .opacity(dimmed ? 0 : 1)
-        .onAppear { text = shown }
-        .onChange(of: shown) { _, v in text = v }
     }
 }
 
