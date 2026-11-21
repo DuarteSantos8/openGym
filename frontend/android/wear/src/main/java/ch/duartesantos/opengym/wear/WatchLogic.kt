@@ -401,13 +401,17 @@ fun OutboxCore.eventType(item: OutItem): String? = try {
  * phone moves the places), else by place.
  */
 data class HoldSet(val entry: Int, val set: Int, val side: String?, val sid: String?) {
-    /** Whether that set (and side, on a per-side set) is still there and still to log in `s`. */
-    fun openIn(s: SessionState): Boolean {
-        val w = s.workout ?: return false
-        val row = if (sid != null) w.entries.flatMap { it.sets }.firstOrNull { it.sid == sid }
-                  else w.entries.getOrNull(entry)?.sets?.getOrNull(set)
-        return row != null && !row.done && row.sideUp == side
+    /** Where that set (and side, on a per-side set) is now in `s` as (entry, place), if it is still there and still to log. */
+    fun placeIn(s: SessionState): Pair<Int, Int>? {
+        val w = s.workout ?: return null
+        val at = (if (sid != null) w.entries.indices.firstNotNullOfOrNull { ei ->
+            w.entries[ei].sets.indexOfFirst { it.sid == sid }.takeIf { it >= 0 }?.let { ei to it }
+        } else entry to set) ?: return null
+        val row = w.entries.getOrNull(at.first)?.sets?.getOrNull(at.second) ?: return null
+        return at.takeIf { !row.done && row.sideUp == side }
     }
+
+    fun openIn(s: SessionState): Boolean = placeIn(s) != null
 }
 
 /* ---------- the 3-2-1, the touch lock, the weigh-in, a workout left running ---------- */

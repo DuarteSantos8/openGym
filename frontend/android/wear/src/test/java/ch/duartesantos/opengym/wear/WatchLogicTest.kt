@@ -701,4 +701,17 @@ class WatchLogicTest {
         assertEquals("what a count-in ending now would hold for", 1, SessionCore.setIndex(phoneLogged, 0))
         assertFalse(hold.openIn(phoneLogged))
     }
+
+    // A hold ending logs the set it began on, found again: the phone removing an earlier set moves the selection, not the hold.
+    @Test fun aHoldLogsItsOwnSetNotTheOneNowSelected() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val c = row().copy(sid = "c")
+        val hold = HoldSet(0, 1, null, "b")
+        assertEquals(0 to 1, hold.placeIn(state(entry("plank", listOf(a, b, c), mode = "time"))))
+        val removed = state(entry("plank", listOf(b, c), mode = "time"))
+        assertEquals("b is now first, not the c a plain pick would give", 0 to 0, hold.placeIn(removed))
+        assertNull(hold.placeIn(state(entry("plank", listOf(a, c), mode = "time"))))
+        assertEquals("no id: by place", 0 to 1, HoldSet(0, 1, null, null).placeIn(state(entry("plank", listOf(a, b), mode = "time"))))
+    }
 }
