@@ -200,11 +200,12 @@ struct RestView: View {
                 HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
                 if name { // at accessibility sizes too: the countdown above gives way (it fills what is left)
                     Group {
+                        let place = SetNav.place(e, si) // "set 3/4": which set of how many
                         if let side = store.sideUp {
-                            Text("\(e.name), set \(Int64(SetNav.place(e, si).n))") + Text(verbatim: " · ")
+                            Text("\(e.name), set \(Int64(place.n))") + Text(verbatim: "/\(place.of) · ")
                                 + Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
                         } else {
-                            Text("\(e.name), set \(Int64(SetNav.place(e, si).n))")
+                            Text("\(e.name), set \(Int64(place.n))") + Text(verbatim: "/\(place.of)")
                         }
                     }
                     .font(TypeScale.second)
@@ -318,6 +319,9 @@ struct EffortChips: View {
         }
     }
 
+    /// The settled and armed capsules trade places by blurring, so the 21 pt and 16 pt values never show doubled.
+    private var swap: AnyTransition { reduceMotion ? .opacity : AnyTransition(.blurReplace) }
+
     /// The exercise and set the chips rate: the one just done.
     private var rated: Text? {
         guard let ref = store.lastLogged, let w = store.workout, w.entries.indices.contains(ref.entry) else { return nil }
@@ -340,8 +344,9 @@ struct EffortChips: View {
                     if store.dial.armed && !dimmed {
                         EffortArmed(kind: kind, value: v, clear: false, height: height, disc: tall ? 31 : 28, ticks: true, size: 21,
                                     nudge: { store.nudgeRating($0, disc: false) }, discNudge: { store.nudgeRating($0, disc: true) },
-                                    grow: reduceMotion ? nil : (grow, AnyHashable(tapped ?? v)))
-                    } else { settled(kind, v, height) }
+                                    grow: reduceMotion ? nil : (grow, AnyHashable(tapped ?? v)), delayed: from == .chips)
+                            .transition(from == .chips ? .identity : swap) // from a chip the capsule grows, it does not blur in
+                    } else { settled(kind, v, height).transition(swap) }
                 } else {
                     HStack(spacing: 4) {
                         ForEach(Effort.chips(kind), id: \.self) { v in
@@ -368,7 +373,7 @@ struct EffortChips: View {
     }
 
     /// The two lines trade places by fading, no slide.
-    private var labelFade: AnyTransition { dimmed ? .identity : AnyTransition.opacity.animation(.easeOut(duration: 0.15)) }
+    private var labelFade: AnyTransition { dimmed ? .identity : AnyTransition(.blurReplace).animation(.easeOut(duration: 0.15)) }
 
     /// Over the chips and the settled capsule: which set it rates. Over the armed capsule: what the Crown does.
     @ViewBuilder private func labelLine(_ kind: String) -> some View {
@@ -432,6 +437,8 @@ struct EffortArmed: View {
     let discNudge: (Int) -> Void
     /// The capsule grows out of the chip or pill it replaces (nil: it only fades in).
     var grow: (Namespace.ID, AnyHashable)? = nil
+    /// The discs come a beat after the capsule that grows from a chip or pill; on a re-arm they come at once.
+    var delayed = true
     @State private var index = 0
     @State private var pulsing = false
     @FocusState private var focused: Bool
@@ -448,7 +455,7 @@ struct EffortArmed: View {
             discButton(minus: false, color: color, inset: inset, dim: value.map { $0 >= r.upperBound } ?? false)
         }
         .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-        .background(Capsule().fill(color.opacity(0.18)).overlay(Capsule().strokeBorder(color, lineWidth: 2)).grows(grow?.0, id: grow?.1 ?? AnyHashable(0)))
+        .background(Capsule().fill(Color.black).overlay(Capsule().fill(color.opacity(0.18))).overlay(Capsule().strokeBorder(color, lineWidth: 2)).grows(grow?.0, id: grow?.1 ?? AnyHashable(0)))
         .shadow(color: color.opacity(0.35), radius: 4)
         .focusable()
         .focusEffectDisabled()
@@ -524,10 +531,10 @@ struct EffortArmed: View {
         .accessibilityHidden(true)
     }
 
-    /// The discs fade in from 0.9, a beat after the capsule, and out to 0.9 (Reduce Motion: fades).
+    /// The discs fade in from 0.9, a beat after the capsule when it grows (`delayed`), and out to 0.9 (Reduce Motion: fades).
     private var discFade: AnyTransition {
         let out = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(.easeOut(duration: reduceMotion ? 0.15 : 0.2))
-        let into = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(reduceMotion ? Motion.fade(true, false) : .easeOut(duration: 0.18).delay(0.05))
+        let into = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(reduceMotion ? Motion.fade(true, false) : .easeOut(duration: 0.18).delay(delayed ? 0.05 : 0))
         return .asymmetric(insertion: into, removal: out)
     }
 
