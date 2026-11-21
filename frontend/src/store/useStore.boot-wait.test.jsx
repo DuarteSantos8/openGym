@@ -16,6 +16,7 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast, stopRest: vi.f
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
+import { guestAllowed } from '../lib/guest.js'
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const USER = { id: 'user-1', name: 'One' }
@@ -123,6 +124,20 @@ describe('boot with a server that answers', () => {
     expect(took).toBeLessThanOrEqual(7000)
     expect(useStore.getState().config).toEqual(cfg)
     expect(waits().filter(([p]) => p === '/api/config')).toEqual([['/api/config', 5000], ['/api/config', undefined]])
+  })
+
+  it('a guest who went in before a late “no guests” answer is shown the sign-in screen', async () => {
+    vi.useFakeTimers()
+    slow({ '/api/config': 6000, '/api/me': 300 }, { '/api/config': { allow_guest: false }, '/api/me': unauth() })
+    let done = false
+    useStore.getState().boot().then(() => { done = true })
+    for (let i = 0; i < 100 && !done; i++) await vi.advanceTimersByTimeAsync(100)
+    expect(done).toBe(true)
+    expect(guestAllowed(useStore.getState().config)).toBe(true)   // nothing known yet: the door stays open
+    useStore.getState().setGuest(true)                            // "Continue without account"
+    await vi.advanceTimersByTimeAsync(7000)
+    expect(useStore.getState().config).toEqual({ allow_guest: false })
+    expect(useStore.getState().isGuest()).toBe(false)
   })
 
   it('signing in while that config is still on its way still gets the signed-in one (the Coach)', async () => {

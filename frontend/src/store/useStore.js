@@ -2285,8 +2285,9 @@ export const useStore = create((set, get) => {
       const bootOpts = o => (hurry ? { ...o, timeout: Math.max(BOOT_WAIT_MIN_MS, bootBy - Date.now()) } : o)
       const cfg = await get().loadConfig(hurry ? { timeout: BOOT_WAIT_MS } : undefined)
       // Past the budget the sign-in screen still wants the answer (SSO, password, guest): asked
-      // again with the usual timeout, and the screen follows the store when it lands.
-      if (hurry && !cfg) get().refreshConfig()
+      // again with the usual timeout, and the screen follows the store when it lands. A guest who
+      // went in meanwhile meets the same rule boot applies just below.
+      if (hurry && !cfg) get().refreshConfig().then(c => { if (!guestAllowed(c) && get().isGuest()) get().setGuest(false) })
       if (!guestAllowed(cfg)) get().setGuest(false)
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
