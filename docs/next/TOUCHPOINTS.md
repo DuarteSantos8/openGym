@@ -23,3 +23,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Settings.media.test.jsx` | `next/today-body-focus` | +11 | Reset everything forgets the body picker's photos and picks. |
 | `docs/MODULES.md` | `next/today-body-focus` | +1 | The Body picker row. |
 | `docs/next/NEXT-STEPS.md` | `next/today-body-focus` | +1 | The feature's status and open items. |
+| `frontend/src/store/useStore.js` | `next/boot-server-wait` | +15 −7 | **Store (Tier A area), web boot only:** `/api/config`, an owed `/api/logout` and `/api/me` share one 5 s budget (`BOOT_WAIT_MS`, each later request at least 1.5 s) instead of 20 s / 60 s apiece, so a server that never answers no longer leaves the app behind the boot screen's 10 s error for 40 s. `loadConfig`/`refreshConfig` pass an optional `opts` through to `api()`. Phones and the paired-phone boot are unchanged. |
