@@ -406,6 +406,8 @@ jobs:
         working-directory: frontend
       - run: ruby ios/ci/add-ui-tests.rb
         working-directory: frontend
+      - run: ruby ios/ci/add-watch-ui-tests.rb
+        working-directory: frontend
       - name: Run the UI tests
         working-directory: frontend/ios/App
         run: |
@@ -424,6 +426,20 @@ jobs:
             -retry-tests-on-failure -test-iterations 3 \
             -resultBundlePath build/ui.xcresult CODE_SIGNING_ALLOWED=NO \
             | tee build/ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
+      # The watch app's controls tapped in a watch simulator (ios/App/WatchUITests, the demo session).
+      - name: Run the watch UI tests
+        working-directory: frontend/ios/App
+        run: |
+          if ! xcrun simctl list runtimes | grep -q watchOS; then xcodebuild -downloadPlatform watchOS || true; fi
+          UDID=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices
+            const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v)
+            process.stdout.write(all.filter(x => /Apple Watch/.test(x.name) && !/Ultra|SE/.test(x.name)).pop().udid)')
+          xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
+          set -o pipefail
+          xcodebuild test -workspace App.xcworkspace -scheme OpenGymWatchUITests -destination "id=$UDID" \
+            -retry-tests-on-failure -test-iterations 3 CODE_SIGNING_ALLOWED=NO \
+            | tee build/watch-ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
       - name: Keep the screenshots
         if: always()
         working-directory: frontend/ios/App
@@ -443,6 +459,7 @@ jobs:
           name: ios-ui-tests
           path: |
             frontend/ios/App/build/ui-tests.log
+            frontend/ios/App/build/watch-ui-tests.log
             frontend/ios/App/build/shots
           retention-days: 7
 
