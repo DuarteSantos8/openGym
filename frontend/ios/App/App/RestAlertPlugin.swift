@@ -392,9 +392,11 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     /// The Lock Screen booked the rest's alert (already posted): the end and the ordering mark follow it.
     @objc private func restBooked(_ note: Notification) {
         guard let end = note.userInfo?["end"] as? Double, end.isFinite else { return }
+        // When it was booked, not when this block runs: a watch change stored in between still counts.
+        let at = (note.userInfo?["at"] as? Double) ?? Date().timeIntervalSince1970 * 1000
         DispatchQueue.main.async {
             guard let p = self.pending else { return }
-            self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues)
+            self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: at)
         }
     }
 

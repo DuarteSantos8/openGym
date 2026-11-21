@@ -878,7 +878,7 @@ enum LiveActivityTick {
         content.interruptionLevel = .active
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: LiveNumbers.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
-        NotificationCenter.default.post(name: LiveActivityQueue.restBooked, object: nil, userInfo: ["end": at.timeIntervalSince1970 * 1000])
+        NotificationCenter.default.post(name: LiveActivityQueue.restBooked, object: nil, userInfo: ["end": at.timeIntervalSince1970 * 1000, "at": Date().timeIntervalSince1970 * 1000])
     }
 }
 
