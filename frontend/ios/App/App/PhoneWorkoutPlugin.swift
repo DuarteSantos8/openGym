@@ -378,9 +378,13 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
             let device = samples.max(by: { $0.endDate < $1.endDate })?.device
             let earbuds = { (s: String?) in s?.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil }
             let name = earbuds(device?.model) && !earbuds(device?.name) ? device?.model : device?.name ?? device?.model
+            let newest = samples.map(\.endDate).max() ?? .distantPast
             DispatchQueue.main.async {
-                // an unnamed source after a named one must not keep the old name
-                self.deviceName = (name?.isEmpty ?? true) ? nil : name
+                // an unnamed source after a named one must not keep the old name; a late batch of older
+                // readings (another device's sync) must not rename the newer reading the page shows
+                // (0.5 s: the builder's copy of the same reading, as add() counts it)
+                let shown = self.readings.last?.0 ?? .distantPast
+                if newest > shown.addingTimeInterval(-0.5) { self.deviceName = (name?.isEmpty ?? true) ? nil : name }
                 self.add(fresh)
             }
         }
