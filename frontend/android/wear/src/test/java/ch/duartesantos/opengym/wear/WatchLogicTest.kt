@@ -711,6 +711,11 @@ class WatchLogicTest {
         assertEquals(0 to 1, hold.placeIn(state(entry("plank", listOf(a, b, c), mode = "time"))))
         val removed = state(entry("plank", listOf(b, c), mode = "time"))
         assertEquals("b is now first, not the c a plain pick would give", 0 to 0, hold.placeIn(removed))
+        assertEquals("the pick the hold began on (place 1) is c now", 1, SessionCore.setIndex(removed, 0, picked = 1))
+        val (ei, si) = hold.placeIn(removed)!!
+        val logged = SessionCore.tick(removed, ei, si, null, null, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
+        assertTrue("b is logged", logged.first { it.sid == "b" }.done)
+        assertFalse("c is still to do", logged.first { it.sid == "c" }.done)
         assertNull(hold.placeIn(state(entry("plank", listOf(a, c), mode = "time"))))
         assertEquals("no id: by place", 0 to 1, HoldSet(0, 1, null, null).placeIn(state(entry("plank", listOf(a, b), mode = "time"))))
     }
