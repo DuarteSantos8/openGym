@@ -993,6 +993,13 @@ describe('Workout live-presence heartbeat', () => {
     expect(api).toHaveBeenLastCalledWith('/api/activity', { method: 'POST', body: JSON.stringify({ active: false, reason: 'navigated' }) })
   })
 
+  it('logging a past workout is nobody training: no heartbeat', async () => {
+    mocks.user = { id: 'u1', name: 'Boris' }
+    await mount([exercise('plain-bench', [false])], 0, { active: { backfill: { durationMin: 60, replaceId: null } } })
+    await unmount()
+    expect(api).not.toHaveBeenCalledWith('/api/activity', expect.objectContaining({ body: expect.stringContaining('"active":true') }))
+  })
+
   it('a guest has no server session, so there is no heartbeat and no signal', async () => {
     await mount([exercise('plain-bench', [false])])
     await unmount()

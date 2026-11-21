@@ -66,6 +66,7 @@ async function startServer(t) {
       child.on('message', done);
       child.send({ now });
     }),
+    post,
     beat: () => post({ active: true, name: 'Push Day', exIdx: 2, exTotal: 5, setsDone: 7, setsTotal: 16, startedAt: T0 - 600000 }),
     // A device syncs; `active` is the running workout it carries (null: none). `live` is the phone's progress.
     sync: async (active, live, baseRev) => {
@@ -225,6 +226,27 @@ test('a sync that carries a past workout being edited lists nobody, and drops a 
   await h.beat();
   await h.sync({ name: 'Push Day', start: T0 - 86400000, editingWorkoutId: 'w1' });
   assert.equal(await h.live(), null);
+});
+
+// Logging a past workout (backfill) is in `active` too, and is nobody training either.
+test('a sync that carries a past workout being logged lists nobody, and drops a row', async t => {
+  const h = await startServer(t);
+  await h.at(T0);
+  await h.beat();
+  await h.sync({ name: 'Push Day', start: T0 - 86400000, backfill: { durationMin: 60, replaceId: null } });
+  assert.equal(await h.live(), null);
+});
+
+// `{"valueOf":null,"toString":null}` is valid JSON and unary + throws on it. The sync is already
+// saved by then, so it must still answer 200; the bad field counts as 0.
+test('a progress field that is not a number reads as 0 and never fails the sync or the beat', async t => {
+  const h = await startServer(t);
+  await h.at(T0);
+  const odd = { valueOf: null, toString: null };
+  assert.equal(await h.sync({ name: 'Push Day', start: odd }, { setsDone: odd, exIdx: '3' }), 200);
+  assert.deepEqual(await h.live(), { name: 'Push Day', exIdx: 3, exTotal: 0, setsDone: 0, setsTotal: 0, startedAt: T0, updatedAt: T0 });
+  await h.post({ active: true, name: 'Push Day', exTotal: odd });
+  assert.equal((await h.live()).exTotal, 0);
 });
 
 test('a refused sync (a conflict) lists nobody', async t => {

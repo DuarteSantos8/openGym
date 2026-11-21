@@ -1052,18 +1052,21 @@ const PRESENCE_TTL = 300000;              // the phone's idle keepalive is 3 min
 // late keepalive must not take a locked phone off the list.
 const PRESENCE_HIDDEN_GRACE = 270000;
 // The row a heartbeat, or a sync's `live`, describes. `b` is caller-supplied.
+// A number or numeric string counts, anything else is 0: unary + throws on `{"valueOf":null,"toString":null}`.
+const num = v => ((typeof v === 'number' || typeof v === 'string') && +v) || 0;
 const presenceRow = (b, now = Date.now()) => ({
   name: text(b.name).slice(0, 60),
-  exIdx: +b.exIdx || 0, exTotal: +b.exTotal || 0,
-  setsDone: +b.setsDone || 0, setsTotal: +b.setsTotal || 0,
-  startedAt: +b.startedAt || now,
+  exIdx: num(b.exIdx), exTotal: num(b.exTotal),
+  setsDone: num(b.setsDone), setsTotal: num(b.setsTotal),
+  startedAt: num(b.startedAt) || now,
   updatedAt: now
 });
 // What a sync says of the athlete: a running workout (`active`, with the phone's own progress in
 // `live` when it sent one) is a sign of life, like a heartbeat; none means it ended. A logged
-// workout being edited (`editingWorkoutId`) is nobody training, as the workout screen says too.
+// workout being edited (`editingWorkoutId`) or a past one being logged (`backfill`) is nobody
+// training, as the workout screen says too.
 function presenceFromSync(uid, active, live) {
-  if (!active || typeof active !== 'object' || active.editingWorkoutId) { presence.delete(uid); return; }
+  if (!active || typeof active !== 'object' || active.editingWorkoutId || active.backfill) { presence.delete(uid); return; }
   presence.set(uid, presenceRow({ name: active.name, startedAt: active.start, ...(live && typeof live === 'object' ? live : {}) }));
 }
 // Whether a row counts as "training now". The one place that decides it: the admin list and the

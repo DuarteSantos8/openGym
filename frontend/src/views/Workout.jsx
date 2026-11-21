@@ -2662,8 +2662,9 @@ function ActiveWorkout() {
   // have no server session. A beacon when the screen opens, one per return to it, and a keepalive
   // after quiet; the syncs a logged set sends carry the progress in between (store doPush).
   useEffect(() => {
-    // The tour's practice workout is nobody's training: the dashboard never hears of it.
-    if (!useStore.getState().user || editing || useStore.getState().tourSandbox) return
+    // The tour's practice workout and a past workout being logged are nobody's training: the
+    // dashboard never hears of them (the server reads a synced backfill the same way).
+    if (!useStore.getState().user || editing || A.backfill || useStore.getState().tourSandbox) return
     let stopped = false
     const ping = active => {
       const A2 = useStore.getState().S.active
