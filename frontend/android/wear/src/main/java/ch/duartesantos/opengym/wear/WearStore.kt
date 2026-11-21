@@ -231,6 +231,8 @@ object WearStore {
         val before = _state.value
         val after = SessionCore.applySnapshot(before, snap, off)
         val gone = before.workout
+        // Another workout, or none: a removal held for Undo was the old one's (its Undo would point into this one).
+        if (gone?.id != after.workout?.id) { undo.flush(); clearRemoval() }
         // The phone ended the workout the watch had (finished or discarded there).
         if (gone != null && after.workout == null) {
             closeRest(now())
