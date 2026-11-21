@@ -132,6 +132,9 @@ struct SideRow: Codable, Equatable {
     var w: Double?
     var r: Double?
     var done: Bool
+    /// The effort logged on this side, by the phone's own names (the profile's scale is the one set).
+    var rpe: Double?
+    var rir: Double?
 }
 
 struct Sides: Codable, Equatable {
@@ -169,6 +172,9 @@ struct SetRow: Codable, Equatable {
     var rp: Bool?
     /// "L" or "R": one half of a timed per-side pair, which the phone treats as one set (setSpanAt).
     var side: String?
+    /// The effort logged on the set (RPE or RIR, half points), so a done set opens on it to be fixed.
+    var rpe: Double?
+    var rir: Double?
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {

@@ -125,6 +125,10 @@ Each set row carries its id (`sid`) and, as `at`, the later of its tick and the 
 numbers on the phone (`setStamp`: a done set edited on the phone is stamped `eat`), so a weight
 corrected on the phone after the tick is not undone by an older fix from the wrist.
 
+A done set carries the effort logged on it as `rpe` or `rir` (the phone's own names, half points,
+only when present; a per-side set carries it on each side too). A watch opens the set on it to fix
+it; one that does not know the fields ignores them.
+
 For the watches' set menu (1.4.6, #1139, #1185) each row may carry `failure` (taken to failure),
 `drop` (the first drop's weight, 0 when none is set yet) with `drops` (how many), `side` (`"L"` or
 `"R"`: one half of a timed per-side pair, which the phone treats as one set) and `rp` (a rest-pause

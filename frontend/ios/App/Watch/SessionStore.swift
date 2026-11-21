@@ -454,27 +454,29 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         fixW = n.w ?? 0
         fixR = n.r ?? 0
         fixSec = n.sec ?? 0
-        fixEffort = nil
+        fixEffortFrom = SetFix.loggedEffort(row, side: fixSide, kind: effortKind)
+        fixEffort = fixEffortFrom
         fixDial = EffortDial()
     }
 
     /// Whether the numbers on a set being fixed differ from what was logged.
     var fixChanged: Bool {
         guard let f = fixFrom, viewing != nil else { return false }
-        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0) || fixEffort != nil
+        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0) || SetFix.changedEffort(fixEffort, logged: fixEffortFrom) != nil
     }
 
     /// Save on a set being fixed: the phone gets it as the set done again (SetFix.correct).
     func saveFix() {
         guard let ref = viewing, fixChanged else { return }
-        let rated = effortKind.flatMap { k in fixEffort.map { Effort.Rating(kind: k, value: $0) } }
+        let changed = SetFix.changedEffort(fixEffort, logged: fixEffortFrom)
+        let rated = effortKind.flatMap { k in changed.map { Effort.Rating(kind: k, value: $0) } }
         let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: fixSide,
                                            to: SetFix.Numbers(w: fixW, r: fixR, sec: fixSec), effort: rated,
                                            now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, off: off)
         guard let ev = event else { return }
         send(event: ev)
         state = next
-        if ref == lastLogged, let r = fixEffort { lastRated = r }
+        if ref == lastLogged, let r = changed { lastRated = r }
         viewing = nil
         fixFrom = nil
         fixDial = EffortDial()
@@ -623,6 +625,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// The effort picked on a set being fixed (nil: left as it was).
     @Published var fixEffort: Double?
+    /// What the phone has logged on the set being fixed: Save sends an effort only when it differs.
+    private var fixEffortFrom: Double?
 
     /// Back to the set up next without saving.
     func closeFix() {

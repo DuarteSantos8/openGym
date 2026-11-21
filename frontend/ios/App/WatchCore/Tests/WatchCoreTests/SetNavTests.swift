@@ -44,6 +44,47 @@ final class SetNavTests: XCTestCase {
         XCTAssertNil(event["restEnd"], "a fix starts no rest and moves none")
     }
 
+    func testASetOpensOnTheEffortTheSnapshotLogged() throws {
+        var r = row(60, 8, done: true, at: 5000)
+        r.rir = 1.5
+        XCTAssertEqual(SetFix.loggedEffort(r, side: nil, kind: "rir"), 1.5)
+        XCTAssertNil(SetFix.loggedEffort(r, side: nil, kind: "rpe"), "the other scale is not the profile's")
+        XCTAssertNil(SetFix.loggedEffort(r, side: nil, kind: nil))
+        XCTAssertNil(SetFix.loggedEffort(row(60, 8, done: true), side: nil, kind: "rir"))
+        // per side: that side's own
+        var p = row(20, 16, done: true)
+        p.rpe = 9
+        p.sides = Sides(L: SideRow(w: 20, r: 8, done: true, rpe: 8.5, rir: nil), R: SideRow(w: 20, r: 8, done: true, rpe: 9, rir: nil))
+        XCTAssertEqual(SetFix.loggedEffort(p, side: "L", kind: "rpe"), 8.5)
+        XCTAssertEqual(SetFix.loggedEffort(p, side: "R", kind: "rpe"), 9)
+    }
+
+    func testOnlyAChangedEffortIsSent() {
+        XCTAssertNil(SetFix.changedEffort(1.5, logged: 1.5), "opened and saved untouched")
+        XCTAssertEqual(SetFix.changedEffort(2, logged: 1.5), 2)
+        XCTAssertEqual(SetFix.changedEffort(2, logged: nil), 2)
+        XCTAssertNil(SetFix.changedEffort(nil, logged: 1.5), "cleared to the dash: the phone keeps what it has")
+        XCTAssertNil(SetFix.changedEffort(nil, logged: nil))
+    }
+
+    func testTheSnapshotsEffortDecodesAndOldOnesStillDo() throws {
+        let new = try JSONDecoder().decode(SetRow.self, from: Data(#"{"w":60,"r":8,"done":true,"warmup":false,"rir":1.5,"sides":{"L":{"w":1,"r":2,"done":true,"rir":1},"R":{"w":1,"r":2,"done":false}}}"#.utf8))
+        XCTAssertEqual(new.rir, 1.5)
+        XCTAssertEqual(new.sides?.L.rir, 1)
+        XCTAssertNil(new.sides?.R.rir)
+        let old = try JSONDecoder().decode(SetRow.self, from: Data(#"{"w":60,"r":8,"done":true,"warmup":false}"#.utf8))
+        XCTAssertNil(old.rir)
+        XCTAssertNil(old.rpe)
+    }
+
+    func testAFixWithAnEffortKeepsItOnTheRowUntilTheSnapshot() throws {
+        let e = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8, done: true, at: 5000)])
+        let (s, ev) = SetFix.correct(state(e), entry: 0, set: 0, side: nil, to: .init(w: 60, r: 8, sec: nil),
+                                     effort: .init(kind: "rir", value: 1.5), now: 1000, id: "f")
+        XCTAssertEqual(try XCTUnwrap(ev)["rir"] as? Double, 1.5)
+        XCTAssertEqual(s.workout?.entries[0].sets[0].rir, 1.5)
+    }
+
     func testOnlyALoggedSetCanBeFixedAndNeverCardio() {
         let e = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8)])
         XCTAssertNil(SetFix.correct(state(e), entry: 0, set: 0, side: nil, to: .init(w: 1, r: 1), now: 1, id: "x").1)

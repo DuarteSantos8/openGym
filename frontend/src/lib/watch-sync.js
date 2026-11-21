@@ -314,7 +314,9 @@ function bestFor (S, id, mode) {
 
 const stepOf = (cfg, S) => { try { return num(weightIncrement(cfg, S?.unit === 'lb' ? 'lb' : 'kg')) } catch { return null } }
 
-const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true })
+// The effort logged on a set or one side of it, by the phone's own names; nothing when none.
+const loggedEffort = v => ({ ...(num(v?.rpe) != null ? { rpe: v.rpe } : {}), ...(num(v?.rir) != null ? { rir: v.rir } : {}) })
+const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true, ...loggedEffort(v) })
 
 // One set as the watch shows it. A per-side set (a unilateral exercise) carries its two sides,
 // each ticked on its own; `done` is both.
@@ -328,6 +330,8 @@ function watchSet (s) {
     // when it was ticked (or its numbers changed here since): of two changes of the same set
     // (phone and watch), the later wins
     ...(setStamp(s) ? { at: setStamp(s) } : {}),
+    // What was logged as RPE / RIR, so the watch opens a done set on it; an older watch ignores it.
+    ...loggedEffort(s),
     ...(isSideSet(s) ? { sides: { L: sideRow(s.sides.L), R: sideRow(s.sides.R) } } : {}),
     // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
     ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),

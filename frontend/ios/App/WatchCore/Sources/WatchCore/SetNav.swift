@@ -50,6 +50,16 @@ enum SetFix {
         return row.done ? Numbers(w: row.w, r: row.r, sec: row.sec) : nil
     }
 
+    /// The effort logged on a set (one side's on a per-side set) in the profile's scale `kind`, or nil.
+    static func loggedEffort(_ row: SetRow, side: String?, kind: String?) -> Double? {
+        let (rpe, rir) = side.flatMap { s in row.sides.map { ($0[s].rpe, $0[s].rir) } } ?? (row.rpe, row.rir)
+        return kind == "rpe" ? rpe : kind == "rir" ? rir : nil
+    }
+
+    /// The rating to send when a done set is saved: only one that differs from what was logged.
+    /// Clearing it ("–") sends none, so the phone keeps what it has.
+    static func changedEffort(_ now: Double?, logged: Double?) -> Double? { now == logged ? nil : now }
+
     /// A done set with new numbers: the state with them and the event for the phone, the setDone
     /// it already knows, a moment later than the set's own tick so it wins there. Nil for a set
     /// that is not done, cardio (logged on the phone), or a row that is gone.
