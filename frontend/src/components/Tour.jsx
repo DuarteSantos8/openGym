@@ -259,10 +259,10 @@ function viewBand(insets) {
 
 // The band as visiblePart reads it: its top and bottom edges.
 const bandBox = b => ({ top: b.top, bottom: b.vh - b.bottom, vw: b.vw })
-// For an element outside the tab bar, the band ends where the bar starts (a row behind it is hidden).
+// For a page element, the band ends where the tab bar starts (a row behind it is hidden).
 function bandFor(el, b) {
   const bar = document.getElementById('tabbar')
-  if (!el || !bar || bar.contains(el)) return bandBox(b)
+  if (!el || !bar || bar.contains(el) || el.closest('#modal-root')) return bandBox(b)   // sheets sit above the bar
   const r = bar.getBoundingClientRect()
   return aboveBar(bandBox(b), r.height > 0 ? r.top : null)
 }

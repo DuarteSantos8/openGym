@@ -308,6 +308,23 @@ describe('the spotlight follows its element', () => {
     expect(parseFloat(document.querySelector('.tour-hole').style.top)).toBe(294)
     expect(card().classList.contains('tour-center')).toBe(false)
   })
+  it('a row in a sheet over the tab bar is on screen, a page row behind it is not', async () => {
+    const bar = document.createElement('nav')
+    bar.id = 'tabbar'
+    bar.getBoundingClientRect = () => ({ top: 600, left: 0, width: 400, height: 80, bottom: 680, right: 400, x: 0, y: 600 })
+    document.body.appendChild(bar)
+    host.id = 'modal-root'   // the anchors stand in for a sheet's rows: sheets sit above the bar
+    await run('today')
+    const el = anchor('today')
+    el.getBoundingClientRect = () => ({ top: 620, left: 20, width: 200, height: 50, bottom: 670, right: 220, x: 20, y: 620 })
+    el.scrollIntoView = vi.fn()
+    await settle(100)
+    expect(parseFloat(document.querySelector('.tour-hole').style.top)).toBe(614)
+    host.id = ''
+    await settle(900)
+    expect(el.scrollIntoView).toHaveBeenCalled()
+    bar.remove()
+  })
   it('waits while the user is still scrolling before bringing it back', async () => {
     let top = 5000
     await run('today')
