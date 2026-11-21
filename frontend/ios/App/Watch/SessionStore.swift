@@ -1851,7 +1851,8 @@ extension SessionStore {
         s.page = tab == .overview ? .overview : tab == .metrics ? .metrics : tab == .music ? .music : .set
         s.holdRunning = holdEndsAt != nil
         s.fixing = viewing != nil
-        s.resting = restEndsAt.map { $0 > Date() } ?? false
+        // A paused rest keeps its panel past its end (restPanel): still a rest, not the set page.
+        s.resting = restEndsAt != nil && (restPausedAt != nil || (restEndsAt ?? .distantPast) > Date())
         s.entry = entry.map { $0.isCardio ? .cardio : $0.isTimed ? .timed : .reps }
         s.setOpen = shownRef != nil
         return s
