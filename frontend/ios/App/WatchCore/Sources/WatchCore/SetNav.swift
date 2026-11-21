@@ -151,7 +151,7 @@ public enum LastTime {
         let parts = sets.map { set in set.range(of: "×", options: .backwards).map { (set[..<$0.upperBound], set[$0.upperBound...]) } }
         // Only plain sets: a drop ("100×8 ↘ 80×6"), an "F", bursts ("10+4+2") or two sides stay as sent.
         func plain(_ p: (Substring, Substring)?) -> Bool {
-            guard let p = p, !p.0.contains("↘"), !p.0.contains("/") else { return false }
+            guard let p = p, !p.0.contains("↘"), !p.0.contains("/"), !p.0.contains(" · ") else { return false }
             let reps = p.1.trimmingCharacters(in: .whitespaces)
             return !reps.isEmpty && reps.allSatisfy(\.isNumber)
         }

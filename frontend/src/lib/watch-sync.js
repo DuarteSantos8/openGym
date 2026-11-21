@@ -232,21 +232,23 @@ export function ensureSetIds (A) {
  */
 export const setStamp = s => Math.max(num(s?.at) || 0, num(s?.eat) || 0)
 /**
- * The rows of the running workout whose numbers were changed on the phone while they were done
- * (`prev` → `next`, the same row by its id, else its place): [entry, set] each.
+ * The rows of the running workout changed by hand on the phone (`prev` → `next`, the same row by
+ * its id, else its place): [entry, set] each. A done row counts for its numbers and marks, a row
+ * not done yet for its marks only (a watch's older mark must not undo one made here).
  */
 export function editedDoneRows (prev, next) {
   const out = []
   if (!prev || !next || prev.id !== next.id || !Array.isArray(next.entries) || !Array.isArray(prev.entries)) return out
-  // The marks too, so a watch's older mark does not undo one changed here (markWatchSet).
-  // lean: a mark changed here on a set not done yet gets no `eat`, so a late watch mark can still undo
-  // it; stamp those too if a late watch mark is reported to undo a phone mark.
-  const nums = s => JSON.stringify([s.w, s.r, s.sec, s.sides?.L?.w, s.sides?.L?.r, s.sides?.R?.w, s.sides?.R?.r, s.rpe, s.rir, !!isWarmupRow(s), !!isFailureSet(s), dropsOf(isSideSet(s) ? s.sides.L : s).length])
+  const marks = s => [!!isWarmupRow(s), !!isFailureSet(s), dropsOf(isSideSet(s) ? s.sides.L : s).length]
+  const nums = s => JSON.stringify([s.w, s.r, s.sec, s.sides?.L?.w, s.sides?.L?.r, s.sides?.R?.w, s.sides?.R?.r, s.rpe, s.rir, ...marks(s)])
   next.entries.forEach((e, i) => (e?.sets || []).forEach((s, j) => {
-    if (!s?.done) return
+    if (!s) return
     const hit = sidOk(s.sid) ? rowBySid(prev, s.sid) : (prev.entries[i]?.id === e.id ? [i, j] : null)
     const p = hit ? prev.entries[hit[0]]?.sets?.[hit[1]] : null
-    if (p?.done && p !== s && nums(p) !== nums(s)) out.push([i, j])
+    if (!p || p === s) return
+    if (s.done && !p.done) return   // just ticked: not an edit
+    const key = s.done ? nums : x => JSON.stringify(marks(x))
+    if (key(p) !== key(s)) out.push([i, j])
   }))
   return out
 }

@@ -241,8 +241,10 @@ describe('the later of two changes of one set', () => {
     a.entries[0].sets[0] = { ...a.entries[0].sets[0], done: true, at: T }
     const b = JSON.parse(JSON.stringify(a))
     b.entries[0].sets[0].w = 65
-    b.entries[0].sets[1].w = 70   // not done: not an edit of a logged set
+    b.entries[0].sets[1].w = 70   // not done: its numbers are not an edit of a logged set
     expect(editedDoneRows(a, b)).toEqual([[0, 0]])
+    b.entries[0].sets[1].failure = true   // but a mark on it is
+    expect(editedDoneRows(a, b)).toEqual([[0, 0], [0, 1]])
     expect(editedDoneRows(a, JSON.parse(JSON.stringify(a)))).toEqual([])
   })
 
