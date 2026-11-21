@@ -63,6 +63,7 @@
 "All sets done" = "Đã xong tất cả hiệp";
 "measuring" = "đang đo …";
 "%@, set %lld" = "%@, hiệp %lld";
+"%@, set %lld/%lld" = "%@, hiệp %lld/%lld";
 "Calories" = "Calo";
 "Heart rate" = "Nhịp tim";
 "Hold" = "Giữ";

@@ -63,6 +63,7 @@
 "All sets done" = "Visos serijos atliktos";
 "measuring" = "matuojama …";
 "%@, set %lld" = "%@, serija %lld";
+"%@, set %lld/%lld" = "%@, serija %lld/%lld";
 "Calories" = "Kalorijos";
 "Heart rate" = "Širdies ritmas";
 "Hold" = "Išlaikymas";

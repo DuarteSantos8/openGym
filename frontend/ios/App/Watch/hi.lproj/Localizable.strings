@@ -63,6 +63,7 @@
 "All sets done" = "सारे सेट पूरे";
 "measuring" = "माप रहा है …";
 "%@, set %lld" = "%@, सेट %lld";
+"%@, set %lld/%lld" = "%@, सेट %lld/%lld";
 "Calories" = "कैलोरी";
 "Heart rate" = "धड़कन";
 "Hold" = "होल्ड";

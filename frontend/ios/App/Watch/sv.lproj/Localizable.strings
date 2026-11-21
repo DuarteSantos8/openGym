@@ -63,6 +63,7 @@
 "All sets done" = "Alla set klara";
 "measuring" = "mäter …";
 "%@, set %lld" = "%@, set %lld";
+"%@, set %lld/%lld" = "%@, set %lld/%lld";
 "Calories" = "Kalorier";
 "Heart rate" = "Puls";
 "Hold" = "Håll";
