@@ -177,7 +177,7 @@ final class GymReminderRules {
     /**
      * Whether the phone has stayed put: fixes {at ms, lat, lng, accuracy m}, oldest first, cover at
      * least SETTLE_MS (some fix is that old by the newest one), and every fix from the latest such
-     * old one on is sharp and within SETTLE_M of the newest. Caller keeps only fixes clear of every gym (clearOfAll).
+     * old one on is sharp and within SETTLE_M of each other. Caller keeps only fixes clear of every gym (clearOfAll).
      */
     static boolean stayedPut(double[][] fixes) {
         if (fixes.length < 2) return false;
@@ -186,7 +186,10 @@ final class GymReminderRules {
         for (int i = 0; i < fixes.length; i++) if (fixes[i][0] <= last[0] - SETTLE_MS) anchor = i;
         if (anchor < 0) return false;
         for (int i = anchor; i < fixes.length; i++) {
-            if (fixes[i][3] > SPOT_MAX_ACC_M || metersBetween(fixes[i][1], fixes[i][2], last[1], last[2]) >= SETTLE_M) return false;
+            if (fixes[i][3] > SPOT_MAX_ACC_M) return false;
+            for (int j = i + 1; j < fixes.length; j++) {
+                if (metersBetween(fixes[i][1], fixes[i][2], fixes[j][1], fixes[j][2]) >= SETTLE_M) return false;
+            }
         }
         return true;
     }
@@ -224,9 +227,9 @@ final class GymReminderRules {
         return Arrays.copyOfRange(kept, Math.max(0, n - MAX_SPOTS), n);
     }
 
-    /** Whether a fix taken at fixAt, at this place, is within SPOT_M of a spot kept less than 30 days. */
-    static boolean knownSpot(double[][] spots, double lat, double lng, long fixAt, long now) {
-        if (now - fixAt > FRESH_FIX_MS) return false;
+    /** Whether a fresh, sharp fix taken at fixAt, at this place, is within SPOT_M of a spot kept less than 30 days. */
+    static boolean knownSpot(double[][] spots, double lat, double lng, double accuracy, long fixAt, long now) {
+        if (now - fixAt > FRESH_FIX_MS || accuracy > SPOT_MAX_ACC_M) return false;
         for (double[] s : spots) {
             if (now - s[2] <= SPOT_KEEP_MS && metersBetween(s[0], s[1], lat, lng) <= SPOT_M) return true;
         }

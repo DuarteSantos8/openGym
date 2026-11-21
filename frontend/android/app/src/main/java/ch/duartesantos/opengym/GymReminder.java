@@ -390,7 +390,8 @@ final class GymReminder {
             return;
         }
         Location here = lastKnown(ctx);
-        if (here != null && GymReminderRules.knownSpot(spots(ctx), here.getLatitude(), here.getLongitude(), here.getTime(), System.currentTimeMillis())) {
+        if (here != null && here.hasAccuracy()
+                && GymReminderRules.knownSpot(spots(ctx), here.getLatitude(), here.getLongitude(), here.getAccuracy(), here.getTime(), System.currentTimeMillis())) {
             note(ctx, "near " + gymId + ": no check (a place that was not the gym)");
             return;
         }

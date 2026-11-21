@@ -186,6 +186,8 @@ public class GymReminderRulesTest {
         // Moved early, stopped since: only the last 3 minutes count.
         double[][] stopped = { fix(0, 0, 20), fix(30_000, 400, 20), fix(60_000, 800, 20), fix(100_000, 800, 20), fix(240_000, 805, 20), fix(280_000, 800, 20) };
         assertTrue(GymReminderRules.stayedPut(stopped));
+        // Back and forth: each fix is within 60 m of the newest, but the phone covered 110 m.
+        assertFalse(GymReminderRules.stayedPut(new double[][] { fix(0, 600, 20), fix(90_000, 710, 20), fix(180_000, 655, 20) }));
     }
 
     @Test
@@ -235,13 +237,15 @@ public class GymReminderRulesTest {
         double[][] spots = GymReminderRules.addSpot(new double[0][], LAT, LNG, 30, t0);
         long now = t0 + 2 * day;
         // Near it, with a fresh fix: no check.
-        assertTrue(GymReminderRules.knownSpot(spots, LAT + 40 * DEG_PER_M, LNG, now - 60_000L, now));
+        assertTrue(GymReminderRules.knownSpot(spots, LAT + 40 * DEG_PER_M, LNG, 30, now - 60_000L, now));
         // Far from it: a check.
-        assertFalse(GymReminderRules.knownSpot(spots, LAT + 400 * DEG_PER_M, LNG, now - 60_000L, now));
+        assertFalse(GymReminderRules.knownSpot(spots, LAT + 400 * DEG_PER_M, LNG, 30, now - 60_000L, now));
+        // A vague fix (a network one can be 1 km wide) does not show the phone is there.
+        assertFalse(GymReminderRules.knownSpot(spots, LAT + 40 * DEG_PER_M, LNG, 1000, now - 60_000L, now));
         // A fix from an hour ago says where the phone was, not where it is.
-        assertFalse(GymReminderRules.knownSpot(spots, LAT, LNG, now - 3600_000L, now));
+        assertFalse(GymReminderRules.knownSpot(spots, LAT, LNG, 30, now - 3600_000L, now));
         // After 30 days it is forgotten.
-        assertFalse(GymReminderRules.knownSpot(spots, LAT, LNG, t0 + 31 * day, t0 + 31 * day));
-        assertFalse(GymReminderRules.knownSpot(new double[0][], LAT, LNG, now, now));
+        assertFalse(GymReminderRules.knownSpot(spots, LAT, LNG, 30, t0 + 31 * day, t0 + 31 * day));
+        assertFalse(GymReminderRules.knownSpot(new double[0][], LAT, LNG, 30, now, now));
     }
 }
