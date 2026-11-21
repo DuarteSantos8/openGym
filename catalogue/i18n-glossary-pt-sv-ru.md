@@ -201,7 +201,7 @@ Russian gyms mix Russian and English transliteration. Use the Russian word where
 | hip thrust / glute bridge | хип-траст / ягодичный мостик |
 | curl / hammer curl / preacher curl / wrist curl | сгибание / молотковое сгибание / сгибание на скамье скотта / сгибание запястья |
 | leg curl / leg extension | сгибание ног / разгибание ног |
-| triceps extension / pushdown / kickback | разгибание рук / разгибание на верхнем блоке / разведение рук назад в наклоне |
+| triceps extension / pushdown / kickback | разгибание рук / разгибание на верхнем блоке / разгибание рук назад в наклоне |
 | skull crusher | французский жим лёжа |
 | row / upright row / inverted row | тяга в наклоне / тяга к подбородку / австралийские подтягивания |
 | pulldown / lat pulldown | тяга верхнего блока |
