@@ -228,7 +228,7 @@ Russian gyms mix Russian and English transliteration. Use the Russian word where
 | incline / decline / flat | наклонная / вниз головой / горизонтальная |
 | single arm, one arm / single leg | одной рукой / одной ногой |
 | alternate, alternating | попеременно |
-| grip / close / wide / reverse / underhand / overhand / neutral | хват / узкий / широкий / обратный /лопатка |
+| grip / close / wide / reverse / underhand / overhand / neutral | хват / узкий / широкий / обратный / обратный (снизу) / прямой (сверху) / нейтральный (параллельный) |
 | floor | пол |
 | (male) / (female) | (муж.) / (жен.) |
 | (form check) | (проверка техники) |
