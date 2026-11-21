@@ -277,6 +277,8 @@ object WearStore {
         commit(after)
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
+        // A set logged on the phone ends a removal's Undo too (after commit: the release is on this state).
+        if (ticks.isNotEmpty()) flushRemoval()
         ticks.lastOrNull()?.let { followPhoneTick(it) }
         if (after.workout != null && after.workout != before.workout) noteActivity()
         loadTargets()
@@ -461,6 +463,8 @@ object WearStore {
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
     fun completeSet(heldFor: Double? = null) {
+        // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
+        flushRemoval()
         val s0 = _state.value
         val w = s0.workout ?: return
         val e = entry() ?: return
