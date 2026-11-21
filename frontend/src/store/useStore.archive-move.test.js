@@ -57,3 +57,14 @@ describe('sign-in adoption', () => {
     expect(S.archiveMoved).toBe(true)
   })
 })
+
+describe('language', () => {
+  it('moves a German "Archiv" folder once the German words have loaded, not only on a later pull', async () => {
+    const { setLang } = await import('../lib/i18n.js')
+    useStore.setState({ S: { ...clone(DEF), _ts: 100, routines: [routine('a', 'Archiv')] }, user: null, ready: true })
+    try {
+      await setLang('de')
+      expect(useStore.getState().S.routines[0].archived).toBe(true)
+    } finally { await setLang('en') }
+  })
+})
