@@ -1652,7 +1652,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "countdown" ? SessionStore.demoReadyJSON : SessionStore.demoJSON)) }
+        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "countdown" ? SessionStore.demoReadyJSON : screen == "folders" ? SessionStore.demoFoldersJSON : SessionStore.demoJSON)) }
         // The 3-2-1 as it runs before a workout started here (without Apple Health, which the demo has not).
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
@@ -1767,6 +1767,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
     {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
     "others":[{"routineIds":["r2"],"name":"Pull day","entries":[]},{"routineIds":["r3"],"name":"Legs","entries":[]}]}}
+    """
+
+    /// CI (-OpenGymWatchScreen folders): the start screen with its routines under the phone's folders.
+    static let demoFoldersJSON = """
+    {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
+    {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
+    "others":[{"routineIds":["r2"],"name":"Pull day","folder":"Upper","entries":[
+    {"id":"row","name":"Barbell Row","mode":"reps","restSec":90,"last":null,"sets":[{"w":50,"r":8,"sec":null,"done":false,"warmup":false}]}]},
+    {"routineIds":["r3"],"name":"Legs","folder":"Lower","entries":[]}]}}
     """
 
     static let demoJSON = """
