@@ -2202,6 +2202,8 @@ export default {
   "Classic beeps": "Bunyi bip klasik",
   "Play even on silent": "Mainkan bahkan dalam mode senyap",
   "Vibrate on silent too": "Bergetar saat senyap juga",
+  "Light up the screen when a rest ends": "Nyalakan layar saat istirahat selesai",
+  "A locked phone wakes up when the rest is over. This uses a little more battery.": "Ponsel yang terkunci menyala saat istirahat selesai. Ini memakai sedikit lebih banyak baterai.",
   "Flash the screen": "Kedipkan layar",
   "Version": "Versi",
   "Source code": "Kode sumber",

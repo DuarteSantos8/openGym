@@ -2168,6 +2168,8 @@ export default {
   'Classic beeps': '經典嗶聲',
   'Play even on silent': '靜音時也播放',
   'Vibrate on silent too': '靜音時也震動',
+  'Light up the screen when a rest ends': '休息結束時點亮螢幕',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': '休息結束時，已鎖定的手機會喚醒螢幕。這會多耗一點電。',
   'Flash the screen': '閃爍螢幕',
   'Version': '版本',
   'Source code': '原始碼',

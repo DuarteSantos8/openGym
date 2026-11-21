@@ -2172,6 +2172,8 @@ export default {
   'Classic beeps': 'Класичні сигнали',
   'Play even on silent': 'Грати і в беззвучному режимі',
   'Vibrate on silent too': 'Вібрувати і в беззвучному режимі',
+  'Light up the screen when a rest ends': 'Вмикати екран, коли відпочинок закінчився',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Заблокований телефон прокидається, коли відпочинок закінчився. Це трохи більше витрачає батарею.',
   'Flash the screen': 'Блимати екраном',
   'Version': 'Версія',
   'Source code': 'Вихідний код',

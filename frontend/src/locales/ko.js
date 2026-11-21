@@ -2175,6 +2175,8 @@ export default {
   'Classic beeps': '클래식 비프음',
   'Play even on silent': '무음 모드에서도 재생',
   'Vibrate on silent too': '무음 모드에서도 진동',
+  'Light up the screen when a rest ends': '휴식이 끝나면 화면 켜기',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': '잠긴 휴대폰이 휴식이 끝나면 깨어납니다. 배터리를 조금 더 씁니다.',
   'Flash the screen': '화면 깜빡이기',
   'Version': '버전',
   'Source code': '소스 코드',

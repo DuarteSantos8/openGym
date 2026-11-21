@@ -2196,6 +2196,8 @@ export default {
   'Classic beeps': 'Klassiska pip',
   'Play even on silent': 'Spela även i tyst läge',
   'Vibrate on silent too': 'Vibrera även i tyst läge',
+  'Light up the screen when a rest ends': 'Tänd skärmen när en vila är slut',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'En låst telefon vaknar när vilan är slut. Det drar lite mer batteri.',
   'Flash the screen': 'Blinka skärmen',
   'Version': 'Version',
   'Source code': 'Källkod',

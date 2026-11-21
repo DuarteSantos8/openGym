@@ -888,6 +888,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="sun" iconTint="var(--yellow)" title={t('Flash the screen')}>
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
+          {/* Android app only: the end of a rest used to wake a locked phone every time. Off by
+              default, since it keeps the display on for a while at each rest of a long workout. */}
+          {MOBILE && android && (
+            <Row icon="bolt" iconTint="var(--yellow)" title={t('Light up the screen when a rest ends')}
+              subtitle={t('A locked phone wakes up when the rest is over. This uses a little more battery.')}>
+              <Switch checked={!!S.restLightScreen} onChange={v => update(s => { s.restLightScreen = v })} />
+            </Row>
+          )}
         </Section>
         {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
             workout begins and each superset member the focus moves to without a rest (#1210),

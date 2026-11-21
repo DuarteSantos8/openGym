@@ -2203,6 +2203,8 @@ export default {
   "Classic beeps": "Klassiske bip",
   "Play even on silent": "Afspil også i lydløs",
   "Vibrate on silent too": "Vibrer også i lydløs",
+  "Light up the screen when a rest ends": "Tænd skærmen, når en pause slutter",
+  "A locked phone wakes up when the rest is over. This uses a little more battery.": "En låst telefon vågner, når pausen er slut. Det bruger lidt mere batteri.",
   "Flash the screen": "Blink skærmen",
   "Version": "Version",
   "Source code": "Kildekode",

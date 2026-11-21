@@ -77,7 +77,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
 
 // `tone`: the rest's sound, a built-in one or one of one's own (lib/user-sounds.js toneFor).
 // `rk`: the kind of rest (#165), whose own sound the native alarm plays when it was given one.
-const alertPrefs = (S, rk = null) => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: toneFor(S, 'rest', rk), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
+const alertPrefs = (S, rk = null) => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: toneFor(S, 'rest', rk), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent, lightScreen: !!S.restLightScreen })
 const autoForecast = owner => { try { return autoHooks?.forecast?.(owner) || [] } catch { return [] } }
 // The count-in and the hold of a chain, booked with the phone the same way (no countdown card:
 // that one is the rest's, with the rest's buttons). Only the phone app, and not the tour.

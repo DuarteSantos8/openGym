@@ -2175,6 +2175,8 @@ export default {
   'Classic beeps': 'Klasyczne piknięcia',
   'Play even on silent': 'Graj też przy wyciszeniu',
   'Vibrate on silent too': 'Wibruj też przy wyciszeniu',
+  'Light up the screen when a rest ends': 'Włącz ekran po zakończeniu przerwy',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Zablokowany telefon budzi się, gdy przerwa się kończy. Zużywa to trochę więcej baterii.',
   'Flash the screen': 'Mignij ekranem',
   'Version': 'Wersja',
   'Source code': 'Kod źródłowy',

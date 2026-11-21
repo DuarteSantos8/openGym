@@ -2175,6 +2175,8 @@ export default {
   'Classic beeps': '经典哔声',
   'Play even on silent': '静音时也播放',
   'Vibrate on silent too': '静音时也振动',
+  'Light up the screen when a rest ends': '休息结束时点亮屏幕',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': '休息结束时，已锁定的手机会唤醒屏幕。这会多耗一点电。',
   'Flash the screen': '闪烁屏幕',
   'Version': '版本',
   'Source code': '源代码',

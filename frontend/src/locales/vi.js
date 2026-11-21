@@ -2145,6 +2145,8 @@ export default {
   'Classic beeps': 'Tiếng bíp cổ điển',
   'Play even on silent': 'Phát cả khi ở chế độ im lặng',
   'Vibrate on silent too': 'Rung cả khi ở chế độ im lặng',
+  'Light up the screen when a rest ends': 'Bật sáng màn hình khi hết giờ nghỉ',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Điện thoại đang khóa sẽ sáng lên khi hết giờ nghỉ. Việc này tốn thêm một chút pin.',
   'Flash the screen': 'Nháy sáng màn hình',
   'Version': 'Phiên bản',
   'Source code': 'Mã nguồn',

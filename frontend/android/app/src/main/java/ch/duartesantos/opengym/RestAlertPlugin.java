@@ -16,7 +16,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * Usage from JS:
  *   import { registerPlugin } from '@capacitor/core';
  *   const RestAlert = registerPlugin('RestAlert');
- *   await RestAlert.schedule({ id, at, title, sound, tone, classic, vibrate, channelId, visibility, importance, localOnly });
+ *   await RestAlert.schedule({ id, at, title, sound, tone, classic, vibrate, lightScreen, channelId, visibility, importance, localOnly });
  *   await RestAlert.cancel({ id });
  *   await RestAlert.buzz({ pattern: [200, 100, 200] });   // navigator.vibrate's shape, as an alarm
  *   await RestAlert.speak({ text, lang, rate, pitch, voice, flush });   // a spoken cue, music ducks (SpeechCue)
@@ -74,6 +74,8 @@ public class RestAlertPlugin extends Plugin {
             return;
         }
         RestAlert.setAccentColor((int) number(call, "accent", 0xFFA3E635L), (int) number(call, "ink", 0xFF0C0E12L));
+        // Settings → "Light up the screen when a rest ends": off for a page that does not send it.
+        RestAlert.setLightScreen(ctx.getApplicationContext(), Boolean.TRUE.equals(call.getBoolean("lightScreen", Boolean.FALSE)));
         RestAlert.setLabels(
                 call.getString("pause", "Pause"),
                 call.getString("resume", "Resume"),

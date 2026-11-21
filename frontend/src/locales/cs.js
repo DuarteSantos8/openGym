@@ -2145,6 +2145,8 @@ export default {
   'Classic beeps': 'Klasické pípání',
   'Play even on silent': 'Přehrát i v tichém režimu',
   'Vibrate on silent too': 'Vibrovat i v tichém režimu',
+  'Light up the screen when a rest ends': 'Rozsvítit displej na konci odpočinku',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Zamknutý telefon se na konci odpočinku probudí. Spotřebuje trochu víc baterie.',
   'Flash the screen': 'Bliknout obrazovkou',
   'Version': 'Verze',
   'Source code': 'Zdrojový kód',

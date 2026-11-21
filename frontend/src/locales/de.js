@@ -2195,6 +2195,8 @@ export default {
   'Classic beeps': 'Klassische Pieptöne',
   'Play even on silent': 'Auch im Lautlos-Modus',
   'Vibrate on silent too': 'Auch lautlos vibrieren',
+  'Light up the screen when a rest ends': 'Bildschirm einschalten, wenn eine Pause endet',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Ein gesperrtes Handy wacht auf, wenn die Pause vorbei ist. Das kostet etwas mehr Akku.',
   'Flash the screen': 'Bildschirm blinken lassen',
   'Version': 'Version',
   'Source code': 'Quellcode',

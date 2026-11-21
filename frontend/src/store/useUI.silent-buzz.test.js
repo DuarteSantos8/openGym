@@ -53,6 +53,15 @@ describe('vibrate on silent', () => {
     expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ alarmBuzz: false }))
   })
 
+  it('asks the phone to light the screen at a rest end only with Settings → "Light up the screen" on', () => {
+    withSettings({})
+    useUI.getState().startRest(60)
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ lightScreen: false }))
+    withSettings({ restLightScreen: true })
+    useUI.getState().startRest(60)
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ lightScreen: true }))
+  })
+
   // Discord "Rest Timer Sound Notification too Quiet": the locked phone's tone follows Settings → Sound.
   it('tells the native alarm which end tone to play', () => {
     withSettings({ sound: true })

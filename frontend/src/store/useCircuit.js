@@ -105,7 +105,7 @@ function bookLock(run) {
   if (!plan) { disarmRestAlert(); return }
   const st = S() || {}
   armRestAlert(plan.at, { title: plan.title, cues: plan.cues, countdown: false, totalSec: Math.max(1, Math.round((plan.at - Date.now()) / 1000)),
-    accent: accentValue(st), sound: !!st.sound, vibrate: st.vibrate !== false, alarmBuzz: st.vibrate !== false && !!st.vibrateOnSilent })
+    accent: accentValue(st), sound: !!st.sound, vibrate: st.vibrate !== false, alarmBuzz: st.vibrate !== false && !!st.vibrateOnSilent, lightScreen: !!st.restLightScreen })
 }
 
 export const useCircuit = create((set, get) => ({
