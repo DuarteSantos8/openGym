@@ -951,7 +951,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let own = holdFor.flatMap { SessionCore.holdPlace(state, entry: $0.entry, set: $0.set, sid: $0.sid) }
         stopHold()
         if lasted >= 1 {
-            if let own = own { state.entryIndex = own.entry; picked[own.entry] = own.set }
+            if let own = own, own.entry != entryIndex || own.set != setIndex {
+                state.entryIndex = own.entry
+                picked[own.entry] = own.set
+                loadTargets()   // the numbers on screen were the other set's (a weighted hold logs its weight)
+            }
             completeSet(sec: lasted)
         }
     }
