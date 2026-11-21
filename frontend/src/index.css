@@ -3127,8 +3127,6 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 .livebar-rl{font-weight:500;margin-inline-end:-2px}
 .livebar-cd{flex:none;font-size:1.4em;font-weight:800;letter-spacing:-.02em;line-height:1;min-width:4.4ch;text-align:start}
 .livebar-nx{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:400}
-.livebar-hr{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;width:calc(13px + 4px + 3ch);font-size:.9375em;font-weight:600}
-.livebar-hr svg{width:13px;height:13px;fill:var(--on-acc);flex:none}
 .livebar-up{flex:none;margin-inline-end:-6px} /* the icon's own side space stands in for most of the 12px gap */
 /* The recording light: a slow breath while the workout runs, still while paused or with Reduce Motion. */
 .livebar-on{display:inline-block;vertical-align:middle;margin-inline-end:.45em;width:6px;height:6px;border-radius:50%;background:var(--on-acc);animation:livebar-on 2s ease-in-out infinite}

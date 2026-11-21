@@ -4,7 +4,6 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { liveBarShows, liveBarState } from '../lib/live-bar.js'
-import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
 import { vibrate } from '../lib/sound.js'
 import Elapsed from './Elapsed.jsx'
@@ -46,14 +45,9 @@ function LiveBarOn () {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const timer = useUI(s => s.timer)
-  const [hr, setHr] = useState(() => liveHeartRate())
   const [link, setLink] = useState(() => linkSnapshot())
   useEffect(() => {
-    const off = onLiveHeartRate(() => setHr(liveHeartRate()))
-    // Same 15 s refresh as LiveHeartRate: a reading over a minute old goes away on its own.
-    const iv = setInterval(() => { if (!document.hidden) setHr(liveHeartRate()) }, 15000)
-    const offLink = onLinkChange(() => setLink(linkSnapshot()))
-    return () => { off(); offLink(); clearInterval(iv) }
+    return onLinkChange(() => setLink(linkSnapshot()))
   }, [])
   useEffect(() => {
     document.body.classList.add('has-livebar')
@@ -66,7 +60,7 @@ function LiveBarOn () {
   const [width, setWidth] = useState(0)
   const btn = useRef(null)
   const ex = useRef(null)
-  const b = liveBarState(S, { timer, live: hr, rows: link.rows, checking: link.checking })
+  const b = liveBarState(S, { timer, rows: link.rows, checking: link.checking })
   const setKey = b?.set ? b.set.n + '/' + b.set.of : ''
   // A different exercise, set or rest starts again at the long label (set during render, so the measure below sees step 0).
   const key = (b?.exercise || '') + '|' + setKey + '|' + !!b?.rest
@@ -97,7 +91,6 @@ function LiveBarOn () {
     b.rest ? restWord + ' ' + clock(b.rest.left) : exercise,
     b.rest ? (b.next ? t('Next: {0}', b.next) : '') : b.set ? t('Set {0} of {1}', b.set.n, b.set.of) : '',
     b.total ? t('{0} of {1} sets done', b.done, b.total) : '',
-    b.bpm != null ? t('Heart rate') + ' ' + b.bpm : '',
     WATCH_WORDS[b.device] ? t(WATCH_WORDS[b.device]) : '',
   ].filter(Boolean).join(', ') + '. ' + t('Opens the workout')
 
@@ -124,9 +117,6 @@ function LiveBarOn () {
             {b.set && step < 2 && <span className="livebar-st">{step ? setKey : t('Set {0} of {1}', b.set.n, b.set.of)}</span>}
           </span>}
       </span>
-      {b.pulseSlot && <span className="livebar-hr livebar-num" aria-hidden="true">
-        {b.bpm != null && <><svg viewBox="0 0 24 24"><path d="M12 21s-8.5-5.2-8.5-11.3C3.5 6.6 5.8 4.6 8.3 4.6c1.5 0 2.9.8 3.7 2 .8-1.2 2.2-2 3.7-2 2.5 0 4.8 2 4.8 5.1C20.5 15.8 12 21 12 21Z" /></svg>{b.bpm}</>}
-      </span>}
       {b.device && <DeviceMark device={b.device} />}
     </button>
   )

@@ -1,9 +1,8 @@
 // What the live workout bar shows (components/LiveBar.jsx draws it): when it shows, and its text,
-// rest, progress, pulse and watch mark. Pure; every number comes from the helpers the Lock Screen uses.
+// rest, progress and watch mark. Pure; every number comes from the helpers the Lock Screen uses.
 import { EXIDX } from './exercises.js'
 import { exerciseNameText } from './format.js'
 import { upcomingSets } from './live-activity.js'
-import { heartNow } from './live-tiles.js'
 import { isWarmupRow } from './workout-model.js'
 
 // The one rule for "a workout is running and the bar (not the workout screen) is where it shows".
@@ -21,7 +20,7 @@ const nameOf = e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(e.targ
 // A watch row that is gone is none; one that answers is linked; delayed or not answering is still being looked for.
 const DEVICE = { live: 'linked', offline: 'none', notFound: 'none' }
 
-export function liveBarState (S, { timer = null, live = null, rows = [], checking = false } = {}) {
+export function liveBarState (S, { timer = null, rows = [], checking = false } = {}) {
   const A = S?.active
   if (!A) return null
   const entries = Array.isArray(A.entries) ? A.entries : []
@@ -33,7 +32,6 @@ export function liveBarState (S, { timer = null, live = null, rows = [], checkin
   const work = e ? e.sets.filter(x => !isWarmupRow(x)) : []
   const resting = !!timer && !timer.ready && timer.left > 0
   const watch = rows.find(r => r.id === 'watch')
-  const bpm = heartNow(A, live)?.bpm ?? null
   const device = watch ? DEVICE[watch.state] || 'relinking' : checking ? 'checking' : null
   return {
     routine: A.name || '',
@@ -48,8 +46,6 @@ export function liveBarState (S, { timer = null, live = null, rows = [], checkin
     total,
     // One section per exercise, as long as its sets and filled by those done (a rest's time is in the countdown digits).
     parts: entries.filter(x => x?.sets?.length).map(x => ({ sets: x.sets.length, done: x.sets.filter(y => y?.done).length })),
-    bpm,
     device,
-    pulseSlot: bpm != null || device === 'linked',
   }
 }

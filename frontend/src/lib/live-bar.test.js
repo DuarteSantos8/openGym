@@ -69,18 +69,13 @@ describe('liveBarState', () => {
     expect(b.exercise).toBe('BENCH')
   })
 
-  describe('pulse and watch', () => {
+  describe('watch', () => {
     const watch = state => ({ rows: [{ id: 'watch', kind: 'apple', state }] })
-    it('a live reading gives the bpm', () => {
-      const b = liveBarState(S(lifting()), { live: { bpm: 132 } })
-      expect(b.bpm).toBe(132)
-      expect(b.pulseSlot).toBe(true)
-    })
-    it('no reading and no watch: no slot, no device', () => {
-      expect(liveBarState(S(lifting()))).toMatchObject({ bpm: null, pulseSlot: false, device: null })
-    })
-    it('a linked watch with no reading reserves the slot', () => {
-      expect(liveBarState(S(lifting()), watch('live'))).toMatchObject({ bpm: null, pulseSlot: true, device: 'linked' })
+    it('no watch: no device, and no heart rate in the bar', () => {
+      const b = liveBarState(S(lifting()), watch('live'))
+      expect(liveBarState(S(lifting())).device).toBeNull()
+      expect(b).not.toHaveProperty('bpm')
+      expect(b).not.toHaveProperty('pulseSlot')
     })
     it('maps every watch state', () => {
       const dev = st => liveBarState(S(lifting()), watch(st)).device

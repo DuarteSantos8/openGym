@@ -2,7 +2,8 @@
 
 A small capsule of accent-coloured glass that floats above the tab bar while a workout is running
 and the lifter is on another screen. It shows the routine, the exercise and set to do next, the
-clock, the heart rate and the watch link. Tapping it goes back to the workout.
+clock and the watch link. Tapping it goes back to the workout. It shows no heart rate: that is left to
+the heart-rate work in #1243 and #1355, so the two do not clash.
 
 Status: built on `feat/live-workout-bar`. It is stacked on `feat/device-link-status` (PR #1160)
 and cannot merge before it. Spec: `.claude/live-bar/DESIGN.md`.
@@ -15,9 +16,9 @@ mount the bar (with `liveBarHidesRest`, see below).
 
 ## What it reads
 
-`liveBarState(S, { timer, live, rows, checking })` in `lib/live-bar.js` is pure and has a test
+`liveBarState(S, { timer, rows, checking })` in `lib/live-bar.js` is pure and has a test
 beside it. It adds no workout maths. It reuses `upcomingSets` (`live-activity.js`, the Lock Screen
-source), `heartNow` (`live-tiles.js`) and the watch row from the device link status. `components/
+source) and the watch row from the device link status. `components/
 LiveBar.jsx` only draws it. A paused workout or rest stands still. An empty or unnamed workout
 shows "Workout". Every set done shows "All sets done".
 
@@ -45,7 +46,7 @@ violet, pink and red are solid, so are the deeper light colours, and so is high 
 ## The rise
 
 The bar keeps the workout page's top bar order: an up chevron first (the mirror of its Minimize
-chevron, saying a tap opens the workout), the text, the pulse, the watch mark last. A small light by
+chevron, saying a tap opens the workout), the text, the watch mark last. A small light by
 the clock breathes while the workout runs (2 s, opacity and scale only); it stands still while paused
 and with Reduce Motion. Tapping the bar navigates at once with `state: { rise: 'rise' }`; that Minimize chevron does
 the same with `'fold'`. App.jsx hands that to the page as its arrival motion (`vrise`, `vfold` in index.css):

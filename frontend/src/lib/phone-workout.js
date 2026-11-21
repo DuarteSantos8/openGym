@@ -264,16 +264,6 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
     try { await p.PW.end({ wid: r.wid, ...how }) } catch { /* the session ends with the app */ }
   }
 
-  // The Apple Health follow while the watch has the workout: the start it follows from, or null.
-  let following = null
-  const follow = since => {
-    if (since === following) return
-    if (following != null && since == null) { latest = null; tellLive() }
-    following = since
-    // An older native side has no follow: the plugin proxy still answers, with a rejection.
-    try { Promise.resolve(since == null ? p.PW.unfollow?.() : p.PW.follow?.({ since })).catch(() => {}) } catch { /* none at all */ }
-  }
-
   const evaluate = () => { busy = busy.then(evaluateNow).catch(() => {}); return busy }
   const evaluateNow = async () => {
     clearTimeout(waitTm)
@@ -299,19 +289,12 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
       supported, healthOn, S, now: Date.now(),
       watch: info, watchClaimed: !!(A?.id && watch?.claimed?.(A.id)), running: !!running,
     })
-    // The watch has the workout and sends heart rate only per set: while the app is in front the live
-    // readout follows Apple Health instead (the watch's samples as they sync, any other source). Fresh
-    // enough on the owner's wrist (2026-11-16), so no watch->phone message is needed (#1312).
-    const followFrom = !plan.run && plan.reason === 'watch' && document.visibilityState === 'visible' ? Number(A?.start) || Date.now() : null
     if (!plan.run) {
       // The watch took it, or Apple Health went off: the phone's session goes, unsaved.
       if (running) await stop(false)
-      // After the session is gone: the native follow starts no query while one runs (review, #1312).
-      follow(followFrom)
       if (plan.wait > 0) waitTm = setTimeout(evaluate, plan.wait + 250)
       return
     }
-    follow(null) // the phone's own session measures from here
     if (!running) {
       try {
         const res = await p.PW.start({ wid: A.id, type: plannedType(A.entries) || undefined })
@@ -353,16 +336,16 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
   const offClaim = watch?.onClaim?.(() => evaluate()) || (() => {})
   const sub = await Promise.resolve(p.PW.addListener('heartRate', e => {
     const bpm = Math.round(Number(e?.bpm)), at = Number(e?.at) || Date.now()
-    if (!(running || (following != null && e?.follow)) || !(bpm >= 25 && bpm <= 250)) return
+    if (!running || !(bpm >= 25 && bpm <= 250)) return
     // the device that measured it, when iOS names one ("AirPods Pro"): the device button draws earbuds
     const device = typeof e?.device === 'string' ? e.device.trim().slice(0, 60) : ''
     latest = device ? { bpm, at, device } : { bpm, at }
     tellLive()
   })).catch(() => null)
-  const onVisible = () => { if (document.visibilityState === 'visible') { evaluate(); settle() } else follow(null) }
+  const onVisible = () => { if (document.visibilityState === 'visible') { evaluate(); settle() } }
   document.addEventListener('visibilitychange', onVisible)
   evaluate()
-  return () => { follow(null); offStore(); offUI(); offHealth(); offClaim(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(waitTm); clearTimeout(settleTm) }
+  return () => { offStore(); offUI(); offHealth(); offClaim(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(waitTm); clearTimeout(settleTm) }
 }
 
 // Test seams.

@@ -9,10 +9,9 @@ import * as sound from '../lib/sound.js'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
-const mocks = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: vi.fn(), snap: { rows: [], checking: false }, onLink: vi.fn(() => () => {}), onHr: vi.fn(() => () => {}) }))
+const mocks = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: vi.fn(), snap: { rows: [], checking: false }, onLink: vi.fn(() => () => {}) }))
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav, useLocation: () => mocks.loc }))
 vi.mock('../lib/device-link-live.js', () => ({ linkSnapshot: () => mocks.snap, onLinkChange: (...a) => mocks.onLink(...a) }))
-vi.mock('../lib/phone-workout.js', async importOriginal => ({ ...await importOriginal(), onLiveHeartRate: (...a) => mocks.onHr(...a) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -88,17 +87,15 @@ describe('the live bar', () => {
     expect(bar().getAttribute('aria-label')).toContain('Switch sides')
   })
 
-  it('runs nothing while there is no bar: no heart-rate or link listener, no interval', () => {
+  it('runs nothing while there is no bar: no link listener, no interval', () => {
     const iv = vi.spyOn(globalThis, 'setInterval')
-    mocks.onLink.mockClear(); mocks.onHr.mockClear()
+    mocks.onLink.mockClear()
     try {
       render()
-      expect(mocks.onHr).not.toHaveBeenCalled()
       expect(mocks.onLink).not.toHaveBeenCalled()
-      expect(iv.mock.calls.filter(c => c[1] === 15000)).toHaveLength(0)
       seed(active())
-      expect(mocks.onHr).toHaveBeenCalledTimes(1)
       expect(mocks.onLink).toHaveBeenCalledTimes(1)
+      expect(iv).not.toHaveBeenCalledWith(expect.any(Function), 15000)
     } finally { iv.mockRestore() }
   })
 
@@ -114,18 +111,18 @@ describe('the live bar', () => {
     expect(text()).toContain('All sets done')
   })
 
-  it('no watch and no pulse: no device mark, no pulse slot', () => {
+  it('no watch: no device mark', () => {
     seed(active()); render()
-    expect(host.querySelector('.livebar-hr')).toBeNull()
     expect(host.querySelector('.livebar-dev')).toBeNull()
   })
 
-  it('a linked watch shows the mark and reserves the pulse slot', () => {
+  it('a linked watch shows the mark, and the bar shows no heart rate', () => {
     mocks.snap = { rows: [{ id: 'watch', kind: 'apple', state: 'live' }], checking: false }
     seed(active()); render()
     expect(host.querySelector('.livebar-dev')).not.toBeNull()
-    expect(host.querySelector('.livebar-hr')).not.toBeNull()
+    expect(host.querySelector('.livebar-hr')).toBeNull()
     expect(bar().getAttribute('aria-label')).toContain('Watch connected')
+    expect(bar().getAttribute('aria-label')).not.toContain('Heart rate')
     // The workout page's top bar order: the arrow first (after the progress line), the watch last.
     expect(bar().children[1].dataset.icon).toBe('chevronUp')
     expect(bar().lastElementChild.classList.contains('livebar-dev')).toBe(true)
