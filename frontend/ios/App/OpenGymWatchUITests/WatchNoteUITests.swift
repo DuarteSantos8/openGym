@@ -6,7 +6,7 @@ import XCTest
  * session note's invisible field, #1330). Run by .github/workflows/ios.yml, which adds this target
  * for the run only (ios/ci/add-watch-ui-tests.rb).
  */
-final class OpenGymWatchUITests: XCTestCase {
+final class WatchNoteUITests: XCTestCase {
     let app = XCUIApplication()
 
     override func setUp() {

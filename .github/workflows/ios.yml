@@ -195,6 +195,27 @@ jobs:
           test -f "$DATA/Documents/widget-preview/done.txt" || { echo "::error::the widget pictures were never drawn"; exit 1; }
           # The extension really is in the app, with its own Info.plist.
           test -f build/dd/Build/Products/Debug-iphonesimulator/App.app/PlugIns/OpenGymWidgets.appex/Info.plist || { echo "::error::no widget extension in the app"; exit 1; }
+      # Taps on the watch app (ios/App/OpenGymWatchUITests): every new control is tapped on the demo
+      # session in a 42 mm simulator, not only photographed (a control can look right and take no tap).
+      # A failing test gets two more tries, as in the iPhone's ui-tests job.
+      - name: Tap the watch app
+        timeout-minutes: 30
+        run: |
+          ruby ios/ci/add-watch-ui-tests.rb
+          cd ios/App
+          if ! xcrun simctl list runtimes | grep -q watchOS; then xcodebuild -downloadPlatform watchOS || true; fi
+          UDID=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices
+            const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v).filter(x => /\(42mm\)/.test(x.name) && !/SE/.test(x.name))
+            process.stdout.write(all.pop().udid)')
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          set -o pipefail
+          xcodebuild test -project App.xcodeproj -scheme OpenGymWatchUITests -destination "id=$UDID" \
+            -derivedDataPath build/dd -retry-tests-on-failure -test-iterations 3 CODE_SIGNING_ALLOWED=NO \
+            | tee build/watch-ui-tests.log | grep -E "error:|Test Case|TEST" || exit 1
+          xcrun simctl shutdown "$UDID" || true
+        working-directory: frontend
       # The watch app on its own in watch simulators, with the demo session it carries
       # (SessionStore.demoJSON: text only, no exercise media), for a look at it. Four sizes: the
       # smallest (40/41 mm), 42 mm (Series 10/11, the size the mail's Series 12 42 mm cut text on),
@@ -406,8 +427,6 @@ jobs:
         working-directory: frontend
       - run: ruby ios/ci/add-ui-tests.rb
         working-directory: frontend
-      - run: ruby ios/ci/add-watch-ui-tests.rb
-        working-directory: frontend
       - name: Run the UI tests
         working-directory: frontend/ios/App
         run: |
@@ -426,20 +445,6 @@ jobs:
             -retry-tests-on-failure -test-iterations 3 \
             -resultBundlePath build/ui.xcresult CODE_SIGNING_ALLOWED=NO \
             | tee build/ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
-      # The watch app's controls tapped in a watch simulator (ios/App/WatchUITests, the demo session).
-      - name: Run the watch UI tests
-        working-directory: frontend/ios/App
-        run: |
-          if ! xcrun simctl list runtimes | grep -q watchOS; then xcodebuild -downloadPlatform watchOS || true; fi
-          UDID=$(xcrun simctl list devices available -j | node -e '
-            const d = JSON.parse(require("fs").readFileSync(0)).devices
-            const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v)
-            process.stdout.write(all.filter(x => /Apple Watch/.test(x.name) && !/Ultra|SE/.test(x.name)).pop().udid)')
-          xcrun simctl boot "$UDID" && xcrun simctl bootstatus "$UDID" -b
-          set -o pipefail
-          xcodebuild test -workspace App.xcworkspace -scheme OpenGymWatchUITests -destination "id=$UDID" \
-            -retry-tests-on-failure -test-iterations 3 CODE_SIGNING_ALLOWED=NO \
-            | tee build/watch-ui-tests.log | grep -E "error:|Test Case|passed|failed|TEST" || exit 1
       - name: Keep the screenshots
         if: always()
         working-directory: frontend/ios/App
@@ -459,7 +464,6 @@ jobs:
           name: ios-ui-tests
           path: |
             frontend/ios/App/build/ui-tests.log
-            frontend/ios/App/build/watch-ui-tests.log
             frontend/ios/App/build/shots
           retention-days: 7
 
