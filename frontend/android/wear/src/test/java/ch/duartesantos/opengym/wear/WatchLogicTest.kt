@@ -657,4 +657,34 @@ class WatchLogicTest {
         // The sensor rests and comes back in B: B's count goes on.
         k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
     }
+
+    /* ---------- a hold the phone logged first (Discord Mircuz, Garmin #1403) ---------- */
+
+    @Test fun aHoldIsOverOnceThePhoneLoggedItsSet() {
+        val hold = HoldSet(0, 0, null, null)
+        assertTrue(hold.openIn(state(entry("plank", listOf(row(), row()), mode = "time"))))
+        val phoneLogged = state(entry("plank", listOf(row(done = true, at = 1.0), row()), mode = "time"))
+        assertFalse("a hold ending now would log set 2", hold.openIn(phoneLogged))
+        assertFalse("no workout, nothing to log", hold.openIn(SessionState()))
+    }
+
+    @Test fun aHoldOnOneSideIsOverWhenThePhoneLoggedThatSide() {
+        val both = Sides(SideRow(20.0, 10.0), SideRow(20.0, 10.0))
+        val hold = HoldSet(0, 0, "L", null)
+        assertTrue(hold.openIn(state(entry("sp", listOf(row(sides = both)), mode = "time"))))
+        val lDone = both.with("L", SideRow(20.0, 10.0, done = true))
+        val s = state(entry("sp", listOf(row(sides = lDone)), mode = "time"))
+        assertFalse(hold.openIn(s))
+        assertTrue("the other side's hold is a new one", HoldSet(0, 0, "R", null).openIn(s))
+    }
+
+    @Test fun aHoldFindsItsSetByIdAfterTheOnesBeforeItMove() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val hold = HoldSet(0, 1, null, "b")
+        assertTrue(hold.openIn(state(entry("plank", listOf(a, b), mode = "time"))))
+        assertTrue("still open, now at place 0", hold.openIn(state(entry("plank", listOf(b), mode = "time"))))
+        assertFalse(hold.openIn(state(entry("plank", listOf(b.copy(done = true, at = 3.0)), mode = "time"))))
+        assertFalse("its set was removed", hold.openIn(state(entry("plank", listOf(a), mode = "time"))))
+    }
 }
