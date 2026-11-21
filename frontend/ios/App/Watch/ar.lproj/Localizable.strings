@@ -63,7 +63,6 @@
 "All sets done" = "اكتملت كل المجموعات";
 "measuring" = "جارٍ القياس …";
 "%@, set %lld" = "%@، المجموعة %lld";
-"%@, set %lld/%lld" = "%@، المجموعة %lld/%lld";
 "Calories" = "السعرات";
 "Heart rate" = "النبض";
 "Hold" = "ثبات";

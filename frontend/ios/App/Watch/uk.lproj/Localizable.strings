@@ -63,7 +63,6 @@
 "All sets done" = "Усі підходи зроблено";
 "measuring" = "вимірюю …";
 "%@, set %lld" = "%@, підхід %lld";
-"%@, set %lld/%lld" = "%@, підхід %lld/%lld";
 "Calories" = "Калорії";
 "Heart rate" = "Пульс";
 "Hold" = "Утримання";
