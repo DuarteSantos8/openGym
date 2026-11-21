@@ -49,10 +49,10 @@ export function SessionBuilder ({ terms: initial, close }) {
         seen.push([])
         continue
       }
+      if (sd === null) gone.push(id)   // recorded even when the base no longer has it, so a later swap cannot bring it back
       const i = out.picks.findIndex(p => p.id === id)
       if (i < 0) continue
       if (sd === null) {
-        gone.push(id)
         const picks = out.picks.filter((_, k) => k !== i)
         seen.splice(i, 1)
         out = { ...out, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
