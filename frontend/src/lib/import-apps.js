@@ -553,14 +553,17 @@ function parseFitbod(rows, opts) {
 // (python-script/converter.py) reads it: "### EXERCISE LOGS ###" has belongsession, ename,
 // mydate (YYYY-MM-DD) and logs, the sets as "weight x reps" pairs ("60x10,65x8");
 // "### WORKOUT SESSIONS ###" has _id, starttime (Unix seconds) and total_time (seconds). The
-// weight's unit is not in the file, so it is imported as written.
-const isJefit = text => /^\s*###\s*EXERCISE LOGS\s*###\s*$/im.test(text)
+// weight's unit is not in the file, so it is imported as written. A real export pads a header
+// with more hashes ("### EXERCISE LOGS ####…") and closes each table with a line of them (#1432).
+const SECTION = /^\s*#{3,}\s*([^#]*?)\s*#{3,}\s*$/
+const isJefit = text => /^\s*#{3,}\s*EXERCISE LOGS\s*#{3,}\s*$/im.test(text)
 
 function jefitSections(text) {
   const out = new Map()
   let cur = null
   for (const line of String(text).replace(/^﻿/, '').split(/\r?\n/)) {
-    const m = /^\s*###\s*(.*?)\s*###\s*$/.exec(line)
+    if (/^\s*#+\s*$/.test(line)) { cur = null; continue }
+    const m = SECTION.exec(line)
     if (m) { cur = []; out.set(m[1].toLowerCase(), cur); continue }
     if (cur && line.trim()) cur.push(line)
   }
