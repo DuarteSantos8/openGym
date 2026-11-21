@@ -2060,6 +2060,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.state.settings.effort = "rir"
                 self.fixEffort = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init)
                 if ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmed") { self.fixDial.arm(at: .distantFuture) }
+                // CI clip: the pill arms after 8 s and settles 5 s later.
+                if ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmLater") { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.armFixEffort() } }
             }
             if screen == "hold" { self.startHold() }
             // CI clips of the motion: Done tapped, a fast Crown spin, a rest's last seconds.
@@ -2067,7 +2069,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen == "spin" {
                 for i in 0..<6 { DispatchQueue.main.asyncAfter(deadline: .now() + 7 + Double(i) * 0.12) { self.weight += 2.5 } }
             }
-            if screen == "rate" { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { withAnimation(.spring(response: 0.34, dampingFraction: 0.62)) { self.rateLast(2) } } }
+            if screen == "rate" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.rateLast(2) }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 15) { self.rearmRating() } // after the 5 s settle: the capsule opens again
+            }
             if screen == "plus15" { for t in [8.0, 8.4, 10.5] { DispatchQueue.main.asyncAfter(deadline: .now() + t) { if t < 10 { self.addRest(15) } else { self.minusRest() } } } }
             if screen == "synced" { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.unsentSets = 1 }; DispatchQueue.main.asyncAfter(deadline: .now() + 9.5) { self.unsentSets = 2 } }
             if screen == "marked" { self.state.settings.setMenu = true; DispatchQueue.main.asyncAfter(deadline: .now() + 8) { if let r = self.shownRef { _ = self.mark(.failure, on: true, entry: r.entry, set: r.set) } } }

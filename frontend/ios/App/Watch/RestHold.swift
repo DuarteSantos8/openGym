@@ -298,8 +298,25 @@ struct EffortChips: View {
     let tall: Bool // 38 pt chips; 34 where the screen is short
     @Environment(\.isLuminanceReduced) private var luminanceReduced
     private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The label's line grows with the text size (it is footnote, allowed up to accessibility2).
     @ScaledMetric(relativeTo: .footnote) private var labelHeight: CGFloat = 22
+    /// The tapped chip's capsule grows into the armed one (same id, one namespace). Not with Reduce Motion.
+    @Namespace private var grow
+    @State private var tapped: Double?
+    /// Where the row was before this change: a chip tap springs open, the settle and a re-arm only fade.
+    @State private var from = Phase.chips
+    private enum Phase { case chips, armed, settled }
+    private var phase: Phase { store.lastRated == nil ? .chips : (store.dial.armed && !dimmed ? .armed : .settled) }
+    private var motion: Animation? {
+        switch (from, phase) {
+        case _ where dimmed: return nil
+        case (_, .chips): return nil
+        case (.chips, .armed): return reduceMotion ? Motion.fade(true, false) : .spring(response: 0.3, dampingFraction: 0.86)
+        case (_, .armed): return .easeOut(duration: reduceMotion ? 0.15 : 0.18)
+        default: return Motion.fade(reduceMotion, false)
+        }
+    }
 
     /// The exercise and set the chips rate: the one just done.
     private var rated: Text? {
@@ -318,31 +335,40 @@ struct EffortChips: View {
         let height: CGFloat = tall ? 38 : 34
         VStack(spacing: 2) {
             if label { labelLine(kind) }
-            if let v = store.lastRated {
-                if store.dial.armed && !dimmed {
-                    EffortArmed(kind: kind, value: v, clear: false, height: height, disc: tall ? 31 : 28, ticks: true, size: 21,
-                                nudge: { store.nudgeRating($0, disc: false) }, discNudge: { store.nudgeRating($0, disc: true) })
-                } else { settled(kind, v, height) }
-            } else {
-                HStack(spacing: 4) {
-                    ForEach(Effort.chips(kind), id: \.self) { v in
-                        Button { store.rateLast(v) } label: {
-                            Text(verbatim: Effort.chipLabel(kind, v))
-                                .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-                                .overlay(Capsule().strokeBorder(Effort.color(kind, v), lineWidth: 1.5))
-                                .contentShape(Capsule())
+            ZStack {
+                if let v = store.lastRated {
+                    if store.dial.armed && !dimmed {
+                        EffortArmed(kind: kind, value: v, clear: false, height: height, disc: tall ? 31 : 28, ticks: true, size: 21,
+                                    nudge: { store.nudgeRating($0, disc: false) }, discNudge: { store.nudgeRating($0, disc: true) },
+                                    grow: reduceMotion ? nil : (grow, AnyHashable(tapped ?? v)))
+                    } else { settled(kind, v, height) }
+                } else {
+                    HStack(spacing: 4) {
+                        ForEach(Effort.chips(kind), id: \.self) { v in
+                            Button { tapped = v; store.rateLast(v) } label: {
+                                Text(verbatim: Effort.chipLabel(kind, v))
+                                    .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+                                    .overlay(Capsule().strokeBorder(Effort.color(kind, v), lineWidth: 1.5).grows(reduceMotion ? nil : grow, id: v))
+                                    .contentShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, v))"))
+                            .transition(reduceMotion ? AnyTransition.opacity : AnyTransition.opacity.animation(.easeOut(duration: 0.12))) // the other chips go quickly
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, v))"))
                     }
+                    .opacity(dimmed ? 0 : 1) // Always On: the chips go, their place stays
+                    .allowsHitTesting(!dimmed)
                 }
-                .opacity(dimmed ? 0 : 1) // Always On: the chips go, their place stays
-                .allowsHitTesting(!dimmed)
             }
         }
+        .animation(motion, value: phase)
+        .onChange(of: phase) { _, p in from = p }
     }
+
+    /// The two lines trade places by fading, no slide.
+    private var labelFade: AnyTransition { dimmed ? .identity : AnyTransition.opacity.animation(.easeOut(duration: 0.15)) }
 
     /// Over the chips and the settled capsule: which set it rates. Over the armed capsule: what the Crown does.
     @ViewBuilder private func labelLine(_ kind: String) -> some View {
@@ -350,10 +376,12 @@ struct EffortChips: View {
             if store.dial.armed && !dimmed, let v = store.lastRated {
                 Label { Text("Crown: half steps") } icon: { Image(systemName: "digitalcrown.arrow.clockwise.fill") }
                     .foregroundStyle(Effort.color(kind, v))
+                    .transition(labelFade)
             } else {
                 (Text(verbatim: "\(Effort.name(kind)) · ") + (self.rated ?? Text("How hard was that set?")))
                     .foregroundStyle(Theme.label2)
                     .opacity(dimmed ? 0 : 1)
+                    .transition(labelFade)
             }
         }
         .font(.system(.footnote, design: .rounded).weight(.bold))
@@ -402,6 +430,8 @@ struct EffortArmed: View {
     let size: CGFloat
     let nudge: (Int) -> Void // the Crown's detents
     let discNudge: (Int) -> Void
+    /// The capsule grows out of the chip or pill it replaces (nil: it only fades in).
+    var grow: (Namespace.ID, AnyHashable)? = nil
     @State private var index = 0
     @State private var pulsing = false
     @FocusState private var focused: Bool
@@ -418,8 +448,7 @@ struct EffortArmed: View {
             discButton(minus: false, color: color, inset: inset, dim: value.map { $0 >= r.upperBound } ?? false)
         }
         .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-        .background(Capsule().fill(color.opacity(0.18)))
-        .overlay(Capsule().strokeBorder(color, lineWidth: 2))
+        .background(Capsule().fill(color.opacity(0.18)).overlay(Capsule().strokeBorder(color, lineWidth: 2)).grows(grow?.0, id: grow?.1 ?? AnyHashable(0)))
         .shadow(color: color.opacity(0.35), radius: 4)
         .focusable()
         .focusEffectDisabled()
@@ -495,6 +524,13 @@ struct EffortArmed: View {
         .accessibilityHidden(true)
     }
 
+    /// The discs fade in from 0.9, a beat after the capsule, and out to 0.9 (Reduce Motion: fades).
+    private var discFade: AnyTransition {
+        let out = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(.easeOut(duration: reduceMotion ? 0.15 : 0.2))
+        let into = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(.easeOut(duration: 0.18).delay(reduceMotion ? 0 : 0.05))
+        return .asymmetric(insertion: into, removal: out)
+    }
+
     /// A disc drawn as strokes (a circle, a bar or two), 44 pt wide to hit, not shown to VoiceOver (the capsule is adjustable).
     private func discButton(minus: Bool, color: Color, inset: CGFloat, dim: Bool) -> some View {
         Button {
@@ -513,6 +549,7 @@ struct EffortArmed: View {
                 .frame(width: disc, height: disc)
                 .padding(minus ? .leading : .trailing, inset)
                 .opacity(dim ? 0.3 : 1)
+                .transition(discFade)
             }
             .frame(width: disc + inset, height: height, alignment: minus ? .leading : .trailing)
             // 44 x 34 at least: the hit runs on in under the value (which takes no touches), and a hair past a 32 pt pill.
@@ -589,5 +626,12 @@ struct HoldView: View {
         }
         .padding(.horizontal, 2)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+    }
+}
+
+extension View {
+    /// A capsule that grows out of the one it replaces: the same id in one namespace (nil: no growing).
+    @ViewBuilder func grows(_ ns: Namespace.ID?, id: AnyHashable) -> some View {
+        if let ns { matchedGeometryEffect(id: id, in: ns) } else { self }
     }
 }

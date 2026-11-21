@@ -25,6 +25,7 @@ struct SetPanel: View {
     @State private var selected: NumberField?
     @State private var keypad: NumberField?
     @State private var confirmSkip = false
+    @Namespace private var grow // the effort pill grows into the armed capsule
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var luminanceReduced
@@ -204,7 +205,10 @@ struct SetPanel: View {
             if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
-            if fixing, !store.fixDial.armed { Tag(text: Text("Done"), color: store.accent) }
+            if fixing, !store.fixDial.armed {
+                Tag(text: Text("Done"), color: store.accent)
+                    .transition(.asymmetric(insertion: .opacity, removal: AnyTransition.opacity.animation(dimmed ? nil : .easeOut(duration: 0.12)))) // out fast, back with the settle
+            }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
                     .font(TypeScale.second)
@@ -223,6 +227,13 @@ struct SetPanel: View {
             // The effort of a set being fixed shares this line (owner 2026-11-11: no line of its own).
             if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
         }
+        .animation(fixMotion, value: store.fixDial.armed)
+    }
+
+    /// The pill springs open into the armed capsule; the settle only fades. Always On: nothing moves.
+    private var fixMotion: Animation? {
+        guard !dimmed else { return nil }
+        return store.fixDial.armed && !reduceMotion ? .spring(response: 0.3, dampingFraction: 0.86) : Motion.fade(reduceMotion, false)
     }
 
     /// The two sides of a per-side set being fixed: which one the numbers are.
@@ -250,7 +261,8 @@ struct SetPanel: View {
         let color = v.map { Effort.color(kind, $0) } ?? Theme.label2
         if store.fixDial.armed && !dimmed {
             EffortArmed(kind: kind, value: v, clear: true, height: 32, disc: 28, ticks: false, size: 15,
-                        nudge: { store.nudgeFixEffort($0, disc: false) }, discNudge: { store.nudgeFixEffort($0, disc: true) })
+                        nudge: { store.nudgeFixEffort($0, disc: false) }, discNudge: { store.nudgeFixEffort($0, disc: true) },
+                        grow: reduceMotion ? nil : (grow, AnyHashable("fix")))
                 .frame(maxWidth: 140, minHeight: 24, maxHeight: 24) // it grows past the row by 4 pt each way, so nothing under it moves
         } else {
             Button { store.armFixEffort() } label: {
@@ -259,6 +271,7 @@ struct SetPanel: View {
                     .foregroundStyle(color)
                     .padding(.horizontal, 10)
                     .frame(minHeight: 24)
+                    .background(Capsule().fill(Color.clear).grows(reduceMotion ? nil : grow, id: "fix")) // the frame the capsule grows from
                     .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
                     .contentShape(Rectangle().inset(by: -6)) // 44 x 36 to hit
             }
