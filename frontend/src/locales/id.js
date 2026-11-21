@@ -604,6 +604,8 @@ export default {
   "Recent workouts": "Sesi latihan terbaru",
   "Less time": "Durasi lebih singkat",
   "More time": "Durasi lebih lama",
+  "Remove 15 seconds": "Kurangi 15 detik",
+  "Add 15 seconds": "Tambah 15 detik",
   "Less volume": "Volume lebih sedikit",
   "More volume": "Volume lebih banyak",
   "No data yet": "Belum ada datanya",

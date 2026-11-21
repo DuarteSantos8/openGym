@@ -600,6 +600,8 @@ export default {
   "Recent workouts": "Seneste pas",
   "Less time": "Mindre tid",
   "More time": "Mere tid",
+  "Remove 15 seconds": "Fjern 15 sekunder",
+  "Add 15 seconds": "Tilføj 15 sekunder",
   "Less volume": "Mindre volumen",
   "More volume": "Mere volumen",
   "No data yet": "Ingen data endnu",

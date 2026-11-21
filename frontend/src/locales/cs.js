@@ -585,6 +585,8 @@ export default {
   'Recent workouts': 'Poslední tréninky',
   'Less time': 'Méně času',
   'More time': 'Více času',
+  "Remove 15 seconds": "Odebrat 15 sekund",
+  "Add 15 seconds": "Přidat 15 sekund",
   'Less volume': 'Menší objem',
   'More volume': 'Větší objem',
   'No data yet': 'Zatím žádná data',

@@ -585,6 +585,8 @@ export default {
   'Recent workouts': 'Các buổi tập gần đây',
   'Less time': 'Ít thời gian hơn',
   'More time': 'Nhiều thời gian hơn',
+  "Remove 15 seconds": "Bớt 15 giây",
+  "Add 15 seconds": "Thêm 15 giây",
   'Less volume': 'Khối lượng tập ít hơn',
   'More volume': 'Khối lượng tập nhiều hơn',
   'No data yet': 'Chưa có dữ liệu',

@@ -541,6 +541,8 @@ export default {
   "Recent workouts": "تمرینات اخیر",
   "Less time": "زمان کمتر",
   "More time": "زمان بیشتر",
+  "Remove 15 seconds": "کم کردن ۱۵ ثانیه",
+  "Add 15 seconds": "افزودن ۱۵ ثانیه",
   "No data yet": "هنوز هیچ داده‌ای وجود ندارد",
   "Your weekly routine": "روتین هفتگی شما",
   "Week schedule": "برنامه هفته",

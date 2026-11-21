@@ -962,6 +962,8 @@ export default {
   'Replace exercise': 'ব্যায়াম রিপ্লেস করুন',
   'Replaced with “{0}”': '“{0}” দিয়ে রিপ্লেস করা হয়েছে',
   'Minimize': 'ছোট করুন',
+  'Remove 15 seconds': '১৫ সেকেন্ড কমান',
+  'Add 15 seconds': '১৫ সেকেন্ড যোগ করুন',
   'Expand': 'বড় করুন',
   'Exercise animations': 'ব্যায়ামের অ্যানিমেশন',
   'Workout options': 'ওয়ার্কআউটের অপশন',

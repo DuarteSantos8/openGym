@@ -3325,6 +3325,8 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
+  'Remove 15 seconds': 'Remover 15 segundos',
+  'Add 15 seconds': 'Adicionar 15 segundos',
   'Lengths in': 'Comprimentos em',
   'Removes the field and every reading logged in it. The other measurements stay.': 'Remove o campo e todos os valores registrados nele. As outras medidas ficam.',
   "Screen orientation": "Orientação da tela",

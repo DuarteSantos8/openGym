@@ -585,6 +585,8 @@ export default {
   "Recent workouts": "Naujausios treniruotės",
   "Less time": "Mažiau laiko",
   "More time": "Daugiau laiko",
+  "Remove 15 seconds": "Pašalinti 15 sekundžių",
+  "Add 15 seconds": "Pridėti 15 sekundžių",
   "Less volume": "Mažiau tūrio",
   "More volume": "Daugiau tūrio",
   "No data yet": "Duomenų dar nėra",
