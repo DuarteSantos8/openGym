@@ -124,7 +124,10 @@ struct RootView: View {
         .onChange(of: store.widgetState) { state in
             guard !store.isDemo else { return }
             state.write()   // at once: a reload a moment later already reads it
-            widgetReload.call { WidgetCenter.shared.reloadAllTimelines() }
+            let reload = { WidgetCenter.shared.reloadAllTimelines() }
+            // The wait only while the workout session keeps the app awake to run it: without one, and
+            // for a workout's end, at once (a suspended app would leave the complications stale).
+            if store.health.running && (state.mode == "set" || state.mode == "rest") { widgetReload.call(reload) } else { reload() }
         }
     }
 }
