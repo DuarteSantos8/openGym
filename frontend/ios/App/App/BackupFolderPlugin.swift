@@ -51,6 +51,12 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
         backupName.firstMatch(in: n, range: NSRange(n.startIndex..., in: n)) != nil
     }
 
+    // A folder named like a backup is never listed or pruned: removeItem would delete all inside it.
+    private static func isDirectory(_ url: URL) -> Bool {
+        var dir: ObjCBool = false
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &dir) && dir.boolValue
+    }
+
     // MARK: bookmarks
 
     // pick (main), a stale refresh (io) and release (bridge queue) all change the dictionary: one lock keeps an entry from being lost.
@@ -182,7 +188,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                         do { listed = try FileManager.default.contentsOfDirectory(atPath: url.path) } catch { listThrown = error }
                     }
                     if let e = (listFailure as Error?) ?? listThrown { throw e }
-                    let names = listed.map { n -> String in
+                    let names = listed.filter { !BackupFolderPlugin.isDirectory(folder.appendingPathComponent($0)) }.map { n -> String in
                         n.hasPrefix(".") && n.hasSuffix(".icloud") ? String(n.dropFirst().dropLast(".icloud".count)) : n
                     }
                     // Newest first by the date in the name, as the Documents/openGym prune does.
@@ -190,6 +196,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                     for n in older.dropFirst(keep - 1) {
                         var failure: NSError?
                         NSFileCoordinator().coordinate(writingItemAt: folder.appendingPathComponent(n), options: .forDeleting, error: &failure) { url in
+                            guard !BackupFolderPlugin.isDirectory(url) else { return }   // the folder may have changed since the listing
                             if (try? FileManager.default.removeItem(at: url)) != nil { deleted += 1 }   // one stuck file does not stop the rest
                         }
                     }
@@ -212,7 +219,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                     }
                     if let e = (failure as Error?) ?? thrown { throw e }
                     // An iCloud file that is not downloaded lists as ".name.icloud"; reading it fetches it.
-                    let names = Set(listed.map { n -> String in
+                    let names = Set(listed.filter { !BackupFolderPlugin.isDirectory(folder.appendingPathComponent($0)) }.map { n -> String in
                         n.hasPrefix(".") && n.hasSuffix(".icloud") ? String(n.dropFirst().dropLast(".icloud".count)) : n
                     }.filter { BackupFolderPlugin.isBackupName($0) }).sorted { $0.dropLast(5) > $1.dropLast(5) }
                     return names.map { n in
