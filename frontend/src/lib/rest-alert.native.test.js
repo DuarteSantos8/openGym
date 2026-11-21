@@ -399,6 +399,19 @@ describe('iPhone: the rest tone never stops the music', () => {
   })
 })
 
+// A set logged on the Lock Screen during a timed hold books the next rest's alarm under "opengym.rest"
+// (tick), then RestAlertPlugin's queued autoStopped block runs. It may only take the chain's own alerts
+// back: removing the rest's id wiped that fresh alarm, and post() then rang the old hold's end or nothing.
+describe('iPhone: Stop auto and a set logged in a hold keep the rest alarm the Lock Screen booked', () => {
+  const swift = readFileSync(new URL('../../ios/App/App/RestAlertPlugin.swift', import.meta.url), 'utf8')
+  const body = swift.slice(swift.indexOf('@objc private func autoStopped()'), swift.indexOf('@objc private func watchRest'))
+
+  it('takes back the chain\'s alert ids only, and does not post again', () => {
+    expect(body).toMatch(/self\.withdraw\(RestAlertPlugin\.cueIds\)/)
+    expect(body).not.toMatch(/self\.withdraw\(\)|self\.post\(\)/)
+  })
+})
+
 // Spoken cues (v1.4.5, lib/spoken-cues.js): the phone's own voice, ducking the music like the tone.
 describe('spoken cues through the phone', () => {
   it('hands the line to the plugin and answers true, false in a browser shell', async () => {

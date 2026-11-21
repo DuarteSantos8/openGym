@@ -399,14 +399,14 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     }
 
     /// Stop auto on the Lock Screen: the alert booked now stays (a hold running still ends), the
-    /// chain's alerts after it go.
+    /// chain's alerts after it go. Only those go, never the rest's own id: a set logged during a hold
+    /// has just booked the next rest's alarm under it (tick), and this block runs after that.
     @objc private func autoStopped() {
         DispatchQueue.main.async {
             guard var p = self.pending else { return }
             p.cues = []
             self.pending = p
-            self.withdraw()
-            if UIApplication.shared.applicationState != .active { self.post() }
+            self.withdraw(RestAlertPlugin.cueIds)
         }
     }
 
@@ -460,9 +460,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         }
     }
 
-    private func withdraw() {
+    private func withdraw(_ ids: [String] = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds) {
         let center = UNUserNotificationCenter.current()
-        let ids = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds
         center.removePendingNotificationRequests(withIdentifiers: ids)
         center.removeDeliveredNotifications(withIdentifiers: ids)
     }
