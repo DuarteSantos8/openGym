@@ -1145,7 +1145,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
         idleMinutes = max(0, SafeNum.int((now - since) / 60000))
         let rules = idleRules
-        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt) {
+        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) {
         case .active:
             // Something happened since (a set on the phone): the card goes away by itself.
             if askDone { askDone = false }
@@ -1204,7 +1204,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         let now = Date().timeIntervalSince1970 * 1000
         let rules = idleRules
-        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt) {
+        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) {
         case .active:
             askDone = false
         case .ask:
