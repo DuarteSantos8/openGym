@@ -139,6 +139,16 @@ describe('routine archive', () => {
       undoSnapshot(s, snap)
       expect(s.rotation).toMatchObject({ sequence: ['a', 'rest', 'b', 'rest', 'c', 'rest', 'd'], at: 4 })
     })
+    it('a cursor that moved on since the archive keeps its segment on undo', () => {
+      const s = { routines: [r('a'), r('b'), r('c'), r('d')], rotation: { id: 'x', sequence: ['a', 'b', 'rest', 'c', 'rest', 'd'], at: 3 } }
+      const snap = archiveRoutines(s, ['a', 'b'])
+      expect(segmentAt(sequenceOf(s), s.rotation.at).ids).toEqual(['c'])
+      s.rotation.at = 3   // c done: on to d
+      expect(segmentAt(sequenceOf(s), s.rotation.at).ids).toEqual(['d'])
+      undoSnapshot(s, snap)
+      expect(s.rotation.sequence).toEqual(['a', 'b', 'rest', 'c', 'rest', 'd'])
+      expect(segmentAt(sequenceOf(s), s.rotation.at).ids).toEqual(['d'])
+    })
   })
 
   describe('the old Archive folder moves once', () => {
