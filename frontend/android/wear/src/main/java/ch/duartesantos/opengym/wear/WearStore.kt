@@ -125,6 +125,8 @@ object WearStore {
     private val homeLock = TouchLock()
     private var restJob: Job? = null
     private var holdJob: Job? = null
+    /** The set the running hold logs at its end: if the phone logged it first, the hold is over (HoldSet). */
+    private var holdFor: HoldSet? = null
     private var countJob: Job? = null
     private var idleJob: Job? = null
     private var refreshJob: Job? = null
@@ -267,6 +269,8 @@ object WearStore {
             RestFollow.Legacy -> legacyRest(snap, after, phoneRest, echo)
         }
         commit(after)
+        // The phone logged the set a hold here runs for (its own hold ended first): this one ends with it, unlogged.
+        if (holdFor?.openIn(after) == false) stopHold()
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
         ticks.lastOrNull()?.let { followPhoneTick(it) }
@@ -739,13 +743,15 @@ object WearStore {
         if (!auto && !touchAllowed()) return
         val e = entry() ?: return
         val seconds = draft.value.sec
-        if (!e.isTimed || setIndex() == null || seconds <= 0) return
+        val si = setIndex()
+        if (!e.isTimed || si == null || seconds <= 0) return
         stopHoldCount()
         stopRest()
         noteActivity()
         val start = now()
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
+        holdFor = HoldSet(entryIndex, si, e.sets[si].sideUp, e.sets[si].sid)
         Awake.until(app, HOLD, end)
         Haptics.start(app)
         holdJob?.cancel()
@@ -768,7 +774,7 @@ object WearStore {
         if (lasted >= 1) completeSet(heldFor = lasted)
     }
 
-    fun stopHold() { holdJob?.cancel(); _hold.value = null; if (::app.isInitialized) Awake.release(HOLD) }
+    fun stopHold() { holdJob?.cancel(); _hold.value = null; holdFor = null; if (::app.isInitialized) Awake.release(HOLD) }
 
     private const val REST = "rest"
     private const val REST_AGAIN = "restAgain"
