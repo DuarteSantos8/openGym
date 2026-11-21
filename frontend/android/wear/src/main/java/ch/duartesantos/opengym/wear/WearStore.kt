@@ -110,7 +110,8 @@ object WearStore {
     private var idleSnooze = 0L
     /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
     private var demoOn = false
-    private val picked = mutableMapOf<Int, Int>()
+    // Snapshot state, so the set page sees a set picked in the same exercise (a skipped one leaves no other trace).
+    private val picked = androidx.compose.runtime.mutableStateMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
     /** The id of the last set ticked here until a snapshot names it applied (the phone's rest for it is ours). */
     private var echoOf: String? = null
