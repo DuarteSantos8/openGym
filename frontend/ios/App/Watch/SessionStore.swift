@@ -935,8 +935,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private func sendHeld(_ id: String) {
         clearRemoval()
         let (next, ev) = SetMenu.release(state, id: id)
-        state = next
+        // Queued before the released state is saved: killed in between, the held edit is still there to release.
         if let ev = ev { send(event: ev) }
+        state = next
     }
 
     private func clearRemoval() {
