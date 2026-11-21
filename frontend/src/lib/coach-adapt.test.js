@@ -100,6 +100,26 @@ describe('applying the Coach’s changes to the workout in progress', () => {
     expect(S.active.cur).toBe(0)
   })
 
+  it('an add after an exercise follows that exercise, not the index it had when the question was asked', () => {
+    const S = session()
+    S.active.entries[2].rid = 'legs'                                  // a combined day: squat belongs to another routine
+    const p = proposal([{ type: 'add', to: ROW, sets: 2, reps: 12, entry: 1, exId: CURL }])
+    S.active.entries.splice(0, 1)                                      // bench removed on the watch: curl is now at 0
+    expect(markAdaptStale(S, p)[0].stale).toBe(false)
+    expect(applyAdapt(S, p, ids(p)).applied).toEqual(['a0'])
+    expect(S.active.entries.map(e => e.id)).toEqual([CURL, ROW, SQUAT])
+    expect(S.active.entries[1].rid).toBe('push')                       // the curl's routine, not the squat's
+  })
+
+  it('an add goes stale when the exercise it follows is gone, or has no id to check', () => {
+    const S = session()
+    const p = proposal([{ type: 'add', to: ROW, sets: 2, reps: 12, entry: 1, exId: CURL }, { type: 'add', to: DBPRESS, entry: 1 }])
+    S.active.entries.splice(1, 1)                                      // curl removed: index 1 is now the squat
+    expect(markAdaptStale(S, p).map(c => c.stale)).toEqual([true, true])
+    expect(applyAdapt(S, p, ids(p)).applied).toEqual([])
+    expect(S.active.entries.map(e => e.id)).toEqual([BENCH, SQUAT])
+  })
+
   it('goes stale instead of landing on the wrong exercise when the session moved on', () => {
     const S = session()
     const p = proposal([{ type: 'reps', entry: 1, exId: CURL, reps: 6 }, { type: 'skip', entry: 2, exId: SQUAT }])

@@ -54,7 +54,8 @@ export function markAdaptStale(S, p) {
   const live = adaptFor(S, p)
   return (p?.changes || []).map(c => {
     if (!live || !ADAPT_TYPES.includes(c.type)) return { ...c, stale: true }
-    if (c.type === 'add') return { ...c, stale: !!EXIDX[c.to] ? false : true }
+    // An add that names the exercise it follows goes stale when that one cannot be found again.
+    if (c.type === 'add') return { ...c, stale: !EXIDX[c.to] || (Number.isInteger(c.entry) && resolveEntry(S.active, c) < 0) }
     const at = resolveEntry(S.active, c)
     if (at < 0) return { ...c, stale: true }
     const entry = S.active.entries[at]
@@ -172,7 +173,7 @@ export function applyAdapt(s, p, acceptedIds) {
   const accepted = new Set(acceptedIds || [])
   const marked = markAdaptStale(s, p)
   const jobs = marked.filter(c => accepted.has(c.id) && !c.stale)
-    .map(c => ({ c, entry: c.type === 'add' && !Number.isInteger(c.entry) ? null : s.active.entries[c.type === 'add' ? c.entry : resolveEntry(s.active, c)] || null }))
+    .map(c => ({ c, entry: s.active.entries[resolveEntry(s.active, c)] || null }))
   const wasIdx = Number.isInteger(s.active.cur) ? s.active.cur : 0
   const was = s.active.entries[wasIdx] || null
   const applied = []
