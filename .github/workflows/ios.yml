@@ -79,9 +79,10 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: macos-26
-    # Room for the two picture steps' own limits (45 + 30 min) after the build: they may end their
-    # step, never the job (a slow runner needs ~15 min per watch size for the shots).
-    timeout-minutes: 100
+    # Room for the two picture steps' own limits (45 + 30 min) after setup and build (~15 min, up
+    # to ~40 with every retry): they may end their step, never the job (a slow runner needs ~15 min
+    # per watch size for the shots).
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -205,7 +206,7 @@ jobs:
       # screen; 46 and 49 mm the busiest ones. -OpenGymWatchLong: a long workout and exercise name.
       - name: Show the watch app
         continue-on-error: true
-        # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
+        # Pictures only: a hung simulator here must not hold the job to its limit.
         timeout-minutes: 45
         working-directory: frontend/ios/App
         run: |
@@ -312,7 +313,7 @@ jobs:
       - name: Watch promo pictures
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         continue-on-error: true
-        # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
+        # Pictures only: a hung simulator here must not hold the job to its limit.
         timeout-minutes: 30
         working-directory: frontend/ios/App
         run: |
