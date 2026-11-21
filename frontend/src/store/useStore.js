@@ -15,7 +15,7 @@ import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJson
 import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
-import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { mergeStates, localExtras, folderKey, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { keptHashes } from '../lib/media-refs.js'
@@ -1432,6 +1432,10 @@ export const useStore = create((set, get) => {
         const mine = S[f] && typeof S[f] === 'object' ? S[f] : {}
         merged[f] = { ...mine, ...(merged[f] || {}) }
       }
+      // So do its folders; the device's folders it lacks follow them, not as the current plan.
+      const theirs = new Set((merged.routineFolders || []).map(folderKey))
+      const added = (S.routineFolders || []).filter(e => folderKey(e) && !theirs.has(folderKey(e))).map(e => ({ name: e.name }))
+      if (added.length) merged.routineFolders = [...(merged.routineFolders || []), ...added]
       persist(merged, false)
       if (rev != null) writeSync(rev, 0, state?._wid)
       else dropSync()
