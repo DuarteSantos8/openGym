@@ -3525,7 +3525,8 @@ paths:
       summary: Live-workout presence beacon
       description: |
         The client sends this when a workout opens, when it comes back on screen, and
-        after 3 minutes in which it sent the server nothing else; the admin dashboard
+        after 3 minutes with no beacon and no successful sync (`PUT /api/data`; other
+        requests such as `GET /api/data/rev` do not count); the admin dashboard
         reads who is training right now. A sync (`PUT /api/data`) whose state carries a
         running workout (`active`) is the same sign of life, so a client that logs sets
         sends no beacon of its own, and one whose state carries none drops the entry.
