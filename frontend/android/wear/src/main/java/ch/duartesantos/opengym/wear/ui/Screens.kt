@@ -265,6 +265,8 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
                     fontSize = 16.sp, textAlign = TextAlign.Center)
             }
             item { Quiet(stringResource(if (!s.synced) R.string.open_phone_once else R.string.start_on_phone), 12.sp, lines = 4) }
+            // Every routine archived: say where they went.
+            if (s.synced) item { Quiet(stringResource(R.string.archived_stay_on_phone), 12.sp, lines = 3) }
             item { VersionLine() }
             return@TransformingLazyColumn
         }
@@ -283,7 +285,7 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
             }
             item { RowButton(r.name, Modifier.fillMaxWidth(), center = false, icon = G.PLAY, tint = Og.Text) { WearStore.start(r) } }
         }
-        if (others.isNotEmpty()) item { Quiet(stringResource(R.string.archived_stay_on_phone), 12.sp, lines = 3) }
+        item { Quiet(stringResource(R.string.archived_stay_on_phone), 12.sp, lines = 3) }
         // A workout finished here with the phone away: its sets are still on their way.
         item { SyncLine(sync, showSynced = false) }
         item { VersionLine() }

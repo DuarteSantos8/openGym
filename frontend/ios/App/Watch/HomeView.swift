@@ -46,14 +46,14 @@ struct HomeView: View {
                                 }
                                 .buttonStyle(RowButtonStyle())
                             }
-                            Text("Archived routines stay on your iPhone.")
-                                .font(.footnote)
-                                .foregroundStyle(Theme.label2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 4)
                         }
                         .padding(.top, ready.today == nil ? 0 : 6)
                     }
+                    Text("Archived routines stay on your iPhone.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.label2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
                     // A workout finished here with the phone away: its sets are still on their way.
                     SyncLine(showSynced: false).padding(.top, 4)
                     VersionLine()
@@ -75,6 +75,13 @@ struct HomeView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
+                    // Every routine archived: say where they went.
+                    if !fresh {
+                        Text("Archived routines stay on your iPhone.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.label2)
+                            .multilineTextAlignment(.center)
+                    }
                     VersionLine()
                 }
                 .padding(.horizontal, 6)
