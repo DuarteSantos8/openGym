@@ -3086,7 +3086,7 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
    All text is full ink; the second line differs by size and weight, never by fading. Digits sit in
    fixed-width slots so nothing moves as clocks tick or a pulse arrives. */
 .livebar{
-  position:fixed;z-index:51;inset-inline:12px;bottom:calc(66px + var(--sab));max-width:520px;margin-inline:auto;
+  position:fixed;z-index:51;inset-inline:12px;bottom:calc(66px + var(--sab) + var(--lb-grow));max-width:520px;margin-inline:auto;
   container-type:inline-size;container-name:livebar;
   min-height:58px;box-sizing:border-box;border-radius:29px;padding-block:10px 8px;padding-inline:10px 12px;
   display:flex;align-items:center;gap:12px;text-align:start;color:var(--on-acc);
@@ -3137,13 +3137,15 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
 @container livebar (max-width:17em){
   .livebar-dev svg{width:36px;height:36px}
 }
-body.has-livebar #app{padding-bottom:calc(154px + var(--sab))} /* the tab bar's 88, the capsule's 58, and 8 */
-body.has-livebar #totop{bottom:calc(146px + var(--sab))}
+/* How much taller than its usual 58px the tab bar is (larger text): LiveBar.jsx measures its top edge */
+body{--lb-grow:max(0px, calc(var(--tabbar-top, 0px) - 58px - var(--sab)))}
+body.has-livebar #app{padding-bottom:calc(154px + var(--sab) + var(--lb-grow))} /* the tab bar's 88, the capsule's 58, and 8 */
+body.has-livebar #totop{bottom:calc(146px + var(--sab) + var(--lb-grow))}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
 body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
-body.totop-on.has-livebar #app{padding-bottom:calc(210px + var(--sab))} /* 144 + the capsule's 58 + 8 */
+body.totop-on.has-livebar #app{padding-bottom:calc(210px + var(--sab) + var(--lb-grow))} /* 144 + the capsule's 58 + 8 */
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
@@ -3508,11 +3510,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   /* Back to top: at the end of the wide column, level with the floating tab bar and clear of it,
      so the page's own 128px at the bottom already keeps the last row out from under it. */
   #totop,body.resting #totop,body.has-livebar #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
-  .livebar{bottom:83px}
-  body.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
+  body{--lb-grow:max(0px, calc(var(--tabbar-top, 0px) - 75px))}   /* the floating bar's top: 16px up, 59px high */
+  .livebar{bottom:calc(83px + var(--lb-grow))}
+  body.has-livebar #app{padding-bottom:calc(194px + var(--sab) + var(--lb-grow))}
   body.totop-on #app{padding-bottom:calc(128px + var(--sab))}
   body.totop-on.resting #app{padding-bottom:calc(220px + var(--sab))}
-  body.totop-on.has-livebar #app{padding-bottom:calc(194px + var(--sab))}
+  body.totop-on.has-livebar #app{padding-bottom:calc(194px + var(--sab) + var(--lb-grow))}
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}

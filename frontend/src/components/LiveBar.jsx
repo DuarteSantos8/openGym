@@ -51,6 +51,23 @@ function LiveBarOn () {
     document.body.classList.add('has-livebar')
     return () => document.body.classList.remove('has-livebar')
   }, [])
+  // The tab bar grows with the text size (rem icons and words, px padding): the bar and the page's
+  // room follow its measured top edge (index.css --lb-grow), as SyncBanner does with --conn.
+  useLayoutEffect(() => {
+    const tabbar = document.getElementById('tabbar')
+    const root = document.documentElement.style
+    if (!tabbar) return undefined
+    const fit = () => {
+      const r = tabbar.getBoundingClientRect()
+      if (r.height > 0) root.setProperty('--tabbar-top', Math.round(window.innerHeight - r.top) + 'px')
+      else root.removeProperty('--tabbar-top')
+    }
+    fit()
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null
+    ro?.observe(tabbar)
+    window.addEventListener('resize', fit)
+    return () => { ro?.disconnect(); window.removeEventListener('resize', fit); root.removeProperty('--tabbar-top') }
+  }, [])
 
   // "Set 2 of 4" gives way to "2/4", then to nothing, before the exercise name is cut. Measured:
   // the name's box is clipped (scrollWidth > clientWidth) at this step, so take the next one.

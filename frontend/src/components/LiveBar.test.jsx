@@ -108,6 +108,20 @@ describe('the live bar', () => {
     expect(said).toBe('Duration 1:00')
   })
 
+  it('rides on the tab bar as tall as it is: its top edge is measured, and let go with the bar', () => {
+    const tabbar = document.createElement('nav')
+    tabbar.id = 'tabbar'
+    tabbar.getBoundingClientRect = () => ({ top: innerHeight - 72, height: 72 })   // Largest text
+    document.body.appendChild(tabbar)
+    const root = document.documentElement.style
+    try {
+      seed(active()); render()
+      expect(root.getPropertyValue('--tabbar-top')).toBe('72px')
+      seed(null)
+      expect(root.getPropertyValue('--tabbar-top')).toBe('')
+    } finally { tabbar.remove() }
+  })
+
   it('an unnamed, empty workout reads "Workout" with no undefined or NaN', () => {
     seed(active({ name: '', entries: [] })); render()
     expect(text()).toContain('Workout')
