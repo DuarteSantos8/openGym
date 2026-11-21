@@ -129,9 +129,9 @@ For the watches' set menu (1.4.6, #1139, #1185) each row may carry `failure` (ta
 `drop` (the first drop's weight, 0 when none is set yet) with `drops` (how many), `side` (`"L"` or
 `"R"`: one half of a timed per-side pair, which the phone treats as one set) and `rp` (a rest-pause
 or cluster set: no drop and no warm-up for it), and `settings.setMenu: true` says the phone takes
-`setMark`, `addSet` and `removeSet`; without it a watch hides its set menu. A done set whose marks
-change on the phone is stamped `eat` like one whose numbers change. `garminSnapshot` leaves these
-row fields out (a Garmin has no set menu).
+`setMark`, `addSet` and `removeSet`; without it a watch hides its set menu. A set whose marks
+change on the phone is stamped `eat`, done or not yet, as a done set whose numbers change is.
+`garminSnapshot` leaves these row fields out (a Garmin has no set menu).
 
 The running workout may carry `pausedAt` (ms) while it is paused on the phone (#976): the watch's
 clock stands at that moment. On resume the field goes and `start` moves on by the pause, so the
