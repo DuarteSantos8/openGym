@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
 import { nextPrescription, POLICIES_FOR, LADDER_TOP } from './progression.js'
 import { EXIDX } from './exercises.js'
+import { buildPlannedEntry } from './session-start.js'
 
 const done = (d, id, reps, sets = 3) => ({ d, entries: [{ id, target: { id, sets, reps, prog: 'ladder', weight: 0 }, sets: Array.from({ length: sets }, () => ({ w: 0, r: reps, done: true })) }] })
 
@@ -57,5 +58,16 @@ describe('the Skill ladder rule', () => {
     const last = nextPrescription({ workouts: [done('2026-11-01', '0725', 12)] }, { ...cfg, id: '0725' })
     expect(last.kind).toBe('hold')
     expect(last.next).toBeUndefined()
+  })
+
+  it('the first session opens at the bottom, so the second climbs from it and not from half the top', () => {
+    const first = buildPlannedEntry({ workouts: [] }, cfg, null)
+    expect(first.sets.map(x => x.r)).toEqual([5, 5, 5])
+    expect(first.target.reps).toBe(5)
+    const S = { workouts: [{ d: '2026-11-01', entries: [{ id: '0662', target: first.target, sets: first.sets.map(x => ({ ...x, done: true })) }] }] }
+    const second = buildPlannedEntry(S, cfg, null)
+    expect(second.plan).toMatchObject({ kind: 'up', reps: 6 })
+    expect(second.sets.map(x => x.r)).toEqual([6, 6, 6])
+    expect(second.target.rowReps).toBeUndefined()
   })
 })
