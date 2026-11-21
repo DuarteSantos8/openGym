@@ -153,7 +153,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
     if (running) { poke?.(); return; }  // a pass waiting on a slow job looks again for what came due
     running = true;
     try {
-      const tried = new Map(), busy = new Set(), flight = new Set();
+      const tried = new WeakMap(), busy = new Set(), flight = new Set();   // weak: a finished job is let go mid-pass
       for (;;) {
         while (flight.size < concurrency) {
           let j = null;
@@ -165,11 +165,13 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
           tried.set(j, now()); busy.add(j.uid);
           const p = runOne(j)
             .catch(e => console.error('integrations: outbox job failed', e?.message))
-            .then(held => { busy.delete(j.uid); flight.delete(p); if (!held) persist(); }); // a pass can last long: save as each delivery ends
+            .then(held => { busy.delete(j.uid); flight.delete(p); if (!held) persist(); poke?.(); }); // a pass can last long: save as each delivery ends
           flight.add(p);
         }
         if (!flight.size) break;
-        await Promise.race([...flight, new Promise(r => { poke = r; })]);
+        // Woken by a delivery ending or by poke(); racing the pending deliveries again on every wake
+        // stacked a reaction on each of them per timer tick while one hung.
+        await new Promise(r => { poke = r; });
       }
     } finally { running = false; }
   }
