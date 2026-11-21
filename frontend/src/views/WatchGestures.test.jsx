@@ -108,6 +108,15 @@ describe('the Gestures screen', () => {
     root = createRoot(host)
   })
 
+  it('a list tap made while the carousel is still settling is the one kept', async () => {
+    await mount()
+    await act(async () => { host.querySelector('[role="slider"]').dispatchEvent(new Event('scroll')) })   // Smart, not settled yet
+    await click(host.querySelector('.gw-mode'))
+    await click(byText('[role="radio"]', 'Complete set'))
+    await act(async () => { await new Promise(r => setTimeout(r, 300)) })
+    expect(readWatchPrefs().doubleTap).toBe('logSet')
+  })
+
   it('tests Double Tap on the watch: waiting, then Worked when the watch answers', async () => {
     await mount()
     expect(byText('.gw-link', 'Try it on my watch')).toBeTruthy()

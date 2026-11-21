@@ -52,12 +52,15 @@ export default function WatchGesturesPage() {
   const car = useRef(null), settle = useRef(0), due = useRef(null), slow = useRef(false)
   const previewed = actions[asList ? savedIdx : pv] || actions[0]
 
+  // A list tap or an Undo wins over a carousel save still waiting to settle.
+  const dropPending = () => { clearTimeout(settle.current); due.current = null }
   const choose = id => {
+    dropPending()
     const prev = prefs[input]
     if (id === prev) return
     setPrefs(writeWatchPrefs({ [input]: id }))
     useUI.getState().toast(t('{0} set to {1}', inputName(input), NAME[id]()), {
-      action: t('Undo'), onAction: () => setPrefs(writeWatchPrefs({ [input]: prev })),
+      action: t('Undo'), onAction: () => { dropPending(); setPrefs(writeWatchPrefs({ [input]: prev })) },
     })
   }
   const dir = () => (getComputedStyle(car.current).direction === 'rtl' ? -1 : 1)
