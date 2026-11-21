@@ -7,8 +7,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
-const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
-vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
+const { toast, ui } = vi.hoisted(() => ({ toast: vi.fn(), ui: { toastAction: null, dismissToast: null } }))
+vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast, ...ui }) } }))
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
@@ -32,6 +32,40 @@ afterEach(() => {
   vi.useRealTimers()
   localStorage.clear()
   useStore.setState({ S: clone(DEF), user: null, ready: false })
+})
+
+// An Undo holds a copy from before its action (undoMerge puts whole lists back): kept after another
+// device's changes came in, it would wipe them. On the iPhone an action toast never times out.
+describe('an Undo toast', () => {
+  beforeEach(() => { ui.toastAction = { label: 'Undo', run: () => {}, id: 1 }; ui.dismissToast = vi.fn() })
+  afterEach(() => { ui.toastAction = null; ui.dismissToast = null })
+
+  it('goes when a pull takes in another device\'s copy', async () => {
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [workout('w1')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    api.mockResolvedValueOnce({ state: { ...clone(DEF), _ts: 200, workouts: [workout('w1'), workout('w2')], _rev: 2 }, rev: 2 })
+    await useStore.getState().pullState()
+    await vi.waitFor(() => expect(ui.dismissToast).toHaveBeenCalled())
+  })
+
+  it('goes when a push meets a conflict and merges the other copy', async () => {
+    signedIn({ ...clone(DEF), _ts: 150, routines: [routine('mine')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: { ...clone(DEF), _ts: 120, routines: [routine('theirs')] } }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+    await useStore.getState().pushState()
+    await vi.waitFor(() => expect(ui.dismissToast).toHaveBeenCalled())
+  })
+
+  it('stays when only this device changed', async () => {
+    signedIn({ ...clone(DEF), _ts: 150, workouts: [workout('w1')], restSec: 75 })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    api.mockResolvedValueOnce({ state: { ...clone(DEF), _ts: 100, workouts: [workout('w1')], _rev: 1 }, rev: 1 })
+    api.mockResolvedValueOnce({ ok: true, rev: 2 })
+    await useStore.getState().pullState()
+    await new Promise(r => setTimeout(r, 0))
+    expect(ui.dismissToast).not.toHaveBeenCalled()
+  })
 })
 
 describe('pull against a revisioned server', () => {
