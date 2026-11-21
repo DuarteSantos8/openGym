@@ -555,7 +555,9 @@ function sourceOf(S, cfg, plan, field, routine) {
     const fromLast = startsFromLast(S) && routine?.excludeFromProgression !== true
     return fromLast && lastEntryFor(S, cfg.id, routine && routine.id) ? 'last_session' : 'routine_plan'
   }
-  const decided = plan.kind !== 'first' && plan[field] != null
+  // A first session decides nothing, unless it carries per-set rows (steady, triple, ladder):
+  // applyPrescription writes those, so the reps are the policy's.
+  const decided = (plan.kind !== 'first' || Array.isArray(plan.rowReps)) && plan[field] != null
   // A policy that settles on the routine's own reps or hold — a restart after the plan was
   // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.
   if (decided) return field !== 'weight' && plan[field] === cfg[field] ? 'routine_plan' : 'progression'
