@@ -125,6 +125,26 @@ final class SetTypesTests: XCTestCase {
         XCTAssertEqual(SessionCore.summary(s.workout!, end: 1).sets, 0)
     }
 
+    func testASkipAndARatingBelongToTheEntryNotToTheExercise() {
+        // the same lift twice (back-off sets): set 0 skipped and set 1 rated on the first one only
+        var s = state([entry("bench", "Bench", sets: [row(60, 8), row(60, 8), row(60, 8)]),
+                       entry("bench", "Bench", sets: [row(50, 10), row(50, 10), row(50, 10)])])
+        s = SessionCore.skip(s, entry: 0, set: 0)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 1), 0, "the second Bench Press still starts at its first set")
+        XCTAssertTrue(SessionCore.isSkipped(s, entry: 0, 0)); XCTAssertFalse(SessionCore.isSkipped(s, entry: 1, 0))
+        s = SessionCore.tick(s, entry: 0, set: 1, w: 60, r: 8, at: 1, id: "1", effort: Effort.Rating(kind: "rpe", value: 8)).0
+        XCTAssertEqual(Metrics.effort(s).map(\.value), [8], "only the first Bench Press has a rating")
+    }
+
+    func testTakingASetOutOfOneEntryLeavesTheOtherEntrysSkipsAlone() throws {
+        func sets(_ p: String) -> [SetRow] { (0..<3).map { SetRow(w: 60, r: 8, sec: nil, done: false, warmup: false, at: nil, sid: "\(p)\($0)") } }
+        var s = state([entry("bench", "Bench", sets: sets("a")), entry("bench", "Bench", sets: sets("b"))])
+        s = SessionCore.skip(SessionCore.skip(s, entry: 0, set: 2), entry: 1, set: 2)
+        let s1 = try XCTUnwrap(SetMenu.removeSet(s, entry: 1, set: 0, at: 5, id: "r1"))
+        XCTAssertEqual(s1.skipped, ["e0:bench#2", "e1:bench#1"])
+    }
+
     func testCardioIsTickedWithoutNumbers() {
         let s0 = state([entry("run", "Treadmill", mode: "cardio", sets: [row(nil, nil)])])
         let (s, ev) = SessionCore.tick(s0, entry: 0, set: 0, w: nil, r: nil, at: 1, id: "c")
