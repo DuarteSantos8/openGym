@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { MUSCLES } from './muscles.js'
 import {
-  AREAS, AREA, VIEW_AREAS, areaOfMuscle, toggleArea, focusMuscles, exploreHref,
+  AREAS, AREA, VIEW_AREAS, areaOfMuscle, toggleArea, focusMuscles, builderTerms, exploreHref,
   loadFocus, saveFocus, FOCUS_KEY, poseProblem, areasFromPose, hitArea, toPhoto,
 } from './body-focus.js'
 
@@ -41,6 +41,12 @@ describe('body-focus areas', () => {
     expect(toggleArea(['calves'], 'shoulders')).toEqual(['shoulders', 'calves'])
     expect(toggleArea(['shoulders', 'calves'], 'shoulders')).toEqual(['calves'])
     expect(toggleArea(['calves'], 'nope')).toEqual(['calves'])
+  })
+
+  it('hand the session builder whole groups where an area is one, so its title stays short', () => {
+    expect(builderTerms(['shoulders', 'core', 'calves'])).toEqual(['group:shoulders', 'group:core', 'calves', 'tibialis'])
+    expect(builderTerms(['chest', 'upper-back'])).toEqual(['group:chest', 'lats', 'upper-back'])
+    expect(builderTerms([])).toEqual([])
   })
 
   it('turn into the explorer filter: the areas’ muscles, in the map’s order', () => {
@@ -110,6 +116,8 @@ describe('body-focus photo geometry', () => {
     expect(new Set(shapes.map(s => s.area))).toEqual(new Set(VIEW_AREAS.back))
     const at = (x, y) => hitArea(shapes, x * W, y * H)
     expect(at(0.5, 0.19)).toBe('traps')
+    expect(at(292 / W, 172 / H)).toBe('traps')     // both upper corners, beside the neck
+    expect(at(308 / W, 172 / H)).toBe('traps')
     expect(at(0.5, 0.3)).toBe('upper-back')
     expect(at(0.5, 0.42)).toBe('lower-back')
     expect(at(0.62, 0.3)).toBe('triceps')

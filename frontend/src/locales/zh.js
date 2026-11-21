@@ -6204,4 +6204,6 @@ export default {
   "Back of thighs": "大腿后侧",
   "Body picker": "身体选择器",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "首页上的你的照片或手绘身体：点一下你想变强的部位，查看对应的动作。",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "背对镜头站好，双臂放在身体两侧。穿贴身的衣服效果最好。照片只保存在这台设备上。",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "这个浏览器无法保存你的照片，关闭应用后照片就会消失。",
 }

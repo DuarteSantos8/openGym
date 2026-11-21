@@ -6259,4 +6259,6 @@ export default {
   "Back of thighs": "خلفية الفخذين",
   "Body picker": "منتقي الجسم",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "صورتك أو جسم مرسوم في الرئيسية: اضغط حيث تريد أن تصبح أقوى وشاهد التمارين المناسبة له.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "قف وظهرك للكاميرا، وذراعاك بجانبك. الملابس الضيقة هي الأفضل. صورتك تبقى على هذا الجهاز.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "لا يستطيع هذا المتصفح الاحتفاظ بصورتك، لذا ستختفي عند إغلاق التطبيق.",
 }

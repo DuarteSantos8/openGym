@@ -6200,4 +6200,6 @@ export default {
   "Back of thighs": "Šlaunų galas",
   "Body picker": "Kūno parinkiklis",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Jūsų nuotrauka arba nupieštas kūnas „Home“ ekrane: bakstelėkite ten, kur norite sustiprėti, ir pamatykite tam skirtus pratimus.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Atsistokite nugara į kamerą, rankos šonuose. Geriausia tinka prigludę drabužiai. Nuotrauka lieka šiame įrenginyje.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Ši naršyklė negali išsaugoti jūsų nuotraukos, todėl uždarius programėlę ji dings.",
 }

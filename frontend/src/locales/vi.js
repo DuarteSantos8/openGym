@@ -6170,4 +6170,6 @@ export default {
   "Back of thighs": "Mặt sau đùi",
   "Body picker": "Chọn vùng cơ thể",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Ảnh của bạn hoặc hình cơ thể vẽ sẵn ở Trang chủ: chạm vào chỗ bạn muốn khỏe hơn và xem bài tập cho vùng đó.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Đứng quay lưng về phía máy ảnh, hai tay buông dọc thân. Quần áo ôm vừa người là tốt nhất. Ảnh của bạn chỉ ở trên thiết bị này.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Trình duyệt này không lưu được ảnh của bạn, nên ảnh sẽ mất khi bạn đóng ứng dụng.",
 };

@@ -6204,4 +6204,6 @@ export default {
   "Back of thighs": "허벅지 뒤쪽",
   "Body picker": "몸 선택기",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "홈에서 내 사진이나 그려진 몸의 강해지고 싶은 곳을 탭하면 그 부위 운동을 볼 수 있어요.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "카메라를 등지고 서서 팔은 옆에 두세요. 몸에 맞는 옷이 가장 좋아요. 사진은 이 기기에만 남아요.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "이 브라우저는 사진을 저장할 수 없어서 앱을 닫으면 사라져요.",
 }

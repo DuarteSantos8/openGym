@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { isOn } from '../lib/modules.js'
 import {
-  AREAS, areaOfMuscle, toggleArea, focusMuscles, exploreHref, loadFocus, saveFocus,
+  AREAS, areaOfMuscle, toggleArea, focusMuscles, builderTerms, exploreHref, loadFocus, saveFocus,
   poseProblem, areasFromPose, hitArea, toPhoto,
 } from '../lib/body-focus.js'
 import { photoStore, preparePhoto, detectPose } from '../lib/body-photo.js'
@@ -17,9 +17,10 @@ import './body-focus.css'
    tap where you want to get stronger. "Show exercises" opens the explorer on those areas' muscles,
    "Build a session" the session builder with them (lib/body-focus.js).
 
-   The photo stays on this device (lib/body-photo.js). The picks are remembered here too, not in the
-   synced profile. Everything on the picture is also a chip below it, so nobody has to aim at a
-   photo, and a screen reader meets one plain button per area. */
+   The photo stays in this browser (lib/body-photo.js); Reset everything and every sign-out delete it.
+   The picks are remembered here too, not in the synced profile. Every area is also a chip below the
+   picture, so nobody has to aim at a photo: the photo's own shapes are hidden from screen readers,
+   and the drawn body keeps the map's per-muscle buttons (a muscle picks the area it belongs to). */
 
 const local = () => { try { return globalThis.localStorage } catch { return null } }
 let STORE = null
@@ -59,27 +60,37 @@ export default function BodyFocus() {
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState('')
   const file = useRef(null)
-  const urls = useRef([])
+  const addButton = useRef(null)
+  const urls = useRef({})                              // view -> object URL shown now
+  const mounted = useRef(true)
+  const [refocus, setRefocus] = useState(0)
 
+  // One object URL per view: a new photo frees the one it replaces, unmounting frees the rest.
+  const release = view => { if (urls.current[view]) URL.revokeObjectURL(urls.current[view]); delete urls.current[view] }
   const show = rec => {
+    if (!mounted.current) return
+    release(rec.view)
     const url = URL.createObjectURL(new Blob([rec.data], { type: rec.mime || 'image/jpeg' }))
-    urls.current.push(url)
+    urls.current[rec.view] = url
     setPhotos(p => ({ ...p, [rec.view]: { rec, url } }))
   }
   useEffect(() => {
-    let alive = true
+    mounted.current = true
     Promise.all(['front', 'back'].map(v => store().get(v).catch(() => null)))
-      .then(recs => { if (alive) for (const rec of recs) if (rec?.lm && !poseProblem(rec.lm, rec.w, rec.h)) show(rec) })
-    return () => { alive = false; for (const u of urls.current) URL.revokeObjectURL(u) }
+      .then(recs => { for (const rec of recs) if (rec?.lm && !poseProblem(rec.lm, rec.w, rec.h)) show(rec) })
+    return () => { mounted.current = false; for (const v of Object.keys(urls.current)) release(v) }
   }, [])
+  // After Remove photo the button that had focus is gone: hand it to the one that takes its place.
+  useEffect(() => { if (refocus) addButton.current?.focus() }, [refocus])
 
   if (!isOn(S, 'bodyfocus')) return null
 
   const change = next => { setFocus(next); saveFocus(local(), next) }
   const toggle = id => id && change({ ...focus, areas: toggleArea(focus.areas, id) })
-  const view = focus.view
-  const photo = photos[view]
   const anyPhoto = !!(photos.front || photos.back)
+  // Without any photo there is no Front/Back switch, so the view is the front, whatever was saved.
+  const view = anyPhoto ? focus.view : 'front'
+  const photo = photos[view]
 
   const onFile = async e => {
     const f = e.target.files?.[0]
@@ -94,13 +105,16 @@ export default function BodyFocus() {
       try { lm = await __test.detect(p.canvas) } catch { setNote(t('This device can’t look for the body in photos. The drawn body works the same way.')); return }
       if (poseProblem(lm, p.w, p.h)) { setNote(t('Couldn’t find your whole body in this photo. Stand straight with your head and feet in view, then try again.')); return }
       const rec = { view, data: p.data, mime: p.mime, w: p.w, h: p.h, lm, at: Date.now() }
-      await store().put(rec).catch(() => {})
+      const kept = await store().put(rec).then(() => store().open(), () => false)
       show(rec)
-    } finally { setBusy(false) }
+      if (!kept && mounted.current) setNote(t('This browser can’t keep your photo, so it’s gone when you close the app.'))
+    } finally { if (mounted.current) setBusy(false) }
   }
   const removePhoto = async () => {
     await store().remove(view).catch(() => {})
+    release(view)
     setPhotos(p => { const n = { ...p }; delete n[view]; return n })
+    setRefocus(n => n + 1)
   }
   const picked = focus.areas
   const muscles = focusMuscles(picked)
@@ -121,11 +135,13 @@ export default function BodyFocus() {
       {busy ? <span className="small dim" role="status">{t('Finding you in the photo…')}</span> : photo ? <>
         <Button size="sm" variant="ghost" icon="camera" onClick={() => file.current?.click()}>{t('Change photo')}</Button>
         <Button size="sm" variant="ghost" icon="trash" onClick={removePhoto}>{t('Remove photo')}</Button>
-      </> : <Button size="sm" variant="tinted" icon="camera" onClick={() => file.current?.click()}>
+      </> : <Button ref={addButton} size="sm" variant="tinted" icon="camera" onClick={() => file.current?.click()}>
         {anyPhoto ? (view === 'back' ? t('Add a back photo') : t('Add a front photo')) : t('Add your photo')}
       </Button>}
     </div>
-    {!photo && !busy && <p className="bf-tip small dim">{t('Stand facing the camera, arms at your sides, palms forward. Fitted clothes work best. Your photo stays on this device.')}</p>}
+    {!photo && !busy && <p className="bf-tip small dim">{view === 'back'
+      ? t('Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.')
+      : t('Stand facing the camera, arms at your sides, palms forward. Fitted clothes work best. Your photo stays on this device.')}</p>}
     {note && <p className="bf-note small" role="alert">{note}</p>}
 
     <div className="bf-chips" role="group" aria-label={t('Your body')}>
@@ -134,8 +150,8 @@ export default function BodyFocus() {
     </div>
 
     {picked.length > 0 && <div className="bf-go">
-      <Button variant="primary" icon="list" onClick={() => nav(exploreHref(picked), { state: { from: '/' } })}>{t('Show exercises')}</Button>
-      <Button icon="sparkles" onClick={() => import('./SessionBuilder.jsx').then(m => m.sessionBuilderSheet(muscles))}>{t('Build a session')}</Button>
+      <Button variant="primary" icon="list" onClick={() => nav(exploreHref(picked), { state: { from: '/home' } })}>{t('Show exercises')}</Button>
+      <Button icon="sparkles" onClick={() => import('./SessionBuilder.jsx').then(m => m.sessionBuilderSheet(builderTerms(picked)))}>{t('Build a session')}</Button>
       <Button size="sm" variant="ghost" onClick={() => change({ ...focus, areas: [] })}>{t('Clear selection')}</Button>
     </div>}
   </div>

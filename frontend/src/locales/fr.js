@@ -6204,4 +6204,6 @@ export default {
   "Back of thighs": "Arrière des cuisses",
   "Body picker": "Sélecteur corporel",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Ta photo ou un corps dessiné sur l’Accueil : touche là où tu veux gagner en force et vois les exercices pour cette zone.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Place-toi dos à l’appareil, bras le long du corps. Des vêtements ajustés, c’est l’idéal. Ta photo reste sur cet appareil.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Ce navigateur ne peut pas garder ta photo : elle disparaît quand tu fermes l’app.",
 }

@@ -6144,4 +6144,6 @@ export default {
   "Back of thighs": "Bagsiden af lårene",
   "Body picker": "Kropsvælger",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Dit foto eller en tegnet krop på Hjem: tryk der, hvor du vil blive stærkere, og se øvelserne til det.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Stå med ryggen mod kameraet og armene ned langs siden. Tætsiddende tøj virker bedst. Dit foto bliver på denne enhed.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Denne browser kan ikke gemme dit foto, så det forsvinder, når du lukker appen.",
 }

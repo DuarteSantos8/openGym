@@ -6207,4 +6207,6 @@ export default {
   "Back of thighs": "Comb hátsó része",
   "Body picker": "Testválasztó",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "A fotód vagy egy rajzolt test a Kezdőlapon: koppints oda, ahol erősebb szeretnél lenni, és nézd meg a hozzá tartozó gyakorlatokat.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Állj háttal a kamerának, karok a tested mellett. A testhez simuló ruha a legjobb. A fotód ezen az eszközön marad.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Ez a böngésző nem tudja megtartani a fotódat, ezért az app bezárásakor eltűnik.",
 }

@@ -6201,4 +6201,6 @@ export default {
   "Back of thighs": "Задня частина стегон",
   "Body picker": "Вибір частин тіла",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Твоє фото або намальоване тіло на Головній: торкнись місця, яке хочеш зміцнити, і дивись вправи для нього.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Стань спиною до камери, руки вздовж тіла. Найкраще підходить облеглий одяг. Фото залишається на цьому пристрої.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Цей браузер не може зберегти твоє фото, тож воно зникне, щойно ти закриєш застосунок.",
 }

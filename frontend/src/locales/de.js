@@ -6224,4 +6224,6 @@ export default {
   "Back of thighs": "Oberschenkel hinten",
   "Body picker": "Körperauswahl",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Dein Foto oder ein gezeichneter Körper auf Start: Tippe dort, wo du stärker werden willst, und sieh die Übungen dafür.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Stell dich mit dem Rücken zur Kamera, Arme seitlich. Eng anliegende Kleidung klappt am besten. Dein Foto bleibt auf diesem Gerät.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Dieser Browser kann dein Foto nicht behalten, es ist weg, sobald du die App schließt.",
 }

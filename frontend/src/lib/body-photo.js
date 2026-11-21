@@ -10,6 +10,7 @@
 // (scripts/stage-mediapipe.mjs): loaded from the app's own files, only when a photo is added,
 // and run on the device on that one still image.
 import { WASM_PATH, MODEL_PATH } from './pose-session.js'
+import { FOCUS_KEY } from './body-focus.js'
 
 const DB = 'ironvane-body'
 const STORE = 'photos'
@@ -55,7 +56,8 @@ export function photoStore({ idb = globalThis.indexedDB } = {}) {
         r.onerror = () => reject(r.error)
         r.onblocked = () => reject(new Error('blocked'))
       })
-      db.onversionchange = () => { try { db.close() } catch { /* closed */ } db = null }
+      // Another tab, or forgetBodyFocus(), wants the database gone: let go, and open afresh next time.
+      db.onversionchange = () => { try { db.close() } catch { /* closed */ } db = null; opening = null }
       return true
     } catch {
       db = null
@@ -86,25 +88,38 @@ export function photoStore({ idb = globalThis.indexedDB } = {}) {
   }
 }
 
+// A file as an <img>, for engines without createImageBitmap or without its options. Browsers draw
+// an <img> upright from its EXIF orientation by default.
+function imageOf(file) {
+  const url = URL.createObjectURL(file)
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve({ image: img, done: () => URL.revokeObjectURL(url) })
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable')) }
+    img.src = url
+  })
+}
+
 /**
  * A picked file drawn upright and shrunk onto a canvas, and the JPEG it is kept as.
  * Resolves { canvas, w, h, data, mime }; rejects when the file is not a picture the browser reads.
+ * createImageBitmap's imageOrientation option is Safari/iOS 16 and Chrome 112 on; older engines
+ * reject the call, and then the file is read through an <img> instead.
  */
-export async function preparePhoto(file, { doc = globalThis.document } = {}) {
-  let src, cleanup = () => {}
-  if (typeof globalThis.createImageBitmap === 'function') {
-    src = await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' })
-    cleanup = () => src.close?.()
-  } else {
-    const url = URL.createObjectURL(file)
-    src = await new Promise((resolve, reject) => {
-      const img = new Image()
-      img.onload = () => resolve(img)
-      img.onerror = () => reject(new Error('unreadable'))
-      img.src = url
-    })
-    cleanup = () => URL.revokeObjectURL(url)
+export async function preparePhoto(file, {
+  doc = globalThis.document,
+  createBitmap = typeof globalThis.createImageBitmap === 'function' ? (f, o) => globalThis.createImageBitmap(f, o) : null,
+  loadImage = imageOf,
+} = {}) {
+  let src = null, done = () => {}
+  if (createBitmap) {
+    try {
+      src = await createBitmap(file, { imageOrientation: 'from-image' })
+      const bitmap = src
+      done = () => bitmap.close?.()
+    } catch { src = null }
   }
+  if (!src) ({ image: src, done } = await loadImage(file))
   try {
     const { w, h } = fitSize(src.width, src.height)
     const canvas = doc.createElement('canvas')
@@ -113,7 +128,7 @@ export async function preparePhoto(file, { doc = globalThis.document } = {}) {
     canvas.getContext('2d').drawImage(src, 0, 0, w, h)
     const blob = await new Promise((resolve, reject) => canvas.toBlob(b => (b ? resolve(b) : reject(new Error('encode'))), 'image/jpeg', 0.86))
     return { canvas, w, h, data: await blob.arrayBuffer(), mime: 'image/jpeg' }
-  } finally { cleanup() }
+  } finally { done() }
 }
 
 /**
@@ -142,4 +157,23 @@ export async function detectPose(source, {
   } finally {
     try { landmarker.close() } catch { /* already gone */ }
   }
+}
+
+/**
+ * Everything the body picker keeps on this device, gone: the photos' database and the picked areas.
+ * Reset everything and every sign-out call it (views/Settings.jsx, store/useStore.js), since both
+ * promise to take the photos off this device and a shared device must keep nothing of them.
+ * Resolves true once the database is deleted; never rejects.
+ */
+export function forgetBodyFocus({ idb = globalThis.indexedDB, storage = globalThis.localStorage } = {}) {
+  try { storage?.removeItem(FOCUS_KEY) } catch { /* private window */ }
+  return new Promise(resolve => {
+    if (!idb) return resolve(false)
+    try {
+      const r = idb.deleteDatabase(DB)
+      r.onsuccess = () => resolve(true)
+      r.onerror = () => resolve(false)
+      r.onblocked = () => resolve(false)
+    } catch { resolve(false) }
+  })
 }

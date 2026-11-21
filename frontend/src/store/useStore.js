@@ -33,6 +33,7 @@ import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent, NEW_ACCENT } from '../lib/accent.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
+import { forgetBodyFocus } from '../lib/body-photo.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -1115,6 +1116,9 @@ export const useStore = create((set, get) => {
     handedOver = false
     // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
     persist(freshState(), false)
+    // Today's body picker keeps a photo and the picks outside the state (lib/body-photo.js): a
+    // shared device keeps nothing of them either.
+    forgetBodyFocus()
     // The openNutrition link (lib/sister-nutrition.js) is this device's, but what it cached is what
     // the signed-out person ate: on a shared device it must not show on the next account's Home,
     // report or month story. Their token goes too; linking again is one code.

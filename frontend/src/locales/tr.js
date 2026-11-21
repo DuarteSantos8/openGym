@@ -6204,4 +6204,6 @@ export default {
   "Back of thighs": "Uyluk arkası",
   "Body picker": "Vücut seçici",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Ana sayfada fotoğrafın ya da çizilmiş bir vücut: güçlenmek istediğin yere dokun ve oranın egzersizlerini gör.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Sırtını kameraya dön, kolların yanlarda olsun. Vücuda oturan kıyafetler en iyisidir. Fotoğrafın bu cihazda kalır.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Bu tarayıcı fotoğrafını saklayamıyor, bu yüzden uygulamayı kapattığında silinir.",
 }

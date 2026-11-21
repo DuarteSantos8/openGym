@@ -6170,4 +6170,6 @@ export default {
   "Back of thighs": "Zadní strana stehen",
   "Body picker": "Výběr partií",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Tvoje fotka nebo nakreslené tělo na obrazovce Domů: klepni tam, kde chceš zesílit, a uvidíš cviky na danou partii.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Postav se zády k fotoaparátu, ruce podél těla. Nejlíp funguje přiléhavé oblečení. Fotka zůstane v tomto zařízení.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Tento prohlížeč fotku neuloží, takže po zavření aplikace zmizí.",
 }

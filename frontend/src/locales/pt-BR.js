@@ -4614,6 +4614,8 @@ export const PT_BR_OVERRIDES = {
   "Back of thighs": "Parte de trás das coxas",
   "Body picker": "Seletor do corpo",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Sua foto ou um corpo desenhado no Início: toque onde você quer ficar mais forte e veja os exercícios para essa região.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Fique de costas para a câmera, braços ao lado do corpo. Roupa justa funciona melhor. Sua foto fica neste dispositivo.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Este navegador não consegue guardar sua foto, então ela some quando você fecha o app.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

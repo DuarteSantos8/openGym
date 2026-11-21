@@ -11,8 +11,15 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Home.jsx` | `next/today-body-focus` | +4 | Renders the body picker card under today's workout, behind `isOn(S, 'bodyfocus')`. |
 | `frontend/src/lib/modules.js` | `next/today-body-focus` | +3 −1 | Registers the `bodyfocus` module (on by default) and adds it to the Just training preset, so every preset keeps it. |
 | `frontend/src/lib/modules-copy.js` | `next/today-body-focus` | +1 | The module's title and description inside `t()`, as `modules-copy.test.js` requires. |
-| `frontend/src/views/Muscles.jsx` | `next/today-body-focus` | +7 −5 | `?m=` takes several muscles (opens with "Any of them"); back from it goes to Today when opened from there. One muscle behaves as before. |
+| `frontend/src/views/settings-pages.js` | `next/today-body-focus` | +1 | The module's Settings search words (without them its search entry read "undefined"). |
+| `frontend/src/views/Muscles.jsx` | `next/today-body-focus` | +7 −5 | `?m=` takes several muscles (opens with "Any of them"); back from it goes to Today (`/home`) when opened from there. One muscle behaves as before. |
 | `frontend/src/components/MuscleExplorer.jsx` | `next/today-body-focus` | +4 −3 | `initial` may be a list, and `initialMatch` sets All/Any; defaults unchanged. |
-| `frontend/src/locales/*.js` (25 packs) | `next/today-body-focus` | +18 each | The picker's 18 new strings. Machine-written; add them to the native-speaker review (NEXT-STEPS task 7). pt-BR gets explicit overrides, so the pt-PT inheritance fingerprint is unchanged. |
+| `frontend/src/store/useStore.js` | `next/today-body-focus` | +4 | **Store (Tier A area):** `clearLocalSession` also calls `forgetBodyFocus()`, so a sign-out leaves no body photo or picks on the device. Device-local delete only; no change to state, sync or merge. |
+| `frontend/src/views/Settings.jsx` | `next/today-body-focus` | +2 | Reset everything also calls `forgetBodyFocus()` (its dialog promises the photos on this device go). |
+| `frontend/src/locales/*.js` (25 packs) | `next/today-body-focus` | +20 each | The picker's 20 new strings. Machine-written; add them to the native-speaker review (NEXT-STEPS task 7). pt-BR gets explicit overrides, so the pt-PT inheritance fingerprint is unchanged. |
 | `frontend/src/views/Modules.test.jsx` | `next/today-body-focus` | +1 −1 | One more module on: "12 of 14 modules on." |
+| `frontend/src/views/Home.modules.test.jsx` | `next/today-body-focus` | +13 | The body picker follows its module; off leaves the rest of Home unchanged (flags-off parity). |
+| `frontend/src/components/MuscleExplorer.test.jsx` | `next/today-body-focus` | +20 | Opening on several muscles with "Any of them"; one muscle still opens with "All of them". |
+| `frontend/src/views/Settings.media.test.jsx` | `next/today-body-focus` | +11 | Reset everything forgets the body picker's photos and picks. |
 | `docs/MODULES.md` | `next/today-body-focus` | +1 | The Body picker row. |
+| `docs/next/NEXT-STEPS.md` | `next/today-body-focus` | +1 | The feature's status and open items. |

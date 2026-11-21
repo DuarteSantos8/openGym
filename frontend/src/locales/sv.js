@@ -6251,4 +6251,6 @@ export default {
   "Back of thighs": "Baksida lår",
   "Body picker": "Kroppsväljare",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "Ditt foto eller en ritad kropp på Hem: tryck där du vill bli starkare och se övningarna för det.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "Stå med ryggen mot kameran och armarna längs sidorna. Åtsittande kläder fungerar bäst. Ditt foto stannar på den här enheten.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "Den här webbläsaren kan inte spara ditt foto, så det försvinner när du stänger appen.",
 }

@@ -10,6 +10,7 @@
 // the torso. Sizes follow the body (shoulder width), never the frame, so a wide photo keeps round
 // circles. Pure: no DOM, no model, no storage beyond the one Storage-like argument.
 import { MUSCLES } from './muscles.js'
+import { MUSCLE_GROUPS, groupTerm } from './muscle-filter.js'
 
 /** Head to toe. `name` is an i18n key; most are the map's own muscle names. */
 export const AREAS = [
@@ -52,6 +53,20 @@ export function toggleArea(areas, id) {
 
 /** Every muscle of the picked areas, in the map's head-to-toe order (the explorer's filter). */
 export const focusMuscles = areas => MUSCLES.filter(m => (areas || []).some(id => AREA[id]?.muscles.includes(m)))
+
+/**
+ * The session builder's terms: an area that is exactly one of the explorer's groups goes as that
+ * group ("Shoulders", not three delts), the others as their muscles. Same muscles either way.
+ */
+export function builderTerms(areas) {
+  const out = []
+  for (const id of inOrder(Array.isArray(areas) ? areas : [])) {
+    const ms = AREA[id].muscles
+    const g = MUSCLE_GROUPS.find(gr => gr.muscles.length === ms.length && gr.muscles.every(m => ms.includes(m)))
+    if (g) out.push(groupTerm(g.id)); else out.push(...ms)
+  }
+  return out
+}
 
 /** The explorer opened on the picked areas (views/Muscles.jsx reads ?m= as "any of these"). */
 export const exploreHref = areas => '/muscles?m=' + focusMuscles(areas).join(',')
@@ -150,7 +165,8 @@ export function areasFromPose(landmarks, w, h, view = 'front') {
     const ears = usable(landmarks[L_EAR]) && usable(landmarks[R_EAR]) ? lerp(P(L_EAR), P(R_EAR), 0.5) : { x: sm.x, y: sm.y - 0.9 * sw }
     const top = lerp(sm, ears, 0.45)
     const across = towards(ls, rs, 0.1 * sw), d = { x: across.x - ls.x, y: across.y - ls.y }
-    shapes.push({ area: 'traps', kind: 'poly', pts: [xy(lerp(ls, rs, 0.18)), xy(lerp(rs, ls, 0.18)), [top.x - d.x, top.y - d.y], [top.x + d.x, top.y + d.y]] })
+    // Round the trapezoid: bottom left, bottom right, top right, top left (any other order crosses itself).
+    shapes.push({ area: 'traps', kind: 'poly', pts: [xy(lerp(ls, rs, 0.18)), xy(lerp(rs, ls, 0.18)), [top.x + d.x, top.y + d.y], [top.x - d.x, top.y - d.y]] })
     shapes.push({ area: 'upper-back', kind: 'poly', pts: band(0, 0.55, 0.08) })
     shapes.push({ area: 'lower-back', kind: 'poly', pts: band(0.55, 0.85, 0.15) })
   } else {

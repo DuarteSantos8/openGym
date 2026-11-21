@@ -6215,4 +6215,6 @@ export default {
   "Back of thighs": "ต้นขาด้านหลัง",
   "Body picker": "ตัวเลือกส่วนของร่างกาย",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "รูปของคุณหรือร่างกายแบบภาพวาดบนหน้าหลัก: แตะตรงที่คุณอยากให้แข็งแรงขึ้นแล้วดูท่าออกกำลังกายสำหรับส่วนนั้น",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "ยืนหันหลังให้กล้อง แขนแนบลำตัว เสื้อผ้าที่พอดีตัวจะได้ผลดีที่สุด รูปของคุณจะอยู่ในอุปกรณ์นี้เท่านั้น",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "เบราว์เซอร์นี้เก็บรูปของคุณไว้ไม่ได้ รูปจะหายไปเมื่อคุณปิดแอป",
 }

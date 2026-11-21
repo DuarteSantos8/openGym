@@ -221,7 +221,9 @@ describe('MuscleExplorer opened on several muscles', () => {
   it('still opens on one muscle with "All of them", as Stats asks for it', () => {
     const host = render({ initial: 'biceps' })
     expect(isOn(muscleChip(host, 'Biceps'))).toBe(true)
+    // The All/Any switch shows from two muscles on: pick a second one to read what it starts on.
+    act(() => muscleChip(host, 'Triceps').click())
     const all = [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'All of them')
-    expect(all?.getAttribute('aria-pressed') ?? 'true').toBe('true')
+    expect(all.getAttribute('aria-pressed')).toBe('true')
   })
 })

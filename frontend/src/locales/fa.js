@@ -6170,4 +6170,6 @@ export default {
   "Back of thighs": "پشت ران",
   "Body picker": "انتخابگر بدن",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "عکس شما یا یک بدن کشیده‌شده در صفحه خانه: جایی را که می‌خواهید قوی‌تر شود لمس کنید و تمرینات آن را ببینید.",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "پشت به دوربین بایستید، دست‌ها کنار بدن. لباس جذب بهترین نتیجه را می‌دهد. عکس شما روی همین دستگاه می‌ماند.",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "این مرورگر نمی‌تواند عکس شما را نگه دارد، پس با بستن برنامه پاک می‌شود.",
 }

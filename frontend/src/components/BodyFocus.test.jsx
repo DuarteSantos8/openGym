@@ -74,7 +74,7 @@ describe('BodyFocus', () => {
     expect(JSON.parse(localStorage.getItem(FOCUS_KEY)).areas).toEqual(['shoulders', 'calves'])
 
     await act(() => button('Show exercises').click())
-    expect(mocks.nav).toHaveBeenCalledWith('/muscles?m=front-delts,side-delts,rear-delts,calves,tibialis', { state: { from: '/' } })
+    expect(mocks.nav).toHaveBeenCalledWith('/muscles?m=front-delts,side-delts,rear-delts,calves,tibialis', { state: { from: '/home' } })
 
     await act(() => button('Clear selection').click())
     expect(button('Show exercises')).toBeUndefined()
@@ -118,6 +118,44 @@ describe('BodyFocus', () => {
     expect(store.m.has('front')).toBe(false)
     expect(host.querySelector('.bf-photo')).toBe(null)
     fetchSpy.mockRestore()
+  })
+
+  it('a saved Back view with no photo left opens on the front, and a new photo is a front one', async () => {
+    localStorage.setItem(FOCUS_KEY, JSON.stringify({ areas: [], view: 'back' }))
+    __test.prepare = vi.fn(async () => ({ canvas: 'c', w: 600, h: 1000, data: new Uint8Array([1]).buffer, mime: 'image/jpeg' }))
+    __test.detect = vi.fn(async () => standing())
+    await mount()
+    expect(host.textContent).toContain('Stand facing the camera')
+    const input = host.querySelector('input[type=file]')
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'me.jpg')], configurable: true })
+    await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })) })
+    await vi.waitFor(() => expect(store.m.get('front')).toBeTruthy())
+    expect(store.m.has('back')).toBe(false)
+  })
+
+  it('the Back view asks for a back photo, with its own tip', async () => {
+    store.m.set('front', { view: 'front', data: new Uint8Array([1]).buffer, mime: 'image/jpeg', w: 600, h: 1000, lm: standing(), at: 1 })
+    await mount()
+    await vi.waitFor(() => expect(button('Back view')).toBeTruthy())
+    await act(() => button('Back view').click())
+    expect(button('Add a back photo')).toBeTruthy()
+    expect(host.textContent).toContain('Stand with your back to the camera')
+    expect(host.textContent).not.toContain('Stand facing the camera')
+  })
+
+  it('says when this browser cannot keep the photo, and Remove hands focus to Add', async () => {
+    store.open = async () => false
+    __test.prepare = vi.fn(async () => ({ canvas: 'c', w: 600, h: 1000, data: new Uint8Array([1]).buffer, mime: 'image/jpeg' }))
+    __test.detect = vi.fn(async () => standing())
+    await mount()
+    const input = host.querySelector('input[type=file]')
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'me.jpg')], configurable: true })
+    await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })) })
+    await vi.waitFor(() => expect(host.querySelector('.bf-photo img')).toBeTruthy())
+    expect(host.textContent).toContain('This browser can’t keep your photo')
+    await act(async () => button('Remove photo').click())
+    expect(document.activeElement?.textContent).toBe('Add your photo')
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:photo')
   })
 
   it('says so when the photo has no whole body in it, and keeps the drawn body', async () => {

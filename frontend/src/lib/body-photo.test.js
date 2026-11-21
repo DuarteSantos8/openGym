@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fitSize, photoStore, detectPose, toLandmarks } from './body-photo.js'
+import { fitSize, photoStore, detectPose, toLandmarks, forgetBodyFocus, preparePhoto } from './body-photo.js'
 
 describe('body-photo', () => {
   it('shrinks a photo to fit, never enlarges one', () => {
@@ -50,5 +50,53 @@ describe('body-photo', () => {
     const loadVision = async () => ({ FilesetResolver: { forVisionTasks: async () => ({}) }, PoseLandmarker: { createFromOptions } })
     expect(await detectPose('img', { base: './', loadVision })).toBe(null)
     expect(createFromOptions.mock.calls.map(c => c[1].baseOptions.delegate)).toEqual(['GPU', 'CPU'])
+  })
+})
+
+describe('forgetBodyFocus', () => {
+  it('deletes the photos’ database and the picks, and never throws', async () => {
+    const removed = []
+    const storage = { removeItem: k => removed.push(k) }
+    const idb = { deleteDatabase: vi.fn(() => { const r = {}; setTimeout(() => r.onsuccess(), 0); return r }) }
+    expect(await forgetBodyFocus({ idb, storage })).toBe(true)
+    expect(idb.deleteDatabase).toHaveBeenCalledWith('ironvane-body')
+    expect(removed).toEqual(['iv_body_focus'])
+    expect(await forgetBodyFocus({ idb: undefined, storage: null })).toBe(false)
+    const blocked = { deleteDatabase: () => { const r = {}; setTimeout(() => r.onblocked(), 0); return r } }
+    expect(await forgetBodyFocus({ idb: blocked, storage })).toBe(false)
+    expect(await forgetBodyFocus({ idb: { deleteDatabase: () => { throw new Error('denied') } }, storage: { removeItem: () => { throw new Error('denied') } } })).toBe(false)
+  })
+})
+
+describe('preparePhoto', () => {
+  const fakeDoc = () => {
+    const drawn = []
+    const canvas = {
+      width: 0, height: 0,
+      getContext: () => ({ drawImage: (src, x, y, w, h) => drawn.push([src.tag, w, h]) }),
+      toBlob: cb => cb({ arrayBuffer: async () => new Uint8Array([7]).buffer }),
+    }
+    return { doc: { createElement: () => canvas }, canvas, drawn }
+  }
+
+  it('draws the picture upright and shrunk, and keeps it as a JPEG', async () => {
+    const { doc, drawn } = fakeDoc()
+    const close = vi.fn()
+    const createBitmap = vi.fn(async () => ({ tag: 'bitmap', width: 3024, height: 4032, close }))
+    const p = await preparePhoto('file', { doc, createBitmap })
+    expect(createBitmap).toHaveBeenCalledWith('file', { imageOrientation: 'from-image' })
+    expect(drawn).toEqual([['bitmap', 960, 1280]])
+    expect(p).toMatchObject({ w: 960, h: 1280, mime: 'image/jpeg' })
+    expect(close).toHaveBeenCalled()
+  })
+
+  it('falls back to a plain image where the browser refuses the bitmap options (iOS 15, old WebViews)', async () => {
+    const { doc, drawn } = fakeDoc()
+    const createBitmap = vi.fn(async () => { throw new TypeError('imageOrientation') })
+    const loadImage = vi.fn(async () => ({ image: { tag: 'img', width: 800, height: 600 }, done: () => {} }))
+    const p = await preparePhoto('file', { doc, createBitmap, loadImage })
+    expect(loadImage).toHaveBeenCalledWith('file')
+    expect(drawn).toEqual([['img', 800, 600]])
+    expect(p.w).toBe(800)
   })
 })

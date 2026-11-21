@@ -134,6 +134,7 @@ const MODULE_KW = {
   videos: 'form video film record camera technique set',
   watch: 'watch apple watch wear os zepp amazfit garmin wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',
+  bodyfocus: 'body picker photo picture tap body map muscle muscles area areas pick choose exercises today home',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
   nutrition: 'nutrition food diary meals servings calories protein carbohydrate fat',
   health: 'health apple health healthkit health connect heart rate recovery sync',

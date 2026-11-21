@@ -15,9 +15,9 @@ export default function Muscles() {
   const picked = (params.get('m') || '').split(',').filter(x => MUSCLES.includes(x))
   const initial = picked.length > 1 ? picked : picked[0] || null
   const from = loc.state?.from
-  const back = from === '/stats' ? '/stats' : from === '/' ? '/' : '/library'
+  const back = from === '/stats' ? '/stats' : from === '/home' ? '/home' : '/library'
   return <>
-    <div className="hdr"><button className="iconbtn" data-back={back} onClick={() => nav(back)} aria-label={back === '/stats' ? t('Progress') : back === '/' ? t('Today') : t('Library')}><Icon name="chevronLeft" /></button>
+    <div className="hdr"><button className="iconbtn" data-back={back} onClick={() => nav(back)} aria-label={back === '/stats' ? t('Progress') : back === '/home' ? t('Today') : t('Library')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Explore muscles')}</h1><div className="sub">{t('Choose a muscle to see exercises that train it, or build a session from it.')}</div></div></div>
 
     <MuscleExplorer key={picked.join(',')} initial={initial} initialMatch={picked.length > 1 ? 'any' : 'all'} onDetail={exerciseDetailSheet} onPlan={addToRoutineSheet} onBuild={sessionBuilderSheet} />

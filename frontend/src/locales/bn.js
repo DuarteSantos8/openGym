@@ -6283,4 +6283,6 @@ export default {
   "Back of thighs": "উরুর পেছনের দিক",
   "Body picker": "শরীর বাছাই",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "হোমে আপনার ছবি বা আঁকা শরীর: যেখানে আরও শক্তিশালী হতে চান সেখানে ট্যাপ করুন, আর সেখানকার ব্যায়ামগুলো দেখুন।",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "ক্যামেরার দিকে পিঠ করে দাঁড়ান, হাত দুপাশে। আঁটসাঁট পোশাক সবচেয়ে ভালো। আপনার ছবি এই ডিভাইসেই থাকে।",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "এই ব্রাউজার আপনার ছবি রাখতে পারে না, তাই অ্যাপ বন্ধ করলে সেটি মুছে যাবে।",
 }

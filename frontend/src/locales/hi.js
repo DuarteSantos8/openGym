@@ -6204,4 +6204,6 @@ export default {
   "Back of thighs": "जाँघ का पिछला हिस्सा",
   "Body picker": "बॉडी पिकर",
   "Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.": "होम पर आपकी फ़ोटो या बना हुआ शरीर: जहाँ आप ज़्यादा मज़बूत बनना चाहते हैं, वहाँ टैप करें और उसके व्यायाम देखें।",
+  "Stand with your back to the camera, arms at your sides. Fitted clothes work best. Your photo stays on this device.": "कैमरे की ओर पीठ करके खड़े हों, बाँहें बगल में। फ़िट कपड़े सबसे अच्छे रहते हैं। आपकी फ़ोटो इसी डिवाइस पर रहती है।",
+  "This browser can’t keep your photo, so it’s gone when you close the app.": "यह ब्राउज़र आपकी फ़ोटो नहीं रख सकता, इसलिए ऐप बंद करते ही वह हट जाएगी।",
 }
