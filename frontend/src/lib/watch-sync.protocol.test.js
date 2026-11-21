@@ -268,7 +268,8 @@ describe('a watch that comes into reach mid-workout gets the running workout at 
     const bridge = readFileSync(resolve('ios/App/App/WatchBridgePlugin.swift'), 'utf8')
     const fn = bridge.slice(bridge.indexOf('func sessionReachabilityDidChange'))
     expect(fn).toMatch(/^func sessionReachabilityDidChange\(_ session: WCSession\) \{\s+guard session\.isReachable else \{ return \}\s+tell\("watchState"/)
-    expect(fn.slice(0, 400)).toMatch(/let last = session\.applicationContext[\s\S]*session\.sendMessage\(last, replyHandler: nil/)
+    expect(fn.slice(0, 400)).toMatch(/let last = session\.applicationContext[\s\S]*session\.sendMessage\(last, replyHandler: \{ _ in \}/)
+    // With a reply handler the watch takes it as not live, so the old snapshot's `now` sets no clock sample.
   })
 })
 
