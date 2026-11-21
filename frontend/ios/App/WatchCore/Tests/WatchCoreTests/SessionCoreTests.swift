@@ -270,4 +270,16 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertEqual(place?.set, 2)
         XCTAssertNil(SessionCore.holdPlace(s, entry: 0, set: 1, sid: "gone"))
     }
+
+    // The phone's Next during a hold: the watch's page follows it, but the hold's set is still on the
+    // exercise before (endHold goes back to holdPlace's entry, not the page the phone moved to).
+    func testAHoldPlaceStaysOnItsExerciseWhenThePhoneMovesOn() {
+        var a = row(60, 8); a.sid = "a"
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [a])))
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [a], cur: 1)))
+        XCTAssertEqual(s.entryIndex, 1, "the page the phone moved to")
+        let place = SessionCore.holdPlace(s, entry: 0, set: 0, sid: "a")
+        XCTAssertEqual(place?.entry, 0)
+        XCTAssertEqual(place?.set, 0)
+    }
 }

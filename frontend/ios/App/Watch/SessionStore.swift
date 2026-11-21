@@ -946,11 +946,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func endHold(early: Bool) {
         guard let from = holdStartedAt, let end = holdEndsAt else { return }
         let lasted = early ? Date().timeIntervalSince(from).rounded() : end.timeIntervalSince(from).rounded()
-        // The set the hold began for, as the phone has it now: a set it added before this one must not take the log.
+        // The set the hold began for, as the phone has it now: a set it added before this one, or its Next
+        // to another exercise meanwhile, must not take the log.
         let own = holdFor.flatMap { SessionCore.holdPlace(state, entry: $0.entry, set: $0.set, sid: $0.sid) }
         stopHold()
         if lasted >= 1 {
-            if let own = own, own.entry == entryIndex { picked[own.entry] = own.set }
+            if let own = own { state.entryIndex = own.entry; picked[own.entry] = own.set }
             completeSet(sec: lasted)
         }
     }
