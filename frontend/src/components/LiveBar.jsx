@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { liveBarShows, liveBarState } from '../lib/live-bar.js'
-import { linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
+import { useDeviceLink } from './useDeviceLink.js'
 import { vibrate } from '../lib/sound.js'
 import Elapsed from './Elapsed.jsx'
 import Icon from './Icon.jsx'
@@ -45,10 +45,8 @@ function LiveBarOn () {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const timer = useUI(s => s.timer)
-  const [link, setLink] = useState(() => linkSnapshot())
-  useEffect(() => {
-    return onLinkChange(() => setLink(linkSnapshot()))
-  }, [])
+  // live: it looks at the links itself, as the workout's link sign does (that sign is off this screen)
+  const link = useDeviceLink({ live: true })
   useEffect(() => {
     document.body.classList.add('has-livebar')
     return () => document.body.classList.remove('has-livebar')

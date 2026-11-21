@@ -9,9 +9,9 @@ import * as sound from '../lib/sound.js'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
-const mocks = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: vi.fn(), snap: { rows: [], checking: false }, onLink: vi.fn(() => () => {}) }))
+const mocks = vi.hoisted(() => ({ loc: { pathname: '/home' }, nav: vi.fn(), snap: { rows: [], checking: false }, onLink: vi.fn(() => () => {}), check: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav, useLocation: () => mocks.loc }))
-vi.mock('../lib/device-link-live.js', () => ({ linkSnapshot: () => mocks.snap, onLinkChange: (...a) => mocks.onLink(...a) }))
+vi.mock('../lib/device-link-live.js', () => ({ linkSnapshot: () => mocks.snap, onLinkChange: (...a) => mocks.onLink(...a), checkLinks: (...a) => mocks.check(...a) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -89,13 +89,16 @@ describe('the live bar', () => {
 
   it('runs nothing while there is no bar: no link listener, no interval', () => {
     const iv = vi.spyOn(globalThis, 'setInterval')
-    mocks.onLink.mockClear()
+    mocks.onLink.mockClear(); mocks.check.mockClear()
     try {
       render()
       expect(mocks.onLink).not.toHaveBeenCalled()
+      expect(iv).not.toHaveBeenCalledWith(expect.any(Function), 15000)
+      // Shown, it keeps the watch link fresh itself: off /workout the link sign that did is gone.
       seed(active())
       expect(mocks.onLink).toHaveBeenCalledTimes(1)
-      expect(iv).not.toHaveBeenCalledWith(expect.any(Function), 15000)
+      expect(mocks.check).toHaveBeenCalled()
+      expect(iv).toHaveBeenCalledWith(expect.any(Function), 15000)
     } finally { iv.mockRestore() }
   })
 
