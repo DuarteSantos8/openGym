@@ -220,10 +220,14 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // A row as it is now in the store (not the render's copy), in the exercise's unit.
   const liveRow = i => { const st = useStore.getState().S; return viewEntry(st, st.active?.entries[entryIdx])?.sets[i] }
   // Warm-up or work is the row's phase; switching it moves the row to the edge of the warm-ups.
-  const setPhaseAt = (i, warm) => update(s => {
-    const e = s.active.entries[entryIdx]
-    e.sets = warm ? makeWarmupAt(e.sets, i) : makeWorkAt(e.sets, i)
-  }, true)
+  // The rows move but their count does not, so the effect above misses it: the hold stops here.
+  const setPhaseAt = (i, warm) => {
+    stopHold()
+    update(s => {
+      const e = s.active.entries[entryIdx]
+      e.sets = warm ? makeWarmupAt(e.sets, i) : makeWorkAt(e.sets, i)
+    }, true)
+  }
   const toggleFailureAt = i => update(s => {
     const e = s.active.entries[entryIdx]
     const [start, count] = setSpanAt(e.sets, i)
