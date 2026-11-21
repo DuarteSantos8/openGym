@@ -43,7 +43,7 @@ export const adaptFor = (S, p) => !!p && p.kind === 'adapt' && !!S?.active && !S
  */
 export function resolveEntry(active, c) {
   const list = active?.entries || []
-  if (!Number.isInteger(c?.entry)) return -1
+  if (!Number.isInteger(c?.entry) || !c.exId) return -1
   if (list[c.entry]?.id === c.exId) return c.entry
   const same = list.map((e, i) => (e?.id === c.exId ? i : -1)).filter(i => i >= 0)
   return same.length === 1 ? same[0] : -1

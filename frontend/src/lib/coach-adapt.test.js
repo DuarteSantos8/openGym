@@ -120,6 +120,15 @@ describe('applying the Coach’s changes to the workout in progress', () => {
     expect(S.active.entries.map(e => e.id)).toEqual([BENCH, SQUAT])
   })
 
+  it('an add with an index but no id is stale even when the index is past the end', () => {
+    const S = session()
+    const p = proposal([{ type: 'add', to: DBPRESS, entry: 2 }])
+    S.active.entries.splice(2, 1)                                      // index 2 no longer exists
+    expect(resolveEntry(S.active, p.changes[0])).toBe(-1)
+    expect(markAdaptStale(S, p).map(c => c.stale)).toEqual([true])
+    expect(applyAdapt(S, p, ids(p)).applied).toEqual([])
+  })
+
   it('goes stale instead of landing on the wrong exercise when the session moved on', () => {
     const S = session()
     const p = proposal([{ type: 'reps', entry: 1, exId: CURL, reps: 6 }, { type: 'skip', entry: 2, exId: SQUAT }])
