@@ -7,7 +7,7 @@ let platform = 'ios'
 vi.mock('./mobile.js', async orig => ({ ...(await orig()), nativePlatform: async () => platform }))
 vi.mock('./health-sync.js', () => ({ loadHealth: async () => ({ on: false }), onHealthChange: () => () => {} }))
 
-import { asciiJson, startWatchSync, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { asciiJson, fitSnapshot, iosBytes, startWatchSync, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
 
 const ascii = s => [...s].every(c => c.charCodeAt(0) <= 0x7f)
 
@@ -22,6 +22,29 @@ describe('asciiJson', () => {
   it('keeps text mostly beyond ASCII as it is, where escaping would cost more than UTF-16', () => {
     const json = JSON.stringify({ name: 'Жим штанги лёжа на скамье' })
     expect(asciiJson(json)).toBe(json)
+  })
+})
+
+// The size guard measures what the iPhone sends: escaped ASCII, or UTF-16 where that is smaller.
+// "é" is 2 bytes in UTF-8 but 6 escaped and 2 in UTF-16, so a snapshot can pass the UTF-8 check and
+// still go over the limit on the wire.
+describe('the iPhone size guard', () => {
+  const snap = { active: { entries: [{ id: 'a', sets: [{ w: 60, r: 8 }], last: 'é'.repeat(60) }] }, ready: null }
+
+  it('counts the bytes the iPhone sends', () => {
+    expect(iosBytes({ a: 'abc' })).toBe(JSON.stringify({ a: 'abc' }).length)
+    const json = JSON.stringify(snap)
+    expect(iosBytes(snap)).toBe(2 * json.length)
+    expect(iosBytes({ a: 'aé' })).toBe(asciiJson(JSON.stringify({ a: 'aé' })).length)
+  })
+
+  it('cuts a snapshot that fits in UTF-8 but not on the wire', () => {
+    const max = 210
+    expect(new TextEncoder().encode(JSON.stringify(snap)).length).toBeLessThanOrEqual(max)
+    expect(fitSnapshot(snap, max).active.entries[0].last).toBeDefined()
+    const fit = fitSnapshot(snap, max, iosBytes)
+    expect(fit.active.entries[0].last).toBeUndefined()
+    expect(iosBytes(fit)).toBeLessThanOrEqual(max)
   })
 })
 
