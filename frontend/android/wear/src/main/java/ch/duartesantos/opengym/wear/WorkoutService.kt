@@ -88,6 +88,8 @@ class WorkoutService : Service() {
             startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
         } catch (_: Exception) {
             // Not allowed now (no permission, or started from the background): the plain notification.
+            // Nothing counts the calories meanwhile, so the workout's total would miss a part: none is sent.
+            WearStore.loseCalories()
             post(this)
             stopSelf()
             return
@@ -232,7 +234,7 @@ class WorkoutService : Service() {
             if (alive || starting) return
             if (hasHrPermission(app) && !fromPhone) {
                 starting = true
-                try { ContextCompat.startForegroundService(app, Intent(app, WorkoutService::class.java)); return } catch (_: Exception) { starting = false }
+                try { ContextCompat.startForegroundService(app, Intent(app, WorkoutService::class.java)); return } catch (_: Exception) { starting = false; WearStore.loseCalories() }
             }
             post(app)
         }
