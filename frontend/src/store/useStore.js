@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
-import { t } from '../lib/i18n.js'
+import { t, onLangChange } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { isArchive } from '../lib/routine-folders.js'
 import { migrateArchiveFolder } from '../lib/routine-archive.js'
@@ -782,6 +782,8 @@ export const useStore = create((set, get) => {
   const moveArchive = () => {
     if (get().S.routines.some(r => isArchive(r.folder))) get().update(migrateArchiveFolder)
   }
+  // And once the language's words load: boot can run before them, and "Archiv" is only matched then.
+  onLangChange(() => { if (get().ready) moveArchive() })
   // Boot's last step: from here on changes push, and one made during boot goes now.
   const finishBoot = (extra = {}) => {
     // The old Archive folder becomes the archive flag once, through update() so it is stamped and
