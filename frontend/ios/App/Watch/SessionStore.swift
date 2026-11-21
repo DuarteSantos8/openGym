@@ -962,7 +962,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The page's set has a menu: a set or a fix on show, not a hold, a rest or cardio.
     /// The set page (pill first) or the rest page draws the badges itself, so they move with the page.
     var ownTopRow: Bool {
-        tab == .set && (restPanel || (holdCountFrom == nil && holdEndsAt == nil && shownRef != nil))
+        restPanel || (holdCountFrom == nil && holdEndsAt == nil && shownRef != nil)
     }
 
     var menuShown: Bool {
