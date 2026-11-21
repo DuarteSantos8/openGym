@@ -10,7 +10,9 @@ abort 'no OpenGymWatch target (run add-watch-app.rb first)' unless watch
 tests = proj.new_target(:ui_test_bundle, 'OpenGymWatchUITests', :watchos, '10.0')
 tests.add_dependency(watch)
 group = proj.main_group.new_group('OpenGymWatchUITests', 'OpenGymWatchUITests')
-tests.add_file_references([group.new_file('OpenGymWatchUITests.swift')])
+# Every test file in the folder, so each PR adds its own file and this script stays the same.
+files = Dir.children(File.join(dir, 'OpenGymWatchUITests')).grep(/\.swift\z/).sort
+tests.add_file_references(files.map { |f| group.new_file(f) })
 tests.build_configurations.each do |c|
   s = c.build_settings
   s['TEST_TARGET_NAME'] = 'OpenGymWatch'
