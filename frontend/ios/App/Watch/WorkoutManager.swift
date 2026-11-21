@@ -197,9 +197,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private(set) var paused = false
 
     func pause() {
-        guard let s = session, !paused, s.state == .running else { return }
+        guard let s = session, !paused else { return }
         paused = true
-        s.pause()
+        // Still starting (just made): it pauses once it runs (workoutSession(_:didChangeTo:)).
+        if s.state == .running { s.pause() }
     }
 
     func resume() {
@@ -395,6 +396,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /* ---------- delegates ---------- */
 
     func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        if toState == .running {
+            // A pause asked while it was starting (a workout picked up already paused on the phone).
+            DispatchQueue.main.async { if self.paused, self.session === workoutSession { workoutSession.pause() } }
+            return
+        }
         guard toState == .ended || toState == .stopped else { return }
         DispatchQueue.main.async { self.lost(workoutSession) }
     }

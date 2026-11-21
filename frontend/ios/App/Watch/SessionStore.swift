@@ -198,6 +198,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     guard let self = self, self.state.workout?.id == w.id else { return }
                     if !SensorPlan.idle(w, seen: nil, now: Date().timeIntervalSince1970 * 1000, busy: false) {
                         self.health.start(workoutId: w.id, type: w.healthType)
+                        // Paused on the phone (#976): the new session rests too.
+                        if self.workoutPausedAt != nil { self.health.pause() }
                     }
                     self.armIdleCheck()
                     // `state = saved` above ran in init, where its didSet does not: the forgotten-
