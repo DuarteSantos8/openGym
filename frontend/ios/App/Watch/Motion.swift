@@ -10,6 +10,9 @@ import WatchKit
  *             arrows and the button stay still under the thumb
  *   3-2-1     a ring that drains smoothly, each number springs in and the last one swells away,
  *             then GO! in the full ring for a moment while the workout starts under it
+ *   rating    the tapped chip grows into the armed capsule (a spring without bounce, the same on the fix
+ *             view's pill) while − / + fade in from 0.9; settling and re-arming only fade (outline
+ *             2 to 1.5 pt, halo, check), the other chips and DONE go in 0.12 s, the label line crossfades
  *
  * Reduce Motion: no slides, no springs, no scaling, only short fades. Always On: nothing moves.
  */
