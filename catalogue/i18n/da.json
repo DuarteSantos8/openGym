@@ -1,4 +1,2746 @@
 {
+  "0001": {
+    "name": "3/4 sit-up"
+  },
+  "0002": {
+    "name": "sidebøjning 45°"
+  },
+  "0003": {
+    "name": "luftcykel"
+  },
+  "0005": {
+    "name": "vekslende bicepscurl med elastik"
+  },
+  "0006": {
+    "name": "vekslende hæltouch"
+  },
+  "0007": {
+    "name": "vekslende træk til bryst i kabel"
+  },
+  "0009": {
+    "name": "assisterede brystdips (knælende)"
+  },
+  "0010": {
+    "name": "assisterede hængende knæløft med nedstødning"
+  },
+  "0011": {
+    "name": "assisterede hængende knæløft"
+  },
+  "0012": {
+    "name": "assisterede liggende benløft med nedstødning til siden"
+  },
+  "0013": {
+    "name": "assisterede liggende benløft med nedstødning"
+  },
+  "0014": {
+    "name": "assisteret russian twist med medicinbold"
+  },
+  "0015": {
+    "name": "assisterede pull-ups med smalt neutralt greb i maskine"
+  },
+  "0016": {
+    "name": "assisteret hamstringsstræk på mave"
+  },
+  "0017": {
+    "name": "assisterede pull-ups i maskine"
+  },
+  "0018": {
+    "name": "assisteret stående triceps-ekstension (med håndklæde)"
+  },
+  "0019": {
+    "name": "assisterede triceps dips (knælende)"
+  },
+  "0020": {
+    "name": "balancebræt"
+  },
+  "0021": {
+    "name": "sit-up på træningsbold"
+  },
+  "0022": {
+    "name": "pullover til pres med vægtstang"
+  },
+  "0023": {
+    "name": "vekslende bicepscurl med vægtstang"
+  },
+  "0024": {
+    "name": "front squat mod bænk med vægtstang"
+  },
+  "0025": {
+    "name": "bænkpres med vægtstang"
+  },
+  "0026": {
+    "name": "squat mod bænk med vægtstang"
+  },
+  "0027": {
+    "name": "foroverbøjet vægtstangsroning"
+  },
+  "0028": {
+    "name": "vend og pres med vægtstang"
+  },
+  "0029": {
+    "name": "front squat med frivend grip med vægtstang"
+  },
+  "0030": {
+    "name": "bænkpres med smalt greb med vægtstang"
+  },
+  "0031": {
+    "name": "vægtstangscurl"
+  },
+  "0032": {
+    "name": "dødløft med vægtstang"
+  },
+  "0033": {
+    "name": "negativ bænkpres med vægtstang"
+  },
+  "0034": {
+    "name": "pullover med bøjede arme på negativ bænk med vægtstang"
+  },
+  "0035": {
+    "name": "negativ skull crusher med smalt greb med vægtstang"
+  },
+  "0036": {
+    "name": "negativt pres med bredt greb med vægtstang"
+  },
+  "0037": {
+    "name": "pullover med bredt greb på negativ bænk med vægtstang"
+  },
+  "0038": {
+    "name": "træk curl med vægtstang"
+  },
+  "0039": {
+    "name": "front squat med vægtstangen ved brystet"
+  },
+  "0040": {
+    "name": "frontløft og pullover med vægtstang"
+  },
+  "0041": {
+    "name": "frontløft med vægtstang"
+  },
+  "0042": {
+    "name": "front squat med vægtstang"
+  },
+  "0043": {
+    "name": "dyb squat med vægtstang"
+  },
+  "0044": {
+    "name": "good morning med vægtstang"
+  },
+  "0045": {
+    "name": "guillotinepres med vægtstang"
+  },
+  "0046": {
+    "name": "hack squat med vægtstang"
+  },
+  "0047": {
+    "name": "skrå bænkpres med vægtstang"
+  },
+  "0048": {
+    "name": "skrå pres med omvendt greb med vægtstang"
+  },
+  "0049": {
+    "name": "skrå roning med vægtstang"
+  },
+  "0050": {
+    "name": "skrå skulderløft med vægtstang"
+  },
+  "0051": {
+    "name": "jefferson squat med vægtstang"
+  },
+  "0052": {
+    "name": "jm-pres med vægtstang"
+  },
+  "0053": {
+    "name": "squat hop med vægtstang"
+  },
+  "0054": {
+    "name": "lunges med vægtstang"
+  },
+  "0055": {
+    "name": "liggende pres med smalt greb med vægtstang"
+  },
+  "0056": {
+    "name": "liggende triceps-ekstension med smalt greb med vægtstang"
+  },
+  "0057": {
+    "name": "liggende extension med vægtstang"
+  },
+  "0058": {
+    "name": "liggende løft (på hoften) med vægtstang"
+  },
+  "0059": {
+    "name": "liggende scottcurl med vægtstang"
+  },
+  "0060": {
+    "name": "skull crusher med vægtstang"
+  },
+  "0061": {
+    "name": "liggende triceps-ekstension med vægtstang"
+  },
+  "0062": {
+    "name": "smal vægtstangsroning"
+  },
+  "0063": {
+    "name": "squat med smal fodstilling med vægtstang"
+  },
+  "0064": {
+    "name": "enarms foroverbøjet roning med vægtstang"
+  },
+  "0065": {
+    "name": "enarms gulvpres med vægtstang"
+  },
+  "0066": {
+    "name": "enarms sidomarkløft med vægtstang"
+  },
+  "0067": {
+    "name": "enarms træk med vægtstang"
+  },
+  "0068": {
+    "name": "et-bens squat med vægtstang"
+  },
+  "0069": {
+    "name": "overhead squat med vægtstang"
+  },
+  "0070": {
+    "name": "scottcurl med vægtstang"
+  },
+  "0071": {
+    "name": "sit-up med pres med vægtstang"
+  },
+  "0072": {
+    "name": "curl liggende på mave på skråbænk med vægtstang"
+  },
+  "0073": {
+    "name": "pullover med vægtstang"
+  },
+  "0074": {
+    "name": "rack pull med vægtstang"
+  },
+  "0075": {
+    "name": "løft til bagerste skulder med vægtstang"
+  },
+  "0076": {
+    "name": "roning til bagerste skulder med vægtstang"
+  },
+  "0077": {
+    "name": "lunges bagud med vægtstang v. 2"
+  },
+  "0078": {
+    "name": "lunges bagud med vægtstang"
+  },
+  "0079": {
+    "name": "omvendt håndledscurl med vægtstang v. 2"
+  },
+  "0080": {
+    "name": "omvendt curl med vægtstang"
+  },
+  "0081": {
+    "name": "omvendt scottcurl med vægtstang"
+  },
+  "0082": {
+    "name": "omvendt håndledscurl med vægtstang"
+  },
+  "0083": {
+    "name": "udrulning fra bænk med vægtstang"
+  },
+  "0084": {
+    "name": "udrulning med vægtstang"
+  },
+  "0085": {
+    "name": "rumænsk dødløft med vægtstang"
+  },
+  "0086": {
+    "name": "siddende militærpres bag nakken med vægtstang"
+  },
+  "0087": {
+    "name": "siddende bradford rocky pres med vægtstang"
+  },
+  "0088": {
+    "name": "siddende lægløft med vægtstang"
+  },
+  "0089": {
+    "name": "siddende koncentrationscurl med smalt greb med vægtstang"
+  },
+  "0090": {
+    "name": "siddende good morning med vægtstang"
+  },
+  "0091": {
+    "name": "siddende skulderpres med vægtstang"
+  },
+  "0092": {
+    "name": "siddende triceps-ekstension over hovedet med vægtstang"
+  },
+  "0093": {
+    "name": "siddende rotation (på træningsbold) med vægtstang"
+  },
+  "0094": {
+    "name": "siddende rotation med vægtstang"
+  },
+  "0095": {
+    "name": "shrugs med vægtstang"
+  },
+  "0096": {
+    "name": "sidebøjning med vægtstang v. 2"
+  },
+  "0097": {
+    "name": "sidelæns split squat med vægtstang v. 2"
+  },
+  "0098": {
+    "name": "sidelæns split squat med vægtstang"
+  },
+  "0099": {
+    "name": "et-bens split squat med vægtstang"
+  },
+  "0100": {
+    "name": "skidåkare med vægtstang"
+  },
+  "0101": {
+    "name": "hurtig squat med vægtstang"
+  },
+  "0102": {
+    "name": "squat (på knæene) med vægtstang"
+  },
+  "0103": {
+    "name": "stående udrulning med vægtstang"
+  },
+  "0104": {
+    "name": "stående håndledscurl bag rygen med vægtstang"
+  },
+  "0105": {
+    "name": "stående bradford pres med vægtstang"
+  },
+  "0106": {
+    "name": "stående curl med smalt greb med vægtstang"
+  },
+  "0107": {
+    "name": "stående frontløft op over hovedet med vægtstang"
+  },
+  "0108": {
+    "name": "stående benvadpress med vægtstang"
+  },
+  "0109": {
+    "name": "stående triceps-ekstension over hovedet med vægtstang"
+  },
+  "0110": {
+    "name": "stående curl med omvendt greb med vægtstang"
+  },
+  "0111": {
+    "name": "stående gyngende lægløft med vægtstang"
+  },
+  "0112": {
+    "name": "stående rotation med vægtstang"
+  },
+  "0113": {
+    "name": "stående curl med bredt greb med vægtstang"
+  },
+  "0114": {
+    "name": "step-up med vægtstang"
+  },
+  "0115": {
+    "name": "good morning med strakte ben med vægtstang"
+  },
+  "0116": {
+    "name": "dødløft med strakte ben med vægtstang"
+  },
+  "0117": {
+    "name": "sumo dødløft med vægtstang"
+  },
+  "0118": {
+    "name": "foroverbøjet vægtstangsroning med omvendt greb"
+  },
+  "0119": {
+    "name": "oprejst roning med vægtstang v. 2"
+  },
+  "0120": {
+    "name": "oprejst roning med vægtstang"
+  },
+  "0121": {
+    "name": "oprejst roning med vægtstang v. 3"
+  },
+  "0122": {
+    "name": "bred bænkpres med vægtstang"
+  },
+  "0123": {
+    "name": "oprejst roning med bredt greb med vægtstang"
+  },
+  "0124": {
+    "name": "bred squat med vægtstang"
+  },
+  "0125": {
+    "name": "håndledscurl med vægtstang v. 2"
+  },
+  "0126": {
+    "name": "håndledscurl med vægtstang"
+  },
+  "0127": {
+    "name": "zercher squat med vægtstang"
+  },
+  "0128": {
+    "name": "battle ropes"
+  },
+  "0129": {
+    "name": "bænkdips (bøjede knæ)"
+  },
+  "0130": {
+    "name": "hofteekstension på bænk"
+  },
+  "0131": {
+    "name": "liggende rotation med bøjede knæ (på træningsbold)"
+  },
+  "0133": {
+    "name": "sideplanke med bøjet knæ"
+  },
+  "0134": {
+    "name": "armbøjning med bøjet knæ til siden"
+  },
+  "0136": {
+    "name": "båd-stilling (yoga)"
+  },
+  "0137": {
+    "name": "body-up"
+  },
+  "0138": {
+    "name": "bottoms-up"
+  },
+  "0139": {
+    "name": "smalle chins til biceps"
+  },
+  "0140": {
+    "name": "bicepschins"
+  },
+  "0142": {
+    "name": "bro (på knæene)"
+  },
+  "0143": {
+    "name": "bro (strakte arme)"
+  },
+  "0145": {
+    "name": "glute bridge (ballebro)"
+  },
+  "0147": {
+    "name": "cykelcrunch med rotation"
+  },
+  "0148": {
+    "name": "vekslende skulderpres i kabel"
+  },
+  "0149": {
+    "name": "vekslende triceps-ekstension i kabel"
+  },
+  "0150": {
+    "name": "træk til bryst med stang"
+  },
+  "0151": {
+    "name": "bænkpres i kabel"
+  },
+  "0152": {
+    "name": "koncentrationsextension i kabel (mod knæet)"
+  },
+  "0153": {
+    "name": "korsat træk til bryst i kabel"
+  },
+  "0154": {
+    "name": "omvendte flyes i kabelcross"
+  },
+  "0155": {
+    "name": "kabelcross, variant"
+  },
+  "0157": {
+    "name": "dødløft i kabel"
+  },
+  "0158": {
+    "name": "negativa kabelflyes"
+  },
+  "0159": {
+    "name": "siddende kabelroning med bredt greb på negativ bænk"
+  },
+  "0160": {
+    "name": "siddende kabelroning med bredt greb på gulvet"
+  },
+  "0161": {
+    "name": "frontløft i kabel"
+  },
+  "0162": {
+    "name": "frontløft i kabel"
+  },
+  "0163": {
+    "name": "siddende kabelroning fremad"
+  },
+  "0164": {
+    "name": "forreste skulderløft i kabel"
+  },
+  "0165": {
+    "name": "hammercurl i kabel (med reb)"
+  },
+  "0166": {
+    "name": "hammercurl i kabel"
+  },
+  "0167": {
+    "name": "høj kabelroning (knælende)"
+  },
+  "0168": {
+    "name": "hofteadduktion i kabel"
+  },
+  "0169": {
+    "name": "skråbænkpres i kabel"
+  },
+  "0170": {
+    "name": "skrå kabelflyes (på træningsbold)"
+  },
+  "0171": {
+    "name": "skrå kabelflyes"
+  },
+  "0172": {
+    "name": "skrå pushdown i kabel"
+  },
+  "0173": {
+    "name": "skrå triceps-ekstension i kabel"
+  },
+  "0174": {
+    "name": "judokast i kabel"
+  },
+  "0175": {
+    "name": "knælende kabelcrunch"
+  },
+  "0176": {
+    "name": "knælende triceps-ekstension i kabel"
+  },
+  "0177": {
+    "name": "træk til bryst (med reb)"
+  },
+  "0178": {
+    "name": "sideløft i kabel"
+  },
+  "0179": {
+    "name": "kabelflyes nedifrån"
+  },
+  "0180": {
+    "name": "siddende lav kabelroning"
+  },
+  "0181": {
+    "name": "liggende kabelcurl med smalt greb"
+  },
+  "0182": {
+    "name": "liggende kabelcurl, smalt greb"
+  },
+  "0183": {
+    "name": "liggende kabelcurl"
+  },
+  "0184": {
+    "name": "liggende extension-pullover i kabel (med reb)"
+  },
+  "0185": {
+    "name": "liggende kabelflyes"
+  },
+  "0186": {
+    "name": "liggende triceps-ekstension i kabel v. 2"
+  },
+  "0187": {
+    "name": "liggende triceps-ekstension i kabel"
+  },
+  "0188": {
+    "name": "kabelflyes i brysthøjde"
+  },
+  "0189": {
+    "name": "enarms foroverbøjet kabelroning"
+  },
+  "0190": {
+    "name": "enarms kabelcurl"
+  },
+  "0191": {
+    "name": "enarms foroverbøjet sideløft i kabel"
+  },
+  "0192": {
+    "name": "enarms sideløft i kabel"
+  },
+  "0193": {
+    "name": "enarms høj kabelroning med strakt ryg (knælende)"
+  },
+  "0194": {
+    "name": "triceps-ekstension over hovedet i kabel (reb)"
+  },
+  "0195": {
+    "name": "scottcurl i kabel"
+  },
+  "0196": {
+    "name": "pull through i kabel (med reb)"
+  },
+  "0197": {
+    "name": "træk i kabel (pro lat-stang)"
+  },
+  "0198": {
+    "name": "træk i kabel"
+  },
+  "0199": {
+    "name": "pushdown med strakte arme v. 2"
+  },
+  "0200": {
+    "name": "triceps pushdown (med reb)"
+  },
+  "0201": {
+    "name": "triceps pushdown"
+  },
+  "0202": {
+    "name": "roning til bagerste skulder i kabel (fodstropper)"
+  },
+  "0203": {
+    "name": "roning til bagerste skulder i kabel (med reb)"
+  },
+  "0204": {
+    "name": "tricepspres bagud i kabel"
+  },
+  "0205": {
+    "name": "træk til nakke"
+  },
+  "0206": {
+    "name": "omvendt kabelcurl"
+  },
+  "0207": {
+    "name": "pushdown med omvendt greb"
+  },
+  "0208": {
+    "name": "siddende høj kabelroning med omvendt greb og strakt ryg"
+  },
+  "0209": {
+    "name": "omvendt scottcurl i kabel"
+  },
+  "0210": {
+    "name": "omvendt håndledscurl i kabel"
+  },
+  "0211": {
+    "name": "russian twist i kabel (på træningsbold)"
+  },
+  "0212": {
+    "name": "siddende kabelcrunch"
+  },
+  "0213": {
+    "name": "siddende høj kabelroning (v-håndtag)"
+  },
+  "0214": {
+    "name": "siddende vekslende enarms kabelroning"
+  },
+  "0215": {
+    "name": "siddende bagerste sideløft i kabel"
+  },
+  "0216": {
+    "name": "siddende indadrotation af skulderen i kabel"
+  },
+  "0218": {
+    "name": "siddende kabelroning med bredt greb"
+  },
+  "0219": {
+    "name": "skulderpres i kabel"
+  },
+  "0220": {
+    "name": "shrugs i kabel"
+  },
+  "0221": {
+    "name": "sidebøjnings-crunch i kabel (bosubold)"
+  },
+  "0222": {
+    "name": "sidebøjning i kabel"
+  },
+  "0223": {
+    "name": "sidocrunch i kabel"
+  },
+  "0224": {
+    "name": "stående håndledscurl bag rygen i kabel"
+  },
+  "0225": {
+    "name": "stående høje omvendte flyes i kabelcross"
+  },
+  "0226": {
+    "name": "stående kabelcrunch"
+  },
+  "0227": {
+    "name": "stående kabelflyes"
+  },
+  "0228": {
+    "name": "stående hofteekstension i kabel"
+  },
+  "0229": {
+    "name": "stående indre kabelcurl"
+  },
+  "0230": {
+    "name": "stående løft i kabel"
+  },
+  "0231": {
+    "name": "stående enarms triceps-ekstension i kabel"
+  },
+  "0232": {
+    "name": "stående træk i kabel (med reb)"
+  },
+  "0233": {
+    "name": "stående roning til bagerste skulder i kabel (med reb)"
+  },
+  "0234": {
+    "name": "stående kabelroning (v-håndtag)"
+  },
+  "0235": {
+    "name": "stående udadrotation af skulderen i kabel"
+  },
+  "0236": {
+    "name": "stående kabelroning med vridning (v-håndtag)"
+  },
+  "0237": {
+    "name": "pulldown med strakte arme (med reb)"
+  },
+  "0238": {
+    "name": "pulldown med strakte arme"
+  },
+  "0239": {
+    "name": "siddende kabelroning med strakt ryg"
+  },
+  "0240": {
+    "name": "omvendte kabelflyes på ryg"
+  },
+  "0241": {
+    "name": "triceps pushdown med v-håndtag"
+  },
+  "0242": {
+    "name": "omvendt crunch med indtrukne knæ i kabel"
+  },
+  "0243": {
+    "name": "vridning i kabel"
+  },
+  "0244": {
+    "name": "træk med vridning i kabel"
+  },
+  "0245": {
+    "name": "træk med underhåndsgreb i kabel"
+  },
+  "0246": {
+    "name": "oprejst roning i kabel"
+  },
+  "0247": {
+    "name": "håndledscurl i kabel"
+  },
+  "0248": {
+    "name": "liggende roning med bøjet vægtstang"
+  },
+  "0250": {
+    "name": "stræk med blikket mod taket"
+  },
+  "0251": {
+    "name": "dips til brystet"
+  },
+  "0253": {
+    "name": "chins (smalt parallellt greb)"
+  },
+  "0255": {
+    "name": "boldcirkler mod væg"
+  },
+  "0256": {
+    "name": "armcirkler med albuerne"
+  },
+  "0257": {
+    "name": "knæcirkler"
+  },
+  "0258": {
+    "name": "ur-armbøjning"
+  },
+  "0259": {
+    "name": "armbøjning med smalt greb"
+  },
+  "0260": {
+    "name": "kokonger"
+  },
+  "0261": {
+    "name": "proptrækker-armbøjning"
+  },
+  "0262": {
+    "name": "krydset crunch"
+  },
+  "0263": {
+    "name": "krydset crunch med vridning"
+  },
+  "0264": {
+    "name": "cross jacks"
+  },
+  "0267": {
+    "name": "crunch (hænderne over hovedet)"
+  },
+  "0268": {
+    "name": "crunch (benløft)"
+  },
+  "0269": {
+    "name": "crunch (benene på træningsbold)"
+  },
+  "0271": {
+    "name": "crunch (på træningsbold)"
+  },
+  "0272": {
+    "name": "crunch (på træningsbold, strakte arme)"
+  },
+  "0273": {
+    "name": "crunch (strakt ben op)"
+  },
+  "0274": {
+    "name": "crunch på gulvet"
+  },
+  "0275": {
+    "name": "crunch på gulvet v. 2"
+  },
+  "0276": {
+    "name": "dead bug"
+  },
+  "0277": {
+    "name": "crunch på negativ bænk"
+  },
+  "0278": {
+    "name": "armbøjning med fødderne på træningsbold"
+  },
+  "0279": {
+    "name": "armbøjning med forhøjede fødder"
+  },
+  "0281": {
+    "name": "sit-up på negativ bænk (strakte arme)"
+  },
+  "0282": {
+    "name": "sit-up på negativ bænk"
+  },
+  "0283": {
+    "name": "diamantarmbøjning"
+  },
+  "0284": {
+    "name": "donkey calf raise"
+  },
+  "0285": {
+    "name": "vekslende bicepscurl med håndvægte"
+  },
+  "0286": {
+    "name": "vekslende sidepres med håndvægte"
+  },
+  "0287": {
+    "name": "arnoldpress med håndvægte v. 2"
+  },
+  "0288": {
+    "name": "pullover i båge med håndvægt"
+  },
+  "0289": {
+    "name": "håndvægtspres"
+  },
+  "0290": {
+    "name": "siddende håndvægtspres på bænk"
+  },
+  "0291": {
+    "name": "squat til bænk med håndvægte"
+  },
+  "0292": {
+    "name": "enarms håndvægtsroning i foroverbøjet position"
+  },
+  "0293": {
+    "name": "foroverbøjet håndvægtsroning"
+  },
+  "0294": {
+    "name": "bicepscurl med håndvægte"
+  },
+  "0295": {
+    "name": "vend med håndvægte"
+  },
+  "0296": {
+    "name": "håndvægtspres med smalt greb"
+  },
+  "0297": {
+    "name": "koncentrationscurl med håndvægt"
+  },
+  "0298": {
+    "name": "krydset hammercurl med håndvægt"
+  },
+  "0299": {
+    "name": "cuban pres med håndvægte"
+  },
+  "0300": {
+    "name": "dødløft med håndvægte"
+  },
+  "0301": {
+    "name": "negativ håndvægtspres"
+  },
+  "0302": {
+    "name": "negativa hantelflyes"
+  },
+  "0303": {
+    "name": "negativ håndvægtspres med hammergreb"
+  },
+  "0304": {
+    "name": "shrugs på negativ bænk med håndvægte v. 2"
+  },
+  "0305": {
+    "name": "shrugs på negativ bænk med håndvægte"
+  },
+  "0306": {
+    "name": "negativ triceps-ekstension med håndvægte"
+  },
+  "0307": {
+    "name": "negativa hantelflyes med vridning"
+  },
+  "0308": {
+    "name": "hantelflyes"
+  },
+  "0309": {
+    "name": "frontløft med håndvægte v. 2"
+  },
+  "0310": {
+    "name": "frontløft med håndvægte"
+  },
+  "0311": {
+    "name": "full can-sideløft med håndvægte"
+  },
+  "0312": {
+    "name": "hammercurl med håndvægte v. 2"
+  },
+  "0313": {
+    "name": "hammercurl med håndvægte"
+  },
+  "0314": {
+    "name": "skrå håndvægtspres"
+  },
+  "0315": {
+    "name": "skrå bicepscurl med håndvægte"
+  },
+  "0316": {
+    "name": "skrå brystpres med håndvægte"
+  },
+  "0317": {
+    "name": "skrå håndvægtscurl v. 2"
+  },
+  "0318": {
+    "name": "skrå håndvægtscurl"
+  },
+  "0319": {
+    "name": "skrå hantelflyes"
+  },
+  "0320": {
+    "name": "skrå hammercurl med håndvægte"
+  },
+  "0321": {
+    "name": "skrå håndvægtspres med hammergreb"
+  },
+  "0322": {
+    "name": "skrå indre bicepscurl med håndvægte"
+  },
+  "0323": {
+    "name": "skrå enarms sideløft med håndvægt"
+  },
+  "0324": {
+    "name": "skrå håndvægtspres med håndfladerne indad"
+  },
+  "0325": {
+    "name": "skrå løft med håndvægte"
+  },
+  "0326": {
+    "name": "skrå bagerste sideløft med håndvægte"
+  },
+  "0327": {
+    "name": "skrå håndvægtsroning"
+  },
+  "0328": {
+    "name": "skrå skulderløft med håndvægte"
+  },
+  "0329": {
+    "name": "skrå shrugs med håndvægte"
+  },
+  "0330": {
+    "name": "skrå triceps-ekstension med håndvægt"
+  },
+  "0331": {
+    "name": "skrå hantelflyes med vridning"
+  },
+  "0332": {
+    "name": "jernkors med håndvægte"
+  },
+  "0333": {
+    "name": "kickback med håndvægt"
+  },
+  "0334": {
+    "name": "sideløft med håndvægte"
+  },
+  "0335": {
+    "name": "sideløft til frontløft med håndvægte"
+  },
+  "0336": {
+    "name": "lunges med håndvægte"
+  },
+  "0337": {
+    "name": "liggende triceps-ekstension over ansiktet med håndvægt"
+  },
+  "0338": {
+    "name": "liggende albuepres med håndvægte"
+  },
+  "0339": {
+    "name": "liggende lårbøjning med håndvægt"
+  },
+  "0340": {
+    "name": "liggende håndvægtspres med hammergreb"
+  },
+  "0341": {
+    "name": "liggende enarms løft til bagerste skulder med håndvægt"
+  },
+  "0342": {
+    "name": "liggende enarms håndvægtspres v. 2"
+  },
+  "0343": {
+    "name": "liggende enarms håndvægtspres"
+  },
+  "0344": {
+    "name": "liggende enarms triceps-ekstension med overhåndsgreb, håndvægt"
+  },
+  "0345": {
+    "name": "liggende enarms bagerste sideløft med håndvægt"
+  },
+  "0346": {
+    "name": "liggende enarms triceps-ekstension med underhåndsgreb, håndvægt"
+  },
+  "0347": {
+    "name": "liggende pronation med håndvægt"
+  },
+  "0348": {
+    "name": "liggende bagerste sideløft med håndvægte"
+  },
+  "0349": {
+    "name": "liggende supination med håndvægt"
+  },
+  "0350": {
+    "name": "curl liggende på ryg med håndvægte"
+  },
+  "0351": {
+    "name": "liggende triceps-ekstension med håndvægte"
+  },
+  "0352": {
+    "name": "bænkpres med neutralt greb, håndvægte"
+  },
+  "0353": {
+    "name": "enarms koncentrationscurl på træningsbold med håndvægt"
+  },
+  "0354": {
+    "name": "enarms kickback med håndvægt"
+  },
+  "0355": {
+    "name": "enarms sideløft med håndvægt"
+  },
+  "0356": {
+    "name": "enarms sideløft med støtte, håndvægt"
+  },
+  "0357": {
+    "name": "enarms håndvægtspres på træningsbold"
+  },
+  "0358": {
+    "name": "enarms omvendt håndledscurl med håndvægt"
+  },
+  "0359": {
+    "name": "enarms omvendte flyes med støtte, håndvægt"
+  },
+  "0360": {
+    "name": "enarms skulderpres med håndvægt v. 2"
+  },
+  "0361": {
+    "name": "enarms skulderpres med håndvægt"
+  },
+  "0362": {
+    "name": "enarms triceps-ekstension på bænk med håndvægt"
+  },
+  "0363": {
+    "name": "enarms oprejst roning med håndvægt"
+  },
+  "0364": {
+    "name": "enarms håndledscurl med håndvægt"
+  },
+  "0365": {
+    "name": "håndledscurl med neutralt greb over bænk, håndvægte"
+  },
+  "0366": {
+    "name": "enarms håndledscurl med neutralt greb over bænk, håndvægt"
+  },
+  "0367": {
+    "name": "enarms håndledscurl over bænk med håndvægt"
+  },
+  "0368": {
+    "name": "omvendt håndledscurl over bænk med håndvægte"
+  },
+  "0369": {
+    "name": "håndledscurl over bænk med håndvægte"
+  },
+  "0370": {
+    "name": "scottcurl med hammergreb, håndvægt"
+  },
+  "0371": {
+    "name": "plyometrisk squat med håndvægte"
+  },
+  "0372": {
+    "name": "scottcurl med håndvægt"
+  },
+  "0373": {
+    "name": "triceps-ekstension med overhåndsgreb, håndvægte"
+  },
+  "0374": {
+    "name": "curl på mave på skråbænk med håndvægte"
+  },
+  "0375": {
+    "name": "pullover med håndvægt"
+  },
+  "0376": {
+    "name": "hantelløft"
+  },
+  "0377": {
+    "name": "roning til bagerste skulder med håndvægte (skulder)"
+  },
+  "0378": {
+    "name": "omvendte flyes med håndvægte, bagud"
+  },
+  "0379": {
+    "name": "bagerste sideløft med hovedstøtte, håndvægte"
+  },
+  "0380": {
+    "name": "bagerste sideløft med håndvægte"
+  },
+  "0381": {
+    "name": "lunges bagud med håndvægte"
+  },
+  "0382": {
+    "name": "bicepscurl med omvendt greb, håndvægte"
+  },
+  "0383": {
+    "name": "omvendte flyes med håndvægte"
+  },
+  "0384": {
+    "name": "omvendt scottcurl med håndvægt"
+  },
+  "0385": {
+    "name": "omvendt håndledscurl med håndvægte"
+  },
+  "0386": {
+    "name": "omvendte flyes med rotation, håndvægte"
+  },
+  "0387": {
+    "name": "siddende vekslende frontløft med håndvægte"
+  },
+  "0388": {
+    "name": "siddende vekslende håndvægtspres"
+  },
+  "0389": {
+    "name": "siddende triceps-ekstension på bænk med håndvægt"
+  },
+  "0390": {
+    "name": "siddende bicepscurl på træningsbold med håndvægte"
+  },
+  "0391": {
+    "name": "siddende curl med håndvægte"
+  },
+  "0392": {
+    "name": "siddende frontløft med håndvægte"
+  },
+  "0393": {
+    "name": "siddende indre bicepscurl med håndvægte"
+  },
+  "0394": {
+    "name": "siddende kickback med håndvægte"
+  },
+  "0395": {
+    "name": "siddende sideløft med håndvægte v. 2"
+  },
+  "0396": {
+    "name": "siddende sideløft med håndvægte"
+  },
+  "0397": {
+    "name": "siddende håndledscurl med neutralt greb, håndvægte"
+  },
+  "0398": {
+    "name": "siddende enarms kickback med håndvægt"
+  },
+  "0399": {
+    "name": "siddende enarms rotation med håndvægt"
+  },
+  "0400": {
+    "name": "siddende et-bens lægløft med håndvægt"
+  },
+  "0401": {
+    "name": "siddende håndledscurl med håndfladerne opad, håndvægte"
+  },
+  "0402": {
+    "name": "siddende scottcurl med håndvægt"
+  },
+  "0403": {
+    "name": "siddende koncentrationscurl med omvendt greb, håndvægt"
+  },
+  "0404": {
+    "name": "siddende skulderpres med håndvægte (parallellt greb)"
+  },
+  "0405": {
+    "name": "siddende skulderpres med håndvægte"
+  },
+  "0406": {
+    "name": "shrugs med håndvægte"
+  },
+  "0407": {
+    "name": "sidebøjning med håndvægt"
+  },
+  "0408": {
+    "name": "sideliggende enarmsløft med håndvægt"
+  },
+  "0409": {
+    "name": "et-bens lægløft med håndvægt"
+  },
+  "0410": {
+    "name": "et-bens split squat med håndvægt"
+  },
+  "0411": {
+    "name": "et-bens squat med håndvægte"
+  },
+  "0412": {
+    "name": "squat med rygen mod træningsbold på væggen, håndvægte"
+  },
+  "0413": {
+    "name": "squat med håndvægte"
+  },
+  "0414": {
+    "name": "stående vekslende skulderpres med håndvægte"
+  },
+  "0415": {
+    "name": "stående vekslende løft med håndvægte"
+  },
+  "0416": {
+    "name": "stående bicepscurl med håndvægte"
+  },
+  "0417": {
+    "name": "stående lægløft med håndvægte"
+  },
+  "0418": {
+    "name": "stående koncentrationscurl med håndvægt"
+  },
+  "0419": {
+    "name": "stående frontløft over hovedet med håndvægte"
+  },
+  "0420": {
+    "name": "stående kickback med håndvægt"
+  },
+  "0421": {
+    "name": "stående enarms koncentrationscurl med håndvægt"
+  },
+  "0422": {
+    "name": "stående enarms curl over skrå bænk med håndvægt"
+  },
+  "0423": {
+    "name": "stående enarms triceps-ekstension med håndvægt"
+  },
+  "0424": {
+    "name": "stående enarms pres med neutralt greb, håndvægt"
+  },
+  "0425": {
+    "name": "stående enarms omvendt curl med håndvægt"
+  },
+  "0426": {
+    "name": "stående skulderpres med håndvægte"
+  },
+  "0427": {
+    "name": "stående pres med neutralt greb, håndvægte"
+  },
+  "0428": {
+    "name": "stående scottcurl med håndvægt"
+  },
+  "0429": {
+    "name": "stående omvendt curl med håndvægte"
+  },
+  "0430": {
+    "name": "stående triceps-ekstension med håndvægt"
+  },
+  "0431": {
+    "name": "step-up med håndvægte"
+  },
+  "0432": {
+    "name": "strakte dødløft med håndvægte"
+  },
+  "0433": {
+    "name": "pullover med strakte arme, håndvægt"
+  },
+  "0434": {
+    "name": "dødløft med strakte ben, håndvægte"
+  },
+  "0435": {
+    "name": "sumo squat med rygen mod træningsbold på væggen, håndvægt"
+  },
+  "0436": {
+    "name": "tatepress med håndvægte"
+  },
+  "0437": {
+    "name": "oprejst roning med håndvægte"
+  },
+  "0438": {
+    "name": "w-pres med håndvægte"
+  },
+  "0439": {
+    "name": "zottmancurl med håndvægte"
+  },
+  "0443": {
+    "name": "albue mod knæ"
+  },
+  "0445": {
+    "name": "antigravitationspres med EZ-stang"
+  },
+  "0446": {
+    "name": "curl med smalt greb, EZ-stang"
+  },
+  "0447": {
+    "name": "curl med EZ-stang"
+  },
+  "0448": {
+    "name": "press mod ansiktet med smalt greb på negativ bænk, EZ-stang"
+  },
+  "0449": {
+    "name": "skrå triceps-ekstension med EZ-stang"
+  },
+  "0450": {
+    "name": "jm-pres med EZ-stang"
+  },
+  "0451": {
+    "name": "curl med omvendt greb, EZ-stang"
+  },
+  "0452": {
+    "name": "scottcurl med omvendt greb, EZ-stang"
+  },
+  "0453": {
+    "name": "siddende triceps-ekstension med EZ-stang"
+  },
+  "0454": {
+    "name": "spidercurl med EZ-stang"
+  },
+  "0455": {
+    "name": "fingercurl"
+  },
+  "0456": {
+    "name": "sit-up med bøjede ben (bøjede knæ)"
+  },
+  "0457": {
+    "name": "sit-up med bøjede ben (strakte arme)"
+  },
+  "0458": {
+    "name": "flyes på gulvet (med vægtstang)"
+  },
+  "0459": {
+    "name": "flutter kicks"
+  },
+  "0461": {
+    "name": "frø-squat"
+  },
+  "0462": {
+    "name": "nakkestræk fremad og bagud"
+  },
+  "0463": {
+    "name": "frontplanke"
+  },
+  "0464": {
+    "name": "frontplanke med vridning"
+  },
+  "0466": {
+    "name": "gironda sternum chins"
+  },
+  "0467": {
+    "name": "gorillachins"
+  },
+  "0468": {
+    "name": "græshoppearmbøjning"
+  },
+  "0469": {
+    "name": "ljumskcrunch"
+  },
+  "0470": {
+    "name": "crunch hånd mod modsat knæ"
+  },
+  "0471": {
+    "name": "armbøjning i håndstand"
+  },
+  "0472": {
+    "name": "hængende benløft"
+  },
+  "0473": {
+    "name": "hængende pike"
+  },
+  "0474": {
+    "name": "hængende hofteløft med strakte ben"
+  },
+  "0475": {
+    "name": "hængende benløft med strakte ben"
+  },
+  "0476": {
+    "name": "hængende hofteløft med strakte ben og vridning"
+  },
+  "0479": {
+    "name": "step-up med højt knæ"
+  },
+  "0480": {
+    "name": "høje knæ med vridning"
+  },
+  "0481": {
+    "name": "høje knæ og hælspark"
+  },
+  "0482": {
+    "name": "hofte-crunch (bøjede knæ)"
+  },
+  "0484": {
+    "name": "hofteløft (bøjede knæ)"
+  },
+  "0485": {
+    "name": "hofteløft i bro v. 2"
+  },
+  "0486": {
+    "name": "hofteløft i bro"
+  },
+  "0487": {
+    "name": "hofteløft-crunch"
+  },
+  "0488": {
+    "name": "rygløft (på bænk)"
+  },
+  "0489": {
+    "name": "rygløft"
+  },
+  "0490": {
+    "name": "skrå armbøjning med smalle hænder"
+  },
+  "0491": {
+    "name": "skrå benløft med hofteløft (strakte ben)"
+  },
+  "0492": {
+    "name": "skrå armbøjning med dybdehop"
+  },
+  "0493": {
+    "name": "skrå armbøjning"
+  },
+  "0494": {
+    "name": "skrå armbøjning med omvendt håndgreb"
+  },
+  "0495": {
+    "name": "skrå sit-up med vridning"
+  },
+  "0496": {
+    "name": "omvendt lårcurl (med bænkstøtte)"
+  },
+  "0497": {
+    "name": "inverteret roning v. 2"
+  },
+  "0498": {
+    "name": "inverteret roning med remme"
+  },
+  "0499": {
+    "name": "inverteret roning"
+  },
+  "0500": {
+    "name": "isometriske forrudeviskere"
+  },
+  "0501": {
+    "name": "burpee med jumping jack"
+  },
+  "0502": {
+    "name": "foldekniv (jackknife) på gulvet"
+  },
+  "0503": {
+    "name": "foldekniv (jackknife) på træningsbold"
+  },
+  "0504": {
+    "name": "jackpress med håndvægte"
+  },
+  "0505": {
+    "name": "jack split crunches"
+  },
+  "0507": {
+    "name": "foldeknivs-sit-up"
+  },
+  "0508": {
+    "name": "janda-sit-up"
+  },
+  "0510": {
+    "name": "hoppende lunges til jumping jack"
+  },
+  "0513": {
+    "name": "squat hop v. 2"
+  },
+  "0514": {
+    "name": "squat hop"
+  },
+  "0517": {
+    "name": "avanceret vindmølle (windmill) med kettlebell"
+  },
+  "0518": {
+    "name": "vekslende hængende vend med kettlebell"
+  },
+  "0519": {
+    "name": "vekslende pres på gulvet med kettlebell"
+  },
+  "0520": {
+    "name": "vekslende pres med kettlebell"
+  },
+  "0521": {
+    "name": "vekslende renegade row med kettlebell"
+  },
+  "0522": {
+    "name": "vekslende roning med kettlebell"
+  },
+  "0523": {
+    "name": "arnoldpress med kettlebell"
+  },
+  "0524": {
+    "name": "bent pres med kettlebell"
+  },
+  "0525": {
+    "name": "vend fra hængende position med kettlebell op og ned"
+  },
+  "0526": {
+    "name": "dubbel vekslende hængende vend med kettlebells"
+  },
+  "0527": {
+    "name": "dubbel stød med kettlebells"
+  },
+  "0528": {
+    "name": "dubbel push pres med kettlebells"
+  },
+  "0529": {
+    "name": "dubbelt træk med kettlebells"
+  },
+  "0530": {
+    "name": "dubbel vindmølle (windmill) med kettlebells"
+  },
+  "0531": {
+    "name": "enarms pres på gulvet med udvidet bevægelsesudslag med kettlebell"
+  },
+  "0532": {
+    "name": "8-taller med kettlebell"
+  },
+  "0533": {
+    "name": "front squat med kettlebell"
+  },
+  "0534": {
+    "name": "goblet squat med kettlebell"
+  },
+  "0535": {
+    "name": "hængende vend med kettlebell"
+  },
+  "0536": {
+    "name": "lunges med kettlebell under benet"
+  },
+  "0537": {
+    "name": "enarms vend og stød med kettlebell"
+  },
+  "0538": {
+    "name": "enarms stød med kettlebell"
+  },
+  "0539": {
+    "name": "enarms militærpres til siden med kettlebell"
+  },
+  "0540": {
+    "name": "enarms push pres med kettlebell"
+  },
+  "0541": {
+    "name": "enarms roning med kettlebell"
+  },
+  "0542": {
+    "name": "enarms træk med kettlebell"
+  },
+  "0543": {
+    "name": "pirate supper legs med kettlebell"
+  },
+  "0544": {
+    "name": "pistol squat med kettlebell"
+  },
+  "0545": {
+    "name": "plyometrisk armbøjning med kettlebell"
+  },
+  "0546": {
+    "name": "siddende pres med kettlebell"
+  },
+  "0547": {
+    "name": "gyngepres med kettlebells"
+  },
+  "0548": {
+    "name": "sumo højt træk med kettlebell"
+  },
+  "0549": {
+    "name": "kettlebell swing"
+  },
+  "0550": {
+    "name": "thruster med kettlebell"
+  },
+  "0551": {
+    "name": "turkish get-up med kettlebell (squatvariation)"
+  },
+  "0552": {
+    "name": "vend med to arme med kettlebell"
+  },
+  "0553": {
+    "name": "militærpres med to arme med kettlebells"
+  },
+  "0554": {
+    "name": "vindmølle (windmill) med kettlebell"
+  },
+  "0555": {
+    "name": "kick out sit"
+  },
+  "0556": {
+    "name": "spark med bøjet ben v. 2"
+  },
+  "0558": {
+    "name": "kipping muscle-up"
+  },
+  "0559": {
+    "name": "stræk knæ mod bryst"
+  },
+  "0560": {
+    "name": "knælende hoftebøjer"
+  },
+  "0561": {
+    "name": "knælende stræk til håndledsbøjere"
+  },
+  "0562": {
+    "name": "landmine 180 med vægtstang"
+  },
+  "0564": {
+    "name": "sidelæns kassehop (box jump)"
+  },
+  "0565": {
+    "name": "hurtige sideskridt"
+  },
+  "0567": {
+    "name": "sidelæns kassehop (box jump) med vridning"
+  },
+  "0568": {
+    "name": "sidebro med benet på bænk"
+  },
+  "0569": {
+    "name": "lårcurl (på træningsbold)"
+  },
+  "0570": {
+    "name": "benindtræk på fladbænk"
+  },
+  "0571": {
+    "name": "vekslende siddende roning med smalt greb i maskine"
+  },
+  "0572": {
+    "name": "assisterede chins i maskine"
+  },
+  "0573": {
+    "name": "rygløft i maskine"
+  },
+  "0574": {
+    "name": "foroverbøjet roning i maskine med vægtstang"
+  },
+  "0575": {
+    "name": "bicepscurl i maskine"
+  },
+  "0576": {
+    "name": "brystpres i maskine"
+  },
+  "0577": {
+    "name": "brystpres i maskine"
+  },
+  "0578": {
+    "name": "dødløft i maskine"
+  },
+  "0579": {
+    "name": "træk til bryst foran i maskine"
+  },
+  "0580": {
+    "name": "shrugs uden greb i maskine"
+  },
+  "0581": {
+    "name": "høj roning i maskine"
+  },
+  "0582": {
+    "name": "knælende lårcurl i maskine"
+  },
+  "0583": {
+    "name": "knælende vridning i maskine"
+  },
+  "0584": {
+    "name": "sideløft i maskine"
+  },
+  "0585": {
+    "name": "benspark i maskine"
+  },
+  "0586": {
+    "name": "liggende lårcurl i maskine"
+  },
+  "0587": {
+    "name": "militærpres i maskine"
+  },
+  "0588": {
+    "name": "siddende roning med smalt greb i maskine"
+  },
+  "0589": {
+    "name": "enarms foroverbøjet roning i maskine"
+  },
+  "0590": {
+    "name": "enarms skulderpres i maskine"
+  },
+  "0591": {
+    "name": "triceps dips med overhåndsgreb i maskine"
+  },
+  "0592": {
+    "name": "scottcurl i maskine"
+  },
+  "0593": {
+    "name": "omvendt rygløft i maskine"
+  },
+  "0594": {
+    "name": "siddende lægløft i maskine"
+  },
+  "0595": {
+    "name": "siddende crunch i maskine (brystpude)"
+  },
+  "0596": {
+    "name": "siddende flyes i maskine"
+  },
+  "0597": {
+    "name": "siddende hofteabduktion i maskine"
+  },
+  "0598": {
+    "name": "siddende hofteadduktion i maskine"
+  },
+  "0599": {
+    "name": "siddende lårcurl i maskine"
+  },
+  "0600": {
+    "name": "siddende crunch med benløft i maskine"
+  },
+  "0601": {
+    "name": "siddende omvendte flyes i maskine (parallellt greb)"
+  },
+  "0602": {
+    "name": "siddende omvendte flyes i maskine"
+  },
+  "0603": {
+    "name": "skulderpres i maskine"
+  },
+  "0604": {
+    "name": "shrugs i maskine"
+  },
+  "0605": {
+    "name": "stående lægpres i maskine"
+  },
+  "0606": {
+    "name": "t-stang roning i maskine"
+  },
+  "0607": {
+    "name": "triceps-ekstension i maskine"
+  },
+  "0608": {
+    "name": "vridning i maskine"
+  },
+  "0609": {
+    "name": "london bridge med reb"
+  },
+  "0610": {
+    "name": "lave jacks"
+  },
+  "0611": {
+    "name": "lunges med armbøjning"
+  },
+  "0612": {
+    "name": "lunges"
+  },
+  "0613": {
+    "name": "liggende lårstræk (på siden)"
+  },
+  "0614": {
+    "name": "liggende vekslende hofteekstension"
+  },
+  "0615": {
+    "name": "liggende korsstræk"
+  },
+  "0616": {
+    "name": "liggende hoftebøjerstræk"
+  },
+  "0617": {
+    "name": "liggende benløft fra hoften (på gulvet)"
+  },
+  "0619": {
+    "name": "liggende benløft med strakt ben fra hoften"
+  },
+  "0620": {
+    "name": "liggende benløft på fladbænk"
+  },
+  "0621": {
+    "name": "liggende saxcrunch"
+  },
+  "0622": {
+    "name": "liggende saxspark"
+  },
+  "0623": {
+    "name": "liggende samtidige vekslende benløft"
+  },
+  "0624": {
+    "name": "marsch i wall sit (vægsidning)"
+  },
+  "0625": {
+    "name": "sit-up med medicinbold (væg)"
+  },
+  "0627": {
+    "name": "chins med blandat greb"
+  },
+  "0628": {
+    "name": "monster walk"
+  },
+  "0629": {
+    "name": "mountain climbers med lunges"
+  },
+  "0630": {
+    "name": "mountain climbers"
+  },
+  "0631": {
+    "name": "muscle-up"
+  },
+  "0632": {
+    "name": "bænkbro med smal benstilling"
+  },
+  "0633": {
+    "name": "nakkebro på mave"
+  },
+  "0634": {
+    "name": "negativ crunch"
+  },
+  "0635": {
+    "name": "skrå crunches på gulvet"
+  },
+  "0636": {
+    "name": "hammercurl med olympisk vægtstang"
+  },
+  "0637": {
+    "name": "triceps-ekstension med olympisk vægtstang"
+  },
+  "0638": {
+    "name": "enarms chins"
+  },
+  "0639": {
+    "name": "enarms dips"
+  },
+  "0640": {
+    "name": "enarms slam (med medicinbold)"
+  },
+  "0641": {
+    "name": "otis up med vægt"
+  },
+  "0642": {
+    "name": "armbøjning med benspark udad"
+  },
+  "0643": {
+    "name": "tricepsstræk over hovedet"
+  },
+  "0647": {
+    "name": "plyometrisk wall sit (vægsidning)"
+  },
+  "0648": {
+    "name": "vend med vægtstang"
+  },
+  "0649": {
+    "name": "pretzelstræk"
+  },
+  "0650": {
+    "name": "knæindtrækning (på træningsbold)"
+  },
+  "0651": {
+    "name": "pull-up (neutralt greb)"
+  },
+  "0652": {
+    "name": "pull-up"
+  },
+  "0653": {
+    "name": "armbøjning (bosubold)"
+  },
+  "0654": {
+    "name": "armbøjning (knæ mod bryst)"
+  },
+  "0655": {
+    "name": "armbøjning (på træningsbold)"
+  },
+  "0656": {
+    "name": "armbøjning (på træningsbold)"
+  },
+  "0657": {
+    "name": "armbøjning (én hånd på træningsbold)"
+  },
+  "0658": {
+    "name": "armbøjning (væg) v. 2"
+  },
+  "0659": {
+    "name": "armbøjning (væg)"
+  },
+  "0660": {
+    "name": "armbøjning med smalt greb på håndvægte"
+  },
+  "0661": {
+    "name": "armbøjning med indadspark"
+  },
+  "0662": {
+    "name": "armbøjning"
+  },
+  "0663": {
+    "name": "armbøjning på medicinbold"
+  },
+  "0664": {
+    "name": "armbøjning til sideplanke"
+  },
+  "0665": {
+    "name": "w-armbøjning"
+  },
+  "0666": {
+    "name": "armbøjning med armløft"
+  },
+  "0667": {
+    "name": "armbøjning med benløft"
+  },
+  "0668": {
+    "name": "bagoverbøjet bro"
+  },
+  "0669": {
+    "name": "stræk til bagerste skulderen"
+  },
+  "0670": {
+    "name": "pull-up bag nakken"
+  },
+  "0672": {
+    "name": "omvendte dips"
+  },
+  "0673": {
+    "name": "træk til bryst i maskine med omvendt greb"
+  },
+  "0674": {
+    "name": "pull-up med omvendt greb"
+  },
+  "0675": {
+    "name": "omvendt rygløft (på træningsbold)"
+  },
+  "0676": {
+    "name": "lunges bagud (med spark)"
+  },
+  "0677": {
+    "name": "dips i ringe"
+  },
+  "0678": {
+    "name": "rocky pull-up til træk"
+  },
+  "0679": {
+    "name": "rullende bro"
+  },
+  "0680": {
+    "name": "rebklatring"
+  },
+  "0681": {
+    "name": "armbøjning med rotation (på knæ)"
+  },
+  "0683": {
+    "name": "roterende jumping jacks"
+  },
+  "0684": {
+    "name": "løb (med redskap)"
+  },
+  "0685": {
+    "name": "løb"
+  },
+  "0686": {
+    "name": "russian twist (på træningsbold, strakte arme)"
+  },
+  "0687": {
+    "name": "russian twist"
+  },
+  "0688": {
+    "name": "skulderbladspull-up"
+  },
+  "0689": {
+    "name": "siddende benløft"
+  },
+  "0690": {
+    "name": "siddende lændestræk"
+  },
+  "0691": {
+    "name": "siddende sidocrunch (væg)"
+  },
+  "0692": {
+    "name": "siddende et-bens hamstringsstræk"
+  },
+  "0693": {
+    "name": "siddende lægstræk med strakt ben"
+  },
+  "0694": {
+    "name": "siddende vridning (på træningsbold)"
+  },
+  "0696": {
+    "name": "selvassisteret omvendt lårcurl (på gulvet)"
+  },
+  "0697": {
+    "name": "selvassisteret omvendt lårcurl"
+  },
+  "0698": {
+    "name": "skulderpres (med elastik)"
+  },
+  "0699": {
+    "name": "armbøjning med skuldertouch"
+  },
+  "0700": {
+    "name": "sidebøjning (på træningsbold)"
+  },
+  "0701": {
+    "name": "sidebro (bøjet knæ)"
+  },
+  "0702": {
+    "name": "sidebro (knæindtræk)"
+  },
+  "0703": {
+    "name": "sidebro med hofteabduktion (stjerne)"
+  },
+  "0705": {
+    "name": "sidebro v. 2"
+  },
+  "0706": {
+    "name": "sidebro"
+  },
+  "0707": {
+    "name": "sidocrunch v. 2"
+  },
+  "0708": {
+    "name": "sidocrunch"
+  },
+  "0709": {
+    "name": "sidehofteløft (i barr)"
+  },
+  "0710": {
+    "name": "hofteabduktion til siden"
+  },
+  "0711": {
+    "name": "sidelungessstræk"
+  },
+  "0712": {
+    "name": "sideliggende fotløft"
+  },
+  "0713": {
+    "name": "nakkestræk til siden"
+  },
+  "0714": {
+    "name": "sideplanke v. 2"
+  },
+  "0715": {
+    "name": "sideplanke"
+  },
+  "0716": {
+    "name": "nakkestræk med tryk til siden"
+  },
+  "0717": {
+    "name": "sidearmbøjning"
+  },
+  "0718": {
+    "name": "sidositup"
+  },
+  "0719": {
+    "name": "crunch med sidestræk"
+  },
+  "0720": {
+    "name": "hagen fra side til side"
+  },
+  "0721": {
+    "name": "håndledsstræk med træk til siden"
+  },
+  "0722": {
+    "name": "benbro i sidled"
+  },
+  "0723": {
+    "name": "lodrette benløft i sidled (strakte ben)"
+  },
+  "0724": {
+    "name": "lodrette benløft i sidled med vridning (strakte ben)"
+  },
+  "0725": {
+    "name": "enarms armbøjning"
+  },
+  "0726": {
+    "name": "et-bens bro"
+  },
+  "0727": {
+    "name": "et-bens lægløft (på en håndvægt)"
+  },
+  "0728": {
+    "name": "et-bens extension (på træningsbold)"
+  },
+  "0730": {
+    "name": "et-bens glid på plade"
+  },
+  "0731": {
+    "name": "et-bens wall sit (vægsidning)"
+  },
+  "0733": {
+    "name": "et-bens step-up"
+  },
+  "0734": {
+    "name": "wall sit (vægsidning)"
+  },
+  "0735": {
+    "name": "sit-up v. 2"
+  },
+  "0736": {
+    "name": "sit-up"
+  },
+  "0738": {
+    "name": "lægløft 45° i maskine"
+  },
+  "0739": {
+    "name": "benpres 45° i maskine"
+  },
+  "0740": {
+    "name": "bred benpres 45° i maskine"
+  },
+  "0741": {
+    "name": "hack squat med smalare fodstilling i maskine"
+  },
+  "0742": {
+    "name": "fremadvinklet lægpres i maskine"
+  },
+  "0743": {
+    "name": "hack squat i maskine"
+  },
+  "0744": {
+    "name": "liggende squat i maskine"
+  },
+  "0746": {
+    "name": "shrugs bag rygen i smith-maskine"
+  },
+  "0747": {
+    "name": "nakkepres i smith-maskine"
+  },
+  "0748": {
+    "name": "bænkpres i smith-maskine"
+  },
+  "0749": {
+    "name": "good morning med bøjede knæ i smith-maskine"
+  },
+  "0750": {
+    "name": "stol-squat i smith-maskine"
+  },
+  "0751": {
+    "name": "bænkpres med smalt greb i smith-maskine"
+  },
+  "0752": {
+    "name": "dødløft i smith-maskine"
+  },
+  "0753": {
+    "name": "negativ bænkpres i smith-maskine"
+  },
+  "0754": {
+    "name": "negativt pres med omvendt greb i smith-maskine"
+  },
+  "0755": {
+    "name": "hack squat i smith-maskine"
+  },
+  "0756": {
+    "name": "bækkenløft i smith-maskine"
+  },
+  "0757": {
+    "name": "skrå bænkpres i smith-maskine"
+  },
+  "0758": {
+    "name": "skrå pres med omvendt greb i smith-maskine"
+  },
+  "0759": {
+    "name": "skrå skulderløft i smith-maskine"
+  },
+  "0760": {
+    "name": "benpres i smith-maskine"
+  },
+  "0761": {
+    "name": "smal roning i smith-maskine"
+  },
+  "0762": {
+    "name": "roning til bagerste skulder i smith-maskine"
+  },
+  "0763": {
+    "name": "omvendt lægløft i smith-maskine"
+  },
+  "0764": {
+    "name": "pres med omvendt greb i smith-maskine"
+  },
+  "0765": {
+    "name": "siddende skulderpres i smith-maskine"
+  },
+  "0766": {
+    "name": "skulderpres i smith-maskine"
+  },
+  "0767": {
+    "name": "shrugs i smith-maskine"
+  },
+  "0768": {
+    "name": "et-bens split squat i smith-maskine"
+  },
+  "0769": {
+    "name": "sprinter-lunges i smith-maskine"
+  },
+  "0770": {
+    "name": "squat i smith-maskine"
+  },
+  "0771": {
+    "name": "stående håndledscurl bag rygen i smith-maskine"
+  },
+  "0772": {
+    "name": "stående militærpres bag nakken i smith-maskine"
+  },
+  "0773": {
+    "name": "stående lægløft i smith-maskine"
+  },
+  "0774": {
+    "name": "stående militærpres i smith-maskine"
+  },
+  "0775": {
+    "name": "oprejst roning i smith-maskine"
+  },
+  "0776": {
+    "name": "snatch pull med vægtstang"
+  },
+  "0777": {
+    "name": "spell caster med håndvægte"
+  },
+  "0778": {
+    "name": "spindelkryp med armbøjning"
+  },
+  "0781": {
+    "name": "split squat"
+  },
+  "0782": {
+    "name": "firkantshop"
+  },
+  "0783": {
+    "name": "squat (armene over hovedet)"
+  },
+  "0784": {
+    "name": "squat (med elastik)"
+  },
+  "0785": {
+    "name": "squat jacks"
+  },
+  "0786": {
+    "name": "squat jerk med vægtstang"
+  },
+  "0788": {
+    "name": "stående nakkepres med vægtstang"
+  },
+  "0789": {
+    "name": "stående hamstringsstræk"
+  },
+  "0790": {
+    "name": "stående hofteabduktion (bøjet knæ)"
+  },
+  "0791": {
+    "name": "stående hofteabduktion"
+  },
+  "0792": {
+    "name": "stående hofteekstension (bøjet knæ)"
+  },
+  "0793": {
+    "name": "stående sideløft med elastik"
+  },
+  "0794": {
+    "name": "stående lateral stræk"
+  },
+  "0795": {
+    "name": "stående et-bens lårcurl"
+  },
+  "0796": {
+    "name": "stående udrulning med mavehjul"
+  },
+  "0798": {
+    "name": "lugn cykling på motionscykel"
+  },
+  "0799": {
+    "name": "step-up med krydsskridt"
+  },
+  "0800": {
+    "name": "step-up med vridning, albue mod modsat knæ"
+  },
+  "0801": {
+    "name": "step-up"
+  },
+  "0803": {
+    "name": "superman-armbøjning"
+  },
+  "0805": {
+    "name": "fallout til maven i slyngetræner"
+  },
+  "0806": {
+    "name": "armbøjning i slyngetræner"
+  },
+  "0807": {
+    "name": "omvendt crunch i slyngetræner"
+  },
+  "0808": {
+    "name": "roning i slyngetræner"
+  },
+  "0809": {
+    "name": "split squat i slyngetræner"
+  },
+  "0810": {
+    "name": "tå-berøring i wall sit (vægsidning)"
+  },
+  "0811": {
+    "name": "dødløft med trap bar"
+  },
+  "0812": {
+    "name": "triceps dips (fødderne på bænk)"
+  },
+  "0813": {
+    "name": "triceps dips (mellem bænke)"
+  },
+  "0814": {
+    "name": "triceps dips"
+  },
+  "0815": {
+    "name": "triceps dips fra gulvet"
+  },
+  "0816": {
+    "name": "tricepspres"
+  },
+  "0817": {
+    "name": "tricepsstræk"
+  },
+  "0818": {
+    "name": "træk til bryst med dobbelthåndtag og parallellt greb"
+  },
+  "0820": {
+    "name": "sideplanke med vridning"
+  },
+  "0821": {
+    "name": "sit-up med vridning"
+  },
+  "0822": {
+    "name": "squat med vridning"
+  },
+  "0823": {
+    "name": "crunch med vridning (strakte arme)"
+  },
+  "0826": {
+    "name": "vertikalt benløft (i barr)"
+  },
+  "0827": {
+    "name": "vertikal mountain climber"
+  },
+  "0828": {
+    "name": "gang (redskap)"
+  },
+  "0829": {
+    "name": "gang (høje knæ)"
+  },
+  "0830": {
+    "name": "bænkdips med vægt"
+  },
+  "0831": {
+    "name": "crunch med vægt (bøjede knæ)"
+  },
+  "0832": {
+    "name": "crunch med vægt"
+  },
+  "0833": {
+    "name": "donkey calf raise med vægt"
+  },
+  "0834": {
+    "name": "frontløft med vægt"
+  },
+  "0835": {
+    "name": "rygløft med vægt (på træningsbold)"
+  },
+  "0836": {
+    "name": "crunch med benstræk med vægt"
+  },
+  "0837": {
+    "name": "liggende hofteabduktion med vægt"
+  },
+  "0838": {
+    "name": "liggende sideløft af hovedet med vægt (med huvudsele)"
+  },
+  "0839": {
+    "name": "liggende vridning med vægt"
+  },
+  "0840": {
+    "name": "crunch med armene over hovedet med vægt (på træningsbold)"
+  },
+  "0841": {
+    "name": "pull-up med vægt"
+  },
+  "0842": {
+    "name": "pullover med vægt (på træningsbold)"
+  },
+  "0843": {
+    "name": "reduktionstriangel med vægt"
+  },
+  "0844": {
+    "name": "armcirkler med vægt"
+  },
+  "0845": {
+    "name": "russian twist med vægt (benene oppe)"
+  },
+  "0846": {
+    "name": "russian twist med vægt"
+  },
+  "0847": {
+    "name": "siddende bicepscurl med vægt (på træningsbold)"
+  },
+  "0848": {
+    "name": "siddende nakkeekstension med vægt (med huvudsele)"
+  },
+  "0849": {
+    "name": "siddende vridning med vægt (på træningsbold)"
+  },
+  "0850": {
+    "name": "sidebøjning med vægt (på træningsbold)"
+  },
+  "0851": {
+    "name": "sissy squat med vægt"
+  },
+  "0852": {
+    "name": "squat med vægt"
+  },
+  "0853": {
+    "name": "stående curl med vægt"
+  },
+  "0854": {
+    "name": "stående håndklem med vægt"
+  },
+  "0855": {
+    "name": "stående vridning med vægt"
+  },
+  "0856": {
+    "name": "svend-pres med vægt"
+  },
+  "0857": {
+    "name": "udrulning med mavehjul"
+  },
+  "0858": {
+    "name": "sprintintervaller"
+  },
+  "0859": {
+    "name": "håndledsrulle"
+  },
+  "0860": {
+    "name": "kickback i kabel"
+  },
+  "0861": {
+    "name": "siddende kabelroning"
+  },
+  "0862": {
+    "name": "vridning i kabel, oppefra og ned"
+  },
+  "0863": {
+    "name": "liggende udadrotation af skulderen med håndvægt"
+  },
+  "0864": {
+    "name": "oprejst udadrotation af skulderen med håndvægt"
+  },
+  "0865": {
+    "name": "liggende ben- og hofteløft"
+  },
+  "0866": {
+    "name": "hængende ben- og hofteløft med vægt"
+  },
+  "0867": {
+    "name": "omvendt planke"
+  },
+  "0868": {
+    "name": "kabelcurl"
+  },
+  "0869": {
+    "name": "skulderpres i maskine v. 2"
+  },
+  "0870": {
+    "name": "rumpløft"
+  },
+  "0871": {
+    "name": "crunch med optrukne knæ"
+  },
+  "0872": {
+    "name": "omvendt crunch"
+  },
+  "0873": {
+    "name": "omvendt crunch i kabel"
+  },
+  "0874": {
+    "name": "stående kabelcrunch (med reb)"
+  },
+  "0878": {
+    "name": "dyb squat med vægtstang (i stilling)"
+  },
+  "0880": {
+    "name": "stående hofteekstension i kabel v. 2"
+  },
+  "0881": {
+    "name": "curtsy lunges med håndvægte"
+  },
+  "0882": {
+    "name": "et-bens squat med håndvægt"
+  },
+  "0884": {
+    "name": "step-up i sidled i smith-maskine"
+  },
+  "0885": {
+    "name": "liggende løft i smith-maskine (på hoften)"
+  },
+  "0886": {
+    "name": "et-bens dødløft i smith-maskine"
+  },
+  "0891": {
+    "name": "rygekstension med elastik"
+  },
+  "0892": {
+    "name": "foroverbøjet roning med elastik v. 2"
+  },
+  "0893": {
+    "name": "foroverbøjede sideløft til bagerste skulder med elastik v. 3"
+  },
+  "0894": {
+    "name": "lægløft med elastik"
+  },
+  "0897": {
+    "name": "hammercurl med elastik"
+  },
+  "0901": {
+    "name": "hofteekstension med elastik"
+  },
+  "0902": {
+    "name": "rygløft med elastik"
+  },
+  "0903": {
+    "name": "kickback med elastik"
+  },
+  "0905": {
+    "name": "knælende træk med elastik"
+  },
+  "0906": {
+    "name": "knælende bagudspark med elastik"
+  },
+  "0907": {
+    "name": "sideløft med elastik"
+  },
+  "0908": {
+    "name": "lave flyes med elastik"
+  },
+  "0909": {
+    "name": "lunges med elastik"
+  },
+  "0910": {
+    "name": "liggende ben- og hofteløft med elastik"
+  },
+  "0911": {
+    "name": "liggende lårcurl med elastik"
+  },
+  "0912": {
+    "name": "liggende benløft med elastik"
+  },
+  "0913": {
+    "name": "flyes på mellemhøjde med elastik"
+  },
+  "0915": {
+    "name": "armbøjning med elastik"
+  },
+  "0917": {
+    "name": "omvendt curl med elastik"
+  },
+  "0919": {
+    "name": "et-bens strakte dødløft med elastik"
+  },
+  "0921": {
+    "name": "stående udadrotation i skulderen med elastik"
+  },
+  "0923": {
+    "name": "stående skrå brystpres med elastik"
+  },
+  "0924": {
+    "name": "stående indadrotation i skulderen med elastik"
+  },
+  "0926": {
+    "name": "stående benspark med elastik"
+  },
+  "0927": {
+    "name": "stående strakte benløft med elastik"
+  },
+  "0928": {
+    "name": "strakte armtræk med elastik"
+  },
+  "0930": {
+    "name": "stående roning med elastik"
+  },
+  "0931": {
+    "name": "twist med elastik (nedefra og op)"
+  },
+  "0934": {
+    "name": "oprejst roning med elastik"
+  },
+  "0935": {
+    "name": "oprejst udadrotation i skulderen med elastik"
+  },
+  "0938": {
+    "name": "stepper i maskine"
+  },
+  "0942": {
+    "name": "katten"
+  },
+  "0943": {
+    "name": "stolen utkatasana v. 2"
+  },
+  "0944": {
+    "name": "stolen utkatasana"
+  },
+  "0945": {
+    "name": "barnets stilling"
+  },
+  "0946": {
+    "name": "kranen bakasana"
+  },
+  "0947": {
+    "name": "halvmånen"
+  },
+  "0948": {
+    "name": "grundstilling"
+  },
+  "0949": {
+    "name": "nedadvendt hund adho mukha svanasana"
+  },
+  "0950": {
+    "name": "fiskestilling matsyasana"
+  },
+  "0951": {
+    "name": "guirlandestilling malasana"
+  },
+  "0952": {
+    "name": "halvmånestilling ardha chandrasana"
+  },
+  "0953": {
+    "name": "hænderne til fødderne pada hastasana"
+  },
+  "0954": {
+    "name": "heltestilling virasana"
+  },
+  "0955": {
+    "name": "benet til siden"
+  },
+  "0956": {
+    "name": "lotusstilling (padmasana)"
+  },
+  "0957": {
+    "name": "roteret sidovinkel parivrtta parsvakonasana"
+  },
+  "0958": {
+    "name": "foroverbøjning med benene bredt adskilt upavista konasana"
+  },
+  "0959": {
+    "name": "stående foroverbøjning uttanasana"
+  },
+  "0960": {
+    "name": "stående foroverbøjning med benene adskilt"
+  },
+  "0961": {
+    "name": "træstilling vrksasana"
+  },
+  "0962": {
+    "name": "trekantstilling trikonasana"
+  },
+  "0963": {
+    "name": "krigerstilling virabhadrasana v. 2"
+  },
+  "0964": {
+    "name": "krigerstilling i virabhadrasana"
+  },
+  "0965": {
+    "name": "bred foroverbøjning prasarita padottanasana"
+  },
+  "0966": {
+    "name": "dødløft med vægtstang (bakifrån)"
+  },
+  "0967": {
+    "name": "dødløft med vægtstang (framifrån)"
+  },
+  "0968": {
+    "name": "skiftevis bicepscurl med elastik"
+  },
+  "0969": {
+    "name": "vekslende v-up med elastik"
+  },
+  "0970": {
+    "name": "elastikassisterede pull-ups"
+  },
+  "0971": {
+    "name": "elastikassisteret udrulning med mavehjul"
+  },
+  "0972": {
+    "name": "cykelcrunch med elastik"
+  },
+  "0973": {
+    "name": "lægløft med elastik v. 2"
+  },
+  "0974": {
+    "name": "træk med smalt greb med elastik"
+  },
+  "0975": {
+    "name": "armbøjning med smalt greb med elastik"
+  },
+  "0976": {
+    "name": "koncentrationscurl med elastik"
+  },
+  "0977": {
+    "name": "forreste sideløft med elastik"
+  },
+  "0978": {
+    "name": "frontløft med elastik"
+  },
+  "0979": {
+    "name": "horisontal pallof-pres med elastik"
+  },
+  "0980": {
+    "name": "hofteekstension foroverbøjet med elastik"
+  },
+  "0981": {
+    "name": "foldekniv (jackknife)-sit-up med elastik"
+  },
+  "0982": {
+    "name": "liggende udadrotation i hoften med elastik"
+  },
+  "0983": {
+    "name": "knælende enarms træk med elastik"
+  },
+  "0984": {
+    "name": "liggende indadrotation i hoften med elastik"
+  },
+  "0985": {
+    "name": "knælende crunch med rotation med elastik"
+  },
+  "0986": {
+    "name": "enarms bicepscurl over hovedet med elastik"
+  },
+  "0987": {
+    "name": "enarms et-bens split squat med elastik"
+  },
+  "0988": {
+    "name": "enarms stående lav roning med elastik"
+  },
+  "0989": {
+    "name": "enarms brystpres med rotation med elastik"
+  },
+  "0990": {
+    "name": "enarms siddende roning med rotation med elastik"
+  },
+  "0991": {
+    "name": "pull through med elastik"
+  },
+  "0992": {
+    "name": "sit-up med pres med elastik"
+  },
+  "0993": {
+    "name": "omvendte flyes med elastik"
+  },
+  "0994": {
+    "name": "omvendt håndledscurl med elastik"
+  },
+  "0995": {
+    "name": "siddende udadrotation i hoften med elastik"
+  },
+  "0996": {
+    "name": "siddende indadrotation i hoften med elastik"
+  },
+  "0997": {
+    "name": "skulderpres med elastik"
+  },
+  "0998": {
+    "name": "triceps-ekstension til siden med elastik"
+  },
+  "0999": {
+    "name": "et-bens lægløft med elastik"
+  },
   "1000": {
     "name": "et-bens omvendt lægløft med elastik"
   },
@@ -14152,2747 +16894,5 @@
   },
   "12018": {
     "name": "stående slingshots med kettlebell (avanceret)"
-  },
-  "0001": {
-    "name": "3/4 sit-up"
-  },
-  "0002": {
-    "name": "sidebøjning 45°"
-  },
-  "0003": {
-    "name": "luftcykel"
-  },
-  "0005": {
-    "name": "vekslende bicepscurl med elastik"
-  },
-  "0006": {
-    "name": "vekslende hæltouch"
-  },
-  "0007": {
-    "name": "vekslende træk til bryst i kabel"
-  },
-  "0009": {
-    "name": "assisterede brystdips (knælende)"
-  },
-  "0010": {
-    "name": "assisterede hængende knæløft med nedstødning"
-  },
-  "0011": {
-    "name": "assisterede hængende knæløft"
-  },
-  "0012": {
-    "name": "assisterede liggende benløft med nedstødning til siden"
-  },
-  "0013": {
-    "name": "assisterede liggende benløft med nedstødning"
-  },
-  "0014": {
-    "name": "assisteret russian twist med medicinbold"
-  },
-  "0015": {
-    "name": "assisterede pull-ups med smalt neutralt greb i maskine"
-  },
-  "0016": {
-    "name": "assisteret hamstringsstræk på mave"
-  },
-  "0017": {
-    "name": "assisterede pull-ups i maskine"
-  },
-  "0018": {
-    "name": "assisteret stående triceps-ekstension (med håndklæde)"
-  },
-  "0019": {
-    "name": "assisterede triceps dips (knælende)"
-  },
-  "0020": {
-    "name": "balancebræt"
-  },
-  "0021": {
-    "name": "sit-up på træningsbold"
-  },
-  "0022": {
-    "name": "pullover til pres med vægtstang"
-  },
-  "0023": {
-    "name": "vekslende bicepscurl med vægtstang"
-  },
-  "0024": {
-    "name": "front squat mod bænk med vægtstang"
-  },
-  "0025": {
-    "name": "bænkpres med vægtstang"
-  },
-  "0026": {
-    "name": "squat mod bænk med vægtstang"
-  },
-  "0027": {
-    "name": "foroverbøjet vægtstangsroning"
-  },
-  "0028": {
-    "name": "vend og pres med vægtstang"
-  },
-  "0029": {
-    "name": "front squat med frivend grip med vægtstang"
-  },
-  "0030": {
-    "name": "bænkpres med smalt greb med vægtstang"
-  },
-  "0031": {
-    "name": "vægtstangscurl"
-  },
-  "0032": {
-    "name": "dødløft med vægtstang"
-  },
-  "0033": {
-    "name": "negativ bænkpres med vægtstang"
-  },
-  "0034": {
-    "name": "pullover med bøjede arme på negativ bænk med vægtstang"
-  },
-  "0035": {
-    "name": "negativ skull crusher med smalt greb med vægtstang"
-  },
-  "0036": {
-    "name": "negativt pres med bredt greb med vægtstang"
-  },
-  "0037": {
-    "name": "pullover med bredt greb på negativ bænk med vægtstang"
-  },
-  "0038": {
-    "name": "træk curl med vægtstang"
-  },
-  "0039": {
-    "name": "front squat med vægtstangen ved brystet"
-  },
-  "0040": {
-    "name": "frontløft og pullover med vægtstang"
-  },
-  "0041": {
-    "name": "frontløft med vægtstang"
-  },
-  "0042": {
-    "name": "front squat med vægtstang"
-  },
-  "0043": {
-    "name": "dyb squat med vægtstang"
-  },
-  "0044": {
-    "name": "good morning med vægtstang"
-  },
-  "0045": {
-    "name": "guillotinepres med vægtstang"
-  },
-  "0046": {
-    "name": "hack squat med vægtstang"
-  },
-  "0047": {
-    "name": "skrå bænkpres med vægtstang"
-  },
-  "0048": {
-    "name": "skrå pres med omvendt greb med vægtstang"
-  },
-  "0049": {
-    "name": "skrå roning med vægtstang"
-  },
-  "0050": {
-    "name": "skrå skulderløft med vægtstang"
-  },
-  "0051": {
-    "name": "jefferson squat med vægtstang"
-  },
-  "0052": {
-    "name": "jm-pres med vægtstang"
-  },
-  "0053": {
-    "name": "squat hop med vægtstang"
-  },
-  "0054": {
-    "name": "lunges med vægtstang"
-  },
-  "0055": {
-    "name": "liggende pres med smalt greb med vægtstang"
-  },
-  "0056": {
-    "name": "liggende triceps-ekstension med smalt greb med vægtstang"
-  },
-  "0057": {
-    "name": "liggende extension med vægtstang"
-  },
-  "0058": {
-    "name": "liggende løft (på hoften) med vægtstang"
-  },
-  "0059": {
-    "name": "liggende scottcurl med vægtstang"
-  },
-  "0060": {
-    "name": "skull crusher med vægtstang"
-  },
-  "0061": {
-    "name": "liggende triceps-ekstension med vægtstang"
-  },
-  "0062": {
-    "name": "smal vægtstangsroning"
-  },
-  "0063": {
-    "name": "squat med smal fodstilling med vægtstang"
-  },
-  "0064": {
-    "name": "enarms foroverbøjet roning med vægtstang"
-  },
-  "0065": {
-    "name": "enarms gulvpres med vægtstang"
-  },
-  "0066": {
-    "name": "enarms sidomarkløft med vægtstang"
-  },
-  "0067": {
-    "name": "enarms træk med vægtstang"
-  },
-  "0068": {
-    "name": "et-bens squat med vægtstang"
-  },
-  "0069": {
-    "name": "overhead squat med vægtstang"
-  },
-  "0070": {
-    "name": "scottcurl med vægtstang"
-  },
-  "0071": {
-    "name": "sit-up med pres med vægtstang"
-  },
-  "0072": {
-    "name": "curl liggende på mave på skråbænk med vægtstang"
-  },
-  "0073": {
-    "name": "pullover med vægtstang"
-  },
-  "0074": {
-    "name": "rack pull med vægtstang"
-  },
-  "0075": {
-    "name": "løft til bagerste skulder med vægtstang"
-  },
-  "0076": {
-    "name": "roning til bagerste skulder med vægtstang"
-  },
-  "0077": {
-    "name": "lunges bagud med vægtstang v. 2"
-  },
-  "0078": {
-    "name": "lunges bagud med vægtstang"
-  },
-  "0079": {
-    "name": "omvendt håndledscurl med vægtstang v. 2"
-  },
-  "0080": {
-    "name": "omvendt curl med vægtstang"
-  },
-  "0081": {
-    "name": "omvendt scottcurl med vægtstang"
-  },
-  "0082": {
-    "name": "omvendt håndledscurl med vægtstang"
-  },
-  "0083": {
-    "name": "udrulning fra bænk med vægtstang"
-  },
-  "0084": {
-    "name": "udrulning med vægtstang"
-  },
-  "0085": {
-    "name": "rumænsk dødløft med vægtstang"
-  },
-  "0086": {
-    "name": "siddende militærpres bag nakken med vægtstang"
-  },
-  "0087": {
-    "name": "siddende bradford rocky pres med vægtstang"
-  },
-  "0088": {
-    "name": "siddende lægløft med vægtstang"
-  },
-  "0089": {
-    "name": "siddende koncentrationscurl med smalt greb med vægtstang"
-  },
-  "0090": {
-    "name": "siddende good morning med vægtstang"
-  },
-  "0091": {
-    "name": "siddende skulderpres med vægtstang"
-  },
-  "0092": {
-    "name": "siddende triceps-ekstension over hovedet med vægtstang"
-  },
-  "0093": {
-    "name": "siddende rotation (på træningsbold) med vægtstang"
-  },
-  "0094": {
-    "name": "siddende rotation med vægtstang"
-  },
-  "0095": {
-    "name": "shrugs med vægtstang"
-  },
-  "0096": {
-    "name": "sidebøjning med vægtstang v. 2"
-  },
-  "0097": {
-    "name": "sidelæns split squat med vægtstang v. 2"
-  },
-  "0098": {
-    "name": "sidelæns split squat med vægtstang"
-  },
-  "0099": {
-    "name": "et-bens split squat med vægtstang"
-  },
-  "0100": {
-    "name": "skidåkare med vægtstang"
-  },
-  "0101": {
-    "name": "hurtig squat med vægtstang"
-  },
-  "0102": {
-    "name": "squat (på knæene) med vægtstang"
-  },
-  "0103": {
-    "name": "stående udrulning med vægtstang"
-  },
-  "0104": {
-    "name": "stående håndledscurl bag rygen med vægtstang"
-  },
-  "0105": {
-    "name": "stående bradford pres med vægtstang"
-  },
-  "0106": {
-    "name": "stående curl med smalt greb med vægtstang"
-  },
-  "0107": {
-    "name": "stående frontløft op over hovedet med vægtstang"
-  },
-  "0108": {
-    "name": "stående benvadpress med vægtstang"
-  },
-  "0109": {
-    "name": "stående triceps-ekstension over hovedet med vægtstang"
-  },
-  "0110": {
-    "name": "stående curl med omvendt greb med vægtstang"
-  },
-  "0111": {
-    "name": "stående gyngende lægløft med vægtstang"
-  },
-  "0112": {
-    "name": "stående rotation med vægtstang"
-  },
-  "0113": {
-    "name": "stående curl med bredt greb med vægtstang"
-  },
-  "0114": {
-    "name": "step-up med vægtstang"
-  },
-  "0115": {
-    "name": "good morning med strakte ben med vægtstang"
-  },
-  "0116": {
-    "name": "dødløft med strakte ben med vægtstang"
-  },
-  "0117": {
-    "name": "sumo dødløft med vægtstang"
-  },
-  "0118": {
-    "name": "foroverbøjet vægtstangsroning med omvendt greb"
-  },
-  "0119": {
-    "name": "oprejst roning med vægtstang v. 2"
-  },
-  "0120": {
-    "name": "oprejst roning med vægtstang"
-  },
-  "0121": {
-    "name": "oprejst roning med vægtstang v. 3"
-  },
-  "0122": {
-    "name": "bred bænkpres med vægtstang"
-  },
-  "0123": {
-    "name": "oprejst roning med bredt greb med vægtstang"
-  },
-  "0124": {
-    "name": "bred squat med vægtstang"
-  },
-  "0125": {
-    "name": "håndledscurl med vægtstang v. 2"
-  },
-  "0126": {
-    "name": "håndledscurl med vægtstang"
-  },
-  "0127": {
-    "name": "zercher squat med vægtstang"
-  },
-  "0128": {
-    "name": "battle ropes"
-  },
-  "0129": {
-    "name": "bænkdips (bøjede knæ)"
-  },
-  "0130": {
-    "name": "hofteekstension på bænk"
-  },
-  "0131": {
-    "name": "liggende rotation med bøjede knæ (på træningsbold)"
-  },
-  "0133": {
-    "name": "sideplanke med bøjet knæ"
-  },
-  "0134": {
-    "name": "armbøjning med bøjet knæ til siden"
-  },
-  "0136": {
-    "name": "båd-stilling (yoga)"
-  },
-  "0137": {
-    "name": "body-up"
-  },
-  "0138": {
-    "name": "bottoms-up"
-  },
-  "0139": {
-    "name": "smalle chins til biceps"
-  },
-  "0140": {
-    "name": "bicepschins"
-  },
-  "0142": {
-    "name": "bro (på knæene)"
-  },
-  "0143": {
-    "name": "bro (strakte arme)"
-  },
-  "0145": {
-    "name": "glute bridge (ballebro)"
-  },
-  "0147": {
-    "name": "cykelcrunch med rotation"
-  },
-  "0148": {
-    "name": "vekslende skulderpres i kabel"
-  },
-  "0149": {
-    "name": "vekslende triceps-ekstension i kabel"
-  },
-  "0150": {
-    "name": "træk til bryst med stang"
-  },
-  "0151": {
-    "name": "bænkpres i kabel"
-  },
-  "0152": {
-    "name": "koncentrationsextension i kabel (mod knæet)"
-  },
-  "0153": {
-    "name": "korsat træk til bryst i kabel"
-  },
-  "0154": {
-    "name": "omvendte flyes i kabelcross"
-  },
-  "0155": {
-    "name": "kabelcross, variant"
-  },
-  "0157": {
-    "name": "dødløft i kabel"
-  },
-  "0158": {
-    "name": "negativa kabelflyes"
-  },
-  "0159": {
-    "name": "siddende kabelroning med bredt greb på negativ bænk"
-  },
-  "0160": {
-    "name": "siddende kabelroning med bredt greb på gulvet"
-  },
-  "0161": {
-    "name": "frontløft i kabel"
-  },
-  "0162": {
-    "name": "frontløft i kabel"
-  },
-  "0163": {
-    "name": "siddende kabelroning fremad"
-  },
-  "0164": {
-    "name": "forreste skulderløft i kabel"
-  },
-  "0165": {
-    "name": "hammercurl i kabel (med reb)"
-  },
-  "0166": {
-    "name": "hammercurl i kabel"
-  },
-  "0167": {
-    "name": "høj kabelroning (knælende)"
-  },
-  "0168": {
-    "name": "hofteadduktion i kabel"
-  },
-  "0169": {
-    "name": "skråbænkpres i kabel"
-  },
-  "0170": {
-    "name": "skrå kabelflyes (på træningsbold)"
-  },
-  "0171": {
-    "name": "skrå kabelflyes"
-  },
-  "0172": {
-    "name": "skrå pushdown i kabel"
-  },
-  "0173": {
-    "name": "skrå triceps-ekstension i kabel"
-  },
-  "0174": {
-    "name": "judokast i kabel"
-  },
-  "0175": {
-    "name": "knælende kabelcrunch"
-  },
-  "0176": {
-    "name": "knælende triceps-ekstension i kabel"
-  },
-  "0177": {
-    "name": "træk til bryst (med reb)"
-  },
-  "0178": {
-    "name": "sideløft i kabel"
-  },
-  "0179": {
-    "name": "kabelflyes nedifrån"
-  },
-  "0180": {
-    "name": "siddende lav kabelroning"
-  },
-  "0181": {
-    "name": "liggende kabelcurl med smalt greb"
-  },
-  "0182": {
-    "name": "liggende kabelcurl, smalt greb"
-  },
-  "0183": {
-    "name": "liggende kabelcurl"
-  },
-  "0184": {
-    "name": "liggende extension-pullover i kabel (med reb)"
-  },
-  "0185": {
-    "name": "liggende kabelflyes"
-  },
-  "0186": {
-    "name": "liggende triceps-ekstension i kabel v. 2"
-  },
-  "0187": {
-    "name": "liggende triceps-ekstension i kabel"
-  },
-  "0188": {
-    "name": "kabelflyes i brysthøjde"
-  },
-  "0189": {
-    "name": "enarms foroverbøjet kabelroning"
-  },
-  "0190": {
-    "name": "enarms kabelcurl"
-  },
-  "0191": {
-    "name": "enarms foroverbøjet sideløft i kabel"
-  },
-  "0192": {
-    "name": "enarms sideløft i kabel"
-  },
-  "0193": {
-    "name": "enarms høj kabelroning med strakt ryg (knælende)"
-  },
-  "0194": {
-    "name": "triceps-ekstension over hovedet i kabel (reb)"
-  },
-  "0195": {
-    "name": "scottcurl i kabel"
-  },
-  "0196": {
-    "name": "pull through i kabel (med reb)"
-  },
-  "0197": {
-    "name": "træk i kabel (pro lat-stang)"
-  },
-  "0198": {
-    "name": "træk i kabel"
-  },
-  "0199": {
-    "name": "pushdown med strakte arme v. 2"
-  },
-  "0200": {
-    "name": "triceps pushdown (med reb)"
-  },
-  "0201": {
-    "name": "triceps pushdown"
-  },
-  "0202": {
-    "name": "roning til bagerste skulder i kabel (fodstropper)"
-  },
-  "0203": {
-    "name": "roning til bagerste skulder i kabel (med reb)"
-  },
-  "0204": {
-    "name": "tricepspres bagud i kabel"
-  },
-  "0205": {
-    "name": "træk til nakke"
-  },
-  "0206": {
-    "name": "omvendt kabelcurl"
-  },
-  "0207": {
-    "name": "pushdown med omvendt greb"
-  },
-  "0208": {
-    "name": "siddende høj kabelroning med omvendt greb og strakt ryg"
-  },
-  "0209": {
-    "name": "omvendt scottcurl i kabel"
-  },
-  "0210": {
-    "name": "omvendt håndledscurl i kabel"
-  },
-  "0211": {
-    "name": "russian twist i kabel (på træningsbold)"
-  },
-  "0212": {
-    "name": "siddende kabelcrunch"
-  },
-  "0213": {
-    "name": "siddende høj kabelroning (v-håndtag)"
-  },
-  "0214": {
-    "name": "siddende vekslende enarms kabelroning"
-  },
-  "0215": {
-    "name": "siddende bagerste sideløft i kabel"
-  },
-  "0216": {
-    "name": "siddende indadrotation af skulderen i kabel"
-  },
-  "0218": {
-    "name": "siddende kabelroning med bredt greb"
-  },
-  "0219": {
-    "name": "skulderpres i kabel"
-  },
-  "0220": {
-    "name": "shrugs i kabel"
-  },
-  "0221": {
-    "name": "sidebøjnings-crunch i kabel (bosubold)"
-  },
-  "0222": {
-    "name": "sidebøjning i kabel"
-  },
-  "0223": {
-    "name": "sidocrunch i kabel"
-  },
-  "0224": {
-    "name": "stående håndledscurl bag rygen i kabel"
-  },
-  "0225": {
-    "name": "stående høje omvendte flyes i kabelcross"
-  },
-  "0226": {
-    "name": "stående kabelcrunch"
-  },
-  "0227": {
-    "name": "stående kabelflyes"
-  },
-  "0228": {
-    "name": "stående hofteekstension i kabel"
-  },
-  "0229": {
-    "name": "stående indre kabelcurl"
-  },
-  "0230": {
-    "name": "stående løft i kabel"
-  },
-  "0231": {
-    "name": "stående enarms triceps-ekstension i kabel"
-  },
-  "0232": {
-    "name": "stående træk i kabel (med reb)"
-  },
-  "0233": {
-    "name": "stående roning til bagerste skulder i kabel (med reb)"
-  },
-  "0234": {
-    "name": "stående kabelroning (v-håndtag)"
-  },
-  "0235": {
-    "name": "stående udadrotation af skulderen i kabel"
-  },
-  "0236": {
-    "name": "stående kabelroning med vridning (v-håndtag)"
-  },
-  "0237": {
-    "name": "pulldown med strakte arme (med reb)"
-  },
-  "0238": {
-    "name": "pulldown med strakte arme"
-  },
-  "0239": {
-    "name": "siddende kabelroning med strakt ryg"
-  },
-  "0240": {
-    "name": "omvendte kabelflyes på ryg"
-  },
-  "0241": {
-    "name": "triceps pushdown med v-håndtag"
-  },
-  "0242": {
-    "name": "omvendt crunch med indtrukne knæ i kabel"
-  },
-  "0243": {
-    "name": "vridning i kabel"
-  },
-  "0244": {
-    "name": "træk med vridning i kabel"
-  },
-  "0245": {
-    "name": "træk med underhåndsgreb i kabel"
-  },
-  "0246": {
-    "name": "oprejst roning i kabel"
-  },
-  "0247": {
-    "name": "håndledscurl i kabel"
-  },
-  "0248": {
-    "name": "liggende roning med bøjet vægtstang"
-  },
-  "0250": {
-    "name": "stræk med blikket mod taket"
-  },
-  "0251": {
-    "name": "dips til brystet"
-  },
-  "0253": {
-    "name": "chins (smalt parallellt greb)"
-  },
-  "0255": {
-    "name": "boldcirkler mod væg"
-  },
-  "0256": {
-    "name": "armcirkler med albuerne"
-  },
-  "0257": {
-    "name": "knæcirkler"
-  },
-  "0258": {
-    "name": "ur-armbøjning"
-  },
-  "0259": {
-    "name": "armbøjning med smalt greb"
-  },
-  "0260": {
-    "name": "kokonger"
-  },
-  "0261": {
-    "name": "proptrækker-armbøjning"
-  },
-  "0262": {
-    "name": "krydset crunch"
-  },
-  "0263": {
-    "name": "krydset crunch med vridning"
-  },
-  "0264": {
-    "name": "cross jacks"
-  },
-  "0267": {
-    "name": "crunch (hænderne over hovedet)"
-  },
-  "0268": {
-    "name": "crunch (benløft)"
-  },
-  "0269": {
-    "name": "crunch (benene på træningsbold)"
-  },
-  "0271": {
-    "name": "crunch (på træningsbold)"
-  },
-  "0272": {
-    "name": "crunch (på træningsbold, strakte arme)"
-  },
-  "0273": {
-    "name": "crunch (strakt ben op)"
-  },
-  "0274": {
-    "name": "crunch på gulvet"
-  },
-  "0275": {
-    "name": "crunch på gulvet v. 2"
-  },
-  "0276": {
-    "name": "dead bug"
-  },
-  "0277": {
-    "name": "crunch på negativ bænk"
-  },
-  "0278": {
-    "name": "armbøjning med fødderne på træningsbold"
-  },
-  "0279": {
-    "name": "armbøjning med forhøjede fødder"
-  },
-  "0281": {
-    "name": "sit-up på negativ bænk (strakte arme)"
-  },
-  "0282": {
-    "name": "sit-up på negativ bænk"
-  },
-  "0283": {
-    "name": "diamantarmbøjning"
-  },
-  "0284": {
-    "name": "donkey calf raise"
-  },
-  "0285": {
-    "name": "vekslende bicepscurl med håndvægte"
-  },
-  "0286": {
-    "name": "vekslende sidepres med håndvægte"
-  },
-  "0287": {
-    "name": "arnoldpress med håndvægte v. 2"
-  },
-  "0288": {
-    "name": "pullover i båge med håndvægt"
-  },
-  "0289": {
-    "name": "håndvægtspres"
-  },
-  "0290": {
-    "name": "siddende håndvægtspres på bænk"
-  },
-  "0291": {
-    "name": "squat til bænk med håndvægte"
-  },
-  "0292": {
-    "name": "enarms håndvægtsroning i foroverbøjet position"
-  },
-  "0293": {
-    "name": "foroverbøjet håndvægtsroning"
-  },
-  "0294": {
-    "name": "bicepscurl med håndvægte"
-  },
-  "0295": {
-    "name": "vend med håndvægte"
-  },
-  "0296": {
-    "name": "håndvægtspres med smalt greb"
-  },
-  "0297": {
-    "name": "koncentrationscurl med håndvægt"
-  },
-  "0298": {
-    "name": "krydset hammercurl med håndvægt"
-  },
-  "0299": {
-    "name": "cuban pres med håndvægte"
-  },
-  "0300": {
-    "name": "dødløft med håndvægte"
-  },
-  "0301": {
-    "name": "negativ håndvægtspres"
-  },
-  "0302": {
-    "name": "negativa hantelflyes"
-  },
-  "0303": {
-    "name": "negativ håndvægtspres med hammergreb"
-  },
-  "0304": {
-    "name": "shrugs på negativ bænk med håndvægte v. 2"
-  },
-  "0305": {
-    "name": "shrugs på negativ bænk med håndvægte"
-  },
-  "0306": {
-    "name": "negativ triceps-ekstension med håndvægte"
-  },
-  "0307": {
-    "name": "negativa hantelflyes med vridning"
-  },
-  "0308": {
-    "name": "hantelflyes"
-  },
-  "0309": {
-    "name": "frontløft med håndvægte v. 2"
-  },
-  "0310": {
-    "name": "frontløft med håndvægte"
-  },
-  "0311": {
-    "name": "full can-sideløft med håndvægte"
-  },
-  "0312": {
-    "name": "hammercurl med håndvægte v. 2"
-  },
-  "0313": {
-    "name": "hammercurl med håndvægte"
-  },
-  "0314": {
-    "name": "skrå håndvægtspres"
-  },
-  "0315": {
-    "name": "skrå bicepscurl med håndvægte"
-  },
-  "0316": {
-    "name": "skrå brystpres med håndvægte"
-  },
-  "0317": {
-    "name": "skrå håndvægtscurl v. 2"
-  },
-  "0318": {
-    "name": "skrå håndvægtscurl"
-  },
-  "0319": {
-    "name": "skrå hantelflyes"
-  },
-  "0320": {
-    "name": "skrå hammercurl med håndvægte"
-  },
-  "0321": {
-    "name": "skrå håndvægtspres med hammergreb"
-  },
-  "0322": {
-    "name": "skrå indre bicepscurl med håndvægte"
-  },
-  "0323": {
-    "name": "skrå enarms sideløft med håndvægt"
-  },
-  "0324": {
-    "name": "skrå håndvægtspres med håndfladerne indad"
-  },
-  "0325": {
-    "name": "skrå løft med håndvægte"
-  },
-  "0326": {
-    "name": "skrå bagerste sideløft med håndvægte"
-  },
-  "0327": {
-    "name": "skrå håndvægtsroning"
-  },
-  "0328": {
-    "name": "skrå skulderløft med håndvægte"
-  },
-  "0329": {
-    "name": "skrå shrugs med håndvægte"
-  },
-  "0330": {
-    "name": "skrå triceps-ekstension med håndvægt"
-  },
-  "0331": {
-    "name": "skrå hantelflyes med vridning"
-  },
-  "0332": {
-    "name": "jernkors med håndvægte"
-  },
-  "0333": {
-    "name": "kickback med håndvægt"
-  },
-  "0334": {
-    "name": "sideløft med håndvægte"
-  },
-  "0335": {
-    "name": "sideløft til frontløft med håndvægte"
-  },
-  "0336": {
-    "name": "lunges med håndvægte"
-  },
-  "0337": {
-    "name": "liggende triceps-ekstension over ansiktet med håndvægt"
-  },
-  "0338": {
-    "name": "liggende albuepres med håndvægte"
-  },
-  "0339": {
-    "name": "liggende lårbøjning med håndvægt"
-  },
-  "0340": {
-    "name": "liggende håndvægtspres med hammergreb"
-  },
-  "0341": {
-    "name": "liggende enarms løft til bagerste skulder med håndvægt"
-  },
-  "0342": {
-    "name": "liggende enarms håndvægtspres v. 2"
-  },
-  "0343": {
-    "name": "liggende enarms håndvægtspres"
-  },
-  "0344": {
-    "name": "liggende enarms triceps-ekstension med overhåndsgreb, håndvægt"
-  },
-  "0345": {
-    "name": "liggende enarms bagerste sideløft med håndvægt"
-  },
-  "0346": {
-    "name": "liggende enarms triceps-ekstension med underhåndsgreb, håndvægt"
-  },
-  "0347": {
-    "name": "liggende pronation med håndvægt"
-  },
-  "0348": {
-    "name": "liggende bagerste sideløft med håndvægte"
-  },
-  "0349": {
-    "name": "liggende supination med håndvægt"
-  },
-  "0350": {
-    "name": "curl liggende på ryg med håndvægte"
-  },
-  "0351": {
-    "name": "liggende triceps-ekstension med håndvægte"
-  },
-  "0352": {
-    "name": "bænkpres med neutralt greb, håndvægte"
-  },
-  "0353": {
-    "name": "enarms koncentrationscurl på træningsbold med håndvægt"
-  },
-  "0354": {
-    "name": "enarms kickback med håndvægt"
-  },
-  "0355": {
-    "name": "enarms sideløft med håndvægt"
-  },
-  "0356": {
-    "name": "enarms sideløft med støtte, håndvægt"
-  },
-  "0357": {
-    "name": "enarms håndvægtspres på træningsbold"
-  },
-  "0358": {
-    "name": "enarms omvendt håndledscurl med håndvægt"
-  },
-  "0359": {
-    "name": "enarms omvendte flyes med støtte, håndvægt"
-  },
-  "0360": {
-    "name": "enarms skulderpres med håndvægt v. 2"
-  },
-  "0361": {
-    "name": "enarms skulderpres med håndvægt"
-  },
-  "0362": {
-    "name": "enarms triceps-ekstension på bænk med håndvægt"
-  },
-  "0363": {
-    "name": "enarms oprejst roning med håndvægt"
-  },
-  "0364": {
-    "name": "enarms håndledscurl med håndvægt"
-  },
-  "0365": {
-    "name": "håndledscurl med neutralt greb over bænk, håndvægte"
-  },
-  "0366": {
-    "name": "enarms håndledscurl med neutralt greb over bænk, håndvægt"
-  },
-  "0367": {
-    "name": "enarms håndledscurl over bænk med håndvægt"
-  },
-  "0368": {
-    "name": "omvendt håndledscurl over bænk med håndvægte"
-  },
-  "0369": {
-    "name": "håndledscurl over bænk med håndvægte"
-  },
-  "0370": {
-    "name": "scottcurl med hammergreb, håndvægt"
-  },
-  "0371": {
-    "name": "plyometrisk squat med håndvægte"
-  },
-  "0372": {
-    "name": "scottcurl med håndvægt"
-  },
-  "0373": {
-    "name": "triceps-ekstension med overhåndsgreb, håndvægte"
-  },
-  "0374": {
-    "name": "curl på mave på skråbænk med håndvægte"
-  },
-  "0375": {
-    "name": "pullover med håndvægt"
-  },
-  "0376": {
-    "name": "hantelløft"
-  },
-  "0377": {
-    "name": "roning til bagerste skulder med håndvægte (skulder)"
-  },
-  "0378": {
-    "name": "omvendte flyes med håndvægte, bagud"
-  },
-  "0379": {
-    "name": "bagerste sideløft med hovedstøtte, håndvægte"
-  },
-  "0380": {
-    "name": "bagerste sideløft med håndvægte"
-  },
-  "0381": {
-    "name": "lunges bagud med håndvægte"
-  },
-  "0382": {
-    "name": "bicepscurl med omvendt greb, håndvægte"
-  },
-  "0383": {
-    "name": "omvendte flyes med håndvægte"
-  },
-  "0384": {
-    "name": "omvendt scottcurl med håndvægt"
-  },
-  "0385": {
-    "name": "omvendt håndledscurl med håndvægte"
-  },
-  "0386": {
-    "name": "omvendte flyes med rotation, håndvægte"
-  },
-  "0387": {
-    "name": "siddende vekslende frontløft med håndvægte"
-  },
-  "0388": {
-    "name": "siddende vekslende håndvægtspres"
-  },
-  "0389": {
-    "name": "siddende triceps-ekstension på bænk med håndvægt"
-  },
-  "0390": {
-    "name": "siddende bicepscurl på træningsbold med håndvægte"
-  },
-  "0391": {
-    "name": "siddende curl med håndvægte"
-  },
-  "0392": {
-    "name": "siddende frontløft med håndvægte"
-  },
-  "0393": {
-    "name": "siddende indre bicepscurl med håndvægte"
-  },
-  "0394": {
-    "name": "siddende kickback med håndvægte"
-  },
-  "0395": {
-    "name": "siddende sideløft med håndvægte v. 2"
-  },
-  "0396": {
-    "name": "siddende sideløft med håndvægte"
-  },
-  "0397": {
-    "name": "siddende håndledscurl med neutralt greb, håndvægte"
-  },
-  "0398": {
-    "name": "siddende enarms kickback med håndvægt"
-  },
-  "0399": {
-    "name": "siddende enarms rotation med håndvægt"
-  },
-  "0400": {
-    "name": "siddende et-bens lægløft med håndvægt"
-  },
-  "0401": {
-    "name": "siddende håndledscurl med håndfladerne opad, håndvægte"
-  },
-  "0402": {
-    "name": "siddende scottcurl med håndvægt"
-  },
-  "0403": {
-    "name": "siddende koncentrationscurl med omvendt greb, håndvægt"
-  },
-  "0404": {
-    "name": "siddende skulderpres med håndvægte (parallellt greb)"
-  },
-  "0405": {
-    "name": "siddende skulderpres med håndvægte"
-  },
-  "0406": {
-    "name": "shrugs med håndvægte"
-  },
-  "0407": {
-    "name": "sidebøjning med håndvægt"
-  },
-  "0408": {
-    "name": "sideliggende enarmsløft med håndvægt"
-  },
-  "0409": {
-    "name": "et-bens lægløft med håndvægt"
-  },
-  "0410": {
-    "name": "et-bens split squat med håndvægt"
-  },
-  "0411": {
-    "name": "et-bens squat med håndvægte"
-  },
-  "0412": {
-    "name": "squat med rygen mod træningsbold på væggen, håndvægte"
-  },
-  "0413": {
-    "name": "squat med håndvægte"
-  },
-  "0414": {
-    "name": "stående vekslende skulderpres med håndvægte"
-  },
-  "0415": {
-    "name": "stående vekslende løft med håndvægte"
-  },
-  "0416": {
-    "name": "stående bicepscurl med håndvægte"
-  },
-  "0417": {
-    "name": "stående lægløft med håndvægte"
-  },
-  "0418": {
-    "name": "stående koncentrationscurl med håndvægt"
-  },
-  "0419": {
-    "name": "stående frontløft over hovedet med håndvægte"
-  },
-  "0420": {
-    "name": "stående kickback med håndvægt"
-  },
-  "0421": {
-    "name": "stående enarms koncentrationscurl med håndvægt"
-  },
-  "0422": {
-    "name": "stående enarms curl over skrå bænk med håndvægt"
-  },
-  "0423": {
-    "name": "stående enarms triceps-ekstension med håndvægt"
-  },
-  "0424": {
-    "name": "stående enarms pres med neutralt greb, håndvægt"
-  },
-  "0425": {
-    "name": "stående enarms omvendt curl med håndvægt"
-  },
-  "0426": {
-    "name": "stående skulderpres med håndvægte"
-  },
-  "0427": {
-    "name": "stående pres med neutralt greb, håndvægte"
-  },
-  "0428": {
-    "name": "stående scottcurl med håndvægt"
-  },
-  "0429": {
-    "name": "stående omvendt curl med håndvægte"
-  },
-  "0430": {
-    "name": "stående triceps-ekstension med håndvægt"
-  },
-  "0431": {
-    "name": "step-up med håndvægte"
-  },
-  "0432": {
-    "name": "strakte dødløft med håndvægte"
-  },
-  "0433": {
-    "name": "pullover med strakte arme, håndvægt"
-  },
-  "0434": {
-    "name": "dødløft med strakte ben, håndvægte"
-  },
-  "0435": {
-    "name": "sumo squat med rygen mod træningsbold på væggen, håndvægt"
-  },
-  "0436": {
-    "name": "tatepress med håndvægte"
-  },
-  "0437": {
-    "name": "oprejst roning med håndvægte"
-  },
-  "0438": {
-    "name": "w-pres med håndvægte"
-  },
-  "0439": {
-    "name": "zottmancurl med håndvægte"
-  },
-  "0443": {
-    "name": "albue mod knæ"
-  },
-  "0445": {
-    "name": "antigravitationspres med EZ-stang"
-  },
-  "0446": {
-    "name": "curl med smalt greb, EZ-stang"
-  },
-  "0447": {
-    "name": "curl med EZ-stang"
-  },
-  "0448": {
-    "name": "press mod ansiktet med smalt greb på negativ bænk, EZ-stang"
-  },
-  "0449": {
-    "name": "skrå triceps-ekstension med EZ-stang"
-  },
-  "0450": {
-    "name": "jm-pres med EZ-stang"
-  },
-  "0451": {
-    "name": "curl med omvendt greb, EZ-stang"
-  },
-  "0452": {
-    "name": "scottcurl med omvendt greb, EZ-stang"
-  },
-  "0453": {
-    "name": "siddende triceps-ekstension med EZ-stang"
-  },
-  "0454": {
-    "name": "spidercurl med EZ-stang"
-  },
-  "0455": {
-    "name": "fingercurl"
-  },
-  "0456": {
-    "name": "sit-up med bøjede ben (bøjede knæ)"
-  },
-  "0457": {
-    "name": "sit-up med bøjede ben (strakte arme)"
-  },
-  "0458": {
-    "name": "flyes på gulvet (med vægtstang)"
-  },
-  "0459": {
-    "name": "flutter kicks"
-  },
-  "0461": {
-    "name": "frø-squat"
-  },
-  "0462": {
-    "name": "nakkestræk fremad og bagud"
-  },
-  "0463": {
-    "name": "frontplanke"
-  },
-  "0464": {
-    "name": "frontplanke med vridning"
-  },
-  "0466": {
-    "name": "gironda sternum chins"
-  },
-  "0467": {
-    "name": "gorillachins"
-  },
-  "0468": {
-    "name": "græshoppearmbøjning"
-  },
-  "0469": {
-    "name": "ljumskcrunch"
-  },
-  "0470": {
-    "name": "crunch hånd mod modsat knæ"
-  },
-  "0471": {
-    "name": "armbøjning i håndstand"
-  },
-  "0472": {
-    "name": "hængende benløft"
-  },
-  "0473": {
-    "name": "hængende pike"
-  },
-  "0474": {
-    "name": "hængende hofteløft med strakte ben"
-  },
-  "0475": {
-    "name": "hængende benløft med strakte ben"
-  },
-  "0476": {
-    "name": "hængende hofteløft med strakte ben og vridning"
-  },
-  "0479": {
-    "name": "step-up med højt knæ"
-  },
-  "0480": {
-    "name": "høje knæ med vridning"
-  },
-  "0481": {
-    "name": "høje knæ og hælspark"
-  },
-  "0482": {
-    "name": "hofte-crunch (bøjede knæ)"
-  },
-  "0484": {
-    "name": "hofteløft (bøjede knæ)"
-  },
-  "0485": {
-    "name": "hofteløft i bro v. 2"
-  },
-  "0486": {
-    "name": "hofteløft i bro"
-  },
-  "0487": {
-    "name": "hofteløft-crunch"
-  },
-  "0488": {
-    "name": "rygløft (på bænk)"
-  },
-  "0489": {
-    "name": "rygløft"
-  },
-  "0490": {
-    "name": "skrå armbøjning med smalle hænder"
-  },
-  "0491": {
-    "name": "skrå benløft med hofteløft (strakte ben)"
-  },
-  "0492": {
-    "name": "skrå armbøjning med dybdehop"
-  },
-  "0493": {
-    "name": "skrå armbøjning"
-  },
-  "0494": {
-    "name": "skrå armbøjning med omvendt håndgreb"
-  },
-  "0495": {
-    "name": "skrå sit-up med vridning"
-  },
-  "0496": {
-    "name": "omvendt lårcurl (med bænkstøtte)"
-  },
-  "0497": {
-    "name": "inverteret roning v. 2"
-  },
-  "0498": {
-    "name": "inverteret roning med remme"
-  },
-  "0499": {
-    "name": "inverteret roning"
-  },
-  "0500": {
-    "name": "isometriske forrudeviskere"
-  },
-  "0501": {
-    "name": "burpee med jumping jack"
-  },
-  "0502": {
-    "name": "foldekniv (jackknife) på gulvet"
-  },
-  "0503": {
-    "name": "foldekniv (jackknife) på træningsbold"
-  },
-  "0504": {
-    "name": "jackpress med håndvægte"
-  },
-  "0505": {
-    "name": "jack split crunches"
-  },
-  "0507": {
-    "name": "foldeknivs-sit-up"
-  },
-  "0508": {
-    "name": "janda-sit-up"
-  },
-  "0510": {
-    "name": "hoppende lunges til jumping jack"
-  },
-  "0513": {
-    "name": "squat hop v. 2"
-  },
-  "0514": {
-    "name": "squat hop"
-  },
-  "0517": {
-    "name": "avanceret vindmølle (windmill) med kettlebell"
-  },
-  "0518": {
-    "name": "vekslende hængende vend med kettlebell"
-  },
-  "0519": {
-    "name": "vekslende pres på gulvet med kettlebell"
-  },
-  "0520": {
-    "name": "vekslende pres med kettlebell"
-  },
-  "0521": {
-    "name": "vekslende renegade row med kettlebell"
-  },
-  "0522": {
-    "name": "vekslende roning med kettlebell"
-  },
-  "0523": {
-    "name": "arnoldpress med kettlebell"
-  },
-  "0524": {
-    "name": "bent pres med kettlebell"
-  },
-  "0525": {
-    "name": "vend fra hængende position med kettlebell op og ned"
-  },
-  "0526": {
-    "name": "dubbel vekslende hængende vend med kettlebells"
-  },
-  "0527": {
-    "name": "dubbel stød med kettlebells"
-  },
-  "0528": {
-    "name": "dubbel push pres med kettlebells"
-  },
-  "0529": {
-    "name": "dubbelt træk med kettlebells"
-  },
-  "0530": {
-    "name": "dubbel vindmølle (windmill) med kettlebells"
-  },
-  "0531": {
-    "name": "enarms pres på gulvet med udvidet bevægelsesudslag med kettlebell"
-  },
-  "0532": {
-    "name": "8-taller med kettlebell"
-  },
-  "0533": {
-    "name": "front squat med kettlebell"
-  },
-  "0534": {
-    "name": "goblet squat med kettlebell"
-  },
-  "0535": {
-    "name": "hængende vend med kettlebell"
-  },
-  "0536": {
-    "name": "lunges med kettlebell under benet"
-  },
-  "0537": {
-    "name": "enarms vend og stød med kettlebell"
-  },
-  "0538": {
-    "name": "enarms stød med kettlebell"
-  },
-  "0539": {
-    "name": "enarms militærpres til siden med kettlebell"
-  },
-  "0540": {
-    "name": "enarms push pres med kettlebell"
-  },
-  "0541": {
-    "name": "enarms roning med kettlebell"
-  },
-  "0542": {
-    "name": "enarms træk med kettlebell"
-  },
-  "0543": {
-    "name": "pirate supper legs med kettlebell"
-  },
-  "0544": {
-    "name": "pistol squat med kettlebell"
-  },
-  "0545": {
-    "name": "plyometrisk armbøjning med kettlebell"
-  },
-  "0546": {
-    "name": "siddende pres med kettlebell"
-  },
-  "0547": {
-    "name": "gyngepres med kettlebells"
-  },
-  "0548": {
-    "name": "sumo højt træk med kettlebell"
-  },
-  "0549": {
-    "name": "kettlebell swing"
-  },
-  "0550": {
-    "name": "thruster med kettlebell"
-  },
-  "0551": {
-    "name": "turkish get-up med kettlebell (squatvariation)"
-  },
-  "0552": {
-    "name": "vend med to arme med kettlebell"
-  },
-  "0553": {
-    "name": "militærpres med to arme med kettlebells"
-  },
-  "0554": {
-    "name": "vindmølle (windmill) med kettlebell"
-  },
-  "0555": {
-    "name": "kick out sit"
-  },
-  "0556": {
-    "name": "spark med bøjet ben v. 2"
-  },
-  "0558": {
-    "name": "kipping muscle-up"
-  },
-  "0559": {
-    "name": "stræk knæ mod bryst"
-  },
-  "0560": {
-    "name": "knælende hoftebøjer"
-  },
-  "0561": {
-    "name": "knælende stræk til håndledsbøjere"
-  },
-  "0562": {
-    "name": "landmine 180 med vægtstang"
-  },
-  "0564": {
-    "name": "sidelæns kassehop (box jump)"
-  },
-  "0565": {
-    "name": "hurtige sideskridt"
-  },
-  "0567": {
-    "name": "sidelæns kassehop (box jump) med vridning"
-  },
-  "0568": {
-    "name": "sidebro med benet på bænk"
-  },
-  "0569": {
-    "name": "lårcurl (på træningsbold)"
-  },
-  "0570": {
-    "name": "benindtræk på fladbænk"
-  },
-  "0571": {
-    "name": "vekslende siddende roning med smalt greb i maskine"
-  },
-  "0572": {
-    "name": "assisterede chins i maskine"
-  },
-  "0573": {
-    "name": "rygløft i maskine"
-  },
-  "0574": {
-    "name": "foroverbøjet roning i maskine med vægtstang"
-  },
-  "0575": {
-    "name": "bicepscurl i maskine"
-  },
-  "0576": {
-    "name": "brystpres i maskine"
-  },
-  "0577": {
-    "name": "brystpres i maskine"
-  },
-  "0578": {
-    "name": "dødløft i maskine"
-  },
-  "0579": {
-    "name": "træk til bryst foran i maskine"
-  },
-  "0580": {
-    "name": "shrugs uden greb i maskine"
-  },
-  "0581": {
-    "name": "høj roning i maskine"
-  },
-  "0582": {
-    "name": "knælende lårcurl i maskine"
-  },
-  "0583": {
-    "name": "knælende vridning i maskine"
-  },
-  "0584": {
-    "name": "sideløft i maskine"
-  },
-  "0585": {
-    "name": "benspark i maskine"
-  },
-  "0586": {
-    "name": "liggende lårcurl i maskine"
-  },
-  "0587": {
-    "name": "militærpres i maskine"
-  },
-  "0588": {
-    "name": "siddende roning med smalt greb i maskine"
-  },
-  "0589": {
-    "name": "enarms foroverbøjet roning i maskine"
-  },
-  "0590": {
-    "name": "enarms skulderpres i maskine"
-  },
-  "0591": {
-    "name": "triceps dips med overhåndsgreb i maskine"
-  },
-  "0592": {
-    "name": "scottcurl i maskine"
-  },
-  "0593": {
-    "name": "omvendt rygløft i maskine"
-  },
-  "0594": {
-    "name": "siddende lægløft i maskine"
-  },
-  "0595": {
-    "name": "siddende crunch i maskine (brystpude)"
-  },
-  "0596": {
-    "name": "siddende flyes i maskine"
-  },
-  "0597": {
-    "name": "siddende hofteabduktion i maskine"
-  },
-  "0598": {
-    "name": "siddende hofteadduktion i maskine"
-  },
-  "0599": {
-    "name": "siddende lårcurl i maskine"
-  },
-  "0600": {
-    "name": "siddende crunch med benløft i maskine"
-  },
-  "0601": {
-    "name": "siddende omvendte flyes i maskine (parallellt greb)"
-  },
-  "0602": {
-    "name": "siddende omvendte flyes i maskine"
-  },
-  "0603": {
-    "name": "skulderpres i maskine"
-  },
-  "0604": {
-    "name": "shrugs i maskine"
-  },
-  "0605": {
-    "name": "stående lægpres i maskine"
-  },
-  "0606": {
-    "name": "t-stang roning i maskine"
-  },
-  "0607": {
-    "name": "triceps-ekstension i maskine"
-  },
-  "0608": {
-    "name": "vridning i maskine"
-  },
-  "0609": {
-    "name": "london bridge med reb"
-  },
-  "0610": {
-    "name": "lave jacks"
-  },
-  "0611": {
-    "name": "lunges med armbøjning"
-  },
-  "0612": {
-    "name": "lunges"
-  },
-  "0613": {
-    "name": "liggende lårstræk (på siden)"
-  },
-  "0614": {
-    "name": "liggende vekslende hofteekstension"
-  },
-  "0615": {
-    "name": "liggende korsstræk"
-  },
-  "0616": {
-    "name": "liggende hoftebøjerstræk"
-  },
-  "0617": {
-    "name": "liggende benløft fra hoften (på gulvet)"
-  },
-  "0619": {
-    "name": "liggende benløft med strakt ben fra hoften"
-  },
-  "0620": {
-    "name": "liggende benløft på fladbænk"
-  },
-  "0621": {
-    "name": "liggende saxcrunch"
-  },
-  "0622": {
-    "name": "liggende saxspark"
-  },
-  "0623": {
-    "name": "liggende samtidige vekslende benløft"
-  },
-  "0624": {
-    "name": "marsch i wall sit (vægsidning)"
-  },
-  "0625": {
-    "name": "sit-up med medicinbold (væg)"
-  },
-  "0627": {
-    "name": "chins med blandat greb"
-  },
-  "0628": {
-    "name": "monster walk"
-  },
-  "0629": {
-    "name": "mountain climbers med lunges"
-  },
-  "0630": {
-    "name": "mountain climbers"
-  },
-  "0631": {
-    "name": "muscle-up"
-  },
-  "0632": {
-    "name": "bænkbro med smal benstilling"
-  },
-  "0633": {
-    "name": "nakkebro på mave"
-  },
-  "0634": {
-    "name": "negativ crunch"
-  },
-  "0635": {
-    "name": "skrå crunches på gulvet"
-  },
-  "0636": {
-    "name": "hammercurl med olympisk vægtstang"
-  },
-  "0637": {
-    "name": "triceps-ekstension med olympisk vægtstang"
-  },
-  "0638": {
-    "name": "enarms chins"
-  },
-  "0639": {
-    "name": "enarms dips"
-  },
-  "0640": {
-    "name": "enarms slam (med medicinbold)"
-  },
-  "0641": {
-    "name": "otis up med vægt"
-  },
-  "0642": {
-    "name": "armbøjning med benspark udad"
-  },
-  "0643": {
-    "name": "tricepsstræk over hovedet"
-  },
-  "0647": {
-    "name": "plyometrisk wall sit (vægsidning)"
-  },
-  "0648": {
-    "name": "vend med vægtstang"
-  },
-  "0649": {
-    "name": "pretzelstræk"
-  },
-  "0650": {
-    "name": "knæindtrækning (på træningsbold)"
-  },
-  "0651": {
-    "name": "pull-up (neutralt greb)"
-  },
-  "0652": {
-    "name": "pull-up"
-  },
-  "0653": {
-    "name": "armbøjning (bosubold)"
-  },
-  "0654": {
-    "name": "armbøjning (knæ mod bryst)"
-  },
-  "0655": {
-    "name": "armbøjning (på træningsbold)"
-  },
-  "0656": {
-    "name": "armbøjning (på træningsbold)"
-  },
-  "0657": {
-    "name": "armbøjning (én hånd på træningsbold)"
-  },
-  "0658": {
-    "name": "armbøjning (væg) v. 2"
-  },
-  "0659": {
-    "name": "armbøjning (væg)"
-  },
-  "0660": {
-    "name": "armbøjning med smalt greb på håndvægte"
-  },
-  "0661": {
-    "name": "armbøjning med indadspark"
-  },
-  "0662": {
-    "name": "armbøjning"
-  },
-  "0663": {
-    "name": "armbøjning på medicinbold"
-  },
-  "0664": {
-    "name": "armbøjning til sideplanke"
-  },
-  "0665": {
-    "name": "w-armbøjning"
-  },
-  "0666": {
-    "name": "armbøjning med armløft"
-  },
-  "0667": {
-    "name": "armbøjning med benløft"
-  },
-  "0668": {
-    "name": "bagoverbøjet bro"
-  },
-  "0669": {
-    "name": "stræk til bagerste skulderen"
-  },
-  "0670": {
-    "name": "pull-up bag nakken"
-  },
-  "0672": {
-    "name": "omvendte dips"
-  },
-  "0673": {
-    "name": "træk til bryst i maskine med omvendt greb"
-  },
-  "0674": {
-    "name": "pull-up med omvendt greb"
-  },
-  "0675": {
-    "name": "omvendt rygløft (på træningsbold)"
-  },
-  "0676": {
-    "name": "lunges bagud (med spark)"
-  },
-  "0677": {
-    "name": "dips i ringe"
-  },
-  "0678": {
-    "name": "rocky pull-up til træk"
-  },
-  "0679": {
-    "name": "rullende bro"
-  },
-  "0680": {
-    "name": "rebklatring"
-  },
-  "0681": {
-    "name": "armbøjning med rotation (på knæ)"
-  },
-  "0683": {
-    "name": "roterende jumping jacks"
-  },
-  "0684": {
-    "name": "løb (med redskap)"
-  },
-  "0685": {
-    "name": "løb"
-  },
-  "0686": {
-    "name": "russian twist (på træningsbold, strakte arme)"
-  },
-  "0687": {
-    "name": "russian twist"
-  },
-  "0688": {
-    "name": "skulderbladspull-up"
-  },
-  "0689": {
-    "name": "siddende benløft"
-  },
-  "0690": {
-    "name": "siddende lændestræk"
-  },
-  "0691": {
-    "name": "siddende sidocrunch (væg)"
-  },
-  "0692": {
-    "name": "siddende et-bens hamstringsstræk"
-  },
-  "0693": {
-    "name": "siddende lægstræk med strakt ben"
-  },
-  "0694": {
-    "name": "siddende vridning (på træningsbold)"
-  },
-  "0696": {
-    "name": "selvassisteret omvendt lårcurl (på gulvet)"
-  },
-  "0697": {
-    "name": "selvassisteret omvendt lårcurl"
-  },
-  "0698": {
-    "name": "skulderpres (med elastik)"
-  },
-  "0699": {
-    "name": "armbøjning med skuldertouch"
-  },
-  "0700": {
-    "name": "sidebøjning (på træningsbold)"
-  },
-  "0701": {
-    "name": "sidebro (bøjet knæ)"
-  },
-  "0702": {
-    "name": "sidebro (knæindtræk)"
-  },
-  "0703": {
-    "name": "sidebro med hofteabduktion (stjerne)"
-  },
-  "0705": {
-    "name": "sidebro v. 2"
-  },
-  "0706": {
-    "name": "sidebro"
-  },
-  "0707": {
-    "name": "sidocrunch v. 2"
-  },
-  "0708": {
-    "name": "sidocrunch"
-  },
-  "0709": {
-    "name": "sidehofteløft (i barr)"
-  },
-  "0710": {
-    "name": "hofteabduktion til siden"
-  },
-  "0711": {
-    "name": "sidelungessstræk"
-  },
-  "0712": {
-    "name": "sideliggende fotløft"
-  },
-  "0713": {
-    "name": "nakkestræk til siden"
-  },
-  "0714": {
-    "name": "sideplanke v. 2"
-  },
-  "0715": {
-    "name": "sideplanke"
-  },
-  "0716": {
-    "name": "nakkestræk med tryk til siden"
-  },
-  "0717": {
-    "name": "sidearmbøjning"
-  },
-  "0718": {
-    "name": "sidositup"
-  },
-  "0719": {
-    "name": "crunch med sidestræk"
-  },
-  "0720": {
-    "name": "hagen fra side til side"
-  },
-  "0721": {
-    "name": "håndledsstræk med træk til siden"
-  },
-  "0722": {
-    "name": "benbro i sidled"
-  },
-  "0723": {
-    "name": "lodrette benløft i sidled (strakte ben)"
-  },
-  "0724": {
-    "name": "lodrette benløft i sidled med vridning (strakte ben)"
-  },
-  "0725": {
-    "name": "enarms armbøjning"
-  },
-  "0726": {
-    "name": "et-bens bro"
-  },
-  "0727": {
-    "name": "et-bens lægløft (på en håndvægt)"
-  },
-  "0728": {
-    "name": "et-bens extension (på træningsbold)"
-  },
-  "0730": {
-    "name": "et-bens glid på plade"
-  },
-  "0731": {
-    "name": "et-bens wall sit (vægsidning)"
-  },
-  "0733": {
-    "name": "et-bens step-up"
-  },
-  "0734": {
-    "name": "wall sit (vægsidning)"
-  },
-  "0735": {
-    "name": "sit-up v. 2"
-  },
-  "0736": {
-    "name": "sit-up"
-  },
-  "0738": {
-    "name": "lægløft 45° i maskine"
-  },
-  "0739": {
-    "name": "benpres 45° i maskine"
-  },
-  "0740": {
-    "name": "bred benpres 45° i maskine"
-  },
-  "0741": {
-    "name": "hack squat med smalare fodstilling i maskine"
-  },
-  "0742": {
-    "name": "fremadvinklet lægpres i maskine"
-  },
-  "0743": {
-    "name": "hack squat i maskine"
-  },
-  "0744": {
-    "name": "liggende squat i maskine"
-  },
-  "0746": {
-    "name": "shrugs bag rygen i smith-maskine"
-  },
-  "0747": {
-    "name": "nakkepres i smith-maskine"
-  },
-  "0748": {
-    "name": "bænkpres i smith-maskine"
-  },
-  "0749": {
-    "name": "good morning med bøjede knæ i smith-maskine"
-  },
-  "0750": {
-    "name": "stol-squat i smith-maskine"
-  },
-  "0751": {
-    "name": "bænkpres med smalt greb i smith-maskine"
-  },
-  "0752": {
-    "name": "dødløft i smith-maskine"
-  },
-  "0753": {
-    "name": "negativ bænkpres i smith-maskine"
-  },
-  "0754": {
-    "name": "negativt pres med omvendt greb i smith-maskine"
-  },
-  "0755": {
-    "name": "hack squat i smith-maskine"
-  },
-  "0756": {
-    "name": "bækkenløft i smith-maskine"
-  },
-  "0757": {
-    "name": "skrå bænkpres i smith-maskine"
-  },
-  "0758": {
-    "name": "skrå pres med omvendt greb i smith-maskine"
-  },
-  "0759": {
-    "name": "skrå skulderløft i smith-maskine"
-  },
-  "0760": {
-    "name": "benpres i smith-maskine"
-  },
-  "0761": {
-    "name": "smal roning i smith-maskine"
-  },
-  "0762": {
-    "name": "roning til bagerste skulder i smith-maskine"
-  },
-  "0763": {
-    "name": "omvendt lægløft i smith-maskine"
-  },
-  "0764": {
-    "name": "pres med omvendt greb i smith-maskine"
-  },
-  "0765": {
-    "name": "siddende skulderpres i smith-maskine"
-  },
-  "0766": {
-    "name": "skulderpres i smith-maskine"
-  },
-  "0767": {
-    "name": "shrugs i smith-maskine"
-  },
-  "0768": {
-    "name": "et-bens split squat i smith-maskine"
-  },
-  "0769": {
-    "name": "sprinter-lunges i smith-maskine"
-  },
-  "0770": {
-    "name": "squat i smith-maskine"
-  },
-  "0771": {
-    "name": "stående håndledscurl bag rygen i smith-maskine"
-  },
-  "0772": {
-    "name": "stående militærpres bag nakken i smith-maskine"
-  },
-  "0773": {
-    "name": "stående lægløft i smith-maskine"
-  },
-  "0774": {
-    "name": "stående militærpres i smith-maskine"
-  },
-  "0775": {
-    "name": "oprejst roning i smith-maskine"
-  },
-  "0776": {
-    "name": "snatch pull med vægtstang"
-  },
-  "0777": {
-    "name": "spell caster med håndvægte"
-  },
-  "0778": {
-    "name": "spindelkryp med armbøjning"
-  },
-  "0781": {
-    "name": "split squat"
-  },
-  "0782": {
-    "name": "firkantshop"
-  },
-  "0783": {
-    "name": "squat (armene over hovedet)"
-  },
-  "0784": {
-    "name": "squat (med elastik)"
-  },
-  "0785": {
-    "name": "squat jacks"
-  },
-  "0786": {
-    "name": "squat jerk med vægtstang"
-  },
-  "0788": {
-    "name": "stående nakkepres med vægtstang"
-  },
-  "0789": {
-    "name": "stående hamstringsstræk"
-  },
-  "0790": {
-    "name": "stående hofteabduktion (bøjet knæ)"
-  },
-  "0791": {
-    "name": "stående hofteabduktion"
-  },
-  "0792": {
-    "name": "stående hofteekstension (bøjet knæ)"
-  },
-  "0793": {
-    "name": "stående sideløft med elastik"
-  },
-  "0794": {
-    "name": "stående lateral stræk"
-  },
-  "0795": {
-    "name": "stående et-bens lårcurl"
-  },
-  "0796": {
-    "name": "stående udrulning med mavehjul"
-  },
-  "0798": {
-    "name": "lugn cykling på motionscykel"
-  },
-  "0799": {
-    "name": "step-up med krydsskridt"
-  },
-  "0800": {
-    "name": "step-up med vridning, albue mod modsat knæ"
-  },
-  "0801": {
-    "name": "step-up"
-  },
-  "0803": {
-    "name": "superman-armbøjning"
-  },
-  "0805": {
-    "name": "fallout til maven i slyngetræner"
-  },
-  "0806": {
-    "name": "armbøjning i slyngetræner"
-  },
-  "0807": {
-    "name": "omvendt crunch i slyngetræner"
-  },
-  "0808": {
-    "name": "roning i slyngetræner"
-  },
-  "0809": {
-    "name": "split squat i slyngetræner"
-  },
-  "0810": {
-    "name": "tå-berøring i wall sit (vægsidning)"
-  },
-  "0811": {
-    "name": "dødløft med trap bar"
-  },
-  "0812": {
-    "name": "triceps dips (fødderne på bænk)"
-  },
-  "0813": {
-    "name": "triceps dips (mellem bænke)"
-  },
-  "0814": {
-    "name": "triceps dips"
-  },
-  "0815": {
-    "name": "triceps dips fra gulvet"
-  },
-  "0816": {
-    "name": "tricepspres"
-  },
-  "0817": {
-    "name": "tricepsstræk"
-  },
-  "0818": {
-    "name": "træk til bryst med dobbelthåndtag og parallellt greb"
-  },
-  "0820": {
-    "name": "sideplanke med vridning"
-  },
-  "0821": {
-    "name": "sit-up med vridning"
-  },
-  "0822": {
-    "name": "squat med vridning"
-  },
-  "0823": {
-    "name": "crunch med vridning (strakte arme)"
-  },
-  "0826": {
-    "name": "vertikalt benløft (i barr)"
-  },
-  "0827": {
-    "name": "vertikal mountain climber"
-  },
-  "0828": {
-    "name": "gang (redskap)"
-  },
-  "0829": {
-    "name": "gang (høje knæ)"
-  },
-  "0830": {
-    "name": "bænkdips med vægt"
-  },
-  "0831": {
-    "name": "crunch med vægt (bøjede knæ)"
-  },
-  "0832": {
-    "name": "crunch med vægt"
-  },
-  "0833": {
-    "name": "donkey calf raise med vægt"
-  },
-  "0834": {
-    "name": "frontløft med vægt"
-  },
-  "0835": {
-    "name": "rygløft med vægt (på træningsbold)"
-  },
-  "0836": {
-    "name": "crunch med benstræk med vægt"
-  },
-  "0837": {
-    "name": "liggende hofteabduktion med vægt"
-  },
-  "0838": {
-    "name": "liggende sideløft af hovedet med vægt (med huvudsele)"
-  },
-  "0839": {
-    "name": "liggende vridning med vægt"
-  },
-  "0840": {
-    "name": "crunch med armene over hovedet med vægt (på træningsbold)"
-  },
-  "0841": {
-    "name": "pull-up med vægt"
-  },
-  "0842": {
-    "name": "pullover med vægt (på træningsbold)"
-  },
-  "0843": {
-    "name": "reduktionstriangel med vægt"
-  },
-  "0844": {
-    "name": "armcirkler med vægt"
-  },
-  "0845": {
-    "name": "russian twist med vægt (benene oppe)"
-  },
-  "0846": {
-    "name": "russian twist med vægt"
-  },
-  "0847": {
-    "name": "siddende bicepscurl med vægt (på træningsbold)"
-  },
-  "0848": {
-    "name": "siddende nakkeekstension med vægt (med huvudsele)"
-  },
-  "0849": {
-    "name": "siddende vridning med vægt (på træningsbold)"
-  },
-  "0850": {
-    "name": "sidebøjning med vægt (på træningsbold)"
-  },
-  "0851": {
-    "name": "sissy squat med vægt"
-  },
-  "0852": {
-    "name": "squat med vægt"
-  },
-  "0853": {
-    "name": "stående curl med vægt"
-  },
-  "0854": {
-    "name": "stående håndklem med vægt"
-  },
-  "0855": {
-    "name": "stående vridning med vægt"
-  },
-  "0856": {
-    "name": "svend-pres med vægt"
-  },
-  "0857": {
-    "name": "udrulning med mavehjul"
-  },
-  "0858": {
-    "name": "sprintintervaller"
-  },
-  "0859": {
-    "name": "håndledsrulle"
-  },
-  "0860": {
-    "name": "kickback i kabel"
-  },
-  "0861": {
-    "name": "siddende kabelroning"
-  },
-  "0862": {
-    "name": "vridning i kabel, oppefra og ned"
-  },
-  "0863": {
-    "name": "liggende udadrotation af skulderen med håndvægt"
-  },
-  "0864": {
-    "name": "oprejst udadrotation af skulderen med håndvægt"
-  },
-  "0865": {
-    "name": "liggende ben- og hofteløft"
-  },
-  "0866": {
-    "name": "hængende ben- og hofteløft med vægt"
-  },
-  "0867": {
-    "name": "omvendt planke"
-  },
-  "0868": {
-    "name": "kabelcurl"
-  },
-  "0869": {
-    "name": "skulderpres i maskine v. 2"
-  },
-  "0870": {
-    "name": "rumpløft"
-  },
-  "0871": {
-    "name": "crunch med optrukne knæ"
-  },
-  "0872": {
-    "name": "omvendt crunch"
-  },
-  "0873": {
-    "name": "omvendt crunch i kabel"
-  },
-  "0874": {
-    "name": "stående kabelcrunch (med reb)"
-  },
-  "0878": {
-    "name": "dyb squat med vægtstang (i stilling)"
-  },
-  "0880": {
-    "name": "stående hofteekstension i kabel v. 2"
-  },
-  "0881": {
-    "name": "curtsy lunges med håndvægte"
-  },
-  "0882": {
-    "name": "et-bens squat med håndvægt"
-  },
-  "0884": {
-    "name": "step-up i sidled i smith-maskine"
-  },
-  "0885": {
-    "name": "liggende løft i smith-maskine (på hoften)"
-  },
-  "0886": {
-    "name": "et-bens dødløft i smith-maskine"
-  },
-  "0891": {
-    "name": "rygekstension med elastik"
-  },
-  "0892": {
-    "name": "foroverbøjet roning med elastik v. 2"
-  },
-  "0893": {
-    "name": "foroverbøjede sideløft til bagerste skulder med elastik v. 3"
-  },
-  "0894": {
-    "name": "lægløft med elastik"
-  },
-  "0897": {
-    "name": "hammercurl med elastik"
-  },
-  "0901": {
-    "name": "hofteekstension med elastik"
-  },
-  "0902": {
-    "name": "rygløft med elastik"
-  },
-  "0903": {
-    "name": "kickback med elastik"
-  },
-  "0905": {
-    "name": "knælende træk med elastik"
-  },
-  "0906": {
-    "name": "knælende bagudspark med elastik"
-  },
-  "0907": {
-    "name": "sideløft med elastik"
-  },
-  "0908": {
-    "name": "lave flyes med elastik"
-  },
-  "0909": {
-    "name": "lunges med elastik"
-  },
-  "0910": {
-    "name": "liggende ben- og hofteløft med elastik"
-  },
-  "0911": {
-    "name": "liggende lårcurl med elastik"
-  },
-  "0912": {
-    "name": "liggende benløft med elastik"
-  },
-  "0913": {
-    "name": "flyes på mellemhøjde med elastik"
-  },
-  "0915": {
-    "name": "armbøjning med elastik"
-  },
-  "0917": {
-    "name": "omvendt curl med elastik"
-  },
-  "0919": {
-    "name": "et-bens strakte dødløft med elastik"
-  },
-  "0921": {
-    "name": "stående udadrotation i skulderen med elastik"
-  },
-  "0923": {
-    "name": "stående skrå brystpres med elastik"
-  },
-  "0924": {
-    "name": "stående indadrotation i skulderen med elastik"
-  },
-  "0926": {
-    "name": "stående benspark med elastik"
-  },
-  "0927": {
-    "name": "stående strakte benløft med elastik"
-  },
-  "0928": {
-    "name": "strakte armtræk med elastik"
-  },
-  "0930": {
-    "name": "stående roning med elastik"
-  },
-  "0931": {
-    "name": "twist med elastik (nedefra og op)"
-  },
-  "0934": {
-    "name": "oprejst roning med elastik"
-  },
-  "0935": {
-    "name": "oprejst udadrotation i skulderen med elastik"
-  },
-  "0938": {
-    "name": "stepper i maskine"
-  },
-  "0942": {
-    "name": "katten"
-  },
-  "0943": {
-    "name": "stolen utkatasana v. 2"
-  },
-  "0944": {
-    "name": "stolen utkatasana"
-  },
-  "0945": {
-    "name": "barnets stilling"
-  },
-  "0946": {
-    "name": "kranen bakasana"
-  },
-  "0947": {
-    "name": "halvmånen"
-  },
-  "0948": {
-    "name": "grundstilling"
-  },
-  "0949": {
-    "name": "nedadvendt hund adho mukha svanasana"
-  },
-  "0950": {
-    "name": "fiskestilling matsyasana"
-  },
-  "0951": {
-    "name": "guirlandestilling malasana"
-  },
-  "0952": {
-    "name": "halvmånestilling ardha chandrasana"
-  },
-  "0953": {
-    "name": "hænderne til fødderne pada hastasana"
-  },
-  "0954": {
-    "name": "heltestilling virasana"
-  },
-  "0955": {
-    "name": "benet til siden"
-  },
-  "0956": {
-    "name": "lotusstilling (padmasana)"
-  },
-  "0957": {
-    "name": "roteret sidovinkel parivrtta parsvakonasana"
-  },
-  "0958": {
-    "name": "foroverbøjning med benene bredt adskilt upavista konasana"
-  },
-  "0959": {
-    "name": "stående foroverbøjning uttanasana"
-  },
-  "0960": {
-    "name": "stående foroverbøjning med benene adskilt"
-  },
-  "0961": {
-    "name": "træstilling vrksasana"
-  },
-  "0962": {
-    "name": "trekantstilling trikonasana"
-  },
-  "0963": {
-    "name": "krigerstilling virabhadrasana v. 2"
-  },
-  "0964": {
-    "name": "krigerstilling i virabhadrasana"
-  },
-  "0965": {
-    "name": "bred foroverbøjning prasarita padottanasana"
-  },
-  "0966": {
-    "name": "dødløft med vægtstang (bakifrån)"
-  },
-  "0967": {
-    "name": "dødløft med vægtstang (framifrån)"
-  },
-  "0968": {
-    "name": "skiftevis bicepscurl med elastik"
-  },
-  "0969": {
-    "name": "vekslende v-up med elastik"
-  },
-  "0970": {
-    "name": "elastikassisterede pull-ups"
-  },
-  "0971": {
-    "name": "elastikassisteret udrulning med mavehjul"
-  },
-  "0972": {
-    "name": "cykelcrunch med elastik"
-  },
-  "0973": {
-    "name": "lægløft med elastik v. 2"
-  },
-  "0974": {
-    "name": "træk med smalt greb med elastik"
-  },
-  "0975": {
-    "name": "armbøjning med smalt greb med elastik"
-  },
-  "0976": {
-    "name": "koncentrationscurl med elastik"
-  },
-  "0977": {
-    "name": "forreste sideløft med elastik"
-  },
-  "0978": {
-    "name": "frontløft med elastik"
-  },
-  "0979": {
-    "name": "horisontal pallof-pres med elastik"
-  },
-  "0980": {
-    "name": "hofteekstension foroverbøjet med elastik"
-  },
-  "0981": {
-    "name": "foldekniv (jackknife)-sit-up med elastik"
-  },
-  "0982": {
-    "name": "liggende udadrotation i hoften med elastik"
-  },
-  "0983": {
-    "name": "knælende enarms træk med elastik"
-  },
-  "0984": {
-    "name": "liggende indadrotation i hoften med elastik"
-  },
-  "0985": {
-    "name": "knælende crunch med rotation med elastik"
-  },
-  "0986": {
-    "name": "enarms bicepscurl over hovedet med elastik"
-  },
-  "0987": {
-    "name": "enarms et-bens split squat med elastik"
-  },
-  "0988": {
-    "name": "enarms stående lav roning med elastik"
-  },
-  "0989": {
-    "name": "enarms brystpres med rotation med elastik"
-  },
-  "0990": {
-    "name": "enarms siddende roning med rotation med elastik"
-  },
-  "0991": {
-    "name": "pull through med elastik"
-  },
-  "0992": {
-    "name": "sit-up med pres med elastik"
-  },
-  "0993": {
-    "name": "omvendte flyes med elastik"
-  },
-  "0994": {
-    "name": "omvendt håndledscurl med elastik"
-  },
-  "0995": {
-    "name": "siddende udadrotation i hoften med elastik"
-  },
-  "0996": {
-    "name": "siddende indadrotation i hoften med elastik"
-  },
-  "0997": {
-    "name": "skulderpres med elastik"
-  },
-  "0998": {
-    "name": "triceps-ekstension til siden med elastik"
-  },
-  "0999": {
-    "name": "et-bens lægløft med elastik"
   }
 }
