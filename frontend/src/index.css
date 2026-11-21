@@ -3071,6 +3071,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 /* Plan: the toast sits above the pill, which does not move for it */
 body:has(.plan-pill:not(.is-away)) #toast{bottom:calc(158px + var(--sab))}
+body.resting:has(.plan-pill:not(.is-away)) #toast{bottom:calc(232px + var(--sab))}   /* the pill rides above the rest timer */
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 
 /* --- back to top (components/ScrollTopButton.jsx) --- */

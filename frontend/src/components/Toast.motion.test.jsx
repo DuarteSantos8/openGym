@@ -48,6 +48,8 @@ describe('toast motion', () => {
 
   it('on Plan the toast sits above the pill (158px), not on it', () => {
     expect(css).toContain('body:has(.plan-pill:not(.is-away)) #toast{bottom:calc(158px + var(--sab))}')
+    // resting, the pill is raised to 166px (52px high): the toast clears it the same 14px
+    expect(css).toContain('body.resting:has(.plan-pill:not(.is-away)) #toast{bottom:calc(232px + var(--sab))}')
   })
 
   it('Reduce Motion: no rise or ghost, under html.reduce-motion and under the phone setting', () => {
