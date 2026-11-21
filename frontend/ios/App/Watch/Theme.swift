@@ -111,7 +111,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .glass(Capsule(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
             .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
             .contentShape(Capsule())
-            .opacity(enabled ? 1 : 0.35)
+            .opacity(enabled ? (configuration.isPressed ? 0.8 : 1) : 0.35)   // shows the press with Reduce Motion too
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
@@ -146,7 +146,9 @@ struct RowButtonStyle: ButtonStyle {
                    fill: dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
             .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
-            .opacity(enabled ? (configuration.isPressed ? 0.6 : 1) : 0.35)   // the glass ignores `fill`: the press shows here
+            // The glass ignores `fill`, so on it the press shows here; before watchOS 26 and in Always On
+            // the lighter fill shows it.
+            .opacity(enabled ? (configuration.isPressed && Theme.hasGlass && !dimmed ? 0.6 : 1) : 0.35)
     }
 }
 
@@ -189,6 +191,7 @@ struct RoundButton: View {
                     .frame(width: size, height: size)
                     .glass(Circle(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
                     .overlay(Circle().stroke(accent, lineWidth: dimmed ? 2 : 0))
+                    .contentShape(Circle())
             }
             .buttonStyle(PressStyle())
             .accessibilityLabel(label)

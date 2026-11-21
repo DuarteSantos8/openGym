@@ -195,6 +195,7 @@ struct SetPanel: View {
                         .padding(.horizontal, 8)
                         .frame(minHeight: 24)
                         .glass(Capsule(), tint: store.fixSide == side ? Theme.teal : nil, fill: store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18), dimmed: dimmed)
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(PressStyle())
                 .accessibilityAddTraits(store.fixSide == side ? AccessibilityTraits.isSelected : AccessibilityTraits())
@@ -221,6 +222,7 @@ struct SetPanel: View {
                 .padding(.horizontal, 10)
                 .frame(minHeight: 24)
                 .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
+                .contentShape(Capsule())
         }
         .buttonStyle(PressStyle())
         .accessibilityLabel(Text("Effort"))
@@ -563,10 +565,12 @@ struct KeypadView: View {
             VStack(spacing: 4) {
                 HStack(spacing: 6) {
                     Button { dismiss() } label: {
+                        // The glass inside the button: the whole circle takes the tap and shows the press.
                         Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
+                            .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
+                            .contentShape(Circle())
                     }
                     .buttonStyle(PressStyle())
-                    .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
                     .accessibilityLabel(Text("Cancel"))
                     display
                 }
