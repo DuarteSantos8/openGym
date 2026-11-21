@@ -242,22 +242,25 @@ export function libraryRoutes(deps) {
       // The files go into the importer's own folder, against their own quota: from then on the
       // copy is theirs, and stays when the original stops being shared.
       const copied = [], made = [];
+      // `copies`: what an import of this item really put in their folder, over every version. An
+      // admin removal takes only those, never a file they had already. Older importers have none.
+      // Saved before a failed import returns, so a retry still knows which files the import made.
+      const keep = () => {
+        const first = !(it.importers || []).includes(user.id), mine = it.copies?.[user.id];
+        if (it.owner === user.id || !(first || (mine && made.some(h => !mine.includes(h))))) return;
+        store.update(it.id, x => {
+          if (first) { x.importers = [...(x.importers || []), user.id]; x.stats = { imports: (x.stats?.imports || 0) + 1 }; }
+          x.copies = { ...x.copies, [user.id]: [...new Set([...(mine || []), ...made])] };
+        });
+      };
       for (const h of it.media || []) {
         if (store.blocked(h)) continue;
         const f = store.file(h);
         if (!f) continue;
         try { if (!media.adopt(user.id, h, f.path, f.ext).existed) made.push(h); copied.push(h); }
-        catch (e) { if (e instanceof MediaError) return json(res, e.status, { error: e.message, code: e.code, ...e.extra }); throw e; }
+        catch (e) { if (made.length) keep(); if (e instanceof MediaError) return json(res, e.status, { error: e.message, code: e.code, ...e.extra }); throw e; }
       }
-      // `copies`: what an import of this item really put in their folder, over every version. An
-      // admin removal takes only those, never a file they had already. Older importers have none.
-      const first = !(it.importers || []).includes(user.id), mine = it.copies?.[user.id];
-      if (it.owner !== user.id && (first || (mine && made.some(h => !mine.includes(h))))) {
-        store.update(it.id, x => {
-          if (first) { x.importers = [...(x.importers || []), user.id]; x.stats = { imports: (x.stats?.imports || 0) + 1 }; }
-          x.copies = { ...x.copies, [user.id]: [...new Set([...(mine || []), ...made])] };
-        });
-      }
+      keep();
       const owner = userById(it.owner);
       json(res, 200, {
         payload: it.payload, media: copied, type: it.type, title: it.title,
