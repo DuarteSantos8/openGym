@@ -29,7 +29,13 @@ function makeStores (active) {
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
     set (next) { const prev = { S }; S = next; for (const f of subs) f({ S }, prev) },
   }
-  const useUI = { getState: () => ({ timer: null, work: null }) }
+  let ui = { timer: null, work: null }
+  const uiSubs = new Set()
+  const useUI = {
+    getState: () => ui,
+    subscribe: fn => { uiSubs.add(fn); return () => uiSubs.delete(fn) },
+    setState (patch) { const prev = ui; ui = { ...ui, ...patch }; for (const f of uiSubs) f(ui, prev) },
+  }
   return { useStore, useUI }
 }
 const workout = () => ({ id: 'w1', start: T0, entries: [{ id: 'bench', target: { restSec: 120 }, sets: [
@@ -74,13 +80,38 @@ describe('forgotten workouts on the phone', () => {
   it('hands the phone session a deadline: the grace after the planned question, ending at the last set plus its rest', async () => {
     vi.setSystemTime(last + MIN)
     const { st, calls } = start()
-    await vi.waitFor(() => expect(calls.deadlines).toEqual([{ wid: 'w1', endBy: last + 50 * MIN, at: last + 120e3, title: undefined }]))
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{ wid: 'w1', endBy: last + 51 * MIN, at: last + 120e3, title: undefined }]))
     // A set logged moves the question, so the deadline.
     const A = { ...workout(), name: 'Push' }; A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
     st.useStore.set({ ...st.useStore.getState().S, active: A })
-    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({ wid: 'w1', endBy: last + 55 * MIN, at: last + 5 * MIN + 120e3, title: 'Push' }))
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({ wid: 'w1', endBy: last + 56 * MIN, at: last + 5 * MIN + 120e3, title: 'Push' }))
     // The workout over: no deadline left.
     st.useStore.set({ ...st.useStore.getState().S, active: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+  })
+
+  it('a long hold pushes the question and the deadline past its end; the hold over, they come back to the last set', async () => {
+    vi.setSystemTime(last + 40 * MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+    const endsAt = last + 55 * MIN   // a 15-minute hold, 40 minutes after the last set
+    st.useUI.setState({ work: { left: 900, total: 900, endsAt } })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(endsAt + 51 * MIN))
+    expect(ln.scheduled.at(-1).schedule.at.getTime()).toBe(endsAt + 45 * MIN)
+    // Its every tick changes nothing.
+    const n = calls.deadlines.length
+    st.useUI.setState({ work: { left: 899, total: 900, endsAt } })
+    await flush()
+    expect(calls.deadlines.length).toBe(n)
+    st.useUI.setState({ work: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+  })
+
+  it('a hold past its end (overtime) is still going on: no question, no deadline', async () => {
+    vi.setSystemTime(last + 40 * MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+    st.useUI.setState({ work: { left: -60, total: 60, endsAt: last + 39 * MIN, overtime: true } })
     await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
   })
 

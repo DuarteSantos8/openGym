@@ -74,7 +74,8 @@ function endSessionBy(wid, at) {
   const S = deps.useStore.getState().S
   if (!wid || !at || S?.active?.id !== wid) { deps.sessionDeadline({}); return }
   const endBy = at + readForgottenPrefs().graceMin * 60e3
-  deps.sessionDeadline({ wid, endBy, at: honestEnd(S.active, { restSec: Number(S.restSec) || 0, now: endBy }), title: S.active.name })
+  // A minute after the page's own finish (checked every 30 s): an awake page ends it first and still reads its heart rate.
+  deps.sessionDeadline({ wid, endBy: endBy + 2 * CHECK_MS, at: honestEnd(S.active, { restSec: Number(S.restSec) || 0, now: endBy }), title: S.active.name })
 }
 
 /** The notification for "Still training?", planned for `at`; or none (`at` 0). Never asks for permission. */
@@ -101,6 +102,9 @@ async function planNotification(wid, at) {
   } catch { planned = '' }
 }
 
+/** The rest and hold counting down now (a paused or finished one is not). */
+const counting = ui => [ui.timer && !ui.timer.ready && !ui.timer.paused && ui.timer, ui.work && !ui.work.paused && ui.work].filter(Boolean)
+
 /** When the question counts as asked: shown here, or its notification gone out. */
 function askedAtOf(st, now) {
   if (st.askedAt) return st.askedAt
@@ -116,11 +120,14 @@ export function checkForgotten(now = Date.now()) {
   if (!A || useStore.getState().tourSandbox) { hide(); if (planned) planNotification(null, 0); return null }
   const prefs = readForgottenPrefs()
   const st = readForgottenState(A.id)
-  const ui = useUI.getState()
-  const resting = !!(ui.timer && !ui.timer.ready && !ui.timer.paused) || !!(ui.work && !ui.work.paused)
+  // A rest or hold counting is the workout going on: idle counts from its end, so the question (and
+  // the phone session's deadline) waits past a long hold. One past its end (overtime): not asked.
+  const runs = counting(useUI.getState())
+  const busyUntil = Math.max(0, ...runs.map(r => Number(r.endsAt) || 0))
   const d = decideForgotten({
     A, now, prefs, leaveGym: leaveGymOn(prefs, deps.gymOn()), leftAt: st.leftAt, askedAt: askedAtOf(st, now),
-    snoozeAt: st.snoozeAt, activeAt: Number(A.reopenedAt) || 0, resting, restSec: Number(S.restSec) || 0,
+    snoozeAt: st.snoozeAt, activeAt: Math.max(Number(A.reopenedAt) || 0, busyUntil), resting: runs.length > 0 && busyUntil <= now,
+    restSec: Number(S.restSec) || 0,
   })
   if (d.state === 'end') {
     hide()
@@ -219,6 +226,9 @@ export function startForgotten({ useStore, useUI, ...rest }) {
     else if (!id) checkForgotten()
     tick()
   })
+  // A rest or hold started, ended or moved (not its every tick): the question moves with it.
+  const runKey = u => JSON.stringify(counting(u).map(r => r.endsAt || 0))
+  const offUI = useUI.subscribe((u, prev) => { if (runKey(u) !== runKey(prev)) checkForgotten() })
   const onVisible = () => { if (document.visibilityState === 'visible') { readLeft(); checkForgotten(); tick() } }
   document.addEventListener('visibilitychange', onVisible)
   let offLeft = () => {}
@@ -240,7 +250,7 @@ export function startForgotten({ useStore, useUI, ...rest }) {
   return () => {
     gone = true
     clearTimeout(timer)
-    offStore(); offLeft()
+    offStore(); offLeft(); offUI()
     document.removeEventListener('visibilitychange', onVisible)
     try { handle?.remove?.() } catch { /* gone */ }
     hide()
