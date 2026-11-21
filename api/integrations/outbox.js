@@ -145,16 +145,31 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
     onSettled(j, res, { final });
   }
 
-  /** Send what is due. One pass at a time; resolves when the pass is over. */
+  /** Send what is due. One pass at a time; resolves when the pass is over. A slot frees as soon
+   * as its job ends, and a profile holds one slot at a time: a receiver that never answers makes
+   * that profile wait on itself, not everyone else. Oldest due job first, each tried once a pass. */
   async function run() {
     if (running) return;
     running = true;
     try {
-      const due = st.jobs.filter(j => !j.running && j.nextAt <= now()).sort((a, b) => a.nextAt - b.nextAt);
-      for (let i = 0; i < due.length; i += concurrency) {
-        await Promise.all(due.slice(i, i + concurrency).map(runOne));
+      const tried = new Set(), busy = new Set(), flight = new Set();
+      for (;;) {
+        while (flight.size < concurrency) {
+          let j = null;
+          for (const x of st.jobs) {
+            if (x.running || tried.has(x) || busy.has(x.uid) || x.nextAt > now()) continue;
+            if (!j || x.nextAt < j.nextAt) j = x;
+          }
+          if (!j) break;
+          tried.add(j); busy.add(j.uid);
+          const p = runOne(j)
+            .catch(e => console.error('integrations: outbox job failed', e?.message))
+            .finally(() => { busy.delete(j.uid); flight.delete(p); persist(); }); // a pass can last long: save as each job ends
+          flight.add(p);
+        }
+        if (!flight.size) break;
+        await Promise.race(flight);
       }
-      if (due.length) persist();
     } finally { running = false; }
   }
 
