@@ -215,6 +215,18 @@ test('a sync that carries no workout (finished or discarded) drops the athlete a
   assert.equal(await h.live(), null);
 });
 
+// Editing a logged workout puts it in `active` too (editingWorkoutId), and the workout screen never
+// beats for it: a sync of that edit is nobody training.
+test('a sync that carries a past workout being edited lists nobody, and drops a row', async t => {
+  const h = await startServer(t);
+  await h.at(T0);
+  await h.sync({ name: 'Push Day', start: T0 - 86400000, editingWorkoutId: 'w1' });
+  assert.equal(await h.live(), null);
+  await h.beat();
+  await h.sync({ name: 'Push Day', start: T0 - 86400000, editingWorkoutId: 'w1' });
+  assert.equal(await h.live(), null);
+});
+
 test('a refused sync (a conflict) lists nobody', async t => {
   const h = await startServer(t);
   await h.at(T0);

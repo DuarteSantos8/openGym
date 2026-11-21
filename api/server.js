@@ -1060,9 +1060,10 @@ const presenceRow = (b, now = Date.now()) => ({
   updatedAt: now
 });
 // What a sync says of the athlete: a running workout (`active`, with the phone's own progress in
-// `live` when it sent one) is a sign of life, like a heartbeat; none means it ended.
+// `live` when it sent one) is a sign of life, like a heartbeat; none means it ended. A logged
+// workout being edited (`editingWorkoutId`) is nobody training, as the workout screen says too.
 function presenceFromSync(uid, active, live) {
-  if (!active || typeof active !== 'object') { presence.delete(uid); return; }
+  if (!active || typeof active !== 'object' || active.editingWorkoutId) { presence.delete(uid); return; }
   presence.set(uid, presenceRow({ name: active.name, startedAt: active.start, ...(live && typeof live === 'object' ? live : {}) }));
 }
 // Whether a row counts as "training now". The one place that decides it: the admin list and the
