@@ -185,7 +185,7 @@ Russian gyms mix Russian and English transliteration. Use the Russian word where
 | bosu ball | БОСУ |
 | suspension, suspender | петли |
 | stick | палка |
-| towel / bottle / chair / wall / box / stepbox | полотенце / бутылка / стeл / стена / тумба / степ |
+| towel / bottle / chair / wall / box / stepbox | полотенце / бутылка / стул / стена / тумба / степ |
 | bodyweight | собственный вес |
 | weighted | с отягощением |
 | assisted / self assisted | с поддержкой |
