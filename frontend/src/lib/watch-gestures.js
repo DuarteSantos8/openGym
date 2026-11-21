@@ -29,9 +29,9 @@ export const NAME = {
 }
 const EFFECT = {
   smart: () => t('Taps what is lit on the watch: Done on a set, Skip on a rest.'),
-  logSet: () => t('Logs the set you are on. Only when a set is up.'),
+  logSet: () => t('Logs the set you are on. On other screens, Smart runs instead.'),
   skipRest: () => t('Ends the rest and brings up your next set.'),
-  addRest: () => t('Gives you a little longer to rest. Only during a rest.'),
+  addRest: () => t('Gives you a little longer to rest. On other screens, Smart runs instead, but Double Tap never logs a set.'),
   hold: () => t('Starts the timer on a timed set. Press again to stop and log it.'),
   nextExercise: () => t('Jumps ahead to the next exercise in your plan.'),
   showMetrics: () => t('Opens the Metrics page: heart rate and time so far.'),
