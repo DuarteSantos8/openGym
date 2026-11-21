@@ -202,10 +202,10 @@ struct RestView: View {
                     Group {
                         let place = SetNav.place(e, si) // "set 3/4": which set of how many
                         if let side = store.sideUp {
-                            Text("\(e.name), set \(Int64(place.n))") + Text(verbatim: "/\(place.of) · ")
+                            Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))") + Text(verbatim: " · ")
                                 + Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
                         } else {
-                            Text("\(e.name), set \(Int64(place.n))") + Text(verbatim: "/\(place.of)")
+                            Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))")
                         }
                     }
                     .font(TypeScale.second)
@@ -304,7 +304,7 @@ struct EffortChips: View {
     @ScaledMetric(relativeTo: .footnote) private var labelHeight: CGFloat = 22
     /// The tapped chip's capsule grows into the armed one (same id, one namespace). Not with Reduce Motion.
     @Namespace private var grow
-    @State private var tapped: Double?
+    @State private var tapped: Double? // until the rating settles; `from` turns .armed one frame after the capsule appears
     /// Where the row was before this change: a chip tap springs open, the settle and a re-arm only fade.
     @State private var from = Phase.chips
     private enum Phase { case chips, armed, settled }
@@ -344,8 +344,8 @@ struct EffortChips: View {
                     if store.dial.armed && !dimmed {
                         EffortArmed(kind: kind, value: v, clear: false, height: height, disc: tall ? 31 : 28, ticks: true, size: 21,
                                     nudge: { store.nudgeRating($0, disc: false) }, discNudge: { store.nudgeRating($0, disc: true) },
-                                    grow: reduceMotion ? nil : (grow, AnyHashable(tapped ?? v)), delayed: from == .chips)
-                            .transition(from == .chips ? .identity : swap) // from a chip the capsule grows, it does not blur in
+                                    grow: reduceMotion ? nil : (grow, AnyHashable(tapped ?? v)), delayed: tapped != nil)
+                            .transition(from == .chips && !reduceMotion ? .identity : swap) // from a chip the capsule grows, it does not blur in
                     } else { settled(kind, v, height).transition(swap) }
                 } else {
                     HStack(spacing: 4) {
@@ -369,7 +369,7 @@ struct EffortChips: View {
             }
         }
         .animation(motion, value: phase)
-        .onChange(of: phase) { _, p in from = p }
+        .onChange(of: phase) { _, p in from = p; if p == .settled { tapped = nil } } // a re-arm grows from no chip
     }
 
     /// The two lines trade places by fading, no slide.
@@ -439,6 +439,8 @@ struct EffortArmed: View {
     var grow: (Namespace.ID, AnyHashable)? = nil
     /// The discs come a beat after the capsule that grows from a chip or pill; on a re-arm they come at once.
     var delayed = true
+    /// Over a growing capsule the value and discs wait for it, so they never sit on the chips it covers.
+    @State private var appeared = false
     @State private var index = 0
     @State private var pulsing = false
     @FocusState private var focused: Bool
@@ -454,6 +456,7 @@ struct EffortArmed: View {
             center(color, r)
             discButton(minus: false, color: color, inset: inset, dim: value.map { $0 >= r.upperBound } ?? false)
         }
+        .opacity(grow != nil && delayed && !appeared ? 0 : 1)
         .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
         .background(Capsule().fill(Color.black).overlay(Capsule().fill(color.opacity(0.18))).overlay(Capsule().strokeBorder(color, lineWidth: 2)).grows(grow?.0, id: grow?.1 ?? AnyHashable(0)))
         .shadow(color: color.opacity(0.35), radius: 4)
@@ -470,6 +473,7 @@ struct EffortArmed: View {
         .onAppear {
             index = Effort.slot(kind, value, clear: clear)
             focused = true
+            withAnimation(.easeOut(duration: 0.18).delay(0.05)) { appeared = true }
             // The first time ever: the crown glyph pulses once, to say halves exist (never with Reduce Motion).
             guard !reduceMotion, store.takeEffortPulse() else { return }
             pulsing = true
