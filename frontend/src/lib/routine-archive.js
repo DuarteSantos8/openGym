@@ -111,9 +111,17 @@ export function undoSnapshot(s, snap) {
   }
   if (snap?.seq?.length) {
     const seq = seqOf(s).slice()
-    for (const [at, id] of snap.seq) if (back.has(id)) seq.splice(Math.min(at, seq.length), 0, id)
+    const was = s.rotation?.at
+    let cur = was
+    for (const [at, id] of snap.seq) {
+      if (!back.has(id)) continue
+      const p = Math.min(at, seq.length)
+      seq.splice(p, 0, id)
+      if (Number.isInteger(cur) && p <= cur) cur++   // a cursor that moved on keeps naming its segment
+    }
     s.rotation = { ...s.rotation, sequence: seq }
-    if (snap.at && s.rotation.at === snap.at[1] && snap.seq.every(([, id]) => back.has(id))) s.rotation.at = snap.at[0]
+    if (snap.at && was === snap.at[1] && snap.seq.every(([, id]) => back.has(id))) s.rotation.at = snap.at[0]
+    else if (Number.isInteger(cur)) s.rotation.at = cur
   }
   for (const d of [...(snap?.deleted || [])].reverse()) if (restoreRoutine(s, d)) did = true
   if (snap?.entry && putBackEntry(s, snap.entry)) did = true
