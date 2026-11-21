@@ -4310,9 +4310,10 @@ body.resting .plan-pill{bottom:calc(166px + var(--sab))}
 .arch-restore .icn{font-size:.875rem}
 .arch-delete-all{display:block;width:100%;min-height:52px;margin-top:32px;color:var(--danger-ink);font-size:var(--fs-body);font-weight:600;text-align:center}
 .plan-more{flex:none;display:grid;place-items:center;width:44px;height:44px;color:var(--label-2)}
-/* Edit with select: a check circle at the start, a grip at the end, a bar for what is ticked */
+/* Edit with select: a check circle at the start, a grip at the end, a bar for what is ticked.
+   The empty circle is --grey, as .chk: a control needs 3:1 (--label-3 was 1.7:1 on light). */
 .plan-check{flex:none;display:grid;place-items:center;width:44px;height:44px;margin-inline:-10px -4px}
-.plan-check span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--label-3);color:transparent;font-size:.875rem;--icon-stroke:2.8}
+.plan-check span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--grey);color:transparent;font-size:.875rem;--icon-stroke:2.8}
 .plan-check[aria-checked="true"] span{background:var(--label);border-color:var(--label);color:var(--bg)}
 .plan-group .item.is-selected{background:var(--surface-3)}
 .plan-grip{flex:none;display:grid;place-items:center;width:44px;height:44px;margin-inline-end:-8px;color:var(--label-3);font-size:1.125rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
