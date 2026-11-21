@@ -148,6 +148,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest running after a set, for that rest's heart rate once it is over.
     private var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date, sid: String?)?
     private var restTimer: Timer?
+    /// Counts each arming of a rest: the 3-2-1 taps of one armed before stay quiet, even at the same end (+15 then −15).
+    private var restArm = 0
     private var holdTimer: Timer?
     /// The rest-over taps again once if nobody reacts to the first ones within a few seconds.
     private var restOverRepeat: DispatchWorkItem?
@@ -1337,9 +1339,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // (the workout session keeps the app running with the wrist down). Each tap is for this
         // rest only: one paused, skipped or moved since stays quiet.
         let left = end.timeIntervalSinceNow
+        restArm += 1
+        let arm = restArm
         for s in [3.0, 2.0, 1.0] where left > s + 1 {
             DispatchQueue.main.asyncAfter(deadline: .now() + left - s) { [weak self] in
-                guard let self = self, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo else { return }
+                guard let self = self, self.restArm == arm, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo else { return }
                 Haptics.restCount()
             }
         }
