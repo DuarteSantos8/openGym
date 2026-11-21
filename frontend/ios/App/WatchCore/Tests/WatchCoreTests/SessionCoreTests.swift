@@ -207,4 +207,52 @@ final class SessionCoreTests: XCTestCase {
         after.entries[0].sets[0] = SessionCore.markSide(w.entries[0].sets[0], "L", w: 20, r: 10, at: 2000)
         XCTAssertEqual(SessionCore.phoneTicks(before, after).map(\.at), [2000])
     }
+    // Discord Mircuz (Garmin #1403): with "Timed holds start by themselves" the phone and the watch each run
+    // the hold. The phone's ends first and logs set 0; the watch's hold must then end unlogged, not log set 1.
+    func testAHoldTheSnapshotShowsDoneOnThePhoneIsOver() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8)])))
+        let ref = (entry: 0, set: SessionCore.setIndex(s, entry: 0)!)
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: ref.entry, set: ref.set, side: nil))
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8, done: true, at: 1), row(60, 8)])))
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1, "the set a hold ending now would log")
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: ref.entry, set: ref.set, side: nil))
+    }
+
+    func testAHoldOnOneSideEndsWhenThePhoneLoggedThatSide() {
+        var w = workout("p1", sets: [row(20, 0)])
+        w.entries[0].sets[0].sides = Sides(L: SideRow(w: 20, r: 10, done: false), R: SideRow(w: 20, r: 10, done: false))
+        var s = SessionCore.applySnapshot(SessionState(), snap(w))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 0, side: "L"))
+        w.entries[0].sets[0] = SessionCore.markSide(w.entries[0].sets[0], "L", w: 20, r: 10, at: 2000)
+        s = SessionCore.applySnapshot(s, snap(w))
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: 0, side: "L"))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 0, side: "R"), "the other side's hold is a new one")
+    }
+
+    // A set removed on the phone during the hold moves the places: the hold's own set is found by its id.
+    func testAHoldFindsItsSetByIdAfterTheOnesBeforeItMove() {
+        var a = row(60, 8); a.sid = "a"
+        var b = row(60, 8); b.sid = "b"
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [a, b])))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"))
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [b])))
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"), "still open, now at place 0")
+        var bDone = b; bDone.done = true; bDone.at = 3000
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [bDone])))
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"))
+    }
+
+    // The 3-2-1 before a hold remembers its set as the hold does: if the phone logs it meanwhile, the set up
+    // next is another one, and a count-in running out must not start a hold for that one.
+    func testACountInForASetThePhoneLoggedMeanwhileIsOver() {
+        var a = row(60, 8); a.sid = "a"
+        var b = row(60, 8); b.sid = "b"
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [a, b])))
+        let counted = (set: SessionCore.setIndex(s, entry: 0)!, sid: a.sid)
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: counted.set, side: nil, sid: counted.sid))
+        var aDone = a; aDone.done = true; aDone.at = 1000
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [aDone, b])))
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1, "what a count-in ending now would hold for")
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: counted.set, side: nil, sid: counted.sid))
+    }
 }
