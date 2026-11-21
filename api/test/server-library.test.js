@@ -359,6 +359,26 @@ test('an admin removal takes the copy an import made, never the importer\'s own 
   assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 200, 'Ben\'s own upload stays');
 });
 
+test('a new version that names a file the importer already had: an admin removal leaves it too', async t => {
+  const h = await start(t);
+  const v1 = M.wav(4410), v2 = M.wav(8820);
+  await h.put('u_dan', v1, 'audio/wav');
+  await h.put('u_ben', v2, 'audio/wav');
+  const s = await h.share('u_dan', { type: 'sound', payload: { name: 'Beep', m: ref(v1, 'audio/wav', 'audio', { width: 1, height: 1 }) } });
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  // Dan's v2 uses bytes Ben uploaded himself. Ben takes v2 too; Cleo only takes v2.
+  await h.put('u_dan', v2, 'audio/wav');
+  const up = await h.call('u_dan', 'PATCH', `/api/shared/${s.body.id}`, { rev: s.body.item.rev, payload: { name: 'Beep', m: ref(v2, 'audio/wav', 'audio', { width: 1, height: 1 }) } });
+  assert.equal(up.status, 200, JSON.stringify(up.body));
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  assert.equal((await h.call('u_cleo', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  const rm = await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'remove', reason: 'licensed music' });
+  assert.equal(rm.status, 200, JSON.stringify(rm.body));
+  assert.equal(rm.body.copiesRemoved, 1, 'only Cleo\'s copy');
+  assert.equal((await h.raw('u_cleo', `/api/media/${M.sha(v2)}`)).status, 404);
+  assert.equal((await h.raw('u_ben', `/api/media/${M.sha(v2)}`)).status, 200, 'Ben\'s own upload stays');
+});
+
 test('account deletion keeps a file someone else shared too', async t => {
   const h = await start(t);
   const sound = M.wav(4410);

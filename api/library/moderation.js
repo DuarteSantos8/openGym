@@ -52,9 +52,10 @@ export function moderationRoutes({ json, readBody, readSession, requireAdmin, is
     // A file another live item still names goes too: blocked bytes are never served again.
     for (const h of hashes) store.drop(h);
     let copies = 0;
-    // Not a file the importer already had before the import (it.ownFiles): that upload is theirs.
+    // Only what an import copied (it.copies), never a file they had already: that upload is theirs.
+    // An importer from before that list keeps the old rule: every file of the item.
     for (const uid of it.importers || []) for (const h of hashes) {
-      if (it.ownFiles?.[uid]?.includes(h)) continue;
+      if (it.copies?.[uid] && !it.copies[uid].includes(h)) continue;
       try { if (media.dropFile(uid, h)) copies++; } catch { /* their folder may be gone */ }
     }
     it.status = 'removed';
