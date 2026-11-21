@@ -117,7 +117,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
     // Rate limits first: no token is a wait, not a failure.
     for (const r of rateOf(j)) {
       const wait = buckets.take(r.key, r);
-      if (wait > 0) { j.nextAt = now() + wait; return; }
+      if (wait > 0) { j.nextAt = now() + wait; return true; }  // held: nothing sent, nothing to save yet
     }
     j.running = true;
     let res;
@@ -147,24 +147,25 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
 
   /** Send what is due. One pass at a time; resolves when the pass is over. A slot frees as soon
    * as its job ends, and a profile holds one slot at a time: a receiver that never answers makes
-   * that profile wait on itself, not everyone else. Oldest due job first, each tried once a pass. */
+   * that profile wait on itself, not everyone else. Oldest due job first; a job comes round again
+   * in the same pass only once it was rescheduled and is due (a retry behind a long pass). */
   async function run() {
     if (running) return;
     running = true;
     try {
-      const tried = new Set(), busy = new Set(), flight = new Set();
+      const tried = new Map(), busy = new Set(), flight = new Set();
       for (;;) {
         while (flight.size < concurrency) {
           let j = null;
           for (const x of st.jobs) {
-            if (x.running || tried.has(x) || busy.has(x.uid) || x.nextAt > now()) continue;
+            if (x.running || busy.has(x.uid) || x.nextAt > now() || x.nextAt <= tried.get(x)) continue;
             if (!j || x.nextAt < j.nextAt) j = x;
           }
           if (!j) break;
-          tried.add(j); busy.add(j.uid);
+          tried.set(j, now()); busy.add(j.uid);
           const p = runOne(j)
             .catch(e => console.error('integrations: outbox job failed', e?.message))
-            .finally(() => { busy.delete(j.uid); flight.delete(p); persist(); }); // a pass can last long: save as each job ends
+            .then(held => { busy.delete(j.uid); flight.delete(p); if (!held) persist(); }); // a pass can last long: save as each delivery ends
           flight.add(p);
         }
         if (!flight.size) break;

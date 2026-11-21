@@ -196,6 +196,28 @@ test('one profile whose receiver never answers does not hold up another profile\
   assert.equal(r.ob.snapshot().jobs.length, 0);
 });
 
+test('another profile\'s retry comes round in the same pass, behind a receiver that never answers', async () => {
+  const hung = [], tries = [];
+  const r = outboxRig(j => {
+    if (j.uid === 'u1') return new Promise(res => hung.push(() => res({ ok: true })));
+    tries.push(j.key);
+    return Promise.resolve(tries.length === 1 ? { ok: false, retry: true, msg: '503' } : { ok: true });
+  });
+  r.ob.enqueue(job('a1'));
+  r.ob.enqueue(job('a2'));
+  r.ob.enqueue(job('b1', { uid: 'u2', conn: 'c2' }));
+  const pass = r.ob.run();
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(tries, ['b1'], 'failed once, due again in 30 s');
+  r.tick(BASE_MS);
+  hung.shift()();
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(tries, ['b1', 'b1'], 'retried without waiting for the pass to end');
+  while (hung.length) { hung.shift()(); await new Promise(res => setImmediate(res)); }
+  await pass;
+  assert.ok(r.ob.snapshot().done.b1);
+});
+
 test('the outbox is bounded per profile and drops what a disconnect leaves behind', () => {
   const r = outboxRig(async () => ({ ok: true }));
   for (let i = 0; i < 200; i++) assert.equal(r.ob.enqueue(job('k' + i)), 'queued');
