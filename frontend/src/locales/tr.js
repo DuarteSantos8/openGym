@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Home: build today's session from the most rested muscles
+  "Today’s workout": "Bugünün antrenmanı",
 }

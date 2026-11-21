@@ -20,7 +20,7 @@
 // of your favourites", "Fits Home gym" in the reader's language (components/SessionBuilder.jsx).
 // `cfg` is a routine entry ({ id, sets, reps | sec, weight, mode, restSec }), so the session can
 // be started at once or saved as a routine.
-import { allExercises, everydayScore, isClassicEx, isCardio, isHold, isBodyweightEq, isLoadedEq, isCustomEx } from './exercises.js'
+import { allExercises, isDistanceEx, everydayScore, isClassicEx, isCardio, isHold, isBodyweightEq, isLoadedEq, isCustomEx } from './exercises.js'
 import { musclesOf, MUSCLE_NAME } from './muscles.js'
 import { shownMuscles } from './muscle-filter.js'
 import { activeProfile, exAvailable } from './equipment.js'
@@ -78,6 +78,13 @@ const NEEDS_BALL = /exercise ball|stability ball|swiss ball|bosu/i
 const BIG = new Set(['chest', 'lats', 'upper-back', 'quadriceps', 'gluteal', 'hamstring'])
 export const capOf = (m, alone) => (alone ? 4 : BIG.has(m) ? 3 : 2)
 
+/** Per-muscle fatigue as of `now`, the way the builder reads it; {} when the history cannot be read. */
+export function fatigueNow (S, now = Date.now()) {
+  const bw = Array.isArray(S?.bodyweight) ? lastBW(S) : null
+  const bodyweightKg = bw && bw.w > 0 ? (S.unit === 'lb' ? bw.w * LB_TO_KG : bw.w) : undefined
+  try { return fatigueOf(S?.workouts || [], now, { bodyweightKg, unit: S?.unit, activities: activityStimuli(S, now) }) || {} } catch { return {} }
+}
+
 /** The muscles the session is for: the filter's, minus the tired ones (unless that is all of them). */
 export function targetMuscles (terms, fatigue = {}) {
   const named = new Set((terms || []).filter(x => typeof x === 'string' && !x.startsWith('group:')))
@@ -100,6 +107,8 @@ export function pickConfig (S, e, compound) {
 export function estimateMinutes (cfgs) {
   let sec = 0
   for (const c of cfgs) {
+    // Cardio is a block of minutes, not sets.
+    if (c.min > 0) { sec += c.min * 60 + 90; continue }
     const sets = Math.max(1, c.sets || 1)
     const work = c.mode === 'time' ? (c.sec || 30) : Math.max(35, (c.reps || 10) * 4)
     sec += sets * work + (sets - 1) * (c.restSec || 90) + 90
@@ -112,10 +121,7 @@ export function estimateMinutes (cfgs) {
  * `today` keep it pure for tests. `exclude` holds ids to leave out (a pick swapped away).
  */
 export function buildSession (S, { terms = [], minutes = 40, seed = 1, now = Date.now(), today = null, exclude = [] } = {}) {
-  const bw = Array.isArray(S?.bodyweight) ? lastBW(S) : null
-  const bodyweightKg = bw && bw.w > 0 ? (S.unit === 'lb' ? bw.w * LB_TO_KG : bw.w) : undefined
-  let fatigue = {}
-  try { fatigue = fatigueOf(S?.workouts || [], now, { bodyweightKg, unit: S?.unit, activities: activityStimuli(S, now) }) || {} } catch { fatigue = {} }
+  const fatigue = fatigueNow(S, now)
   const { muscles, tired, fresh, allTired } = targetMuscles(terms, fatigue)
   const profile = activeProfile(S)
   const out = { picks: [], minutes: 0, muscles, tired: allTired ? [] : tired, allTired, profileName: profile?.name || null }
@@ -212,6 +218,16 @@ export function swapPick (S, session, index, opts = {}) {
   // It takes over the sets the session gave the one it replaces.
   const p = { ...p0, cfg: { ...p0.cfg, sets: was.cfg.sets } }
   const picks = session.picks.map((x, i) => (i === index ? p : x))
+  return { ...session, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
+}
+
+/** `ex` added to the end of the session, with the sets and rest a built pick of its kind gets; the session as is when it is already in. */
+export function addPick (S, session, ex) {
+  if (!ex || session.picks.some(p => p.id === ex.id)) return session
+  const w = musclesOf(ex)
+  const main = Object.keys(w).filter(m => w[m] >= 1)
+  const compound = COMPOUND.test(ex.n || '') || main.length >= 2
+  const picks = [...session.picks, { id: ex.id, cfg: isCardio(ex) || isDistanceEx(ex) ? { ...defaultConfig(ex.id, undefined, S), id: ex.id } : pickConfig(S, ex, compound), muscles: main, compound, why: [] }]
   return { ...session, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
 }
 

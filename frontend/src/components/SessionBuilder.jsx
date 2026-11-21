@@ -5,9 +5,10 @@ import { t, tn, exerciseNameFor, exerciseNameClass, dateLocale } from '../lib/i1
 import { uid } from '../lib/format.js'
 import { exOr } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
-import { groupOfTerm } from '../lib/muscle-filter.js'
-import { buildSession, swapPick, sessionRoutine, DURATIONS } from '../lib/session-builder.js'
-import { startBuiltSession, exerciseDetailSheet } from '../sheets.jsx'
+import { groupOfTerm, groupTerm, toggleTerm, MUSCLE_GROUPS } from '../lib/muscle-filter.js'
+import { buildSession, swapPick, addPick, sessionRoutine, estimateMinutes, DURATIONS } from '../lib/session-builder.js'
+import { gymsOf, gymLabel, switchGym } from '../lib/gym-inventory.js'
+import { startBuiltSession, exerciseDetailSheet, exercisePicker } from '../sheets.jsx'
 import { nav } from '../lib/nav.js'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
@@ -21,22 +22,57 @@ import { isoRun } from '../lib/bidi.js'
 
 const termName = term => { const g = groupOfTerm(term); return g ? t(g.name) : t(MUSCLE_NAME[term] || term) }
 const whyLine = why => why.map(w => (w[0] === 'A classic for {0}' ? t(w[0], t(w[1])) : t(...w))).join(' · ')
-const amount = c => isoRun(c.mode === 'time' ? `${c.sets} × ${c.sec} s` : `${c.sets} × ${c.reps}`)
+const amount = c => isoRun(
+  c.min > 0 ? t('{0} min', c.min)
+    : c.mode === 'time' ? `${c.sets} × ${c.sec} s`
+      : c.mode === 'distance' ? `${c.sets} × ${c.m} m`
+        : `${c.sets} × ${c.reps}`)
 
-export function SessionBuilder ({ terms, close }) {
+export function SessionBuilder ({ terms: initial, close }) {
+  const [terms, setTerms] = useState(initial)
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const [minutes, setMinutes] = useState(40)
   const [seed, setSeed] = useState(1)
-  const [swaps, setSwaps] = useState([])   // [index, seed] in order, replayed over the base
+  const [swaps, setSwaps] = useState([])   // [exercise id, seed] swaps, [exercise id, null] removals and [exercise id, 'add'] additions, in order, replayed over the base
   const session = useMemo(() => {
     let out = buildSession(S, { terms, minutes, seed })
-    for (const [i, sd] of swaps) out = swapPick(S, out, i, { seed: sd })
+    // Every exercise a slot has already shown stays out of it, so repeated taps walk on
+    // through the alternatives instead of flipping between two; a removed one stays out of all.
+    const seen = out.picks.map(() => [])
+    const gone = []
+    // An edit names the exercise it was made on, so one whose exercise is no longer in the
+    // session (the base moved under it) is dropped instead of landing on a neighbour.
+    for (const [id, sd] of swaps) {
+      if (sd === 'add') {
+        out = addPick(S, out, exOr(id))
+        seen.push([])
+        continue
+      }
+      if (sd === null) gone.push(id)   // recorded even when the base no longer has it, so a later swap cannot bring it back
+      const i = out.picks.findIndex(p => p.id === id)
+      if (i < 0) continue
+      if (sd === null) {
+        const picks = out.picks.filter((_, k) => k !== i)
+        seen.splice(i, 1)
+        out = { ...out, picks, minutes: estimateMinutes(picks.map(x => x.cfg)) }
+        continue
+      }
+      seen[i].push(id)
+      out = swapPick(S, out, i, { seed: sd, exclude: [...seen[i], ...gone] })
+    }
     return out
   }, [S.workouts, S.equipProfiles, S.activeEquipId, S.equipFilterOn, S.bench, S.dumbbells, S.customEx, S.favEx, terms, minutes, seed, swaps]) // eslint-disable-line react-hooks/exhaustive-deps
   const title = terms.map(termName).join(' + ')
   const shuffle = () => { setSwaps([]); setSeed(x => x + 1) }
-  const swapOne = i => setSwaps(list => [...list, [i, seed * 31 + list.length + 7]])
+  const swapOne = i => setSwaps(list => [...list, [session.picks[i].id, seed * 31 + list.length + 7]])
+  const addOne = () => {
+    const sheet = exercisePicker(ex => { sheet.close(); setSwaps(list => [...list, [ex.id, 'add']]) }, { title: t('Add exercise') })
+  }
+  // The focus: tap a group to add it or take it off; the last one stays.
+  const toggleFocus = term => { const next = toggleTerm(terms, term); if (next.length) { setSwaps([]); setTerms(next) } }
+  const focusTerms = [...MUSCLE_GROUPS.map(g => groupTerm(g.id)), ...terms.filter(x => !groupOfTerm(x))]
+  const removeOne = i => setSwaps(list => [...list, [session.picks[i].id, null]])
   const start = () => startBuiltSession(session.picks.map(p => p.cfg), title, close)
   const save = () => {
     const r = sessionRoutine(session, { id: uid(), name: title })
@@ -46,10 +82,21 @@ export function SessionBuilder ({ terms, close }) {
     nav('/plan/r/' + r.id)
   }
   const empty = !session.picks.length
+  // Two or more gyms: say where you are right here. Picking one makes it the active gym and turns
+  // the equipment filter on, so the session is built from what that place has.
+  const gyms = gymsOf(S)
+  const gymId = S.equipFilterOn ? S.activeEquipId : ''
+  const pickGym = id => { setSwaps([]); update(s => { switchGym(s, id); s.equipFilterOn = true }) }
   return <div className="sb" data-session-builder>
     <h3 style={{ marginBottom: 2 }}>{t('Session for {0}', title)}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>
       {session.profileName ? t('Built from what “{0}” has.', session.profileName) : t('Built from the whole library. Pick a gym in Settings to narrow it.')}
+    </div>
+    {gyms.length > 1 && <div style={{ marginBottom: 10 }}>
+      <Segmented value={gymId || ''} onChange={pickGym} options={gyms.map(g => ({ value: g.id, label: gymLabel(g) }))} />
+    </div>}
+    <div className="chips" style={{ flexWrap: 'wrap', overflow: 'visible', marginBottom: 10 }} role="group" aria-label={t('Focus')}>
+      {focusTerms.map(x => <button key={x} type="button" className={'chip' + (terms.includes(x) ? ' on' : '')} aria-pressed={terms.includes(x)} onClick={() => toggleFocus(x)}>{termName(x)}</button>)}
     </div>
     <Segmented value={String(minutes)} onChange={v => { setSwaps([]); setMinutes(Number(v)) }}
       options={DURATIONS.map(m => ({ value: String(m), label: t('{0} min', m) }))} />
@@ -72,9 +119,11 @@ export function SessionBuilder ({ terms, close }) {
               <span className="ss">{amount(p.cfg)}{p.why.length ? ' · ' + whyLine(p.why) : ''}</span>
             </button>
             <button type="button" className="iconbtn" aria-label={t('Swap {0}', exerciseNameFor(ex))} title={t('Swap')} onClick={() => swapOne(i)}><Icon name="swap" /></button>
+            <button type="button" className="iconbtn" aria-label={t('Remove {0}', exerciseNameFor(ex))} title={t('Remove')} onClick={() => removeOne(i)}><Icon name="xmark" /></button>
           </div>
         })}
       </div>}
+    <Button variant="tinted" icon="plus" onClick={addOne}>{t('Add exercise')}</Button>
     {!empty && <div className="small muted sb-total">{t('About {0} min, {1}.', session.minutes, tn('{0} exercise', '{0} exercises', session.picks.length))}</div>}
     <div className="sb-actions">
       <Button variant="primary" icon="play" disabled={empty} onClick={start}>{t('Start workout')}</Button>

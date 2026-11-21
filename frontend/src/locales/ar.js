@@ -5952,4 +5952,6 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // Home: build today's session from the most rested muscles
+  "Today’s workout": "تمرين اليوم",
 }

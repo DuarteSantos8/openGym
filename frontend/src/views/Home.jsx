@@ -24,6 +24,8 @@ import { RecapHomeCard } from '../components/Recap.jsx'
 import { scheduleModeOf } from '../lib/rotation.js'
 import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
+import { sessionBuilderSheet } from '../components/SessionBuilder.jsx'
+import { suggestTerms } from '../lib/todays-workout.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
@@ -212,7 +214,12 @@ export default function Home() {
           and your other routines) is only reachable on a day with nothing planned. The one other
           way in, "Choose a different workout" on the weigh-in sheet, does not exist when the
           weigh-in is switched off. This is that door, and it starts nothing on its own. */}
-      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
+        {/* Today's workout: no plan needed. The muscles are the most rested ones (lib/todays-workout.js),
+            the exercises are the active gym's (lib/session-builder.js). */}
+        <Button size="sm" variant="tinted" icon="sparkles" data-todays-workout onClick={() => sessionBuilderSheet(suggestTerms(S).terms)}>
+          {t('Today’s workout')}
+        </Button>
         <Button size="sm" variant="ghost" className="dim" icon="swap" onClick={startPickerSheet}>
           {t('Choose a different workout')}
         </Button>

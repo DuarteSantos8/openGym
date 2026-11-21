@@ -5944,4 +5944,6 @@ export default {
   "Preview on": "Förhandsvisa på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kortare",
+  // Home: build today's session from the most rested muscles
+  "Today’s workout": "Dagens pass",
 }
