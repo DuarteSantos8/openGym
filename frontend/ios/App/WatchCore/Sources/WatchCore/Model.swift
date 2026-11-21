@@ -132,6 +132,9 @@ struct SideRow: Codable, Equatable {
     var w: Double?
     var r: Double?
     var done: Bool
+    /// The effort logged on this side, by the phone's own names (the profile's scale is the one set).
+    var rpe: Double?
+    var rir: Double?
 }
 
 struct Sides: Codable, Equatable {
@@ -159,6 +162,19 @@ struct SetRow: Codable, Equatable {
     /// The set's id in the running workout (protocol 2, #1162): events name the set by it, so a set
     /// added or taken out elsewhere never moves a tick onto another set's place.
     var sid: String? = nil
+    /// Taken to failure, planned or marked (the phone's isFailureSet). Omitted when false.
+    var failure: Bool?
+    /// A drop set: the first drop's weight in the exercise's unit (0: none set yet).
+    var drop: Double?
+    /// How many drops it has; nil with `drop` set means one.
+    var drops: Int?
+    /// A rest-pause or cluster set: the menu offers no Drop and no Warm-up for it.
+    var rp: Bool?
+    /// "L" or "R": one half of a timed per-side pair, which the phone treats as one set (setSpanAt).
+    var side: String?
+    /// The effort logged on the set (RPE or RIR, half points), so a done set opens on it to be fixed.
+    var rpe: Double?
+    var rir: Double?
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {
@@ -194,6 +210,8 @@ struct WatchSettings: Codable, Equatable {
     var onAccent: String?
     /// The phone's Settings → Workout → Forgotten workouts (1.4.5); nil from an older phone.
     var forgotten: ForgottenSettings?
+    /// The phone handles setMark / addSet / removeSet; without it the watch hides the set menu.
+    var setMenu: Bool?
 }
 
 /// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).

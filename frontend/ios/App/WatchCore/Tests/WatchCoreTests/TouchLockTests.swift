@@ -19,4 +19,14 @@ final class TouchLockTests: XCTestCase {
         lock.unlock()
         XCTAssertTrue(lock.allows(at: t.addingTimeInterval(0.1)))
     }
+
+    func testTheCrownIsIgnoredForUnderASecondAfterARestEndedUnderIt() {
+        let t = Date(timeIntervalSince1970: 1000)
+        var lock = TouchLock()
+        XCTAssertTrue(lock.crownAllows(at: t))
+        lock.lockCrown(at: t)
+        XCTAssertFalse(lock.crownAllows(at: t.addingTimeInterval(0.5)))
+        XCTAssertTrue(lock.crownAllows(at: t.addingTimeInterval(0.6)))
+        XCTAssertTrue(lock.allows(at: t), "touches are a separate lock")
+    }
 }

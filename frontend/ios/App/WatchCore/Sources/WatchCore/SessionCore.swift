@@ -82,6 +82,9 @@ struct SessionState: Codable, Equatable {
     /// picks the countdown up instead of losing it (a snapshot does not bring back an older rest).
     var restEnd: Double?
     var restFrom: Double?
+    /// Set menu edits made here (SetMenu: marks, sets added or taken out), in the order made, until
+    /// the phone has applied them (`acked`): replayed over every snapshot before the ticks.
+    var edits: [PendingEdit]?
 }
 
 typealias Event = [String: Any]
@@ -126,6 +129,8 @@ enum SessionCore {
                 guard let id = item.value.id else { return true }
                 return !acked.contains(id)
             }
+            s.edits = s.edits?.filter { !acked.contains($0.id) }
+            if s.edits?.isEmpty == true { s.edits = nil }
         }
 
         // A session started here that the phone has not reported back yet stays, whatever it sends,
@@ -138,6 +143,7 @@ enum SessionCore {
             if unconfirmed { return s }
             s.workout = nil
             s.pending = [:]
+            s.edits = nil
             s.restAt = nil
             s.restEnd = nil
             s.restFrom = nil
@@ -155,12 +161,16 @@ enum SessionCore {
             s.pending = [:]
             s.skipped = nil
             s.efforts = nil
+            s.edits = nil
             s.entryIndex = next.cur
             // Its rest is that workout's (rule 2): this one's rest stamp starts afresh.
             s.restAt = nil
             s.restEnd = nil
             s.restFrom = nil
         }
+        // The watch's set menu edits the phone has not applied yet, in the order made (a tick may be on
+        // a set one added or moved); a held removal too, so a snapshot does not end its Undo (#1162).
+        if let edits = s.edits { next = SetMenu.replay(edits, on: next) }
         // The watch's ticks the phone has not shown yet win; the later tick wins on a set both changed.
         // The row's time is the phone's clock, the tick's the watch's own (`off` apart).
         for (ei, e) in next.entries.enumerated() {
@@ -257,9 +267,13 @@ enum SessionCore {
         if let side = oneSide { event["side"] = side }
         if let hr = hr { event["hr"] = hr }
         // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
-        if let r = effort, Effort.notches(r.kind) != nil {
+        if let r = effort, Effort.range(r.kind) != nil {
             event[r.kind] = r.value
             s.efforts = (s.efforts ?? [:]).merging([key(e.id, si): r.value]) { $1 }
+            // the row holds it too, so a set opened again before the next snapshot shows it
+            if let side = oneSide {
+                if r.kind == "rpe" { s.workout?.entries[ei].sets[si].sides?[side].rpe = r.value } else { s.workout?.entries[ei].sets[si].sides?[side].rir = r.value }
+            } else if r.kind == "rpe" { s.workout?.entries[ei].sets[si].rpe = r.value } else { s.workout?.entries[ei].sets[si].rir = r.value }
         }
         return (s, event)
     }
@@ -403,6 +417,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.entryIndex = 0
         s.restAt = nil
         s.restEnd = nil
@@ -422,6 +437,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.startedHere = nil
         s.startId = nil
         s.restAt = nil
@@ -523,9 +539,41 @@ struct TouchLock: Equatable {
     static let seconds: TimeInterval = 1
     private(set) var until = Date.distantPast
 
+    /// The Crown is ignored a little less: its leftover turn goes nowhere once a rest has ended under it.
+    static let crownSeconds: TimeInterval = 0.6
+    private(set) var crownUntil = Date.distantPast
+
     mutating func lock(at t: Date) { until = t.addingTimeInterval(TouchLock.seconds) }
+    mutating func lockCrown(at t: Date) { crownUntil = t.addingTimeInterval(TouchLock.crownSeconds) }
     mutating func unlock() { until = .distantPast }
     func allows(at t: Date) -> Bool { t >= until }
+    func crownAllows(at t: Date) -> Bool { t >= crownUntil }
+}
+
+/// The rating dial after a chip is tapped: armed (the Crown and the − / + discs move the value),
+/// then settled 5 s after the last touch. A burst of changes is one update to the phone: it goes out
+/// 0.6 s after the last change, or at once when the dial is let go (`disarm`).
+struct EffortDial: Equatable {
+    static let send: TimeInterval = 0.6
+    static let settle: TimeInterval = 5
+    private(set) var armed = false
+    private(set) var unsent = false
+    private var touched = Date.distantPast
+
+    mutating func arm(at t: Date) { armed = true; unsent = false; touched = t }
+    /// A touch that moved nothing (a disc at the end of the scale): only the settle counts from now.
+    mutating func touch(at t: Date) { touched = t }
+    /// The value moved: the settle and the send count from now.
+    mutating func change(at t: Date) { touched = t; unsent = true }
+    /// A value that waits to go out has waited long enough.
+    func sendDue(at t: Date) -> Bool { unsent && t >= touched.addingTimeInterval(EffortDial.send) }
+    func settleDue(at t: Date) -> Bool { armed && t >= touched.addingTimeInterval(EffortDial.settle) }
+    mutating func sent() { unsent = false }
+    /// Let go (settled, page change, wrist down, rest end). True when a value still waits to go out.
+    mutating func disarm() -> Bool {
+        defer { armed = false; unsent = false }
+        return unsent
+    }
 }
 
 /// The 3-2-1 before a workout started on the watch: the heart-rate sensor warms up meanwhile (it
@@ -639,10 +687,12 @@ enum Idle: Equatable {
 
 /*
  * RPE or RIR on a set, in the scale the phone's profile logs (lib/history.js EFFORT). Empty by
- * default: a set nobody rated sends no effort. The crown walks notches from "not rated" through
- * the scale from easy to hard, so turning up always means harder, whichever the scale:
- *   RPE   –, 6, 6.5, … 10      (half points, as on the phone)
- *   RIR   –, 5, 4, 3, 2, 1, 0  (whole reps left; 0 = failure, the far end of the crown)
+ * default: a set nobody rated sends no effort. The rest's chips rate a whole value; the Crown and the
+ * − / + discs then walk it in half steps, and turning up is always the number going up, whichever
+ * the scale:
+ *   RPE   6 to 10   (half points, as on the phone)
+ *   RIR   0 to 5    (reps left; 0 = failure)
+ * The fix view can also clear it (one step below the floor), so it has a place for "not rated".
  */
 enum Effort {
     struct Rating: Equatable {
@@ -650,33 +700,45 @@ enum Effort {
         var value: Double
     }
 
-    /// The scale's values from easy to hard, nil for a scale the watch does not know.
-    static func notches(_ kind: String?) -> [Double]? {
+    /// One Crown detent, one disc tap.
+    static let step = 0.5
+
+    /// The scale's range, nil for a scale the watch does not know.
+    static func range(_ kind: String?) -> ClosedRange<Double>? {
         switch kind {
-        case "rpe": return stride(from: 6.0, through: 10.0, by: 0.5).map { $0 }
-        case "rir": return [5, 4, 3, 2, 1, 0]
+        case "rpe": return 6...10
+        case "rir": return 0...5
         default: return nil
         }
+    }
+
+    /// `steps` half steps from `v`, held inside the scale. From "not rated" the first step lands on
+    /// `start`; with `clear`, a step down from the floor clears it again (nil). A value outside the
+    /// scale (a phone's RIR 7) is shown as it is until the first step brings it in.
+    static func nudged(_ kind: String, _ v: Double?, by steps: Int, clear: Bool) -> Double? {
+        guard let r = range(kind), steps != 0 else { return v }
+        guard let v = v else { return start(kind) }
+        let to = ((v + Double(steps) * step) * 2).rounded() / 2
+        if to < r.lowerBound { return clear && v <= r.lowerBound ? nil : r.lowerBound }
+        return min(to, r.upperBound)
+    }
+
+    /// The Crown's detents run 0 … `slots`: with `clear`, 0 is "not rated", then the scale in half steps.
+    static func slots(_ kind: String, clear: Bool) -> Int {
+        guard let r = range(kind) else { return 0 }
+        return SafeNum.int((r.upperBound - r.lowerBound) / step) + (clear ? 1 : 0)
+    }
+
+    /// Where a value sits on those detents (the nearest; one outside the scale sits at its end).
+    static func slot(_ kind: String, _ v: Double?, clear: Bool) -> Int {
+        guard let r = range(kind), let v = v else { return 0 }
+        return SafeNum.int(((min(max(v, r.lowerBound), r.upperBound) - r.lowerBound) / step).rounded()) + (clear ? 1 : 0)
     }
 
     /// "RPE" / "RIR": the phone's own column heading, the same word in every language.
     static func name(_ kind: String) -> String { kind == "rpe" ? "RPE" : "RIR" }
 
-    /// The value at a crown position: 0 is not rated, 1… the scale; past either end it stops there.
-    static func value(_ kind: String, at position: Int) -> Double? {
-        guard let n = notches(kind), position > 0 else { return nil }
-        return n[min(position, n.count) - 1]
-    }
-
-    /// Where a value sits on the crown (the nearest notch); 0 for not rated.
-    static func position(_ kind: String, of value: Double?) -> Int {
-        guard let n = notches(kind), let v = value else { return 0 }
-        var best = 0
-        for i in n.indices where abs(n[i] - v) < abs(n[best] - v) { best = i }
-        return best + 1
-    }
-
-    /// Where the editor opens on a set not rated yet: a hard working set, RPE 8 / RIR 2.
+    /// Where the first step from "not rated" lands: a hard working set, RPE 8 / RIR 2.
     static func start(_ kind: String) -> Double { kind == "rpe" ? 8 : 2 }
 
     /// The phone's colour band (lib/effort.js EFFORT_BANDS), by RIR: 0 nothing left … 5 easy.

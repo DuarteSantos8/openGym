@@ -21,12 +21,15 @@ const LANGS = {
   da: 'da',
 }
 
+const LOAN_WARMUP = new Set(['de', 'fr', 'es', 'it', 'pt-PT', 'pt-BR', 'pl', 'hu', 'sv', 'da', 'id', 'lt'])
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
   'Start workout': 'Start workout',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
+  'Remove': 'Remove',
+  'Undo': 'Undo',
   'Reps': 'Reps',
   'Rest': 'Rest',
   'Skip': 'Skip',
@@ -68,11 +71,19 @@ const FROM_APP = {
   'Looks like you left the gym': 'Looks like you left the gym',
   'Keep going': 'Keep going',
   'Finish now': 'Finish now',
+  'Taken to failure': 'Taken to failure',
+  'Drop set': 'Drop set',
+  'More': 'More',
   // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
   'Back': 'Back',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
+  // The set menu: the phone's "Set {0}" and its short "Add" ("Add set" is too wide under 75 pt in German).
+  'Set %lld': ['Set {0}', w => w.replace('{0}', '%lld')],
+  'Add set': ['Add', w => w],
+  // The word under the Warm-up disc: 56 pt wide at 12 pt, so the loan word where the local one is longer (as the mockup's German).
+  'Warm-up disc': ['Warm-up', (w, l) => LOAN_WARMUP.has(l) ? 'Warm-up' : w],
   'Last time: %@': ['Last time', w => `${w}: %@`],
   // The phone's sentence with the time it ends by itself in the place of {0}.
   'Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.':
@@ -319,6 +330,31 @@ const PLIST = {
   },
 }
 
+// Set types (Task 7): the tag words and the toast; "Taken to failure", "Drop set" and "More" are the phone's.
+const SET_TYPES = {
+  'Failure': { de: 'Versagen', fr: 'Échec', es: 'Fallo', it: 'Cedimento', 'pt-PT': 'Falha', 'pt-BR': 'Falha', pl: 'Upadek', hu: 'Kudarc', tr: 'Tükeniş', ru: 'Отказ', uk: 'Відмова', ar: 'فشل', hi: 'फेल्योर', bn: 'ফেইলিওর', th: 'หมดแรง', ko: '실패', 'zh-Hans': '力竭', 'zh-Hant': '力竭', cs: 'Selhání', fa: 'شکست', id: 'Gagal', lt: 'Nesėkmė', sv: 'Utmattning', vi: 'Kiệt sức', da: 'Failure' },
+  'Drop': { de: 'Drop', fr: 'Drop', es: 'Drop', it: 'Drop', 'pt-PT': 'Drop', 'pt-BR': 'Drop', pl: 'Drop', hu: 'Drop', tr: 'Drop', ru: 'Дроп', uk: 'Дроп', ar: 'دروب', hi: 'ड्रॉप', bn: 'ড্রপ', th: 'ดรอป', ko: '드롭', 'zh-Hans': '递减', 'zh-Hant': '遞減', cs: 'Drop', fa: 'دراپ', id: 'Drop', lt: 'Drop', sv: 'Drop', vi: 'Drop', da: 'Drop' },
+  'Set %lld added': { de: 'Satz %lld hinzugefügt', fr: 'Série %lld ajoutée', es: 'Serie %lld añadida', it: 'Serie %lld aggiunta', 'pt-PT': 'Série %lld adicionada', 'pt-BR': 'Série %lld adicionada', pl: 'Dodano serię %lld', hu: '%lld. sorozat hozzáadva', tr: '%lld. set eklendi', ru: 'Подход %lld добавлен', uk: 'Підхід %lld додано', ar: 'تمت إضافة المجموعة %lld', hi: 'सेट %lld जोड़ा गया', bn: 'সেট %lld যোগ হয়েছে', th: 'เพิ่มเซต %lld แล้ว', ko: '%lld세트 추가됨', 'zh-Hans': '已添加第 %lld 组', 'zh-Hant': '已新增第 %lld 組', cs: 'Přidána série %lld', fa: 'ست %lld اضافه شد', id: 'Set %lld ditambahkan', lt: 'Pridėta %lld serija', sv: 'Set %lld tillagt', vi: 'Đã thêm hiệp %lld', da: 'Sæt %lld tilføjet' },
+}
+Object.assign(OWN, SET_TYPES)
+
+// Set menu (Task 8): remove hint, what is lost, the Removed screen and the toast's second line (own words, native check before release).
+const SET_MENU = {
+  "Hold 1 s to remove": { de: "1 s halten zum Entfernen", fr: "Maintiens 1 s pour retirer", es: "Mantén 1 s para quitar", it: "Tieni premuto 1 s per rimuovere", "pt-PT": "Mantém 1 s para remover", "pt-BR": "Segure 1 s para remover", pl: "Przytrzymaj 1 s, by usunąć", hu: "Tartsd 1 mp-ig a törléshez", tr: "Kaldırmak için 1 sn basılı tut", ru: "Удерживай 1 с, чтобы удалить", uk: "Утримуй 1 с, щоб видалити", ar: "اضغط مطولًا ثانية للحذف", hi: "हटाने के लिए 1 सेकंड दबाओ", bn: "সরাতে ১ সেকেন্ড চেপে ধরো", th: "กดค้าง 1 วิ เพื่อลบ", ko: "1초간 눌러 삭제", "zh-Hans": "按住 1 秒删除", "zh-Hant": "按住 1 秒刪除", cs: "Podrž 1 s pro odebrání", fa: "برای حذف ۱ ثانیه نگه دار", id: "Tahan 1 dtk untuk menghapus", lt: "Laikyk 1 s, kad pašalintum", sv: "Håll 1 s för att ta bort", vi: "Giữ 1 giây để xóa", da: "Hold 1 s for at fjerne" },
+  "Set %lld · %@ is lost": { de: "Satz %lld · %@ geht verloren", fr: "Série %lld · %@ sera perdue", es: "Serie %lld · %@ se pierde", it: "Serie %lld · %@ va persa", "pt-PT": "Série %lld · %@ perde-se", "pt-BR": "Série %lld · %@ será perdida", pl: "Seria %lld · %@ zniknie", hu: "%lld. sorozat · %@ elvész", tr: "%lld. set · %@ kaybolur", ru: "Подход %lld · %@ будет потерян", uk: "Підхід %lld · %@ буде втрачено", ar: "المجموعة %lld · %@ ستُفقد", hi: "सेट %lld · %@ खो जाएगा", bn: "সেট %lld · %@ হারিয়ে যাবে", th: "เซต %lld · %@ จะหายไป", ko: "%lld세트 · %@ 사라짐", "zh-Hans": "第 %lld 组 · %@ 将丢失", "zh-Hant": "第 %lld 組 · %@ 將遺失", cs: "Série %lld · %@ se ztratí", fa: "ست %lld · %@ از بین می‌رود", id: "Set %lld · %@ hilang", lt: "%lld serija · %@ bus prarasta", sv: "Set %lld · %@ går förlorat", vi: "Hiệp %lld · %@ sẽ mất", da: "Sæt %lld · %@ går tabt" },
+  "Set %lld removed": { de: "Satz %lld entfernt", fr: "Série %lld retirée", es: "Serie %lld quitada", it: "Serie %lld rimossa", "pt-PT": "Série %lld removida", "pt-BR": "Série %lld removida", pl: "Usunięto serię %lld", hu: "%lld. sorozat törölve", tr: "%lld. set kaldırıldı", ru: "Подход %lld удалён", uk: "Підхід %lld видалено", ar: "تمت إزالة المجموعة %lld", hi: "सेट %lld हटाया गया", bn: "সেট %lld সরানো হয়েছে", th: "ลบเซต %lld แล้ว", ko: "%lld세트 삭제됨", "zh-Hans": "已删除第 %lld 组", "zh-Hant": "已刪除第 %lld 組", cs: "Série %lld odebrána", fa: "ست %lld حذف شد", id: "Set %lld dihapus", lt: "Pašalinta %lld serija", sv: "Set %lld borttaget", vi: "Đã xóa hiệp %lld", da: "Sæt %lld fjernet" },
+  "at the end": { de: "am Ende", fr: "à la fin", es: "al final", it: "alla fine", "pt-PT": "no fim", "pt-BR": "no final", pl: "na końcu", hu: "a végén", tr: "sonda", ru: "в конце", uk: "у кінці", ar: "في النهاية", hi: "अंत में", bn: "শেষে", th: "ท้ายสุด", ko: "맨 끝에", "zh-Hans": "在末尾", "zh-Hant": "在末尾", cs: "na konci", fa: "در آخر", id: "di akhir", lt: "pabaigoje", sv: "på slutet", vi: "ở cuối", da: "til sidst" },
+}
+Object.assign(OWN, SET_MENU)
+
+// Half steps on the rating (#1402): the hint over the armed capsule, and what VoiceOver says at the ends of the scale.
+const EFFORT_HALVES = {
+  "Crown: half steps": { "de": "Digital Crown: halbe Schritte", "fr": "Digital Crown : demi-pas", "es": "Digital Crown: medios pasos", "it": "Digital Crown: mezzi passi", "pt-PT": "Digital Crown: meios passos", "pt-BR": "Digital Crown: meios passos", "pl": "Digital Crown: połówki", "hu": "Digital Crown: fél lépések", "tr": "Digital Crown: yarım adım", "ru": "Digital Crown: полшага", "uk": "Digital Crown: пів кроку", "ar": "Digital Crown: نصف خطوة", "hi": "Digital Crown: आधे कदम", "bn": "Digital Crown: আধা ধাপ", "th": "Digital Crown: ครึ่งขั้น", "ko": "Digital Crown: 반 단계", "zh-Hans": "数码表冠：半步", "zh-Hant": "數位錶冠：半步", "cs": "Digital Crown: půlkroky", "fa": "Digital Crown: نیم‌گام", "id": "Digital Crown: setengah langkah", "lt": "Digital Crown: pusės žingsnio", "sv": "Digital Crown: halva steg", "vi": "Digital Crown: nửa bước", "da": "Digital Crown: halve trin" },
+  "Highest": { "de": "Höchstwert", "fr": "Maximum", "es": "Máximo", "it": "Massimo", "pt-PT": "Máximo", "pt-BR": "Máximo", "pl": "Maksimum", "hu": "Maximum", "tr": "En yüksek", "ru": "Максимум", "uk": "Максимум", "ar": "الأعلى", "hi": "सबसे ज़्यादा", "bn": "সর্বোচ্চ", "th": "สูงสุด", "ko": "최고", "zh-Hans": "最高", "zh-Hant": "最高", "cs": "Maximum", "fa": "بیشترین", "id": "Tertinggi", "lt": "Didžiausia", "sv": "Högsta", "vi": "Cao nhất", "da": "Højeste" },
+  "Lowest": { "de": "Tiefstwert", "fr": "Minimum", "es": "Mínimo", "it": "Minimo", "pt-PT": "Mínimo", "pt-BR": "Mínimo", "pl": "Minimum", "hu": "Minimum", "tr": "En düşük", "ru": "Минимум", "uk": "Мінімум", "ar": "الأدنى", "hi": "सबसे कम", "bn": "সর্বনিম্ন", "th": "ต่ำสุด", "ko": "최저", "zh-Hans": "最低", "zh-Hant": "最低", "cs": "Minimum", "fa": "کمترین", "id": "Terendah", "lt": "Mažiausia", "sv": "Lägsta", "vi": "Thấp nhất", "da": "Laveste" },
+}
+Object.assign(OWN, EFFORT_HALVES)
+
 // Danish (#1039): the watch's own lines.
 OWN['Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.'].da = 'Slå Apple Sundhed til på din iPhone, så bliver openGym på skærmen under pauser og hold.'
 for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min.", "No sets yet": "Ingen sæt endnu", "+%lld more": "+%lld mere", "%@ sets": "%@ sæt"})) OWN[k].da = v
@@ -335,7 +371,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
     lines.push(`"${esc(k)}" = "${esc(v)}";`)
   }
   for (const [k, appKey] of Object.entries(FROM_APP)) put(k, dict[appKey])
-  for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey]))
+  for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey], lproj))
   for (const [k, tr] of Object.entries(OWN)) put(k, tr[lproj])
   mkdirSync(join(out, `${lproj}.lproj`), { recursive: true })
   writeFileSync(join(out, `${lproj}.lproj`, 'Localizable.strings'), lines.join('\n') + '\n')
@@ -354,7 +390,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
 {
   const keys = [...Object.keys(FROM_APP), ...Object.keys(COMPOSED), ...Object.keys(OWN)]
   const lines = ['/* openGym on the Apple Watch, en. Written by ios/ci/watch-strings.mjs: change that, not this. */', '']
-  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k)}";`)
+  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k === 'Warm-up disc' ? 'Warm-up' : k)}";`)
   for (const dir of [out, widgets]) {
     mkdirSync(join(dir, 'en.lproj'), { recursive: true })
     writeFileSync(join(dir, 'en.lproj', 'Localizable.strings'), lines.join('\n') + '\n')

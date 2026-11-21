@@ -49,12 +49,15 @@ final class RestMathTests: XCTestCase {
         XCTAssertEqual(Effort.chips("rir"), [0, 1, 2, 3])
         XCTAssertEqual(Effort.chips("rpe"), [10, 9, 8, 7])
         for kind in ["rir", "rpe"] {
-            let notches = Effort.notches(kind) ?? []
-            for v in Effort.chips(kind) { XCTAssertTrue(notches.contains(v), "\(kind) \(v)") }
+            let range = Effort.range(kind)
+            for v in Effort.chips(kind) { XCTAssertTrue(range?.contains(v) == true, "\(kind) \(v)") }
         }
         XCTAssertEqual(Effort.chipLabel("rir", 3), "3+")
         XCTAssertEqual(Effort.chipLabel("rir", 1), "1")
         XCTAssertEqual(Effort.chipLabel("rpe", 7), "≤7")
         XCTAssertEqual(Effort.chipLabel("rpe", 9), "9")
+        XCTAssertEqual(Effort.valueLabel(1.5), "1.5", "a half reads with the point")
+        XCTAssertEqual(Effort.valueLabel(3), "3", "the rated 3 is not the chip's 3+")
+        XCTAssertEqual(Effort.valueLabel(8.5), "8.5")
     }
 }
