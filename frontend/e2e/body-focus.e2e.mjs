@@ -24,7 +24,13 @@ test('pick areas on the drawn body and open their exercises', async ({ page }) =
   await click(card(page).getByRole('button', { name: 'Show exercises' }))
   await expect(page).toHaveURL(/#\/muscles\?m=front-delts,side-delts,rear-delts,calves,tibialis$/)
   await expect(page.getByRole('button', { name: 'Any of them' })).toHaveAttribute('aria-pressed', 'true')
-  await click(page.getByRole('button', { name: 'Today' }))
+  // On iPhone WebKit a page that has just opened swaps its header for a new one a moment later
+  // (every page does, not only this one), and a tap on the old back button goes nowhere: tap
+  // again until Today is there, as a person would.
+  await expect(async () => {
+    await click(page.locator('#app > .page:not(.under) [data-back="/home"]'))
+    await expect(page).toHaveURL(/#\/home$/, { timeout: 1500 })
+  }).toPass({ timeout: 15_000 })
   await expect(chip(page, 'Shoulders')).toHaveAttribute('aria-pressed', 'true')   // remembered
 })
 
