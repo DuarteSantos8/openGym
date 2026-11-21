@@ -30,8 +30,9 @@ struct SetMenuView: View {
             let offer = store.offer(entry: entry, set: set)
             // The numbers the set page shows (its draft, or the fix), not the phone's copy, which can lack the weight.
             let fixing = store.viewing != nil
-            let shown = e.isTimed ? row : SetRow(w: fixing ? store.fixW : store.weight, r: fixing ? store.fixR : store.reps,
-                                                  sec: nil, done: row.done, warmup: row.warmup)
+            let shown = e.isTimed ? SetRow(w: row.w, r: row.r, sec: fixing ? store.fixSec : store.seconds, done: row.done, warmup: row.warmup)
+                                  : SetRow(w: fixing ? store.fixW : store.weight, r: fixing ? store.fixR : store.reps,
+                                           sec: nil, done: row.done, warmup: row.warmup)
             let line = SetMenuView.line(shown, unit: e.weightUnit(w.unit), weighted: !e.isBodyweight && !e.isTimed)
             let number = SetNav.place(e, set).n
             VStack(spacing: 0) {
