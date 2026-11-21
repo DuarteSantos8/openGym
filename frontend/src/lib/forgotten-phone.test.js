@@ -135,6 +135,26 @@ describe('forgotten workouts on the phone', () => {
     } finally { fakeNotifications.schedule = real }
   })
 
+  // Both plans use the one notification id: an older plan that schedules last would put back its earlier time.
+  it('an older plan overtaken before it schedules plans no notification of its own', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.checkPermissions
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    fakeNotifications.checkPermissions = async () => { if (first) { first = false; await gate } return real() }
+    try {
+      const { st } = start()
+      await vi.waitFor(() => expect(first).toBe(false))
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(ln.scheduled).toHaveLength(1))
+      release()
+      await flush(); await flush()
+      expect(ln.scheduled.map(n => n.schedule.at.getTime())).toEqual([last + 50 * MIN])
+    } finally { fakeNotifications.checkPermissions = real }
+  })
+
   it('a plan that fails after the old notification was cancelled takes the old deadline away too', async () => {
     vi.setSystemTime(last + MIN)
     const real = fakeNotifications.schedule

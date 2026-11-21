@@ -91,11 +91,14 @@ async function planNotification(wid, at) {
     if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
     await registerActions(L)
     const c = forgottenCopy()
-    await L.schedule({ notifications: await withoutAlarmPrompt(L, [{
+    const notifications = await withoutAlarmPrompt(L, [{
       id: ASK_NOTIFICATION_ID, title: c.askTitle, body: c.askBody,
       schedule: { at: new Date(at), allowWhileIdle: true },
       actionTypeId: ASK_ACTIONS, extra: { forgotten: wid },
-    }]) })
+    }])
+    // A newer plan replaced this one while it waited: one id, so scheduling now would put back this older time.
+    if (planned !== key) return
+    await L.schedule({ notifications })
     if (planned !== key) return   // a newer plan replaced this one while it waited
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
