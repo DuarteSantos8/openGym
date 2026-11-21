@@ -1412,6 +1412,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
     func finish(at end: Date = Date(), idle: Bool = false, left: Bool = false) {
+        flushRemoval()   // a removal still in its Undo time goes out before the workout is saved
         // Finished mid-hold: the seconds held so far are that set, not lost.
         if !idle, holdEndsAt != nil { endHold(early: true) }
         closeRest(at: end)

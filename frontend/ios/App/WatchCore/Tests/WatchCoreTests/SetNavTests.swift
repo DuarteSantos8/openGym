@@ -124,6 +124,7 @@ final class SetNavTests: XCTestCase {
         // review 2026-11-12: drops, failure, bursts stay as sent
         XCTAssertEqual(LastTime.compact("100×8 ↘ 80×6, 100×8 ↘ 80×5"), "100×8 ↘ 80×6, 100×8 ↘ 80×5")
         XCTAssertEqual(LastTime.compact("60×8 F, 60×8"), "60×8 F, 60×8")
+        XCTAssertEqual(LastTime.compact("L 20×8 · R 20×8, L 20×8 · R 20×7"), "L 20×8 · R 20×8, L 20×8 · R 20×7")   // two sides as sent
         XCTAssertEqual(LastTime.compact("60×10+4+2, 60×10+4+2"), "60×10+4+2, 60×10+4+2")
     }
 }

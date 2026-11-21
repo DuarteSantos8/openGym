@@ -165,6 +165,14 @@ final class SetMenuTests: XCTestCase {
         XCTAssertEqual(s.skipped, ["x#1"]); XCTAssertEqual(s.efforts, ["x#1": 8])
     }
 
+    func testAWarmupMoveRemapsAPendingTickKeyedByPlace() {
+        let (t, _) = SessionCore.tick(state([row(), row(w: 50), row(w: 70)]), entry: 0, set: 1, w: 50, r: 8, at: 4, id: "t1")   // no ids: keyed "e0:x#1"
+        XCTAssertNotNil(t.pending["e0:x#1"])
+        let (s, _) = SetMenu.mark(t, entry: 0, set: 2, .warmup, on: true, at: 5, id: "m1")   // the third row to the top
+        XCTAssertEqual(rows(s).map(\.w), [70, 60, 50])
+        XCTAssertNil(s.pending["e0:x#1"]); XCTAssertNotNil(s.pending["e0:x#2"])
+    }
+
     func testWarmupOffGoesToTheEdgeOfTheWarmups() {
         let s0 = state([row(warmup: true), SetRow(w: 30, r: 5, sec: nil, done: false, warmup: true, at: nil), row()])
         let (s, _) = SetMenu.mark(s0, entry: 0, set: 0, .warmup, on: false, at: 5, id: "m1")

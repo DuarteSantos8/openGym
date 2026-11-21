@@ -171,7 +171,7 @@ enum SetMenu {
         guard pe.sid.flatMap({ find(w, sid: $0) }) == nil else { return s }
         w.entries[ei].sets.insert(row, at: si)
         s.workout = w
-        return remapKeys(s, exId: pe.exId) { $0 >= si ? $0 + 1 : $0 }
+        return remapKeys(s, exId: pe.exId, entry: ei) { $0 >= si ? $0 + 1 : $0 }
     }
 
     /// The watch's edits over a snapshot that may not have them yet, in the order they were made.
@@ -179,11 +179,11 @@ enum SetMenu {
         edits.reduce(w) { apply($1, on: $0)?.0 ?? $0 }
     }
 
-    /// "exerciseId#setIndex" keys (skipped sets, efforts) of one exercise moved to the rows' new
-    /// places; nil drops the key. Pending ticks are keyed by the set's id and need no move.
-    static func remapKeys(_ s0: SessionState, exId: String, map: (Int) -> Int?) -> SessionState {
-        let prefix = exId + "#"
-        func move(_ k: String) -> String? {
+    /// "exerciseId#setIndex" keys (skipped sets, efforts) and the place-keyed pending ticks
+    /// ("e<entry>:exerciseId#setIndex", or the 1.4.4 form) of one exercise moved to the rows' new
+    /// places; nil drops the key. Ticks keyed by the set's id ("s:<sid>") need no move.
+    static func remapKeys(_ s0: SessionState, exId: String, entry: Int, map: (Int) -> Int?) -> SessionState {
+        func move(_ k: String, _ prefix: String) -> String? {
             guard k.hasPrefix(prefix) else { return k }
             var parts = k.dropFirst(prefix.count).split(separator: "#", omittingEmptySubsequences: false).map(String.init)
             guard let si = Int(parts[0]) else { return k }
@@ -191,9 +191,11 @@ enum SetMenu {
             parts[0] = String(n)
             return prefix + parts.joined(separator: "#")
         }
+        func plain(_ k: String) -> String? { move(k, exId + "#") }
         var s = s0
-        s.skipped = s0.skipped.map { $0.compactMap(move).sorted() }
-        s.efforts = s0.efforts.map { Dictionary($0.compactMap { k, v in move(k).map { ($0, v) } }) { a, _ in a } }
+        s.skipped = s0.skipped.map { $0.compactMap(plain).sorted() }
+        s.efforts = s0.efforts.map { Dictionary($0.compactMap { k, v in plain(k).map { ($0, v) } }) { a, _ in a } }
+        s.pending = Dictionary(s0.pending.compactMap { k, v in (k.hasPrefix("e\(entry):") ? move(k, "e\(entry):\(exId)#") : plain(k)).map { ($0, v) } }) { a, _ in a }
         return s
     }
 
@@ -271,7 +273,7 @@ enum SetMenu {
     /// The edit on the watch's own state at once, kept until acked; nil when it does not apply.
     private static func record(_ s0: SessionState, _ pe: PendingEdit) -> SessionState? {
         guard let w = s0.workout, let (next, moved) = apply(pe, on: w) else { return nil }
-        var s = remapKeys(s0, exId: pe.exId) { moved.indices.contains($0) ? moved[$0] : $0 }
+        var s = remapKeys(s0, exId: pe.exId, entry: pe.entry(in: w) ?? pe.entryIdx) { moved.indices.contains($0) ? moved[$0] : $0 }
         s.workout = next
         s.edits = (s.edits ?? []) + [pe]
         return s

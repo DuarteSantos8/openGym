@@ -42,7 +42,7 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `rest` | `wid`, `endsAt` (ms, watch clock) or `null`, `at` | +15, −15 or Skip on the watch (`null`: Skip, or −15 to nothing): the phone's rest follows when `at` is newer than its own last change (protocol 2) |
 | `addSet` | `wid`, `exId`, `entryIdx`, `sid` (the watch's own, e.g. `w-<uuid>`), `after?` (a set's id), `w?`, `r?`, `sec?`, `at` | a row like the exercise's last, after `after` or at the end, with that id; once only (the watches' set menu, 1.4.6: #1139, #1185) |
 | `removeSet` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid`, `at` | that row out, unless it is done (or the exercise's only row): then nothing, and the next snapshot shows it again |
-| `setMark` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid`, `warmup?`, `failure?`, `drop?`, `at` | that row's marks, each one only when sent; the later `at` wins, as for a tick |
+| `setMark` | `wid`, `exId`, `entryIdx`, `setIdx`, `sid?`, `warmup?`, `failure?`, `drop?`, `at` | that row's marks, each one only when sent; the later `at` wins, as for a tick; without `sid`, by place |
 | `finish` | `wid`, `at`, `idle?`, `left?` | Finish and save, ending at `at`; an idle finish is checked against the phone's own log first |
 | `discard` | `wid`, `at` | the workout screen's Discard |
 | `stillHere` | `wid`, `at` | "Keep going" on the forgotten-workout question |
