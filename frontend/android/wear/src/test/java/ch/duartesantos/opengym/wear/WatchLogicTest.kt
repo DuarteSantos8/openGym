@@ -657,4 +657,25 @@ class WatchLogicTest {
         // The sensor rests and comes back in B: B's count goes on.
         k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
     }
+
+    // A restarted exercise that cannot count calories (no permission, refused, another app's exercise): the
+    // total misses its part, so none is sent, even if a later restart counts again.
+    @Test fun kcalSendsNoneOnceARestartedExerciseCannotCount() {
+        val k = KcalCount()
+        k.start("a"); k.total(120.0)
+        k.start("a"); k.lose("a"); assertNull(k.value)
+        k.start("a"); k.total(30.0); assertNull(k.value)
+        k.start("b"); k.total(10.0); assertEquals(10.0, k.value!!, 0.0)
+    }
+
+    // A phone workout the watch picks up well after it began: the count would cover only the end of it.
+    @Test fun kcalSendsNoneForAWorkoutPickedUpLate() {
+        assertFalse(KcalCount.late(start = 1_000.0, now = 31_000.0))
+        assertTrue(KcalCount.late(start = 1_000.0, now = 1_000.0 + 15 * 60_000))
+        assertFalse("no start known", KcalCount.late(start = null, now = 1e12))
+        val k = KcalCount()
+        k.start("a"); k.total(200.0)
+        k.switchTo("b", late = true); k.total(260.0); assertNull(k.value)
+        k.start("b"); k.total(10.0); assertNull(k.value)
+    }
 }

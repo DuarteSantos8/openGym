@@ -90,7 +90,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
 - **Calories in Health Connect**: the watch's measured calories go with its Finish (`kcal` on the
-  finish event; none when the watch ends a forgotten workout), and the phone writes them to Health
+  finish event; none when the watch ends a forgotten workout, took the workout up more than a minute
+  after it began, or ran part of it without counting calories), and the phone writes them to Health
   Connect with the workout instead of its own estimate, less the resting burn (1 kcal per kg of
   body weight per hour) since Health Connect takes active calories (lib/health-connect.js), when
   Health Connect lets openGym write calories (#724).

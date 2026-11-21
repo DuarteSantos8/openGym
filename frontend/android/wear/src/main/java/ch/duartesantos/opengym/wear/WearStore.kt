@@ -236,7 +236,8 @@ object WearStore {
             if (gone != null) { closeRest(now()); stopRest() }
             noteRestAt(0.0, after.workout.id)
             readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null; restAfter = null
-            kcal.switchTo(after.workout.id); _calories.value = null
+            kcal.switchTo(after.workout.id, late = KcalCount.late(after.workout.start?.let { it + clockOff() }, now().toDouble()))
+            _calories.value = null
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
         // Sets ticked on the phone while this watch runs the workout: their heart rate is the watch's (setHr).
@@ -905,6 +906,9 @@ object WearStore {
 
     /** A new Health Services exercise starts (counting from zero) for the running workout. */
     fun startCalories() { kcal.start(_state.value.workout?.id); _calories.value = kcal.value }
+
+    /** That exercise counts no calories (no permission, refused, another app's): the workout's total is incomplete, none is sent. */
+    fun loseCalories() { kcal.lose(_state.value.workout?.id); _calories.value = null }
 
     /**
      * A set ticked on the phone: measured here like a tick on the wrist, from when the set started

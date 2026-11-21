@@ -94,7 +94,7 @@ class WorkoutService : Service() {
         }
         // Restarted by Android for a workout idle for hours (SensorPlan): no sensor, the plain notification.
         if (WearStore.sensorsResting) { stopSelf(); return }
-        scope.launch { startHeartRate() }
+        scope.launch { if (!startHeartRate()) WearStore.loseCalories() }
         scope.launch {
             WearStore.state.combine(WearStore.rest) { s, r -> s to r }.collect { (s, r) ->
                 if (s.workout == null) { stopSelf(); return@collect }
@@ -105,8 +105,9 @@ class WorkoutService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int) = START_STICKY
 
-    private suspend fun startHeartRate() {
-        if (!hasHrPermission(this)) return
+    /** Starts the heart rate; true when the exercise counts the calories too. */
+    private suspend fun startHeartRate(): Boolean {
+        if (!hasHrPermission(this)) return false
         try {
             val client = HealthServices.getClient(this).exerciseClient
             // Health Services runs one exercise at a time: starting ours would end the workout
@@ -120,14 +121,14 @@ class WorkoutService : Service() {
             if (HrPlan.measureOnly(tracked, otherApp)) {
                 HealthServices.getClient(this).measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
                 measuring = true
-                return
+                return false
             }
             val caps = client.getCapabilitiesAsync().await()
             // The workout's own type first (a run, a ride, yoga: the phone's healthType), then strength.
             val own = TYPES[WearStore.state.value.workout?.healthType]
             val type = (listOfNotNull(own) + listOf(ExerciseType.STRENGTH_TRAINING, ExerciseType.WEIGHTLIFTING, ExerciseType.WORKOUT))
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
-                ?: return
+                ?: return false
             client.setUpdateCallback(hrCallback)
             WearStore.startCalories()
             // The calories too where this type has them and physical activity is allowed: asking for
@@ -141,6 +142,7 @@ class WorkoutService : Service() {
                 .setIsAutoPauseAndResumeEnabled(false)
                 .setIsGpsEnabled(false)
                 .build()
+            var counts = kcal != null
             try {
                 client.startExerciseAsync(config(setOfNotNull(DataType.HEART_RATE_BPM, kcal))).await()
             } catch (e: kotlinx.coroutines.CancellationException) {
@@ -149,9 +151,14 @@ class WorkoutService : Service() {
                 // Refused with the calories: the heart rate alone, as before calories came.
                 if (kcal == null) throw e
                 client.startExerciseAsync(config(setOf(DataType.HEART_RATE_BPM))).await()
+                counts = false
             }
             exerciseOn = true
+            return counts
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (_: Exception) { /* another app's exercise, or no sensor: the workout goes on without */ }
+        return false
     }
 
     override fun onDestroy() {
