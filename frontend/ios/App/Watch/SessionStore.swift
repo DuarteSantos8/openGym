@@ -644,6 +644,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if next.workout != nil && next.workout != before.workout { self.noteActivity() }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
             let ticks = SessionCore.phoneTicks(before.workout, next.workout)
+            // A set logged on the phone ends a removal's Undo too.
+            if !ticks.isEmpty { self.flushRemoval() }
             for tick in ticks {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
             }
@@ -715,6 +717,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if heldFor == nil, let last = lastTick, Date().timeIntervalSince(last) < 0.7 { return }
         // In a superset the page flips to the partner: a slower second tap would log its set.
         if heldFor == nil, !touchAllowed { return }
+        // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
+        flushRemoval()
         lastTick = Date()
         ackRestOver()
         let ei = entryIndex
