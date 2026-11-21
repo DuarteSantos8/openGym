@@ -35,7 +35,6 @@ final class GesturesTests: XCTestCase {
             XCTAssertEqual(Gestures.resolve(choice: "hold", input: input, screen: .timedSet), .startHold)
             XCTAssertEqual(Gestures.resolve(choice: "hold", input: input, screen: .holdRunning), .stopHold)
             XCTAssertEqual(Gestures.resolve(choice: "hold", input: input, screen: .rest), .skipRest)
-            XCTAssertEqual(Gestures.resolve(choice: "nextExercise", input: input, screen: .holdRunning), .stopHold)
             XCTAssertNil(Gestures.resolve(choice: "nextExercise", input: input, screen: .overview))
         }
         for s: GestureScreen in [.set, .timedSet, .rest, .exerciseDone] {
@@ -52,6 +51,11 @@ final class GesturesTests: XCTestCase {
         XCTAssertNil(Gestures.resolve(choice: nil, input: .doubleTap, screen: .set))
         XCTAssertNil(Gestures.resolve(choice: "skipRest", input: .doubleTap, screen: .set))
         XCTAssertNil(Gestures.resolve(choice: "hold", input: .doubleTap, screen: .set))
+        // Stopping a hold logs it too: a pinch while hanging from the bar does not end the hold.
+        XCTAssertNil(Gestures.resolve(choice: nil, input: .doubleTap, screen: .holdRunning))
+        XCTAssertNil(Gestures.resolve(choice: "nextExercise", input: .doubleTap, screen: .holdRunning))
+        XCTAssertEqual(Gestures.resolve(choice: "nextExercise", input: .actionButton, screen: .holdRunning), .stopHold)
+        XCTAssertEqual(Gestures.resolve(choice: "hold", input: .doubleTap, screen: .holdRunning), .stopHold)
         XCTAssertEqual(Gestures.resolve(choice: nil, input: .doubleTap, screen: .rest), .skipRest)
         XCTAssertEqual(Gestures.resolve(choice: nil, input: .doubleTap, screen: .summary), .closeSummary)
         // Chosen on purpose (Smart, Complete set), or a button press: it does.

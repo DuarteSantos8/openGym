@@ -60,7 +60,8 @@ enum Gestures {
         let fallback = smart(input, screen, canGoNext)
         if action == .smart { return fallback }
         if let effect = picked(action, input, screen, canGoNext) { return effect }
-        return input == .doubleTap && fallback == .logSet ? nil : fallback
+        // Stopping a hold logs it too (with the seconds it lasted).
+        return input == .doubleTap && (fallback == .logSet || fallback == .stopHold) ? nil : fallback
     }
 
     private static func picked(_ a: GestureAction, _ input: GestureInput, _ s: GestureScreen, _ canGoNext: Bool) -> GestureEffect? {
