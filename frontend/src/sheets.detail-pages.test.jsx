@@ -77,6 +77,23 @@ describe('detail pages', () => {
     act(() => { history.replaceState({ idx: 0 }, ''); window.dispatchEvent(new PopStateEvent('popstate')) })
     expect(host.textContent).toContain('LIST')
   })
+  // The page stays up where the sheet closed (after Change date & time): a note a sync changed
+  // meanwhile must not be put back by the untouched field losing focus.
+  it('an untouched note on the workout page follows the saved one and never writes over it', () => {
+    useStore.setState(s => ({ S: { ...s.S, workouts: [workout({ note: 'A' })] } }))
+    const host = mountAt('/history/' + encodeURIComponent('w 1'))
+    const area = host.querySelector('textarea')
+    expect(area.value).toBe('A')
+    act(() => useStore.setState(s => ({ S: { ...s.S, workouts: [{ ...s.S.workouts[0], note: 'B' }] } })))
+    expect(area.value).toBe('B')
+    act(() => { area.dispatchEvent(new FocusEvent('focusin', { bubbles: true })); area.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    act(() => useStore.setState(s => ({ S: { ...s.S, workouts: [{ ...s.S.workouts[0], note: 'C' }] } })))
+    act(() => { area.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    act(() => roots.splice(0).forEach(r => r.unmount()))
+    expect(useStore.getState().S.workouts[0].note).toBe('C')
+    expect(useStore.getState().S.workouts[0]._ts).toBeUndefined()
+  })
+
   // CodeRabbit on #1050: Reopen moves to /workout itself; a step back in the same tap raced it.
   it('Reopen on the workout page leaves the move to /workout', () => {
     const w = workout({ autoEnded: 'quiet' })

@@ -3642,27 +3642,38 @@ export function WorkoutDetail({ w, close, page = false }) {
   // The session note is editable here rather than only at the finish sheet: what you want to
   // record about a session is often clearer once you have looked at what you actually did.
   const [note, setNote] = useState(w.note || '')
+  // The saved note the field started from. As a page the detail stays up while a sync changes the
+  // note: an untouched field follows it, and is never saved over it.
+  const base = useRef(w.note || '')
+  useEffect(() => {
+    const was = base.current, saved = w.note || ''
+    if (saved === was) return
+    base.current = saved
+    setNote(n => (n === was ? saved : n))
+  }, [w.note])
   // A note written here is an edit of the saved workout, stamped for the sync to keep it over an
   // older copy of the same workout (stampWorkout) — and only when it changed, since a stamp
   // outranks what another device wrote since.
-  const saveNote = () => update(s => {
-    const rec = s.workouts.find(x => sameWorkout(x, w))
-    if (!rec) return
+  const saveNote = () => {
+    if (note === base.current) return
     const text = note.trim().slice(0, NOTE_MAX)
-    if (text === (rec.note || '')) return
-    if (text) rec.note = text; else delete rec.note
-    stampWorkout(rec)
-  })
+    update(s => {
+      const rec = s.workouts.find(x => sameWorkout(x, w))
+      if (!rec || text === (rec.note || '')) return
+      if (text) rec.note = text; else delete rec.note
+      stampWorkout(rec)
+    })
+    base.current = note
+  }
   // onBlur alone loses the note: Escape, the Android back gesture and swipe-to-dismiss all
   // close the sheet without ever moving focus out of the textarea. Flush on unmount too. The
   // ref is what makes that work — a cleanup closes over the note from its own render, which
   // is the empty string this started with.
   const latest = useRef(note)
   latest.current = note
-  const initial = useRef(w.note || '')
   useEffect(() => () => {
+    if (latest.current === base.current) return
     const text = latest.current.trim().slice(0, NOTE_MAX)
-    if (text === initial.current) return
     update(s => {
       const rec = s.workouts.find(x => sameWorkout(x, w))
       if (!rec || text === (rec.note || '')) return   // deleted from this very sheet, or already saved
@@ -3754,12 +3765,9 @@ export function WorkoutDetail({ w, close, page = false }) {
   // reads the workout through too). A legacy single-routine workout (one routineIds, or no rid
   // anywhere) renders flat.
   // The note lives in a textarea that only writes on blur, and moving the workout re-keys a
-  // legacy record — so whatever leaves this sheet flushes it first and stops the unmount hook
-  // writing it a second time.
-  const flushNote = () => {
-    saveNote()
-    initial.current = latest.current.trim().slice(0, NOTE_MAX)
-  }
+  // legacy record — so whatever leaves this sheet flushes it first, and saveNote's new baseline
+  // stops the unmount hook writing it a second time.
+  const flushNote = saveNote
   const saveAsRoutine = () => confirmSheet({
     title: t('Save as routine?'),
     message: t('Create an independent routine from these exercise targets. Your workout history is kept.'),
