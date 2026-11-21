@@ -1909,10 +1909,11 @@ extension SessionStore {
 
     /// The first press: today's workout starts, as the Start button does (with the 3-2-1 when Apple
     /// Health is on) but without the weigh-in, which a button press cannot answer. Nothing starts
-    /// when one runs already or nothing is planned for today (not another routine): the app only opens.
+    /// when one runs already, nothing is planned for today (not another routine), or the phone's test
+    /// sheet or a dialog is up: the app only opens.
     func startFromActionButton() {
         noteActionButtonSeen()
-        guard workout == nil, countdownFrom == nil, weighInFor == nil, let session = ready?.today else { return }
+        guard !coveredForGestures, workout == nil, countdownFrom == nil, weighInFor == nil, let session = ready?.today else { return }
         summary = nil
         countIn(session, bw: nil)
     }
