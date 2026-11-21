@@ -70,6 +70,13 @@ const LOGOUT_OWED_KEY = 'gym_logout_owed'
 // question was open). Kept in storage so an app killed with the question open asks it again on
 // the next start instead of pushing the copy it still holds.
 const ADOPT_KEY = 'gym_adopt'
+// Ironvane: how long, all told, the browser's boot waits for the server (config, an owed sign-out,
+// /api/me) when nobody is signed in here. The boot screen gives up at 10 s (index.html); a server
+// that never answers, down behind a proxy that holds the connection open, used to cost 20 s per
+// request, so the sign-in screen came up after 40 s behind that error. A signed-in copy or a guest
+// is on screen at once (App hides the boot screen), so their boot keeps lib/api.js's timeouts.
+const BOOT_WAIT_MS = 5000
+const BOOT_WAIT_MIN_MS = 1500   // what a later request still gets once an earlier one used it all
 // Reads the mark with no argument, sets or clears it with one. Storage that cannot be read owes nothing.
 function logoutOwed(on) {
   try {
@@ -1772,18 +1779,19 @@ export const useStore = create((set, get) => {
     // fetch — the login screen and boot both read it, so it is fetched once and cached here
     // rather than by each screen that happens to need it.
     config: null,
-    async loadConfig() {
+    async loadConfig(opts) {
       if (get().config) return get().config
-      return get().refreshConfig()
+      return get().refreshConfig(opts)
     },
     // Always asks. The cached copy is right for one boot, but an admin can switch the Coach on
     // while a paired phone sits on the setup screen — that screen wants today's answer.
     // Two callers that ask at once get one request: signing in re-asks (setUser) and the pairing
     // flow awaits a refresh of its own immediately after, and there is one answer to have.
-    async refreshConfig() {
+    async refreshConfig(opts) {
       if (configFetch) return configFetch
       configFetch = (async () => {
-        try { const c = await api('/api/config'); rememberDefaultLang(c); set({ config: c }); return c }
+        // `opts` (boot's short timeout) only for a fetch it starts; one in flight is joined as is.
+        try { const c = await (opts ? api('/api/config', opts) : api('/api/config')); rememberDefaultLang(c); set({ config: c }); return c }
         catch { return null }
         finally { configFetch = null }
       })()
@@ -1860,6 +1868,7 @@ export const useStore = create((set, get) => {
         // nothing on this path waits for the answer. A copy that has the key was made for a
         // session and is already the right answer, Coach or no Coach.
         if (get().config && !('coach' in get().config)) get().refreshConfig()
+        else if (configFetch) configFetch.then(c => { if (c && !('coach' in c)) get().refreshConfig() })   // Ironvane: one in flight (boot's re-ask) left before this sign-in
       } else { rejoined = false; adoptHold = false; localStorage.removeItem('gym_user') }
       set({ user: u })
       // Another account, or none: what is in flight was for the previous one (GHSA-656w-p99j-x8hf).
@@ -2270,12 +2279,19 @@ export const useStore = create((set, get) => {
       // refuse — the only way the switch reaches someone already inside is here, on their next
       // boot. Ending the session needs a positive `allow_guest: false`; see lib/guest.js for why
       // an unreachable server must not be allowed to lock anyone out (#42).
-      const cfg = await get().loadConfig()
+      // A provider sign-in arriving (?oidc=) is not hurried either: its /api/me is the sign-in.
+      const hurry = !get().user && !get().isGuest() && !/[?&]oidc(-error)?=/.test(window.location.search || '')
+      const bootBy = Date.now() + BOOT_WAIT_MS
+      const bootOpts = o => (hurry ? { ...o, timeout: Math.max(BOOT_WAIT_MIN_MS, bootBy - Date.now()) } : o)
+      const cfg = await get().loadConfig(hurry ? { timeout: BOOT_WAIT_MS } : undefined)
+      // Past the budget the sign-in screen still wants the answer (SSO, password, guest): asked
+      // again with the usual timeout, and the screen follows the store when it lands.
+      if (hurry && !cfg) get().refreshConfig()
       if (!guestAllowed(cfg)) get().setGuest(false)
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
-        try { await api('/api/logout', { method: 'POST', body: '{}' }); logoutOwed(false) } catch { /* owed until it is answered */ }
+        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
@@ -2287,7 +2303,7 @@ export const useStore = create((set, get) => {
         // guest's start used to print in the console as an error. Skipped on a plain `false`
         // alone: a server from before the flag, or one that did not answer, is asked as before.
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
-        const me = await api('/api/me')
+        const me = await (hurry ? api('/api/me', bootOpts({})) : api('/api/me'))
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
         get().setUser(me.user, arrived ? { adopt: true } : undefined)
         if (arrived) {
