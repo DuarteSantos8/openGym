@@ -200,12 +200,11 @@ struct RestView: View {
                 HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
                 if name { // at accessibility sizes too: the countdown above gives way (it fills what is left)
                     Group {
-                        let place = SetNav.place(e, si) // "set 3/4": which set of how many
                         if let side = store.sideUp {
-                            Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))") + Text(verbatim: " · ")
+                            Text("\(e.name), set \(Int64(SetNav.place(e, si).n))") + Text(verbatim: " · ")
                                 + Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
                         } else {
-                            Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))")
+                            Text("\(e.name), set \(Int64(SetNav.place(e, si).n))")
                         }
                     }
                     .font(TypeScale.second)
