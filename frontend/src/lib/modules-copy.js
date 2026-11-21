@@ -11,6 +11,7 @@ export const moduleCopy = () => ({
   videos: [t('Form videos'), t('Film a set and watch it back right under the row.')],
   watch: [t('Watch'), t('Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.')],
   checkin: [t('Gym check-in'), t('Your membership codes on Home, and NFC stickers that start a workout.')],
+  bodyfocus: [t('Body picker'), t('Your photo or a drawn body on Home: tap where you want to get stronger and see the exercises for it.')],
   body: [t('Body'), t('Weigh-ins, measurements, progress photos and your weight goal.')],
   nutrition: [t('Nutrition diary'), t('Log food, servings and daily totals on this device, including offline.')],
   health: [t('Health'), t('Apple Health or Health Connect, heart rate and recovery tips.')],
