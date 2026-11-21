@@ -55,6 +55,7 @@
 "All sets done" = "Все подходы сделаны";
 "measuring" = "измеряю …";
 "%@, set %lld" = "%@, подход %lld";
+"%@, set %lld/%lld" = "%@, подход %lld/%lld";
 "Calories" = "Калории";
 "Heart rate" = "Пульс";
 "Hold" = "Удержание";

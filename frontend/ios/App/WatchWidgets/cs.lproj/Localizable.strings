@@ -55,6 +55,7 @@
 "All sets done" = "Všechny série hotové";
 "measuring" = "měřím …";
 "%@, set %lld" = "%@, série %lld";
+"%@, set %lld/%lld" = "%@, série %lld/%lld";
 "Calories" = "Kalorie";
 "Heart rate" = "Tep";
 "Hold" = "Výdrž";

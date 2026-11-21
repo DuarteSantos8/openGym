@@ -55,6 +55,7 @@
 "All sets done" = "모든 세트 완료";
 "measuring" = "측정 중 …";
 "%@, set %lld" = "%@, %lld세트";
+"%@, set %lld/%lld" = "%@, %lld/%lld세트";
 "Calories" = "칼로리";
 "Heart rate" = "심박수";
 "Hold" = "버티기";

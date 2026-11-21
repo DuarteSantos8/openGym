@@ -106,7 +106,7 @@
     <string name="time">Час</string>
     <string name="today">Сьогодні</string>
     <string name="up_next">Далі</string>
-    <string name="up_next_set">%1$s, підхід %2$d</string>
+    <string name="up_next_set">%1$s, підхід %2$d/%3$d</string>
     <string name="volume">Обсяг</string>
     <string name="waiting_sync">Очікує синхронізації</string>
     <string name="warmup">Розминка</string>

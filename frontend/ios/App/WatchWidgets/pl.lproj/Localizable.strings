@@ -55,6 +55,7 @@
 "All sets done" = "Wszystkie serie zrobione";
 "measuring" = "mierzę …";
 "%@, set %lld" = "%@, seria %lld";
+"%@, set %lld/%lld" = "%@, seria %lld/%lld";
 "Calories" = "Kalorie";
 "Heart rate" = "Tętno";
 "Hold" = "Utrzymaj";
