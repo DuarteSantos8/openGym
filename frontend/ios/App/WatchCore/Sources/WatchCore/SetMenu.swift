@@ -257,7 +257,7 @@ enum SetMenu {
         return (ei, si)
     }
 
-    private static func find(_ w: ActiveWorkout, sid: String) -> (Int, Int)? {
+    static func find(_ w: ActiveWorkout, sid: String) -> (Int, Int)? {
         for (ei, e) in w.entries.enumerated() {
             if let si = e.sets.firstIndex(where: { $0.sid == sid }) { return (ei, si) }
         }

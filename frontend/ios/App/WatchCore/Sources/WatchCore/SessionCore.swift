@@ -224,8 +224,24 @@ enum SessionCore {
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
+        if same, let was = s0.workout, let m = s.efforts { s.efforts = followEfforts(m, from: was, to: next) }
         s.workout = next
         return s
+    }
+
+    /// Ratings are keyed by place: each follows its set by the set's id from the rows it was keyed on to
+    /// where that set is now (a replay that refuses a local move puts the rows back; Wear's followEfforts).
+    /// A rating whose set is gone is dropped; one on a set without an id keeps its place.
+    static func followEfforts(_ m: [String: Double], from: ActiveWorkout, to: ActiveWorkout) -> [String: Double] {
+        var out: [String: Double] = [:]
+        for (k, v) in m {
+            let at = from.entries.indices.lazy.flatMap { ei in from.entries[ei].sets.indices.map { (ei, $0) } }
+                .first { placeKey(from, entry: $0.0, set: $0.1) == k }
+            guard let (ei0, si0) = at, let sid = from.entries[ei0].sets[si0].sid else { if out[k] == nil { out[k] = v }; continue }
+            guard let (ei, si) = SetMenu.find(to, sid: sid) else { continue }
+            out[placeKey(to, entry: ei, set: si)] = v
+        }
+        return out
     }
 
     /// One side of a per-side set done, the row's own numbers following both sides (as the phone's
