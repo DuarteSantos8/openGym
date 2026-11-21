@@ -56,25 +56,32 @@ struct RestView: View {
                 .frame(height: 36)
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
-                    // The last three seconds (Direction B): orange, and each one punches in. Redrawn only at those three moments.
-                    // 3.5: a timeline's first entry counts as already shown, so 3 would never fire.
-                    TimelineView(.explicit([3.5, 3, 2, 1].map { end.addingTimeInterval(-$0) })) { ctx in
-                        let left = end.timeIntervalSince(ctx.date > Date() ? Date() : ctx.date) // before its first entry ctx.date is that future entry, not now
-                        let last = !paused && left > 0.5 && left < 3.5 ? Int(left.rounded()) : 0
-                        countdown
-                            .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
-                            .foregroundStyle((last > 0 ? Theme.orange : accent).opacity(dimmed ? 0.75 : 1))
-                            .lineLimit(1)
-                            .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
-                            .contentTransition(.numericText(countsDown: true))
-                            .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.25), value: end) // ±15 rolls the digits
-                            .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion || dimmed ? 0 : last) { digits, s in
-                                digits.scaleEffect(s)
-                            } keyframes: { _ in
-                                SpringKeyframe(1.12, duration: 0.1, spring: Spring(response: 0.12, dampingRatio: 0.9))
-                                SpringKeyframe(1.0, duration: 0.45, spring: Spring(response: 0.35, dampingRatio: 0.45))
-                            }
-                            .frame(width: t.size.width, height: t.size.height)
+                    let digits = countdown
+                        .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
+                        .lineLimit(1)
+                        .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
+                        .frame(width: t.size.width, height: t.size.height)
+                    if dimmed {
+                        // Always On: the system ticks the seconds, nothing of ours moves them. A timeline, a content
+                        // transition or a keyframe here can roll the digits both ways between the dimmed frames.
+                        digits.foregroundStyle(accent.opacity(0.75))
+                    } else {
+                        // The last three seconds (Direction B): orange, and each one punches in. Redrawn only at those three moments.
+                        // 3.5: a timeline's first entry counts as already shown, so 3 would never fire.
+                        TimelineView(.explicit([3.5, 3, 2, 1].map { end.addingTimeInterval(-$0) })) { ctx in
+                            let left = end.timeIntervalSince(ctx.date > Date() ? Date() : ctx.date) // before its first entry ctx.date is that future entry, not now
+                            let last = !paused && left > 0.5 && left < 3.5 ? Int(left.rounded()) : 0
+                            digits
+                                .foregroundStyle(last > 0 ? Theme.orange : accent)
+                                .contentTransition(.numericText(countsDown: true))
+                                .animation(reduceMotion ? nil : .snappy(duration: 0.25), value: end) // ±15 rolls the digits
+                                .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion ? 0 : last) { digits, s in
+                                    digits.scaleEffect(s)
+                                } keyframes: { _ in
+                                    SpringKeyframe(1.12, duration: 0.1, spring: Spring(response: 0.12, dampingRatio: 0.9))
+                                    SpringKeyframe(1.0, duration: 0.45, spring: Spring(response: 0.35, dampingRatio: 0.45))
+                                }
+                        }
                     }
                 }
                 .overlay(alignment: .top) {
@@ -175,7 +182,8 @@ struct RestView: View {
                 .accessibilityLabel(Text("Rest"))
                 .accessibilityValue(Text(verbatim: RestMath.clock(end.timeIntervalSince(paused))))
         } else {
-            Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+            // The range starts when the rest did, not at Date(): a body that moves its own range is redrawn wrongly in Always On.
+            Text(timerInterval: SafeNum.timerRange(store.restStartedAt ?? end.addingTimeInterval(-90), end), countsDown: true)
                 .accessibilityLabel(Text("Rest"))
         }
     }
