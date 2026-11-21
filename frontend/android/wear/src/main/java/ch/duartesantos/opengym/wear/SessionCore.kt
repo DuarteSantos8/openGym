@@ -215,6 +215,15 @@ object SessionCore {
         )
     }
 
+    private fun withEffort(row: SetRow, side: String?, r: EffortRating): SetRow {
+        val sides = row.sides
+        if (side != null && sides != null) {
+            val o = sides[side]
+            return row.copy(sides = sides.with(side, if (r.kind == "rpe") o.copy(rpe = r.value) else o.copy(rir = r.value)))
+        }
+        return if (r.kind == "rpe") row.copy(rpe = r.value) else row.copy(rir = r.value)
+    }
+
     /** A set ticked here: the state with it done, and the event for the phone (watch-sync.js setDone). */
     fun tick(
         s0: SessionState, ei: Int, si: Int, side: String? = null, w: Double?, r: Double?, sec: Double? = null,
@@ -228,9 +237,10 @@ object SessionCore {
         val oneSide = side?.takeIf { row.sides != null }
         val newRow = if (oneSide != null) markSide(row, oneSide, w, r, at)
         else row.copy(done = true, w = w ?: row.w, r = r ?: row.r, sec = sec ?: row.sec, at = at)
-        val entries = workout.entries.toMutableList()
-        entries[ei] = e.copy(sets = e.sets.toMutableList().also { it[si] = newRow })
         val rated = effort?.takeIf { Effort.notches(it.kind) != null }
+        val entries = workout.entries.toMutableList()
+        // the row holds the rating too, so a set opened again before the next snapshot shows it
+        entries[ei] = e.copy(sets = e.sets.toMutableList().also { it[si] = if (rated != null) withEffort(newRow, oneSide, rated) else newRow })
         val s = s0.copy(
             workout = workout.copy(entries = entries),
             pending = s0.pending + (pendingKey(row, e.id, nthOf(workout.entries, ei), si, oneSide) to PendingTick(w, r, at, sec, id)),

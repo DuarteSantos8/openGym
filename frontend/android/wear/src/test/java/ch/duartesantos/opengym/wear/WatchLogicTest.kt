@@ -160,6 +160,33 @@ class WatchLogicTest {
         assertNull("a scale the phone does not know sends nothing", odd["feel"])
     }
 
+    @Test fun aDoneSetOpensOnTheEffortLoggedOnIt() {
+        val sided = SetRow(done = true, sides = Sides(SideRow(20.0, 8.0, true, rir = 1.5), SideRow(20.0, 8.0, true, rir = 3.0)), rir = 9.0)
+        assertEquals(1.5, SetFix.loggedEffort(sided, "L", "rir")!!, 0.0)
+        assertEquals(3.0, SetFix.loggedEffort(sided, "R", "rir")!!, 0.0)
+        val whole = SetRow(done = true, rpe = 8.5)
+        assertEquals(8.5, SetFix.loggedEffort(whole, null, "rpe")!!, 0.0)
+        assertNull("another scale than the profile's", SetFix.loggedEffort(whole, null, "rir"))
+        assertNull("no scale", SetFix.loggedEffort(whole, null, null))
+        assertNull("nothing logged", SetFix.loggedEffort(row(done = true), null, "rir"))
+    }
+
+    @Test fun onlyAChangedEffortIsSent() {
+        assertNull("untouched", SetFix.changedEffort(2.0, 2.0))
+        assertNull("cleared sends none, the phone keeps its own", SetFix.changedEffort(null, 2.0))
+        assertEquals(1.5, SetFix.changedEffort(1.5, 2.0)!!, 0.0)
+        assertEquals("rated from none", 2.0, SetFix.changedEffort(2.0, null)!!, 0.0)
+        val f = Fix(SetRef(0, 0), null, 60.0, 8.0, 0.0, SetFix.Numbers(60.0, 8.0, 0.0), 2.0, 2.0)
+        assertFalse("opened on its effort, nothing changed", f.changed)
+        assertTrue(f.copy(effort = 1.5).changed)
+    }
+
+    @Test fun aCorrectionKeepsTheRatingOnTheRow() {
+        val e = entry("b", listOf(row(60.0, 8.0, done = true, at = 10.0)))
+        val s = SetFix.correct(state(e), 0, 0, null, SetFix.Numbers(60.0, 8.0), EffortRating("rir", 1.5), now = 20.0, id = "e").first
+        assertEquals(1.5, SetFix.loggedEffort(s.workout!!.entries[0].sets[0], null, "rir")!!, 0.0)
+    }
+
     @Test fun keypadTypesNumbersAndKeepsThemSane() {
         var k = Keypad(2)
         for (key in listOf("0", "6", "2", ".", "2", "5", "9")) k = k.press(key)

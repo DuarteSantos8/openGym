@@ -117,6 +117,17 @@ object SetFix {
         return if (row.done) Numbers(row.w, row.r, row.sec) else null
     }
 
+    /** The effort logged on a set (one side's on a per-side set) in the profile's scale `kind`, or null. */
+    fun loggedEffort(row: SetRow, side: String?, kind: String?): Double? {
+        val o = side?.let { s -> row.sides?.get(s) }
+        val rpe = o?.rpe ?: row.rpe.takeIf { o == null }
+        val rir = o?.rir ?: row.rir.takeIf { o == null }
+        return if (kind == "rpe") rpe else if (kind == "rir") rir else null
+    }
+
+    /** The rating to send when a done set is saved: only one that differs from what was logged. Clearing it sends none. */
+    fun changedEffort(now: Double?, logged: Double?): Double? = if (now == logged) null else now
+
     /**
      * A done set with new numbers: the setDone the phone already knows, a moment later than the
      * set's own tick so it wins there (Workout.jsx setDone: the later tick wins), and without `hr`,

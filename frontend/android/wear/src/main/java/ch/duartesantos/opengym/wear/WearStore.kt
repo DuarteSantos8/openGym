@@ -35,8 +35,9 @@ data class CountIn(val from: Long, val session: ReadySession? = null, val bw: Do
 
 /** A done set open on the set page to be fixed: its numbers, the side, and what was logged. */
 data class Fix(val ref: SetRef, val side: String?, val w: Double, val r: Double, val sec: Double,
-               val from: SetFix.Numbers, val effort: Double? = null) {
-    val changed get() = w != (from.w ?: 0.0) || r != (from.r ?: 0.0) || sec != (from.sec ?: 0.0) || effort != null
+               val from: SetFix.Numbers, val effort: Double? = null, val loggedEffort: Double? = null) {
+    val changed get() = w != (from.w ?: 0.0) || r != (from.r ?: 0.0) || sec != (from.sec ?: 0.0) ||
+        SetFix.changedEffort(effort, loggedEffort) != null
 }
 
 /** The session screen's pages, side by side like Apple Workout: Overview ← Set → Metrics → Media. */
@@ -412,7 +413,8 @@ object WearStore {
         val row = fixRow(ref)
         val n = row?.let { SetFix.logged(it, side) }
         if (n == null) { closeFix(); return }
-        fix.value = Fix(ref, side, n.w ?: 0.0, n.r ?: 0.0, n.sec ?: 0.0, n)
+        val logged = SetFix.loggedEffort(row, side, _state.value.settings.effort)
+        fix.value = Fix(ref, side, n.w ?: 0.0, n.r ?: 0.0, n.sec ?: 0.0, n, logged, logged)
     }
 
     fun setFixSide(side: String) { fix.value?.let { loadFix(it.ref, side) } }
@@ -424,13 +426,14 @@ object WearStore {
         val f = fix.value ?: return
         if (!f.changed) return
         val kind = _state.value.settings.effort
-        val rated = if (kind != null && f.effort != null) EffortRating(kind, f.effort) else null
+        val sent = SetFix.changedEffort(f.effort, f.loggedEffort)
+        val rated = if (kind != null && sent != null) EffortRating(kind, sent) else null
         val (next, event) = SetFix.correct(_state.value, f.ref.entry, f.ref.set, f.side, SetFix.Numbers(f.w, f.r, f.sec), rated,
             now().toDouble(), UUID.randomUUID().toString(), clockOff())
         event ?: return
         PhoneLink.send(app, event)
         commit(next)
-        if (f.ref == lastLogged.value && f.effort != null) lastRated.value = f.effort
+        if (f.ref == lastLogged.value && sent != null) lastRated.value = sent
         closeFix()
         noteActivity()
         Haptics.tick(app)

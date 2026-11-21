@@ -127,7 +127,11 @@ data class Entry(
 data class BestSet(val w: Double? = null, val r: Double? = null, val sec: Double? = null)
 
 @Serializable
-data class SideRow(val w: Double? = null, val r: Double? = null, val done: Boolean = false)
+data class SideRow(
+    val w: Double? = null, val r: Double? = null, val done: Boolean = false,
+    /** The effort logged on this side, by the phone's own names. */
+    val rpe: Double? = null, val rir: Double? = null,
+)
 
 @Serializable
 data class Sides(val L: SideRow = SideRow(), val R: SideRow = SideRow()) {
@@ -152,6 +156,9 @@ data class SetRow(
     val drops: Int? = null,
     val rp: Boolean? = null,
     val side: String? = null,
+    /** The effort logged on the set (RPE or RIR, half points), so a done set opens on it to be fixed. */
+    val rpe: Double? = null,
+    val rir: Double? = null,
 ) {
     /** The side up next on a per-side set ("L", then "R"), or null. */
     val sideUp: String? get() = sides?.let { if (!it.L.done) "L" else if (!it.R.done) "R" else null }
