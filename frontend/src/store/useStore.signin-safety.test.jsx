@@ -93,6 +93,15 @@ describe('sign-in asks about a plan built while signed out, and keeps what it dr
     expect(S.exNotes['0025']).toBe('elbows in')
     expect(S.gymCards.map(c => c.id)).toEqual(['card1'])
   })
+  it('a guest with only folders is asked; "Add them" adds the folders the account lacks', async () => {
+    up(s => { s.routineFolders = [{ name: 'Summer', current: true }, { name: 'push day' }] })
+    api.mockImplementation(async (p, o) => (o?.method === 'PUT' ? { ok: true, rev: 8 } : { state: { ...server(), routineFolders: [{ name: 'Push Day', current: true }] }, rev: 7 }))
+    useStore.getState().setUser({ id: 'u1', name: 'x' }, { adopt: true })
+    const ask = vi.fn(async () => true)
+    await useStore.getState().adoptProfile(ask)
+    expect(ask).toHaveBeenCalledWith(expect.objectContaining({ setup: 1 }))
+    expect(useStore.getState().S.routineFolders).toEqual([{ name: 'Push Day', current: true }, { name: 'Summer' }])   // the account's current plan stays
+  })
   it('"Keep profile as is" keeps the device\'s copy aside, to save as a backup file', async () => {
     guestPlan()
     api.mockImplementation(async (p, o) => (o?.method === 'PUT' ? { ok: true, rev: 8 } : { state: server(), rev: 7 }))
