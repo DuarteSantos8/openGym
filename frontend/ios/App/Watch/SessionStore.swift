@@ -1202,10 +1202,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let phoneAt = Date(timeIntervalSince1970: at / 1000)
             if activityAt.map({ $0 < phoneAt }) ?? true { activityAt = phoneAt }
         }
-        // Past ending but the phone could not be asked: the workout stays, the sensor rests until the next activity.
-        if Idle.sensorRests(since: since, now: Date().timeIntervalSince1970 * 1000, reply: reply, rules: idleRules, leftAt: w.leftGymAt) { health.pause() }
         let now = Date().timeIntervalSince1970 * 1000
         let rules = idleRules
+        // Past ending but the phone could not be asked: the workout stays, the sensor rests until the next activity.
+        if Idle.sensorRests(since: since, now: now, reply: reply, rules: rules, leftAt: w.leftGymAt) { health.pause() }
         switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt) {
         case .active:
             askDone = false
