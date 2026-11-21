@@ -527,7 +527,7 @@ struct EffortArmed: View {
     /// The discs fade in from 0.9, a beat after the capsule, and out to 0.9 (Reduce Motion: fades).
     private var discFade: AnyTransition {
         let out = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(.easeOut(duration: reduceMotion ? 0.15 : 0.2))
-        let into = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(.easeOut(duration: 0.18).delay(reduceMotion ? 0 : 0.05))
+        let into = AnyTransition.opacity.combined(with: reduceMotion ? .identity : .scale(scale: 0.9)).animation(reduceMotion ? Motion.fade(true, false) : .easeOut(duration: 0.18).delay(0.05))
         return .asymmetric(insertion: into, removal: out)
     }
 
