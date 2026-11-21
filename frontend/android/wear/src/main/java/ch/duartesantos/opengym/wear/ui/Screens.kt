@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -696,8 +697,8 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
     // The effort armed on this line takes all of it (as it grows over "Done" on the Apple Watch).
     val grown = fixing && effortArmed && effortInline != null
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        // With the L/R switch here, the pill shrinks (and loses its "n/of") rather than push the switch out.
-        if (!grown) SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
+        // With the L/R switch or the rest's clock here, the pill shrinks (and loses its "n/of") rather than push them out.
+        if (!grown) SetPill(n, of, row, menu, if (sideSwitch || (fixing && rest != null)) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
         if (sideSwitch) SideSwitch(fix?.side)
@@ -708,7 +709,7 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
             // The rest runs on while a set is fixed: its time stays in sight.
             val now = rememberNow()
             Text(clock(kotlin.math.ceil(rest.leftMs(now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold, style = Og.Number)
+                fontWeight = FontWeight.SemiBold, style = Og.Number, maxLines = 1, softWrap = false)
         }
     }
 }
@@ -1119,7 +1120,9 @@ private fun ArmedEffort(kind: String, v: Double?, h: Dp, ticks: Boolean, clear: 
     ) {
         EffortDisc(false, c, disc, Effort.step(kind, v, -1, clear) == v, lock) { step(-1, true) }
         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text((if (big) "" else Effort.name(kind) + " ") + shown, color = c, fontSize = 16.sp, fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
+            // On a small watch the slot between the buttons is 44 dp ("RIR 1.5" is ~64): the text draws over their empty tap area, not wrapped.
+            Text((if (big) "" else Effort.name(kind) + " ") + shown, color = c, fontSize = 16.sp, fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1,
+                softWrap = false, modifier = Modifier.wrapContentWidth(unbounded = true))
             // 1 and 1.5 share a colour: the tick says which. Only where there is the height for it.
             if (ticks) {
                 val (n, at) = Effort.ticks(kind, v)
