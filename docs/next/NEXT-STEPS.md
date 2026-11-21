@@ -21,6 +21,7 @@ Epic status:
   - EP14-T01: upstream already has local inference (ADR 0007).
   - EP08 and EP11: NO-GO after the spikes.
 - **Done (2026-11-15):** emulated devices (WebKit/Chromium phone profiles in CI) and the EP14 real-model run.
+- **In review (2026-11-20):** Today's body picker (module `bodyfocus`, branch `next/today-body-focus`): tap the drawn body or your own photo, see the exercises for those areas. Photos stay in the browser; Reset everything and sign-out delete them. Still open: (1) try it on a real phone with your own photo, front and back; (2) the native apps: decide whether to keep the WebView's IndexedDB out of Android Auto Backup (`backup_rules.xml`, `data_extraction_rules.xml`) and iCloud, checked on a device; (3) add its 20 strings to the translation review (task 7); (4) iOS 15.x: if the bundled MediaPipe WASM needs SIMD (Safari 16.4+), photos there get the "can't look for the body" message and the drawn body.
 - **Needs a person:** EP16-T03 on real phones, translation review.
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
 

@@ -66,6 +66,7 @@ import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
+import { forgetBodyFocus } from '../lib/body-photo.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
@@ -468,6 +469,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       resetAll()
       nav('/home'); toast(t('All data reset'))
       clearMediaAfterReset(!!user).catch(() => {})
+      forgetBodyFocus()   // Today's body picker: its photos and picks on this device
     },
   })
 

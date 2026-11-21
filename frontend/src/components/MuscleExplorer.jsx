@@ -20,12 +20,13 @@ const FAV = '☆'
 
 // One explorer for the Library and every catalogue picker. Supplying `onPick` turns
 // a result into a selection; without it the explorer behaves like the normal Library.
-export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pickIcon = 'plus', initial = null }) {
+export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pickIcon = 'plus', initial = null, initialMatch = 'all' }) {
   const S = useStore(s => s.S)
   // The filter (#885, #900, lib/muscle-filter.js): muscles and groups, AND by default. A group
   // chip picks the whole group and opens its muscles in the strip below, to pick one instead.
-  const [terms, setTerms] = useState(() => (initial ? [initial] : []))
-  const [match, setMatch] = useState('all')
+  // `initial`: one muscle, or several (Today's body picker opens on its areas with 'any').
+  const [terms, setTerms] = useState(() => (Array.isArray(initial) ? initial : initial ? [initial] : []))
+  const [match, setMatch] = useState(initialMatch === 'any' ? 'any' : 'all')
   const [openGroup, setOpenGroup] = useState(null)
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')

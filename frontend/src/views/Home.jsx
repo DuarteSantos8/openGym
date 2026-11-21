@@ -37,6 +37,7 @@ import { DeloadCard } from '../components/DeloadCard.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
+import BodyFocus from '../components/BodyFocus.jsx'
 import { isOn } from '../lib/modules.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
@@ -223,6 +224,9 @@ export default function Home() {
       </div>}
       <SeasonDeco spot="home-hero" />
     </div>
+
+    {/* Ironvane: tap your photo or the drawn body where you want to get stronger (Settings → Modules). */}
+    {on('bodyfocus') && <BodyFocus />}
 
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />

@@ -62,6 +62,19 @@ describe('Home follows the modules', () => {
     expect(heads()).not.toContain('Check in')
   })
 
+  // Ironvane's body picker: on by default and in every preset; switched off, Home is as it was.
+  it('the body picker follows its module, and off leaves the rest of Home unchanged', () => {
+    mountWith(undefined)
+    expect(heads()).toContain('Tap where you want to get stronger')
+    const withPicker = heads().filter(h => h !== 'Tap where you want to get stronger')
+    mountWith(presetModules('training'))
+    expect(heads()).toContain('Tap where you want to get stronger')
+    mountWith({ bodyfocus: false })
+    expect(heads()).not.toContain('Tap where you want to get stronger')
+    expect(host.querySelector('.bf-card')).toBe(null)
+    expect(heads()).toEqual(withPicker)
+  })
+
   it('the old check-in switch still hides its card until Modules decides', () => {
     mountWith(undefined, { checkIn: false })
     expect(heads()).not.toContain('Check in')
