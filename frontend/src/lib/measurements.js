@@ -115,9 +115,12 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
 
 // Fold a second entry for a date into the first. The later reading wins per field, but a field
 // it left empty keeps the earlier value — two partial rows on one date are two halves of the
-// same check-in, not a reason to throw one away.
+// same check-in, not a reason to throw one away. A typed check-in counts as the later one against
+// one read from Health (`src`) whatever their times, and the fold is then not Health's.
 function mergeMeasurementEntries(a, b) {
+  if (b.src && !a.src) [a, b] = [b, a]
   const entry = { ...a, t: b.t }
+  if (!b.src) delete entry.src
   for (const key of MEASUREMENT_KEYS) entry[key] = b[key] ?? a[key]
   if (b.note || a.note) entry.note = b.note || a.note
   const other = new Map(a.other.map(o => [o.id, o]))

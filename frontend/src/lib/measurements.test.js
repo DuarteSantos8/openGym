@@ -195,4 +195,16 @@ describe('a check-in read from Health', () => {
     ] })
     expect(s.measurements.map(e => e.src)).toEqual(['health', undefined])
   })
+
+  it('loses to a typed check-in of the same day whichever is newer, and the fold is not tagged Health', () => {
+    const typed = { d: '2026-10-14', t: 5, waist: 80, chest: 100 }
+    const health = { d: '2026-10-14', t: 9, waist: 82.4, neck: 38, src: 'health' }
+    for (const rows of [[typed, health], [{ ...health, t: 1 }, typed]]) {
+      const [e] = normalizeMeasurementsState({ measurements: rows.map(r => ({ ...r })) }).measurements
+      expect(e.waist).toBe(80)
+      expect(e.chest).toBe(100)
+      expect(e.neck).toBe(38)
+      expect(e.src).toBeUndefined()
+    }
+  })
 })
