@@ -1023,6 +1023,18 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
   return out
 }
 
+/**
+ * The snapshot's JSON as the iPhone sends it. WatchConnectivity keeps a string with any character
+ * beyond ASCII as UTF-16, two bytes a character: the one "×" of a history line doubled the whole
+ * snapshot, near or over the limit above. Escaped as \uXXXX it stays one byte a character, and the
+ * watch's JSON reader gets the same text back. Left as it is when escaping costs more than UTF-16
+ * (a profile mostly in Cyrillic or Chinese, six bytes a character escaped).
+ */
+export function asciiJson (json) {
+  const esc = json.replace(/[\u0080-\uffff]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))
+  return esc.length < 2 * json.length ? esc : json
+}
+
 // How many deleted workouts the watch is told about at most (the newest deletions).
 export const HEALTH_GONE_MAX = 60
 
@@ -1137,7 +1149,8 @@ export function streakFor (S, today = todayISO()) {
 export async function startWatchSync ({ useStore, useUI }) {
   const p = await watchPlugin()
   if (!p) return () => {}
-  return runLink(p, { useStore, useUI }, { garmin: true })
+  // Only the iPhone's WatchConnectivity stores text as UTF-16; Android sends UTF-8 as it is.
+  return runLink(p, { useStore, useUI }, { garmin: true, ascii: (await nativePlatform()) === 'ios' })
 }
 
 // Links besides the phone's own WatchBridge, with the same calls (lib/watch-relay.js). Their
@@ -1157,7 +1170,7 @@ export async function startLinkSync (plugin, { useStore, useUI }, opts = {}) {
   return () => { extraLinks.delete(p); stop() }
 }
 
-async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true, garmin: withGarmin = false } = {}) {
+async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true, garmin: withGarmin = false, ascii = false } = {}) {
   getStateRef = () => useStore.getState()
   uiRef = useUI
   // `sentAt`: when the last snapshot went, for the next change to go at once (sendSoon).
@@ -1244,7 +1257,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         const gone = [...healthGoneFor(S), ...discarded.map(id => 'opengym-w-' + id).reverse()]
         if (gone.length) snap.healthGone = [...new Set(gone)]
       }
-      const json = JSON.stringify(fitSnapshot(snap))
+      const fit = JSON.stringify(fitSnapshot(snap))
+      const json = ascii ? asciiJson(fit) : fit
       // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
       // Garmin pauses with the others.
       const naming = garmin && unnamed.length > GARMIN_ACKED_MAX ? unnamed.slice(0, GARMIN_ACKED_MAX) : null
