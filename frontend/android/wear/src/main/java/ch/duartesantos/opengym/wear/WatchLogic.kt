@@ -398,9 +398,10 @@ fun OutboxCore.eventType(item: OutItem): String? = try {
  * The set a running hold will log when it ends (the Apple Watch's holdFor). With "Timed holds start by
  * themselves" the phone runs the hold too and logs it first; this one is then over, unlogged, or it
  * would log the set after it. The set is found by its id when it has one (a set added or removed on the
- * phone moves the places), else by place.
+ * phone moves the places), else by place. `w` is the weight on the screen when the hold began: a weighted
+ * hold logs that, not the numbers of whatever set is picked by the time it ends.
  */
-data class HoldSet(val entry: Int, val set: Int, val side: String?, val sid: String?) {
+data class HoldSet(val entry: Int, val set: Int, val side: String?, val sid: String?, val w: Double? = null) {
     /** Where that set (and side, on a per-side set) is now in `s` as (entry, place), if it is still there and still to log. */
     fun placeIn(s: SessionState): Pair<Int, Int>? {
         val w = s.workout ?: return null

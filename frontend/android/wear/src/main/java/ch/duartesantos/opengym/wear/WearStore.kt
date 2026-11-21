@@ -456,7 +456,7 @@ object WearStore {
     }
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
-    fun completeSet(heldFor: Double? = null, held: Pair<Int, Int>? = null) {
+    fun completeSet(heldFor: Double? = null, held: Pair<Int, Int>? = null, heldW: Double? = null) {
         val s0 = _state.value
         val w = s0.workout ?: return
         // A hold logs the set it started for, where it is now (the phone may have removed an earlier one).
@@ -475,7 +475,7 @@ object WearStore {
         var tw: Double? = null; var tr: Double? = null; var tsec: Double? = null
         if (e.isTimed) {
             tsec = heldFor ?: d.sec
-            if ((e.sets[si].w ?: 0.0) > 0) tw = d.w        // a weighted hold keeps its weight
+            if ((e.sets[si].w ?: 0.0) > 0) tw = heldW ?: d.w        // a weighted hold keeps its weight
         } else if (!e.isCardio) { tw = d.w; tr = d.r }
         val (s1, event0) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from))
         event0 ?: return
@@ -753,7 +753,7 @@ object WearStore {
         val start = now()
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
-        holdFor = HoldSet(entryIndex, si, e.sets[si].sideUp, e.sets[si].sid)
+        holdFor = HoldSet(entryIndex, si, e.sets[si].sideUp, e.sets[si].sid, draft.value.w)
         Awake.until(app, HOLD, end)
         Haptics.start(app)
         holdJob?.cancel()
@@ -774,8 +774,9 @@ object WearStore {
         val lasted = Math.round(((if (early) now() else h.endsAt) - h.startedAt) / 1000.0).toDouble()
         val held = holdFor?.placeIn(_state.value)
         val gone = holdFor != null && held == null
+        val heldW = holdFor?.w
         stopHold()
-        if (lasted >= 1 && !gone) completeSet(heldFor = lasted, held = held)
+        if (lasted >= 1 && !gone) completeSet(heldFor = lasted, held = held, heldW = heldW)
     }
 
     fun stopHold() { holdJob?.cancel(); _hold.value = null; holdFor = null; if (::app.isInitialized) Awake.release(HOLD) }

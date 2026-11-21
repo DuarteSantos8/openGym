@@ -719,4 +719,15 @@ class WatchLogicTest {
         assertNull(hold.placeIn(state(entry("plank", listOf(a, c), mode = "time"))))
         assertEquals("no id: by place", 0 to 1, HoldSet(0, 1, null, null).placeIn(state(entry("plank", listOf(a, b), mode = "time"))))
     }
+
+    // A weighted hold keeps the weight it began with: the screen's numbers may have moved on to the set now picked.
+    @Test fun aWeightedHoldLogsTheWeightItBeganWith() {
+        val b = row(w = 10.0).copy(sid = "b")
+        val c = row(w = 30.0).copy(sid = "c")
+        val hold = HoldSet(0, 1, null, "b", w = 10.0)
+        val removed = state(entry("plank", listOf(b, c), mode = "time"))
+        val (ei, si) = hold.placeIn(removed)!!
+        val logged = SessionCore.tick(removed, ei, si, null, hold.w, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
+        assertEquals(10.0, logged.first { it.sid == "b" }.w!!, 0.0)
+    }
 }
