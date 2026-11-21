@@ -69,10 +69,10 @@ struct SessionState: Codable, Equatable {
     var pending: [String: PendingTick] = [:]
     /// The exercise on screen.
     var entryIndex = 0
-    /// Sets passed over here ("exerciseId#setIndex"), not done: the next one comes up instead.
+    /// Sets passed over here ("n<copy>:exerciseId#setIndex", SessionCore.placeKey), not done: the next one comes up instead.
     /// Optional, like every field added later, so a state saved by an older build still loads.
     var skipped: [String]?
-    /// The effort rated here per set ("exerciseId#setIndex"), kept for the Effort page: the phone's
+    /// The effort rated here per set ("n<copy>:exerciseId#setIndex"), kept for the Effort page: the phone's
     /// snapshot does not carry it back. In the profile's scale (`settings.effort`).
     var efforts: [String: Double]?
     /// The newest change to the rest this watch knows of, its own or the phone's (ms, the phone's
@@ -90,9 +90,27 @@ struct SessionState: Codable, Equatable {
 typealias Event = [String: Any]
 
 enum SessionCore {
-    /// The skipped sets' and the efforts' key: the exercise and the set's place in it.
+    /// The exercise and the set's place in it: the key a 1.4.4 build saved a pending tick under.
     static func key(_ exId: String, _ si: Int, _ side: String? = nil) -> String {
         side.map { "\(exId)#\(si)#\($0)" } ?? "\(exId)#\(si)"
+    }
+
+    /// A skipped set's and a rating's key: which copy of its exercise the entry is (0: the first) and
+    /// the set ("n1:bench#2"), so the same lift twice keeps its own, and an exercise the phone moves or
+    /// takes out does not carry one off (Wear's placeKey).
+    static func placeKey(_ w: ActiveWorkout, entry ei: Int, set si: Int) -> String {
+        let id = w.entries[ei].id
+        return "n\(w.entries[..<ei].filter { $0.id == id }.count):\(id)#\(si)"
+    }
+
+    /// A state saved by 1.4.5, whose skips and ratings were keyed "exerciseId#setIndex": those go to
+    /// the exercise's first copy. Safe to run more than once.
+    static func upgraded(_ s0: SessionState) -> SessionState {
+        func up(_ k: String) -> String { k.range(of: #"^n\d+:"#, options: .regularExpression) == nil ? "n0:" + k : k }
+        var s = s0
+        s.skipped = s0.skipped.map { $0.map(up).sorted() }
+        s.efforts = s0.efforts.map { Dictionary($0.map { (up($0.key), $0.value) }) { a, _ in a } }
+        return s
     }
 
     /// A pending tick's key (protocol 2, rule 5): "s:<sid>" for a set the phone named, else its place
@@ -206,8 +224,24 @@ enum SessionCore {
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
+        if same, let was = s0.workout, let m = s.efforts { s.efforts = followEfforts(m, from: was, to: next) }
         s.workout = next
         return s
+    }
+
+    /// Ratings are keyed by place: each follows its set by the set's id from the rows it was keyed on to
+    /// where that set is now (a replay that refuses a local move puts the rows back; Wear's followEfforts).
+    /// A rating whose set is gone is dropped; one on a set without an id keeps its place.
+    static func followEfforts(_ m: [String: Double], from: ActiveWorkout, to: ActiveWorkout) -> [String: Double] {
+        var out: [String: Double] = [:]
+        for (k, v) in m {
+            let at = from.entries.indices.lazy.flatMap { ei in from.entries[ei].sets.indices.map { (ei, $0) } }
+                .first { placeKey(from, entry: $0.0, set: $0.1) == k }
+            guard let (ei0, si0) = at, let sid = from.entries[ei0].sets[si0].sid else { if out[k] == nil { out[k] = v }; continue }
+            guard let (ei, si) = SetMenu.find(to, sid: sid) else { continue }
+            out[placeKey(to, entry: ei, set: si)] = v
+        }
+        return out
     }
 
     /// One side of a per-side set done, the row's own numbers following both sides (as the phone's
@@ -269,7 +303,7 @@ enum SessionCore {
         // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
         if let r = effort, Effort.notches(r.kind) != nil {
             event[r.kind] = r.value
-            s.efforts = (s.efforts ?? [:]).merging([key(e.id, si): r.value]) { $1 }
+            s.efforts = (s.efforts ?? [:]).merging([placeKey(workout, entry: ei, set: si): r.value]) { $1 }
         }
         return (s, event)
     }
@@ -291,13 +325,14 @@ enum SessionCore {
     static func skip(_ s0: SessionState, entry ei: Int, set si: Int) -> SessionState {
         guard let w = s0.workout, w.entries.indices.contains(ei), w.entries[ei].sets.indices.contains(si) else { return s0 }
         var s = s0
-        let k = key(w.entries[ei].id, si)
+        let k = placeKey(w, entry: ei, set: si)
         s.skipped = Array(Set((s.skipped ?? []) + [k])).sorted()
         return s
     }
 
-    static func isSkipped(_ s: SessionState, _ exId: String, _ si: Int) -> Bool {
-        s.skipped?.contains(key(exId, si)) ?? false
+    static func isSkipped(_ s: SessionState, entry ei: Int, _ si: Int) -> Bool {
+        guard let w = s.workout, w.entries.indices.contains(ei) else { return false }
+        return s.skipped?.contains(placeKey(w, entry: ei, set: si)) ?? false
     }
 
     /// A set the phone ticked (#1101, the Apple twin of #1165): the exercise the watch goes to, when
@@ -457,8 +492,7 @@ enum SessionCore {
         guard let w = s.workout, w.entries.indices.contains(ei) else { return nil }
         let sets = w.entries[ei].sets
         if let p = picked, sets.indices.contains(p), !sets[p].done { return p }
-        let exId = w.entries[ei].id
-        return sets.indices.first { !sets[$0].done && !isSkipped(s, exId, $0) }
+        return sets.indices.first { !sets[$0].done && !isSkipped(s, entry: ei, $0) }
     }
 
     /// Sets done and sets in all, for the complication's ring.

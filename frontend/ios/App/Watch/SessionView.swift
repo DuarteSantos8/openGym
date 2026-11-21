@@ -22,19 +22,16 @@ struct SessionView: View {
     var body: some View {
         ZStack {
         NavigationStack {
+            // No toolbar: each page draws the clock's row itself (ClockRow). A toolbar item that came and went with the
+            // page changed the bar's height, and the pages jumped 16 pt as a swipe settled.
             TabView(selection: $store.tab) {
-                OverviewPage().tag(SessionTab.overview)
+                OverviewPage().safeAreaInset(edge: .top, spacing: 0) { ClockRow() }.tag(SessionTab.overview)
                 LivePage().tag(SessionTab.set)
-                MetricsStack(health: store.health).tag(SessionTab.metrics)
-                MusicPage().tag(SessionTab.music)
+                // Metrics shows the heart rate big itself. Its pager passes the screen's insets on, so its pages keep the row too (metricsTitle).
+                MetricsStack(health: store.health).safeAreaInset(edge: .top, spacing: 0) { ClockRow(heart: false) }.tag(SessionTab.metrics)
+                MusicPage().safeAreaInset(edge: .top, spacing: 0) { ClockRow() }.tag(SessionTab.music)
             }
             .tabViewStyle(.page)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    // On a hold or its countdown the pill stays beside the clock (review 2026-11-12).
-                    if !store.ownTopRow { SessionBadges(pill: store.tab == .set).environmentObject(store) }
-                }
-            }
         }
         // The set menu, over everything but the system clock.
         if let r = store.menuFor { MenuLayer(ref: r).zIndex(1) }
@@ -79,21 +76,38 @@ struct DoneRipple: View {
     }
 }
 
-/// Beside the clock: whether sets wait for the phone, and the heart rate. The set and rest pages
-/// draw their own row (`ownTopRow`), so the set pill slides with its page (owner 2026-11-11).
+/// The row the toolbar kept under the clock, with the badges hung level with the clock as on the set page:
+/// drawn by the page, they slide with it (owner 2026-11-11).
+struct ClockRow: View {
+    var pill = false
+    var heart = true
+
+    // shortcut: the toolbar's row is 16 pt on 42 mm and 18.5 on 49 mm (measured 2026-11-21); measure per case if a big one looks tight.
+    static let height: CGFloat = 16
+
+    var body: some View {
+        Color.clear.frame(height: Self.height)
+            .overlay(alignment: .topLeading) {
+                SessionBadges(pill: pill, heart: heart).alignmentGuide(.top) { $0[.bottom] + 4 }.padding(.leading, 4)
+            }
+    }
+}
+
+/// Beside the clock: whether sets wait for the phone, and the heart rate. Every page draws them (ClockRow;
+/// the set and rest pages their own row, `ownTopRow`), so they slide with it (owner 2026-11-11).
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var dimmed
     private var still: Bool { reduceMotion || dimmed }
     var pill = false
+    var heart = true
 
     var body: some View {
         HStack(spacing: 4) {
             if pill { SetPill() }
             SyncPill().transition(.scale(scale: 0.6).combined(with: .opacity))
-            // Metrics shows the heart rate big itself.
-            if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
+            if heart && store.show.showHr { HeartRateBadge(health: store.health) }
         }
         // The waiting badge pops in and out, its count rolls, the heart rate slides over (Direction B).
         .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.6), value: store.sync.count)
@@ -348,6 +362,8 @@ struct LivePage: View {
             }
         }
         .animation(Motion.fade(reduceMotion, dimmed), value: panel)
+        // On a hold or its countdown the pill stays beside the clock (review 2026-11-12).
+        .safeAreaInset(edge: .top, spacing: 0) { if !store.ownTopRow { ClockRow(pill: true) } }
     }
 }
 

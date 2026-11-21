@@ -103,8 +103,9 @@ struct RootView: View {
             }
         }
         .animation(Motion.fade(reduceMotion, dimmed), value: screen)
-        // A removal still in its Undo time goes out the moment the app is not in front.
-        .onChange(of: scenePhase) { _, p in if p != .active { store.flushRemoval() } }
+        // A removal still in its Undo time goes out when the app leaves the screen. A lowered wrist
+        // is only .inactive: Undo stays, and its own timer sends the removal.
+        .onChange(of: scenePhase) { _, p in if p == .background { store.flushRemoval() } }
         .animation(Motion.fade(reduceMotion, dimmed), value: store.goAt)
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale), and the app's accent.

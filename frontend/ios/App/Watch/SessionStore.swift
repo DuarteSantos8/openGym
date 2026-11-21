@@ -183,7 +183,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         } else if let data = UserDefaults.standard.data(forKey: SessionStore.stateKey),
                   let saved = try? JSONDecoder().decode(SessionState.self, from: data) {
             // Relaunched (mid-workout or not): the session as it was, then the latest from the phone.
-            state = saved
+            state = SessionCore.upgraded(saved)
             loadTargets()
             // A rest that was running: its countdown goes on (a snapshot no longer brings back a rest
             // this watch already knows of, protocol 2).
@@ -315,7 +315,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the sets logged here have reached the iPhone (WatchCore SyncState).
     var sync: SyncState { SyncState.of(waiting: unsentSets, reachable: reachable) }
 
-    func isSkipped(_ exId: String, _ si: Int) -> Bool { SessionCore.isSkipped(state, exId, si) }
+    func isSkipped(entry ei: Int, _ si: Int) -> Bool { SessionCore.isSkipped(state, entry: ei, si) }
 
     /// The side of a per-side set that is up ("L" or "R"), or nil.
     var sideUp: String? {
@@ -644,6 +644,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if next.workout != nil && next.workout != before.workout { self.noteActivity() }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
             let ticks = SessionCore.phoneTicks(before.workout, next.workout)
+            // A set logged on the phone ends a removal's Undo too.
+            if !ticks.isEmpty { self.flushRemoval() }
             for tick in ticks {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
             }
@@ -715,6 +717,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if heldFor == nil, let last = lastTick, Date().timeIntervalSince(last) < 0.7 { return }
         // In a superset the page flips to the partner: a slower second tap would log its set.
         if heldFor == nil, !touchAllowed { return }
+        // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
+        flushRemoval()
         lastTick = Date()
         ackRestOver()
         let ei = entryIndex
@@ -965,7 +969,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The page's set has a menu: a set or a fix on show, not a hold, a rest or cardio.
     /// The set page (pill first) or the rest page draws the badges itself, so they move with the page.
     var ownTopRow: Bool {
-        tab == .set && (restPanel || (holdCountFrom == nil && holdEndsAt == nil && shownRef != nil))
+        restPanel || (holdCountFrom == nil && holdEndsAt == nil && shownRef != nil)
     }
 
     var menuShown: Bool {
@@ -1415,6 +1419,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
     func finish(at end: Date = Date(), idle: Bool = false, left: Bool = false) {
+        flushRemoval()   // a removal still in its Undo time goes out before the workout is saved
         // Finished mid-hold: the seconds held so far are that set, not lost.
         if !idle, holdEndsAt != nil { endHold(early: true) }
         closeRest(at: end)
@@ -1900,7 +1905,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
                     self.state.settings.effort = "rir"
-                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.key($0.id, 0), $1) })
+                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries.indices, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.placeKey(w, entry: $0, set: 0), $1) })
                 }
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true

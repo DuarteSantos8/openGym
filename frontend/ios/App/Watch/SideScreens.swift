@@ -146,6 +146,7 @@ extension View {
                 .clearOfPageDots()
                 .alignmentGuide(.top) { $0[.bottom] }
         }
+        .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: ClockRow.height) }
     }
 
     /// The summary's badge in the clock's row, top-left, as Apple's Workout has its workout symbol there.
@@ -153,6 +154,7 @@ extension View {
         overlay(alignment: .topLeading) {
             WorkoutBadge(size: 40).clearOfPageDots().alignmentGuide(.top) { $0[.bottom] + 2 }
         }
+        .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: ClockRow.height) }
     }
 
     /// Clear of the Metrics stack's vertical page dots, which sit on the Digital Crown's side: the left when the
