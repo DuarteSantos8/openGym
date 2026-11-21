@@ -417,10 +417,10 @@ export class GarminWatch {
   /** Actions.holdStart: a hold of `sec` s on the set up now; at zero it logs itself, its rest `rest` s. */
   holdStart (sec, rest = 0) { this.hold = { from: this.now(), sec, rest, up: this.upNow() } }
 
-  /** Actions.upNow: the set up now, what a hold is for. */
+  /** Actions.upNow: the set up now (Core.pkey), what a hold is for. */
   upNow () {
     const e = this.entryAt(this.s.pos), si = this.setIndex(this.s.pos)
-    return e && si != null ? strOf(e.id) + '#' + si : null
+    return e && si != null ? pkey(e, this.s.pos, si) : null
   }
 
   /** Seconds left on the rest here (Rest.left), or null. */

@@ -228,7 +228,8 @@ module Actions {
         WatchUi.requestUpdate();
     }
 
-    //! The set up now, as "<exercise id>#<set><side>", or null: what a hold is for.
+    //! The set up now, as its key (Core.pkey: the set's id, else its place), or null: what a hold is
+    //! for. A set removed on the phone leaves its place to the next one, which has another id.
     (:big)
     function upNow() {
         var s = G.state;
@@ -237,8 +238,7 @@ module Actions {
         if (e == null || si == null) {
             return null;
         }
-        var sd = Core.sideUp(Core.dictOf(Core.arrOf(e["sets"])[si]));
-        return Core.strOf(e["id"]) + "#" + si + (sd == null ? "" : sd);
+        return Core.pkey(e, s["pos"], si, Core.sideUp(Core.dictOf(Core.arrOf(e["sets"])[si])));
     }
 
     (:small)

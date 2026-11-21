@@ -804,6 +804,20 @@ describe('one rest, the two clocks, set ids (protocol 2, docs/WATCH_SYNC.md)', (
     expect(apart(w)).toBeLessThan(1000)
   })
 
+  it('the held set removed on the phone: the next set slides into its index, the watch\'s hold ends unlogged', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.holdStart(30, 60)
+    await w.run(5)
+    // same exercise, same index 0, another set (another sid)
+    w.update(s => { s.active.entries[0].sets.splice(0, 1) })
+    await w.run(30)
+    expect(w.watch.hold).toBe(null)
+    expect(w.done()).toEqual([])
+  })
+
   it('a set ticked on the phone moves the watch on, also on another exercise', async () => {
     const w = world()
     await w.launch()
