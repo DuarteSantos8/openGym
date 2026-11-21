@@ -16,7 +16,7 @@
 #   WATCH_WIDGET_PROFILE=<widget.mobileprovision>  once the watch app carries its widget
 #
 # Before: the phone build with the app's animations, from the same commit as the IPA:
-#   cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/build-fast/from-hdd/opengym-media/build-appwebp npm run build:mobile
+#   cd frontend && VITE_CLIP_EXT=webp VITE_BUILTIN_CLIP_PX=<px> APP_MEDIA_DIR=<media>/quality/<px> npm run build:mobile
 # After: upload the IPA (docs/APP_STORES.md, "Upload").
 set -euo pipefail
 
@@ -33,8 +33,16 @@ trap 'rm -rf "$WORK"' EXIT
 PUBLIC="$FRONT/ios/App/App/public"
 [ -f "$PUBLIC/index.html" ] || { echo "no phone build in $PUBLIC: run npm run build:mobile first" >&2; exit 1; }
 grep -q 'name="opengym-flavor" content="mobile"' "$PUBLIC/index.html" || { echo "$PUBLIC is not the phone build" >&2; exit 1; }
-CLIPS=$(find "$PUBLIC/exercise-media" -name '*.webp' 2>/dev/null | wc -l)
+# The animations only: the stills are WebP too, and counting them let a build pass whose clips were
+# never staged (APP_MEDIA_DIR without VITE_CLIP_EXT=webp copies no clip at all), so every animation
+# in the App Store app stayed a still (#962). And no MP4 the page would ask for instead.
+CLIPS=$(find "$PUBLIC/exercise-media/clip" -name '*.webp' 2>/dev/null | wc -l)
 [ "$CLIPS" -gt 6000 ] || { echo "$PUBLIC has $CLIPS WebP animations: build with VITE_CLIP_EXT=webp and APP_MEDIA_DIR" >&2; exit 1; }
+MP4S=$(find "$PUBLIC/exercise-media/clip" -name '*.mp4' 2>/dev/null | wc -l)
+[ "$MP4S" -eq 0 ] || { echo "$PUBLIC mixes $MP4S MP4 animations with the WebP ones: build with VITE_CLIP_EXT=webp" >&2; exit 1; }
+# And by name: every still and animation the bundle itself asks for (its clip extension and
+# built-in size), for both figures, is in the package (#962).
+node "$FRONT/scripts/check-app-media.mjs" "$PUBLIC" || { echo "the phone build would ship without some of its exercise media" >&2; exit 1; }
 
 unzip -q "$IPA" -d "$WORK/ipa"
 APP="$WORK/ipa/Payload/App.app"

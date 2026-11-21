@@ -3,12 +3,13 @@
   "name": "barbell z press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "upper chest",
-    "lower back"
+    "lower back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated floor overhead press with legs straight. It builds shoulders and core.",

@@ -3,9 +3,8 @@
   "name": "resistance band pull apart (45 degrees)",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "trapezius",
     "upper back"

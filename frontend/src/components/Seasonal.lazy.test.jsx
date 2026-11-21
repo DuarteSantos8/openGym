@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const st = vi.hoisted(() => ({ S: {}, loaded: 0, xmas: 0, tour: false }))
-vi.mock('../store/useStore.js', () => ({ useStore: sel => sel({ S: st.S }) }))
+vi.mock('../store/useStore.js', () => ({ useStore: Object.assign(sel => sel({ S: st.S }), { getState: () => ({ S: st.S }) }) }))
 vi.mock('../lib/tour.js', () => ({ useTourRunning: () => st.tour }))
 vi.mock('../seasonal/halloween.jsx', () => {
   st.loaded++
@@ -155,7 +155,20 @@ describe('fetched only while a theme shows', () => {
     expect(st.xmas).toBe(before)
   })
 
+  it('On in November 2026, before Christmas exists: nothing, never fetched, openSeasonal says no', async () => {
+    vi.setSystemTime(new Date(2026, 10, 20, 12))
+    st.S = { seasonal: { christmas: 'on', halloween: 'off' } }
+    const before = st.xmas
+    const { SeasonalLayer, SeasonDeco, openSeasonal } = await import('./Seasonal.jsx')
+    await act(async () => root.render(<><SeasonalLayer /><SeasonDeco spot="home-advent" /></>))
+    expect(host.innerHTML).toBe('')
+    expect(await openSeasonal('christmas', 'advent')).toBe(false)
+    expect(st.xmas).toBe(before)
+  })
+
   it('openSeasonal reaches the theme\'s own open()', async () => {
+    vi.setSystemTime(new Date(2026, 11, 5, 12))
+    st.S = {}
     const { openSeasonal } = await import('./Seasonal.jsx')
     expect(await openSeasonal('christmas', 'advent')).toBe(true)
     expect(st.opened).toBe('advent')

@@ -12,7 +12,7 @@
   /* a raised surface (P11): lighter than the cards under the dim, edged with a hairline of light */
   box-shadow:inset 0 0 0 var(--hair,.5px) var(--raised-line,transparent),0 16px 48px -12px rgba(0,0,0,.55);transition:top .25s ease,left .25s ease;outline:none}
 .tour-center{top:50%;left:50%;transform:translate(-50%,-50%)}
-.tour-card h2{margin:2px 0 6px;font-size:18px;font-weight:700;letter-spacing:-.02em;text-transform:none;color:var(--label)}
+.tour-card h2{margin:2px 0 6px;font-size:1.125rem;font-weight:700;letter-spacing:-.02em;text-transform:none;color:var(--label)}
 .tour-card p{margin:0 0 12px;font-size:var(--fs-subhead);line-height:1.45;color:var(--label-2,var(--label))}
 .tour-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px}
 .tour-count{font-size:var(--fs-caption);font-weight:600;color:var(--label-3,var(--label));font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -30,7 +30,7 @@
 .tour-list{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
 .tour-tut{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:12px;background:var(--surface-2);
   color:var(--label);font:inherit;text-align:start;cursor:pointer}
-.tour-tut .icon,.tour-tut svg{flex:none;color:var(--label-3,var(--label));font-size:14px}
+.tour-tut .icon,.tour-tut svg{flex:none;color:var(--label-3,var(--label));font-size:.875rem}
 [dir="rtl"] .tour-tut svg{transform:scaleX(-1)}
 .tour-tut-m{display:flex;flex-direction:column;min-width:0;flex:1}
 .tour-tut-t{font-size:var(--fs-subhead);font-weight:600}
@@ -60,7 +60,7 @@
   box-shadow:0 10px 32px -8px rgba(0,0,0,.6);border:1px solid var(--sep,transparent)}
 .tour-bar.at-bottom{top:auto;bottom:calc(var(--sab,0px) + 10px)}
 .tour-bar h2{font-size:var(--fs-callout);margin:0 0 2px}
-.tour-bar p{font-size:14px;margin:0 0 8px}
+.tour-bar p{font-size:.875rem;margin:0 0 8px}
 @media (prefers-reduced-motion:reduce){.tour-hole,.tour-card,.tour-ring{transition:none}}
 /* A short screen (320 x 568): the closing card's tutorials go to one line each, so its buttons
    stay in sight without scrolling the card. */

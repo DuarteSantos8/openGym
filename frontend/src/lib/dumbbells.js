@@ -278,6 +278,22 @@ export function stackFromStep(first, step, count) {
   return cleanWeights(out)
 }
 
+/**
+ * Several weights typed or pasted at once (#926): one per line, or separated by commas, semicolons
+ * or spaces ("5, 11.3, 18.1" or a column copied from a sheet). `decimalComma` is whether this
+ * language writes 2,5 for two and a half; then a comma between two digits is that decimal comma
+ * and only a comma with a space after it, a line break, a semicolon or a space separates. Units
+ * typed along ("20 kg") are ignored. Returns the clean list: sorted, no duplicates, nothing <= 0.
+ */
+export function parseWeightList(text, decimalComma = false) {
+  let s = String(text || '').replace(/(kg|lbs?)\b/gi, ' ').replace(/[،，、；]/g, ' ')
+  s = decimalComma ? s.replace(/,(?=\s|$)/g, ' ') : s.replace(/,/g, ' ')
+  return cleanWeights(s.split(/[\s;]+/).filter(Boolean).map(tok => {
+    const n = tok.replace(',', '.')
+    return /^\d*\.?\d+$/.test(n) ? Number(n) : NaN
+  }))
+}
+
 const EPS = 1e-6
 /** The `n`-th owned weight above `w` (the nearest one for an off-list weight); null past the heaviest. */
 export function ownedUp(ws, w, n = 1) {

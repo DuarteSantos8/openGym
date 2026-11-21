@@ -4,13 +4,15 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { canRenderFmt, normalizeFmt } from '../lib/qr.js'
 import { encodeBars } from '../lib/barcode.js'
-import { scanCode, importCodeFromImage, webScanner } from '../lib/scan.js'
+import { TYPED_FMTS, checkTyped, hasCheckDigit } from '../lib/checkin-typed.js'
+import { scanCode, importCodeFromImage, webScanner, MODULE_MISSING } from '../lib/scan.js'
 import Icon from '../components/Icon.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
-import { Button, TextField } from '../components/ui.jsx'
+import { Button, TextField, MenuButton } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
 // Move the card at `from` to sit at index `to`, returning a new array (the input is left alone).
@@ -34,8 +36,9 @@ export function moveGymCard(cards, from, to) {
 //
 // The rail reopens on the card you used last (lastGymCardId) and remembers the one you settle on,
 // so a member with two gyms lands on the right code without swiping. Cards are added by scanning
-// or importing a photo only — never by typing a code, which is too easy to fat-finger into a
-// code that silently fails at the turnstile. An existing card can be edited (rename, re-scan), and
+// or importing a photo. Typing a code is too easy to fat-finger into one that silently fails at
+// the turnstile, so it is only the way out after a scan or photo found nothing (TypedCode below),
+// with a check digit or a second entry and a big preview. An existing card can be edited (rename, re-scan), and
 // with more than one card each carries ◀ ▶ buttons to nudge its position along the rail.
 export default function CheckIn() {
   const nav = useNavigate()
@@ -123,16 +126,20 @@ function CardFace({ card, index, count }) {
   const move = to => update(s => { s.gymCards = moveGymCard(s.gymCards, index, to) })
   return <div className="ci-card">
     <div className="ci-card-hd">
-      <button className="iconbtn ci-card-btn" onClick={() => openEditCard(card)} aria-label={t('Edit')}><Icon name="pencil" /></button>
+      <button className="iconbtn ci-card-btn" onClick={() => openEditCard(card)} aria-label={nameIn(card.label, t('Edit'))}><Icon name="pencil" /></button>
       <div className="ci-label">{card.label}</div>
-      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red)' }} onClick={remove} aria-label={t('Remove')}><Icon name="trash" /></button>
+      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red)' }} onClick={remove} aria-label={card.label ? t('Remove {0}', said(card.label)) : t('Remove')}><Icon name="trash" /></button>
     </div>
     <div className="ci-qr-plate"><QrCanvas value={card.value} fmt={card.fmt} size={230} /></div>
     <div className="ci-value">{card.value}</div>
+    {card.typed && <div className="ci-typed">
+      <Icon name="info" /><span>{t('Typed in by hand. Give it one test run at the turnstile.')}</span>
+      <Button size="xs" variant="plain" aria-label={nameIn(card.label, t('It works'))} onClick={() => update(s => { const c = (s.gymCards || []).find(x => x.id === card.id); if (c) delete c.typed })}>{t('It works')}</Button>
+    </div>}
     {count > 1 && <div className="ci-reorder">
-      <button className="iconbtn ci-card-btn" onClick={() => move(index - 1)} disabled={index === 0} aria-label={t('Move left')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn ci-card-btn" onClick={() => move(index - 1)} disabled={index === 0} aria-label={nameIn(card.label, t('Move left'))}><Icon name="chevronLeft" /></button>
       <span className="ci-pos">{index + 1} / {count}</span>
-      <button className="iconbtn ci-card-btn" onClick={() => move(index + 1)} disabled={index === count - 1} aria-label={t('Move right')}><Icon name="chevronRight" /></button>
+      <button className="iconbtn ci-card-btn" onClick={() => move(index + 1)} disabled={index === count - 1} aria-label={nameIn(card.label, t('Move right'))}><Icon name="chevronRight" /></button>
     </div>}
   </div>
 }
@@ -151,14 +158,18 @@ export function openEditCard(card) {
 }
 
 // Shared sheet for adding and editing a card. Without `card` it creates a new one; with `card` it
-// updates that entry in place. The code always comes from a scan or a photo — there is no text
-// field for it — so an edit that only renames keeps the existing scanned code untouched.
+// updates that entry in place. The code comes from a scan or a photo, or, once those found
+// nothing, from TypedCode; an edit that only renames keeps the existing code untouched.
 function CardSheet({ close, card }) {
   const editing = !!card
   const [label, setLabel] = useState(card?.label || '')
   const [value, setValue] = useState(card?.value || '')
   const [fmt, setFmt] = useState(normalizeFmt(card?.fmt) || 'qrcode')
   const [busy, setBusy] = useState(false)
+  // Typing the code is the way out once a scan or photo found nothing, never the first offer.
+  const [failed, setFailed] = useState(false)
+  const [typing, setTyping] = useState(false)
+  const [typed, setTyped] = useState(!!card?.typed)
   const fileRef = useRef(null)
   const toast = useUI(s => s.toast)
 
@@ -181,13 +192,14 @@ function CardSheet({ close, card }) {
         c.label = label.trim() || t('Gym card')
         c.value = trimmed
         c.fmt = fmt
+        if (typed) c.typed = true; else delete c.typed
       })
       toast(t('Card updated'))
     } else {
       update(s => {
         if (!Array.isArray(s.gymCards)) s.gymCards = []
         const id = uid()
-        s.gymCards.push({ id, label: label.trim() || t('Gym card'), value: trimmed, fmt })
+        s.gymCards.push({ id, label: label.trim() || t('Gym card'), value: trimmed, fmt, ...(typed ? { typed: true } : {}) })
         s.lastGymCardId = id
       })
       toast(t('Card added'))
@@ -202,32 +214,36 @@ function CardSheet({ close, card }) {
     const f = normalizeFmt(code.fmt)
     if (!canRenderFmt(f) || (f !== 'qrcode' && !encodeBars(code.value, f))) {
       toast(t('That code type is not supported. Use a QR code or a barcode'))
+      setFailed(true)
       return
     }
     setValue(code.value)
     setFmt(f)
+    setTyped(false)
+    setTyping(false)
   }
 
   // Camera scan: in the app, hands off to the native scanner; in a browser (and the F-Droid build,
   // which has no ML Kit), opens our own camera sheet on top of this one. Either way the value
   // drops straight into the form so the user can still name it before saving.
   const doScan = async () => {
-    if (await webScanner()) {
-      useUI.getState().openSheet(closeCam => <CameraScan
-        onCancel={closeCam}
-        onFound={code => {
-          closeCam()
-          take(code)
-        }} />)
-      return
-    }
+    const camera = () => useUI.getState().openSheet(closeCam => <CameraScan
+      onCancel={closeCam}
+      onFound={code => {
+        closeCam()
+        take(code)
+      }} />)
+    if (await webScanner()) { camera(); return }
     setBusy(true)
     try {
       const code = await scanCode()
       if (!code) return                       // user backed out
       take(code)
     } catch (e) {
+      // Google's scanner isn't on this phone yet (a Play services download): our own camera instead.
+      if (e && e.message === MODULE_MISSING) { camera(); return }
       toast(scanErrorMessage(e))
+      setFailed(true)
     } finally { setBusy(false) }
   }
 
@@ -238,10 +254,11 @@ function CardSheet({ close, card }) {
     setBusy(true)
     try {
       const code = await importCodeFromImage(file)
-      if (!code) { toast(t('No code found in that image')); return }
+      if (!code) { toast(t('No code found in that image')); setFailed(true); return }
       take(code)
     } catch (e) {
       toast(t('Could not read that image'))
+      setFailed(true)
     } finally { setBusy(false) }
   }
 
@@ -254,6 +271,13 @@ function CardSheet({ close, card }) {
       <Button variant="tinted" icon="image" onClick={() => fileRef.current?.click()} disabled={busy}>{t('Import photo')}</Button>
     </div>
 
+    {failed && !typing && <div className="ci-fallback">
+      <span>{t('No luck reading it? Type the number instead.')}</span>
+      <Button size="sm" variant="plain" icon="pencil" onClick={() => setTyping(true)}>{t('Type it in')}</Button>
+    </div>}
+    {typing && <TypedCode initialFmt={fmt === 'qrcode' && !value ? 'ean13' : fmt} onCancel={() => setTyping(false)}
+      onUse={(v, f) => { setValue(v); setFmt(f); setTyped(true); setTyping(false) }} />}
+
     <label className="sect-t">{t('Label')}</label>
     <TextField value={label} onChange={e => setLabel(e.target.value)} placeholder={t('e.g. FitZone downtown')} style={{ marginBottom: 16 }} />
 
@@ -263,6 +287,55 @@ function CardSheet({ close, card }) {
 
     <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
   </>
+}
+
+const FMT_LABEL = { ean13: 'EAN-13', upca: 'UPC-A', ean8: 'EAN-8', code128: 'Code 128', code39: 'Code 39' }
+const fmtLabel = f => FMT_LABEL[f] || t('QR code')
+
+// What a typed code still needs, in words (lib/checkin-typed.js checkTyped's `why`).
+function typedHint(r) {
+  switch (r.why) {
+    case 'digits': return t('Digits only for this one.')
+    case 'length': return t('This one has {0} digits.', r.want)
+    case 'check': return t('That doesn’t add up. The last digit checks the others, so one of them is off.')
+    case 'chars': return t('This format can’t carry some of those characters. Check the type above.')
+    case 'long': return t('That’s longer than this format takes ({0} at most).', r.max)
+    case 'mismatch': return t('The two don’t match. One of them has a typo.')
+    case 'again': return t('Once more below, to be sure.')
+    default: return ''
+  }
+}
+
+// Typing the code off the card: the format, the number (twice where there is no check digit), and
+// the code drawn big to hold against the card before it goes in.
+function TypedCode({ initialFmt, onUse, onCancel }) {
+  const [fmt, setFmt] = useState(TYPED_FMTS.includes(initialFmt) ? initialFmt : 'ean13')
+  const [a, setA] = useState('')
+  const [b, setB] = useState('')
+  const r = checkTyped(a, fmt, b)
+  const digits = hasCheckDigit(fmt)
+  // A hint only once there is something to judge: no scolding before the first key.
+  const hint = !a.trim() || (r.why === 'length' && a.replace(/\D/g, '').length < r.want) ? '' : typedHint(r)
+  return <div className="ci-typedform">
+    <div className="ci-typed-row">
+      <span className="sect-t">{t('Code type')}</span>
+      <MenuButton title={t('Code type')} value={fmt} options={TYPED_FMTS.map(f => ({ value: f, label: fmtLabel(f) }))} onChange={f => { setFmt(f); setB('') }} />
+    </div>
+    <TextField className="ci-typed-in" value={a} onChange={e => setA(e.target.value)} aria-label={t('The number on your card')} placeholder={t('The number on your card')}
+      inputMode={digits ? 'numeric' : 'text'} autoComplete="off" autoCorrect="off" autoCapitalize={fmt === 'code39' ? 'characters' : 'off'} spellCheck={false} autoFocus />
+    {!digits && <TextField className="ci-typed-in" value={b} onChange={e => setB(e.target.value)} aria-label={t('Once more, to be sure')} placeholder={t('Once more, to be sure')}
+      inputMode="text" autoComplete="off" autoCorrect="off" autoCapitalize={fmt === 'code39' ? 'characters' : 'off'} spellCheck={false} />}
+    <div className={'ci-typed-hint' + (hint && r.why !== 'again' ? ' bad' : '')} aria-live="polite">{r.ok ? t('Looks right. Hold it next to your card: same digits, same bars?') : hint}</div>
+    {r.ok && <>
+      <div className="ci-qr-plate ci-typed-big"><QrCanvas value={r.value} fmt={fmt} size={280} /></div>
+      <div className="ci-value ci-typed-v">{r.value}</div>
+      <div className="muted small ci-typed-note">{t('Test it at the turnstile once before you count on it.')}</div>
+    </>}
+    <div className="row ci-typed-act">
+      <Button variant="plain" onClick={onCancel}>{t('Cancel')}</Button>
+      <Button variant="tinted" icon="check" disabled={!r.ok} onClick={() => onUse(r.value, fmt)}>{t('Use this code')}</Button>
+    </div>
+  </div>
 }
 
 // Map the thrown reasons from lib/scan.js to something a person can act on.

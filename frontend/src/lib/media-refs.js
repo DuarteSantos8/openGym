@@ -6,7 +6,7 @@
  * on the server under DATA_DIR/uploads/<uid>/<sha256>.<ext> (api/media.js). Everything here is
  * pure and has no imports, so the store, the sync, the editor and the tests can all use it.
  *
- *   MediaRef = { kind: 'image'|'gif'|'video', hash, mime, size, width, height,
+ *   MediaRef = { kind: 'image'|'gif'|'video'|'audio', hash, mime, size, width, height,
  *                dur?, codec?, poster?: { hash, mime, size, width, height }, at, local? }
 
  * `local: true` marks a set's form video kept on the phone that filmed it ("Keep videos on this
@@ -21,7 +21,7 @@
 
 export const HASH_RE = /^[0-9a-f]{64}$/
 
-/* The seven types that are ever stored, the same list as api/media.js MEDIA_TYPES. `playExt` is
+/* The eight types that are ever stored, the same list as api/media.js MEDIA_TYPES. `playExt` is
    the name a file gets in the phone's own folder: the WebView's local server types a file by its
    extension, and it hands out .mov as something the <video> element will not play, while the same
    bytes named .mp4 play (a MOV and an MP4 are the same container). */
@@ -32,7 +32,10 @@ export const MEDIA_MIMES = {
   'image/gif': { kind: 'gif', category: 'still', ext: 'gif', playExt: 'gif' },
   'video/mp4': { kind: 'video', category: 'video', ext: 'mp4', playExt: 'mp4' },
   'video/quicktime': { kind: 'video', category: 'video', ext: 'mov', playExt: 'mp4' },
-  'video/webm': { kind: 'video', category: 'video', ext: 'webm', playExt: 'webm' }
+  'video/webm': { kind: 'video', category: 'video', ext: 'webm', playExt: 'webm' },
+  // A sound of one's own for the rest timer (lib/user-sounds.js): always the WAV this app wrote
+  // (lib/sound-ingest.js). Its width and height are 1: it has none, and the shape stays the same.
+  'audio/wav': { kind: 'audio', category: 'audio', ext: 'wav', playExt: 'wav' }
 }
 // A poster is always a still this app encoded itself, so only the two formats the encoder writes.
 const POSTER_MIMES = new Set(['image/webp', 'image/jpeg'])
@@ -137,6 +140,12 @@ export function stateMediaRefs(state) {
   for (const w of Array.isArray(state.workouts) ? state.workouts : []) out.push(...setRefsOf(w))
   // Progress photos filed under a day rather than a workout (lib/day-photos.js, #557).
   if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) out.push(e.m)
+  // Sounds of one's own (lib/user-sounds.js): sounds[] = { id, name, m, _ts }.
+  for (const e of Array.isArray(state.sounds) ? state.sounds : []) if (isObj(e) && isObj(e.m)) out.push(e.m)
+  // Your own photo or video on a built-in exercise (lib/ex-media.js): exMedia[<id>] = { m, show, _ts }.
+  if (isObj(state.exMedia)) for (const e of Object.values(state.exMedia)) if (isObj(e) && isObj(e.m)) out.push(e.m)
+  // The profile picture (lib/avatar.js): avatar = { m } (a preset has no file).
+  if (isObj(state.avatar) && isObj(state.avatar.m)) out.push(state.avatar.m)
   return out
 }
 
@@ -212,10 +221,15 @@ export function referencedFiles(state, { refs = stateMediaRefs(state) } = {}) {
  * server does not say it keeps them (`sets` false: GET /api/config without media.sets, whose GC
  * would sweep them). A file another ref names without those reasons still goes.
  */
-export function uploadableFiles(state, { sets = true } = {}) {
+export function uploadableFiles(state, { sets = true, sounds = true, avatar = true } = {}) {
   const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
   const setRefs = new Set(state && typeof state === 'object' && Array.isArray(state.workouts) ? state.workouts.flatMap(setRefsOf) : [])
-  const refs = stateMediaRefs(state).filter(m => isObj(m) && m.local !== true && (sets || !setRefs.has(m)))
+  // A sound of one's own goes only to a server that says it keeps them (media.sounds, v1.4.5):
+  // an older one would refuse the WAV and sweep it.
+  // The profile picture likewise (media.avatar, v1.4.5): an older server's GC would sweep it, so
+  // there it stays on the device that has it.
+  const avatarRef = state && typeof state === 'object' && isObj(state.avatar) ? state.avatar.m : null
+  const refs = stateMediaRefs(state).filter(m => isObj(m) && m.local !== true && (sets || !setRefs.has(m)) && (sounds || m.kind !== 'audio') && (avatar || m !== avatarRef))
   return referencedFiles(state, { refs })
 }
 

@@ -3,11 +3,12 @@
   "name": "smith drag curl",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "biceps",
   "secondaryMuscles": [
     "brachialis",
     "forearms",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A biceps curl where the bar is dragged up along the body, keeping the load on the biceps and reducing shoulder swing.",

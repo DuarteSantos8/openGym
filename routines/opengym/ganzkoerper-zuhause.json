@@ -1,0 +1,113 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "de",
+  "title": "Ganzkörper zu Hause in 30 Minuten",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 30,
+  "tags": [
+    "zuhause",
+    "ohne geräte"
+  ],
+  "description": "Zwei kurze Einheiten für Wohnzimmer und Küchentisch, im Wechsel an drei Tagen. Kein Gerät nötig, nur ein stabiler Tisch und zwei Stühle.",
+  "sessions": [
+    {
+      "name": "Tag A",
+      "exercises": [
+        {
+          "id": "0662",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "1197",
+          "sets": 3,
+          "reps": 20,
+          "rest": 60
+        },
+        {
+          "id": "3381",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60,
+          "note": "Unter einem stabilen Tisch."
+        },
+        {
+          "id": "0612",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60,
+          "note": "Pro Bein."
+        },
+        {
+          "id": "0715",
+          "sets": 3,
+          "sec": 30,
+          "rest": 30
+        }
+      ]
+    },
+    {
+      "name": "Tag B",
+      "exercises": [
+        {
+          "id": "2921",
+          "sets": 3,
+          "reps": 8,
+          "rest": 60
+        },
+        {
+          "id": "0781",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "3387",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        },
+        {
+          "id": "2471",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0276",
+          "sets": 3,
+          "reps": 10,
+          "rest": 45
+        },
+        {
+          "id": "0463",
+          "sets": 3,
+          "sec": 45,
+          "rest": 30
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      5,
+      0
+    ]
+  ]
+}

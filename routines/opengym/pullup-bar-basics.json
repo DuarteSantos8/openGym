@@ -1,0 +1,107 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Pull-up bar basics",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 40,
+  "tags": [
+    "home",
+    "pull-up bar"
+  ],
+  "description": "Three short sessions for a doorway bar and the floor. Pulling, pushing, legs and core, no gym membership needed.",
+  "sessions": [
+    {
+      "name": "Bar A",
+      "exercises": [
+        {
+          "id": "0652",
+          "sets": 3,
+          "reps": 6,
+          "rest": 120,
+          "note": "No pull-up yet? Jump up and lower yourself as slowly as you can."
+        },
+        {
+          "id": "0662",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "1197",
+          "sets": 3,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "9819",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        },
+        {
+          "id": "0463",
+          "sets": 3,
+          "sec": 40,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Bar B",
+      "exercises": [
+        {
+          "id": "1326",
+          "sets": 3,
+          "reps": 6,
+          "rest": 120
+        },
+        {
+          "id": "2921",
+          "sets": 3,
+          "reps": 8,
+          "rest": 90
+        },
+        {
+          "id": "0781",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60,
+          "note": "Each leg."
+        },
+        {
+          "id": "2471",
+          "sets": 3,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0715",
+          "sets": 2,
+          "sec": 30,
+          "rest": 30
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      5,
+      0
+    ]
+  ]
+}

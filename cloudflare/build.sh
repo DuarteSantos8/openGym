@@ -22,4 +22,7 @@ bash website/build-images.sh dist/img
 node scripts/catalogue/stage-media.mjs frontend/dist
 mv frontend/dist dist/demo
 
+# Community routines under /routines/ (same pages as on the homelab, scripts/routines/build.mjs)
+node scripts/routines/build.mjs --out dist/routines
+
 echo "fallback site in dist/: $(find dist -type f | wc -l) files"

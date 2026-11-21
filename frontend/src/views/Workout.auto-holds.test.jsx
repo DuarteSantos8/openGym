@@ -35,7 +35,7 @@ function renderWorkout(entries, over = {}) {
 }
 const entriesNow = () => useStore.getState().S.active.entries
 const doneOf = (idx = 0) => entriesNow()[idx].sets.map(s => s.done)
-const tapStart = () => act(() => container.querySelector('button[aria-label="Start set"]').click())
+const tapStart = () => act(() => container.querySelector('button[aria-label*=": Start set"]').click())
 const wait = ms => act(() => { vi.advanceTimersByTime(ms) })
 
 beforeEach(() => {

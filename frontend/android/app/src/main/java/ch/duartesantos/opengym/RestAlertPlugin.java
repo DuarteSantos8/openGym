@@ -19,7 +19,8 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  *   await RestAlert.schedule({ id, at, title, sound, tone, classic, vibrate, channelId, visibility, importance, localOnly });
  *   await RestAlert.cancel({ id });
  *   await RestAlert.buzz({ pattern: [200, 100, 200] });   // navigator.vibrate's shape, as an alarm
- *   await RestAlert.speak({ text, lang, rate, flush });   // a spoken cue, music ducks (SpeechCue)
+ *   await RestAlert.speak({ text, lang, rate, pitch, voice, flush });   // a spoken cue, music ducks (SpeechCue)
+ *   await RestAlert.voices();                            // { voices: [{ id, name, lang, online }] }
  *   await RestAlert.hush();
  */
 @CapacitorPlugin(name = "RestAlert")
@@ -72,7 +73,7 @@ public class RestAlertPlugin extends Plugin {
             call.reject("at must be in the future");
             return;
         }
-        RestAlert.setAccentColor((int) number(call, "accent", 0xFF30D158L), (int) number(call, "ink", 0xFF000000L));
+        RestAlert.setAccentColor((int) number(call, "accent", 0xFFA3E635L), (int) number(call, "ink", 0xFF0C0E12L));
         RestAlert.setLabels(
                 call.getString("pause", "Pause"),
                 call.getString("resume", "Resume"),
@@ -140,6 +141,15 @@ public class RestAlertPlugin extends Plugin {
             call.reject("no context");
             return;
         }
+        // `at`: the end of the rest or hold this tone is for. When the alarm already rang it (the
+        // page thawed after a lock or an app switch and caught up), once is enough (#1007).
+        long at = number(call, "at", 0);
+        if (at > 0 && !RestAlert.claimForPage(at)) {
+            JSObject res = new JSObject();
+            res.put("skipped", true);
+            call.resolve(res);
+            return;
+        }
         RestAlert.playNow(ctx.getApplicationContext(), call.getString("kind", "chime"));
         call.resolve();
     }
@@ -157,9 +167,42 @@ public class RestAlertPlugin extends Plugin {
             return;
         }
         Double rate = call.getDouble("rate");
-        boolean ok = SpeechCue.speak(ctx, text, call.getString("lang", ""), rate == null ? 1f : rate.floatValue(), Boolean.TRUE.equals(call.getBoolean("flush", false)));
+        Double pitch = call.getDouble("pitch");
+        boolean ok = SpeechCue.speak(ctx, text, call.getString("lang", ""), rate == null ? 1f : rate.floatValue(),
+                pitch == null ? 1f : pitch.floatValue(), call.getString("voice", ""), Boolean.TRUE.equals(call.getBoolean("flush", false)));
         if (ok) call.resolve();
         else call.reject("no voice");
+    }
+
+    /**
+     * The phone's voices for Settings → Timer alerts → Voice: { voices: [{ id, name, lang, online }] }.
+     * `id` is the voice's name, which speak({ voice }) takes back. Voices whose language data is not
+     * installed are left out: they would say nothing.
+     */
+    @PluginMethod
+    public void voices(PluginCall call) {
+        Context ctx = getContext();
+        if (ctx == null) {
+            call.reject("no context");
+            return;
+        }
+        SpeechCue.voices(ctx, list -> {
+            JSArray out = new JSArray();
+            for (android.speech.tts.Voice v : list) {
+                try {
+                    if (v.getFeatures() != null && v.getFeatures().contains(android.speech.tts.TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)) continue;
+                    JSObject o = new JSObject();
+                    o.put("id", v.getName());
+                    o.put("name", v.getName());
+                    o.put("lang", v.getLocale() == null ? "" : v.getLocale().toLanguageTag());
+                    o.put("online", v.isNetworkConnectionRequired());
+                    out.put(o);
+                } catch (Exception ignored) { /* a voice that cannot describe itself */ }
+            }
+            JSObject res = new JSObject();
+            res.put("voices", out);
+            call.resolve(res);
+        });
     }
 
     @PluginMethod
@@ -203,8 +246,8 @@ public class RestAlertPlugin extends Plugin {
 
     @PluginMethod
     public void setAccent(PluginCall call) {
-        int color = (int) number(call, "accent", 0xFF30D158L);
-        int ink = (int) number(call, "ink", 0xFF000000L);
+        int color = (int) number(call, "accent", 0xFFA3E635L);
+        int ink = (int) number(call, "ink", 0xFF0C0E12L);
         RestAlert.setAccentColor(color, ink);
         Context ctx = getContext();
         if (ctx != null) {

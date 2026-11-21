@@ -18,6 +18,7 @@ import { EXDB } from '../lib/exercises.js'
 import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat, defaultTrainingDays } from '../lib/coach.js'
 import { requestPlan, disclosure, JOB_ERRORS, isDeclined, coachVia } from '../lib/coach-api.js'
 import { consentTarget, allowAi } from '../lib/coach-consent.js'
+import { OptionalRows } from '../components/CoachSees.jsx'
 import { DEMO } from '../lib/demo.js'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -209,7 +210,7 @@ export default function CoachIntake() {
         <div className="dw-read" aria-hidden="true">{toHHMM(p.sessionMin || 60)}</div>
         <HourMinuteWheel value={p.sessionMin || 60} onChange={m => set({ sessionMin: m })} min={10} />
         <div className="ob-quick">
-          {QUICK_MIN.map(m => <button key={m} className={'chip' + (p.sessionMin === m ? ' on' : '')} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</button>)}
+          {QUICK_MIN.map(m => <button key={m} className={'chip nocap' + (p.sessionMin === m ? ' on' : '')} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</button>)}
         </div>
       </>}
 
@@ -283,6 +284,8 @@ function Consent({ onAgree, onDecline }) {
         return <div key={k} className="ob-consent-row"><Icon name="check" /><div><b>{title}</b><span>{sub}</span></div></div>
       })}
     </div>
+    <div className="ob-sub">{t('You decide')}</div>
+    <div className="ob-consent"><OptionalRows /></div>
     <div className="ob-fine">
       <div>{who}</div>
       <div>{t('Your name, your sign-in details and everything else about your account stay here. Other people’s data is never included.')}</div>

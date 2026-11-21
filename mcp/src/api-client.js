@@ -10,6 +10,8 @@
    profile, so it only ever travels over https — plain http to this machine aside, the exception
    passkeys make too — and it is never put into a result or an error message. */
 
+import { currentProfile } from './state.js'
+
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
 // What a session token is made of (api/server.js makeSession: `uid:exp:ver` and a base64url MAC).
 // Checked before it goes into a header, because the header check's own error quotes the value.
@@ -36,8 +38,20 @@ export function apiBase(raw) {
   return u.origin + u.pathname.replace(/\/+$/, '')
 }
 
-/** { base, token } from the environment, or ENOCONFIG saying what to set. */
+/** Whether a token is a scoped one (Settings → API tokens, api/tokens.js), not a paired session. */
+export const isScoped = token => typeof token === 'string' && token.startsWith('ogt_')
+
+/** The routes a token reads and writes the profile through: a scoped token has its own
+ *  (/api/token/*, which hand it only its categories); a paired session uses the app's. */
+export const profilePaths = cfg => isScoped(cfg.token)
+  ? { me: '/api/token/me', data: '/api/token/data', rev: '/api/token/data/rev' }
+  : { me: '/api/me', data: '/api/data', rev: '/api/data/rev' }
+
+/** { base, token } from the environment, or ENOCONFIG saying what to set. Inside a request the
+ *  HTTP server took (http.js), the token that request carried, whatever the environment says. */
 export function apiConfig(env = process.env) {
+  const ctx = currentProfile()
+  if (ctx?.api) return ctx.api
   const url = (env.OPENGYM_URL || '').trim()
   const token = (env.OPENGYM_TOKEN || '').trim()
   if (!url || !token) {
@@ -76,7 +90,15 @@ export async function apiFetch(cfg, path, { method = 'GET', body, timeoutMs = TI
   let data = null
   try { data = await res.json() } catch { /* an HTML error page from a proxy: the status says enough */ }
   if (res.ok || res.status === 409) return { status: res.status, body: data }
-  if (res.status === 401) throw fail('EAUTH', 'the openGym server did not accept OPENGYM_TOKEN: it expired or was signed out everywhere. Pair again (node mcp/scripts/pair.mjs) and update the config.')
+  if (res.status === 401) {
+    throw fail('EAUTH', isScoped(cfg.token)
+      ? 'the openGym server did not accept this token: it was revoked, it expired, or the profile signed out everywhere. Make a new one in Settings → API tokens.'
+      : 'the openGym server did not accept OPENGYM_TOKEN: it expired or was signed out everywhere. Pair again (node mcp/scripts/pair.mjs) and update the config.')
+  }
+  if (res.status === 403 && data?.code === 'scope') {
+    throw fail('ESCOPE', 'this token may not make that change: give it "Change directly" for that category in Settings → API tokens (a new token), or make the change in the app. Nothing was saved.', { status: 403 })
+  }
+  if (res.status === 429) throw fail('ERATE', 'the openGym server says this token made too many requests; wait a minute and try again', { status: 429 })
   if (res.status === 413) throw fail('ETOOBIG', 'the profile is larger than the server accepts in one write (MAX_BODY); nothing was saved')
   const said = data && typeof data.error === 'string' ? `: ${data.error.slice(0, 200)}` : ''
   throw fail('EAPI', `the openGym server answered ${res.status}${said}`, { status: res.status })

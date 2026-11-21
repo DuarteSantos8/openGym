@@ -112,8 +112,10 @@ describe('logging body measurements', () => {
       { d: '2026-09-15', t: 2, waist: 90, chest: null, bodyFat: null, other: [] },
     ] })
     const screen = render(<Measurements />)
-    const del = screen.querySelectorAll('button[aria-label="Delete"]')
+    // Each day's button says its date (P4), so the two are told apart.
+    const del = screen.querySelectorAll('button[aria-label$=": Delete"]')
     expect(del).toHaveLength(2)
+    expect(new Set([...del].map(b => b.getAttribute('aria-label'))).size).toBe(2)
     act(() => del[0].click())           // newest first: 2026-09-15
     expect(entries()).toHaveLength(2)   // nothing gone before the answer
     click(topSheet(), 'Delete')

@@ -104,7 +104,9 @@ const pkgVersion = JSON.parse(readFileSync(new URL('./package.json', import.meta
 const appVersion = process.env.APP_BUILD ? `${pkgVersion}+${process.env.APP_BUILD}` : pkgVersion
 
 export default defineConfig({
-  define: { __APP_VERSION__: JSON.stringify(appVersion) },
+  // __SEASON_CLOCK__: the seasonal QA date hook (src/lib/season-clock.js), only in a build made
+  // with VITE_SEASON_CLOCK=1 for screenshots. false everywhere else, so the hook is compiled out.
+  define: { __APP_VERSION__: JSON.stringify(appVersion), __SEASON_CLOCK__: JSON.stringify(process.env.VITE_SEASON_CLOCK === '1') },
   plugins: [react(), umami, flavor, swStamp, catalogueMedia],
   base: './',
   server: {

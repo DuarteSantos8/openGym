@@ -3,9 +3,8 @@
   "name": "bodyweight bent over rear delt fly",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids"
   ],

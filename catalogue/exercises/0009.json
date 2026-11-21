@@ -3,10 +3,11 @@
   "name": "assisted chest dip (kneeling)",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "assisted-pullup",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A machine-assisted chest dip performed from a kneeling pad, so you can train dips with less of your bodyweight.",
@@ -23,7 +24,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids"
+      "front-delts"
     ]
   },
   "femaleVariant": "2528",

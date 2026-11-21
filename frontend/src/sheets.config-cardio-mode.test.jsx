@@ -43,7 +43,7 @@ describe('a cardio exercise logged as sets x reps (#678)', () => {
   it('high knees are cardio in the catalogue and opens on Cardio, with Reps and Time on offer', () => {
     expect(EXIDX[HIGH_KNEES].bp).toBe('cardio')
     const v = open(EXIDX[HIGH_KNEES], { sets: 1, min: 20, speed: 8 })
-    expect(v.modes()).toEqual(['Cardio', 'Reps', 'Time'])
+    expect(v.modes()).toEqual(['Cardio', 'Reps', 'Time', 'Distance'])
     expect(v.picked()).toBe('Cardio')
     expect(v.labels()).toContain('Intervals')
   })
@@ -72,9 +72,15 @@ describe('a cardio exercise logged as sets x reps (#678)', () => {
     expect(modeOf({ ...saved, id: HIGH_KNEES })).toBe('cardio')
   })
 
-  it('a strength exercise still only offers Reps and Time', () => {
+  it('a strength exercise offers Reps, Time and Distance (carries, sleds: Reddit, #1011)', () => {
     const bench = EXDB.find(e => e.bp === 'chest' && e.eq === 'barbell')
     const v = open(bench)
-    expect(v.modes()).toEqual(['Reps', 'Time'])
+    expect(v.modes()).toEqual(['Reps', 'Time', 'Distance'])
+  })
+
+  it('a sled push opens on Distance and saves metres with its load', () => {
+    const v = open(EXIDX['4428'])
+    expect(v.picked()).toBe('Distance')
+    expect(v.labels()).toContain('Metres')
   })
 })

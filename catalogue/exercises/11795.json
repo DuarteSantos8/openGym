@@ -3,10 +3,10 @@
   "name": "backward press shoulders mobilization",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "rotator cuff",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "mobility",
   "description": "A shoulder mobility drill moving the arm backward to open the front of the shoulder.",

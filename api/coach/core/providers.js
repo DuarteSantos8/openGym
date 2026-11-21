@@ -15,14 +15,20 @@ export const HTTP_PROVIDERS = Object.freeze({
     apiKeyEnv: 'ANTHROPIC_API_KEY', oauthEnv: null,
     defaultBase: 'https://api.anthropic.com',
     defaultModel: 'claude-opus-5',
-    keyPlaceholder: 'sk-ant-…'
+    keyPlaceholder: 'sk-ant-…',
+    keyUrl: 'https://platform.claude.com/settings/keys',
+    keyPattern: /^sk-ant-[A-Za-z0-9_-]{20,}$/,
+    web: true
   }),
   openai: Object.freeze({
     label: 'OpenAI API', runtime: 'HTTPS', http: true,
     apiKeyEnv: 'OPENAI_API_KEY', oauthEnv: null,
     defaultBase: 'https://api.openai.com',
     defaultModel: 'gpt-5.6',
-    keyPlaceholder: 'sk-…'
+    keyPlaceholder: 'sk-…',
+    keyUrl: 'https://platform.openai.com/api-keys',
+    keyPattern: /^sk-(?!ant-|or-)[A-Za-z0-9_-]{20,}$/,
+    web: true
   }),
   gemini: Object.freeze({
     label: 'Google Gemini', runtime: 'HTTPS', http: true,
@@ -31,7 +37,33 @@ export const HTTP_PROVIDERS = Object.freeze({
     // Stable and on the free tier, which is where the Discord setup guide sends people. The
     // 2.5 names are refused for keys made after Google retired them (#758).
     defaultModel: 'gemini-3.8-flash',
-    keyPlaceholder: 'AIza… or AQ.…'
+    keyPlaceholder: 'AIza… or AQ.…',
+    keyUrl: 'https://aistudio.google.com/apikey',
+    keyPattern: /^(?:AIza[0-9A-Za-z_-]{30,}|AQ\.[0-9A-Za-z_.-]{20,})$/,
+    web: true
+  }),
+  minimax: Object.freeze({
+    label: 'MiniMax API', runtime: 'HTTPS', http: true,
+    apiKeyEnv: 'MINIMAX_API_KEY', oauthEnv: null,
+    defaultBase: 'https://api.minimax.io/v1',
+    defaultModel: 'MiniMax-M3.1-Flash',
+    keyPlaceholder: 'sk-…',
+    keyUrl: 'https://platform.minimax.io/user-center/basic-information/interface-key'
+  }),
+  // One sign-in for Claude, GPT, Gemini and the rest, through OpenRouter's own OAuth PKCE flow:
+  // the person approves openGym on openrouter.ai and gets back an API key of their own, billed to
+  // their OpenRouter credits (core/openrouter-oauth.js). A pasted key works the same.
+  openrouter: Object.freeze({
+    label: 'OpenRouter', runtime: 'HTTPS', http: true,
+    apiKeyEnv: 'OPENROUTER_API_KEY', oauthEnv: null,
+    defaultBase: 'https://openrouter.ai/api/v1',
+    // OpenRouter's own router: picks a capable model per request, so a fresh sign-in just works.
+    defaultModel: 'openrouter/auto',
+    keyPlaceholder: 'sk-or-…',
+    keyUrl: 'https://openrouter.ai/settings/keys',
+    keyPattern: /^sk-or-(?:v\d+-)?[A-Za-z0-9]{20,}$/,
+    signIn: 'pkce',
+    web: true
   }),
   // Ollama, LM Studio, vLLM, OpenRouter, a corporate gateway: anything that serves the
   // Chat Completions shape. The base URL is the whole configuration; a key is optional
@@ -46,6 +78,33 @@ export const HTTP_PROVIDERS = Object.freeze({
 });
 
 export const HTTP_PROVIDER_IDS = Object.freeze(Object.keys(HTTP_PROVIDERS));
+
+/** The provider a pasted key belongs to, by its shape, or null. Only a hint for the setup screen:
+ *  the Test button is what proves a key. */
+export function providerOfKey(raw) {
+  const key = String(raw || '').trim();
+  if (!key) return null;
+  for (const id of HTTP_PROVIDER_IDS) if (HTTP_PROVIDERS[id].keyPattern && HTTP_PROVIDERS[id].keyPattern.test(key)) return id;
+  return null;
+}
+
+/* What a model roughly costs, as a hint next to its name in the picker: 'low', 'mid' or 'high'.
+ * An exact price where the listing carries one (OpenRouter: USD per token), else read off the
+ * name, since the other providers' model lists carry no prices. Null when there is no telling. */
+export function priceTier(model, price) {
+  if (price && Number.isFinite(price.prompt) && Number.isFinite(price.completion)) {
+    const perM = (price.prompt * 3 + price.completion) / 4 * 1e6;
+    if (perM === 0) return 'free';
+    return perM < 1 ? 'low' : perM < 6 ? 'mid' : 'high';
+  }
+  const m = String(model || '').toLowerCase();
+  if (!m) return null;
+  if (/:free\b/.test(m)) return 'free';
+  if (/haiku|mini|nano|flash|lite|small|8b|7b|3b|\bm\d.*flash/.test(m)) return 'low';
+  if (/opus|fable|mythos|-pro\b|ultra|\bo\d-pro|gpt-\d+(?:\.\d+)?-pro/.test(m)) return 'high';
+  if (/sonnet|gpt-|gemini|claude|deepseek|qwen|llama|mistral|minimax/.test(m)) return 'mid';
+  return null;
+}
 
 /** The base URL a provider will actually be called at: the configured override, else the default. */
 export function baseUrlFor(id, cfg) {
