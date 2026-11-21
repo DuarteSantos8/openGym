@@ -902,8 +902,10 @@ private fun UpNext(roomy: Boolean) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val (n, of) = SetNav.place(e, si) // the same count as the set pill: "set 2/4"
-    val set = stringResource(R.string.up_next_set, e.name, n, of) +
+    // The text after the name (", set 2/4 · Left"): the name is the string's first argument in every language.
+    val tail = stringResource(R.string.up_next_set, "", n, of) +
         (side?.let { " · " + stringResource(if (it == "L") R.string.left else R.string.right) } ?: "")
+    val set = e.name + tail
     val numbers = nextSetNumbers(e, si, w.unit)
     // The workout's time (#1100), standing still while the phone has the workout paused.
     val time: @Composable () -> Unit = {
@@ -925,7 +927,15 @@ private fun UpNext(roomy: Boolean) {
         numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number) }
     } else {
         // A 40/41 mm watch has two lines for it (measured on the emulator): "Up next: the set", then what to load and the time.
-        Quiet(stringResource(R.string.up_next) + ": " + set, 12.sp, lines = 1)
+        // A long name gives way with "…"; the count after it stays in view (seen on a 40 mm watch: "set 1/3" was cut off).
+        // Where "Up next: " leaves the name no room, the label goes first: "Bench Press, set 2/3" says it alone.
+        val lead = stringResource(R.string.up_next) + ": "
+        var tight by remember(lead, e.name, tail) { mutableStateOf(false) }
+        Row(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = lead + set }, horizontalArrangement = Arrangement.Center) {
+            Text((if (tight) "" else lead) + e.name, color = Og.Label2, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                onTextLayout = { if (it.hasVisualOverflow) tight = true }, modifier = Modifier.weight(1f, fill = false))
+            Text(tail, color = Og.Label2, fontSize = 12.sp, maxLines = 1)
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, style = Og.Number, modifier = Modifier.weight(1f, fill = false)); Spacer(Modifier.width(8.dp)) }
             time()
