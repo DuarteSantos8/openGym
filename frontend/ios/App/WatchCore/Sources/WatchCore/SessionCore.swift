@@ -270,6 +270,10 @@ enum SessionCore {
         if let r = effort, Effort.range(r.kind) != nil {
             event[r.kind] = r.value
             s.efforts = (s.efforts ?? [:]).merging([key(e.id, si): r.value]) { $1 }
+            // the row holds it too, so a set opened again before the next snapshot shows it
+            if let side = oneSide {
+                if r.kind == "rpe" { s.workout?.entries[ei].sets[si].sides?[side].rpe = r.value } else { s.workout?.entries[ei].sets[si].sides?[side].rir = r.value }
+            } else if r.kind == "rpe" { s.workout?.entries[ei].sets[si].rpe = r.value } else { s.workout?.entries[ei].sets[si].rir = r.value }
         }
         return (s, event)
     }

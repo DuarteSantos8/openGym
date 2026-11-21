@@ -51,6 +51,17 @@ describe('the snapshot carries every kind of set', () => {
     expect(split.sets[0].sides).toEqual({ L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: false } })
     expect(bench.sets[1].sides).toBeUndefined()
   })
+  it('the effort logged on a set, on its side too, only where there is one', () => {
+    const E = S()
+    E.active.entries[0].sets[1] = { w: 80, r: 6, done: true, rir: 1.5 }
+    E.active.entries[3].sets[0] = { w: 20, r: 16, done: true, rpe: 9, sides: { L: { w: 20, r: 8, done: true, rpe: 8.5 }, R: { w: 20, r: 8, done: true, rpe: 9 } } }
+    const [b, , , sp] = buildSnapshot(E).active.entries
+    expect(b.sets[1].rir).toBe(1.5)
+    expect('rpe' in b.sets[1]).toBe(false)
+    expect('rir' in b.sets[0]).toBe(false)
+    expect(sp.sets[0].sides.L.rpe).toBe(8.5)
+    expect(sp.sets[0].sides.R.rpe).toBe(9)
+  })
   it('supersets by their group, only where there is one', () => {
     expect(curl.group).toBe('g1')
     expect(push.group).toBe('g1')
