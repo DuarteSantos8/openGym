@@ -358,7 +358,9 @@ function Shell() {
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
   // ...but not for ever: a workout left quiet for 15 min lets the screen lock (lib/wakelock-quiet.js)
   const resting = useUI(u => !!(u.timer && !u.timer.ready && !u.timer.paused) || !!(u.work && !u.work.paused))
-  const quiet = useQuiet(S.active, resting)
+  // a circuit clock counts too: an interval step can run 60 min untouched, and our release is global
+  const circuitOn = useCircuit(c => !!c.run && !c.run.ended && c.run.paused == null)
+  const quiet = useQuiet(S.active, resting || circuitOn)
   useWakeLock(wantsWakeLock(S) && !quiet)
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
