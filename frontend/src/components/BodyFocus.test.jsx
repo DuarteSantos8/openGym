@@ -131,6 +131,10 @@ describe('BodyFocus', () => {
     await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })) })
     await vi.waitFor(() => expect(store.m.get('front')).toBeTruthy())
     expect(store.m.has('back')).toBe(false)
+    // and it is the photo on screen, under Front view, not hidden behind the saved Back view
+    await vi.waitFor(() => expect(host.querySelector('.bf-photo img')).toBeTruthy())
+    expect(button('Front view').getAttribute('aria-pressed')).toBe('true')
+    expect(button('Add a back photo')).toBeUndefined()
   })
 
   it('the Back view asks for a back photo, with its own tip', async () => {

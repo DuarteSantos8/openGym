@@ -7,7 +7,7 @@ import {
   AREAS, areaOfMuscle, toggleArea, focusMuscles, builderTerms, exploreHref, loadFocus, saveFocus,
   poseProblem, areasFromPose, hitArea, toPhoto,
 } from '../lib/body-focus.js'
-import { photoStore, preparePhoto, detectPose } from '../lib/body-photo.js'
+import { sharedPhotoStore, preparePhoto, detectPose } from '../lib/body-photo.js'
 import BodyMap from './BodyMap.jsx'
 import CardHead from './CardHead.jsx'
 import { Button, Segmented } from './ui.jsx'
@@ -24,7 +24,7 @@ import './body-focus.css'
 
 const local = () => { try { return globalThis.localStorage } catch { return null } }
 let STORE = null
-const store = () => STORE || (STORE = photoStore())
+const store = () => STORE || sharedPhotoStore()
 /** Tests swap the photo store and the pose model. */
 export const __test = { setStore: s => { STORE = s }, detect: detectPose, prepare: preparePhoto }
 
@@ -107,6 +107,9 @@ export default function BodyFocus() {
       const rec = { view, data: p.data, mime: p.mime, w: p.w, h: p.h, lm, at: Date.now() }
       const kept = await store().put(rec).then(() => store().open(), () => false)
       show(rec)
+      // The photo just added is the one on screen, even where a Back view was saved without any photo.
+      // Read the picks as they are now: the model took seconds, and the user may have tapped meanwhile.
+      if (mounted.current) setFocus(f => { const next = { ...f, view: rec.view }; saveFocus(local(), next); return next })
       if (!kept && mounted.current) setNote(t('This browser can’t keep your photo, so it’s gone when you close the app.'))
     } finally { if (mounted.current) setBusy(false) }
   }

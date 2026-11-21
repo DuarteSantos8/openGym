@@ -32,4 +32,22 @@ describe('signing out forgets the body picker', () => {
     expect(localStorage.getItem(FOCUS_KEY)).toBeNull()
     expect(idb.deleteDatabase).toHaveBeenCalledWith('ironvane-body')
   })
+
+  it('a different account signing in after an expired session does not see the previous photo', async () => {
+    localStorage.setItem('gym_owner', 'u1')
+    localStorage.setItem(FOCUS_KEY, JSON.stringify({ areas: ['glutes'], view: 'front' }))
+    useStore.getState().setUser({ id: 'u2', name: 'Bea' })
+    await new Promise(r => setTimeout(r, 0))
+    expect(localStorage.getItem(FOCUS_KEY)).toBeNull()
+    expect(idb.deleteDatabase).toHaveBeenCalledWith('ironvane-body')
+  })
+
+  it('the same account coming back keeps its photo and picks', async () => {
+    localStorage.setItem('gym_owner', 'u1')
+    localStorage.setItem(FOCUS_KEY, JSON.stringify({ areas: ['glutes'], view: 'front' }))
+    useStore.getState().setUser({ id: 'u1', name: 'Olga' })
+    await new Promise(r => setTimeout(r, 0))
+    expect(localStorage.getItem(FOCUS_KEY)).not.toBeNull()
+    expect(idb.deleteDatabase).not.toHaveBeenCalled()
+  })
 })

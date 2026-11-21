@@ -100,3 +100,14 @@ describe('preparePhoto', () => {
     expect(p.w).toBe(800)
   })
 })
+
+describe('forgetBodyFocus and the in-memory fallback', () => {
+  it('also empties the shared store’s memory, where the browser could not open IndexedDB', async () => {
+    const { sharedPhotoStore } = await import('./body-photo.js')
+    const s = sharedPhotoStore({ idb: undefined })
+    await s.put({ view: 'front', data: new ArrayBuffer(1), mime: 'image/jpeg', w: 1, h: 1, lm: [], at: 1 })
+    expect(await s.get('front')).toBeTruthy()
+    await forgetBodyFocus({ idb: undefined, storage: null })
+    expect(await s.get('front')).toBe(null)
+  })
+})

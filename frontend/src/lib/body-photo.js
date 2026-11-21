@@ -78,6 +78,8 @@ export function photoStore({ idb = globalThis.indexedDB } = {}) {
       tx.objectStore(STORE).put(record)
       await done(tx)
     },
+    /** The memory fallback's photos, gone (forgetBodyFocus). */
+    forgetMemory() { mem.clear() },
     async remove(view) {
       await open()
       if (!db) { mem.delete(view); return }
@@ -87,6 +89,11 @@ export function photoStore({ idb = globalThis.indexedDB } = {}) {
     },
   }
 }
+
+// The one store the app uses (components/BodyFocus.jsx), so forgetBodyFocus() also reaches a
+// photo kept in memory where IndexedDB would not open.
+let shared = null
+export const sharedPhotoStore = opts => shared || (shared = photoStore(opts))
 
 // A file as an <img>, for engines without createImageBitmap or without its options. Browsers draw
 // an <img> upright from its EXIF orientation by default.
@@ -167,6 +174,7 @@ export async function detectPose(source, {
  */
 export function forgetBodyFocus({ idb = globalThis.indexedDB, storage = globalThis.localStorage } = {}) {
   try { storage?.removeItem(FOCUS_KEY) } catch { /* private window */ }
+  shared?.forgetMemory()
   return new Promise(resolve => {
     if (!idb) return resolve(false)
     try {

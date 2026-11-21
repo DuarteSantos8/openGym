@@ -1826,6 +1826,7 @@ export const useStore = create((set, get) => {
           keepForPrevious(owner, wasHeld)
           forgetSync()
           localStorage.removeItem(KEY)
+          forgetBodyFocus()   // nor the previous account's body photo and picks (lib/body-photo.js)
           // The new owner before the new copy, as on a sign-out: another tab still holding the
           // previous account's copy must not join it into this one (QA 2026-10-06).
           localStorage.setItem('gym_owner_name', u.name || '')
