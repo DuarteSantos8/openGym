@@ -891,7 +891,7 @@ fun RestView(rest: Rest) {
     }
 }
 
-/** "Up next: Bench Press, set 3 · Left", and under it what to load (#911). */
+/** "Up next: Bench Press, set 3/4 · Left", and under it what to load (#911). */
 @Composable
 private fun UpNext(roomy: Boolean) {
     val s by WearStore.state.collectAsState()
@@ -901,7 +901,8 @@ private fun UpNext(roomy: Boolean) {
     val side = e.sets[si].sideUp
     val a = LocalAccent.current
     val dim = LocalAmbient.current
-    val set = stringResource(R.string.up_next_set, e.name, SetNav.place(e, si).first) +
+    val (n, of) = SetNav.place(e, si) // the same count as the set pill: "set 2/4"
+    val set = stringResource(R.string.up_next_set, e.name, n, of) +
         (side?.let { " · " + stringResource(if (it == "L") R.string.left else R.string.right) } ?: "")
     val numbers = nextSetNumbers(e, si, w.unit)
     // The workout's time (#1100), standing still while the phone has the workout paused.

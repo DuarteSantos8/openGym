@@ -106,7 +106,7 @@
     <string name="time">Tid</string>
     <string name="today">Idag</string>
     <string name="up_next">Härnäst</string>
-    <string name="up_next_set">%1$s, set %2$d</string>
+    <string name="up_next_set">%1$s, set %2$d/%3$d</string>
     <string name="volume">Volym</string>
     <string name="waiting_sync">Väntar på synk</string>
     <string name="warmup">Uppvärmning</string>

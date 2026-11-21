@@ -106,7 +106,7 @@
     <string name="time">시간</string>
     <string name="today">오늘</string>
     <string name="up_next">다음</string>
-    <string name="up_next_set">%1$s, %2$d세트</string>
+    <string name="up_next_set">%1$s, %2$d/%3$d세트</string>
     <string name="volume">볼륨</string>
     <string name="waiting_sync">동기화 대기 중</string>
     <string name="warmup">워밍업</string>

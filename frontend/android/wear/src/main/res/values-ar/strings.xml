@@ -106,7 +106,7 @@
     <string name="time">الوقت</string>
     <string name="today">اليوم</string>
     <string name="up_next">التالي</string>
-    <string name="up_next_set">%1$s، المجموعة %2$d</string>
+    <string name="up_next_set">%1$s، المجموعة %2$d/%3$d</string>
     <string name="volume">حجم التدريب</string>
     <string name="waiting_sync">بانتظار المزامنة</string>
     <string name="warmup">إحماء</string>

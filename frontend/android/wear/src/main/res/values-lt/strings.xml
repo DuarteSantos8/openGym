@@ -106,7 +106,7 @@
     <string name="time">Laikas</string>
     <string name="today">Šiandien</string>
     <string name="up_next">Kitas</string>
-    <string name="up_next_set">%1$s, serija %2$d</string>
+    <string name="up_next_set">%1$s, serija %2$d/%3$d</string>
     <string name="volume">Tūris</string>
     <string name="waiting_sync">Laukiama sinchronizacijos</string>
     <string name="warmup">Apšilimas</string>
