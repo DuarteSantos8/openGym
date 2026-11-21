@@ -1040,6 +1040,16 @@ export function setsDoneActive(A) {
   if (A) A.entries.forEach(e => e.sets.forEach(s => { n += doneUnits(s) }))
   return n
 }
+// What the admin's "training now" row shows of a running workout. Sent by the workout screen's
+// beacon (POST /api/activity) and with every sync (`live` beside the state on PUT /api/data).
+export function livePresence(A) {
+  const units = supersetUnits(A.entries)
+  const cur = Math.min(A.cur, Math.max(0, A.entries.length - 1))
+  return {
+    name: A.name, exIdx: units.findIndex(u => u.includes(cur)) + 1, exTotal: units.length,
+    setsDone: setsDoneActive(A), setsTotal: setUnitsTotal(A.entries), startedAt: A.start
+  }
+}
 export const lastBW = S => (S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null)
 
 // Group consecutive items sharing a superset id (sg) into "units" of indices.

@@ -171,7 +171,7 @@ tags:
   - name: push
     description: Web Push (VAPID) subscriptions, rest-timer and test pushes
   - name: activity
-    description: Live-workout presence heartbeat
+    description: Live-workout presence
   - name: admin
     description: Admin dashboard. Requires an admin session (`ADMIN_UIDS` or `admin:true`)
   - name: media
@@ -2343,6 +2343,12 @@ paths:
                     The write id (`_wid`) of the document this client last read or wrote. With
                     `baseRev`, a write over a different document at the same revision (the data
                     directory went back in time and the number was reached again) answers 409.
+                live:
+                  type: object
+                  description: >-
+                    Progress of the running workout (`state.active`), for the admin's "training now"
+                    row: the fields of `POST /api/activity`. Optional; the workout's name and start
+                    are read from `state.active` without it. Ignored when `state` has no `active`.
                 stamped:
                   type: boolean
                   description: >-
@@ -3516,16 +3522,20 @@ paths:
     post:
       tags: [activity]
       operationId: postActivity
-      summary: Live-workout presence heartbeat
+      summary: Live-workout presence beacon
       description: |
-        The client pings this every ~20 s while a workout is on screen; the admin
-        dashboard reads who is training right now. Purely ephemeral, in-memory, never
-        persisted; entries expire 70 s after the last ping. `{"active": false}` is the
+        The client sends this when a workout opens, when it comes back on screen, and
+        after 3 minutes in which it sent the server nothing else; the admin dashboard
+        reads who is training right now. A sync (`PUT /api/data`) whose state carries a
+        running workout (`active`) is the same sign of life, so a client that logs sets
+        sends no beacon of its own, and one whose state carries none drops the entry.
+        Purely ephemeral, in-memory, never persisted; entries expire 5 minutes after the
+        last sign of life. `{"active": false}` is the
         "left" signal: with `reason` `navigated` or `closed`, or with no reason, it
         drops the caller's entry immediately. With `reason: hidden` (the page went to
         the background) it marks the entry away instead, and the entry stops being
-        listed 45 s after that mark unless a heartbeat arrives first; a heartbeat
-        clears the mark. The 70 s expiry applies either way.
+        listed 270 s after that mark unless a beacon arrives first; a beacon
+        clears the mark. The 5 minute expiry applies either way.
       requestBody:
         required: true
         content:
@@ -6823,7 +6833,7 @@ components:
 
     Presence:
       type: object
-      description: Live-workout snapshot (from /api/activity heartbeats).
+      description: Live-workout snapshot (from /api/activity beacons and the `live` of a sync).
       properties:
         name: { type: string }
         exIdx: { type: integer }

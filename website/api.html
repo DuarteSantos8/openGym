@@ -2157,6 +2157,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">The write id (<code>_wid</code>) of the document this client last read or wrote. With <code>baseRev</code>, a write over a different document at the same revision (the data directory went back in time and the number was reached again) answers 409.</span>
   </div>
   <div class="prow">
+    <span class="p-name">live</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Progress of the running workout (<code>state.active</code>), for the admin's &quot;training now&quot; row: the fields of <code>POST /api/activity</code>. Optional; the workout's name and start are read from <code>state.active</code> without it. Ignored when <code>state</code> has no <code>active</code>.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">stamped</span>
     <span class="p-type">boolean</span>
     <span class="p-desc">True when the client stamps its own changes in <code>deleted</code>, <code>edited</code> and each entry's <code>_ts</code>/<code>_f</code>, as the app does. Omit it to have the server stamp what changed against the stored document.</span>
@@ -2497,7 +2502,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 
 <section class="api-sec" id="activity">
   <h2>Activity</h2>
-  <p class="sub">Live-workout presence heartbeat</p>
+  <p class="sub">Live-workout presence</p>
   <div class="eps">
 
 <details class="ep" id="op-postActivity">
@@ -2505,10 +2510,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m post">POST</span>
     <span class="ep-path"><code>/api/activity</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Live-workout presence heartbeat</span>
+    <span class="ep-sum">Live-workout presence beacon</span>
   </summary>
   <div class="ep-body">
-<p>The client pings this every ~20 s while a workout is on screen; the admin dashboard reads who is training right now. Purely ephemeral, in-memory, never persisted; entries expire 70 s after the last ping. <code>{&quot;active&quot;: false}</code> is the &quot;left&quot; signal: with <code>reason</code> <code>navigated</code> or <code>closed</code>, or with no reason, it drops the caller's entry immediately. With <code>reason: hidden</code> (the page went to the background) it marks the entry away instead, and the entry stops being listed 45 s after that mark unless a heartbeat arrives first; a heartbeat clears the mark. The 70 s expiry applies either way.</p>
+<p>The client sends this when a workout opens, when it comes back on screen, and after 3 minutes in which it sent the server nothing else; the admin dashboard reads who is training right now. A sync (<code>PUT /api/data</code>) whose state carries a running workout (<code>active</code>) is the same sign of life, so a client that logs sets sends no beacon of its own, and one whose state carries none drops the entry. Purely ephemeral, in-memory, never persisted; entries expire 5 minutes after the last sign of life. <code>{&quot;active&quot;: false}</code> is the &quot;left&quot; signal: with <code>reason</code> <code>navigated</code> or <code>closed</code>, or with no reason, it drops the caller's entry immediately. With <code>reason: hidden</code> (the page went to the background) it marks the entry away instead, and the entry stops being listed 270 s after that mark unless a beacon arrives first; a beacon clears the mark. The 5 minute expiry applies either way.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -9082,7 +9087,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <summary>
     <span class="sch-name"><code>Presence</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Live-workout snapshot (from /api/activity heartbeats).</span>
+    <span class="ep-sum">Live-workout snapshot (from /api/activity beacons and the <code>live</code> of a sync).</span>
   </summary>
   <div class="ep-body">
 
