@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, tr. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Doğum yılını telefon uygulamasında ekle</string>
+    <string name="add_session_note">Antrenman notu ekle</string>
     <string name="added_weight">Ek ağırlık</string>
     <string name="all_done_q">Bitirdin mi?</string>
     <string name="all_sets_done">Tüm setler tamam</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Antrenman iptal edilsin mi?</string>
     <string name="done">Bitti</string>
     <string name="edit">Düzenle</string>
+    <string name="edit_session_note">Antrenman notunu düzenle</string>
     <string name="effort">Zorluk</string>
     <string name="ended_on_phone">Telefonda bitirildi</string>
     <string name="exercises">Egzersizler</string>

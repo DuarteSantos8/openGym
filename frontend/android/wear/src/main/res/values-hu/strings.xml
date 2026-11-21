@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, hu. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Add meg a születési éved a telefonos appban</string>
+    <string name="add_session_note">Edzésjegyzet hozzáadása</string>
     <string name="added_weight">Plusz súly</string>
     <string name="all_done_q">Végeztél?</string>
     <string name="all_sets_done">Minden sorozat kész</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Elveted az edzést?</string>
     <string name="done">Kész</string>
     <string name="edit">Szerkesztés</string>
+    <string name="edit_session_note">Edzésjegyzet szerkesztése</string>
     <string name="effort">Megerőltetés</string>
     <string name="ended_on_phone">A telefonon befejezve</string>
     <string name="exercises">Gyakorlatok</string>

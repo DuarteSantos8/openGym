@@ -1219,6 +1219,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
+    /// The Overview's note button: shown when the phone applies a workout's note.
+    var canNote: Bool { SessionCore.canNote(state) }
+    var noteShown: String { SessionCore.shownNote(state) }
+
+    /// The note typed or dictated on the Overview (empty clears it). Nothing changed sends nothing.
+    func saveNote(_ text: String) {
+        guard let (s, ev) = SessionCore.workoutNote(state, text, at: SessionStore.nowMs(), id: UUID().uuidString) else { return }
+        state = s
+        send(event: ev)
+        WKInterfaceDevice.current().play(.success)
+    }
+
     /// "Keep going" on "Still training?" (or on "Looks like you left the gym"): idle counts from
     /// now, here and on the phone, which stops asking too.
     func keepGoing() {
@@ -1709,7 +1721,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "finish", "overview": self.picked[0] = 2; self.tab = .overview
+            case "finish", "overview": self.state.settings.workoutNote = true; self.picked[0] = 2; self.tab = .overview
+            case "overview-note":
+                self.state.settings.workoutNote = true
+                self.state.workout?.note = "Left shoulder felt tight, grip slipped on the last rep"
+                self.picked[0] = 2; self.tab = .overview
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])

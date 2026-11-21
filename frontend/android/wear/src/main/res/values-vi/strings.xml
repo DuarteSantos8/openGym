@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, vi. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Thêm năm sinh trong ứng dụng trên điện thoại</string>
+    <string name="add_session_note">Thêm ghi chú buổi tập</string>
     <string name="added_weight">Tạ thêm</string>
     <string name="all_done_q">Xong chưa?</string>
     <string name="all_sets_done">Đã xong tất cả hiệp</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Hủy buổi tập?</string>
     <string name="done">Xong</string>
     <string name="edit">Chỉnh sửa</string>
+    <string name="edit_session_note">Sửa ghi chú buổi tập</string>
     <string name="effort">Độ gắng sức</string>
     <string name="ended_on_phone">Đã kết thúc trên điện thoại</string>
     <string name="exercises">Bài tập</string>
