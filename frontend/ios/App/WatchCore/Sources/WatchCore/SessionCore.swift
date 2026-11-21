@@ -69,10 +69,10 @@ struct SessionState: Codable, Equatable {
     var pending: [String: PendingTick] = [:]
     /// The exercise on screen.
     var entryIndex = 0
-    /// Sets passed over here ("e<entry>:exerciseId#setIndex", SessionCore.rowKey), not done: the next one comes up instead.
+    /// Sets passed over here ("n<copy>:exerciseId#setIndex", SessionCore.placeKey), not done: the next one comes up instead.
     /// Optional, like every field added later, so a state saved by an older build still loads.
     var skipped: [String]?
-    /// The effort rated here per set ("e<entry>:exerciseId#setIndex"), kept for the Effort page: the phone's
+    /// The effort rated here per set ("n<copy>:exerciseId#setIndex"), kept for the Effort page: the phone's
     /// snapshot does not carry it back. In the profile's scale (`settings.effort`).
     var efforts: [String: Double]?
     /// The newest change to the rest this watch knows of, its own or the phone's (ms, the phone's
@@ -93,6 +93,24 @@ enum SessionCore {
     /// The exercise and the set's place in it: the key a 1.4.4 build saved a pending tick under.
     static func key(_ exId: String, _ si: Int, _ side: String? = nil) -> String {
         side.map { "\(exId)#\(si)#\($0)" } ?? "\(exId)#\(si)"
+    }
+
+    /// A skipped set's and a rating's key: which copy of its exercise the entry is (0: the first) and
+    /// the set ("n1:bench#2"), so the same lift twice keeps its own, and an exercise the phone moves or
+    /// takes out does not carry one off (Wear's placeKey).
+    static func placeKey(_ w: ActiveWorkout, entry ei: Int, set si: Int) -> String {
+        let id = w.entries[ei].id
+        return "n\(w.entries[..<ei].filter { $0.id == id }.count):\(id)#\(si)"
+    }
+
+    /// A state saved by 1.4.5, whose skips and ratings were keyed "exerciseId#setIndex": those go to
+    /// the exercise's first copy. Safe to run more than once.
+    static func upgraded(_ s0: SessionState) -> SessionState {
+        func up(_ k: String) -> String { k.range(of: #"^n\d+:"#, options: .regularExpression) == nil ? "n0:" + k : k }
+        var s = s0
+        s.skipped = s0.skipped.map { $0.map(up).sorted() }
+        s.efforts = s0.efforts.map { Dictionary($0.map { (up($0.key), $0.value) }) { a, _ in a } }
+        return s
     }
 
     /// A pending tick's key (protocol 2, rule 5): "s:<sid>" for a set the phone named, else its place
@@ -269,7 +287,7 @@ enum SessionCore {
         // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
         if let r = effort, Effort.range(r.kind) != nil {
             event[r.kind] = r.value
-            s.efforts = (s.efforts ?? [:]).merging([rowKey(sid: nil, entry: ei, exId: e.id, set: si): r.value]) { $1 }
+            s.efforts = (s.efforts ?? [:]).merging([placeKey(workout, entry: ei, set: si): r.value]) { $1 }
             // the row holds it too, so a set opened again before the next snapshot shows it
             if let side = oneSide {
                 if r.kind == "rpe" { s.workout?.entries[ei].sets[si].sides?[side].rpe = r.value } else { s.workout?.entries[ei].sets[si].sides?[side].rir = r.value }
@@ -295,14 +313,14 @@ enum SessionCore {
     static func skip(_ s0: SessionState, entry ei: Int, set si: Int) -> SessionState {
         guard let w = s0.workout, w.entries.indices.contains(ei), w.entries[ei].sets.indices.contains(si) else { return s0 }
         var s = s0
-        let k = rowKey(sid: nil, entry: ei, exId: w.entries[ei].id, set: si)
+        let k = placeKey(w, entry: ei, set: si)
         s.skipped = Array(Set((s.skipped ?? []) + [k])).sorted()
         return s
     }
 
     static func isSkipped(_ s: SessionState, entry ei: Int, _ si: Int) -> Bool {
         guard let w = s.workout, w.entries.indices.contains(ei) else { return false }
-        return s.skipped?.contains(rowKey(sid: nil, entry: ei, exId: w.entries[ei].id, set: si)) ?? false
+        return s.skipped?.contains(placeKey(w, entry: ei, set: si)) ?? false
     }
 
     /// A set the phone ticked (#1101, the Apple twin of #1165): the exercise the watch goes to, when

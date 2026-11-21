@@ -183,7 +183,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         } else if let data = UserDefaults.standard.data(forKey: SessionStore.stateKey),
                   let saved = try? JSONDecoder().decode(SessionState.self, from: data) {
             // Relaunched (mid-workout or not): the session as it was, then the latest from the phone.
-            state = saved
+            state = SessionCore.upgraded(saved)
             loadTargets()
             // A rest that was running: its countdown goes on (a snapshot no longer brings back a rest
             // this watch already knows of, protocol 2).
@@ -2009,7 +2009,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
                     self.state.settings.effort = "rir"
-                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries.indices, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.rowKey(sid: nil, entry: $0, exId: w.entries[$0].id, set: 0), $1) })
+                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries.indices, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.placeKey(w, entry: $0, set: 0), $1) })
                 }
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true

@@ -179,8 +179,8 @@ enum SetMenu {
         edits.reduce(w) { apply($1, on: $0)?.0 ?? $0 }
     }
 
-    /// The place keys ("e<entry>:exerciseId#setIndex": skipped sets, efforts, pending ticks, or a
-    /// pending tick's 1.4.4 form) of one exercise moved to the rows' new
+    /// The keys of one exercise's rows (skipped sets and efforts, "n<copy>:exerciseId#setIndex";
+    /// pending ticks, "e<entry>:exerciseId#setIndex" or the 1.4.4 form) moved to the rows' new
     /// places; nil drops the key. Ticks keyed by the set's id ("s:<sid>") need no move.
     static func remapKeys(_ s0: SessionState, exId: String, entry: Int, map: (Int) -> Int?) -> SessionState {
         func move(_ k: String, _ prefix: String) -> String? {
@@ -191,11 +191,12 @@ enum SetMenu {
             parts[0] = String(n)
             return prefix + parts.joined(separator: "#")
         }
-        func placed(_ k: String) -> String? { move(k, "e\(entry):\(exId)#") }
+        let copy = s0.workout.map { w in w.entries.prefix(entry).filter { $0.id == exId }.count } ?? 0
+        func placed(_ k: String) -> String? { move(k, "n\(copy):\(exId)#") }
         var s = s0
         s.skipped = s0.skipped.map { $0.compactMap(placed).sorted() }
         s.efforts = s0.efforts.map { Dictionary($0.compactMap { k, v in placed(k).map { ($0, v) } }) { a, _ in a } }
-        s.pending = Dictionary(s0.pending.compactMap { k, v in (k.hasPrefix("e\(entry):") ? placed(k) : move(k, exId + "#")).map { ($0, v) } }) { a, _ in a }
+        s.pending = Dictionary(s0.pending.compactMap { k, v in move(k, k.hasPrefix("e\(entry):") ? "e\(entry):\(exId)#" : exId + "#").map { ($0, v) } }) { a, _ in a }
         return s
     }
 
