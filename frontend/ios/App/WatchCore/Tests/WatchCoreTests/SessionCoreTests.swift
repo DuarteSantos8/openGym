@@ -255,4 +255,19 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1, "what a count-in ending now would hold for")
         XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: counted.set, side: nil, sid: counted.sid))
     }
+
+    // A set the phone adds before the hold's own set: the hold still ends on its own set, not on the one
+    // that is now first open (the watch completes holdPlace, not setIndex).
+    func testAHoldPlaceStaysOnItsSetWhenThePhoneAddsOneBeforeIt() {
+        var a = row(60, 8); a.sid = "a"; a.done = true; a.at = 1000
+        var b = row(60, 8); b.sid = "b"
+        var x = row(60, 8); x.sid = "x"
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [a, b])))
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [a, x, b])))
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1, "the set a plain Done would log")
+        let place = SessionCore.holdPlace(s, entry: 0, set: 1, sid: "b")
+        XCTAssertEqual(place?.entry, 0)
+        XCTAssertEqual(place?.set, 2)
+        XCTAssertNil(SessionCore.holdPlace(s, entry: 0, set: 1, sid: "gone"))
+    }
 }

@@ -635,7 +635,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             // it, unlogged, instead of logging the set after it.
             if let h = self.holdFor, !SessionCore.holdOpen(self.state, entry: h.entry, set: h.set, side: h.side, sid: h.sid) {
                 self.stopHold()
-                self.stopHoldCount()
             }
             // The newest of them takes the watch to the set after it, on whichever exercise (#1101,
             // the twin of Wear's #1165): not while a set is open to be fixed or a hold runs here.
@@ -947,12 +946,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func endHold(early: Bool) {
         guard let from = holdStartedAt, let end = holdEndsAt else { return }
         let lasted = early ? Date().timeIntervalSince(from).rounded() : end.timeIntervalSince(from).rounded()
+        // The set the hold began for, as the phone has it now: a set it added before this one must not take the log.
+        let own = holdFor.flatMap { SessionCore.holdPlace(state, entry: $0.entry, set: $0.set, sid: $0.sid) }
         stopHold()
-        if lasted >= 1 { completeSet(sec: lasted) }
+        if lasted >= 1 {
+            if let own = own, own.entry == entryIndex { picked[own.entry] = own.set }
+            completeSet(sec: lasted)
+        }
     }
 
     /// The hold ends without a set (the workout ended meanwhile).
     func stopHold() {
+        stopHoldCount()     // a 3-2-1 still running would start a hold on the next workout's set
         holdTimer?.invalidate()
         holdTimer = nil
         holdTicks.forEach { $0.cancel() }
