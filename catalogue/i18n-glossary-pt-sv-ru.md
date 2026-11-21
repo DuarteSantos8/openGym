@@ -1,4 +1,4 @@
-# Exercise-name glossary: European Portuguese (`pt`) and Swedish (`sv`)
+# Exercise-name glossary: European Portuguese (`pt`), Swedish (`sv`), Russian (`ru`)
 
 The terms `catalogue/i18n/pt.json` and `catalogue/i18n/sv.json` use for exercise names, so the
 same English word reads the same way across all 5,632 names. Names are stored lower-case like
@@ -162,3 +162,74 @@ Swedish writes compounds as one word: `hantelpress`, `kabelrodd`, `bicepscurl`.
 | (male) / (female) | (man) / (kvinna) |
 | (form check) | (teknikkoll) |
 | (front pov) / (side pov) / (back pov) | (framifrån) / (från sidan) / (bakifrån) |
+
+## Russian
+Russian gyms mix Russian and English transliteration. Use the Russian word where lifters do and keep the loans they actually use.
+
+| English | ru |
+|---------|----|
+| barbell | штанга |
+| dumbbell / dumbbells | гантель |
+| cable | блок |
+| lever, machine | рычажный тренажёр |
+| smith | машина Смита |
+| kettlebell | гиря |
+| band, resistance band | резиновая лента |
+| ez barbell / ez bar | EZ-Гриф |
+| trap bar | трэп-гриф |
+| olympic barbell | олимпийская штанга |
+| landmine | лендмайн |
+| sled | сани |
+| stability ball, exercise ball | фитбол |
+| medicine ball | медбол |
+| bosu ball | БОСУ |
+| suspension, suspender | петли |
+| stick | палка |
+| towel / bottle / chair / wall / box / stepbox | полотенце / бутылка / стeл / стена / тумба / степ |
+| bodyweight | собственный вес |
+| weighted | с отягощением |
+| assisted / self assisted | с поддержкой |
+| bench press | жим лёжа |
+| shoulder press, overhead press | жим над головой  |
+| military press | армейский жим |
+| chest press | жим от груди в тренажёре |
+| leg press | жим ногами   |
+| squat / front squat / split squat / bulgarian split squat | приседание / фронтальный присед / сплит-присед / болгарские сплит-присед |
+| lunge | выпады |
+| deadlift / romanian / stiff leg / sumo | становая тяга / румынская тяга / тяга на прямых ногах / сумо |
+| good morning | good morning |
+| hip thrust / glute bridge | хип-траст / ягодичный мостик |
+| curl / hammer curl / preacher curl / wrist curl | сгибание / молотковое сгибание / сгибание на скамье скотта / сгибание запястья |
+| leg curl / leg extension | сгибание ног / разгибание ног |
+| triceps extension / pushdown / kickback | разгибание рук / разгибание на верхнем блоке / разведение рук назад в наклоне |
+| skull crusher | французский жим лёжа |
+| row / upright row / inverted row | тяга в наклоне / тяга к подбородку / австралийские подтягивания |
+| pulldown / lat pulldown | тяга верхнего блока |
+| pull-up / chin-up | подтягивание / подтягивание обратным хватом |
+| push-up | отжимание |
+| dip | отжимания на брусьях |
+| fly / reverse fly / crossover | разведение / разведение в наклоне / кроссовер |
+| pullover | пуловер |
+| lateral / front / rear delt raise | подъём в стороны / подъём перед собой / разведение в наклоне |
+| shrug | шраги |
+| face pull | тяга к лицу |
+| calf raise | подъём на носки |
+| leg raise / knee raise | подъём ног / подъём коленей |
+| crunch / sit-up | скручивания / подъём корпуса |
+| plank / side plank | планка / боковая планка |
+| hyperextension / back extension | гиперэкстензия / разгибание спины |
+| stretch | растяжка |
+| pose (yoga) | поза |
+| clean, snatch, jerk | взятие на грудь, рывок, толчок |
+| thruster, burpee, swing | трастер, бёрпи, мах (гирей) |
+| jumping jack / mountain climber | джампинг джек / альпинист |
+| standing / seated, sitting / lying / kneeling | стоя / сидя / лёжа / на коленях |
+| prone / supine | лёжа на животе / лёжа на спине |
+| incline / decline / flat | наклонная / вниз головой / горизонтальная |
+| single arm, one arm / single leg | одной рукой / одной ногой |
+| alternate, alternating | попеременно |
+| grip / close / wide / reverse / underhand / overhand / neutral | хват / узкий / широкий / обратный /лопатка |
+| floor | пол |
+| (male) / (female) | (муж.) / (жен.) |
+| (form check) | (проверка техники) |
+| (front pov) / (side pov) / (back pov) | (вид спереди) / (вид сбоку) / (вид сзади) |
