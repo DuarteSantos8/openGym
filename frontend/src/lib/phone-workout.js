@@ -21,7 +21,9 @@
 //
 // When the workout is finished, the session saves it to Apple Health (once: AppleHealthPlugin skips
 // its own post-hoc write for it); discarded, it is dropped (also a session iOS handed back after a
-// crash, whose workout is gone by then). AirPods taken out only pause readings.
+// crash, whose workout is gone by then). AirPods taken out only pause readings. A workout nobody
+// finishes: forgotten-phone.js hands the session a deadline (the end of the "Still training?" grace),
+// so it ends by itself even while the page sleeps.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { sanitizeHr, cleanSamples } from './heart-rate.js'
 import { isSideSet } from './workout-model.js'
@@ -183,6 +185,15 @@ const phonePlugin = () => pluginP || (pluginP = (async () => {
   const { registerPlugin } = await import('@capacitor/core')
   return { PW: registerPlugin('PhoneWorkout') }
 })().catch(() => null))
+
+/**
+ * A deadline for the native session: it saves and ends itself at `endBy` (ms) as the workout
+ * ended at `at`, with `title`, unless a new deadline or `{}` (none) replaces it first. The page
+ * sleeps with the phone locked, so this is what ends a workout nobody came back to.
+ */
+export async function setSessionDeadline (d) {
+  try { await (await phonePlugin())?.PW.deadline({ wid: d.wid, endBy: d.endBy, at: d.at, title: d.title }) } catch { /* an older shell: the page ends it when it wakes */ }
+}
 
 /** Whether this phone can run its own workout session (the iPhone app on iOS 26 or later). */
 export async function phoneSessionSupported () {

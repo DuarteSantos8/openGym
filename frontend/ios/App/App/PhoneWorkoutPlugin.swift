@@ -23,6 +23,7 @@ import HealthKit
  *   await PhoneWorkout.recover()    // { wid, start } of a session iOS kept, or {}
  *   await PhoneWorkout.samples({ since })         // { samples: [[ms, bpm]] }
  *   await PhoneWorkout.end({ wid, save, at, title, discarded })   // discarded: the workout is gone, never saved
+ *   await PhoneWorkout.deadline({ wid, endBy, at, title })        // saves and ends it by itself at endBy; none: cancelled
  *   PhoneWorkout.addListener('heartRate', ({ bpm, at }) => ...)   // at most every few seconds
  *
  * Below iOS 26 status says { supported: false } and every other call does nothing.
@@ -37,6 +38,7 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "recover", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "samples", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "end", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deadline", returnType: CAPPluginReturnPromise),
     ]
 
     override public func load() {
@@ -104,6 +106,20 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         let discarded = call.getBool("discarded") ?? false
         DispatchQueue.main.async {
             PhoneWorkoutSession.shared.end(workoutId: wid, save: save && !discarded, at: at, title: title, discarded: discarded)
+            call.resolve()
+        }
+    }
+
+    /// The page's "Still training?" grace (lib/forgotten-phone.js): a workout nobody finishes ends
+    /// here, since the page sleeps with the phone locked. No `endBy`: no deadline.
+    @objc func deadline(_ call: CAPPluginCall) {
+        guard #available(iOS 26.0, *) else { call.resolve(); return }
+        let wid = call.getString("wid")
+        let endBy = call.getDouble("endBy").map { Date(timeIntervalSince1970: $0 / 1000) }
+        let at = call.getDouble("at").map { Date(timeIntervalSince1970: $0 / 1000) }
+        let title = call.getString("title")
+        DispatchQueue.main.async {
+            PhoneWorkoutSession.shared.setDeadline(workoutId: wid, endBy: endBy, at: at, title: title)
             call.resolve()
         }
     }
@@ -211,6 +227,22 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         return true
     }
 
+    /// The session's own deadline: a workout left running with the phone locked is saved and ended
+    /// here as it ended at `at`, since the page that would end it sleeps. A wall-clock timer, so
+    /// time asleep counts. Replaced by the next call; gone when the session ends. `endBy` nil: none.
+    private var deadlineTimer: DispatchSourceTimer?
+
+    func setDeadline(workoutId wid: String?, endBy: Date?, at: Date?, title: String?) {
+        deadlineTimer?.cancel()
+        deadlineTimer = nil
+        guard let wid = wid, let endBy = endBy else { return }
+        let t = DispatchSource.makeTimerSource(queue: .main)
+        t.schedule(wallDeadline: .now() + max(0, endBy.timeIntervalSinceNow))
+        t.setEventHandler { [weak self] in self?.end(workoutId: wid, save: true, at: at, title: title) }
+        deadlineTimer = t
+        t.resume()
+    }
+
     /// The app was killed (or crashed) with a session running: iOS kept it and hands it back, with
     /// everything it measured. The workout's id comes from the sync identifier it was started with.
     func recover(_ done: ((String?, Date?) -> Void)? = nil) {
@@ -280,6 +312,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
     func end(workoutId wid: String?, save: Bool, at: Date?, title: String?, discarded: Bool = false) {
         guard let s = session, let b = builder else { return }
         if let wid = wid, wid != workoutId { return }
+        deadlineTimer?.cancel()
+        deadlineTimer = nil
         let sid = workoutId.map(Self.syncId)
         if let q = query { store.stop(q); query = nil }
         // Never before its own start and never ahead of now (a stale or NaN `at` from the page):
@@ -395,6 +429,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
             guard self.session === workoutSession else { return }
             if let q = self.query { self.store.stop(q); self.query = nil }
             if let wid = self.workoutId { PhoneWorkoutLedger.mark(Self.syncId(wid), nil) }
+            self.deadlineTimer?.cancel()
+            self.deadlineTimer = nil
             self.builder?.discardWorkout()
             self.session = nil
             self.builder = nil

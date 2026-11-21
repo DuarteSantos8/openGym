@@ -12,7 +12,7 @@ import { t } from './i18n-core.js'
 import { fmtClock } from './format.js'
 import { withoutAlarmPrompt } from './exact-alarm.js'
 import {
-  decideForgotten, readForgottenPrefs, readForgottenState, writeForgottenState, keepGoingPatch, leaveGymOn,
+  decideForgotten, honestEnd, readForgottenPrefs, readForgottenState, writeForgottenState, keepGoingPatch, leaveGymOn,
 } from './forgotten-workout.js'
 
 export const ASK_NOTIFICATION_ID = 3100
@@ -21,7 +21,7 @@ export const ASK_ACTIONS = 'og-forgotten'
 export const LEFT_ACTIONS = 'og-left'
 const CHECK_MS = 30 * 1000
 
-let deps = null          // { useStore, useUI, finish, discard, openPrompt, closePrompt, gymOn }
+let deps = null          // { useStore, useUI, finish, discard, openPrompt, closePrompt, gymOn, sessionDeadline }
 let timer = null
 let shown = null         // the card on screen: { wid, state }
 let planned = ''         // the notification planned last ("wid|at")
@@ -64,6 +64,19 @@ async function registerActions(L) {
   } catch { /* an older shell: the notification still opens the app */ }
 }
 
+/**
+ * The phone's own workout session (HealthKit, AirPods heart rate) ends by itself when the question
+ * planned for `at` goes unanswered for the grace, saved as the page's finish would save it. Only
+ * while that notification is really planned: a workout nobody was asked about is never ended.
+ */
+function endSessionBy(wid, at) {
+  if (!deps?.sessionDeadline) return
+  const S = deps.useStore.getState().S
+  if (!wid || !at || S?.active?.id !== wid) { deps.sessionDeadline({}); return }
+  const endBy = at + readForgottenPrefs().graceMin * 60e3
+  deps.sessionDeadline({ wid, endBy, at: honestEnd(S.active, { restSec: Number(S.restSec) || 0, now: endBy }), title: S.active.name })
+}
+
 /** The notification for "Still training?", planned for `at`; or none (`at` 0). Never asks for permission. */
 async function planNotification(wid, at) {
   const key = wid && at ? wid + '|' + at : ''
@@ -73,8 +86,8 @@ async function planNotification(wid, at) {
   planned = key
   try {
     await L.cancel({ notifications: [{ id: ASK_NOTIFICATION_ID }] }).catch(() => {})
-    if (!key) { writeForgottenState(wid, { notifyAt: 0 }); return }
-    if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); return }
+    if (!key) { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
+    if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
     await registerActions(L)
     const c = forgottenCopy()
     await L.schedule({ notifications: await withoutAlarmPrompt(L, [{
@@ -84,6 +97,7 @@ async function planNotification(wid, at) {
     }]) })
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
+    endSessionBy(wid, at)
   } catch { planned = '' }
 }
 

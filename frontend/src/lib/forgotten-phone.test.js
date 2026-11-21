@@ -42,7 +42,7 @@ afterEach(() => { stop(); _resetForgottenPhone(); vi.useRealTimers() })
 
 function start (A = workout()) {
   const st = makeStores(A)
-  const calls = { finish: [], prompts: [], closed: 0, discard: 0, used: [] }
+  const calls = { finish: [], prompts: [], closed: 0, discard: 0, used: [], deadlines: [] }
   stop = startForgotten({
     ...st,
     finish: o => { calls.finish.push(o); st.useStore.set({ ...st.useStore.getState().S, active: null }) },
@@ -53,6 +53,7 @@ function start (A = workout()) {
     readLeft: async () => null,
     onLeft: () => () => {},
     notifications: fakeNotifications,
+    sessionDeadline: d => calls.deadlines.push(d),
   })
   return { st, calls }
 }
@@ -68,6 +69,26 @@ describe('forgotten workouts on the phone', () => {
     expect(readForgottenState('w1').notifyAt).toBe(last + 45 * MIN)
     // Android 14 without "Alarms & reminders": inexact, so the plugin opens no settings screen (QA66).
     expect(ln.scheduled[0].isExactNotification).toBe(false)
+  })
+
+  it('hands the phone session a deadline: the grace after the planned question, ending at the last set plus its rest', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{ wid: 'w1', endBy: last + 50 * MIN, at: last + 120e3, title: undefined }]))
+    // A set logged moves the question, so the deadline.
+    const A = { ...workout(), name: 'Push' }; A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+    st.useStore.set({ ...st.useStore.getState().S, active: A })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({ wid: 'w1', endBy: last + 55 * MIN, at: last + 5 * MIN + 120e3, title: 'Push' }))
+    // The workout over: no deadline left.
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+  })
+
+  it('no notification planned (no permission): no deadline, a workout nobody was asked about is not ended', async () => {
+    vi.setSystemTime(last + MIN)
+    ln.granted = false
+    const { calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{}]))
   })
 
   it('asks on screen, then ends at the last set plus its rest when nobody answers', () => {
