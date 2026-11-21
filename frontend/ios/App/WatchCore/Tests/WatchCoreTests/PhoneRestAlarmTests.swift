@@ -20,6 +20,13 @@ final class PhoneRestAlarmTests: XCTestCase {
         XCTAssertEqual(PhoneRestAlarm.change(skip, wid: "w1", since: since, now: now), .init(at: now - 500, end: nil))
         let over: [String: Any] = ["type": "rest", "wid": "w1", "endsAt": now + 200, "at": now - 500, "off": 0.0]
         XCTAssertEqual(PhoneRestAlarm.change(over, wid: "w1", since: since, now: now)?.end, nil, "an end this close is over")
+        XCTAssertNil(PhoneRestAlarm.change(skip, wid: "w1", since: since, now: now)?.over, "a Skip has no end that passed")
+    }
+
+    func testAnEventThatCameAfterItsEndKeepsThatEnd() {
+        // Not a Skip: the chain's phases follow this end, so cues that rang already are not rung again.
+        let late: [String: Any] = ["type": "rest", "wid": "w1", "endsAt": now - 20_000, "at": now - 25_000, "off": 0.0]
+        XCTAssertEqual(PhoneRestAlarm.change(late, wid: "w1", since: since, now: now), .init(at: now - 25_000, end: nil, over: now - 20_000))
     }
 
     func testASetTickedOnTheWatchBringsItsRest() {

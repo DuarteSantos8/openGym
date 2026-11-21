@@ -17,6 +17,9 @@ enum PhoneRestAlarm {
         let at: Double
         let end: Double?
         var sameRest = true
+        /// A `rest` change whose new end has passed already (an event that came late): that end
+        /// (ms), where `end` is nil. Not a Skip, which has none.
+        var over: Double? = nil
     }
 
     /// Beyond this the watch's clock is wrong, not off: left as it is (watch-sync.js MAX_OFF_MS).
@@ -41,7 +44,9 @@ enum PhoneRestAlarm {
             end = e > 0 ? e : nil
         }
         let same = type == "rest"
-        guard let e = end, e - off > now + 500 else { return Change(at: t - off, end: nil, sameRest: same) }
+        guard let e = end, e - off > now + 500 else {
+            return Change(at: t - off, end: nil, sameRest: same, over: type == "rest" ? end.map { $0 - off } : nil)
+        }
         return Change(at: t - off, end: e - off, sameRest: same)
     }
 

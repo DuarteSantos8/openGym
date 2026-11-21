@@ -205,6 +205,9 @@ enum LiveActivityQueue {
     /// Stop auto was tapped, or a set logged that changes the chain's timing: RestAlertPlugin drops
     /// the alerts of the chain of holds after the one booked now (the page books again when it wakes).
     static let autoStopped = Notification.Name("OpenGymLiveActivityAutoStopped")
+    /// The Lock Screen booked a rest's alert itself (+15, a set logged): `userInfo["end"]` is its
+    /// time (ms). RestAlertPlugin takes it as the rest's end and the newest change, so an older one from the watch does not move it back.
+    static let restBooked = Notification.Name("OpenGymLiveActivityRestBooked")
     private static let lock = NSLock()
 
     static func all() -> [[String: Any]] {
@@ -875,6 +878,7 @@ enum LiveActivityTick {
         content.interruptionLevel = .active
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: LiveNumbers.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
+        NotificationCenter.default.post(name: LiveActivityQueue.restBooked, object: nil, userInfo: ["end": at.timeIntervalSince1970 * 1000])
     }
 }
 

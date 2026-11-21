@@ -84,6 +84,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
         // The Live Activity's Stop auto: the chain's alerts after this one are not rung.
         nc.addObserver(self, selector: #selector(autoStopped), name: LiveActivityQueue.autoStopped, object: nil)
+        // The Lock Screen's +15 or a set logged there booked the alert itself: that is the newest change of the rest.
+        nc.addObserver(self, selector: #selector(restBooked(_:)), name: LiveActivityQueue.restBooked, object: nil)
         // The watch's +15, −15, Skip or a set's rest, with the page asleep: this alert moves with it.
         nc.addObserver(self, selector: #selector(watchRest(_:)), name: WatchLink.eventStored, object: nil)
         nc.addObserver(self, selector: #selector(audioInterrupted(_:)), name: AVAudioSession.interruptionNotification, object: nil)
@@ -387,6 +389,15 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         }
     }
 
+    /// The Lock Screen booked the rest's alert (already posted): the end and the ordering mark follow it.
+    @objc private func restBooked(_ note: Notification) {
+        guard let end = note.userInfo?["end"] as? Double, end.isFinite else { return }
+        DispatchQueue.main.async {
+            guard let p = self.pending else { return }
+            self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues)
+        }
+    }
+
     /// Stop auto on the Lock Screen: the alert booked now stays (a hold running still ends), the
     /// chain's alerts after it go.
     @objc private func autoStopped() {
@@ -409,7 +420,11 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             let wid = UserDefaults.standard.string(forKey: WatchBridgePlugin.idleWidKey)
             guard let c = PhoneRestAlarm.change(ev, wid: wid, since: p.since, now: Date().timeIntervalSince1970 * 1000) else { return }
             self.withdraw()
-            if c.sameRest, let end = c.end {
+            if c.sameRest, let over = c.over {
+                // The watch's end passed already (an event that came late): the chain keeps its phases from it, and only what is still ahead rings.
+                self.pending = Pending(at: Date(timeIntervalSince1970: over / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.post()
+            } else if c.sameRest, let end = c.end {
                 self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
                 self.post()
             } else if c.sameRest, !p.cues.isEmpty {
