@@ -85,7 +85,7 @@ enum Metrics {
     static func effort(_ s: SessionState) -> [ExerciseEffort] {
         guard let w = s.workout, let efforts = s.efforts else { return [] }
         return w.entries.enumerated().compactMap { ei, e in
-            let v = e.sets.indices.compactMap { efforts[SessionCore.rowKey(sid: nil, entry: ei, exId: e.id, set: $0)] }
+            let v = e.sets.indices.compactMap { efforts[SessionCore.placeKey(w, entry: ei, set: $0)] }
             return v.isEmpty ? nil : ExerciseEffort(id: e.id, name: e.name, value: v.reduce(0, +) / Double(v.count))
         }
     }
