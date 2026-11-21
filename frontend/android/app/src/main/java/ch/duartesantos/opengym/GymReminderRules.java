@@ -156,6 +156,16 @@ final class GymReminderRules {
     /** A fix vaguer than this (m) proves nothing about standing still, or about a place. */
     static final double SPOT_MAX_ACC_M = 100;
 
+    /**
+     * Settling and remembering a spot need every gym more than its radius + 2 x SPOT_M away: a wait
+     * in the car park is not "somewhere else", and a kept spot (rounded, then matched within
+     * SPOT_M) can never reach into a gym.
+     */
+    static boolean clearOfAll(double[] dist, double[] radius) {
+        for (int i = 0; i < dist.length; i++) if (dist[i] <= radius[i] + 2 * SPOT_M) return false;
+        return true;
+    }
+
     /** Metres between two places (haversine). */
     static double metersBetween(double lat1, double lng1, double lat2, double lng2) {
         double p1 = Math.toRadians(lat1), p2 = Math.toRadians(lat2);
@@ -167,7 +177,7 @@ final class GymReminderRules {
     /**
      * Whether the phone has stayed put: fixes {at ms, lat, lng, accuracy m}, oldest first, cover at
      * least SETTLE_MS (some fix is that old by the newest one), and every fix from the latest such
-     * old one on is sharp and within SETTLE_M of the newest. Caller has checked it is outside every gym.
+     * old one on is sharp and within SETTLE_M of the newest. Caller keeps only fixes clear of every gym (clearOfAll).
      */
     static boolean stayedPut(double[][] fixes) {
         if (fixes.length < 2) return false;

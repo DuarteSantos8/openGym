@@ -508,8 +508,9 @@ opens the Start screen (or the running workout).
   the GPS chip); within 400 m it switches to high accuracy every 15 s (back to cheap past 500 m).
   It stops at the first of: inside a gym (then the usual no-nag rule and the server check
   decide), beyond every approach zone + 250 m, today settled meanwhile, the phone staying within
-  about 60 m for 3 minutes outside every gym ("settled somewhere else"), or **15 minutes**.
-  The last two remember the spot (rounded to about 150 m, kept 30 days, at most 5, in the same
+  about 60 m for 3 minutes more than 300 m beyond every gym's radius ("settled somewhere else",
+  so a wait in the car park does not count), or **15 minutes**. The last two remember the spot
+  when it is that clear of every gym (rounded to about 150 m, kept 30 days, at most 5, in the same
   private file as the gyms): a zone alert that finds the phone's last known location (passive or
   network provider, no power) at such a spot, and fresher than 10 minutes, starts no check; the
   gym's own alert still works as before. At most **3 checks a day**, none once today is settled

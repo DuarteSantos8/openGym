@@ -27,8 +27,9 @@ import org.json.JSONObject;
  * door, instead of waiting for Android's next proximity-alert look, which for an app in the
  * background can be half an hour away. Ends as soon as one of these is true: the phone is inside
  * a gym (the reminder posts, or the no-nag rule keeps it quiet), it left every approach zone,
- * today got settled meanwhile, it stayed put somewhere else for 3 minutes, or 15 minutes passed
- * (the last two remember the spot, GymReminderRules.addSpot). A foreground service because
+ * today got settled meanwhile, it stayed put somewhere else for 3 minutes (well clear of every
+ * gym, not in its car park), or 15 minutes passed (the last two remember the spot if it was
+ * clear, GymReminderRules.addSpot). A foreground service because
  * Android only gives background apps a few fixes an hour otherwise; its notification is a silent
  * one on its own channel and goes away with the check.
  *
@@ -51,7 +52,9 @@ public class GymScanService extends Service implements LocationListener {
     /** Whether the cheap kind of fix is being asked for (every gym more than 400 m away). */
     private boolean far = true;
     private Location lastFix;
-    /** {at, lat, lng, accuracy} of the fixes of the last few minutes that were outside every gym. */
+    /** Whether lastFix was clear of every gym (GymReminderRules.clearOfAll): only then is it a spot. */
+    private boolean clear;
+    /** {at, lat, lng, accuracy} of the fixes of the last few minutes that were clear of every gym. */
     private final ArrayList<double[]> track = new ArrayList<>();
 
     @Override
@@ -129,7 +132,7 @@ public class GymScanService extends Service implements LocationListener {
 
     /** The check ends without an arrival: where the phone is counts as "not the gym". */
     private void rememberLastFix() {
-        if (lastFix == null) return;
+        if (lastFix == null || !clear) return;
         GymReminder.rememberSpot(getApplicationContext(), lastFix.getLatitude(), lastFix.getLongitude(),
                 lastFix.hasAccuracy() ? lastFix.getAccuracy() : 1000);
     }
@@ -139,6 +142,7 @@ public class GymScanService extends Service implements LocationListener {
         if (!running || loc == null) return;
         fixes++;
         lastFix = loc;
+        clear = false;
         Context ctx = getApplicationContext();
         Calendar now = Calendar.getInstance();
         String why = GymReminder.skipNow(ctx, now);
@@ -171,9 +175,11 @@ public class GymScanService extends Service implements LocationListener {
             finish("left the area");
         } else {
             long at = System.currentTimeMillis();
-            track.add(new double[] { at, loc.getLatitude(), loc.getLongitude(), loc.hasAccuracy() ? loc.getAccuracy() : 1000 });
-            while (track.get(0)[0] < at - 2 * GymReminderRules.SETTLE_MS) track.remove(0);
-            if (GymReminderRules.stayedPut(track.toArray(new double[0][]))) {
+            clear = GymReminderRules.clearOfAll(dist, radius);
+            if (!clear) track.clear();
+            else track.add(new double[] { at, loc.getLatitude(), loc.getLongitude(), loc.hasAccuracy() ? loc.getAccuracy() : 1000 });
+            while (!track.isEmpty() && track.get(0)[0] < at - 2 * GymReminderRules.SETTLE_MS) track.remove(0);
+            if (clear && GymReminderRules.stayedPut(track.toArray(new double[0][]))) {
                 rememberLastFix();
                 finish("stayed put");
                 return;

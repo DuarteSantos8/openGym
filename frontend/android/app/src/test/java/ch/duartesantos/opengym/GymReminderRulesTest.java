@@ -189,6 +189,17 @@ public class GymReminderRulesTest {
     }
 
     @Test
+    public void aWaitInTheCarParkIsNotSettledElsewhere() {
+        // 100 m gym: within 400 m of it (car park, doorstep) the check keeps going, and no spot is kept.
+        assertFalse(GymReminderRules.clearOfAll(new double[] { 150, 5000 }, new double[] { 100, 100 }));
+        assertFalse(GymReminderRules.clearOfAll(new double[] { 400, 5000 }, new double[] { 100, 100 }));
+        assertTrue(GymReminderRules.clearOfAll(new double[] { 401, 5000 }, new double[] { 100, 100 }));
+        // A wide gym pushes it out with its radius.
+        assertFalse(GymReminderRules.clearOfAll(new double[] { 700, 5000 }, new double[] { 500, 100 }));
+        assertTrue(GymReminderRules.clearOfAll(new double[0], new double[0]));
+    }
+
+    @Test
     public void aVagueFixCannotProveStillness() {
         double[][] vague = { fix(0, 0, 20), fix(90_000, 0, 1500), fix(180_000, 0, 20) };
         assertFalse(GymReminderRules.stayedPut(vague));
