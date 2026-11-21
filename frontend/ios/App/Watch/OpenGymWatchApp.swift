@@ -129,6 +129,10 @@ struct RootView: View {
             // for a workout's end, at once (a suspended app would leave the complications stale).
             if store.health.running && (state.mode == "set" || state.mode == "rest") { widgetReload.call(reload) } else { reload() }
         }
+        // The session ended inside that wait (lost, or ended by watchOS): reload now, the app may be suspended next.
+        .onReceive(store.health.$running.dropFirst()) { running in
+            if !running, !store.isDemo { WidgetCenter.shared.reloadAllTimelines() }
+        }
     }
 }
 
