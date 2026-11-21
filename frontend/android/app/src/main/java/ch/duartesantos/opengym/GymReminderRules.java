@@ -1,5 +1,6 @@
 package ch.duartesantos.opengym;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -113,5 +114,112 @@ final class GymReminderRules {
     /** Whether another check may start today, given the day the last ones ran and how many. */
     static boolean mayScan(String scanDay, int scansThatDay, String today) {
         return !today.equals(scanDay) || scansThatDay < SCANS_PER_DAY;
+    }
+
+    // ---------------------------------------------------------------- keeping the check cheap
+    //
+    // Most of a check is spent far from the gym (home or work inside the approach zone), where
+    // GPS buys nothing: the walk through the door is what has to be seen sharply.
+
+    /** Closer than this to a gym, the check asks for GPS-grade fixes; further, for cheap ones. */
+    static final double FAR_M = 400;
+    /** Back to cheap fixes only past this, so hovering around 400 m does not flip it every fix. */
+    static final double FAR_BACK_M = 500;
+    /** A fix this often is plenty at walking pace (30 s is about 40 m) while still far away. */
+    static final long FAR_INTERVAL_MS = 30_000L;
+
+    /** True while the phone is beyond FAR_M from every gym (beyond FAR_BACK_M once it came closer). */
+    static boolean farFromAll(double[] dist, boolean wasFar) {
+        double limit = wasFar ? FAR_M : FAR_BACK_M;
+        for (double d : dist) if (d <= limit) return false;
+        return true;
+    }
+
+    static long intervalFor(boolean far) {
+        return far ? FAR_INTERVAL_MS : SCAN_INTERVAL_MS;
+    }
+
+    /**
+     * Location providers to try, best first (the names are LocationManager's constants). Fused
+     * exists from Android 12. Far from the gyms, below 12 only the network one: never the GPS chip.
+     */
+    static String[] providersFor(boolean far, int sdk) {
+        if (sdk >= 31) return far ? new String[] { "fused", "network" } : new String[] { "fused", "gps", "network" };
+        return far ? new String[] { "network" } : new String[] { "gps", "network" };
+    }
+
+    // ---------------------------------------------------------------- settled somewhere else
+
+    /** Fixes over this long that all sit within SETTLE_M of each other: the phone stays put. */
+    static final long SETTLE_MS = 3 * 60_000L;
+    static final double SETTLE_M = 60;
+    /** A fix vaguer than this (m) proves nothing about standing still, or about a place. */
+    static final double SPOT_MAX_ACC_M = 100;
+
+    /** Metres between two places (haversine). */
+    static double metersBetween(double lat1, double lng1, double lat2, double lng2) {
+        double p1 = Math.toRadians(lat1), p2 = Math.toRadians(lat2);
+        double a = Math.pow(Math.sin((p2 - p1) / 2), 2)
+                + Math.cos(p1) * Math.cos(p2) * Math.pow(Math.sin(Math.toRadians(lng2 - lng1) / 2), 2);
+        return 2 * 6_371_000 * Math.asin(Math.sqrt(a));
+    }
+
+    /**
+     * Whether the phone has stayed put: fixes {at ms, lat, lng, accuracy m}, oldest first, cover at
+     * least SETTLE_MS (some fix is that old by the newest one), and every fix from the latest such
+     * old one on is sharp and within SETTLE_M of the newest. Caller has checked it is outside every gym.
+     */
+    static boolean stayedPut(double[][] fixes) {
+        if (fixes.length < 2) return false;
+        double[] last = fixes[fixes.length - 1];
+        int anchor = -1;
+        for (int i = 0; i < fixes.length; i++) if (fixes[i][0] <= last[0] - SETTLE_MS) anchor = i;
+        if (anchor < 0) return false;
+        for (int i = anchor; i < fixes.length; i++) {
+            if (fixes[i][3] > SPOT_MAX_ACC_M || metersBetween(fixes[i][1], fixes[i][2], last[1], last[2]) >= SETTLE_M) return false;
+        }
+        return true;
+    }
+
+    // ---------------------------------------------------------------- "not the gym" spots
+    //
+    // A check that ended without an arrival (the phone stayed put elsewhere, or 15 minutes ran
+    // out) remembers where: the next zone alert that finds the phone at that spot starts no check.
+
+    /** Spots are rounded to a grid of about this (m); a phone within it of one is "there". */
+    static final double SPOT_M = 150;
+    static final long SPOT_KEEP_MS = 30L * 24 * 3600_000L;
+    static final int MAX_SPOTS = 5;
+    /** A last known fix older than this says where the phone was, not where it is. */
+    static final long FRESH_FIX_MS = 10 * 60_000L;
+
+    /**
+     * The spots {lat, lng, at ms} with this place added (rounded to the ~150 m grid, so the exact
+     * place is not kept): one already near it is replaced, those over 30 days old are dropped, and
+     * only the newest MAX_SPOTS stay. A fix vaguer than SPOT_MAX_ACC_M adds nothing.
+     */
+    static double[][] addSpot(double[][] spots, double lat, double lng, double accuracy, long now) {
+        double latStep = SPOT_M / 111_320.0;
+        double rLat = Math.round(lat / latStep) * latStep;
+        double lngStep = latStep / Math.max(0.01, Math.cos(Math.toRadians(rLat)));
+        double rLng = Math.round(lng / lngStep) * lngStep;
+        double[][] kept = new double[spots.length + 1][];
+        int n = 0;
+        for (double[] s : spots) {
+            boolean old = now - s[2] > SPOT_KEEP_MS;
+            boolean same = accuracy <= SPOT_MAX_ACC_M && metersBetween(s[0], s[1], rLat, rLng) < 1.5 * SPOT_M;
+            if (!old && !same) kept[n++] = s;
+        }
+        if (accuracy <= SPOT_MAX_ACC_M) kept[n++] = new double[] { rLat, rLng, now };
+        return Arrays.copyOfRange(kept, Math.max(0, n - MAX_SPOTS), n);
+    }
+
+    /** Whether a fix taken at fixAt, at this place, is within SPOT_M of a spot kept less than 30 days. */
+    static boolean knownSpot(double[][] spots, double lat, double lng, long fixAt, long now) {
+        if (now - fixAt > FRESH_FIX_MS) return false;
+        for (double[] s : spots) {
+            if (now - s[2] <= SPOT_KEEP_MS && metersBetween(s[0], s[1], lat, lng) <= SPOT_M) return true;
+        }
+        return false;
     }
 }

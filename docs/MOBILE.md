@@ -503,11 +503,18 @@ opens the Start screen (or the running workout).
   (and indoors, where GPS may not get a fix at all) the nudge could come half an hour late.
 - **Approach check (Android):** every gym also gets a wide proximity alert, the approach zone
   (800 m, or 5× the radius for big ones; `GymReminderRules.approachOf`). Entering it starts
-  `GymScanService`, a location foreground service that asks for a fix every 15 s (fused, high
-  accuracy) and stops at the first of: inside a gym (then the usual no-nag rule and the server
-  check decide), beyond every approach zone + 250 m, today settled meanwhile, or **15 minutes**.
-  At most **3 checks a day**, none once today is settled (fired, trained, excused, outside the
-  window), so a normal day costs one check of a few minutes and the worst case is 45 min of GPS.
+  `GymScanService`, a location foreground service. While every gym is more than 400 m away it
+  asks for cheap fixes every 30 s (balanced power; below Android 12 the network provider, never
+  the GPS chip); within 400 m it switches to high accuracy every 15 s (back to cheap past 500 m).
+  It stops at the first of: inside a gym (then the usual no-nag rule and the server check
+  decide), beyond every approach zone + 250 m, today settled meanwhile, the phone staying within
+  about 60 m for 3 minutes outside every gym ("settled somewhere else"), or **15 minutes**.
+  The last two remember the spot (rounded to about 150 m, kept 30 days, at most 5, in the same
+  private file as the gyms): a zone alert that finds the phone's last known location (passive or
+  network provider, no power) at such a spot, and fresher than 10 minutes, starts no check; the
+  gym's own alert still works as before. At most **3 checks a day**, none once today is settled
+  (fired, trained, excused, outside the window). A normal day costs one check of a few minutes;
+  someone living inside the zone no longer runs the GPS (the old worst case was 45 min a day).
   Its notification is a silent one on its own channel (`gym-reminder-check`, IMPORTANCE_MIN) and
   goes away with the check (Android holds a new foreground-service notification back for up to
   10 s, so a check that ends quickly may never show one). Catch: Android 12+ lets a background app start a foreground service

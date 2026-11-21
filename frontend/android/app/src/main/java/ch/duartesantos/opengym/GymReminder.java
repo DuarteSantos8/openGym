@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -52,7 +53,8 @@ import org.json.JSONObject;
  *
  * What is kept, in the app's private preferences: the config the page saved (gyms with their
  * places, the time window), the status it last reported (last day trained, a running session, the
- * notification's words) and the day it last went off. That file is left out of Android's cloud
+ * notification's words), the day it last went off and the few rounded spots where a check found
+ * no gym (see rememberSpot). That file is left out of Android's cloud
  * backup and device transfer (res/xml/backup_rules.xml, data_extraction_rules.xml): the places
  * stay on this phone, and never go to the user's server either.
  */
@@ -321,9 +323,57 @@ final class GymReminder {
                 prefs(ctx).getString("lastFired", ""), now);
     }
 
+    // ---------------------------------------------------------------- "not the gym" spots
+
+    private static double[][] spots(Context ctx) {
+        try {
+            JSONArray a = new JSONArray(prefs(ctx).getString("spots", "[]"));
+            double[][] out = new double[a.length()][];
+            for (int i = 0; i < out.length; i++) {
+                JSONArray s = a.getJSONArray(i);
+                out[i] = new double[] { s.getDouble(0), s.getDouble(1), s.getDouble(2) };
+            }
+            return out;
+        } catch (Exception e) {
+            return new double[0][];
+        }
+    }
+
+    /**
+     * A check ended without an arrival at this place: keep it (rounded to about 150 m, 30 days, a
+     * few at most) so a zone alert that finds the phone there starts no check (GymReminderRules.addSpot).
+     */
+    static void rememberSpot(Context ctx, double lat, double lng, double accuracy) {
+        JSONArray a = new JSONArray();
+        try {
+            for (double[] s : GymReminderRules.addSpot(spots(ctx), lat, lng, accuracy, System.currentTimeMillis())) {
+                a.put(new JSONArray().put(s[0]).put(s[1]).put((long) s[2]));
+            }
+        } catch (Exception e) {
+            return;
+        }
+        prefs(ctx).edit().putString("spots", a.toString()).apply();
+    }
+
+    /** The newest fix the phone already has (the passive and the network provider cost no power), or null. */
+    private static Location lastKnown(Context ctx) {
+        LocationManager lm = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
+        Location best = null;
+        for (String p : new String[] { LocationManager.PASSIVE_PROVIDER, LocationManager.NETWORK_PROVIDER }) {
+            try {
+                Location l = lm == null ? null : lm.getLastKnownLocation(p);
+                if (l != null && (best == null || l.getTime() > best.getTime())) best = l;
+            } catch (Exception ignored) {
+                // No permission or no such provider: the other one may still answer.
+            }
+        }
+        return best;
+    }
+
     /**
      * The phone entered a gym's approach zone: start the short check with live location, unless
-     * today is settled already (no point looking), three checks ran today, or Android refuses.
+     * today is settled already (no point looking), three checks ran today, the phone is at a spot a
+     * check found no gym at, or Android refuses.
      */
     static void startCheck(Context ctx, String gymId, Calendar now) {
         String why = skipNow(ctx, now);
@@ -337,6 +387,11 @@ final class GymReminder {
         int count = today.equals(day) ? p.getInt("scans", 0) : 0;
         if (!GymReminderRules.mayScan(day, count, today)) {
             note(ctx, "near " + gymId + ": no check (3 today)");
+            return;
+        }
+        Location here = lastKnown(ctx);
+        if (here != null && GymReminderRules.knownSpot(spots(ctx), here.getLatitude(), here.getLongitude(), here.getTime(), System.currentTimeMillis())) {
+            note(ctx, "near " + gymId + ": no check (a place that was not the gym)");
             return;
         }
         String how = launchCheck(ctx);
