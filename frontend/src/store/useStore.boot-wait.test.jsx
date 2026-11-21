@@ -125,6 +125,25 @@ describe('boot with a server that answers', () => {
     expect(waits().filter(([p]) => p === '/api/config')).toEqual([['/api/config', 5000], ['/api/config', undefined]])
   })
 
+  it('signing in while that config is still on its way still gets the signed-in one (the Coach)', async () => {
+    let n = 0
+    vi.useFakeTimers()
+    api.mockImplementation((path, o) => new Promise((resolve, reject) => {
+      if (path !== '/api/config') return setTimeout(() => reject(unauth()), 100)
+      n++
+      if (n === 1) return setTimeout(() => reject(timedOut()), o?.timeout ?? 20000)   // boot's, past the budget
+      setTimeout(() => resolve(n === 2 ? { allow_guest: true } : { allow_guest: true, coach: null }), 3000)
+    }))
+    let done = false
+    useStore.getState().boot().then(() => { done = true })
+    for (let i = 0; i < 100 && !done; i++) await vi.advanceTimersByTimeAsync(100)
+    expect(done).toBe(true)
+    useStore.getState().setUser(USER)   // a passkey sign-in while the config asked again is out
+    await vi.advanceTimersByTimeAsync(10000)
+    expect(useStore.getState().config).toEqual({ allow_guest: true, coach: null })
+    expect(n).toBe(3)
+  })
+
   it('asks the same questions as before, each with time to answer on a slow network', async () => {
     api.mockImplementation(async path => {
       if (path === '/api/config') return { allow_guest: true }

@@ -1868,6 +1868,7 @@ export const useStore = create((set, get) => {
         // nothing on this path waits for the answer. A copy that has the key was made for a
         // session and is already the right answer, Coach or no Coach.
         if (get().config && !('coach' in get().config)) get().refreshConfig()
+        else if (configFetch) configFetch.then(c => { if (c && !('coach' in c)) get().refreshConfig() })   // Ironvane: one in flight (boot's re-ask) left before this sign-in
       } else { rejoined = false; adoptHold = false; localStorage.removeItem('gym_user') }
       set({ user: u })
       // Another account, or none: what is in flight was for the previous one (GHSA-656w-p99j-x8hf).
