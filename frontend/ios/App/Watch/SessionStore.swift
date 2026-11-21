@@ -610,6 +610,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.health.end(save: false)
                 self.ran(before.workout?.id)
             }
+            // Another workout, or none: a removal held for Undo was the old one's (its Undo would point into this one).
+            if next.workout?.id != before.workout?.id { self.undoWindow = UndoWindow(); self.clearRemoval() }
             if let ended = before.workout, next.workout == nil {
                 // Ended on the phone: the session here ends too. Finished there, it is saved to Apple
                 // Health and the watch says so instead of quietly going back to the start screen.
