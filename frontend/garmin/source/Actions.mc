@@ -411,6 +411,13 @@ module Actions {
         if (w == null || askN % 10 != 0 || G.hold != null) {
             return;
         }
+        // Paused on the phone on purpose: never "Still training?", as on the phone and the other watches.
+        var paused = Core.toMs(w["pausedAt"]);
+        if (paused != null && paused > 0) {
+            G.ask = false;
+            G.askLeft = false;
+            return;
+        }
         var left = Core.toMs(w["leftGymAt"]);
         G.askLeft = left != null && (G.snooze == null || G.snooze < left);
         var st = Core.dictOf(G.state["set"]);
