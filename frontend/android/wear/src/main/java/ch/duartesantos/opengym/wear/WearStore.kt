@@ -125,7 +125,7 @@ object WearStore {
     private val homeLock = TouchLock()
     private var restJob: Job? = null
     private var holdJob: Job? = null
-    /** The set the running hold logs at its end: if the phone logged it first, the hold is over (HoldSet). */
+    /** The set the running hold (or its 3-2-1) logs: if the phone logged it first, that is over (HoldSet). */
     private var holdFor: HoldSet? = null
     private var countJob: Job? = null
     private var idleJob: Job? = null
@@ -269,8 +269,8 @@ object WearStore {
             RestFollow.Legacy -> legacyRest(snap, after, phoneRest, echo)
         }
         commit(after)
-        // The phone logged the set a hold here runs for (its own hold ended first): this one ends with it, unlogged.
-        if (holdFor?.openIn(after) == false) stopHold()
+        // The phone logged the set a hold (or its 3-2-1) here runs for: this one ends with it, unlogged.
+        if (holdFor?.openIn(after) == false) { stopHold(); stopHoldCount() }
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
         ticks.lastOrNull()?.let { followPhoneTick(it) }
@@ -783,10 +783,12 @@ object WearStore {
     /** With the phone's "timed holds start by themselves" on and a hold up next: 3-2-1, then the hold. */
     fun autoHoldIfDue() {
         val s = _state.value
-        if (s.settings.autoHolds != true || s.workout == null || entry()?.isTimed != true || setIndex() == null) return
+        val si = setIndex()
+        if (s.settings.autoHolds != true || s.workout == null || entry()?.isTimed != true || si == null) return
         if (_hold.value != null || _rest.value != null || _holdCountIn.value != null || draft.value.sec <= 0) return
         val from = now()
         _holdCountIn.value = from
+        holdFor = HoldSet(entryIndex, si, entry()?.sets?.get(si)?.sideUp, entry()?.sets?.get(si)?.sid)
         Haptics.count(app)
         countJob?.cancel()
         countJob = scope.launch {
@@ -804,7 +806,7 @@ object WearStore {
     }
 
     fun stopHoldCount() {
-        if (_holdCountIn.value != null) countJob?.cancel()
+        if (_holdCountIn.value != null) { countJob?.cancel(); holdFor = null }
         _holdCountIn.value = null
     }
 

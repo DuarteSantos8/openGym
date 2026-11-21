@@ -687,4 +687,18 @@ class WatchLogicTest {
         assertFalse(hold.openIn(state(entry("plank", listOf(b.copy(done = true, at = 3.0)), mode = "time"))))
         assertFalse("its set was removed", hold.openIn(state(entry("plank", listOf(a), mode = "time"))))
     }
+
+    // The 3-2-1 before a hold remembers its set as the hold does: if the phone logs it meanwhile, the set up
+    // next is another one, and a count-in running out must not start a hold for that one.
+    @Test fun aCountInForASetThePhoneLoggedMeanwhileIsOver() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val s = state(entry("plank", listOf(a, b), mode = "time"))
+        val counted = SessionCore.setIndex(s, 0)!!
+        val hold = HoldSet(0, counted, null, a.sid)
+        assertTrue(hold.openIn(s))
+        val phoneLogged = state(entry("plank", listOf(a.copy(done = true, at = 1.0), b), mode = "time"))
+        assertEquals("what a count-in ending now would hold for", 1, SessionCore.setIndex(phoneLogged, 0))
+        assertFalse(hold.openIn(phoneLogged))
+    }
 }
