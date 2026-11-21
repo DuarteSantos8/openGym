@@ -395,15 +395,22 @@ enum SessionCore {
     /// first. A set the watch ticked itself is done in `before` already (tick), so only the phone's
     /// show up here; a set without the phone's `at` is left out (no time to measure up to).
     /// One side of a per-side set counts too: the row's `at` is that side's tick.
+    /// A set is matched by its id, so sets the phone moves are no tick; one without an id by place.
     static func phoneTicks(_ before: ActiveWorkout?, _ after: ActiveWorkout?) -> [PhoneTick] {
         guard let b = before, let a = after, let wid = a.id, wid == b.id else { return [] }
         var out: [PhoneTick] = []
         for (ei, e) in a.entries.enumerated() {
-            guard b.entries.indices.contains(ei), b.entries[ei].id == e.id else { continue }
-            let old = b.entries[ei].sets
+            let old = b.entries.indices.contains(ei) && b.entries[ei].id == e.id ? b.entries[ei].sets : []
             for (si, row) in e.sets.enumerated() {
-                guard let at = row.at, old.indices.contains(si) else { continue }
-                let was = old[si]
+                guard let at = row.at else { continue }
+                let was: SetRow
+                if let sid = row.sid, !sid.isEmpty {
+                    guard let (pe, ps) = SetMenu.find(b, sid: sid) else { continue }
+                    was = b.entries[pe].sets[ps]
+                } else {
+                    guard old.indices.contains(si) else { continue }
+                    was = old[si]
+                }
                 let newSide = ["L", "R"].contains { row.sides?[$0].done == true && was.sides?[$0].done != true }
                 if (row.done && !was.done) || newSide { out.append(PhoneTick(exId: e.id, entryIdx: ei, setIdx: si, at: at, sid: row.sid)) }
             }
