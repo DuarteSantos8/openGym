@@ -623,7 +623,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.summary = nil
                 self.health.start(workoutId: next.workout?.id, type: next.workout?.healthType)
             }
-            if next.workout != nil && next.workout != before.workout { self.noteActivity() }
+            if next.workout != nil && next.workout != before.workout {
+                // Paused on the phone (#976): the sensor rests too, as in Apple's own Workout. Not
+                // noteActivity, which would resume it first. The snapshot that resumes the workout
+                // changes it again, and noteActivity picks the session up.
+                if self.workoutPausedAt != nil { self.health.pause() } else { self.noteActivity() }
+            }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
             let ticks = SessionCore.phoneTicks(before.workout, next.workout)
             for tick in ticks {
