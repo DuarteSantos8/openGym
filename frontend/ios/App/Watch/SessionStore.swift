@@ -649,7 +649,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 // snapshot or a relaunch no longer restarts the rest here).
                 self.state.restAt = f.restAt
                 self.echoOf = nil
-                self.followPhoneRest(f.action)
+                self.followPhoneRest(f.action, newRest: !ticks.isEmpty)
             } else {
                 // An older phone (no `restAt`): only a rest end the phone has not sent before: the same
                 // one again (with some other change) would undo a ±15 here, or bring back a rest skipped
@@ -872,13 +872,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     /// What the phone did to the rest, newer than the watch's own last change (RestMath.follow).
-    private func followPhoneRest(_ action: RestMath.Follow) {
+    /// `newRest`: the same snapshot ticked a set there, so a running rest here is not moved, it is over.
+    private func followPhoneRest(_ action: RestMath.Follow, newRest: Bool) {
         switch action {
         case .ignore, .keep:
             break
         case .run(let endMs):
             let end = Date(timeIntervalSince1970: endMs / 1000)
-            let start = restEndsAt != nil ? restStartedAt : nil, shift = restShift
+            let start = restEndsAt != nil && !newRest ? restStartedAt : nil, shift = restShift
             startRest(until: end, notify: true)
             if start != nil { restShift = shift } // the same rest, moved or resumed on the phone
             // Moved there (±15 on the phone): the bar keeps its start; a new rest starts now.
@@ -1282,6 +1283,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         restEndsAt = nil
         restStartedAt = nil
         restPausedAt = nil
+        restShift = 0
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
     }
@@ -1300,6 +1302,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         closeRest(at: end)
         restEndsAt = nil
         restStartedAt = nil
+        restShift = 0
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
         if onTime { autoHoldIfDue() }
     }
