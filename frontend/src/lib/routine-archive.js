@@ -135,6 +135,8 @@ export function migrateArchiveFolder(s) {
   const old = (s.routines || []).filter(r => isArchive(r.folder))
   if (!old.length) return false
   // Off the schedule first, as an ordinary archive does: a later Restore must not reactivate old assignments.
+  // One that synced in already archived still holds them, so it goes through the same path.
+  for (const r of old) delete r.archived
   archiveRoutines(s, old.map(r => r.id))
   for (const r of old) { r.archived = true; delete r.folder }
   s.archiveMoved = true

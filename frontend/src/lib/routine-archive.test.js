@@ -163,6 +163,15 @@ describe('routine archive', () => {
       restoreRoutines(s, ['a'])
       expect(s.week).toEqual({ 1: ['b'] })
     })
+    it('takes an already archived arrival in Archive off the schedule too', () => {
+      const s = { routines: [{ ...r('a', 'Archive'), archived: true }, r('b')], week: { 1: ['a', 'b'] }, dayPlan: { '2026-11-16': 'a' }, rotation: { sequence: ['a', 'rest', 'b'] } }
+      expect(migrateArchiveFolder(s)).toBe(true)
+      expect(s.week).toEqual({ 1: ['b'] })
+      expect(s.dayPlan).toEqual({})
+      expect(s.rotation.sequence).toEqual(['rest', 'b'])
+      expect(s.routines[0]).toMatchObject({ archived: true })
+      expect(s.routines[0].folder).toBeUndefined()
+    })
     it('leaves "Archiv" alone under en', () => {
       const s = { routines: [r('a', 'Archiv')] }
       migrateArchiveFolder(s)
