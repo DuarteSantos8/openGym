@@ -3,6 +3,7 @@
 // per-side (two sides, each ticked on its own), holds (seconds), supersets (group), warm-ups,
 // the best set before today (the watch's PRs) and the workout's start (its summary).
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { withExUnit } from './ex-unit.js'
 import { buildSnapshot, applyEvents, bindWatchAppActions, patchSetIn, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -49,6 +50,17 @@ describe('the snapshot carries every kind of set', () => {
     expect(split.perSide).toBe(true)
     expect(split.sets[0].sides).toEqual({ L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: false } })
     expect(bench.sets[1].sides).toBeUndefined()
+  })
+  it('the effort logged on a set, on its side too, only where there is one', () => {
+    const E = S()
+    E.active.entries[0].sets[1] = { w: 80, r: 6, done: true, rir: 1.5 }
+    E.active.entries[3].sets[0] = { w: 20, r: 16, done: true, rpe: 9, sides: { L: { w: 20, r: 8, done: true, rpe: 8.5 }, R: { w: 20, r: 8, done: true, rpe: 9 } } }
+    const [b, , , sp] = buildSnapshot(E).active.entries
+    expect(b.sets[1].rir).toBe(1.5)
+    expect('rpe' in b.sets[1]).toBe(false)
+    expect('rir' in b.sets[0]).toBe(false)
+    expect(sp.sets[0].sides.L.rpe).toBe(8.5)
+    expect(sp.sets[0].sides.R.rpe).toBe(9)
   })
   it('supersets by their group, only where there is one', () => {
     expect(curl.group).toBe('g1')
@@ -185,5 +197,109 @@ describe('workouts deleted in openGym, for the watch\'s own copies in Apple Heal
     applyEvents([ev, ev], () => ({ S: { active: null } }))
     expect(healthDeleted).toHaveBeenCalledTimes(1)
     expect(healthDeleted).toHaveBeenCalledWith(['opengym-w-b'])
+  })
+})
+
+describe('set marks on the watch', () => {
+  const setsOf = (sets, extra = {}) => buildSnapshot({
+    unit: 'kg', restSec: 90, routines: [], ...extra,
+    active: { id: 'w-1', name: 'x', cur: 0, d: '2026-10-14', start: 1, entries: [{ id: '0025', target: { sets: 1, reps: 6 }, sets }] },
+  }).active.entries[0].sets
+
+  it('a set taken to failure says so; a warm-up never does', () => {
+    const [a, b] = setsOf([{ w: 80, r: 6, failure: true }, { w: 40, r: 6, failure: true, phase: 'warmup' }])
+    expect(a.failure).toBe(true)
+    expect('failure' in b).toBe(false)
+  })
+
+  it('a drop set sends its first drop weight and how many drops', () => {
+    const [d, p] = setsOf([{ w: 80, r: 6, type: 'dropset', drops: [{ w: 60, r: 6 }, { w: 50, r: 6 }] }, { w: 80, r: 6 }])
+    expect([d.drop, d.drops]).toEqual([60, 2])
+    expect('drop' in p || 'drops' in p).toBe(false)
+  })
+
+  it('a per-side drop set sends the drops of its sides (review 2026-11-12)', () => {
+    const side = { w: 20, r: 8, done: false, type: 'dropset', drops: [{ w: 15, r: 6 }, { w: 10, r: 6 }] }
+    const [d] = setsOf([{ w: 20, r: 16, done: false, type: 'dropset', sides: { L: side, R: { ...side } } }])
+    expect([d.drop, d.drops]).toEqual([15, 2])
+  })
+
+  it('the halves of a timed per-side pair say which side they are', () => {
+    const [l, r, p] = setsOf([{ sec: 30, side: 'L' }, { sec: 30, side: 'R' }, { sec: 30 }])
+    expect([l.side, r.side, 'side' in p]).toEqual(['L', 'R', false])
+  })
+
+  it('rest-pause and cluster sets are flagged so the watch offers no drop', () => {
+    const [r, c, p] = setsOf([{ w: 80, r: 6, type: 'restpause', clusters: [{ r: 3 }] }, { w: 80, r: 9, type: 'restpause', cluster: true, clusters: [{ r: 3 }] }, { w: 80, r: 6 }])
+    expect(r.rp).toBe(true)
+    expect(c.rp).toBe(true)
+    expect('rp' in p).toBe(false)
+  })
+
+  it('an exercise in its own unit sends the drop weight in that unit', () => {
+    const [d] = setsOf([{ w: 63.5029, r: 5, type: 'dropset', drops: [{ w: 45.3592, r: 5 }] }], { exUnit: withExUnit({}, '0025', 'lb', 1) })
+    expect(d.w).toBe(140)
+    expect(d.drop).toBe(100)
+  })
+})
+
+describe('set marks from the watch (setMark)', () => {
+  const st = (over = {}) => ({ S: { unit: 'kg', workouts: [], active: { id: 'w-1', entries: [{ id: '0025', target: { sets: 2, reps: 8 }, sets: [{ w: 40, r: 10, done: false, sid: 'sa' }, { w: 80, r: 6, done: false, sid: 'sb' }] }] }, ...over } })
+  const mark = (id, o = {}) => ({ id, type: 'setMark', wid: 'w-1', exId: '0025', entryIdx: 0, setIdx: 1, sid: 'sb', failure: true, at: 1, ...o })
+  const bind = state => { const edit = vi.fn(fn => !!fn(state.S)); bindWatchAppActions({ edit }); return edit }
+  const rows = state => state.S.active.entries[0].sets
+
+  it('by the set\'s id, wherever the row is now, once', () => {
+    const state = st()
+    rows(state).reverse()   // the phone moved the rows since the watch looked
+    bind(state)
+    expect(applyEvents([mark('a'), mark('a')], () => state)).toEqual(['a', 'a'])
+    expect(rows(state).find(r => r.sid === 'sb').failure).toBe(true)
+    expect(rows(state).find(r => r.sid === 'sa').failure).toBeUndefined()
+  })
+
+  it('without an id, by its place', () => {
+    const state = st()
+    bind(state)
+    expect(applyEvents([mark('a', { sid: undefined, setIdx: 0 })], () => state)).toEqual(['a'])
+    expect(rows(state).map(r => r.failure)).toEqual([true, undefined])
+  })
+
+  it('a mark older than the phone\'s own change of that set does nothing, and is acked', () => {
+    const state = st()
+    rows(state)[1].eat = 500
+    const edit = bind(state)
+    expect(applyEvents([mark('a', { at: 100 })], () => state)).toEqual(['a'])
+    expect(edit).toHaveBeenCalledTimes(1)
+    expect(rows(state)[1].failure).toBeUndefined()
+  })
+
+  it('for a watch-started workout whose start is not here yet it waits', () => {
+    const state = st()
+    const edit = bind(state)
+    expect(applyEvents([mark('a', { wid: 'watch-9', at: Date.now() })], () => state)).toEqual([])
+    expect(edit).not.toHaveBeenCalled()
+  })
+
+  it('on a workout already saved it is acked and does nothing', () => {
+    const state = st({ active: null, workouts: [{ id: 'w-1', entries: [] }] })
+    const edit = bind(state)
+    expect(applyEvents([mark('a')], () => state)).toEqual(['a'])
+    expect(edit).not.toHaveBeenCalled()
+  })
+
+  it('while the workout is being edited, nothing happens', () => {
+    const state = st()
+    state.S.active.editingWorkoutId = 'old'
+    const edit = bind(state)
+    applyEvents([mark('a')], () => state)
+    expect(edit).not.toHaveBeenCalled()
+    expect(rows(state)[1].failure).toBeUndefined()
+  })
+
+  it('an older phone: an unknown type is acked, never blocks the queue', () => {
+    const state = st()
+    bind(state)
+    expect(applyEvents([{ id: 'u', type: 'somethingNew', wid: 'w-1' }, mark('a')], () => state)).toEqual(['u', 'a'])
   })
 })

@@ -68,7 +68,8 @@ import { bindWatchActions, markDiscarded, watchTickRest, applyRestStep, restAtFo
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
-import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { toggleFailureSpan, withDrop } from '../lib/watch-marks.js'
+import { isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -218,12 +219,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const e = s.active.entries[entryIdx]
     e.sets = warm ? makeWarmupAt(e.sets, i) : makeWorkAt(e.sets, i)
   }, true)
-  const toggleFailureAt = i => update(s => {
-    const e = s.active.entries[entryIdx]
-    const [start, count] = setSpanAt(e.sets, i)
-    const on = !isFailureSet(e.sets[i])
-    for (let j = start; j < start + count; j++) if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
-  }, true)
+  const toggleFailureAt = i => update(s => toggleFailureSpan(s.active.entries[entryIdx].sets, i), true)
   // One set's own rest for this session (#609): null takes it away, 0 is "No timer". It sits on
   // the set's first row, the one the rest flow reads (ownSetRest). The wheel may outlive the
   // set it was opened for, so a Done after the rows moved or the workout changed does nothing.
@@ -254,18 +250,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       else row.tempo = v
     }, true)
   }
-  const addDropRow = i => mutSet(i, row => {
-    // A unilateral set drops per side (issue #60): addSideDrop seeds each side from its own weight.
-    if (isSideSet(row)) {
-      const pct = entry.target?.intensifier?.type === 'dropset' ? entry.target.intensifier.pct : undefined
-      return addSideDrop(row, pct, dropGrid(S, { ...entry.target, id: entry.id }))
-    }
-    const drops = dropsOf(row)
-    const base = drops.length ? drops[drops.length - 1].w : (row.w || 0)
-    const pct = entry.target?.intensifier?.type === 'dropset' ? entry.target.intensifier.pct : undefined
-    // On a weight you can load: the plates you own, else the exercise's step (lib/plates.js).
-    return addDrop(row, { w: nextDropWeight(base, pct, dropGrid(S, { ...entry.target, id: entry.id })), r: row.r })
-  })
+  const addDropRow = i => mutSet(i, row => withDrop(S, entry, row))
   // A rest-pause row's own reps are always the total across every burst (see
   // applyIntensifierPlan/history.js) — clusters are the breakdown of that total, not extra on
   // top of it — so adding, removing or editing one keeps `r` in step by the same delta.

@@ -152,10 +152,39 @@ class WatchLogicTest {
         val rir = SetFix.correct(state(e), 0, 0, null, SetFix.Numbers(60.0, 8.0), EffortRating("rir", 2.0), now = 20.0, id = "e").second!!
         assertEquals(2.0, num(rir, "rir")!!, 0.0)
         assertNull("never both", rir["rpe"])
+        val half = SetFix.correct(state(e), 0, 0, null, SetFix.Numbers(60.0, 8.0), EffortRating("rir", 1.5), now = 20.0, id = "e").second!!
+        assertEquals("a half goes out as it is", 1.5, num(half, "rir")!!, 0.0)
         val rpe = SetFix.correct(state(e), 0, 0, null, SetFix.Numbers(60.0, 8.0), EffortRating("rpe", 8.5), now = 20.0, id = "e").second!!
         assertEquals(8.5, num(rpe, "rpe")!!, 0.0)
         val odd = SetFix.correct(state(e), 0, 0, null, SetFix.Numbers(60.0, 8.0), EffortRating("feel", 3.0), now = 20.0, id = "e").second!!
         assertNull("a scale the phone does not know sends nothing", odd["feel"])
+    }
+
+    @Test fun aDoneSetOpensOnTheEffortLoggedOnIt() {
+        val sided = SetRow(done = true, sides = Sides(SideRow(20.0, 8.0, true, rir = 1.5), SideRow(20.0, 8.0, true, rir = 3.0)), rir = 9.0)
+        assertEquals(1.5, SetFix.loggedEffort(sided, "L", "rir")!!, 0.0)
+        assertEquals(3.0, SetFix.loggedEffort(sided, "R", "rir")!!, 0.0)
+        val whole = SetRow(done = true, rpe = 8.5)
+        assertEquals(8.5, SetFix.loggedEffort(whole, null, "rpe")!!, 0.0)
+        assertNull("another scale than the profile's", SetFix.loggedEffort(whole, null, "rir"))
+        assertNull("no scale", SetFix.loggedEffort(whole, null, null))
+        assertNull("nothing logged", SetFix.loggedEffort(row(done = true), null, "rir"))
+    }
+
+    @Test fun onlyAChangedEffortIsSent() {
+        assertNull("untouched", SetFix.changedEffort(2.0, 2.0))
+        assertNull("cleared sends none, the phone keeps its own", SetFix.changedEffort(null, 2.0))
+        assertEquals(1.5, SetFix.changedEffort(1.5, 2.0)!!, 0.0)
+        assertEquals("rated from none", 2.0, SetFix.changedEffort(2.0, null)!!, 0.0)
+        val f = Fix(SetRef(0, 0), null, 60.0, 8.0, 0.0, SetFix.Numbers(60.0, 8.0, 0.0), 2.0, 2.0)
+        assertFalse("opened on its effort, nothing changed", f.changed)
+        assertTrue(f.copy(effort = 1.5).changed)
+    }
+
+    @Test fun aCorrectionKeepsTheRatingOnTheRow() {
+        val e = entry("b", listOf(row(60.0, 8.0, done = true, at = 10.0)))
+        val s = SetFix.correct(state(e), 0, 0, null, SetFix.Numbers(60.0, 8.0), EffortRating("rir", 1.5), now = 20.0, id = "e").first
+        assertEquals(1.5, SetFix.loggedEffort(s.workout!!.entries[0].sets[0], null, "rir")!!, 0.0)
     }
 
     @Test fun keypadTypesNumbersAndKeepsThemSane() {
@@ -249,6 +278,57 @@ class WatchLogicTest {
         assertEquals(0, Effort.band("rir", 0.0))
         assertEquals(0, Effort.band("rpe", 10.0))
         assertEquals(5, Effort.band("rir", 5.0))
+    }
+
+    @Test fun effortWalksInHalvesInsideTheRange() {
+        assertEquals(1.5, Effort.step("rir", 1.0, 1, false)!!, 0.0)
+        assertEquals(0.5, Effort.step("rir", 1.0, -1, false)!!, 0.0)
+        assertEquals(8.5, Effort.step("rpe", 8.0, 1, false)!!, 0.0)
+        assertEquals("the number goes up, for RPE too", 7.5, Effort.step("rpe", 8.0, -1, false)!!, 0.0)
+        assertEquals("3 goes on past the 3+ chip", 3.5, Effort.step("rir", 3.0, 1, false)!!, 0.0)
+        // the stops: it stays, no wrap
+        assertEquals(5.0, Effort.step("rir", 5.0, 1, false)!!, 0.0)
+        assertEquals(0.0, Effort.step("rir", 0.0, -1, false)!!, 0.0)
+        assertEquals(10.0, Effort.step("rpe", 10.0, 1, false)!!, 0.0)
+        assertEquals(6.0, Effort.step("rpe", 6.0, -1, false)!!, 0.0)
+    }
+
+    @Test fun effortOnASetBeingFixedStartsAtTwoOrEightAndClearsBelowTheFloor() {
+        for (d in listOf(1, -1)) {
+            assertEquals(2.0, Effort.step("rir", null, d, true)!!, 0.0)
+            assertEquals(8.0, Effort.step("rpe", null, d, true)!!, 0.0)
+        }
+        assertNull(Effort.step("rir", 0.0, -1, true))
+        assertNull(Effort.step("rpe", 6.0, -1, true))
+        assertEquals(0.5, Effort.step("rir", 1.0, -1, true)!!, 0.0)
+        assertEquals("up is never a clear", 5.0, Effort.step("rir", 5.0, 1, true)!!, 0.0)
+    }
+
+    @Test fun halvesReadWithAPointInEveryLanguage() {
+        assertEquals("1.5", Effort.valueLabel(1.5))
+        assertEquals("3.5", Effort.valueLabel(3.5))
+        assertEquals("8.5", Effort.valueLabel(8.5))
+        assertEquals("2", Effort.valueLabel(2.0))
+        assertEquals("a rating is never a chip's name", "3", Effort.valueLabel(3.0))
+        assertEquals("7", Effort.valueLabel(7.0))
+        assertEquals("1.5", Effort.chipLabel("rir", 1.5))
+    }
+
+    @Test fun theTickStripHasOneTickPerHalfStep() {
+        assertEquals(11 to 3, Effort.ticks("rir", 1.5))
+        assertEquals(9 to 5, Effort.ticks("rpe", 8.5))
+        assertEquals(11 to 10, Effort.ticks("rir", 5.0))
+        assertEquals(9 to -1, Effort.ticks("rpe", null))
+    }
+
+    @Test fun effortTimingsMatchTheAppleWatch() {
+        assertEquals(600L, Effort.SEND_MS)
+        assertEquals(5000L, Effort.SETTLE_MS)
+        assertEquals(600L, Effort.CROWN_LOCK_MS)
+        val crown = TouchLock()
+        crown.lock(now, Effort.CROWN_LOCK_MS)
+        assertFalse(crown.allows(now + 599))
+        assertTrue(crown.allows(now + 600))
     }
 
     /* ---------- the sync status ---------- */

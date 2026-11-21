@@ -38,7 +38,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -67,6 +69,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -75,8 +82,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -90,6 +99,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
@@ -108,6 +118,7 @@ import androidx.wear.compose.material3.timeTextCurvedText
 import androidx.wear.compose.material3.timeTextSeparator
 import ch.duartesantos.opengym.wear.BuildConfig
 import ch.duartesantos.opengym.wear.Effort
+import ch.duartesantos.opengym.wear.SetMenu
 import ch.duartesantos.opengym.wear.Entry
 import ch.duartesantos.opengym.wear.Fix
 import ch.duartesantos.opengym.wear.Keypad
@@ -124,6 +135,8 @@ import ch.duartesantos.opengym.wear.SetNav
 import ch.duartesantos.opengym.wear.SetRef
 import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
+import ch.duartesantos.opengym.wear.TouchLock
+import ch.duartesantos.opengym.wear.HeldRemoval
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.RoundEdge
@@ -209,7 +222,9 @@ fun OgTimeText() {
     val holdCount by WearStore.holdCountIn.collectAsState()
     val go by WearStore.goAt.collectAsState()
     val pg by WearStore.page.collectAsState()
-    if (countIn != null || go != null || (holdCount != null && pg == Page.SET)) return
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    // the set menu is full screen: no clock over it
+    if (countIn != null || go != null || (holdCount != null && pg == Page.SET) || (menuOpen && pg == Page.SET && WearStore.menuAvailable())) return
     // At the largest text sizes the curved line ran off its arc into the title below: it grows at most 10 %.
     val d = LocalDensity.current
     androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
@@ -409,10 +424,12 @@ fun SessionScreen() {
         }
     }
     LaunchedEffect(pager) {
-        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it] }
+        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it]; if (Page.entries[it] != Page.SET) WearStore.menuOpen.value = false }
     }
     // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
-    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    val menuShown = menuOpen && page == Page.SET && WearStore.menuAvailable()
+    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { if (!menuShown) key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
         // A square watch has no curve under the content for the dots: the pages end above them (watch
         // round 1.4.5, 360 px square emulator: Done, the effort chips and the sets row ran under the dots).
         val square = !LocalRound.current
@@ -439,15 +456,19 @@ fun LivePage(onScreen: Boolean) {
     val fix by WearStore.fix.collectAsState()
     val ambient = LocalAmbient.current
     val reduce = LocalReduceMotion.current
+    // reads `s` here (not only inside the panels) so the choice is made again when the state changes: a removal can leave no open set
+    val open = s.workout != null && WearStore.shownRef() != null
     val panel = when {
         holdCount != null -> "count"
         hold != null -> "hold"
         fix != null -> "set"
         rest != null -> "rest"
-        WearStore.shownRef() != null -> "set"
+        open -> "set"
         else -> "done"
     }
+    val removed by WearStore.removed.collectAsState()
     CapText {
+      Box(Modifier.fillMaxSize()) {
         AnimatedContent(panel, transitionSpec = { Motion.fade(reduce, ambient) }, label = "panel") { p ->
             when (p) {
                 "count" -> holdCount?.let { from ->
@@ -455,11 +476,15 @@ fun LivePage(onScreen: Boolean) {
                         onCancel = { WearStore.stopHoldCount() })
                 }
                 "hold" -> hold?.let { HoldView(it.startedAt, it.endsAt) }
-                "rest" -> rest?.let { RestView(it) }
+                "rest" -> rest?.let { RestView(it, onScreen) }
                 "set" -> SetPanel(onScreen)
                 else -> DonePanel(s)
             }
         }
+        // The set panel draws the chip in the Done bar's place; the others (all sets done, the rest) get it along the bottom, where
+        // the bar would be, for the Undo window only.
+        if (removed != null && panel != "set") Box(Modifier.align(Alignment.BottomCenter).padding(bottom = if (LocalRound.current) 24.dp else 6.dp)) { UndoChip(removed) }
+      }
     }
 }
 
@@ -472,6 +497,7 @@ fun SetPanel(onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     val draft by WearStore.draft.collectAsState()
     val fix by WearStore.fix.collectAsState()
+    val removed by WearStore.removed.collectAsState()
     val rest by WearStore.rest.collectAsState()
     val lastStep by WearStore.lastStep.collectAsState()
     val ambient = LocalAmbient.current
@@ -482,6 +508,7 @@ fun SetPanel(onScreen: Boolean) {
     val e = w.entries.getOrNull(ref.entry) ?: return
     val row = e.sets.getOrNull(ref.set) ?: return
     val fixing = fix != null
+    val menu = WearStore.menuAvailable()
     val unit = e.weightUnit(w.unit)
     val fields = when {
         e.isCardio -> emptyList()
@@ -526,13 +553,21 @@ fun SetPanel(onScreen: Boolean) {
         )
         return
     }
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    if (menuOpen && menu) {
+        SetMenuView(e, ref.set, SetMenu.offer(e, ref.set), { k, on -> WearStore.markSet(k, on, ref) }, { WearStore.addSet(ref) }, { WearStore.removeSet(ref) },
+            onClose = { WearStore.menuOpen.value = false })
+        return
+    }
     if (confirmSkip) {
         Confirm(stringResource(R.string.skip_set_q), stringResource(R.string.skip_set), danger = false,
             onYes = { confirmSkip = false; WearStore.skipSet() }, onNo = { confirmSkip = false })
         return
     }
     val focus = remember { FocusRequester() }
-    LaunchedEffect(ref, fixing, onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
+    // The effort being fixed, armed: its capsule holds the crown (and gives it back when it settles).
+    var effortArmed by remember(ref, fixing) { mutableStateOf(false) }
+    LaunchedEffect(ref, fixing, onScreen, ambient, effortArmed) { if (onScreen && !ambient && !effortArmed) try { focus.requestFocus() } catch (_: Exception) {} }
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
     // The exercise's animation beside its name, as on the Apple Watch (the phone's "show animations").
@@ -580,7 +615,20 @@ fun SetPanel(onScreen: Boolean) {
             @Suppress("UnusedContentLambdaTargetStateParameter")
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                // The pill's 18 dp slot cannot hear taps outside itself: this column takes the 48 dp tap on its behalf
+                // (a child that takes the tap, like a box, still wins).
+                var pill by remember { mutableStateOf<Rect?>(null) }
+                var origin by remember { mutableStateOf(Offset.Zero) }
+                val tap = with(LocalDensity.current) { Og.Tap.toPx() }
+                Column(Modifier.fillMaxWidth().onGloballyPositioned { origin = it.positionInRoot() }
+                    .pointerInput(menu) {
+                        if (menu) detectTapGestures { o ->
+                            val r = pill ?: return@detectTapGestures
+                            val p = o + origin; val grow = ((tap - r.height) / 2).coerceAtLeast(0f)
+                            if (p.x in r.left..r.right && p.y in (r.top - grow)..(r.bottom + grow)) WearStore.menuOpen.value = true
+                        }
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (!tight) Row(Modifier.padding(horizontal = if (round) TitleInset else 0.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (clipShown) {
                             ClipView(clipFile!!, animating = onScreen && !reduce, modifier = Modifier.size(28.dp))
@@ -590,7 +638,8 @@ fun SetPanel(onScreen: Boolean) {
                             maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     }
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight)
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu, onPill = { pill = it },
+                        effortArmed = effortArmed, onEffortArmed = { effortArmed = it })
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (sides && !tight) SideSwitch(fix?.side)
                     if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
@@ -610,15 +659,17 @@ fun SetPanel(onScreen: Boolean) {
                                 }),
                                 selected = sel == f, tint = tint, showLabel = boxLabels, modifier = Modifier.weight(1f).fillMaxHeight(),
                                 onAdjust = { d -> bump(f, d) },
+                                onLongClick = if (menu) ({ WearStore.menuOpen.value = true }) else null,
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
-                    if (effortLine && effortKind != null) FixEffort(effortKind, fix)
+                    if (effortLine && effortKind != null) FixEffort(effortKind, fix, effortArmed, { effortArmed = it })
                     if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 12.sp, lines = 1)
                 }
             }
             Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (removed != null) UndoChip(removed)
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 ArrowButton(left = true, enabled = WearStore.canStep(-1)) { WearStore.step(-1) }
                 when {
                     fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, enabled = fix?.changed == true) { WearStore.saveFix() }
@@ -634,29 +685,55 @@ fun SetPanel(onScreen: Boolean) {
     }
 }
 
-/** "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix). */
+/** "Set 2 of 4" with its tags (the pill that opens the set menu), the side up, done (when it is a fix). */
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
-                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false) {
+                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false,
+                      onPill: (Rect) -> Unit = {}, effortArmed: Boolean = false, onEffortArmed: (Boolean) -> Unit = {}) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
+    // The effort armed on this line takes all of it (as it grows over "Done" on the Apple Watch).
+    val grown = fixing && effortArmed && effortInline != null
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        // With the L/R switch here, "Set 2 of 4" gives way to it on a narrow line.
-        Quiet(stringResource(R.string.set_of, n, of), 12.sp, lines = 1, modifier = if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier)
-        if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
+        // With the L/R switch here, the pill shrinks (and loses its "n/of") rather than push the switch out.
+        if (!grown) SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
         if (sideSwitch) SideSwitch(fix?.side)
-        else if (fixing && effortInline != null) FixEffort(effortInline, fix)
+        else if (fixing && effortInline != null) FixEffort(effortInline, fix, effortArmed, onEffortArmed, if (grown) Modifier.weight(1f) else Modifier)
         else if (fixing) Tag(stringResource(R.string.done), a.accent)
         if (partner != null && !fixing) PartnerLine(partner, small = true)
-        if (fixing && rest != null) {
+        if (fixing && rest != null && !grown) {
             // The rest runs on while a set is fixed: its time stays in sight.
             val now = rememberNow()
             Text(clock(kotlin.math.ceil(rest.leftMs(now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold, style = Og.Number)
         }
+    }
+}
+
+/** "Removed | Undo" in the place of the bar for the 4 s a taken-out set can still come back; the line along the bottom runs out. */
+@Composable
+private fun UndoChip(held: HeldRemoval?) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val start = held?.at ?: System.currentTimeMillis()
+    val shape = CircleShape
+    // a polite live region: TalkBack says "Removed" when the chip appears
+    Box(Modifier.semantics { liveRegion = LiveRegionMode.Polite }.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
+        .then(if (dim) Modifier.border(1.dp, Og.Surface2, shape) else Modifier)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = Og.Tap), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                FitText(stringResource(R.string.removed), Og.Text, 15.sp, FontWeight.SemiBold)
+            }
+            Box(Modifier.width(62.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else a.accent)
+                .then(if (dim) Modifier.border(1.5.dp, a.accent, shape) else Modifier)
+                .combinedClickable(role = Role.Button) { WearStore.undoRemove() }, contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.undo), color = if (dim) a.accent else a.on, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            }
+        }
+        TimeBar(start, start + (held?.ms ?: 4000L), a.accent, Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -689,22 +766,28 @@ private fun SideSwitch(side: String?) {
     }
 }
 
-/** The effort on a set being fixed: a tap goes through the quick ratings and back to as it was. */
+/** The effort on a set being fixed: a tap arms it like the rest's capsule; one step below the floor clears it to "–". */
 @Composable
-private fun FixEffort(kind: String, fix: Fix?) {
+private fun FixEffort(kind: String, fix: Fix?, armed: Boolean, onArmed: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val a = LocalAccent.current
     val v = fix?.effort
+    if (armed) {
+        ArmedEffort(kind, v, 30.dp, ticks = false, clear = true, onSettle = { onArmed(false) }, modifier = modifier,
+            onStep = { d ->
+                // read live: a fast turn steps twice before the screen has the first
+                val f = WearStore.fix.value
+                val n = Effort.step(kind, f?.effort, d, true)
+                (f != null && n != f.effort).also { if (it) WearStore.editFix(f!!.copy(effort = n)) }
+            })
+        return
+    }
     val color = v?.let { Og.effortColor(Effort.band(kind, it), a.accent) } ?: Og.Label2
     Box(
         Modifier.heightIn(min = 26.dp).clip(CircleShape).background(color.copy(alpha = 0.18f))
-            .combinedClickable(role = Role.Button) {
-                val chips = Effort.chips(kind)
-                val i = v?.let { chips.indexOf(it) } ?: -1
-                fix?.let { WearStore.editFix(it.copy(effort = if (i < 0) chips.first() else chips.getOrNull(i + 1))) }
-            }.padding(horizontal = 10.dp),
+            .combinedClickable(role = Role.Button) { onArmed(true) }.padding(horizontal = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text("${Effort.name(kind)} ${v?.let { Effort.chipLabel(kind, it) } ?: "–"}", color = color, fontSize = 12.sp,
+        Text("${Effort.name(kind)} ${v?.let { Effort.valueLabel(it) } ?: "–"}", color = color, fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold, style = Og.Number)
     }
 }
@@ -810,10 +893,12 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
 /* ---------- the rest ---------- */
 
 @Composable
-fun RestView(rest: Rest) {
+fun RestView(rest: Rest, onScreen: Boolean = true) {
     val s by WearStore.state.collectAsState()
     val last by WearStore.lastLogged.collectAsState()
     val rated by WearStore.lastRated.collectAsState()
+    // Here, not in the chips: a small watch keeps the effort row for an armed capsule, Up next comes back when it settles.
+    val effortArmed = remember(last) { mutableStateOf(false) }
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val now = rememberNow()
@@ -837,7 +922,7 @@ fun RestView(rest: Rest) {
         val both = roomy || maxHeight.value >= 224 + (LocalDensity.current.fontScale - 1f) * 62
         // Always On: no chips to tap, so Up next takes their place on a watch without room for both
         // (40 mm emulator: the hidden chips left the screen empty where release-1.4.5 showed what's next).
-        val rate = WearStore.canRateLast() && (both || (rated == null && !dim))
+        val rate = WearStore.canRateLast() && (both || ((rated == null || effortArmed.value) && !dim))
         val next = s.settings.show?.showNext != false && (both || !rate)
         // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
@@ -883,8 +968,9 @@ fun RestView(rest: Rest) {
             }
             // A fixed place for the effort, so rating it moves nothing below.
             // Round: the chips sit low, where the circle narrows; at a large font their outer corners met the edge (45 mm emulator).
-            if (rate) Box(Modifier.fillMaxWidth().padding(horizontal = if (round) 10.dp else 0.dp).height(if (roomy) 46.dp else 30.dp).alpha(if (dim) 0f else 1f), contentAlignment = Alignment.Center) {
-                if (!dim) EffortChips(roomy)
+            // Always On: only a rating already made stays, as a thin outline.
+            if (rate) Box(Modifier.fillMaxWidth().padding(horizontal = if (round) 10.dp else 0.dp).height(if (roomy) 46.dp else 30.dp).alpha(if (dim && rated == null) 0f else 1f), contentAlignment = Alignment.Center) {
+                if (!dim || rated != null) EffortChips(roomy, effortArmed, onScreen)
             }
             if (next) UpNext(roomy)
         }
@@ -932,38 +1018,136 @@ private fun UpNext(roomy: Boolean) {
     }
 }
 
-/** "RIR · How hard was that set?" and four chips; once rated, the rating in a small capsule that opens the chips again. */
+/**
+ * "RIR · How hard was that set?" and four chips. A chip rates the whole value at once and arms the capsule:
+ * - / + (and the rotary, where the watch has one) move it by half a step; a burst of steps goes out once.
+ * Five seconds after the last touch it settles to "RIR 1.5 ✓" (one tap arms it again).
+ */
 @Composable
-private fun EffortChips(roomy: Boolean) {
+private fun EffortChips(roomy: Boolean, armedState: MutableState<Boolean>, onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     val rated by WearStore.lastRated.collectAsState()
-    val last by WearStore.lastLogged.collectAsState()
+    val lastNow by WearStore.lastLogged.collectAsState()
     val a = LocalAccent.current
+    val dim = LocalAmbient.current
     val kind = s.settings.effort ?: "rir"
-    var again by remember(last) { mutableStateOf(false) }
-    val r = rated
-    if (r != null && !again) {
-        val c = Og.effortColor(Effort.band(kind, r), a.accent)
-        Row(
-            Modifier.heightIn(min = 28.dp).clip(CircleShape).background(c.copy(alpha = 0.18f))
-                .combinedClickable(role = Role.Button) { again = true }.padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("${Effort.name(kind)} ${Effort.chipLabel(kind, r)}", color = c, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, style = Og.Number)
-            Spacer(Modifier.width(4.dp)); Glyph(G.CHECK, c, 10.dp)
-        }
-    } else Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    val h = if (roomy) 38.dp else 30.dp
+    val last = lastNow      // this set, kept: a burst still going out when the next set is done must not rate that one
+    var armed by armedState
+    val cur = remember(last) { mutableStateOf(rated) }
+    val pending = remember(last) { mutableStateOf<Double?>(null) }
+    fun send() { pending.value?.let { pending.value = null; WearStore.rateLast(it, last, tap = false) } }
+    LaunchedEffect(pending.value) { if (pending.value != null) { kotlinx.coroutines.delay(Effort.SEND_MS); send() } }
+    // Any exit sends at once: the page leaves, the rest ends. A rest ending under a turn also kills the crown for a moment.
+    DisposableEffect(last) { onDispose { send(); if (armed) WearStore.lockCrown() } }
+    LaunchedEffect(dim, onScreen) { if (dim || !onScreen) { send(); armed = false } }   // wrist down, another page
+    val v = cur.value ?: rated
+    if (v == null) Column(horizontalAlignment = Alignment.CenterHorizontally) {
         if (roomy) Quiet("${Effort.name(kind)} · " + stringResource(R.string.how_hard), 12.sp, lines = 1)
         Row(Modifier.fillMaxWidth().padding(horizontal = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            for (v in Effort.chips(kind)) {
-                val c = Og.effortColor(Effort.band(kind, v), a.accent)
+            for (c in Effort.chips(kind)) {
+                val color = Og.effortColor(Effort.band(kind, c), a.accent)
                 Box(
-                    Modifier.weight(1f).height(28.dp).clip(CircleShape).background(c.copy(alpha = 0.18f))
-                        .combinedClickable(role = Role.Button) { WearStore.rateLast(v); again = false }
-                        .semantics { contentDescription = "${Effort.name(kind)} ${Effort.chipLabel(kind, v)}" },
+                    Modifier.weight(1f).height(28.dp).clip(CircleShape).background(color.copy(alpha = 0.18f))
+                        .combinedClickable(role = Role.Button) { if (WearStore.rateLast(c, last)) { cur.value = c; armed = true } }
+                        .semantics { contentDescription = "${Effort.name(kind)} ${Effort.chipLabel(kind, c)}" },
                     contentAlignment = Alignment.Center,
-                ) { Text(Effort.chipLabel(kind, v), color = c, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, style = Og.Number) }
+                ) { Text(Effort.chipLabel(kind, c), color = color, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, style = Og.Number) }
             }
+        }
+    }
+    else if (armed && !dim) ArmedEffort(kind, v, h, ticks = roomy, clear = false, onSettle = { send(); armed = false },
+        onStep = { d ->
+            val n = Effort.step(kind, cur.value, d, false)
+            (n != null && n != cur.value).also { if (it) { cur.value = n; pending.value = n } }
+        })
+    else {
+        val c = Og.effortColor(Effort.band(kind, v), a.accent)
+        val big = LocalDensity.current.fontScale > 1.3f
+        val said = stringResource(R.string.effort) + ", " + Effort.name(kind) + " " + Effort.valueLabel(v) + ". " + stringResource(R.string.tap_to_change)
+        // Full width, like the chips it replaces; the whole row is the target.
+        Row(
+            Modifier.fillMaxWidth().height(h).clip(CircleShape).background(if (dim) Color.Transparent else c.copy(alpha = 0.18f))
+                .border(if (dim) 1.dp else 1.5.dp, c.copy(alpha = if (dim) 1f else 0.6f), CircleShape)
+                .combinedClickable(enabled = !dim, role = Role.Button) { armed = true }
+                .semantics { contentDescription = said },
+            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text((if (big) "" else Effort.name(kind) + " ") + Effort.valueLabel(v), color = c.copy(alpha = if (dim) 0.85f else 1f), fontSize = 16.sp,
+                fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
+            Spacer(Modifier.width(6.dp)); Glyph(G.CHECK, c, 12.dp)
+        }
+    }
+}
+
+/**
+ * An effort being moved: (-) RIR 1.5 (+) in a capsule. The - and + are always here, since many watches have no
+ * rotary; where there is one it moves the value too, by half a step, while this is on screen. `onStep` says whether
+ * the value moved (at an end it does not: a light buzz). Lets go five seconds after the last touch (`onSettle`).
+ * TalkBack gets one adjustable node, not the two buttons.
+ */
+@Composable
+private fun ArmedEffort(kind: String, v: Double?, h: Dp, ticks: Boolean, clear: Boolean, onStep: (Int) -> Boolean, onSettle: () -> Unit,
+                        modifier: Modifier = Modifier) {
+    val view = LocalView.current
+    val c = v?.let { Og.effortColor(Effort.band(kind, it), LocalAccent.current.accent) } ?: Og.Label2
+    val shown = v?.let { Effort.valueLabel(it) } ?: "–"
+    val big = LocalDensity.current.fontScale > 1.3f
+    val effort = stringResource(R.string.effort)
+    // The thumb that armed this is still down: the buttons wait a second.
+    val lock = remember { TouchLock().also { it.lock(System.currentTimeMillis()) } }
+    var touched by remember { mutableIntStateOf(0) }
+    LaunchedEffect(touched) { kotlinx.coroutines.delay(Effort.SETTLE_MS); onSettle() }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { try { focus.requestFocus() } catch (_: Exception) {} }
+    fun step(d: Int, button: Boolean) {
+        touched++
+        WearStore.ackRestOver()
+        if (!onStep(d) || button) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+    }
+    val adjust = adjustActions { d -> step(d, false) }
+    val disc = h - 2.dp
+    Row(
+        modifier.fillMaxWidth().height(h).clip(CircleShape).background(c.copy(alpha = 0.18f)).border(2.dp, c, CircleShape)
+            .crown(focus) { step(it, false) }
+            .semantics(mergeDescendants = true) {
+                contentDescription = effort
+                stateDescription = Effort.name(kind) + " " + shown
+                if (adjust != null) customActions = adjust
+            },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        EffortDisc(false, c, disc, Effort.step(kind, v, -1, clear) == v, lock) { step(-1, true) }
+        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Text((if (big) "" else Effort.name(kind) + " ") + shown, color = c, fontSize = 16.sp, fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
+            // 1 and 1.5 share a colour: the tick says which. Only where there is the height for it.
+            if (ticks) {
+                val (n, at) = Effort.ticks(kind, v)
+                Canvas(Modifier.fillMaxWidth(0.8f).height(5.dp)) {
+                    val gap = size.width / (n - 1)
+                    for (i in 0 until n) {
+                        val tall = i == at
+                        drawLine(if (tall) c else c.copy(alpha = 0.4f), Offset(i * gap, if (tall) 0f else size.height * 0.45f), Offset(i * gap, size.height),
+                            1.5.dp.toPx(), StrokeCap.Round)
+                    }
+                }
+            }
+        }
+        EffortDisc(true, c, disc, Effort.step(kind, v, 1, clear) == v, lock) { step(1, true) }
+    }
+}
+
+/** A circle drawn as a stroke, concentric with the capsule's end, with - or + in it. The tap area is 44 dp wide, reaching inward. */
+@Composable
+private fun EffortDisc(plus: Boolean, color: Color, size: Dp, atEnd: Boolean, lock: TouchLock, onClick: () -> Unit) {
+    val ink = color.copy(alpha = if (atEnd) 0.35f else 1f)
+    Box(
+        // hidden first in the chain, so the click below is hidden too (TalkBack moves it with More and Less)
+        Modifier.clearAndSetSemantics {}.width(44.dp).fillMaxHeight().combinedClickable(role = Role.Button) { if (lock.allows(System.currentTimeMillis())) onClick() },
+        contentAlignment = if (plus) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Box(Modifier.padding(horizontal = 1.dp).size(size).border(1.5.dp, ink, CircleShape), contentAlignment = Alignment.Center) {
+            Glyph(if (plus) G.PLUS else G.MINUS, ink, size * 0.5f)
         }
     }
 }

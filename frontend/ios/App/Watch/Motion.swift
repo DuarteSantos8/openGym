@@ -10,6 +10,9 @@ import WatchKit
  *             arrows and the button stay still under the thumb
  *   3-2-1     a ring that drains smoothly, each number springs in and the last one swells away,
  *             then GO! in the full ring for a moment while the workout starts under it
+ *   rating    the tapped chip grows into the armed capsule (a spring without bounce, the same on the fix
+ *             view's pill) while − / + fade in from 0.9; settling and re-arming only fade (outline
+ *             2 to 1.5 pt, halo, check), the other chips and DONE go in 0.12 s, the label line crossfades
  *
  * Reduce Motion: no slides, no springs, no scaling, only short fades. Always On: nothing moves.
  */
@@ -48,14 +51,14 @@ struct CountdownView: View {
                         let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
                         ZStack {
                             Text(verbatim: "\(n)")
-                                .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                                .font(.system(size: TypeScale.hero, weight: .bold, design: .rounded).monospacedDigit())
                                 .foregroundStyle(accent)
                                 .id(n)
                                 .transition(reduceMotion || dimmed ? AnyTransition.opacity
-                                            : AnyTransition.asymmetric(insertion: AnyTransition.scale(scale: 0.6).combined(with: .opacity),
+                                            : AnyTransition.asymmetric(insertion: AnyTransition.scale(scale: 0.4).combined(with: .opacity),
                                                                        removal: AnyTransition.scale(scale: 1.35).combined(with: .opacity)))
                         }
-                        .animation(dimmed ? nil : (reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 0.75)), value: n)
+                        .animation(dimmed ? nil : (reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.3, dampingFraction: 0.55)), value: n) // a punch, then settle (Direction B)
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel(label ?? Text("Start workout"))
                         .accessibilityValue(Text(verbatim: "\(n)"))
@@ -110,8 +113,14 @@ struct GoView: View {
         ZStack {
             Color.black
             Circle()
-                .stroke(accent, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                .stroke(accent, style: StrokeStyle(lineWidth: shown || reduceMotion ? 7 : 14, lineCap: .round))
                 .padding(10)
+            // The ring flashes out as GO! lands (Direction B).
+            Circle()
+                .stroke(accent, lineWidth: 3)
+                .padding(10)
+                .scaleEffect(shown ? 1.15 : 1)
+                .opacity(shown || reduceMotion ? 0 : 0.8)
             Text("Go!")
                 .font(.system(size: 52, weight: .heavy, design: .rounded))
                 .foregroundStyle(accent)
@@ -125,7 +134,7 @@ struct GoView: View {
         .background(Color.black)
         .ignoresSafeArea()
         .onAppear {
-            withAnimation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.65)) { shown = true }
+            withAnimation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.5)) { shown = true }
         }
         .accessibilityHidden(true)
     }

@@ -40,7 +40,13 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
     and no `hr`, so the phone keeps the set's heart rate. A long press on Done skips the set.
   - Rest (on the set page): the time big, a draining bar, Up next with what to load, effort chips
     (RIR 0/1/2/3+ or RPE 10/9/8/≤7, as the phone logs), −15 s / Skip / +15 s, which ignore taps for
-    a second after Done. ‹ opens the set just done to fix it while the rest runs on.
+    a second after Done. ‹ opens the set just done to fix it while the rest runs on. A chip rates
+    the whole value at once and arms its capsule, `(−) RIR 1.5 (+)`: the − and + buttons (always
+    there, many watches have no rotary) and the rotary move it by 0.5 inside RIR 0 to 5 / RPE 6 to 10.
+    A burst of steps is sent once, 0.6 s after the last; 5 s after the last touch the capsule settles
+    to `RIR 1.5 ✓` and a tap arms it again (a small watch gives the row back to Up next instead).
+    In the fix view the effort pill arms the same way, from
+    `–` the first step lands on RIR 2 / RPE 8, and one step below the floor clears it.
   - Hold: the seconds left big, a teal bar whose last 5 s turn orange, a tick for each of the last
     three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
     phone: a 3-2-1 after the rest, then the hold.
@@ -89,9 +95,13 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
+- **The set menu** (1.4.6, #1185): tap the set pill (or long-press a number box) to mark the
+  set as warm-up, failure or drop, add a set at the end, or remove one that is not done yet
+  (with 4 s to Undo). The same events as the Apple Watch, by the set's id (docs/WATCH_SYNC.md).
+  It shows only when the phone handles it.
+
 Still not on Wear OS: calories saved to Health Connect (#724, #1173; the watch shows them),
-marking a set as warm-up, failure or drop and adding or removing sets from the watch (#1185),
-and a Settings page on the watch (the phone's settings apply). #1173 and #1185 are planned for 1.4.6.
+and a Settings page on the watch (the phone's settings apply). #1173 is planned for 1.4.6.
 
 ### Screenshots
 

@@ -4,6 +4,8 @@
 "Start workout" = "Inizia allenamento";
 "Done" = "Fatto";
 "Warm-up" = "Riscaldamento";
+"Remove" = "Rimuovi";
+"Undo" = "Annulla";
 "Reps" = "Rip.";
 "Rest" = "Riposo";
 "Skip" = "Salta";
@@ -44,7 +46,13 @@
 "Looks like you left the gym" = "Sembra che tu sia uscito dalla palestra";
 "Keep going" = "Continua";
 "Finish now" = "Termina ora";
+"Taken to failure" = "A cedimento";
+"Drop set" = "Drop set";
+"More" = "Più";
 "Back" = "Indietro";
+"Set %lld" = "Serie %lld";
+"Add set" = "Aggiungi";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "L'ultima volta: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Niente registrato da un po’. Se hai finito, finisce da solo alle %@, salvato alla tua ultima serie.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Terminare l’allenamento ora? Altrimenti finisce da solo alle %@.";
@@ -89,3 +97,13 @@
 "No sets yet" = "Ancora nessuna serie";
 "+%lld more" = "+%lld altri";
 "%@ sets" = "%@ serie";
+"Failure" = "Cedimento";
+"Drop" = "Drop";
+"Set %lld added" = "Serie %lld aggiunta";
+"Hold 1 s to remove" = "Tieni premuto 1 s per rimuovere";
+"Set %lld · %@ is lost" = "Serie %lld · %@ va persa";
+"Set %lld removed" = "Serie %lld rimossa";
+"at the end" = "alla fine";
+"Crown: half steps" = "Digital Crown: mezzi passi";
+"Highest" = "Massimo";
+"Lowest" = "Minimo";
