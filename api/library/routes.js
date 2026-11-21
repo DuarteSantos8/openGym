@@ -241,16 +241,20 @@ export function libraryRoutes(deps) {
       if (it.type === 'avatar' || PERSONAL_TYPES.includes(it.type)) return json(res, 403, { error: 'this one is only to look at', code: 'not-importable' });
       // The files go into the importer's own folder, against their own quota: from then on the
       // copy is theirs, and stays when the original stops being shared.
-      const copied = [];
+      const copied = [], had = [];
       for (const h of it.media || []) {
         if (store.blocked(h)) continue;
         const f = store.file(h);
         if (!f) continue;
-        try { media.adopt(user.id, h, f.path, f.ext); copied.push(h); }
+        try { if (media.adopt(user.id, h, f.path, f.ext).existed) had.push(h); copied.push(h); }
         catch (e) { if (e instanceof MediaError) return json(res, e.status, { error: e.message, code: e.code, ...e.extra }); throw e; }
       }
       if (it.owner !== user.id && !(it.importers || []).includes(user.id)) {
-        store.update(it.id, x => { x.importers = [...(x.importers || []), user.id]; x.stats = { imports: (x.stats?.imports || 0) + 1 }; });
+        // `ownFiles`: what they already had, so an admin removal leaves it alone.
+        store.update(it.id, x => {
+          x.importers = [...(x.importers || []), user.id]; x.stats = { imports: (x.stats?.imports || 0) + 1 };
+          if (had.length) x.ownFiles = { ...x.ownFiles, [user.id]: had };
+        });
       }
       const owner = userById(it.owner);
       json(res, 200, {
@@ -310,6 +314,7 @@ export function libraryRoutes(deps) {
           it.payload = {}; it.title = ''; it.desc = ''; it.src = null;
         }
         if ((it.importers || []).includes(uid)) it.importers = it.importers.filter(x => x !== uid);
+        if (it.ownFiles?.[uid]) delete it.ownFiles[uid];
         if ((it.reports || []).some(r => r.by === uid)) it.reports = it.reports.map(r => (r.by === uid ? { ...r, by: null } : r));
       }
     });

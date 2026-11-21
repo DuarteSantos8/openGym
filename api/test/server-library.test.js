@@ -344,6 +344,21 @@ test('account deletion withdraws everything; an importer keeps the copy', async 
   assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 404);
 });
 
+test('an admin removal takes the copy an import made, never the importer\'s own upload of the same file', async t => {
+  const h = await start(t);
+  const sound = M.wav(4410);
+  for (const who of ['u_dan', 'u_ben']) await h.put(who, sound, 'audio/wav');
+  const s = await h.share('u_dan', { type: 'sound', payload: { name: 'Beep', m: ref(sound, 'audio/wav', 'audio', { width: 1, height: 1 }) } });
+  // Ben had these bytes before he imported (his own upload); Cleo did not.
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  assert.equal((await h.call('u_cleo', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  const rm = await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'remove', reason: 'licensed music' });
+  assert.equal(rm.status, 200, JSON.stringify(rm.body));
+  assert.equal(rm.body.copiesRemoved, 1, 'only Cleo\'s copy');
+  assert.equal((await h.raw('u_cleo', `/api/media/${M.sha(sound)}`)).status, 404);
+  assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 200, 'Ben\'s own upload stays');
+});
+
 test('account deletion keeps a file someone else shared too', async t => {
   const h = await start(t);
   const sound = M.wav(4410);

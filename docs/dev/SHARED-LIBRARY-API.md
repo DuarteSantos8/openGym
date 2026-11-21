@@ -67,7 +67,7 @@ SharedItem = {
   createdAt, updatedAt,
   consentId: 'c_…',            // consent record (below)
   stats: { imports: 0 },
-  // server only, never sent: owner, importers[], reports[], mod
+  // server only, never sent: owner, importers[], ownFiles{uid: [hash]} (what an importer already had), reports[], mod
 }
 ```
 
