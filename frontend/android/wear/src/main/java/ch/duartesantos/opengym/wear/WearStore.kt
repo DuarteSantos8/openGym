@@ -647,8 +647,10 @@ object WearStore {
         val h = undo.flush() ?: return
         clearRemoval()
         val (next, event) = SetMenu.release(_state.value, h.id)
-        commit(next)
+        // Queued before the held mark is cleared: the outbox is saved at once, the state a moment later, and
+        // a relaunch in between releases it again under the same id (the outbox keeps one).
         event?.let { PhoneLink.send(app, it) }
+        commit(next)
     }
 
     private fun clearRemoval() {
