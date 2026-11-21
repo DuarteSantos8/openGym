@@ -187,9 +187,10 @@ test('one profile whose receiver never answers does not hold up another profile\
   assert.equal(hung.length, 1, 'one slot at a time for a profile');
   // A job queued mid-pass by another profile does not wait for the pass to end.
   r.ob.enqueue(job('c1', { uid: 'u3', conn: 'c3' }));
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(sent, ['b1', 'c1'], 'sent while the first profile still waits');
   hung.shift()();
   await new Promise(res => setImmediate(res));
-  assert.deepEqual(sent, ['b1', 'c1']);
   while (hung.length || live) { hung.shift()?.(); await new Promise(res => setImmediate(res)); }
   await pass;
   assert.equal(peak, 1);

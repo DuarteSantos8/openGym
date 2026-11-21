@@ -78,7 +78,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
   for (const j of st.jobs) delete j.running;
 
   const buckets = createBuckets({ now });
-  let timer = null, kick = null, running = false;
+  let timer = null, kick = null, running = false, poke = null; // poke: wakes a pass that waits on a slow job
 
   function prune() {
     const cut = now() - DONE_KEEP_MS;
@@ -109,7 +109,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
       payload: job.payload ?? null, attempts: 0, createdAt: now(), nextAt: now(),
     });
     persist();
-    soon();
+    soon(); poke?.();
     return 'queued';
   }
 
@@ -150,7 +150,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
    * that profile wait on itself, not everyone else. Oldest due job first; a job comes round again
    * in the same pass only once it was rescheduled and is due (a retry behind a long pass). */
   async function run() {
-    if (running) return;
+    if (running) { poke?.(); return; }  // a pass waiting on a slow job looks again for what came due
     running = true;
     try {
       const tried = new Map(), busy = new Set(), flight = new Set();
@@ -169,7 +169,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
           flight.add(p);
         }
         if (!flight.size) break;
-        await Promise.race(flight);
+        await Promise.race([...flight, new Promise(r => { poke = r; })]);
       }
     } finally { running = false; }
   }
@@ -185,7 +185,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
       if (!back.length) return 0;
       st.failed = st.failed.filter(j => !back.includes(j));
       for (const j of back) { delete j.failedAt; delete j.msg; st.jobs.push({ ...j, attempts: 0, nextAt: now() }); }
-      persist(); soon();
+      persist(); soon(); poke?.();
       return back.length;
     },
     dropConnection(uid, conn) {
