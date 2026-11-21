@@ -22,7 +22,11 @@ import { isoRun } from '../lib/bidi.js'
 
 const termName = term => { const g = groupOfTerm(term); return g ? t(g.name) : t(MUSCLE_NAME[term] || term) }
 const whyLine = why => why.map(w => (w[0] === 'A classic for {0}' ? t(w[0], t(w[1])) : t(...w))).join(' · ')
-const amount = c => isoRun(c.mode === 'time' ? `${c.sets} × ${c.sec} s` : `${c.sets} × ${c.reps}`)
+const amount = c => isoRun(
+  c.min > 0 ? t('{0} min', c.min)
+    : c.mode === 'time' ? `${c.sets} × ${c.sec} s`
+      : c.mode === 'distance' ? `${c.sets} × ${c.m} m`
+        : `${c.sets} × ${c.reps}`)
 
 export function SessionBuilder ({ terms: initial, close }) {
   const [terms, setTerms] = useState(initial)
