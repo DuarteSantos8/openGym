@@ -1197,6 +1197,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private func settleIdle(wid: String?, since: Double, last: Double, reply: Idle.PhoneReply?) {
         // Finished, discarded or replaced while the phone was being asked: nothing to settle.
         guard let w = workout, w.id == wid, holdEndsAt == nil, restEndsAt == nil else { return }
+        // Used here while the phone was asked ("Keep going", a set): stale, the next check counts from then.
+        let ms = { (d: Date?) in d.map { $0.timeIntervalSince1970 * 1000 } }
+        guard Idle.since(lastSet: Idle.lastSet(w) ?? since, seen: ms(workoutSeenAt), activity: ms(activityAt), snooze: ms(idleSnooze)) <= since else { return }
         // Used on the phone since: the idle clock counts from then, like a change from the phone.
         if let r = reply, r.wid == wid, let at = r.activeAt, at > since {
             let phoneAt = Date(timeIntervalSince1970: at / 1000)
