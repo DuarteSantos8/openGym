@@ -205,6 +205,8 @@ describe('a check-in read from Health', () => {
       expect(e.chest).toBe(100)
       expect(e.neck).toBe(38)
       expect(e.src).toBeUndefined()
+      // The fold keeps the newer time, or a sync would take the other device's older copy over it.
+      expect(e.t).toBe(Math.max(...rows.map(r => r.t)))
     }
   })
 })

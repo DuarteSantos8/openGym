@@ -119,7 +119,7 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
 // one read from Health (`src`) whatever their times, and the fold is then not Health's.
 function mergeMeasurementEntries(a, b) {
   if (b.src && !a.src) [a, b] = [b, a]
-  const entry = { ...a, t: b.t }
+  const entry = { ...a, t: Math.max(a.t, b.t) }   // the newer time, or a sync takes an older copy over the fold
   if (!b.src) delete entry.src
   for (const key of MEASUREMENT_KEYS) entry[key] = b[key] ?? a[key]
   if (b.note || a.note) entry.note = b.note || a.note
