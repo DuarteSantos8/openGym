@@ -1202,6 +1202,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let phoneAt = Date(timeIntervalSince1970: at / 1000)
             if activityAt.map({ $0 < phoneAt }) ?? true { activityAt = phoneAt }
         }
+        // Past ending but the phone could not be asked: the workout stays, the sensor rests until the next activity.
+        if Idle.sensorRests(since: since, now: Date().timeIntervalSince1970 * 1000, reply: reply, rules: idleRules, leftAt: w.leftGymAt) { health.pause() }
         let now = Date().timeIntervalSince1970 * 1000
         let rules = idleRules
         switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt) {
@@ -1226,6 +1228,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         idleSnooze = at
         askDone = false
         idleLeft = false
+        noteActivity()   // a session the idle rule rested picks up again
         if let ev = SessionCore.stillHere(state, at: at.timeIntervalSince1970 * 1000, id: UUID().uuidString) { send(event: ev) }
     }
 
