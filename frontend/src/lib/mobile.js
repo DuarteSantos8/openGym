@@ -526,7 +526,8 @@ async function writeToChosenFolder(state, day) {
   return true
 }
 
-/* Restore: the dated copies in the folder auto-backup writes to, newest first as [{ name, size }].
+/* Restore: the dated copies in the folder auto-backup writes to, newest first as [{ name, size, uri }]
+   (uri: the chosen folder that listed them, none for Documents/openGym).
    A lost folder is not listed: its copies went to Documents/openGym. Only the app's own names. */
 export async function listFolderBackups() {
   const folder = await backupFolder()
@@ -539,17 +540,17 @@ export async function listFolderBackups() {
     try { files = (await Filesystem.readdir({ path: AUTO_BACKUP_DIR, directory: Directory.Documents })).files || [] } catch (e) { return [] }   // no folder yet: nothing to restore
   }
   return files.filter(f => typeof f !== 'string' && f?.type !== 'directory' && AUTO_BACKUP_NAME.test(f?.name || ''))
-    .map(f => ({ name: f.name, size: f.size }))
+    .map(f => ({ name: f.name, size: f.size, uri: folder.uri }))
     .sort((a, b) => (a.name.slice(0, -5) < b.name.slice(0, -5) ? 1 : -1))   // minus .json, or '-2' (newer) sorts under the plain name
 }
 
-/** The text of one copy `listFolderBackups` named. */
-export async function readFolderBackup(name) {
+/** The text of one copy `listFolderBackups` named, read from the folder that listed it (`uri`),
+    never from another one if the choice changed since. */
+export async function readFolderBackup(name, uri) {
   if (!AUTO_BACKUP_NAME.test(name || '')) throw new Error('not a backup file name')
-  const folder = await backupFolder()
-  if (folder.uri) {
+  if (uri) {
     await loadFolderPlugin()
-    return (await folderPlugin.read({ uri: folder.uri, name })).data
+    return (await folderPlugin.read({ uri, name })).data
   }
   const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
   return (await Filesystem.readFile({ path: `${AUTO_BACKUP_DIR}/${name}`, directory: Directory.Documents, encoding: Encoding.UTF8 })).data

@@ -200,7 +200,7 @@ export async function restoreFromFolder() {
   let list
   try { list = await (await import('../lib/mobile.js')).listFolderBackups() } catch (e) { toast((await import('../lib/backup-media.js')).backupImportError(e)); return } finally { listing = false }
   if (!list.length) { toast(t('No openGym backups in that folder yet.')); return }
-  const read = name => import('../lib/mobile.js').then(m => m.readFolderBackup(name))
+  const read = name => import('../lib/mobile.js').then(m => m.readFolderBackup(name, list.find(b => b.name === name)?.uri))
   useUI.getState().openSheet(c => <RestoreList list={list} close={c} read={read} />)
 }
 

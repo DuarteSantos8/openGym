@@ -192,8 +192,12 @@ describe('restoring from the folder', () => {
     await chooseBackupFolder()
     h.listed = [f('opengym-backup-2026-02-02.json'), f('opengym-backup-2026-01-01.json'), f('x.json')]
     // The plugin already filters and sorts; the app's own rule is applied again on this side.
-    expect((await listFolderBackups()).map(b => b.name)).toEqual(['opengym-backup-2026-02-02.json', 'opengym-backup-2026-01-01.json'])
-    expect(await readFolderBackup('opengym-backup-2026-02-02.json')).toBe('from-folder:opengym-backup-2026-02-02.json')
+    const list = await listFolderBackups()
+    expect(list.map(b => b.name)).toEqual(['opengym-backup-2026-02-02.json', 'opengym-backup-2026-01-01.json'])
+    // The folder changes while the list is open: the pick still reads the folder that listed it.
+    await resetBackupFolder()
+    h.calls.length = 0
+    expect(await readFolderBackup('opengym-backup-2026-02-02.json', list[0].uri)).toBe('from-folder:opengym-backup-2026-02-02.json')
     expect(h.calls.filter(c => c[0] === 'read')[0][1]).toEqual({ uri: SYNC, name: 'opengym-backup-2026-02-02.json' })
   })
 
