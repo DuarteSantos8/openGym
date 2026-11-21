@@ -241,4 +241,18 @@ final class SessionCoreTests: XCTestCase {
         s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [bDone])))
         XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: 1, side: nil, sid: "b"))
     }
+
+    // The 3-2-1 before a hold remembers its set as the hold does: if the phone logs it meanwhile, the set up
+    // next is another one, and a count-in running out must not start a hold for that one.
+    func testACountInForASetThePhoneLoggedMeanwhileIsOver() {
+        var a = row(60, 8); a.sid = "a"
+        var b = row(60, 8); b.sid = "b"
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [a, b])))
+        let counted = (set: SessionCore.setIndex(s, entry: 0)!, sid: a.sid)
+        XCTAssertTrue(SessionCore.holdOpen(s, entry: 0, set: counted.set, side: nil, sid: counted.sid))
+        var aDone = a; aDone.done = true; aDone.at = 1000
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [aDone, b])))
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1, "what a count-in ending now would hold for")
+        XCTAssertFalse(SessionCore.holdOpen(s, entry: 0, set: counted.set, side: nil, sid: counted.sid))
+    }
 }
