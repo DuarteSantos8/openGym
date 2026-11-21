@@ -2045,7 +2045,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.pauseRest(left: 47)
             }
             if screen == "effort" || screen == "rate" {
-                self.state.settings.effort = "rir"
+                self.state.settings.effort = SessionStore.argument("-OpenGymWatchEffort") ?? "rir"   // CI: "rpe" for the RPE scale
                 self.lastLogged = SetRef(entry: 0, set: 1)
             }
             if ["rest", "effort", "rate", "plus15"].contains(screen) {
