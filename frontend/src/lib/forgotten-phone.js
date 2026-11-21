@@ -96,10 +96,14 @@ async function planNotification(wid, at) {
       schedule: { at: new Date(at), allowWhileIdle: true },
       actionTypeId: ASK_ACTIONS, extra: { forgotten: wid },
     }]) })
+    if (planned !== key) return   // a newer plan replaced this one while it waited
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
     endSessionBy(wid, at)
-  } catch { planned = '' }
+  } catch {
+    // The old notification is cancelled already: its deadline goes too, unless a newer plan owns it.
+    if (planned === key) { planned = ''; endSessionBy() }
+  }
 }
 
 /** The rest and hold counting down now (a paused or finished one is not). */

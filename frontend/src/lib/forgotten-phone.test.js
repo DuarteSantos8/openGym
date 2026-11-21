@@ -115,6 +115,39 @@ describe('forgotten workouts on the phone', () => {
     await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
   })
 
+  it('an older plan that finishes late does not put back its older deadline', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.schedule
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    fakeNotifications.schedule = async o => { if (first) { first = false; await gate } return real(o) }
+    try {
+      const { st, calls } = start()
+      await vi.waitFor(() => expect(first).toBe(false))
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 56 * MIN))
+      release()
+      await flush(); await flush()
+      expect(calls.deadlines.at(-1)?.endBy).toBe(last + 56 * MIN)
+      expect(readForgottenState('w1').notifyAt).toBe(last + 50 * MIN)
+    } finally { fakeNotifications.schedule = real }
+  })
+
+  it('a plan that fails after the old notification was cancelled takes the old deadline away too', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.schedule
+    try {
+      const { st, calls } = start()
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+      fakeNotifications.schedule = async () => { throw new Error('refused') }
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+    } finally { fakeNotifications.schedule = real }
+  })
+
   it('no notification planned (no permission): no deadline, a workout nobody was asked about is not ended', async () => {
     vi.setSystemTime(last + MIN)
     ln.granted = false
