@@ -4119,13 +4119,16 @@ function LogPastWorkout({ initial, close }) {
   const [date, setDate] = useState(initial?.iso || isoOf(yesterday))
   const [time, setTime] = useState('18:00')
   const [dur, setDur] = useState(60)
-  const [routineId, setRoutineId] = useState(planned.length > 1 ? PLANNED_DAY : planned[0]?.id || '')
+  const firstPick = planned.length > 1 ? PLANNED_DAY : planned[0]?.id || ''
+  const [picked, setRoutineId] = useState(firstPick)
   const today = todayISO()
   const options = [
     { value: '', label: t('Freestyle') },
     ...(planned.length > 1 ? [{ value: PLANNED_DAY, label: deriveSessionName(planned.map(r => r.name)) }] : []),
     ...live.map(r => ({ value: r.id, label: r.name })),
   ]
+  // A sync can archive a routine while this is open: a pick no longer offered falls back.
+  const routineId = options.some(o => o.value === picked) ? picked : firstPick
 
   const go = replaceId => {
     close()

@@ -103,6 +103,18 @@ describe('logging a missed planned day', () => {
     expect(S().active).toMatchObject({ d: '2026-09-11', name: 'Push', routineIds: ['A'] })
   })
 
+  it('a routine archived while the sheet is open is no longer the pick', () => {
+    dayOverrideSheet('2026-09-14')
+    tapInTopSheet('Log this workout')
+    const host = mountTopSheet()
+    act(() => { useStore.getState().update(s => { s.routines[1].archived = true }) })   // a sync archives Pull
+    expect(host.querySelector('.lrow-v').textContent).toBe('Push')
+    act(() => { useStore.getState().update(s => { s.routines[0].archived = true }) })   // and then Push
+    expect(host.querySelector('.lrow-v').textContent).toBe('Freestyle')
+    act(() => { button(host, 'Continue').click() })
+    expect(S().active).toMatchObject({ d: '2026-09-14', routineIds: [] })
+  })
+
   it('files a completed workout on that date once its sets are marked done', () => {
     dayOverrideSheet('2026-09-14')
     tapInTopSheet('Log this workout')
