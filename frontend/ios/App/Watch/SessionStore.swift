@@ -1734,7 +1734,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // CI: "-OpenGymWatchRestSeconds 6" is a rest that ends within a test's wait.
+            let restSeconds = SessionStore.argument("-OpenGymWatchRestSeconds").flatMap(Double.init) ?? 83
+            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(restSeconds), notify: false) }
             // CI: the rest as it stands while the phone has it paused (protocol 2, restPaused).
             if screen == "rest", ProcessInfo.processInfo.arguments.contains("-OpenGymWatchRestPaused") {
                 self.pauseRest(left: 47)
