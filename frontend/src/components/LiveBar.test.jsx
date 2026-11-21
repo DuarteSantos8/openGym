@@ -102,6 +102,12 @@ describe('the live bar', () => {
     } finally { iv.mockRestore() }
   })
 
+  it('a screen reader gets the running time as the description, read when it reaches the bar', () => {
+    seed(active()); render()
+    const said = bar().getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id)?.textContent).join(' ')
+    expect(said).toBe('Duration 1:00')
+  })
+
   it('an unnamed, empty workout reads "Workout" with no undefined or NaN', () => {
     seed(active({ name: '', entries: [] })); render()
     expect(text()).toContain('Workout')

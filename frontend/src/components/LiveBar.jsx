@@ -93,16 +93,18 @@ function LiveBarOn () {
   ].filter(Boolean).join(', ') + '. ' + t('Opens the workout')
 
   return (
-    <button ref={btn} id="livebar" className="livebar" type="button" aria-label={label} onClick={rise}>
+    // The running time as the description: read when a screen reader reaches the bar, never announced by itself.
+    <button ref={btn} id="livebar" className="livebar" type="button" aria-label={label} aria-describedby="livebar-tl livebar-time" onClick={rise}>
       <span className="livebar-hl" aria-hidden="true">{b.parts.map((p, i) => <span key={i} style={{ flexGrow: p.sets }}><i style={{ transform: `scaleX(${p.done / p.sets})` }} /></span>)}</span>
       {/* Says a tap opens the workout upward; the mirror of the workout page's Minimize chevron,
           and in the same order as that page's top bar: arrow first, the watch at the end. */}
       <Icon name="chevronUp" size={18} className="livebar-up" />
       <span className="livebar-txt" aria-hidden="true">
+        <span id="livebar-tl" hidden>{t('Duration')}</span>
         <span className="livebar-l1">
           <span className="livebar-nm">{routine}</span>
           {/* A recording light by the clock: the workout is running. Still while paused. */}
-          <span className="livebar-el livebar-num"><i className={'livebar-on' + (b.pausedAt ? ' paused' : '')} /><Elapsed start={b.start} pausedAt={b.pausedAt} /></span>
+          <span id="livebar-time" className="livebar-el livebar-num"><i className={'livebar-on' + (b.pausedAt ? ' paused' : '')} /><Elapsed start={b.start} pausedAt={b.pausedAt} /></span>
         </span>
         {b.rest
           ? <span className="livebar-l2">
