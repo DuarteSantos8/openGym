@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { EXALIAS } from './exercises-data.js'
+import { EXIDX } from './exercises.js'
 import { cleanText, codeFromQr, codeFromNfc, isRandomUid, refusal, codesOf, exercisesFor, link, unlink, shownCode, searchHint } from './machine-codes.js'
 
 describe('cleaning', () => {
@@ -58,6 +60,24 @@ describe('the map', () => {
   })
   it('keeps custom exercises', () => {
     expect(exercisesFor({ customEx: [{ id: 'cMine' }], machineCodes: { cMine: ['t:A'] } }, 't:A')).toEqual(['cMine'])
+  })
+  it('a code on an exercise merged away opens the one it went into', () => {
+    const S = { machineCodes: { cOld: ['t:A'] }, customEx: [{ id: 'cNew' }], exMerged: { cOld: { into: 'cNew', _ts: 1 } } }
+    expect(exercisesFor(S, 't:A')).toEqual(['cNew'])
+    const cat = { machineCodes: { '0150': ['t:A'], '0151': ['t:A'] }, exMerged: { '0150': { into: '0151', _ts: 1 } } }
+    expect(exercisesFor(cat, 't:A')).toEqual(['0151'])
+  })
+  it('a code kept under a drawing id reads, links and unlinks as its exercise', () => {
+    const [ALIAS, TO] = Object.entries(EXALIAS).find(([id, to]) => EXIDX[to] && id !== to)
+    const S = { machineCodes: { [ALIAS]: ['t:A'] } }
+    expect(codesOf(S, TO)).toEqual(['t:A'])
+    link(S, TO, 't:A')
+    expect(S.machineCodes).toEqual({ [ALIAS]: ['t:A'] })
+    link(S, TO, 't:B', { only: true })
+    expect(codesOf(S, TO)).toEqual(['t:A', 't:B'])
+    unlink(S, TO, 't:A')
+    expect(codesOf(S, TO)).toEqual(['t:B'])
+    expect(Object.hasOwn(S.machineCodes, ALIAS)).toBe(false)
   })
   it('a code reading __proto__ is plain data', () => {
     const S = { machineCodes: {} }

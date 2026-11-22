@@ -1,6 +1,5 @@
 // Plan > Scan a QR code: what a scanned text is, and so which handler it goes to.
 import { describe, it, expect } from 'vitest'
-import { vi } from 'vitest'
 import { routeScannedText, shownText } from './scan-route.js'
 
 describe('routing a scanned code', () => {

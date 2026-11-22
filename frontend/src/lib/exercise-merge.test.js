@@ -144,6 +144,22 @@ describe('a merge on one device, a workout on another', () => {
     expect(merged.exMerged[CUSTOM].into).toBe(BENCH)
   })
 
+  test('a code the other copy linked to the source moves over too', () => {
+    const base = state()
+    const phone = clone(base)
+    const prev = clone(phone)
+    mergeExercise(phone, CUSTOM, BENCH, { now: 5000 })
+    stampChange(prev, phone, 5000)
+    phone._ts = 5000
+    // the tablet linked a machine code to the custom exercise before it heard of the merge
+    const tablet = clone(base)
+    tablet.machineCodes = { [CUSTOM]: ['t:A'], [BENCH]: ['t:B'] }
+    tablet._ts = 6000
+    const merged = mergeStates(phone, tablet)
+    expect(merged.machineCodes[CUSTOM]).toBeUndefined()
+    expect(merged.machineCodes[BENCH]).toEqual(['t:B', 't:A'])
+  })
+
   test('applyExerciseMerges leaves a copy without merges alone', () => {
     const S = state()
     expect(applyExerciseMerges(S)).toBe(0)

@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { scanSlot, scanInWorkout, pickForScan } from './machine-scan.js'
 import { moveActiveWorkoutUnitTo } from './active-workout-order.js'
+import { EXALIAS } from './exercises-data.js'
+import { EXIDX } from './exercises.js'
+
+const [ALIAS, TO] = Object.entries(EXALIAS).find(([id, to]) => EXIDX[to] && id !== to)
 
 function ex(id, done, total, sg) {
   const sets = Array.from({ length: total }, (_, i) => ({ reps: 8, done: i < done }))
@@ -69,5 +73,10 @@ describe('pickForScan', () => {
     expect(pickForScan({ cur: 0, entries: [ex('X', 0, 3)] }, ['CHEST', 'LAT'])).toBe(null)
     expect(pickForScan({ cur: 0, entries: [ex('CHEST', 0, 3), ex('LAT', 0, 3)] }, ['CHEST', 'LAT'])).toBe(null)
     expect(pickForScan({ cur: 0, entries: [ex('X', 0, 3)] }, ['CHEST'])).toBe('CHEST')
+  })
+  it('an entry logged under a drawing id is that exercise', () => {
+    const A = { cur: 0, entries: [ex('X', 1, 3), ex(ALIAS, 0, 3)] }
+    expect(scanInWorkout(A, TO)).toEqual({ do: 'jump', idx: 1 })
+    expect(pickForScan({ cur: 0, entries: [ex(ALIAS, 0, 3), ex('LAT', 3, 3)] }, [TO, 'LAT'])).toBe(TO)
   })
 })

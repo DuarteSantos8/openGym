@@ -1,8 +1,12 @@
 import { supersetUnits } from './history.js'
 import { entryProgress } from './exercise-chips.js'
+import { canonicalExId } from './exercises.js'
 
 // Where an exercise scanned from a machine code goes in the workout in progress. Pure: the
 // workout screen applies the answer (see moveActiveWorkoutUnitTo for the move).
+
+// An entry logged under a drawing id (EXALIAS) is that exercise.
+const sameEx = (a, b) => a === b || canonicalExId(a) === canonicalExId(b)
 
 // Entry position for a scanned exercise: right after the current unit once any of it has a ticked
 // set, else in front of it. Always between whole supersets, never inside one.
@@ -17,7 +21,7 @@ export function scanSlot(active) {
 export function scanInWorkout(active, exId) {
   const entries = active?.entries || []
   const slot = scanSlot(active)
-  const idx = entries.findIndex(e => e.id === exId)
+  const idx = entries.findIndex(e => sameEx(e.id, exId))
   if (idx < 0) return { do: 'add', slot }
   if (entryProgress(entries[idx]) === 'done') return { do: 'jump', idx }
   const units = supersetUnits(entries)
@@ -33,7 +37,7 @@ export function scanInWorkout(active, exId) {
 export function pickForScan(active, ids) {
   const entries = active?.entries || []
   const open = ids.filter(id => {
-    const e = entries.find(x => x.id === id)
+    const e = entries.find(x => sameEx(x.id, id))
     return e && entryProgress(e) !== 'done'
   })
   if (open.length === 1) return open[0]

@@ -3,6 +3,7 @@
 // used as an object key (the map is exercise id -> code[]), never parsed as
 // markup, and never trusted to be short or printable until cleanText has run.
 import { EXIDX, canonicalExId } from './exercises.js'
+import { mergedInto } from './exercise-merge.js'
 
 const MAX_LEN = 512
 const STOP = new Set(['product', 'products', 'equipment', 'machine', 'machines', 'qr', 'index', 'html', 'htm', 'php', 'en', 'de', 'fr', 'www', 'item', 'id'])
@@ -44,36 +45,47 @@ export function refusal(S, code, { own = false } = {}) {
 }
 
 const map = S => (S.machineCodes && typeof S.machineCodes === 'object' ? S.machineCodes : (S.machineCodes = {}))
+const own = (m, key) => (Object.hasOwn(m, key) && Array.isArray(m[key]) ? m[key] : [])
+// The keys an exercise's codes sit under: its id, and a drawing id (EXALIAS) of the same exercise
+// that an older copy may have stored them under. Read, link and unlink all go through this.
+const keysOf = (m, exId) => Object.keys(m).filter(k => k === exId || canonicalExId(k) === canonicalExId(exId))
+const drop = (m, key, code) => {
+  const rest = own(m, key).filter(c => c !== code)
+  if (rest.length) m[key] = rest
+  else delete m[key]
+}
 
 export function codesOf(S, exId) {
   const m = S?.machineCodes
-  return m && Object.hasOwn(m, exId) && Array.isArray(m[exId]) ? m[exId] : []
+  if (!m || typeof m !== 'object') return []
+  const keys = keysOf(m, exId)
+  return keys.length === 1 ? own(m, keys[0]) : [...new Set(keys.flatMap(k => own(m, k)))]
 }
 
 function known(S, id) {
   return !!EXIDX[canonicalExId(id)] || (S.customEx || []).some(e => e && e.id === id)
 }
 
+// An exercise merged away (lib/exercise-merge.js) answers as the one it went into.
 export function exercisesFor(S, code) {
   return Object.entries(S?.machineCodes || {})
-    .filter(([id, codes]) => Array.isArray(codes) && codes.includes(code) && known(S, id))
-    .map(([id]) => canonicalExId(id))
-    .filter((id, i, all) => all.indexOf(id) === i)
+    .filter(([, codes]) => Array.isArray(codes) && codes.includes(code))
+    .map(([id]) => canonicalExId(mergedInto(S, canonicalExId(id))))
+    .filter((id, i, all) => known(S, id) && all.indexOf(id) === i)
 }
 
 export function unlink(S, exId, code) {
   const m = map(S)
-  if (!Object.hasOwn(m, exId)) return
-  const rest = m[exId].filter(c => c !== code)
-  if (rest.length) m[exId] = rest
-  else delete m[exId]
+  for (const key of keysOf(m, exId)) drop(m, key, code)
 }
 
 export function link(S, exId, code, { only = false } = {}) {
   const m = map(S)
-  if (only) for (const id of Object.keys(m)) if (id !== exId) unlink(S, id, code)
-  const have = codesOf(S, exId)
-  if (!have.includes(code)) m[exId] = [...have, code]
+  if (only) {
+    const mine = new Set(keysOf(m, exId))
+    for (const key of Object.keys(m)) if (!mine.has(key)) drop(m, key, code)
+  }
+  if (!codesOf(S, exId).includes(code)) m[exId] = [...own(m, exId), code]
 }
 
 export function shownCode(code, max = 40) {
