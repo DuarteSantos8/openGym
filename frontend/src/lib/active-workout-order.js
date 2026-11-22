@@ -79,3 +79,25 @@ export function moveActiveWorkoutEntry(active, index, direction) {
   active.entries.splice(0, active.entries.length, ...reorderedEntries)
   return { indices }
 }
+
+// Moves the unit holding `index` so it starts at entry position `slot` (an index in the array as
+// it is before the move; a slot sits between whole units). Same { indices } contract as
+// moveActiveWorkoutUnit, and active.cur follows the entry that was at `index`. Null when the
+// order would not change.
+export function moveActiveWorkoutUnitTo(active, index, slot) {
+  if (!active || !Array.isArray(active.entries) || !Number.isInteger(slot)) return null
+  const units = supersetUnits(active.entries)
+  const source = units.find(unit => unit.includes(index))
+  if (!source) return null
+  if (slot >= source[0] && slot <= source[source.length - 1] + 1) return null
+  const others = units.filter(unit => unit !== source)
+  const at = others.findIndex(unit => unit[0] >= slot)
+  const reordered = [...others]
+  reordered.splice(at < 0 ? others.length : at, 0, source)
+  const indices = reordered.flat()
+  const selected = active.entries[index]
+  const entries = indices.map(entryIndex => active.entries[entryIndex])
+  active.entries.splice(0, active.entries.length, ...entries)
+  active.cur = active.entries.indexOf(selected)
+  return { indices }
+}
