@@ -25,6 +25,8 @@ import { RecapHomeCard } from '../components/Recap.jsx'
 import { scheduleModeOf } from '../lib/rotation.js'
 import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
+import FirstWins from '../components/FirstWins.jsx'
+import { experienceOf } from '../lib/experience.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
@@ -225,6 +227,19 @@ export default function Home() {
       <SeasonDeco spot="home-hero" />
     </div>
 
+    {/* A profile with no plan yet meets the way to get one first, before anything else on Home (EP22). */}
+    {!S.routines.length && !S.active && (
+      <div className="card">
+        <CardHead icon="calendar" title={t('Welcome!')} sub={t('Answer six questions for a plan that fits you, or pick one yourself.')} />
+        {/* Find my plan (EP22, views/Onboarding.jsx): the way in for someone who does not know
+            what a split is. The starter plans and the empty plan stay one tap away. */}
+        <Button variant="primary" icon="sparkles" data-start="quiz" onClick={() => nav('/start')}>{t('Find my plan')}</Button>
+        <div style={{ height: 8 }} /><Button icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+        <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
+        <div style={{ height: 8 }} /><Button variant="ghost" icon="lightbulb" onClick={() => nav('/learn')}>{t('Learn the basics')}</Button>
+      </div>
+    )}
+
     {/* Ironvane: tap your photo or the drawn body where you want to get stronger (Settings → Modules). */}
     {on('bodyfocus') && <BodyFocus />}
 
@@ -255,13 +270,9 @@ export default function Home() {
       </div>
     )}
 
-    {!S.routines.length && !S.active && (
-      <div className="card">
-        <CardHead icon="calendar" title={t('Welcome!')} sub={t('Set up your weekly routine to get going, or grab a ready-made starter plan.')} />
-        <Button variant="primary" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
-        <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
-      </div>
-    )}
+
+    {/* A Beginner's first month (EP25, lib/wins.js): five wins about turning up, gone once all are in. */}
+    {on('motivation') && experienceOf(S) === 'beginner' && <FirstWins S={S} />}
 
     {/* A new profile picks how forgiving its streak is, once (components/StreakRule.jsx), but only
         after its first logged workout: before that there is no streak to be forgiving about, and a

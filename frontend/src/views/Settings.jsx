@@ -102,6 +102,8 @@ import { libraryOn } from '../lib/shared-api.js'
 import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
+import { LEVELS, experienceOf, applyExperience } from '../lib/experience.js'
+import { levelName } from '../lib/experience-copy.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -950,6 +952,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* The target range of weekly sets for each main muscle (lib/muscle-targets.js). */}
         <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
+      </Section>
+      {/* The beginner's way in (EP21, EP22, EP24): the quiz that picks a plan, the level that decides
+          how much the workout screen shows (lib/experience.js), and the basics to read. */}
+      <Section footer={t('Beginner keeps the workout screen simple. Nothing is removed, and you can change this at any time.')}>
+        <Row icon="sparkles" iconTint="var(--green)" title={t('Find my plan')} subtitle={t('Six questions, then a plan that fits')} accessory="chevron" onClick={() => nav('/start')} />
+        <SelectRow icon="stairs" iconTint="var(--indigo)" title={t('Experience level')}
+          value={experienceOf(S) || ''}
+          options={[...(experienceOf(S) ? [] : [{ value: '', label: t('Not set') }]), ...LEVELS.map(l => ({ value: l, label: levelName(l) }))]}
+          onChange={v => { if (v) update(s => { applyExperience(s, v) }) }} />
+        <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
       </Section>
     </>,
 

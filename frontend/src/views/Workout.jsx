@@ -88,6 +88,7 @@ import { RecordMark, RecordHintLine } from '../components/SetRecord.jsx'
 import { setNoteOf } from '../lib/set-notes.js'
 import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
 import { isOn } from '../lib/modules.js'
+import { simpleWorkout } from '../lib/experience.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
 import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
@@ -589,6 +590,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   const backups = (entry.target?.subs || []).map(id => EXIDX[id]).filter(b => b && b.id !== entry.id)
   // Form videos are a module (Settings → Modules): off, nothing offers to film; filmed ones stay.
   const videosOn = isOn(S, 'videos')
+  // A Beginner's set menu keeps failure, drop sets and bursts one step back, under More (lib/experience.js).
+  const simple = simpleWorkout(S)
   // Settings → Modules → Effort off: no cardio chip either (the set menu keeps its row).
   const effortOn = isOn(S, 'effort')
   const filmAt = videosOn ? filmTarget(entry) : -1
@@ -731,6 +734,14 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const noteHere = setNoteOf(entry.sets[spanStart])
     const tagHere = setTagOf(entry.sets[spanStart])
     const tagItem = { icon: 'palette', label: t('Colour tag'), sub: tagHere ? `${tagHere.shape} ${setTagName(tagHere.id)}` : t('Your own code for this set'), onClick: () => tagSheet(spanStart, warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i))) }
+    // Taken to failure: a toggle with its check, like the menu's other on/off rows. It counts
+    // as RIR 0 wherever effort is read, unless a rating was logged on the set. A timed
+    // per-side pair is one set, so both halves get it.
+    const failureItem = !warm && mode !== 'cardio' && { icon: 'gauge', label: t('Taken to failure'), sub: t('Nothing left in the tank'), on: isFailureSet(s), onClick: () => toggleFailureAt(i) }
+    const dropItem = !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) }
+    const burstItem = !warm && mode === 'reps' && !isDropSet(s) && (isClusterSet(s)
+      ? { icon: 'bolt', label: t('One more mini-set'), sub: t('+ Mini-set'), onClick: () => addBurstRow(i) }
+      : { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) })
     menuSheet({
       title: warm ? t('Warm-up') : sideTag ? t('Set {0} ({1})', setNumOf(s, i), sideTag) : t('Set {0}', setNumOf(s, i)),
       subtitle: setLabel(entry.id, s, entry.target, speedUnit),
@@ -738,18 +749,13 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       // the phase and the set's own rest are rarer and fold under More (v1.4.4). Remove stays last.
       sections: [
         { items: [
-          // Taken to failure: a toggle with its check, like the menu's other on/off rows. It counts
-          // as RIR 0 wherever effort is read, unless a rating was logged on the set. A timed
-          // per-side pair is one set, so both halves get it.
-          !warm && mode !== 'cardio' && { icon: 'gauge', label: t('Taken to failure'), sub: t('Nothing left in the tank'), on: isFailureSet(s), onClick: () => toggleFailureAt(i) },
+          !simple && failureItem,
           // Cardio's effort lives here, not in a column (the third one is the incline): RPE only,
           // whatever the profile logs, since reps in reserve mean nothing on a treadmill. Stored as
           // `rpe` on the set, which the fatigue model already reads (recovery.js via rirOf).
           !warm && cardio && { icon: 'gauge', label: t('How hard it felt'), sub: s.rpe != null ? t(EFFORT.rpe.hd) + ' ' + fmtNum(s.rpe) : t('Not rated yet'), onClick: () => effortPickerSheet('rpe', s.rpe ?? null, nv => onField(i, 'rpe', nv), { cardio: true }) },
-          !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
-          !warm && mode === 'reps' && !isDropSet(s) && (isClusterSet(s)
-            ? { icon: 'bolt', label: t('One more mini-set'), sub: t('+ Mini-set'), onClick: () => addBurstRow(i) }
-            : { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) }),
+          !simple && dropItem,
+          !simple && burstItem,
           onCopySetAt && { icon: 'copy', label: t('Copy this set'), onClick: () => onCopySetAt(i) },
           // Your own form video (v1.4.4). Up here rather than under More: it is filmed while the
           // set happens, one tap from the number; once there is one, the same row plays it.
@@ -763,6 +769,11 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
           tagHere && tagItem,
         ] },
         { more: [{ items: [
+          // For a Beginner (lib/experience.js) the three rarer actions live here instead of up top:
+          // still one tap away, no longer the first thing under every set number.
+          simple && failureItem,
+          simple && dropItem,
+          simple && burstItem,
           // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
           // only, the kind a warm-up is added as; one work set always stays. A per-side set keeps
           // its two sides either way (#575), so it goes back and forth like any other.

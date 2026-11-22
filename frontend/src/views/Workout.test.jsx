@@ -3071,6 +3071,31 @@ describe('workout controls: the more menu and the set menu', () => {
     expect(mocks.S.active.entries[0].sets.length).toBe(1)
   })
 
+  // EP21 (lib/experience.js): a Beginner's set menu keeps the rarer actions under More. Nothing is
+  // removed, and a profile that never chose a level keeps the menu above exactly.
+  it('keeps failure, drop set and burst under More for a Beginner', async () => {
+    await mount([exercise('plain-bench', [false, false])], 0, { experience: 'beginner' })
+    await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const sections = lastMenu().sections
+    const top = sections[0].items.filter(Boolean).map(it => it.label)
+    expect(top).toEqual(['Copy this set', 'Film this set', 'Note'])
+    const more = sections[1].more[0].items.filter(Boolean).map(it => it.label)
+    expect(more.slice(0, 3)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst'])
+    // still there, still working
+    expect(menuItemsOf(lastMenu()).map(it => it.label).sort()).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note', 'Make it a warm-up set', 'Tempo', 'Rest after this set', 'Colour tag', 'Remove this set'].sort())
+    await act(async () => { item('Drop set').onClick() })
+    expect(mocks.S.active.entries[0].sets[1].drops?.length).toBe(1)
+  })
+
+  it('leaves the set menu as it was for Intermediate and Experienced', async () => {
+    for (const experience of ['intermediate', 'advanced']) {
+      await mount([exercise('plain-bench', [false, false])], 0, { experience })
+      await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+      expect(lastMenu().sections[0].items.filter(Boolean).map(it => it.label).slice(0, 3)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst'])
+      await unmount()
+    }
+  })
+
   // Cardio effort (Discord thehypetrainhobo): the third column stays the incline, so the rating
   // sits in the set menu, RPE only, and lands on the row as `rpe` for the fatigue model.
   it('rates a cardio row in RPE from its set menu, whatever the profile logs', async () => {
