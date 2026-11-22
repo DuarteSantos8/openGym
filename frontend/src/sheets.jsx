@@ -2004,7 +2004,7 @@ function usageMap(st) {
 }
 // The swap pickers' own scope (#473): exercises sharing the swapped exercise's target muscle.
 const SAME = '≈'
-function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCoach }) {
+function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCoach, query }) {
   const st = useStore(s => s.S)
   const isSwap = !!like || title === t('Swap exercise') || title === t('Replace exercise') || title === 'Swap exercise' || title === 'Replace exercise'
   const quickIcon = actionIcon || (isSwap ? 'swap' : 'plus')
@@ -2012,7 +2012,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
     ? (title ? `${title}: ${exerciseNameText(e)}` : `${t('Swap exercise')}: ${exerciseNameText(e)}`)
     : t('Add “{0}”', exerciseNameText(e))
   const usage = usageMap(st)
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(query || '')
   const backupList = (Array.isArray(backups) ? backups : []).map(id => EXIDX[id]).filter(Boolean)
   // What a swap is away from: the picker opens on what trains the same muscle, if anything you
   // can use does, and "All" is one tap back to everything. Suggested substitutes (#674) lead
@@ -2191,7 +2191,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
 // train the same muscle, same equipment first (#473), with suggested substitutes on top and a gym
 // choice that filters only this list (#674).
 // `backups`: the slot's planned substitutes (lib/routine-backups.js), listed first in a swap.
-export const exercisePicker = (onPick, { title, like, actionIcon, backups, askCoach } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} backups={backups} askCoach={askCoach} close={close} />)
+// `query`: the search it opens with (a scanned machine code's words, lib/machine-codes.js).
+export const exercisePicker = (onPick, { title, like, actionIcon, backups, askCoach, query } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} backups={backups} askCoach={askCoach} query={query} close={close} />)
 
 /** Start a safe swap for one exact active-workout occurrence. */
 // `opts.askCoach`: offered at the top of the picker when the Coach can answer (#1003).

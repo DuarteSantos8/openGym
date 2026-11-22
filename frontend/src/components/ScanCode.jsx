@@ -14,7 +14,7 @@ import CameraScan from './CameraScan.jsx'
 
 const ui = () => useUI.getState()
 
-async function indexAddress() {
+export async function indexAddress() {
   try { return (await import('../lib/routine-library.js')).indexUrl() } catch { return null }
 }
 
@@ -35,16 +35,19 @@ function scanErrorMessage(e) {
   return t('Could not start the scanner')
 }
 
-/** Opens the camera, reads one code and handles it. */
-export async function scanQrCode() {
-  const camera = () => ui().openSheet(close => <CameraScan importPhoto onImportError={msg => ui().toast(msg)} onCancel={close} onFound={code => { close(); handleScannedText(code?.value) }} />)
+/** Opens the camera, reads one code and gives its text to `onText`. */
+export async function scanQrWith(onText) {
+  const camera = () => ui().openSheet(close => <CameraScan importPhoto onImportError={msg => ui().toast(msg)} onCancel={close} onFound={code => { close(); onText(code?.value) }} />)
   if (await webScanner()) { camera(); return }
   try {
     const code = await scanCode()
-    if (code) await handleScannedText(code.value)
+    if (code) await onText(code.value)
   } catch (e) {
     // Google's scanner isn't on this phone yet (a Play services download): our own camera instead.
     if (e && e.message === MODULE_MISSING) { camera(); return }
     ui().toast(scanErrorMessage(e))
   }
 }
+
+/** Opens the camera, reads one code and handles it. */
+export const scanQrCode = () => scanQrWith(handleScannedText)
