@@ -237,4 +237,15 @@ describe('Library search across an exercise page', () => {
     expect(render().querySelector('.search input').value).toBe('')
     mocks.key = undefined
   })
+
+  // A fresh load at #/library: the router names that first entry "default" (no key in its state).
+  it('keeps the search on the first history entry of a fresh load too', () => {
+    mocks.key = 'default'
+    const input = render().querySelector('.search input')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    act(() => { setter.call(input, 'row'); input.dispatchEvent(new Event('input', { bubbles: true })) })
+    act(() => { mounted.splice(0).forEach(r => r.unmount()) })
+    expect(render().querySelector('.search input').value).toBe('row')
+    mocks.key = undefined
+  })
 })
