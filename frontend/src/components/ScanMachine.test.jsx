@@ -20,7 +20,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = () => ui
   return { useUI }
 })
-vi.mock('../sheets.jsx', () => ({ exercisePicker: (onPick, o) => m.pickers.push({ onPick, ...o }), confirmSheet: () => {}, planImportSheet: () => {} }))
+vi.mock('../sheets.jsx', () => ({ exercisePicker: (onPick, o) => { const h = { onPick, ...o, closed: false, close: () => { h.closed = true } }; m.pickers.push(h); return h }, confirmSheet: () => {}, planImportSheet: () => {} }))
 vi.mock('./RoutineShare.jsx', () => ({ openRoutinePayload: async p => { m.own.push(['routine', p]); return true } }))
 vi.mock('./LibraryLink.jsx', () => ({ openLibraryLink: async l => { m.own.push(['library', l]) } }))
 vi.mock('./Nfc.jsx', () => ({ handleTagLink: u => { m.own.push(['tag', u]); return true } }))
@@ -85,7 +85,8 @@ describe('scan a machine, route mode', () => {
     expect(host.textContent).toContain('This code isn’t linked yet.')
     await click('Link to an exercise…')
     expect(m.pickers[0].query).toBe('hack squat')
-    m.pickers[0].onPick('0160')
+    m.pickers[0].onPick({ id: '0160', name: 'Hack squat' })
+    expect(m.pickers[0].closed).toBe(true)
     expect(m.S.machineCodes['0160']).toEqual(['t:https://gym.example/product/hack-squat'])
     expect(got).toEqual(['0160'])
   })

@@ -71,9 +71,10 @@ async function onRead(input, { mode, ex, onExercise, live }) {
 function Unlinked({ code, close, onExercise }) {
   const go = () => {
     close()
-    exercisePicker(id => {
-      store().update(s => { link(s, id, code) })
-      onExercise(id)
+    const picker = exercisePicker(ex => {
+      picker.close()
+      store().update(s => { link(s, ex.id, code) })
+      onExercise(ex.id)
     }, { query: searchHint(code) })
   }
   return <>
