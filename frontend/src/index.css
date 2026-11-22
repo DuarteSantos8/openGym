@@ -3107,7 +3107,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
 :root[data-platform="ios"] #tabbar .cir .t{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#000}
 :root[data-platform="ios"] #tabbar .orb .tl{color:var(--tab-on);font-weight:600}
-:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
+:root[data-platform="ios"] #tabbar.min .orb{z-index:2;transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}   /* above the shrunk tab's wide box: Stats and Exercises come later and would take its taps */
 :root[data-platform="ios"] #tabbar.min .orb .cir{transform:scale(var(--os))}
 :root[data-platform="ios"] #tabbar.min .orb:active .cir{transform:scale(calc(var(--os)*.93))}
 /* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
