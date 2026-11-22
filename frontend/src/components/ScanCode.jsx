@@ -10,6 +10,10 @@ import { routeScannedText, shownText } from '../lib/scan-route.js'
 import { openRoutinePayload } from './RoutineShare.jsx'
 import { openLibraryLink } from './LibraryLink.jsx'
 import { handleTagLink } from './Nfc.jsx'
+import { exerciseDetailSheet } from '../sheets.jsx'
+import { EXIDX } from '../lib/exercises.js'
+import { useStore } from '../store/useStore.js'
+import { nfcReadSupport } from '../lib/nfc.js'
 import CameraScan from './CameraScan.jsx'
 
 const ui = () => useUI.getState()
@@ -20,11 +24,16 @@ export async function indexAddress() {
 
 /** Sends what a scan read to its handler. Resolves the route it took (tests read it). */
 export async function handleScannedText(text, { indexAddress: at } = {}) {
-  const route = routeScannedText(text, { indexAddress: at === undefined ? await indexAddress() : at })
+  const route = routeScannedText(text, { indexAddress: at === undefined ? await indexAddress() : at, S: useStore.getState().S })
   if (route.kind === 'routine-link') await openRoutinePayload(route.payload)
   else if (route.kind === 'library') await openLibraryLink(route.link)
   else if (route.kind === 'tag') handleTagLink(route.url)
-  else ui().toast(t('That’s not an openGym code: {0}', shownText(route.text) || '?'))
+  else if (route.kind === 'machine') {
+    // Outside a workout a machine is its exercise's details; several exercises ask which first.
+    const open = id => EXIDX[id] && exerciseDetailSheet(EXIDX[id])
+    if (route.ids.length === 1) open(route.ids[0])
+    else (await import('./ScanMachine.jsx')).whichExerciseSheet({ ids: route.ids, onExercise: open })
+  } else ui().toast(t('That’s not an openGym code: {0}', shownText(route.text) || '?'))
   return route
 }
 
@@ -51,3 +60,13 @@ export async function scanQrWith(onText) {
 
 /** Opens the camera, reads one code and handles it. */
 export const scanQrCode = () => scanQrWith(handleScannedText)
+
+/** Plan's scan: a device that reads NFC gets the Scan a machine sheet (camera or tag), others the camera. */
+export async function scanFromPlan() {
+  if ((await nfcReadSupport()).supported) {
+    const { scanMachineSheet } = await import('./ScanMachine.jsx')
+    scanMachineSheet({ onExercise: id => EXIDX[id] && exerciseDetailSheet(EXIDX[id]), live: null })
+    return
+  }
+  await scanQrCode()
+}

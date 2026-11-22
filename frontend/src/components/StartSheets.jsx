@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { startFlow, menuSheet } from '../sheets.jsx'
+import { scanMachineSheet } from './ScanMachine.jsx'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exCount, todayISO, DAYN, fmtDaysAgo } from '../lib/format.js'
 import { setLabel } from '../lib/history.js'
@@ -97,6 +98,7 @@ function StartPicker({ close }) {
     </>}
     <div className="list menu-list" style={{ marginBottom: 14 }}>
       <Row icon="shuffle" title={t('Freestyle workout (pick as you go)')} accessory="chevron" onClick={() => { close(); startFlow([]) }} />
+      <Row icon="qr" title={t('Scan a machine to start freestyle')} accessory="chevron" onClick={() => { close(); scanMachineSheet({ onExercise: id => startFlow([], { first: id }), live: null }) }} />
     </div>
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>

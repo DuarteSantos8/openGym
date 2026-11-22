@@ -16,6 +16,7 @@ import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
+import { entryToAdd } from './lib/session-add.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -4031,14 +4032,16 @@ function dailyCheckinSheet(routineIds, opts) {
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.
-export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null, lighter = null } = {}) {
+export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null, lighter = null, first: firstId = null } = {}) {
   const st = S()
   const built = buildCombinedEntries(st, routineIds)
   const { routineIds: rids, routines } = built
   // The leftovers keep their own routine's `rid`, so the history reads them back per routine;
   // the session stays today's (routineIds), so the plan and the queue count today only.
   const first = leadEntries(st, lead)
-  const entries = first.length ? [...first, ...built.entries] : built.entries
+  let entries = first.length ? [...first, ...built.entries] : built.entries
+  // A machine scanned to start (components/ScanMachine.jsx): a freestyle session opens on it.
+  if (firstId && !entries.length) entries = [entryToAdd(st, firstId, null)]
   const startAt = Number.isFinite(start) && start > 0 ? start : Date.now()
   update(s => {
     s.active = {

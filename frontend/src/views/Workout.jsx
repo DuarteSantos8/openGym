@@ -130,6 +130,8 @@ function StartChooser() {
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
     <div style={{ height: 14 }} />
     <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
+    <div style={{ height: 10 }} />
+    <Button icon="qr" onClick={() => scanMachineSheet({ onExercise: id => startFlow([], { first: id }), live: null })}>{t('Scan a machine to start freestyle')}</Button>
     {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
   </div>
 }

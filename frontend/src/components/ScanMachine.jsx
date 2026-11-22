@@ -166,6 +166,10 @@ function ScanMachine({ close, ...ctx }) {
 export const scanMachineSheet = ({ onExercise, live = null }) =>
   ui().openSheet(close => <ScanMachine mode="route" onExercise={onExercise} live={live} close={close} />)
 
+/** The "Which exercise?" chooser on its own, for a machine code read outside the sheet (Plan's camera scan). */
+export const whichExerciseSheet = ({ ids, live = null, onExercise }) =>
+  ui().openSheet(close => <Which ids={ids} live={live} close={close} onExercise={onExercise} />)
+
 /** Link mode: read one code and link it to `ex`. */
 export const linkMachineSheet = ex =>
   ui().openSheet(close => <ScanMachine mode="link" ex={ex} close={close} />)

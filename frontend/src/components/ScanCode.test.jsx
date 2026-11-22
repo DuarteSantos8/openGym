@@ -4,7 +4,7 @@
 // one that cannot be fetched offers the website instead, at an address no app filter claims.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const m = vi.hoisted(() => ({ toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [] }))
+const m = vi.hoisted(() => ({ toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [], details: [], machineSheets: [], which: [], nfc: false }))
 
 vi.mock('../store/useStore.js', () => {
   const useStore = sel => sel({ S: { unit: 'kg' } })
@@ -17,13 +17,19 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = () => ui
   return { useUI }
 })
-vi.mock('../sheets.jsx', () => ({ planImportSheet: b => m.imports.push(b), confirmSheet: o => m.confirms.push(o) }))
+vi.mock('../sheets.jsx', () => ({ planImportSheet: b => m.imports.push(b), confirmSheet: o => m.confirms.push(o), exerciseDetailSheet: ex => m.details.push(ex?.id) }))
+vi.mock('../lib/nfc.js', () => ({ nfcReadSupport: async () => ({ supported: m.nfc, enabled: true, mode: 'hold' }) }))
+vi.mock('./ScanMachine.jsx', () => ({ scanMachineSheet: o => m.machineSheets.push(o), whichExerciseSheet: o => m.which.push(o) }))
+vi.mock('../lib/scan-route.js', async orig => {
+  const real = await orig()
+  return { ...real, routeScannedText: (raw, o) => /^MACHINE/.test(raw) ? { kind: 'machine', code: raw, ids: raw === 'MACHINE2' ? ['0025', '0027'] : ['0025'] } : real.routeScannedText(raw, o) }
+})
 vi.mock('./RoutineShare.jsx', () => ({ openRoutinePayload: async p => { m.routine.push(p); return true } }))
 vi.mock('./Nfc.jsx', () => ({ handleTagLink: u => { m.tags.push(u); return true } }))
 vi.mock('../lib/scan.js', () => ({ MODULE_MISSING: 'module-missing', webScanner: async () => m.web, scanCode: async () => { if (m.scanned instanceof Error) throw m.scanned; return m.scanned } }))
 vi.mock('../lib/routine-library.js', () => ({ indexUrl: () => 'https://opengym.ch/routines/index.json', communityEntries: async () => [{ url: 'https://opengym.ch/routines/bar-and-floor/', author: 'Ana' }] }))
 
-import { handleScannedText, scanQrCode } from './ScanCode.jsx'
+import { handleScannedText, scanQrCode, scanFromPlan } from './ScanCode.jsx'
 import { openLibraryLink, _resetLibraryLinksForTests } from './LibraryLink.jsx'
 import { libraryLinkFromUrl } from '../lib/library-link.js'
 
@@ -31,11 +37,41 @@ const plan = { opengym_plan: 1, name: 'Bar and floor', unit: 'kg', week: { 1: ['
 const ok = body => async () => ({ ok: true, status: 200, text: async () => JSON.stringify(body) })
 
 beforeEach(() => {
-  Object.assign(m, { toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [] })
+  Object.assign(m, { toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [], details: [], machineSheets: [], which: [], nfc: false })
   _resetLibraryLinksForTests()
   vi.spyOn(window, 'open').mockImplementation(url => { m.opened.push(url); return null })
 })
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
+
+describe('a machine code outside a workout', () => {
+  it('one exercise opens its details', async () => {
+    const r = await handleScannedText('MACHINE1', { indexAddress: null })
+    expect(r.kind).toBe('machine')
+    expect(m.details).toEqual(['0025'])
+  })
+  it('several exercises ask which first', async () => {
+    await handleScannedText('MACHINE2', { indexAddress: null })
+    expect(m.details).toEqual([])
+    expect(m.which).toHaveLength(1)
+    expect(m.which[0].ids).toEqual(['0025', '0027'])
+    m.which[0].onExercise('0027')
+    expect(m.details).toEqual(['0027'])
+  })
+  it('Plan’s scan opens the Scan a machine sheet when the device reads NFC', async () => {
+    m.nfc = true
+    await scanFromPlan()
+    expect(m.machineSheets).toHaveLength(1)
+    expect(m.machineSheets[0].live).toBe(null)
+    m.machineSheets[0].onExercise('0025')
+    expect(m.details).toEqual(['0025'])
+    expect(m.sheets).toHaveLength(0)
+  })
+  it('without NFC it is the camera as before', async () => {
+    await scanFromPlan()
+    expect(m.machineSheets).toHaveLength(0)
+    expect(m.sheets).toHaveLength(1)
+  })
+})
 
 describe('a scanned code goes to its handler', () => {
   it('a friend’s routine link opens its preview', async () => {
