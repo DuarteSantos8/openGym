@@ -378,3 +378,30 @@ non-openGym tags.
 - Exact icon for the chip-row button (an existing `qr` or a new scan glyph in `Icon.jsx`).
 - Whether Plan's row is renamed to cover NFC ("Scan a machine or QR code").
 - Event / method names on the plugins, as long as both platforms answer the same shape.
+
+## Future work
+
+Left out of this change on purpose, roughly in the order they would pay off.
+
+- **Remember the gym.** Record the active gym when a code is linked, show it in the details list
+  ("Gym A · QR …"), and prefer the active gym's exercise when one code (a maker's model page)
+  finds several. A scan could also switch to that gym, the way a check-in sticker does
+  (`autoGymHere`). A code entry grows from a string into `{ c, gym }`.
+- **Quicker ways in.** An iPhone Control Center or Lock Screen control and an Android Quick
+  Settings tile that open Scan a machine straight away.
+- **Tap and go on Android, for linked tags only.** During a workout, read tags in the foreground
+  and react only to a code that is linked, ignoring every other tag silently; behind a setting.
+  The always-on reading rejected above reacted to any tag.
+- **Share a gym's codes.** Pack "this gym's machines → exercises" into a link, as routines are
+  shared, so a friend at the same gym does not link every machine again.
+- **Recognise a machine without picking.** A table of makers' code formats → exercise ids,
+  best built from codes people actually scan, and kept by the community.
+- **An overview** of every linked exercise in Settings, and an optional short note per code
+  ("the one by the window").
+- **Watches.** Wear OS can read NFC, so a tap of the wrist could switch exercise there. Apple
+  Watch has no NFC reading; it would only show the phone's result.
+- **More tag types on iPhone:** FeliCa and ISO 7816 need their system codes or AIDs declared.
+- **Export and import** of the links (with `= + - @` escaped in any CSV).
+
+Found while planning, unrelated to this feature: `api/sync-stamps.js` `PER_KEY` lacks `bandEx`,
+which `frontend/src/lib/sync-merge.js` has.
