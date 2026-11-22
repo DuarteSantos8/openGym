@@ -3333,6 +3333,9 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
 body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
+/* iPhone, Text size Larger with a rest row: 10 pt above the bar (76) and its row (146), and the page ends 16 pt above the button, as above */
+:root[data-platform="ios"] body.resting:has(#tabbar.tm.ax:not(.min)) #totop{bottom:calc(max(var(--sab) - 13px, 8px) + 232px)}
+:root[data-platform="ios"] body.totop-on.resting:has(#tabbar.tm.ax:not(.min)):not(.no-tabbar) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 292px)}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
