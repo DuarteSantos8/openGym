@@ -3143,7 +3143,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   padding:10px 10px 0;padding-inline-start:20px;pointer-events:none;animation:trowin .25s .14s both}   /* never eats taps: the raised Start orb reaches 15 pt up into it */
 @keyframes trowin{from{opacity:0}}
 :root[data-platform="ios"] #tabbar.min .trow{visibility:hidden;opacity:0;animation:none}
-:root[data-platform="ios"] .trow.dock{position:fixed;z-index:60;bottom:0;height:auto;min-height:calc(54px + var(--sab));flex-wrap:wrap;padding-bottom:calc(var(--sab) + 4px);
+:root[data-platform="ios"] .trow.dock{position:fixed;z-index:60;bottom:0;height:auto;min-height:calc(54px + var(--sab));padding-bottom:calc(var(--sab) + 4px);
   border-radius:24px 24px 0 0;background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--glass-shadow)}
 :root[data-platform="ios"] .trow.dock::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
 :root[data-platform="ios"] #tabbar.ax .trow{--bf:19px;flex-wrap:wrap;gap:8px 6px}
