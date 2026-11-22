@@ -53,10 +53,11 @@ describe('the start picker (#930)', () => {
     expect(started).toEqual([['mob']])
     expect(useUI.getState().sheets).toHaveLength(0)
   })
-  it('Scan a machine to start freestyle starts a freestyle session on the exercise it finds', () => {
+  it('Scan a machine to start freestyle starts a freestyle session on the exercise it finds', async () => {
     scans.length = 0
     startPickerSheet(); renderTop()
     click('Scan a machine to start freestyle')
+    await vi.dynamicImportSettled()
     expect(useUI.getState().sheets).toHaveLength(0)
     expect(scans).toHaveLength(1)
     expect(scans[0].live).toBe(null)

@@ -4,7 +4,7 @@
 // one that cannot be fetched offers the website instead, at an address no app filter claims.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const m = vi.hoisted(() => ({ toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [], details: [], machineSheets: [], which: [], nfc: false }))
+const m = vi.hoisted(() => ({ toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [], details: [], machineSheets: [], which: [], unlinked: [], nfc: false }))
 
 vi.mock('../store/useStore.js', () => {
   const useStore = sel => sel({ S: { unit: 'kg' } })
@@ -19,7 +19,7 @@ vi.mock('../store/useUI.js', () => {
 })
 vi.mock('../sheets.jsx', () => ({ planImportSheet: b => m.imports.push(b), confirmSheet: o => m.confirms.push(o), exerciseDetailSheet: ex => m.details.push(ex?.id) }))
 vi.mock('../lib/nfc.js', () => ({ nfcReadSupport: async () => ({ supported: m.nfc, enabled: true, mode: 'hold' }) }))
-vi.mock('./ScanMachine.jsx', () => ({ scanMachineSheet: o => m.machineSheets.push(o), whichExerciseSheet: o => m.which.push(o) }))
+vi.mock('./ScanMachine.jsx', () => ({ scanMachineSheet: o => m.machineSheets.push(o), whichExerciseSheet: o => m.which.push(o), unlinkedCodeSheet: o => m.unlinked.push(o) }))
 vi.mock('../lib/scan-route.js', async orig => {
   const real = await orig()
   return { ...real, routeScannedText: (raw, o) => /^MACHINE/.test(raw) ? { kind: 'machine', code: raw, ids: raw === 'MACHINE2' ? ['0025', '0027'] : ['0025'] } : real.routeScannedText(raw, o) }
@@ -37,7 +37,7 @@ const plan = { opengym_plan: 1, name: 'Bar and floor', unit: 'kg', week: { 1: ['
 const ok = body => async () => ({ ok: true, status: 200, text: async () => JSON.stringify(body) })
 
 beforeEach(() => {
-  Object.assign(m, { toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [], details: [], machineSheets: [], which: [], nfc: false })
+  Object.assign(m, { toasts: [], imports: [], confirms: [], routine: [], tags: [], opened: [], web: true, scanned: null, sheets: [], details: [], machineSheets: [], which: [], unlinked: [], nfc: false })
   _resetLibraryLinksForTests()
   vi.spyOn(window, 'open').mockImplementation(url => { m.opened.push(url); return null })
 })
@@ -84,10 +84,21 @@ describe('a scanned code goes to its handler', () => {
     expect(m.tags).toEqual(['https://opengym.ch/nfc?do=start'])
   })
 
-  it('anything else is shown back, not acted on', async () => {
-    await handleScannedText('WIFI:S:gym;T:WPA;P:hunter2;;', { indexAddress: null })
-    expect(m.toasts).toEqual(['That’s not an openGym code: WIFI:S:gym;T:WPA;P:hunter2;;'])
-    expect(m.routine.length + m.tags.length + m.imports.length).toBe(0)
+  it('any other code offers to link it to an exercise, and acts on nothing', async () => {
+    await handleScannedText('https://gym.example/m/leg-press', { indexAddress: null })
+    expect(m.toasts).toEqual([])
+    expect(m.unlinked).toHaveLength(1)
+    expect(m.unlinked[0].code).toBe('t:https://gym.example/m/leg-press')
+    expect(m.routine.length + m.tags.length + m.imports.length + m.details.length).toBe(0)
+    m.unlinked[0].onExercise('0025')
+    expect(m.details).toEqual(['0025'])
+  })
+
+  it('a read with nothing to link is shown back', async () => {
+    await handleScannedText('x'.repeat(600), { indexAddress: null })
+    expect(m.unlinked).toHaveLength(0)
+    expect(m.toasts).toHaveLength(1)
+    expect(m.toasts[0]).toMatch(/^That’s not an openGym code: /)
   })
 
   it('a library page fetches the routine into the import sheet', async () => {

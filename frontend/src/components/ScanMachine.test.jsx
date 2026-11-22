@@ -33,6 +33,8 @@ vi.mock('../lib/nfc.js', () => ({
 }))
 
 import { scanMachineSheet, linkMachineSheet } from './ScanMachine.jsx'
+// ScanMachine loads the camera side when a scan needs it; loaded here so that is one tick.
+import './ScanCode.jsx'
 
 let host, root
 const flush = () => act(async () => { await new Promise(r => setTimeout(r, 0)) })
@@ -111,6 +113,16 @@ describe('scan a machine, route mode', () => {
     m.scanned = { value: 'https://opengym.ch/nfc?ex=0025' }
     await click('Scan QR code')
     expect(got).toEqual(['0025'])
+  })
+
+  it('a sticker for an exercise this profile does not have says so and opens nothing', async () => {
+    const got = []
+    scanMachineSheet({ onExercise: id => got.push(id) })
+    await open()
+    m.scanned = { value: 'https://opengym.ch/nfc?ex=cGone' }
+    await click('Scan QR code')
+    expect(got).toEqual([])
+    expect(m.toasts).toEqual(['This sticker is for an exercise you don’t have.'])
   })
 
   it('a held NFC tag is read, and the reader stops when the sheet closes', async () => {

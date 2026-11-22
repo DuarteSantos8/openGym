@@ -51,7 +51,6 @@ import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
-import { linkMachineSheet } from './components/ScanMachine.jsx'
 import { codesOf, unlink, shownCode } from './lib/machine-codes.js'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
@@ -1592,7 +1591,7 @@ function ExerciseDetail({ ex, close }) {
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
     {/* Codes already on the machine (QR or NFC) that open this exercise (lib/machine-codes.js).
         The camera works on every platform, so this is not gated on nfcOK. Codes are text only. */}
-    {!ex.missing && <Button icon="qr" style={{ marginTop: 4 }} onClick={() => linkMachineSheet(ex)}>
+    {!ex.missing && <Button icon="qr" style={{ marginTop: 4 }} onClick={() => import('./components/ScanMachine.jsx').then(m => m.linkMachineSheet(ex))}>
       {t('Link a code on this machine')}
       {machineCodes.length > 0 && <span className="tag dim machine-code-count" style={{ marginInlineStart: 8 }}>{machineCodes.length}</span>}
     </Button>}

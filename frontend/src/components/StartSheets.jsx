@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { startFlow, menuSheet } from '../sheets.jsx'
-import { scanMachineSheet } from './ScanMachine.jsx'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exCount, todayISO, DAYN, fmtDaysAgo } from '../lib/format.js'
 import { setLabel } from '../lib/history.js'
@@ -17,6 +16,9 @@ import { glyphOf } from '../lib/glyphs.js'
 import { leftoversBefore } from '../lib/leftovers.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
+
+// Loaded on a tap, like Plan's scan: the scanner stays out of the first chunk.
+const scanMachineSheet = o => import('./ScanMachine.jsx').then(m => m.scanMachineSheet(o))
 
 const ui = () => useUI.getState()
 const S = () => useStore.getState().S

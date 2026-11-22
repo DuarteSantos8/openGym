@@ -2,7 +2,8 @@
 // components/CameraScan.jsx with jsQR in a browser and the F-Droid build), pointed at openGym's
 // own codes. What it read goes where a tap on the same link would go (lib/scan-route.js): a
 // friend's routine to its preview, a library routine to the import sheet, a sticker link to the
-// sticker's action. Anything else is shown back, so you can see what the camera actually saw.
+// sticker's action. A machine code opens its exercise, or is offered for linking (ScanMachine.jsx);
+// anything else is shown back, so you can see what the camera actually saw.
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { scanCode, webScanner, MODULE_MISSING } from '../lib/scan.js'
@@ -22,6 +23,8 @@ export async function indexAddress() {
   try { return (await import('../lib/routine-library.js')).indexUrl() } catch { return null }
 }
 
+const openDetails = id => EXIDX[id] && exerciseDetailSheet(EXIDX[id])
+
 /** Sends what a scan read to its handler. Resolves the route it took (tests read it). */
 export async function handleScannedText(text, { indexAddress: at } = {}) {
   const route = routeScannedText(text, { indexAddress: at === undefined ? await indexAddress() : at, S: useStore.getState().S })
@@ -30,9 +33,11 @@ export async function handleScannedText(text, { indexAddress: at } = {}) {
   else if (route.kind === 'tag') handleTagLink(route.url)
   else if (route.kind === 'machine') {
     // Outside a workout a machine is its exercise's details; several exercises ask which first.
-    const open = id => EXIDX[id] && exerciseDetailSheet(EXIDX[id])
-    if (route.ids.length === 1) open(route.ids[0])
-    else (await import('./ScanMachine.jsx')).whichExerciseSheet({ ids: route.ids, onExercise: open })
+    if (route.ids.length === 1) openDetails(route.ids[0])
+    else (await import('./ScanMachine.jsx')).whichExerciseSheet({ ids: route.ids, onExercise: openDetails })
+  } else if (route.code) {
+    // A code no exercise has yet: offered for linking, as the Scan a machine sheet does.
+    (await import('./ScanMachine.jsx')).unlinkedCodeSheet({ code: route.code, onExercise: openDetails })
   } else ui().toast(t('That’s not an openGym code: {0}', shownText(route.text) || '?'))
   return route
 }
@@ -65,7 +70,7 @@ export const scanQrCode = () => scanQrWith(handleScannedText)
 export async function scanFromPlan() {
   if ((await nfcReadSupport()).supported) {
     const { scanMachineSheet } = await import('./ScanMachine.jsx')
-    scanMachineSheet({ onExercise: id => EXIDX[id] && exerciseDetailSheet(EXIDX[id]), live: null })
+    scanMachineSheet({ onExercise: openDetails, live: null })
     return
   }
   await scanQrCode()

@@ -47,9 +47,13 @@ const click = el => act(() => { el.dispatchEvent(new Event('click', { bubbles: t
 const ids = () => useStore.getState().S.active.entries.map(e => e.id)
 const active = () => useStore.getState().S.active
 
+// The sheet is loaded on a tap (a dynamic import): wait for it.
+const settle = () => act(async () => { await vi.dynamicImportSettled() })
+
 // Tap the chip row's scan button and have the sheet answer with `exId`.
-function scan(exId) {
+async function scan(exId) {
   click(scanButton())
+  await settle()
   const { onExercise } = mocks.scan.mock.calls.at(-1)[0]
   act(() => onExercise(exId))
 }
@@ -82,7 +86,7 @@ afterEach(() => {
 })
 
 describe('Scan a machine in the workout', () => {
-  it('puts the scan button in the chip row, before the session map', () => {
+  it('puts the scan button in the chip row, before the session map', async () => {
     mount([entry(A_ID), entry(B_ID)])
     const row = container.querySelector('.wchips-row')
     expect(row).toBeTruthy()
@@ -95,11 +99,12 @@ describe('Scan a machine in the workout', () => {
     expect(kids.indexOf(btn)).toBeLessThan(kids.indexOf(map))
     expect(kids.indexOf(btn)).toBeGreaterThan(kids.indexOf(row.querySelector('.wchips')))
     click(btn)
+    await settle()
     expect(mocks.scan).toHaveBeenCalledOnce()
     expect(mocks.scan.mock.calls[0][0].live.id).toBe('scan-test')
   })
 
-  it('has no scan button while editing a saved workout or logging a past one', () => {
+  it('has no scan button while editing a saved workout or logging a past one', async () => {
     mount([entry(A_ID), entry(B_ID)], 0, { active: { editingWorkoutId: 'w1' } })
     expect(scanButton()).toBeNull()
     act(() => root.unmount()); container.remove(); root = null
@@ -107,30 +112,31 @@ describe('Scan a machine in the workout', () => {
     expect(scanButton()).toBeNull()
   })
 
-  it('lists Scan a machine under Add exercise in the ⋯ menu, chips on or off', () => {
+  it('lists Scan a machine under Add exercise in the ⋯ menu, chips on or off', async () => {
     mount([entry(A_ID), entry(B_ID)], 0, { wc: { exerciseChips: false } })
     expect(container.querySelector('.wchips-row')).toBeNull()
     click(container.querySelector('button[aria-label="Workout options"]'))
     const labels = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).map(it => it.label)
     expect(labels.indexOf('Scan a machine')).toBe(labels.indexOf('Add exercise') + 1)
     act(() => menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(it => it.label === 'Scan a machine').onClick())
+    await settle()
     expect(mocks.scan).toHaveBeenCalledOnce()
   })
 
-  it('keeps Scan a machine out of the ⋯ menu of a past workout', () => {
+  it('keeps Scan a machine out of the ⋯ menu of a past workout', async () => {
     mount([entry(A_ID)], 0, { active: { backfill: { durationMin: 60, replaceId: null } } })
     click(container.querySelector('button[aria-label="Workout options"]'))
     const labels = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).map(it => it.label)
     expect(labels).not.toContain('Scan a machine')
   })
 
-  it('keeps the rest on its exercise after a scan move', () => {
+  it('keeps the rest on its exercise after a scan move', async () => {
     // A and B done, C next (cur 2) with its rest running; D scanned → D goes in front of C.
     mount([entry(A_ID, true), entry(B_ID, true), entry(C_ID), entry(D_ID)], 2)
     act(() => useUI.getState().startRest(90, 2))
     expect(useUI.getState().timer.forIdx).toBe(2)
 
-    scan(D_ID)
+    await scan(D_ID)
 
     expect(ids()).toEqual([A_ID, B_ID, D_ID, C_ID])
     expect(active().cur).toBe(2)
@@ -144,15 +150,15 @@ describe('Scan a machine in the workout', () => {
     expect(useUI.getState().timer.forIdx).toBe(2)
   })
 
-  it('jumps to an exercise already in place without moving anything', () => {
+  it('jumps to an exercise already in place without moving anything', async () => {
     mount([entry(A_ID, true), entry(B_ID), entry(C_ID)], 1)
-    scan(A_ID)
+    await scan(A_ID)
     expect(ids()).toEqual([A_ID, B_ID, C_ID])
     expect(active().cur).toBe(0)
     expect(useUI.getState().toastAction).toBeNull()
   })
 
-  it('ends a running hold before an added exercise shifts the indexes', () => {
+  it('ends a running hold before an added exercise shifts the indexes', async () => {
     // The current exercise is untouched, so the scanned one goes in front of it, at its index.
     mount([entry(A_ID), entry(B_ID)], 0)
     const holdWrite = vi.fn(elapsed => {
@@ -160,7 +166,7 @@ describe('Scan a machine in the workout', () => {
     })
     act(() => useUI.getState().startWork(5, 'Hold', holdWrite, { idx: 0, i: 0, id: A_ID }))
 
-    expect(() => scan(E_ID)).not.toThrow()
+    await expect(scan(E_ID)).resolves.toBeUndefined()
     act(() => vi.advanceTimersByTime(10_000))
 
     expect(ids()).toEqual([E_ID, A_ID, B_ID])
@@ -170,11 +176,11 @@ describe('Scan a machine in the workout', () => {
     expect(added.sets.some(set => set.done || set.sec != null)).toBe(false)
   })
 
-  it('adds a scanned exercise that is not in the workout, and Undo takes it out', () => {
+  it('adds a scanned exercise that is not in the workout, and Undo takes it out', async () => {
     mount([entry(A_ID, true), entry(B_ID)], 0)
     act(() => useUI.getState().startRest(90, 1))
 
-    scan(E_ID)
+    await scan(E_ID)
 
     // A has a ticked set, so the new one lands after it.
     expect(ids()).toEqual([A_ID, E_ID, B_ID])
@@ -187,5 +193,16 @@ describe('Scan a machine in the workout', () => {
     expect(ids()).toEqual([A_ID, B_ID])
     expect(active().cur).toBe(0)
     expect(useUI.getState().timer.forIdx).toBe(1)
+  })
+  it('Undo leaves an added exercise alone once a set of it is ticked', async () => {
+    mount([entry(A_ID, true), entry(B_ID)], 0)
+    await scan(E_ID)
+    expect(ids()).toEqual([A_ID, E_ID, B_ID])
+    act(() => useStore.getState().update(s => { s.active.entries[1].sets[0].done = true }))
+
+    undo()
+
+    expect(ids()).toEqual([A_ID, E_ID, B_ID])
+    expect(active().entries[1].sets[0].done).toBe(true)
   })
 })

@@ -8,7 +8,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { exerciseNameText } from '../lib/format.js'
-import { EXIDX } from '../lib/exercises.js'
+import { EXIDX, canonicalExId } from '../lib/exercises.js'
 import { entryProgress } from '../lib/exercise-chips.js'
 import { codeFromQr, codeFromNfc, refusal, exercisesFor, link, shownCode, searchHint } from '../lib/machine-codes.js'
 import { pickForScan } from '../lib/machine-scan.js'
@@ -16,11 +16,14 @@ import { routeScannedText } from '../lib/scan-route.js'
 import { parseTagUrl } from '../lib/nfc-tags.js'
 import { nfcReadSupport, readMachineTags, readMachineTagOnce } from '../lib/nfc.js'
 import { exercisePicker } from '../sheets.jsx'
-import { scanQrWith, handleScannedText, indexAddress } from './ScanCode.jsx'
 import { Button, Row } from './ui.jsx'
 
 const ui = () => useUI.getState()
 const store = () => useStore.getState()
+// The camera and openGym's own codes (components/ScanCode.jsx), loaded when a scan needs them:
+// ScanCode opens this sheet the same way, so neither pulls the other into the first chunk.
+const scanCode = () => import('./ScanCode.jsx')
+const indexAddress = async () => (await scanCode()).indexAddress()
 
 const REFUSED = {
   own: () => t('This is an openGym code. It already has a job.'),
@@ -45,7 +48,6 @@ async function classify({ text, tag }) {
   return { S, raw, own, code }
 }
 
-
 async function onRead(input, { mode, ex, onExercise, live }) {
   const { S, raw, own, code } = await classify(input)
   if (mode === 'link') {
@@ -55,18 +57,24 @@ async function onRead(input, { mode, ex, onExercise, live }) {
   }
   if (own) {
     const sticker = own.kind === 'tag' ? parseTagUrl(own.url) : null
-    if (sticker?.kind === 'exercise') onExercise(sticker.id)
-    else await handleScannedText(raw, { indexAddress: await indexAddress() })
+    if (sticker?.kind === 'exercise') {
+      // The sticker's exercise, if this profile has it (a deleted own one it no longer does).
+      const id = canonicalExId(sticker.id)
+      if (EXIDX[id] || (S.customEx || []).some(e => e && e.id === id)) onExercise(id)
+      else ui().toast(t('This sticker is for an exercise you don’t have.'))
+    } else await (await scanCode()).handleScannedText(raw, { indexAddress: await indexAddress() })
     return
   }
   const why = refusal(S, code)
   if (why) { ui().toast(REFUSED[why]()); return }
   const ids = exercisesFor(S, code)
-  if (!ids.length) { ui().openSheet(close => <Unlinked code={code} close={close} onExercise={onExercise} />); return }
+  if (!ids.length) { openUnlinked(code, onExercise); return }
   const id = pickForScan(live, ids)
   if (id) onExercise(id)
   else ui().openSheet(close => <Which ids={ids} live={live} close={close} onExercise={onExercise} />)
 }
+
+const openUnlinked = (code, onExercise) => ui().openSheet(close => <Unlinked code={code} close={close} onExercise={onExercise} />)
 
 function Unlinked({ code, close, onExercise }) {
   const go = () => {
@@ -89,7 +97,7 @@ function Unlinked({ code, close, onExercise }) {
 
 function Which({ ids, live, close, onExercise }) {
   const entries = live?.entries || []
-  const state = id => { const e = entries.find(x => x.id === id); return e ? (entryProgress(e) === 'done' ? 'done' : 'open') : 'absent' }
+  const state = id => { const e = entries.find(x => canonicalExId(x.id) === canonicalExId(id)); return e ? (entryProgress(e) === 'done' ? 'done' : 'open') : 'absent' }
   const rank = { open: 0, done: 1, absent: 2 }
   const sorted = [...ids].sort((a, b) => rank[state(a)] - rank[state(b)])
   return <>
@@ -127,7 +135,7 @@ function linkTo(ex, code) {
 function ScanMachine({ close, ...ctx }) {
   const [nfc, setNfc] = useState(null)
   const read = input => { close(); onRead(input, ctx) }
-  const camera = () => { close(); scanQrWith(text => onRead({ text }, ctx)) }
+  const camera = async () => { close(); (await scanCode()).scanQrWith(text => onRead({ text }, ctx)) }
   const mode = nfc?.supported && nfc.enabled ? nfc.mode : null
 
   useEffect(() => {
@@ -169,6 +177,16 @@ export const scanMachineSheet = ({ onExercise, live = null }) =>
 /** The "Which exercise?" chooser on its own, for a machine code read outside the sheet (Plan's camera scan). */
 export const whichExerciseSheet = ({ ids, live = null, onExercise }) =>
   ui().openSheet(close => <Which ids={ids} live={live} close={close} onExercise={onExercise} />)
+
+/**
+ * "This code isn't linked yet" for a machine code read outside the sheet (Plan's camera scan on a
+ * device without NFC): refused codes are said, any other is offered for linking.
+ */
+export function unlinkedCodeSheet({ code, onExercise }) {
+  const why = refusal(store().S, code)
+  if (why) { ui().toast(REFUSED[why]()); return }
+  openUnlinked(code, onExercise)
+}
 
 /** Link mode: read one code and link it to `ex`. */
 export const linkMachineSheet = ex =>

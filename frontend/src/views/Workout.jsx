@@ -71,8 +71,8 @@ import { bindWidgetActions } from '../lib/widget-logger.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry, moveActiveWorkoutUnitTo } from '../lib/active-workout-order.js'
 import { scanInWorkout } from '../lib/machine-scan.js'
+import { entryProgress } from '../lib/exercise-chips.js'
 import { entryToAdd } from '../lib/session-add.js'
-import { scanMachineSheet } from '../components/ScanMachine.jsx'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
@@ -97,6 +97,9 @@ import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
 import { BandChips } from '../components/Bands.jsx'
 import { isoDir } from '../lib/bidi.js'
+
+// Loaded on a tap, like Plan's scan: the scanner stays out of the first chunk.
+const scanMachineSheet = o => import('../components/ScanMachine.jsx').then(m => m.scanMachineSheet(o))
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -1750,12 +1753,14 @@ function ActiveWorkout() {
     if (!added) return
     ui.toast(t('“{0}” added', name), { action: t('Undo'), onAction: () => {
       const now = useStore.getState().S.active
-      if (!now || now.id !== activeId || now.entries[plan.slot]?.id !== exId) return
+      // Once a set of it is ticked it is part of the workout: Undo no longer takes it out.
+      const there = now?.id === activeId ? now.entries[plan.slot] : null
+      if (there?.id !== exId || entryProgress(there) !== 'todo') return
       removeActiveExercise(plan.slot)
       update(s => { if (s.active) s.active.cur = Math.min(prevCur, s.active.entries.length - 1) })
     } })
   }
-  const scanMachine = () => scanMachineSheet({ onExercise: scanApply, live: useStore.getState().S.active })
+  const scanMachine = () => { scanMachineSheet({ onExercise: scanApply, live: useStore.getState().S.active }) }
   const canScan = !editing && !A.backfill
 
   const moveCurrentUnit = direction => moveUnitAt(cur, direction)
