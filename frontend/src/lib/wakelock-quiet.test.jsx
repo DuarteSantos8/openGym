@@ -40,6 +40,14 @@ describe('useQuiet', () => {
     await wait(1 * MIN); expect(quiet).toBe(true)
   })
 
+  it('counts typing as a touch', async () => {
+    await show({ A: { id: 'a', start: T0 }, resting: false })
+    await wait(14 * MIN)
+    await act(async () => { document.dispatchEvent(new Event('input')) })
+    await wait(14 * MIN); expect(quiet).toBe(false)
+    await wait(1 * MIN); expect(quiet).toBe(true)
+  })
+
   it('stays off through a long rest, and counts 15 min from when it ends', async () => {
     const A = { id: 'a', start: T0 }
     await show({ A, resting: true })

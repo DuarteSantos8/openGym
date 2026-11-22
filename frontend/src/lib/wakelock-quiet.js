@@ -30,10 +30,12 @@ export function useQuiet(A, resting) {
     const touch = () => { touchAt = Date.now(); arm() }
     arm()
     document.addEventListener('pointerdown', touch, true)
+    document.addEventListener('input', touch, true)   // typing a note is not a tap
     document.addEventListener('visibilitychange', touch)
     return () => {
       clearTimeout(timer)
       document.removeEventListener('pointerdown', touch, true)
+      document.removeEventListener('input', touch, true)
       document.removeEventListener('visibilitychange', touch)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- A is read for its clock: `since` stands for it
