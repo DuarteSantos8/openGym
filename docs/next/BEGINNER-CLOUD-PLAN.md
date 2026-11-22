@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-22. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-22, after PRs #56, #57 and #58 were merged and with `next/EP23-exercise-guidance` in review. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 
@@ -37,31 +37,31 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Status |
 |---|---|---|
-| EP17-T01 | ADR 0008 Cloud edition, charter amended in `AGENTS.md` and `START-HERE.md` | done, `next/EP17-decisions-adrs` |
-| EP17-T02 | ADR 0009 media in a commercial build | done, same branch. **Owner still chooses A (replace) or B (buy a licence) before a paid deploy** |
-| EP17-T03 | ADR 0010 backend: Supabase beside the API | done, same branch |
-| EP17-T04 | ADR 0011 payments: Stripe on the web first | done, same branch. Price and Pro list need the owner's word |
-| EP17-T05 | ADR 0012 health content | done, same branch |
+| EP17-T01 | ADR 0008 Cloud edition, charter amended in `AGENTS.md` and `START-HERE.md` | done, merged in #56 |
+| EP17-T02 | ADR 0009 media in a commercial build | done, #56. **Owner still chooses A (replace) or B (buy a licence) before a paid deploy** |
+| EP17-T03 | ADR 0010 backend: Supabase beside the API | done, #56 |
+| EP17-T04 | ADR 0011 payments: Stripe on the web first | done, #56. Price and Pro list need the owner's word |
+| EP17-T05 | ADR 0012 health content | done, #56 |
 
 ### Phase 1: guardrails
 
 | ID | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
-| EP18-T01 | Edition flag | `frontend/src/lib/edition.js` + test | `editionOf` is `cloud` only for the exact word; a test reads `src/` and fails on a static import of `lib/cloud` or a provider's name outside it | done, `next/EP18-EP20-cloud-edition` |
+| EP18-T01 | Edition flag | `frontend/src/lib/edition.js` + test | `editionOf` is `cloud` only for the exact word; a test reads `src/` and fails on a static import of `lib/cloud` or a provider's name outside it | done, #58 |
 | EP18-T02 | E2E network guard per edition | `frontend/e2e/fixtures.mjs`, `frontend/playwright.config.mjs` | default projects unchanged; a `cloud` project allows only ADR 0008's four origins | open |
 | EP18-T03 | Bundle budget | NEW `scripts/check-bundle-budget.mjs`, CI | red when the entry chunk grows more than 10 KB gzip without the budget file changing | open |
 | EP18-T04 | Media manifest and cloud build filter | `scripts/catalogue/build.mjs`, NEW `catalogue/media-sources.json` | a cloud build holds no file without a commercial-use licence; attribution screen lists every author | open, **blocks a paid deploy** |
-| EP18-T05 | Secret scan and env template | `api/test/no-secrets.test.js`, `.env.example` | CI fails on a committed Stripe or Supabase key or a private key block | done, `next/EP18-EP20-cloud-edition` |
+| EP18-T05 | Secret scan and env template | `api/test/no-secrets.test.js`, `.env.example` | CI fails on a committed Stripe or Supabase key or a private key block | done, #58 |
 
 ### Phase 2: Supabase and Stripe (cloud edition only)
 
 | ID | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
-| EP19-T01 | Schema: profiles | `supabase/migrations/…_profiles.sql` | applies cleanly; a trigger makes the profile; the user can change name and level only | done, `next/EP18-EP20-cloud-edition` |
+| EP19-T01 | Schema: profiles | `supabase/migrations/…_profiles.sql` | applies cleanly; a trigger makes the profile; the user can change name and level only | done, #58 |
 | EP19-T02 | Schema: billing and content, RLS, tests | `supabase/migrations/…_billing.sql`, `…_content.sql`, `supabase/tests/rls.sql`, `run-rls-local.sh` | every expectation in `rls.sql` holds; breaking a policy makes it fail | done, same branch (run on PostgreSQL 16; **not** yet on a Supabase project) |
-| EP19-T03 | Sign-in client and screen | NEW `frontend/src/lib/cloud/auth.js`, `components/cloud/SignIn.jsx` | sign up, sign in, magic link, reset, OAuth pass the cloud E2E; axe clean | open; needs a Supabase project |
-| EP19-T04 | API accepts a Supabase token | `api/supabase-jwt.js` + test; then `api/server.js`, `api/openapi.yaml`, `api/Dockerfile` | verifier: done. Wiring: with `SUPABASE_URL` unset every existing API test passes untouched | **part**: verifier and its 12 tests done; not wired into `server.js` |
-| EP19-T05 | Link an existing account; guest keeps their data | `api/server.js` (`/api/link/supabase`), `useStore.js` | a guest with 10 workouts signs up and has 10 on the server; a passkey user links without a second user | open |
+| EP19-T03 | Sign-in, sign-up, reset and consent pages | NEW `frontend/src/lib/cloud/auth.js`, `components/cloud/SignIn.jsx`, `Consent.jsx` | sign up, sign in, reset and approve pass the cloud E2E; axe clean | open; needs a Supabase project. ADR 0013 adds the consent page |
+| EP19-T04 | API accepts a cloud sign-in | `api/oidc/` (already there), `.env.example`; fallback `api/supabase-jwt.js` | **ADR 0013 (proposed): no new server code.** The API's existing OIDC sign-in is pointed at the Supabase project. Confirm ADR 0013's five checks on a real project | **part**: decision written, verifier kept as the tested fallback, nothing confirmed against Supabase |
+| EP19-T05 | Link an existing account; guest keeps their data | the OIDC flow's own link mode (ADR 0013) | a guest with 10 workouts signs in and has 10 on the server; a passkey user links without a second user | open: to be shown on a real project, not built |
 | EP19-T06 | Delete account and export | NEW `supabase/functions/delete-account`, `export-data` | after delete: auth user, rows, `state-<uid>.json` and the Stripe subscription are gone | open |
 | EP20-T01 | Stripe catalogue seed | NEW `scripts/stripe/seed.mjs` | product and two prices created idempotently in test mode | open; needs a Stripe account |
 | EP20-T02 | Checkout | `supabase/functions/create-checkout-session`, `_shared/handlers.js` | guest 403, unknown price 400, already subscribed 409, double tap one session | done against a pretend Stripe, same branch. **Not** run against Stripe |
@@ -75,18 +75,18 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
-| EP21-T01 | Experience levels | `frontend/src/lib/experience.js`, `experience-copy.js` | Beginner, Intermediate, Experienced write four detail modules and nothing that is connected or holds data | done, `next/EP21-EP25-beginner-core` |
-| EP21-T02 | Workout shows less to a Beginner | `views/Workout.jsx` | **part**: the set menu keeps failure, drop set and burst under More. Still open: the same for the exercise menu (tempo, pyramid, superset) |
+| EP21-T01 | Experience levels | `frontend/src/lib/experience.js`, `experience-copy.js` | Beginner, Intermediate, Experienced write four detail modules and nothing that is connected or holds data | done, #57 |
+| EP21-T02 | Workout shows less to a Beginner | `views/Workout.jsx` | done: the set menu keeps failure, drop set and burst under More (#57); the exercise menu leads with How to do it (`next/EP23-exercise-guidance`). Supersets and ordering were already under More |
 | EP21-T03 | Level in Settings | `views/Settings.jsx`, `settings-pages.js` | **part**: the row, searchable. Still open: a shorter Settings root for a Beginner |
 | EP22-T01 | Planner | `frontend/src/lib/planner.js`, `lib/starter.js` `buildPlanFrom` | all 1,200 answer combinations give a valid plan, deterministic, equipment respected, within the minutes | done, same branch. Draws on the 8 starter plans; `routines/opengym/` is not used yet |
 | EP22-T02 | Find my plan | `views/Onboarding.jsx`, `App.jsx` `/start` | six questions, a plan with reasons, "Use this plan"; limitations never stored; E2E with axe | done, same branch |
-| EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | open |
+| EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | **part**: the chooser now opens with Find my plan (`next/EP23-exercise-guidance`). The cards themselves are unchanged |
 | EP22-T04 | First-session load finder | NEW `lib/load-finder.js`, `Workout.jsx` | an exercise with no history offers "two easy test sets" | open (the Learn guide "How heavy should I start?" covers it as text) |
 | EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **part**: the first-run question no longer opens over the quiz. Still open: a Beginner tour of 8 stops or fewer |
-| EP23-T01 | Exercise schema: level, pattern, cues, mistakes, feel, easier and harder | `scripts/catalogue/build.mjs`, NEW `catalogue/schema/exercise.schema.json` | `--check` validates; ladders have no cycles; `contentReview` required | open. Make the mistakes field upstreamable: upstream lists "top three mistakes per exercise" as a candidate |
+| EP23-T01 | Exercise guidance: level, pattern, cues, mistakes, feel, breathing, easier and harder | `frontend/src/content/exercise-guides.js`, `lib/exercise-guide.js` | `problems()` is empty: fields complete, ids real, ladders never circular, review status valid | done, `next/EP23-exercise-guidance`. **Kept out of `catalogue/` on purpose for now**: the generated catalogue files stay untouched and the text loads on demand. Moving it into `catalogue/exercises/*.json` is a mechanical step once upstream settles its own "top three mistakes" field |
 | EP23-T02 | Seed level and pattern | NEW `scripts/catalogue/seed-level.mjs` | 90% of exercises get a pattern; reviewed diff | open |
-| EP23-T03 | Essentials: about 80 movements written by hand, in batches of 10 | `catalogue/exercises/<id>.json` | each: 3 cues, 2 mistakes with fixes, what you should feel, breathing, a ladder | open; `draft` until a named human reviews (ADR 0012) |
-| EP23-T04 | "How to" on the exercise sheet | `sheets.jsx`, NEW `components/HowTo.jsx` | cues, mistakes and the ladder show; inherited content is labelled | open |
+| EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 exercises, which is every exercise a starter plan uses, so every Find my plan result is covered (a test holds that). All `draft`: **the owner or a named reviewer still has to read them** (ADR 0012). About 35 more for the routines library are open |
+| EP23-T04 | Guidance on the exercise sheet | `sheets.jsx`, `components/ExerciseGuide.jsx` | cues, mistakes with fixes, where to feel it, breathing, easier and harder open the other exercise; a draft is never called reviewed | done, `next/EP23-exercise-guidance` |
 | EP23-T05 | Library opens on Essentials for a Beginner | Library view, search index in `build.mjs` | search p95 under 50 ms on the Pixel 7 profile | open |
 | EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 terms, searchable, one `Term` in use (the plan result). Still open: `Term` in Workout, Plan and Progress; translations of the entries |
 | EP24-T02 | Learn | `views/Learn.jsx`, `App.jsx` `/learn` | done, same branch: 8 guides and the glossary, offline, no link out, axe clean |
@@ -94,7 +94,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP24-T04 | Food, sleep and safety basics | `content/learn.js` | done, same branch: every number names its source; English only for now |
 | EP25-T01 | First wins | `lib/wins.js`, `components/FirstWins.jsx` | done, same branch |
 | EP25-T02 | Streak shields for rest-day mobility | `lib/streak.js` | open (the streak already counts weeks, so rest days never break it) |
-| EP25-T03 | Rest-day card | `lib/recovery.js`, Today | open |
+| EP25-T03 | Rest day explained | `views/Home.jsx` | done, `next/EP23-exercise-guidance`: a Beginner's planned rest day says why it is one and links the guide |
 
 ### Phase 4: what nobody else has
 
@@ -118,15 +118,25 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 ## Order from here
 
-1. Merge `next/EP17-decisions-adrs`, then `next/EP21-EP25-beginner-core`, then `next/EP18-EP20-cloud-edition`. They touch different files and merge in any order; this one makes the history read best.
-2. EP23-T01 to T04 (cues and mistakes): the largest remaining gap for a beginner.
-3. EP22-T03 and EP21-T02's exercise menu: small, and they finish what the quiz starts.
-4. Owner: create the Supabase project and the Stripe test account, then EP19-T03, T04 wiring, T05.
-5. EP18-T04 and EP26-T01 before any live key.
+1. Owner: read the 45 exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
+2. Owner: create the Supabase project and the Stripe test account. Nothing more of the Cloud edition can be verified without them: ADR 0013's five checks, EP19-T03, T05, EP20-T01, T07 and EP18-T02 all wait on this.
+3. Agent: EP23-T03's remaining exercises (the routines library), EP23-T05 (Library opens on the guided exercises for a Beginner), EP22-T04 (load finder), EP24-T03 (warm-up sessions).
+4. EP18-T04 and EP26-T01 before any live key.
+
+## What "production ready" still needs, and who can give it
+
+| Needed | Why an agent cannot close it |
+|---|---|
+| A human read of the exercise guides and the Learn text | ADR 0012: `reviewed` needs a named person |
+| A Supabase project and a Stripe account in test mode | Sign-in, checkout and webhooks cannot be proven against pretend services |
+| The media decision (ADR 0009) | A licence purchase or a replacement set is the owner's call and cost |
+| Real phones, a screen reader, native builds | Not available in CI or to an agent |
+| Five first-time lifters (EP27-T03) | The only honest source of a usability grade |
+| Native-speaker review of 72 machine-written strings per language | NEXT-STEPS task 7 |
 
 ## Verification record (2026-11-22)
 
-What was run, where, and what was not. Nothing below was merged or deployed.
+What was run, where, and what was not. #56, #57 and #58 are merged; nothing has been deployed by an agent.
 
 | Check | Result |
 |---|---|
@@ -139,6 +149,9 @@ What was run, where, and what was not. Nothing below was merged or deployed.
 | Cloud: function tests | 39 passed; each security check also confirmed to fail when removed |
 | Cloud: API token verifier | 12 passed |
 | Cloud: RLS on PostgreSQL 16 | all expectations held; two deliberate breaks were caught |
+| Guidance branch (`next/EP23-exercise-guidance`), full frontend suite | 964 files, 10,763 tests, all passed |
+| Guidance branch, E2E on the three profiles | 53 passed, 1 skipped (the same camera test). The new sheet scan found an older fault, fixed in the branch: the Last and Est. 1RM tiles had spoken names that did not contain the words on them (WCAG 2.5.3) |
+| Guidance branch, locale checks, build, Safari 15.5 bundle check, secrets check | passed; 10 new strings in all 25 packs |
 | **Not run** | Real phones; a screen reader by hand; anything against a real Supabase project or Stripe; the native apps |
 
 ### Grades, honestly
@@ -147,7 +160,7 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 
 | Category | Grade | What keeps it from higher |
 |---|---|---|
-| Beginner-friendliness and clarity | 6 | No form cues or mistakes per exercise (EP23); no load finder; glossary reaches one screen; Learn is English only |
+| Beginner-friendliness and clarity | 7 | Every starter-plan exercise now has cues, mistakes, where to feel it and an easier version, but all 45 are unreviewed drafts in English; no load finder; glossary reaches one screen |
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
-| Feature completeness (all in one) | 4 | 19 of 53 tasks done (5 of those are decisions), 6 in part. Warm-up sessions, rest-day card and exercise guidance are open |
-| Technical quality and backend | 6 | What exists is tested hard, including by breaking it. But no sign-in, no paywall, nothing run against the real services, and the API is not wired |
+| Feature completeness (all in one) | 5 | 23 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, the load finder, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
+| Technical quality and backend | 6 | What exists is tested hard, including by breaking it. But no sign-in, no paywall, and nothing run against the real services. ADR 0013 may remove the API wiring altogether, once checked on a real project |

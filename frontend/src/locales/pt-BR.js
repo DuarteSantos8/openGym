@@ -4678,6 +4678,16 @@ export const PT_BR_OVERRIDES = {
   "about {0} min": "cerca de {0} min",
   "{0} sets of {1} reps to start.": "{0} séries de {1} repetições para começar.",
   "{0} workouts logged": "{0} treinos registrados",
+  "Breathing": "Respiração",
+  "Common mistakes": "Erros comuns",
+  "Do it well": "Faça direito",
+  "Easier:": "Mais fácil:",
+  "General guidance. Stop if something hurts.": "Orientação geral. Pare se algo doer.",
+  "Harder:": "Mais difícil:",
+  "Rest is when you get stronger. A walk today helps.": "É descansando que você fica mais forte. Uma caminhada hoje ajuda.",
+  "Reviewed by {0}.": "Revisado por {0}.",
+  "Where you should feel it": "Onde você deve sentir",
+  "Why rest days matter": "Por que os dias de descanso importam",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

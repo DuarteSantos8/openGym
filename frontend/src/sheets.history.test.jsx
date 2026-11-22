@@ -141,7 +141,8 @@ describe('exercise history sheet', () => {
     const host = renderTop()
     const btn = lastTile(host)
     expect(btn.disabled).toBe(false)
-    expect(btn.getAttribute('aria-label')).toBe('History: 60×5')
+    // the name starts with the words on the tile (WCAG 2.5.3), then says where it leads
+    expect(btn.getAttribute('aria-label')).toBe('Last 60×5: History')
     act(() => { btn.click() })
     expect(useUI.getState().sheets).toHaveLength(2)
     const top = renderTop()
