@@ -28,8 +28,9 @@ What it adds:
 
 It builds on your own machine at install from the official `opengym-api` and `opengym-web`
 images, pinned by digest, so the exercise photos and animations are never re-hosted
-([NOTICE.md](../NOTICE.md)). Each openGym release is tested against the add-on and reaches it
-as an update.
+([NOTICE.md](../NOTICE.md)). Each openGym release is tested against the add-on. If every test
+passes, the release reaches the add-on as an update. If a test fails, the add-on keeps its
+previous version.
 
 ### What it changes, so you can judge it
 
@@ -41,6 +42,12 @@ Those sessions are openGym's own (`makeSession`), so "sign out everywhere", disa
 deleting a profile end them as they end any other. Nothing in the public listener, its routes or
 its CSRF and origin checks is touched.
 
+**Taking someone's access away.** Home Assistant decides who can open the panel, so removing the
+person from Home Assistant is the first step. In openGym, use **Disable account** (Admin) on their
+profile: it ends their sessions and keeps them out, and **Enable account** brings them back. Do
+not use **Delete account** for that: the next time a Home Assistant user opens the sidebar, the
+add-on makes them a new, empty profile.
+
 Direct access from outside Home Assistant is off by default; when it is turned on, openGym's own
 sign-in (passkeys, or a password if `PASSWORD_LOGIN` is on) applies as usual.
 
@@ -48,7 +55,8 @@ sign-in (passkeys, or a password if `PASSWORD_LOGIN` is on) applies as usual.
 
 1. In Home Assistant: *Settings → Add-ons → Add-on store → ⋮ → Repositories*, add
    `https://github.com/Amantux/opengym-ha`, install **openGym** and start it.
-2. For the sensors and services, add the integration through HACS from the same repository, or
-   follow the add-on's Documentation tab if you do not use HACS.
+2. For the sensors and services, download the integration through HACS from the same repository,
+   restart Home Assistant, then accept the discovered openGym under *Settings → Devices &
+   services*. If you do not use HACS, follow the add-on's Documentation tab instead.
 
 For a standalone openGym that you run yourself, keep following [self-hosting](SELF_HOSTING.md).
