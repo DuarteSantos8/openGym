@@ -1731,6 +1731,7 @@ export const useStore = create((set, get) => {
         merged._ts = now
         merged.active = carryActive({ unit: next.unit, active: running }, merged)
         persist(merged, false)
+        if (get().ready) moveArchive()   // an older backup can still hold the Archive folder
         return
       }
       if (!mergeWith?.state || !uid) {
@@ -1742,6 +1743,7 @@ export const useStore = create((set, get) => {
         next.active = running
         const at = read?.rev != null ? { rev: read.rev, wid: read.state?._wid } : metaOf().base
         get().replaceState(next, !!uid, { baseRev: at?.rev ?? null, baseWid: at?.wid })
+        if (get().ready) moveArchive()
         return
       }
       const others = mergeWith.local ? mergeStates(cur, mergeWith.state) : mergeWith.state
@@ -1753,6 +1755,7 @@ export const useStore = create((set, get) => {
       merged.active = carryActive({ unit: next.unit, active: running }, merged)
       persist(merged, true)
       if (mergeWith.rev != null) writeSync(mergeWith.rev, 0, mergeWith.state?._wid)
+      if (get().ready) moveArchive()
     },
     // A replace that is meant to reach the server (backup import, reset) is a deliberate
     // overwrite, not a change to merge: the push it arms goes without a baseRev — or, given one

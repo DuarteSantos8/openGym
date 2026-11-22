@@ -58,6 +58,17 @@ describe('sign-in adoption', () => {
   })
 })
 
+describe('backup import', () => {
+  it('moves Archive-folder routines of an older backup at once, not on the next launch', () => {
+    useStore.setState({ S: { ...clone(DEF), _ts: 100 }, user: null, ready: true })
+    useStore.getState().importBackup({ ...clone(DEF), _ts: 50, routines: [routine('a', 'Archive')] })
+    const S = useStore.getState().S
+    expect(S.routines[0].archived).toBe(true)
+    expect(S.routines[0].folder).toBeUndefined()
+    expect(S.archiveMoved).toBe(true)
+  })
+})
+
 describe('language', () => {
   it('moves a German "Archiv" folder once the German words have loaded, not only on a later pull', async () => {
     const { setLang } = await import('../lib/i18n.js')
