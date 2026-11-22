@@ -1,5 +1,6 @@
 // Plan > Scan a QR code: what a scanned text is, and so which handler it goes to.
 import { describe, it, expect } from 'vitest'
+import { vi } from 'vitest'
 import { routeScannedText, shownText } from './scan-route.js'
 
 describe('routing a scanned code', () => {
@@ -23,11 +24,11 @@ describe('routing a scanned code', () => {
   })
 
   it('shows anything else back as it was read', () => {
-    expect(routeScannedText('4006381333931')).toEqual({ kind: 'unknown', text: '4006381333931' })
-    expect(routeScannedText('https://example.com/routines/a/')).toEqual({ kind: 'unknown', text: 'https://example.com/routines/a/' })
+    expect(routeScannedText('4006381333931')).toEqual({ kind: 'unknown', text: '4006381333931', code: 't:4006381333931' })
+    expect(routeScannedText('https://example.com/routines/a/')).toEqual({ kind: 'unknown', text: 'https://example.com/routines/a/', code: 't:https://example.com/routines/a/' })
     expect(routeScannedText('https://opengym.ch/r#not-a-payload')).toMatchObject({ kind: 'unknown' })
-    expect(routeScannedText('')).toEqual({ kind: 'unknown', text: '' })
-    expect(routeScannedText(undefined)).toEqual({ kind: 'unknown', text: '' })
+    expect(routeScannedText('')).toEqual({ kind: 'unknown', text: '', code: null })
+    expect(routeScannedText(undefined)).toEqual({ kind: 'unknown', text: '', code: null })
   })
 
   it('keeps what it shows short', () => {
@@ -35,5 +36,18 @@ describe('routing a scanned code', () => {
     const long = shownText('x'.repeat(200))
     expect(long.length).toBe(80)
     expect(long.endsWith('…')).toBe(true)
+  })
+})
+
+describe('routing a linked machine code', () => {
+  const S = { machineCodes: { '0150': ['t:https://brand.com/m/12'], '0025': ['t:opengym.ch/nfc?ex=0025'] } }
+  it('sends a linked text to its exercises', () => {
+    expect(routeScannedText('https://brand.com/m/12', { S })).toEqual({ kind: 'machine', code: 't:https://brand.com/m/12', ids: ['0150'] })
+  })
+  it('keeps openGym’s own sticker a tag even when linked', () => {
+    expect(routeScannedText('opengym.ch/nfc?ex=0025', { S })).toMatchObject({ kind: 'tag' })
+  })
+  it('leaves an unlinked text unknown, with its code', () => {
+    expect(routeScannedText('https://brand.com/m/99', { S })).toEqual({ kind: 'unknown', text: 'https://brand.com/m/99', code: 't:https://brand.com/m/99' })
   })
 })

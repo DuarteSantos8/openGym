@@ -12,11 +12,9 @@ import { platformNow } from '../lib/platform-now.js'
 import { tagUrl, parseTagUrl, routeTag, tagDebouncer } from '../lib/nfc-tags.js'
 import { nfcSupport, writeTag, cancelWrite, onTagLink } from '../lib/nfc.js'
 import { autoGymHere } from '../lib/gym-auto.js'
-import { freestyleConfig, pickedExerciseConfig, supersetUnits } from '../lib/history.js'
+import { supersetUnits } from '../lib/history.js'
 import { insertionIndexAfterCurrentUnit } from '../lib/supersetFlow.js'
-import { buildSessionEntry, builtOutOfProgression } from '../lib/session-start.js'
-import { joinSessionNoProg } from '../lib/session-noprog.js'
-import { sessionHistory } from '../lib/backfill.js'
+import { entryToAdd } from '../lib/session-add.js'
 import { startFlow, confirmSheet, exerciseDetailSheet } from '../sheets.jsx'
 import { Button, Section, Row } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -118,13 +116,8 @@ export function addExerciseToSession(id) {
     const A = s.active
     if (!A || !Array.isArray(A.entries)) return
     const curEntry = A.entries[A.cur]
-    const curRid = curEntry?.rid
-    const routine = curRid ? (s.routines || []).find(r => r.id === curRid) : null
-    const noProg = !!routine && builtOutOfProgression(curEntry, routine)
-    const cfg = routine ? pickedExerciseConfig(id, undefined, s) : freestyleConfig(sessionHistory(s), { id, ...pickedExerciseConfig(id, undefined, s) })
-    const built = buildSessionEntry(s, id, cfg, routine, curEntry)
     const at = insertionIndexAfterCurrentUnit(supersetUnits(A.entries), A.cur, A.entries.length)
-    A.entries.splice(at, 0, joinSessionNoProg(A, { id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))
+    A.entries.splice(at, 0, entryToAdd(s, id, curEntry))
     A.cur = at
     added = at
   })
