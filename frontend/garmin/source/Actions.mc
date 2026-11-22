@@ -160,6 +160,10 @@ module Actions {
         if (e == null) {
             return;
         }
+        // A set logged on the phone during the 3-2-1: no hold starts on it, it would log the set again.
+        if (G.hcd != null && G.hold == null) {
+            holdCancel();
+        }
         G.last = [e["id"], t[1], null];
         G.rated = null;
         if (G.fix != null || G.hold != null || G.hcd != null) {
