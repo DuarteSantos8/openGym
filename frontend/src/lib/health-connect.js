@@ -7,7 +7,7 @@
 // it instead of adding a second one, and anything openGym wrote can be found and removed again.
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
-import { isoOf } from './format.js'
+import { isoOf, weightDecimals } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
 import { activeKcal, bodyKgFor } from './active-energy.js'
@@ -203,7 +203,7 @@ export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = f
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   // `kcal`: the hub allows active energy, so every session carries its estimate. A change of that
   // permission changes the records, so the next sync writes them all again, with or without.
-  const o = { unit, nameOf, speedUnit, kcal, segments, customEx: S?.customEx, bw: kcal ? S?.bodyweight : null, i18n: getVersion() }
+  const o = { unit, nameOf, speedUnit, kcal, segments, customEx: S?.customEx, bw: kcal ? S?.bodyweight : null, i18n: getVersion(), dec: weightDecimals() }
   return {
     sessions: (S?.workouts || []).filter(w => !isImportedWorkout(w)).map(w => keptSession(S, w, o, now)).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
@@ -217,11 +217,12 @@ export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = f
 // A save runs this on every set tick, which changes S.active only: update() (store/useStore.js
 // draftOf) keeps every finished workout the same object, so its record and fingerprint are kept
 // here, and built again once anything they are made from changes: the workout, the unit, the
-// names and the language (i18n's version), the body weight log the calories come from. Nothing
-// changes a record once built (the plugin gets a copy), so its fingerprint holds as long as it does.
+// names and the language (i18n's version), the weight decimals (Settings), the body weight log
+// the calories come from. Nothing changes a record once built (the plugin gets a copy), so its
+// fingerprint holds as long as it does.
 const kept = new WeakMap()
 const keys = new WeakMap()
-const KEPT_BY = ['unit', 'nameOf', 'speedUnit', 'kcal', 'segments', 'customEx', 'bw', 'i18n']
+const KEPT_BY = ['unit', 'nameOf', 'speedUnit', 'kcal', 'segments', 'customEx', 'bw', 'i18n', 'dec']
 function keptSession(S, w, o, now) {
   const was = kept.get(w)
   if (was && KEPT_BY.every(k => was.o[k] === o[k])) return was.rec

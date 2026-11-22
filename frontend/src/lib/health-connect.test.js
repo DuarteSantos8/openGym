@@ -307,6 +307,15 @@ describe('the record of a finished workout is kept between saves', async () => {
     } finally { _setLangState('en') }
     expect(first()).toEqual(was)
   })
+  it('a switch to two weight decimals builds it again', async () => {
+    const { setWeightDecimals } = await import('./format.js')
+    const S2 = { ...S, workouts: [workout([{ ...strength, sets: [{ w: 60.25, r: 8, done: true }] }])] }
+    expect(healthRecords(S2, opts).sessions[0].notes).toContain('60.3')
+    try {
+      setWeightDecimals(2)
+      expect(healthRecords(S2, opts).sessions[0].notes).toContain('60.25')
+    } finally { setWeightDecimals(1) }
+  })
   it('a unit switch builds it again', () => {
     const lb = healthRecords({ ...S, unit: 'lb' }, opts).sessions[0]
     expect(lb).not.toBe(first())
