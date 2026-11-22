@@ -30,4 +30,10 @@ describe('Coach composer above the docked rest row', () => {
     expect(coach).toMatch(/:root\[data-platform="ios"\] body:has\(\.trow\.dock\) \.composer\{bottom:calc\(54px \+ var\(--sab\)\);padding-bottom:10px\}/)
     expect(coach).toMatch(/:root\[data-platform="ios"\] body:has\(\.trow\.dock\) \.chat\{padding-bottom:calc\(94px \+ var\(--sab\) \+ var\(--composer-extra,0px\)\)\}/)
   })
+  // A long hold name used to wrap the row onto two lines and cover the composer's lower controls.
+  it('the docked row stays one line, so the fixed lift is enough', () => {
+    expect(css).toMatch(/:root\[data-platform="ios"\] \.trow\.dock\{[^}]*\}/)
+    expect(css).not.toMatch(/\.trow\.dock\{[^}]*flex-wrap:wrap/)
+    expect(css).toMatch(/\.trow \.clk \.l \.n\{min-width:0;overflow:hidden;text-overflow:ellipsis\}/)
+  })
 })

@@ -29,6 +29,9 @@ let stepAt = 0
 export const newHold = () => ({ tm: null, held: false, stopAt: 0 })
 const shared = newHold() // set rows in Workout have no unmount cleanup and share this one
 export const stopHold = (h = shared) => { if (h.tm) h.stopAt = Date.now(); clearTimeout(h.tm); h.tm = null }
+/** Set rows are keyed by index: rows that shift under a press leave its button standing for another
+ *  set, so the click that ends that press is swallowed too (held, with no time limit). */
+export const dropHold = (h = shared) => { const pressed = !!h.tm; stopHold(h); if (pressed) { h.held = true; h.stopAt = Infinity } }
 
 /** One step of a stepper, wherever it came from (tap, hold, arrow key, VoiceOver). `step(dir)`
  *  answers false when the value is at its limit: that is one light haptic and the hold stops. */

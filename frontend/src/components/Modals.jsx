@@ -83,9 +83,11 @@ function Sheet({ sheet }) {
   const asMenu = ios && sheet.kind === 'menu' && !!sheet.anchor?.isConnected
   const born = ios && !!sheet.born && !reduced() && !!document.getElementById('tabbar')
   const seen = useRef(new Map())
+  const locked = useRef(sheet.locked)
+  locked.current = sheet.locked   // the guard below is registered once, on mount; lock(false) must still reach it
   // iPhone: the surface is a named dialog, focus goes into it and back to what opened it, a
   // tap on the dim or Esc close it unless it holds an edit, a born sheet goes back into the bar.
-  const stuck = () => sheet.locked || (ios && edited(ref.current, seen.current))
+  const stuck = () => locked.current || (ios && edited(ref.current, seen.current))
   const dismiss = () => {
     if (stuck()) return
     const el = ref.current, box = born && el && barBox(el)
@@ -297,6 +299,14 @@ function Sheet({ sheet }) {
   )
 }
 
+// Numbered one past the page's, as the router numbers a push: a page that takes this entry over
+// (closeThenNav) or is pushed after it gets its index from it, and Settings' back reads that index
+// to tell whether there is a page to go back to.
+function pushSheetEntry() {
+  const idx = history.state?.idx
+  history.pushState(typeof idx === 'number' ? { openGymSheet: true, idx: idx + 1 } : { openGymSheet: true }, '')
+}
+
 export default function Modals() {
   const sheets = useUI(s => s.sheets)
   const closeSheet = useUI(s => s.closeSheet)
@@ -315,11 +325,7 @@ export default function Modals() {
     if (sheets.length > prev) {
       for (let i = prev; i < sheets.length; i++) {
         sheetEntries.current.push({ openedAt: location.href, live: true })
-        // Numbered one past the page's, as the router numbers a push: a page that takes this
-        // entry over (closeThenNav) or is pushed after it gets its index from it, and Settings'
-        // back reads that index to tell whether there is a page to go back to.
-        const idx = history.state?.idx
-        history.pushState(typeof idx === 'number' ? { openGymSheet: true, idx: idx + 1 } : { openGymSheet: true }, '')
+        pushSheetEntry()
         pushedEntries.current++
       }
     } else if (sheets.length < prev) {
@@ -344,14 +350,17 @@ export default function Modals() {
       // The browser has already spent one pushed entry. Mark the latest live active
       // sheet entry spent even when the sheet is locked; with no active entry this is a
       // moved-on leak, which is still accounted for by the counter decrement above.
-      for (let i = sheetEntries.current.length - 1; i >= 0; i--) {
-        if (sheetEntries.current[i].live) {
-          sheetEntries.current[i].live = false
-          break
-        }
-      }
+      let spent = null
+      for (let i = sheetEntries.current.length - 1; i >= 0 && !spent; i--) if (sheetEntries.current[i].live) spent = sheetEntries.current[i]
+      if (spent) spent.live = false
       const top = sheets[sheets.length - 1]
-      if (top && !top.locked && !stuckById.get(top.id)?.()) closeSheet(top.id)
+      if (!top || top.locked) return
+      if (!stuckById.get(top.id)?.()) { closeSheet(top.id); return }
+      // An edit keeps the sheet: give back the entry Back just spent, so the next Back asks again
+      // instead of leaving the page behind the sheet.
+      pushSheetEntry()
+      pushedEntries.current++
+      if (spent) spent.live = true
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)

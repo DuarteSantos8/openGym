@@ -32,7 +32,8 @@ let lastBrowse = { key: null }
 export default function Library() {
   const nav = useNavigate()
   const loc = useLocation()
-  const [key] = useState(() => (loc.key && loc.key !== 'default' && loc.key !== 'back-preview' ? loc.key : window.history.state?.key || null))
+  // "default" is the router's name for the first entry of a fresh load: a real entry all the same
+  const [key] = useState(() => (loc.key && loc.key !== 'back-preview' ? loc.key : window.history.state?.key || null))
   const was = key && lastBrowse.key === key ? lastBrowse : {}
   const S = useStore(s => s.S)
   // The server's community library (views/Community.jsx), where it has one.
