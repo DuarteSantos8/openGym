@@ -106,7 +106,8 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             for other in all where other.attributes.wid != attributes.wid {
                 await other.end(nil, dismissalPolicy: .immediate)
             }
-            if let mine = all.first(where: { $0.attributes.wid == attributes.wid && $0.activityState == .active }) {
+            // A rest past its staleDate leaves the activity .stale; it is still this workout's, so update it, not a second one.
+            if let mine = all.first(where: { $0.attributes.wid == attributes.wid && ($0.activityState == .active || $0.activityState == .stale) }) {
                 // This state's turn, for a button only the page can draw that waits for its answer
                 // (WorkoutActivity.swift LiveAnswer). Counted before the check below, and such a
                 // button reads the count after it queued its tap: a state counted later than that
