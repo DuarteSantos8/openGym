@@ -5878,4 +5878,5 @@ export default {
   "{0} spm": "{0} kroků/min",
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} kroků",
+  "Avg speed": "Prům. rychlost",
 }

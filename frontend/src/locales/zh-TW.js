@@ -1670,7 +1670,7 @@ export default {
   'Download & Install': '下載並安裝',
   'Update failed: {0}': '更新失敗：{0}',
   'Check for updates': '檢查更新',
-  'Checking…': '正在檢查更新…',
+  'Checking…': '正在檢查…',
   'You have v{0}': '目前版本 v{0}',
   'Update to openGym v{0}': '更新至 openGym v{0}',
   'You have the latest version.': '已是最新版本。',
@@ -5905,4 +5905,5 @@ export default {
   "{0} spm": "{0} 步/分鐘",
   "{0} kcal": "{0} 大卡",
   "{0} steps": "{0} 步",
+  "Avg speed": "平均速度",
 }

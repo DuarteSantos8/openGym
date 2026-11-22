@@ -5915,4 +5915,5 @@ export default {
   "{0} spm": "{0} lépés/perc",
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} lépés",
+  "Avg speed": "Átlagsebesség",
 }

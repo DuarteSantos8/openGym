@@ -42,7 +42,7 @@ function RecoverySpecs({ S, spec, min, update }) {
   const available = []
   if (spec.km > 0) available.push({ k: 'km', label: t('Distance'), val: distText(S, spec.km) })
   if (pace) available.push({ k: 'pace', label: t('Pace'), val: pace })
-  if (speedText) available.push({ k: 'speed', label: t('Speed'), val: speedText, sub: maxSpeedText ? `${t('Max')} ${maxSpeedText}` : null })
+  if (speedText) available.push({ k: 'speed', label: t('Avg speed'), val: speedText, sub: maxSpeedText ? `${t('Max')} ${maxSpeedText}` : null })
   if (spec.steps > 0) available.push({ k: 'steps', label: t('Steps'), val: fmtNum(spec.steps) })
   if (cadence) available.push({ k: 'cadence', label: t('Cadence'), val: t('{0} spm', fmtNum(cadence)) })
   if (spec.hr?.avg > 0) {

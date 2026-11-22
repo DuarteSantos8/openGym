@@ -5912,4 +5912,5 @@ export default {
   "{0} spm": "{0} kr./min",
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} kroków",
+  "Avg speed": "Śr. prędkość",
 }

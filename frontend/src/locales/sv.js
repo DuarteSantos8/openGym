@@ -5959,4 +5959,5 @@ export default {
   "{0} spm": "{0} steg/min",
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} steg",
+  "Avg speed": "Snitthastighet",
 }

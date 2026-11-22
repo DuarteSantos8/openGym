@@ -5878,4 +5878,5 @@ export default {
   "{0} spm": "{0} bước/phút",
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} bước",
+  "Avg speed": "Tốc độ TB",
 };

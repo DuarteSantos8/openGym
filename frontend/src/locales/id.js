@@ -5877,4 +5877,5 @@ export default {
   "{0} spm": "{0} lpm",
   "{0} kcal": "{0} kkal",
   "{0} steps": "{0} langkah",
+  "Avg speed": "Kecepatan rata-rata",
 };

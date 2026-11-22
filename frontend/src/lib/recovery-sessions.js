@@ -30,7 +30,7 @@ export const RECOVERY_METRIC_KEYS = ['km', 'pace', 'speed', 'steps', 'cadence', 
 export const RECOVERY_METRIC_LABEL = {
   km: 'Distance',
   pace: 'Pace',
-  speed: 'Speed',
+  speed: 'Avg speed',
   steps: 'Steps',
   cadence: 'Cadence',
   hr: 'Heart rate',

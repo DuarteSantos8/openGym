@@ -5908,4 +5908,5 @@ export default {
   "{0} spm": "{0} žing./min.",
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} žingsn.",
+  "Avg speed": "Vid. greitis",
 }

@@ -362,25 +362,37 @@ describe('day workouts for recovery suggestions', () => {
 
   it('does not cache or clobber pending reads when clearDayWorkoutsCache runs mid-flight', async () => {
     h.granted = { exercise: true }
-    let releaseFirst
-    let call = 0
-    h.workoutsHook = async () => {
-      call++
-      if (call === 1) return new Promise(resolve => { releaseFirst = () => resolve({ records: [] }) })
-      return { records: [walk] }
-    }
+    const resolvers = []
+    h.workoutsHook = async () => new Promise(resolve => { resolvers.push(resolve) })
     try {
+      // Case 1: p1 finishes while p2 is still pending -> p1 must not remove p2 from dayWorkoutPending.
       const p1 = hs.readDayWorkouts(day, S)
-      // Wait for p1 to enter readWorkouts
-      await vi.waitFor(() => expect(releaseFirst).toBeTypeOf('function'))
+      await vi.waitFor(() => expect(resolvers).toHaveLength(1))
       hs.clearDayWorkoutsCache()
       const p2 = hs.readDayWorkouts(day, S)
-      releaseFirst()
+      await vi.waitFor(() => expect(resolvers).toHaveLength(2))
+      resolvers[0]({ records: [] })
       expect(await p1).toEqual({ records: [], src: 'hc' })
-      expect(await p2).toEqual({ records: [walk], src: 'hc' })
-      // Next call must see the post-invalidation result from p2, not stale p1.
-      expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [walk], src: 'hc' })
+      // p3 must share the still-pending p2 rather than triggering a third native read.
+      const p3 = hs.readDayWorkouts(day, S)
       expect(reads('readWorkouts')).toHaveLength(2)
+      resolvers[1]({ records: [walk] })
+      expect(await p2).toEqual({ records: [walk], src: 'hc' })
+      expect(await p3).toEqual({ records: [walk], src: 'hc' })
+
+      // Case 2: stale read resolves AFTER a newer read has already cached -> must not overwrite cache.
+      hs.clearDayWorkoutsCache()
+      const stale = hs.readDayWorkouts(day, S)
+      await vi.waitFor(() => expect(resolvers).toHaveLength(3))
+      hs.clearDayWorkoutsCache()
+      const fresh = hs.readDayWorkouts(day, S)
+      await vi.waitFor(() => expect(resolvers).toHaveLength(4))
+      resolvers[3]({ records: [walk] })
+      expect(await fresh).toEqual({ records: [walk], src: 'hc' })
+      resolvers[2]({ records: [] })
+      expect(await stale).toEqual({ records: [], src: 'hc' })
+      expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [walk], src: 'hc' })
+      expect(reads('readWorkouts')).toHaveLength(4)
     } finally {
       h.workoutsHook = null
     }
