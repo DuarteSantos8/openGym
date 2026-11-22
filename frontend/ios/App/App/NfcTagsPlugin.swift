@@ -219,9 +219,9 @@ extension NfcTagsPlugin: NFCTagReaderSessionDelegate {
     public func tagReaderSessionDidBecomeActive(_ session: NFCTagReaderSession) {}
 
     public func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
-        // Cancel on the sheet, its timeout, or our own invalidate after a read (settled by then).
-        let code = (error as? NFCReaderError)?.code
-        let cancelled = code == .readerSessionInvalidationErrorUserCanceled || code == .readerSessionInvalidationErrorSessionTimeout
+        // Only Cancel on the sheet is cancelled; a timeout fails, so the page offers the QR code.
+        // Our own invalidate after a read ends here too, settled by then.
+        let cancelled = (error as? NFCReaderError)?.code == .readerSessionInvalidationErrorUserCanceled
         DispatchQueue.main.async {
             // A session replaced by a newer read ends later: its end is not the new one's.
             guard self.tagSession === session else { return }
