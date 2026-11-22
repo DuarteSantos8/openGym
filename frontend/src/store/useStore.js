@@ -33,6 +33,7 @@ import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent, NEW_ACCENT } from '../lib/accent.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
+import { pushSupported, disablePush } from '../lib/push.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -1267,6 +1268,13 @@ export const useStore = create((set, get) => {
       ui.stopRest?.()
     } catch { /* no timers to stop */ }
   }
+  // A signed-out browser must stop getting the account's reminders and rest alerts. Web only (the
+  // phones have no service worker), skipped where notifications were never allowed, and a failure
+  // never holds up the sign-out (a row whose browser side did go is pruned on the server's next send).
+  const dropPush = async () => {
+    if (MOBILE || !pushSupported() || Notification.permission !== 'granted') return
+    await disablePush().catch(() => {})
+  }
 
   // Back on the server and account a forced sign-out or disconnect left: the kept changes are
   // merged in like a conflict (lib/sync-merge.js), marked owed and pushed, and the stash goes.
@@ -2060,6 +2068,7 @@ export const useStore = create((set, get) => {
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
       let out = null
+      await dropPush()   // while the session can still tell the server which row is this browser's
       try { out = await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
@@ -2127,6 +2136,7 @@ export const useStore = create((set, get) => {
       if (left.owed && !force) return owedResult(left)
       await stopTimers()
       await api('/api/logout/all', { method: 'POST', body: '{}' })
+      await dropPush()   // the server dropped every row of the account; this ends the browser's side
       if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       await clearLocalSession()
