@@ -5922,7 +5922,7 @@ export default {
   "{0} of {1} sets done": "{0} séries sur {1} terminées",
   "Watch connected": "Montre connectée",
   "Watch reconnecting": "Montre en reconnexion",
-  "No watch linked": "Aucune montre connectée",
+  "No watch linked": "Aucune montre associée",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Personnaliser",
   "Collapsed": "Repliée",
