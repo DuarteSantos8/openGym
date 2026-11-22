@@ -185,19 +185,12 @@ struct SetPanel: View {
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
     private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
         let side = fixing ? store.fixSide : row.sideUp
-        let failure = row.failure == true
-        let drop = row.drop != nil || row.drops != nil
-        // The words when they fit; at 41 mm when the line is crowded, glyph-only discs.
-        return ViewThatFits(in: .horizontal) {
-            tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: true)
-            tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: false)
-        }
+        return tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner)
         .padding(.leading, 5)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
-    private func tagLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, side: String?, partner: String?,
-                         failure: Bool, drop: Bool, words: Bool) -> some View {
+    private func tagLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, side: String?, partner: String?) -> some View {
         HStack(spacing: 4) {
             // "Set 2 of 4" is the top row's pill now (SetPill).
             // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
@@ -739,40 +732,6 @@ struct AnyLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View { make(configuration) }
 }
 
-
-/// Failure (red, bolt) or Drop (near-white, step down) on the set page; glyph-only disc when crowded.
-struct SetTypeTag: View {
-    enum Kind { case failure, drop }
-    let kind: Kind
-    let words: Bool
-    let dimmed: Bool
-
-    private var color: Color { kind == .failure ? Theme.red : Color(white: 0.96) }
-    @ViewBuilder private func glyph(_ size: CGFloat) -> some View {
-        if kind == .failure { Image(systemName: "bolt.fill").font(.system(size: size, weight: .bold)) } else { StepDownGlyph(size: size) }
-    }
-
-    var body: some View {
-        let label = kind == .failure ? Text("Failure") : Text("Drop")
-        Group {
-            if words {
-                HStack(spacing: 2) {
-                    glyph(9)
-                    label.font(TypeScale.label).lineLimit(1)
-                }
-                .padding(.horizontal, 5).padding(.vertical, 1)
-            } else {
-                glyph(11).frame(width: 20, height: 20)
-            }
-        }
-        // Always On: outlines instead of fills.
-        .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
-        .background(Capsule().fill(dimmed ? Color.clear : color))
-        .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1 : 0))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(kind == .failure ? Text("Taken to failure") : Text("Drop set"))
-    }
-}
 
 /// The Drop mark: a step down, as in the set-types mockup (SF Symbols has no stairs). Drawn in the
 /// text colour, `size` is the font size it stands beside.
