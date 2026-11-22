@@ -5900,4 +5900,11 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Min": "Min",
+  "Cadence": "Lépésszám/perc",
+  "Elevation": "Szintemelkedés",
+  "Floors": "Emeletek",
+  "Splits": "Részidők",
+  "Recovery details": "Regeneráció részletei",
+  "Choose which recorded metrics appear on recovery sessions.": "Válaszd ki, mely rögzített adatok jelenjenek meg a regenerációs alkalmaknál.",
 }

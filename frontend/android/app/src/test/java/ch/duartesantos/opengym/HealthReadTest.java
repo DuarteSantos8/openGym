@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.WeightRecord;
 import androidx.health.connect.client.records.metadata.DataOrigin;
@@ -75,6 +76,27 @@ public class HealthReadTest {
         assertEquals("android.permission.health.READ_RESTING_HEART_RATE", HealthRead.readPermission("restingHeartRate"));
         assertEquals("android.permission.health.READ_HEART_RATE_VARIABILITY", HealthRead.readPermission("hrv"));
         assertEquals("android.permission.health.READ_STEPS", HealthRead.readPermission("steps"));
+        assertEquals("android.permission.health.READ_EXERCISE", HealthRead.readPermission("exercise"));
+        assertEquals("android.permission.health.READ_DISTANCE", HealthRead.readPermission("distance"));
+        assertEquals("android.permission.health.READ_ACTIVE_CALORIES_BURNED", HealthRead.readPermission("calories"));
+        assertEquals("android.permission.health.READ_TOTAL_CALORIES_BURNED", HealthRead.readPermission("totalCalories"));
+        assertEquals("android.permission.health.READ_ELEVATION_GAINED", HealthRead.readPermission("elevation"));
+        assertEquals("android.permission.health.READ_SPEED", HealthRead.readPermission("speed"));
+        assertEquals("android.permission.health.READ_STEPS_CADENCE", HealthRead.readPermission("cadence"));
+        assertEquals("android.permission.health.READ_FLOORS_CLIMBED", HealthRead.readPermission("floors"));
         assertNull(HealthRead.readPermission("menstruation"));
+    }
+
+    @Test
+    public void sportNamesSeparateWalkAndStretchFromGymAndSports() {
+        assertEquals("walk", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_WALKING));
+        assertEquals("walk", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR));
+        assertEquals("stretch", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING));
+        assertEquals("gym", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL));
+        assertEquals("gym", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL));
+        assertEquals("gym", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING));
+        assertEquals("strength", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING));
+        assertEquals("run", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_RUNNING));
+        assertEquals("other", HealthRead.sportName(ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT));
     }
 }

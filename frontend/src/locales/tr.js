@@ -5897,4 +5897,11 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Min": "Min",
+  "Cadence": "Kadans",
+  "Elevation": "Yükselti",
+  "Floors": "Kat",
+  "Splits": "Bölümler",
+  "Recovery details": "Toparlanma ayrıntıları",
+  "Choose which recorded metrics appear on recovery sessions.": "Toparlanma seanslarında hangi kayıtlı ölçümlerin görüneceğini seçin.",
 }

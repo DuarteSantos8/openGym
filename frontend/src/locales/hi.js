@@ -5897,4 +5897,11 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Min": "न्यूनतम",
+  "Cadence": "कैडेंस",
+  "Elevation": "ऊंचाई",
+  "Floors": "मंज़िलें",
+  "Splits": "स्प्लिट्स",
+  "Recovery details": "रिकवरी विवरण",
+  "Choose which recorded metrics appear on recovery sessions.": "चुनें कि रिकवरी सत्रों में कौन-से रिकॉर्ड किए गए आँकड़े दिखाई दें।",
 }

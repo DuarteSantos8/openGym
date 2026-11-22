@@ -13,17 +13,30 @@ import androidx.health.connect.client.records.BasalMetabolicRateRecord;
 import androidx.health.connect.client.records.BodyFatRecord;
 import androidx.health.connect.client.records.BoneMassRecord;
 import androidx.health.connect.client.records.BodyWaterMassRecord;
+import androidx.health.connect.client.records.DistanceRecord;
+import androidx.health.connect.client.records.ElevationGainedRecord;
+import androidx.health.connect.client.records.ExerciseLap;
+import androidx.health.connect.client.records.FloorsClimbedRecord;
 import androidx.health.connect.client.records.LeanBodyMassRecord;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.WeightRecord;
 import androidx.health.connect.client.records.SleepSessionRecord;
+import androidx.health.connect.client.records.SpeedRecord;
 import androidx.health.connect.client.records.RestingHeartRateRecord;
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord;
+import androidx.health.connect.client.records.StepsCadenceRecord;
 import androidx.health.connect.client.records.StepsRecord;
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
+import androidx.health.connect.client.aggregate.AggregateMetric;
+import androidx.health.connect.client.aggregate.AggregationResult;
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod;
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest;
+import androidx.health.connect.client.request.AggregateRequest;
+import androidx.health.connect.client.units.Energy;
+import androidx.health.connect.client.units.Length;
+import androidx.health.connect.client.units.Velocity;
 import androidx.health.connect.client.records.metadata.Metadata;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.response.ReadRecordsResponse;
@@ -112,8 +125,16 @@ public class HealthConnectPlugin extends Plugin {
     private static final String READ_RESTING_HR = "android.permission.health.READ_RESTING_HEART_RATE";
     private static final String READ_HRV = "android.permission.health.READ_HEART_RATE_VARIABILITY";
     private static final String READ_STEPS = "android.permission.health.READ_STEPS";
-    // Sport (v1.4.5, gm-hooks): other apps' exercise sessions, read as activities (lib/activities.js).
+    // Sport (v1.4.5, gm-hooks): other apps' exercise sessions, read as activities (lib/activities.js)
+    // and recovery suggestions (lib/recovery-sessions.js). Extra session metrics are optional.
     private static final String READ_EXERCISE = "android.permission.health.READ_EXERCISE";
+    private static final String READ_DISTANCE = "android.permission.health.READ_DISTANCE";
+    private static final String READ_CALORIES = "android.permission.health.READ_ACTIVE_CALORIES_BURNED";
+    private static final String READ_TOTAL_CALORIES = "android.permission.health.READ_TOTAL_CALORIES_BURNED";
+    private static final String READ_ELEVATION = "android.permission.health.READ_ELEVATION_GAINED";
+    private static final String READ_SPEED = "android.permission.health.READ_SPEED";
+    private static final String READ_CADENCE = "android.permission.health.READ_STEPS_CADENCE";
+    private static final String READ_FLOORS = "android.permission.health.READ_FLOORS_CLIMBED";
     // Records per page when reading, and pages at most: a few hours of heart rate fit easily.
     private static final int PAGE = 1000;
     private static final int MAX_PAGES = 50;
@@ -505,10 +526,10 @@ public class HealthConnectPlugin extends Plugin {
     }
 
     /**
-     * Exercise sessions since `since` (ms) that any app saved, openGym's own included (JS skips
-     * those, lib/activities.js isOwnRecord), with the sport as lib/activities.js names it
-     * (HealthRead.sportName). Only with READ_EXERCISE granted; distance needs a permission of its
-     * own and is left out.
+     * Exercise sessions since `since` (ms), or in [since, until] when `until` is passed, that
+     * any app saved, openGym's own included (JS skips those, lib/activities.js isOwnRecord), with
+     * the sport as lib/activities.js names it (HealthRead.sportName). When `details` is true, also
+     * aggregates any granted distance, calories, steps, and heart-rate metrics for each session.
      */
     @PluginMethod
     public void readWorkouts(PluginCall call) {
@@ -521,20 +542,67 @@ public class HealthConnectPlugin extends Plugin {
             call.reject("since is needed", "failed");
             return;
         }
+        Long until = millis(call, "until");
+        boolean details = Boolean.TRUE.equals(call.getBoolean("details", false));
+        Set<String> sportsFilter = new HashSet<>();
+        JSArray sportsArr = call.getArray("sports", null);
+        if (sportsArr != null) {
+            for (int i = 0; i < sportsArr.length(); i++) {
+                String s = sportsArr.optString(i, "");
+                if (!s.isEmpty()) sportsFilter.add(s);
+            }
+        }
+        String myPkg = getContext().getPackageName();
         worker.execute(() -> {
             try {
                 JSArray records = new JSArray();
-                if (granted().contains(READ_EXERCISE)) {
-                    for (ExerciseSessionRecord r : read(ExerciseSessionRecord.class, TimeRangeFilter.after(Instant.ofEpochMilli(since)))) {
+                Set<String> got = granted();
+                if (got.contains(READ_EXERCISE)) {
+                    TimeRangeFilter range = (until != null && until > since)
+                            ? TimeRangeFilter.between(Instant.ofEpochMilli(since), Instant.ofEpochMilli(until))
+                            : TimeRangeFilter.after(Instant.ofEpochMilli(since));
+                    Set<AggregateMetric<?>> metrics = details ? sessionMetrics(got) : Collections.emptySet();
+                    for (ExerciseSessionRecord r : read(ExerciseSessionRecord.class, range)) {
+                        String sport = HealthRead.sportName(r.getExerciseType());
+                        if (!sportsFilter.isEmpty() && !sportsFilter.contains(sport)) continue;
                         Metadata m = r.getMetadata();
                         JSObject o = new JSObject();
                         o.put("id", m.getId());
-                        o.put("sport", HealthRead.sportName(r.getExerciseType()));
+                        o.put("sport", sport);
                         o.put("start", r.getStartTime().toEpochMilli());
                         o.put("end", r.getEndTime().toEpochMilli());
                         if (r.getTitle() != null) o.put("title", r.getTitle());
-                        o.put("origin", m.getDataOrigin().getPackageName());
-                        if (m.getClientRecordId() != null) o.put("clientId", m.getClientRecordId());
+                        if (r.getNotes() != null && !r.getNotes().trim().isEmpty()) o.put("notes", r.getNotes().trim());
+                        String origin = m.getDataOrigin().getPackageName();
+                        o.put("origin", origin);
+                        String appLabel = appLabel(origin);
+                        if (appLabel != null && !appLabel.isEmpty()) o.put("sourceName", appLabel);
+                        String cid = m.getClientRecordId();
+                        if (cid != null) o.put("clientId", cid);
+                        boolean own = (cid != null && cid.startsWith("opengym-"))
+                                || origin.equals(myPkg) || origin.startsWith("ch.duartesantos.opengym");
+                        if (details && !own) {
+                            List<ExerciseLap> rawLaps = r.getLaps();
+                            if (rawLaps != null && !rawLaps.isEmpty()) {
+                                JSArray laps = new JSArray();
+                                int limit = Math.min(rawLaps.size(), 50);
+                                for (int i = 0; i < limit; i++) {
+                                    ExerciseLap lap = rawLaps.get(i);
+                                    long sec = Duration.between(lap.getStartTime(), lap.getEndTime()).getSeconds();
+                                    if (sec < 1) continue;
+                                    JSObject lo = new JSObject();
+                                    lo.put("sec", sec);
+                                    if (lap.getLength() != null && lap.getLength().getKilometers() > 0) {
+                                        lo.put("km", lap.getLength().getKilometers());
+                                    }
+                                    laps.put(lo);
+                                }
+                                if (laps.length() > 0) o.put("laps", laps);
+                            }
+                            if (!metrics.isEmpty() && r.getEndTime().isAfter(r.getStartTime())) {
+                                addSessionMetrics(o, metrics, r.getStartTime(), r.getEndTime());
+                            }
+                        }
                         records.put(o);
                     }
                 }
@@ -547,6 +615,73 @@ public class HealthConnectPlugin extends Plugin {
                 call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
+    }
+
+    private static Set<AggregateMetric<?>> sessionMetrics(Set<String> got) {
+        Set<AggregateMetric<?>> m = new HashSet<>();
+        if (got.contains(READ_DISTANCE)) m.add(DistanceRecord.DISTANCE_TOTAL);
+        if (got.contains(READ_CALORIES)) m.add(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL);
+        if (got.contains(READ_TOTAL_CALORIES)) m.add(TotalCaloriesBurnedRecord.ENERGY_TOTAL);
+        if (got.contains(READ_STEPS)) m.add(StepsRecord.COUNT_TOTAL);
+        if (got.contains(READ_ELEVATION)) m.add(ElevationGainedRecord.ELEVATION_GAINED_TOTAL);
+        if (got.contains(READ_SPEED)) {
+            m.add(SpeedRecord.SPEED_AVG);
+            m.add(SpeedRecord.SPEED_MAX);
+        }
+        if (got.contains(READ_CADENCE)) m.add(StepsCadenceRecord.RATE_AVG);
+        if (got.contains(READ_FLOORS)) m.add(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL);
+        if (got.contains(READ_HEART_RATE)) {
+            m.add(HeartRateRecord.BPM_AVG);
+            m.add(HeartRateRecord.BPM_MIN);
+            m.add(HeartRateRecord.BPM_MAX);
+        }
+        return m;
+    }
+
+    private void addSessionMetrics(JSObject o, Set<AggregateMetric<?>> metrics, Instant start, Instant end) {
+        try {
+            AggregateRequest req = new AggregateRequest(metrics, TimeRangeFilter.between(start, end), Collections.emptySet());
+            AggregationResult res = (AggregationResult) BuildersKt.runBlocking(
+                    EmptyCoroutineContext.INSTANCE, (scope, cont) -> client().aggregate(req, cont));
+            Length dist = res.get(DistanceRecord.DISTANCE_TOTAL);
+            if (dist != null && dist.getKilometers() > 0) o.put("km", dist.getKilometers());
+            Energy active = res.get(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL);
+            Energy total = res.get(TotalCaloriesBurnedRecord.ENERGY_TOTAL);
+            double kcal = active != null && active.getKilocalories() > 0 ? active.getKilocalories()
+                    : (total != null && total.getKilocalories() > 0 ? total.getKilocalories() : 0);
+            if (kcal > 0) o.put("kcal", Math.round(kcal));
+            Long steps = res.get(StepsRecord.COUNT_TOTAL);
+            if (steps != null && steps > 0) o.put("steps", steps);
+            Length elev = res.get(ElevationGainedRecord.ELEVATION_GAINED_TOTAL);
+            if (elev != null && elev.getMeters() > 0) o.put("elev", Math.round(elev.getMeters()));
+            Velocity sAvg = res.get(SpeedRecord.SPEED_AVG);
+            if (sAvg != null && sAvg.getKilometersPerHour() > 0) o.put("speedAvg", sAvg.getKilometersPerHour());
+            Velocity sMax = res.get(SpeedRecord.SPEED_MAX);
+            if (sMax != null && sMax.getKilometersPerHour() > 0) o.put("speedMax", sMax.getKilometersPerHour());
+            Double cad = res.get(StepsCadenceRecord.RATE_AVG);
+            if (cad != null && cad > 0) o.put("cadence", Math.round(cad));
+            Double floors = res.get(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL);
+            if (floors != null && floors > 0) o.put("floors", floors);
+            Long hrAvg = res.get(HeartRateRecord.BPM_AVG);
+            if (hrAvg != null && hrAvg >= HealthRead.BPM_MIN && hrAvg <= HealthRead.BPM_MAX) o.put("hrAvg", hrAvg);
+            Long hrMin = res.get(HeartRateRecord.BPM_MIN);
+            if (hrMin != null && hrMin >= HealthRead.BPM_MIN && hrMin <= HealthRead.BPM_MAX) o.put("hrMin", hrMin);
+            Long hrMax = res.get(HeartRateRecord.BPM_MAX);
+            if (hrMax != null && hrMax >= HealthRead.BPM_MIN && hrMax <= HealthRead.BPM_MAX) o.put("hrMax", hrMax);
+        } catch (Throwable ignored) {
+            // Optional session specs: a failure here never hides the session itself.
+        }
+    }
+
+    private String appLabel(String pkg) {
+        if (pkg == null || pkg.isEmpty()) return null;
+        try {
+            android.content.pm.PackageManager pm = getContext().getPackageManager();
+            CharSequence label = pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0));
+            return label != null ? label.toString().trim() : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     private static JSObject span(Instant s, Instant e, int awake) {

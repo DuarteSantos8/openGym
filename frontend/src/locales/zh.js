@@ -5897,4 +5897,11 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  "Min": "最低",
+  "Cadence": "步频",
+  "Elevation": "爬升",
+  "Floors": "楼层",
+  "Splits": "分段",
+  "Recovery details": "恢复详情",
+  "Choose which recorded metrics appear on recovery sessions.": "选择在恢复记录中显示哪些已记录的指标。",
 }

@@ -5863,4 +5863,11 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Min": "Min",
+  "Cadence": "Kadence",
+  "Elevation": "Převýšení",
+  "Floors": "Patra",
+  "Splits": "Mezičasy",
+  "Recovery details": "Podrobnosti regenerace",
+  "Choose which recorded metrics appear on recovery sessions.": "Vyberte, které zaznamenané metriky se zobrazí u regenerace.",
 }

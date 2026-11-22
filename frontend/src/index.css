@@ -3023,6 +3023,35 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 /* A recovery session's row (components/RecoverySheet.jsx): the teal of its calendar dot. */
 .rec-i{background:color-mix(in srgb,var(--teal) 16%,transparent);color:var(--teal-ink)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.rec-i{background:var(--surface-3)}}
+/* Detected Health Connect / Apple Health sessions inside RecoverySheet. */
+.rec-picks{display:grid;gap:6px;margin-bottom:12px}
+.rec-pick{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast),box-shadow var(--fast)}
+.rec-pick:active{background:var(--press-fill)}
+.rec-pick.on{background:var(--acc-soft);box-shadow:inset 0 0 0 1.5px var(--acc)}
+.rec-pick-i{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;font-size:1rem}
+.rec-pick.on .rec-pick-i{background:var(--acc);color:var(--on-acc)}
+.rec-pick-txt{display:grid;gap:1px;min-width:0}
+.rec-pick-t{font-size:var(--fs-subhead);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-pick-s{font-size:var(--fs-footnote);color:var(--label-2);font-variant-numeric:tabular-nums;line-height:var(--lh-small)}
+.rec-specs{padding:10px 12px;border-radius:var(--r);background:var(--surface);margin-bottom:12px}
+.rec-specs-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rec-specs-btn{flex:none;display:inline-grid;place-items:center;width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--label-2);cursor:pointer;position:relative;touch-action:manipulation}
+.rec-specs-btn::before{content:'';position:absolute;inset:-8px}
+.rec-specs-btn.on,.rec-specs-btn:active{background:var(--surface-2);color:var(--label)}
+.rec-metric-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rec-set-chips{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px}
+.rec-specs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:10px 12px;margin-top:8px}
+.rec-spec-cell{display:grid;gap:1px;min-width:0}
+.rec-spec-k{font-size:var(--fs-caption);color:var(--label-2)}
+.rec-spec-cell b{font-size:var(--fs-subhead);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
+.rec-spec-s{font-size:var(--fs-caption);color:var(--label-3);font-variant-numeric:tabular-nums}
+.rec-laps{margin-top:10px;padding-top:8px;border-top:1px solid var(--sep)}
+.rec-laps-list{display:flex;flex-wrap:wrap;gap:6px}
+.rec-lap{font-size:var(--fs-caption);color:var(--label-2);background:var(--surface-2);padding:3px 7px;border-radius:6px;font-variant-numeric:tabular-nums}
+.rec-checking{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;border-radius:var(--r);background:var(--surface);font-size:var(--fs-footnote);color:var(--label-2)}
+.rec-spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--surface-3);border-top-color:var(--acc);animation:rec-spin .8s linear infinite;flex:none}
+@keyframes rec-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.rec-spinner{animation:none;border-color:var(--acc)}}
 /* An activity's row (components/ActivitySheet.jsx): the blue of its calendar dot. */
 .act-i{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue-ink)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.act-i{background:var(--surface-3)}}

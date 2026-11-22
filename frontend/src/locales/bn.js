@@ -5976,4 +5976,11 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  "Min": "সর্বনিম্ন",
+  "Cadence": "ক্যাডেন্স",
+  "Elevation": "উচ্চতা",
+  "Floors": "তলা",
+  "Splits": "স্প্লিট",
+  "Recovery details": "রিকভারি বিবরণ",
+  "Choose which recorded metrics appear on recovery sessions.": "রিকভারি সেশনে কোন রেকর্ড করা মেট্রিক দেখানো হবে তা বেছে নিন।",
 }

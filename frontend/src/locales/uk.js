@@ -5894,4 +5894,11 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Min": "Мін",
+  "Cadence": "Каденс",
+  "Elevation": "Набір висоти",
+  "Floors": "Поверхи",
+  "Splits": "Відрізки",
+  "Recovery details": "Деталі відновлення",
+  "Choose which recorded metrics appear on recovery sessions.": "Виберіть, які записані показники показувати в сесіях відновлення.",
 }

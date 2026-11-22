@@ -5837,4 +5837,11 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Min": "Min",
+  "Cadence": "Kadence",
+  "Elevation": "Højdemeter",
+  "Floors": "Etager",
+  "Splits": "Mellemtider",
+  "Recovery details": "Restitutionsdetaljer",
+  "Choose which recorded metrics appear on recovery sessions.": "Vælg, hvilke registrerede målinger der vises på restitutionspas.",
 }

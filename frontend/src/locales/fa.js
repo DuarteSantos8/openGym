@@ -5863,4 +5863,11 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Min": "حداقل",
+  "Cadence": "آهنگ گام",
+  "Elevation": "ارتفاع",
+  "Floors": "طبقات",
+  "Splits": "بخش‌ها",
+  "Recovery details": "جزئیات ریکاوری",
+  "Choose which recorded metrics appear on recovery sessions.": "انتخاب کنید کدام معیارهای ثبت‌شده در جلسات ریکاوری نمایش داده شوند.",
 }

@@ -5862,4 +5862,11 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Min": "Min",
+  "Cadence": "Kadens",
+  "Elevation": "Elevasi",
+  "Floors": "Lantai",
+  "Splits": "Split",
+  "Recovery details": "Detail pemulihan",
+  "Choose which recorded metrics appear on recovery sessions.": "Pilih metrik terekam yang ditampilkan pada sesi pemulihan.",
 };

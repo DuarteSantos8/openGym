@@ -241,6 +241,7 @@ export function initHealthSync(getState, apply = null) {
   import('@capacitor/app').then(({ App }) => {
     App.addListener('appStateChange', ({ isActive }) => {
       if (!isActive) return
+      clearDayWorkoutsCache()
       syncHealth(getState()).catch(() => {})
       readHealth(getState, { force: true }).catch(() => {})
     })
@@ -290,8 +291,9 @@ export const BODY_READS = ['bodyFat', 'leanMass', 'boneMass', 'bodyWater', 'bmr'
 // switch for the four, each its own permission in the store's dialog.
 export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']
 // Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts (a run from Strava or the watch,
-// a padel match) as activities. One permission: the store's exercise sessions / workouts.
-export const SPORT_READS = ['exercise']
+// a padel match) as activities, and walks/stretching in Log recovery. Exercise is required; all
+// other session metrics are optional extras when granted.
+export const SPORT_READS = ['exercise', 'distance', 'calories', 'totalCalories', 'steps', 'heartRate', 'elevation', 'speed', 'cadence', 'floors']
 const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : kind === 'sport' ? 'readSport' : 'readWeight')
 const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
 
@@ -317,6 +319,7 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
   const out = { ...h, [readKey(kind)]: true, readError: null }
   if (kind === 'weight') out.wHistory = history && res.read?.history === true
   await saveHealth(out)
+  clearDayWorkoutsCache()
   told(out)
   if (getState) await readHealth(getState, { force: true, apply }).catch(() => {})
   return { ok: true, reason: null, health: cached }
@@ -329,6 +332,7 @@ export async function disableRead(kind) {
   const out = kind === 'hr' ? { ...h, readHr: false, hrTried: {} } : { ...h, [readKey(kind)]: false }
   if (!anyRead(out)) out.readError = null
   await saveHealth(out)
+  clearDayWorkoutsCache()
   told(out)
   return out
 }
@@ -455,4 +459,59 @@ async function readOnce(getState, force, now, applyFn) {
   await saveHealth(h)
   told(h)
   return h
+}
+
+const DAY_WORKOUT_CACHE_MS = 30 * 1000
+const dayWorkoutCache = new Map()
+const dayWorkoutPending = new Map()
+
+/** Drop cached day-workout reads (called after permission changes or app resume). */
+export function clearDayWorkoutsCache() {
+  dayWorkoutCache.clear()
+  dayWorkoutPending.clear()
+}
+
+/**
+ * One day's workouts from the phone's health store, for RecoverySheet to suggest walks and
+ * mobility sessions on demand. Foreground only, never triggers a permission dialog, caches
+ * results briefly and deduplicates concurrent reads so opening the sheet feels immediate.
+ */
+export async function readDayWorkouts(dayIso, S = null, { sports = ['walk', 'stretch'], force = false } = {}) {
+  if (!MOBILE) return { records: [], src: null }
+  if (S && !isOn(S, 'health')) return { records: [], src: null }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dayIso || ''))) return { records: [], src: null }
+  const dayStartDate = new Date(dayIso + 'T00:00:00')
+  const dayStart = dayStartDate.getTime()
+  if (!Number.isFinite(dayStart)) return { records: [], src: null }
+  dayStartDate.setDate(dayStartDate.getDate() + 1)
+  const dayEnd = dayStartDate.getTime()
+  const key = `${dayIso}|${Array.isArray(sports) ? sports.join(',') : ''}`
+  const hit = !force && dayWorkoutCache.get(key)
+  if (hit && Date.now() - hit.at < DAY_WORKOUT_CACHE_MS) return hit.value
+  if (!force && dayWorkoutPending.has(key)) return dayWorkoutPending.get(key)
+  const run = (async () => {
+    try {
+      const p = await plugin()
+      if (!p) return { records: [], src: null }
+      const src = srcOf(p.platform)
+      const st = await p.HC.status().catch(() => null)
+      if (st?.status !== 'available') return { records: [], src: null }
+      if (p.platform === 'android') {
+        if (st.read?.exercise !== true) return { records: [], src }
+      } else {
+        const h = await loadHealth().catch(() => null)
+        if (!st.granted && !h?.on && !h?.readSport) return { records: [], src }
+      }
+      const res = await p.HC.readWorkouts({ since: dayStart, until: dayEnd, details: true, sports })
+      const value = { records: Array.isArray(res?.records) ? res.records : [], src }
+      dayWorkoutCache.set(key, { at: Date.now(), value })
+      return value
+    } catch {
+      return { records: [], src: null }
+    } finally {
+      dayWorkoutPending.delete(key)
+    }
+  })()
+  dayWorkoutPending.set(key, run)
+  return run
 }

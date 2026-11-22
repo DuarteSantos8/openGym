@@ -5901,4 +5901,11 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  "Min": "Мин",
+  "Cadence": "Каденс",
+  "Elevation": "Набор высоты",
+  "Floors": "Этажи",
+  "Splits": "Отрезки",
+  "Recovery details": "Данные восстановления",
+  "Choose which recorded metrics appear on recovery sessions.": "Выберите, какие записанные показатели отображать в сессиях восстановления.",
 }

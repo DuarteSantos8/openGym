@@ -5863,4 +5863,11 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Min": "Tối thiểu",
+  "Cadence": "Nhịp bước",
+  "Elevation": "Độ cao",
+  "Floors": "Tầng",
+  "Splits": "Chặng",
+  "Recovery details": "Chi tiết phục hồi",
+  "Choose which recorded metrics appear on recovery sessions.": "Chọn các chỉ số đã ghi sẽ hiển thị trong buổi phục hồi.",
 };

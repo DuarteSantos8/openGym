@@ -1,4 +1,7 @@
 import XCTest
+#if canImport(HealthKit)
+import HealthKit
+#endif
 @testable import WatchCore
 
 /// openGym v1.4.3: what the iPhone app hands to JS when it reads heart rate and weigh-ins back
@@ -33,4 +36,19 @@ final class HealthReadCoreTests: XCTestCase {
         XCTAssertEqual(out[0]["origin"] as? String, "com.withings.wiscale2")
         XCTAssertNil(out[0]["clientId"])
     }
+
+#if canImport(HealthKit)
+    func testSportNamesSeparateWalkAndStretchFromGymAndSports() {
+        XCTAssertEqual(HealthReadCore.sportName(.walking), "walk")
+        XCTAssertEqual(HealthReadCore.sportName(.wheelchairWalkPace), "walk")
+        XCTAssertEqual(HealthReadCore.sportName(.wheelchairRunPace), "walk")
+        XCTAssertEqual(HealthReadCore.sportName(.flexibility), "stretch")
+        XCTAssertEqual(HealthReadCore.sportName(.cooldown), "stretch")
+        XCTAssertEqual(HealthReadCore.sportName(.preparationAndRecovery), "stretch")
+        XCTAssertEqual(HealthReadCore.sportName(.elliptical), "gym")
+        XCTAssertEqual(HealthReadCore.sportName(.traditionalStrengthTraining), "strength")
+        XCTAssertEqual(HealthReadCore.sportName(.running), "run")
+        XCTAssertEqual(HealthReadCore.sportName(.other), "other")
+    }
+#endif
 }

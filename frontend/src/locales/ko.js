@@ -5897,4 +5897,11 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Min": "최소",
+  "Cadence": "케이던스",
+  "Elevation": "고도",
+  "Floors": "층수",
+  "Splits": "구간",
+  "Recovery details": "회복 세부 정보",
+  "Choose which recorded metrics appear on recovery sessions.": "회복 세션에 표시할 기록된 지표를 선택하세요.",
 }

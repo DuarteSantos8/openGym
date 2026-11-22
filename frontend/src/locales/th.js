@@ -5908,4 +5908,11 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Min": "ต่ำสุด",
+  "Cadence": "รอบก้าว",
+  "Elevation": "ความสูง",
+  "Floors": "ชั้น",
+  "Splits": "ช่วงเวลา",
+  "Recovery details": "รายละเอียดการฟื้นฟู",
+  "Choose which recorded metrics appear on recovery sessions.": "เลือกค่าที่บันทึกไว้ซึ่งต้องการแสดงในเซสชันการฟื้นฟู",
 }

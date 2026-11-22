@@ -5897,4 +5897,11 @@ export default {
   "Preview on": "Pré-visualizar em",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "um pouco mais curto",
+  "Min": "Mín",
+  "Cadence": "Cadência",
+  "Elevation": "Elevação",
+  "Floors": "Andares",
+  "Splits": "Parciais",
+  "Recovery details": "Detalhes da recuperação",
+  "Choose which recorded metrics appear on recovery sessions.": "Escolhe quais métricas aparecem nas sessões de recuperação.",
 }
