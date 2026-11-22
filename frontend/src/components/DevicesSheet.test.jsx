@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const m = vi.hoisted(() => ({ rows: [], check: vi.fn(), go: vi.fn(), retry: vi.fn(), pair: vi.fn(), connect: vi.fn(), signin: vi.fn() }))
-vi.mock('./useDeviceLink.js', () => ({ useDeviceLink: () => ({ rows: m.rows, overall: 'ok' }) }))
+vi.mock('./useDeviceLink.js', () => ({ useDeviceLink: () => ({ rows: m.rows, overall: 'ok', checking: !!m.checking }) }))
 vi.mock('../lib/device-link-live.js', () => ({ checkLinks: (...a) => m.check(...a) }))
 vi.mock('../lib/nav.js', () => ({ closeThenNav: (_c, to) => m.go(to) }))
 vi.mock('./ServerSync.jsx', () => ({
@@ -17,6 +17,7 @@ vi.mock('./ServerSync.jsx', () => ({
 }))
 
 import { DevicesSheet } from './DevicesSheet.jsx'
+import { _setLangState } from '../lib/i18n-core.js'
 
 const row = (id, kind, state, over = {}) => ({ id, kind, state, speed: null, lastHeard: null, warn: false, fix: null, ...over })
 let host, root
@@ -65,6 +66,21 @@ describe('DevicesSheet', () => {
     expect(host.textContent).toContain('No devices connected')
     host.querySelector('button.dev-fix').click()
     expect(m.go).toHaveBeenCalledWith('/settings')
+  })
+  it('while the first look is under way it says so, not that nothing is connected', async () => {
+    m.checking = true
+    try {
+      await render([])
+      expect(host.textContent).toContain('Checking…')
+      expect(host.textContent).not.toContain('No devices connected')
+    } finally { m.checking = false }
+  })
+  it('the heart rate unit comes from the language pack', async () => {
+    _setLangState('de', { '{0} bpm': '{0} S/min' }, null, null)
+    try {
+      await render([row('hr', 'hr', 'live', { bpm: 99 })])
+      expect(host.textContent).toContain('99 S/min')
+    } finally { _setLangState('en', {}, null, null) }
   })
   it.each([['retry', 'Try again', 'retry'], ['pair', 'Pair again', 'pair'], ['signin', 'Sign in', 'signin'], ['connect', 'Connect', 'connect']])('the server fix for %s says %s and runs it', async (action, label, fn) => {
     m[fn].mockClear()
