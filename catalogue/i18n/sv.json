@@ -2744,8 +2744,14 @@
   "1000": {
     "name": "enbens omvänd vadpress med gummiband"
   },
+  "10003": {
+    "name": "sittande dorsalflexion av fotleden på golvet med gummiband"
+  },
   "1001": {
     "name": "enbens split squat med gummiband"
+  },
+  "10014": {
+    "name": "höftadduktion liggande på rygg med boll som stöd"
   },
   "1002": {
     "name": "liggande raka benlyft med gummiband"
@@ -2753,14 +2759,83 @@
   "1003": {
     "name": "knäböj med rodd med gummiband"
   },
+  "10031": {
+    "name": "fingerflexion med utsträckt tumme"
+  },
+  "10032": {
+    "name": "tumabduktion"
+  },
+  "10038": {
+    "name": "handledssupination med hantel"
+  },
   "1004": {
     "name": "knäböj med gummiband"
+  },
+  "10040": {
+    "name": "stående alternerande korslyft med hantlar"
+  },
+  "10041": {
+    "name": "sidoplanka med hantel v. 2"
+  },
+  "10042": {
+    "name": "golvpress med ihoptryckta hantlar"
+  },
+  "10043": {
+    "name": "enarms Z-press med hantel"
+  },
+  "10044": {
+    "name": "hängande ryck med hantel"
+  },
+  "10045": {
+    "name": "snöängel med ansiktet mot golvet"
+  },
+  "10046": {
+    "name": "snöängel med ansiktet mot taket"
+  },
+  "10047": {
+    "name": "rumänska marklyft i delad fotställning med skivstång"
+  },
+  "10048": {
+    "name": "step-up i kabel"
+  },
+  "10049": {
+    "name": "butterfly z-press med skivstång"
   },
   "1005": {
     "name": "stående crunch med gummiband"
   },
+  "10050": {
+    "name": "superman till armhävning"
+  },
+  "10051": {
+    "name": "smalt knäböjsutfall"
+  },
+  "10052": {
+    "name": "kosackböj med landmine"
+  },
+  "10053": {
+    "name": "hopp från sittande position"
+  },
+  "10054": {
+    "name": "statiskt utfallssteg med skivstång"
+  },
+  "10055": {
+    "name": "smal knäböj till utfallssteg med hantlar"
+  },
+  "10056": {
+    "name": "landminepress med gummiband"
+  },
+  "10057": {
+    "name": "bordsbrygga med jack"
+  },
+  "10058": {
+    "name": "alternerande från knästående till halvt knästående"
+  },
   "1006": {
     "name": "rodd för bakre axel med gummiband"
+  },
+  "10065": {
+    "name": "bålrotation i maskin"
   },
   "1007": {
     "name": "stående crunch med rotation med gummiband"
@@ -2771,17 +2846,86 @@
   "1009": {
     "name": "raka marklyft med gummiband"
   },
+  "10092": {
+    "name": "coreknäböj med skivstång"
+  },
+  "10093": {
+    "name": "halvknästående Thor-lyft med hantel"
+  },
+  "10094": {
+    "name": "stående korsvis frivändning med hantel"
+  },
+  "10095": {
+    "name": "enarms bear fly i kabel"
+  },
+  "10096": {
+    "name": "bakåtutfall till enarms axelpress med hantel"
+  },
+  "10097": {
+    "name": "knäböj med uppresning åt sidan med viktskiva"
+  },
   "1010": {
     "name": "marklyft med raka ben med gummiband"
+  },
+  "10106": {
+    "name": "högt drag med skivstång"
+  },
+  "10107": {
+    "name": "högt frivändningsdrag från häng med skivstång"
+  },
+  "10108": {
+    "name": "uppkast över huvudet med medicinboll"
+  },
+  "10109": {
+    "name": "kast bakåt över huvudet med medicinboll"
   },
   "1011": {
     "name": "sittande twist med gummiband"
   },
+  "10110": {
+    "name": "omvänd curl med tjock skivstång"
+  },
+  "10112": {
+    "name": "sittande enarms kabelrodd med latsfokus"
+  },
+  "10113": {
+    "name": "isometrisk knäböj med höftabduktion i maskin"
+  },
+  "10114": {
+    "name": "lu-lyft med viktskiva"
+  },
+  "10115": {
+    "name": "negativ press med smalt grepp med skivstång"
+  },
+  "10116": {
+    "name": "lutande bänkpress med smalt grepp i smithmaskin"
+  },
+  "10117": {
+    "name": "halvknästående enarms frivändning och press med hantel"
+  },
+  "10118": {
+    "name": "slam över huvudet i cirkel med medicinboll"
+  },
+  "10119": {
+    "name": "step-up i sidled i kabel"
+  },
   "1012": {
     "name": "axelpress med rotation med gummiband"
   },
+  "10120": {
+    "name": "ensidig step-up i kabel"
+  },
+  "10126": {
+    "name": "stående isometrisk utåtrotation av axeln med handduk"
+  },
   "1013": {
     "name": "drag med underhandsgrepp med gummiband"
+  },
+  "10138": {
+    "name": "stående isometrisk bicepshållning"
+  },
+  "10139": {
+    "name": "sittande isometrisk lårcurlhållning med pilatesboll"
   },
   "1014": {
     "name": "v-up med gummiband"
@@ -2792,14 +2936,77 @@
   "1016": {
     "name": "handledscurl med gummiband"
   },
+  "10160": {
+    "name": "lådhopp ner med landning på båda fötterna"
+  },
+  "10168": {
+    "name": "boxknäböj"
+  },
   "1017": {
     "name": "y-lyft med gummiband"
   },
   "1018": {
     "name": "shrugs med gummiband"
   },
+  "10182": {
+    "name": "burpee över hanteln"
+  },
+  "10183": {
+    "name": "stående frontlyft med vridning, hantel"
+  },
+  "10184": {
+    "name": "alternerande Pallof press i utfallsställning med gummiband"
+  },
+  "10185": {
+    "name": "alternerande hantelrodd i björnplanka"
+  },
+  "10186": {
+    "name": "pullover till press i bäckenlyft, hantlar"
+  },
+  "10187": {
+    "name": "upphopp och sidohopp"
+  },
+  "10188": {
+    "name": "stående framåtböjning med alternerande tåberöring"
+  },
+  "10189": {
+    "name": "marklyft, utfallssteg bakåt och axelpress med viktskiva"
+  },
+  "10190": {
+    "name": "enarms push press med landmine"
+  },
+  "10191": {
+    "name": "gobletknäböj runt klockan"
+  },
+  "10192": {
+    "name": "kettlebell swing åt sidan"
+  },
+  "10193": {
+    "name": "burpee med slädpush"
+  },
+  "10194": {
+    "name": "fjärilsrullning på rygg"
+  },
+  "10195": {
+    "name": "thorlyft i halvt knästående med skivstång"
+  },
+  "10196": {
+    "name": "axelkomplex med hantlar"
+  },
+  "10197": {
+    "name": "horisontell smash med medicinboll"
+  },
+  "10198": {
+    "name": "alternerande negativ enbens benpress i maskin"
+  },
+  "10199": {
+    "name": "korsade rumänska marklyft med hantlar"
+  },
   "1020": {
     "name": "sidocrunch med gummiband"
+  },
+  "10200": {
+    "name": "knästående rotation runt huvudet med hantel"
   },
   "1021": {
     "name": "stående benlyft med gummiband"
@@ -2819,6 +3026,9 @@
   "1029": {
     "name": "parallell bröstpress i maskin"
   },
+  "10294": {
+    "name": "hälgång"
+  },
   "1030": {
     "name": "flyes i pec deck"
   },
@@ -2828,11 +3038,32 @@
   "1032": {
     "name": "alternerande bicepscurl i maskin"
   },
+  "10326": {
+    "name": "plankhopp till knäböj"
+  },
+  "10327": {
+    "name": "kraftfull russian twist med kettlebell"
+  },
+  "10328": {
+    "name": "bulgarisk split squat i bältesmaskin"
+  },
+  "10329": {
+    "name": "kroc-rodd med hantel"
+  },
   "1033": {
     "name": "tricepsextension i maskin v. 2"
   },
+  "10330": {
+    "name": "powell-lyft med hantel"
+  },
+  "10331": {
+    "name": "stående pronationscurl med vridning, med vikt och gummiband (armbrytare)"
+  },
   "1034": {
     "name": "höftabduktion från sidan i maskin"
+  },
+  "10345": {
+    "name": "superman med pulsering"
   },
   "1035": {
     "name": "höftadduktion från sidan i maskin"
@@ -2840,11 +3071,38 @@
   "1036": {
     "name": "stående benlyft i maskin"
   },
+  "10366": {
+    "name": "sittande tibialispress på golvet med gummiband"
+  },
+  "10367": {
+    "name": "sittande tibialispress med kettlebell"
+  },
   "1037": {
     "name": "stående bakåtspark i maskin"
   },
   "1038": {
     "name": "stolknäböj i maskin"
+  },
+  "10383": {
+    "name": "marklyft med sandsäck"
+  },
+  "10384": {
+    "name": "knäböj med sandsäck"
+  },
+  "10385": {
+    "name": "sandsäck upp på axeln"
+  },
+  "10386": {
+    "name": "sandsäcksbärning (på axlarna)"
+  },
+  "10387": {
+    "name": "sandsäcksbärning (björnkram)"
+  },
+  "10388": {
+    "name": "militärpress med sandsäck"
+  },
+  "10389": {
+    "name": "rodd med sandsäck"
   },
   "1039": {
     "name": "djup knäböj i maskin"
@@ -2855,11 +3113,29 @@
   "1041": {
     "name": "liggande bröstpress i maskin (skivladdad)"
   },
+  "10410": {
+    "name": "knäböj med steel mace (med vikt)"
+  },
+  "10411": {
+    "name": "halo med steel mace (med vikt)"
+  },
   "1042": {
     "name": "liggande nackextension med vikt"
   },
+  "10427": {
+    "name": "sandsäckskast över axeln (med vikt)"
+  },
   "1043": {
     "name": "liggande nackflexion med vikt"
+  },
+  "10437": {
+    "name": "enarms låg kabelrodd (med rep)"
+  },
+  "10438": {
+    "name": "alternerande dödhäng"
+  },
+  "10439": {
+    "name": "klättring i två rep"
   },
   "1044": {
     "name": "nypgrepp med viktskivor"
@@ -2869,6 +3145,12 @@
   },
   "1046": {
     "name": "upphöjd kabelrodd"
+  },
+  "10462": {
+    "name": "sittande hamstringsstretch på stol"
+  },
+  "10463": {
+    "name": "sittande bröststretch med skulderbladen ihop på stol"
   },
   "1047": {
     "name": "latsdrag framför med smalt grepp"
@@ -2882,8 +3164,14 @@
   "1050": {
     "name": "vadpress i smithmaskin (med kloss)"
   },
+  "10503": {
+    "name": "latsdrag med smalt omvänt grepp"
+  },
   "1051": {
     "name": "kattstretch"
+  },
+  "10517": {
+    "name": "stående enbens höftcirklar med stolstöd"
   },
   "1052": {
     "name": "ryggstretch i fast stång"
@@ -2891,17 +3179,137 @@
   "1053": {
     "name": "knästående höftböjarstretch"
   },
+  "10534": {
+    "name": "sittande enbens knäflexion"
+  },
+  "10535": {
+    "name": "sittande enbens tibialispress"
+  },
+  "10536": {
+    "name": "stående enbens knäextension med gummiband"
+  },
+  "10537": {
+    "name": "sittande enbens knäextension"
+  },
+  "10538": {
+    "name": "sittande enbens knäextension v. 2"
+  },
+  "10539": {
+    "name": "sittande enbens benspark med vikt v. 2"
+  },
   "1054": {
     "name": "vadstretch i utfall med rakt ben"
+  },
+  "10540": {
+    "name": "liggande tibialispress med böjda knän"
+  },
+  "10541": {
+    "name": "sittande enbens knäflexion med knät kramat"
+  },
+  "10542": {
+    "name": "sittande enbens knäflexion med knät kramat, med handduk"
+  },
+  "10543": {
+    "name": "knästående knäböjning med stöd mot stol"
+  },
+  "10547": {
+    "name": "stående enbens vadgungning"
+  },
+  "10548": {
+    "name": "stående enbens koncentrationsvadpress"
+  },
+  "10549": {
+    "name": "upphöjd enbensbrygga"
+  },
+  "10550": {
+    "name": "liggande svendpress på golvet med viktskiva"
+  },
+  "10551": {
+    "name": "knäböjsmobilisering"
+  },
+  "10552": {
+    "name": "bålvridning i delad fotställning med medicinboll"
+  },
+  "10553": {
+    "name": "slag över huvudet med gummiband"
+  },
+  "10554": {
+    "name": "planka med alternerande slag på medicinboll"
+  },
+  "10555": {
+    "name": "sittande nackflexion till extension på stol"
+  },
+  "10556": {
+    "name": "sittande nackvridning från sida till sida på stol"
+  },
+  "10557": {
+    "name": "sittande nackböjning från sida till sida på stol"
+  },
+  "10558": {
+    "name": "situp med slam med medicinboll"
+  },
+  "10559": {
+    "name": "frontlyft med fångst med hantel"
   },
   "1056": {
     "name": "liggande sätesstretch"
   },
+  "10560": {
+    "name": "bänkpress med skivstång med fångst"
+  },
+  "10561": {
+    "name": "enbens marklyft med kettlebellöverlämning"
+  },
+  "10562": {
+    "name": "ipsilateralt bakåtutfall med högt knä med kettlebell"
+  },
+  "10563": {
+    "name": "vadstretch med knät mot lådan"
+  },
+  "10564": {
+    "name": "sittande pronation och supination av foten"
+  },
+  "10565": {
+    "name": "90/90-stretch med press"
+  },
+  "10566": {
+    "name": "halvknästående bålvridning"
+  },
   "1058": {
     "name": "stående enarms bröststretch"
   },
+  "10588": {
+    "name": "liggande frontlyft med skivstång"
+  },
+  "10589": {
+    "name": "liggande frontlyft med pinne"
+  },
   "1059": {
     "name": "stående quadricepsstretch"
+  },
+  "10590": {
+    "name": "latsstretch med walkout"
+  },
+  "10591": {
+    "name": "sittande enbens knäflexion med knät kramat, med gummiband"
+  },
+  "10592": {
+    "name": "halvknästående hamstringsstretch"
+  },
+  "10593": {
+    "name": "lutande plankan med jack-hopp"
+  },
+  "10594": {
+    "name": "sidoslag med gummiband"
+  },
+  "10595": {
+    "name": "pullover med fångst med medicinboll"
+  },
+  "10597": {
+    "name": "inåtrotation i 90 grader med fångst i kabel"
+  },
+  "10598": {
+    "name": "liggande smal press och fångst på golvet med medicinboll"
   },
   "1060": {
     "name": "höftlyft med skivstång"
@@ -2915,14 +3323,92 @@
   "1063": {
     "name": "sumoknäböj med skivstång"
   },
+  "10639": {
+    "name": "full situp i glute ham developer"
+  },
   "1064": {
     "name": "sumoknäböj"
+  },
+  "10646": {
+    "name": "lutande rodd på mage i maskin"
   },
   "1065": {
     "name": "liggande höftlyft (på pilatesboll)"
   },
+  "10650": {
+    "name": "explosiv armhävning med gummiband"
+  },
+  "10651": {
+    "name": "enbens abduktion stående på bosuboll med gummiband"
+  },
+  "10654": {
+    "name": "liggande knäextension på tårna i pilatesmaskin"
+  },
+  "10655": {
+    "name": "liggande knäextension i pilatesmaskin"
+  },
+  "10656": {
+    "name": "liggande knäextension på hälarna i pilatesmaskin"
+  },
+  "10657": {
+    "name": "liggande vadpress i pilatesmaskin"
+  },
+  "10658": {
+    "name": "the hundred i pilatesmaskin"
+  },
+  "10660": {
+    "name": "assisterad enarms pull-up med gummiband"
+  },
+  "10661": {
+    "name": "assisterad enarms pull-up med gummiband i ringar"
+  },
+  "10662": {
+    "name": "rocky pull-up till drag i ringar"
+  },
+  "10663": {
+    "name": "skin the cat i ringar"
+  },
+  "10664": {
+    "name": "planchepress"
+  },
+  "10665": {
+    "name": "armbågsplanche"
+  },
+  "10667": {
+    "name": "knästående enarms horisontell kabelrodd"
+  },
+  "10668": {
+    "name": "knästående enarms horisontell rodd med gummiband"
+  },
+  "10669": {
+    "name": "sittande lutande bröstpress i viktmagasinsmaskin"
+  },
   "1067": {
     "name": "pulldown med raka armar v. 3"
+  },
+  "10670": {
+    "name": "sittande lutande enarms bröstpress i viktmagasinsmaskin"
+  },
+  "10671": {
+    "name": "sittande bröstpress i viktmagasinsmaskin"
+  },
+  "10672": {
+    "name": "sittande enarms bröstpress i viktmagasinsmaskin"
+  },
+  "10673": {
+    "name": "knäböj med kettlebell"
+  },
+  "10674": {
+    "name": "knäböj med kettlebells på ryggen"
+  },
+  "10675": {
+    "name": "hoppande knäböj med landmine"
+  },
+  "10676": {
+    "name": "gång med viktad ryggsäck"
+  },
+  "10677": {
+    "name": "löpning med viktad ryggsäck"
   },
   "1068": {
     "name": "kickback i kabel v. 3"
@@ -2936,26 +3422,140 @@
   "1071": {
     "name": "inverterad rodd med böjda knän i slingor"
   },
+  "10710": {
+    "name": "liggande crunch med viktskiva"
+  },
   "1072": {
     "name": "bröstdips i slingor"
+  },
+  "10729": {
+    "name": "vattencykel"
   },
   "1073": {
     "name": "bröstpress i slingor"
   },
+  "10730": {
+    "name": "rumänska marklyft med sandsäck"
+  },
+  "10731": {
+    "name": "repklättring i L-sit"
+  },
+  "10732": {
+    "name": "hopp från sida till sida över steppbräda"
+  },
+  "10733": {
+    "name": "enbensbalans på balansbräda"
+  },
+  "10734": {
+    "name": "enbensbalans på balansplatta"
+  },
+  "10735": {
+    "name": "hängande alternerande knälyft"
+  },
+  "10736": {
+    "name": "headbanger"
+  },
+  "10738": {
+    "name": "lådhopp genom armarna"
+  },
+  "10739": {
+    "name": "liggande enarms tricepsstretch"
+  },
   "1074": {
     "name": "flyes i slingor"
+  },
+  "10740": {
+    "name": "liggande enarms tricepsstretch med pinne"
+  },
+  "10741": {
+    "name": "stående enarms tricepsstretch med gummiband"
+  },
+  "10742": {
+    "name": "liggande enarms glidning från Y till T"
+  },
+  "10743": {
+    "name": "från knästående till lådhopp"
+  },
+  "10744": {
+    "name": "sittande enbens hamstringsstretch med gummiband"
+  },
+  "10745": {
+    "name": "sittande enbens halvcirkel"
+  },
+  "10746": {
+    "name": "sittande enbens knäextension med gummiband"
+  },
+  "10747": {
+    "name": "snabba fötter in och ut i löpning"
+  },
+  "10748": {
+    "name": "stående enbens tåtapp framåt, bakåt och åt sidan"
+  },
+  "10749": {
+    "name": "gång med bensparkar"
   },
   "1075": {
     "name": "frontlyft i slingor"
   },
+  "10750": {
+    "name": "från knästående till stående"
+  },
+  "10751": {
+    "name": "vadhopp"
+  },
+  "10752": {
+    "name": "jeffersoncurl"
+  },
+  "10753": {
+    "name": "sittande knälyft med gummiband"
+  },
+  "10754": {
+    "name": "enbens vadhopp"
+  },
+  "10755": {
+    "name": "enbens vadhopp med stöd av steppbräda"
+  },
+  "10756": {
+    "name": "vadhopp framåt"
+  },
+  "10757": {
+    "name": "vadhopp från sida till sida"
+  },
+  "10758": {
+    "name": "skridskohopp med medicinboll"
+  },
+  "10759": {
+    "name": "gång med höga knän"
+  },
   "1076": {
     "name": "hamstringslöpare i slingor"
+  },
+  "10760": {
+    "name": "gång på tå med gummiband"
+  },
+  "10761": {
+    "name": "sidogång på tå med gummiband"
+  },
+  "10762": {
+    "name": "tågång i sidled"
+  },
+  "10763": {
+    "name": "sittande enbens lårcurl i maskin (skivladdad)"
+  },
+  "10764": {
+    "name": "liggande enbensknäböj i maskin"
   },
   "1077": {
     "name": "höftabduktion i slingor"
   },
   "1078": {
     "name": "höftbrygga i slingor"
+  },
+  "10780": {
+    "name": "liggande nackflexion"
+  },
+  "10781": {
+    "name": "liggande nackextension"
   },
   "1079": {
     "name": "rygglyft i slingor"
@@ -2966,8 +3566,20 @@
   "1081": {
     "name": "jackknife pike i slingor"
   },
+  "10817": {
+    "name": "handledsrotation med hantel"
+  },
+  "10818": {
+    "name": "enbenshopp i fyra riktningar v. 2"
+  },
+  "10819": {
+    "name": "enbens vadpress i delad fotställning"
+  },
   "1082": {
     "name": "jackknife i slingor"
+  },
+  "10820": {
+    "name": "stående balans med höftabduktion med böjt ben, med gummiband"
   },
   "1083": {
     "name": "lårcurl i slingor"
@@ -2975,29 +3587,242 @@
   "1084": {
     "name": "mountain climber i slingor"
   },
+  "10847": {
+    "name": "liggande groda och bencirklar i pilatesmaskin"
+  },
+  "10848": {
+    "name": "liggande löpning i pilatesmaskin"
+  },
+  "10849": {
+    "name": "liggande bäckenlyft i pilatesmaskin"
+  },
+  "10850": {
+    "name": "sidospagat i pilatesmaskin"
+  },
+  "10851": {
+    "name": "rysk knäböj i pilatesmaskin"
+  },
+  "10852": {
+    "name": "rysk spagat i pilatesmaskin"
+  },
+  "10853": {
+    "name": "long spine i pilatesmaskin"
+  },
+  "10854": {
+    "name": "armcirklar i pilatesmaskin"
+  },
+  "10855": {
+    "name": "bröstexpansion i pilatesmaskin"
+  },
+  "10856": {
+    "name": "lyft över huvudet i pilatesmaskin"
+  },
+  "10857": {
+    "name": "jeffersoncurl med skivstång"
+  },
+  "10858": {
+    "name": "lu-lyft med hantlar"
+  },
+  "10859": {
+    "name": "stående tibialislyft från golvet med väggstöd"
+  },
   "1086": {
     "name": "power pull i slingor"
+  },
+  "10860": {
+    "name": "sidospark med benet bakåt i kabel"
+  },
+  "10861": {
+    "name": "omvänd rygglyft med viktboll i GHD"
+  },
+  "10862": {
+    "name": "enbens marklyft mot boll"
+  },
+  "10863": {
+    "name": "sittande enarms axelpress med neutralt grepp i smithmaskin"
+  },
+  "10864": {
+    "name": "step-up på hög låda"
+  },
+  "10865": {
+    "name": "enbens rumänska marklyft på bänk med hantel"
+  },
+  "10866": {
+    "name": "framåtböjd enarms rodd med latsfokus i maskin"
+  },
+  "10867": {
+    "name": "lutande rodd på mage med neutralt grepp i maskin"
+  },
+  "10868": {
+    "name": "knäböj på bosuboll"
+  },
+  "10869": {
+    "name": "enbens knäböj på bosuboll"
   },
   "1087": {
     "name": "pull-through i slingor"
   },
+  "10870": {
+    "name": "gående bäckenlyft med gummiband"
+  },
+  "10871": {
+    "name": "crunch med viktskiva (händerna ovanför huvudet)"
+  },
+  "10873": {
+    "name": "crunch med vikt och hantel över huvudet"
+  },
+  "10875": {
+    "name": "sidoböjning 45 grader med viktskiva"
+  },
+  "10877": {
+    "name": "crunch med viktskiva (händerna ovanför huvudet) v. 2"
+  },
+  "10879": {
+    "name": "crunch med hantel (händerna ovanför huvudet) v. 2"
+  },
   "1088": {
     "name": "pull-up i slingor"
+  },
+  "10882": {
+    "name": "knästående plyometrisk armhävning"
+  },
+  "10890": {
+    "name": "tåhopp på studsmatta"
+  },
+  "10899": {
+    "name": "liggande abduktion med gummiband"
   },
   "1090": {
     "name": "omvända flyes i slingor"
   },
+  "10901": {
+    "name": "enarms shrugs med hantel"
+  },
+  "10902": {
+    "name": "excentrisk enarms pull-up"
+  },
+  "10903": {
+    "name": "assisterad enarms pull-up med gummiband v. 2"
+  },
+  "10904": {
+    "name": "hamstringsbrygga v. 2"
+  },
+  "10905": {
+    "name": "hamstringsbrygga med benspark v. 2"
+  },
+  "10906": {
+    "name": "split squat-håll"
+  },
+  "10907": {
+    "name": "halvt split squat-håll"
+  },
+  "10908": {
+    "name": "sittande enbens fotcirkel"
+  },
+  "10909": {
+    "name": "sittande fotcirklar"
+  },
   "1091": {
     "name": "utrullning i slingor"
+  },
+  "10910": {
+    "name": "sittande enbens fot från sida till sida"
+  },
+  "10911": {
+    "name": "sittande tåkrullning"
+  },
+  "10912": {
+    "name": "sittande enbens tåkrullning"
+  },
+  "10913": {
+    "name": "liggande enbens benlyft"
+  },
+  "10914": {
+    "name": "kvartsknäböj"
+  },
+  "10915": {
+    "name": "enbens marklyft med håll"
+  },
+  "10916": {
+    "name": "enbens marklyft med tåberöring"
+  },
+  "10917": {
+    "name": "sittande enbens tibialispress v. 2"
+  },
+  "10918": {
+    "name": "sittande enbens tåkrullning v. 2"
+  },
+  "10919": {
+    "name": "sittande enbens fot från sida till sida v. 2"
+  },
+  "10920": {
+    "name": "sittande enbens tåpress"
+  },
+  "10921": {
+    "name": "sittande enbens knäextension med hållning, med gummiband"
+  },
+  "10922": {
+    "name": "stående hälsenestretch med bakre benet"
+  },
+  "10925": {
+    "name": "hopp från två ben till ett"
+  },
+  "10926": {
+    "name": "stående väggglidning, statisk kvarts knäböj"
+  },
+  "10927": {
+    "name": "stående glidpress framåt med handduk"
+  },
+  "10928": {
+    "name": "stående serratusglidning mot vägg med handduk"
+  },
+  "10929": {
+    "name": "stående glidande inåtrotation med handduk"
   },
   "1093": {
     "name": "självassisterade bröstdips i slingor"
   },
+  "10930": {
+    "name": "stående glidande utåtrotation med handduk"
+  },
+  "10931": {
+    "name": "stående utåtrotation bakom ryggen med handduk"
+  },
+  "10932": {
+    "name": "axelstretch bakom ryggen med handduk"
+  },
+  "10933": {
+    "name": "sidoliggande utåtrotation"
+  },
+  "10934": {
+    "name": "utåtrotation i axeln i sidoläge"
+  },
+  "10935": {
+    "name": "axelmobilisering i abduktion bakom ryggen med pinne"
+  },
+  "10936": {
+    "name": "axelrotation över huvudet med pinne"
+  },
+  "10937": {
+    "name": "stående axelrotation mot vägg"
+  },
   "1094": {
     "name": "självassisterad pull-up i slingor"
   },
+  "10948": {
+    "name": "skulderbladspull-up med sving"
+  },
+  "10949": {
+    "name": "bicepssving med raka armar, hantel"
+  },
   "1095": {
     "name": "självassisterade tricepsdips i slingor"
+  },
+  "10950": {
+    "name": "armhävningshållning med raka armar i ringar"
+  },
+  "10951": {
+    "name": "benlyft i L-sit"
   },
   "1096": {
     "name": "utåtrotation av axeln i slingor"
@@ -3005,17 +3830,56 @@
   "1097": {
     "name": "sidoböjning i slingor"
   },
+  "10977": {
+    "name": "rygglyft med hantel v. 2"
+  },
   "1098": {
     "name": "sidoplanka i slingor"
+  },
+  "10987": {
+    "name": "lådhopp med hantlar"
+  },
+  "10988": {
+    "name": "från knästående till lådhopp med hantlar"
+  },
+  "10989": {
+    "name": "tuck planche på parallettes"
   },
   "1099": {
     "name": "enbens split squat i slingor (självassisterad)"
   },
+  "10995": {
+    "name": "krabbgång framåt och bakåt"
+  },
+  "10997": {
+    "name": "väggassisterad handstående till negativ tuck planche"
+  },
+  "10998": {
+    "name": "statisk handstående på ett ben i spagat med ansiktet mot väggen"
+  },
   "1100": {
     "name": "enbens split squat i slingor"
   },
+  "11006": {
+    "name": "sittande armkorsning och bröstet ut på stol"
+  },
   "1101": {
     "name": "enbensknäböj i slingor"
+  },
+  "11010": {
+    "name": "höftlyft med ländryggen från golvet"
+  },
+  "11014": {
+    "name": "frontlyft med underhandsgrepp, hantlar"
+  },
+  "11015": {
+    "name": "skulderbladspull-up v. 2"
+  },
+  "11016": {
+    "name": "halvknästående enarms axelpress med hantel"
+  },
+  "11017": {
+    "name": "knästående enarms axelpress med hantel"
   },
   "1102": {
     "name": "lårcurl med rak höft i slingor"
@@ -3026,20 +3890,83 @@
   "1104": {
     "name": "tricepsextension i slingor v. 2"
   },
+  "11047": {
+    "name": "liggande abduktion"
+  },
+  "11048": {
+    "name": "sittande abduktion med böjda knän"
+  },
+  "11049": {
+    "name": "sittande abduktion med böjda knän och fötterna från golvet"
+  },
   "1105": {
     "name": "vridning i slingor"
+  },
+  "11050": {
+    "name": "sittande abduktion med böjda knän och fötterna från golvet med gummiband"
+  },
+  "11051": {
+    "name": "stående korsad tricepsextension med neutralt grepp i övre kabel"
+  },
+  "11053": {
+    "name": "höftlyft med förskjuten fotställning i smithmaskin"
+  },
+  "11054": {
+    "name": "höftlyft med förskjuten fotställning i maskin (skivladdad)"
+  },
+  "11055": {
+    "name": "sumomarklyft i bältesmaskin (V-handtag)"
+  },
+  "11056": {
+    "name": "sittande skulderbladsindragning i maskin (skivladdad)"
+  },
+  "11057": {
+    "name": "sittande skulderbladsindragning i kabel"
+  },
+  "11058": {
+    "name": "rumänska marklyft med höftstöd med hantlar"
+  },
+  "11059": {
+    "name": "knästående kickback med benet på bänk med gummiband"
   },
   "1106": {
     "name": "jackknife med vridning i slingor"
   },
+  "11060": {
+    "name": "face pulls med utåtrotation"
+  },
   "1107": {
     "name": "Y-sidolyft i slingor"
+  },
+  "11077": {
+    "name": "liggande abduktion över bröstet med hantlar"
   },
   "1108": {
     "name": "armcurl mot öronen i slingor"
   },
+  "11088": {
+    "name": "utfallssteg bakåt med armsträck och vridning"
+  },
+  "11089": {
+    "name": "spagatstretch med ryggrullning"
+  },
   "1109": {
     "name": "bicepsclutch i slingor"
+  },
+  "11090": {
+    "name": "negativ front lever-lyft"
+  },
+  "11091": {
+    "name": "enarms hängande tår till stång"
+  },
+  "11092": {
+    "name": "knästående landmine 180"
+  },
+  "11093": {
+    "name": "2-3 marklyft med skivstång"
+  },
+  "11095": {
+    "name": "sittande katt och ko på stol"
   },
   "1110": {
     "name": "body saw i slingor"
@@ -3083,14 +4010,128 @@
   "1125": {
     "name": "enarms armhävning med lyft ben i slingor"
   },
+  "11250": {
+    "name": "stående kabelflyes v. 3"
+  },
+  "11251": {
+    "name": "knästående vedhuggning i kabel v. 3"
+  },
+  "11252": {
+    "name": "overheadknäböj i kabel v. 3"
+  },
+  "11253": {
+    "name": "knästående latsdrag v. 3"
+  },
+  "11254": {
+    "name": "stående omvända kabelflyes v. 3"
+  },
+  "11255": {
+    "name": "sidoutfall i kabel v. 3"
+  },
+  "11256": {
+    "name": "bänkpress i kabel v. 3"
+  },
+  "11257": {
+    "name": "sittande hög kabelrodd v. 3"
+  },
+  "11258": {
+    "name": "stående tryck och drag i kabel v. 3"
+  },
+  "11259": {
+    "name": "stående höftextension i kabel v. 3"
+  },
   "1126": {
     "name": "enbens bröstpress i slingor"
+  },
+  "11260": {
+    "name": "knästående militärpress i kabel v. 3"
+  },
+  "11261": {
+    "name": "stående bicepscurl i kabel (rep) v. 3"
+  },
+  "11262": {
+    "name": "liggande alternerande jackknife med böjt ben i kabel v. 3"
+  },
+  "11263": {
+    "name": "enarms kabelrodd med rotation v. 3"
+  },
+  "11264": {
+    "name": "lutande bänkpress i kabel v. 3"
+  },
+  "11265": {
+    "name": "stående höftflexion i kabel v. 3"
+  },
+  "11266": {
+    "name": "stående höftabduktion i kabel v. 3"
+  },
+  "11267": {
+    "name": "stående höftadduktion i kabel v. 3"
+  },
+  "11268": {
+    "name": "knäböj i kabel v. 3"
+  },
+  "11269": {
+    "name": "framåtlutad enarms kabelrodd v. 3"
   },
   "1127": {
     "name": "pull-up i slingor v. 2"
   },
+  "11270": {
+    "name": "knästående kabelcrunch v. 3"
+  },
+  "11271": {
+    "name": "stående bålrotation i kabel v. 3"
+  },
+  "11272": {
+    "name": "stående bicepscurl till arnoldpress i kabel v. 3"
+  },
+  "11273": {
+    "name": "liggande kabelflyes v. 3"
+  },
+  "11274": {
+    "name": "stående alternerande diagonal bröstpress i kabel v. 3"
+  },
+  "11275": {
+    "name": "kabelrodd i sidoplanka v. 3"
+  },
+  "11276": {
+    "name": "enbens lårcurl på mage i kabel v. 3"
+  },
+  "11277": {
+    "name": "stående frontlyft i kabel v. 3"
+  },
+  "11278": {
+    "name": "stående sidoböjning i kabel v. 3"
+  },
+  "11279": {
+    "name": "stående enarms tricepsextension över huvudet i kabel v. 3"
+  },
   "1128": {
     "name": "armhävning med slingtränare"
+  },
+  "11282": {
+    "name": "situp med raka armar i glute ham developer"
+  },
+  "11283": {
+    "name": "korsat grodhopp"
+  },
+  "11284": {
+    "name": "enarms alternerande flyes med kettlebell"
+  },
+  "11285": {
+    "name": "liggande bröstpress på golvet med gummiband"
+  },
+  "11286": {
+    "name": "sidoutfall i halvknästående med kettlebell"
+  },
+  "11287": {
+    "name": "stående rumänska marklyft med kettlebell bakom ryggen"
+  },
+  "11288": {
+    "name": "stående shrugs ovanför huvudet med kroppsvikt"
+  },
+  "11289": {
+    "name": "stående fotleds- och höftövning"
   },
   "1129": {
     "name": "utfallssteg bakåt i slingor"
@@ -3098,8 +4139,23 @@
   "1130": {
     "name": "omvända flyes som uppvärmning i slingor"
   },
+  "11303": {
+    "name": "bänkknäböj i smithmaskin"
+  },
+  "11309": {
+    "name": "enarms latsdrag med omvänt grepp i maskin (skivladdad)"
+  },
   "1131": {
     "name": "sidoutfall med korssteg i slingor"
+  },
+  "11315": {
+    "name": "lutande armhävning med smalt grepp mot stol vid vägg"
+  },
+  "11316": {
+    "name": "stående väggglidning till halv knäböj"
+  },
+  "11317": {
+    "name": "rygglyft med viktskiva v. 2"
   },
   "1132": {
     "name": "sidoutfall i slingor"
@@ -3119,8 +4175,14 @@
   "1137": {
     "name": "situp i slingor"
   },
+  "11374": {
+    "name": "sleeper stretch"
+  },
   "1138": {
     "name": "spiderman-armhävning i slingor"
+  },
+  "11383": {
+    "name": "stretch för handledssträckarna"
   },
   "1139": {
     "name": "delade flyes i slingor"
@@ -3134,11 +4196,23 @@
   "1143": {
     "name": "knäböj i slingor"
   },
+  "11436": {
+    "name": "stående tricepsextension över huvudet med neutralt grepp i kabel"
+  },
   "1144": {
     "name": "stående utrullning i slingor"
   },
   "1145": {
     "name": "stjärnplanka i slingor"
+  },
+  "11450": {
+    "name": "step-up (första och andra trappsteget)"
+  },
+  "11451": {
+    "name": "stående väggglidning, statisk halv knäböj"
+  },
+  "11452": {
+    "name": "vadstretch v. 2"
   },
   "1146": {
     "name": "stjärnarmhävning i slingor"
@@ -3161,6 +4235,9 @@
   "1152": {
     "name": "vridning uppåt i slingor"
   },
+  "11529": {
+    "name": "enbens rumänska marklyft i bältesmaskin"
+  },
   "1153": {
     "name": "stretch för övre ryggen i slingor"
   },
@@ -3173,8 +4250,26 @@
   "1156": {
     "name": "pendel i slingor"
   },
+  "11567": {
+    "name": "liggande lårcurl till omvänd rygglyft i maskin"
+  },
+  "11568": {
+    "name": "enbens bulgarisk split squat från upphöjning i smithmaskin"
+  },
+  "11569": {
+    "name": "stående benlyft åt sidan med gummiband"
+  },
   "1157": {
     "name": "höftfällning i slingor"
+  },
+  "11570": {
+    "name": "stående höftextension med gummiband"
+  },
+  "11571": {
+    "name": "rumpgång"
+  },
+  "11572": {
+    "name": "liggande torakal extension på foamroller"
   },
   "1158": {
     "name": "sidostretch i slingor"
@@ -3197,8 +4292,47 @@
   "1164": {
     "name": "vadpress i smithmaskin v. 2"
   },
+  "11644": {
+    "name": "sidoliggande höftabduktion med gummiband"
+  },
+  "11645": {
+    "name": "statisk quadricepsspänning (isometrisk)"
+  },
+  "11646": {
+    "name": "statisk sätesspänning (isometrisk)"
+  },
+  "11647": {
+    "name": "enbens pogohopp"
+  },
+  "11648": {
+    "name": "W-lyft på golvet"
+  },
+  "11649": {
+    "name": "vadstretch med böjt knä"
+  },
   "1165": {
     "name": "stående militärpress med skivstång (utan ställning)"
+  },
+  "11650": {
+    "name": "sittande enbens vadpress på stol"
+  },
+  "11651": {
+    "name": "sittande mobilisering av knäskålen"
+  },
+  "11652": {
+    "name": "nervglidning för ischiasnerven"
+  },
+  "11653": {
+    "name": "stående sätesspänning"
+  },
+  "11654": {
+    "name": "sittande knä nedåt"
+  },
+  "11656": {
+    "name": "hydroterapi, gång på stället"
+  },
+  "11657": {
+    "name": "utfallssteg bakåt med viktskiva ovanför huvudet"
   },
   "1166": {
     "name": "hoppande split"
@@ -3218,6 +4352,21 @@
   "1171": {
     "name": "rygglyft i 45 grader med rotation"
   },
+  "11714": {
+    "name": "pull-ups i rep"
+  },
+  "11715": {
+    "name": "inverterad rodd i rep"
+  },
+  "11716": {
+    "name": "stående power-axelpress med sten"
+  },
+  "11717": {
+    "name": "plyometrisk armhävning v. 2"
+  },
+  "11718": {
+    "name": "lutande omvända flyes med bröststöd i maskin (skivladdad)"
+  },
   "1172": {
     "name": "assisterad armhävning med vikt"
   },
@@ -3233,17 +4382,89 @@
   "1176": {
     "name": "lutande frontlyft med hantlar"
   },
+  "11762": {
+    "name": "framåtböjd rodd i smithmaskin (med bröststöd)"
+  },
+  "11763": {
+    "name": "sittande lutande kabelcurl"
+  },
+  "11764": {
+    "name": "stående enarms bröstpress med underhandsgrepp i kabel"
+  },
   "1177": {
     "name": "liggande hantelpress med hammargrepp v. 2"
   },
   "1178": {
     "name": "stående enbens vadpress med hantel"
   },
+  "11781": {
+    "name": "hoppande step-up på låda"
+  },
+  "11782": {
+    "name": "sidohopp"
+  },
+  "11783": {
+    "name": "explosiva fingrar"
+  },
+  "11784": {
+    "name": "explosiv knäböj från häng"
+  },
+  "11785": {
+    "name": "axelmobilisering med inåtrotation"
+  },
+  "11786": {
+    "name": "sittande mobilisering av radialisnerven"
+  },
+  "11787": {
+    "name": "sittande mobilisering av medianusnerven"
+  },
+  "11788": {
+    "name": "sittande mobilisering av ulnarisnerven"
+  },
+  "11789": {
+    "name": "raka marklyft med förskjuten fotställning med skivstång"
+  },
   "1179": {
     "name": "fladdersparkar v. 2"
   },
+  "11790": {
+    "name": "balans med tåtapp i tre punkter"
+  },
+  "11791": {
+    "name": "enarms fingerpress med boll"
+  },
+  "11792": {
+    "name": "knästående isometrisk bicepshållning"
+  },
+  "11793": {
+    "name": "axelmobilisering med utåtpress"
+  },
+  "11794": {
+    "name": "enarms fingerpress med boll v. 2"
+  },
+  "11795": {
+    "name": "axelmobilisering med press bakåt"
+  },
+  "11796": {
+    "name": "axelmobilisering med utåtrotation"
+  },
+  "11797": {
+    "name": "axelmobilisering med press framåt"
+  },
+  "11798": {
+    "name": "framåtböjt armlyft bakifrån via sidan till framåt"
+  },
+  "11799": {
+    "name": "framåtlutat armlyft bakifrån via sidan till fram med hantlar"
+  },
   "1180": {
     "name": "liggande samtidiga alternerande benlyft med raka ben"
+  },
+  "11800": {
+    "name": "liggande enarms press med rak arm på golvet, hantel"
+  },
+  "11801": {
+    "name": "liggande enbens quadricepsmobilisering"
   },
   "1181": {
     "name": "liggande benlyft med raka ben v. 2"
@@ -3260,17 +4481,38 @@
   "1186": {
     "name": "alternerande raka benlyft (på bosuboll)"
   },
+  "11864": {
+    "name": "enarms curl med isometrisk hållning, hantel"
+  },
   "1187": {
     "name": "situp med kettlebell"
   },
+  "11877": {
+    "name": "hängande L-sitt"
+  },
+  "11878": {
+    "name": "benlyft i ribbstol"
+  },
+  "11879": {
+    "name": "step-up i smithmaskin"
+  },
   "1188": {
     "name": "vridande crunch med vikt (på bänk)"
+  },
+  "11880": {
+    "name": "T-stångsrodd med smalt grepp i maskin (skivladdad)"
   },
   "1189": {
     "name": "V-crunch med vikt (på bosuboll)"
   },
   "1190": {
     "name": "lutande situp med vridning v. 2"
+  },
+  "11903": {
+    "name": "stående stretch för höftböjarna"
+  },
+  "11904": {
+    "name": "stående höftböjarstretch i halvt knästående"
   },
   "1191": {
     "name": "tricepspress (huvudet nedanför bänken)"
@@ -3283,6 +4525,9 @@
   },
   "1195": {
     "name": "lutande hammer-bröstpress i maskin"
+  },
+  "11954": {
+    "name": "liggande kringlestretch"
   },
   "1196": {
     "name": "alternerande bicepscurl med hantlar v. 2"
@@ -3301,6 +4546,9 @@
   },
   "1201": {
     "name": "burpee med hantlar"
+  },
+  "12018": {
+    "name": "stående slingshots med kettlebell (avancerad)"
   },
   "1202": {
     "name": "horisontell Pallof press i kabel"
@@ -15646,1253 +16894,5 @@
   },
   "9999": {
     "name": "planka med knätouch"
-  },
-  "10003": {
-    "name": "sittande dorsalflexion av fotleden på golvet med gummiband"
-  },
-  "10014": {
-    "name": "höftadduktion liggande på rygg med boll som stöd"
-  },
-  "10031": {
-    "name": "fingerflexion med utsträckt tumme"
-  },
-  "10032": {
-    "name": "tumabduktion"
-  },
-  "10038": {
-    "name": "handledssupination med hantel"
-  },
-  "10040": {
-    "name": "stående alternerande korslyft med hantlar"
-  },
-  "10041": {
-    "name": "sidoplanka med hantel v. 2"
-  },
-  "10042": {
-    "name": "golvpress med ihoptryckta hantlar"
-  },
-  "10043": {
-    "name": "enarms Z-press med hantel"
-  },
-  "10044": {
-    "name": "hängande ryck med hantel"
-  },
-  "10045": {
-    "name": "snöängel med ansiktet mot golvet"
-  },
-  "10046": {
-    "name": "snöängel med ansiktet mot taket"
-  },
-  "10047": {
-    "name": "rumänska marklyft i delad fotställning med skivstång"
-  },
-  "10048": {
-    "name": "step-up i kabel"
-  },
-  "10049": {
-    "name": "butterfly z-press med skivstång"
-  },
-  "10050": {
-    "name": "superman till armhävning"
-  },
-  "10051": {
-    "name": "smalt knäböjsutfall"
-  },
-  "10052": {
-    "name": "kosackböj med landmine"
-  },
-  "10053": {
-    "name": "hopp från sittande position"
-  },
-  "10054": {
-    "name": "statiskt utfallssteg med skivstång"
-  },
-  "10055": {
-    "name": "smal knäböj till utfallssteg med hantlar"
-  },
-  "10056": {
-    "name": "landminepress med gummiband"
-  },
-  "10057": {
-    "name": "bordsbrygga med jack"
-  },
-  "10058": {
-    "name": "alternerande från knästående till halvt knästående"
-  },
-  "10065": {
-    "name": "bålrotation i maskin"
-  },
-  "10092": {
-    "name": "coreknäböj med skivstång"
-  },
-  "10093": {
-    "name": "halvknästående Thor-lyft med hantel"
-  },
-  "10094": {
-    "name": "stående korsvis frivändning med hantel"
-  },
-  "10095": {
-    "name": "enarms bear fly i kabel"
-  },
-  "10096": {
-    "name": "bakåtutfall till enarms axelpress med hantel"
-  },
-  "10097": {
-    "name": "knäböj med uppresning åt sidan med viktskiva"
-  },
-  "10106": {
-    "name": "högt drag med skivstång"
-  },
-  "10107": {
-    "name": "högt frivändningsdrag från häng med skivstång"
-  },
-  "10108": {
-    "name": "uppkast över huvudet med medicinboll"
-  },
-  "10109": {
-    "name": "kast bakåt över huvudet med medicinboll"
-  },
-  "10110": {
-    "name": "omvänd curl med tjock skivstång"
-  },
-  "10112": {
-    "name": "sittande enarms kabelrodd med latsfokus"
-  },
-  "10113": {
-    "name": "isometrisk knäböj med höftabduktion i maskin"
-  },
-  "10114": {
-    "name": "lu-lyft med viktskiva"
-  },
-  "10115": {
-    "name": "negativ press med smalt grepp med skivstång"
-  },
-  "10116": {
-    "name": "lutande bänkpress med smalt grepp i smithmaskin"
-  },
-  "10117": {
-    "name": "halvknästående enarms frivändning och press med hantel"
-  },
-  "10118": {
-    "name": "slam över huvudet i cirkel med medicinboll"
-  },
-  "10119": {
-    "name": "step-up i sidled i kabel"
-  },
-  "10120": {
-    "name": "ensidig step-up i kabel"
-  },
-  "10126": {
-    "name": "stående isometrisk utåtrotation av axeln med handduk"
-  },
-  "10138": {
-    "name": "stående isometrisk bicepshållning"
-  },
-  "10139": {
-    "name": "sittande isometrisk lårcurlhållning med pilatesboll"
-  },
-  "10160": {
-    "name": "lådhopp ner med landning på båda fötterna"
-  },
-  "10168": {
-    "name": "boxknäböj"
-  },
-  "10182": {
-    "name": "burpee över hanteln"
-  },
-  "10183": {
-    "name": "stående frontlyft med vridning, hantel"
-  },
-  "10184": {
-    "name": "alternerande Pallof press i utfallsställning med gummiband"
-  },
-  "10185": {
-    "name": "alternerande hantelrodd i björnplanka"
-  },
-  "10186": {
-    "name": "pullover till press i bäckenlyft, hantlar"
-  },
-  "10187": {
-    "name": "upphopp och sidohopp"
-  },
-  "10188": {
-    "name": "stående framåtböjning med alternerande tåberöring"
-  },
-  "10189": {
-    "name": "marklyft, utfallssteg bakåt och axelpress med viktskiva"
-  },
-  "10190": {
-    "name": "enarms push press med landmine"
-  },
-  "10191": {
-    "name": "gobletknäböj runt klockan"
-  },
-  "10192": {
-    "name": "kettlebell swing åt sidan"
-  },
-  "10193": {
-    "name": "burpee med slädpush"
-  },
-  "10194": {
-    "name": "fjärilsrullning på rygg"
-  },
-  "10195": {
-    "name": "thorlyft i halvt knästående med skivstång"
-  },
-  "10196": {
-    "name": "axelkomplex med hantlar"
-  },
-  "10197": {
-    "name": "horisontell smash med medicinboll"
-  },
-  "10198": {
-    "name": "alternerande negativ enbens benpress i maskin"
-  },
-  "10199": {
-    "name": "korsade rumänska marklyft med hantlar"
-  },
-  "10200": {
-    "name": "knästående rotation runt huvudet med hantel"
-  },
-  "10294": {
-    "name": "hälgång"
-  },
-  "10326": {
-    "name": "plankhopp till knäböj"
-  },
-  "10327": {
-    "name": "kraftfull russian twist med kettlebell"
-  },
-  "10328": {
-    "name": "bulgarisk split squat i bältesmaskin"
-  },
-  "10329": {
-    "name": "kroc-rodd med hantel"
-  },
-  "10330": {
-    "name": "powell-lyft med hantel"
-  },
-  "10331": {
-    "name": "stående pronationscurl med vridning, med vikt och gummiband (armbrytare)"
-  },
-  "10345": {
-    "name": "superman med pulsering"
-  },
-  "10366": {
-    "name": "sittande tibialispress på golvet med gummiband"
-  },
-  "10367": {
-    "name": "sittande tibialispress med kettlebell"
-  },
-  "10383": {
-    "name": "marklyft med sandsäck"
-  },
-  "10384": {
-    "name": "knäböj med sandsäck"
-  },
-  "10385": {
-    "name": "sandsäck upp på axeln"
-  },
-  "10386": {
-    "name": "sandsäcksbärning (på axlarna)"
-  },
-  "10387": {
-    "name": "sandsäcksbärning (björnkram)"
-  },
-  "10388": {
-    "name": "militärpress med sandsäck"
-  },
-  "10389": {
-    "name": "rodd med sandsäck"
-  },
-  "10410": {
-    "name": "knäböj med steel mace (med vikt)"
-  },
-  "10411": {
-    "name": "halo med steel mace (med vikt)"
-  },
-  "10427": {
-    "name": "sandsäckskast över axeln (med vikt)"
-  },
-  "10437": {
-    "name": "enarms låg kabelrodd (med rep)"
-  },
-  "10438": {
-    "name": "alternerande dödhäng"
-  },
-  "10439": {
-    "name": "klättring i två rep"
-  },
-  "10462": {
-    "name": "sittande hamstringsstretch på stol"
-  },
-  "10463": {
-    "name": "sittande bröststretch med skulderbladen ihop på stol"
-  },
-  "10503": {
-    "name": "latsdrag med smalt omvänt grepp"
-  },
-  "10517": {
-    "name": "stående enbens höftcirklar med stolstöd"
-  },
-  "10534": {
-    "name": "sittande enbens knäflexion"
-  },
-  "10535": {
-    "name": "sittande enbens tibialispress"
-  },
-  "10536": {
-    "name": "stående enbens knäextension med gummiband"
-  },
-  "10537": {
-    "name": "sittande enbens knäextension"
-  },
-  "10538": {
-    "name": "sittande enbens knäextension v. 2"
-  },
-  "10539": {
-    "name": "sittande enbens benspark med vikt v. 2"
-  },
-  "10540": {
-    "name": "liggande tibialispress med böjda knän"
-  },
-  "10541": {
-    "name": "sittande enbens knäflexion med knät kramat"
-  },
-  "10542": {
-    "name": "sittande enbens knäflexion med knät kramat, med handduk"
-  },
-  "10543": {
-    "name": "knästående knäböjning med stöd mot stol"
-  },
-  "10547": {
-    "name": "stående enbens vadgungning"
-  },
-  "10548": {
-    "name": "stående enbens koncentrationsvadpress"
-  },
-  "10549": {
-    "name": "upphöjd enbensbrygga"
-  },
-  "10550": {
-    "name": "liggande svendpress på golvet med viktskiva"
-  },
-  "10551": {
-    "name": "knäböjsmobilisering"
-  },
-  "10552": {
-    "name": "bålvridning i delad fotställning med medicinboll"
-  },
-  "10553": {
-    "name": "slag över huvudet med gummiband"
-  },
-  "10554": {
-    "name": "planka med alternerande slag på medicinboll"
-  },
-  "10555": {
-    "name": "sittande nackflexion till extension på stol"
-  },
-  "10556": {
-    "name": "sittande nackvridning från sida till sida på stol"
-  },
-  "10557": {
-    "name": "sittande nackböjning från sida till sida på stol"
-  },
-  "10558": {
-    "name": "situp med slam med medicinboll"
-  },
-  "10559": {
-    "name": "frontlyft med fångst med hantel"
-  },
-  "10560": {
-    "name": "bänkpress med skivstång med fångst"
-  },
-  "10561": {
-    "name": "enbens marklyft med kettlebellöverlämning"
-  },
-  "10562": {
-    "name": "ipsilateralt bakåtutfall med högt knä med kettlebell"
-  },
-  "10563": {
-    "name": "vadstretch med knät mot lådan"
-  },
-  "10564": {
-    "name": "sittande pronation och supination av foten"
-  },
-  "10565": {
-    "name": "90/90-stretch med press"
-  },
-  "10566": {
-    "name": "halvknästående bålvridning"
-  },
-  "10588": {
-    "name": "liggande frontlyft med skivstång"
-  },
-  "10589": {
-    "name": "liggande frontlyft med pinne"
-  },
-  "10590": {
-    "name": "latsstretch med walkout"
-  },
-  "10591": {
-    "name": "sittande enbens knäflexion med knät kramat, med gummiband"
-  },
-  "10592": {
-    "name": "halvknästående hamstringsstretch"
-  },
-  "10593": {
-    "name": "lutande plankan med jack-hopp"
-  },
-  "10594": {
-    "name": "sidoslag med gummiband"
-  },
-  "10595": {
-    "name": "pullover med fångst med medicinboll"
-  },
-  "10597": {
-    "name": "inåtrotation i 90 grader med fångst i kabel"
-  },
-  "10598": {
-    "name": "liggande smal press och fångst på golvet med medicinboll"
-  },
-  "10639": {
-    "name": "full situp i glute ham developer"
-  },
-  "10646": {
-    "name": "lutande rodd på mage i maskin"
-  },
-  "10650": {
-    "name": "explosiv armhävning med gummiband"
-  },
-  "10651": {
-    "name": "enbens abduktion stående på bosuboll med gummiband"
-  },
-  "10654": {
-    "name": "liggande knäextension på tårna i pilatesmaskin"
-  },
-  "10655": {
-    "name": "liggande knäextension i pilatesmaskin"
-  },
-  "10656": {
-    "name": "liggande knäextension på hälarna i pilatesmaskin"
-  },
-  "10657": {
-    "name": "liggande vadpress i pilatesmaskin"
-  },
-  "10658": {
-    "name": "the hundred i pilatesmaskin"
-  },
-  "10660": {
-    "name": "assisterad enarms pull-up med gummiband"
-  },
-  "10661": {
-    "name": "assisterad enarms pull-up med gummiband i ringar"
-  },
-  "10662": {
-    "name": "rocky pull-up till drag i ringar"
-  },
-  "10663": {
-    "name": "skin the cat i ringar"
-  },
-  "10664": {
-    "name": "planchepress"
-  },
-  "10665": {
-    "name": "armbågsplanche"
-  },
-  "10667": {
-    "name": "knästående enarms horisontell kabelrodd"
-  },
-  "10668": {
-    "name": "knästående enarms horisontell rodd med gummiband"
-  },
-  "10669": {
-    "name": "sittande lutande bröstpress i viktmagasinsmaskin"
-  },
-  "10670": {
-    "name": "sittande lutande enarms bröstpress i viktmagasinsmaskin"
-  },
-  "10671": {
-    "name": "sittande bröstpress i viktmagasinsmaskin"
-  },
-  "10672": {
-    "name": "sittande enarms bröstpress i viktmagasinsmaskin"
-  },
-  "10673": {
-    "name": "knäböj med kettlebell"
-  },
-  "10674": {
-    "name": "knäböj med kettlebells på ryggen"
-  },
-  "10675": {
-    "name": "hoppande knäböj med landmine"
-  },
-  "10676": {
-    "name": "gång med viktad ryggsäck"
-  },
-  "10677": {
-    "name": "löpning med viktad ryggsäck"
-  },
-  "10710": {
-    "name": "liggande crunch med viktskiva"
-  },
-  "10729": {
-    "name": "vattencykel"
-  },
-  "10730": {
-    "name": "rumänska marklyft med sandsäck"
-  },
-  "10731": {
-    "name": "repklättring i L-sit"
-  },
-  "10732": {
-    "name": "hopp från sida till sida över steppbräda"
-  },
-  "10733": {
-    "name": "enbensbalans på balansbräda"
-  },
-  "10734": {
-    "name": "enbensbalans på balansplatta"
-  },
-  "10735": {
-    "name": "hängande alternerande knälyft"
-  },
-  "10736": {
-    "name": "headbanger"
-  },
-  "10738": {
-    "name": "lådhopp genom armarna"
-  },
-  "10739": {
-    "name": "liggande enarms tricepsstretch"
-  },
-  "10740": {
-    "name": "liggande enarms tricepsstretch med pinne"
-  },
-  "10741": {
-    "name": "stående enarms tricepsstretch med gummiband"
-  },
-  "10742": {
-    "name": "liggande enarms glidning från Y till T"
-  },
-  "10743": {
-    "name": "från knästående till lådhopp"
-  },
-  "10744": {
-    "name": "sittande enbens hamstringsstretch med gummiband"
-  },
-  "10745": {
-    "name": "sittande enbens halvcirkel"
-  },
-  "10746": {
-    "name": "sittande enbens knäextension med gummiband"
-  },
-  "10747": {
-    "name": "snabba fötter in och ut i löpning"
-  },
-  "10748": {
-    "name": "stående enbens tåtapp framåt, bakåt och åt sidan"
-  },
-  "10749": {
-    "name": "gång med bensparkar"
-  },
-  "10750": {
-    "name": "från knästående till stående"
-  },
-  "10751": {
-    "name": "vadhopp"
-  },
-  "10752": {
-    "name": "jeffersoncurl"
-  },
-  "10753": {
-    "name": "sittande knälyft med gummiband"
-  },
-  "10754": {
-    "name": "enbens vadhopp"
-  },
-  "10755": {
-    "name": "enbens vadhopp med stöd av steppbräda"
-  },
-  "10756": {
-    "name": "vadhopp framåt"
-  },
-  "10757": {
-    "name": "vadhopp från sida till sida"
-  },
-  "10758": {
-    "name": "skridskohopp med medicinboll"
-  },
-  "10759": {
-    "name": "gång med höga knän"
-  },
-  "10760": {
-    "name": "gång på tå med gummiband"
-  },
-  "10761": {
-    "name": "sidogång på tå med gummiband"
-  },
-  "10762": {
-    "name": "tågång i sidled"
-  },
-  "10763": {
-    "name": "sittande enbens lårcurl i maskin (skivladdad)"
-  },
-  "10764": {
-    "name": "liggande enbensknäböj i maskin"
-  },
-  "10780": {
-    "name": "liggande nackflexion"
-  },
-  "10781": {
-    "name": "liggande nackextension"
-  },
-  "10817": {
-    "name": "handledsrotation med hantel"
-  },
-  "10818": {
-    "name": "enbenshopp i fyra riktningar v. 2"
-  },
-  "10819": {
-    "name": "enbens vadpress i delad fotställning"
-  },
-  "10820": {
-    "name": "stående balans med höftabduktion med böjt ben, med gummiband"
-  },
-  "10847": {
-    "name": "liggande groda och bencirklar i pilatesmaskin"
-  },
-  "10848": {
-    "name": "liggande löpning i pilatesmaskin"
-  },
-  "10849": {
-    "name": "liggande bäckenlyft i pilatesmaskin"
-  },
-  "10850": {
-    "name": "sidospagat i pilatesmaskin"
-  },
-  "10851": {
-    "name": "rysk knäböj i pilatesmaskin"
-  },
-  "10852": {
-    "name": "rysk spagat i pilatesmaskin"
-  },
-  "10853": {
-    "name": "long spine i pilatesmaskin"
-  },
-  "10854": {
-    "name": "armcirklar i pilatesmaskin"
-  },
-  "10855": {
-    "name": "bröstexpansion i pilatesmaskin"
-  },
-  "10856": {
-    "name": "lyft över huvudet i pilatesmaskin"
-  },
-  "10857": {
-    "name": "jeffersoncurl med skivstång"
-  },
-  "10858": {
-    "name": "lu-lyft med hantlar"
-  },
-  "10859": {
-    "name": "stående tibialislyft från golvet med väggstöd"
-  },
-  "10860": {
-    "name": "sidospark med benet bakåt i kabel"
-  },
-  "10861": {
-    "name": "omvänd rygglyft med viktboll i GHD"
-  },
-  "10862": {
-    "name": "enbens marklyft mot boll"
-  },
-  "10863": {
-    "name": "sittande enarms axelpress med neutralt grepp i smithmaskin"
-  },
-  "10864": {
-    "name": "step-up på hög låda"
-  },
-  "10865": {
-    "name": "enbens rumänska marklyft på bänk med hantel"
-  },
-  "10866": {
-    "name": "framåtböjd enarms rodd med latsfokus i maskin"
-  },
-  "10867": {
-    "name": "lutande rodd på mage med neutralt grepp i maskin"
-  },
-  "10868": {
-    "name": "knäböj på bosuboll"
-  },
-  "10869": {
-    "name": "enbens knäböj på bosuboll"
-  },
-  "10870": {
-    "name": "gående bäckenlyft med gummiband"
-  },
-  "10871": {
-    "name": "crunch med viktskiva (händerna ovanför huvudet)"
-  },
-  "10873": {
-    "name": "crunch med vikt och hantel över huvudet"
-  },
-  "10875": {
-    "name": "sidoböjning 45 grader med viktskiva"
-  },
-  "10877": {
-    "name": "crunch med viktskiva (händerna ovanför huvudet) v. 2"
-  },
-  "10879": {
-    "name": "crunch med hantel (händerna ovanför huvudet) v. 2"
-  },
-  "10882": {
-    "name": "knästående plyometrisk armhävning"
-  },
-  "10890": {
-    "name": "tåhopp på studsmatta"
-  },
-  "10899": {
-    "name": "liggande abduktion med gummiband"
-  },
-  "10901": {
-    "name": "enarms shrugs med hantel"
-  },
-  "10902": {
-    "name": "excentrisk enarms pull-up"
-  },
-  "10903": {
-    "name": "assisterad enarms pull-up med gummiband v. 2"
-  },
-  "10904": {
-    "name": "hamstringsbrygga v. 2"
-  },
-  "10905": {
-    "name": "hamstringsbrygga med benspark v. 2"
-  },
-  "10906": {
-    "name": "split squat-håll"
-  },
-  "10907": {
-    "name": "halvt split squat-håll"
-  },
-  "10908": {
-    "name": "sittande enbens fotcirkel"
-  },
-  "10909": {
-    "name": "sittande fotcirklar"
-  },
-  "10910": {
-    "name": "sittande enbens fot från sida till sida"
-  },
-  "10911": {
-    "name": "sittande tåkrullning"
-  },
-  "10912": {
-    "name": "sittande enbens tåkrullning"
-  },
-  "10913": {
-    "name": "liggande enbens benlyft"
-  },
-  "10914": {
-    "name": "kvartsknäböj"
-  },
-  "10915": {
-    "name": "enbens marklyft med håll"
-  },
-  "10916": {
-    "name": "enbens marklyft med tåberöring"
-  },
-  "10917": {
-    "name": "sittande enbens tibialispress v. 2"
-  },
-  "10918": {
-    "name": "sittande enbens tåkrullning v. 2"
-  },
-  "10919": {
-    "name": "sittande enbens fot från sida till sida v. 2"
-  },
-  "10920": {
-    "name": "sittande enbens tåpress"
-  },
-  "10921": {
-    "name": "sittande enbens knäextension med hållning, med gummiband"
-  },
-  "10922": {
-    "name": "stående hälsenestretch med bakre benet"
-  },
-  "10925": {
-    "name": "hopp från två ben till ett"
-  },
-  "10926": {
-    "name": "stående väggglidning, statisk kvarts knäböj"
-  },
-  "10927": {
-    "name": "stående glidpress framåt med handduk"
-  },
-  "10928": {
-    "name": "stående serratusglidning mot vägg med handduk"
-  },
-  "10929": {
-    "name": "stående glidande inåtrotation med handduk"
-  },
-  "10930": {
-    "name": "stående glidande utåtrotation med handduk"
-  },
-  "10931": {
-    "name": "stående utåtrotation bakom ryggen med handduk"
-  },
-  "10932": {
-    "name": "axelstretch bakom ryggen med handduk"
-  },
-  "10933": {
-    "name": "sidoliggande utåtrotation"
-  },
-  "10934": {
-    "name": "utåtrotation i axeln i sidoläge"
-  },
-  "10935": {
-    "name": "axelmobilisering i abduktion bakom ryggen med pinne"
-  },
-  "10936": {
-    "name": "axelrotation över huvudet med pinne"
-  },
-  "10937": {
-    "name": "stående axelrotation mot vägg"
-  },
-  "10948": {
-    "name": "skulderbladspull-up med sving"
-  },
-  "10949": {
-    "name": "bicepssving med raka armar, hantel"
-  },
-  "10950": {
-    "name": "armhävningshållning med raka armar i ringar"
-  },
-  "10951": {
-    "name": "benlyft i L-sit"
-  },
-  "10977": {
-    "name": "rygglyft med hantel v. 2"
-  },
-  "10987": {
-    "name": "lådhopp med hantlar"
-  },
-  "10988": {
-    "name": "från knästående till lådhopp med hantlar"
-  },
-  "10989": {
-    "name": "tuck planche på parallettes"
-  },
-  "10995": {
-    "name": "krabbgång framåt och bakåt"
-  },
-  "10997": {
-    "name": "väggassisterad handstående till negativ tuck planche"
-  },
-  "10998": {
-    "name": "statisk handstående på ett ben i spagat med ansiktet mot väggen"
-  },
-  "11006": {
-    "name": "sittande armkorsning och bröstet ut på stol"
-  },
-  "11010": {
-    "name": "höftlyft med ländryggen från golvet"
-  },
-  "11014": {
-    "name": "frontlyft med underhandsgrepp, hantlar"
-  },
-  "11015": {
-    "name": "skulderbladspull-up v. 2"
-  },
-  "11016": {
-    "name": "halvknästående enarms axelpress med hantel"
-  },
-  "11017": {
-    "name": "knästående enarms axelpress med hantel"
-  },
-  "11047": {
-    "name": "liggande abduktion"
-  },
-  "11048": {
-    "name": "sittande abduktion med böjda knän"
-  },
-  "11049": {
-    "name": "sittande abduktion med böjda knän och fötterna från golvet"
-  },
-  "11050": {
-    "name": "sittande abduktion med böjda knän och fötterna från golvet med gummiband"
-  },
-  "11051": {
-    "name": "stående korsad tricepsextension med neutralt grepp i övre kabel"
-  },
-  "11053": {
-    "name": "höftlyft med förskjuten fotställning i smithmaskin"
-  },
-  "11054": {
-    "name": "höftlyft med förskjuten fotställning i maskin (skivladdad)"
-  },
-  "11055": {
-    "name": "sumomarklyft i bältesmaskin (V-handtag)"
-  },
-  "11056": {
-    "name": "sittande skulderbladsindragning i maskin (skivladdad)"
-  },
-  "11057": {
-    "name": "sittande skulderbladsindragning i kabel"
-  },
-  "11058": {
-    "name": "rumänska marklyft med höftstöd med hantlar"
-  },
-  "11059": {
-    "name": "knästående kickback med benet på bänk med gummiband"
-  },
-  "11060": {
-    "name": "face pulls med utåtrotation"
-  },
-  "11077": {
-    "name": "liggande abduktion över bröstet med hantlar"
-  },
-  "11088": {
-    "name": "utfallssteg bakåt med armsträck och vridning"
-  },
-  "11089": {
-    "name": "spagatstretch med ryggrullning"
-  },
-  "11090": {
-    "name": "negativ front lever-lyft"
-  },
-  "11091": {
-    "name": "enarms hängande tår till stång"
-  },
-  "11092": {
-    "name": "knästående landmine 180"
-  },
-  "11093": {
-    "name": "2-3 marklyft med skivstång"
-  },
-  "11095": {
-    "name": "sittande katt och ko på stol"
-  },
-  "11250": {
-    "name": "stående kabelflyes v. 3"
-  },
-  "11251": {
-    "name": "knästående vedhuggning i kabel v. 3"
-  },
-  "11252": {
-    "name": "overheadknäböj i kabel v. 3"
-  },
-  "11253": {
-    "name": "knästående latsdrag v. 3"
-  },
-  "11254": {
-    "name": "stående omvända kabelflyes v. 3"
-  },
-  "11255": {
-    "name": "sidoutfall i kabel v. 3"
-  },
-  "11256": {
-    "name": "bänkpress i kabel v. 3"
-  },
-  "11257": {
-    "name": "sittande hög kabelrodd v. 3"
-  },
-  "11258": {
-    "name": "stående tryck och drag i kabel v. 3"
-  },
-  "11259": {
-    "name": "stående höftextension i kabel v. 3"
-  },
-  "11260": {
-    "name": "knästående militärpress i kabel v. 3"
-  },
-  "11261": {
-    "name": "stående bicepscurl i kabel (rep) v. 3"
-  },
-  "11262": {
-    "name": "liggande alternerande jackknife med böjt ben i kabel v. 3"
-  },
-  "11263": {
-    "name": "enarms kabelrodd med rotation v. 3"
-  },
-  "11264": {
-    "name": "lutande bänkpress i kabel v. 3"
-  },
-  "11265": {
-    "name": "stående höftflexion i kabel v. 3"
-  },
-  "11266": {
-    "name": "stående höftabduktion i kabel v. 3"
-  },
-  "11267": {
-    "name": "stående höftadduktion i kabel v. 3"
-  },
-  "11268": {
-    "name": "knäböj i kabel v. 3"
-  },
-  "11269": {
-    "name": "framåtlutad enarms kabelrodd v. 3"
-  },
-  "11270": {
-    "name": "knästående kabelcrunch v. 3"
-  },
-  "11271": {
-    "name": "stående bålrotation i kabel v. 3"
-  },
-  "11272": {
-    "name": "stående bicepscurl till arnoldpress i kabel v. 3"
-  },
-  "11273": {
-    "name": "liggande kabelflyes v. 3"
-  },
-  "11274": {
-    "name": "stående alternerande diagonal bröstpress i kabel v. 3"
-  },
-  "11275": {
-    "name": "kabelrodd i sidoplanka v. 3"
-  },
-  "11276": {
-    "name": "enbens lårcurl på mage i kabel v. 3"
-  },
-  "11277": {
-    "name": "stående frontlyft i kabel v. 3"
-  },
-  "11278": {
-    "name": "stående sidoböjning i kabel v. 3"
-  },
-  "11279": {
-    "name": "stående enarms tricepsextension över huvudet i kabel v. 3"
-  },
-  "11282": {
-    "name": "situp med raka armar i glute ham developer"
-  },
-  "11283": {
-    "name": "korsat grodhopp"
-  },
-  "11284": {
-    "name": "enarms alternerande flyes med kettlebell"
-  },
-  "11285": {
-    "name": "liggande bröstpress på golvet med gummiband"
-  },
-  "11286": {
-    "name": "sidoutfall i halvknästående med kettlebell"
-  },
-  "11287": {
-    "name": "stående rumänska marklyft med kettlebell bakom ryggen"
-  },
-  "11288": {
-    "name": "stående shrugs ovanför huvudet med kroppsvikt"
-  },
-  "11289": {
-    "name": "stående fotleds- och höftövning"
-  },
-  "11303": {
-    "name": "bänkknäböj i smithmaskin"
-  },
-  "11309": {
-    "name": "enarms latsdrag med omvänt grepp i maskin (skivladdad)"
-  },
-  "11315": {
-    "name": "lutande armhävning med smalt grepp mot stol vid vägg"
-  },
-  "11316": {
-    "name": "stående väggglidning till halv knäböj"
-  },
-  "11317": {
-    "name": "rygglyft med viktskiva v. 2"
-  },
-  "11374": {
-    "name": "sleeper stretch"
-  },
-  "11383": {
-    "name": "stretch för handledssträckarna"
-  },
-  "11436": {
-    "name": "stående tricepsextension över huvudet med neutralt grepp i kabel"
-  },
-  "11450": {
-    "name": "step-up (första och andra trappsteget)"
-  },
-  "11451": {
-    "name": "stående väggglidning, statisk halv knäböj"
-  },
-  "11452": {
-    "name": "vadstretch v. 2"
-  },
-  "11529": {
-    "name": "enbens rumänska marklyft i bältesmaskin"
-  },
-  "11567": {
-    "name": "liggande lårcurl till omvänd rygglyft i maskin"
-  },
-  "11568": {
-    "name": "enbens bulgarisk split squat från upphöjning i smithmaskin"
-  },
-  "11569": {
-    "name": "stående benlyft åt sidan med gummiband"
-  },
-  "11570": {
-    "name": "stående höftextension med gummiband"
-  },
-  "11571": {
-    "name": "rumpgång"
-  },
-  "11572": {
-    "name": "liggande torakal extension på foamroller"
-  },
-  "11644": {
-    "name": "sidoliggande höftabduktion med gummiband"
-  },
-  "11645": {
-    "name": "statisk quadricepsspänning (isometrisk)"
-  },
-  "11646": {
-    "name": "statisk sätesspänning (isometrisk)"
-  },
-  "11647": {
-    "name": "enbens pogohopp"
-  },
-  "11648": {
-    "name": "W-lyft på golvet"
-  },
-  "11649": {
-    "name": "vadstretch med böjt knä"
-  },
-  "11650": {
-    "name": "sittande enbens vadpress på stol"
-  },
-  "11651": {
-    "name": "sittande mobilisering av knäskålen"
-  },
-  "11652": {
-    "name": "nervglidning för ischiasnerven"
-  },
-  "11653": {
-    "name": "stående sätesspänning"
-  },
-  "11654": {
-    "name": "sittande knä nedåt"
-  },
-  "11656": {
-    "name": "hydroterapi, gång på stället"
-  },
-  "11657": {
-    "name": "utfallssteg bakåt med viktskiva ovanför huvudet"
-  },
-  "11714": {
-    "name": "pull-ups i rep"
-  },
-  "11715": {
-    "name": "inverterad rodd i rep"
-  },
-  "11716": {
-    "name": "stående power-axelpress med sten"
-  },
-  "11717": {
-    "name": "plyometrisk armhävning v. 2"
-  },
-  "11718": {
-    "name": "lutande omvända flyes med bröststöd i maskin (skivladdad)"
-  },
-  "11762": {
-    "name": "framåtböjd rodd i smithmaskin (med bröststöd)"
-  },
-  "11763": {
-    "name": "sittande lutande kabelcurl"
-  },
-  "11764": {
-    "name": "stående enarms bröstpress med underhandsgrepp i kabel"
-  },
-  "11781": {
-    "name": "hoppande step-up på låda"
-  },
-  "11782": {
-    "name": "sidohopp"
-  },
-  "11783": {
-    "name": "explosiva fingrar"
-  },
-  "11784": {
-    "name": "explosiv knäböj från häng"
-  },
-  "11785": {
-    "name": "axelmobilisering med inåtrotation"
-  },
-  "11786": {
-    "name": "sittande mobilisering av radialisnerven"
-  },
-  "11787": {
-    "name": "sittande mobilisering av medianusnerven"
-  },
-  "11788": {
-    "name": "sittande mobilisering av ulnarisnerven"
-  },
-  "11789": {
-    "name": "raka marklyft med förskjuten fotställning med skivstång"
-  },
-  "11790": {
-    "name": "balans med tåtapp i tre punkter"
-  },
-  "11791": {
-    "name": "enarms fingerpress med boll"
-  },
-  "11792": {
-    "name": "knästående isometrisk bicepshållning"
-  },
-  "11793": {
-    "name": "axelmobilisering med utåtpress"
-  },
-  "11794": {
-    "name": "enarms fingerpress med boll v. 2"
-  },
-  "11795": {
-    "name": "axelmobilisering med press bakåt"
-  },
-  "11796": {
-    "name": "axelmobilisering med utåtrotation"
-  },
-  "11797": {
-    "name": "axelmobilisering med press framåt"
-  },
-  "11798": {
-    "name": "framåtböjt armlyft bakifrån via sidan till framåt"
-  },
-  "11799": {
-    "name": "framåtlutat armlyft bakifrån via sidan till fram med hantlar"
-  },
-  "11800": {
-    "name": "liggande enarms press med rak arm på golvet, hantel"
-  },
-  "11801": {
-    "name": "liggande enbens quadricepsmobilisering"
-  },
-  "11864": {
-    "name": "enarms curl med isometrisk hållning, hantel"
-  },
-  "11877": {
-    "name": "hängande L-sitt"
-  },
-  "11878": {
-    "name": "benlyft i ribbstol"
-  },
-  "11879": {
-    "name": "step-up i smithmaskin"
-  },
-  "11880": {
-    "name": "T-stångsrodd med smalt grepp i maskin (skivladdad)"
-  },
-  "11903": {
-    "name": "stående stretch för höftböjarna"
-  },
-  "11904": {
-    "name": "stående höftböjarstretch i halvt knästående"
-  },
-  "11954": {
-    "name": "liggande kringlestretch"
-  },
-  "12018": {
-    "name": "stående slingshots med kettlebell (avancerad)"
   }
 }

@@ -2744,8 +2744,14 @@
   "1000": {
     "name": "elevação de gémeos invertida a uma perna com banda elástica"
   },
+  "10003": {
+    "name": "dorsiflexão do tornozelo sentado no chão com banda elástica"
+  },
   "1001": {
     "name": "afundo estático a uma perna com banda elástica"
+  },
+  "10014": {
+    "name": "adução de anca deitado de barriga para cima assistida com bola de pilates"
   },
   "1002": {
     "name": "elevação de pernas esticadas deitado com banda elástica"
@@ -2753,14 +2759,83 @@
   "1003": {
     "name": "agachamento com remada com banda elástica"
   },
+  "10031": {
+    "name": "flexão dos dedos com extensão do polegar"
+  },
+  "10032": {
+    "name": "abdução do polegar"
+  },
+  "10038": {
+    "name": "supinação do pulso com haltere"
+  },
   "1004": {
     "name": "agachamento com banda elástica"
+  },
+  "10040": {
+    "name": "elevação cruzada alternada de pé com halteres"
+  },
+  "10041": {
+    "name": "prancha lateral com haltere v. 2"
+  },
+  "10042": {
+    "name": "supino em compressão deitado no chão com halteres"
+  },
+  "10043": {
+    "name": "Z press unilateral com haltere"
+  },
+  "10044": {
+    "name": "hang snatch com haltere"
+  },
+  "10045": {
+    "name": "anjo na neve de barriga para baixo"
+  },
+  "10046": {
+    "name": "anjo na neve de barriga para cima"
+  },
+  "10047": {
+    "name": "peso morto romeno em posição de afundo com barra"
+  },
+  "10048": {
+    "name": "step-up na polia"
+  },
+  "10049": {
+    "name": "z press borboleta com barra"
   },
   "1005": {
     "name": "abdominal de pé com banda elástica"
   },
+  "10050": {
+    "name": "superman para flexão"
+  },
+  "10051": {
+    "name": "afundo com agachamento estreito"
+  },
+  "10052": {
+    "name": "agachamento cossaco no landmine"
+  },
+  "10053": {
+    "name": "salto a partir da posição sentada"
+  },
+  "10054": {
+    "name": "afundo sem deslocação com barra"
+  },
+  "10055": {
+    "name": "afundo com agachamento estreito e halteres"
+  },
+  "10056": {
+    "name": "press no landmine com banda elástica"
+  },
+  "10057": {
+    "name": "ponte em mesa com abertura de pernas"
+  },
+  "10058": {
+    "name": "de ajoelhado a semiajoelhado alternado"
+  },
   "1006": {
     "name": "remada para deltoide posterior com banda elástica"
+  },
+  "10065": {
+    "name": "rotação do torso na máquina"
   },
   "1007": {
     "name": "abdominal com rotação de pé com banda elástica"
@@ -2771,17 +2846,86 @@
   "1009": {
     "name": "peso morto de pernas rígidas com banda elástica"
   },
+  "10092": {
+    "name": "agachamento de core com barra"
+  },
+  "10093": {
+    "name": "thor lift semiajoelhado com haltere"
+  },
+  "10094": {
+    "name": "clean cruzado de pé com haltere"
+  },
+  "10095": {
+    "name": "bear fly a um braço na polia"
+  },
+  "10096": {
+    "name": "afundo atrás para press de ombros unilateral com haltere"
+  },
+  "10097": {
+    "name": "agachamento lateral com disco"
+  },
   "1010": {
     "name": "peso morto de pernas esticadas com banda elástica"
+  },
+  "10106": {
+    "name": "high pull com barra"
+  },
+  "10107": {
+    "name": "hang clean high pull com barra"
+  },
+  "10108": {
+    "name": "lançamento por cima da cabeça com bola medicinal"
+  },
+  "10109": {
+    "name": "lançamento para trás por cima da cabeça com bola medicinal"
   },
   "1011": {
     "name": "rotação sentado com banda elástica"
   },
+  "10110": {
+    "name": "curl invertido com barra grossa"
+  },
+  "10112": {
+    "name": "remada sentada a um braço com foco nos dorsais na polia"
+  },
+  "10113": {
+    "name": "agachamento isométrico com abdução da anca na máquina"
+  },
+  "10114": {
+    "name": "elevação L-U com disco"
+  },
+  "10115": {
+    "name": "supino declinado com pega fechada com barra"
+  },
+  "10116": {
+    "name": "supino inclinado com pega fechada na máquina Smith"
+  },
+  "10117": {
+    "name": "clean and press a um braço semiajoelhado com haltere"
+  },
+  "10118": {
+    "name": "slam em círculo acima da cabeça com bola medicinal"
+  },
+  "10119": {
+    "name": "step-up lateral na polia"
+  },
   "1012": {
     "name": "press acima da cabeça com rotação com banda elástica"
   },
+  "10120": {
+    "name": "step-up unilateral na polia"
+  },
+  "10126": {
+    "name": "rotação externa isométrica do ombro de pé com toalha"
+  },
   "1013": {
     "name": "puxada com pega supinada com banda elástica"
+  },
+  "10138": {
+    "name": "isometria de bíceps de pé"
+  },
+  "10139": {
+    "name": "curl de pernas isométrico sentado com bola de pilates"
   },
   "1014": {
     "name": "abdominal em V com banda elástica"
@@ -2792,14 +2936,77 @@
   "1016": {
     "name": "curl de pulso com banda elástica"
   },
+  "10160": {
+    "name": "salto da caixa com aterragem a dois pés"
+  },
+  "10168": {
+    "name": "agachamento à caixa com o peso do corpo"
+  },
   "1017": {
     "name": "elevação em Y com banda elástica"
   },
   "1018": {
     "name": "encolhimento de ombros com banda elástica"
   },
+  "10182": {
+    "name": "burpee por cima do haltere"
+  },
+  "10183": {
+    "name": "elevação frontal com rotação de pé com haltere"
+  },
+  "10184": {
+    "name": "pallof press alternado em posição de afundo com banda elástica"
+  },
+  "10185": {
+    "name": "remada alternada em prancha de urso com halteres"
+  },
+  "10186": {
+    "name": "pullover para press em ponte com haltere"
+  },
+  "10187": {
+    "name": "salto vertical com salto lateral"
+  },
+  "10188": {
+    "name": "toque alternado nos pés de pé com inclinação"
+  },
+  "10189": {
+    "name": "peso morto com afundo para trás e press acima da cabeça com disco"
+  },
+  "10190": {
+    "name": "push press unilateral no landmine"
+  },
+  "10191": {
+    "name": "agachamento goblet em relógio"
+  },
+  "10192": {
+    "name": "swing lateral com kettlebell"
+  },
+  "10193": {
+    "name": "burpee com empurrar de trenó"
+  },
+  "10194": {
+    "name": "rolamento para trás em borboleta"
+  },
+  "10195": {
+    "name": "thor lift semiajoelhado com barra"
+  },
+  "10196": {
+    "name": "complexo de ombros com halteres"
+  },
+  "10197": {
+    "name": "smash horizontal com bola medicinal"
+  },
+  "10198": {
+    "name": "leg press negativo a uma perna alternado"
+  },
+  "10199": {
+    "name": "peso morto romeno cruzado com haltere"
+  },
   "1020": {
     "name": "abdominal lateral com banda elástica"
+  },
+  "10200": {
+    "name": "rotação à volta da cabeça ajoelhado com haltere"
   },
   "1021": {
     "name": "elevação de perna de pé com banda elástica"
@@ -2819,6 +3026,9 @@
   "1029": {
     "name": "press de peito paralelo na máquina"
   },
+  "10294": {
+    "name": "andar nos calcanhares"
+  },
   "1030": {
     "name": "aberturas na máquina pec deck"
   },
@@ -2828,11 +3038,32 @@
   "1032": {
     "name": "curl de bíceps alternado na máquina"
   },
+  "10326": {
+    "name": "salto de prancha para agachamento"
+  },
+  "10327": {
+    "name": "rotação russa forte com kettlebell"
+  },
+  "10328": {
+    "name": "agachamento búlgaro com cinto na máquina"
+  },
+  "10329": {
+    "name": "remada Kroc com haltere"
+  },
   "1033": {
     "name": "extensão de tríceps na máquina v. 2"
   },
+  "10330": {
+    "name": "elevação Powell com haltere"
+  },
+  "10331": {
+    "name": "curl com rotação em pronação de pé com banda elástica e carga (braço de ferro)"
+  },
   "1034": {
     "name": "abdução lateral da anca na máquina"
+  },
+  "10345": {
+    "name": "superman com pulsações"
   },
   "1035": {
     "name": "adução lateral da anca na máquina"
@@ -2840,11 +3071,38 @@
   "1036": {
     "name": "elevação de perna de pé na máquina"
   },
+  "10366": {
+    "name": "press de tibial sentado no chão com banda elástica"
+  },
+  "10367": {
+    "name": "press de tibial sentado com kettlebell"
+  },
   "1037": {
     "name": "coice atrás de pé na máquina"
   },
   "1038": {
     "name": "agachamento em cadeira na máquina"
+  },
+  "10383": {
+    "name": "peso morto com saco de areia"
+  },
+  "10384": {
+    "name": "agachamento com saco de areia"
+  },
+  "10385": {
+    "name": "saco de areia ao ombro"
+  },
+  "10386": {
+    "name": "transporte de saco de areia (aos ombros)"
+  },
+  "10387": {
+    "name": "transporte de saco de areia (abraço de urso)"
+  },
+  "10388": {
+    "name": "press militar com saco de areia"
+  },
+  "10389": {
+    "name": "remada com saco de areia"
   },
   "1039": {
     "name": "agachamento completo na máquina"
@@ -2855,11 +3113,29 @@
   "1041": {
     "name": "press de peito deitado na máquina (com discos)"
   },
+  "10410": {
+    "name": "agachamento com steel mace (com carga)"
+  },
+  "10411": {
+    "name": "halo com steel mace (com carga)"
+  },
   "1042": {
     "name": "extensão do pescoço deitado com carga"
   },
+  "10427": {
+    "name": "lançamento de saco de areia por cima do ombro (com carga)"
+  },
   "1043": {
     "name": "flexão do pescoço deitado com carga"
+  },
+  "10437": {
+    "name": "remada baixa a um braço na polia (com corda)"
+  },
+  "10438": {
+    "name": "suspensão na barra alternada"
+  },
+  "10439": {
+    "name": "subida em duas cordas"
   },
   "1044": {
     "name": "pinça de discos"
@@ -2869,6 +3145,12 @@
   },
   "1046": {
     "name": "remada elevada na polia"
+  },
+  "10462": {
+    "name": "alongamento de isquiotibiais sentado numa cadeira"
+  },
+  "10463": {
+    "name": "alongamento de peito a juntar as omoplatas sentado numa cadeira"
   },
   "1047": {
     "name": "puxada ao peito com pega fechada na polia"
@@ -2882,8 +3164,14 @@
   "1050": {
     "name": "elevação de gémeos na máquina Smith (com bloco)"
   },
+  "10503": {
+    "name": "puxada ao peito com pega fechada invertida na polia"
+  },
   "1051": {
     "name": "alongamento do gato"
+  },
+  "10517": {
+    "name": "círculos com a anca a uma perna de pé com apoio numa cadeira"
   },
   "1052": {
     "name": "alongamento das costas na barra"
@@ -2891,17 +3179,137 @@
   "1053": {
     "name": "alongamento do flexor da anca ajoelhado"
   },
+  "10534": {
+    "name": "flexão do joelho a uma perna sentado"
+  },
+  "10535": {
+    "name": "press de tibial a uma perna sentado"
+  },
+  "10536": {
+    "name": "extensão do joelho a uma perna de pé com banda elástica"
+  },
+  "10537": {
+    "name": "extensão do joelho a uma perna sentado"
+  },
+  "10538": {
+    "name": "extensão do joelho a uma perna sentado v. 2"
+  },
+  "10539": {
+    "name": "extensão do joelho a uma perna sentado com carga v. 2"
+  },
   "1054": {
     "name": "alongamento de gémeos em afundo com perna estendida"
+  },
+  "10540": {
+    "name": "press de tibial deitado com joelhos fletidos"
+  },
+  "10541": {
+    "name": "flexão do joelho a uma perna sentado, abraçando o joelho"
+  },
+  "10542": {
+    "name": "flexão do joelho a uma perna sentado, abraçando o joelho, com toalha"
+  },
+  "10543": {
+    "name": "flexão de joelho ajoelhado com apoio na cadeira"
+  },
+  "10547": {
+    "name": "balanço de gémeos a uma perna de pé"
+  },
+  "10548": {
+    "name": "elevação de gémeos concentrada a uma perna de pé"
+  },
+  "10549": {
+    "name": "ponte a uma perna elevada"
+  },
+  "10550": {
+    "name": "svend press deitado no chão com disco"
+  },
+  "10551": {
+    "name": "mobilização de agachamento"
+  },
+  "10552": {
+    "name": "rotação do tronco com pés desalinhados com bola medicinal"
+  },
+  "10553": {
+    "name": "golpe acima da cabeça com banda elástica"
+  },
+  "10554": {
+    "name": "prancha com toque alternado na bola"
+  },
+  "10555": {
+    "name": "flexão e extensão do pescoço sentado numa cadeira"
+  },
+  "10556": {
+    "name": "rotação do pescoço de um lado para o outro sentado numa cadeira"
+  },
+  "10557": {
+    "name": "inclinação do pescoço de um lado para o outro sentado numa cadeira"
+  },
+  "10558": {
+    "name": "abdominal completo com slam com bola medicinal"
+  },
+  "10559": {
+    "name": "elevação frontal completa com receção com haltere"
   },
   "1056": {
     "name": "alongamento de glúteos deitado"
   },
+  "10560": {
+    "name": "supino com barra com receção"
+  },
+  "10561": {
+    "name": "peso morto a uma perna com passagem do kettlebell"
+  },
+  "10562": {
+    "name": "afundo atrás ipsilateral com elevação de joelho com kettlebell"
+  },
+  "10563": {
+    "name": "alongamento de gémeos com joelho na caixa"
+  },
+  "10564": {
+    "name": "pronação e supinação do pé sentado"
+  },
+  "10565": {
+    "name": "alongamento 90 a 90 com press"
+  },
+  "10566": {
+    "name": "rotação do tronco semiajoelhado"
+  },
   "1058": {
     "name": "alongamento do peito a um braço de pé"
   },
+  "10588": {
+    "name": "elevação frontal deitado com barra"
+  },
+  "10589": {
+    "name": "elevação frontal deitado com bastão"
+  },
   "1059": {
     "name": "alongamento dos quadríceps de pé"
+  },
+  "10590": {
+    "name": "alongamento do dorsal com avanço das mãos"
+  },
+  "10591": {
+    "name": "flexão do joelho a uma perna sentado, abraçando o joelho, com banda elástica"
+  },
+  "10592": {
+    "name": "alongamento dos isquiotibiais semiajoelhado"
+  },
+  "10593": {
+    "name": "prancha inclinada com abertura de pernas"
+  },
+  "10594": {
+    "name": "golpe lateral com banda elástica"
+  },
+  "10595": {
+    "name": "pullover com receção com bola medicinal"
+  },
+  "10597": {
+    "name": "rotação interna a 90 graus com receção na polia"
+  },
+  "10598": {
+    "name": "press fechado deitado no chão com receção com bola medicinal"
   },
   "1060": {
     "name": "hip thrust com barra"
@@ -2915,14 +3323,92 @@
   "1063": {
     "name": "agachamento sumo com barra"
   },
+  "10639": {
+    "name": "abdominal completo no GHD"
+  },
   "1064": {
     "name": "agachamento sumo"
+  },
+  "10646": {
+    "name": "remada inclinada de barriga para baixo na máquina"
   },
   "1065": {
     "name": "elevação da anca deitado (na bola de pilates)"
   },
+  "10650": {
+    "name": "flexão explosiva com banda elástica"
+  },
+  "10651": {
+    "name": "abdução de perna a uma perna de pé no bosu com banda elástica"
+  },
+  "10654": {
+    "name": "extensão do joelho deitado sobre as pontas dos pés na máquina de pilates"
+  },
+  "10655": {
+    "name": "extensão do joelho deitado na máquina de pilates"
+  },
+  "10656": {
+    "name": "extensão do joelho deitado sobre os calcanhares na máquina de pilates"
+  },
+  "10657": {
+    "name": "elevação de gémeos deitado na máquina de pilates"
+  },
+  "10658": {
+    "name": "hundred na máquina de pilates"
+  },
+  "10660": {
+    "name": "elevação a um braço assistida com banda elástica"
+  },
+  "10661": {
+    "name": "elevação a um braço assistida com banda elástica nas argolas"
+  },
+  "10662": {
+    "name": "elevação oscilante com puxada nas argolas"
+  },
+  "10663": {
+    "name": "skin the cat nas argolas"
+  },
+  "10664": {
+    "name": "planche press"
+  },
+  "10665": {
+    "name": "planche nos cotovelos"
+  },
+  "10667": {
+    "name": "remada horizontal a um braço ajoelhado na polia"
+  },
+  "10668": {
+    "name": "remada horizontal a um braço ajoelhado com banda elástica"
+  },
+  "10669": {
+    "name": "press de peito inclinado sentado na máquina de placas"
+  },
   "1067": {
     "name": "puxada de braços esticados na polia v. 3"
+  },
+  "10670": {
+    "name": "press de peito inclinado a um braço sentado na máquina de placas"
+  },
+  "10671": {
+    "name": "press de peito sentado na máquina de placas"
+  },
+  "10672": {
+    "name": "press de peito a um braço sentado na máquina de placas"
+  },
+  "10673": {
+    "name": "agachamento com kettlebell"
+  },
+  "10674": {
+    "name": "agachamento com kettlebell nas costas"
+  },
+  "10675": {
+    "name": "agachamento com salto no landmine"
+  },
+  "10676": {
+    "name": "caminhada com mochila com carga"
+  },
+  "10677": {
+    "name": "corrida com mochila com carga"
   },
   "1068": {
     "name": "kickback na polia v. 3"
@@ -2936,26 +3422,140 @@
   "1071": {
     "name": "remada invertida com os joelhos fletidos em suspensão"
   },
+  "10710": {
+    "name": "abdominal deitado com disco"
+  },
   "1072": {
     "name": "fundos para peito em suspensão"
+  },
+  "10729": {
+    "name": "aquabike"
   },
   "1073": {
     "name": "press de peito em suspensão"
   },
+  "10730": {
+    "name": "peso morto romeno com saco de areia"
+  },
+  "10731": {
+    "name": "subida à corda em L-sit"
+  },
+  "10732": {
+    "name": "salto lateral sobre o step"
+  },
+  "10733": {
+    "name": "equilíbrio a uma perna na plataforma de equilíbrio"
+  },
+  "10734": {
+    "name": "equilíbrio a uma perna na almofada de equilíbrio"
+  },
+  "10735": {
+    "name": "elevação alternada de joelhos em suspensão"
+  },
+  "10736": {
+    "name": "headbanger"
+  },
+  "10738": {
+    "name": "salto na caixa por entre os braços"
+  },
+  "10739": {
+    "name": "alongamento de tríceps a um braço deitado"
+  },
   "1074": {
     "name": "aberturas em suspensão"
+  },
+  "10740": {
+    "name": "alongamento do tríceps a um braço deitado com bastão"
+  },
+  "10741": {
+    "name": "alongamento de tríceps a um braço de pé com banda elástica"
+  },
+  "10742": {
+    "name": "deslize a um braço deitado de Y para T"
+  },
+  "10743": {
+    "name": "de ajoelhado para salto para a caixa"
+  },
+  "10744": {
+    "name": "alongamento de isquiotibiais a uma perna sentado com banda elástica"
+  },
+  "10745": {
+    "name": "meio círculo a uma perna sentado"
+  },
+  "10746": {
+    "name": "extensão do joelho a uma perna sentado com banda elástica"
+  },
+  "10747": {
+    "name": "corrida de pés rápidos dentro e fora"
+  },
+  "10748": {
+    "name": "toque com o pé a uma perna de pé para a frente, para trás e para os lados"
+  },
+  "10749": {
+    "name": "caminhada com pontapé"
   },
   "1075": {
     "name": "elevação frontal em suspensão"
   },
+  "10750": {
+    "name": "de ajoelhado para de pé"
+  },
+  "10751": {
+    "name": "salto de gémeos"
+  },
+  "10752": {
+    "name": "jefferson curl com o peso do corpo"
+  },
+  "10753": {
+    "name": "elevação de joelhos sentado com banda elástica"
+  },
+  "10754": {
+    "name": "salto de gémeos a uma perna"
+  },
+  "10755": {
+    "name": "salto de gémeos a uma perna com apoio no step"
+  },
+  "10756": {
+    "name": "salto de gémeos para a frente"
+  },
+  "10757": {
+    "name": "salto de gémeos de um lado para o outro"
+  },
+  "10758": {
+    "name": "salto de patinador com bola medicinal"
+  },
+  "10759": {
+    "name": "andar com joelhos altos"
+  },
   "1076": {
     "name": "corrida de isquiotibiais em suspensão (TRX)"
+  },
+  "10760": {
+    "name": "caminhada em pontas dos pés com banda elástica"
+  },
+  "10761": {
+    "name": "marcha lateral em pontas dos pés com banda elástica"
+  },
+  "10762": {
+    "name": "marcha lateral em pontas dos pés"
+  },
+  "10763": {
+    "name": "curl de pernas unilateral sentado na máquina (com discos)"
+  },
+  "10764": {
+    "name": "agachamento a uma perna deitado na máquina"
   },
   "1077": {
     "name": "abdução da anca em suspensão (TRX)"
   },
   "1078": {
     "name": "ponte de anca em suspensão (TRX)"
+  },
+  "10780": {
+    "name": "flexão do pescoço deitado"
+  },
+  "10781": {
+    "name": "extensão do pescoço deitado"
   },
   "1079": {
     "name": "hiperextensão em suspensão (TRX)"
@@ -2966,8 +3566,20 @@
   "1081": {
     "name": "canivete em pike em suspensão (TRX)"
   },
+  "10817": {
+    "name": "rotação do pulso com haltere"
+  },
+  "10818": {
+    "name": "salto a uma perna em 4 direções v. 2"
+  },
+  "10819": {
+    "name": "elevação de gémeos a uma perna com os pés desfasados"
+  },
   "1082": {
     "name": "canivete em suspensão (TRX)"
+  },
+  "10820": {
+    "name": "abdução de anca com perna fletida em equilíbrio de pé com banda elástica"
   },
   "1083": {
     "name": "curl de pernas em suspensão (TRX)"
@@ -2975,29 +3587,242 @@
   "1084": {
     "name": "escalador em suspensão (TRX)"
   },
+  "10847": {
+    "name": "rã e círculo de pernas deitado na máquina de pilates"
+  },
+  "10848": {
+    "name": "corrida deitado na máquina de pilates"
+  },
+  "10849": {
+    "name": "elevação pélvica deitado na máquina de pilates"
+  },
+  "10850": {
+    "name": "abertura lateral de pernas na máquina de pilates"
+  },
+  "10851": {
+    "name": "agachamento russo na máquina de pilates"
+  },
+  "10852": {
+    "name": "afundo russo na máquina de pilates"
+  },
+  "10853": {
+    "name": "long spine na máquina de pilates"
+  },
+  "10854": {
+    "name": "círculo de braços na máquina de pilates"
+  },
+  "10855": {
+    "name": "expansão do peito na máquina de pilates"
+  },
+  "10856": {
+    "name": "extensão acima da cabeça na máquina de pilates"
+  },
+  "10857": {
+    "name": "jefferson curl com barra"
+  },
+  "10858": {
+    "name": "elevação Lu com halteres"
+  },
+  "10859": {
+    "name": "elevação do tibial de pé no chão com apoio na parede"
+  },
   "1086": {
     "name": "power pull em suspensão (TRX)"
+  },
+  "10860": {
+    "name": "pontapé lateral da perna por trás na polia"
+  },
+  "10861": {
+    "name": "hiperextensão invertida com bola medicinal na GHD"
+  },
+  "10862": {
+    "name": "peso morto a uma perna contra a bola"
+  },
+  "10863": {
+    "name": "press de ombros sentado a um braço com pega neutra na máquina Smith"
+  },
+  "10864": {
+    "name": "step-up em caixa alta"
+  },
+  "10865": {
+    "name": "peso morto romeno a uma perna no banco com haltere"
+  },
+  "10866": {
+    "name": "remada inclinada a um braço com foco no dorsal na máquina"
+  },
+  "10867": {
+    "name": "remada inclinada de barriga para baixo com pega neutra na máquina"
+  },
+  "10868": {
+    "name": "agachamento no bosu"
+  },
+  "10869": {
+    "name": "agachamento a uma perna no bosu"
   },
   "1087": {
     "name": "pull through em suspensão (TRX)"
   },
+  "10870": {
+    "name": "caminhada em ponte de glúteos com banda elástica"
+  },
+  "10871": {
+    "name": "abdominal com disco (mãos acima da cabeça)"
+  },
+  "10873": {
+    "name": "abdominal com carga e haltere (mãos acima da cabeça)"
+  },
+  "10875": {
+    "name": "inclinação lateral a 45 graus com disco"
+  },
+  "10877": {
+    "name": "abdominal com disco (mãos acima da cabeça) v. 2"
+  },
+  "10879": {
+    "name": "abdominal com haltere (mãos acima da cabeça) v. 2"
+  },
   "1088": {
     "name": "elevação em suspensão (TRX)"
+  },
+  "10882": {
+    "name": "flexão pliométrica ajoelhado"
+  },
+  "10890": {
+    "name": "salto em pontas dos pés no trampolim"
+  },
+  "10899": {
+    "name": "abdução deitado com banda elástica"
   },
   "1090": {
     "name": "aberturas invertidas em suspensão (TRX)"
   },
+  "10901": {
+    "name": "encolhimento de ombros unilateral com haltere"
+  },
+  "10902": {
+    "name": "elevação excêntrica a um braço"
+  },
+  "10903": {
+    "name": "elevação a um braço assistida com banda elástica v. 2"
+  },
+  "10904": {
+    "name": "ponte de isquiotibiais v. 2"
+  },
+  "10905": {
+    "name": "ponte de isquiotibiais com pontapé v. 2"
+  },
+  "10906": {
+    "name": "afundo estático isométrico"
+  },
+  "10907": {
+    "name": "meio afundo estático isométrico"
+  },
+  "10908": {
+    "name": "círculos com o pé a uma perna sentado"
+  },
+  "10909": {
+    "name": "círculos com os pés sentado"
+  },
   "1091": {
     "name": "rollout em suspensão (TRX)"
+  },
+  "10910": {
+    "name": "pé de um lado para o outro a uma perna sentado"
+  },
+  "10911": {
+    "name": "apertar os dedos dos pés sentado"
+  },
+  "10912": {
+    "name": "apertar os dedos dos pés a uma perna sentado"
+  },
+  "10913": {
+    "name": "elevação de uma perna deitado"
+  },
+  "10914": {
+    "name": "agachamento a um quarto com o peso do corpo"
+  },
+  "10915": {
+    "name": "peso morto a uma perna isométrico"
+  },
+  "10916": {
+    "name": "peso morto a uma perna com toque no pé"
+  },
+  "10917": {
+    "name": "press de tibial a uma perna sentado v. 2"
+  },
+  "10918": {
+    "name": "apertar os dedos dos pés a uma perna sentado v. 2"
+  },
+  "10919": {
+    "name": "pé de um lado para o outro a uma perna sentado v. 2"
+  },
+  "10920": {
+    "name": "press dos dedos dos pés a uma perna sentado"
+  },
+  "10921": {
+    "name": "extensão do joelho isométrica a uma perna sentado com banda elástica"
+  },
+  "10922": {
+    "name": "alongamento do tendão de Aquiles da perna de trás de pé"
+  },
+  "10925": {
+    "name": "salto de duas pernas para uma"
+  },
+  "10926": {
+    "name": "quarto de agachamento isométrico a deslizar na parede"
+  },
+  "10927": {
+    "name": "press a deslizar para a frente de pé com toalha"
+  },
+  "10928": {
+    "name": "deslize do serrátil na parede de pé com toalha"
+  },
+  "10929": {
+    "name": "deslize em rotação interna de pé com toalha"
   },
   "1093": {
     "name": "fundos para peito autoassistidos em suspensão (TRX)"
   },
+  "10930": {
+    "name": "deslize em rotação externa de pé com toalha"
+  },
+  "10931": {
+    "name": "rotação externa atrás das costas de pé com toalha"
+  },
+  "10932": {
+    "name": "alongamento de ombros atrás das costas com toalha"
+  },
+  "10933": {
+    "name": "rotação externa deitado de lado"
+  },
+  "10934": {
+    "name": "rotação externa do ombro deitado de lado com o peso do corpo"
+  },
+  "10935": {
+    "name": "mobilização do ombro em abdução atrás das costas com bastão"
+  },
+  "10936": {
+    "name": "rotação dos ombros acima da cabeça com bastão"
+  },
+  "10937": {
+    "name": "rotação do ombro na parede de pé"
+  },
   "1094": {
     "name": "elevação autoassistida em suspensão (TRX)"
   },
+  "10948": {
+    "name": "elevação escapular com balanço"
+  },
+  "10949": {
+    "name": "balanço de bíceps com braços esticados e haltere"
+  },
   "1095": {
     "name": "fundos para tríceps autoassistidos em suspensão (TRX)"
+  },
+  "10950": {
+    "name": "flexão isométrica com braços esticados nas argolas"
+  },
+  "10951": {
+    "name": "elevação de pernas em L-sit"
   },
   "1096": {
     "name": "rotação externa do ombro em suspensão (TRX)"
@@ -3005,17 +3830,56 @@
   "1097": {
     "name": "inclinação lateral em suspensão (TRX)"
   },
+  "10977": {
+    "name": "hiperextensão com haltere v. 2"
+  },
   "1098": {
     "name": "prancha lateral em suspensão (TRX)"
+  },
+  "10987": {
+    "name": "salto para a caixa com halteres"
+  },
+  "10988": {
+    "name": "de ajoelhado a salto para a caixa com halteres"
+  },
+  "10989": {
+    "name": "tuck planche nas paralettes"
   },
   "1099": {
     "name": "afundo estático a uma perna em suspensão (TRX, autoassistido)"
   },
+  "10995": {
+    "name": "andar de caranguejo para a frente e para trás"
+  },
+  "10997": {
+    "name": "negativa do pino para tuck planche assistida na parede"
+  },
+  "10998": {
+    "name": "pino em espargata a uma perna de frente para a parede"
+  },
   "1100": {
     "name": "afundo estático a uma perna em suspensão (TRX)"
   },
+  "11006": {
+    "name": "cruzar os braços e abrir o peito sentado numa cadeira"
+  },
   "1101": {
     "name": "agachamento a uma perna em suspensão (TRX)"
+  },
+  "11010": {
+    "name": "elevação da anca com lombar fora do chão"
+  },
+  "11014": {
+    "name": "elevação frontal com pega supinada e halteres"
+  },
+  "11015": {
+    "name": "elevação escapular v. 2"
+  },
+  "11016": {
+    "name": "press de ombros a um braço semiajoelhado com haltere"
+  },
+  "11017": {
+    "name": "press de ombros unilateral ajoelhado com haltere"
   },
   "1102": {
     "name": "curl de pernas com a anca estendida em suspensão (TRX)"
@@ -3026,20 +3890,83 @@
   "1104": {
     "name": "extensão de tríceps em suspensão (TRX) v. 2"
   },
+  "11047": {
+    "name": "abdução deitado"
+  },
+  "11048": {
+    "name": "abdução sentado com joelhos fletidos"
+  },
+  "11049": {
+    "name": "abdução sentado com joelhos fletidos e pés fora do chão"
+  },
   "1105": {
     "name": "rotação em suspensão (TRX)"
+  },
+  "11050": {
+    "name": "abdução sentado com joelhos fletidos e pés fora do chão com banda elástica"
+  },
+  "11051": {
+    "name": "extensão de tríceps cruzada alta com pega neutra de pé na polia"
+  },
+  "11053": {
+    "name": "hip thrust com os pés desalinhados na máquina Smith"
+  },
+  "11054": {
+    "name": "hip thrust com pés desalinhados na máquina (com discos)"
+  },
+  "11055": {
+    "name": "peso morto sumo com cinto na máquina (barra em V)"
+  },
+  "11056": {
+    "name": "retração escapular sentado na máquina (com discos)"
+  },
+  "11057": {
+    "name": "retração escapular sentado na polia"
+  },
+  "11058": {
+    "name": "peso morto romeno com apoio da anca com haltere"
+  },
+  "11059": {
+    "name": "kickback de perna ajoelhado no banco com banda elástica"
   },
   "1106": {
     "name": "canivete com rotação em suspensão"
   },
+  "11060": {
+    "name": "face pull com rotação externa na polia"
+  },
   "1107": {
     "name": "elevação lateral em Y em suspensão"
+  },
+  "11077": {
+    "name": "abdução sobre o peito deitado com haltere"
   },
   "1108": {
     "name": "curl de braços até às orelhas em suspensão"
   },
+  "11088": {
+    "name": "afundo atrás com alcance e rotação dos braços"
+  },
+  "11089": {
+    "name": "rolamento da coluna com alongamento em espargata"
+  },
   "1109": {
     "name": "curl de bíceps com pega fechada em suspensão"
+  },
+  "11090": {
+    "name": "front lever negativo"
+  },
+  "11091": {
+    "name": "pés à barra suspenso a um braço"
+  },
+  "11092": {
+    "name": "landmine 180 ajoelhado"
+  },
+  "11093": {
+    "name": "peso morto 2 3 com barra"
+  },
+  "11095": {
+    "name": "alongamento gato-vaca sentado numa cadeira"
   },
   "1110": {
     "name": "serrote em suspensão"
@@ -3083,14 +4010,128 @@
   "1125": {
     "name": "flexão a um braço com perna elevada em suspensão"
   },
+  "11250": {
+    "name": "aberturas de pé na polia v. 3"
+  },
+  "11251": {
+    "name": "lenhador ajoelhado na polia v. 3"
+  },
+  "11252": {
+    "name": "agachamento overhead na polia v. 3"
+  },
+  "11253": {
+    "name": "puxada ajoelhado na polia v. 3"
+  },
+  "11254": {
+    "name": "aberturas invertidas de pé na polia v. 3"
+  },
+  "11255": {
+    "name": "afundo lateral na polia v. 3"
+  },
+  "11256": {
+    "name": "supino na polia v. 3"
+  },
+  "11257": {
+    "name": "remada alta sentado na polia v. 3"
+  },
+  "11258": {
+    "name": "empurrar e puxar de pé na polia v. 3"
+  },
+  "11259": {
+    "name": "extensão da anca de pé na polia v. 3"
+  },
   "1126": {
     "name": "press de peito a uma perna em suspensão"
+  },
+  "11260": {
+    "name": "press militar ajoelhado na polia v. 3"
+  },
+  "11261": {
+    "name": "curl de bíceps de pé na polia (com acessório de corda) v. 3"
+  },
+  "11262": {
+    "name": "canivete alternado com perna fletida deitado na polia v. 3"
+  },
+  "11263": {
+    "name": "remada a um braço com rotação na polia v. 3"
+  },
+  "11264": {
+    "name": "supino inclinado na polia v. 3"
+  },
+  "11265": {
+    "name": "flexão da anca de pé na polia v. 3"
+  },
+  "11266": {
+    "name": "abdução da anca de pé na polia v. 3"
+  },
+  "11267": {
+    "name": "adução da anca de pé na polia v. 3"
+  },
+  "11268": {
+    "name": "agachamento na polia v. 3"
+  },
+  "11269": {
+    "name": "remada curvada a um braço na polia v. 3"
   },
   "1127": {
     "name": "elevação em suspensão v. 2"
   },
+  "11270": {
+    "name": "abdominal ajoelhado na polia v. 3"
+  },
+  "11271": {
+    "name": "rotação do tronco de pé na polia v. 3"
+  },
+  "11272": {
+    "name": "curl de bíceps para press Arnold de pé na polia v. 3"
+  },
+  "11273": {
+    "name": "aberturas deitado na polia v. 3"
+  },
+  "11274": {
+    "name": "press de peito diagonal alternado de pé na polia v. 3"
+  },
+  "11275": {
+    "name": "remada em prancha lateral na polia v. 3"
+  },
+  "11276": {
+    "name": "curl de pernas a uma perna de barriga para baixo na polia v. 3"
+  },
+  "11277": {
+    "name": "elevação frontal de pé na polia v. 3"
+  },
+  "11278": {
+    "name": "inclinação lateral de pé na polia v. 3"
+  },
+  "11279": {
+    "name": "extensão de tríceps acima da cabeça a um braço de pé na polia v. 3"
+  },
   "1128": {
     "name": "flexão em suspensão"
+  },
+  "11282": {
+    "name": "abdominal completo com braços esticados no GHD"
+  },
+  "11283": {
+    "name": "salto encolhido com pernas cruzadas"
+  },
+  "11284": {
+    "name": "aberturas alternadas a um braço com kettlebells"
+  },
+  "11285": {
+    "name": "press de peito deitado no chão com banda elástica"
+  },
+  "11286": {
+    "name": "afundo lateral semiajoelhado com kettlebell"
+  },
+  "11287": {
+    "name": "peso morto romeno de pé com kettlebell atrás das costas"
+  },
+  "11288": {
+    "name": "encolhimento de ombros acima da cabeça de pé com o peso do corpo"
+  },
+  "11289": {
+    "name": "exercício de tornozelo e anca de pé"
   },
   "1129": {
     "name": "afundo para trás em suspensão"
@@ -3098,8 +4139,23 @@
   "1130": {
     "name": "aberturas invertidas wake up em suspensão"
   },
+  "11303": {
+    "name": "agachamento ao banco na máquina Smith"
+  },
+  "11309": {
+    "name": "puxada lateral a um braço com pega supinada na máquina (com discos)"
+  },
   "1131": {
     "name": "afundo lateral cruzado em suspensão"
+  },
+  "11315": {
+    "name": "flexão inclinada com mãos juntas na cadeira contra a parede"
+  },
+  "11316": {
+    "name": "meio agachamento a deslizar na parede"
+  },
+  "11317": {
+    "name": "hiperextensão com disco v. 2"
   },
   "1132": {
     "name": "afundo lateral em suspensão"
@@ -3119,8 +4175,14 @@
   "1137": {
     "name": "abdominal completo em suspensão"
   },
+  "11374": {
+    "name": "alongamento sleeper"
+  },
   "1138": {
     "name": "flexão spiderman em suspensão"
+  },
+  "11383": {
+    "name": "alongamento dos extensores do pulso"
   },
   "1139": {
     "name": "aberturas alternadas em suspensão"
@@ -3134,11 +4196,23 @@
   "1143": {
     "name": "agachamento em suspensão"
   },
+  "11436": {
+    "name": "extensão de tríceps acima da cabeça com pega neutra de pé na polia"
+  },
   "1144": {
     "name": "rollout abdominal de pé em suspensão"
   },
   "1145": {
     "name": "prancha em estrela em suspensão"
+  },
+  "11450": {
+    "name": "step-up (1.º e 2.º degraus da escada)"
+  },
+  "11451": {
+    "name": "meio agachamento isométrico a deslizar na parede"
+  },
+  "11452": {
+    "name": "alongamento dos gémeos v. 2"
   },
   "1146": {
     "name": "flexão em estrela em suspensão"
@@ -3161,6 +4235,9 @@
   "1152": {
     "name": "rotação para cima em suspensão"
   },
+  "11529": {
+    "name": "peso morto romeno a uma perna com cinto na máquina"
+  },
   "1153": {
     "name": "alongamento da parte superior das costas em suspensão"
   },
@@ -3173,8 +4250,26 @@
   "1156": {
     "name": "pêndulo em suspensão"
   },
+  "11567": {
+    "name": "curl de pernas deitado para hiperextensão invertida na máquina"
+  },
+  "11568": {
+    "name": "agachamento búlgaro unilateral em défice na máquina Smith"
+  },
+  "11569": {
+    "name": "elevação lateral de perna de pé com banda elástica"
+  },
   "1157": {
     "name": "dobradiça da anca em suspensão"
+  },
+  "11570": {
+    "name": "extensão de anca de pé com banda elástica"
+  },
+  "11571": {
+    "name": "andar sentado sobre os glúteos"
+  },
+  "11572": {
+    "name": "extensões torácicas deitado no rolo de espuma"
   },
   "1158": {
     "name": "alongamento lateral em suspensão"
@@ -3197,8 +4292,47 @@
   "1164": {
     "name": "elevação de gémeos na máquina Smith v. 2"
   },
+  "11644": {
+    "name": "abdução de anca deitado de lado com banda elástica"
+  },
+  "11645": {
+    "name": "contração estática dos quadríceps (isométrica)"
+  },
+  "11646": {
+    "name": "contração estática dos glúteos (isométrica)"
+  },
+  "11647": {
+    "name": "salto pogo a uma perna"
+  },
+  "11648": {
+    "name": "elevação em W no chão"
+  },
+  "11649": {
+    "name": "alongamento de gémeos com joelho fletido"
+  },
   "1165": {
     "name": "press militar de pé com barra (sem rack)"
+  },
+  "11650": {
+    "name": "elevação de gémeos a uma perna sentado numa cadeira"
+  },
+  "11651": {
+    "name": "mobilização da rótula sentado"
+  },
+  "11652": {
+    "name": "deslizamento neural do nervo ciático"
+  },
+  "11653": {
+    "name": "contração dos glúteos de pé"
+  },
+  "11654": {
+    "name": "joelho para baixo sentado"
+  },
+  "11656": {
+    "name": "marcha no lugar (hidroterapia)"
+  },
+  "11657": {
+    "name": "afundo invertido com disco acima da cabeça"
   },
   "1166": {
     "name": "afundo alternado com salto"
@@ -3218,6 +4352,21 @@
   "1171": {
     "name": "hiperextensão a 45 graus com rotação"
   },
+  "11714": {
+    "name": "elevação na corda"
+  },
+  "11715": {
+    "name": "remada invertida na corda"
+  },
+  "11716": {
+    "name": "push press de pé com pedra"
+  },
+  "11717": {
+    "name": "flexão pliométrica v. 2"
+  },
+  "11718": {
+    "name": "aberturas invertidas inclinadas com apoio no peito na máquina (com discos)"
+  },
   "1172": {
     "name": "flexão com carga assistida"
   },
@@ -3233,17 +4382,89 @@
   "1176": {
     "name": "elevação frontal inclinada com halteres"
   },
+  "11762": {
+    "name": "remada curvada na máquina Smith (com apoio no peito)"
+  },
+  "11763": {
+    "name": "curl inclinado sentado na polia"
+  },
+  "11764": {
+    "name": "press de peito a um braço com pega supinada de pé na polia"
+  },
   "1177": {
     "name": "supino com pega neutra deitado com halteres v. 2"
   },
   "1178": {
     "name": "elevação de gémeos a uma perna de pé com haltere"
   },
+  "11781": {
+    "name": "salto com passo na caixa"
+  },
+  "11782": {
+    "name": "salto lateral"
+  },
+  "11783": {
+    "name": "abertura explosiva dos dedos"
+  },
+  "11784": {
+    "name": "agachamento explosivo em suspensão"
+  },
+  "11785": {
+    "name": "mobilização dos ombros em rotação interna"
+  },
+  "11786": {
+    "name": "mobilização do nervo radial sentado"
+  },
+  "11787": {
+    "name": "mobilização do nervo mediano sentado"
+  },
+  "11788": {
+    "name": "mobilização do nervo cubital sentado"
+  },
+  "11789": {
+    "name": "peso morto de pernas rígidas com pés desfasados com barra"
+  },
   "1179": {
     "name": "batimento de pernas v. 2"
   },
+  "11790": {
+    "name": "equilíbrio com toque do pé em 3 pontos"
+  },
+  "11791": {
+    "name": "pressão dos dedos a um braço com bola"
+  },
+  "11792": {
+    "name": "isometria de bíceps ajoelhado"
+  },
+  "11793": {
+    "name": "mobilização dos ombros com press para fora"
+  },
+  "11794": {
+    "name": "pressão dos dedos a um braço com bola v. 2"
+  },
+  "11795": {
+    "name": "mobilização de ombros com press para trás"
+  },
+  "11796": {
+    "name": "mobilização dos ombros em rotação externa"
+  },
+  "11797": {
+    "name": "mobilização dos ombros com press para a frente"
+  },
+  "11798": {
+    "name": "elevação de braços inclinado de trás para o lado e para a frente"
+  },
+  "11799": {
+    "name": "elevação dos braços de trás para o lado e para a frente curvado com halteres"
+  },
   "1180": {
     "name": "elevação de pernas estendidas alternada e simultânea deitado"
+  },
+  "11800": {
+    "name": "press unilateral de braço esticado deitado no chão com haltere"
+  },
+  "11801": {
+    "name": "mobilização do quadríceps a uma perna deitado"
   },
   "1181": {
     "name": "elevação de perna estendida deitado v. 2"
@@ -3260,17 +4481,38 @@
   "1186": {
     "name": "elevação alternada de perna esticada (no bosu)"
   },
+  "11864": {
+    "name": "curl unilateral com isometria e haltere"
+  },
   "1187": {
     "name": "abdominal completo com kettlebell"
   },
+  "11877": {
+    "name": "L-sit em suspensão"
+  },
+  "11878": {
+    "name": "elevação de pernas no espaldar"
+  },
+  "11879": {
+    "name": "step-up na máquina Smith"
+  },
   "1188": {
     "name": "abdominal com rotação com carga (no banco)"
+  },
+  "11880": {
+    "name": "remada em T com pega fechada na máquina (com discos)"
   },
   "1189": {
     "name": "abdominal em V com carga (no bosu)"
   },
   "1190": {
     "name": "abdominal completo inclinado com rotação v. 2"
+  },
+  "11903": {
+    "name": "alongamento dos flexores da anca de pé"
+  },
+  "11904": {
+    "name": "alongamento dos flexores da anca em meio ajoelhado"
   },
   "1191": {
     "name": "press de tríceps com halteres (cabeça abaixo do banco)"
@@ -3283,6 +4525,9 @@
   },
   "1195": {
     "name": "press de peito inclinado na máquina hammer"
+  },
+  "11954": {
+    "name": "alongamento pretzel deitado"
   },
   "1196": {
     "name": "curl de bíceps alternado com halteres v. 2"
@@ -3301,6 +4546,9 @@
   },
   "1201": {
     "name": "burpee com halteres"
+  },
+  "12018": {
+    "name": "slingshots de pé com kettlebell (avançado)"
   },
   "1202": {
     "name": "pallof press horizontal na polia"
@@ -15646,1253 +16894,5 @@
   },
   "9999": {
     "name": "prancha com toque no joelho"
-  },
-  "10003": {
-    "name": "dorsiflexão do tornozelo sentado no chão com banda elástica"
-  },
-  "10014": {
-    "name": "adução de anca deitado de barriga para cima assistida com bola de pilates"
-  },
-  "10031": {
-    "name": "flexão dos dedos com extensão do polegar"
-  },
-  "10032": {
-    "name": "abdução do polegar"
-  },
-  "10038": {
-    "name": "supinação do pulso com haltere"
-  },
-  "10040": {
-    "name": "elevação cruzada alternada de pé com halteres"
-  },
-  "10041": {
-    "name": "prancha lateral com haltere v. 2"
-  },
-  "10042": {
-    "name": "supino em compressão deitado no chão com halteres"
-  },
-  "10043": {
-    "name": "Z press unilateral com haltere"
-  },
-  "10044": {
-    "name": "hang snatch com haltere"
-  },
-  "10045": {
-    "name": "anjo na neve de barriga para baixo"
-  },
-  "10046": {
-    "name": "anjo na neve de barriga para cima"
-  },
-  "10047": {
-    "name": "peso morto romeno em posição de afundo com barra"
-  },
-  "10048": {
-    "name": "step-up na polia"
-  },
-  "10049": {
-    "name": "z press borboleta com barra"
-  },
-  "10050": {
-    "name": "superman para flexão"
-  },
-  "10051": {
-    "name": "afundo com agachamento estreito"
-  },
-  "10052": {
-    "name": "agachamento cossaco no landmine"
-  },
-  "10053": {
-    "name": "salto a partir da posição sentada"
-  },
-  "10054": {
-    "name": "afundo sem deslocação com barra"
-  },
-  "10055": {
-    "name": "afundo com agachamento estreito e halteres"
-  },
-  "10056": {
-    "name": "press no landmine com banda elástica"
-  },
-  "10057": {
-    "name": "ponte em mesa com abertura de pernas"
-  },
-  "10058": {
-    "name": "de ajoelhado a semiajoelhado alternado"
-  },
-  "10065": {
-    "name": "rotação do torso na máquina"
-  },
-  "10092": {
-    "name": "agachamento de core com barra"
-  },
-  "10093": {
-    "name": "thor lift semiajoelhado com haltere"
-  },
-  "10094": {
-    "name": "clean cruzado de pé com haltere"
-  },
-  "10095": {
-    "name": "bear fly a um braço na polia"
-  },
-  "10096": {
-    "name": "afundo atrás para press de ombros unilateral com haltere"
-  },
-  "10097": {
-    "name": "agachamento lateral com disco"
-  },
-  "10106": {
-    "name": "high pull com barra"
-  },
-  "10107": {
-    "name": "hang clean high pull com barra"
-  },
-  "10108": {
-    "name": "lançamento por cima da cabeça com bola medicinal"
-  },
-  "10109": {
-    "name": "lançamento para trás por cima da cabeça com bola medicinal"
-  },
-  "10110": {
-    "name": "curl invertido com barra grossa"
-  },
-  "10112": {
-    "name": "remada sentada a um braço com foco nos dorsais na polia"
-  },
-  "10113": {
-    "name": "agachamento isométrico com abdução da anca na máquina"
-  },
-  "10114": {
-    "name": "elevação L-U com disco"
-  },
-  "10115": {
-    "name": "supino declinado com pega fechada com barra"
-  },
-  "10116": {
-    "name": "supino inclinado com pega fechada na máquina Smith"
-  },
-  "10117": {
-    "name": "clean and press a um braço semiajoelhado com haltere"
-  },
-  "10118": {
-    "name": "slam em círculo acima da cabeça com bola medicinal"
-  },
-  "10119": {
-    "name": "step-up lateral na polia"
-  },
-  "10120": {
-    "name": "step-up unilateral na polia"
-  },
-  "10126": {
-    "name": "rotação externa isométrica do ombro de pé com toalha"
-  },
-  "10138": {
-    "name": "isometria de bíceps de pé"
-  },
-  "10139": {
-    "name": "curl de pernas isométrico sentado com bola de pilates"
-  },
-  "10160": {
-    "name": "salto da caixa com aterragem a dois pés"
-  },
-  "10168": {
-    "name": "agachamento à caixa com o peso do corpo"
-  },
-  "10182": {
-    "name": "burpee por cima do haltere"
-  },
-  "10183": {
-    "name": "elevação frontal com rotação de pé com haltere"
-  },
-  "10184": {
-    "name": "pallof press alternado em posição de afundo com banda elástica"
-  },
-  "10185": {
-    "name": "remada alternada em prancha de urso com halteres"
-  },
-  "10186": {
-    "name": "pullover para press em ponte com haltere"
-  },
-  "10187": {
-    "name": "salto vertical com salto lateral"
-  },
-  "10188": {
-    "name": "toque alternado nos pés de pé com inclinação"
-  },
-  "10189": {
-    "name": "peso morto com afundo para trás e press acima da cabeça com disco"
-  },
-  "10190": {
-    "name": "push press unilateral no landmine"
-  },
-  "10191": {
-    "name": "agachamento goblet em relógio"
-  },
-  "10192": {
-    "name": "swing lateral com kettlebell"
-  },
-  "10193": {
-    "name": "burpee com empurrar de trenó"
-  },
-  "10194": {
-    "name": "rolamento para trás em borboleta"
-  },
-  "10195": {
-    "name": "thor lift semiajoelhado com barra"
-  },
-  "10196": {
-    "name": "complexo de ombros com halteres"
-  },
-  "10197": {
-    "name": "smash horizontal com bola medicinal"
-  },
-  "10198": {
-    "name": "leg press negativo a uma perna alternado"
-  },
-  "10199": {
-    "name": "peso morto romeno cruzado com haltere"
-  },
-  "10200": {
-    "name": "rotação à volta da cabeça ajoelhado com haltere"
-  },
-  "10294": {
-    "name": "andar nos calcanhares"
-  },
-  "10326": {
-    "name": "salto de prancha para agachamento"
-  },
-  "10327": {
-    "name": "rotação russa forte com kettlebell"
-  },
-  "10328": {
-    "name": "agachamento búlgaro com cinto na máquina"
-  },
-  "10329": {
-    "name": "remada Kroc com haltere"
-  },
-  "10330": {
-    "name": "elevação Powell com haltere"
-  },
-  "10331": {
-    "name": "curl com rotação em pronação de pé com banda elástica e carga (braço de ferro)"
-  },
-  "10345": {
-    "name": "superman com pulsações"
-  },
-  "10366": {
-    "name": "press de tibial sentado no chão com banda elástica"
-  },
-  "10367": {
-    "name": "press de tibial sentado com kettlebell"
-  },
-  "10383": {
-    "name": "peso morto com saco de areia"
-  },
-  "10384": {
-    "name": "agachamento com saco de areia"
-  },
-  "10385": {
-    "name": "saco de areia ao ombro"
-  },
-  "10386": {
-    "name": "transporte de saco de areia (aos ombros)"
-  },
-  "10387": {
-    "name": "transporte de saco de areia (abraço de urso)"
-  },
-  "10388": {
-    "name": "press militar com saco de areia"
-  },
-  "10389": {
-    "name": "remada com saco de areia"
-  },
-  "10410": {
-    "name": "agachamento com steel mace (com carga)"
-  },
-  "10411": {
-    "name": "halo com steel mace (com carga)"
-  },
-  "10427": {
-    "name": "lançamento de saco de areia por cima do ombro (com carga)"
-  },
-  "10437": {
-    "name": "remada baixa a um braço na polia (com corda)"
-  },
-  "10438": {
-    "name": "suspensão na barra alternada"
-  },
-  "10439": {
-    "name": "subida em duas cordas"
-  },
-  "10462": {
-    "name": "alongamento de isquiotibiais sentado numa cadeira"
-  },
-  "10463": {
-    "name": "alongamento de peito a juntar as omoplatas sentado numa cadeira"
-  },
-  "10503": {
-    "name": "puxada ao peito com pega fechada invertida na polia"
-  },
-  "10517": {
-    "name": "círculos com a anca a uma perna de pé com apoio numa cadeira"
-  },
-  "10534": {
-    "name": "flexão do joelho a uma perna sentado"
-  },
-  "10535": {
-    "name": "press de tibial a uma perna sentado"
-  },
-  "10536": {
-    "name": "extensão do joelho a uma perna de pé com banda elástica"
-  },
-  "10537": {
-    "name": "extensão do joelho a uma perna sentado"
-  },
-  "10538": {
-    "name": "extensão do joelho a uma perna sentado v. 2"
-  },
-  "10539": {
-    "name": "extensão do joelho a uma perna sentado com carga v. 2"
-  },
-  "10540": {
-    "name": "press de tibial deitado com joelhos fletidos"
-  },
-  "10541": {
-    "name": "flexão do joelho a uma perna sentado, abraçando o joelho"
-  },
-  "10542": {
-    "name": "flexão do joelho a uma perna sentado, abraçando o joelho, com toalha"
-  },
-  "10543": {
-    "name": "flexão de joelho ajoelhado com apoio na cadeira"
-  },
-  "10547": {
-    "name": "balanço de gémeos a uma perna de pé"
-  },
-  "10548": {
-    "name": "elevação de gémeos concentrada a uma perna de pé"
-  },
-  "10549": {
-    "name": "ponte a uma perna elevada"
-  },
-  "10550": {
-    "name": "svend press deitado no chão com disco"
-  },
-  "10551": {
-    "name": "mobilização de agachamento"
-  },
-  "10552": {
-    "name": "rotação do tronco com pés desalinhados com bola medicinal"
-  },
-  "10553": {
-    "name": "golpe acima da cabeça com banda elástica"
-  },
-  "10554": {
-    "name": "prancha com toque alternado na bola"
-  },
-  "10555": {
-    "name": "flexão e extensão do pescoço sentado numa cadeira"
-  },
-  "10556": {
-    "name": "rotação do pescoço de um lado para o outro sentado numa cadeira"
-  },
-  "10557": {
-    "name": "inclinação do pescoço de um lado para o outro sentado numa cadeira"
-  },
-  "10558": {
-    "name": "abdominal completo com slam com bola medicinal"
-  },
-  "10559": {
-    "name": "elevação frontal completa com receção com haltere"
-  },
-  "10560": {
-    "name": "supino com barra com receção"
-  },
-  "10561": {
-    "name": "peso morto a uma perna com passagem do kettlebell"
-  },
-  "10562": {
-    "name": "afundo atrás ipsilateral com elevação de joelho com kettlebell"
-  },
-  "10563": {
-    "name": "alongamento de gémeos com joelho na caixa"
-  },
-  "10564": {
-    "name": "pronação e supinação do pé sentado"
-  },
-  "10565": {
-    "name": "alongamento 90 a 90 com press"
-  },
-  "10566": {
-    "name": "rotação do tronco semiajoelhado"
-  },
-  "10588": {
-    "name": "elevação frontal deitado com barra"
-  },
-  "10589": {
-    "name": "elevação frontal deitado com bastão"
-  },
-  "10590": {
-    "name": "alongamento do dorsal com avanço das mãos"
-  },
-  "10591": {
-    "name": "flexão do joelho a uma perna sentado, abraçando o joelho, com banda elástica"
-  },
-  "10592": {
-    "name": "alongamento dos isquiotibiais semiajoelhado"
-  },
-  "10593": {
-    "name": "prancha inclinada com abertura de pernas"
-  },
-  "10594": {
-    "name": "golpe lateral com banda elástica"
-  },
-  "10595": {
-    "name": "pullover com receção com bola medicinal"
-  },
-  "10597": {
-    "name": "rotação interna a 90 graus com receção na polia"
-  },
-  "10598": {
-    "name": "press fechado deitado no chão com receção com bola medicinal"
-  },
-  "10639": {
-    "name": "abdominal completo no GHD"
-  },
-  "10646": {
-    "name": "remada inclinada de barriga para baixo na máquina"
-  },
-  "10650": {
-    "name": "flexão explosiva com banda elástica"
-  },
-  "10651": {
-    "name": "abdução de perna a uma perna de pé no bosu com banda elástica"
-  },
-  "10654": {
-    "name": "extensão do joelho deitado sobre as pontas dos pés na máquina de pilates"
-  },
-  "10655": {
-    "name": "extensão do joelho deitado na máquina de pilates"
-  },
-  "10656": {
-    "name": "extensão do joelho deitado sobre os calcanhares na máquina de pilates"
-  },
-  "10657": {
-    "name": "elevação de gémeos deitado na máquina de pilates"
-  },
-  "10658": {
-    "name": "hundred na máquina de pilates"
-  },
-  "10660": {
-    "name": "elevação a um braço assistida com banda elástica"
-  },
-  "10661": {
-    "name": "elevação a um braço assistida com banda elástica nas argolas"
-  },
-  "10662": {
-    "name": "elevação oscilante com puxada nas argolas"
-  },
-  "10663": {
-    "name": "skin the cat nas argolas"
-  },
-  "10664": {
-    "name": "planche press"
-  },
-  "10665": {
-    "name": "planche nos cotovelos"
-  },
-  "10667": {
-    "name": "remada horizontal a um braço ajoelhado na polia"
-  },
-  "10668": {
-    "name": "remada horizontal a um braço ajoelhado com banda elástica"
-  },
-  "10669": {
-    "name": "press de peito inclinado sentado na máquina de placas"
-  },
-  "10670": {
-    "name": "press de peito inclinado a um braço sentado na máquina de placas"
-  },
-  "10671": {
-    "name": "press de peito sentado na máquina de placas"
-  },
-  "10672": {
-    "name": "press de peito a um braço sentado na máquina de placas"
-  },
-  "10673": {
-    "name": "agachamento com kettlebell"
-  },
-  "10674": {
-    "name": "agachamento com kettlebell nas costas"
-  },
-  "10675": {
-    "name": "agachamento com salto no landmine"
-  },
-  "10676": {
-    "name": "caminhada com mochila com carga"
-  },
-  "10677": {
-    "name": "corrida com mochila com carga"
-  },
-  "10710": {
-    "name": "abdominal deitado com disco"
-  },
-  "10729": {
-    "name": "aquabike"
-  },
-  "10730": {
-    "name": "peso morto romeno com saco de areia"
-  },
-  "10731": {
-    "name": "subida à corda em L-sit"
-  },
-  "10732": {
-    "name": "salto lateral sobre o step"
-  },
-  "10733": {
-    "name": "equilíbrio a uma perna na plataforma de equilíbrio"
-  },
-  "10734": {
-    "name": "equilíbrio a uma perna na almofada de equilíbrio"
-  },
-  "10735": {
-    "name": "elevação alternada de joelhos em suspensão"
-  },
-  "10736": {
-    "name": "headbanger"
-  },
-  "10738": {
-    "name": "salto na caixa por entre os braços"
-  },
-  "10739": {
-    "name": "alongamento de tríceps a um braço deitado"
-  },
-  "10740": {
-    "name": "alongamento do tríceps a um braço deitado com bastão"
-  },
-  "10741": {
-    "name": "alongamento de tríceps a um braço de pé com banda elástica"
-  },
-  "10742": {
-    "name": "deslize a um braço deitado de Y para T"
-  },
-  "10743": {
-    "name": "de ajoelhado para salto para a caixa"
-  },
-  "10744": {
-    "name": "alongamento de isquiotibiais a uma perna sentado com banda elástica"
-  },
-  "10745": {
-    "name": "meio círculo a uma perna sentado"
-  },
-  "10746": {
-    "name": "extensão do joelho a uma perna sentado com banda elástica"
-  },
-  "10747": {
-    "name": "corrida de pés rápidos dentro e fora"
-  },
-  "10748": {
-    "name": "toque com o pé a uma perna de pé para a frente, para trás e para os lados"
-  },
-  "10749": {
-    "name": "caminhada com pontapé"
-  },
-  "10750": {
-    "name": "de ajoelhado para de pé"
-  },
-  "10751": {
-    "name": "salto de gémeos"
-  },
-  "10752": {
-    "name": "jefferson curl com o peso do corpo"
-  },
-  "10753": {
-    "name": "elevação de joelhos sentado com banda elástica"
-  },
-  "10754": {
-    "name": "salto de gémeos a uma perna"
-  },
-  "10755": {
-    "name": "salto de gémeos a uma perna com apoio no step"
-  },
-  "10756": {
-    "name": "salto de gémeos para a frente"
-  },
-  "10757": {
-    "name": "salto de gémeos de um lado para o outro"
-  },
-  "10758": {
-    "name": "salto de patinador com bola medicinal"
-  },
-  "10759": {
-    "name": "andar com joelhos altos"
-  },
-  "10760": {
-    "name": "caminhada em pontas dos pés com banda elástica"
-  },
-  "10761": {
-    "name": "marcha lateral em pontas dos pés com banda elástica"
-  },
-  "10762": {
-    "name": "marcha lateral em pontas dos pés"
-  },
-  "10763": {
-    "name": "curl de pernas unilateral sentado na máquina (com discos)"
-  },
-  "10764": {
-    "name": "agachamento a uma perna deitado na máquina"
-  },
-  "10780": {
-    "name": "flexão do pescoço deitado"
-  },
-  "10781": {
-    "name": "extensão do pescoço deitado"
-  },
-  "10817": {
-    "name": "rotação do pulso com haltere"
-  },
-  "10818": {
-    "name": "salto a uma perna em 4 direções v. 2"
-  },
-  "10819": {
-    "name": "elevação de gémeos a uma perna com os pés desfasados"
-  },
-  "10820": {
-    "name": "abdução de anca com perna fletida em equilíbrio de pé com banda elástica"
-  },
-  "10847": {
-    "name": "rã e círculo de pernas deitado na máquina de pilates"
-  },
-  "10848": {
-    "name": "corrida deitado na máquina de pilates"
-  },
-  "10849": {
-    "name": "elevação pélvica deitado na máquina de pilates"
-  },
-  "10850": {
-    "name": "abertura lateral de pernas na máquina de pilates"
-  },
-  "10851": {
-    "name": "agachamento russo na máquina de pilates"
-  },
-  "10852": {
-    "name": "afundo russo na máquina de pilates"
-  },
-  "10853": {
-    "name": "long spine na máquina de pilates"
-  },
-  "10854": {
-    "name": "círculo de braços na máquina de pilates"
-  },
-  "10855": {
-    "name": "expansão do peito na máquina de pilates"
-  },
-  "10856": {
-    "name": "extensão acima da cabeça na máquina de pilates"
-  },
-  "10857": {
-    "name": "jefferson curl com barra"
-  },
-  "10858": {
-    "name": "elevação Lu com halteres"
-  },
-  "10859": {
-    "name": "elevação do tibial de pé no chão com apoio na parede"
-  },
-  "10860": {
-    "name": "pontapé lateral da perna por trás na polia"
-  },
-  "10861": {
-    "name": "hiperextensão invertida com bola medicinal na GHD"
-  },
-  "10862": {
-    "name": "peso morto a uma perna contra a bola"
-  },
-  "10863": {
-    "name": "press de ombros sentado a um braço com pega neutra na máquina Smith"
-  },
-  "10864": {
-    "name": "step-up em caixa alta"
-  },
-  "10865": {
-    "name": "peso morto romeno a uma perna no banco com haltere"
-  },
-  "10866": {
-    "name": "remada inclinada a um braço com foco no dorsal na máquina"
-  },
-  "10867": {
-    "name": "remada inclinada de barriga para baixo com pega neutra na máquina"
-  },
-  "10868": {
-    "name": "agachamento no bosu"
-  },
-  "10869": {
-    "name": "agachamento a uma perna no bosu"
-  },
-  "10870": {
-    "name": "caminhada em ponte de glúteos com banda elástica"
-  },
-  "10871": {
-    "name": "abdominal com disco (mãos acima da cabeça)"
-  },
-  "10873": {
-    "name": "abdominal com carga e haltere (mãos acima da cabeça)"
-  },
-  "10875": {
-    "name": "inclinação lateral a 45 graus com disco"
-  },
-  "10877": {
-    "name": "abdominal com disco (mãos acima da cabeça) v. 2"
-  },
-  "10879": {
-    "name": "abdominal com haltere (mãos acima da cabeça) v. 2"
-  },
-  "10882": {
-    "name": "flexão pliométrica ajoelhado"
-  },
-  "10890": {
-    "name": "salto em pontas dos pés no trampolim"
-  },
-  "10899": {
-    "name": "abdução deitado com banda elástica"
-  },
-  "10901": {
-    "name": "encolhimento de ombros unilateral com haltere"
-  },
-  "10902": {
-    "name": "elevação excêntrica a um braço"
-  },
-  "10903": {
-    "name": "elevação a um braço assistida com banda elástica v. 2"
-  },
-  "10904": {
-    "name": "ponte de isquiotibiais v. 2"
-  },
-  "10905": {
-    "name": "ponte de isquiotibiais com pontapé v. 2"
-  },
-  "10906": {
-    "name": "afundo estático isométrico"
-  },
-  "10907": {
-    "name": "meio afundo estático isométrico"
-  },
-  "10908": {
-    "name": "círculos com o pé a uma perna sentado"
-  },
-  "10909": {
-    "name": "círculos com os pés sentado"
-  },
-  "10910": {
-    "name": "pé de um lado para o outro a uma perna sentado"
-  },
-  "10911": {
-    "name": "apertar os dedos dos pés sentado"
-  },
-  "10912": {
-    "name": "apertar os dedos dos pés a uma perna sentado"
-  },
-  "10913": {
-    "name": "elevação de uma perna deitado"
-  },
-  "10914": {
-    "name": "agachamento a um quarto com o peso do corpo"
-  },
-  "10915": {
-    "name": "peso morto a uma perna isométrico"
-  },
-  "10916": {
-    "name": "peso morto a uma perna com toque no pé"
-  },
-  "10917": {
-    "name": "press de tibial a uma perna sentado v. 2"
-  },
-  "10918": {
-    "name": "apertar os dedos dos pés a uma perna sentado v. 2"
-  },
-  "10919": {
-    "name": "pé de um lado para o outro a uma perna sentado v. 2"
-  },
-  "10920": {
-    "name": "press dos dedos dos pés a uma perna sentado"
-  },
-  "10921": {
-    "name": "extensão do joelho isométrica a uma perna sentado com banda elástica"
-  },
-  "10922": {
-    "name": "alongamento do tendão de Aquiles da perna de trás de pé"
-  },
-  "10925": {
-    "name": "salto de duas pernas para uma"
-  },
-  "10926": {
-    "name": "quarto de agachamento isométrico a deslizar na parede"
-  },
-  "10927": {
-    "name": "press a deslizar para a frente de pé com toalha"
-  },
-  "10928": {
-    "name": "deslize do serrátil na parede de pé com toalha"
-  },
-  "10929": {
-    "name": "deslize em rotação interna de pé com toalha"
-  },
-  "10930": {
-    "name": "deslize em rotação externa de pé com toalha"
-  },
-  "10931": {
-    "name": "rotação externa atrás das costas de pé com toalha"
-  },
-  "10932": {
-    "name": "alongamento de ombros atrás das costas com toalha"
-  },
-  "10933": {
-    "name": "rotação externa deitado de lado"
-  },
-  "10934": {
-    "name": "rotação externa do ombro deitado de lado com o peso do corpo"
-  },
-  "10935": {
-    "name": "mobilização do ombro em abdução atrás das costas com bastão"
-  },
-  "10936": {
-    "name": "rotação dos ombros acima da cabeça com bastão"
-  },
-  "10937": {
-    "name": "rotação do ombro na parede de pé"
-  },
-  "10948": {
-    "name": "elevação escapular com balanço"
-  },
-  "10949": {
-    "name": "balanço de bíceps com braços esticados e haltere"
-  },
-  "10950": {
-    "name": "flexão isométrica com braços esticados nas argolas"
-  },
-  "10951": {
-    "name": "elevação de pernas em L-sit"
-  },
-  "10977": {
-    "name": "hiperextensão com haltere v. 2"
-  },
-  "10987": {
-    "name": "salto para a caixa com halteres"
-  },
-  "10988": {
-    "name": "de ajoelhado a salto para a caixa com halteres"
-  },
-  "10989": {
-    "name": "tuck planche nas paralettes"
-  },
-  "10995": {
-    "name": "andar de caranguejo para a frente e para trás"
-  },
-  "10997": {
-    "name": "negativa do pino para tuck planche assistida na parede"
-  },
-  "10998": {
-    "name": "pino em espargata a uma perna de frente para a parede"
-  },
-  "11006": {
-    "name": "cruzar os braços e abrir o peito sentado numa cadeira"
-  },
-  "11010": {
-    "name": "elevação da anca com lombar fora do chão"
-  },
-  "11014": {
-    "name": "elevação frontal com pega supinada e halteres"
-  },
-  "11015": {
-    "name": "elevação escapular v. 2"
-  },
-  "11016": {
-    "name": "press de ombros a um braço semiajoelhado com haltere"
-  },
-  "11017": {
-    "name": "press de ombros unilateral ajoelhado com haltere"
-  },
-  "11047": {
-    "name": "abdução deitado"
-  },
-  "11048": {
-    "name": "abdução sentado com joelhos fletidos"
-  },
-  "11049": {
-    "name": "abdução sentado com joelhos fletidos e pés fora do chão"
-  },
-  "11050": {
-    "name": "abdução sentado com joelhos fletidos e pés fora do chão com banda elástica"
-  },
-  "11051": {
-    "name": "extensão de tríceps cruzada alta com pega neutra de pé na polia"
-  },
-  "11053": {
-    "name": "hip thrust com os pés desalinhados na máquina Smith"
-  },
-  "11054": {
-    "name": "hip thrust com pés desalinhados na máquina (com discos)"
-  },
-  "11055": {
-    "name": "peso morto sumo com cinto na máquina (barra em V)"
-  },
-  "11056": {
-    "name": "retração escapular sentado na máquina (com discos)"
-  },
-  "11057": {
-    "name": "retração escapular sentado na polia"
-  },
-  "11058": {
-    "name": "peso morto romeno com apoio da anca com haltere"
-  },
-  "11059": {
-    "name": "kickback de perna ajoelhado no banco com banda elástica"
-  },
-  "11060": {
-    "name": "face pull com rotação externa na polia"
-  },
-  "11077": {
-    "name": "abdução sobre o peito deitado com haltere"
-  },
-  "11088": {
-    "name": "afundo atrás com alcance e rotação dos braços"
-  },
-  "11089": {
-    "name": "rolamento da coluna com alongamento em espargata"
-  },
-  "11090": {
-    "name": "front lever negativo"
-  },
-  "11091": {
-    "name": "pés à barra suspenso a um braço"
-  },
-  "11092": {
-    "name": "landmine 180 ajoelhado"
-  },
-  "11093": {
-    "name": "peso morto 2 3 com barra"
-  },
-  "11095": {
-    "name": "alongamento gato-vaca sentado numa cadeira"
-  },
-  "11250": {
-    "name": "aberturas de pé na polia v. 3"
-  },
-  "11251": {
-    "name": "lenhador ajoelhado na polia v. 3"
-  },
-  "11252": {
-    "name": "agachamento overhead na polia v. 3"
-  },
-  "11253": {
-    "name": "puxada ajoelhado na polia v. 3"
-  },
-  "11254": {
-    "name": "aberturas invertidas de pé na polia v. 3"
-  },
-  "11255": {
-    "name": "afundo lateral na polia v. 3"
-  },
-  "11256": {
-    "name": "supino na polia v. 3"
-  },
-  "11257": {
-    "name": "remada alta sentado na polia v. 3"
-  },
-  "11258": {
-    "name": "empurrar e puxar de pé na polia v. 3"
-  },
-  "11259": {
-    "name": "extensão da anca de pé na polia v. 3"
-  },
-  "11260": {
-    "name": "press militar ajoelhado na polia v. 3"
-  },
-  "11261": {
-    "name": "curl de bíceps de pé na polia (com acessório de corda) v. 3"
-  },
-  "11262": {
-    "name": "canivete alternado com perna fletida deitado na polia v. 3"
-  },
-  "11263": {
-    "name": "remada a um braço com rotação na polia v. 3"
-  },
-  "11264": {
-    "name": "supino inclinado na polia v. 3"
-  },
-  "11265": {
-    "name": "flexão da anca de pé na polia v. 3"
-  },
-  "11266": {
-    "name": "abdução da anca de pé na polia v. 3"
-  },
-  "11267": {
-    "name": "adução da anca de pé na polia v. 3"
-  },
-  "11268": {
-    "name": "agachamento na polia v. 3"
-  },
-  "11269": {
-    "name": "remada curvada a um braço na polia v. 3"
-  },
-  "11270": {
-    "name": "abdominal ajoelhado na polia v. 3"
-  },
-  "11271": {
-    "name": "rotação do tronco de pé na polia v. 3"
-  },
-  "11272": {
-    "name": "curl de bíceps para press Arnold de pé na polia v. 3"
-  },
-  "11273": {
-    "name": "aberturas deitado na polia v. 3"
-  },
-  "11274": {
-    "name": "press de peito diagonal alternado de pé na polia v. 3"
-  },
-  "11275": {
-    "name": "remada em prancha lateral na polia v. 3"
-  },
-  "11276": {
-    "name": "curl de pernas a uma perna de barriga para baixo na polia v. 3"
-  },
-  "11277": {
-    "name": "elevação frontal de pé na polia v. 3"
-  },
-  "11278": {
-    "name": "inclinação lateral de pé na polia v. 3"
-  },
-  "11279": {
-    "name": "extensão de tríceps acima da cabeça a um braço de pé na polia v. 3"
-  },
-  "11282": {
-    "name": "abdominal completo com braços esticados no GHD"
-  },
-  "11283": {
-    "name": "salto encolhido com pernas cruzadas"
-  },
-  "11284": {
-    "name": "aberturas alternadas a um braço com kettlebells"
-  },
-  "11285": {
-    "name": "press de peito deitado no chão com banda elástica"
-  },
-  "11286": {
-    "name": "afundo lateral semiajoelhado com kettlebell"
-  },
-  "11287": {
-    "name": "peso morto romeno de pé com kettlebell atrás das costas"
-  },
-  "11288": {
-    "name": "encolhimento de ombros acima da cabeça de pé com o peso do corpo"
-  },
-  "11289": {
-    "name": "exercício de tornozelo e anca de pé"
-  },
-  "11303": {
-    "name": "agachamento ao banco na máquina Smith"
-  },
-  "11309": {
-    "name": "puxada lateral a um braço com pega supinada na máquina (com discos)"
-  },
-  "11315": {
-    "name": "flexão inclinada com mãos juntas na cadeira contra a parede"
-  },
-  "11316": {
-    "name": "meio agachamento a deslizar na parede"
-  },
-  "11317": {
-    "name": "hiperextensão com disco v. 2"
-  },
-  "11374": {
-    "name": "alongamento sleeper"
-  },
-  "11383": {
-    "name": "alongamento dos extensores do pulso"
-  },
-  "11436": {
-    "name": "extensão de tríceps acima da cabeça com pega neutra de pé na polia"
-  },
-  "11450": {
-    "name": "step-up (1.º e 2.º degraus da escada)"
-  },
-  "11451": {
-    "name": "meio agachamento isométrico a deslizar na parede"
-  },
-  "11452": {
-    "name": "alongamento dos gémeos v. 2"
-  },
-  "11529": {
-    "name": "peso morto romeno a uma perna com cinto na máquina"
-  },
-  "11567": {
-    "name": "curl de pernas deitado para hiperextensão invertida na máquina"
-  },
-  "11568": {
-    "name": "agachamento búlgaro unilateral em défice na máquina Smith"
-  },
-  "11569": {
-    "name": "elevação lateral de perna de pé com banda elástica"
-  },
-  "11570": {
-    "name": "extensão de anca de pé com banda elástica"
-  },
-  "11571": {
-    "name": "andar sentado sobre os glúteos"
-  },
-  "11572": {
-    "name": "extensões torácicas deitado no rolo de espuma"
-  },
-  "11644": {
-    "name": "abdução de anca deitado de lado com banda elástica"
-  },
-  "11645": {
-    "name": "contração estática dos quadríceps (isométrica)"
-  },
-  "11646": {
-    "name": "contração estática dos glúteos (isométrica)"
-  },
-  "11647": {
-    "name": "salto pogo a uma perna"
-  },
-  "11648": {
-    "name": "elevação em W no chão"
-  },
-  "11649": {
-    "name": "alongamento de gémeos com joelho fletido"
-  },
-  "11650": {
-    "name": "elevação de gémeos a uma perna sentado numa cadeira"
-  },
-  "11651": {
-    "name": "mobilização da rótula sentado"
-  },
-  "11652": {
-    "name": "deslizamento neural do nervo ciático"
-  },
-  "11653": {
-    "name": "contração dos glúteos de pé"
-  },
-  "11654": {
-    "name": "joelho para baixo sentado"
-  },
-  "11656": {
-    "name": "marcha no lugar (hidroterapia)"
-  },
-  "11657": {
-    "name": "afundo invertido com disco acima da cabeça"
-  },
-  "11714": {
-    "name": "elevação na corda"
-  },
-  "11715": {
-    "name": "remada invertida na corda"
-  },
-  "11716": {
-    "name": "push press de pé com pedra"
-  },
-  "11717": {
-    "name": "flexão pliométrica v. 2"
-  },
-  "11718": {
-    "name": "aberturas invertidas inclinadas com apoio no peito na máquina (com discos)"
-  },
-  "11762": {
-    "name": "remada curvada na máquina Smith (com apoio no peito)"
-  },
-  "11763": {
-    "name": "curl inclinado sentado na polia"
-  },
-  "11764": {
-    "name": "press de peito a um braço com pega supinada de pé na polia"
-  },
-  "11781": {
-    "name": "salto com passo na caixa"
-  },
-  "11782": {
-    "name": "salto lateral"
-  },
-  "11783": {
-    "name": "abertura explosiva dos dedos"
-  },
-  "11784": {
-    "name": "agachamento explosivo em suspensão"
-  },
-  "11785": {
-    "name": "mobilização dos ombros em rotação interna"
-  },
-  "11786": {
-    "name": "mobilização do nervo radial sentado"
-  },
-  "11787": {
-    "name": "mobilização do nervo mediano sentado"
-  },
-  "11788": {
-    "name": "mobilização do nervo cubital sentado"
-  },
-  "11789": {
-    "name": "peso morto de pernas rígidas com pés desfasados com barra"
-  },
-  "11790": {
-    "name": "equilíbrio com toque do pé em 3 pontos"
-  },
-  "11791": {
-    "name": "pressão dos dedos a um braço com bola"
-  },
-  "11792": {
-    "name": "isometria de bíceps ajoelhado"
-  },
-  "11793": {
-    "name": "mobilização dos ombros com press para fora"
-  },
-  "11794": {
-    "name": "pressão dos dedos a um braço com bola v. 2"
-  },
-  "11795": {
-    "name": "mobilização de ombros com press para trás"
-  },
-  "11796": {
-    "name": "mobilização dos ombros em rotação externa"
-  },
-  "11797": {
-    "name": "mobilização dos ombros com press para a frente"
-  },
-  "11798": {
-    "name": "elevação de braços inclinado de trás para o lado e para a frente"
-  },
-  "11799": {
-    "name": "elevação dos braços de trás para o lado e para a frente curvado com halteres"
-  },
-  "11800": {
-    "name": "press unilateral de braço esticado deitado no chão com haltere"
-  },
-  "11801": {
-    "name": "mobilização do quadríceps a uma perna deitado"
-  },
-  "11864": {
-    "name": "curl unilateral com isometria e haltere"
-  },
-  "11877": {
-    "name": "L-sit em suspensão"
-  },
-  "11878": {
-    "name": "elevação de pernas no espaldar"
-  },
-  "11879": {
-    "name": "step-up na máquina Smith"
-  },
-  "11880": {
-    "name": "remada em T com pega fechada na máquina (com discos)"
-  },
-  "11903": {
-    "name": "alongamento dos flexores da anca de pé"
-  },
-  "11904": {
-    "name": "alongamento dos flexores da anca em meio ajoelhado"
-  },
-  "11954": {
-    "name": "alongamento pretzel deitado"
-  },
-  "12018": {
-    "name": "slingshots de pé com kettlebell (avançado)"
   }
 }
