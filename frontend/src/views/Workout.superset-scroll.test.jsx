@@ -327,4 +327,14 @@ describe('the superset card after a rating', () => {
     mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
     expect(seen).toEqual([container.querySelectorAll('.setrow')[0]])
   })
+  // On the iPhone a rest docks its row (.trow.dock, RestTimer.jsx) in place of #timer.
+  it('a row under the docked rest row counts as off screen', async () => {
+    await mount(superset(), 0, { workoutView: 'list' })
+    rowsAt(400); const seen = watchScrolls()
+    const bar = document.createElement('div'); bar.className = 'trow dock'; document.body.appendChild(bar)
+    dom.Element.prototype.getBoundingClientRect = function () { return this.classList?.contains('dock') ? { top: 380, bottom: 659 } : { top: 400, bottom: 444 } }
+    mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
+    expect(seen).toEqual([container.querySelectorAll('.setrow')[0]])
+    bar.remove()
+  })
 })
