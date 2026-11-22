@@ -984,7 +984,7 @@ function json(res, code, obj, extraHeaders) {
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
-function readBody(req) {
+function readBody(req, { gzip = false } = {}) {
   return new Promise((resolve, reject) => {
     let size = 0, over = false; const chunks = [];
     req.on('data', d => {
@@ -1019,8 +1019,9 @@ function readBody(req) {
       }
       let raw = Buffer.concat(chunks);
       // A gzipped body (the app's sync push, when GET /api/config says gzip_body): the cap is on
-      // what it unzips to, so a few KB that expand past it are a 413 like any big body.
-      if (/^\s*gzip\s*$/i.test(req.headers['content-encoding'] || '')) {
+      // what it unzips to, so a few KB that expand past it are a 413 like any big body. Only a
+      // route that asks, after its session check: a stranger's 5 KB must not buy 5 MiB of parsing.
+      if (gzip && /^\s*gzip\s*$/i.test(req.headers['content-encoding'] || '')) {
         try { raw = zlib.gunzipSync(raw, { maxOutputLength: MAX_BODY }); }
         catch (e) { return reject(e.code === 'ERR_BUFFER_TOO_LARGE' ? new HttpError(413, 'body too large') : new HttpError(400, 'invalid gzip')); }
       }
@@ -2583,7 +2584,7 @@ const routes = {
       // `false` here the app does not ask. /api/me itself answers 401 as it always did: paired
       // phones, older apps and scripts read that status.
       signed_in: !!readSession(req),
-      // PUT bodies may be gzipped (readBody). Older servers leave it out, and the app sends plain.
+      // PUT /api/data may be gzipped (readBody). Older servers leave it out, and the app sends plain.
       gzip_body: true,
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
@@ -3187,7 +3188,7 @@ const routes = {
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    const body = await readBody(req);
+    const body = await readBody(req, { gzip: true });
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     // An object with nothing of the profile in it empties the document with the counter left
     // intact: what lands on disk is `{"_rev":n+1}`, every routine, workout and weigh-in gone, and

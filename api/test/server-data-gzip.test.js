@@ -56,6 +56,16 @@ test('GET /api/config says the server takes a gzipped body', async t => {
   assert.match(pre.headers.get('access-control-allow-headers'), /Content-Encoding/);
 });
 
+test('only PUT /api/data unzips, after its session check: a stranger gets no 5 MiB parse for 5 KB', async t => {
+  const h = await startServer(t);
+  const small = zlib.gzipSync(JSON.stringify({ cid: 'nope' }));
+  const anon = await fetch(`${h.api}/api/login/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip' }, body: small });
+  assert.equal(anon.status, 400);
+  assert.equal((await anon.json()).error, 'invalid json', 'read as the bytes it is, never unzipped');
+  const noSession = await fetch(`${h.api}/api/data`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip' }, body: small });
+  assert.equal(noSession.status, 401);
+});
+
 test('PUT /api/data: plain and gzipped bodies, the cap on the unzipped size, bad gzip, and the 409', async t => {
   const h = await startServer(t);
   const onDisk = () => JSON.parse(fs.readFileSync(path.join(h.dataDir, `state-${UID}.json`), 'utf8'));

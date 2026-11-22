@@ -317,9 +317,8 @@ paths:
                   gzip_body:
                     type: boolean
                     description: >-
-                      True when request bodies may be sent gzipped (`Content-Encoding: gzip`),
-                      which the app does for `PUT /api/data`. Absent on an older server, where
-                      the app sends the body plain.
+                      True when `PUT /api/data` takes a gzipped body (`Content-Encoding: gzip`).
+                      Absent on an older server, where the app sends the body plain.
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -2303,9 +2302,9 @@ paths:
         server stamps the new revision into the document as `_rev`; a `_rev` sent by
         the client is ignored.
 
-        The body may be gzipped, with `Content-Encoding: gzip` (any route that takes a JSON
-        body does; `GET /api/config` says so with `gzip_body`). The 5 MiB limit applies to
-        the unzipped body.
+        The body may be gzipped, with `Content-Encoding: gzip` (`GET /api/config` says so
+        with `gzip_body`). The 5 MiB limit applies to the unzipped body. Only this route
+        unzips: anywhere else a gzipped body is `invalid json`.
 
         The records of removals (`deleted`) and of edits (`edited`) never shrink: the
         stored ones are joined into the write (a reset keeps its own). A writer that does
