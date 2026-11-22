@@ -3381,8 +3381,11 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    blurred layer here and the bottom edge is a plain gradient: with the tab bar and the connection
    bar that is the 3 the screen may hold. --ebr is the bottom of the nav row. */
 :root[data-platform="ios"]{--nav:44px;--ebr:calc(var(--sat) + var(--conn) + var(--nav))}
-:root[data-platform="ios"] #app:has(.gh){padding-top:var(--ebr)}
-:root[data-platform="ios"] #app:has(.gh.wk){padding-top:calc(var(--ebr) + 62px)}   /* fixed: folding the pill row must not move the content */
+:root[data-platform="ios"] #app:has(> .page:not(.under) .gh){padding-top:var(--ebr)}
+:root[data-platform="ios"] #app:has(> .page:not(.under) .gh.wk){padding-top:calc(var(--ebr) + 62px)}   /* fixed: folding the pill row must not move the content */
+/* the page under an edge swipe back (App.jsx) brings its own header's room; the page on top keeps its own */
+:root[data-platform="ios"] #app > .page.under:has(.gh){padding-top:var(--ebr)}
+:root[data-platform="ios"] #app > .page.under:has(.gh.wk){padding-top:calc(var(--ebr) + 62px)}
 .gh{--eb:var(--ebr);--eh:calc(var(--eb) + 28px);--bb:calc(var(--sab) + 92px);--gbtn:color-mix(in srgb,var(--bg-el) 82%,transparent);
   position:fixed;top:0;left:0;right:0;height:var(--eb);z-index:30;pointer-events:none}
 .gh.wk{--eb:calc(var(--ebr) + 56px);--bb:calc(var(--sab) + 6px)}   /* nav + 8 + pill 44 + 4; no tab bar */

@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import ScreenHeader from './ScreenHeader.jsx'
 
@@ -36,5 +38,16 @@ describe('ScreenHeader', () => {
     expect(host.querySelector('.nav button')).toBeNull()
     expect(host.querySelector('.gh').classList.contains('hard')).toBe(true)
     expect(host.querySelector('.hdr').nextElementSibling.textContent).toBe('more')
+  })
+})
+
+// CodeRabbit on #1058: the page an edge swipe back shows underneath (App.jsx) may have a header when
+// the page on top has none (Plan under a routine's editor); the editor must not move down by it.
+describe('header room on the iPhone', () => {
+  const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+  it('comes from the page on top, and the page underneath brings its own', () => {
+    expect(css).not.toMatch(/#app:has\(\.gh/)
+    expect(css).toContain(':root[data-platform="ios"] #app:has(> .page:not(.under) .gh){padding-top:var(--ebr)}')
+    expect(css).toContain(':root[data-platform="ios"] #app > .page.under:has(.gh){padding-top:var(--ebr)}')
   })
 })
