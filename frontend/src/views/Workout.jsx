@@ -17,7 +17,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
 import { beep, vibrate, haptic, unlock } from '../lib/sound.js'
-import { holdProps, stopHold } from '../lib/feel.js'
+import { holdProps, stopHold, dropHold } from '../lib/feel.js'
 import { isIOS } from '../lib/platform-now.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -211,8 +211,9 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // Rows are keyed by index: one added or removed above would put the player under another set.
   const rowCount = entry?.sets?.length
   useEffect(() => { setVideoAt(null) }, [rowCount])
-  // Set rows share one hold (lib/feel.js) and are keyed by index: rows that shift must not keep a hold stepping.
-  useEffect(() => { stopHold() }, [rowCount, entryIdx])
+  // Set rows share one hold (lib/feel.js) and are keyed by index: rows that shift must not keep a hold
+  // stepping, nor let its click land on the set that now stands under the finger.
+  useEffect(() => { dropHold() }, [rowCount, entryIdx])
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
