@@ -1515,11 +1515,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private func updateLink() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
-        let r = session.activationState == .activated && session.isReachable
         let o = box
         let q = OutboxCore.waiting(o)
         let sets = OutboxCore.waitingSets(o)
         DispatchQueue.main.async {
+            // Read here, not before the hop: updates queued out of order must not leave an old state on screen.
+            let r = session.activationState == .activated && session.isReachable
             // The demo screens set reachability by hand (idle-away); a live link must not undo it.
             if !self.isDemo, self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
