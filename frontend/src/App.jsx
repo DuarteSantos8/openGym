@@ -102,6 +102,9 @@ const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const Assistants = lazyView(() => import('./views/Assistants.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
 const Tools = lazyView(() => import('./views/Tools.jsx'))
+// Find my plan and Learn (EP22, EP24): the beginner's way in. Fetched like every other screen past Home.
+const Onboarding = lazyView(() => import('./views/Onboarding.jsx'))
+const Learn = lazyView(() => import('./views/Learn.jsx'))
 const Journal = lazyView(() => import('./views/Journal.jsx'))
 const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 // The trainer dashboard (docs/TRAINERS.md): only for sessions that train someone or lead a gym.
@@ -418,6 +421,8 @@ function Shell() {
       {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
       <Route path="/structural-balance" element={<StructuralBalance />} />
       <Route path="/tools" element={<Tools />} />
+      <Route path="/start" element={<Onboarding />} />
+      <Route path="/learn" element={<Learn />} />
       <Route path="/journal" element={<Journal />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}

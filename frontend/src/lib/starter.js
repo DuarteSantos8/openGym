@@ -104,9 +104,13 @@ export const fitRoutines = (routines, equipment, machines) => {
 // treats null as "change nothing" can never half-apply a plan. With an equipment list the
 // plan is fitted to it first, and `fit` reports how many exercises that swapped or dropped.
 // `machines`, the profile's machine kinds (lib/machine-kinds.js), narrows the machines it may use.
-export const buildStarterPlan = (id, equipment, machines) => {
-  const plan = PLANS[id]
-  if (!plan) return null
+export const buildStarterPlan = (id, equipment, machines) => buildPlanFrom(PLANS[id], equipment, machines)
+
+// The same, for a plan handed in as data rather than named: { routines, schedule } in the
+// catalogue's own shape (lib/planner.js builds one from the quiz answers). null for anything
+// that is not a plan.
+export const buildPlanFrom = (plan, equipment, machines) => {
+  if (!plan || !Array.isArray(plan.routines) || !Array.isArray(plan.schedule)) return null
   const fit = equipment ? fitRoutines(plan.routines, equipment, machines) : null
   const source = fit ? fit.routines : plan.routines
   const routines = build(source)

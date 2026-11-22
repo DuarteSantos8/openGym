@@ -243,6 +243,9 @@ export const SEARCH = [
   { page: 'plan', title: 'Week starts on', icon: 'calendar', tint: 'var(--orange)', kw: 'monday sunday first day week', opts: ['Monday', 'Sunday'], tkw: () => t('week start') },
   { page: 'plan', title: 'Weekly sets per muscle', icon: 'slider', tint: 'var(--teal)', kw: 'volume sets per week muscle target range mev mrv hypertrophy landmarks' },
   { page: 'plan', title: 'Load starter plan', icon: 'clipboard', tint: 'var(--green)', kw: 'starter template beginner program routine' },
+  { page: 'plan', title: 'Find my plan', icon: 'sparkles', tint: 'var(--green)', kw: 'quiz questions onboarding beginner start goal recommend plan new' },
+  { page: 'plan', title: 'Experience level', icon: 'stairs', tint: 'var(--indigo)', kw: 'beginner intermediate advanced experienced level simple mode novice', opts: ['Beginner', 'Intermediate', 'Experienced'] },
+  { page: 'plan', title: 'Learn', icon: 'lightbulb', tint: 'var(--yellow)', kw: 'glossary guide help basics how to terms words meaning rir rpe set rep warm-up nutrition safety' },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
   { page: 'units', title: 'English exercise names', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },

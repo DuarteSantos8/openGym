@@ -275,6 +275,9 @@ const PLAN_COPY = {
   hotel: () => ({ name: t('Hotel room'), about: t('Twenty-five minutes between the bed and the desk chair.') })
 }
 
+/** A starter plan's name in the language on screen, or '' for an unknown id (views/Onboarding.jsx). */
+export const starterPlanName = id => PLAN_COPY[id]?.().name || ''
+
 // Adds the plan's routines (reusing one you already have under the same name) and puts them on
 // its weekdays. Existing routines are never touched
 // and only the weekdays the plan asks for are reassigned; an id with no plan behind it changes
