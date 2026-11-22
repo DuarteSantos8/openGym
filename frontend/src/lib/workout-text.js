@@ -7,14 +7,14 @@ import { EXIDX } from './exercises.js'
 import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { fmtDate, fmtNum, fmtVol, durPart, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
-import { viewEntry, exUnitTag } from './ex-unit.js'
+import { viewEntry, exUnitOf } from './ex-unit.js'
 
 /**
  * `unit` is the profile's, `nameOf(entry)` the exercise's display name, `speedUnit` the one cardio
  * is shown in (lib/speed.js; km/h when absent). Blocks are separated by a blank line: the heading,
  * then each exercise (a superset's under one "Superset" line, its members together), then the
- * session note. `state`, when given, is the profile: an exercise in a weight unit of its own
- * (#657) is then written in it, its unit after its sets.
+ * session note. Every weight is written with its unit, "60 kg × 8". `state`, when given, is the
+ * profile: an exercise in a weight unit of its own (#657) is then written in that one.
  */
 export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state = null }) {
   const facts = [
@@ -34,7 +34,10 @@ export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state
     // Title case the way the screen shows it (exerciseNameClass): an English name gets it, a
     // translated one keeps its own casing, which German's capitalised nouns depend on.
     const name = nameOf(entry)
-    return [exerciseNameClass(EXIDX[entry.id]) ? capWords(name) : name, sets.map(s => setLabel(entry.id, s, entry.target, speedUnit)).join(', ') + (state ? exUnitTag(state, entry.id) : ''), ...(entry.note ? [entry.note] : [])]
+    // The unit goes next to each weight, so a pasted "60×8" is not left guessing which is which:
+    // the exercise's own when it is pinned to one (#657), else the profile's.
+    const wUnit = state ? exUnitOf(state, entry.id) : unit
+    return [exerciseNameClass(EXIDX[entry.id]) ? capWords(name) : name, sets.map(s => setLabel(entry.id, s, entry.target, speedUnit, wUnit)).join(', '), ...(entry.note ? [entry.note] : [])]
   }
   // Grouped the way the detail sheet groups it (sessionSections): per routine first, so a
   // superset is only ever paired inside one routine's section, in the order the sheet lists them.
