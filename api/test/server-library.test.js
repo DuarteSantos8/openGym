@@ -320,6 +320,22 @@ test('a ban pauses sharing and hides what was live; the unban brings back exactl
   assert.deepEqual(back.map(i => i.id), [a.body.id], 'the one an admin hid stays hidden');
 });
 
+test('a ban and unban never publish an item that was waiting for review or auto-hidden', async t => {
+  const h = await start(t, { SHARE_REVIEW: 'on' });
+  const waiting = await h.share('u_anna', { type: 'tip', payload: { exId: '0001', text: 'Waiting' } });
+  const reported = await h.share('u_anna', { type: 'tip', payload: { exId: '0002', text: 'Reported' } });
+  await h.call('u_admin', 'POST', `/api/admin/shared/${reported.body.id}`, { action: 'approve', reason: 'fine' });
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${reported.body.id}/report`, { reason: 'licensed' })).body.status, 'pending');
+  const ban = await h.call('u_admin', 'POST', '/api/admin/users/u_anna/sharing', { banned: true, reason: 'spam wave' });
+  assert.equal(ban.body.items, 0, 'nothing of hers was live');
+  await h.call('u_admin', 'POST', '/api/admin/users/u_anna/sharing', { banned: false });
+  assert.equal((await h.call('u_ben', 'GET', '/api/shared')).body.items.length, 0);
+  assert.equal((await h.call('u_ben', 'GET', `/api/shared/${waiting.body.id}`)).status, 404);
+  const items = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'shared', 'items.json'), 'utf8')).items;
+  assert.equal(items.find(i => i.id === waiting.body.id).status, 'pending', 'still waiting for review');
+  assert.equal(items.find(i => i.id === reported.body.id).mod.action, 'auto-hide', 'the reports still count');
+});
+
 test('account deletion withdraws everything; an importer keeps the copy', async t => {
   const h = await start(t);
   const sound = M.wav(4410);

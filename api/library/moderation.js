@@ -107,7 +107,8 @@ export function moderationRoutes({ json, readBody, readSession, requireAdmin, is
     }),
 
     // Sharing paused or resumed for one person. Their live items step out of sight with it and come
-    // back with the unban; what an admin hid for another reason stays hidden.
+    // back with the unban; what an admin hid for another reason stays hidden. Pending ones (waiting
+    // for review, or auto-hidden by reports) are out of sight already and keep their status.
     'POST /api/admin/users/{uid}/sharing': async (req, res) => {
       if (!cfg.on) return off(res);
       const admin = requireAdmin(req, res); if (!admin) return;
@@ -128,7 +129,7 @@ export function moderationRoutes({ json, readBody, readSession, requireAdmin, is
       store.batch(items => {
         for (const it of items) {
           if (it.owner !== u.id) continue;
-          if (banned && (it.status === 'live' || it.status === 'pending')) { it.status = 'hidden'; it.mod = { by: admin.id, at: t, action: 'ban', reason }; n++; }
+          if (banned && it.status === 'live') { it.status = 'hidden'; it.mod = { by: admin.id, at: t, action: 'ban', reason }; n++; }
           if (!banned && it.status === 'hidden' && it.mod?.action === 'ban') { it.status = 'live'; it.mod = { by: admin.id, at: t, action: 'unban', reason }; n++; }
         }
       });

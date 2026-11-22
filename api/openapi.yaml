@@ -2988,7 +2988,8 @@ paths:
       summary: 'Admin: pause or resume sharing for one person'
       description: |
         `banned: true` (with a reason) stops the person sharing or editing, and takes their live
-        and waiting items out of sight; `false` brings back exactly the ones the ban hid.
+        items out of sight; items waiting for review keep their status. `false` brings back
+        exactly the ones the ban hid.
         Logged as `shared.ban` / `shared.unban`.
       requestBody:
         content:
