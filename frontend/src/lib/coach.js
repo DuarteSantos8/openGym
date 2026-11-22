@@ -199,7 +199,8 @@ export function markStale(proposal, S) {
   if (!proposal) return proposal
   const planMoved = !!proposal.planHash && proposal.planHash !== planHash(S)
   const changes = (proposal.changes || []).map(c => {
-    const r = c.target?.routineId ? findRoutine(S, c.target.routineId) : null
+    const found = c.target?.routineId ? findRoutine(S, c.target.routineId) : null
+    const r = found?.archived === true ? null : found   // an archived routine is out of the plan, like a deleted one
     let stale = false
     // A programme names no routine: a revision is stale once the programme it revises is gone.
     if (c.type === 'programme') stale = !!c.target?.programmeId && !programmeById(S, c.target.programmeId)
