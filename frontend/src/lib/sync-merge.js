@@ -499,7 +499,7 @@ const RESET_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: bodyweightKey,
   measurements: bodyweightKey, gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
 }
-const RESET_MAPS = ['exNotes', 'barWeights', 'exAliases', 'exShownName', 'programmes', ...STAMPED_MAPS]
+const RESET_MAPS = ['exNotes', 'machineCodes', 'barWeights', 'exAliases', 'exShownName', 'programmes', ...STAMPED_MAPS]
 /** An entry's name in resetIds: a workout's id (or day and start), a weigh-in's day and time, … */
 export const entryKey = (field, x) => String(RESET_LISTS[field](x))
 // Per field, the most names a reset keeps — far more workouts than anyone logs, and a bound on
@@ -558,6 +558,7 @@ export function sinceReset(S, at, ids) {
     out.gymCards = []
     out.favEx = []
     out.exNotes = {}
+    out.machineCodes = {}
     out.exAliases = {}
     out.exShownName = {}
     out.programmes = {}
@@ -726,7 +727,7 @@ const OWN_MERGE = new Set([
 // `modules` (lib/modules.js): one switch per feature area, so Body off on the phone and Seasonal off
 // on the laptop both hold.
 // bandEx (lib/bands.js): which exercises use bands, per exercise like exNotes.
-const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'exShownName', 'programmes', 'modules', 'bandEx'])
+const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'machineCodes', 'barWeights', 'exAliases', 'exShownName', 'programmes', 'modules', 'bandEx'])
 // The order of the routines, as the list shows them, is a choice of its own (`edited.routineOrder`):
 // a reorder on one device was lost to the other's whole copy whenever that one was newer.
 export const ORDER_KEY = 'routineOrder'
@@ -954,7 +955,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     if (kept) out.exWeights[id] = clone(kept)
     else delete out.exWeights[id]
   }
-  for (const f of ['exNotes', 'barWeights', 'exAliases', 'exShownName', 'programmes', 'modules']) {
+  for (const f of ['exNotes', 'machineCodes', 'barWeights', 'exAliases', 'exShownName', 'programmes', 'modules']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
   // The plate-loading choices (lib/plates.js) are stamped the same way: an exercise's loading and

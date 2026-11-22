@@ -996,3 +996,19 @@ describe('body measurements across devices (#82)', () => {
     expect(next.measurements[0].t).toBe(1000)
   })
 })
+
+describe('machineCodes', () => {
+  it('keeps a code added to two exercises on two devices', () => {
+    const b0 = base({ machineCodes: {} })
+    const a = stampEdits(b0, { ...clone(b0), machineCodes: { '0150': ['t:A'] }, _ts: 1000 }, 1000)
+    const b = stampEdits(b0, { ...clone(b0), machineCodes: { '0151': ['t:A'] }, _ts: 2000 }, 2000)
+    expect(a.edited['machineCodes.0150']).toBe(1000)
+    expect(mergeStates(a, b).machineCodes).toEqual({ '0150': ['t:A'], '0151': ['t:A'] })
+  })
+  it('an unlink stays unlinked', () => {
+    const empty = base({ machineCodes: {} })
+    const linked = stampEdits(empty, { ...clone(empty), machineCodes: { '0150': ['t:A'] }, _ts: 1000 }, 1000)
+    const gone = stampEdits(linked, { ...clone(linked), machineCodes: {}, _ts: 3000 }, 3000)
+    expect(mergeStates(gone, linked).machineCodes).toEqual({})
+  })
+})

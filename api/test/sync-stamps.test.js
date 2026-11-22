@@ -432,3 +432,13 @@ test('an unstamped push keeps the Coach lines another device added, and an Undo 
   assert.deepEqual(next.coach.log.map(e => e.id), ['l1', 'r1']);
   assert.deepEqual(next.coach.snapshots.map(x => x.proposalId), ['p1']);   // p2 was undone
 });
+
+test('a changed machineCodes entry is stamped per exercise', () => {
+  const cur = stored();
+  cur.machineCodes = {};
+  const next = clone(cur);
+  next.machineCodes = { '0150': ['t:A'] };
+  stampPut(cur, next, { overRead: true, stamped: false, now: NOW });
+  assert.ok(next.edited['machineCodes.0150'] >= NOW);
+  assert.equal(next.edited.machineCodes, undefined);
+});

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   createToken, findToken, listTokens, revokeTokens, touchToken, scopedState, mergeScoped, cleanTokenScopes,
-  sameHash, ScopeError, TOKENS_MAX, readCategories,
+  sameHash, ScopeError, TOKENS_MAX, readCategories, categoriesOf,
 } from '../tokens.js';
 
 const user = (over = {}) => ({ id: 'u1', name: 'Ana', sv: 0, ...over });
@@ -180,4 +180,8 @@ test('a connector access token past aexp is not found; rotateToken changes the v
   const next = rotateToken(row);
   assert.equal(findToken(db, token, () => user, 6000), null);
   assert.equal(findToken(db, next, () => user, 6000), row);
+});
+
+test('machineCodes belongs to the plans scope', () => {
+  assert.deepEqual(categoriesOf('machineCodes'), ['plans']);
 });
