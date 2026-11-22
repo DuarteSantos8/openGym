@@ -60,7 +60,8 @@ sign-in (passkeys, or a password if `PASSWORD_LOGIN` is on) applies as usual.
 1. In Home Assistant: *Settings → Add-ons → Add-on store → ⋮ → Repositories*, add
    `https://github.com/Amantux/opengym-ha`, install **openGym** and start it.
 2. For the sensors and services, in HACS add the same repository under *Custom repositories*
-   with type **Integration**, download **openGym**, restart Home Assistant, then accept the discovered openGym under *Settings → Devices &
-   services*. If you do not use HACS, follow the add-on's Documentation tab instead.
+   with type **Integration**, download **openGym**, restart Home Assistant, then accept the
+   discovered openGym under *Settings → Devices & services*. If you do not use HACS, follow the
+   add-on's Documentation tab instead.
 
 For a standalone openGym that you run yourself, keep following [self-hosting](SELF_HOSTING.md).
