@@ -55,9 +55,9 @@ function installDom() {
   root = createRoot(document.getElementById('host'))
 }
 
-const form = () => React.createElement('div', null,
+const form = close => React.createElement('div', null,
   React.createElement('h3', null, 'Rename'), React.createElement('input', { defaultValue: 'Push day' }),
-  React.createElement('button', { className: 'btn ghost dim' }, 'Cancel'))
+  React.createElement('button', { className: 'btn ghost dim', onClick: close }, 'Cancel'))
 const open = async (render, extra = {}) => {
   await act(async () => { mocks.setSheets([{ id: 's1', locked: false, kind: 'sheet', render, ...extra }]) })
 }
@@ -110,7 +110,7 @@ describe('iPhone sheets (Liquid Glass G4)', () => {
     expect(mocks.state.sheets).toHaveLength(1)
     await act(async () => { { const e = new dom.Event('keydown'); e.key = 'Escape'; window.dispatchEvent(e) } })
     expect(mocks.state.sheets).toHaveLength(1)
-    await act(async () => { mocks.state.closeSheet('s1') })
+    await act(async () => { document.querySelector('.sheet .btn.dim').click() })
     expect(mocks.state.sheets).toEqual([])
   })
 
