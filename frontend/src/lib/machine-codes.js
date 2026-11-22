@@ -7,12 +7,12 @@ import { EXIDX, canonicalExId } from './exercises.js'
 const MAX_LEN = 512
 const STOP = new Set(['product', 'products', 'equipment', 'machine', 'machines', 'qr', 'index', 'html', 'htm', 'php', 'en', 'de', 'fr', 'www', 'item', 'id'])
 
-// Controls, bidi embeddings/overrides/isolates and the zero-width marks.
-const HIDDEN = /[\p{Cc}\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/gu
+// C0 and C1 controls, bidi embeddings/overrides and bidi isolates.
+const HIDDEN = /[\u0000-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/g
 
 export function cleanText(raw) {
   if (typeof raw !== 'string') return null
-  const s = raw.replace(HIDDEN, '').trim()
+  const s = raw.normalize('NFC').replace(HIDDEN, '').trim()
   return s && s.length <= MAX_LEN ? s : null
 }
 
@@ -30,9 +30,9 @@ export function codeFromNfc({ uid, records } = {}) {
   return id ? 'uid:' + id.toUpperCase() : null
 }
 
-// A first byte of 08 marks a UID the tag makes up afresh, so it can't identify a machine.
+// A 4-byte UID starting with 08 is one the tag makes up afresh, so it can't identify a machine.
 export function isRandomUid(uidHex) {
-  return typeof uidHex === 'string' && /^08/i.test(uidHex.trim())
+  return typeof uidHex === 'string' && /^08[0-9a-f]{6}$/i.test(uidHex.trim())
 }
 
 export function refusal(S, code, { own = false } = {}) {
@@ -57,7 +57,8 @@ function known(S, id) {
 export function exercisesFor(S, code) {
   return Object.entries(S?.machineCodes || {})
     .filter(([id, codes]) => Array.isArray(codes) && codes.includes(code) && known(S, id))
-    .map(([id]) => id)
+    .map(([id]) => canonicalExId(id))
+    .filter((id, i, all) => all.indexOf(id) === i)
 }
 
 export function unlink(S, exId, code) {

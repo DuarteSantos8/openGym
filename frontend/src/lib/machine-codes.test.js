@@ -7,6 +7,9 @@ describe('cleaning', () => {
     expect(cleanText('x'.repeat(513))).toBe(null)
     expect(cleanText('   ')).toBe(null)
   })
+  it('composed and decomposed text are one code', () => {
+    expect(codeFromQr('caf\u00e9')).toBe(codeFromQr('cafe\u0301'))
+  })
   it('prefixes text and uid codes', () => {
     expect(codeFromQr(' https://brand.com/m/12 ')).toBe('t:https://brand.com/m/12')
     expect(codeFromNfc({ uid: '04a25b11223344', records: [] })).toBe('uid:04A25B11223344')
@@ -18,6 +21,7 @@ describe('cleaning', () => {
   it('spots random UIDs', () => {
     expect(isRandomUid('08A1B2C3')).toBe(true)
     expect(isRandomUid('04A25B11223344')).toBe(false)
+    expect(isRandomUid('08A25B11223344')).toBe(false)
   })
 })
 
