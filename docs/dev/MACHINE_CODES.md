@@ -1,6 +1,6 @@
 # Machine codes: link an exercise to a code already on the machine
 
-Design note for [#1334](https://github.com/DuarteSantos8/openGym/issues/1334). Status: design, not built.
+Design note for [#1334](https://github.com/DuarteSantos8/openGym/issues/1334). Status: built on branch feat/machine-codes; awaiting device testing and maintainer review.
 
 ## Why
 
@@ -165,16 +165,18 @@ going back to such a build and forward again loses nothing.
 A pure helper `lib/machine-codes.js` (with `machine-codes.test.js`):
 
 - `codeFromQr(text)`, `codeFromNfc({ records, uid })` → code or null
-- `isOwnCode(text)` → true for openGym codes (delegates to `routeScannedText` / `parseTagUrl`)
+- `cleanText(raw)` → the cleaned text (see Safety) or null
+- `refusal(S, code, { own })` → why a code may not be linked (`empty`, `own`, `gym-card`, `random-uid`) or null; the
+  caller decides `own` with `routeScannedText` / `parseTagUrl`
 - `exercisesFor(S, code)` → every exercise whose list holds the code (canonical ids, known to the
   library), `[]` if none
 - `codesOf(S, exId)` → that exercise's codes
 - `link(S, exId, code, { only })` → adds the code to the exercise; with `only`, also takes it off
   every other exercise
 - `unlink(S, exId, code)` → takes one code off one exercise
-- `pickForScan(active, ids)` → which of a code's exercises a scan in a live workout means:
-  the one not yet done in this workout when exactly one is; null (ask) when several are, or
-  when none is in it and the code has several
+- `pickForScan(active, ids)` (in `lib/machine-scan.js`, with `scanInWorkout`) → which of a code's
+  exercises a scan in a live workout means: the one not yet done in this workout when exactly one
+  is; the only id when the code has just one; null (ask) otherwise
 - `isRandomUid(uid)` → true for a 4-byte NFCID1 starting with `0x08` (random per read)
 - `shownCode(code)` → short label for lists (`QR https://brand.com/m/12…`, `NFC 04:A2:…`)
 - `searchHint(code)` → search words from a text code, or `''`: the URL's path and query values
@@ -231,8 +233,7 @@ not started → A D B C). Never inside a superset: the slot is before or after a
 **Supersets:** an exercise that belongs to a superset moves with its whole superset; the current
 exercise becomes the scanned member.
 
-A pure helper decides it (`scanInWorkout(active, exId)` in `lib/machine-codes.js` or
-`lib/active-workout-order.js` → `{ do: 'jump' | 'move' | 'add', at, indices }`), unit-tested on
+A pure helper decides it (`scanInWorkout(active, exId)` in `lib/machine-scan.js` → `{ do: 'jump' | 'move' | 'add', at, indices }`), unit-tested on
 the cases above. The move reuses `lib/active-workout-order.js` (a move-to-index next to the
 existing one-step move, returning the same index permutation so the rest timer, the rest owner
 and the progress high-water marks remap the way `moveUnitAt` already does). The add reuses
@@ -287,8 +288,8 @@ exercise. Only in a live session (not in the saved-workout editor, not in a back
 ```
 
 With the chips switched off (Settings, `wc.exerciseChips`), the button is not moved into the
-header; the workout's ⋯ menu gets **Scan a machine** under Add exercise instead (shown always, so
-it can be found either way).
+header; the workout's ⋯ menu gets **Scan a machine** under Add exercise instead. The menu item
+is shown always, with the chips on or off, so it can be found either way.
 
 **Scan a machine sheet** (new, `components/ScanMachine.jsx`), opened from the workout's chip row (or
 its ⋯ menu) and from Plan > Scan a QR code:
@@ -302,9 +303,10 @@ its ⋯ menu) and from Plan > Scan a QR code:
 ```
 
 While it is open, NFC reading is on (Android reader mode, Web NFC scan). On iPhone the sheet's
-NFC row is a button that starts `NFCTagReaderSession` with Apple's own sheet. Whatever it reads
-goes through the routing above. Where NFC reading is not available, Plan > Scan a QR code opens the
-camera directly, as today.
+NFC row is a **Read NFC tag** button that starts `NFCTagReaderSession` with Apple's own sheet,
+with the existing alert text "Hold the top of your iPhone near the sticker.". Whatever it reads
+goes through the routing above. Where NFC reading is not available, the sheet opens the camera
+at once, and Plan > Scan a QR code skips the sheet and opens the camera, as today.
 
 **Exercise details** (`sheets.jsx`, next to Write NFC sticker for this exercise):
 
@@ -340,15 +342,19 @@ no connect beyond reading). Only one of read or write at a time: starting one st
 [.iso14443, .iso15693])`, connects to the first tag, takes its identifier (MIFARE / ISO 15693),
 reads NDEF if the tag has it, resolves with the same shape and invalidates the session. The
 entitlement already lists `TAG`. `NFCReaderUsageDescription` is reworded to cover reading a
-machine's tag. ISO 7816 tags without declared AIDs are not detected; the sheet's error says to try
-the QR code.
+machine's tag. ISO 7816 tags are only detected for AIDs declared in `Info.plist`: it lists the
+NDEF Type 4 application, `D2760000850101`, under
+`com.apple.developer.nfc.readersession.iso7816.select-identifiers`, so NDEF Type 4 tags are
+selected through it and read. Other ISO 7816 tags are not detected; a failed or timed-out read
+shows a toast that says to try the QR code.
 
-**Web** (`lib/nfc.js`): `readMachineTag()` runs `NDEFReader.scan()` from the sheet's tap and uses
+**Web** (`lib/nfc.js`): `readMachineTags()` runs `NDEFReader.scan()` while the sheet is open and uses
 the event's `serialNumber` and records. The background reader in `onTagLink` keeps ignoring
 non-openGym tags.
 
-`lib/nfc.js` exposes `nfcReadSupport()` (Android app, iPhone app, Web NFC) and
-`readMachineTag({ signal })` → `{ uid, records }`.
+`lib/nfc.js` exposes `nfcReadSupport()` → `{ supported, enabled, mode }` (`hold` on Android and
+Web NFC, `button` on iPhone), `readMachineTags(onTag)` (hold mode, returns a stop function) and
+`readMachineTagOnce({ alert })` (iPhone, one tap) → `{ uid, records }`.
 
 ## Tests
 
