@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: on Android the file with what openGym read from Health Connect (sleep, heart rate variability, body composition and so on) no longer goes into the phone's Google backup or a transfer to a new phone. It was meant to stay on this phone.
 - Garmin: the watch app now runs on older Garmins too: fēnix 5, 5S, 5X and Chronos, Forerunner 645 and 935, D2 Charlie and Delta (S, PX), Descent Mk1 and Approach S62. That is 12 more models, 130 in all, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
 - Fixed: on Android the end of a rest made no sound while the app was open. The beeps for the last seconds played, the final sound only came with the app in the background. It plays on screen again, and still only once (thanks Santiago, by mail).
 - Apple Watch: on the rest screen the effort chips and the workout time sit a little in from the edges. On a 42 mm Series 12 the outer chips and the time ran under the display's rounded edge (thanks Karim, by mail).
