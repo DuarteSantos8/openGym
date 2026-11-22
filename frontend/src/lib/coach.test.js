@@ -143,6 +143,12 @@ describe('staleness', () => {
     expect(markStale(p, edited).planMoved).toBe(true)
   })
 
+  it('flags a change to an archived routine', () => {
+    const S = state(); S.routines[0].archived = true
+    const [c] = markStale(proposal([change()]), S).changes
+    expect(c.status).toBe('stale')
+  })
+
   it('flags a change whose target is gone', () => {
     const S = state(); S.routines[0].ex = S.routines[0].ex.filter(e => e.id !== '0001')
     const [c] = markStale(proposal([change()]), S).changes
