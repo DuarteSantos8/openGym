@@ -2572,8 +2572,12 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* The live session's body (#670, components/SessionMuscles.jsx): at the end of the exercise
    chips, and no taller than their 37px row, so it moves nothing in any layout. */
 .iconbtn.whdr-map{width:auto;height:32px;padding:0 2px;border-radius:10px}
-.wchips-row{display:flex;align-items:center;gap:4px}
+.wchips-row{display:flex;align-items:center;gap:4px;margin-bottom:11px}
 .wchips-row>.wchips{flex:1;min-width:0}
+/* The space under the chips belongs to the row, not the strip: with it on the strip, the row's
+   centring put the scan and session-map buttons beside it half that margin too low. */
+.wchips-row>.chips.wchips{margin-bottom:0}
+.whdr.stick .wchips-row{margin-bottom:5px}
 .iconbtn.wchips-scan{width:32px;height:32px;border-radius:10px}   /* the session map's height beside it */
 .whdr-map .bodymap.bm-mini{gap:1px}
 .whdr-map .bodymap.bm-mini .bm-v{height:30px}
