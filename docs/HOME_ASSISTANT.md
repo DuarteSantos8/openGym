@@ -48,6 +48,10 @@ profile: it ends their sessions and keeps them out, and **Enable account** bring
 not use **Delete account** for that: the next time a Home Assistant user opens the sidebar, the
 add-on makes them a new, empty profile.
 
+**Admins** cannot be disabled (openGym answers "cannot disable an admin"). To remove one, the
+owner first takes their admin role away (**Remove admin**, owner only), then disables the account.
+If the person leaving is the owner, make another admin the owner first (**Make owner**).
+
 Direct access from outside Home Assistant is off by default; when it is turned on, openGym's own
 sign-in (passkeys, or a password if `PASSWORD_LOGIN` is on) applies as usual.
 
@@ -55,8 +59,8 @@ sign-in (passkeys, or a password if `PASSWORD_LOGIN` is on) applies as usual.
 
 1. In Home Assistant: *Settings → Add-ons → Add-on store → ⋮ → Repositories*, add
    `https://github.com/Amantux/opengym-ha`, install **openGym** and start it.
-2. For the sensors and services, download the integration through HACS from the same repository,
-   restart Home Assistant, then accept the discovered openGym under *Settings → Devices &
+2. For the sensors and services, in HACS add the same repository under *Custom repositories*
+   with type **Integration**, download **openGym**, restart Home Assistant, then accept the discovered openGym under *Settings → Devices &
    services*. If you do not use HACS, follow the add-on's Documentation tab instead.
 
 For a standalone openGym that you run yourself, keep following [self-hosting](SELF_HOSTING.md).
