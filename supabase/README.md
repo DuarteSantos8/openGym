@@ -90,4 +90,13 @@ the output. `api/test/no-secrets.test.js` fails the build on a committed key.
 |---|---|
 | Checked | Schema applies to PostgreSQL 16; every RLS expectation in `rls.sql`; every handler path with a pretend Stripe and database; signature, token and JWT checks, each also verified to fail when the check is removed |
 | **Not** checked | Anything against a real Supabase project or real Stripe: the platform's key headers, the Deno entry points, CLI commands, Checkout and Portal pages, live webhooks. Step 7 above is where that happens |
-| Not built yet | The sign-in screen and paywall in the app, wiring `api/supabase-jwt.js` into the server, account linking, account deletion and export, native store billing. See `docs/next/BEGINNER-CLOUD-PLAN.md` |
+| Not built yet | The sign-in, consent and paywall screens in the app, account deletion and export, native store billing. See `docs/next/BEGINNER-CLOUD-PLAN.md` |
+
+## How the API learns who someone is
+
+Through its own OIDC sign-in, pointed at this project (ADR 0013, proposed). In the Supabase
+dashboard: enable the OAuth 2.1 server, set its authorization path to the app's consent page,
+register one client whose redirect is `<the API's origin>/api/oidc/callback`. On the API:
+`OIDC_ISSUER=https://<ref>.supabase.co/auth/v1` and `OIDC_CLIENT_ID=<that client>`. ADR 0013
+lists the five things to check on the first real project. `api/supabase-jwt.js` is the tested
+fallback if that route does not hold, and is used by nothing today.

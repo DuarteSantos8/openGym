@@ -54,3 +54,17 @@
 .iv-wins li.done>svg{color:var(--green-ink)}
 .iv-wins li.done{color:var(--label)}
 .iv-wins li:not(.done){color:var(--label-2)}
+/* Form guidance on the exercise sheet (components/ExerciseGuide.jsx). */
+.iv-guide{margin-top:4px}
+.iv-guide-cues,.iv-guide-mistakes{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.iv-guide-cues li{position:relative;padding-inline-start:18px;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-guide-cues li::before{content:"";position:absolute;inset-inline-start:2px;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--green-ink)}
+.iv-guide-mistakes li{display:flex;flex-direction:column;gap:2px;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-guide-wrong{color:var(--label);font-weight:600}
+.iv-guide-fix{color:var(--label-2)}
+.iv-guide-facts{margin:14px 0 0}
+.iv-guide-facts dt{font-size:var(--fs-footnote);color:var(--label-2);margin-top:10px}
+.iv-guide-facts dd{margin:2px 0 0;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-guide-ladder{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.iv-guide-rung{justify-content:flex-start;text-align:start;white-space:normal;height:auto;min-height:48px}
+.iv-guide-foot{margin:12px 0 0}

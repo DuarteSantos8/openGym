@@ -2,7 +2,7 @@ import { tempoSheet } from './components/Tempo.jsx'
 import { useCircuit } from './store/useCircuit.js'
 import { CircuitResults } from './components/CircuitCard.jsx'
 import { normalizeTempo, repSec } from './lib/tempo.js'
-import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, Suspense, lazy, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
@@ -330,6 +330,14 @@ function StarterPlanChooser({ close }) {
   }
   return <>
     <h3>{t('Choose starter plan')}</h3>
+    {/* Not sure which? The quiz picks one from six answers (EP22, views/Onboarding.jsx). */}
+    <div className="list" style={{ marginBottom: 10 }}>
+      <button type="button" className="item" data-start="quiz" onClick={() => closeThenNav(close, '/start')}>
+        <div className="lrow-i" aria-hidden="true" style={{ '--tint': 'var(--green)' }}><Icon name="sparkles" /></div>
+        <div className="grow"><div className="tt">{t('Find my plan')}</div><div className="ss">{t('Six questions, then a plan that fits')}</div></div>
+        <Icon name="chevronRight" className="chev" />
+      </button>
+    </div>
     {profiles.length > 0
       ? <div className="chips" style={{ margin: '0 0 10px' }}>
           <div className="small dim" style={{ width: '100%' }}>{t('Fit to my equipment')}</div>
@@ -1596,6 +1604,10 @@ function ExerciseMediaSwitch({ ex }) {
 // description, the steps and the YouTube search together, where they were two blocks far apart);
 // Add to this workout and Add to my plan as the main buttons; everything you set once for the
 // exercise folded under "Setup for this exercise"; Merge and Delete at the very end, apart (P6).
+// The form guidance and its text (EP23), fetched the first time an exercise sheet opens. It
+// renders nothing for an exercise without a guide.
+const ExerciseGuide = lazy(() => import('./components/ExerciseGuide.jsx'))
+
 function ExerciseDetail({ ex, close }) {
   useLang() // the description and steps arrive in their own chunk the first time a sheet asks
   // The best and last time in the exercise's own weight unit (#657).
@@ -1652,9 +1664,11 @@ function ExerciseDetail({ ex, close }) {
     </div>
     <ExerciseMediaSwitch ex={ex} />
     {/* Your numbers, one tile each. Last opens the history; the estimated 1RM opens the
-        calculator for a set you have not done (issue #18), so it is there before any history. */}
+        calculator for a set you have not done (issue #18), so it is there before any history.
+        Each button's name starts with the words on it and then says where it leads, so someone
+        speaking the words they see reaches it (WCAG 2.5.3; axe label-content-name-mismatch). */}
     {(last || best > 0 || hasOrm) && <div className="ex-nums" style={{ '--n': hasOrm ? 3 : 2 }}>
-      <button type="button" className="ex-num" disabled={!last} aria-label={nameIn(t('History'), lastVal || '–')}
+      <button type="button" className="ex-num" disabled={!last} aria-label={nameIn(t('Last') + ' ' + (lastVal || '–'), t('History'))}
         onClick={() => exerciseHistorySheet(ex.id)}>
         <span className="ex-num-l">{t('Last')}{last && <Icon name="chevronRight" />}</span>
         <bdi dir="ltr" className="ex-num-v">{lastVal || '–'}</bdi>
@@ -1664,7 +1678,7 @@ function ExerciseDetail({ ex, close }) {
         <bdi dir="ltr" className="ex-num-v">{best > 0 ? fmtWeight(best, st.unit) : '–'}</bdi>
       </div>
       {hasOrm && <button type="button" className={'ex-num' + (calc ? ' on' : '')} aria-expanded={calc}
-        aria-label={nameIn(t('Estimated 1RM'), orm ? fmtNum(orm.est) + ' ' + st.unit : '–')} onClick={() => setCalc(c => !c)}>
+        aria-label={nameIn(t('Est. 1RM') + ' ' + (orm ? fmtNum(orm.est) + ' ' + st.unit : '–'), t('Estimated 1RM'))} onClick={() => setCalc(c => !c)}>
         <span className="ex-num-l">{t('Est. 1RM')}<Icon name={calc ? 'chevronUp' : 'chevronDown'} /></span>
         <bdi dir="ltr" className="ex-num-v">{orm ? fmtNum(orm.est) + ' ' + st.unit : '–'}</bdi>
       </button>}
@@ -1679,6 +1693,11 @@ function ExerciseDetail({ ex, close }) {
       <h4 className="sec">{t('How to')}{steps.length > 0 && getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4>
       {desc && <div className="exnote">{desc}</div>}
       {steps.length > 0 && <ol className="steps-list">{steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
+      {/* Form guidance for the exercises that have it (EP23): cues, common mistakes, where to
+          feel it, and the way to an easier or harder version. Its text arrives on demand. */}
+      <Suspense fallback={null}>
+        <ExerciseGuide ex={ex} onOpen={other => { close(); exerciseDetailSheet(other) }} />
+      </Suspense>
       {yt && <Button variant="ghost" icon="play" className="ex-yt" onClick={() => openExternal(yt)}>{t('Watch on YouTube')}</Button>}
     </div>}
     {/* The main actions. In a workout that already has it, there is nothing to add: the plan is. */}

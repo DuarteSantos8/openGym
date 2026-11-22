@@ -2882,6 +2882,24 @@ describe('workout controls: the more menu and the set menu', () => {
     expect([...container.querySelectorAll('button')].some(b => b.textContent.trim() === 'Add set')).toBe(true)
   })
 
+  // EP23: a Beginner's first question about an exercise is how to do it, so it leads the menu.
+  // Everyone else finds it where it always was.
+  it('puts How to do it first in a Beginner\'s exercise menu, and leaves it under More for everyone else', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, { experience: 'beginner' })
+    await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const top = lastMenu().sections[0].items.filter(Boolean).map(it => it.label)
+    expect(top[0]).toBe('How to do it')
+    expect(menuItemsOf(lastMenu()).filter(it => it.label === 'How to do it')).toHaveLength(1)
+    await unmount()
+    for (const patch of [{}, { experience: 'intermediate' }]) {
+      await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, patch)
+      await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+      expect(lastMenu().sections[0].items.filter(Boolean).map(it => it.label)).not.toContain('How to do it')
+      expect(menuItemsOf(lastMenu()).filter(it => it.label === 'How to do it')).toHaveLength(1)
+      await unmount()
+    }
+  })
+
   it('routes swap, move, remove, warm-up and details through the More menu of that exercise', async () => {
     await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0)
     await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })

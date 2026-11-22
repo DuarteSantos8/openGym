@@ -601,11 +601,15 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const at = setSpanAt(entry.sets, i)[0]
     filmSetSheet({ entry: entryIdx, set: at }, t('Film {0}', setTitle(entry.sets[at], at)))
   }
+  const howToItem = { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) }
   const openMore = () => menuSheet({
     title: exerciseNameFor(ex),
     titleClass: exerciseNameClass(ex),
     sections: [
       { items: [
+        // For a Beginner, how to do the exercise comes first: it is the question they have
+        // (lib/experience.js). Everyone else finds it under More, where it always was.
+        simple && howToItem,
         { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
         onSwap && { icon: 'swap', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
         // The slot's planned backups (#649), one tap each: the machine is taken, the plan says what next.
@@ -622,7 +626,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
         { title: t('Exercise'), items: [
           onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
           plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
-          { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
+          !simple && howToItem,
           youtubeSearchUrl(ex) && { icon: 'play', label: t('Watch on YouTube'), sub: t('Opens a search for good form'), onClick: () => openExternal(youtubeSearchUrl(ex)) },
           routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
         ] },
