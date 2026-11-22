@@ -120,7 +120,29 @@ describe('iPhone sheets (Liquid Glass G4)', () => {
     await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
     expect(mocks.state.sheets).toHaveLength(1)
     await act(async () => { mocks.state.closeSheet('s1') })
+    expect(history.go).toHaveBeenCalledWith(-1)   // the closed sheet takes back the entry the refused Back gave it
+    await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })   // the browser's answer to that go(-1)
     await open(form)
+    await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
+    expect(mocks.state.sheets).toEqual([])
+  })
+
+  // Back has already spent the sheet's history entry when the edit keeps the sheet: it is put back,
+  // or the next Back would leave the page behind the sheet without asking.
+  it('a Back the edit refuses gives the sheet its history entry again, so the next Back is refused too', async () => {
+    await open(form)
+    await type('Pull day')
+    expect(history.pushState).toHaveBeenCalledTimes(1)
+    await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
+    expect(history.pushState).toHaveBeenCalledTimes(2)
+    await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
+    expect(history.pushState).toHaveBeenCalledTimes(3)
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('a sheet opened locked and then unlocked closes on back', async () => {
+    await open(form, { locked: true })
+    await act(async () => { mocks.setSheets([{ ...mocks.state.sheets[0], locked: false }]) })
     await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
     expect(mocks.state.sheets).toEqual([])
   })

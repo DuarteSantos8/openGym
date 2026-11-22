@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./sound.js', () => ({ haptic: vi.fn() }))
 import { haptic } from './sound.js'
-import { rollCols, repeatDelay, HOLD_MS, holdProps, stepOnce, stopHold, recentTick, newHold } from './feel.js'
+import { rollCols, repeatDelay, HOLD_MS, holdProps, stepOnce, stopHold, dropHold, recentTick, newHold } from './feel.js'
 
 describe('rollCols', () => {
   it('rolls only the digits that changed when the length is the same', () => {
@@ -75,6 +75,28 @@ describe('stepOnce and holdProps', () => {
     p.onPointerCancel()
     vi.advanceTimersByTime(2000)
     p.onClick(); expect(step).toHaveBeenCalledTimes(2)
+  })
+
+  // CodeRabbit on #1049: set rows are keyed by index, so after a row above goes the pressed button
+  // stands for the next set; the click that ends the press must not step that one.
+  it('rows that shift under a press drop its click, however long the finger stays', () => {
+    document.documentElement.dataset.platform = 'ios'
+    const step = vi.fn(() => true)
+    const p = holdProps(step, 1)
+    p.onPointerDown({ button: 0 })
+    vi.advanceTimersByTime(200)
+    dropHold()
+    vi.advanceTimersByTime(2000)
+    p.onPointerUp(); p.onClick()
+    expect(step).not.toHaveBeenCalled()
+    p.onClick(); expect(step).toHaveBeenCalledTimes(1)   // the next tap is a tap again
+  })
+
+  it('rows that shift with no press under way leave the next click alone', () => {
+    const step = vi.fn(() => true)
+    const p = holdProps(step, 1)
+    dropHold()
+    p.onClick(); expect(step).toHaveBeenCalledTimes(1)
   })
 
   it('each stepper holds on its own: stopping another one leaves this repeat running', () => {
