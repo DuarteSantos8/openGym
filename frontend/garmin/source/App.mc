@@ -391,10 +391,15 @@ module Workout {
             return;
         }
         try {
+            // Activity.SPORT_* came with Connect IQ 3.2; before (fēnix 5, Forerunner 935, D2 Delta)
+            // the same values were ActivityRecording's. A missing symbol is a crash, not an exception.
+            var sport = (Activity has :SPORT_TRAINING) ? Activity.SPORT_TRAINING : ActivityRecording.SPORT_TRAINING;
+            var sub = (Activity has :SUB_SPORT_STRENGTH_TRAINING)
+                ? Activity.SUB_SPORT_STRENGTH_TRAINING : ActivityRecording.SUB_SPORT_STRENGTH_TRAINING;
             session = ActivityRecording.createSession({
                 :name => Core.strOf(w["name"]).length() > 0 ? Core.strOf(w["name"]) : "openGym",
-                :sport => Activity.SPORT_TRAINING,
-                :subSport => Activity.SUB_SPORT_STRENGTH_TRAINING
+                :sport => sport,
+                :subSport => sub
             });
             session.start();
             G.state["rec"] = w["id"];

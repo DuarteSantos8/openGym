@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Garmin: the watch app now runs on older Garmins too: fēnix 5, 5S, 5X and Chronos, Forerunner 645 and 935, D2 Charlie and Delta (S, PX), Descent Mk1 and Approach S62. That is 12 more models, 130 in all, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
 - Fixed: on Android the end of a rest made no sound while the app was open. The beeps for the last seconds played, the final sound only came with the app in the background. It plays on screen again, and still only once (thanks Santiago, by mail).
 - Apple Watch: on the rest screen the effort chips and the workout time sit a little in from the edges. On a 42 mm Series 12 the outer chips and the time ran under the display's rounded edge (thanks Karim, by mail).
 - NixOS module (contrib/nix): it no longer switches off nginx when its own nginx option is off. On a server where nginx runs other sites, enabling openGym shut them all down (thanks Lumine, by mail).
@@ -32,7 +33,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Bengali: the newer strings say আপনি and use everyday wording like the rest (#1234, thanks @mrjohndoel).
 - Fixed: with a rotation and Workouts per week set, Planned sets in Stats follow your week instead of one turn of the loop. A loop of six sessions at four a week plans four sixths of its sets, and a routine the loop names twice counts twice (#1249, thanks @avikl).
 - Fixed: on an exercise's page, "Your photo or video" and the description under it no longer touch. There is a gap between the two cards now (#1260, thanks @unabomberlive).
-- Garmin: the watch app now runs on the fēnix 9 line (fēnix 9, 9 Pro and 9 Pro Solar, every size), the Forerunner 70 and 170, Enduro 4, MARQ (Gen 3), Approach S50 and S72 and the D2 Air X10. Some older watches it had skipped are in too: fēnix 5 Plus, Forerunner 645 Music, the first MARQ, Descent G1, D2 Air, Venu Sq Music and the Legacy Hero and Legacy Saga watches. That is 36 more models, 118 in all, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
+- Garmin: the watch app now runs on the fēnix 9 line (fēnix 9, 9 Pro and 9 Pro Solar, every size), the Forerunner 70 and 170, Enduro 4, MARQ (Gen 3), Approach S50 and S72 and the D2 Air X10. Some older watches it had skipped are in too: fēnix 5 Plus, Forerunner 645 Music, the first MARQ, Descent G1, D2 Air, Venu Sq Music and the Legacy Hero and Legacy Saga watches. That is 36 more models, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
 
 ## v1.4.5 (2026-11-14)
 

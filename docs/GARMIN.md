@@ -114,12 +114,12 @@ sunlight) or, on the Instinct, black and white. So, like the other watches but f
 
 ### Watches
 
-`manifest.xml` lists 118 products, everything from Connect IQ 3.2 up that is a watch people lift
-with: Forerunner 165 / 170 / 245 / 255 / 265 / 55 / 570 / 645 Music / 70 / 745 / 945 / 955 / 965 / 970,
-fēnix 5 Plus / 6 / 7 / 8 / 9 / E, epix (Gen 2) and epix Pro, enduro / enduro 3 / Enduro 4,
+`manifest.xml` lists 130 products, everything from Connect IQ 3.0 up that is a watch people lift
+with: Forerunner 165 / 170 / 245 / 255 / 265 / 55 / 570 / 645 / 645 Music / 70 / 745 / 935 / 945 / 955 / 965 / 970,
+fēnix 5 / 5S / 5X / Chronos / 5 Plus / 6 / 7 / 8 / 9 / E, epix (Gen 2) and epix Pro, enduro / enduro 3 / Enduro 4,
 Venu 1 / 2 / 3 / 4 / Sq / Sq 2 / X1, vívoactive 4 / 5 / 6, the Legacy Hero and Legacy Saga watches,
-Instinct 2 / 2S / 2X / 3 / Crossover / E, MARQ (all three generations), Descent Mk2 / Mk3 / G1 / G2,
-D2 Air / Air X10 / Mach, Approach S50 / S70 / S72.
+Instinct 2 / 2S / 2X / 3 / Crossover / E, MARQ (all three generations), Descent Mk1 / Mk2 / Mk3 / G1 / G2,
+D2 Charlie / Delta / Delta S / Delta PX / Air / Air X10 / Mach, Approach S50 / S62 / S70 / S72.
 The fēnix 9 line, Forerunner 70 and 170, Enduro 4, MARQ (Gen 3) and Approach S72 came as device
 files while the SDK was still 9.2.0: they build with it, and `check.mjs` takes the device files'
 ids as well as the SDK's. The fēnix 9 Pro 51mm is the first 466 × 466 screen; the layouts are
@@ -128,8 +128,18 @@ Pro Solar 47mm, the Descent G1 (an Instinct 2 inside, with its line in `monkey.j
 Approach S72 43mm, the Venu Sq Music and, for the lowest Connect IQ levels here (3.2.1 and 3.2.3),
 the D2 Air and the Forerunner 645 Music. The other new ones have the screen, the buttons and the
 memory of a watch already listed and were compiled only.
-Left out: the vívoactive 3 Music (one button and no BACK, a kind of watch nobody tried here) and
-everything below Connect IQ 3.2.
+The Connect IQ 3.0 and 3.1 generation (1.4.6: fēnix 5 / 5S / 5X / Chronos, Forerunner 645 and 935,
+D2 Charlie and Delta, Descent Mk1, Approach S62) took `minApiLevel` from 3.2.0 down to 3.0.0. All
+twelve pass the unit tests in the simulator and ran a 40-set workout with the phone away without an
+error (the Approach S62 not to its summary there: the script wants a DOWN button). Every screen of the
+fēnix 5S (the first 218 px round one), the D2 Charlie and the Approach S62 (touch) was looked at.
+None has met a real watch. Before 3.2 the
+sport constants were `ActivityRecording`'s, not `Activity`'s (`App.begin` picks by `has`; the
+missing symbol crashed the start). The 128 KB ones (fēnix 5 / 5S / Chronos, Forerunner 645 and
+935) are (:small) like the fēnix 6, in `monkey.jungle` and `sim/monkey.jungle` both: peak 102.3 of
+123.8 KB, as the Forerunner 245. A new API in the watch app needs a `has` check from now on.
+Left out: the vívoactive 3 family (one button and no BACK, a kind of watch nobody tried here) and
+everything below Connect IQ 3.0.
 Adding one is a line in `manifest.xml` (and, for a black-and-white screen, one in `monkey.jungle`).
 The oldest watches here (Forerunner 55 and 245, fēnix 6) give a watch app the least memory; the app
 keeps its state small for them (see "How it talks to the phone"), but they are the first to try in
