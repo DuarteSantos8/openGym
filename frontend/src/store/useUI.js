@@ -302,9 +302,10 @@ function endTone(enabled, kind, at = 0) {
   toneNative(kind === true ? 'classic' : kind, { onSilent, at }).then(ok => { if (!ok) chime(enabled, kind) })
 }
 
-// WebKit does not focus a tapped button, so activeElement is body after a tap: remember what was touched
-let touched = null
-if (typeof document !== 'undefined') for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, e => { touched = e.target?.closest?.('button,a,[tabindex]') || null }, true)
+// WebKit does not focus a tapped button, so activeElement is body (or a button focus went back to)
+// after a tap: remember what was touched, and whether by a finger
+let touched = null, byPointer = false
+if (typeof document !== 'undefined') for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, e => { touched = e.target?.closest?.('button,a,[tabindex]') || null; byPointer = ev === 'pointerdown' }, true)
 
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center'|'menu', locked, wide, born, anchor }
@@ -335,7 +336,8 @@ export const useUI = create((set, get) => ({
   openSheet(render, { kind = 'sheet', locked = false, wide = false, born = false, anchor = null } = {}) {
     const id = uid()
     // a page field that kept focus through the tap did not open it, and focusing it back raises the keyboard
-    const a = typeof document === 'undefined' ? null : document.activeElement, opener = a && a !== document.body && !a.matches?.('input,textarea,[contenteditable]') ? a : touched
+    const a = typeof document === 'undefined' ? null : document.activeElement
+    const opener = byPointer && touched ? touched : a && a !== document.body && !a.matches?.('input,textarea,[contenteditable]') ? a : touched
     set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide, born, anchor, opener }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
