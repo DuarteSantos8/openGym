@@ -139,6 +139,16 @@ describe('routine archive', () => {
       undoSnapshot(s, snap)
       expect(s.rotation).toMatchObject({ sequence: ['a', 'rest', 'b', 'rest', 'c', 'rest', 'd'], at: 4 })
     })
+    it('a cursor that moved on since the archive keeps its segment on undo', () => {
+      const s = { routines: [r('a'), r('b'), r('c'), r('d')], rotation: { id: 'x', sequence: ['a', 'b', 'rest', 'c', 'rest', 'd'], at: 3 } }
+      const snap = archiveRoutines(s, ['a', 'b'])
+      expect(segmentAt(sequenceOf(s), s.rotation.at).ids).toEqual(['c'])
+      s.rotation.at = 3   // c done: on to d
+      expect(segmentAt(sequenceOf(s), s.rotation.at).ids).toEqual(['d'])
+      undoSnapshot(s, snap)
+      expect(s.rotation.sequence).toEqual(['a', 'b', 'rest', 'c', 'rest', 'd'])
+      expect(segmentAt(sequenceOf(s), s.rotation.at).ids).toEqual(['d'])
+    })
   })
 
   describe('the old Archive folder moves once', () => {
@@ -162,6 +172,15 @@ describe('routine archive', () => {
       expect(s.rotation.at).toBe(3)
       restoreRoutines(s, ['a'])
       expect(s.week).toEqual({ 1: ['b'] })
+    })
+    it('takes an already archived arrival in Archive off the schedule too', () => {
+      const s = { routines: [{ ...r('a', 'Archive'), archived: true }, r('b')], week: { 1: ['a', 'b'] }, dayPlan: { '2026-11-16': 'a' }, rotation: { sequence: ['a', 'rest', 'b'] } }
+      expect(migrateArchiveFolder(s)).toBe(true)
+      expect(s.week).toEqual({ 1: ['b'] })
+      expect(s.dayPlan).toEqual({})
+      expect(s.rotation.sequence).toEqual(['rest', 'b'])
+      expect(s.routines[0]).toMatchObject({ archived: true })
+      expect(s.routines[0].folder).toBeUndefined()
     })
     it('leaves "Archiv" alone under en', () => {
       const s = { routines: [r('a', 'Archiv')] }

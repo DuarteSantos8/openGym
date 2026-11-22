@@ -387,7 +387,7 @@ function Run({ at, flow = 'tour' }) {
     if (!tutorial) noteStep(step.id)
     sandboxFor(step.sandbox)
     if (!step.sheet && useUI.getState().sheets.length) useUI.getState().closeAll()
-    entryRef.current = { customEx: (useStore.getState().S.customEx || []).length, routines: useStore.getState().S.routines.map(r => r.id) }
+    entryRef.current = { customEx: (useStore.getState().S.customEx || []).length, routines: (useStore.getState().S.routines || []).map(r => r.id) }
     const route = routeOf(step, { made: madeRef.current })
     if (route && pathRef.current !== route) nav(route, { replace: true })
     // A way to a screen that is already on has nothing to show, nor a stop whose own rule says so.
