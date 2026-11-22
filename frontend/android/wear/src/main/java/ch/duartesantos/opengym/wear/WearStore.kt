@@ -260,7 +260,8 @@ object WearStore {
                 if (follow.endsAt <= now() + 500) { if (_rest.value != null) endRestFromPhone() }
                 else if (follow.restart) {
                     val total = follow.total ?: _rest.value?.total ?: ((follow.endsAt - now()) / 1000).toInt().coerceAtLeast(1)
-                    armRest(Rest(follow.endsAt, total))
+                    // The same rest moved or resumed on the phone keeps its ±15; one after a set logged there starts at 0 (Apple Watch alike).
+                    armRest(Rest(follow.endsAt, total, shift = if (ticks.isEmpty()) _rest.value?.shift ?: 0 else 0))
                 }
             }
             is RestFollow.Pause -> { noteRestAt(follow.restAt, after.workout?.id); pauseRest(follow.leftMs) }
