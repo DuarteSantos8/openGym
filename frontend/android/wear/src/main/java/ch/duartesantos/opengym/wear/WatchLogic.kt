@@ -405,7 +405,7 @@ data class HoldSet(val entry: Int, val set: Int, val side: String?, val sid: Str
     /** Where that set (and side, on a per-side set) is now in `s` as (entry, place), if it is still there and still to log. */
     fun placeIn(s: SessionState): Pair<Int, Int>? {
         val w = s.workout ?: return null
-        val at = (if (sid != null) w.entries.indices.firstNotNullOfOrNull { ei ->
+        val at = (if (!sid.isNullOrEmpty()) w.entries.indices.firstNotNullOfOrNull { ei ->
             w.entries[ei].sets.indexOfFirst { it.sid == sid }.takeIf { it >= 0 }?.let { ei to it }
         } else entry to set) ?: return null
         val row = w.entries.getOrNull(at.first)?.sets?.getOrNull(at.second) ?: return null

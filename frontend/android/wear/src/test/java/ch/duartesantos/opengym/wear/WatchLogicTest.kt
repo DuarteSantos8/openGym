@@ -688,6 +688,12 @@ class WatchLogicTest {
         assertFalse("its set was removed", hold.openIn(state(entry("plank", listOf(a), mode = "time"))))
     }
 
+    @Test fun anEmptySetIdFindsTheSetByPlace() {
+        val hold = HoldSet(0, 1, null, "")
+        val s = state(entry("plank", listOf(row(done = true, at = 1.0).copy(sid = ""), row().copy(sid = "")), mode = "time"))
+        assertEquals(0 to 1, hold.placeIn(s))
+    }
+
     // The 3-2-1 before a hold remembers its set as the hold does: if the phone logs it meanwhile, the set up
     // next is another one, and a count-in running out must not start a hold for that one.
     @Test fun aCountInForASetThePhoneLoggedMeanwhileIsOver() {
