@@ -804,6 +804,16 @@ describe('one rest, the two clocks, set ids (protocol 2, docs/WATCH_SYNC.md)', (
     expect(apart(w)).toBeLessThan(1000)
   })
 
+  it('a hold running when the watch discards the workout does not carry into the next one', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.holdStart(30, 60)
+    w.watch.finish(true)
+    expect(w.watch.hold).toBe(null)
+  })
+
   it('the held set removed on the phone: the next set slides into its index, the watch\'s hold ends unlogged', async () => {
     const w = world()
     await w.launch()

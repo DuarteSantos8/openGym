@@ -465,6 +465,7 @@ export class GarminWatch {
     s.p = {}; s.sk = []; s.pos = 0; s.rest = null; s.rh = null; s.ra = 0
     const ev = { id: this.newId(), type: 'start', routineIds: arrOf(session.routineIds), wid, at }
     this.ended = null
+    this.hold = null   // Actions.reset
     this.send(ev)
     this.save()
     return ev
@@ -483,6 +484,7 @@ export class GarminWatch {
     const ev = { id: this.newId(), type: discard ? 'discard' : 'finish', wid, at }
     this.send(ev)
     this.ended = discard ? null : { ended: false }
+    this.hold = null   // Actions.reset
     this.save()
     return ev
   }
