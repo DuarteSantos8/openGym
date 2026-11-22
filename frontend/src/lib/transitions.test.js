@@ -334,6 +334,17 @@ describe('wrapHistory (View Transitions): the pop waits for the history event', 
     expect(document.documentElement.hasAttribute('data-nav')).toBe(false)
     expect(rejections).toEqual([])
   })
+  // CodeRabbit on #1155: a page whose code is still loading (App.jsx lazyView) is empty for a moment.
+  it('a push to a page still loading focuses its title once it shows', async () => {
+    fakeVT()
+    const h = fakeHistory('/home')
+    h.push = vi.fn(() => { document.getElementById('app').innerHTML = '<div class="page" id="new"><div class="page-in"></div></div>' })
+    wrap(h).push('/settings')
+    await tick(60)
+    document.querySelector('#new .page-in').innerHTML = '<h1>Settings</h1>'
+    await tick(60)
+    expect(document.activeElement?.textContent).toBe('Settings')
+  })
   // CodeRabbit on #1050: a history event later than the next frame; focus goes to the page it brings.
   it('focuses on the page the pop brings, not the one leaving', async () => {
     fakeVT()

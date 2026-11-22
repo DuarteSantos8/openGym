@@ -174,14 +174,16 @@ function grow(push) {
 
 function focusTitle() {
   const h = topPage()?.querySelector('h1')
-  if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }) }
+  if (!h) return false   // a page whose code is still loading (App.jsx lazyView) has no title yet
+  h.tabIndex = -1; h.focus({ preventScroll: true })
 }
 function focusOpener(i) {
   const p = topPage()
   if (p) (opens(p)[i] || p.querySelector('h1'))?.focus?.({ preventScroll: true })
 }
-// A frame later, once the page is there; and not if another input came in meanwhile.
-const later = (ep, fn) => requestAnimationFrame(() => { if (st.ep === ep) fn() })
+// A frame later, once the page is there; and not if another input came in meanwhile. A `fn` that
+// answers false (nothing there yet) tries again each frame, for a second at most.
+const later = (ep, fn, until = performance.now() + 1000) => requestAnimationFrame(() => { if (st.ep === ep && fn() === false && performance.now() < until) later(ep, fn, until) })
 
 // The control tapped a moment ago, once.
 function takeTap() {
