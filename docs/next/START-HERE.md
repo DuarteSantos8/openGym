@@ -149,6 +149,8 @@ Non-negotiables (v1 §00, kept): (1) no harm to the core workout path; (2) local
 
 Out of scope unless approved: backend replacement, a mandatory managed DB, an auth/sync redesign, automatic prescription or diagnosis, unbounded agents, auto-merge/deploy, wholesale imports of external projects.
 
+Amended 2026-11-22 (ADR 0008 to 0012): a separate **Cloud edition** (`VITE_EDITION=cloud`) may use Supabase and Stripe beside the existing API. It replaces nothing, so "backend replacement" and "auth/sync redesign" stay out of scope, and the default build keeps non-negotiable (2) unchanged. EP15 stays blocked; the beginner content added under ADR 0012 is general education only.
+
 ---
 
 ## 2. Upstream overlap (verify in EP00-T03 → `docs/next/UPSTREAM-INVENTORY.md`)
