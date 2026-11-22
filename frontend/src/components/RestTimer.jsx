@@ -118,8 +118,10 @@ export function TimerRow({ docked = false }) {
   const [said, setSaid] = useState('')
   const rowRef = useRef(null), xvRef = useRef(null), dgRef = useRef(null), closeRef = useRef(null)
   const clkRef = useRef(null), tRef = useRef(null), mtRef = useRef(null), mttRef = useRef(null)
-  const closing = useRef(0), touchY = useRef(null)
+  const closing = useRef(0), touchY = useRef(null), actsRef = useRef(null)
   const work = kind === 'work'
+  // Only the word on show: Ready drops −15 s, so Dismiss gets more room than Skip had.
+  const skipFits = useSkipFits(actsRef, [!!c && !work, !!c?.ready, t('Skip'), t('Dismiss')])
   const view = c && restView({ left: c.left, total: c.total, paused: !!c.paused, over: !!c.ready, work, overtime: !!c.overtime, switching: c.kind === 'switch' })
   const next = useMemo(() => {
     if (!x || work || !c) return ''
@@ -205,9 +207,13 @@ export function TimerRow({ docked = false }) {
       onClick={c.paused ? U().resumeRest : U().pauseRest}><Icon name={c.paused ? 'play' : 'pause'} /></button>
   const minus = <button type="button" className="b adj" aria-label={t('Less time') + ', ' + t('{0} seconds', 15)} onClick={() => U().addRest(-15)}>{t('−15 s')}</button>
   const plus = <button type="button" className="b adj" disabled={view.plusOff} onClick={() => U().addRest(15)}>{view.plusLabel}</button>
-  // The row's Skip carries an icon that stands alone below 340 px (index.css); aria-label keeps its name then.
+  // The row's Skip carries an icon that stands alone below 340 px (index.css) or when its word does not
+  // fit (useSkipFits); aria-label keeps its name then.
   const skip = cls => cls === 'sk'
-    ? <button type="button" className={'b pri ' + cls} aria-label={view.skipLabel} onClick={() => U().skipRest()}><Icon name={c.ready ? 'xmark' : 'skipForward'} /><span>{view.skipLabel}</span></button>
+    ? <button type="button" className={'b pri skip ' + cls + (skipFits ? '' : ' icon-only')} aria-label={view.skipLabel} onClick={() => U().skipRest()}>
+      <Icon name={c.ready ? 'xmark' : 'skipForward'} /><span>{view.skipLabel}</span>
+      <span className="skip-probe" aria-hidden="true"><span>{view.skipLabel}</span></span>
+    </button>
     : <button type="button" className={'b pri ' + cls} onClick={() => U().skipRest()}>{view.skipLabel}</button>
 
   // While the full view is open the page behind is inert, so the announcement lives inside the dialog.
@@ -218,9 +224,9 @@ export function TimerRow({ docked = false }) {
       <i className="prog" aria-hidden="true"><b style={{ transform: `scaleX(${view.progress})` }} /></i>
       <button ref={clkRef} type="button" className="clk" onClick={open} aria-haspopup="dialog" aria-expanded={x} aria-label={name}>
         <span ref={tRef} className="t">{view.time}</span>
-        <span className="l">{sub}<Icon name="chevronUp" /></span>
+        <span className="l"><span className="n">{sub}</span><Icon name="chevronUp" /></span>
       </button>
-      <div className="acts">
+      <div className="acts" ref={actsRef}>
         {rest ? <>
           {!c.ready && minus}{plus}{pause('')}{skip('sk')}
         </> : <>

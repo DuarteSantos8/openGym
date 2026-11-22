@@ -51,7 +51,7 @@ describe('the docked row on the iPhone', () => {
     const row = document.querySelector('.trow.dock')
     expect(row.querySelector('.clk .t').textContent).toBe('1:00')
     expect(row.getAttribute('data-tour')).toBe('rest')   // the tour's rest step still finds its target
-    expect([...row.querySelectorAll('.acts .b')].map(b => b.textContent.trim())).toEqual(['−15 s', '+15 s', '', 'Skip'])
+    expect([...row.querySelectorAll('.acts .b')].map(b => (b.querySelector(':scope > span') || b).textContent.trim())).toEqual(['−15 s', '+15 s', '', 'Skip'])
     act(() => row.querySelector('.adj + .adj').click())
     expect(useUI.getState().timer.left).toBe(75)
   })
@@ -65,6 +65,28 @@ describe('the docked row on the iPhone', () => {
     expect(sk.querySelector('span').textContent).toBe('Skip')
   })
 
+  // German "Überspringen" at 375 or 390 pt: measured, like the card's Skip, not a fixed breakpoint.
+  it('Skip turns to its icon when the longer of Skip and Dismiss does not fit beside the others', () => {
+    const rect = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function () {
+      const r = rect.call(this)
+      return this.parentElement?.classList.contains('skip-probe') ? { ...r, width: 400 } : r
+    }
+    try {
+      act(() => useUI.setState({ timer: rest() }))
+      mount()
+      const sk = document.querySelector('.trow.dock .sk')
+      expect(sk.classList.contains('icon-only')).toBe(true)
+      expect(sk.getAttribute('aria-label')).toBe('Skip')
+    } finally { Element.prototype.getBoundingClientRect = rect }
+  })
+
+  it('a hold\'s exercise name sits in its own span, so a long one can end in an ellipsis inside the clock', () => {
+    act(() => useUI.setState({ work: { left: 30, total: 45, label: 'Single-leg Romanian deadlift hold' } }))
+    mount()
+    expect(document.querySelector('.trow.dock .clk .l .n').textContent).toBe('Single-leg Romanian deadlift hold')
+  })
+
   it('Rest over stays, says so once, and +15s starts a new rest', () => {
     act(() => useUI.setState({ timer: rest({ left: 0, ready: true }) }))
     mount()
@@ -72,7 +94,7 @@ describe('the docked row on the iPhone', () => {
     expect(row.querySelector('.clk .t').textContent).toBe('0:00')
     const said = () => [...document.querySelectorAll('[role=status]')].map(e => e.textContent).join('')
     expect(said()).toBe('Rest over')
-    expect(row.querySelector('.sk').textContent).toBe('Dismiss')
+    expect(row.querySelector('.sk > span').textContent).toBe('Dismiss')
     act(() => { vi.advanceTimersByTime(3100) })
     expect(said()).toBe('')
   })

@@ -1235,13 +1235,14 @@ export function removeActiveExercise(idx) {
 
 // Whether a set row sits wholly between the fixed bars at the top and at the bottom: the status bar
 // and the connection bar above (and `under`, the bottom of a header fixed over the page), the tab
-// bar and the rest or hold bar below. A row is short enough to be all in or all out.
+// bar and the rest or hold bar below (on the iPhone the docked row, .trow.dock). A row is short
+// enough to be all in or all out.
 const rowOnScreen = (el, under = 0) => {
   if (typeof window === 'undefined' || typeof el.getBoundingClientRect !== 'function') return false
   const r = el.getBoundingClientRect()
   let bottom = window.innerHeight
-  for (const id of ['timer', 'tabbar']) {
-    const bar = document.getElementById(id)
+  for (const sel of ['#timer', '#tabbar', '.trow.dock']) {
+    const bar = document.querySelector(sel)
     const top = bar && typeof bar.getBoundingClientRect === 'function' ? bar.getBoundingClientRect().top : null
     if (top != null && top < bottom) bottom = top
   }
