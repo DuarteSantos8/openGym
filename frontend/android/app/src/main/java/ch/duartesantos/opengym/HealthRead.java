@@ -102,7 +102,8 @@ final class HealthRead {
             case "totalCalories": return "android.permission.health.READ_TOTAL_CALORIES_BURNED";
             case "elevation": return "android.permission.health.READ_ELEVATION_GAINED";
             case "speed": return "android.permission.health.READ_SPEED";
-            case "cadence": return "android.permission.health.READ_STEPS_CADENCE";
+            // StepsCadenceRecord shares READ_STEPS in Health Connect.
+            case "cadence": return "android.permission.health.READ_STEPS";
             case "floors": return "android.permission.health.READ_FLOORS_CLIMBED";
             // Not a data type: data older than 30 days before the first grant (#801).
             case "history": return "android.permission.health.READ_HEALTH_DATA_HISTORY";

@@ -5924,4 +5924,12 @@ export default {
   "Splits": "Zwischenzeiten",
   "Recovery details": "Erholungsdetails",
   "Choose which recorded metrics appear on recovery sessions.": "Wähle aus, welche aufgezeichneten Werte bei Erholungseinheiten angezeigt werden.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/h",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} spm",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} Schritte",
 }

@@ -399,7 +399,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func sessionSum(_ id: HKQuantityTypeIdentifier, from start: Date, to end: Date) async -> Int? {
         guard end > start, let type = HKQuantityType.quantityType(forIdentifier: id) else { return nil }
-        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
         return await withCheckedContinuation { cont in
             let q = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: pred, options: .cumulativeSum) { _, stat, _ in
                 let n = stat?.sumQuantity()?.doubleValue(for: .count()) ?? 0
@@ -411,7 +411,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func sessionHeartRate(from start: Date, to end: Date) async -> (avg: Int?, min: Int?, max: Int?) {
         guard end > start, let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return (nil, nil, nil) }
-        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
         let perMinute = HKUnit.count().unitDivided(by: .minute())
         return await withCheckedContinuation { cont in
             let q = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: pred, options: [.discreteAverage, .discreteMin, .discreteMax]) { _, stat, _ in
@@ -427,7 +427,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func sessionWalkingSpeed(from start: Date, to end: Date) async -> (avg: Double?, max: Double?) {
         guard end > start, let type = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) else { return (nil, nil) }
-        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
         let mps = HKUnit.meter().unitDivided(by: .second())
         return await withCheckedContinuation { cont in
             let q = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: pred, options: [.discreteAverage, .discreteMax]) { _, stat, _ in

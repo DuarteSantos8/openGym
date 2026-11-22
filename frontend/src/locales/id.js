@@ -5869,4 +5869,12 @@ export default {
   "Splits": "Split",
   "Recovery details": "Detail pemulihan",
   "Choose which recorded metrics appear on recovery sessions.": "Pilih metrik terekam yang ditampilkan pada sesi pemulihan.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/jam",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} kaki",
+  "{0} spm": "{0} lpm",
+  "{0} kcal": "{0} kkal",
+  "{0} steps": "{0} langkah",
 };

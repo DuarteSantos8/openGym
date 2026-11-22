@@ -5897,4 +5897,12 @@ export default {
   "Splits": "分段",
   "Recovery details": "恢復詳情",
   "Choose which recorded metrics appear on recovery sessions.": "選擇在恢復紀錄中顯示哪些已記錄的指標。",
+  "{0} /km": "{0} /公里",
+  "{0} /mi": "{0} /英里",
+  "{0} km/h": "{0} 公里/小時",
+  "{0} mph": "{0} 英里/小時",
+  "{0} ft": "{0} 英尺",
+  "{0} spm": "{0} 步/分鐘",
+  "{0} kcal": "{0} 大卡",
+  "{0} steps": "{0} 步",
 }

@@ -5914,4 +5914,12 @@ export default {
   "Splits": "Parziali",
   "Recovery details": "Dettagli recupero",
   "Choose which recorded metrics appear on recovery sessions.": "Scegli quali metriche registrate mostrare nelle sessioni di recupero.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/h",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} ppm",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} passi",
 }

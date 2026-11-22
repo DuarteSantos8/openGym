@@ -5907,4 +5907,12 @@ export default {
   "Splits": "Részidők",
   "Recovery details": "Regeneráció részletei",
   "Choose which recorded metrics appear on recovery sessions.": "Válaszd ki, mely rögzített adatok jelenjenek meg a regenerációs alkalmaknál.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/h",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} lépés/perc",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} lépés",
 }

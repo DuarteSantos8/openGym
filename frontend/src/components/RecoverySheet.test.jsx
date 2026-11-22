@@ -240,4 +240,27 @@ describe('RecoverySheet: Health Connect / Apple Health suggestions', () => {
     expect(mocks.readDayWorkouts).not.toHaveBeenCalled()
     expect(host.querySelector('.rec-picks')).toBeNull()
   })
+
+  it('skips inserting a duplicate if the picked session was already logged before Save', async () => {
+    mocks.readDayWorkouts.mockResolvedValue({
+      src: 'hc',
+      records: [{ id: 'garmin-dup', sport: 'walk', start: at('2026-11-21', 9, 0), end: at('2026-11-21', 9, 30), origin: 'com.garmin.android.apps.connectmobile' }],
+    })
+    await mount()
+    await act(async () => { kindBtn('Easy walk').click() })
+    await flush()
+    await act(async () => { host.querySelector('.rec-pick').click() })
+    // Simulate the same workout arriving in state (for example via sync) before Save is tapped.
+    await act(async () => {
+      useStore.getState().update(s => {
+        s.recoverySessions = withRecovery(s.recoverySessions, 'synced-1', {
+          d: '2026-11-21', kind: 'walk', min: 30, at: at('2026-11-21', 9, 0), src: 'hc', srcId: 'garmin-dup',
+        })
+      })
+    })
+    await act(async () => { saveBtn().click() })
+    expect(close).toHaveBeenCalledTimes(1)
+    expect(recoverySessionsOf(useStore.getState().S)).toHaveLength(1)
+    expect(mocks.toast).not.toHaveBeenCalled()
+  })
 })

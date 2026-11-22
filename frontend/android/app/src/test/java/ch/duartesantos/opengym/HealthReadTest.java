@@ -82,7 +82,7 @@ public class HealthReadTest {
         assertEquals("android.permission.health.READ_TOTAL_CALORIES_BURNED", HealthRead.readPermission("totalCalories"));
         assertEquals("android.permission.health.READ_ELEVATION_GAINED", HealthRead.readPermission("elevation"));
         assertEquals("android.permission.health.READ_SPEED", HealthRead.readPermission("speed"));
-        assertEquals("android.permission.health.READ_STEPS_CADENCE", HealthRead.readPermission("cadence"));
+        assertEquals("android.permission.health.READ_STEPS", HealthRead.readPermission("cadence"));
         assertEquals("android.permission.health.READ_FLOORS_CLIMBED", HealthRead.readPermission("floors"));
         assertNull(HealthRead.readPermission("menstruation"));
     }

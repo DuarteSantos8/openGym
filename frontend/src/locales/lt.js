@@ -5900,4 +5900,12 @@ export default {
   "Splits": "Atkarpos",
   "Recovery details": "Atsigavimo duomenys",
   "Choose which recorded metrics appear on recovery sessions.": "Pasirinkite, kurie užfiksuoti rodikliai rodomi atsigavimo sesijose.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/val.",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} pėd.",
+  "{0} spm": "{0} žing./min.",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} žingsn.",
 }

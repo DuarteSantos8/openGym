@@ -14,6 +14,8 @@
 // deleted key, which the other device's copy would bring straight back.
 import { NOTE_MAX } from './history.js'
 import { isOwnRecord, overlapsWorkout } from './activities.js'
+import { t } from './i18n.js'
+import { fmtNum } from './format.js'
 
 export const RECOVERY_KINDS = ['sauna', 'cold', 'massage', 'stretch', 'walk', 'other']
 export const RECOVERY_LABEL = { sauna: 'Sauna', cold: 'Ice bath', massage: 'Massage', stretch: 'Mobility', walk: 'Easy walk', other: 'Other recovery' }
@@ -177,14 +179,15 @@ export function recoveryPace(min, km, unit = 'kg') {
   const paceMin = m / dist
   if (!Number.isFinite(paceMin) || paceMin < 1 || paceMin >= 120) return null
   const totalSec = Math.round(paceMin * 60)
-  return `${Math.floor(totalSec / 60)}:${String(totalSec % 60).padStart(2, '0')} /${unit === 'lb' ? 'mi' : 'km'}`
+  const clock = `${Math.floor(totalSec / 60)}:${String(totalSec % 60).padStart(2, '0')}`
+  return unit === 'lb' ? t('{0} /mi', clock) : t('{0} /km', clock)
 }
 
-/** Speed string from km/h ("4.8 km/h" or "3.0 mph"), or null when unavailable. */
+/** Speed string from km/h ("4.8 km/h" or "3 mph"), or null when unavailable. */
 export function recoverySpeedText(kmh, unit = 'kg') {
   const v = Number(kmh)
   if (!Number.isFinite(v) || v < 0.1 || v > 120) return null
-  return unit === 'lb' ? `${round1(v / MI)} mph` : `${round1(v)} km/h`
+  return unit === 'lb' ? t('{0} mph', fmtNum(round1(v / MI))) : t('{0} km/h', fmtNum(round1(v)))
 }
 
 /** Average speed in km/h from recorded speed or derived from km and minutes. */
@@ -200,7 +203,7 @@ export function recoveryAvgSpeedKmh(spec, min) {
 export function recoveryElevText(meters, unit = 'kg') {
   const m = Number(meters)
   if (!Number.isFinite(m) || m < 1) return null
-  return unit === 'lb' ? `${Math.round(m * FT_PER_M)} ft` : `${Math.round(m)} m`
+  return unit === 'lb' ? t('{0} ft', fmtNum(Math.round(m * FT_PER_M))) : t('{0} m', fmtNum(Math.round(m)))
 }
 
 /** Cadence (steps/min) from recorded cadence or derived from steps and minutes. */

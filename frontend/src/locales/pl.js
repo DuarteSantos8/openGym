@@ -5904,4 +5904,12 @@ export default {
   "Splits": "Międzyczasy",
   "Recovery details": "Szczegóły regeneracji",
   "Choose which recorded metrics appear on recovery sessions.": "Wybierz, które zapisane metryki mają się pojawiać w sesjach regeneracji.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/h",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} kr./min",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} kroków",
 }

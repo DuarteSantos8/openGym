@@ -293,7 +293,7 @@ export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']
 // Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts (a run from Strava or the watch,
 // a padel match) as activities, and walks/stretching in Log recovery. Exercise is required; all
 // other session metrics are optional extras when granted.
-export const SPORT_READS = ['exercise', 'distance', 'calories', 'totalCalories', 'steps', 'heartRate', 'elevation', 'speed', 'cadence', 'floors']
+export const SPORT_READS = ['exercise', 'distance', 'calories', 'totalCalories', 'steps', 'heartRate', 'elevation', 'speed', 'floors']
 const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : kind === 'sport' ? 'readSport' : 'readWeight')
 const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
 
@@ -464,9 +464,11 @@ async function readOnce(getState, force, now, applyFn) {
 const DAY_WORKOUT_CACHE_MS = 30 * 1000
 const dayWorkoutCache = new Map()
 const dayWorkoutPending = new Map()
+let dayWorkoutGeneration = 0
 
 /** Drop cached day-workout reads (called after permission changes or app resume). */
 export function clearDayWorkoutsCache() {
+  dayWorkoutGeneration++
   dayWorkoutCache.clear()
   dayWorkoutPending.clear()
 }
@@ -489,6 +491,7 @@ export async function readDayWorkouts(dayIso, S = null, { sports = ['walk', 'str
   const hit = !force && dayWorkoutCache.get(key)
   if (hit && Date.now() - hit.at < DAY_WORKOUT_CACHE_MS) return hit.value
   if (!force && dayWorkoutPending.has(key)) return dayWorkoutPending.get(key)
+  const generation = dayWorkoutGeneration
   const run = (async () => {
     try {
       const p = await plugin()
@@ -504,12 +507,12 @@ export async function readDayWorkouts(dayIso, S = null, { sports = ['walk', 'str
       }
       const res = await p.HC.readWorkouts({ since: dayStart, until: dayEnd, details: true, sports })
       const value = { records: Array.isArray(res?.records) ? res.records : [], src }
-      dayWorkoutCache.set(key, { at: Date.now(), value })
+      if (generation === dayWorkoutGeneration) dayWorkoutCache.set(key, { at: Date.now(), value })
       return value
     } catch {
       return { records: [], src: null }
     } finally {
-      dayWorkoutPending.delete(key)
+      if (dayWorkoutPending.get(key) === run) dayWorkoutPending.delete(key)
     }
   })()
   dayWorkoutPending.set(key, run)

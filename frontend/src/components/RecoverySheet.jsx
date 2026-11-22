@@ -44,15 +44,15 @@ function RecoverySpecs({ S, spec, min, update }) {
   if (pace) available.push({ k: 'pace', label: t('Pace'), val: pace })
   if (speedText) available.push({ k: 'speed', label: t('Speed'), val: speedText, sub: maxSpeedText ? `${t('Max')} ${maxSpeedText}` : null })
   if (spec.steps > 0) available.push({ k: 'steps', label: t('Steps'), val: fmtNum(spec.steps) })
-  if (cadence) available.push({ k: 'cadence', label: t('Cadence'), val: `${cadence} spm` })
+  if (cadence) available.push({ k: 'cadence', label: t('Cadence'), val: t('{0} spm', fmtNum(cadence)) })
   if (spec.hr?.avg > 0) {
     const hrSub = [
-      spec.hr.min > 0 && spec.hr.min < spec.hr.avg ? `${t('Min')} ${spec.hr.min}` : null,
-      spec.hr.max > spec.hr.avg ? `${t('Max')} ${spec.hr.max}` : null,
+      spec.hr.min > 0 && spec.hr.min < spec.hr.avg ? `${t('Min')} ${fmtNum(spec.hr.min)}` : null,
+      spec.hr.max > spec.hr.avg ? `${t('Max')} ${fmtNum(spec.hr.max)}` : null,
     ].filter(Boolean).join(' · ')
-    available.push({ k: 'hr', label: t('Heart rate'), val: t('{0} bpm', spec.hr.avg), sub: hrSub || null })
+    available.push({ k: 'hr', label: t('Heart rate'), val: t('{0} bpm', fmtNum(spec.hr.avg)), sub: hrSub || null })
   }
-  if (spec.kcal > 0) available.push({ k: 'kcal', label: t('Calories'), val: `${fmtNum(spec.kcal)} kcal` })
+  if (spec.kcal > 0) available.push({ k: 'kcal', label: t('Calories'), val: t('{0} kcal', fmtNum(spec.kcal)) })
   if (elevText) available.push({ k: 'elev', label: t('Elevation'), val: elevText })
   if (spec.floors > 0) available.push({ k: 'floors', label: t('Floors'), val: fmtNum(spec.floors) })
 
@@ -109,9 +109,9 @@ const pickSummary = (S, m) => [
   fmtClock(m.start),
   t('{0} min', m.min),
   isRecoveryMetricOn(S, 'km') && m.km > 0 ? distText(S, m.km) : null,
-  isRecoveryMetricOn(S, 'steps') && m.steps > 0 ? `${fmtNum(m.steps)} ${t('Steps').toLowerCase()}` : null,
-  isRecoveryMetricOn(S, 'hr') && m.hr?.avg > 0 ? t('{0} bpm', m.hr.avg) : null,
-  isRecoveryMetricOn(S, 'kcal') && m.kcal > 0 ? `${fmtNum(m.kcal)} kcal` : null,
+  isRecoveryMetricOn(S, 'steps') && m.steps > 0 ? t('{0} steps', fmtNum(m.steps)) : null,
+  isRecoveryMetricOn(S, 'hr') && m.hr?.avg > 0 ? t('{0} bpm', fmtNum(m.hr.avg)) : null,
+  isRecoveryMetricOn(S, 'kcal') && m.kcal > 0 ? t('{0} kcal', fmtNum(m.kcal)) : null,
   isRecoveryMetricOn(S, 'elev') && m.elev > 0 ? recoveryElevText(m.elev, S?.unit) : null,
 ].filter(Boolean).join(' · ')
 
@@ -223,13 +223,16 @@ function RecoveryLog({ id = null, day = null, close }) {
 
   const save = () => {
     if (!(min >= 1) || d > todayISO()) return
+    let inserted = true
     update(s => {
+      const logged = !id && picked?.srcId && recoverySessionsOf(s).some(r => r.srcId === picked.srcId)
+      if (logged) { inserted = false; return }
       s.recoverySessions = withRecovery(s.recoverySessions, id || uid(), {
         d, kind, min, note: note.trim().slice(0, NOTE_MAX), ...(activeSpec || {}),
       })
     })
     close()
-    toast(had ? t('Saved') : t('{0} logged. Your muscles say thanks.', t(RECOVERY_LABEL[kind])))
+    if (inserted) toast(had ? t('Saved') : t('{0} logged. Your muscles say thanks.', t(RECOVERY_LABEL[kind])))
   }
   const remove = () => {
     update(s => { s.recoverySessions = withRecovery(s.recoverySessions, id, null) })
@@ -297,8 +300,8 @@ export function RecoveryRow({ r, showDate = true }) {
         showDate ? fmtDate(r.d, true) : null,
         t('{0} min', r.min),
         isRecoveryMetricOn(S, 'km') && r.km > 0 ? distText(S, r.km) : null,
-        isRecoveryMetricOn(S, 'hr') && r.hr?.avg > 0 ? t('{0} bpm', r.hr.avg) : null,
-        isRecoveryMetricOn(S, 'kcal') && r.kcal > 0 ? `${fmtNum(r.kcal)} kcal` : null,
+        isRecoveryMetricOn(S, 'hr') && r.hr?.avg > 0 ? t('{0} bpm', fmtNum(r.hr.avg)) : null,
+        isRecoveryMetricOn(S, 'kcal') && r.kcal > 0 ? t('{0} kcal', fmtNum(r.kcal)) : null,
         r.app || null,
         r.note,
       ].filter(Boolean).join(' · ')}</div></div>

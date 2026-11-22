@@ -5959,4 +5959,12 @@ export default {
   "Splits": "الأجزاء",
   "Recovery details": "تفاصيل التعافي",
   "Choose which recorded metrics appear on recovery sessions.": "اختر المقاييس المسجلة التي تظهر في جلسات التعافي.",
+  "{0} /km": "{0} /كم",
+  "{0} /mi": "{0} /ميل",
+  "{0} km/h": "{0} كم/س",
+  "{0} mph": "{0} ميل/س",
+  "{0} ft": "{0} قدم",
+  "{0} spm": "{0} خطوة/د",
+  "{0} kcal": "{0} سعرة",
+  "{0} steps": "{0} خطوة",
 }

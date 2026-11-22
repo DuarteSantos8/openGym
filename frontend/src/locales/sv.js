@@ -5951,4 +5951,12 @@ export default {
   "Splits": "Mellantider",
   "Recovery details": "Återhämtningsdetaljer",
   "Choose which recorded metrics appear on recovery sessions.": "Välj vilka registrerade mätvärden som visas för återhämtningspass.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/h",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} steg/min",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} steg",
 }

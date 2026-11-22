@@ -50,6 +50,7 @@ vi.mock('@capacitor/core', () => ({
     },
     readWorkouts: async arg => {
       h.calls.push(['readWorkouts', arg])
+      if (h.workoutsHook) return h.workoutsHook(arg)
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return { records: (h.workouts || []).filter(r => r.start >= arg.since) }
     },
@@ -357,5 +358,31 @@ describe('day workouts for recovery suggestions', () => {
 
     h.fail = 'permission'
     expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [], src: null })
+  })
+
+  it('does not cache or clobber pending reads when clearDayWorkoutsCache runs mid-flight', async () => {
+    h.granted = { exercise: true }
+    let releaseFirst
+    let call = 0
+    h.workoutsHook = async () => {
+      call++
+      if (call === 1) return new Promise(resolve => { releaseFirst = () => resolve({ records: [] }) })
+      return { records: [walk] }
+    }
+    try {
+      const p1 = hs.readDayWorkouts(day, S)
+      // Wait for p1 to enter readWorkouts
+      await vi.waitFor(() => expect(releaseFirst).toBeTypeOf('function'))
+      hs.clearDayWorkoutsCache()
+      const p2 = hs.readDayWorkouts(day, S)
+      releaseFirst()
+      expect(await p1).toEqual({ records: [], src: 'hc' })
+      expect(await p2).toEqual({ records: [walk], src: 'hc' })
+      // Next call must see the post-invalidation result from p2, not stale p1.
+      expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [walk], src: 'hc' })
+      expect(reads('readWorkouts')).toHaveLength(2)
+    } finally {
+      h.workoutsHook = null
+    }
   })
 })

@@ -5870,4 +5870,12 @@ export default {
   "Splits": "Chặng",
   "Recovery details": "Chi tiết phục hồi",
   "Choose which recorded metrics appear on recovery sessions.": "Chọn các chỉ số đã ghi sẽ hiển thị trong buổi phục hồi.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /dặm",
+  "{0} km/h": "{0} km/giờ",
+  "{0} mph": "{0} dặm/giờ",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} bước/phút",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} bước",
 };

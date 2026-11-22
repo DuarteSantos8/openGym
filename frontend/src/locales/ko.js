@@ -5904,4 +5904,12 @@ export default {
   "Splits": "구간",
   "Recovery details": "회복 세부 정보",
   "Choose which recorded metrics appear on recovery sessions.": "회복 세션에 표시할 기록된 지표를 선택하세요.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mi",
+  "{0} km/h": "{0} km/h",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} spm",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0}걸음",
 }

@@ -133,7 +133,6 @@ public class HealthConnectPlugin extends Plugin {
     private static final String READ_TOTAL_CALORIES = "android.permission.health.READ_TOTAL_CALORIES_BURNED";
     private static final String READ_ELEVATION = "android.permission.health.READ_ELEVATION_GAINED";
     private static final String READ_SPEED = "android.permission.health.READ_SPEED";
-    private static final String READ_CADENCE = "android.permission.health.READ_STEPS_CADENCE";
     private static final String READ_FLOORS = "android.permission.health.READ_FLOORS_CLIMBED";
     // Records per page when reading, and pages at most: a few hours of heart rate fit easily.
     private static final int PAGE = 1000;
@@ -622,13 +621,15 @@ public class HealthConnectPlugin extends Plugin {
         if (got.contains(READ_DISTANCE)) m.add(DistanceRecord.DISTANCE_TOTAL);
         if (got.contains(READ_CALORIES)) m.add(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL);
         if (got.contains(READ_TOTAL_CALORIES)) m.add(TotalCaloriesBurnedRecord.ENERGY_TOTAL);
-        if (got.contains(READ_STEPS)) m.add(StepsRecord.COUNT_TOTAL);
+        if (got.contains(READ_STEPS)) {
+            m.add(StepsRecord.COUNT_TOTAL);
+            m.add(StepsCadenceRecord.RATE_AVG);
+        }
         if (got.contains(READ_ELEVATION)) m.add(ElevationGainedRecord.ELEVATION_GAINED_TOTAL);
         if (got.contains(READ_SPEED)) {
             m.add(SpeedRecord.SPEED_AVG);
             m.add(SpeedRecord.SPEED_MAX);
         }
-        if (got.contains(READ_CADENCE)) m.add(StepsCadenceRecord.RATE_AVG);
         if (got.contains(READ_FLOORS)) m.add(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL);
         if (got.contains(READ_HEART_RATE)) {
             m.add(HeartRateRecord.BPM_AVG);

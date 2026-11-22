@@ -5904,4 +5904,12 @@ export default {
   "Splits": "Bölümler",
   "Recovery details": "Toparlanma ayrıntıları",
   "Choose which recorded metrics appear on recovery sessions.": "Toparlanma seanslarında hangi kayıtlı ölçümlerin görüneceğini seçin.",
+  "{0} /km": "{0} /km",
+  "{0} /mi": "{0} /mil",
+  "{0} km/h": "{0} km/sa",
+  "{0} mph": "{0} mph",
+  "{0} ft": "{0} ft",
+  "{0} spm": "{0} adım/dk",
+  "{0} kcal": "{0} kcal",
+  "{0} steps": "{0} adım",
 }
