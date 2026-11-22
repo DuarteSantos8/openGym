@@ -108,6 +108,11 @@ describe('signFace: the one symbol in the top bar', () => {
   it('a live watch glows', () => {
     expect(face({})).toMatchObject({ device: 'watch', state: 'live', kind: 'apple' })
   })
+  it('a watch that is syncing wins over one in trouble, whichever row comes first', () => {
+    const rows = [{ id: 'watch', kind: 'apple', state: 'offline', warn: true }, { id: 'zepp', kind: 'zepp', state: 'live', warn: false }]
+    expect(signFace({ rows, checking: false })).toMatchObject({ device: 'watch', state: 'live', kind: 'zepp' })
+    expect(signFace({ rows: [rows[0]], checking: false })).toMatchObject({ state: 'trouble', kind: 'apple' })
+  })
   it('a quiet watch in a long rest is delayed, not trouble', () => {
     expect(face({ watch: away, heard: { wid: 'w1', at: NOW - 60_000 } })).toMatchObject({ device: 'watch', state: 'delayed' })
   })

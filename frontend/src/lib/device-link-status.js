@@ -70,7 +70,8 @@ const DEVICE = { server: 'cloud' }
 const deviceOf = row => row?.kind === 'hr' ? (EARBUDS.test(row.device || '') ? 'earbuds' : 'bluetooth') : DEVICE[row?.kind] || 'watch'
 const face = (row, state) => ({ device: deviceOf(row), state, kind: row?.kind ?? null, row })
 export function signFace({ rows, checking }) {
-  const watch = rows.find(r => WATCHES.includes(r.kind))
+  const watches = rows.filter(r => WATCHES.includes(r.kind))
+  const watch = watches.find(r => !r.warn) || watches[0]
   if (watch && !watch.warn) return face(watch, watch.state === 'delayed' ? 'delayed' : 'live')
   const bt = rows.find(r => r.kind === 'hr')
   if (bt) return face(bt, 'live')
