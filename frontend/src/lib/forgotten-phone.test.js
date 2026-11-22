@@ -90,6 +90,25 @@ describe('forgotten workouts on the phone', () => {
     await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
   })
 
+  it('an older plan that ends late leaves the newer plan its deadline', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.wid).toBe('w1'))
+    const cancel = fakeNotifications.cancel
+    let release = null
+    fakeNotifications.cancel = () => new Promise(r => { release = r })
+    try {
+      st.useStore.set({ ...st.useStore.getState().S, active: null })   // its plan waits on the cancel
+      await vi.waitFor(() => expect(release).not.toBeNull())
+      fakeNotifications.cancel = cancel
+      st.useStore.set({ ...st.useStore.getState().S, active: { ...workout(), id: 'w2' } })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.wid).toBe('w2'))
+      release()
+      for (let i = 0; i < 10; i++) await flush()
+      expect(calls.deadlines.at(-1)?.wid).toBe('w2')
+    } finally { fakeNotifications.cancel = cancel }
+  })
+
   it('a long hold pushes the question and the deadline past its end; the hold over, they come back to the last set', async () => {
     vi.setSystemTime(last + 40 * MIN)
     const { st, calls } = start()

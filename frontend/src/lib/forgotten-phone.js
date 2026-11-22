@@ -87,8 +87,11 @@ async function planNotification(wid, at) {
   planned = key
   try {
     await L.cancel({ notifications: [{ id: ASK_NOTIFICATION_ID }] }).catch(() => {})
+    if (planned !== key) return   // a newer plan owns the saved state and the deadline now
     if (!key) { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
-    if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
+    const granted = (await L.checkPermissions()).display === 'granted'
+    if (planned !== key) return
+    if (!granted) { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
     await registerActions(L)
     const c = forgottenCopy()
     const notifications = await withoutAlarmPrompt(L, [{
