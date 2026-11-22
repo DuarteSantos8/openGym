@@ -189,4 +189,17 @@ describe('forgotten workouts on the phone', () => {
     start(null)
     await vi.waitFor(() => expect(ln.cancelled).toBe(1))
   })
+
+  it('a cancel that fails is tried again on the next look', async () => {
+    const cancel = fakeNotifications.cancel
+    fakeNotifications.cancel = async () => { ln.cancelled++; throw new Error('busy') }
+    try {
+      start(null)
+      await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+      fakeNotifications.cancel = cancel
+      for (let i = 0; i < 5; i++) await flush()
+      checkForgotten()
+      await vi.waitFor(() => expect(ln.cancelled).toBe(2))
+    } finally { fakeNotifications.cancel = cancel }
+  })
 })

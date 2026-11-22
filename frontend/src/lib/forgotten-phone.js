@@ -81,7 +81,7 @@ async function planNow(wid, at) {
   if (!L) return
   planned = key
   try {
-    await L.cancel({ notifications: [{ id: ASK_NOTIFICATION_ID }] }).catch(() => {})
+    await L.cancel({ notifications: [{ id: ASK_NOTIFICATION_ID }] })   // a failed cancel leaves planned unknown, so the next look tries again
     if (!key) { writeForgottenState(wid, { notifyAt: 0 }); return }
     if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); return }
     await registerActions(L)
