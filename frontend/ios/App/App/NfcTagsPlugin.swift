@@ -8,9 +8,13 @@ import CoreNFC
  * openGym's NFC stickers (lib/nfc.js, components/Nfc.jsx): writes one openGym link onto a sticker
  * with Core NFC's own sheet ("Hold the top of your iPhone near the sticker").
  *
- * Reading needs nothing here: an iPhone XS or newer reads NDEF stickers in the background, and the
- * https://opengym.ch/nfc link on ours comes back to the page as opengym://nfc?... (through
+ * Our own stickers need no read here: an iPhone XS or newer reads NDEF stickers in the background,
+ * and the https://opengym.ch/nfc link on ours comes back to the page as opengym://nfc?... (through
  * opengym.ch/nfc, or straight away once opengym.ch is an associated domain), via @capacitor/app.
+ *
+ * A machine's tag (lib/nfc.js readMachineTagOnce) is read on demand with NFCTagReaderSession: its
+ * uid and its URI and text records come back as text. A tag is untrusted: nothing here opens,
+ * writes or acts on what it holds.
  *
  * Only NDEF stickers: no card emulation, nothing reads or copies a gym's access card.
  *
@@ -18,8 +22,10 @@ import CoreNFC
  *   const NfcTags = registerPlugin('NfcTags')
  *   await NfcTags.isAvailable()     // { supported, enabled }
  *   await NfcTags.write({ url, alert: 'Hold the top…', done: 'Sticker ready.' })
- *   await NfcTags.cancel()
+ *   await NfcTags.read({ alert: 'Hold your phone…' })  // { uid, records: [{ type: 'uri'|'text', value }] }
+ *   await NfcTags.cancel()          // ends a write or a read
  * A failed write rejects with code cancelled | read-only | too-small | unsupported | failed.
+ * A failed read rejects with code cancelled | unsupported | failed. Only one of them runs at a time.
  */
 @objc(NfcTagsPlugin)
 public class NfcTagsPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -28,6 +34,7 @@ public class NfcTagsPlugin: CAPPlugin, CAPBridgedPlugin {
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "write", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "read", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "cancel", returnType: CAPPluginReturnPromise),
     ]
 
@@ -36,6 +43,9 @@ public class NfcTagsPlugin: CAPPlugin, CAPBridgedPlugin {
     private var pending: CAPPluginCall?
     private var message: NFCNDEFMessage?
     private var doneText = ""
+    // The machine-tag read: its own session and call, apart from the write's.
+    private var tagSession: NFCTagReaderSession?
+    private var readPending: CAPPluginCall?
     #endif
 
     @objc func isAvailable(_ call: CAPPluginCall) {
@@ -63,6 +73,7 @@ public class NfcTagsPlugin: CAPPlugin, CAPBridgedPlugin {
         DispatchQueue.main.async {
             self.settle(code: "cancelled", why: "replaced by a newer write")
             self.session?.invalidate()
+            self.endRead("replaced by a write")
             self.pending = call
             self.message = NFCNDEFMessage(records: [record])
             self.doneText = done
@@ -76,12 +87,40 @@ public class NfcTagsPlugin: CAPPlugin, CAPBridgedPlugin {
         #endif
     }
 
+    @objc func read(_ call: CAPPluginCall) {
+        #if canImport(CoreNFC)
+        guard NFCTagReaderSession.readingAvailable else {
+            call.reject("this iPhone cannot read NFC tags", "unsupported")
+            return
+        }
+        let alert = call.getString("alert") ?? ""
+        DispatchQueue.main.async {
+            // One at a time: a write or an older read in progress ends here.
+            self.settle(code: "cancelled", why: "replaced by a read")
+            self.session?.invalidate()
+            self.session = nil
+            self.endRead("replaced by a newer read")
+            self.readPending = call
+            self.tagSession = NFCTagReaderSession(pollingOption: [.iso14443, .iso15693], delegate: self, queue: nil)
+            guard let s = self.tagSession else {
+                self.settleRead(code: "failed", why: "could not start reading")
+                return
+            }
+            if !alert.isEmpty { s.alertMessage = alert }
+            s.begin()
+        }
+        #else
+        call.reject("this iPhone cannot read NFC tags", "unsupported")
+        #endif
+    }
+
     @objc func cancel(_ call: CAPPluginCall) {
         #if canImport(CoreNFC)
         DispatchQueue.main.async {
             self.settle(code: "cancelled", why: "cancelled")
             self.session?.invalidate()
             self.session = nil
+            self.endRead("cancelled")
             call.resolve()
         }
         #else
@@ -96,6 +135,20 @@ public class NfcTagsPlugin: CAPPlugin, CAPBridgedPlugin {
         pending = nil
         message = nil
         if let code = code { call.reject(why, code) } else { call.resolve(["written": true]) }
+    }
+
+    /// Ends the waiting read once: resolved with what the tag held, rejected with a code.
+    private func settleRead(code: String?, why: String = "", result: [String: Any] = [:]) {
+        guard let call = readPending else { return }
+        readPending = nil
+        if let code = code { call.reject(why, code) } else { call.resolve(result) }
+    }
+
+    /// Cancels a read in progress, if any, and closes its sheet (main queue).
+    private func endRead(_ why: String) {
+        settleRead(code: "cancelled", why: why)
+        tagSession?.invalidate()
+        tagSession = nil
     }
 
     /// Fails the write and closes the sheet with a short reason.
@@ -156,6 +209,85 @@ extension NfcTagsPlugin: NFCNDEFReaderSessionDelegate {
                     }
                 }
             }
+        }
+    }
+}
+#endif
+
+#if canImport(CoreNFC)
+extension NfcTagsPlugin: NFCTagReaderSessionDelegate {
+    public func tagReaderSessionDidBecomeActive(_ session: NFCTagReaderSession) {}
+
+    public func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
+        // Cancel on the sheet, its timeout, or our own invalidate after a read (settled by then).
+        let code = (error as? NFCReaderError)?.code
+        let cancelled = code == .readerSessionInvalidationErrorUserCanceled || code == .readerSessionInvalidationErrorSessionTimeout
+        DispatchQueue.main.async {
+            // A session replaced by a newer read ends later: its end is not the new one's.
+            guard self.tagSession === session else { return }
+            self.tagSession = nil
+            self.settleRead(code: cancelled ? "cancelled" : "failed", why: error.localizedDescription)
+        }
+    }
+
+    public func tagReaderSession(_ session: NFCTagReaderSession, didDetect tags: [NFCTag]) {
+        guard tags.count == 1, let tag = tags.first else {
+            // Two tags at once: wait for one.
+            DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(500)) { session.restartPolling() }
+            return
+        }
+        let uid: Data
+        let ndef: NFCNDEFTag?
+        switch tag {
+        case .miFare(let t): uid = t.identifier; ndef = t
+        case .iso15693(let t): uid = t.identifier; ndef = t
+        case .iso7816(let t): uid = t.identifier; ndef = t
+        case .feliCa(let t): uid = t.currentIDm; ndef = t
+        @unknown default: uid = Data(); ndef = nil
+        }
+        let hex = uid.map { String(format: "%02x", $0) }.joined()
+        session.connect(to: tag) { error in
+            if let error = error { self.failRead(session, error.localizedDescription); return }
+            guard let ndef = ndef else { self.finishRead(session, uid: hex, records: []); return }
+            ndef.queryNDEFStatus { status, _, error in
+                // An unformatted or empty tag still has its uid.
+                if error != nil || status == .notSupported { self.finishRead(session, uid: hex, records: []); return }
+                ndef.readNDEF { message, error in
+                    guard error == nil, let message = message else { self.finishRead(session, uid: hex, records: []); return }
+                    self.finishRead(session, uid: hex, records: NfcTagsPlugin.textRecords(message))
+                }
+            }
+        }
+    }
+
+    /// URI and text records as plain strings: at most 8, each 1 to 512 characters, the rest ignored.
+    static func textRecords(_ message: NFCNDEFMessage) -> [[String: String]] {
+        var out: [[String: String]] = []
+        for payload in message.records {
+            if out.count >= 8 { break }
+            if let uri = payload.wellKnownTypeURIPayload()?.absoluteString {
+                if (1...512).contains(uri.count) { out.append(["type": "uri", "value": uri]) }
+            } else if let text = payload.wellKnownTypeTextPayload().0 {
+                if (1...512).contains(text.count) { out.append(["type": "text", "value": text]) }
+            }
+        }
+        return out
+    }
+
+    /// Resolves the read once and closes the sheet.
+    private func finishRead(_ session: NFCTagReaderSession, uid: String, records: [[String: String]]) {
+        DispatchQueue.main.async {
+            guard self.tagSession === session else { session.invalidate(); return }
+            self.settleRead(code: nil, result: ["uid": uid, "records": records])
+            session.invalidate()
+        }
+    }
+
+    /// Fails the read and closes the sheet with a short reason.
+    private func failRead(_ session: NFCTagReaderSession, _ why: String) {
+        DispatchQueue.main.async {
+            if self.tagSession === session { self.settleRead(code: "failed", why: why) }
+            session.invalidate(errorMessage: why)
         }
     }
 }
