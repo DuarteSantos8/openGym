@@ -107,8 +107,9 @@ describe('the floating tab bar', () => {
   })
 
   it('shows only Home, and not inert, when shrunk on a page with no tab lit', () => {
-    path.now = '/settings'
+    path.now = '/workout'   // a route with no tab and no parent tab
     act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(bar().classList.contains('none')).toBe(true)
     vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1000)
     Object.defineProperty(document.documentElement, 'scrollHeight', { value: 5000, configurable: true })
     scrollTo(100); scrollTo(130)
