@@ -23,6 +23,11 @@ Epic status:
 - **Done (2026-11-15):** emulated devices (WebKit/Chromium phone profiles in CI) and the EP14 real-model run.
 - **Merged (2026-11-21, #52, #53):** Today's body picker (module `bodyfocus`, branch `next/today-body-focus`): tap the drawn body or your own photo, see the exercises for those areas. Photos stay in the browser; Reset everything and sign-out delete them. Still open: (1) try it on a real phone with your own photo, front and back; (2) the native apps: decide whether to keep the WebView's IndexedDB out of Android Auto Backup (`backup_rules.xml`, `data_extraction_rules.xml`) and iCloud, checked on a device; (3) add its 20 strings to the translation review (task 7); (4) iOS 15.x: if the bundled MediaPipe WASM needs SIMD (Safari 16.4+), photos there get the "can't look for the body" message and the drawn body.
 - **In review (2026-11-21):** the web boot waits at most about 5 s for a server that does not answer, for someone signed out (branch `next/boot-server-wait`, Tier A: store). Before, a server held open behind the Vercel `/api` rewrite left new visitors on "Ironvane is taking too long to start" for 40 s. Needs Soren's manual journey: open the live site in a private window while the API is up, sign in, sign out.
+- **In review (2026-11-22): the beginner-first and Cloud edition work, EP17 to EP27.** The plan, every task's status and the order from here are in `BEGINNER-CLOUD-PLAN.md`; the decisions are ADR 0008 to 0012. Three draft PRs, independent of each other:
+  - `next/EP17-decisions-adrs`: the five ADRs, the charter amendment in `AGENTS.md` and `START-HERE.md`, the plan. Docs only.
+  - `next/EP21-EP25-beginner-core`: experience levels, Find my plan (`/start`), Learn (`/learn`) with a glossary, First wins, a simpler set menu for a Beginner. Needs Soren's manual journey on a phone: fresh guest → Find my plan → Use this plan → start the first workout.
+  - `next/EP18-EP20-cloud-edition`: the edition flag, the Supabase schema with RLS and its tests, the four Stripe functions, the API's token verifier, a secret scan. **Nothing in it has run against a real Supabase project or Stripe**, and it changes nothing for the default build.
+- **Needs the owner before any paid deploy:** the media route (ADR 0009: replace or buy a licence), a Supabase project, a Stripe account, the price and the Pro list (ADR 0011).
 - **Needs a person:** EP16-T03 on real phones, translation review.
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
 
@@ -45,6 +50,10 @@ Epic status:
 | 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels) | reviewer | Reviewer named in a PR |
 | 8 | EP09-T03 (apply a progression rule to a routine). Only if users ask for it. | — | — |
 | 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
+| 10 | **EP23-T01 to T04**: cues, common mistakes and easier / harder versions per exercise (`BEGINNER-CLOUD-PLAN.md`). The largest remaining gap for a beginner. Content is `draft` until a named human reviews it (ADR 0012) | agent, then owner review | The "How to" tab shows on the Essentials |
+| 11 | EP22-T03 (plan cards by goal in the starter chooser) and the rest of EP21-T02 (the exercise menu for a Beginner) | agent | Per the plan's acceptance column |
+| 12 | Cloud: create the Supabase project and Stripe test account, then EP19-T03, the wiring half of EP19-T04, EP19-T05 | owner, then agent | `supabase/README.md` "First deploy" steps 1 to 7 done in test mode |
+| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos) | agent | Before any live Stripe key |
 
 ## 4. Environment (WSL2 Ubuntu)
 
