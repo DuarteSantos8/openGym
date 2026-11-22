@@ -34,13 +34,18 @@ function detail(r) {
 
 export function DevicesSheet({ close }) {
   const fixes = { retry: syncNowWithToast, pair: () => { close(); pairAgain() }, connect: () => { close(); connectServer() }, signin: () => { close(); signInAgain() } }
-  const { rows } = useDeviceLink({ live: false })
+  const { rows, checking } = useDeviceLink({ live: false })
   useEffect(() => {
     checkLinks({ ping: true })
     const id = setInterval(() => { if (document.visibilityState === 'visible') checkLinks({ ping: true }) }, LOOK_MS)
     return () => clearInterval(id)
   }, [])
 
+  // The first look is still under way: not yet "nothing connected".
+  if (!rows.length && checking) return <>
+    <h3>{t('Devices')}</h3>
+    <div className="card muted" style={{ textAlign: 'center' }} role="status">{t('Checking…')}</div>
+  </>
   if (!rows.length) return <>
     <h3>{t('Devices')}</h3>
     <div className="card" style={{ textAlign: 'center' }}>
@@ -58,7 +63,7 @@ export function DevicesSheet({ close }) {
         const down = r.state === 'offline' && r.kind === 'server'
         return <div className="dev-item" key={r.id}>
           <Row icon={TILE[r.kind]} title={r.device || NAME[r.kind]()} subtitle={detail(r)}>
-            {r.bpm != null && <span className="dev-bpm">{r.bpm} bpm</span>}
+            {r.bpm != null && <span className="dev-bpm">{t('{0} bpm', r.bpm)}</span>}
             {r.speed && <span className={'dev-speed ' + r.speed}><Icon name="bars" />{r.speed === 'fast' ? t('Fast') : t('Slow')}</span>}
             <span className={'dev-state' + (r.warn ? ' warn' : r.state === 'live' || r.state === 'ok' ? ' ok' : '')}><Icon name={glyph} />{word()}</span>
           </Row>
