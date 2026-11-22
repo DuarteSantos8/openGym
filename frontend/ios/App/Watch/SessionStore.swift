@@ -1203,7 +1203,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // Used on the phone since: the idle clock counts from then, like a change from the phone.
         if let r = reply, r.wid == wid, let at = r.activeAt, at > since {
             let phoneAt = Date(timeIntervalSince1970: at / 1000)
-            if activityAt.map({ $0 < phoneAt }) ?? true { activityAt = phoneAt }
+            if activityAt.map({ $0 < phoneAt }) ?? true {
+                activityAt = phoneAt
+                // In use on the phone: a session the idle rule rested picks up again, and the next check counts from then.
+                if health.paused, workoutPausedAt == nil { health.resume() }
+                armIdleCheck()
+            }
         }
         let now = Date().timeIntervalSince1970 * 1000
         let rules = idleRules
