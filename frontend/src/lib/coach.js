@@ -19,6 +19,7 @@ import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICIES } from './progression.js'
 import { t, tn } from './i18n.js'
+import { STANDALONE } from './demo.js' // LIFTIQ-FORK: no demo coach in the standalone flavour
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
@@ -63,7 +64,7 @@ const coachOf = s => (s.coach = s.coach || emptyCoach())
 // chosen means nothing shown — the same "invisible unless configured" promise the web keeps.
 export const coachAvailable = (config, user, { demo, mobile, coachMode } = {}) =>
   mobile ? (coachMode === 'byok' || !!(config?.coach?.enabled && user))
-    : demo ? true : !!(config?.coach?.enabled && user)
+    : demo ? !STANDALONE : !!(config?.coach?.enabled && user) // LIFTIQ-FORK: demo coach is a canned stub, hidden when standalone
 
 // What each data category means, in the user's words. Rendered from the same list the payload
 // builder uses (api/coach/core/categories.js), so the screen cannot promise less than leaves.

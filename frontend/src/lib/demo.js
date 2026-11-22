@@ -9,6 +9,9 @@
 // Only these three constants are shared with normal builds: Vite replaces VITE_DEMO at build
 // time, so the demo-only UI folds away and the seed generator — imported dynamically — never
 // lands in a self-hosted bundle.
-export const DEMO = import.meta.env.VITE_DEMO === '1'
+// LIFTIQ-FORK: VITE_STANDALONE=1 is the fork's phone-only flavour. It reuses every DEMO behaviour (no backend,
+// guest mode, no login) but boots with an EMPTY history and drops the 'Demo' wording; see LIFTIQ-FORK.md.
+export const STANDALONE = import.meta.env.VITE_STANDALONE === '1'
+export const DEMO = import.meta.env.VITE_DEMO === '1' || STANDALONE
 export const DEMO_SEEDED = 'gym_demo_seeded_v1'
 export const REPO = 'https://gitlab.com/DuarteSantos8/opengym'
