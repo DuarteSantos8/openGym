@@ -3109,7 +3109,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
 :root[data-platform="ios"] #tabbar .cir .t{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#000}
 :root[data-platform="ios"] #tabbar .orb .tl{color:var(--tab-on);font-weight:600}
-:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
+:root[data-platform="ios"] #tabbar.min .orb{z-index:2;transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}   /* above the shrunk tab's wide box: Stats and Exercises come later and would take its taps */
 :root[data-platform="ios"] #tabbar.min .orb .cir{transform:scale(var(--os))}
 :root[data-platform="ios"] #tabbar.min .orb:active .cir{transform:scale(calc(var(--os)*.93))}
 /* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
@@ -3145,7 +3145,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   padding:10px 10px 0;padding-inline-start:20px;pointer-events:none;animation:trowin .25s .14s both}   /* never eats taps: the raised Start orb reaches 15 pt up into it */
 @keyframes trowin{from{opacity:0}}
 :root[data-platform="ios"] #tabbar.min .trow{visibility:hidden;opacity:0;animation:none}
-:root[data-platform="ios"] .trow.dock{position:fixed;z-index:60;bottom:0;height:auto;min-height:calc(54px + var(--sab));flex-wrap:wrap;padding-bottom:calc(var(--sab) + 4px);
+:root[data-platform="ios"] .trow.dock{position:fixed;z-index:60;bottom:0;height:auto;min-height:calc(54px + var(--sab));padding-bottom:calc(var(--sab) + 4px);
   border-radius:24px 24px 0 0;background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--glass-shadow)}
 :root[data-platform="ios"] .trow.dock::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
 :root[data-platform="ios"] #tabbar.ax .trow{--bf:19px;flex-wrap:wrap;gap:8px 6px}
@@ -3158,9 +3158,12 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar .trow .clk,:root[data-platform="ios"] .trow.dock .clk{position:relative;z-index:1;pointer-events:auto;flex:0 1 auto;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
   height:44px;min-width:72px;margin-inline-end:auto;padding:0;border:0;border-radius:10px;background:none;color:var(--label);font:inherit;text-align:start;-webkit-tap-highlight-color:transparent}
 :root[data-platform="ios"] .trow .clk .t{font-size:27px;font-weight:600;line-height:1.05;letter-spacing:-.026em;font-variant-numeric:tabular-nums;white-space:nowrap}
-:root[data-platform="ios"] .trow .clk .l{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:500;line-height:1.15;color:var(--glass-label);white-space:nowrap}
+:root[data-platform="ios"] .trow .clk .l{display:flex;align-items:center;gap:3px;max-width:100%;font-size:12px;font-weight:500;line-height:1.15;color:var(--glass-label);white-space:nowrap}
+:root[data-platform="ios"] .trow .clk .l .n{min-width:0;overflow:hidden;text-overflow:ellipsis}   /* a long hold name ends inside the clock, the chevron stays */
+:root[data-platform="ios"] .trow .clk .l .icn{flex:none}
 :root[data-platform="ios"] #tabbar .trow .clk .l .icn{font-size:11px;color:inherit}
 :root[data-platform="ios"] .trow .acts{position:relative;z-index:1;pointer-events:auto;display:flex;gap:6px}
+:root[data-platform="ios"] .trow .acts:has(.sk){flex:1 1 0;min-width:0;justify-content:flex-end}   /* a rest takes the room the clock leaves, so useSkipFits can measure it */
 :root[data-platform="ios"] #tabbar.ax .trow .clk{flex:1 0 100%;height:52px;margin:0}
 :root[data-platform="ios"] #tabbar.ax .trow .clk .t{font-size:34px}
 :root[data-platform="ios"] #tabbar.ax .trow .clk .l{font-size:15px}
@@ -3172,8 +3175,12 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] :is(.trow,.xv) .b:active{transform:scale(.95)}
 :root[data-platform="ios"] :is(.trow,.xv) .b .icn,:root[data-platform="ios"] #tabbar .trow .b .icn{font-size:18px;--icon-stroke:2.2;color:inherit}
 :root[data-platform="ios"] :is(.trow,.xv) .b.pri,:root[data-platform="ios"] #tabbar .trow .b.pri{background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge)}
-:root[data-platform="ios"] .trow .sk{min-width:72px}
+:root[data-platform="ios"] .trow .sk{position:relative;min-width:72px}
 :root[data-platform="ios"] .trow .sk .icn{display:none}
+:root[data-platform="ios"] .trow .sk .skip-probe{position:absolute;left:0;top:0;display:flex;width:max-content;visibility:hidden;pointer-events:none}
+:root[data-platform="ios"] .trow .sk.icon-only{min-width:44px}
+:root[data-platform="ios"] .trow .sk.icon-only .icn{display:inline-block}
+:root[data-platform="ios"] .trow .sk.icon-only > span:not(.skip-probe){display:none}
 /* 320 pt (SE, Display Zoom): the bar is 288 wide, so the row's content is 266 once its start padding is 12.
    clock 72 + gap 4 + four 44 buttons + three gaps of 4 + the .adj margin 2 = 266; Skip goes icon-only.
    Widths only, never the row height: --rh and the spacing above it stay as they are. */
@@ -3249,6 +3256,8 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 /* a hold and a count-in keep their accent outline on glass (the rule above outranks #timer.working) */
 :root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--glass-shadow)}
 :root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+/* dark glass over a bright page left --label-2 at about 3.7:1 for this 13px line */
+:root[data-platform="ios"]:not([data-theme="light"]) #timer .autorow.next .up{color:var(--label)}
 :root[data-platform="ios"] #toast{
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),var(--glass-shadow);
@@ -3463,6 +3472,9 @@ body.resting #totop{bottom:calc(172px + var(--sab))}
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
 body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
+/* iPhone, Text size Larger with a rest row: 10 pt above the bar (76) and its row (146), and the page ends 16 pt above the button, as above */
+:root[data-platform="ios"] body.resting:has(#tabbar.tm.ax:not(.min)) #totop{bottom:calc(max(var(--sab) - 13px, 8px) + 232px)}
+:root[data-platform="ios"] body.totop-on.resting:has(#tabbar.tm.ax:not(.min)):not(.no-tabbar) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 292px)}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
