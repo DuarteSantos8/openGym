@@ -105,7 +105,7 @@ async function transport(url, init) {
   const origin = /^https?:\/\//i.test(url) ? originOf(url) : ''
   if (origin && viaNative.has(origin)) return nativeFetch(url, init)
   try {
-    return await fetch(url, init)
+    return await fetch(url, await gzipped(init))
   } catch (e) {
     if (!origin || e?.name === 'AbortError' || init?.signal?.aborted || !(await inAndroidApp())) throw e
     let r
@@ -113,6 +113,16 @@ async function transport(url, init) {
     viaNative.add(origin)
     return r
   }
+}
+
+// `gzip: true` (the sync push, to a server whose /api/config says gzip_body): the whole profile
+// goes up on every set, and gzipped it is about a tenth of the bytes. A browser without
+// CompressionStream sends it plain. The native retry above gets the plain init: CapacitorHttp
+// sends only a string body.
+async function gzipped({ gzip, ...init }) {
+  if (!gzip || typeof CompressionStream !== 'function' || typeof init.body !== 'string') return init
+  const body = await new Response(new Blob([init.body]).stream().pipeThrough(new CompressionStream('gzip'))).blob()
+  return { ...init, body, headers: { ...init.headers, 'Content-Encoding': 'gzip' } }
 }
 
 async function exchange(url, init) {
