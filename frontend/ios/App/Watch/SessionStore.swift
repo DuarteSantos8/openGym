@@ -1343,7 +1343,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let arm = restArm
         for s in [3.0, 2.0, 1.0] where left > s + 1 {
             DispatchQueue.main.asyncAfter(deadline: .now() + left - s) { [weak self] in
-                guard let self = self, self.restArm == arm, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo else { return }
+                guard let self = self, self.restArm == arm, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo, Date() < end else { return }   // late (app held back): the rest-over alarm speaks now
                 Haptics.restCount()
             }
         }
