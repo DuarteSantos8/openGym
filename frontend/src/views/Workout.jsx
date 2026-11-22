@@ -1733,7 +1733,10 @@ function ActiveWorkout() {
       } })
       return
     }
-    if (focusMode) focusPointerEpoch.current++
+    // An add shifts every index from `slot` up, and a hold can be running on the exercise there
+    // (an untouched one counts as not started): end its timed callback first, as a move does.
+    ui.stopWork()
+    focusPointerEpoch.current++
     let added = null
     update(s => {
       if (s.active?.id !== activeId) return

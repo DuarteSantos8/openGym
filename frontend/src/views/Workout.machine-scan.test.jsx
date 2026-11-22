@@ -10,7 +10,7 @@ import { menuItemsOf } from '../lib/menu-items.js'
 
 const mocks = vi.hoisted(() => ({ scan: vi.fn(), menuSheet: vi.fn() }))
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', async importOriginal => ({ ...(await importOriginal()), beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), chime: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn() }))
 vi.mock('../components/ScanMachine.jsx', () => ({ scanMachineSheet: mocks.scan, linkMachineSheet: vi.fn() }))
 vi.mock('../sheets.jsx', async importOriginal => ({ ...(await importOriginal()), menuSheet: mocks.menuSheet }))
@@ -150,6 +150,24 @@ describe('Scan a machine in the workout', () => {
     expect(ids()).toEqual([A_ID, B_ID, C_ID])
     expect(active().cur).toBe(0)
     expect(useUI.getState().toastAction).toBeNull()
+  })
+
+  it('ends a running hold before an added exercise shifts the indexes', () => {
+    // The current exercise is untouched, so the scanned one goes in front of it, at its index.
+    mount([entry(A_ID), entry(B_ID)], 0)
+    const holdWrite = vi.fn(elapsed => {
+      useStore.getState().update(s => { const set = s.active.entries[0].sets[0]; set.sec = elapsed; set.done = true })
+    })
+    act(() => useUI.getState().startWork(5, 'Hold', holdWrite, { idx: 0, i: 0, id: A_ID }))
+
+    expect(() => scan(E_ID)).not.toThrow()
+    act(() => vi.advanceTimersByTime(10_000))
+
+    expect(ids()).toEqual([E_ID, A_ID, B_ID])
+    expect(useUI.getState().work).toBeNull()
+    expect(holdWrite).not.toHaveBeenCalled()
+    const added = active().entries[0]
+    expect(added.sets.some(set => set.done || set.sec != null)).toBe(false)
   })
 
   it('adds a scanned exercise that is not in the workout, and Undo takes it out', () => {
