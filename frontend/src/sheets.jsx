@@ -51,6 +51,8 @@ import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
+import { linkMachineSheet } from './components/ScanMachine.jsx'
+import { codesOf, unlink, shownCode } from './lib/machine-codes.js'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -1550,6 +1552,7 @@ function ExerciseDetail({ ex, close }) {
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
   const nfcOK = useNfcSupported()
+  const machineCodes = codesOf(useStore(s => s.S), ex.id)
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
@@ -1587,6 +1590,16 @@ function ExerciseDetail({ ex, close }) {
     <FormVideosSection exId={ex.id} />
     {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
+    {/* Codes already on the machine (QR or NFC) that open this exercise (lib/machine-codes.js).
+        The camera works on every platform, so this is not gated on nfcOK. Codes are text only. */}
+    {!ex.missing && <Button icon="qr" style={{ marginTop: 4 }} onClick={() => linkMachineSheet(ex)}>
+      {t('Link a code on this machine')}
+      {machineCodes.length > 0 && <span className="tag dim machine-code-count" style={{ marginInlineStart: 8 }}>{machineCodes.length}</span>}
+    </Button>}
+    {!ex.missing && machineCodes.map(code => <div key={code} className="row machine-code-row" style={{ gap: 8, margin: '4px 0' }}>
+      <span className="small muted machine-code-text" style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{shownCode(code)}</span>
+      <button type="button" className="iconbtn" aria-label={t('Remove')} onClick={() => { update(s => { unlink(s, ex.id, code) }); toast(t('Code removed')) }}>✕</button>
+    </div>)}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
     {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
