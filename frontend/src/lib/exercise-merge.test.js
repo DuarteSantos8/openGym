@@ -149,4 +149,13 @@ describe('a merge on one device, a workout on another', () => {
     expect(applyExerciseMerges(S)).toBe(0)
     expect(S).toEqual(state())
   })
+
+  test('the source codes join the target, and Undo puts them back', () => {
+    const S = { ...state(), machineCodes: { [CUSTOM]: ['t:A', 't:B'], [BENCH]: ['t:B', 't:C'] } }
+    registerCustom(S.customEx)
+    const { undo } = mergeExercise(S, CUSTOM, BENCH, { now: 1000 })
+    expect(S.machineCodes).toEqual({ [BENCH]: ['t:B', 't:C', 't:A'] })
+    undoMerge(S, undo, { now: 2000 })
+    expect(S.machineCodes).toEqual({ [CUSTOM]: ['t:A', 't:B'], [BENCH]: ['t:B', 't:C'] })
+  })
 })

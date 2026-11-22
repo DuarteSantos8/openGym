@@ -28,6 +28,7 @@ import { betterWeight, isCustomEx, EXIDX } from './exercises.js'
 import { exerciseMuscleSnapshot } from './muscles.js'
 import { exerciseAliases, normalizeAliases } from './exercise-aliases.js'
 import { NOTE_MAX } from './history.js'
+import { codesOf } from './machine-codes.js'
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const list = v => (Array.isArray(v) ? v : [])
@@ -36,7 +37,7 @@ const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)))
 // Per-exercise settings maps: the target keeps its own, the source's moves only where it has none.
 const MOVE_MAPS = ['barWeights', 'loadKind', 'dbLoad', 'stackWeights', 'exUnit']
 // What an Undo puts back whole.
-const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'exShownName', 'favEx', 'balanceOverrides', ...MOVE_MAPS]
+const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'exShownName', 'favEx', 'balanceOverrides', 'machineCodes', ...MOVE_MAPS]
 
 /** Where `id` went, following merges of merges; `id` itself when it was never merged. */
 export function mergedInto(S, id) {
@@ -212,6 +213,14 @@ export function mergeExercise(S, fromId, toId, { now = Date.now(), names = [] } 
     if (!(toId in m) && m[fromId] != null) m[toId] = isMap(m[fromId]) && m[fromId]._ts != null ? { ...m[fromId], _ts: now } : m[fromId]
     delete m[fromId]
     S[f] = m
+  }
+  // Machine codes: the target's own first, then the source's, each once.
+  if (isMap(S.machineCodes) && fromId in S.machineCodes) {
+    const m = { ...S.machineCodes }
+    const joined = [...new Set([...codesOf(S, toId), ...codesOf(S, fromId)])]
+    delete m[fromId]
+    if (joined.length) m[toId] = joined
+    S.machineCodes = m
   }
   if (isMap(S.balanceOverrides)) {
     let touched = false
