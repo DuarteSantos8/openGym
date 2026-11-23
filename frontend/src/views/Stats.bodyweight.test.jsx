@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Stats from './Stats.jsx'
 import { pickFrom, pickerOptions } from './stats-pick.test-util.js'
+import { initWeighInSource } from '../lib/weigh-in-source.js'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
@@ -47,6 +48,21 @@ const labels = scope => pickerOptions(scope, 'Chart')
 const pickChart = (scope, label) => pickFrom(scope, 'Chart', label)
 // the exercise progress chart (h 150): since 1.4.5 (P5) the Effort part's own chart renders after it
 const lastChart = () => mocks.charts.filter(c => c.h === 150).at(-1)
+
+// #1088: weigh-ins read from the health store are the only ones, so the Body card offers no Log.
+describe('Stats: the body weight card', () => {
+  it('offers Log unless weigh-ins are read from the health store', async () => {
+    let tell
+    await initWeighInSource(async () => ({ readWeight: false }), cb => { tell = cb })
+    const log = () => [...host.querySelectorAll('.bw-head button')].some(b => b.textContent === 'Log')
+    mount([])
+    expect(log()).toBe(true)
+    act(() => tell({ readWeight: true }))
+    expect(log()).toBe(false)
+    act(() => tell({ readWeight: false }))
+    expect(log()).toBe(true)
+  })
+})
 
 describe('Stats: Bodyweight view of exercise progress', () => {
   it('is not offered without a body weight to compare with, or with a single workout', () => {

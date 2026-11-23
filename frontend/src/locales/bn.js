@@ -5982,4 +5982,7 @@ export default {
   "Hide": "লুকান",
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "ওজন শুধু Health Connect থেকে আসে।",
+  "Weigh-ins come from Apple Health only.": "ওজন শুধু Apple Health থেকে আসে।",
 }

@@ -5869,4 +5869,7 @@ export default {
   "Hide": "Skrýt",
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Vážení přichází jen z Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Vážení přichází jen z Apple Health.",
 }

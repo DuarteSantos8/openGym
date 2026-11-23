@@ -5923,4 +5923,7 @@ export default {
   "Hide": "Ausblenden",
   "Totals": "Summen",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Die Pfeile ändern die Reihenfolge.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "Wiegungen kommen nur aus Health Connect.",
+  "Weigh-ins come from Apple Health only.": "Wiegungen kommen nur aus Apple Health.",
 }

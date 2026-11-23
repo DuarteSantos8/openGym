@@ -12,6 +12,7 @@ vi.mock('./health-sync.js', () => ({
 
 import { shouldOpenOnWatch, startWatchSync, applyEvents, bindWatchAppActions, _setWatchPluginForTest, _resetWatchSync, OPEN_ON_WATCH_WINDOW_MS } from './watch-sync.js'
 import { WATCH_DEFAULTS, writeWatchPrefs } from './watch-settings.js'
+import { initWeighInSource } from './weigh-in-source.js'
 
 const now = 1_800_000_000_000
 const live = (over = {}) => ({ id: 'w-9', start: now - 1000, entries: [], ...over })
@@ -190,6 +191,50 @@ describe('startWatchSync', () => {
       health.listeners.forEach(fn => fn({ on: false }))
       await vi.runAllTimersAsync()
       expect(sent().health).toBe(false)
+      stop()
+    } finally { vi.useRealTimers() }
+  })
+  // #1088: the read of weigh-ins on means no weigh-in before a workout, on the watch too, at once.
+  it('tells the watch again when the startup read of weigh-ins lands after the first snapshot', async () => {
+    vi.useFakeTimers()
+    let stop = () => {}
+    try {
+      const b = bridge()
+      _setWatchPluginForTest(b)
+      let resolve
+      const read = initWeighInSource(() => new Promise(r => { resolve = r }), () => {})
+      stop = await startWatchSync({ useStore: store({ S: S0 }), useUI: ui })
+      await vi.runAllTimersAsync()
+      const sent = () => JSON.parse(b.sendSnapshot.mock.calls.at(-1)[0].json).settings
+      expect(sent().weighIn).toBe(true)
+      resolve({ readWeight: true })
+      await read
+      await vi.runAllTimersAsync()
+      expect(sent().weighIn).toBe(false)
+    } finally {
+      stop()
+      vi.useRealTimers()
+      // back to off for the cases after this one
+      await initWeighInSource(async () => ({ readWeight: false }), () => {})
+    }
+  })
+
+  it('tells the watch again when the read of weigh-ins changes', async () => {
+    vi.useFakeTimers()
+    try {
+      const b = bridge()
+      _setWatchPluginForTest(b)
+      await initWeighInSource(async () => ({ readWeight: false }), cb => health.listeners.add(cb))
+      const stop = await startWatchSync({ useStore: store({ S: S0 }), useUI: ui })
+      await vi.runAllTimersAsync()
+      const sent = () => JSON.parse(b.sendSnapshot.mock.calls.at(-1)[0].json).settings
+      expect(sent().weighIn).toBe(true)
+      health.listeners.forEach(fn => fn({ on: false, readWeight: true }))
+      await vi.runAllTimersAsync()
+      expect(sent().weighIn).toBe(false)
+      health.listeners.forEach(fn => fn({ on: false, readWeight: false }))
+      await vi.runAllTimersAsync()
+      expect(sent().weighIn).toBe(true)
       stop()
     } finally { vi.useRealTimers() }
   })

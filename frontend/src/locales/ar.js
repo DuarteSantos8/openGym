@@ -5958,4 +5958,7 @@ export default {
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
+  // Weigh-ins from the health store only (#1088)
+  "Weigh-ins come from Health Connect only.": "قياسات الوزن تأتي من Health Connect فقط.",
+  "Weigh-ins come from Apple Health only.": "قياسات الوزن تأتي من Apple صحتي فقط.",
 }

@@ -49,6 +49,7 @@ import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
+import { weighInsFromHealth } from './lib/weigh-in-source.js'
 import { useTour } from './lib/tour.js'
 import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
@@ -523,9 +524,11 @@ export default function App() {
     // A session started on the watch starts here as the phone's Start does, with the watch's id
     // and start time, and no weigh-in question (the lifter is at the watch, not here).
     const unbind = bindWatchAppActions({
-      start: (ids, { bw = null, ...opts } = {}) => beginWorkout(ids, bw, opts),
+      // A watch on an older snapshot may still bring a weigh-in; none while they come from the health store.
+      start: (ids, { bw = null, ...opts } = {}) => beginWorkout(ids, weighInsFromHealth(useStore.getState().S) ? null : bw, opts),
       // The watch's weigh-in: logged as the phone's check-in logs one (today's replaces today's).
-      weighIn: ({ w, at }) => useStore.getState().update(s => { logWeighIn(s, w, at) }),
+      // None while weigh-ins come from the health store; a watch on an older snapshot may still ask.
+      weighIn: ({ w, at }) => { if (!weighInsFromHealth(useStore.getState().S)) useStore.getState().update(s => { logWeighIn(s, w, at) }) },
       // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
       // runs again, finds them gone and stops retrying them.
       healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },

@@ -8,6 +8,7 @@ import StructuralBalance from './StructuralBalance.jsx'
 import Stats from './Stats.jsx'
 import { buildDemoState } from '../lib/demoSeed.js'
 import { TEMPLATE_LIST } from '../lib/structuralBalanceTemplates.js'
+import { initWeighInSource } from '../lib/weigh-in-source.js'
 
 const navSpy = vi.fn()
 vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }))
@@ -152,6 +153,23 @@ describe('StructuralBalance view', () => {
     expect(scored.dataset.status).toBe('balanced')
     expect(scored.querySelector('[data-needs-bodyweight]')).toBe(null)
     expect([...scored.querySelectorAll('button')].some(b => b.textContent.includes('Log body weight'))).toBe(false)
+  })
+
+  it('has no Log body weight button while weigh-ins are read from the health store (#1088)', async () => {
+    let tell
+    await initWeighInSource(async () => ({ readWeight: true }), cb => { tell = cb })
+    try {
+      const S = clone(DEF)
+      S.balanceTemplate = 'atg'
+      S.workouts = [workoutAt('0085', Date.now(), [setDoneSet(80, 12)])]
+      useStore.setState({ S, user: null })
+      const host = render()
+      const rdl = host.querySelector('[data-role-id="romanianDeadlift"]')
+      // it says where the weigh-in comes from instead of asking to log one
+      expect(rdl.textContent).toContain('Weigh-ins come from Health Connect only.')
+      expect(rdl.textContent).not.toContain('Log your body weight to score this lift.')
+      expect([...rdl.querySelectorAll('button')].some(b => b.textContent.includes('Log body weight'))).toBe(false)
+    } finally { tell({ readWeight: false }) }
   })
 
   it('says why a logged lift is not scored when its anchor never was', () => {

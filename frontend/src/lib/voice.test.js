@@ -2,6 +2,7 @@
 import { readingsOf } from './weigh-ins.js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { convertWeight, parseSpokenWeight, importPendingWeighIns, todayRoutineIds, loggedLine, weightInRange } from './voice.js'
+import { initWeighInSource } from './weigh-in-source.js'
 
 // Weigh-ins Siri logged with the app closed (ios/App/App/VoiceIntents.swift VoicePending), and
 // what Assistant hands over in a link: brought in once, in the profile's unit, on the right day.
@@ -181,5 +182,76 @@ describe('startVoice', () => {
     expect(state.S.bodyweight).toHaveLength(1)
     expect(toast).toHaveBeenCalledWith('78.2 kg logged by Siri')
     stop()
+  })
+  // #1088: while weigh-ins come from the health store, what Siri heard is cleared, not logged, and
+  // not kept for later either (a weight logged weeks after it was said would be wrong).
+  it('drops what is pending while weigh-ins come from the health store', async () => {
+    let tell
+    await initWeighInSource(async () => ({ readWeight: true }), cb => { tell = cb })
+    try {
+      const m = await import('./voice.js')
+      // its own id: the case above left p1 among the ids already seen
+      const plugin = { pending: vi.fn(async () => ({ items: [pending({ id: 'p9', at: Date.now() - 60000, d: undefined })] })), clear: vi.fn(async () => {}) }
+      m._setVoicePluginForTest(plugin)
+      let state = { ready: true, S: { unit: 'kg', bodyweight: [] } }
+      const useStore = {
+        getState: () => ({ ...state, update: fn => { const S = structuredClone(state.S); fn(S); state = { ...state, S } } }),
+        subscribe: () => () => {},
+      }
+      const toast = vi.fn()
+      const stop = await m.startVoice({ useStore, toast })
+      await vi.waitFor(() => expect(plugin.clear).toHaveBeenCalledWith({ ids: ['p9'] }))
+      expect(state.S.bodyweight).toHaveLength(0)
+      expect(toast).not.toHaveBeenCalled()
+      stop()
+    } finally { tell({ readWeight: false }) }
+  })
+  // Siri queues while the app is closed, so the drain at launch can start before the read lands.
+  it('waits for the startup read of weigh-ins before it drains', async () => {
+    let resolve
+    const read = initWeighInSource(() => new Promise(r => { resolve = r }), () => {})
+    let stop
+    try {
+      const m = await import('./voice.js')
+      const plugin = { pending: vi.fn(async () => ({ items: [pending({ id: 'p10', at: Date.now() - 60000, d: undefined })] })), clear: vi.fn(async () => {}) }
+      m._setVoicePluginForTest(plugin)
+      let state = { ready: true, S: { unit: 'kg', bodyweight: [] } }
+      const useStore = {
+        getState: () => ({ ...state, update: fn => { const S = structuredClone(state.S); fn(S); state = { ...state, S } } }),
+        subscribe: () => () => {},
+      }
+      stop = await m.startVoice({ useStore, toast: vi.fn() })
+      await new Promise(r => setTimeout(r, 0))
+      resolve({ readWeight: true })
+      await read
+      await vi.waitFor(() => expect(plugin.clear).toHaveBeenCalledWith({ ids: ['p10'] }))
+      expect(state.S.bodyweight).toHaveLength(0)
+    } finally {
+      stop?.()
+      await initWeighInSource(async () => ({ readWeight: false }), () => {})
+    }
+  })
+
+  it('drains nothing when stopped while the startup read was pending', async () => {
+    let resolve
+    const read = initWeighInSource(() => new Promise(r => { resolve = r }), () => {})
+    try {
+      const m = await import('./voice.js')
+      const plugin = { pending: vi.fn(async () => ({ items: [pending({ id: 'p11', at: Date.now() - 60000, d: undefined })] })), clear: vi.fn(async () => {}) }
+      m._setVoicePluginForTest(plugin)
+      let state = { ready: true, S: { unit: 'kg', bodyweight: [] } }
+      const useStore = {
+        getState: () => ({ ...state, update: fn => { const S = structuredClone(state.S); fn(S); state = { ...state, S } } }),
+        subscribe: () => () => {},
+      }
+      const stop = await m.startVoice({ useStore, toast: vi.fn() })
+      await new Promise(r => setTimeout(r, 0))
+      stop()
+      resolve({ readWeight: false })
+      await read
+      await new Promise(r => setTimeout(r, 0))
+      expect(plugin.pending).not.toHaveBeenCalled()
+      expect(state.S.bodyweight).toHaveLength(0)
+    } finally { await initWeighInSource(async () => ({ readWeight: false }), () => {}) }
   })
 })

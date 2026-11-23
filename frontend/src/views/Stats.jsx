@@ -55,6 +55,7 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
+import { useWeighInsFromHealth } from '../lib/weigh-in-source.js'
 import { activityStimuli } from '../lib/activities.js'
 import { isoRun } from '../lib/bidi.js'
 
@@ -582,6 +583,7 @@ export default function Stats() {
   const nav = useNavigate()
   // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
   const S = countedS(useStore(s => s.S))
+  const typedWeighIns = !useWeighInsFromHealth(S)
   const photoUser = useStore(s => s.user)
   const photoConfig = useStore(s => s.config)
   const [range, setRange] = useState(90)
@@ -986,7 +988,7 @@ export default function Stats() {
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
         <div className="row" style={{ gap: 8 }}>
           <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--gold-ink)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
-          <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
+          {typedWeighIns && <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>}
         </div>
       </div>
       <Segmented className="seg-range" of={t('Body weight')} value={range} onChange={setRange}
