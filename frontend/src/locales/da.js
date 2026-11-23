@@ -834,6 +834,8 @@ export default {
   "Could not change notification settings": "Kunne ikke ændre notifikationsindstillingerne",
   "tap to pause": "tryk for at pause",
   "tap to play": "tryk for at afspille",
+  "Pause animation": "Sæt animationen på pause",
+  "Play animation": "Afspil animationen",
   "back": "ryg",
   "cardio": "kondition",
   "chest": "bryst",

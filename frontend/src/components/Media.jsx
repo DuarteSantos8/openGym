@@ -11,6 +11,7 @@ import { youtubeId, youtubeLinks } from '../lib/youtube.js'
 import { useAnimSources } from './Animations.jsx'
 import { OwnMediaFlip } from './OwnExerciseMedia.jsx'
 import { exMediaOf } from '../lib/ex-media.js'
+import { reducedMotion } from '../lib/seasonal.js'
 
 // Your own photo or video on this built-in exercise (lib/ex-media.js), or null. The raw entry is
 // selected, then read, so the store hands back the same value until it changes.
@@ -47,7 +48,8 @@ export default function Media(p) {
 // (gifSize 'off') — then nothing renders here and the exercise card closes up, exactly like
 // an exercise without media. Any other/legacy value behaves as 'full'.
 function BuiltinMedia({ ex, id, compact, minimizable, sayAs }) {
-  const [playing, setPlaying] = useState(true)
+  // Opens on the still when the system asks for reduced motion; a tap still plays it.
+  const [playing, setPlaying] = useState(() => !reducedMotion())
   // 'gif' → the animation failed, the still is showing; 'all' → the still failed too. Media is
   // fetched from wherever the build points (a mount, a CDN): a dropped connection, an expired
   // session on a gated instance or a CDN hiccup used to leave the browser's broken-image glyph
@@ -103,7 +105,9 @@ function BuiltinMedia({ ex, id, compact, minimizable, sayAs }) {
         </button>
       )}
       {!mini && !failed && !anim.still && (
-        <span className="gifhint">
+        // A button for a screen reader and the keyboard too: the whole media area is the tap target.
+        <span className="gifhint" role="button" tabIndex={0} aria-label={playing ? t('Pause animation') : t('Play animation')}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap() } }}>
           <Icon name={playing ? 'pause' : 'play'} />{playing ? t('tap to pause') : t('tap to play')}
         </span>
       )}

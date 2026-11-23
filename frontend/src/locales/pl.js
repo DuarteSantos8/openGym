@@ -809,6 +809,8 @@ export default {
   'Could not change notification settings': 'Nie udało się zmienić ustawień powiadomień',
   'tap to pause': 'dotknij, aby wstrzymać',
   'tap to play': 'dotknij, aby odtworzyć',
+  'Pause animation': 'Wstrzymaj animację',
+  'Play animation': 'Odtwórz animację',
   'back': 'plecy', 'cardio': 'cardio', 'chest': 'klatka', 'lower arms': 'przedramiona',
   'lower legs': 'łydki', 'neck': 'szyja', 'shoulders': 'barki',
   'upper arms': 'ramiona', 'upper legs': 'uda', 'waist': 'brzuch',

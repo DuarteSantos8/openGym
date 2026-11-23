@@ -809,6 +809,8 @@ export default {
   'Could not change notification settings': 'Bildirim ayarları değiştirilemedi',
   'tap to pause': 'duraklatmak için dokun',
   'tap to play': 'oynatmak için dokun',
+  'Pause animation': 'Animasyonu duraklat',
+  'Play animation': 'Animasyonu oynat',
   'back': 'sırt', 'cardio': 'kardiyo', 'chest': 'göğüs', 'lower arms': 'ön kollar',
   'lower legs': 'baldırlar', 'neck': 'boyun', 'shoulders': 'omuzlar',
   'upper arms': 'üst kollar', 'upper legs': 'bacaklar', 'waist': 'karın',

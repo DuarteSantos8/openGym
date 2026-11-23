@@ -817,6 +817,8 @@ export default {
   'Could not change notification settings': 'Không thể thay đổi cài đặt thông báo',
   'tap to pause': 'chạm để tạm dừng',
   'tap to play': 'chạm để phát',
+  'Pause animation': 'Tạm dừng hoạt ảnh',
+  'Play animation': 'Phát hoạt ảnh',
   'back': 'lưng',
   'cardio': 'cardio',
   'chest': 'ngực',

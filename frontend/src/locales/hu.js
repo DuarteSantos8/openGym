@@ -809,6 +809,8 @@ export default {
   // --- media ---
   'tap to pause': 'koppints a szüneteltetéshez',
   'tap to play': 'koppints a lejátszáshoz',
+  'Pause animation': 'Animáció szüneteltetése',
+  'Play animation': 'Animáció lejátszása',
   // --- data terms: body parts ---
   'back': 'hát', 'cardio': 'kardió', 'chest': 'mell', 'lower arms': 'alkar',
   'lower legs': 'lábszár', 'neck': 'nyak', 'shoulders': 'váll',

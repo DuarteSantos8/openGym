@@ -825,6 +825,8 @@ export default {
   // --- media ---
   'tap to pause': 'Tippen zum Pausieren',
   'tap to play': 'Tippen zum Abspielen',
+  'Pause animation': 'Animation pausieren',
+  'Play animation': 'Animation abspielen',
   // --- data terms: body parts ---
   'back': 'Rücken', 'cardio': 'Cardio', 'chest': 'Brust', 'lower arms': 'Unterarme',
   'lower legs': 'Unterschenkel', 'neck': 'Nacken', 'shoulders': 'Schultern',

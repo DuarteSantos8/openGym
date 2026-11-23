@@ -809,6 +809,8 @@ export default {
   'Could not change notification settings': 'सूचना सेटिंग नहीं बदल सके',
   'tap to pause': 'रोकने के लिए टैप करें',
   'tap to play': 'चलाने के लिए टैप करें',
+  'Pause animation': 'एनिमेशन रोकें',
+  'Play animation': 'एनिमेशन चलाएँ',
   'back': 'पीठ', 'cardio': 'कार्डियो', 'chest': 'छाती', 'lower arms': 'अग्रबाहु',
   'lower legs': 'पिंडलियाँ', 'neck': 'गर्दन', 'shoulders': 'कंधे',
   'upper arms': 'बाजू', 'upper legs': 'जाँघें', 'waist': 'पेट',

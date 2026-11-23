@@ -809,6 +809,8 @@ export default {
   // --- media ---
   'tap to pause': 'แตะเพื่อหยุดชั่วคราว',
   'tap to play': 'แตะเพื่อเล่น',
+  'Pause animation': 'หยุดแอนิเมชันชั่วคราว',
+  'Play animation': 'เล่นแอนิเมชัน',
   // --- data terms: body parts ---
   'back': 'หลัง', 'cardio': 'คาร์ดิโอ', 'chest': 'อก', 'lower arms': 'แขนท่อนล่าง',
   'lower legs': 'ขาท่อนล่าง', 'neck': 'คอ', 'shoulders': 'ไหล่',

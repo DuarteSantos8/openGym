@@ -1082,6 +1082,8 @@ export const PT_BR_OVERRIDES = {
   'Could not change notification settings': 'Não foi possível alterar as configurações de notificação',
   'tap to pause': 'toque para pausar',
   'tap to play': 'toque para reproduzir',
+  'Pause animation': 'Pausar animação',
+  'Play animation': 'Reproduzir animação',
   'Keeps your data safe and separate per person.': 'Mantém seus dados seguros e separados por pessoa.',
   'Create your own exercise': 'Crie seu próprio exercício',
   'Give it a name': 'Dê um nome',
