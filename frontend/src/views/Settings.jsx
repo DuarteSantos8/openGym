@@ -24,6 +24,7 @@ import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } 
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO, STANDALONE } from '../lib/demo.js'
 import { StandaloneAccountRows, StandaloneSource } from '../liftiq/StandaloneRows.jsx' // LIFTIQ-FORK
+import LiftiqSettingsSection from '../liftiq/SettingsRow.jsx' // LIFTIQ-FORK
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
 import { NUDGE_COPY, NUDGE_TONES, toneOf } from '../lib/nudge.js'
 import { referencedFiles } from '../lib/media-refs.js'
@@ -1146,6 +1147,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
         </Section>
       ))}
+      <LiftiqSettingsSection /> {/* LIFTIQ-FORK: renders nothing unless the LiftIQ integration is on */}
       <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
     </>}
   </div>

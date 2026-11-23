@@ -50,6 +50,7 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
+import { liftiqSetItems } from '../liftiq/menu.js' // LIFTIQ-FORK
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -491,6 +492,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         // only, the kind a warm-up is added as; one work set always stays. A per-side set keeps
         // its two sides either way (#575), so it goes back and forth like any other.
         { items: [
+          // LIFTIQ-FORK: "Record with sensor" (empty list unless the LiftIQ integration is on), see liftiq/menu.js
+          ...liftiqSetItems({ entry, set: s, i, mode, unit: S.unit, editing, onField, onToggle, setTitle: warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i)) }),
           !warm && mode === 'reps' && canBeWarmup(s) && entry.sets.some((x, j) => j !== i && !isWarmupRow(x)) && { icon: 'sunrise', label: t('Make it a warm-up set'), onClick: () => setPhaseAt(i, true) },
           warm && mode === 'reps' && { icon: 'dumbbell', label: t('Count it as a working set'), onClick: () => setPhaseAt(i, false) },
           // Taken to failure: a toggle with its check, like the menu's other on/off rows. It counts
