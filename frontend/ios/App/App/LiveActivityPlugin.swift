@@ -42,7 +42,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         // phone can show (an iPhone without one shows the activity on the Lock Screen and as a
         // banner). Read on the main thread, where the window's safe area lives.
         DispatchQueue.main.async {
-            let island = LiveActivityPlugin.hasDynamicIsland()
+            let island = LiveActivityPlugin.hasDynamicIsland(in: self.bridge?.viewController?.view.window)
             if #available(iOS 17.0, *) {
                 call.resolve(["supported": ActivityAuthorizationInfo().areActivitiesEnabled, "island": island])
             } else {
@@ -62,8 +62,8 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     /// Whether this device has a Dynamic Island: by its model when the model is known, else by the
     /// top safe area (59 points or more only on an island iPhone in portrait). Unknown: no.
-    static func hasDynamicIsland() -> Bool {
-        guard UIDevice.current.userInterfaceIdiom == .phone else { return false }
+    static func hasDynamicIsland(in window: UIWindow?) -> Bool {
+        guard let window, window.traitCollection.userInterfaceIdiom == .phone else { return false }
         var sys = utsname()
         uname(&sys)
         let machine = withUnsafeBytes(of: &sys.machine) { raw in
@@ -76,9 +76,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         if model.hasPrefix("iPhone"), let major = Int(model.dropFirst(6).split(separator: ",").first ?? ""), major <= 14 {
             return false
         }
-        let windows = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
-        guard let window = windows.first(where: { $0.isKeyWindow }) ?? windows.first,
-              window.bounds.height > window.bounds.width else { return false }
+        guard window.bounds.height > window.bounds.width else { return false }
         return window.safeAreaInsets.top >= 59
     }
 
