@@ -69,6 +69,18 @@ describe('watchAccount: the app hears who is signed in to the hosted account', (
     expect(c.listeners.size).toBe(0)
   })
 
+  // Review of #73.
+  it('a name still being read when the watching stops is not announced afterwards', async () => {
+    const c = client({ session: A }); const set = vi.fn()
+    let release
+    c.profiles.get = vi.fn(() => new Promise(r => { release = () => r({ display_name: 'Sam' }) }))
+    const stop = watchAccount(c, set)
+    stop()
+    const before = set.mock.calls.length
+    release(); await flush()
+    expect(set.mock.calls.length).toBe(before)
+  })
+
   it('no client (the default edition) does nothing', () => {
     const set = vi.fn()
     expect(typeof watchAccount(null, set)).toBe('function')

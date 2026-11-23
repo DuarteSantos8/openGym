@@ -78,6 +78,8 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const title = useRef(null)
   const [savedName, setSavedName] = useState('')     // the name as the server has it: Save has work only when the field differs
   const [saved, setSaved] = useState(false)          // the last Save went through, and nothing was typed since
+  const edits = useRef(0)           // how many times the name was typed in: a save that lands after more typing leaves the field alone
+  const signedIn = useRef(null)     // whose account is on screen right now, for a save that lands after that changed
   const typedName = useRef(false)   // the name field has been edited: a late profile load must not replace it
 
   useEffect(() => client?.auth.onChange(setSession), [client])
@@ -162,21 +164,28 @@ export default function Account({ client = cloud(), go = url => { location.assig
   // one thing to edit, with a Save that says when it saved. The rest are plain rows, and deleting
   // the account stays folded away until it is asked for.
   const dirty = name.trim() !== savedName.trim()
+  signedIn.current = session?.user?.id || null
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
     <div className="iv-acct-actions">
       <Button variant="primary" disabled={busy} type="button" data-continue="" onClick={() => { enter(); nav('/home') }}>{t('Continue')}</Button>
     </div>
     <form className="iv-acct-form iv-acct-block" onSubmit={e => { e.preventDefault(); if (!ready || !dirty) return; run(async () => {
+      const me = session.user, typed = edits.current
       const p = await client.profiles.update({ display_name: name })
-      if (!p) return
+      // Signed out, or someone else signed in, while this was under way: it is not theirs to hear.
+      if (!p || signedIn.current !== me.id) return
       const kept = p.display_name || ''
-      setName(kept); setSavedName(kept); setSaved(true)
-      setCloudAccount({ email: session.user.email, name: kept })
+      setSavedName(kept)
+      setCloudAccount({ email: me.email, name: kept })
+      // Typed on in the meantime: what is in the field is newer than what was saved. Leave it,
+      // and let Save offer itself again.
+      if (edits.current !== typed) return
+      setName(kept); setSaved(true)
     }) }}>
       <label className="iv-acct-field"><span>{t('Name')}</span>
         <span className="iv-acct-inline">
-          <TextField className="input" name="name" autoComplete="nickname" maxLength={80} value={name} onChange={e => { typedName.current = true; setSaved(false); setName(e.target.value) }} />
+          <TextField className="input" name="name" autoComplete="nickname" maxLength={80} value={name} onChange={e => { typedName.current = true; edits.current++; setSaved(false); setName(e.target.value) }} />
           <Button variant="tinted" type="submit" disabled={busy || !ready || !dirty} data-save="">{t('Save')}</Button>
         </span></label>
       {/* Always in the page, so that a screen reader hears it fill in. */}
