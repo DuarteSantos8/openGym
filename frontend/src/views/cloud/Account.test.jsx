@@ -4,11 +4,11 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import Account, { wordFor } from './Account.jsx'
+import Account, { wordFor, forgetLink } from './Account.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, container
-afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null })
+afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null; forgetLink() })
 
 const err = code => Object.assign(new Error(code), { code })
 function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) {
@@ -132,6 +132,38 @@ describe('Account', () => {
     await submit()
     expect(c.auth.updatePassword).toHaveBeenCalledWith('a-new-long-password')
     expect(mode()).toBe('account')
+  })
+
+  // Found by the cloud E2E: the app remounts a view when its address changes, and dropping the
+  // link's hash from the address is such a change. The step must survive that.
+  it('still asks for the new password after the screen is remounted', async () => {
+    const c = fakeClient()
+    await mount(c, { url: '/account?token_hash=h-1&type=recovery' })
+    expect(mode()).toBe('newpass')
+    act(() => root.unmount()); container.remove()
+    await mount(c, { url: '/account' })
+    expect(mode()).toBe('newpass')
+    await type('password', 'a-new-long-password')
+    await submit()
+    expect(mode()).toBe('account')
+    act(() => root.unmount()); container.remove()
+    await mount(c, { url: '/account' })
+    expect(mode()).toBe('account')
+  })
+
+  it('a dead link still says so after the screen is remounted, until something else is done', async () => {
+    const c = fakeClient()
+    c.auth.verify.mockRejectedValueOnce(err('otp_expired'))
+    await mount(c, { url: '/account?token_hash=old&type=signup' })
+    act(() => root.unmount()); container.remove()
+    await mount(c, { url: '/account' })
+    expect($('[role="alert"]').textContent).toBe('This link has expired. Ask for a new one.')
+    await type('email', 'a@example.com'); await type('password', 'right-password')
+    await submit()
+    expect(mode()).toBe('account')
+    act(() => root.unmount()); container.remove()
+    await mount(c, { url: '/account' })
+    expect($('[role="alert"]')).toBeNull()
   })
 
   it('a dead link says so', async () => {

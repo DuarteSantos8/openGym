@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-22, after PRs #56 to #64 were merged. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-22, after PRs #56 to #65 were merged and with `next/EP18-cloud-e2e` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 
@@ -48,7 +48,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | ID | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
 | EP18-T01 | Edition flag | `frontend/src/lib/edition.js` + test | `editionOf` is `cloud` only for the exact word; a test reads `src/` and fails on a static import of `lib/cloud` or a provider's name outside it | done, #58 |
-| EP18-T02 | E2E network guard per edition | `frontend/e2e/fixtures.mjs`, `frontend/playwright.config.mjs` | default projects unchanged; a `cloud` project allows only ADR 0008's four origins | open |
+| EP18-T02 | E2E for the Cloud edition | `frontend/playwright.config.mjs`, NEW `frontend/e2e/cloud/`, `e2e/no-cloud.e2e.mjs` | the E2E run builds the Cloud edition too and drives its account screen on two engines against a pretend project on this machine, so the rule that nothing leaves the device holds for it as well; the default build is shown to have no account screen | **done** in `next/EP18-cloud-e2e`. It found two faults unit tests could not: the app remounts a view when its address changes, which lost the "choose a new password" step after a reset link and the message for a dead link |
 | EP18-T03 | Bundle budget | NEW `frontend/bundle-budget.json`, `scripts/check-bundle-budget.mjs` + test | the first load (what `index.html` asks for up front) stays under 950 kB of script and 62 kB of styles, gzipped, and the guides and Learn text stay out of it | **done** (#60): measured 905 kB and 58 kB. The budget is today's size plus 5%, not a target: the first load is heavy and nothing here has made it lighter |
 | EP18-T04 | Media manifest and cloud build filter | `scripts/catalogue/build.mjs`, NEW `catalogue/media-sources.json` | a cloud build holds no file without a commercial-use licence; attribution screen lists every author | open, **blocks a paid deploy** |
 | EP18-T05 | Secret scan and env template | `api/test/no-secrets.test.js`, `.env.example` | CI fails on a committed Stripe or Supabase key or a private key block | done, #58 |
@@ -158,6 +158,8 @@ What was run, where, and what was not. #56 to #60 are merged; nothing has been d
 | Cloud backend branch (`next/EP19-cloud-backend`), on the real project | All 4 migrations applied (the fourth, which answers the project's own advisors, after the owner confirmed it; the performance advisor now reports nothing). 10 live tests passed: sign-in, wrong password, row level security over REST as two users, token refresh, billing tables closed, the API's token check on a real token, the OIDC discovery document, export, the refusals, and a real account deletion |
 | Cloud backend branch, real browser | The cloud build signed in, saved a name, kept the session over a reload and signed out, on a phone and a desktop viewport, talking only to the project. It found two races that are now fixed and tested |
 | Cloud backend branch, the usual suites | Frontend 970 files, 10,847 tests; API 1,304 tests (3 skipped as before); E2E on the default build 62 passed, 1 skipped; row level security on PostgreSQL 16 with all four migrations; axe clean on all five account steps of the cloud build; the bundle check fails a default build that contains any cloud code |
+| Cloud E2E branch (`next/EP18-cloud-e2e`) | The whole E2E run, both builds: 75 passed, 1 skipped (62 as before, 3 showing the default build has no account screen, 10 on the cloud build across Chromium and WebKit, each step scanned with axe) |
+| Cloud preview | Deployed from the `next/cloud-preview` branch with the three variables set for that branch only; production and other previews are unchanged. `APP_ORIGIN` is set to it: the export function answers that origin and no other. Not opened by an agent (it is behind the owner's Vercel sign-in) |
 | **Not run** | Real phones; a screen reader by hand; Stripe; sign-up and reset emails end to end; a sign-in through the API's OIDC; the native apps |
 
 ### Grades, honestly
