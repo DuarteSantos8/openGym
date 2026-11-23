@@ -99,9 +99,10 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
     landing.current = null
     const reduce = (() => { try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches } catch { return false } })()
     if (!reduce) {
+      const base = listRef.current.getBoundingClientRect()?.top || 0
       for (const row of listRef.current.querySelectorAll('[data-flip-key]')) {
         const from = was.get(row.dataset.flipKey)
-        const to = row.getBoundingClientRect()?.top
+        const to = row.getBoundingClientRect()?.top - base
         if (from == null || !Number.isFinite(to) || Math.abs(from - to) < 0.5 || typeof row.animate !== 'function') continue
         row.animate([{ transform: `translateY(${from - to}px)` }, { transform: 'translateY(0)' }], { duration: FLIP_MS, easing: EASE })
       }
@@ -144,9 +145,10 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       // later is a real tap, so the guard only needs to outlive that one event.
       suppressTimerRef.current = window.setTimeout(() => { suppressClickRef.current = false }, 150)
       const tops = new Map()
+      const base = list.getBoundingClientRect()?.top || 0
       for (const row of list.querySelectorAll('[data-flip-key]')) {
         const top = row.getBoundingClientRect()?.top
-        if (Number.isFinite(top)) tops.set(row.dataset.flipKey, top)
+        if (Number.isFinite(top)) tops.set(row.dataset.flipKey, top - base)
       }
       landing.current = tops
       setDrag({ quiet: true })

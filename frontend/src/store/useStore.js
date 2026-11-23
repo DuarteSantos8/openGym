@@ -1271,9 +1271,13 @@ export const useStore = create((set, get) => {
   // A signed-out browser must stop getting the account's reminders and rest alerts. Web only (the
   // phones have no service worker), skipped where notifications were never allowed, and a failure
   // never holds up the sign-out (a row whose browser side did go is pruned on the server's next send).
+  const DROP_PUSH_WAIT_MS = 1500
   const dropPush = async () => {
     if (MOBILE || !pushSupported() || Notification.permission !== 'granted') return
-    await disablePush().catch(() => {})
+    // At most a moment's wait (review 1.4.6): offline, the service worker and the request could
+    // hold the sign-out for 8 s and the button looked dead. What has not finished by then goes on
+    // by itself; the server also drops a subscription it can no longer deliver to.
+    await Promise.race([disablePush().catch(() => {}), new Promise(r => setTimeout(r, DROP_PUSH_WAIT_MS))])
   }
 
   // Back on the server and account a forced sign-out or disconnect left: the kept changes are

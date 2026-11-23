@@ -48,11 +48,16 @@ export function useListReorder(count, onMove) {
   const tops = useRef(new Map())
 
   const rowsOf = () => [...(listRef.current?.children || [])].filter(el => el.hasAttribute('data-reorder-row'))
+  // Each row's top relative to the list, not the screen: a scroll between two renders moves
+  // every row on screen and must not read as a move (review 1.4.6, 40 of 40 rows slid).
   const measure = () => {
     const m = new Map()
+    const base = listRef.current?.getBoundingClientRect()?.top
+    if (!Number.isFinite(base)) return m
     for (const row of rowsOf()) {
       const key = row.getAttribute('data-reorder-key')
-      if (key != null) m.set(key, row.getBoundingClientRect().top)
+      const top = row.getBoundingClientRect()?.top
+      if (key != null && Number.isFinite(top)) m.set(key, top - base)
     }
     return m
   }
