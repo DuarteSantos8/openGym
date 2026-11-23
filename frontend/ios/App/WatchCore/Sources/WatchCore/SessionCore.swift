@@ -518,6 +518,9 @@ struct WorkoutSummary: Codable, Equatable {
     var workoutId: String? = nil
     /// The whole workout's effort, 1 to 10, once rated here.
     var effort: Int? = nil
+    /// Where the rating starts: worked out from the sets rated during the workout
+    /// (WorkoutEffort.preset), nil with too few to go by.
+    var effortPreset: Int? = nil
 }
 
 /// The whole workout's effort, as Apple Fitness asks for it after a workout (the phone's
@@ -539,6 +542,30 @@ enum WorkoutEffort {
     static func step(_ v: Int?, by d: Int) -> Int {
         guard let v = v else { return 5 }
         return min(range.upperBound, max(range.lowerBound, v + d))
+    }
+
+    /// How much lower people rate a whole lifting session than the mean of its sets (the phone's
+    /// SESSION_OFFSET in lib/workout-effort.js): taken off strength sets, not cardio.
+    static let sessionOffset = 1.5
+    /// Below this many rated sets the mean is a guess (the phone's AUTO_MIN_SETS).
+    static let minSets = 3
+
+    /// Where the summary's rating starts, as the phone's "Set automatically" works it out: each work
+    /// set rated during the workout on the RPE scale (RIR 2 is RPE 8), less sessionOffset for
+    /// strength sets, averaged, halves rounded down. nil with fewer than minSets rated sets.
+    static func preset(_ w: ActiveWorkout, efforts: [String: Double]?, kind: String?) -> Int? {
+        guard let efforts = efforts, let kind = kind else { return nil }
+        var sum = 0.0, n = 0
+        for e in w.entries {
+            for (i, row) in e.sets.enumerated() where !row.warmup {
+                guard let v = efforts[SessionCore.key(e.id, i)] else { continue }
+                let rpe = kind == "rpe" ? v : 10 - max(0, v)
+                sum += rpe - (e.isCardio ? 0 : sessionOffset)
+                n += 1
+            }
+        }
+        guard n >= minSets else { return nil }
+        return min(range.upperBound, max(range.lowerBound, Int((sum / Double(n) - 0.5).rounded(.up))))
     }
 
     /// Whether the summary asks: the phone says so, and the workout has an id to send it back with.

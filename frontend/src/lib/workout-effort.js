@@ -11,7 +11,7 @@
 // 'auto'. The Apple Watch links its own rating to the workout it saved; the iPhone links the
 // others (AppleHealthPlugin.swift), so one score is never written twice.
 import { anchorsByWorkout, resolveSetRir } from './recovery.js'
-import { isWarmupRow } from './workout-model.js'
+import { isWarmupRow, isSideSet } from './workout-model.js'
 import { isCardio } from './exercises.js'
 import { bodyweightKgOf } from './structuralBalance.js'
 
@@ -64,15 +64,25 @@ export function autoEffort(S, w) {
     const cardio = isCardio(e?.id)
     for (const s of e?.sets || []) {
       if (!s?.done || isWarmupRow(s)) continue
-      const r = resolveSetRir(s, s, e, w, anchors, opts)
-      if (r == null || !Number.isFinite(r.rir)) continue
-      sum += 10 - Math.max(0, r.rir) - (cardio ? 0 : SESSION_OFFSET)
+      const rir = setRir(s, e, w, anchors, opts)
+      if (rir == null) continue
+      sum += 10 - Math.max(0, rir) - (cardio ? 0 : SESSION_OFFSET)
       n++
     }
   }
   if (n < AUTO_MIN_SETS) return null
   // Halves round down: a session that sits on the line between two words reads as the easier one.
   return Math.min(EFFORT_MAX, Math.max(EFFORT_MIN, Math.ceil(sum / n - 0.5)))
+}
+
+// One set's RIR. A per-side set is read a side at a time, each from its own load and reps (the
+// row's `r` is both sides added up, which would read far too hard against a one-sided best), and
+// the harder side counts, as the row's own effort shows it (workout-model.js syncSideAggregate).
+function setRir(s, e, w, anchors, opts) {
+  const one = row => { const r = resolveSetRir(row, row, e, w, anchors, opts); return r && Number.isFinite(r.rir) ? r.rir : null }
+  if (!isSideSet(s)) return one(s)
+  const sides = [s.sides.L, s.sides.R].filter(x => x?.done).map(one).filter(v => v != null)
+  return sides.length ? Math.min(...sides) : null
 }
 
 /**

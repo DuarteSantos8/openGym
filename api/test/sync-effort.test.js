@@ -9,14 +9,25 @@ const clone = v => JSON.parse(JSON.stringify(v));
 const sets = [{ w: 60, r: 8, done: true }];
 const doc = extra => ({ _ts: 10, unit: 'kg', workoutEffort: 'auto', workouts: [{ id: 'w1', d: '2026-10-10', _ts: 5, entries: [{ id: '0025', sets }], ...extra }], routines: [] });
 
-test('the effort stays through a PUT from the app that wrote it and from an older app', () => {
+test('the effort stays through a PUT from the app that wrote it', () => {
   const cur = doc({ effort: 7, effortBy: 'watch' });
-  for (const stamped of [true, false]) {
-    const out = stampPut(clone(cur), clone(cur), { stamped, overRead: false, now: 20 });
-    assert.equal(out.workouts[0].effort, 7);
-    assert.equal(out.workouts[0].effortBy, 'watch');
-    assert.equal(out.workoutEffort, 'auto');
-  }
+  const out = stampPut(clone(cur), clone(cur), { stamped: true, overRead: false, now: 20 });
+  assert.equal(out.workouts[0].effort, 7);
+  assert.equal(out.workouts[0].effortBy, 'watch');
+  assert.equal(out.workoutEffort, 'auto');
+});
+
+test('an older app that does not know the fields leaves them in place', () => {
+  const cur = doc({ effort: 7, effortBy: 'watch' });
+  // What an older app sends back: the same document without the fields it never heard of.
+  const next = clone(cur);
+  delete next.workoutEffort;
+  delete next.workouts[0].effort;
+  delete next.workouts[0].effortBy;
+  const out = stampPut(clone(cur), next, { stamped: false, overRead: false, now: 20 });
+  assert.equal(out.workouts[0].effort, 7);
+  assert.equal(out.workouts[0].effortBy, 'watch');
+  assert.equal(out.workoutEffort, 'auto');
 });
 
 test('an older app editing another workout leaves it alone', () => {

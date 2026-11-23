@@ -64,4 +64,31 @@ describe('the rating the watch sends', () => {
     applyEvents([ev], () => ({ S }))
     expect(workoutEffort).toHaveBeenCalledTimes(1)
   })
+
+  it('waits while its workout is not saved here: behind another workout on the phone', () => {
+    const workoutEffort = vi.fn()
+    bindWatchAppActions({ workoutEffort, start: vi.fn() })
+    const now = Date.parse('2026-11-23T12:00:00Z')
+    // A workout runs on the phone; the watch's own workout (start, finish, rating) waits behind it.
+    const running = { S: { active: { id: 'p1', entries: [] }, workouts: [] } }
+    const queue = [
+      { id: 's', type: 'start', wid: 'watch-1', routineIds: [], at: now - 60e3 },
+      { id: 'f', type: 'finish', wid: 'watch-1', at: now - 30e3 },
+      { id: 'e', type: 'workoutEffort', wid: 'watch-1', v: 6, at: now - 20e3 },
+    ]
+    expect(applyEvents(queue, () => running, now)).not.toContain('e')
+    expect(workoutEffort).not.toHaveBeenCalled()
+    // Saved at last: the rating goes onto it.
+    const saved = { S: { workouts: [{ id: 'watch-1', entries: [] }] } }
+    expect(applyEvents([queue[2]], () => saved, now)).toEqual(['e'])
+    expect(workoutEffort).toHaveBeenCalledWith({ wid: 'watch-1', v: 6 })
+  })
+
+  it('lets a rating go for a workout that never comes, after two days', () => {
+    const workoutEffort = vi.fn()
+    bindWatchAppActions({ workoutEffort })
+    const now = Date.parse('2026-11-23T12:00:00Z')
+    const old = { id: 'o', type: 'workoutEffort', wid: 'watch-2', v: 5, at: now - 49 * 3600e3 }
+    expect(applyEvents([old], () => ({ S: { workouts: [] } }), now)).toEqual(['o'])
+  })
 })

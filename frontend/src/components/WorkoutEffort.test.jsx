@@ -52,11 +52,11 @@ describe('WorkoutEffortPicker', () => {
   it('rates the saved workout with one tap, and takes it back with a second', async () => {
     await mount()
     expect(host.textContent).toContain('How hard was it?')
-    expect(host.querySelectorAll('[role="radio"]')).toHaveLength(10)
+    expect(host.querySelectorAll('[data-effort]')).toHaveLength(10)
     await act(async () => { score(7).click() })
     expect(mocks.S.workouts[0]).toMatchObject({ effort: 7, effortBy: 'phone' })
     expect(mocks.S.workouts[0]._ts).toBeGreaterThan(0)
-    expect(score(7).getAttribute('aria-checked')).toBe('true')
+    expect(score(7).getAttribute('aria-pressed')).toBe('true')
     expect(host.textContent).toContain('Hard')
     expect(mocks.askEffort).toHaveBeenCalledTimes(1)
     await act(async () => { score(7).click() })
@@ -66,7 +66,7 @@ describe('WorkoutEffortPicker', () => {
   it('shows the automatic score already picked, and a tap makes it yours', async () => {
     mocks.S = { workoutEffort: 'auto', workouts: [{ id: 'w1', entries: [], effort: 4, effortBy: 'auto' }] }
     await mount()
-    expect(score(4).getAttribute('aria-checked')).toBe('true')
+    expect(score(4).getAttribute('aria-pressed')).toBe('true')
     expect(host.textContent).toContain('set from your sets')
     await act(async () => { score(9).click() })
     expect(mocks.S.workouts[0]).toMatchObject({ effort: 9, effortBy: 'phone' })
@@ -79,12 +79,12 @@ describe('WorkoutEffortPicker', () => {
     mocks.S = { workouts: [{ id: 'w1', entries: [], effort: 5, effortBy: 'phone' }] }
     act(() => root.unmount()); root = createRoot(host)
     await mount()
-    expect(score(5).getAttribute('aria-checked')).toBe('true')
+    expect(score(5).getAttribute('aria-pressed')).toBe('true')
     // Set automatically: the watch does not ask, so the phone shows the score.
     mocks.S = { workoutEffort: 'auto', workouts: [{ id: 'w1', entries: [], effort: 4, effortBy: 'auto' }] }
     act(() => root.unmount()); root = createRoot(host)
     await mount()
-    expect(score(4).getAttribute('aria-checked')).toBe('true')
+    expect(score(4).getAttribute('aria-pressed')).toBe('true')
   })
 
   it('is not there when Settings never asks, before iOS 18, or with Apple Health off', async () => {

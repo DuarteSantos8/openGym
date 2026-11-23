@@ -169,6 +169,10 @@ async function syncOnce(S, h) {
       if (refused.length) out.refused = [...new Set([...(Array.isArray(h.refused) ? h.refused : []), ...refused])].slice(-REFUSED_MAX)
       // Written but not yet removed: kept as written, so a failed remove is tried again.
       const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
+      // In Apple Health, but its effort could not be linked (AppleHealthPlugin effortFailed): not
+      // kept as written, so the next sync writes it again and the score gets another try.
+      const retry = new Set((Array.isArray(res?.effortFailed) ? res.effortFailed : []).filter(id => typeof id === 'string' && id))
+      if (retry.size) for (const id of retry) { delete plan.written[id]; delete kept[id] }
       out.written = { ...kept, ...plan.written }
     }
     let written = plan.written
@@ -244,7 +248,8 @@ export async function askEffort(getState) {
     const h = await loadHealth()
     const written = Object.fromEntries(Object.entries(h.written).filter(([id]) => !rated.has(id)))
     await saveHealth({ ...h, written })
-    await syncHealth(S)
+    // Read again here, after the waits: a workout deleted meanwhile must not be written back.
+    await syncHealth(getState?.() || S)
   }
   return true
 }

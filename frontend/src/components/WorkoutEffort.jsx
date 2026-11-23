@@ -43,12 +43,12 @@ export function WorkoutEffortPicker({ wid }) {
   const word = value == null ? null : WORDS[effortWord(value)]()
   return <div style={{ textAlign: 'start', marginBottom: 14 }} data-workout-effort>
     <h4 className="sec">{t('How hard was it?')}</h4>
-    <div role="radiogroup" aria-label={t('Workout effort')}
+    <div role="group" aria-label={t('Workout effort')}
       style={{ display: 'grid', gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', gap: 4 }}>
       {SCORES.map(n => {
         const on = n === value
         const c = colorOf(n)
-        return <button key={n} type="button" role="radio" aria-checked={on} data-effort={n}
+        return <button key={n} type="button" aria-pressed={on} data-effort={n}
           onClick={() => pick(n)}
           style={{
             minHeight: 40, padding: 0, borderRadius: 10, border: 'none', font: 'inherit', fontWeight: 600,
@@ -60,7 +60,7 @@ export function WorkoutEffortPicker({ wid }) {
     </div>
     <div className="small dim" style={{ marginTop: 6 }}>
       {word
-        ? (w.effortBy === 'auto' ? t('{0}, set from your sets. Tap to change it.', word) : t('{0}. Goes to Apple Health with the workout.', word))
+        ? (w.effortBy === 'auto' ? t('{0}, set from your sets. Tap to change it.', word) : word)
         : t('Easy 1 to 3, moderate 4 to 6, hard 7 and 8, all out 9 and 10.')}
     </div>
   </div>

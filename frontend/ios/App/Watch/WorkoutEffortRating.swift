@@ -1,51 +1,60 @@
 import SwiftUI
 
 /// "How hard was it?" on the summary: the whole workout's effort, 1 to 10, as Apple Fitness asks
-/// for it (Easy, Moderate, Hard, All out). Round chips outlined in their band's colour, the way
-/// the rest screen rates a set (EffortChips), in two rows of five; the one picked is filled and
-/// its word sits under them. A second tap on it takes the rating back. Taps, not the crown, which
-/// scrolls the summary.
+/// for it (Easy, Moderate, Hard, All out). One number, as the set page's boxes: before it is rated
+/// it shows where it would start (the preset from the sets rated during the workout, else 5),
+/// dimmed. A tap rates it there and hands it the Crown, a detent a step; a second tap lets the
+/// Crown go back to the summary.
 struct EffortRating: View {
     @Binding var value: Int?
+    let preset: Int?
+    var editing = false
+    @FocusState private var focused: Bool
+    @State private var index = 5
     @Environment(\.isLuminanceReduced) private var dimmed
 
+    private var start: Int { preset ?? 5 }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("How hard was it?")
-                .font(.system(.footnote, design: .rounded).weight(.bold))
-                .foregroundStyle(Theme.label2)
-            ForEach([Array(1...5), Array(6...10)], id: \.self) { row in
-                HStack(spacing: 4) {
-                    ForEach(row, id: \.self) { chip($0) }
+        let shown = value ?? start
+        let color = EffortRating.color(shown)
+        VStack(alignment: .leading, spacing: 2) {
+            NumberBox(value: "\(shown)", unit: nil, label: Text("How hard was it?"), tint: color, selected: focused)
+                .opacity(value == nil && !focused ? 0.45 : 1)
+                .focusable()
+                .focusEffectDisabled()
+                .focused($focused)
+                .digitalCrownRotation(detent: $index, from: 1, through: 10, by: 1,
+                                      sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+                .onTapGesture {
+                    if focused { focused = false; return }
+                    if value == nil { value = start }
+                    index = value ?? start
+                    focused = true
                 }
-            }
+                .onChange(of: index) { i in if focused, (1...10).contains(i), i != value { value = i } }
+                .onAppear {
+                    index = value ?? start
+                    if editing { if value == nil { value = start }; focused = true }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("How hard was it?"))
+                .accessibilityValue(value.map { Text(verbatim: "\($0), ") + Text(LocalizedStringKey(WorkoutEffort.word($0))) } ?? Text("None"))
+                .accessibilityAdjustableAction { dir in
+                    switch dir {
+                    case .increment: value = WorkoutEffort.step(value ?? start - 1, by: 1)
+                    case .decrement: value = WorkoutEffort.step(value ?? start + 1, by: -1)
+                    @unknown default: break
+                    }
+                }
             if let v = value {
                 Text(LocalizedStringKey(WorkoutEffort.word(v)))
                     .font(.system(.footnote, design: .rounded).weight(.semibold))
-                    .foregroundStyle(EffortRating.color(v))
-                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
+                    .padding(.leading, 8)
             }
         }
         .padding(.top, 2)
-    }
-
-    private func chip(_ n: Int) -> some View {
-        let on = value == n
-        let color = EffortRating.color(n)
-        return Button {
-            withAnimation(.snappy) { value = on ? nil : n }
-        } label: {
-            Text(verbatim: "\(n)")
-                .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
-                .foregroundStyle(on && !dimmed ? Color.black : .white)
-                .frame(maxWidth: .infinity, minHeight: 32, maxHeight: 32)
-                .background(Capsule().fill(on && !dimmed ? color : Color.clear))
-                .overlay(Capsule().strokeBorder(color, lineWidth: 1.5))
-                .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(verbatim: "\(n), ") + Text(LocalizedStringKey(WorkoutEffort.word(n))))
-        .accessibilityAddTraits(on ? .isSelected : [])
     }
 
     /// The band's colour, as on the phone's summary (WorkoutEffort.jsx): green, yellow, orange, red.

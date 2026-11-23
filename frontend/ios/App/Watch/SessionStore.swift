@@ -605,6 +605,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     if !self.isDemo {
                         self.summary = SessionCore.summary(ended, end: Date().timeIntervalSince1970 * 1000,
                                                            startedAt: self.workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }, endedOnPhone: true)
+                        self.summary?.effortPreset = WorkoutEffort.preset(ended, efforts: before.efforts, kind: self.effortKind)
                     }
                     self.ran(ended.id)
                     self.health.end(save: true) { totals in self.addTotals(totals) }
@@ -985,10 +986,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The whole workout's effort, 1 to 10 (nil takes it back), as − and + change it. It goes out
     /// shortly after the last press, so a few presses make one rating, not one each.
     func rateEffort(_ v: Int?) {
-        guard var s = summary, let wid = s.workoutId else { return }
+        guard var s = summary else { return }
         s.effort = v
-        effortToSend = (wid, v)
         summary = s
+        guard let wid = s.workoutId, !isDemo else { return }
+        effortToSend = (wid, v)
         effortTimer?.invalidate()
         effortTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
             DispatchQueue.main.async { self?.sendEffort() }
@@ -1292,7 +1294,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let ended = workout
         let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle, left: left)
         guard let ev = event else { return }
-        if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
+        if let w = ended {
+            summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 })
+            summary?.effortPreset = WorkoutEffort.preset(w, efforts: state.efforts, kind: effortKind)
+        }
         ran(ended?.id)
         health.end(save: true, at: end) { [weak self] totals in self?.addTotals(totals) }
         stopHoldCount()
@@ -1799,8 +1804,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
-                // CI: "-OpenGymWatchEffort 7" shows the effort rating at 7 ("-" unrated).
+                // CI: "-OpenGymWatchEffort 7" shows the effort rating at 7 ("-" unrated); with
+                // -OpenGymWatchEffortPreset 6 it starts there, and -OpenGymWatchEffortEdit opens it on the Crown.
                 if let e = SessionStore.argument("-OpenGymWatchEffort") { self.summary?.effort = Int(e) }
+                if let p = SessionStore.argument("-OpenGymWatchEffortPreset") { self.summary?.effortPreset = Int(p) }
             }
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames

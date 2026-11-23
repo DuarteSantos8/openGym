@@ -382,10 +382,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             if let totals = totals { DispatchQueue.main.async { totals(out) } }
             b.finishWorkout { workout, _ in
                 guard let id = endedId else { return }
-                DispatchQueue.main.async {
-                    self.finishing.remove(id)
-                    if let workout = workout { self.saved(workout, id: id) } else { self.pendingEffort.removeValue(forKey: id) }
-                }
+                DispatchQueue.main.async { self.finishSaved(workout, id: id) }
             }
         }
         if let id = endedId { finishing.insert(id) }
@@ -405,6 +402,13 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     var canRateEffort: Bool {
         guard #available(watchOS 11.0, *) else { return false }
         return enabled
+    }
+
+    /// A save for this workout answered (end() or lost()): the rating waiting for it is linked, or,
+    /// when it was not saved and no other save of it is still under way, let go.
+    private func finishSaved(_ workout: HKWorkout?, id: String) {
+        finishing.remove(id)
+        if let workout = workout { saved(workout, id: id) } else if savedWorkouts[id] == nil { pendingEffort.removeValue(forKey: id) }
     }
 
     private func saved(_ workout: HKWorkout, id: String) {
@@ -487,7 +491,16 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         if let q = query { store.stop(q); query = nil }
         if let b = b {
             let endAt = Date()
-            b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in b.finishWorkout { _, _ in } }
+            // Registered like end()'s save: a workout finished with no set after this has no session
+            // left to end, and the summary's effort goes to the copy saved here.
+            let lostId = workoutId
+            if let id = lostId { finishing.insert(id) }
+            b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in
+                b.finishWorkout { workout, _ in
+                    guard let id = lostId else { return }
+                    DispatchQueue.main.async { self.finishSaved(workout, id: id) }
+                }
+            }
         }
         running = false
         heartRate = nil

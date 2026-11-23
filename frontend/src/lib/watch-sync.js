@@ -752,6 +752,11 @@ function applyEach (events, getState, now = Date.now()) {
     // with it however old it is, a heart rate without a time of its own too.
     if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && WORKOUT_EVENTS.includes(ev.type) &&
         !seen.includes(wid) && !discardedFor(now).includes(wid) && (startWaits.has(wid) || (num(ev.at) && now - num(ev.at) < DEFER_MAX_MS))) { waited.add(wid); continue }
+    // The whole workout's effort goes onto the saved workout: one not saved here yet (still running,
+    // or a watch workout waiting behind one on the phone) keeps it waiting in the queue, like its
+    // sets, until it is. Not for a discarded one, nor after two days.
+    if (ev.type === 'workoutEffort' && wid && !(Array.isArray(S?.workouts) && S.workouts.some(w => w && w.id === wid)) &&
+        !discardedFor(now).includes(wid) && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) { waited.add(wid); continue }
     // A copy of a start for a workout this phone already had (saved, discarded, or running) is
     // not a new workout: nothing starts again (no zombie session after a resend).
     const had = ev.type === 'start' && wid && (seen.includes(wid) || saved || discardedFor(now).includes(wid))

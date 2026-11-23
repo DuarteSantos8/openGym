@@ -680,7 +680,9 @@ struct SummaryView: View {
                                                                          numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
                     }
                     if store.asksEffort {
-                        EffortRating(value: Binding(get: { store.summary?.effort }, set: { store.rateEffort($0) }))
+                        EffortRating(value: Binding(get: { store.summary?.effort }, set: { store.rateEffort($0) }),
+                                     preset: summary.effortPreset,
+                                     editing: ProcessInfo.processInfo.arguments.contains("-OpenGymWatchEffortEdit"))
                     }
                     SyncLine().padding(.top, 2)
                     Button {

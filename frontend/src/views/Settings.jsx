@@ -2237,7 +2237,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const EFFORT_LABEL = { ask: t('Ask me'), auto: t('Set automatically'), never: t('Never ask') }
   const pickEffort = () => menuSheet({
     title: t('Effort after a workout'),
-    subtitle: t('How hard the whole workout was, 1 to 10, as Apple Fitness asks. It goes to Apple Health with the workout.'),
+    subtitle: t('How hard the whole workout was, 1 to 10, as Apple Fitness asks.'),
     items: [
       { label: EFFORT_LABEL.ask, sub: t('The summary and your Apple Watch ask for it.'), on: effortMode === 'ask', onClick: () => chooseEffort('ask') },
       { label: EFFORT_LABEL.auto, sub: t('Worked out from the effort of each set, logged or estimated. Nothing to tap.'), on: effortMode === 'auto', onClick: () => chooseEffort('auto') },

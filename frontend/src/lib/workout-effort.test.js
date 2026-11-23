@@ -80,6 +80,25 @@ describe('autoEffort', () => {
     expect(autoEffort({ workouts: [] }, w)).toBe(5)
   })
 
+  it('reads a per-side set a side at a time, not from both sides\' reps added up', () => {
+    const side = (w, r) => ({ w, r, done: true })
+    const row = (w, r) => ({ sides: { L: side(w, r), R: side(w, r) }, w, r: r * 2, done: true })
+    const past = { id: 'p', d: '2026-10-25', start: Date.parse('2026-10-25T10:00:00Z'), end: Date.parse('2026-10-25T11:00:00Z'),
+      entries: [{ id: '0025', sets: [row(60, 12)] }] }
+    const now = { id: 'w1', d: '2026-11-01', start: Date.parse('2026-11-01T10:00:00Z'), end: Date.parse('2026-11-01T11:00:00Z'),
+      entries: [{ id: '0025', sets: [row(60, 8), row(60, 8), row(60, 8)] }] }
+    // 60 × 8 a side against a best of 60 × 12 a side: about four in reserve, a moderate-to-easy
+    // session, where 16 reps against 12 read as all out.
+    expect(autoEffort({ workouts: [past, now] }, now)).toBeLessThanOrEqual(5)
+  })
+
+  it('takes the harder side of a per-side set', () => {
+    const w = W([])
+    w.entries[0].sets = [0, 1, 2].map(() => ({ sides: { L: { w: 60, r: 8, done: true, rir: 3 }, R: { w: 60, r: 8, done: true, rir: 1 } }, w: 60, r: 16, done: true, rir: 1 }))
+    // RIR 1 (the harder side) → 9 less 1.5 → 7.5, a half: 7.
+    expect(autoEffort({ workouts: [w] }, w)).toBe(7)
+  })
+
   it('gives none with too few sets to go by', () => {
     const w = W(Array.from({ length: AUTO_MIN_SETS - 1 }, () => ({ rir: 1 })))
     expect(autoEffort({ workouts: [w] }, w)).toBe(null)
