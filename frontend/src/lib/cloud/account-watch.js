@@ -15,6 +15,7 @@ import { setCloudAccount } from '../account-badge.js'
 export function watchAccount(client = cloud(), set = setCloudAccount) {
   if (!client) return () => {}
   let who = null          // the signed-in person's id, as last heard
+  let watching = true     // false once stopped: a name still being read is then nobody's business
   const hear = session => {
     const user = session?.user
     if (!user?.id || !user.email) { who = null; set(null); return }
@@ -23,8 +24,9 @@ export function watchAccount(client = cloud(), set = setCloudAccount) {
     set({ email: user.email, name: '' })
     // The name is theirs to set and lives in their profile. Read once per sign-in; if it cannot
     // be read (offline), the address stands.
-    client.profiles.get().then(p => { if (who === user.id && p?.display_name) set({ email: user.email, name: p.display_name }) }, () => {})
+    client.profiles.get().then(p => { if (watching && who === user.id && p?.display_name) set({ email: user.email, name: p.display_name }) }, () => {})
   }
   hear(client.auth.session())
-  return client.auth.onChange(hear)
+  const off = client.auth.onChange(hear)
+  return () => { watching = false; off() }
 }

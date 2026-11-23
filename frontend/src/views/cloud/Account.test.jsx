@@ -10,7 +10,7 @@ import { cloudAccount, setCloudAccount } from '../../lib/account-badge.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, container
-afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null; forgetLink(); window.sessionStorage.clear() })
+afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null; forgetLink(); window.sessionStorage.clear(); setCloudAccount(null) })
 
 const err = code => Object.assign(new Error(code), { code })
 function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) {
@@ -263,6 +263,36 @@ describe('Account', () => {
     await type('name', 'Samira K')
     expect($('[data-saved]').textContent).toBe('')
     expect($('[data-save]').disabled).toBe(false)
+  })
+
+  // Review of #73.
+  it('typing on while a save is under way is not written over when it lands', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    let land
+    c.profiles.update = vi.fn(() => new Promise(r => { land = () => r({ display_name: 'Samira' }) }))
+    await mount(c)
+    await type('name', 'Samira')
+    await click('[data-save]')
+    await type('name', 'Samira K')
+    await act(async () => { land() })
+    expect($('input[name="name"]').value).toBe('Samira K')
+    expect($('[data-saved]').textContent).toBe('')          // what is on screen is not what was saved
+    expect($('[data-save]').disabled).toBe(false)
+    expect($('.iv-acct-title').textContent).toBe('Samira')  // what was saved, was
+  })
+
+  it('a save that lands after signing out does not bring the account back', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    let land
+    c.profiles.update = vi.fn(() => new Promise(r => { land = () => r({ display_name: 'Samira' }) }))
+    await mount(c)
+    await type('name', 'Samira')
+    await click('[data-save]')
+    await act(async () => { c.set(null) })
+    await act(async () => { land() })
+    expect(cloudAccount()).toBeNull()
+    expect(mode()).toBe('signin')
+    expect($('input[name="name"]')).toBeNull()
   })
 
   it('a save that fails does not say Saved', async () => {

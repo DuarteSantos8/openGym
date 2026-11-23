@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-23, after PRs #56 to #72 were merged and with `next/EP19-app-knows-the-account` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-23, after PRs #56 to #73 were merged and with `next/EP19-account-follow-ups` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 

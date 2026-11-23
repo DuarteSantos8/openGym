@@ -29,3 +29,10 @@ export const useCloudAccount = () => useSyncExternalStore(onCloudAccount, cloudA
 
 /** What to call them on a screen: their name where they gave one, else their address. */
 export const whoIs = a => (a ? a.name?.trim() || a.email : '')
+
+/**
+ * What the account card at the top of Settings says for someone signed in to the hosted account:
+ * who they are, and where their training is. `t` is the translator, handed in.
+ * @returns {{title: string, sub: string, face: string}|null}
+ */
+export const badgeCard = (a, t) => (a ? { title: whoIs(a), sub: t('Signed in as {0}. Your training is stored on this device.', a.email), face: whoIs(a) } : null)

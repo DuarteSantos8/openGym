@@ -104,7 +104,7 @@ import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
 import { LEVELS, experienceOf, applyExperience } from '../lib/experience.js'
 import { isCloud } from '../lib/edition.js'
-import { useCloudAccount, whoIs } from '../lib/account-badge.js'
+import { useCloudAccount, whoIs, badgeCard } from '../lib/account-badge.js'
 import { levelName } from '../lib/experience-copy.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
@@ -1501,6 +1501,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   const [q, setQ] = useState(() => (key && lastQuery.key === key ? lastQuery.q : ''))
   const set = v => { lastQuery = { q: v, key }; setQ(v) }
   const hits = q.trim() ? searchSettings(q, ctx) : null
+  const cloudWho = useCloudAccount()
+  const cloudCard = isCloud() ? badgeCard(cloudWho, t) : null
   // The account card: who this is, and the one line that matters about it.
   const acct = DEMO ? { title: t('Demo'), sub: t('Example data, only in this browser.') }
     : user ? {
@@ -1508,9 +1510,10 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
       sub: sync && sync.status && sync.status !== 'ok' ? t('Sync needs a look') : MOBILE ? t('Synced with your server') : t('Account, devices and sync'),
     }
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
-    : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
+    // Cloud edition: signed in to the hosted account is not "Guest" (lib/account-badge.js).
+    : cloudCard || { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   // The face: one's own picture (components/Avatar.jsx), else the name's first letter, else the icon.
-  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : null
+  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : !DEMO && !MOBILE && cloudCard ? cloudCard.face : null
   const nav = useNavigate()
   // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
   // it the admin dashboard has no Coach card to land on.
