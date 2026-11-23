@@ -358,6 +358,29 @@ describe('JEFIT CSV', () => {
     expect(p.workouts[0].d).toBe('2026-06-01')
   })
 
+  it('reads a real export, headers padded with hashes and each table closed by a line of them (#1432)', () => {
+    const real = [
+      '### WORKOUT SESSIONS ##########################',
+      '_id,starttime,endtime,total_time',
+      `7,${at('2026-06-01T17:00:00.000Z') / 1000},0,3600`,
+      '################################################',
+      '',
+      '#### EXERCISE LOGS #############################',
+      '_id,belongsession,eid,ename,mydate,logs',
+      '1,7,1,"Barbell Bench Press",2026-06-01,"60x10,70x8"',
+      '################################################',
+      '### SOMETHING ELSE ####',
+      'a,b',
+      '1,2',
+    ].join('\n')
+    const p = inTz('Europe/Berlin', () => parseImportFile(real, { unit: 'kg' }))
+    expect(p.source).toBe('JEFIT')
+    expect(p.workouts).toHaveLength(1)
+    expect(hhmm(p.workouts[0].start)).toBe('19:00')
+    expect(entry(p.workouts[0], '0025').sets.map(s => [s.w, s.r])).toEqual([[60, 10], [70, 8]])
+    expect(p.skipped).toBe(0)
+  })
+
   it('fails clearly when the logs section is not the one described', () => {
     expect(parseImportFile('### EXERCISE LOGS ###\nfoo,bar\n1,2')).toEqual({ error: 'format', app: 'JEFIT' })
   })
