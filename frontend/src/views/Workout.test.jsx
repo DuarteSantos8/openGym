@@ -771,8 +771,26 @@ describe('active workout weight controls', () => {
     expect(opts.unit).toBe('kg')
     expect(opts.step).toBe(2.5)
     expect(opts.ex.id).toBe('plain-bench')
+    expect(opts.floor).toBe(0)
+    expect(opts.label).toBe('Weight (kg)')
+    expect(opts.weights).toBeNull()
+    expect(opts.pair).toBe(false)
     await act(async () => { opts.onUse(25) })
     expect(mocks.S.active.entries[0].sets.map(x => x.w)).toEqual([25, 25, 25])
+    // A set logged while the finder was open (a watch can do that) is not written over: the
+    // weight goes to the first set still open at that moment.
+    await unmount()
+    finderMocks.loadFinderSheet.mockClear()
+    await mount([exercise('plain-bench', [false, false, false], { target: { mode: 'reps', reps: 8, weight: 0, bodyweight: false } })])
+    await act(async () => { container.querySelector('[data-load-finder]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const late = finderMocks.loadFinderSheet.mock.calls[0][0]
+    mocks.S.active.entries[0].sets[0] = { ...mocks.S.active.entries[0].sets[0], w: 17.5, done: true }
+    await act(async () => { late.onUse(25) })
+    expect(mocks.S.active.entries[0].sets.map(x => x.w)).toEqual([17.5, 25, 25])
+    // an assisted machine counts the other way round (more weight is easier), so it gets no finder
+    await unmount()
+    await mount([exercise('plain-bench', [false, false], { target: { mode: 'reps', reps: 8, weight: 0, bodyweight: false, assisted: true } })])
+    expect(container.querySelector('[data-load-finder]')).toBeNull()
     // once a set is ticked the hint and its button are gone
     await unmount()
     await mount([exercise('plain-bench', [true, false])])

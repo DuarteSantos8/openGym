@@ -6293,4 +6293,5 @@ export default {
   "Too hard": "太难",
   "Use this weight": "使用这个重量",
   "With form guide": "附动作指引",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "这已经是最轻的了。如果还是太难，先试试更简单的动作。",
 }

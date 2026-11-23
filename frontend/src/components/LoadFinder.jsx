@@ -7,7 +7,7 @@ import { t } from '../lib/i18n.js'
 import { fmtWeight, exerciseNameText } from '../lib/format.js'
 import { useUI } from '../store/useUI.js'
 import { Button, Stepper } from './ui.jsx'
-import { begin, answer, startLoad } from '../lib/load-finder.js'
+import { begin, answer, startLoad, stepIn } from '../lib/load-finder.js'
 import './load-finder.css'
 
 // A plan without a rep count still gets a number to aim at.
@@ -20,23 +20,33 @@ const answers = () => [
   ['hard', t('Too hard'), t('I could not finish, or it got shaky')],
 ]
 
-export function LoadFinder({ ex, unit, step, reps, onUse, close }) {
-  const [s, setS] = useState(() => begin(startLoad(ex, unit), step))
+export function LoadFinder({ ex, unit, step, floor = 0, weights = null, label, pair = false, reps, onUse, close }) {
+  // A lift with a bar starts on the athlete's own bar (the floor), anything else on the usual light pick.
+  // `pair`: the number means both dumbbells together, so the usual light pick counts twice.
+  const first = () => begin(floor > 0 ? floor : startLoad(ex, unit) * (pair ? 2 : 1), step, { floor, weights })
+  const [s, setS] = useState(first)
   const name = exerciseNameText(ex)
   return <div className="iv-lf" data-weight={s.weight} data-tries={s.tries}>
     <h3 style={{ marginBottom: 2 }}>{t('Find my weight')}</h3>
     <p className="small dim" style={{ marginTop: 0 }}>{name}</p>
     {s.done ? <>
-      <p className="iv-lf-found">{t('Start with {0}.', fmtWeight(s.weight, unit))}</p>
-      <p className="small dim">{t('If the last reps of your first set feel easy, add a little next time. That is how it is meant to go.')}</p>
+      {s.atFloor
+        ? <p className="iv-lf-floor">{t('That is the lightest this goes. If it was too hard, try an easier exercise first.')}</p>
+        : <>
+          <p className="iv-lf-found">{t('Start with {0}.', fmtWeight(s.weight, unit))}</p>
+          <p className="small dim">{t('If the last reps of your first set feel easy, add a little next time. That is how it is meant to go.')}</p>
+        </>}
       <div className="iv-lf-actions">
-        <Button variant="primary" data-use="" onClick={() => { onUse(s.weight); close() }}>{t('Use this weight')}</Button>
-        <Button variant="ghost" onClick={() => setS(begin(s.weight, step))}>{t('Try again')}</Button>
+        {!s.atFloor && <Button variant="primary" data-use="" onClick={() => { onUse(s.weight); close() }}>{t('Use this weight')}</Button>}
+        <Button variant="ghost" onClick={() => setS(begin(s.weight, step, { floor, weights }))}>{t('Try again')}</Button>
+        {s.atFloor && <Button variant="ghost" onClick={close}>{t('Close')}</Button>}
       </div>
     </> : <>
       {s.tries > 0 && <p className="iv-lf-rest small">{t('Rest for a minute, then try this.')}</p>}
       <p className="iv-lf-try">{t('Do {0} reps with this weight, then say how it felt.', reps > 0 ? reps : DEFAULT_REPS)}</p>
-      <Stepper label={t('Weight ({0})', unit)} value={s.weight} step={step > 0 ? step : 0.5} onChange={v => setS(x => ({ ...x, weight: v }))} />
+      <Stepper label={label || t('Weight ({0})', unit)} value={s.weight} step={step > 0 ? step : 0.5} min={s.floor}
+        onStep={s.weights ? (v, _step, dir) => stepIn(s.weights, v, dir) : undefined}
+        onChange={v => setS(x => ({ ...x, weight: Math.max(x.floor || 0, v) }))} />
       <div className="iv-lf-answers" role="group" aria-label={t('How did that feel?')}>
         {answers().map(([feel, label, sub]) => <button key={feel} type="button" className="item" data-feel={feel} onClick={() => setS(x => answer(x, feel))}>
           <div className="grow"><div className="tt">{label}</div><div className="ts">{sub}</div></div>

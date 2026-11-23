@@ -6372,4 +6372,5 @@ export default {
   "Too hard": "খুব কঠিন",
   "Use this weight": "এই ওজন ব্যবহার করুন",
   "With form guide": "ফর্ম গাইড সহ",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "এর চেয়ে হালকা হয় না। খুব কঠিন লাগলে আগে একটি সহজ ব্যায়াম চেষ্টা করুন।",
 }

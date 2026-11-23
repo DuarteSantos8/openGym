@@ -6297,4 +6297,5 @@ export default {
   "Too hard": "Слишком тяжело",
   "Use this weight": "Использовать этот вес",
   "With form guide": "С подсказками по технике",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Легче уже не бывает. Если было слишком тяжело, сначала попробуй упражнение попроще.",
 }

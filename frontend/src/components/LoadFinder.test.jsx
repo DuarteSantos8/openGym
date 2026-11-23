@@ -69,4 +69,32 @@ describe('LoadFinder', () => {
     expect(container.querySelector('.iv-lf-foot').textContent).toMatch(/not logged/i)
     expect(container.querySelector('.iv-lf-foot').textContent).toMatch(/hurts/i)
   })
+
+  it('starts on the athlete\'s own bar and, if that is too hard, says it cannot go lighter', () => {
+    const onUse = vi.fn()
+    mount(<LoadFinder ex={ex} unit="kg" step={2.5} floor={15} reps={8} onUse={onUse} close={() => {}} />)
+    expect(container.querySelector('.iv-lf').dataset.weight).toBe('15')
+    tap('[data-feel="hard"]')
+    expect(container.querySelector('.iv-lf-floor')).not.toBeNull()
+    expect(container.querySelector('.iv-lf-found')).toBeNull()
+    expect(container.querySelector('.iv-lf').dataset.weight).toBe('15')
+  })
+
+  it('names only weights from the rack it is given, under the heading the workout uses', () => {
+    const onUse = vi.fn()
+    mount(<LoadFinder ex={{ eq: 'dumbbell', n: 'dumbbell bench press' }} unit="kg" step={2.5} weights={[4, 6, 8, 10, 12.5]} label="Each (kg)" reps={10} onUse={onUse} close={() => {}} />)
+    expect(container.querySelector('.iv-lf').dataset.weight).toBe('4')
+    expect(container.querySelector('.iv-lf').textContent).toContain('Each (kg)')
+    tap('[data-feel="easy"]')
+    expect(container.querySelector('.iv-lf').dataset.weight).toBe('6')
+    tap('[data-feel="right"]')
+    tap('[data-use]')
+    expect(onUse).toHaveBeenCalledWith(6)
+  })
+
+  it('doubles the usual start when the number means both dumbbells together', () => {
+    mount(<LoadFinder ex={{ eq: 'dumbbell', n: 'dumbbell bench press' }} unit="kg" step={2.5} pair label="Both (kg)" reps={10} onUse={() => {}} close={() => {}} />)
+    expect(container.querySelector('.iv-lf').dataset.weight).toBe('10')
+  })
 })
+

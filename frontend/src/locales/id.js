@@ -6258,4 +6258,5 @@ export default {
   "Too hard": "Terlalu berat",
   "Use this weight": "Gunakan beban ini",
   "With form guide": "Dengan panduan teknik",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Ini sudah yang paling ringan. Jika terlalu berat, coba latihan yang lebih mudah dulu.",
 };

@@ -6259,4 +6259,5 @@ export default {
   "Too hard": "Quá nặng",
   "Use this weight": "Dùng mức tạ này",
   "With form guide": "Có hướng dẫn kỹ thuật",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Đây là mức nhẹ nhất rồi. Nếu vẫn quá nặng, hãy thử một bài dễ hơn trước.",
 };

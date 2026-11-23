@@ -6289,4 +6289,5 @@ export default {
   "Too hard": "Per sunku",
   "Use this weight": "Naudoti šį svorį",
   "With form guide": "Su technikos gidu",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Lengviau nebūna. Jei buvo per sunku, pirmiausia pabandyk lengvesnį pratimą.",
 }
