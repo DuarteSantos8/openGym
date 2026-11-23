@@ -195,3 +195,24 @@ test('a connector access token past aexp is not found; rotateToken changes the v
   assert.equal(findToken(db, token, () => user, 6000), null);
   assert.equal(findToken(db, next, () => user, 6000), row);
 });
+
+test('mergeScoped: a plans token sets how an exercise is loaded (#1425)', () => {
+  const S = { ...doc(), loadKind: { '0001': { kind: 'single', _ts: 1 } }, barWeights: { '0001': 20 } };
+  const plans = { plans: 'apply' };
+  const a = mergeScoped(S, { loadKind: { '0001': { kind: 'pairs', _ts: 2 } } }, plans);
+  assert.equal(a.next.loadKind['0001'].kind, 'pairs');
+  assert.deepEqual(a.touched, ['plans']);
+  const b = mergeScoped(S, { barWeights: { '0001': 0 } }, plans);
+  assert.equal(b.next.barWeights['0001'], 0);
+  assert.deepEqual(b.touched, ['plans']);
+  assert.equal(S.loadKind['0001'].kind, 'single', 'the stored copy is not touched');
+  assert.equal(S.barWeights['0001'], 20);
+  assert.throws(() => mergeScoped(S, { loadKind: { '0001': { kind: 'none', _ts: 3 } } }, { workouts: 'apply' }), e => e.code === 'scope');
+  assert.throws(() => mergeScoped(S, { barWeights: { '0001': 10 } }, { workouts: 'apply', plans: 'view' }), e => e.code === 'scope');
+  const p = scopedState(S, { plans: 'view' });
+  assert.deepEqual(p.loadKind, S.loadKind);
+  assert.deepEqual(p.barWeights, S.barWeights);
+  const bw = scopedState(S, { bodyweight: 'view' });
+  assert.equal('loadKind' in bw, false);
+  assert.equal('barWeights' in bw, false);
+});
