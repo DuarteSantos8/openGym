@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addHeart, lastHeart, watchCurve, heartOrigin, onPhoneClock } from './session-heart.js'
+import { addHeart, lastHeart, watchCurve, heartOrigin, onPhoneClock, heartBatchFor } from './session-heart.js'
 
 // The watch's readings for the heart rate band of the workout in progress.
 describe('addHeart', () => {
@@ -29,6 +29,16 @@ describe('watchCurve', () => {
     expect(watchCurve(addHeart(live, 'w1', [[9000, 120]]), 'w1')).toBe(true)
     // Nothing new but the flag: a new state all the same.
     expect(addHeart(health, 'w1', [], { watch: true })).not.toBe(health)
+  })
+})
+
+describe('heartBatchFor', () => {
+  it('files a batch under the workout running here only when the batch names it', () => {
+    expect(heartBatchFor({ wid: 'w1', samples: [] }, 'w1')).toBe('w1')
+    expect(heartBatchFor({ wid: 'w0', samples: [] }, 'w1')).toBe(null)
+    expect(heartBatchFor({ samples: [] }, 'w1')).toBe(null)
+    expect(heartBatchFor({ wid: 'w1' }, null)).toBe(null)
+    expect(heartBatchFor(null, 'w1')).toBe(null)
   })
 })
 

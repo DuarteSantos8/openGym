@@ -36,7 +36,7 @@ import { groupRoutines, folderOf, isArchive } from './routine-folders.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
-import { feedHeart, onPhoneClock } from './session-heart.js'
+import { feedHeart, heartBatchFor, onPhoneClock } from './session-heart.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
@@ -1452,12 +1452,10 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const sub = await p.WatchBridge.addListener('watchEvent', () => { drainWatchEvents() })
   // Each heart-rate reading of the watch's workout, with its own time, for the curve under the
   // workout screen's progress bar (components/HeartBand.jsx).
-  // Each batch says which workout the watch measured it for, and the watch's clock gap: a reading
-  // for another workout (the watch not yet on the one started here) is left out.
+  // Each batch says which workout the watch measured it for, and the watch's clock gap: a batch for
+  // another workout, or for none (the watch not yet on the one started here), is left out.
   const subHeart = await Promise.resolve(p.WatchBridge.addListener('watchHeart', e => {
-    const wid = useStore.getState().S?.active?.id
-    if (e?.wid && e.wid !== wid) return
-    feedHeart(wid, onPhoneClock(e?.samples, e?.off), { watch: true })
+    feedHeart(heartBatchFor(e, useStore.getState().S?.active?.id), onPhoneClock(e?.samples, e?.off), { watch: true })
   })).catch(() => null)
   // The link itself changed (the session finished activating after launch, a watch was paired, the
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.

@@ -51,6 +51,11 @@ export const watchCurve = (state, wid) => !!state && state.wid === wid && state.
  *  (lib/workout-pause.js), so the time paused is taken back off: the curve keeps the whole session. */
 export const heartOrigin = A => (Number(A?.start) || 0) - (Number(A?.pausedMs) || 0)
 
+/** The workout a batch from the watch goes to: the one running here, and only when the batch names
+ *  it. A batch without its workout (the watch not yet on one) goes nowhere: read back from Apple
+ *  Health later, its readings still fill the curve. */
+export const heartBatchFor = (batch, activeId) => (activeId && batch?.wid === activeId ? activeId : null)
+
 /** The watch's readings on this phone's clock: `off` is the watch's clock minus the phone's
  *  (lib/watch-sync.js phoneClock), the same gap its events carry. */
 export function onPhoneClock(readings, off) {

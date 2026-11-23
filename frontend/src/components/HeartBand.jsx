@@ -40,14 +40,15 @@ export default function HeartBand({ A }) {
     const tick = setInterval(() => { if (!document.hidden) setNow(Date.now()) }, 5000)
     return () => clearInterval(tick)
   }, [])
-  // What the page missed (asleep, or opened in the middle): read back from Apple Health.
-  // Only for the workout still running when the answer comes: a slow read never lands on the next one.
+  // What the page missed (asleep, or opened in the middle): read back from Apple Health, the watch's
+  // readings only, so the AirPods' never step into its curve. Only for the workout still running
+  // when the answer comes: a slow read never lands on the next one.
   useEffect(() => {
     if (!MOBILE || !A?.id || !A.start) return
     const fill = () => {
       if (document.visibilityState !== 'visible') return
       const wid = A.id
-      readWorkoutHeart({ start: heartOrigin(A), end: Date.now() }, useStore.getState().S).then(r => {
+      readWorkoutHeart({ start: heartOrigin(A), end: Date.now() }, useStore.getState().S, { watch: true }).then(r => {
         if (useStore.getState().S?.active?.id === wid) feedHeart(wid, r)
       }, () => {})
     }

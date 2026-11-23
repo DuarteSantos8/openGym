@@ -39,6 +39,12 @@ public enum HealthReadCore {
         return kept.map { [$0.ms.rounded(), $0.bpm.rounded()] }
     }
 
+    /// Whether an Apple Watch measured this reading, from its source's product type ("Watch7,1") or
+    /// its device's model ("Watch"): not AirPods, the iPhone, or another brand's watch or strap.
+    public static func fromAppleWatch(productType: String?, model: String?) -> Bool {
+        (productType?.hasPrefix("Watch") ?? false) || model == "Watch"
+    }
+
     /// Whether openGym wrote this one itself (by its sync identifier or its source).
     public static func isOwn(source: String, syncId: String?) -> Bool {
         if let id = syncId, id.hasPrefix("opengym-") { return true }

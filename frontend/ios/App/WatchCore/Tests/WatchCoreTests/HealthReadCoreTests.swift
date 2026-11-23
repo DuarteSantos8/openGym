@@ -9,6 +9,15 @@ final class HealthReadCoreTests: XCTestCase {
         XCTAssertEqual(HealthReadCore.samples(s, from: 5_000, to: 15_000), [[9_000, 100], [15_000, 130]])
     }
 
+    func testAppleWatchReadingsAreTold() {
+        XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: "Watch7,1", model: "Watch"))
+        XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: nil, model: "Watch"))
+        XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: "Watch6,2", model: nil))
+        XCTAssertFalse(HealthReadCore.fromAppleWatch(productType: "iPhone15,2", model: "AirPods"))
+        XCTAssertFalse(HealthReadCore.fromAppleWatch(productType: "iPhone15,2", model: "Forerunner 265"))
+        XCTAssertFalse(HealthReadCore.fromAppleWatch(productType: nil, model: nil))
+    }
+
     func testImplausibleRatesAreLeftOut() {
         let s = [HealthReadCore.HeartSample(ms: 0, bpm: 10), .init(ms: 1, bpm: 300), .init(ms: 2, bpm: 25), .init(ms: 3, bpm: 250.4)]
         XCTAssertEqual(HealthReadCore.samples(s, from: 0, to: 10).map { $0[1] }, [25, 250])
