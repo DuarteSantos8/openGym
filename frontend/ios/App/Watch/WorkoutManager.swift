@@ -385,7 +385,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
                 DispatchQueue.main.async { self.finishSaved(workout, id: id) }
             }
         }
-        if let id = endedId { finishing.insert(id) }
+        if let id = endedId { finishing[id, default: 0] += 1 }
         settle()
     }
 
@@ -395,8 +395,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private var savedWorkouts: [String: HKWorkout] = [:]
     /// A rating given before Apple Health handed the saved workout back.
     private var pendingEffort: [String: Int?] = [:]
-    /// The workouts being saved right now (finishWorkout not answered yet).
-    private var finishing: Set<String> = []
+    /// How many saves of each workout are under way (finishWorkout not answered yet).
+    private var finishing: [String: Int] = [:]
 
     /// Whether this watch links a workout's effort in Apple Health: watchOS 11, Apple Health on.
     var canRateEffort: Bool {
@@ -405,10 +405,12 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// A save for this workout answered (end() or lost()): the rating waiting for it is linked, or,
-    /// when it was not saved and no other save of it is still under way, let go.
+    /// when it was not saved and no other save of it is still under way, let go. Counted per
+    /// workout: a session watchOS ended and the one that followed it each save the same workout.
     private func finishSaved(_ workout: HKWorkout?, id: String) {
-        finishing.remove(id)
-        if let workout = workout { saved(workout, id: id) } else if savedWorkouts[id] == nil { pendingEffort.removeValue(forKey: id) }
+        let left = max(0, (finishing[id] ?? 1) - 1)
+        finishing[id] = left == 0 ? nil : left
+        if let workout = workout { saved(workout, id: id) } else if left == 0, savedWorkouts[id] == nil { pendingEffort.removeValue(forKey: id) }
     }
 
     private func saved(_ workout: HKWorkout, id: String) {
@@ -427,7 +429,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         guard #available(watchOS 11.0, *), enabled else { return }
         guard let workout = savedWorkouts[workoutId] else {
             // Still being saved: linked once it is. Not saved here at all: nothing to link it to.
-            if finishing.contains(workoutId) { pendingEffort[workoutId] = score }
+            if finishing[workoutId] != nil { pendingEffort[workoutId] = score }
             return
         }
         let type = HKQuantityType(.workoutEffortScore)
@@ -494,7 +496,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             // Registered like end()'s save: a workout finished with no set after this has no session
             // left to end, and the summary's effort goes to the copy saved here.
             let lostId = workoutId
-            if let id = lostId { finishing.insert(id) }
+            if let id = lostId { finishing[id, default: 0] += 1 }
             b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in
                 b.finishWorkout { workout, _ in
                     guard let id = lostId else { return }

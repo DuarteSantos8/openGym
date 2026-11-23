@@ -556,9 +556,13 @@ enum WorkoutEffort {
     static func preset(_ w: ActiveWorkout, efforts: [String: Double]?, kind: String?) -> Int? {
         guard let efforts = efforts, let kind = kind else { return nil }
         var sum = 0.0, n = 0
+        // A rating is kept by exercise and set place (SessionCore.key): the same exercise twice in a
+        // workout shares its keys, and one rating must not count as several rated sets.
+        var seen: Set<String> = []
         for e in w.entries {
             for (i, row) in e.sets.enumerated() where !row.warmup {
-                guard let v = efforts[SessionCore.key(e.id, i)] else { continue }
+                let k = SessionCore.key(e.id, i)
+                guard let v = efforts[k], seen.insert(k).inserted else { continue }
                 let rpe = kind == "rpe" ? v : 10 - max(0, v)
                 sum += rpe - (e.isCardio ? 0 : sessionOffset)
                 n += 1

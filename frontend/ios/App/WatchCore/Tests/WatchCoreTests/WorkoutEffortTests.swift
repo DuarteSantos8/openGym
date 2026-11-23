@@ -65,6 +65,12 @@ final class WorkoutEffortTests: XCTestCase {
         XCTAssertEqual(WorkoutEffort.preset(workout([entry("0025", sets: 4, warmups: 1)]), efforts: rated("0025", [5, 2, 2, 2]), kind: "rir"), 7)
     }
 
+    func testOneRatingCountsOnceWhenAnExerciseComesBack() {
+        // The same exercise three times, one set each: one rating, not three rated sets.
+        let w = workout([entry("0025", sets: 1), entry("0025", sets: 1), entry("0025", sets: 1)])
+        XCTAssertNil(WorkoutEffort.preset(w, efforts: rated("0025", [2]), kind: "rir"))
+    }
+
     func testNoPresetWithTooFewRatedSets() {
         let w = workout([entry("0025", sets: 3)])
         XCTAssertNil(WorkoutEffort.preset(w, efforts: rated("0025", [2, 2]), kind: "rir"))

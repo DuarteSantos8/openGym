@@ -118,12 +118,25 @@ describe('keeping in step', () => {
     h.calls = []
     h.writeAnswer = { skipped: [], failed: [], effortFailed: ['opengym-w-w1'] }
     await hs.syncHealth(state([rated, workout('w2', 18)]))
-    expect(Object.keys(file().written)).toEqual(['opengym-w-w2'])
+    expect(Object.keys(file().written).sort()).toEqual(['opengym-w-w1', 'opengym-w-w2'])
+    expect(file().written['opengym-w-w1'].h).toBeNull()
     // The next sync tries the rated one again; once it goes in, it is kept as written.
     h.calls = []; h.writeAnswer = null
     await hs.syncHealth(state([rated, workout('w2', 18)]))
     expect(writes().map(w => w.sessions.map(s => s.id))).toEqual([['opengym-w-w1']])
     expect(Object.keys(file().written).sort()).toEqual(['opengym-w-w1', 'opengym-w-w2'])
+  })
+
+  it('still removes a workout deleted before its effort went in', async () => {
+    const rated = { ...workout('w1', 17), effort: 7, effortBy: 'phone' }
+    await hs.enableHealth(state([]))
+    h.writeAnswer = { skipped: [], failed: [], effortFailed: ['opengym-w-w1'] }
+    await hs.syncHealth(state([rated]))
+    h.calls = []; h.writeAnswer = null
+    await hs.syncHealth({ ...state([]), deleted: { workouts: { w1: at(20, 9) } } })
+    expect(writes()).toEqual([])
+    expect(removes()).toEqual([{ sessions: ['opengym-w-w1'], weights: [] }])
+    expect(file().written).toEqual({})
   })
   it('remembers a refused permission, keeps what it has, and clears it once allowed again', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
