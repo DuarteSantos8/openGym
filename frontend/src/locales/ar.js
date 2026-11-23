@@ -5957,5 +5957,6 @@ export default {
   "Collapsed": "مطوية",
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. الأسهم تغيّر الترتيب.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. اضغط مطولاً على بطاقة لنقلها.",
+  "Shows up when there is something to show": "تظهر عندما يكون فيها ما تعرضه",
 }

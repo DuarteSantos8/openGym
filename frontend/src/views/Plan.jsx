@@ -374,7 +374,7 @@ function Schedule({ S, update, nav, mode }) {
           const key = looped ? i + ':' + id : id
           // The loop's swipe is remove-only (v1.3.11): a routine is in the loop once, so there is
           // nothing to copy. The row the reorder measures is the swipe's outer element.
-          const reorderProps = { 'data-reorder-row': '', style: loopReorder.rowStyle(i) }
+          const reorderProps = { 'data-reorder-row': '', 'data-reorder-key': looped ? undefined : id, style: loopReorder.rowStyle(i) }
           const name = rest ? t('Rest day') : r?.name ?? id
           // A loop may hold a routine or a rest day more than once: its place tells them apart (P4).
           const sayName = seq.filter(x => x === id).length > 1 ? `${i + 1}. ${name}` : name
@@ -484,7 +484,7 @@ function Routines({ S, update, nav }) {
     {routines.length ? <>
       {edit
         ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
-          <div key={r.id} data-reorder-row className="item plan-routine" style={reorder.rowStyle(i)}>
+          <div key={r.id} data-reorder-row data-reorder-key={r.id} className="item plan-routine" style={reorder.rowStyle(i)}>
             <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>

@@ -5898,5 +5898,6 @@ export default {
   "Collapsed": "Suskleista",
   "Hide": "Slėpti",
   "Totals": "Sumos",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Palaikyk kortelę, kad ją perkeltum.",
+  "Shows up when there is something to show": "Atsiras, kai bus ką rodyti",
 }

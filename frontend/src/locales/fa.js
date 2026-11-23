@@ -5868,5 +5868,6 @@ export default {
   "Collapsed": "جمع‌شده",
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. برای جابه‌جایی، یک کارت را نگه دار.",
+  "Shows up when there is something to show": "وقتی چیزی برای نشان دادن باشد ظاهر می\u200cشود",
 }

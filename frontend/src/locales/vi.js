@@ -5868,5 +5868,6 @@ export default {
   "Collapsed": "Thu gọn",
   "Hide": "Ẩn",
   "Totals": "Tổng",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Nhấn giữ một thẻ để di chuyển.",
+  "Shows up when there is something to show": "Sẽ hiện khi có nội dung để hiển thị",
 };

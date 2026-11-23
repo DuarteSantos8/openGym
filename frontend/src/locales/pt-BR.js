@@ -4327,7 +4327,8 @@ export const PT_BR_OVERRIDES = {
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
   // Arrange your own Home and Stats (#1119)
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. Toque e segure um cartão para movê-lo.",
+  "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

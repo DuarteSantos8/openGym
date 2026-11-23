@@ -5867,5 +5867,6 @@ export default {
   "Collapsed": "Diciutkan",
   "Hide": "Sembunyikan",
   "Totals": "Total",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Panah mengubah urutannya.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Tahan kartu untuk memindahkannya.",
+  "Shows up when there is something to show": "Muncul saat ada yang bisa ditampilkan",
 };

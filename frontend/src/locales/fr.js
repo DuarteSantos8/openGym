@@ -5902,5 +5902,6 @@ export default {
   "Collapsed": "Repliée",
   "Hide": "Masquer",
   "Totals": "Totaux",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Les flèches changent l’ordre.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Maintiens une carte pour la déplacer.",
+  "Shows up when there is something to show": "Apparaît quand il y a quelque chose à montrer",
 }

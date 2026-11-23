@@ -5902,5 +5902,6 @@ export default {
   "Collapsed": "समेटा हुआ",
   "Hide": "छिपाएँ",
   "Totals": "कुल",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। खिसकाने के लिए किसी कार्ड को दबाकर रखें।",
+  "Shows up when there is something to show": "जब दिखाने को कुछ होगा तब दिखेगा",
 }

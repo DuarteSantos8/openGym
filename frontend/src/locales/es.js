@@ -5902,5 +5902,6 @@ export default {
   "Collapsed": "Plegada",
   "Hide": "Ocultar",
   "Totals": "Totales",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Las flechas cambian el orden.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Mantén pulsada una tarjeta para moverla.",
+  "Shows up when there is something to show": "Aparece cuando hay algo que mostrar",
 }

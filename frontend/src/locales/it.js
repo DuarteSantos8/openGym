@@ -5912,5 +5912,6 @@ export default {
   "Collapsed": "Compressa",
   "Hide": "Nascondi",
   "Totals": "Totali",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Tieni premuta una scheda per spostarla.",
+  "Shows up when there is something to show": "Compare quando c’è qualcosa da mostrare",
 }

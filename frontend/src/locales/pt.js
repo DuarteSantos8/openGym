@@ -5902,5 +5902,6 @@ export default {
   "Collapsed": "Recolhido",
   "Hide": "Ocultar",
   "Totals": "Totais",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. As setas mudam a ordem.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. Mantém um cartão premido para o mover.",
+  "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
 }

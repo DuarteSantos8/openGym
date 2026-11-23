@@ -5868,5 +5868,6 @@ export default {
   "Collapsed": "Sbalené",
   "Hide": "Skrýt",
   "Totals": "Součty",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
+  "Shows up when there is something to show": "Objeví se, až bude co ukázat",
 }

@@ -5922,5 +5922,6 @@ export default {
   "Collapsed": "Eingeklappt",
   "Hide": "Ausblenden",
   "Totals": "Summen",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Die Pfeile ändern die Reihenfolge.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Halte eine Karte gedrückt, um sie zu verschieben.",
+  "Shows up when there is something to show": "Erscheint, sobald es etwas zu zeigen gibt",
 }

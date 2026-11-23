@@ -532,15 +532,27 @@ h4.sec{
 .fold-b[hidden]{display:none}
 .arr{display:contents}
 .customize-link{display:flex;justify-content:center;margin:4px 0 12px}
+/* The Customize sheet (1.4.6): a row per card, held and dragged like an iOS list in Edit mode.
+   The row lifts (shadow, a touch larger) while it is held, the others make room, and it glides
+   into place (lib/use-list-reorder.js). EMIL: transform/opacity only, ease-out, under 300 ms. */
 .lay-group{margin-top:14px}
-.lay-row{padding:12px 14px}
+.lay-list{position:relative}
+.lay-row{padding:10px 14px 12px 6px;background:var(--surface);border-radius:inherit;position:relative;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y;
+  transition:box-shadow .2s var(--ease),background-color .2s var(--ease)}
 .lay-row+.lay-row{box-shadow:inset 0 .5px 0 var(--separator)}
-.lay-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.lay-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.lay-row.held{z-index:2;border-radius:14px;background:var(--surface-2);
+  box-shadow:0 10px 28px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18)}
+.lay-top{display:flex;align-items:center;gap:6px;margin-bottom:8px;min-height:36px}
+.lay-grip{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:10px;color:var(--label-3);
+  touch-action:none;cursor:grab;transition:color .16s var(--ease),transform .16s var(--ease)}
+.lay-grip:active,.lay-row.held .lay-grip{color:var(--acc);cursor:grabbing;transform:scale(.94)}
+.lay-name{flex:1;font-weight:600;min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:2px}
+.lay-hint{font-weight:400;font-size:var(--fs-footnote);color:var(--label-2)}
 .lay-row.off .lay-name{color:var(--label-2)}
-.lay-move{display:flex;gap:8px;flex:none}
-.lay-move .iconbtn{width:44px;height:36px;border-radius:10px}
-.lay-move .iconbtn:disabled{opacity:.35}
+.lay-row .seg{margin-inline-start:42px}
+.lay-move{display:contents}
+@media (prefers-reduced-transparency: reduce){.lay-row.held{box-shadow:0 0 0 1px var(--separator)}}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -1844,23 +1856,25 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* Its own layer only while it moves: on every row it was a layer per set (#431). */
 .swrow.dragging .swfront,.swrow.go-del .swfront,.swrow.go-cp .swfront{will-change:transform}
 .swpane{position:absolute;top:0;bottom:0;width:0;overflow:hidden;z-index:0}
-.swpane.del{inset-inline-end:0;background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}
-.swpane.cp{inset-inline-start:0;background:var(--acc-soft)}
-.swpane button{position:absolute;top:0;bottom:0;width:76px;padding:0;color:#fff;transition:width .16s var(--ease)}
+/* The pane is its action's colour edge to edge from the first pixel, like iOS Mail: a paler strip
+   between the button and the row read as a gap (owner, 2026-11-23). Arming shows in the label. */
+.swpane.del{inset-inline-end:0;background:var(--red)}
+.swpane.cp{inset-inline-start:0;background:var(--acc)}
+.swpane button{position:absolute;top:0;bottom:0;width:100%;padding:0;color:#fff}
 .swpane.del button{inset-inline-end:0;background:var(--red)}
 .swpane.cp button{inset-inline-start:0;background:var(--acc);color:var(--on-acc)}
-.swpane.armed button{width:100%}
 .swpane .lab{position:absolute;top:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs-caption)}
 .swpane.del .lab{inset-inline-start:0}
 .swpane.cp .lab{inset-inline-end:0}
 .swpane .lab .icn{font-size:1.3125rem;transform:scale(.8);transition:transform .16s var(--ease)}
+.swpane .lab{transition:opacity .16s var(--ease)}
+.swpane:not(.armed) .lab{opacity:.85}
 .swpane .lab b{font-weight:500}
 .swpane.armed .lab .icn{transform:scale(1)}
 .swpane.armed .lab b{font-weight:800}
 /* The last set cannot go: the delete side shows grey and never fills. */
-.swpane.del.dis{background:var(--surface-2)}
+.swpane.del.dis{background:var(--surface-3)}
 .swpane.del.dis button{background:var(--surface-3);color:var(--label-3)}
-.swpane.del.dis.armed button{width:76px}
 .swrow.flash .swfront{animation:swflash .4s ease}
 @keyframes swflash{0%,35%{background:linear-gradient(var(--acc-line),var(--acc-line)),var(--surface);background:color-mix(in srgb,var(--acc) 28%,var(--surface))}100%{background:var(--surface)}}
 .swrow.flash-red .swfront{animation:swflashr .5s ease}

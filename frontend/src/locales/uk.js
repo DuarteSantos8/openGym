@@ -5899,5 +5899,6 @@ export default {
   "Collapsed": "Згорнута",
   "Hide": "Сховати",
   "Totals": "Підсумки",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Утримуйте картку, щоб перемістити її.",
+  "Shows up when there is something to show": "З’явиться, коли буде що показати",
 }

@@ -41,6 +41,7 @@ import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
+import { syncPrefs } from './lib/device-prefs-sync.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
@@ -161,6 +162,9 @@ function Shell() {
   setKnownBands(S.bands)
   // Settings → Vibrate, the same way: one page-level switch rather than a check at each buzz.
   useEffect(() => { setVibrate(S.vibrate !== false) }, [S.vibrate])
+  // Display and voice, kept in the profile so every device signed in
+  // shares them (lib/device-prefs-sync.js): a profile from another device is applied here.
+  useEffect(() => { syncPrefs(useStore.getState().S, useStore.getState().update) }, [S.prefs])
   // Android app: "Vibrate when the phone is on silent" sends the end-of-rest buzz through the
   // native side as an alarm (#375). buzzAsAlarm answers false off Android, so iOS buzzes as before.
   useEffect(() => { setAlarmBuzzer(MOBILE && S.vibrate !== false && S.vibrateOnSilent ? buzzAsAlarm : null) }, [S.vibrate, S.vibrateOnSilent])
