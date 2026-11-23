@@ -6281,4 +6281,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "بعد از یک دقیقه ایمیلی نیامد؟ شاید این نشانی از قبل حساب داشته باشد: وارد شوید یا گذرواژه را بازنشانی کنید.",
   "Sign in or create account": "ورود یا ساخت حساب",
   "Your training stays on this device. An account is for your plan and purchases.": "تمرین‌های شما روی همین دستگاه می‌ماند. حساب برای طرح و خریدهای شماست.",
+  "Signed in as {0}. Your training is stored on this device.": "با نام {0} وارد شده‌اید. تمرین‌های شما روی همین دستگاه ذخیره می‌شود.",
 }

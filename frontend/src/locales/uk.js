@@ -6312,4 +6312,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Лист не надійшов за хвилину? Можливо, ця адреса вже має обліковий запис: увійди або скинь пароль.",
   "Sign in or create account": "Увійти або створити обліковий запис",
   "Your training stays on this device. An account is for your plan and purchases.": "Твої тренування залишаються на цьому пристрої. Обліковий запис потрібен для тарифу й покупок.",
+  "Signed in as {0}. Your training is stored on this device.": "Вхід виконано: {0}. Твої тренування зберігаються на цьому пристрої.",
 }

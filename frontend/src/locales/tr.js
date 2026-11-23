@@ -6315,4 +6315,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Bir dakika geçti, e-posta gelmedi mi? Bu adresin zaten bir hesabı olabilir: giriş yap ya da şifreni sıfırla.",
   "Sign in or create account": "Giriş yap veya hesap oluştur",
   "Your training stays on this device. An account is for your plan and purchases.": "Antrenmanların bu cihazda kalır. Hesap, planın ve satın alımların içindir.",
+  "Signed in as {0}. Your training is stored on this device.": "{0} olarak giriş yapıldı. Antrenmanların bu cihazda saklanır.",
 }

@@ -6318,4 +6318,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Egy perc után sincs e-mail? Lehet, hogy ehhez a címhez már tartozik fiók: jelentkezz be, vagy állítsd vissza a jelszavad.",
   "Sign in or create account": "Bejelentkezés vagy fiók létrehozása",
   "Your training stays on this device. An account is for your plan and purchases.": "Az edzéseid ezen az eszközön maradnak. A fiók a csomagodhoz és a vásárlásaidhoz kell.",
+  "Signed in as {0}. Your training is stored on this device.": "Bejelentkezve mint {0}. Az edzéseid ezen az eszközön vannak tárolva.",
 }

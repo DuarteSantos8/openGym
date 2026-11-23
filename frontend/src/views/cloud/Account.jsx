@@ -12,6 +12,8 @@ import { Button, TextField } from '../../components/ui.jsx'
 import { cloud } from '../../lib/cloud/client.js'
 import { createPendingReset } from '../../lib/cloud/pending-reset.js'
 import { enterApp } from '../../lib/cloud/enter-app.js'
+import { setCloudAccount } from '../../lib/account-badge.js'
+import Icon from '../../components/Icon.jsx'
 import { useStore } from '../../store/useStore.js'
 import './account.css'
 
@@ -74,6 +76,8 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const [sentAfter, setSentAfter] = useState('')     // what led to "check your email": signup | forgot
   const [ready, setReady] = useState(false)          // the profile has loaded: only then may the name be saved
   const title = useRef(null)
+  const [savedName, setSavedName] = useState('')     // the name as the server has it: Save has work only when the field differs
+  const [saved, setSaved] = useState(false)          // the last Save went through, and nothing was typed since
   const typedName = useRef(false)   // the name field has been edited: a late profile load must not replace it
 
   useEffect(() => client?.auth.onChange(setSession), [client])
@@ -100,7 +104,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
 
   // Whoever is signed in has changed: nothing typed for the last account carries over to this
   // one. Above all not the word that confirms deleting it.
-  useEffect(() => { setWord(''); setName(''); setReady(false) }, [session?.user?.id])
+  useEffect(() => { setWord(''); setName(''); setSavedName(''); setSaved(false); setReady(false) }, [session?.user?.id])
   // Nor a password to choose: that step belongs to the account the link signed in. Signed out,
   // or signed in as someone else, it is over.
   useEffect(() => {
@@ -113,7 +117,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
     if (!client || !session) return
     let live = true
     typedName.current = false
-    client.profiles.get().then(p => { if (!live) return; if (p && !typedName.current) setName(p.display_name || ''); setReady(true) }).catch(() => {})
+    client.profiles.get().then(p => { if (!live) return; if (p) setSavedName(p.display_name || ''); if (p && !typedName.current) setName(p.display_name || ''); setReady(true) }).catch(() => {})
     return () => { live = false }
   }, [client, session?.user?.id])
 
@@ -154,37 +158,53 @@ export default function Account({ client = cloud(), go = url => { location.assig
     <div className="iv-acct-actions"><Button variant="primary" type="submit" disabled={busy || password.length < MIN_PASSWORD}>{t('Save')}</Button></div>
   </form>)
 
-  if (session) return frame(name || session.user.email, null, <>
+  // Signed in. What most people came for is first and largest: the way on into the app. Then the
+  // one thing to edit, with a Save that says when it saved. The rest are plain rows, and deleting
+  // the account stays folded away until it is asked for.
+  const dirty = name.trim() !== savedName.trim()
+  if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
-    <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); if (!ready) return; run(async () => { const p = await client.profiles.update({ display_name: name }); if (p) setName(p.display_name || '') }) }}>
-      <label className="iv-acct-field"><span>{t('Name')}</span>
-        <TextField className="input" name="name" autoComplete="nickname" maxLength={80} value={name} onChange={e => { typedName.current = true; setName(e.target.value) }} /></label>
-      <div className="iv-acct-actions">
-        <Button variant="primary" type="submit" disabled={busy || !ready} data-save="">{t('Save')}</Button>
-        <Button variant="tinted" disabled={busy} type="button" data-export="" onClick={() => run(async () => {
-          const { status, data } = await client.fn('export-account')
-          if (status !== 200) throw { code: data?.error }
-          save('ironvane-account.json', JSON.stringify(data, null, 2))
-        })}>{t('Export')}</Button>
-        <Button variant="ghost" disabled={busy} type="button" data-change="" onClick={() => { setError(''); setPassword(''); setMode('newpass') }}>{t('Change password')}</Button>
-        {/* The way on: into the app itself. Someone who arrived from an email in a fresh browser
-            has no tab bar yet, and without this the account screen would be a dead end. */}
-        <Button variant="ghost" disabled={busy} type="button" data-continue="" onClick={() => { enter(); nav('/home') }}>{t('Continue')}</Button>
-        <Button variant="ghost" disabled={busy} type="button" data-signout="" onClick={() => { setMode('signin'); setPassword(''); run(() => client.auth.signOut()) }}>{t('Sign out')}</Button>
-      </div>
-    </form>
-    <form className="iv-acct-form iv-acct-danger" onSubmit={e => { e.preventDefault(); run(async () => {
-      const { status, data } = await client.fn('delete-account', { confirm: 'delete' })
-      if (status !== 200) throw { code: data?.error }
-      // the step first, the server after: a slow sign-out must not move someone who has tapped on
-      setWord(''); setMode('signin')
-      await client.auth.signOut()
+    <div className="iv-acct-actions">
+      <Button variant="primary" disabled={busy} type="button" data-continue="" onClick={() => { enter(); nav('/home') }}>{t('Continue')}</Button>
+    </div>
+    <form className="iv-acct-form iv-acct-block" onSubmit={e => { e.preventDefault(); if (!ready || !dirty) return; run(async () => {
+      const p = await client.profiles.update({ display_name: name })
+      if (!p) return
+      const kept = p.display_name || ''
+      setName(kept); setSavedName(kept); setSaved(true)
+      setCloudAccount({ email: session.user.email, name: kept })
     }) }}>
-      <label className="iv-acct-field"><span>{t('Delete account')}</span>
-        <TextField className="input" name="confirm" autoComplete="off" autoCapitalize="none" spellCheck={false} value={word} onChange={e => setWord(e.target.value)} />
-        <small>{t('Type the word delete to confirm. Your account is removed and cannot be brought back.')}</small></label>
-      <div className="iv-acct-actions"><Button variant="danger" type="submit" disabled={busy || word.trim().toLowerCase() !== 'delete'} data-delete="">{t('Delete account')}</Button></div>
+      <label className="iv-acct-field"><span>{t('Name')}</span>
+        <span className="iv-acct-inline">
+          <TextField className="input" name="name" autoComplete="nickname" maxLength={80} value={name} onChange={e => { typedName.current = true; setSaved(false); setName(e.target.value) }} />
+          <Button variant="tinted" type="submit" disabled={busy || !ready || !dirty} data-save="">{t('Save')}</Button>
+        </span></label>
+      {/* Always in the page, so that a screen reader hears it fill in. */}
+      <p className="iv-acct-ok" role="status" data-saved="">{saved && !dirty ? t('Saved') : ''}</p>
     </form>
+    <div className="iv-acct-list">
+      <button type="button" className="iv-acct-row" disabled={busy} data-change="" onClick={() => { setError(''); setPassword(''); setMode('newpass') }}><span>{t('Change password')}</span><Icon name="chevronRight" /></button>
+      <button type="button" className="iv-acct-row" disabled={busy} data-export="" onClick={() => run(async () => {
+        const { status, data } = await client.fn('export-account')
+        if (status !== 200) throw { code: data?.error }
+        save('ironvane-account.json', JSON.stringify(data, null, 2))
+      })}><span>{t('Export')}</span><Icon name="chevronRight" /></button>
+      <button type="button" className="iv-acct-row" disabled={busy} data-signout="" onClick={() => { setMode('signin'); setPassword(''); run(() => client.auth.signOut()) }}><span>{t('Sign out')}</span></button>
+    </div>
+    <details className="iv-acct-danger">
+      <summary>{t('Delete account')}</summary>
+      <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => {
+        const { status, data } = await client.fn('delete-account', { confirm: 'delete' })
+        if (status !== 200) throw { code: data?.error }
+        // the step first, the server after: a slow sign-out must not move someone who has tapped on
+        setWord(''); setMode('signin')
+        await client.auth.signOut()
+      }) }}>
+        <label className="iv-acct-field"><span>{t('Type the word delete to confirm. Your account is removed and cannot be brought back.')}</span>
+          <TextField className="input" name="confirm" autoComplete="off" autoCapitalize="none" spellCheck={false} value={word} onChange={e => setWord(e.target.value)} /></label>
+        <div className="iv-acct-actions"><Button variant="danger" type="submit" disabled={busy || word.trim().toLowerCase() !== 'delete'} data-delete="">{t('Delete account')}</Button></div>
+      </form>
+    </details>
   </>)
 
   // After a sign-up the server answers the same whether the address is new or already has an
