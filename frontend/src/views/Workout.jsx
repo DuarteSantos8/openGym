@@ -11,7 +11,7 @@ import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume, livePresence } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
@@ -20,7 +20,7 @@ import { beep, vibrate, unlock } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
-import { api, beacon } from '../lib/api.js'
+import { api, beacon, msSinceSignOfLife } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor, restKindAfter } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
@@ -2658,32 +2658,27 @@ function ActiveWorkout() {
     }
   }, [])
 
-  // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —
-  // guests have no server session. Reads fresh state each tick so progress stays current.
+  // Live presence so the admin dashboard can show who's training now. Signed-in only — guests
+  // have no server session. A beacon when the screen opens, one per return to it, and a keepalive
+  // after quiet; the syncs a logged set sends carry the progress in between (store doPush).
   useEffect(() => {
-    // The tour's practice workout is nobody's training: the dashboard never hears of it.
-    if (!useStore.getState().user || editing || useStore.getState().tourSandbox) return
+    // The tour's practice workout and a past workout being logged are nobody's training: the
+    // dashboard never hears of them (the server reads a synced backfill the same way).
+    if (!useStore.getState().user || editing || A.backfill || useStore.getState().tourSandbox) return
     let stopped = false
     const ping = active => {
       const A2 = useStore.getState().S.active
       if (!A2) return
-      const u = supersetUnits(A2.entries)
-      const c = Math.min(A2.cur, Math.max(0, A2.entries.length - 1))
-      const ui = u.findIndex(x => x.includes(c))
-      const tot = setUnitsTotal(A2.entries)
-      api('/api/activity', { method: 'POST', body: JSON.stringify({
-        active, name: A2.name, exIdx: ui + 1, exTotal: u.length,
-        setsDone: setsDoneActive(A2), setsTotal: tot, startedAt: A2.start
-      }) }).catch(() => {})
+      api('/api/activity', { method: 'POST', body: JSON.stringify({ active, ...livePresence(A2) }) }).catch(() => {})
     }
     // The cleanup below runs on in-app navigation only. A closed tab, or a home-screen app swiped
     // away or killed by the phone, unmounts nothing, so "training now" kept the athlete until the
-    // server's presence expiry, 70 s after they had gone. So the page going away sends the "left"
+    // server's presence expiry, minutes after they had gone. So the page going away sends the "left"
     // signal itself, and says why: `closed` on pagehide, which the server acts on at once, and
     // `hidden` on visibilitychange, because iOS kills a hidden home-screen app without a pagehide.
-    // The server keeps a `hidden` athlete listed for 45 s and a heartbeat cancels it, so a hidden
-    // page that keeps running (a phone locked between sets) goes on heartbeating and never blinks
-    // off the list; an iOS app swiped away sends nothing after `hidden` and is gone in 45 s. Each
+    // The server keeps a `hidden` athlete listed for 270 s and a keepalive cancels it, so a hidden
+    // page that keeps running (a phone locked between sets) goes on beating and never blinks
+    // off the list; an iOS app swiped away sends nothing after `hidden` and is gone in 270 s. Each
     // is sent once per hide, re-armed by a heartbeat; the pagehide of a close that went hidden
     // first still sends `closed`, and nothing follows `closed`. A page shown again heartbeats at once.
     let sent = null
@@ -2696,7 +2691,9 @@ function ActiveWorkout() {
     const onHide = () => leave('closed')
     const onShow = e => { if (e.persisted && sent && !stopped) live() }
     live()
-    const iv = setInterval(() => { if (!stopped) live() }, 20000)
+    // The server reads every sync of a running workout as a sign of life, so a set logged costs no
+    // beat of its own: only 3 quiet minutes do (the server lets a row go after 5).
+    const iv = setInterval(() => { if (!stopped && msSinceSignOfLife() >= 180000) live() }, 30000)
     document.addEventListener('visibilitychange', onVisibility)
     window.addEventListener('pagehide', onHide)
     window.addEventListener('pageshow', onShow)

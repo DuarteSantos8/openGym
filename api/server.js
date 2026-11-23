@@ -1037,18 +1037,38 @@ const text = v => (typeof v === 'string' ? v : typeof v === 'number' ? String(v)
 const b64uToBuf = s => Buffer.from(s, 'base64url');
 
 /* ---------- live presence (in-memory) ---------- */
-// Clients heartbeat /api/activity while a workout is on screen; the admin dashboard reads who's
-// live. Purely ephemeral — never persisted. Expires shortly after the last ping.
+// A phone's sync that carries a running workout (PUT /api/data) marks the athlete live, and one
+// that carries none drops them; a phone that logs nothing for 3 min sends /api/activity itself.
+// The admin dashboard reads who's live. Purely ephemeral — never persisted. Expires 5 min after
+// the last sign of life.
 const presence = new Map();               // uid -> { name, exIdx, exTotal, setsDone, setsTotal, startedAt, updatedAt, hiddenAt? }
-const PRESENCE_TTL = 70000;               // ~3.5× the 20s client heartbeat
+const PRESENCE_TTL = 300000;              // the phone's idle keepalive is 3 min, checked every 30 s: it lands within 3.5 min
 // A "left" signal with reason `hidden` (the workout page went to the background) marks the row
 // away at that moment instead of dropping it. A phone locked between sets keeps the page running
 // and heartbeating, and the next heartbeat clears the mark, so the athlete never blinks off the
 // dashboard; an iOS home-screen app swiped away sends `hidden` and nothing after it, so it is gone
-// this long after instead of the full TTL. Two heartbeat intervals and 5 s: browsers throttle a
-// hidden page's timers, so its first heartbeat after the hide can run late, and one late
-// heartbeat must not take a locked phone off the list.
-const PRESENCE_HIDDEN_GRACE = 45000;
+// this long after instead of the full TTL. The 3.5 min a keepalive can take, and 1 min: browsers
+// throttle a hidden page's timers, so its first keepalive after the hide can run late, and one
+// late keepalive must not take a locked phone off the list.
+const PRESENCE_HIDDEN_GRACE = 270000;
+// The row a heartbeat, or a sync's `live`, describes. `b` is caller-supplied.
+// A number or numeric string counts, anything else is 0: unary + throws on `{"valueOf":null,"toString":null}`.
+const num = v => ((typeof v === 'number' || typeof v === 'string') && +v) || 0;
+const presenceRow = (b, now = Date.now()) => ({
+  name: text(b.name).slice(0, 60),
+  exIdx: num(b.exIdx), exTotal: num(b.exTotal),
+  setsDone: num(b.setsDone), setsTotal: num(b.setsTotal),
+  startedAt: num(b.startedAt) || now,
+  updatedAt: now
+});
+// What a sync says of the athlete: a running workout (`active`, with the phone's own progress in
+// `live` when it sent one) is a sign of life, like a heartbeat; none means it ended. A logged
+// workout being edited (`editingWorkoutId`) or a past one being logged (`backfill`) is nobody
+// training, as the workout screen says too.
+function presenceFromSync(uid, active, live) {
+  if (!active || typeof active !== 'object' || active.editingWorkoutId || active.backfill) { presence.delete(uid); return; }
+  presence.set(uid, presenceRow({ name: active.name, startedAt: active.start, ...(live && typeof live === 'object' ? live : {}) }));
+}
 // Whether a row counts as "training now". The one place that decides it: the admin list and the
 // sweep below both ask here.
 const presenceListed = (p, now) =>
@@ -3221,7 +3241,9 @@ const routes = {
         (body.baseRev != null && typeof body.baseWid === 'string' && cur?._wid && body.baseWid !== cur._wid)) {
       return json(res, 409, { error: 'conflict', rev: curRev, state: forClient(cur) });
     }
+    const running = body.state.active;   // commitState drops it: a running workout stays on the device
     const done = commitState(user.id, cur, body.state, { overRead: body.baseRev != null && body.baseRev === curRev, stamped: body.stamped === true });
+    if (done.status === 200) presenceFromSync(user.id, running, body.live);
     json(res, done.status, done.body);
   },
 
@@ -3330,7 +3352,8 @@ const routes = {
     json(res, 200, { ok: true });
   },
 
-  // Live-workout heartbeat: client pings while a workout is on screen; { active:false } drops it,
+  // Live-workout beacon: the client says so when a workout opens, and again after 3 min with
+  // nothing else sent (a sync with a running workout says it too); { active:false } drops it,
   // except with reason `hidden`, which marks it away (see PRESENCE_HIDDEN_GRACE). `navigated`,
   // `closed`, and no reason at all (older clients), drop it at once.
   'POST /api/activity': async (req, res) => {
@@ -3339,13 +3362,7 @@ const routes = {
     const body = await readBody(req);
     if (body.active) {
       // a fresh row, which also clears any hidden mark
-      presence.set(user.id, {
-        name: text(body.name).slice(0, 60),
-        exIdx: +body.exIdx || 0, exTotal: +body.exTotal || 0,
-        setsDone: +body.setsDone || 0, setsTotal: +body.setsTotal || 0,
-        startedAt: +body.startedAt || Date.now(),
-        updatedAt: Date.now()
-      });
+      presence.set(user.id, presenceRow(body));
     } else if (body.reason === 'hidden') {
       // The first mark stands: a repeat without a heartbeat between cannot stretch the grace.
       const p = presence.get(user.id);

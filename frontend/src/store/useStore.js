@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
+import { livePresence } from '../lib/history.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { syncGymInventory } from '../lib/gym-inventory.js'
@@ -881,6 +882,9 @@ export const useStore = create((set, get) => {
     // against the copy it holds, exactly as it would for that app (api/sync-stamps.js).
     const legacy = readLegacy()
     const body = { state: S, stamped: !(legacy && legacy.owner === get().user?.id) }
+    // A running workout never reaches the server's copy, but the server reads it in this push as
+    // "training now", and takes the progress from here. A dashboard nicety: it never fails a push.
+    if (S.active) { try { body.live = livePresence(S.active) } catch { /* the server lists the workout by its name */ } }
     if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
     else if (!force && base) { body.baseRev = base.rev; if (base.wid) body.baseWid = base.wid }
     try {

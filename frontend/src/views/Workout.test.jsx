@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
-import { api, beacon } from '../lib/api.js'
+import { api, beacon, msSinceSignOfLife } from '../lib/api.js'
 import { nextPrescription } from '../lib/progression.js'
 import { buildCombinedEntries } from '../lib/session-merge.js'
 import { buildCompletedWorkout } from '../lib/finish-workout.js'
@@ -136,6 +136,7 @@ vi.mock('../components/WorkoutSettingsSheet.jsx', () => ({ workoutSettingsSheet:
 vi.mock('../lib/api.js', () => ({
   api: vi.fn(() => Promise.resolve({})),
   beacon: vi.fn(),
+  msSinceSignOfLife: vi.fn(() => 0),
   IS_APPLE: false, IS_ANDROID: false, BIO: 'biometrics',
 }))
 
@@ -271,6 +272,7 @@ async function rerenderAt(cur) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.mocked(msSinceSignOfLife).mockReturnValue(0)
   mocks.user = null
   mocks.timer = null
   mocks.work = null
@@ -991,6 +993,13 @@ describe('Workout live-presence heartbeat', () => {
     expect(api).toHaveBeenLastCalledWith('/api/activity', { method: 'POST', body: JSON.stringify({ active: false, reason: 'navigated' }) })
   })
 
+  it('logging a past workout is nobody training: no heartbeat', async () => {
+    mocks.user = { id: 'u1', name: 'Boris' }
+    await mount([exercise('plain-bench', [false])], 0, { active: { backfill: { durationMin: 60, replaceId: null } } })
+    await unmount()
+    expect(api).not.toHaveBeenCalledWith('/api/activity', expect.objectContaining({ body: expect.stringContaining('"active":true') }))
+  })
+
   it('a guest has no server session, so there is no heartbeat and no signal', async () => {
     await mount([exercise('plain-bench', [false])])
     await unmount()
@@ -1002,8 +1011,9 @@ describe('Workout live-presence heartbeat', () => {
 // A closed tab, or a home-screen app swiped away or killed by the phone, never unmounts the screen,
 // so the "left" signal in the effect cleanup never went and "training now" kept the athlete until
 // the server's presence expiry. The page going away sends it itself, with the reason the server
-// goes by: `closed` drops the athlete at once, `hidden` gives a heartbeat 45 s to cancel it.
+// goes by: `closed` drops the athlete at once, `hidden` gives a keepalive 270 s to cancel it.
 describe('Workout live-presence "left" signal when the page goes away', () => {
+  const KEEPALIVE_MS = 180000
   let visibility
   const setVisibility = async state => {
     visibility = state
@@ -1075,18 +1085,33 @@ describe('Workout live-presence "left" signal when the page goes away', () => {
     expect(reasons()).toEqual(['closed', 'closed'])
   })
 
-  it('a hidden page that keeps heartbeating is re-armed, for hidden and for the close that follows', async () => {
+  it('a hidden page whose keepalive is due is re-armed, for hidden and for the close that follows', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
     await signedInMount()
     await setVisibility('hidden')
     expect(reasons()).toEqual(['hidden'])
     const before = heartbeats()
-    await act(async () => { vi.advanceTimersByTime(20000) })
+    vi.mocked(msSinceSignOfLife).mockReturnValue(KEEPALIVE_MS)
+    await act(async () => { vi.advanceTimersByTime(30000) })
     expect(heartbeats()).toBe(before + 1)
     await setVisibility('hidden')
     expect(reasons()).toEqual(['hidden', 'hidden'])
     await pagehide()
     expect(reasons()).toEqual(['hidden', 'hidden', 'closed'])
+  })
+
+  // The server reads a set's sync as "training now", so the screen only beats on its own after
+  // 3 minutes in which nothing went to the server (lib/api.js msSinceSignOfLife), checked every 30 s.
+  it('no keepalive while the server has heard from the phone inside 3 minutes, one once it has not', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    await signedInMount()
+    const before = heartbeats()
+    vi.mocked(msSinceSignOfLife).mockReturnValue(KEEPALIVE_MS - 1)
+    await act(async () => { vi.advanceTimersByTime(10 * 60000) })
+    expect(heartbeats()).toBe(before)
+    vi.mocked(msSinceSignOfLife).mockReturnValue(KEEPALIVE_MS)
+    await act(async () => { vi.advanceTimersByTime(30000) })
+    expect(heartbeats()).toBe(before + 1)
   })
 
   it('a guest sends nothing, and an unmounted screen stops listening', async () => {

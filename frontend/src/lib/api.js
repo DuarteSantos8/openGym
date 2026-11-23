@@ -57,6 +57,13 @@ function refusal(status, body) {
   return (body && body.error) || ('HTTP ' + status)
 }
 
+// When the server last heard the athlete is training: a presence beat, or a sync (the server reads a
+// running workout in it, api/server.js presence). The workout screen's keepalive waits for this
+// to be quiet, so a phone that logs sets sends nothing extra.
+let lastSignOfLife = 0
+export const msSinceSignOfLife = () => Date.now() - lastSignOfLife
+const signOfLife = (path, init) => path === '/api/activity' || (path === '/api/data' && init.method === 'PUT')
+
 export async function api(path, opts) {
   const { timeout, ...init } = opts || {}
   // A phone with no server to talk to: local mode, or a pairing that is gone. There is no
@@ -70,7 +77,9 @@ export async function api(path, opts) {
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.
   const url = remoteBase ? remoteBase + path : appBase().replace(/\/$/, '') + path
   const ms = timeout != null ? timeout : (init.method || 'GET').toUpperCase() === 'GET' ? TIMEOUT_GET_MS : TIMEOUT_MS
-  return request(url, Object.assign({}, init, { headers }), ms)
+  const answer = await request(url, Object.assign({}, init, { headers }), ms)
+  if (signOfLife(path, init)) lastSignOfLife = Date.now()
+  return answer
 }
 
 // One exchange, bounded by `ms`. No status on the timeout, like a fetch that failed outright: to

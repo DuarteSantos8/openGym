@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { webauthnOK, bio, BIO, passkeyError, api } from './api.js'
+import { webauthnOK, bio, BIO, passkeyError, api, msSinceSignOfLife } from './api.js'
 import de from '../locales/de.js'
 import { _setLangState } from './i18n-core.js'
 
@@ -223,5 +223,38 @@ describe('a write refused for the wrong address', () => {
   it('any other refusal keeps the server\'s words', async () => {
     answer(403, { error: 'forbidden' })
     expect((await api('/api/data', { method: 'PUT', body: '{}' }).catch(x => x)).message).toBe('forbidden')
+  })
+})
+
+// The server counts a request as a sign the athlete is training only when it is a heartbeat or a
+// sync (api/server.js presence). The workout screen sends its own keepalive after 3 quiet minutes
+// by this clock, so a set logged every couple of minutes costs no extra request.
+describe('msSinceSignOfLife', () => {
+  const answering = (ok = true) => vi.fn(async () => ({ ok, status: ok ? 200 : 500, json: async () => ({}) }))
+  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
+
+  it('restarts with a presence beat or a sync, and with nothing else', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.stubGlobal('fetch', answering())
+    vi.setSystemTime(1000000)
+    await api('/api/activity', { method: 'POST', body: '{}' })
+    vi.setSystemTime(1060000)
+    expect(msSinceSignOfLife()).toBe(60000)
+    await api('/api/data/rev')
+    await api('/api/push/rest-timer', { method: 'POST', body: '{}' })
+    expect(msSinceSignOfLife()).toBe(60000)
+    await api('/api/data', { method: 'PUT', body: '{}' })
+    expect(msSinceSignOfLife()).toBe(0)
+  })
+
+  it('a request the server did not take is no sign of life', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(2000000)
+    vi.stubGlobal('fetch', answering())
+    await api('/api/activity', { method: 'POST', body: '{}' })
+    vi.setSystemTime(2100000)
+    vi.stubGlobal('fetch', answering(false))
+    await expect(api('/api/data', { method: 'PUT', body: '{}' })).rejects.toThrow()
+    expect(msSinceSignOfLife()).toBe(100000)
   })
 })
