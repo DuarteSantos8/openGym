@@ -84,6 +84,8 @@ final class OpenGymWatchUITests: XCTestCase {
 
     func testRestChipArmsTheCapsuleAndHalvesMove() {
         launch("effort")
+        XCTAssertTrue(app.buttons["RIR 1"].waitForExistence(timeout: 15), "the RIR 1 chip did not show up")
+        Thread.sleep(forTimeInterval: 1.5) // the demo launch locks taps for a second (TouchLock), as in openSetMenu
         tap(app.buttons["RIR 1"], "the RIR 1 chip")
         assertArmed("RIR 1", "after the chip")
         tapDisc(plus: true)
@@ -104,6 +106,7 @@ final class OpenGymWatchUITests: XCTestCase {
         launch("fix", ["-OpenGymWatchRated", "2"])
         XCTAssertTrue(settled.waitForExistence(timeout: 15), "the fix view shows no rating pill")
         XCTAssertEqual(settled.value as? String, "RIR 2")
+        Thread.sleep(forTimeInterval: 1.5) // the demo launch locks taps for a second (TouchLock), as in openSetMenu
         settled.tap()
         assertArmed("RIR 2", "after the tap")
         tapDisc(plus: true)
