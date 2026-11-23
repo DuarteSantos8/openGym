@@ -6,6 +6,7 @@ import { t } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import BrandLogo from '../components/BrandLogo.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
@@ -68,6 +69,14 @@ function RegisterSheet({ close }) {
   </>
 }
 
+/** To the account, through the router: that numbers the step in this session's history, which is
+    how the account's Back can return here. Its own component so that only the Cloud edition's
+    first screen needs a router around it. */
+function AccountButton() {
+  const nav = useNavigate()
+  return <Button variant="primary" icon="person" onClick={() => nav('/account')}>{t('Sign in or create account')}</Button>
+}
+
 export default function Login() {
   const { setUser, adoptProfile, setGuest } = useStore()
   const config = useStore(s => s.config)
@@ -127,7 +136,7 @@ export default function Login() {
     <div className="narrow" style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
-      <Button variant="primary" icon="person" onClick={() => { window.location.hash = '#/account' }}>{t('Sign in or create account')}</Button>
+      <AccountButton />
       <div style={{ height: 10 }} />
       {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Your training stays on this device. An account is for your plan and purchases.')}</div>

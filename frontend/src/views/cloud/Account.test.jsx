@@ -36,11 +36,11 @@ function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) 
 
 let where = ''
 function Where() { where = useLocation().pathname; return null }
-async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn() } = {}) {
+async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn(), from = null } = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  await act(async () => { root.render(<MemoryRouter initialEntries={[url]}><Where /><Account client={client} go={go} enter={enter} /></MemoryRouter>) })
+  await act(async () => { root.render(<MemoryRouter initialEntries={from ? [from, url] : [url]} initialIndex={from ? 1 : 0}><Where /><Account client={client} go={go} enter={enter} /></MemoryRouter>) })
   await act(async () => {})
   return go
 }
@@ -310,6 +310,29 @@ describe('Account', () => {
     await click('[data-back]')
     expect(where).toBe('/home')
     expect(c.auth.recover).not.toHaveBeenCalled()
+  })
+
+  // Found in review of #71: Back always went to the app's front door. Someone who opened the
+  // account from Settings was sent to Home, and the account stayed behind them in the history.
+  it('Back returns to where they came from when that was inside the app', async () => {
+    const state = vi.spyOn(window.history, 'state', 'get').mockReturnValue({ idx: 1 })
+    try {
+      const c = fakeClient()
+      await mount(c, { from: '/settings' })
+      expect(where).toBe('/account')
+      await click('[data-back]')
+      expect(where).toBe('/settings')
+    } finally { state.mockRestore() }
+  })
+
+  it('Back goes to the app when the account was the first thing opened (a link, a bookmark)', async () => {
+    const state = vi.spyOn(window.history, 'state', 'get').mockReturnValue({ idx: 0 })
+    try {
+      const c = fakeClient()
+      await mount(c)
+      await click('[data-back]')
+      expect(where).toBe('/home')
+    } finally { state.mockRestore() }
   })
 
   it('signed in, Continue is the way on, and there is no second "Back"', async () => {
