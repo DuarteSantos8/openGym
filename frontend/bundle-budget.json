@@ -1,0 +1,9 @@
+{
+  "note": "What the first screen may cost, gzipped, and what must stay out of it. Raise a number only in the pull request that needs it, and say why there. scripts/check-bundle-budget.mjs holds the build to this.",
+  "entryJsGzip": 950000,
+  "entryCssGzip": 62000,
+  "lazyOnly": [
+    { "what": "exercise guides (content/exercise-guides.js)", "marker": "Heels lifting off the floor." },
+    { "what": "Learn glossary and guides (content/learn.js)", "marker": "A group of reps done without stopping" }
+  ]
+}

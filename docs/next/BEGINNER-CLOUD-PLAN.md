@@ -49,7 +49,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|---|---|
 | EP18-T01 | Edition flag | `frontend/src/lib/edition.js` + test | `editionOf` is `cloud` only for the exact word; a test reads `src/` and fails on a static import of `lib/cloud` or a provider's name outside it | done, #58 |
 | EP18-T02 | E2E network guard per edition | `frontend/e2e/fixtures.mjs`, `frontend/playwright.config.mjs` | default projects unchanged; a `cloud` project allows only ADR 0008's four origins | open |
-| EP18-T03 | Bundle budget | NEW `scripts/check-bundle-budget.mjs`, CI | red when the entry chunk grows more than 10 KB gzip without the budget file changing | open |
+| EP18-T03 | Bundle budget | NEW `frontend/bundle-budget.json`, `scripts/check-bundle-budget.mjs` + test | the first load (what `index.html` asks for up front) stays under 950 kB of script and 62 kB of styles, gzipped, and the guides and Learn text stay out of it | **done** in `next/EP22-load-finder`: measured 905 kB and 58 kB. The budget is today's size plus 5%, not a target: the first load is heavy and nothing here has made it lighter |
 | EP18-T04 | Media manifest and cloud build filter | `scripts/catalogue/build.mjs`, NEW `catalogue/media-sources.json` | a cloud build holds no file without a commercial-use licence; attribution screen lists every author | open, **blocks a paid deploy** |
 | EP18-T05 | Secret scan and env template | `api/test/no-secrets.test.js`, `.env.example` | CI fails on a committed Stripe or Supabase key or a private key block | done, #58 |
 
@@ -154,6 +154,7 @@ What was run, where, and what was not. #56 to #59 are merged; nothing has been d
 | Guidance branch, locale checks, build, Safari 15.5 bundle check, secrets check | passed; 10 new strings in all 25 packs |
 | Load finder branch (`next/EP22-load-finder`), full frontend suite | 966 files, 10,785 tests. 4 tests in 2 older files failed here and on `main`: they dated a workout by the UTC day, which on a Sunday evening west of Greenwich is next week. Fixed in the branch and passing in three time zones; CI (UTC) never saw it |
 | Load finder branch, E2E on the three profiles | 59 passed, 1 skipped (the same camera test) |
+| Load finder branch, bundle budget | first load 905 kB script and 58 kB styles gzipped, inside the budget; guides and Learn text load on demand |
 | **Not run** | Real phones; a screen reader by hand; anything against a real Supabase project or Stripe; the native apps |
 
 ### Grades, honestly
@@ -164,5 +165,5 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 |---|---|---|
 | Beginner-friendliness and clarity | 7 | Every starter-plan exercise has cues, mistakes, where to feel it and an easier version, and a first weight can be found in three test sets. But all 45 guides are unreviewed drafts in English, the glossary reaches one screen, and no first-time lifter has tried any of it |
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
-| Feature completeness (all in one) | 5 | 25 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
+| Feature completeness (all in one) | 5 | 26 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
 | Technical quality and backend | 6 | What exists is tested hard, including by breaking it. But no sign-in, no paywall, and nothing run against the real services. ADR 0013 may remove the API wiring altogether, once checked on a real project |
