@@ -4,11 +4,12 @@
  * Two things a phone on a slow connection pays for before the first screen: the script and the
  * styles index.html asks for up front (its own tags and its modulepreloads). This adds them up
  * gzipped and compares with the budget, and checks that text meant to load on demand (the
- * exercise guides, the Learn hub) has not been pulled into that first load by a stray import.
+ * exercise guides, the Learn hub) has not been pulled into that first load by a stray import,
+ * and that a default build has none of the Cloud edition's code in any file.
  *
  *   node scripts/check-bundle-budget.mjs [dist]     exit 1 with one line per problem
  */
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -37,7 +38,10 @@ export function measure(dist) {
     if (f.endsWith('.js')) { entryJsGzip += gz; scripts.push({ file: f, text: buf.toString('utf8') }) }
     else entryCssGzip += gz
   }
-  return { files, entryJsGzip, entryCssGzip, scripts }
+  // Every script the build made, loaded up front or not: for what must not be there at all.
+  const assets = join(dist, 'assets')
+  const all = existsSync(assets) ? readdirSync(assets).filter(f => f.endsWith('.js')).map(f => ({ file: 'assets/' + f, text: readFileSync(join(assets, f), 'utf8') })) : []
+  return { files, entryJsGzip, entryCssGzip, scripts, all }
 }
 
 const kb = n => (n / 1000).toFixed(1) + ' kB'
@@ -51,6 +55,11 @@ export function problems(m, budget) {
   for (const { what, marker } of budget.lazyOnly || []) {
     const hit = m.scripts.find(s => s.text.includes(marker))
     if (hit) out.push(`${what} is in the first load (${hit.file}); it is meant to load on demand`)
+  }
+  // A default build carries no Cloud edition code, reachable or not (ADR 0008).
+  for (const { what, marker } of budget.absent || []) {
+    const hit = (m.all || []).find(s => s.text.includes(marker))
+    if (hit) out.push(`${what} is in this build (${hit.file}); a default build must not contain it`)
   }
   return out
 }

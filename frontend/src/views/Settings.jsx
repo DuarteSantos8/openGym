@@ -103,6 +103,7 @@ import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
 import { LEVELS, experienceOf, applyExperience } from '../lib/experience.js'
+import { isCloud } from '../lib/edition.js'
 import { levelName } from '../lib/experience-copy.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
@@ -963,6 +964,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           onChange={v => { if (v) update(s => { applyExperience(s, v) }) }} />
         <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
       </Section>
+      {/* Cloud edition only (lib/edition.js): the hosted account. Nothing in a default build. */}
+      {isCloud() && <Section>
+        <Row icon="person" iconTint="var(--acc)" title={t('Account')} accessory="chevron" onClick={() => nav('/account')} />
+      </Section>}
     </>,
 
     units: () => <>

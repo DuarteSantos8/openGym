@@ -2,10 +2,15 @@
 // the handlers: PostgREST's eq / in / not.in filters, upsert by on_conflict, PATCH, DELETE, the
 // auth /user endpoint, and Stripe's customers, checkout sessions, portal sessions and
 // subscriptions. Every request is recorded so a test can say what was, and was not, sent.
-const PK = { customers: ['user_id'], subscriptions: ['id'], entitlements: ['user_id', 'feature', 'source'], webhook_events: ['id'] }
+const PK = { customers: ['user_id'], subscriptions: ['id'], entitlements: ['user_id', 'feature', 'source'], webhook_events: ['id'], profiles: ['id'] }
 
-export function makeWorld({ users = {}, env: extra = {} } = {}) {
-  const tables = { customers: [], subscriptions: [], entitlements: [], webhook_events: [] }
+export function makeWorld({ users: seed = {}, env: extra = {} } = {}) {
+  // A copy: deleting an account in one test must not delete it for the next.
+  const users = { ...seed }
+  const tables = { customers: [], subscriptions: [], entitlements: [], webhook_events: [], profiles: [] }
+  // What deleting an auth user takes with it (every table's `on delete cascade`).
+  const OWNED = { profiles: 'id', customers: 'user_id', subscriptions: 'user_id', entitlements: 'user_id' }
+  const admin = { down: false, deleted: [] }
   const stripe = { customers: [], sessions: [], portals: [], subscriptions: {}, idempotency: new Map(), down: false }
   const calls = []
   const env = {
@@ -82,11 +87,23 @@ export function makeWorld({ users = {}, env: extra = {} } = {}) {
       const u = users[(req.headers.Authorization || '').replace(/^Bearer\s+/i, '')]
       return u ? reply(200, u) : reply(401, { message: 'invalid token' })
     }
+    const del = url.origin === env.SUPABASE_URL && req.method === 'DELETE' && /^\/auth\/v1\/admin\/users\/([^/]+)$/.exec(url.pathname)
+    if (del) {
+      if (req.headers.apikey !== env.SUPABASE_SECRET_KEY || req.headers.Authorization !== 'Bearer ' + env.SUPABASE_SECRET_KEY) return reply(401, { message: 'bad key' })
+      if (admin.down) return reply(500, { message: 'down' })
+      const id = decodeURIComponent(del[1])
+      const token = Object.keys(users).find(t => users[t].id === id)
+      if (!token) return reply(404, { message: 'User not found' })
+      delete users[token]
+      for (const [t, col] of Object.entries(OWNED)) tables[t] = tables[t].filter(r => r[col] !== id)
+      admin.deleted.push(id)
+      return reply(200, {})
+    }
     if (url.origin === env.SUPABASE_URL && url.pathname.startsWith('/rest/v1/')) return rest(url, req)
     if (url.origin === 'https://api.stripe.com') return stripeApi(url, req)
     throw new Error('world: a request left for ' + url.origin)
   }
-  return { env, tables: () => tables, table: n => tables[n], stripe, calls, fetchImpl }
+  return { env, tables: () => tables, table: n => tables[n], stripe, admin, calls, fetchImpl }
 }
 
 const enc = new TextEncoder()

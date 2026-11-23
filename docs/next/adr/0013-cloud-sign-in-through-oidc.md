@@ -1,6 +1,6 @@
 # ADR 0013: Cloud sign-in goes through the API's existing OIDC, with Supabase as the provider
 
-- Status: proposed (2026-11-22). Supersedes the "API verifies a Supabase token" half of ADR 0010 if accepted. Needs one real Supabase project to confirm before it is accepted.
+- Status: proposed (2026-11-22), partly confirmed on a real project (2026-11-23): checks 2, 3 and 4 below hold by the project's own discovery document; checks 1 and 5 need the OAuth server switched on. Supersedes the "API verifies a Supabase token" half of ADR 0010 if accepted.
 - Context: ADR 0010 planned new API code for the Cloud edition: verify a Supabase access token on the API (`api/supabase-jwt.js`, EP19-T04) and add a link endpoint and a guest upgrade (EP19-T05). Before wiring that into a 3,800-line server, two facts changed the picture.
 
 ## What is already there
@@ -53,3 +53,19 @@ If 1 or 2 fails, this ADR is rejected and EP19-T04 goes ahead as first written.
 ## Not changed
 
 Entitlements (ADR 0011) still key on the Supabase user id. The API knows that id as the OIDC `sub` it stores for the account, so a server-side Pro check can ask Supabase for that user's entitlements with no extra mapping table.
+
+## What the first real project showed (2026-11-23)
+
+Read from the project's own `/.well-known/openid-configuration` and its key set, and held by `supabase/tests/live.test.mjs`:
+
+| Check | Result |
+|---|---|
+| 2. Discovery lists `S256` and an accepted ID-token algorithm | yes: `S256`; `ES256` and `RS256` are listed, and the published key is `ES256` |
+| 3. A public client (PKCE, no secret) is possible | yes: `none` is among the token endpoint's auth methods |
+| 4. `email_verified` is a claim | yes |
+| `issuer` in discovery | `https://<ref>.supabase.co/auth/v1`, exactly the value `OIDC_ISSUER` is to be set to |
+| 1. `iss` in a real ID token equals that | **not yet**: no ID token can be had while the OAuth server is off (`feature_disabled`) |
+| 5. A full round trip through the API | **not yet**: same reason, and it needs a running API |
+
+The consent page ADR 0013 asked for is built: `#/account?authorization_id=…` in the cloud build (`frontend/src/views/cloud/Account.jsx`), calling `GET` and `POST /auth/v1/oauth/authorizations/<id>[/consent]`. Both paths exist on the project (they answer `feature_disabled`, not "not found"), but neither has run for real.
+

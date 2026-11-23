@@ -105,6 +105,11 @@ const Tools = lazyView(() => import('./views/Tools.jsx'))
 // Find my plan and Learn (EP22, EP24): the beginner's way in. Fetched like every other screen past Home.
 const Onboarding = lazyView(() => import('./views/Onboarding.jsx'))
 const Learn = lazyView(() => import('./views/Learn.jsx'))
+// The Cloud edition's account screen (ADR 0008, 0013). The comparison is with the build's own
+// constant, written out here, so a default build drops this import and never has the file:
+// scripts/check-bundle-budget.mjs holds it to that.
+const CLOUD = import.meta.env.VITE_EDITION === 'cloud'
+const CloudAccount = CLOUD ? lazyView(() => import('./views/cloud/Account.jsx')) : null
 const Journal = lazyView(() => import('./views/Journal.jsx'))
 const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 // The trainer dashboard (docs/TRAINERS.md): only for sessions that train someone or lead a gym.
@@ -403,7 +408,10 @@ function Shell() {
     </div>
   )
 
-  const view = l => (!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
+  // In the Cloud edition the account screen is reachable before this app has a session of its
+  // own: it is where a link in an email lands, and where the hosted sign-in server sends someone
+  // to approve signing in here (ADR 0013), which by definition happens before they are in.
+  const view = l => (CloudAccount && l.pathname === '/account' ? <CloudAccount /> : !authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
     <Routes location={l}>
       <Route path="/home" element={<Home />} />
       {/* A module switched off (Settings → Modules, lib/modules.js) takes its screens with it: the
