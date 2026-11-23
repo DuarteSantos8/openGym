@@ -26,7 +26,11 @@ COPY frontend/ ./
 ARG APP_BUILD=""
 RUN APP_BUILD="$APP_BUILD" npm run build
 
-FROM nginxinc/nginx-unprivileged:1-alpine
+# nginx/nginx-unprivileged, not nginxinc/: upstream moved its Docker Hub repository in October 2026
+# (nginxinc/docker-nginx-unprivileged#428) and stopped pushing to the old name at 1.31.7, so
+# the old name never got 1.31.9 and the fixes in it (https://nginx.org/en/CHANGES). Same image,
+# same Dockerfiles, same uid 101 layout. Dependabot and Renovate do not follow a renamed image.
+FROM nginx/nginx-unprivileged:1-alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
 # The base's last instruction is USER 101, and apk then exits 99 — it cannot open its log as
 # that user. Upgrade as root, then switch back. 101 has to be the last USER in this file so
