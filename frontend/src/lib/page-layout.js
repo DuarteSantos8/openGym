@@ -138,6 +138,21 @@ export function moveCard(s, page, id, dir) {
   return true
 }
 
+/**
+ * Puts a card where `targetId` is, among the whole page's order: after it when it came from
+ * above, before it when it came from below (one drag in the Customize sheet). Cards between them
+ * that the sheet does not list keep their places relative to each other.
+ */
+export function placeCard(s, page, id, targetId) {
+  const ids = orderedCards(s, page).map(c => c.id)
+  const a = ids.indexOf(id), b = ids.indexOf(targetId)
+  if (a < 0 || b < 0 || a === b) return false
+  ids.splice(a, 1)
+  ids.splice(b, 0, id)
+  slot(s, page).order = ids
+  return true
+}
+
 export function resetLayout(s, page) {
   if (!s.layout || typeof s.layout !== 'object') return
   const { [page]: _gone, ...rest } = s.layout

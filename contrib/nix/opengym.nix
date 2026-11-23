@@ -379,10 +379,9 @@ in
               };
           };
         })
-        # Caddy-native default: this module owns no web server of its own.
-        (lib.mkIf (!cfg.nginx.enable) {
-          services.nginx.enable = lib.mkForce false;
-        })
+        # Without services.opengym.nginx.enable the module owns no web server and leaves
+        # services.nginx alone: forcing it off here shut down a server's nginx for every
+        # other site on it (reported by a NixOS user, 2026-11-20).
       ]
     ))
 ];

@@ -197,6 +197,9 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                 if !sessions.isEmpty, self.caloriesGranted, let kcal = self.activeEnergy {
                     _ = try? await self.delete(kcal, ids: sessions.map { $0 + "-kcal" })
                 }
+                // Gone from Apple Health, so the phone session's "saved" mark goes too: left standing, the next
+                // write of this workout (Health turned on again) is skipped as already saved (PhoneWorkoutLedger).
+                for id in sessions where !left.contains(id) { PhoneWorkoutLedger.mark(id, nil) }
                 if !weights.isEmpty { left += try await self.delete(self.bodyMass, ids: weights) }
                 call.resolve(["left": left])
             } catch {

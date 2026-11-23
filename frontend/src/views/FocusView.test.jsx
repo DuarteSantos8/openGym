@@ -7,7 +7,7 @@ import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), vibrate: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -109,6 +109,32 @@ describe('Focus workout view', () => {
     expect(plan.textContent).toBe('Plan: 3 × 5')
     expect(summary.textContent).toContain('8 Reps')
     expect(summary.textContent).not.toContain('today')
+  })
+
+  // Issue #1104: after a weight increase double progression aims at the floor of its range, so
+  // target.reps equals target.repsMin. The badge used to print "8–8" instead of the plan's range.
+  it('shows the plan\'s whole rep range when today aims at the floor of it', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 3, reps: 8, repsMin: 8, weight: 95 },
+      planned: { sets: 3, reps: 12, repsMin: 8, weight: 95 },
+      plan: { kind: 'up' },
+      sets: Array.from({ length: 3 }, () => ({ w: 95, r: 8, done: false })),
+    })
+
+    const summary = container.querySelector('.focus-prescription')
+    expect(summary.textContent).toContain('8–12 Reps')
+    expect(summary.textContent).not.toContain('8–8')
+  })
+
+  it('keeps a rep range readable when there is no plan to read it from', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 3, reps: 12, repsMin: 8, weight: 95 },
+      sets: Array.from({ length: 3 }, () => ({ w: 95, r: 12, done: false })),
+    })
+
+    expect(container.querySelector('.focus-prescription').textContent).toContain('8–12 Reps')
   })
 
   it('offers the per-exercise progression switch and marks the current exercise', () => {

@@ -98,6 +98,28 @@ describe('makeBackHandler', () => {
     expect(h.calls.exit).toBe(0)
   })
 
+  // Android 16's WebView answered canGoBack false on Settings → Data & backup, reached by two
+  // taps, so back offered to exit instead of going up to Settings.
+  it('goes back a page the router pushed even when the WebView says it cannot', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/settings/data', key: 'data', idx: 2 })
+    expect(h.handler({ canGoBack: false })).toBe('history')
+    expect(h.calls.back).toBe(1)
+    expect(h.calls.toasts).toEqual([])
+  })
+
+  it('still offers to exit from the first page the app opened on', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/settings/data', key: 'data', idx: 0 })
+    expect(h.handler({ canGoBack: false })).toBe('arm-exit')
+  })
+
+  it('leaves a root tab whatever the router history holds', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/home', key: 'home', idx: 5 })
+    expect(h.handler({ canGoBack: false })).toBe('arm-exit')
+  })
+
   it('treats a missing event payload as no history', () => {
     const h = harness()
     expect(h.handler()).toBe('arm-exit')

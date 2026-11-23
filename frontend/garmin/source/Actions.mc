@@ -48,6 +48,10 @@ module Actions {
     function cancelStart() {
         G.cd = null;
         Motion.stop();
+        // The sensor warmed up for the 3-2-1: off again, unless a workout started on the phone meanwhile.
+        if (G.state["w"] == null && (Sensor has :setEnabledSensors)) {
+            Sensor.setEnabledSensors([]);
+        }
         G.changed();
     }
 

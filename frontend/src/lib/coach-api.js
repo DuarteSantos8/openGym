@@ -83,6 +83,29 @@ export async function ensureAiConsent() {
 }
 const asked = fn => async (...a) => { await ensureAiConsent(); return fn(...a) }
 
+/* Automatic reviews run on the server's tick with nobody there to ask, so the yes they were
+   switched on with keeps which provider and host it was for (S.coach.cadenceFor, synced). The
+   tick runs them only while the server still sends reviews there (api/coach/cadence.js). */
+const cadenceKey = info => `${info?.provider || ''}|${info?.host || ''}`
+export async function agreeCadence() {
+  await ensureAiConsent()
+  return cadenceKey(await disclosure())
+}
+/** On opening the Coach: automatic reviews agreed for another provider or host are paused on the
+ *  server, so this asks again. A yes moves them to the new one; "Not now" switches them off. */
+export async function recheckCadence() {
+  const cadence = S()?.coach?.cadence
+  if (DEMO || LOCAL() || !cadence || cadence === 'off') return
+  const key = cadenceKey(await disclosure())
+  if (S().coach.cadenceFor === key) return
+  const { update } = useStore.getState()
+  try { await ensureAiConsent() } catch (e) {
+    if (isDeclined(e)) update(s => { s.coach.cadence = 'off' })
+    return
+  }
+  update(s => { s.coach.cadenceFor = key })
+}
+
 export const coachStatus = async () => DEMO ? (await demo()).demoStatus() : LOCAL() ? (await local()).localStatus() : api('/api/coach/status')
 // The phone's vitals (sleep, heart rate, HRV, steps) go along only when the person shares health
 // with the Coach (Coach menu, What the Coach sees); they never sync, so the request carries them.

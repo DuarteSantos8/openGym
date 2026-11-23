@@ -30,7 +30,7 @@ always shown, importing copies (the copy is the importer's), licensed exercise m
 
 - Which of your own things an item is: the app sends `src` (`sound:<id>`, `plan:r:<id>`, …) and only the owner gets it back. No `shared` marker goes into the synced state, so nothing new in `sync-merge.js`; a copy carries `origin` on the element (`sounds[]`, `customEx[]`, `routines[]`, `equipProfiles[]`, `customMeasurements[]`), which rides along with the element.
 - `media` is derived from the payload's MediaRefs (and posters); the server checks every file in the owner's uploads, takes the stored size as the truth and copies it with a hard link where it can.
-- Removing is final: payload dropped, files deleted from `shared/media` and from every importer's folder (`media.dropFile`, only hashes of that item, only its importer list), hashes blocked. A blocked hash is still accepted by `PUT /api/media` (no one learns someone else had it), never shared, served or copied again.
+- Removing is final: payload dropped, files deleted from `shared/media` and from every importer's folder (`media.dropFile`, only hashes of that item, only its importer list, only the files their import copied: a file they had already stays), hashes blocked. A blocked hash is still accepted by `PUT /api/media` (no one learns someone else had it), never shared, served or copied again.
 - Tips are not copied into the state as an item: "Add to my note" appends the text to `exNotes[exId]`. `GET /api/shared?type=tip&ex=<id>` feeds the exercise sheet.
 - The profile picture is a switch, not a tab: a live `avatar` item puts its hash into `by.avatar` on that person's items. One per person; a new one withdraws the old.
 - Personal media can be looked at, never taken (`take: false` in the app, no import button).
@@ -67,7 +67,7 @@ SharedItem = {
   createdAt, updatedAt,
   consentId: 'c_…',            // consent record (below)
   stats: { imports: 0 },
-  // server only, never sent: owner, importers[], reports[], mod
+  // server only, never sent: owner, importers[], copies{uid: [hash]} (the files an import copied into that importer's folder), reports[], mod
 }
 ```
 

@@ -90,6 +90,13 @@ export function sniffKind(bytes) {
     if (brand === 'qt  ') return { mime: 'video/quicktime', kind: 'video', category: 'video' }
     if (MP4_BRANDS.has(brand)) return { mime: 'video/mp4', kind: 'video', category: 'video' }
     if (HEIF_BRANDS.has(brand)) return { mime: brand.startsWith('avi') ? 'image/avif' : 'image/heic', kind: 'image', category: 'still', input: true }
+    // The major brand can be one nobody lists (a newer camera's own); the compatible brands after
+    // it still say what the file is (ISO/IEC 14496-12 4.3). Only HEIF/AVIF are taken that way (#1268).
+    const size = u32be(b, 0)
+    for (let i = 16; i + 4 <= Math.min(size, b.length, 64); i += 4) {
+      const c = ascii(b, i, 4)
+      if (HEIF_BRANDS.has(c)) return { mime: c.startsWith('avi') ? 'image/avif' : 'image/heic', kind: 'image', category: 'still', input: true }
+    }
     return null
   }
   if (at(b, 0, [0x1a, 0x45, 0xdf, 0xa3])) {

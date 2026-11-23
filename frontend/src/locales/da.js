@@ -2178,7 +2178,7 @@ export default {
   "Tap to plan something": "Tryk for at planlægge noget",
   "Drag to reorder": "Træk for at ændre rækkefølge",
   "Drag to reorder. Tap the minus to delete.": "Træk for at ændre rækkefølge. Tryk på minus for at slette.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "Tryk på en rutine for at redigere den. Rækkefølge og sletning ligger under Rediger.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Tryk på en rutine for at redigere den, eller hold på den for at flytte den. Sletning ligger under Rediger.",
   "Pick one routine, or more to train them together.": "Vælg én rutine, eller flere for at træne dem sammen.",
   "Planned sets per week, from your plan.": "Planlagte sæt pr. uge, fra din plan.",
   "Timer alerts": "Timeralarmer",
@@ -5842,5 +5842,6 @@ export default {
   "Collapsed": "Foldet sammen",
   "Hide": "Skjul",
   "Totals": "Totaler",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Hold på et kort for at flytte det.",
+  "Shows up when there is something to show": "Vises, når der er noget at vise",
 }

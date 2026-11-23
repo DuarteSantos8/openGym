@@ -1,6 +1,6 @@
 import { isFavRoutine, toggleFavRoutine } from '../lib/routine-favs.js'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
@@ -29,9 +29,13 @@ import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/prog
 import BodyMap from '../components/BodyMap.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
 import { viewTarget, exUnitOf } from '../lib/ex-unit.js'
+import { HOLD_MS, SLOP, FLIP_MS, SLIDE_MS, EASE } from '../lib/use-list-reorder.js'
+import { vibrate } from '../lib/sound.js'
+import { scrollHostFor, autoScrollStep } from '../lib/drag-scroll.js'
 
-export const ROUTINE_LONG_PRESS_MS = 380
-export const ROUTINE_DRAG_SLOP = 8
+// The same hold and slop as every other list (lib/use-list-reorder.js): one feel app-wide.
+export const ROUTINE_LONG_PRESS_MS = HOLD_MS
+export const ROUTINE_DRAG_SLOP = SLOP
 
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value))
 
@@ -66,34 +70,6 @@ function unitGeometry(list, exercises) {
   return geometry.every(Boolean) ? geometry : null
 }
 
-function scrollHostFor(node) {
-  for (let parent = node.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
-    const overflowY = window.getComputedStyle(parent).overflowY
-    if (/(auto|scroll)/.test(overflowY) && parent.scrollHeight > parent.clientHeight) return parent
-  }
-  return window
-}
-
-function autoScrollStep(host, clientY) {
-  const edge = 64
-  const maxStep = 14
-  let top, bottom, scrollTop, maxScroll
-  if (host === window) {
-    const root = document.scrollingElement || document.documentElement
-    top = window.visualViewport?.offsetTop || 0
-    bottom = top + (window.visualViewport?.height || window.innerHeight || root.clientHeight)
-    scrollTop = window.scrollY || root.scrollTop || 0
-    maxScroll = Math.max(root.scrollHeight, document.body?.scrollHeight || 0) - (bottom - top)
-  } else {
-    const rect = host.getBoundingClientRect()
-    top = rect.top; bottom = rect.bottom
-    scrollTop = host.scrollTop; maxScroll = host.scrollHeight - host.clientHeight
-  }
-  if (clientY < top + edge && scrollTop > 0) return -Math.ceil(maxStep * clamp((top + edge - clientY) / edge, 0, 1))
-  if (clientY > bottom - edge && scrollTop < maxScroll) return Math.ceil(maxStep * clamp((clientY - bottom + edge) / edge, 0, 1))
-  return 0
-}
-
 function useRoutineReorder(routineIdentity, exercises, onDrop) {
   const listRef = useRef(null)
   const gestureRef = useRef(null)
@@ -103,6 +79,10 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
   const suppressClickRef = useRef(false)
   const suppressTimerRef = useRef(null)
   const [drag, setDrag] = useState(null)
+  // Where every row was on screen as a drop landed (by exercise, not by index: the rows are
+  // keyed by place), so the layout effect below glides each one from there (the same landing as
+  // lib/use-list-reorder.js), and the frame the move lands in runs without CSS transitions.
+  const landing = useRef(null)
   exercisesRef.current = exercises
   routineIdentityRef.current = routineIdentity
   onDropRef.current = onDrop
@@ -112,6 +92,23 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
     suppressClickRef.current = false
     window.clearTimeout(suppressTimerRef.current)
   }, [])
+
+  useLayoutEffect(() => {
+    const was = landing.current
+    if (!was || !listRef.current) return
+    landing.current = null
+    const reduce = (() => { try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches } catch { return false } })()
+    if (!reduce) {
+      const base = listRef.current.getBoundingClientRect()?.top || 0
+      for (const row of listRef.current.querySelectorAll('[data-flip-key]')) {
+        const from = was.get(row.dataset.flipKey)
+        const to = row.getBoundingClientRect()?.top - base
+        if (from == null || !Number.isFinite(to) || Math.abs(from - to) < 0.5 || typeof row.animate !== 'function') continue
+        row.animate([{ transform: `translateY(${from - to}px)` }, { transform: 'translateY(0)' }], { duration: FLIP_MS, easing: EASE })
+      }
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => setDrag(d => (d && d.quiet ? null : d))))
+  })
 
   useEffect(() => {
     const list = listRef.current
@@ -147,22 +144,20 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       // The compatibility click lands synchronously after pointerup; anything
       // later is a real tap, so the guard only needs to outlive that one event.
       suppressTimerRef.current = window.setTimeout(() => { suppressClickRef.current = false }, 150)
-      setDrag(null)
+      const tops = new Map()
+      const base = list.getBoundingClientRect()?.top || 0
+      for (const row of list.querySelectorAll('[data-flip-key]')) {
+        const top = row.getBoundingClientRect()?.top
+        if (Number.isFinite(top)) tops.set(row.dataset.flipKey, top - base)
+      }
+      landing.current = tops
+      setDrag({ quiet: true })
       const rect = list.getBoundingClientRect()
       const inside = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
       const geometry = unitGeometry(list, exercisesRef.current)
       if (commit && inside && geometry && matchesSnapshot(gesture) && gesture.targetSlot !== gesture.sourcePosition) {
         onDropRef.current(gesture.sourceIndex, gesture.targetSlot)
       }
-    }
-    const indicatorTop = (geometry, gesture, slot, listRect) => {
-      if (slot === gesture.sourcePosition) return clamp(gesture.sourceTop - listRect.top, 0, listRect.height)
-      const remaining = geometry.filter(unit => unit.position !== gesture.sourcePosition)
-      let top
-      if (slot <= 0) top = remaining[0]?.top ?? gesture.sourceTop
-      else if (slot >= remaining.length) top = remaining.at(-1)?.bottom ?? gesture.sourceBottom
-      else top = (remaining[slot - 1].bottom + remaining[slot].top) / 2
-      return clamp(top - listRect.top, 0, listRect.height)
     }
     const updateDrag = (gesture, x, y, schedule = true) => {
       if (gestureRef.current !== gesture || !gesture.active || !matchesSnapshot(gesture)) {
@@ -178,8 +173,12 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       const slot = moved ? remaining.reduce((count, unit) => count + (probeY > unit.center ? 1 : 0), 0) : gesture.sourcePosition
       const rawDelta = y - gesture.grabOffset - gesture.sourceTop
       const deltaY = clamp(rawDelta, listRect.top - gesture.sourceTop, listRect.bottom - gesture.sourceBottom)
+      if (slot !== gesture.targetSlot) vibrate(6)
       gesture.lastX = x; gesture.lastY = y; gesture.targetSlot = slot
-      setDrag({ first: gesture.sourceUnit[0], last: gesture.sourceUnit.at(-1), deltaY, indicatorTop: indicatorTop(geometry, gesture, slot, listRect) })
+      // The units it passes make room: they slide by its height plus the gap between rows.
+      const gap = geometry.length > 1 ? Math.max(0, geometry[1].top - geometry[0].bottom) : 0
+      const room = gesture.sourceBottom - gesture.sourceTop + gap
+      setDrag({ first: gesture.sourceUnit[0], last: gesture.sourceUnit.at(-1), deltaY, source: gesture.sourcePosition, slot, room })
       if (schedule && frame == null) frame = window.requestAnimationFrame(runAutoScroll)
     }
     function runAutoScroll() {
@@ -208,6 +207,7 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       try { gesture.captureTarget.setPointerCapture?.(gesture.pointerId) } catch { /* unsupported */ }
       suppressClickRef.current = true
       window.clearTimeout(suppressTimerRef.current)
+      vibrate(12)
       updateDrag(gesture, gesture.lastX, gesture.lastY)
     }
     const onPointerDown = event => {
@@ -323,7 +323,7 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
   }
   // Whether a long press has picked a row up: the row's swipe stays out of the way while it has.
   const lifted = () => !!gestureRef.current?.active
-  return { listRef, drag, onClickCapture, lifted }
+  return { listRef, drag: drag && !drag.quiet ? drag : null, quiet: !!drag?.quiet, onClickCapture, lifted }
 }
 
 /**
@@ -455,6 +455,9 @@ export default function RoutineEdit() {
   const ssPos = new Map()
   units.filter(grouped).forEach((u, k) => u.forEach((idx, n) => ssPos.set(idx, String.fromCharCode(65 + (k % 26)) + (n + 1))))
   const unitOf = new Map(units.flatMap(u => u.map(idx => [idx, u])))
+  // Each exercise's unit, by the unit's place in the list (a superset is one unit): what slides
+  // out of the way while one is held.
+  const unitPos = new Map(units.flatMap((u, k) => u.map(idx => [idx, k])))
   // Name, rest and how the group runs (lib/circuit.js). A circuit's stations get one row per round,
   // so the session opens with the right number of sets to fill in.
   const saveGroup = (sg, meta) => edit(ex => {
@@ -555,7 +558,7 @@ export default function RoutineEdit() {
       <Button size="sm" variant="tinted" icon="plus" data-tour="routine-add" onClick={addExercise}>{t('Add exercise')}</Button>
     </div>
     {r.ex.length ? <div ref={reorder.listRef} onClickCapture={reorder.onClickCapture}
-      className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
+      className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i, all) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
       // could neither see nor delete, but that still turned up in the workout.
       const ex = exOr(e.id)
@@ -565,6 +568,10 @@ export default function RoutineEdit() {
       const leavesUp = inSS.has(i) && !linkedPrev
       const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
+      // A unit between where the held one was and where it would land slides out of its way.
+      const pos = unitPos.get(i), d = reorder.drag
+      const shift = d && !isDragging ? (d.slot > d.source && pos > d.source && pos <= d.slot ? -d.room : d.slot < d.source && pos >= d.slot && pos < d.source ? d.room : 0) : 0
+      const flipKey = e.id + '#' + all.slice(0, i).filter(x => x.id === e.id).length
       const removeHere = () => removeRoutineExercise(id, i)
       // What the row's buttons are called (P4): the exercise, with its place in the routine when
       // the same exercise is in it twice, so no two rows share a "Move up".
@@ -591,13 +598,15 @@ export default function RoutineEdit() {
           <div className="re-rail">
             {i > 0 ? <button className={'iconbtn re-link' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} aria-label={nameIn(rowName, t('Superset with exercise above'))} aria-pressed={!!linkedPrev} onClick={() => toggleLink(i)}><Icon name="link" /></button>
               : <span className="re-link" aria-hidden="true" />}
-            <button className="iconbtn re-up" aria-label={t('Move {0} up', said(rowName))} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
-            <button className="iconbtn re-down" aria-label={t('Move {0} down', said(rowName))} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
+            <button className="vh re-up" aria-label={t('Move {0} up', said(rowName))} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
+            <button className="vh re-down" aria-label={t('Move {0} down', said(rowName))} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
           </div>
         </div>
-      return <div key={i} data-routine-row data-ex-index={i} data-tour={i === 0 ? 'routine-ex' : undefined}
+      return <div key={i} data-routine-row data-ex-index={i} data-flip-key={flipKey} data-tour={i === 0 ? 'routine-ex' : undefined}
         className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
-        style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
+        style={reorder.quiet ? { transition: 'none' }
+          : isDragging ? { transform: `translate3d(0, ${d.deltaY}px, 0)`, scale: '1.02' }
+          : d ? { transform: `translate3d(0, ${shift}px, 0)`, transition: `transform ${SLIDE_MS}ms ${EASE}` } : undefined}>
         {unitFirst.has(i) && (() => {
           const meta = supersetMeta(r.ex, unitOf.get(i))
           return <button type="button" className="ss-label ss-label-btn" onClick={() => editSuperset(i)} title={t('Name and rest of this superset')}>
@@ -619,8 +628,7 @@ export default function RoutineEdit() {
             canSwipe={() => !reorder.lifted()} onDelete={removeHere}>{item}</SwipeRow>
           : item}
       </div>
-    })}{reorder.drag && <div className="routine-drop-indicator" data-testid="routine-drop-indicator"
-      aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
+    })}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
 
     {/* Coverage of the routine as planned, so a gap shows up while you're building it
         rather than after a month of training around it. */}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PAGES, arrange, cardState, groupHidden, isCustom, layoutOf, moveCard, orderedCards, resetLayout, setCardState } from './page-layout.js'
+import { PAGES, arrange, cardState, groupHidden, isCustom, layoutOf, moveCard, orderedCards, placeCard, resetLayout, setCardState } from './page-layout.js'
 
 const ids = page => PAGES[page].map(c => c.id)
 
@@ -79,5 +79,17 @@ describe('page layout (Home and Stats, #1119)', () => {
     expect(isCustom(s, 'stats')).toBe(false)
     expect(s.showWeightCard).toBe(true)
     expect(arrange(s, 'stats', ids('stats'))).toEqual(ids('stats'))
+  })
+})
+
+describe('placeCard (a drag in the Customize sheet)', () => {
+  it('puts a card after the one it was dropped on going down, before it going up', () => {
+    const s = {}
+    expect(placeCard(s, 'home', 'recap', 'challenges')).toBe(true)
+    expect(orderedCards(s, 'home').map(c => c.id).slice(0, 4)).toEqual(['recovery', 'deload', 'challenges', 'recap'])
+    expect(placeCard(s, 'home', 'streak', 'recovery')).toBe(true)
+    expect(orderedCards(s, 'home').map(c => c.id)[0]).toBe('streak')
+    expect(placeCard(s, 'home', 'streak', 'streak')).toBe(false)
+    expect(placeCard(s, 'home', 'nope', 'streak')).toBe(false)
   })
 })

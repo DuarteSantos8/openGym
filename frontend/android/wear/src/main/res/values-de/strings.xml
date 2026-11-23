@@ -100,7 +100,7 @@
     <string name="set_of_tags">Satz %1$d von %2$d, %3$s</string>
     <string name="sets">Sätze</string>
     <string name="sets_of">%1$d von %2$d Sätzen</string>
-    <string name="skip">Überspringen</string>
+    <string name="skip">Weiter</string>
     <string name="skip_set">Satz überspringen</string>
     <string name="skip_set_q">Diesen Satz überspringen?</string>
     <string name="skipped_waiting">Ein übersprungener Satz wartet noch.</string>

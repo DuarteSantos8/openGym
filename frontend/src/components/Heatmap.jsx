@@ -15,7 +15,12 @@ const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChange, counts, legend, countLabel }) {
   const wrapRef = useRef(null)
   const [localMetric, setLocalMetric] = useState(() => normalizeMetric(selectedMetric ?? S?.heatmapMetric))
-  useEffect(() => { if (wrapRef.current) wrapRef.current.scrollLeft = wrapRef.current.scrollWidth }, [])
+  // Scrolled to today on the next frame, not inside the mount: reading scrollWidth there forced a
+  // layout while the rest of Stats was still mounting (review 1.4.6).
+  useEffect(() => {
+    const id = requestAnimationFrame(() => { if (wrapRef.current) wrapRef.current.scrollLeft = wrapRef.current.scrollWidth })
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const metric = normalizeMetric(selectedMetric ?? localMetric)
   const metricValue = counts ? 'n' : metric === 'vol' ? 'vol' : 'min'

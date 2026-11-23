@@ -2191,7 +2191,7 @@ export default {
   'Tap to plan something': 'কিছু প্ল্যান করতে ট্যাপ করুন',
   'Drag to reorder': 'ক্রম বদলাতে টেনে সরান',
   'Drag to reorder. Tap the minus to delete.': 'ক্রম বদলাতে টেনে সরান। মুছতে মাইনাসে ট্যাপ করুন।',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'এডিট করতে একটি রুটিনে ট্যাপ করুন। ক্রম বদলানো ও মুছে ফেলা “এডিট”-এর ভেতরে।',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "এডিট করতে একটি রুটিনে ট্যাপ করুন, সরাতে চেপে ধরুন। মুছে ফেলা “এডিট”-এর ভেতরে।",
   'Pick one routine, or more to train them together.': 'একটি রুটিন বেছে নিন, অথবা একসাথে ট্রেন করতে একাধিক।',
   'Planned sets per week, from your plan.': 'আপনার প্ল্যান অনুযায়ী প্রতি সপ্তাহে পরিকল্পিত সেট।',
   // --- Settings (v1.3.11) ---
@@ -5981,5 +5981,6 @@ export default {
   "Collapsed": "গুটানো",
   "Hide": "লুকান",
   "Totals": "মোট",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। সরাতে একটি কার্ড চেপে ধরুন।",
+  "Shows up when there is something to show": "দেখানোর মতো কিছু থাকলে দেখা যাবে",
 }

@@ -1452,6 +1452,16 @@ describe('effectiveRoutineIds — coach queue', () => {
     expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'd1' }, workouts: [done('d1')] }), TODAY, TODAY)).toEqual(['d2'])
   })
 
+  it('a session the pass already did, planned again for a later week, is that day\'s session', () => {
+    // d1 done Tuesday 09-08; planned for Tuesday 09-15 and for today. Today shares Tuesday's week, so
+    // its pin is fulfilled; next week's is not, and that day trains d1 with its own routine beside it.
+    const s = S({ dayPlan: { '2026-09-15': 'd1' }, workouts: [done('d1')], week: { 2: ['own'] } })
+    expect(effectiveRoutineIds(s, '2026-09-15', TODAY)).toEqual(['d1', 'own'])
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['d2'])
+    const last = S({ dayPlan: { [TODAY]: 'd1' }, workouts: [{ ...done('d1'), d: '2026-09-04', start: SINCE - 86400000 * 3 }], queue: { ids: ['d1', 'd2'], since: SINCE - 86400000 * 4, startsOn: '2026-09-03', label: 'US W1' } })
+    expect(effectiveRoutineIds(last, TODAY, TODAY)).toEqual(['d1'])
+  })
+
   it('with every remaining session pinned to other days, today shows only your own routines — a coach pointer on the weekday stays hidden', () => {
     const s = S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: ['d2', 'own'] } })
     expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['own'])
@@ -1674,5 +1684,58 @@ describe('timed per-side pairs come off as a pair', () => {
     expect(removeRowAt(pairs(3), 2).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(removeRowAt(pairs(3), 3).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(setSpanAt([{ sec: 30, side: 'L' }, { sec: 30 }], 0)).toEqual([0, 1])
+  })
+})
+
+/* ---------- the weight unit written next to each weight (text export, workout PDF, report) ---------- */
+
+// "87.5×8 (kg)" left it open which number was the weight. With a unit, every weight reads on its
+// own: "87.5 kg × 8". Without one, a label reads exactly as it always did (the history screen).
+describe('setLabel — with a weight unit', () => {
+  const lifted = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
+  const reps = { id: LIFT, mode: 'reps' }
+
+  it('writes the unit right after the weight, spaced from the reps', () => {
+    expect(setLabel(LIFT, lifted(87.5, 8), reps, undefined, 'kg')).toBe('87.5 kg × 8')
+    expect(setLabel(LIFT, lifted(60, 8), reps, undefined, 'lb')).toBe('60 lb × 8')
+    expect(setLabel(LIFT, lifted(0, 10), reps, undefined, 'kg')).toBe('0 kg × 10')
+  })
+
+  it('reads as before when no unit is given', () => {
+    expect(setLabel(LIFT, lifted(87.5, 8), reps)).toBe('87.5×8')
+    expect(setLabel(LIFT, lifted(87.5, 8), reps, undefined, '')).toBe('87.5×8')
+  })
+
+  it('keeps the effort and the failure mark behind the numbers', () => {
+    expect(setLabel(LIFT, lifted(60, 8, { rir: 2 }), reps, undefined, 'kg')).toBe('60 kg × 8 (RIR 2)')
+  })
+
+  it('gives every drop of a drop-set its own unit', () => {
+    const drop = lifted(100, 8, { type: 'dropset', drops: [{ w: 80, r: 6 }, { w: 60, r: 5 }] })
+    expect(setLabel(LIFT, drop, reps, undefined, 'kg')).toBe('100 kg × 8 ↘ 80 kg × 6 ↘ 60 kg × 5')
+  })
+
+  it('writes each side of a one-arm set with its unit', () => {
+    const s = setSideField(setSideField(makeSideSet({ w: 15, r: 16 }), 'R', 'r', 7), 'L', 'r', 8)
+    expect(setLabel(LIFT, s, { id: LIFT, side: true }, undefined, 'kg')).toBe('L 15 kg × 8 · R 15 kg × 7')
+  })
+
+  it('reads added bodyweight as "+10 kg × 12" and a bare bodyweight set as just the reps', () => {
+    expect(setLabel(BW, lifted(10, 12), { id: BW, mode: 'reps', bodyweight: true }, undefined, 'kg')).toBe('+10 kg × 12')
+    expect(setLabel(BW, lifted(0, 12), { id: BW, mode: 'reps', bodyweight: true }, undefined, 'kg')).toBe('12')
+  })
+
+  it('puts the unit after the weight of a timed set, and nothing on a bare hold', () => {
+    expect(setLabel(LIFT, { sec: 30, w: 20, done: true }, { id: LIFT, mode: 'time' }, undefined, 'kg')).toBe(`${fmtSec(30)} · 20 kg`)
+    expect(setLabel(LIFT, { sec: 45, done: true }, { id: LIFT, mode: 'time' }, undefined, 'kg')).toBe(fmtSec(45))
+  })
+
+  it('says what a dumbbell weight means, with the unit inside it', () => {
+    expect(setLabel('0289', lifted(20, 8), { id: '0289', mode: 'reps', dbLoad: 'each' }, undefined, 'kg')).toBe('20 kg each × 8')
+    expect(setLabel('0289', lifted(40, 8), { id: '0289', mode: 'reps', dbLoad: 'total' }, undefined, 'kg')).toBe('40 kg total × 8')
+  })
+
+  it('leaves cardio alone: minutes and a speed have their own units', () => {
+    expect(setLabel(CARDIO, { min: 20, speed: 10, done: true }, { id: CARDIO, mode: 'cardio' }, undefined, 'kg')).toBe('20 min @ 10 km/h')
   })
 })

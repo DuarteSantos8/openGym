@@ -35,7 +35,7 @@ const LANGS = {
 // resource name → the app's key, for words the app already has.
 const FROM_APP = {
   today: 'Today', start_workout: 'Start workout', done: 'Done', warmup: 'Warm-up', reps: 'Reps',
-  rest: 'Rest', skip: 'Skip', finish_workout: 'Finish workout', finish_workout_q: 'Finish workout?',
+  rest: 'Rest', finish_workout: 'Finish workout', finish_workout_q: 'Finish workout?',
   finish_and_save: 'Finish and save', discard_workout: 'Discard workout', continue_workout: 'Continue workout',
   cancel: 'Cancel', rest_over: 'Rest’s over. Next set!', left: 'Left', right: 'Right', bodyweight: 'Bodyweight',
   superset: 'Superset', weight: 'Weight', sets: 'Sets', volume: 'Volume', time: 'Time', skip_set: 'Skip set',
@@ -56,6 +56,8 @@ const COMPOSED = {
 // resource name → the Apple Watch's key (its %@ and %lld become Android's %1$s / %1$d).
 const FROM_WATCH = {
   avg: 'avg', no_effort_yet: 'No effort rated yet',
+  // The Apple Watch's word, shorter than the app's in German ("Weiter", #1400).
+  skip: 'Skip',
   no_workout: 'No workout running', not_synced: 'Not synced yet', all_sets_done: 'All sets done',
   set_of: 'Set %lld of %lld', sets_of: '%lld of %lld sets', hold: 'Hold',
   stop: 'Stop', start_hold: 'Start hold', workout_saved: 'Workout saved', added_weight: 'Added weight',

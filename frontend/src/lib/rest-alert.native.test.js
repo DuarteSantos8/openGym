@@ -372,8 +372,19 @@ describe('iPhone: the rest tone never stops the music', () => {
 
   it('sets the mixing .ambient session at load and whenever it lets go', () => {
     expect(swift).toMatch(/static func mixWithMusic\(\)\s*\{\s*try\? AVAudioSession\.sharedInstance\(\)\.setCategory\(\.ambient/)
-    // at load, and in letGo after the last sound of ours ended (Reddit, v1.4.5)
-    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(2)
+    // at load, in letGo after the last sound of ours ended (Reddit, v1.4.5), when a sounding shape
+    // is refused, and before any sound while the session is .soloAmbient (which stops the music)
+    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(4)
+    expect(swift).toMatch(/category == \.soloAmbient \{\s*if let shape = ledger\.activeShape, shape\.category == \.playback \{ apply\(\.activate\(shape\)\) \} else \{ RestAlertPlugin\.mixWithMusic\(\) \}/)
+    // a refused activation: the category that took stays (onSilent keeps .playback) and is not
+    // recorded as active, so the next cue tries again; a refused category gets the mixing kind
+    expect(swift).toMatch(/\} catch \{[^}]*?if session\.category != shape\.avCategory \{ RestAlertPlugin\.mixWithMusic\(\) \}\s*ledger\.didFailActivation\(\)/)
+    expect(swift).toMatch(/private func letGo\(attempt: Int\) \{\s*guard ledger\.isIdle, ledger\.holdsSession else/)
+    // The catch of apply's activation, cut out whole: it records the failure, never an activation.
+    const activate = swift.slice(swift.indexOf('case .activate(let shape):'), swift.indexOf('case .deactivate('))
+    const refused = activate.slice(activate.indexOf('} catch {'))
+    expect(refused).toMatch(/ledger\.didFailActivation\(\)/)
+    expect(refused).not.toMatch(/didActivate\(/)
     expect(swift).toMatch(/private func letGo\(attempt: Int\)[\s\S]*?setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)[\s\S]*?mixWithMusic/)
   })
 

@@ -692,6 +692,9 @@ object CheckIn {
 object HrPlan {
     /** `tracked`: Health Services' ExerciseTrackedStatus now (null: it would not say). */
     fun measureOnly(tracked: Int?, otherAppInProgress: Int) = tracked != null && tracked == otherAppInProgress
+
+    /** An exercise of ours is running that no service owns (the process died, a start was cancelled): it must end. */
+    fun stray(tracked: Int?, ownedInProgress: Int, serviceUp: Boolean) = tracked != null && tracked == ownedInProgress && !serviceUp
 }
 
 /**

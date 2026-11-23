@@ -21,6 +21,7 @@ import { cardPalette } from '../lib/card-draw.js'
 import { makeCanvas, toPng, currentAccent, isRtl } from '../lib/share-image.js'
 import { viewAspect, CARD_FONT } from '../lib/workout-card.js'
 import { reducedMotion } from '../lib/seasonal.js'
+import { setOverlayBack } from '../lib/back.js'
 import { t, useLang, dateLocale } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import BodyMap from './BodyMap.jsx'
@@ -156,6 +157,28 @@ export default function Wrapped() {
   const next = () => { if (idx >= cards.length - 1) return; go(1) }
   const prev = () => go(-1)
   const sheetOpen = () => useUI.getState().sheets.length > 0
+  // Back closes the story, like a sheet (review 1.4.6: in a browser it changed the page under the
+  // story, and on Android it offered to leave the app). The story gets a history entry of its
+  // own: Back spends it and closes; × or Escape take it back so no stray entry stays behind.
+  // A sheet opened on top (Share) has its own entry above this one and closes first.
+  useEffect(() => {
+    if (!open) return undefined
+    const idx = history.state?.idx
+    history.pushState(typeof idx === 'number' ? { openGymStory: true, idx: idx + 1 } : { openGymStory: true }, '')
+    let live = true, from = location.href
+    const onPop = () => {
+      if (history.state?.openGymStory) return   // a sheet above the story went back
+      live = false
+      close()
+    }
+    window.addEventListener('popstate', onPop)
+    setOverlayBack(() => { close(); return true })
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      setOverlayBack(null)
+      if (live && location.href === from && history.state?.openGymStory) history.back()
+    }
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!open) return
     const onKey = e => {

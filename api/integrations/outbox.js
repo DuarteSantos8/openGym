@@ -78,7 +78,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
   for (const j of st.jobs) delete j.running;
 
   const buckets = createBuckets({ now });
-  let timer = null, kick = null, running = false;
+  let timer = null, kick = null, running = false, poke = null; // poke: wakes a pass that waits on a slow job
 
   function prune() {
     const cut = now() - DONE_KEEP_MS;
@@ -109,7 +109,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
       payload: job.payload ?? null, attempts: 0, createdAt: now(), nextAt: now(),
     });
     persist();
-    soon();
+    soon(); poke?.();
     return 'queued';
   }
 
@@ -117,7 +117,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
     // Rate limits first: no token is a wait, not a failure.
     for (const r of rateOf(j)) {
       const wait = buckets.take(r.key, r);
-      if (wait > 0) { j.nextAt = now() + wait; return; }
+      if (wait > 0) { j.nextAt = now() + wait; return true; }  // held: nothing sent, nothing to save yet
     }
     j.running = true;
     let res;
@@ -145,16 +145,34 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
     onSettled(j, res, { final });
   }
 
-  /** Send what is due. One pass at a time; resolves when the pass is over. */
+  /** Send what is due. One pass at a time; resolves when the pass is over. A slot frees as soon
+   * as its job ends, and a profile holds one slot at a time: a receiver that never answers makes
+   * that profile wait on itself, not everyone else. Oldest due job first; a job comes round again
+   * in the same pass only once it was rescheduled and is due (a retry behind a long pass). */
   async function run() {
-    if (running) return;
+    if (running) { poke?.(); return; }  // a pass waiting on a slow job looks again for what came due
     running = true;
     try {
-      const due = st.jobs.filter(j => !j.running && j.nextAt <= now()).sort((a, b) => a.nextAt - b.nextAt);
-      for (let i = 0; i < due.length; i += concurrency) {
-        await Promise.all(due.slice(i, i + concurrency).map(runOne));
+      const tried = new WeakMap(), busy = new Set(), flight = new Set();   // weak: a finished job is let go mid-pass
+      for (;;) {
+        while (flight.size < concurrency) {
+          let j = null;
+          for (const x of st.jobs) {
+            if (x.running || busy.has(x.uid) || x.nextAt > now() || x.nextAt <= tried.get(x)) continue;
+            if (!j || x.nextAt < j.nextAt) j = x;
+          }
+          if (!j) break;
+          tried.set(j, now()); busy.add(j.uid);
+          const p = runOne(j)
+            .catch(e => console.error('integrations: outbox job failed', e?.message))
+            .then(held => { busy.delete(j.uid); flight.delete(p); if (!held) persist(); poke?.(); }); // a pass can last long: save as each delivery ends
+          flight.add(p);
+        }
+        if (!flight.size) break;
+        // Woken by a delivery ending or by poke(); racing the pending deliveries again on every wake
+        // stacked a reaction on each of them per timer tick while one hung.
+        await new Promise(r => { poke = r; });
       }
-      if (due.length) persist();
     } finally { running = false; }
   }
 
@@ -169,7 +187,7 @@ export function createOutbox({ file, deliver, rateOf = () => [], onSettled = () 
       if (!back.length) return 0;
       st.failed = st.failed.filter(j => !back.includes(j));
       for (const j of back) { delete j.failedAt; delete j.msg; st.jobs.push({ ...j, attempts: 0, nextAt: now() }); }
-      persist(); soon();
+      persist(); soon(); poke?.();
       return back.length;
     },
     dropConnection(uid, conn) {

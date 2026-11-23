@@ -2169,7 +2169,7 @@ export default {
   'Tap to plan something': 'Tippen, um etwas zu planen',
   'Drag to reorder': 'Ziehen zum Sortieren',
   'Drag to reorder. Tap the minus to delete.': 'Ziehen zum Sortieren. Tippe auf das Minus zum Löschen.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Tippe auf eine Routine, um sie zu bearbeiten. Sortieren und Löschen findest du unter Bearbeiten.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Tippe auf eine Routine, um sie zu bearbeiten, oder halte sie gedrückt, um sie zu verschieben. Löschen findest du unter Bearbeiten.",
   'Pick one routine, or more to train them together.': 'Wähle eine Routine, oder mehrere, um sie zusammen zu trainieren.',
   'Planned sets per week, from your plan.': 'Geplante Sätze pro Woche, aus deinem Plan.',
   // --- Settings (v1.3.11) ---
@@ -5922,5 +5922,6 @@ export default {
   "Collapsed": "Eingeklappt",
   "Hide": "Ausblenden",
   "Totals": "Summen",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Die Pfeile ändern die Reihenfolge.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zeig, was du nutzt, klapp ein, was du selten öffnest, und blende den Rest aus. Halte eine Karte gedrückt, um sie zu verschieben.",
+  "Shows up when there is something to show": "Erscheint, sobald es etwas zu zeigen gibt",
 }

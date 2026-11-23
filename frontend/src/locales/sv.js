@@ -2170,7 +2170,7 @@ export default {
   'Tap to plan something': 'Tryck för att planera något',
   'Drag to reorder': 'Dra för att ändra ordning',
   'Drag to reorder. Tap the minus to delete.': 'Dra för att ändra ordning. Tryck på minus för att ta bort.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Tryck på en rutin för att redigera den. Ändra ordning och ta bort finns under Redigera.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Tryck på en rutin för att redigera den, eller håll in för att flytta den. Ta bort finns under Redigera.",
   'Pick one routine, or more to train them together.': 'Välj en rutin, eller flera för att träna dem tillsammans.',
   'Planned sets per week, from your plan.': 'Planerade set per vecka, enligt din plan.',
   // --- Settings (v1.3.11) ---
@@ -5949,5 +5949,6 @@ export default {
   "Collapsed": "Hopfälld",
   "Hide": "Dölj",
   "Totals": "Totalt",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Håll in ett kort för att flytta det.",
+  "Shows up when there is something to show": "Visas när det finns något att visa",
 }

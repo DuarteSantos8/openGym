@@ -154,15 +154,18 @@ const effortTail = s => {
 // One-line summary of a logged set. `cfg` carries the mode when the caller has it (a routine
 // entry or a workout entry); passing an id alone keeps the old body-part behaviour.
 // `speedUnit` is the profile's (lib/speed.js speedUnitOf); without one a cardio set reads km/h.
+// `wUnit` ('kg' or 'lb'), when given, is written next to every weight and spaces it from the reps,
+// "87.5 kg × 8", so a copied or printed set cannot be read with the weight and the reps swapped.
+// Without it a set reads as the screens show it, "87.5×8".
 const EXPLICIT_MODES = new Set(['reps', 'time', 'cardio', 'distance'])
 // In Arabic and Persian the whole label is one isolated run (lib/bidi.js): left to right when it
 // is numbers and Latin, so "25×10 (RIR 2)" never turns into "10×25", and first-strong when it has
 // words of the page's script in it, with every weight×reps inside it a left-to-right run of its
 // own. Native surfaces (watch, Live Activity, tiles) take it through stripBidi.
-export function setLabel(id, s, cfg, speedUnit) {
-  return isoRun(setLabelText(id, s, cfg, speedUnit))
+export function setLabel(id, s, cfg, speedUnit, wUnit) {
+  return isoRun(setLabelText(id, s, cfg, speedUnit, wUnit))
 }
-function setLabelText(id, s, cfg, speedUnit) {
+function setLabelText(id, s, cfg, speedUnit, wUnit) {
   // The id is the caller's when the config does not carry one: a freestyle target is built
   // without it, and modeOf would then fall back to 'reps' and print a run as "0×0".
   const c = cfg ? { ...cfg, id: cfg.id ?? id } : { id }
@@ -186,19 +189,20 @@ function setLabelText(id, s, cfg, speedUnit) {
   // A set taken to failure carries its "F" behind the numbers, the mark lifting logs use for it;
   // the history, the text export and the set menu all read it from here.
   const fail = isFailureSet(s) ? ' ' + t('F') : ''
-  if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '') + fail
+  const amount = w => fmtNum(w) + (wUnit ? ' ' + wUnit : '')
+  if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${amount(s.w)}` : '') + fail
   // A carry or a sled (Reddit, #1011): the distance, then the load, "40 m · 32".
-  if (mode === 'distance') return fmtMetres(s.m) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '') + fail
+  if (mode === 'distance') return fmtMetres(s.m) + (s.w > 0 ? ` · ${amount(s.w)}` : '') + fail
   const bw = isBw(c)
   // A dumbbell weight that says what it means (lib/dumbbells.js, issue #474) says it here too:
   // "20 each × 8" is one 20 in each hand, "40 total × 8" both together. Spaced like the "+10 × 12"
   // of added weight, since the number is no longer the whole load on its own. As entered, and a
   // one-arm exercise (one bell, so both meanings are the same number), read as they always did.
   const meaning = !bw && bellsIn(c) === 2 ? dbLoadOf(c.dbLoad) : null
-  const load = (w, reps) => (bw ? ltrRun((w > 0 ? `+${fmtNum(w)} × ` : '') + reps)
-    : meaning === 'each' ? `${t('{0} each', fmtNum(w || 0))} × ${reps}`
-      : meaning === 'total' ? `${t('{0} total', fmtNum(w || 0))} × ${reps}`
-        : ltrRun(`${fmtNum(w || 0)}×${reps}`))
+  const load = (w, reps) => (bw ? ltrRun((w > 0 ? `+${amount(w)} × ` : '') + reps)
+    : meaning === 'each' ? `${t('{0} each', amount(w || 0))} × ${reps}`
+      : meaning === 'total' ? `${t('{0} total', amount(w || 0))} × ${reps}`
+        : ltrRun(wUnit ? `${amount(w || 0)} × ${reps}` : `${fmtNum(w || 0)}×${reps}`))
   // A rest-pause set's reps read as its bursts, "60×10+4+2", the way the protocol is written
   // down. The row's own `r` is the total either way; a planned set's bursts already add up to it
   // (applyIntensifierPlan), while bursts added live sit on top of the activation set, which is
@@ -231,7 +235,7 @@ function setLabelText(id, s, cfg, speedUnit) {
     return ['L', 'R'].map(key => {
       const side = s.sides[key]
       return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + effortTail(side)}`
-    }).join(' · ') + fail
+    }).join(' · ') + (setBandsOf(s).length ? ' · ' + bandText(setBandsOf(s)) : '') + fail
   }
   // Bands (lib/bands.js, Reddit): "15 × Red + Yellow", or "20×15 + Red" with a weight as well.
   const bands = setBandsOf(s)
@@ -587,12 +591,13 @@ export function bestWeightFor(S, exId, as) {
  *
  * An override naming a queue session is a PIN (queue.js): the session is that day's, with the
  * weekday's own routines riding along as on any queue day, and the floating rule skips it on
- * other days. Once the session is done the pin is fulfilled and the day reads as if unpinned.
+ * other days. Once the session is done the pin is fulfilled and the day reads as if unpinned;
+ * from today on, only when it was done in the pinned day's own week (pinState).
  */
 export function effectiveRoutineIds(S, iso, today = todayISO()) {
   const ov = S.dayPlan[iso]
   if (ov === 'rest') return []
-  const pin = pinState(S, ov, today)
+  const pin = pinState(S, ov, today, iso)
   if (!pin && ov && S.routines.some(r => r.id === ov)) return [ov]
   const wd = new Date(iso + 'T12:00:00').getDay()
   const weekday = [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
@@ -665,11 +670,12 @@ function bandSeed(S, cfg, options = {}) {
   if (!cfg || modeOf(cfg) !== 'reps' || !usesBands(S, cfg.id, cfg)) return null
   const plan = setBandsOf({ bands: cfg.bands })
   const last = options.useTarget ? null : lastEntryFor(S, cfg.id, options.rid)
-  const lastWork = last ? (last.sets || []).filter(x => !isWarmupRow(x) && !isSideSet(x)) : []
+  // Per-side sets keep one band choice for the pair (#1351), so they seed like any work set.
+  const lastWork = last ? (last.sets || []).filter(x => !isWarmupRow(x)) : []
   const anyBands = lastWork.some(x => setBandsOf(x).length)
   if (!anyBands && !plan.length) return null
   const top = cfg.repsMax > 0 ? cfg.repsMax : cfg.reps
-  const climb = anyBands && cfg.prog !== 'off' && !(cfg.weight > 0) && top > 0 && lastWork.every(x => Number(x.r) >= top)
+  const climb = anyBands && cfg.prog !== 'off' && !(cfg.weight > 0) && top > 0 && lastWork.every(x => !isSideSet(x) && Number(x.r) >= top)
   const from = cfg.repsMin > 0 ? cfg.repsMin : cfg.reps
   return { plan, lastWork, anyBands, climb, from }
 }
@@ -694,7 +700,7 @@ export function seedBands(S, cfg, rows, options = {}) {
   const list = bandsOf(S)
   let wi = 0
   return rows.map(r => {
-    if (isWarmupRow(r) || isSideSet(r)) return r
+    if (isWarmupRow(r)) return r
     const prev = lastWork[wi] || lastWork[lastWork.length - 1]
     wi++
     let ids = anyBands ? setBandsOf(prev) : plan

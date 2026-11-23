@@ -320,6 +320,22 @@ test('a ban pauses sharing and hides what was live; the unban brings back exactl
   assert.deepEqual(back.map(i => i.id), [a.body.id], 'the one an admin hid stays hidden');
 });
 
+test('a ban and unban never publish an item that was waiting for review or auto-hidden', async t => {
+  const h = await start(t, { SHARE_REVIEW: 'on' });
+  const waiting = await h.share('u_anna', { type: 'tip', payload: { exId: '0001', text: 'Waiting' } });
+  const reported = await h.share('u_anna', { type: 'tip', payload: { exId: '0002', text: 'Reported' } });
+  await h.call('u_admin', 'POST', `/api/admin/shared/${reported.body.id}`, { action: 'approve', reason: 'fine' });
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${reported.body.id}/report`, { reason: 'licensed' })).body.status, 'pending');
+  const ban = await h.call('u_admin', 'POST', '/api/admin/users/u_anna/sharing', { banned: true, reason: 'spam wave' });
+  assert.equal(ban.body.items, 0, 'nothing of hers was live');
+  await h.call('u_admin', 'POST', '/api/admin/users/u_anna/sharing', { banned: false });
+  assert.equal((await h.call('u_ben', 'GET', '/api/shared')).body.items.length, 0);
+  assert.equal((await h.call('u_ben', 'GET', `/api/shared/${waiting.body.id}`)).status, 404);
+  const items = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'shared', 'items.json'), 'utf8')).items;
+  assert.equal(items.find(i => i.id === waiting.body.id).status, 'pending', 'still waiting for review');
+  assert.equal(items.find(i => i.id === reported.body.id).mod.action, 'auto-hide', 'the reports still count');
+});
+
 test('account deletion withdraws everything; an importer keeps the copy', async t => {
   const h = await start(t);
   const sound = M.wav(4410);
@@ -342,6 +358,62 @@ test('account deletion withdraws everything; an importer keeps the copy', async 
   assert.equal(rm.status, 200, JSON.stringify(rm.body));
   assert.equal(rm.body.copiesRemoved, 1);
   assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 404);
+});
+
+test('an admin removal takes the copy an import made, never the importer\'s own upload of the same file', async t => {
+  const h = await start(t);
+  const sound = M.wav(4410);
+  for (const who of ['u_dan', 'u_ben']) await h.put(who, sound, 'audio/wav');
+  const s = await h.share('u_dan', { type: 'sound', payload: { name: 'Beep', m: ref(sound, 'audio/wav', 'audio', { width: 1, height: 1 }) } });
+  // Ben had these bytes before he imported (his own upload); Cleo did not.
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  assert.equal((await h.call('u_cleo', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  const rm = await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'remove', reason: 'licensed music' });
+  assert.equal(rm.status, 200, JSON.stringify(rm.body));
+  assert.equal(rm.body.copiesRemoved, 1, 'only Cleo\'s copy');
+  assert.equal((await h.raw('u_cleo', `/api/media/${M.sha(sound)}`)).status, 404);
+  assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 200, 'Ben\'s own upload stays');
+});
+
+test('a new version that names a file the importer already had: an admin removal leaves it too', async t => {
+  const h = await start(t);
+  const v1 = M.wav(4410), v2 = M.wav(8820);
+  await h.put('u_dan', v1, 'audio/wav');
+  await h.put('u_ben', v2, 'audio/wav');
+  const s = await h.share('u_dan', { type: 'sound', payload: { name: 'Beep', m: ref(v1, 'audio/wav', 'audio', { width: 1, height: 1 }) } });
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  // Dan's v2 uses bytes Ben uploaded himself. Ben takes v2 too; Cleo only takes v2.
+  await h.put('u_dan', v2, 'audio/wav');
+  const up = await h.call('u_dan', 'PATCH', `/api/shared/${s.body.id}`, { rev: s.body.item.rev, payload: { name: 'Beep', m: ref(v2, 'audio/wav', 'audio', { width: 1, height: 1 }) } });
+  assert.equal(up.status, 200, JSON.stringify(up.body));
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  assert.equal((await h.call('u_cleo', 'POST', `/api/shared/${s.body.id}/import`, {})).status, 200);
+  const rm = await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'remove', reason: 'licensed music' });
+  assert.equal(rm.status, 200, JSON.stringify(rm.body));
+  assert.equal(rm.body.copiesRemoved, 1, 'only Cleo\'s copy');
+  assert.equal((await h.raw('u_cleo', `/api/media/${M.sha(v2)}`)).status, 404);
+  assert.equal((await h.raw('u_ben', `/api/media/${M.sha(v2)}`)).status, 200, 'Ben\'s own upload stays');
+});
+
+test('an import that fails halfway still counts the file it copied: a retry and an admin removal take it', async t => {
+  // A 25 KB quota: Ben's filler and the first photo fit, the second does not.
+  const h = await start(t, { MEDIA_QUOTA_MB: '0.0244140625' });
+  const a = M.jpeg(9000), b = M.jpeg(9001), filler = M.jpeg(9002);
+  for (const x of [a, b]) await h.put('u_dan', x, 'image/jpeg');
+  await h.put('u_ben', filler, 'image/jpeg');
+  const s = await h.share('u_dan', { type: 'exercise', payload: { ex: { n: 'Two photos' }, media: ref(a, 'image/jpeg', 'image', { poster: { hash: M.sha(b), mime: 'image/jpeg', size: b.length, width: 256, height: 256 } }) } });
+  assert.equal(s.status, 201, JSON.stringify(s.body));
+  const imp = () => h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {});
+  assert.equal((await imp()).body.code, 'media-quota');
+  // Ben keeps the first photo, lets the filler go and tries again.
+  const state = { unit: 'kg', routines: [], workouts: [], customEx: [{ id: 'cx0', n: 'Two photos', bp: 'back', custom: true, media: { ...ref(a, 'image/jpeg', 'image'), at: 1 } }] };
+  const put = await h.call('u_ben', 'PUT', '/api/data', { state });
+  assert.equal(put.status, 200, JSON.stringify(put.body));
+  assert.equal((await h.call('u_ben', 'POST', '/api/media/sweep', {})).status, 200);
+  assert.equal((await imp()).status, 200);
+  const rm = await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'remove', reason: 'licensed' });
+  assert.equal(rm.body.copiesRemoved, 2, 'both files were copied by the import');
+  assert.equal((await h.raw('u_ben', `/api/media/${M.sha(a)}`)).status, 404);
 });
 
 test('account deletion keeps a file someone else shared too', async t => {

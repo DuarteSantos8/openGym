@@ -20,14 +20,14 @@ public class RestCountdownPlanTest {
 
     @Test
     public void screenOnTicksOnWholeSecondsAndLandsOnTheEnd() {
-        assertEquals(1000, RestCountdownPlan.nextTickMs(90_000, true));
-        assertEquals(500, RestCountdownPlan.nextTickMs(89_500, true));
-        assertEquals(1, RestCountdownPlan.nextTickMs(1, true));
+        assertEquals(1000, RestCountdownPlan.nextTickMs(90_000, true, false));
+        assertEquals(500, RestCountdownPlan.nextTickMs(89_500, true, false));
+        assertEquals(1, RestCountdownPlan.nextTickMs(1, true, false));
         // Walk a whole 90 s rest: 90 runs, the last exactly on the end.
         long left = 90_000;
         int runs = 0;
         while (left > 0) {
-            left -= RestCountdownPlan.nextTickMs(left, true);
+            left -= RestCountdownPlan.nextTickMs(left, true, false);
             runs++;
         }
         assertEquals(90, runs);
@@ -35,9 +35,26 @@ public class RestCountdownPlanTest {
     }
 
     @Test
+    public void appInFrontRepostsTheBarEveryFiveSecondsAndStillLandsOnTheEnd() {
+        long left = 90_000;
+        int runs = 0;
+        while (left > 0) {
+            left -= RestCountdownPlan.nextTickMs(left, true, true);
+            runs++;
+        }
+        assertEquals(18, runs);
+        assertEquals(0, left);
+        // The last wait is the remainder, so the end is not late; a short rest has one run.
+        assertEquals(2_500, RestCountdownPlan.nextTickMs(2_500, true, true));
+        assertEquals(5_000, RestCountdownPlan.nextTickMs(7_500, true, true));
+        // Screen off wins over in front: no reposts, only the end.
+        assertEquals(90_000, RestCountdownPlan.nextTickMs(90_000, false, true));
+    }
+
+    @Test
     public void screenOffWakesOnlyForTheEnd() {
-        assertEquals(90_000, RestCountdownPlan.nextTickMs(90_000, false));
-        assertEquals(0, RestCountdownPlan.nextTickMs(0, false));
+        assertEquals(90_000, RestCountdownPlan.nextTickMs(90_000, false, false));
+        assertEquals(0, RestCountdownPlan.nextTickMs(0, false, false));
     }
 
     @Test

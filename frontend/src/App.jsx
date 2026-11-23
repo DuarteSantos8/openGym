@@ -41,9 +41,11 @@ import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
+import { syncPrefs } from './lib/device-prefs-sync.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
+import { useQuiet } from './lib/wakelock-quiet.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
@@ -160,6 +162,9 @@ function Shell() {
   setKnownBands(S.bands)
   // Settings → Vibrate, the same way: one page-level switch rather than a check at each buzz.
   useEffect(() => { setVibrate(S.vibrate !== false) }, [S.vibrate])
+  // Display and voice, kept in the profile so every device signed in
+  // shares them (lib/device-prefs-sync.js): a profile from another device is applied here.
+  useEffect(() => { syncPrefs(useStore.getState().S, useStore.getState().update) }, [S.prefs])
   // Android app: "Vibrate when the phone is on silent" sends the end-of-rest buzz through the
   // native side as an alarm (#375). buzzAsAlarm answers false off Android, so iOS buzzes as before.
   useEffect(() => { setAlarmBuzzer(MOBILE && S.vibrate !== false && S.vibrateOnSilent ? buzzAsAlarm : null) }, [S.vibrate, S.vibrateOnSilent])
@@ -355,7 +360,12 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(wantsWakeLock(S))
+  // ...but not for ever: a workout left quiet for 15 min lets the screen lock (lib/wakelock-quiet.js)
+  const resting = useUI(u => !!(u.timer && !u.timer.ready && !u.timer.paused) || !!(u.work && !u.work.paused))
+  // a circuit clock counts too: an interval step can run 60 min untouched, and our release is global
+  const circuitOn = useCircuit(c => !!c.run && !c.run.ended && c.run.paused == null)
+  const quiet = useQuiet(S.active, resting || circuitOn)
+  useWakeLock(wantsWakeLock(S) && !quiet)
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
