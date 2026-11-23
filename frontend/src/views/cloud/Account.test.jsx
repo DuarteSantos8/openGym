@@ -2,7 +2,7 @@
 // The Cloud edition's account screen, against a pretend client: every step someone can be on.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Account, { wordFor, forgetLink } from './Account.jsx'
 import { RESET_KEY } from '../../lib/cloud/pending-reset.js'
@@ -34,11 +34,13 @@ function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) 
   return { auth, profiles, fn, set, user }
 }
 
+let where = ''
+function Where() { where = useLocation().pathname; return null }
 async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn() } = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  await act(async () => { root.render(<MemoryRouter initialEntries={[url]}><Account client={client} go={go} enter={enter} /></MemoryRouter>) })
+  await act(async () => { root.render(<MemoryRouter initialEntries={[url]}><Where /><Account client={client} go={go} enter={enter} /></MemoryRouter>) })
   await act(async () => {})
   return go
 }
@@ -286,6 +288,34 @@ describe('Account', () => {
     await mount(c)
     expect($('[data-continue]')).not.toBeNull()
     expect($('[data-continue]').textContent).toBe('Continue')
+  })
+
+  // Found in review of #70: the first screen now sends people here, and an app installed to the
+  // home screen has no browser back. Signed out, there was no way to return and pick "Continue
+  // without account".
+  it('signed out, there is a way back to where they came from', async () => {
+    const c = fakeClient()
+    await mount(c)
+    for (const step of [null, 'signup', 'signin']) {
+      if (step) await click(`[data-go="${step}"]`)
+      expect($('[data-back]'), step || 'signin').not.toBeNull()
+      expect($('[data-back]').textContent).toBe('Back')
+      expect($('[data-back]').getAttribute('type')).toBe('button')     // never submits the form
+    }
+    // The reset step has one "Back" already, to the sign-in step: one tap from the way out, not two buttons with one name.
+    await click('[data-go="forgot"]')
+    expect($('[data-back]')).toBeNull()
+    await click('[data-go="signin"]')
+    expect(where).toBe('/account')
+    await click('[data-back]')
+    expect(where).toBe('/home')
+    expect(c.auth.recover).not.toHaveBeenCalled()
+  })
+
+  it('signed in, Continue is the way on, and there is no second "Back"', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    await mount(c)
+    expect($('[data-back]')).toBeNull()
   })
 
   // Found by the owner on the real project: Continue went to the app's address and nothing more,
