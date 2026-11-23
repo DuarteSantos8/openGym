@@ -41,6 +41,13 @@ describe('the decisions', () => {
     expect(releaseOf({ dx: 5, width, vx: 2 })).toBe('cancel')
     expect(releaseOf({ dx: -40, width, vx: 0 })).toBe('cancel')
   })
+  it('the web app keeps a plain third; the native app cancels a flick back and needs 35 %', () => {
+    const width = 390
+    expect(releaseOf({ dx: 131, width, vx: 0 })).toBe('back')                        // 33.6 %
+    expect(releaseOf({ dx: 131, width, vx: 0, native: true })).toBe('cancel')
+    expect(releaseOf({ dx: 160, width, vx: -0.5, native: true })).toBe('cancel')
+    expect(releaseOf({ dx: 160, width, vx: -0.5 })).toBe('back')
+  })
 })
 
 /* ---------- on a page ---------- */

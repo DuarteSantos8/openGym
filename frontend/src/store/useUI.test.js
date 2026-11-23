@@ -303,3 +303,36 @@ describe('addRest adjustments', () => {
   })
 })
 
+describe('openSheet opener', () => {
+  it('a page field that kept focus is not the opener; the tapped button is', () => {
+    const input = document.createElement('input'), btn = document.createElement('button')
+    document.body.append(input, btn)
+    input.focus()
+    btn.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+    useUI.getState().openSheet(() => null)
+    expect(useUI.getState().sheets.at(-1).opener).toBe(btn)
+    useUI.setState({ sheets: [] }); input.remove(); btn.remove()
+  })
+
+  // WebKit leaves focus on A (put back there when a sheet closed) when B is tapped.
+  it('a tap opens from the tapped button, not from a button that still holds focus', () => {
+    const a = document.createElement('button'), b = document.createElement('button')
+    document.body.append(a, b)
+    a.focus()
+    b.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+    useUI.getState().openSheet(() => null)
+    expect(useUI.getState().sheets.at(-1).opener).toBe(b)
+    useUI.setState({ sheets: [] }); a.remove(); b.remove()
+  })
+
+  it('a key opens from the focused button', () => {
+    const a = document.createElement('button'), b = document.createElement('button')
+    document.body.append(a, b)
+    b.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+    a.focus()
+    a.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    useUI.getState().openSheet(() => null)
+    expect(useUI.getState().sheets.at(-1).opener).toBe(a)
+    useUI.setState({ sheets: [] }); a.remove(); b.remove()
+  })
+})

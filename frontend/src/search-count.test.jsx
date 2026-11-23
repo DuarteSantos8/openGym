@@ -47,10 +47,12 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) 
 
 // The screens run the same search over the same catalogue, so the expected numbers come from it.
 const matches = q => searchExercises(EXDB, q).length
+let visits = 0
 
 describe('exercise search result count', () => {
   for (const [where, open] of [
-    ['Library', () => mount(<MemoryRouter><Library /></MemoryRouter>)],
+    // each mount a new history entry: the Library keeps its search for the entry it was on
+    ['Library', () => mount(<MemoryRouter initialEntries={[{ pathname: '/library', key: 'visit' + ++visits }]}><Library /></MemoryRouter>)],
     ['exercise picker', () => { exercisePicker(vi.fn()); return renderTopSheet() }],
   ]) {
     it(`${where}: finds aliases, follows edits and clears, and keeps filters`, () => {

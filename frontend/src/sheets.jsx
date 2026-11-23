@@ -117,7 +117,7 @@ import { joinSessionNoProg } from './lib/session-noprog.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
 import { leadEntries } from './lib/leftovers.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
-import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
+import { moveWorkout, sameWorkout, legacySyncKey, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { hrLabel } from './lib/heart-rate.js'
@@ -152,7 +152,7 @@ const snd = () => S().sound
 function ConfirmDialog({ title, message, confirmText, cancelText, danger, noCancel, onConfirm, onCancel, close }) {
   return <div style={{ textAlign: 'center', padding: '4px 0' }}>
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
-    <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
+    <div className="muted" data-desc style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
     <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); onConfirm && onConfirm() }}>{confirmText || t('Confirm')}</button>
     {!noCancel && <>
       <div style={{ height: 8 }} />
@@ -249,8 +249,9 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
     </div>)}
   </>
 }
+// `anchor`: the button it opened from. On the iPhone the menu grows out of it; everywhere else it is the usual sheet.
 export function menuSheet(opts) {
-  ui().openSheet(close => <MenuSheet {...opts} close={close} />)
+  ui().openSheet(close => <MenuSheet {...opts} close={close} />, opts.anchor ? { kind: 'menu', anchor: opts.anchor } : undefined)
 }
 
 // Themed replacement for window.confirm — callback-based (no blocking).
@@ -1533,7 +1534,7 @@ export function detailTags(ex) {
 
 // The star beside an exercise's name: the detail sheet and the sheet a picked exercise opens in
 // (adding one mid-workout, #1006), so a favourite can be made right where you meet the exercise.
-function FavButton({ id }) {
+export function FavButton({ id }) {
   const fav = useStore(s => isFav(s.S, id))
   const flipFav = () => {
     let on = false
@@ -1546,7 +1547,9 @@ function FavButton({ id }) {
   </button>
 }
 
-function ExerciseDetail({ ex, close }) {
+// `page`: the same content as a screen of its own (views/DetailPages.jsx), where the header carries
+// the name and the star, and Edit leaves the page where it is.
+export function ExerciseDetail({ ex, close, page = false }) {
   useLang() // the description and steps arrive in their own chunk the first time a sheet asks
   // The best and last time in the exercise's own weight unit (#657).
   const st = exView(useStore(s => s.S), ex.id)
@@ -1558,10 +1561,10 @@ function ExerciseDetail({ ex, close }) {
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
   const [showOther, setShowOther] = useState(false)
   return <>
-    <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
+    {!page && <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
       <h3 className={'exdetail-name ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
       <FavButton id={ex.id} />
-    </div>
+    </div>}
     <Media ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
       {detailTags(ex).map(tg => {
@@ -1591,7 +1594,7 @@ function ExerciseDetail({ ex, close }) {
     {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
-    {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
+    {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { if (!page) close(); customExSheet(ex) }}>{t('Edit')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
       <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} /></div>
@@ -1642,6 +1645,11 @@ function ExerciseDetail({ ex, close }) {
   </>
 }
 export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail ex={ex} close={close} />)
+// On the iPhone an exercise's detail is a page (route /library/:id, views/DetailPages.jsx) so it can
+// slide in and out like the rest; the sheet stays everywhere else, and for an exercise that is
+// no longer in the catalogue (a placeholder), which has no page to show.
+const iosPages = () => document.documentElement.dataset.platform === 'ios'
+export const openExerciseDetail = ex => (iosPages() && EXIDX[ex.id] ? nav('/library/' + encodeURIComponent(ex.id)) : exerciseDetailSheet(ex))
 
 /* ============================ exercise history ============================ */
 // What you did on this exercise before, reachable mid-workout (issue #43): the curve first,
@@ -3623,7 +3631,10 @@ function WorkoutDurationEdit({ w, onDone, close }) {
 }
 export const workoutDurationSheet = (w, onDone) => ui().openSheet(close => <WorkoutDurationEdit w={w} onDone={onDone} close={close} />)
 
-function WorkoutDetail({ w, close }) {
+export function WorkoutDetail({ w, close, page = false }) {
+  // As a page, what the sheet closes itself for (the record moved or the session started, which
+  // navigates on its own) leaves the page standing; only Delete leaves it (`close`).
+  const away = page ? () => {} : close
   const noteRef = useRef(null)
   const onNoteFocus = useSheetKeyboard(noteRef)
   const st = useStore(s => s.S)
@@ -3631,27 +3642,38 @@ function WorkoutDetail({ w, close }) {
   // The session note is editable here rather than only at the finish sheet: what you want to
   // record about a session is often clearer once you have looked at what you actually did.
   const [note, setNote] = useState(w.note || '')
+  // The saved note the field started from. As a page the detail stays up while a sync changes the
+  // note: an untouched field follows it, and is never saved over it.
+  const base = useRef(w.note || '')
+  useEffect(() => {
+    const was = base.current, saved = w.note || ''
+    if (saved === was) return
+    base.current = saved
+    setNote(n => (n === was ? saved : n))
+  }, [w.note])
   // A note written here is an edit of the saved workout, stamped for the sync to keep it over an
   // older copy of the same workout (stampWorkout) — and only when it changed, since a stamp
   // outranks what another device wrote since.
-  const saveNote = () => update(s => {
-    const rec = s.workouts.find(x => sameWorkout(x, w))
-    if (!rec) return
+  const saveNote = () => {
+    if (note === base.current) return
     const text = note.trim().slice(0, NOTE_MAX)
-    if (text === (rec.note || '')) return
-    if (text) rec.note = text; else delete rec.note
-    stampWorkout(rec)
-  })
+    update(s => {
+      const rec = s.workouts.find(x => sameWorkout(x, w))
+      if (!rec || text === (rec.note || '')) return
+      if (text) rec.note = text; else delete rec.note
+      stampWorkout(rec)
+    })
+    base.current = note
+  }
   // onBlur alone loses the note: Escape, the Android back gesture and swipe-to-dismiss all
   // close the sheet without ever moving focus out of the textarea. Flush on unmount too. The
   // ref is what makes that work — a cleanup closes over the note from its own render, which
   // is the empty string this started with.
   const latest = useRef(note)
   latest.current = note
-  const initial = useRef(w.note || '')
   useEffect(() => () => {
+    if (latest.current === base.current) return
     const text = latest.current.trim().slice(0, NOTE_MAX)
-    if (text === initial.current) return
     update(s => {
       const rec = s.workouts.find(x => sameWorkout(x, w))
       if (!rec || text === (rec.note || '')) return   // deleted from this very sheet, or already saved
@@ -3694,7 +3716,7 @@ function WorkoutDetail({ w, close }) {
     // The row is not a button (card dismiss pass): the text opens the history, stretched over the row
     // (.tap-main), and the picture is its own button above it for the exercise's details.
     return <div key={i} className="row wd-ex tap-host" style={{ alignItems: 'flex-start' }}>
-      {ex && <button type="button" className="wd-thumb" aria-label={nameIn(exerciseNameText(ex), t('Details'))} aria-haspopup="dialog" onClick={() => exerciseDetailSheet(ex)}><Thumb ex={ex} /></button>}
+      {ex && <button type="button" className="wd-thumb" aria-label={nameIn(exerciseNameText(ex), t('Details'))} aria-haspopup={page ? undefined : 'dialog'} onClick={() => (page ? openExerciseDetail(ex) : exerciseDetailSheet(ex))}><Thumb ex={ex} /></button>}
       <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseHistorySheet(e.id)}><span className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</span>
         {/* An exercise in a unit of its own (#657) reads in it, and says which. */}
         <span className="ss">{detailSets(e)}{exUnitTag(st, e.id)}</span>
@@ -3743,12 +3765,9 @@ function WorkoutDetail({ w, close }) {
   // reads the workout through too). A legacy single-routine workout (one routineIds, or no rid
   // anywhere) renders flat.
   // The note lives in a textarea that only writes on blur, and moving the workout re-keys a
-  // legacy record — so whatever leaves this sheet flushes it first and stops the unmount hook
-  // writing it a second time.
-  const flushNote = () => {
-    saveNote()
-    initial.current = latest.current.trim().slice(0, NOTE_MAX)
-  }
+  // legacy record — so whatever leaves this sheet flushes it first, and saveNote's new baseline
+  // stops the unmount hook writing it a second time.
+  const flushNote = saveNote
   const saveAsRoutine = () => confirmSheet({
     title: t('Save as routine?'),
     message: t('Create an independent routine from these exercise targets. Your workout history is kept.'),
@@ -3757,8 +3776,7 @@ function WorkoutDetail({ w, close }) {
       let id
       try { update(s => { id = saveSessionAsRoutine(s, w, w.name) }) }
       catch (e) { toast(t(e.message)); return }
-      close()
-      nav('/plan/r/' + id)
+      closeThenNav(away, '/plan/r/' + id)   // the routine takes the confirm's history entry, as Edit workout does
     }
   })
   // "Do the workout I just did": the session as a routine (the one Save as routine makes, never
@@ -3780,8 +3798,8 @@ function WorkoutDetail({ w, close }) {
       title: w.name,
       sections: [
         { items: [
-          { icon: 'calendar', label: t('Change date & time'), onClick: () => workoutDateSheet(w, close) },
-          { icon: 'stopwatch', label: t('Change duration'), onClick: () => workoutDurationSheet(w, close) },
+          { icon: 'calendar', label: t('Change date & time'), onClick: () => workoutDateSheet(w, away) },
+          { icon: 'stopwatch', label: t('Change duration'), onClick: () => workoutDurationSheet(w, away) },
           { icon: 'plus', label: t('Save as routine'), onClick: saveAsRoutine },
         ] },
         { title: t('Share'), items: [
@@ -3801,10 +3819,10 @@ function WorkoutDetail({ w, close }) {
   const groups = sessionSections(w.entries)
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
-    <h3>{w.name}</h3>
+    {!page && <h3>{w.name}</h3>}
     <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
-    <AutoEndedNote w={w} close={close} />
+    <AutoEndedNote w={w} close={away} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
     <CircuitResults w={w} />
     {grouped ? groups.map(g => {
@@ -3834,7 +3852,7 @@ function WorkoutDetail({ w, close }) {
         flush the date row does, and the unmount hook then has nothing left to write over it. */}
     <Button icon="pencil" data-tour="wd-edit" disabled={!!st.active} onClick={() => {
       flushNote()
-      try { update(state => { editCompletedSession(state, w) }); closeThenNav(close, '/workout') }
+      try { update(state => { editCompletedSession(state, w) }); closeThenNav(away, '/workout') }
       catch (error) { toast(t(error.message)) }
     }}>{t('Edit workout')}</Button>
     <div style={{ height: 8 }} />
@@ -3842,7 +3860,7 @@ function WorkoutDetail({ w, close }) {
         in this workout. The record itself stays as it is. */}
     <Button icon="reset" disabled={!!st.active} onClick={() => {
       flushNote()
-      repeatWorkout(w, close)
+      repeatWorkout(w, away)
     }}>{t('Repeat today')}</Button>
     <div style={{ height: 10 }} />
     {/* Everything else a past workout can do, once in a while each, behind one row (v1.4.4): it
@@ -3876,6 +3894,10 @@ function mediaGoesToo(rec) {
   return n ? ' ' + tn('Its photo or video is deleted with it.', 'Its {0} photos or videos are deleted with it.', n) : ''
 }
 export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w={w} close={close} />)
+// A past workout as a page on the iPhone (route /history/:id); a record from before ids is found by
+// the key the sync gives it (sameWorkout).
+export const workoutPath = w => '/history/' + encodeURIComponent(w.id ?? legacySyncKey(w))
+export const openWorkoutDetail = w => (iosPages() ? nav(workoutPath(w)) : workoutDetailSheet(w))
 
 /* ============================ calendar ============================ */
 function Calendar({ start, close, help = false }) {
