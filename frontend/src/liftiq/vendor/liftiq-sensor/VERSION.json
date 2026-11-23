@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "sourceCommit": null,
+  "fileHashes": {
+    "analysis/live-counter.js": "03d28193f0334ea6760c6bb09f31b3c2f22e1d42fd3b39d73af8f87f44e3140a",
+    "analysis/pulses.js": "8a19ebd84295bacbe307e4c3118f91acb9ccfc8d7d79937b18b7af9a1e45e4ee",
+    "ble-client.js": "07929ec5f93c9beab6579e6faa4134fa1459561092cf6ac90a74647a90af3149",
+    "index.js": "bb44c1dd62bfaaad4d20e2fde4aa9d17d83e3a3b07d5b30e4898796df962aa6f",
+    "packet-stats.js": "05cc9bbd6b4e24692c3d53ee36105ba3a1b8ab4e86a4fcb54df92f29d8ceac08",
+    "protocol.js": "9c488fda925081702303e6f1b2652d9511a8aa21095e13ec7b25c62317502316",
+    "raw-protocol.js": "ddf91f25e26b4d449ad1419d6b83b592aafa99b95294ee968130f01621e5a239",
+    "ready-check.js": "62558070a47293f5bc4f75c70bff454b6b47e9776816a4407a7fa05f28c84f41",
+    "session.js": "6157d62331f6ae4954a074e83e6a7a5b72e34adaff74e25b4abce328cd74cfee",
+    "web-bluetooth-transport.js": "ddfa2456b1c39a56fa8d33bd1c93ab4e7ea34050edcfd877154cb7ad462cd035"
+  }
+}
