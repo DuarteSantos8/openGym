@@ -6,7 +6,7 @@
 // Links in the project's emails come back here as #/account?token_hash=…&type=…, and the hosted
 // sign-in server sends people here as #/account?authorization_id=… to approve (ADR 0013).
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { t } from '../../lib/i18n.js'
 import { Button, TextField } from '../../components/ui.jsx'
 import { cloud } from '../../lib/cloud/client.js'
@@ -43,6 +43,7 @@ function save(name, text) {
 
 export default function Account({ client = cloud(), go = url => { location.assign(url) } }) {
   const [params, setParams] = useSearchParams()
+  const nav = useNavigate()
   const tokenHash = params.get('token_hash'), linkType = params.get('type'), authorizationId = params.get('authorization_id')
   const [session, setSession] = useState(() => client?.auth.session() ?? null)
   const [mode, setMode] = useState('signin')          // signin | signup | forgot | sent | newpass
@@ -53,6 +54,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [request, setRequest] = useState(null)
+  const [ready, setReady] = useState(false)          // the profile has loaded: only then may the name be saved
   const title = useRef(null)
   const typedName = useRef(false)   // the name field has been edited: a late profile load must not replace it
 
@@ -76,11 +78,15 @@ export default function Account({ client = cloud(), go = url => { location.assig
     })
   }, [])
 
+  // Whoever is signed in has changed: nothing typed for the last account carries over to this
+  // one. Above all not the word that confirms deleting it.
+  useEffect(() => { setWord(''); setName(''); setReady(false) }, [session?.user?.id])
+
   useEffect(() => {
     if (!client || !session) return
     let live = true
     typedName.current = false
-    client.profiles.get().then(p => { if (live && p && !typedName.current) setName(p.display_name || '') }).catch(() => {})
+    client.profiles.get().then(p => { if (!live) return; if (p && !typedName.current) setName(p.display_name || ''); setReady(true) }).catch(() => {})
     return () => { live = false }
   }, [client, session?.user?.id])
 
@@ -123,17 +129,20 @@ export default function Account({ client = cloud(), go = url => { location.assig
 
   if (session) return frame(name || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
-    <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => { const p = await client.profiles.update({ display_name: name }); if (p) setName(p.display_name || '') }) }}>
+    <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); if (!ready) return; run(async () => { const p = await client.profiles.update({ display_name: name }); if (p) setName(p.display_name || '') }) }}>
       <label className="iv-acct-field"><span>{t('Name')}</span>
         <TextField className="input" name="name" autoComplete="nickname" maxLength={80} value={name} onChange={e => { typedName.current = true; setName(e.target.value) }} /></label>
       <div className="iv-acct-actions">
-        <Button variant="primary" type="submit" disabled={busy} data-save="">{t('Save')}</Button>
+        <Button variant="primary" type="submit" disabled={busy || !ready} data-save="">{t('Save')}</Button>
         <Button variant="tinted" disabled={busy} type="button" data-export="" onClick={() => run(async () => {
           const { status, data } = await client.fn('export-account')
           if (status !== 200) throw { code: data?.error }
           save('ironvane-account.json', JSON.stringify(data, null, 2))
         })}>{t('Export')}</Button>
         <Button variant="ghost" disabled={busy} type="button" data-change="" onClick={() => { setError(''); setPassword(''); setMode('newpass') }}>{t('Change password')}</Button>
+        {/* The way on: into the app itself. Someone who arrived from an email in a fresh browser
+            has no tab bar yet, and without this the account screen would be a dead end. */}
+        <Button variant="ghost" disabled={busy} type="button" data-continue="" onClick={() => nav('/home')}>{t('Continue')}</Button>
         <Button variant="ghost" disabled={busy} type="button" data-signout="" onClick={() => { setMode('signin'); setPassword(''); run(() => client.auth.signOut()) }}>{t('Sign out')}</Button>
       </div>
     </form>
