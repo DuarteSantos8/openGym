@@ -401,11 +401,13 @@ export function buildReady (S, today = todayISO()) {
       }
     } catch { return null }
   }
+  // Archived routines stay on the phone, even one the week still names.
+  const archived = new Set((S.routines || []).filter(r => r && (r.archived === true || isArchive(folderOf(r)))).map(r => r.id))
   let todayIds = []
-  try { todayIds = effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || [] } catch { todayIds = [] }
+  try { todayIds = (effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || []).filter(id => !archived.has(id)) } catch { todayIds = [] }
   const planned = todayIds.length ? session(todayIds) : null
-  // By folder like the phone's Plan (no folder first); archived routines stay on the phone.
-  const shown = (S.routines || []).filter(r => r && r.archived !== true && !isArchive(folderOf(r)) && !todayIds.includes(r.id))
+  // By folder like the phone's Plan (no folder first).
+  const shown = (S.routines || []).filter(r => r && !archived.has(r.id) && !todayIds.includes(r.id))
   const others = groupRoutines(shown).flatMap(g => g.routines.map(r => {
     const s = session([r.id])
     return s && g.folder ? { ...s, folder: g.folder } : s
@@ -1016,7 +1018,8 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
     () => { const w = out.ready?.today; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
     () => { const w = out.active; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
     () => { for (const r of out.ready?.others || []) strip(r.entries, 'last', 'best') },
-    () => { const o = out.ready?.others || []; while (o.length && bytesOf(out) > max) o.pop() },
+    // each routine's bytes once, not the whole snapshot per routine: with no cap there can be many
+    () => { const o = out.ready?.others || []; let over = bytesOf(out) - max; while (o.length && over > 0) over -= bytesOf(o.pop()) + (o.length ? 1 : 0) },
     () => { if (out.ready?.today) strip(out.ready.today.entries, 'last', 'best') },
     () => { if (out.active) strip(out.active.entries, 'last') },
     () => { out.ready = null },

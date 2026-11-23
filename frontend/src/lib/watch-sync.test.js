@@ -369,6 +369,12 @@ describe('routines on the watch, by folder', () => {
     expect(o.map(x => x.name)).toEqual(['c'])
   })
 
+  it('an archived routine the week still names is not Today either', () => {
+    expect(ready([R('a', 'Archive'), R('c')], { 2: 'a' }).today).toBe(null)
+    const r = ready([R('b', 'Legs', { archived: true }), R('c')], { 2: ['b', 'c'] })
+    expect(r.today.routineIds).toEqual(['c'])
+  })
+
   it("today's routine stays Today and is not repeated under its folder", () => {
     const r = ready([R('t', 'Legs'), R('u', 'Legs')], { 2: 't' })
     expect(r.today.name).toBe('t')
