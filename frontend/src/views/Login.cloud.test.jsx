@@ -3,7 +3,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import Login from './Login.jsx'
+import Login, { sentences } from './Login.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -93,5 +93,17 @@ describe('Login in the Cloud edition', () => {
     expect(buttons(page)).toContain('Sign in with passkey')
     expect(buttons(page)).toContain('Create new profile')
     expect(buttons(page)).not.toContain('Sign in or create account')
+  })
+})
+
+describe('sentences: one to a row for the statement on the first screen', () => {
+  it('splits at full stops and keeps them, in any script', () => {
+    expect(sentences('Your workouts. Your weights. Your profile.')).toEqual(['Your workouts.', 'Your weights.', 'Your profile.'])
+    expect(sentences('你的训练。你的重量。你的档案。')).toEqual(['你的训练。', '你的重量。', '你的档案。'])
+  })
+  it('a line with no stop stays whole, and nothing gives nothing', () => {
+    expect(sentences('การออกกำลังกายของคุณ น้ำหนักของคุณ')).toEqual(['การออกกำลังกายของคุณ น้ำหนักของคุณ'])
+    expect(sentences('')).toEqual([])
+    expect(sentences(undefined)).toEqual([])
   })
 })

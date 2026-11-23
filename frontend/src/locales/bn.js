@@ -6394,4 +6394,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "এক মিনিট পরেও ইমেইল আসেনি? এই ঠিকানায় হয়তো আগে থেকেই একটি অ্যাকাউন্ট আছে: সাইন ইন করুন, অথবা পাসওয়ার্ড রিসেট করুন।",
   "Sign in or create account": "সাইন ইন করুন বা অ্যাকাউন্ট তৈরি করুন",
   "Your training stays on this device. An account is for your plan and purchases.": "আপনার ট্রেনিং এই ডিভাইসেই থাকে। অ্যাকাউন্টটি আপনার প্ল্যান ও কেনাকাটার জন্য।",
+  "Signed in as {0}. Your training is stored on this device.": "{0} হিসেবে সাইন ইন করা আছে। আপনার ট্রেনিং এই ডিভাইসে সংরক্ষিত।",
 }

@@ -6319,4 +6319,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Письмо не пришло за минуту? Возможно, у этого адреса уже есть аккаунт: войди или сбрось пароль.",
   "Sign in or create account": "Войти или создать аккаунт",
   "Your training stays on this device. An account is for your plan and purchases.": "Твои тренировки остаются на этом устройстве. Аккаунт нужен для тарифа и покупок.",
+  "Signed in as {0}. Your training is stored on this device.": "Вход выполнен: {0}. Твои тренировки хранятся на этом устройстве.",
 }

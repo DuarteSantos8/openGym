@@ -167,6 +167,14 @@ function Shell() {
   const { S, user, ready } = useStore()
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
+  // Cloud edition: the app hears who is signed in to the hosted account, so that no screen calls
+  // them a guest (lib/account-badge.js). Nothing of this is in a default build.
+  useEffect(() => {
+    if (!CLOUD) return
+    let stop = null, gone = false
+    import('./lib/cloud/account-watch.js').then(m => { if (!gone) stop = m.watchAccount() }, () => {})
+    return () => { gone = true; stop?.() }
+  }, [])
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
   // The band names the set lines read (lib/bands.js), in step before this render's set lines.
   setKnownBands(S.bands)

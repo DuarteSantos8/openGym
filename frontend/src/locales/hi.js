@@ -6315,4 +6315,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "एक मिनट बाद भी ईमेल नहीं आया? हो सकता है इस पते का खाता पहले से हो: साइन इन करें, या पासवर्ड रीसेट करें।",
   "Sign in or create account": "साइन इन करें या खाता बनाएँ",
   "Your training stays on this device. An account is for your plan and purchases.": "आपकी ट्रेनिंग इसी डिवाइस पर रहती है। खाता आपके प्लान और खरीदारी के लिए है।",
+  "Signed in as {0}. Your training is stored on this device.": "{0} के रूप में साइन इन हैं। आपकी ट्रेनिंग इसी डिवाइस पर सहेजी जाती है।",
 }

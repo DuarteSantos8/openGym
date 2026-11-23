@@ -104,6 +104,7 @@ import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
 import { LEVELS, experienceOf, applyExperience } from '../lib/experience.js'
 import { isCloud } from '../lib/edition.js'
+import { useCloudAccount, whoIs } from '../lib/account-badge.js'
 import { levelName } from '../lib/experience-copy.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
@@ -175,6 +176,7 @@ const APPLE_UA = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Macintosh
 
 export default function Settings({ page = null, find = null, via = null, entryKey = null }) {
   const nav = useNavigate()
+  const cloudWho = useCloudAccount()     // Cloud edition: who is signed in to the hosted account, for its row
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
@@ -966,7 +968,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       {/* Cloud edition only (lib/edition.js): the hosted account. Nothing in a default build. */}
       {isCloud() && <Section>
-        <Row icon="person" iconTint="var(--acc)" title={t('Account')} accessory="chevron" onClick={() => nav('/account')} />
+        <Row icon="person" iconTint="var(--acc)" title={t('Account')} subtitle={cloudWho ? t('Signed in as {0}', whoIs(cloudWho)) : undefined} accessory="chevron" onClick={() => nav('/account')} />
       </Section>}
     </>,
 

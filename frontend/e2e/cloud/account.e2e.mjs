@@ -37,6 +37,10 @@ test('sign in, change the name, stay signed in over a reload, sign out', async (
 
   await page.fill('input[name="name"]', 'Samira')
   await page.click('[data-save]')
+  // Save says so (the owner pressed it eight times on the real project and saw nothing), and
+  // has nothing more to do until the name changes again.
+  await expect(page.locator('[data-saved]')).toHaveText('Saved')
+  await expect(page.locator('[data-save]')).toBeDisabled()
   await expect(page.locator('.iv-acct-title')).toHaveText('Samira')
   await page.reload()
   await expect(page.locator('.iv-acct-title')).toHaveText('Samira', { timeout: 15_000 })
@@ -104,6 +108,9 @@ test('deleting needs the word, then the account is gone and its password no long
   await open(page)
   await signIn(page)
   await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+  // Folded away until it is asked for.
+  await expect(page.locator('input[name="confirm"]')).toBeHidden()
+  await page.locator('.iv-acct-danger > summary').click()
   await expect(page.locator('[data-delete]')).toBeDisabled()
   await page.fill('input[name="confirm"]', 'delet')
   await expect(page.locator('[data-delete]')).toBeDisabled()
@@ -164,4 +171,8 @@ test('the first screen offers the account and this device; signed in, Continue g
   await expect(page.getByRole('button', { name: 'Sign in or create account' })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Create new profile' })).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('gym_guest'))).toBe('1')
+  // And the app knows who they are: not "Guest mode", and the button goes to their account.
+  const line = page.locator('.conn-t')
+  await expect(line).toHaveText('Signed in as Sam. Your training is stored on this device.')
+  await expect(page.getByText('Guest mode')).toHaveCount(0)
 })

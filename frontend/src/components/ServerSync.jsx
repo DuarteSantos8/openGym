@@ -12,6 +12,8 @@ import { MOBILE, shareExport } from '../lib/mobile.js'
 import { offlineBuild } from '../lib/build-caps.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { DEMO } from '../lib/demo.js'
+import { isCloud } from '../lib/edition.js'
+import { cloudAccount, whoIs } from '../lib/account-badge.js'
 import { askAddDeviceData, menuSheet } from '../sheets.jsx'
 import { ConnectSheet, CfAccessSheet } from '../views/MobileOnboarding.jsx'
 import { passwordOn, openPasswordSignIn } from './PasswordAuth.jsx'
@@ -55,7 +57,7 @@ export function useOnline() {
    network, which decides whether "offline" is the device or the server. Every state that is not
    'ok' says the changes are kept on this device — that is the one thing the person needs to hear
    first. */
-export function connectionView(sync, { mobile = MOBILE, online = isOnline(), offline = offlineBuild() } = {}) {
+export function connectionView(sync, { mobile = MOBILE, online = isOnline(), offline = offlineBuild(), cloud = isCloud(), account = cloudAccount() } = {}) {
   if (!sync) return null
   const err = sync.lastError || {}
   // A device that says it has no network is offline whatever the last request found: said the
@@ -99,9 +101,13 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline(), off
     default:
       // openGym Offline (lib/build-caps.js) has nothing to connect to: no button for it.
       if (mobile && offline) return { tone: 'quiet', icon: 'lock', action: null, line: t('openGym Offline: on this phone, and only here'), banner: null }
-      return mobile
-        ? { tone: 'quiet', icon: 'lock', action: 'connect', line: t('On this phone only, not connected to a server'), banner: null }
-        : { tone: 'quiet', icon: 'lock', action: canSignIn() ? 'signin' : null, line: t('Guest mode: your data lives only in this browser.'), banner: t('Guest mode: your data lives only in this browser.') }
+      if (mobile) return { tone: 'quiet', icon: 'lock', action: 'connect', line: t('On this phone only, not connected to a server'), banner: null }
+      // Cloud edition (ADR 0008): someone signed in to their account is not a guest, and is told
+      // so by name. Their training is on this device all the same, and the line still says it. A
+      // guest there is offered the account, not a sign-in to a server that may not exist.
+      if (cloud && account) return { tone: 'quiet', icon: 'person', action: 'account', label: t('Account'), line: t('Signed in as {0}', whoIs(account)), banner: t('Signed in as {0}. Your training is stored on this device.', whoIs(account)) }
+      if (cloud) return { tone: 'quiet', icon: 'lock', action: 'account', label: t('Sign in'), line: t('Guest mode: your data lives only in this browser.'), banner: t('Guest mode: your data lives only in this browser.') }
+      return { tone: 'quiet', icon: 'lock', action: canSignIn() ? 'signin' : null, line: t('Guest mode: your data lives only in this browser.'), banner: t('Guest mode: your data lives only in this browser.') }
   }
 }
 

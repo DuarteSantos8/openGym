@@ -6255,4 +6255,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Ingen e-mail efter et minut? Adressen har måske allerede en konto: log ind, eller nulstil din adgangskode.",
   "Sign in or create account": "Log ind eller opret en konto",
   "Your training stays on this device. An account is for your plan and purchases.": "Din træning bliver på denne enhed. En konto er til dit abonnement og dine køb.",
+  "Signed in as {0}. Your training is stored on this device.": "Logget ind som {0}. Din træning er gemt på denne enhed.",
 }

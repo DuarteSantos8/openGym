@@ -6315,4 +6315,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "一分钟后仍未收到邮件？这个地址可能已有账号：请登录，或重置密码。",
   "Sign in or create account": "登录或创建账号",
   "Your training stays on this device. An account is for your plan and purchases.": "你的训练数据留在这台设备上。账号用于你的方案和购买。",
+  "Signed in as {0}. Your training is stored on this device.": "已以 {0} 登录。你的训练数据保存在这台设备上。",
 }

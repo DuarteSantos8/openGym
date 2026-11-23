@@ -6280,4 +6280,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Belum ada email setelah semenit? Alamat ini mungkin sudah punya akun: masuk, atau atur ulang kata sandimu.",
   "Sign in or create account": "Masuk atau buat akun",
   "Your training stays on this device. An account is for your plan and purchases.": "Latihanmu tetap di perangkat ini. Akun dipakai untuk paket dan pembelianmu.",
+  "Signed in as {0}. Your training is stored on this device.": "Masuk sebagai {0}. Latihanmu disimpan di perangkat ini.",
 };
