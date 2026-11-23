@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addHeart, lastHeart, watchCurve, heartOrigin, onPhoneClock, heartBatchFor } from './session-heart.js'
+import { addHeart, lastHeart, watchCurve, heartOrigin, onPhoneClock, heartBatchFor, heartBandShown } from './session-heart.js'
 
 // The watch's readings for the heart rate band of the workout in progress.
 describe('addHeart', () => {
@@ -29,6 +29,25 @@ describe('watchCurve', () => {
     expect(watchCurve(addHeart(live, 'w1', [[9000, 120]]), 'w1')).toBe(true)
     // Nothing new but the flag: a new state all the same.
     expect(addHeart(health, 'w1', [], { watch: true })).not.toBe(health)
+  })
+})
+
+describe('heartBandShown', () => {
+  const S = { modules: {} }
+  const A = { id: 'w1' }
+  it('is on for a live session in the iPhone app with the watch and Health modules on', () => {
+    expect(heartBandShown(S, A, { ios: true })).toBe(true)
+  })
+  it('is off on another platform, for a session logged afterwards or being edited, or without a workout', () => {
+    expect(heartBandShown(S, A, { ios: false })).toBe(false)
+    expect(heartBandShown(S, { ...A, backfill: true }, { ios: true })).toBe(false)
+    expect(heartBandShown(S, A, { ios: true, editing: true })).toBe(false)
+    expect(heartBandShown(S, null, { ios: true })).toBe(false)
+  })
+  it('is off with the Watch or Health module off, or the curve switched off', () => {
+    expect(heartBandShown({ modules: { watch: false } }, A, { ios: true })).toBe(false)
+    expect(heartBandShown({ modules: { health: false } }, A, { ios: true })).toBe(false)
+    expect(heartBandShown({ modules: {}, heartCurve: false }, A, { ios: true })).toBe(false)
   })
 })
 

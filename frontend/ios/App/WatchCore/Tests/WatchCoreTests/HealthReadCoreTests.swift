@@ -13,6 +13,7 @@ final class HealthReadCoreTests: XCTestCase {
         XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: "Watch7,1", model: "Watch"))
         XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: nil, model: "Watch"))
         XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: "Watch6,2", model: nil))
+        XCTAssertTrue(HealthReadCore.fromAppleWatch(productType: "watch2,4", model: nil))
         XCTAssertFalse(HealthReadCore.fromAppleWatch(productType: "iPhone15,2", model: "AirPods"))
         XCTAssertFalse(HealthReadCore.fromAppleWatch(productType: "iPhone15,2", model: "Forerunner 265"))
         XCTAssertFalse(HealthReadCore.fromAppleWatch(productType: nil, model: nil))

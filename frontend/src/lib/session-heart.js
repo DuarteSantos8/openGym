@@ -5,6 +5,8 @@
 // (lib/health-sync.js), so the curve still starts at the start. Nothing of it is saved: it stays in
 // Apple Health.
 
+import { isOn } from './modules.js'
+
 // The range lib/heart-rate.js keeps too: outside it, a sensor glitch.
 const BPM_MIN = 25
 const BPM_MAX = 250
@@ -50,6 +52,13 @@ export const watchCurve = (state, wid) => !!state && state.wid === wid && state.
 /** Where the curve starts: the workout's start on the clock. A resume moves A.start on by the pause
  *  (lib/workout-pause.js), so the time paused is taken back off: the curve keeps the whole session. */
 export const heartOrigin = A => (Number(A?.start) || 0) - (Number(A?.pausedMs) || 0)
+
+/** Whether the workout screen shows the watch's heart band (components/HeartBand.jsx), and so whether
+ *  the header's ♥ follows the watch (components/LiveHeartRate.jsx): one condition for both. A live
+ *  session (not one logged afterwards or being edited) in the iPhone app (`ios`), with the Watch and
+ *  Health modules on and the curve not switched off (Settings → Workout). */
+export const heartBandShown = (S, A, { editing = false, ios = false } = {}) =>
+  !!A && !(A.backfill || editing) && ios && isOn(S, 'watch') && isOn(S, 'health') && S?.heartCurve !== false
 
 /** The workout a batch from the watch goes to: the one running here, and only when the batch names
  *  it. A batch without its workout (the watch not yet on one) goes nowhere: read back from Apple
