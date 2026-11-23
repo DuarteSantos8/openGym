@@ -21,7 +21,7 @@ describe('the system bars on Android', () => {
     const dir = new URL('../', import.meta.url)
     for (const f of readdirSync(dir).filter(n => n.endsWith('.css'))) {
       const uses = read('../' + f).match(/env\(safe-area-inset-[a-z]+/g) || []
-      expect({ f, uses }).toEqual({ f, uses: f === 'index.css' ? ['env(safe-area-inset-bottom', 'env(safe-area-inset-top'] : [] })
+      expect({ f, uses }).toEqual({ f, uses: f === 'index.css' ? ['env(safe-area-inset-bottom', 'env(safe-area-inset-top', 'env(safe-area-inset-left', 'env(safe-area-inset-right'] : [] })
     }
   })
 

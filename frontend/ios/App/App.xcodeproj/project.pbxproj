@@ -22,6 +22,7 @@
 		AA01000000000000000005A2 /* SaveImagePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01000000000000000005A1 /* SaveImagePlugin.swift */; };
 		AA0900000000000000000002 /* AppIconPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0900000000000000000001 /* AppIconPlugin.swift */; };
 		AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0A00000000000000000001 /* NfcTagsPlugin.swift */; };
+		AA0B00000000000000000002 /* VerticalBarPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0B00000000000000000001 /* VerticalBarPlugin.swift */; };
 		AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */; };
 		AA0200000000000000000002 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000001 /* MainViewController.swift */; };
 		AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000003 /* RestAlertPlugin.swift */; };
@@ -61,6 +62,7 @@
 		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		AA0900000000000000000001 /* AppIconPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPlugin.swift; sourceTree = "<group>"; };
 		AA0A00000000000000000001 /* NfcTagsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NfcTagsPlugin.swift; sourceTree = "<group>"; };
+		AA0B00000000000000000001 /* VerticalBarPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalBarPlugin.swift; sourceTree = "<group>"; };
 		AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorkoutPlugin.swift; sourceTree = "<group>"; };
 		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
 		AA01000000000000000005A1 /* SaveImagePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveImagePlugin.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 				AA01000000000000000005A1 /* SaveImagePlugin.swift */,
 				AA0900000000000000000001 /* AppIconPlugin.swift */,
 				AA0A00000000000000000001 /* NfcTagsPlugin.swift */,
+				AA0B00000000000000000001 /* VerticalBarPlugin.swift */,
 				AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */,
 				AA0200000000000000000001 /* MainViewController.swift */,
 				AA0200000000000000000003 /* RestAlertPlugin.swift */,
@@ -388,6 +391,7 @@
 				AA01000000000000000005A2 /* SaveImagePlugin.swift in Sources */,
 				AA0900000000000000000002 /* AppIconPlugin.swift in Sources */,
 				AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */,
+				AA0B00000000000000000002 /* VerticalBarPlugin.swift in Sources */,
 				AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */,
 				AA0200000000000000000002 /* MainViewController.swift in Sources */,
 				AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */,
