@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cloudAccount, onCloudAccount, setCloudAccount, whoIs } from './account-badge.js'
+import { badgeCard, cloudAccount, onCloudAccount, setCloudAccount, whoIs } from './account-badge.js'
 
 afterEach(() => setCloudAccount(null))
 
@@ -38,5 +38,13 @@ describe('account-badge: who is signed in to the hosted account, as the app may 
     expect(whoIs({ email: 'sam@example.com', name: 'Sam' })).toBe('Sam')
     expect(whoIs({ email: 'sam@example.com', name: '  ' })).toBe('sam@example.com')
     expect(whoIs(null)).toBe('')
+  })
+
+  // Review of #73: Settings' own card at the top still said "Guest" and "Sign in to sync".
+  it('badgeCard: what the Settings card says for someone signed in to the hosted account', () => {
+    const t = (k, a) => k.replace('{0}', a)
+    expect(badgeCard({ email: 'sam@example.com', name: 'Sam' }, t)).toEqual({ title: 'Sam', sub: 'Signed in as sam@example.com. Your training is stored on this device.', face: 'Sam' })
+    expect(badgeCard({ email: 'sam@example.com', name: '' }, t).title).toBe('sam@example.com')
+    expect(badgeCard(null, t)).toBeNull()
   })
 })

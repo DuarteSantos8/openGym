@@ -175,4 +175,9 @@ test('the first screen offers the account and this device; signed in, Continue g
   const line = page.locator('.conn-t')
   await expect(line).toHaveText('Signed in as Sam. Your training is stored on this device.')
   await expect(page.getByText('Guest mode')).toHaveCount(0)
+  // Settings says the same at the top: their name, not "Guest" and "Sign in to sync".
+  await page.evaluate(() => { location.hash = '#/settings' })
+  const card = page.locator('.sp-acct')
+  await expect(card.locator('.lrow-t')).toHaveText('Sam')
+  await expect(card.locator('.lrow-s')).toHaveText('Signed in as sam@example.com. Your training is stored on this device.')
 })
