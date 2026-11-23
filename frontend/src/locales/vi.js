@@ -6283,4 +6283,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Việc tập luyện của bạn nằm trên thiết bị này. Tài khoản dùng cho gói và các giao dịch mua của bạn.",
   "Signed in as {0}. Your training is stored on this device.": "Đã đăng nhập với tên {0}. Việc tập luyện của bạn được lưu trên thiết bị này.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Có tài khoản, quá trình tập luyện sẽ theo bạn sang các thiết bị khác. Không có tài khoản, dữ liệu chỉ nằm trên thiết bị này.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Không thể đăng xuất khỏi dữ liệu tập luyện của bạn trên máy chủ nên chưa có gì thay đổi. Hãy thử lại khi bạn có kết nối mạng.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Hãy xóa dữ liệu tập luyện trước: trong ứng dụng, mở Cài đặt, rồi Tài khoản, rồi Xóa tài khoản của tôi. Sau đó quay lại đây để xóa tài khoản này.",
 };

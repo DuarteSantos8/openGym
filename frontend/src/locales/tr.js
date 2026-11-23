@@ -6317,4 +6317,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Antrenmanların bu cihazda kalır. Hesap, planın ve satın alımların içindir.",
   "Signed in as {0}. Your training is stored on this device.": "{0} olarak giriş yapıldı. Antrenmanların bu cihazda saklanır.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Hesabın varsa antrenmanların diğer cihazlarına da gelir. Hesap olmadan bu cihazda kalır.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Sunucudaki antrenmanlarından çıkış yapılamadı, bu yüzden hiçbir şey değişmedi. Çevrimiçi olduğunda tekrar dene.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Önce antrenmanlarını sil: uygulamada Ayarlar, ardından Hesap, ardından Hesabımı sil bölümünü aç. Sonra bu hesabı silmek için buraya dön.",
 }

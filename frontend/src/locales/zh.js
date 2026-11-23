@@ -6317,4 +6317,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "你的训练数据留在这台设备上。账号用于你的方案和购买。",
   "Signed in as {0}. Your training is stored on this device.": "已以 {0} 登录。你的训练数据保存在这台设备上。",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "有了账号，你的训练记录会同步到你的其他设备。没有账号，记录只保留在这台设备上。",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "无法退出服务器上的训练记录，因此没有任何更改。请在联网后重试。",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "请先删除你的训练记录：在应用中依次打开“设置”、“账号”、“删除我的账号”。完成后再回到这里删除此账号。",
 }

@@ -13,6 +13,7 @@ import { cloud } from '../../lib/cloud/client.js'
 import { createPendingReset } from '../../lib/cloud/pending-reset.js'
 import { enterApp } from '../../lib/cloud/enter-app.js'
 import { startWebSignIn } from '../../lib/oidc.js'
+import { serverLink } from '../../lib/cloud/server-link.js'
 import { setCloudAccount } from '../../lib/account-badge.js'
 import Icon from '../../components/Icon.jsx'
 import { useStore } from '../../store/useStore.js'
@@ -45,6 +46,7 @@ export function wordFor(code) {
     case 'otp_expired': case 'flow_state_expired': case 'flow_state_not_found': return t('This link has expired. Ask for a new one.')
     case 'user_banned': return t('This account has been disabled.')
     case 'subscription_active': return t('Cancel your subscription first, then delete the account.')
+    case 'server_signout': return t('Your training on the server could not be signed out, so nothing was changed. Try again when you are online.')
     case 'network': return t('No connection. Check your network and try again.')
     default: return t('Something went wrong. Try again.')
   }
@@ -60,7 +62,10 @@ function save(name, text) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
-export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = () => enterApp(useStore.getState()), link = () => startWebSignIn() }) {
+// The app's own server, as this screen needs it: the profile open there, and signing out of it.
+const appServer = { user: () => useStore.getState().user, signOut: opts => useStore.getState().signOut(opts) }
+
+export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = who => enterApp(useStore.getState(), who), link = () => startWebSignIn(), server = appServer, note = serverLink() }) {
   const [params, setParams] = useSearchParams()
   const nav = useNavigate()
   const tokenHash = params.get('token_hash'), linkType = params.get('type'), authorizationId = params.get('authorization_id')
@@ -170,7 +175,29 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const dirty = name.trim() !== savedName.trim()
   // Into the app. Where its own server signs people in with this account, that sign-in is the
   // way in and the page leaves for it; otherwise the app opens here (lib/cloud/enter-app.js).
-  const onward = () => { if (enter() === 'link') { setLeaving(true); link() } else nav('/home') }
+  // A server profile that is open ends with the account it was opened through
+  // (lib/cloud/server-link.js). Forced: changes the server has not seen are kept aside on this
+  // device for that account, as the app's own sign-out does. If it cannot be ended, nothing
+  // else happens: leaving it open is the one thing that must not.
+  const endServer = async () => {
+    if (!server.user()) return
+    await server.signOut({ force: true })
+    if (server.user()) throw { code: 'server_signout' }
+  }
+  const onward = () => run(async () => {
+    const how = enter({ hostedId: session.user.id, owner: note.owner() })
+    if (how === 'switch') await endServer()
+    if (how !== 'link' && how !== 'switch') { nav('/home'); return }
+    note.leaving(session.user.id)
+    setLeaving(true)
+    link()
+  })
+  // Signing out is immediate where there is only the account: a slow server cannot undo what is
+  // tapped next. With a server profile open, that one ends first, and only then the account.
+  const signOut = () => {
+    if (!server.user()) { setMode('signin'); setPassword(''); note.forget(); return run(() => client.auth.signOut()) }
+    return run(async () => { await endServer(); note.forget(); setMode('signin'); setPassword(''); await client.auth.signOut() })
+  }
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
     <div className="iv-acct-actions">
@@ -205,21 +232,25 @@ export default function Account({ client = cloud(), go = url => { location.assig
         if (status !== 200) throw { code: data?.error }
         save('ironvane-account.json', JSON.stringify(data, null, 2))
       })}><span>{t('Export')}</span><Icon name="chevronRight" /></button>
-      <button type="button" className="iv-acct-row" disabled={busy} data-signout="" onClick={() => { setMode('signin'); setPassword(''); run(() => client.auth.signOut()) }}><span>{t('Sign out')}</span></button>
+      <button type="button" className="iv-acct-row" disabled={busy} data-signout="" onClick={signOut}><span>{t('Sign out')}</span></button>
     </div>
     <details className="iv-acct-danger">
       <summary>{t('Delete account')}</summary>
-      <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => {
+      {/* Deleting here removes the account, not the training on the app's own server. With a
+          profile open there, "deleted" would leave that behind, so it goes first, where the app
+          deletes it with its own proof (components/DeleteAccount.jsx). */}
+      {server.user() ? <p className="iv-acct-hint">{t('Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.')}</p>
+      : <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => {
         const { status, data } = await client.fn('delete-account', { confirm: 'delete' })
         if (status !== 200) throw { code: data?.error }
         // the step first, the server after: a slow sign-out must not move someone who has tapped on
-        setWord(''); setMode('signin')
+        setWord(''); setMode('signin'); note.forget()
         await client.auth.signOut()
       }) }}>
         <label className="iv-acct-field"><span>{t('Type the word delete to confirm. Your account is removed and cannot be brought back.')}</span>
           <TextField className="input" name="confirm" autoComplete="off" autoCapitalize="none" spellCheck={false} value={word} onChange={e => setWord(e.target.value)} /></label>
         <div className="iv-acct-actions"><Button variant="danger" type="submit" disabled={busy || word.trim().toLowerCase() !== 'delete'} data-delete="">{t('Delete account')}</Button></div>
-      </form>
+      </form>}
     </details>
   </>)
 

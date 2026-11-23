@@ -94,8 +94,29 @@ describe('Login in the Cloud edition', () => {
   it('where the server signs people in with the account, the first screen is still the account and this device', () => {
     mocks.config = { allow_guest: true, oidc: { label: 'Ironvane', only: true } }
     const page = mount(<Login />)
-    expect(buttons(page)).toEqual(['Sign in or create account', 'Continue without account'])
+    expect(buttons(page).slice(0, 2)).toEqual(['Sign in or create account', 'Continue without account'])
     expect(buttons(page)).not.toContain('Sign in with Ironvane')
+  })
+
+  // Found in review of #78. That server still takes an admin's passkey when the provider is down
+  // (the default edition's "break-glass" way); the Cloud screen must not take that away.
+  it('and an admin can still reach their passkey from it', () => {
+    mocks.config = { allow_guest: false, oidc: { label: 'Ironvane', only: true } }
+    const page = mount(<Login />)
+    expect(buttons(page)).toEqual(['Sign in or create account', 'Admin? Use your passkey'])
+    act(() => [...page.querySelectorAll('button')].find(b => b.textContent === 'Admin? Use your passkey').click())
+    expect(buttons(page)).toContain('Sign in with passkey')
+  })
+
+  // A server that offers the provider beside its other ways in is not the hosted one: everything
+  // it accepts stays on offer, as in the default edition.
+  it('a server with other ways in beside the provider keeps offering them', () => {
+    mocks.config = { allow_guest: true, oidc: { label: 'Ironvane' } }
+    const page = mount(<Login />)
+    expect(buttons(page)).toContain('Sign in with Ironvane')
+    expect(buttons(page)).toContain('Sign in with passkey')
+    expect(buttons(page)).toContain('Create new profile')
+    expect(buttons(page)).not.toContain('Sign in or create account')
   })
 
   // With that server, training does follow the account, so the line under the buttons must not
@@ -110,7 +131,7 @@ describe('Login in the Cloud edition', () => {
   it('and offers this device only where that server allows it', () => {
     mocks.config = { allow_guest: false, oidc: { label: 'Ironvane', only: true } }
     const page = mount(<Login />)
-    expect(buttons(page)).toEqual(['Sign in or create account'])
+    expect(buttons(page)).toEqual(['Sign in or create account', 'Admin? Use your passkey'])
   })
 
   it('a server sign-in that came back with an error says so there', () => {
