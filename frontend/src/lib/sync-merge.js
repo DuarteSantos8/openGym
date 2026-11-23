@@ -84,6 +84,7 @@ import { mergeAdvent } from './advent.js'
 import { mergeChallenges } from './challenges.js'
 import { mergeDay, dailyModeOf, settleAll } from './weigh-ins.js'
 import { applyExerciseMerges } from './exercise-merge.js'
+import { cleanFolder } from './routine-folders.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -1256,6 +1257,8 @@ export function stampEntries(prev = [], next = [], now = Date.now()) { return st
 // one "Add them" keeps (mergeBodyweight). Counted only on days the server lacked, a weigh-in
 // made on the phone on a day the profile already had one was dropped without the question ever
 // being asked. Weights are compared in the server's unit.
+// A folder by its name, as the folder list matches it (routine-folders.js).
+export const folderKey = e => cleanFolder(e?.name).toLowerCase()
 export function localExtras(local, server) {
   const have = new Set(list(server?.workouts).map(workoutKey))
   const days = new Map(list(server?.bodyweight).filter(e => e && e.d != null).map(e => [e.d, e]))
@@ -1271,7 +1274,9 @@ export function localExtras(local, server) {
   const keysNew = f => Object.entries(isMap(local?.[f]) ? local[f] : {})
     .filter(([k, v]) => v != null && !(Array.isArray(v) && !v.length) && !(isMap(server?.[f]) && k in server[f])).length
   const measured = new Set(list(server?.measurements).map(e => e?.d))
-  const setup = ['gymCards', 'equipProfiles'].reduce((n, f) => n + list(local?.[f]).filter(x => x && x.id != null && !ids(f).has(x.id)).length, 0) +
+  const folders = new Set(list(server?.routineFolders).map(folderKey))
+  const setup = list(local?.routineFolders).filter(e => folderKey(e) && !folders.has(folderKey(e))).length +
+    ['gymCards', 'equipProfiles'].reduce((n, f) => n + list(local?.[f]).filter(x => x && x.id != null && !ids(f).has(x.id)).length, 0) +
     list(local?.measurements).filter(e => e && e.d != null && !measured.has(e.d)).length +
     Object.entries(isMap(local?.dayNotes) ? local.dayNotes : {}).filter(([k, v]) => readNote(v) && !readNote(server?.dayNotes?.[k])).length +
     keysNew('week') + keysNew('dayPlan') + keysNew('exNotes') + keysNew('exAliases') + keysNew('exShownName') + keysNew('programmes')

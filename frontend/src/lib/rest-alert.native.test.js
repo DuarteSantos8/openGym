@@ -185,6 +185,8 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.buzz).toEqual([{ pattern: [200, 100, 200] }])
     await expect(alert.buzzAsAlarm([])).resolves.toBe(false)
     expect(calls.buzz).toHaveLength(1)
+    await expect(alert.buzzAsAlarm(10, 'light')).resolves.toBe(true)
+    expect(calls.buzz[1]).toEqual({ pattern: [10], style: 'light' })
   })
 
   // #1007: the end's own time goes with the tone, so Android rings a rest once when the alarm

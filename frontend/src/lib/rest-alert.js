@@ -166,12 +166,13 @@ if (MOBILE) {
 // once it did, false anywhere it cannot (the web, a failed call) for the caller to buzz the
 // ordinary way instead. iOS has no patterns: the phone buzzes once. Never resolves with the plugin
 // itself — see restPlugin.
-export function buzzAsAlarm(pattern) {
+// `style` ('light', 'medium', 'selection'): which haptic a short pulse is on the iPhone; none keeps the default.
+export function buzzAsAlarm(pattern, style) {
   if (!MOBILE) return Promise.resolve(false)
   const p = Array.isArray(pattern) ? pattern.filter(n => Number.isFinite(n) && n >= 0).map(Math.round) : (Number.isFinite(pattern) && pattern > 0 ? [Math.round(pattern)] : [])
   if (!p.length) return Promise.resolve(false)
   return restPlugin()
-    .then(plugin => (plugin ? plugin.RestAlert.buzz({ pattern: p }).then(() => true) : false))
+    .then(plugin => (plugin ? plugin.RestAlert.buzz(style ? { pattern: p, style } : { pattern: p }).then(() => true) : false))
     .catch(() => false)
 }
 

@@ -75,7 +75,7 @@ function exerciseNames(doc) {
 /** The routine ids a day holds, in the reminder's order of precedence. */
 export function dayRoutines(S, iso, today) {
   const routines = list(S?.routines);
-  const known = new Set(routines.map(r => r.id));
+  const known = new Set(routines.filter(r => r.archived !== true).map(r => r.id));
   const ov = S?.dayPlan?.[iso];
   if (ov === 'rest') return [];
   // A floating session is "today's" on every future day; it has no day of its own there.

@@ -79,7 +79,8 @@ const PLAN = [
   { id: 'p-go', route: null, anchor: 'tab-plan', go: '/plan' },
   // "New routine" is on the Routines side of Plan; already there, this one is passed over.
   { id: 'p-views', route: '/plan', anchor: 'plan-views', open: true, until: c => c.has('plan-new'), skip: c => c.has('plan-new') },
-  { id: 'p-new', route: '/plan', anchor: 'plan-new', go: /^\/plan\/r\/[^/]+$/, sandbox: 'plan' },
+  // New opens a menu (New routine, New folder): the sheet is the user's to use.
+  { id: 'p-new', route: '/plan', anchor: 'plan-new', go: /^\/plan\/r\/[^/]+$/, free: true, sheet: true, sandbox: 'plan' },
   { id: 'p-name', route: c => '/plan/r/' + c.made, anchor: 'routine-name', open: true, sandbox: 'plan' },
   { id: 'p-add', route: c => '/plan/r/' + c.made, anchor: 'routine-add', open: true, sandbox: 'plan', until: c => c.sheets > 0 },
   { id: 'p-pick', route: c => '/plan/r/' + c.made, anchor: null, free: true, sheet: true, sandbox: 'plan',

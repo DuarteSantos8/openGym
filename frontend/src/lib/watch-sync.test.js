@@ -323,6 +323,19 @@ describe('patching a saved workout', () => {
   })
 })
 
+describe('buildReady and archived routines', () => {
+  it('an archived routine is neither today nor an other', () => {
+    const rs = [
+      { id: 'r-push', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 8 }] },
+      { id: 'r-pull', name: 'Pull', ex: [{ id: '0001', sets: 2, reps: 10 }], archived: true },
+      { id: 'r-leg', name: 'Legs', ex: [{ id: '0001', sets: 2, reps: 10 }] },
+    ]
+    const ready = buildReady({ unit: 'kg', workouts: [], routines: rs, week: { 2: ['r-push', 'r-pull'] }, dayPlan: {} }, '2026-10-13')
+    expect(ready.today.routineIds).toEqual(['r-push'])
+    expect(ready.others.map(o => o.routineIds)).toEqual([['r-leg']])
+  })
+})
+
 describe('the birth year for the watch zones', () => {
   const y = new Date().getFullYear()
   it('sends a year that gives an age of 10 to 100', () => {

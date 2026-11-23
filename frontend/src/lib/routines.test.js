@@ -20,6 +20,10 @@ describe('copyRoutine', () => {
     expect(copy.id).toBeTruthy()
   })
 
+  it('a copy of an archived routine is live', () => {
+    expect(copyRoutine({ ...routine, archived: true }).archived).toBeUndefined()
+  })
+
   it('appends "(Copy)" to the name by default', () => {
     const copy = copyRoutine(routine)
     expect(copy.name).toBe('Push Day (Copy)')

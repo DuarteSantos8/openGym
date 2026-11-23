@@ -550,3 +550,12 @@ describe('rest days and repeats (#536)', () => {
     expect(s.queue).toBeNull()
   })
 })
+
+describe('an archived routine is out of the loop', () => {
+  it('rotationIds, sequenceOf and the queue leave it out', () => {
+    const st = S({ routines: routines.map(r => r.id === 'b' ? { ...r, archived: true } : r), rotation: { id: 'r1', sequence: ['a', 'b', 'c'], label: 'Rotation' }, queue: pass(['a', 'b', 'c']) })
+    expect(rotationIds(st)).toEqual(['a', 'c'])
+    expect(sequenceOf(st)).toEqual(['a', 'c'])
+    expect(queueRemaining(st)).toEqual(['a', 'c'])
+  })
+})

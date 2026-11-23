@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -14,12 +14,14 @@ import EmptyState from '../components/EmptyState.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { Button, Row, Section, Segmented } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
-import { copyRoutine, deleteRoutine, restoreRoutine, routineSnapshot } from '../lib/routines.js'
+import { deleteRoutine, restoreRoutine, routineSnapshot } from '../lib/routines.js'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
+import { colorOf, nextColor, tileStyle } from '../lib/routine-colors.js'
+import RoutineTile from '../components/RoutineTile.jsx'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { coachAvailable } from '../lib/coach.js'
@@ -32,8 +34,13 @@ import {
   chooseRotation, chooseFixedWeek, sequenceOf, isSimpleSequence, segmentAt, REST,
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
-import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routine-folders.js'
+import { activeRoutines, currentFolder, folderList, folderOf, isLive, moveToFolder, reorderFolders } from '../lib/routine-folders.js'
+import { useLongPressDrag } from '../lib/use-long-press-drag.js'
+import { deleteLive } from '../lib/routine-archive.js'
+import { routineMenu, folderMenu, duplicateRoutine, moveSheet, withUndo, archiveIdsWithUndo } from '../components/RoutineMenus.jsx'
 import { isFavRoutine } from '../lib/routine-favs.js'
+import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
+import { folderNameSheet } from '../components/RoutineFolder.jsx'
 import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
 import { routineSources } from '../lib/session-routines.js'
 
@@ -145,8 +152,13 @@ export default function Plan() {
   const user = useStore(s => s.user)
   const fileRef = useRef(null)
   const [view, setViewState] = useState(readView)
+  const [editing, setEditing] = useState(false)   // Routines' Edit: Share steps aside while it is on
+  // Edit's button unmounts while Edit is on, so focus goes back to it on Done (Routines focuses Select all on the way in).
+  const editBtn = useRef(null)
+  const wasEditing = useRef(false)
+  useEffect(() => { if (wasEditing.current && !editing) editBtn.current?.focus(); wasEditing.current = editing }, [editing])
   const setView = v => {
-    setViewState(v)
+    setViewState(v); setEditing(false)
     try { localStorage.setItem(PLAN_VIEW_KEY, v) } catch { /* private mode: the view just isn't remembered */ }
   }
 
@@ -180,23 +192,25 @@ export default function Plan() {
   // A running programme wrote the schedule below (lib/programmes.js); the strip says whose it is.
   const progChip = programmeChip(S)
 
+  const picking = view === 'routines' && editing
   return <div className="narrow plan">
-    <div className="hdr">
+    {!picking && <div className="hdr">
       <SeasonDeco spot="header-bats" />
       <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
       <div className="hdr-actions">
         {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
+        {view === 'routines' && activeRoutines(S).length > 0 && <button ref={editBtn} className="plan-textbtn plan-edit" onClick={() => setEditing(true)}>{t('Edit')}</button>}
         <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
       </div>
-    </div>
+    </div>}
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
-    <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
-      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
-    {progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
+    {!picking && <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
+      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />}
+    {!picking && progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
       <Icon name="calendar" /><span className="grow">{S.programmes?.[S.programme?.id]?.name || t('Programme')}</span><span className="tag acc">{progChip}</span>
     </button>}
     {view === 'routines'
-      ? <Routines S={S} update={update} nav={nav} />
+      ? <Routines S={S} update={update} nav={nav} edit={editing} setEdit={setEditing} />
       : <Schedule S={S} update={update} nav={nav} mode={mode} />}
   </div>
 }
@@ -205,9 +219,14 @@ export default function Plan() {
 
 // An empty routine, opened in its editor. From the Routines tab's header, and from the Schedule's
 // empty state: "Build my own plan" on Home lands there, and it said "Make one" without a way to.
-function newRoutine(update, nav) {
+export function newRoutine(update, nav, folder) {
   const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
-  update(s => { s.routines.push(r) })
+  update(s => {
+    if (folder) r.folder = folder
+    // Its neighbours are the routines in the same folder (or the loose ones): the first colour they lack.
+    r.color = nextColor(s.routines.filter(x => folderOf(x) === folderOf(r)))
+    s.routines.push(r)
+  })
   nav('/plan/r/' + r.id)
 }
 
@@ -270,8 +289,8 @@ function Schedule({ S, update, nav, mode }) {
     title: t('Add to the rotation'),
     items: [
       ...(seq.length ? [{ icon: 'moon', label: t('Rest day'), sub: t('A day off before the next one'), onClick: () => setSeq([...seq, REST]) }] : []),
-      ...S.routines.map(r => ({
-        icon: glyphOf(r.emoji), label: r.name, sub: seq.includes(r.id) ? t('Already in the loop: adds it again') : undefined, onClick: () => setSeq([...seq, r.id]),
+      ...activeRoutines(S).map(r => ({
+        icon: glyphOf(r.emoji), iconStyle: tileStyle(r), label: r.name, sub: seq.includes(r.id) ? t('Already in the loop: adds it again') : undefined, onClick: () => setSeq([...seq, r.id]),
       })),
     ],
   })
@@ -293,19 +312,19 @@ function Schedule({ S, update, nav, mode }) {
 
   const ws = weekStartOf(S)
   const todayDow = new Date().getDay()
-  const routineOf = id => S.routines.find(x => x.id === id)
+  const routineOf = id => activeRoutines(S).find(x => x.id === id)
   const dayRoutines = d => [].concat(S.week[d] || []).map(routineOf).filter(Boolean)
   // One weekday: what is on it at a glance, and a tap to change it (dayAssignSheet picks one
   // routine, several for a combined day, or a rest day).
   const dayRow = (d, rs = dayRoutines(d)) => {
     return <div key={d} className="item plan-day" data-day={d} aria-label={t(DAYN[d])} {...tappable(() => dayAssignSheet(d))}>
       <span className={'plan-day-n' + (d === todayDow ? ' today' : '')} aria-hidden="true">{t(DAYS[d])}</span>
-      <span className={'lrow-i' + (rs.length ? '' : ' rest')}><Icon name={rs.length ? glyphOf(rs[0].emoji) : 'moon'} /></span>
+      {rs.length ? <RoutineTile r={rs[0]} /> : <span className="lrow-i rest"><Icon name="moon" /></span>}
       <div className="grow">
         <div className="tt">{rs.length ? deriveSessionName(rs.map(r => r.name)) : t('Rest day')}</div>
         <div className="ss">{rs.length === 1 ? exCount(rs[0].ex.length) : rs.length ? routineCount(rs.length) : t('Tap to plan something')}</div>
       </div>
-      {rs.length > 0 && <MiniBodyMap routines={rs} body={S.body} tour="plan-body" />}
+      {rs.length > 0 && <MiniBodyMap routines={rs} tint={colorOf(rs[0])} body={S.body} tour="plan-body" />}
       <Icon name="chevronRight" className="chev" />
     </div>
   }
@@ -361,7 +380,7 @@ function Schedule({ S, update, nav, mode }) {
         {!external && <div className="row plan-sec-acts" style={{ gap: 6 }}>
           {seq.length > 0 && <button className="plan-textbtn" aria-pressed={editLoop} onClick={() => setEditLoop(e => !e)}>{editLoop ? t('Done') : t('Edit')}</button>}
           <Button size="sm" variant="tinted" icon="plus" data-tour="plan-loop-add" aria-label={t('Add routine to the rotation')}
-            disabled={!S.routines.length} onClick={addToSeq}>{t('Add')}</Button>
+            disabled={!activeRoutines(S).length} onClick={addToSeq}>{t('Add')}</Button>
         </div>}
       </div>
       {seq.length ? <div className="list plan-loop" ref={loopReorder.listRef}>
@@ -382,12 +401,12 @@ function Schedule({ S, update, nav, mode }) {
             {editing && <button className="plan-minus" aria-label={t('Remove {0}', said(sayName))} title={t('Remove')}
               onClick={() => takeOut(i)}><Icon name="minus" /></button>}
             <span className={'plan-order' + (item?.state === 'next' ? ' next' : '')}>{item?.state === 'done' ? <Icon name="check" /> : i + 1}</span>
-            <span className={'lrow-i' + (rest ? ' rest' : '')}><Icon name={rest ? 'moon' : glyphOf(r?.emoji)} /></span>
+            {rest ? <span className="lrow-i rest"><Icon name="moon" /></span> : <RoutineTile r={r} />}
             <div className="grow" style={{ minWidth: 0 }}>
               <div className="tt">{name}</div>
               <div className="ss">{item ? stateWord(item) : rest ? t('A day off before the next one') : r ? exCount(r.ex.length) : ''}</div>
             </div>
-            {r && !rest && !editing && <MiniBodyMap routines={[r]} body={S.body} />}
+            {r && !rest && !editing && <MiniBodyMap routines={[r]} tint={colorOf(r)} body={S.body} />}
             {editing && seq.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', said(sayName))} title={t('Drag to reorder')}
               {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>
@@ -432,105 +451,176 @@ function Schedule({ S, update, nav, mode }) {
 
 /* ================================ Routines ================================ */
 
-function Routines({ S, update, nav }) {
-  const [edit, setEdit] = useState(false)
+/** Moves one live routine of a group (the rows `pred` picks) from one place to another. */
+export function reorderWithin(s, pred, from, to) {
+  const sec = s.routines.filter(r => isLive(r) && pred(r))
+  if (to < 0 || to >= sec.length) return
+  const [m] = s.routines.splice(s.routines.indexOf(sec[from]), 1)
+  const rest = s.routines.filter(r => isLive(r) && pred(r))
+  s.routines.splice(to < rest.length ? s.routines.indexOf(rest[to]) : s.routines.length, 0, m)
+}
+
+/** A drop on a folder (or '' for Plan itself): the routine goes there, last in its group. */
+export function dropRoutine(update, id, folder) {
+  update(s => {
+    moveToFolder(s, [id], folder)
+    const i = s.routines.findIndex(r => r.id === id)
+    if (i >= 0) s.routines.push(...s.routines.splice(i, 1))
+  })
+}
+
+function Routines({ S, update, nav, edit, setEdit }) {
+  const selectAll = useRef(null)
+  useEffect(() => { if (edit) selectAll.current?.focus() }, [edit])
+  const [sel, setSel] = useState([])   // ids ticked in Edit; routines only, folders are reordered not selected
   const [flash, setFlash] = useState(null)
-  // Which folders are open on this device (lib/routine-folders.js), keyed by lower-case name.
-  const [openFolders, setOpenFolders] = useState({})
-  const toggleFolder = (f, open) => { setFolderOpen(f, open); setOpenFolders(o => ({ ...o, [f.toLowerCase()]: open })) }
+  const [starred, setStarredNow] = useState(() => { try { return localStorage.getItem('og_plan_starred') === '1' } catch { return false } })
+  const setStarred = v => {
+    setStarredNow(v)
+    try { v ? localStorage.setItem('og_plan_starred', '1') : localStorage.removeItem('og_plan_starred') } catch { /* private mode: the filter just isn't remembered */ }
+  }
   const swipe = workoutControls(S).swipeSets
-  const routines = S.routines
+  // Archived routines are not listed here (they have their own screen); they keep their place in S.routines.
+  const routines = activeRoutines(S)
+  const archived = (S.routines || []).length - routines.length
+  const folders = folderList(S)
+  const at = f => r => folderOf(r).toLowerCase() === f.name.toLowerCase()
+  const cur = folders.find(f => f.name.toLowerCase() === currentFolder(S)?.toLowerCase())
+  const others = folders.filter(f => f !== cur)
+  const loose = routines.filter(r => !folderOf(r))
   // The order of this list is the order of `S.routines`, and every other screen reads the same
   // array (the Start screen, the day sheets, the routine pickers), so moving a routine here moves
-  // it everywhere (#142). Reordering lives behind Edit, like on an iPhone.
-  const reorder = useListReorder(routines.length, (from, to) => update(s => {
-    if (to < 0 || to >= s.routines.length) return
-    const [m] = s.routines.splice(from, 1)
-    s.routines.splice(to, 0, m)
+  // it everywhere (#142). Reordering lives behind Edit, like on an iPhone, within one group.
+  const inCur = r => !!cur && at(cur)(r)
+  const inLoose = r => !folderOf(r)
+  const moveIn = pred => (from, to) => update(s => reorderWithin(s, pred, from, to))
+  const curRoutines = routines.filter(inCur)
+  const reorderCur = useListReorder(curRoutines.length, moveIn(inCur))
+  const reorderLoose = useListReorder(loose.length, moveIn(inLoose))
+  // Long-press drag (not in Edit, which has its grips): a drop between rows reorders within the
+  // group, a drop on a folder row or the current plan block moves the routine there.
+  const dragOpts = { onDropOn: (folder, id) => dropRoutine(update, id, folder), nameOf: x => S.routines.find(r => r.id === x)?.name ?? (x || t('Not in a folder')) }
+  const dragCur = useLongPressDrag({ ...dragOpts, listRef: reorderCur.listRef, rows: curRoutines.map(r => r.id), onReorder: moveIn(inCur) })
+  const dragLoose = useLongPressDrag({ ...dragOpts, listRef: reorderLoose.listRef, rows: loose.map(r => r.id), onReorder: moveIn(inLoose) })
+  const lifted = dragCur.lifted || dragLoose.lifted
+  const hot = key => [dragCur, dragLoose].some(d => d.over?.kind === 'target' && d.over.key === key)
+  const here = <span className="plan-here">{t('Move here')}</span>
+  // The folders list skips the current plan, so its positions are looked up in the whole list.
+  const reorderFolder = useListReorder(others.length, (from, to) => update(s => {
+    const all = folderList(s).map(f => f.name.toLowerCase())
+    const at2 = i => all.indexOf(others[i]?.name.toLowerCase())
+    if (others[from] && others[to]) reorderFolders(s, at2(from), at2(to))
   }))
+  // Only what the list shows can be ticked: the current plan's routines and the loose ones.
+  const shown = [...curRoutines, ...loose]
+  const ids = sel.filter(id => shown.some(r => r.id === id))
+  const toggle = id => setSel(l => (l.includes(id) ? l.filter(x => x !== id) : [...l, id]))
+  const allPicked = shown.length > 0 && ids.length === shown.length
+  const leave = () => { setEdit(false); setSel([]) }
+  const archiveSel = () => { if (ids.length) { archiveIdsWithUndo(ids); setSel([]) } }
+  const deleteSel = () => ids.length && confirmSheet({
+    title: t('Delete for good'), danger: true, confirmText: t('Delete'),
+    message: t('Delete {0} for good? Your past workouts stay in History.', routineCount(ids.length)),
+    onConfirm: () => { withUndo(t('{0} gone.', routineCount(ids.length)), s => deleteLive(s, ids)); setSel([]) },
+  })
 
   const addRoutine = () => newRoutine(update, nav)
+  const newMenu = () => menuSheet({ items: [
+    { icon: 'plus', label: t('New routine'), onClick: addRoutine },
+    { icon: 'folder', label: t('New folder'), onClick: () => folderNameSheet({ mode: 'new' }) },
+  ] })
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
   // place of its confirm (v1.3.11): the swipe and the edit-mode minus both land here.
   const remove = r => deleteRoutineWithUndo(r.id)
   // The swipe's other side: a copy right below the original, named the way "Copy routine" names
   // one, and staying on this list rather than opening it.
-  const duplicate = r => {
-    const copy = copyRoutine(r, t('Copy'))
-    update(s => {
-      const at = s.routines.findIndex(x => x.id === r.id)
-      s.routines.splice(at < 0 ? s.routines.length : at + 1, 0, copy)
-    })
-    setFlash({ id: copy.id, n: ++flashSeq })
-    // With its own Undo: the toast takes the place of any Undo still showing (one toast at a
-    // time), so the newest swipe is at least the one you can take back.
-    useUI.getState().toast(t('Copied as “{0}”.', copy.name), { action: t('Undo'), onAction: () => {
-      update(s => { if (s.routines.some(x => x.id === copy.id)) deleteRoutine(s, copy.id) })
-    } })
-  }
+  // (with its own Undo: the toast takes the place of any Undo still showing, one at a time)
+  const duplicate = r => setFlash({ id: duplicateRoutine(r).id, n: ++flashSeq })
   // The weekdays a routine is on, short, in the order the week runs.
   const order = weekOrder(weekStartOf(S))
   const daysOf = id => order.filter(d => [].concat(S.week[d] || []).includes(id)).map(d => t(DAYS[d]))
-  // A routine a trainer assigned or changed says who (docs/TRAINERS.md, `_by`).
-  const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', '), r._by?.kind === 'trainer' && r._by.name ? t('from {0}', r._by.name) : null, edit ? folderOf(r) : null].filter(Boolean).join(' · ')
+  // A routine a trainer assigned or changed says who (docs/TRAINERS.md, `_by`); `where` names its folder under Starred.
+  const sub = (r, where) => [where, exCount(r.ex.length), daysOf(r.id).join(', '), r._by?.kind === 'trainer' && r._by.name ? t('from {0}', r._by.name) : null].filter(Boolean).join(' · ')
+  // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo, toward the
+  // end duplicates. Edit's Delete and the routine's own page stay the way in for a keyboard and a screen reader.
+  const rowOf = (r, where, rd, list, dg) => <RoutineRow key={r.id} r={r} sub={sub(r, where)} body={S.body} onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)}
+    drag={!edit && dg && dragOf(dg, r.id)}
+    edit={edit && { checked: sel.includes(r.id), onToggle: () => toggle(r.id), handle: rd.handle(list.indexOf(r)), style: rd.rowStyle(list.indexOf(r)), grip: list.length > 1 }}
+    swipe={swipe && { copyLabel: t('Duplicate'), deleteName: t('Delete {0}', said(r.name)), copyName: nameIn(r.name, t('Duplicate')),
+      onDelete: () => remove(r), onCopy: () => duplicate(r), flash: flash?.id === r.id ? flash.n : 0 }} />
+  const group = (key, rows, cls = '', ref, area) => <div key={key} ref={ref} className={'list plan-group ' + cls} {...area}>{rows}</div>
+  const folderText = (tile, name, count) => <>
+    <span className="lrow-i plan-ftile">{tile}</span>
+    <div className="grow"><div className="tt">{name}</div><div className="ss">{count}</div></div>
+  </>
+  // In Edit a folder is only reordered: no tap, no "…", just the grip.
+  const folderRow = (key, tile, name, count, onOpen, onMenu, grip, drop) => grip
+    ? <div key={key} className="item plan-folder is-edit" data-reorder-row="" style={grip.style}>
+      {folderText(tile, name, count)}
+      {grip.grip && <button type="button" className="plan-grip" aria-label={t('Move {0}', said(name))} title={t('Drag to reorder')} {...grip.handle}><Icon name="grip" /></button>}
+    </div>
+    : <div key={key} className={'item plan-folder' + (drop && hot(name) ? ' is-drop' : '')} {...(drop || {})} {...tappable(onOpen)}>
+      {folderText(tile, name, count)}
+      {drop && hot(name) ? here : <>{onMenu && <MoreButton name={name} onClick={onMenu} />}<Icon name="chevronRight" className="chev" /></>}
+    </div>
+  const starredRoutines = routines.filter(isFavRoutine)
 
   return <>
-    <div className="row between plan-sec-h plan-routines-bar">
-      {routines.length > 0
-        ? <button className="plan-textbtn" aria-pressed={edit} onClick={() => setEdit(e => !e)}>{edit ? t('Done') : t('Edit')}</button>
-        : <span />}
-      <Button size="sm" variant="tinted" icon="plus" data-tour="plan-new" onClick={addRoutine}>{t('New routine')}</Button>
-    </div>
-    {routines.length ? <>
-      {edit
-        ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
-          <div key={r.id} data-reorder-row className="item plan-routine" style={reorder.rowStyle(i)}>
-            <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
-            {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
-              {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
-          </div>)}</div>
-        // Starred routines first, under Favourites (#327, lib/routine-favs.js): out of their
-        // folder while starred, so each routine shows once. Edit still orders S.routines itself.
-        : [...(routines.some(isFavRoutine) ? [{ folder: '', fav: true, routines: routines.filter(isFavRoutine) }] : []),
-          ...groupRoutines(routines.filter(r => !isFavRoutine(r)))].map(g => {
-          if (!g.routines.length) return null
-          const open = !g.folder || (openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder))
-          const list = open && <div key={'l' + (g.fav ? '*' : g.folder)} className="list routine-list plan-routines" data-folder={g.folder || undefined} data-favs={g.fav || undefined}>{g.routines.map(r => {
-          const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub(r)}</div></div>
-            <MiniBodyMap routines={[r]} body={S.body} />
-            <Icon name="chevronRight" className="chev" /></div>
-          // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo,
-          // toward the end duplicates. Edit's minus and the routine's own page stay the way in
-          // for a keyboard and a screen reader.
-          return swipe
-            ? <SwipeRow key={r.id} className="swrow-item" copyLabel={t('Duplicate')} deleteName={t('Delete {0}', said(r.name))} copyName={nameIn(r.name, t('Duplicate'))}
-              onDelete={() => remove(r)} onCopy={() => duplicate(r)}
-              flash={flash?.id === r.id ? flash.n : 0}>{row}</SwipeRow>
-            : row
-        })}</div>
-          if (g.fav) return <div key="favs" className="plan-folder-sect plan-favs">
-            <h4 className="sec plan-favs-h"><Icon name="starFill" className="fav-star" />{t('Favourites')}</h4>
-            {list}
-          </div>
-          if (!g.folder) return list
-          // A folder's header folds its routines away; where it was left is remembered here.
-          return <div key={'f' + g.folder} className="plan-folder-sect">
-            <button type="button" className="plan-folder" aria-expanded={open} onClick={() => toggleFolder(g.folder, !open)}>
-              <Icon name="folder" /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span>
-              <Icon name="chevronRight" className="chev" />
-            </button>
-            {list}
-          </div>
-        })}
-      <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it. Reorder and delete are behind Edit.')}</p>
-    </> : <>
-      <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
-        <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
-      </EmptyState>
+    {edit && <>
+      <div className="row between plan-routines-bar">
+        <button ref={selectAll} className="plan-textbtn" onClick={() => setSel(allPicked ? [] : shown.map(r => r.id))}>{allPicked ? t('Select none') : t('Select all')}</button>
+        <button className="plan-textbtn" onClick={leave}>{t('Done')}</button>
+      </div>
+      <h2 className="plan-selcount" role="status">{ids.length ? t('{0} selected', ids.length) : t('Select items')}</h2>
     </>}
+    {routines.length || folders.length || archived ? <div className={'plan-routes' + (edit ? ' is-editing' : '') + (lifted ? ' is-dragging' : '') + (starred && !edit ? ' is-starred' : '')}>
+      {!edit && starred
+          ? (starredRoutines.length
+            ? <>
+              <div className="plan-starred-bar">
+                <span className="ss">{t('{0} of {1} routines', starredRoutines.length, routines.length)}</span>
+                <button className="plan-textbtn" onClick={() => setStarred(false)}>{t('Show all')}</button>
+              </div>
+              {group('starred', starredRoutines.map(r => rowOf(r, cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
+            </>
+            : <div className="plan-fav-empty">
+              <span className="plan-fav-i"><Icon name="star" /></span>
+              <h3>{t('No favourites yet.')}</h3>
+              <p>{t('Open the menu on a routine and pick Add to favourites. It will show here.')}</p>
+              <button type="button" className="plan-textbtn" onClick={() => setStarred(false)}>{t('Show all routines')}</button>
+            </div>)
+          : <>
+            {cur && group('cur', [
+              <div key="cur" className={'item plan-current' + (hot(cur.name) ? ' is-drop' : '')} {...dragCur.targetProps(cur.name)}>
+                <span className="lrow-i plan-pin"><Icon name="pushpin" /></span>
+                <div className="grow"><div className="tt">{cur.name}</div><div className="ss"><b>{t('Current plan')}</b> · {routineCount(cur.live)}</div></div>
+                {hot(cur.name) ? here : !edit && <MoreButton name={cur.name} onClick={() => folderMenu(cur.name)} />}
+              </div>, ...curRoutines.map(r => rowOf(r, undefined, reorderCur, curRoutines, dragCur))], 'routine-list plan-routines', reorderCur.listRef, !edit && dragCur.areaProps(cur.name))}
+            {loose.length > 0 && <>
+              {(cur || others.length > 0) && <h4 className={'sec plan-hdr' + (hot('') ? ' is-drop' : '')}>{t('Not in a folder')}{hot('') && here}</h4>}
+              {group('loose', loose.map(r => rowOf(r, undefined, reorderLoose, loose, dragLoose)), 'routine-list plan-routines' + (hot('') ? ' is-drop-area' : ''), reorderLoose.listRef, !edit && dragCur.areaProps(''))}
+            </>}
+            {others.length > 0 && loose.length > 0 && <h4 className="sec plan-hdr">{t('Folders')}</h4>}
+            {others.length > 0 && group('folders', others.map((f, i) => folderRow('f' + f.name, <Icon name="folder" />, f.name, routineCount(f.live),
+              () => nav('/plan/folder/' + encodeURIComponent(f.name)), () => folderMenu(f.name),
+              edit && { handle: reorderFolder.handle(i), style: reorderFolder.rowStyle(i), grip: others.length > 1 },
+              !edit && dragCur.targetProps(f.name))), '', reorderFolder.listRef)}
+            {archived > 0 && !edit && group('archive', folderRow('archive', <Icon name="archive" />, t('Archive'), routineCount(archived), () => nav('/plan/archive')), 'plan-archive')}
+          </>}
+    </div> : <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
+      <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+    </EmptyState>}
+    {edit && <div className="plan-editbar">
+      <button type="button" disabled={!ids.length} onClick={archiveSel}><Icon name="archive" />{t('Archive')}</button>
+      <button type="button" disabled={!ids.length} onClick={() => moveSheet(ids)}><Icon name="folder" />{t('Move to folder')}</button>
+      <button type="button" className="danger apart" disabled={!ids.length} onClick={deleteSel}><Icon name="trash" />{t('Delete')}</button>
+    </div>}
+    <div className="vh" role="status" aria-live="polite">{dragCur.announce || dragLoose.announce}</div>
+    {!edit && !lifted && <div className="plan-pill">
+      <button type="button" className="plan-pill-star" aria-label={t('Favourites')} aria-pressed={starred} onClick={() => setStarred(!starred)}>
+        <Icon name={starred ? 'starFill' : 'star'} />{starred && <span>{t('Favourites')}</span>}
+      </button>
+      <button type="button" className="plan-pill-new" data-tour="plan-new" onClick={newMenu}><Icon name="plus" />{t('New')}</button>
+    </div>}
   </>
 }
