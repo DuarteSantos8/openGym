@@ -44,7 +44,6 @@ Committed in `render.yaml` (no secrets, nothing project-specific):
 | `PORT` | `10000` | Render's port for a web service |
 | `OIDC_ONLY` | `1` | the hosted account is the only way to get a profile: no sign-up straight on the server |
 | `OIDC_LABEL` | `Ironvane` | the button reads "Sign in with Ironvane" |
-| `FIRST_USER_ADMIN` | `1` | the first profile is the admin. **The owner signs in first, before the address is shared** |
 
 Typed into Render's dashboard when the blueprint is created, never committed (the repository is
 public):
@@ -55,12 +54,14 @@ public):
 | `RP_ID` | its host name alone |
 | `OIDC_ISSUER` | `https://<project-ref>.supabase.co/auth/v1` |
 | `OIDC_CLIENT_ID` | the public client registered in the project's OAuth server |
+| `ADMIN_UIDS` | the owner's Account ID on this server, added after their first sign-in (below). Empty until then |
 
 Left out on purpose:
 
-- `TRUST_PROXY`. The service is reachable on its own Render address as well as through the
-  Vercel rewrite, and `.env.example` says to leave it off unless whatever sits in front
-  overwrites the forwarding headers. Not verified for this chain, so off.
+- `FIRST_USER_ADMIN`. It makes the first profile the admin, and here anyone can make a hosted
+  account: once the address is public, whoever signs in first would own the server (found in
+  review of #76). The admin is named by id in `ADMIN_UIDS` instead.
+- `TRUST_PROXY`. See "Known limit: sign-in throttling" below.
 - `OIDC_EMAIL_LINKING`. A fresh server has no profiles to link to.
 - Any model provider key. The Coach's key is pasted by the admin into the app's admin dashboard
   and stored encrypted on the disk (`docs/AI_COACH.md`, "Where a credential lives").
@@ -86,7 +87,9 @@ Then, in order:
    `{"ok":true,…}`).
 5. Point the `/api/*` rewrite in `frontend/vercel.json` at the Render address (a pull request).
 6. The owner opens the app, signs in to the hosted account, and goes through "Sign in with
-   Ironvane" once. That first profile is the admin.
+   Ironvane" once. That makes an ordinary profile. They copy its Account ID from Settings,
+   Account, and put it in `ADMIN_UIDS` in Render's dashboard; the service restarts and the
+   admin dashboard appears. Nobody becomes the admin by arriving first.
 7. Check ADR 0013's two open items on the real thing: the `iss` of a real ID token equals the
    discovery `issuer`, and the round trip completes on the web.
 8. Coach: Settings, Account, Admin dashboard, AI Coach, Set up the Coach. Pick a provider, paste
@@ -105,6 +108,22 @@ Then, in order:
 Not checked, because it needs the real service: the Docker build on Render, the disk's
 permissions for the Coach's unprivileged user, the sign-in round trip, and the Coach with a real
 provider.
+
+## Known limit: sign-in throttling
+
+Found in review of #76 and confirmed in the code. The server limits sign-in attempts per
+address: 30 requests a minute on the OIDC routes (`OIDC_BURST` in `api/server.js`), plus a pause
+after wrong states or codes. Behind the Vercel rewrite the server does not see the visitor's
+address. With `TRUST_PROXY` off it counts the connecting socket; with it on it reads
+`CF-Connecting-IP` or the last `X-Forwarded-For` entry (`limitAddress`), and both of those are
+the proxy in front of it, not the person. Either way everyone shares a few buckets.
+
+What that means: fine for a beta (a sign-in is two requests, so roughly fifteen a minute per
+bucket), but a busy day or someone hammering the sign-in route can make other people wait a
+minute. Which headers really arrive is to be read off the live service at bring-up. The real
+fix is for the server to be reached without a second proxy in between: its own subdomain, or
+the web container in front of it as in `docker-compose.yml`. That is a decision for before
+launch, not for the beta.
 
 ## Backups
 
