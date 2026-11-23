@@ -781,9 +781,12 @@ h4.sec{
 #tabbar button.start .cir{color:var(--on-acc)}
 #tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px var(--orange);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
 #tabbar button.start.rec span{color:var(--orange-ink)}   /* the running clock is read: #ff9500 was 2.1:1 on the light bar */
+/* Three pings when a workout starts, then still (review 1.4.6): an endless ring kept the phone's
+   compositor busy for the whole workout, the biggest battery cost the Android pass measured.
+   The orange disc and the running clock already say a workout is on. */
 #tabbar button.start.rec .cir::after{
   content:'';position:absolute;inset:0;border-radius:50%;
-  border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
+  border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3 both;
 }
 @keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.45);opacity:0}}
 

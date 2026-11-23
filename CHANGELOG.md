@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Battery: the ring around the Start button pings three times when a workout begins and then rests, instead of pulsing for the whole workout. On Android it alone kept the screen redrawing the whole time.
 - Coach: automatic reviews only go to the AI provider you said yes to. If you switched them on before this version, open the Coach once after updating and confirm: until then they pause, since the server cannot tell which provider you agreed to back then (#1500).
 - Customize Home and Stats: hold a card and drag it where you want it, or drag it by its grip. The others make room as it passes and it glides into its slot, with a light buzz on the way. The list only offers the cards that have something to show today (Your week, for one, shows after a week ends), plus the ones you hid; one you turn on that has nothing yet says it will show up when there is something.
 - Moving things works the same on every list now: hold a row until it lifts (a light buzz), drag it, and the others make room; let go and it glides into place. That is Plan's routines (no need to tap Edit first, Edit stays for deleting), the rotation's loop, a routine's exercises, Customize Home and Stats, your resistance bands and a ladder's rungs. With a mouse, the grip on the left picks a row up at once. The move arrows are gone from sight; a keyboard and a screen reader still have them.
