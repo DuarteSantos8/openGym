@@ -57,6 +57,16 @@ export function garminLook (st = {}) {
 // A set the watch still has to do: not done, or a per-side set with a side to go.
 const openRow = s => !!s && !s.done
 const openEntry = e => e?.mode !== 'cardio' && (e?.sets || []).some(openRow)
+const sameGroup = (a, b) => a?.group != null && a.group === b?.group
+
+// The exercise up now: the phone's `cur`, or the first after it with a set to do, else `cur`.
+function upNow (active) {
+  const entries = active.entries
+  const n = entries.length
+  const cur = Math.max(0, Math.min(n - 1, active.cur || 0))
+  for (let k = 0; k < n; k++) { const i = (cur + k) % n; if (openEntry(entries[i])) return i }
+  return cur
+}
 
 /**
  * Which exercises of the running workout go to the watch: the one up now (the phone's `cur`, or
@@ -67,10 +77,7 @@ export function garminWindow (active) {
   const entries = active?.entries || []
   const n = entries.length
   if (!n) return []
-  const cur = Math.max(0, Math.min(n - 1, active.cur || 0))
-  let at = -1
-  for (let k = 0; k < n && at < 0; k++) { const i = (cur + k) % n; if (openEntry(entries[i])) at = i }
-  if (at < 0) at = cur
+  const at = upNow(active)
   let lo = at, hi = at
   const g = entries[at].group
   if (g != null) {
@@ -109,7 +116,9 @@ const nameOnly = r => ({ routineIds: r.routineIds || [], name: r.name || '', ent
  * The snapshot (buildSnapshot's, with settings, streak and discarded as startWatchSync adds them)
  * made into what a Garmin watch gets. Under `max` bytes as JSON, cutting first what matters least:
  * the other routines' count, the records, the "last time" lines, today's exercises (the watch then
- * asks the phone to start it), and last of all the exercise after the one up now.
+ * asks the phone to start it), the exercise after the one up now (after its superset), a long
+ * superset's members furthest from the one up now (down to it and one more), the older acked ids,
+ * and last of all the rest of the superset. The exercise up now always stays.
  */
 export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   const st = snap?.settings || {}
@@ -133,8 +142,10 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
     ready: null,
   }
   const A = snap?.active
+  let at = -1
   if (A && Array.isArray(A.entries)) {
     const win = garminWindow(A)
+    if (win.length) at = upNow(A)
     const { progress, volume } = garminTotals(A)
     // The Garmin watch has no Muscles page: the muscle weights and names would only cost bytes.
     const { entries, muscleNames, ...rest } = A
@@ -157,8 +168,21 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
     () => { if (out.ready?.today) out.ready.today = nameOnly(out.ready.today) },
     () => { if (out.active) out.active.entries = out.active.entries.map(e => slim(e, 'last')) },
     () => { if (out.ready) out.ready.others = [] },
-    () => { if (out.active && out.active.entries.length > 1) out.active.entries = out.active.entries.slice(0, -1) },
+    // the exercise after the window's superset (or after the one up now)
+    () => { const es = out.active?.entries || []; if (es.length > 1 && !sameGroup(es[es.length - 1], es.find(e => e.i === at))) es.pop() },
+    narrow(2),
+    // the watch keeps the others in its outbox and sends them again, and the phone names them then
+    () => { if (out.acked) out.acked = out.acked.slice(-4) },
+    narrow(1),
   ]
+  // A superset too long for the watch, down to `keep` members: those before the one up now go
+  // first (the watch does the ones after it next), then the furthest after it.
+  function narrow (keep) {
+    return () => {
+      const es = out.active?.entries || []
+      while (es.length > keep && bytesOf(out) > max) { if (es[0].i !== at) es.shift(); else es.pop() }
+    }
+  }
   for (const step of steps) {
     if (bytesOf(out) <= max) break
     step()

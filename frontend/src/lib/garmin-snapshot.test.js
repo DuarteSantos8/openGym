@@ -132,13 +132,43 @@ describe('the Garmin snapshot', () => {
     expect(out.streak).toBeNull()
   })
 
-  it('carries the newest acked ids, a short list, and never cuts them for size', () => {
+  it('carries the newest acked ids, a short list, cut to the newest 4 only when nothing else is left to cut', () => {
     const ids = Array.from({ length: 40 }, (_, i) => 'g' + i)
     const out = garminSnapshot({ ...wearSnap(), acked: [...ids, 7] })
     expect(out.acked).toEqual(ids.slice(-GARMIN_ACKED_MAX))
     const tight = garminSnapshot({ ...wearSnap(), acked: ids }, { max: 300 })
-    expect(tight.acked).toHaveLength(GARMIN_ACKED_MAX)
+    expect(tight.acked).toEqual(ids.slice(-4))
     expect(garminSnapshot(wearSnap()).acked).toBeUndefined()
+  })
+
+  it('fits a six-exercise circuit with long names, keeping the exercise up now and the next in the round', () => {
+    // A giant set as the phone sends it: an Instinct 2 ran out of memory on these at 3.3 to 3.6 KB.
+    const uuid = k => '2f1c9a3e-7b4d-4c1e-9a55-' + String(k).padStart(12, '0')
+    const name = k => 'Recumbent Hip External Rotator And Hip Extensor Stretch (Crossed Leg) ' + k
+    const rows = k => Array.from({ length: 4 }, (_, s) => ({ w: 62.5, r: 8, sec: null, done: false, warmup: s === 0, sid: 'r' + k + s }))
+    const circuit = (n, cur) => ({
+      v: 1, unit: 'kg', restSec: 90, now: 1761742800000,
+      settings: { lang: 'en', accent: '#30D158', onAccent: '#000000', crown: 'weight', effort: 'rir', autoHolds: true, forgotten: { askMin: 30 } },
+      streak: { weeks: 12, thisWeekDone: true },
+      acked: Array.from({ length: 80 }, (_, k) => uuid(k)),
+      discarded: [uuid(900), uuid(901)],
+      active: { id: 'w', name: 'Circuit', cur, unit: 'kg', restSec: 90, entries: Array.from({ length: n }, (_, k) => ex('e' + k, rows(k), { name: name(k), restSec: 90, bodyweight: true, best: { w: 62.5, r: 8 }, ...(k < 6 ? { group: 'g1' } : {}) })) },
+      ready: { today: { routineIds: ['t'], name: 'Circuit', entries: [] }, others: [] },
+    })
+    // the circuit then two more exercises, and the circuit alone (it ends the workout)
+    for (const n of [8, 6]) {
+      for (let cur = 0; cur < 6; cur++) {
+        const out = garminSnapshot(circuit(n, cur))
+        expect(bytes(out)).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+        const up = out.active.entries.find(e => e.i === cur)
+        expect(up.sets).toHaveLength(4)
+        expect(up.group).toBe('g1')
+        // the watch's next exercise in the round comes along (the one after, or the top of the group)
+        expect(out.active.entries.some(e => e.i === (cur < 5 ? cur + 1 : cur - 1))).toBe(true)
+        expect(out.acked).toHaveLength(GARMIN_ACKED_MAX)
+        expect(out.discarded).toHaveLength(2)
+      }
+    }
   })
 })
 
