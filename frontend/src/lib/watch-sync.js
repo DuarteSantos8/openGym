@@ -308,7 +308,12 @@ function bestFor (S, id, mode) {
   return bestCache.map.get(key)
 }
 
-const stepOf = (cfg, S) => { try { return num(weightIncrement(cfg, S?.unit === 'lb' ? 'lb' : 'kg')) } catch { return null } }
+// The watch's weight wheel moves 1.25 kg (2.5 lb) at most: a heavy lift's 5 kg default skipped
+// the weights between (owner, 1.4.5). A finer step of the exercise's own (0.5 kg) is kept.
+const stepOf = (cfg, S) => {
+  const unit = S?.unit === 'lb' ? 'lb' : 'kg'
+  try { const s = num(weightIncrement(cfg, unit)); return s ? Math.min(s, unit === 'lb' ? 2.5 : 1.25) : s } catch { return null }
+}
 
 const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true })
 
@@ -368,8 +373,9 @@ function watchEntry (stored, H, S) {
     ...(e.sg ? { group: String(e.sg) } : {}),
     ...(best ? { best } : {}),
     ...(mode === 'reps' && isAssisted(e.id) ? { assisted: true } : {}),
-    // the step the weight moves in, as on the phone (this exercise's own, else its plates' default)
-    ...(mode === 'reps' && stepOf(cfg, V) ? { step: stepOf(cfg, V) } : {}),
+    // the step the weight moves in, as on the phone (this exercise's own, else its plates' default);
+    // a hold too: a weighted plank's wheel fell back to the watch's 2.5 kg without it
+    ...(stepOf(cfg, V) ? { step: stepOf(cfg, V) } : {}),
     ...(own ? { unit: own } : {}),
   }
 }
