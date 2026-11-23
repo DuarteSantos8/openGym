@@ -1,4 +1,5 @@
 import { favRoutinesFirst, isFavRoutine } from '../lib/routine-favs.js'
+import { activeRoutines } from '../lib/routine-folders.js'
 import Icon from './Icon.jsx'
 import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
@@ -13,6 +14,7 @@ import { daySessionsStatus } from '../lib/day-sessions.js'
 import { exOr } from '../lib/exercises.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { colorOf, tileStyle } from '../lib/routine-colors.js'
 import { leftoversBefore } from '../lib/leftovers.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
@@ -63,7 +65,7 @@ function StartPicker({ close }) {
   const sessions = daySessionsStatus(st, today).filter(x => x.routines.length)
   const planned = new Set(sessions.flatMap(x => x.ids))
   // Starred routines first (lib/routine-favs.js, #327), each half in Plan's order.
-  const others = favRoutinesFirst((st.routines || []).filter(r => !planned.has(r.id)))
+  const others = favRoutinesFirst(activeRoutines(st).filter(r => !planned.has(r.id)))
   const go = ids => { close(); startOrPreview(ids) }
   const nameOf = s => deriveSessionName(s.routines.map(r => r.name))
   const firstOpen = sessions.find(x => !x.done)
@@ -82,7 +84,7 @@ function StartPicker({ close }) {
       <h4 className="sec">{t('Today')} · {t(DAYN[new Date(today + 'T12:00:00').getDay()])}</h4>
       <div className="list menu-list start-today" style={{ marginBottom: 14 }}>
         {sessions.map((s, i) => <Row key={s.ids.join('+')} icon={s.done ? 'checkCircle' : glyphOf(s.routines[0].emoji)}
-          iconTint={s.done ? 'var(--green)' : 'var(--acc)'} title={nameOf(s)}
+          iconTint={s.done ? 'var(--green)' : 'var(--acc)'} iconStyle={s.done ? undefined : tileStyle(s.routines[0])} title={nameOf(s)}
           subtitle={s.done ? t('Done today. Again?') : exCount(s.routines.reduce((n, r) => n + (r.ex || []).length, 0))}
           accessory="chevron" className={!s.done && i === sessions.findIndex(x => !x.done) ? 'start-first' : ''}
           onClick={() => go(s.ids)} />)}
@@ -91,7 +93,7 @@ function StartPicker({ close }) {
     {others.length > 0 && <>
       <h4 className="sec">{sessions.length ? t('Other routines') : t('Your routines')}</h4>
       <div className="list menu-list" style={{ marginBottom: 14 }}>
-        {others.map(r => <Row key={r.id} icon={glyphOf(r.emoji)} title={isFavRoutine(r) ? <><Icon name="starFill" className="fav-star" />{r.name}</> : r.name} subtitle={exCount((r.ex || []).length)}
+        {others.map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconStyle={tileStyle(r)} title={isFavRoutine(r) ? <><Icon name="starFill" className="fav-star" />{r.name}</> : r.name} subtitle={exCount((r.ex || []).length)}
           accessory="chevron" onClick={() => go([r.id])} />)}
       </div>
     </>}
@@ -130,7 +132,7 @@ function Preview({ ids, close }) {
         <h3 style={{ marginBottom: 2 }}>{name}</h3>
         <div className="muted small">{exCount(built.entries.length)}</div>
       </div>
-      <MiniBodyMap routines={built.routines} body={st.body} />
+      <MiniBodyMap routines={built.routines} tint={colorOf(built.routines[0])} body={st.body} />
     </div>
     {built.entries.length
       ? <ol className="list preview-list" style={{ margin: '12px 0 16px' }} aria-label={t('In this workout')}>

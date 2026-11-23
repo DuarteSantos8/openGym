@@ -104,6 +104,9 @@ test('scopedState: a category reads its keys, settings ride along, the never lis
   for (const k of ['dayPhotos', 'avatar', 'coach', 'active', 'deleted', 'edited', '_unstamped', 'integrationsSeen']) assert.equal(k in w, false, k);
   const p = scopedState(S, { plans: 'apply' });
   assert.ok(p.routines && p.week && p.customEx && !p.workouts);
+  const pf = scopedState({ ...S, routineFolders: [{ name: 'A' }], archiveMoved: true }, { plans: 'view' });
+  assert.ok(pf.routineFolders && pf.archiveMoved, 'folders and the archive mark are plans');
+  assert.equal('routineFolders' in scopedState({ ...S, routineFolders: [] }, { workouts: 'view' }), false);
   const all = scopedState(S, { workouts: 'apply', plans: 'apply', bodyweight: 'apply', measurements: 'apply', notes: 'view' });
   for (const k of ['dayPhotos', 'avatar', 'coach', 'active']) assert.equal(k in all, false, k);
   assert.deepEqual(scopedState(S, {}), {}, 'a token that holds nothing reads nothing, settings included');

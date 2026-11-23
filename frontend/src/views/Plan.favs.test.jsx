@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Favourite routines (#327): the starred ones lead Plan's routine list under Favourites, once each.
+// Favourite routines (#327): a star beside the name, in place; the Starred pill filters (Plan.folders.test.jsx).
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -35,7 +35,7 @@ let host, root
 beforeEach(() => {
   mocks.S = {
     unit: 'kg', workouts: [], exWeights: {}, week: {}, dayPlan: {},
-    routines: [{ id: 'r1', name: 'Push', emoji: null, ex: [] }, { id: 'r2', name: 'Pull', emoji: null, ex: [], fav: true, folder: 'Block A' }, { id: 'r3', name: 'Legs', emoji: null, ex: [] }],
+    routines: [{ id: 'r1', name: 'Push', emoji: null, ex: [] }, { id: 'r2', name: 'Pull', emoji: null, ex: [], fav: true }, { id: 'r3', name: 'Legs', emoji: null, ex: [] }],
   }
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -49,14 +49,13 @@ afterEach(() => {
 const mount = () => { localStorage.setItem(KEY, 'routines'); act(() => root.render(<Plan />)) }
 
 describe('Plan: favourite routines', () => {
-  it('lists the starred routine first under Favourites, and not again in its folder', () => {
+  it('shows the star on the starred routine, where it is: no Favourites group, no repeat', () => {
     mount()
-    const favs = host.querySelector('[data-favs]')
-    expect(favs).toBeTruthy()
-    expect(favs.textContent).toContain('Pull')
+    expect(host.querySelector('[data-favs]')).toBeNull()
+    expect(host.textContent).not.toContain('Favourites')
     const names = [...host.querySelectorAll('.plan-routine .tt')].map(n => n.textContent)
     expect(names.filter(n => n === 'Pull')).toHaveLength(1)
-    expect(names.indexOf('Pull')).toBeLessThan(names.indexOf('Push'))
-    expect(host.textContent).not.toContain('Block A')
+    expect(host.querySelectorAll('.plan-routine .fav-star')).toHaveLength(1)
+    expect(host.querySelector('.plan-routine .fav-star').closest('.tt').textContent).toBe('Pull')
   })
 })

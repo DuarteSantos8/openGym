@@ -4,6 +4,7 @@
 // morning and ankle work in the evening, each with its own Start, each done on its own.
 //
 // Pure, read from S: Home's today rows, the Start button and the start picker all use it.
+import { isLive } from './routine-folders.js'
 import { effectiveRoutineIds } from './history.js'
 import { queueOf } from './queue.js'
 import { todayISO } from './format.js'
@@ -42,7 +43,7 @@ export function daySessionsStatus(S, iso = todayISO()) {
   const queueIds = queueOf(S)?.ids || []
   const covered = id => !queueIds.includes(id) && logged.some(w => (Array.isArray(w.routineIds) ? w.routineIds : [w.routineId]).includes(id))
   return daySessions(S, iso).map(ids => {
-    const routines = ids.map(id => (S.routines || []).find(r => r.id === id)).filter(Boolean)
+    const routines = ids.map(id => (S.routines || []).find(r => r.id === id)).filter(isLive)
     const doneW = routines.length && routines.every(r => covered(r.id)) ? logged.filter(w => ids.some(id => (Array.isArray(w.routineIds) ? w.routineIds : [w.routineId]).includes(id))).at(-1) || null : null
     return { ids, routines, done: doneW }
   })
