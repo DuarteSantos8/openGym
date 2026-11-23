@@ -2,8 +2,10 @@ import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
-import { t } from '../lib/i18n.js'
+import { t, onLangChange } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
+import { isArchive } from '../lib/routine-folders.js'
+import { migrateArchiveFolder } from '../lib/routine-archive.js'
 import { syncGymInventory } from '../lib/gym-inventory.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
@@ -13,7 +15,7 @@ import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJson
 import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
-import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { mergeStates, localExtras, folderKey, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { keptHashes } from '../lib/media-refs.js'
@@ -383,7 +385,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.routineFolders || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -776,8 +778,19 @@ export const useStore = create((set, get) => {
       pushTm = setTimeout(() => get().pushState(), 1500)
     }
   }
+  // Also after a pull: an older app's copy can still carry routines in the Archive folder.
+  const moveArchive = () => {
+    if (get().S.routines.some(r => isArchive(r.folder))) get().update(migrateArchiveFolder)
+  }
+  // And once the language's words load: boot can run before them, and "Archiv" is only matched then.
+  onLangChange(() => { if (get().ready) moveArchive() })
   // Boot's last step: from here on changes push, and one made during boot goes now.
   const finishBoot = (extra = {}) => {
+    // The old Archive folder becomes the archive flag once, through update() so it is stamped and
+    // syncs; a push it asks for waits for `ready` below. Not in persist: that stamps nothing.
+    // Only when there is something to move: a bare marker would make every synced copy owe a push.
+    // lean: a copy with no Archive folder never gets the marker; set it on the first Archive use.
+    moveArchive()
     set({ ready: true, ...extra })
     if (pushPending && get().user) {
       clearTimeout(pushTm)
@@ -1421,6 +1434,10 @@ export const useStore = create((set, get) => {
         const mine = S[f] && typeof S[f] === 'object' ? S[f] : {}
         merged[f] = { ...mine, ...(merged[f] || {}) }
       }
+      // So do its folders; the device's folders it lacks follow them, not as the current plan.
+      const theirs = new Set((merged.routineFolders || []).map(folderKey))
+      const added = (S.routineFolders || []).filter(e => folderKey(e) && !theirs.has(folderKey(e))).map(e => ({ name: e.name }))
+      if (added.length) merged.routineFolders = [...(merged.routineFolders || []), ...added]
       persist(merged, false)
       if (rev != null) writeSync(rev, 0, state?._wid)
       else dropSync()
@@ -1940,7 +1957,10 @@ export const useStore = create((set, get) => {
           pushPending = false
           await get().pushState()
         } catch (e) { if (isCurrent(tok)) failed(e) /* keep local; the poll retries */ }
-        finally { if (tok === syncSession) pulling = null }
+        finally {
+          if (tok === syncSession) pulling = null
+          if (isCurrent(tok) && get().ready) moveArchive()   // not before boot's own move
+        }
       })()
       return pulling
     },
@@ -2021,7 +2041,7 @@ export const useStore = create((set, get) => {
       // stays held, and the next check or "Sync now" runs it again; a bare call has nothing to
       // hold for and lets go.
       adopting = runAdopt(ask, opts, tok)
-        .then(r => { if (isCurrent(tok)) claimSaved(); return r })
+        .then(r => { if (isCurrent(tok)) { claimSaved(); if (get().ready) moveArchive() } return r })   // the account's copy may hold the old Archive folder
         .catch(e => { if (isCurrent(tok) && !adoptOwed()) releaseAdopt(); throw e })
         .finally(() => { if (tok === syncSession) adopting = null })
       return adopting

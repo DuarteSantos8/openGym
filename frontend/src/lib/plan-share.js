@@ -8,6 +8,7 @@
 //  2. A clean, printable page (Save as PDF) where a single exercise never splits across
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
+import { isLive } from './routine-folders.js'
 import { cleanCircuit } from './circuit.js'
 import { normalizeTempo } from './tempo.js'
 import { warmupModeOf, ownRowsOf } from './warmup-ramp.js'
@@ -31,6 +32,7 @@ import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { MEDIA_CREDIT, isPrintPicture, loadPrintPictures } from './print-pictures.js'
 import { normalizeAliases } from './exercise-aliases.js'
+import { colorOf } from './routine-colors.js'
 import { bundleProgramme, importedProgramme, programmeById, programmeRoutineIds, programmesOf, IMPORT_MAX_PROGRAMMES } from './programmes.js'
 
 const PLAN_FMT = 1
@@ -269,6 +271,7 @@ export function buildPlanBundle(S, name) {
   if (!unit) unitError()
   const routines = (S.routines || []).map(r => ({
     id: r.id, name: r.name, emoji: r.emoji,
+    ...(colorOf(r) ? { color: r.color } : {}),
     ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
     ex: (r.ex || []).map(cleanEx)
@@ -416,6 +419,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       id: nid,
       name: r.name || t('Shared routine'),
       emoji: r.emoji,
+      ...(colorOf(r) ? { color: r.color } : {}),
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))
@@ -555,7 +559,7 @@ function weekHTML(S, m) {
   // The printout is read by whoever exported it, so the week runs in their order.
   const rows = weekOrder(weekStartOf(S)).map(d => {
     const names = [].concat(S.week?.[d] || [])
-      .map(id => S.routines.find(x => x.id === id)?.name)
+      .map(id => S.routines.find(x => x.id === id && isLive(x))?.name)
       .filter(Boolean)
     const val = names.length ? esc(deriveSessionName(names)) : `<span class="rest">${esc(t('Rest'))}</span>`
     return `<tr><th scope="row">${esc(t(DAYN[d]))}</th><td>${val}</td></tr>`
@@ -695,7 +699,7 @@ export function planPrintHTML(S, owner, { routineId, probe = false, pictures = n
   const unit = S.unit || 'kg'
   const speedUnit = speedUnitOf(S)
   const single = routineId ? (S.routines || []).find(r => r.id === routineId) || null : null
-  const routines = routineId ? [single].filter(Boolean) : (S.routines || []).filter(r => r.ex && r.ex.length)
+  const routines = routineId ? [single].filter(Boolean) : (S.routines || []).filter(r => isLive(r) && r.ex && r.ex.length)
   const pics = {}
   if (pictures && typeof pictures === 'object') {
     for (const r of routines) for (const e of r.ex || []) if (isPrintPicture(pictures[e.id])) pics[e.id] = pictures[e.id]

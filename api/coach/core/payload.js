@@ -310,11 +310,18 @@ function runWeek(run, now, weeks) {
  * disagree, every proposal reads as stale and the feature quietly stops working. coach.test.js
  * pins them together against shared fixtures.
  */
+// A day's ids minus routines that are archived (treated like deleted); a day left empty is dropped.
+const weekOf = S => {
+  const gone = new Set((S.routines || []).filter(r => r.archived === true).map(r => r.id));
+  const out = {};
+  [1, 2, 3, 4, 5, 6, 0].forEach(d => { const ids = S.week?.[d]?.length ? [].concat(S.week[d]).filter(id => !gone.has(id)) : []; if (ids.length) out[d] = ids; });
+  return out;
+};
 export function canonicalPlan(S) {
   const custom = new Map((S.customEx || []).map(c => [c.id, c]));
   const exOf = id => LIB_BY_ID.get(id) || custom.get(id);
   return {
-    routines: (S.routines || []).map(r => ({
+    routines: (S.routines || []).filter(r => r.archived !== true).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e, exOf(e.id));
@@ -337,7 +344,7 @@ export function canonicalPlan(S) {
     // A weekday holds a routine-id list. `[].concat` folds a legacy bare string and a
     // one-element list to the same shape (so their fingerprint is identical); `?.length` keeps
     // a stray `[]` out; insertion order is preserved and never sorted (it is the merge order).
-    week: Object.fromEntries([1, 2, 3, 4, 5, 6, 0].filter(d => S.week?.[d]?.length).map(d => [d, [].concat(S.week[d])]))
+    week: weekOf(S)
   };
 }
 
@@ -346,7 +353,7 @@ export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
-  const routines = list(S.routines).filter(r => r && typeof r === 'object').map(r => ({
+  const routines = list(S.routines).filter(r => r && typeof r === 'object' && r.archived !== true).map(r => ({
     id: ident(r.id), name: r.name == null ? r.name : text(String(r.name), NAME_MAX),
     emoji: r.emoji == null ? r.emoji : glyphStr(String(r.emoji)),
     ...(policy(r.prog) ? { prog: r.prog } : {}),
@@ -354,7 +361,11 @@ export function cleanPlan(S, now) {
   }));
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
-  [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]).map(ident); });
+  const gone = new Set(list(S.routines).filter(r => r && r.archived === true).map(r => ident(r.id)));
+  [1, 2, 3, 4, 5, 6, 0].forEach(d => {
+    const ids = S.week?.[d]?.length ? [].concat(S.week[d]).map(ident).filter(id => !gone.has(id)) : [];
+    if (ids.length) week[d] = ids;
+  });
   const programmes = programmesOut(S, now);
   return { routines, week, ...(programmes.length ? { programmes } : {}) };
 }
