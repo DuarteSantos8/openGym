@@ -16,7 +16,7 @@ import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDat
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
-import { beep, vibrate, unlock } from '../lib/sound.js'
+import { beep, vibrate, unlock, prepareAudio } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
@@ -2947,5 +2947,8 @@ export function _resetHintQuiet() { lastTouchAt = 0 }
 
 export default function Workout() {
   const active = useStore(s => s.S.active)
+  const sounds = useStore(s => !!s.S.sound)
+  // The audio context is made while the phone is idle, not inside the first set's tap.
+  useEffect(() => { if (active) prepareAudio(sounds) }, [!!active, sounds]) // eslint-disable-line react-hooks/exhaustive-deps
   return active ? <ActiveWorkout /> : <StartChooser />
 }

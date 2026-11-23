@@ -23,7 +23,7 @@ vi.mock('../store/useStore.js', async () => {
   return { useStore }
 })
 const buzz = vi.hoisted(() => ({ vibrate: null }))
-vi.mock('../lib/sound.js', () => ({ vibrate: p => buzz.vibrate(p) }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), vibrate: p => buzz.vibrate(p) }))
 
 let host, root, reduce = false
 const load = async () => { vi.resetModules(); return import('./christmas.jsx') }

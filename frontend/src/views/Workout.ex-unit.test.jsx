@@ -10,7 +10,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { withExUnit, shownWeight } from '../lib/ex-unit.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

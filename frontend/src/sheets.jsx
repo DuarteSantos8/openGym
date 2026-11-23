@@ -6,7 +6,7 @@ import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
@@ -2049,6 +2049,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   const onSearchFocus = useSheetKeyboard(searchRef)
   const moreRef = useAutoMore(() => setShown(s => s + 50))
   const all = allExercises(st).filter(e => e.id !== like)
+  // The search words, built while the phone is idle before the first letter (review 1.4.6).
+  useEffect(() => { warmSearch(all) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const gymS = gym == null ? st : { ...st, equipFilterOn: !!gym, activeEquipId: gym || st.activeEquipId }
   const profile = activeProfile(gymS)
   const profiles = st.equipProfiles || []

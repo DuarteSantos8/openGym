@@ -112,3 +112,37 @@ describe('the stories', () => {
     expect(host.querySelector('.wr-hide')).toBeNull()
   })
 })
+
+// Review 1.4.6: Back closes the story like a sheet, and closing it with × leaves no stray entry.
+describe('Back and the story', () => {
+  const popTo = state => act(() => {
+    history.replaceState(state, '')
+    window.dispatchEvent(new PopStateEvent('popstate', { state }))
+  })
+  it('opening pushes an entry; Back closes the story', () => {
+    seed()
+    render(<Wrapped />)
+    act(() => openWrapped(2026))
+    expect(useWrappedUI.getState().year).toBe(2026)
+    expect(history.state?.openGymStory).toBe(true)
+    popTo(null)
+    expect(useWrappedUI.getState().year).toBe(null)
+  })
+  it('a sheet above the story going back leaves the story open', () => {
+    seed()
+    render(<Wrapped />)
+    act(() => openWrapped(2026))
+    popTo({ openGymStory: true })
+    expect(useWrappedUI.getState().year).toBe(2026)
+  })
+  it('× takes its entry back', () => {
+    seed()
+    render(<Wrapped />)
+    act(() => openWrapped(2026))
+    const back = vi.spyOn(history, 'back').mockImplementation(() => {})
+    act(() => button('Close').click())
+    expect(useWrappedUI.getState().year).toBe(null)
+    expect(back).toHaveBeenCalledOnce()
+    back.mockRestore()
+  })
+})

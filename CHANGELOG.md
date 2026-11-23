@@ -6,6 +6,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: Back closes Your month and Your year, on Android and in a browser. It used to change the page underneath (or, on Android, offer to leave the app) while the story stayed open.
+- Smoother on slower phones: the first letter typed in Library or the exercise picker no longer stalls (the search is prepared while the phone is idle), the first set you tick no longer waits for the sound to get ready, and Stats opens without a forced layout pass.
+- Zepp OS: "Phone out of reach" shows again when your routines come in pages; it takes the place of the streak's caption.
 - Battery: the ring around the Start button pings three times when a workout begins and then rests, instead of pulsing for the whole workout. On Android it alone kept the screen redrawing the whole time.
 - Coach: automatic reviews only go to the AI provider you said yes to. If you switched them on before this version, open the Coach once after updating and confirm: until then they pause, since the server cannot tell which provider you agreed to back then (#1500).
 - Customize Home and Stats: hold a card and drag it where you want it, or drag it by its grip. The others make room as it passes and it glides into its slot, with a light buzz on the way. The list only offers the cards that have something to show today (Your week, for one, shows after a week ends), plus the ones you hid; one you turn on that has nothing yet says it will show up when there is something.

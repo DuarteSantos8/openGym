@@ -322,9 +322,12 @@ Page(
       // The streak, big, lime once this week has a workout (the Wear OS Tile's rule).
       const st = s.streak || { weeks: 0, thisWeekDone: false }
       label(String(st.weeks), cy - u(200), { size: T.number, color: st.thisWeekDone ? C.lime : C.text, h: u(84) })
-      label(t('week_streak'), cy - u(118))
       const ready = s.ready || { today: null, others: [] }
       const others = (ready.others || []).filter(r => r.entries.length)
+      // The streak's caption is drawn once the pages are known (below): with the routines in
+      // pages the bottom line is the pager, so "phone out of reach" takes the caption's place
+      // (review 1.4.6: it was not shown at all then).
+      const caption = paged => label(link.away && paged ? t('phone_away') : t('week_streak'), cy - u(118), link.away && paged ? { color: C.text } : {})
       let y = cy - u(70)
       if (ready.today && ready.today.entries.length) {
         label(t('today'), y)
@@ -334,7 +337,7 @@ Page(
         label(t('rest_day'), y, { h: u(40) })
         if (others[0]) { button(t('quick_start'), y + u(44), () => this.startSession(others[0]), { primary: true }); y += u(134) } else y += u(60)
       }
-      if (!ready.today && !others.length) { label(t('start_on_phone'), y, { h: u(90), wrap: true }); return }
+      if (!ready.today && !others.length) { caption(false); label(t('start_on_phone'), y, { h: u(90), wrap: true }); return }
       // The others as quiet tiles, as many as fit the round screen. When there are more, they
       // come in pages with ‹ 1/3 › at the bottom, so every routine can be started here (#1479).
       const rest = ready.today ? others : others.slice(1)
@@ -355,6 +358,7 @@ Page(
         label(`${page + 1}/${pages}`, py + u(8), { size: 22, h: u(40), w: u(110) })
         button('›', py, () => turn(1), { x: Math.round(W / 2 + u(70)), w: bw, h: bh, size: T.label })
       } else if (link.away) label(t('phone_away'), H - u(70), { size: 20, h: u(40) })
+      caption(pages > 1)
     },
 
     startSession (session) {
