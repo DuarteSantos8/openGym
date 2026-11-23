@@ -338,6 +338,65 @@ test('a clean pyramid session reads as a hit, not a run of misses', () => {
   assert.equal(unfinished.stalls, 1);
 });
 
+/* ---------------- a logged session keeps its target ---------------- */
+
+test('a logged pyramid target keeps its per-set aims, in full and compact sessions', () => {
+  // The plan is not the only place a prescription lives: an old session's own target recorded the
+  // pyramid it was trained under. Reading it as a flat 4x12 made a real 12-10-8-Max session look
+  // like four sets against one target once the plan had moved on.
+  const target = {
+    sets: 4, reps: 12, weight: 40,
+    pyramid: [12, 10, 8, 'max'], pyramidRest: [0, 180, 0, 0], pyramidWeight: [40, 45, 50, 0]
+  };
+  const session = d => ({
+    id: 'w' + d, d, name: 'Push', start: 1000, end: 1000 + 45 * 60000,
+    entries: [{ id: '0001', target, sets: [12, 10, 8, 9].map(r => ({ w: 40, r, done: true })) }]
+  });
+  const S = sampleState({
+    routines: [{ id: 'r1', name: 'Push', emoji: '💪', ex: [{ ...EX }] }],
+    week: { 1: 'r1' },
+    workouts: ['2026-07-10', '2026-07-13', '2026-07-16', '2026-07-19', '2026-07-22'].map(d => session(D(d)))
+  });
+  const window = payload.build(S, { handle: H, kind: 'review' }).window.workouts;
+
+  // The newest sessions carry the target whole, as the plan does.
+  const newest = window[window.length - 1].entries[0];
+  assert.deepEqual(newest.target.pyramid, [12, 10, 8, 'max']);
+  assert.deepEqual(newest.target.pyramidRest, [0, 180, 0, 0]);
+  assert.deepEqual(newest.target.pyramidWeight, [40, 45, 50, 0]);
+
+  // An older, compact line keeps the flat target and the per-set aims beside it.
+  const oldest = window[0];
+  assert.equal(oldest.compact, true);
+  assert.equal(oldest.entries[0].target, '40x12');
+  assert.deepEqual(oldest.entries[0].pyramid, [12, 10, 8, 'max']);
+
+  // A target that never had one is unchanged: no new fields on ordinary history.
+  const flat = session(D('2026-07-22'));
+  flat.entries[0].target = { sets: 3, reps: 10, weight: 20 };
+  S.workouts[4] = flat;
+  const plain = payload.build(S, { handle: H, kind: 'review' }).window.workouts[4].entries[0];
+  assert.equal('pyramid' in plain.target, false);
+  assert.equal('pyramid' in plain, false);
+});
+
+test('a historical target drops a bad pyramid entry without moving the next set\'s rest or load', () => {
+  const target = {
+    sets: 3, reps: 12,
+    pyramid: [12, 'bad', 8], pyramidRest: [60, 300, 90], pyramidWeight: [40, 80, 50]
+  };
+  const S = sampleState({
+    workouts: [{
+      id: 'w1', d: D('2026-07-20'), name: 'Push', start: 1000, end: 1000 + 45 * 60000,
+      entries: [{ id: '0001', target, sets: [12, 8].map(r => ({ w: 40, r, done: true })) }]
+    }]
+  });
+  const kept = payload.build(S, { handle: H, kind: 'review' }).window.workouts[0].entries[0].target;
+  assert.deepEqual(kept.pyramid, [12, 8]);
+  assert.deepEqual(kept.pyramidRest, [60, 90], 'the 8-rep set keeps its own rest, not the dropped one');
+  assert.deepEqual(kept.pyramidWeight, [40, 50], 'and its own load');
+});
+
 /* ---------------- the fingerprint ---------------- */
 
 test('a pyramid moves the plan fingerprint, and its absence does not', () => {

@@ -570,9 +570,27 @@ function cleanSet(s) {
 }
 const entriesOf = w => list(w.entries).filter(en => en && typeof en === 'object');
 const setsOf = en => list(en.sets).filter(s => s && typeof s === 'object');
-const targetOf = en => (en.target && typeof en.target === 'object'
-  ? { sets: num(en.target.sets), reps: num(en.target.reps), sec: num(en.target.sec), weight: num(en.target.weight) }
-  : null);
+/* A logged session's target can carry the pyramid it was prescribed under. Without it the
+   history reads as a flat 4x12, so a session that actually trained 12-10-8-Max looks like four
+   sets against one target. Bounded exactly as the plan is, with each set's own rest and load. */
+function targetPyramid(t) {
+  const pyramid = pyramidOut(t.pyramid);
+  if (!pyramid.length) return null;
+  const idx = pyramidIndexes(t.pyramid);
+  const rest = pyramidRestOut(t.pyramidRest, idx);
+  const weight = pyramidWeightOut(t.pyramidWeight, idx);
+  return {
+    pyramid,
+    ...(rest.length ? { pyramidRest: rest } : {}),
+    ...(weight.length ? { pyramidWeight: weight } : {})
+  };
+}
+const targetOf = en => {
+  if (!(en.target && typeof en.target === 'object')) return null;
+  const target = { sets: num(en.target.sets), reps: num(en.target.reps), sec: num(en.target.sec), weight: num(en.target.weight) };
+  const pyramid = targetPyramid(en.target);
+  return pyramid ? { ...target, ...pyramid } : target;
+};
 
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
 function compactWorkout(w, custom) {
@@ -594,7 +612,12 @@ function compactWorkout(w, custom) {
         id: ident(en.id),
         name: nameOf(en.id, custom),
         done: done.length + '/' + sets.length,
-        ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
+        ...(target ? {
+          target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }),
+          // A compact line keeps only the numbers, but a pyramid is the one prescription a flat
+          // target cannot say, so its per-set aims travel beside it.
+          ...(target.pyramid ? { pyramid: target.pyramid } : {})
+        } : {}),
         ...(top ? { top: fmtSet(top) } : {})
       };
     })
