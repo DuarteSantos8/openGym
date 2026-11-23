@@ -37,10 +37,12 @@ struct RestView: View {
                 HStack(spacing: 4) {
                     if store.lastLogged != nil {
                         Button { store.fixLast() } label: {
+                            // The glass inside the button: the whole circle takes the tap and shows the press.
                             Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold)).frame(width: 34, height: 34)
+                                .glass(Circle(), fill: Theme.surface, dimmed: false)
+                                .contentShape(Circle())
                         }
-                        .buttonStyle(.plain)
-                        .glass(Circle(), fill: Theme.surface, dimmed: false)
+                        .buttonStyle(PressStyle())
                         .opacity(dimmed ? 0 : 1)
                         .accessibilityLabel(Text("Back"))
                     }
@@ -232,6 +234,7 @@ struct OutlineCapsule: ButtonStyle {
             .glass(Capsule(), fill: configuration.isPressed ? Theme.surface2 : Color.clear, dimmed: false)
             .overlay(Capsule().strokeBorder(.white.opacity(Theme.hasGlass ? 0 : 0.5), lineWidth: 1.5))
             .contentShape(Capsule())
+            .opacity(configuration.isPressed && Theme.hasGlass ? 0.6 : 1)   // the glass ignores `fill`: the press shows here
     }
 }
 
@@ -270,8 +273,9 @@ struct EffortChips: View {
                 .padding(.horizontal, 10)
                 .frame(minHeight: tall ? 38 : 34)
                 .glass(Capsule(), tint: Effort.color(kind, rated).opacity(0.35), fill: Effort.color(kind, rated).opacity(0.18), dimmed: false)
+                .contentShape(Capsule())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressStyle())
             .accessibilityLabel(Text("Effort"))
             .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, rated))"))
             .accessibilityHint(Text("Tap to change it."))
