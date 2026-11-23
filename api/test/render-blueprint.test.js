@@ -75,8 +75,16 @@ test("the project's own addresses and ids are typed into the dashboard, never co
   assert.doesNotMatch(text, /[a-z0-9]{20}\.supabase\.co|onrender\.com|vercel\.app|hstgr\.cloud|sb_(publishable|secret)_/);
 });
 
-test('sign-up is through the identity provider only, and the first profile is the admin', () => {
+test('sign-up is through the identity provider only', () => {
   const { env } = readBlueprint(read(file));
   assert.equal(env.OIDC_ONLY.value, '1');
-  assert.equal(env.FIRST_USER_ADMIN.value, '1');
+});
+
+// Anyone can make a hosted account, so "the first profile is the admin" would hand the server to
+// whoever signs in first once the address is public. The admin is named by id instead.
+test('nobody becomes the admin by arriving first: the admin is named by id, in the dashboard', () => {
+  const { env } = readBlueprint(read(file));
+  assert.equal(env.FIRST_USER_ADMIN, undefined);
+  assert.equal(env.ADMIN_UIDS?.sync, 'false');
+  assert.equal(env.ADMIN_UIDS.value, undefined);
 });
