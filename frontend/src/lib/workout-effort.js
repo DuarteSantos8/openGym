@@ -23,7 +23,7 @@ export const AUTO_MIN_SETS = 3
 // How much lower people rate a whole lifting session than the average of its sets: about 1 to 1.6
 // on the RPE scale (Sweet 2004, doi:10.1519/14153.1; Singh 2007, doi:10.1123/ijspp.2.1.34; Enes
 // 2023, doi:10.1177/00315125231176729). Taken off each strength set, not cardio, which is rated
-// on the same scale as the whole session already. Mean RIR 2 reads Moderate (6), RIR 1 Hard (7).
+// on the same scale as the whole session already. Mean RIR 3 reads Moderate (6), RIR 2 Hard (7).
 export const SESSION_OFFSET = 1.5
 
 export const effortModeOf = S => (EFFORT_MODES.includes(S?.workoutEffort) ? S.workoutEffort : 'ask')
@@ -49,7 +49,7 @@ export function effortWord(v) {
 
 /**
  * The workout's effort from its sets, for 'auto': the average of each finished work set's effort
- * on the RPE scale (RIR 2 is RPE 8), less SESSION_OFFSET for strength sets, rounded to a whole number. A set nobody rated is estimated
+ * on the RPE scale (RIR 2 is RPE 8), less SESSION_OFFSET for strength sets, rounded to a whole number (halves up). A set nobody rated is estimated
  * from its load against the lifter's recent best (recovery.js resolveSetRir), the same reading
  * Stats and the muscle map give it. Warm-ups do not count. null when fewer than AUTO_MIN_SETS
  * sets have an effort at all: an empty workout or one of cardio nobody rated gets no score.
@@ -71,8 +71,8 @@ export function autoEffort(S, w) {
     }
   }
   if (n < AUTO_MIN_SETS) return null
-  // Halves round down: a session that sits on the line between two words reads as the easier one.
-  return Math.min(EFFORT_MAX, Math.max(EFFORT_MIN, Math.ceil(sum / n - 0.5)))
+  // Halves round up (a mean of RIR 2 is 6.5: 7, Hard).
+  return Math.min(EFFORT_MAX, Math.max(EFFORT_MIN, Math.floor(sum / n + 0.5)))
 }
 
 // One set's RIR. A per-side set is read a side at a time, each from its own load and reps (the

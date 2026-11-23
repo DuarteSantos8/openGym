@@ -552,7 +552,7 @@ enum WorkoutEffort {
 
     /// Where the summary's rating starts, as the phone's "Set automatically" works it out: each work
     /// set rated during the workout on the RPE scale (RIR 2 is RPE 8), less sessionOffset for
-    /// strength sets, averaged, halves rounded down. nil with fewer than minSets rated sets.
+    /// strength sets, averaged, halves rounded up. nil with fewer than minSets rated sets.
     static func preset(_ w: ActiveWorkout, efforts: [String: Double]?, kind: String?) -> Int? {
         guard let efforts = efforts, let kind = kind else { return nil }
         var sum = 0.0, n = 0
@@ -565,7 +565,7 @@ enum WorkoutEffort {
             }
         }
         guard n >= minSets else { return nil }
-        return min(range.upperBound, max(range.lowerBound, Int((sum / Double(n) - 0.5).rounded(.up))))
+        return min(range.upperBound, max(range.lowerBound, Int((sum / Double(n) + 0.5).rounded(.down))))
     }
 
     /// Whether the summary asks: the phone says so, and the workout has an id to send it back with.

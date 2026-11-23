@@ -339,7 +339,10 @@ same for its own workouts.
   after the last press, or when the summary closes or the app goes to the background.
 - **Set automatically:** Finish and save works it out (`lib/workout-effort.js` `autoEffort`): the
   average of each work set's effort on the RPE scale, a logged RIR/RPE where there is one, else the
-  estimate Stats and the muscle map use (`recovery.js` `resolveSetRir`). At least 3 sets with an
+  estimate Stats and the muscle map use (`recovery.js` `resolveSetRir`), less 1.5 for strength sets
+  (`SESSION_OFFSET`: people rate a whole session about that much below the mean of its sets), halves
+  rounded up: a mean of RIR 3 reads 6 Moderate, RIR 2 reads 7 Hard. A per-side set counts its harder
+  side, each side read from its own reps. The watch starts its rating there too. At least 3 sets with an
   effort, or no score. The summary shows it already picked, and a tap still changes it. Editing the
   workout's sets later works it out again (`session-edit.js`); a score somebody gave stays.
 - **Never ask:** no question anywhere and no effort written.

@@ -38,23 +38,23 @@ describe('effortWord', () => {
 
 describe('autoEffort', () => {
   it('averages the logged effort of the work sets on the RPE scale, less the session offset', () => {
-    // RIR 2, 1, 0 → RPE 8, 9, 10 → 9, less 1.5 → 7.5, a half: the easier word
+    // RIR 2, 1, 0 → RPE 8, 9, 10 → 9, less 1.5 → 7.5, a half: rounded up
     const w = W([{ rir: 2 }, { rir: 1 }, { rir: 0 }])
-    expect(autoEffort({ workouts: [w] }, w)).toBe(7)
+    expect(autoEffort({ workouts: [w] }, w)).toBe(8)
     // RPE straight: 7.33 less 1.5 → 6
     const r = W([{ rpe: 7 }, { rpe: 7 }, { rpe: 8 }])
     expect(autoEffort({ workouts: [r] }, r)).toBe(6)
   })
 
-  it('reads a session the way people rate one: RIR 2 Moderate, RIR 1 Hard, RIR 3 below', () => {
+  it('reads a session the way people rate one: RIR 3 Moderate, RIR 2 Hard', () => {
     expect(SESSION_OFFSET).toBe(1.5)
     const at = rir => { const w = W([{ rir }, { rir }, { rir }]); return autoEffort({ workouts: [w] }, w) }
-    expect(at(0)).toBe(8)
-    expect(at(1)).toBe(7)
-    expect(effortWord(at(1))).toBe('Hard effort')
-    expect(at(2)).toBe(6)
-    expect(effortWord(at(2))).toBe('Moderate')
-    expect(at(3)).toBe(5)
+    expect(at(0)).toBe(9)
+    expect(at(1)).toBe(8)
+    expect(at(2)).toBe(7)
+    expect(effortWord(at(2))).toBe('Hard effort')
+    expect(at(3)).toBe(6)
+    expect(effortWord(at(3))).toBe('Moderate')
   })
 
   it('takes no offset off cardio, which is rated like a whole session already', () => {
@@ -64,7 +64,7 @@ describe('autoEffort', () => {
 
   it('leaves warm-ups and unticked sets out', () => {
     const w = W([{ rir: 6, warmup: true }, { rir: 1, done: false }, { rir: 2 }, { rir: 2 }, { rir: 2 }])
-    expect(autoEffort({ workouts: [w] }, w)).toBe(6)
+    expect(autoEffort({ workouts: [w] }, w)).toBe(7)
   })
 
   it('estimates the sets nobody rated, against the workout’s own best', () => {
@@ -77,7 +77,7 @@ describe('autoEffort', () => {
 
   it('works for a workout not yet in the history (the one being finished)', () => {
     const w = W([{ rir: 3 }, { rir: 3 }, { rir: 3 }])
-    expect(autoEffort({ workouts: [] }, w)).toBe(5)
+    expect(autoEffort({ workouts: [] }, w)).toBe(6)
   })
 
   it('reads a per-side set a side at a time, not from both sides\' reps added up', () => {
@@ -95,8 +95,8 @@ describe('autoEffort', () => {
   it('takes the harder side of a per-side set', () => {
     const w = W([])
     w.entries[0].sets = [0, 1, 2].map(() => ({ sides: { L: { w: 60, r: 8, done: true, rir: 3 }, R: { w: 60, r: 8, done: true, rir: 1 } }, w: 60, r: 16, done: true, rir: 1 }))
-    // RIR 1 (the harder side) → 9 less 1.5 → 7.5, a half: 7.
-    expect(autoEffort({ workouts: [w] }, w)).toBe(7)
+    // RIR 1 (the harder side) → 9 less 1.5 → 7.5, a half: 8.
+    expect(autoEffort({ workouts: [w] }, w)).toBe(8)
   })
 
   it('gives none with too few sets to go by', () => {

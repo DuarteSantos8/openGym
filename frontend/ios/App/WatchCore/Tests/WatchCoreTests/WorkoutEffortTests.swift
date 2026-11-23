@@ -50,18 +50,19 @@ final class WorkoutEffortTests: XCTestCase {
 
     func testPresetReadsASessionTheWayThePhoneDoes() {
         let w = workout([entry("0025", sets: 3)])
-        // Mean RIR 2 → RPE 8, less 1.5 → 6.5, a half: the easier word (Moderate).
-        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [2, 2, 2]), kind: "rir"), 6)
-        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [1, 1, 1]), kind: "rir"), 7)
-        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [0, 0, 0]), kind: "rir"), 8)
+        // Mean RIR 2 → RPE 8, less 1.5 → 6.5, a half: rounded up (Hard). RIR 3 → 5.5: 6 (Moderate).
+        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [3, 3, 3]), kind: "rir"), 6)
+        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [2, 2, 2]), kind: "rir"), 7)
+        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [1, 1, 1]), kind: "rir"), 8)
+        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [0, 0, 0]), kind: "rir"), 9)
         // RPE straight: 8 less 1.5.
-        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [8, 8, 8]), kind: "rpe"), 6)
+        XCTAssertEqual(WorkoutEffort.preset(w, efforts: rated("0025", [8, 8, 8]), kind: "rpe"), 7)
     }
 
     func testPresetTakesNoOffsetOffCardioAndLeavesWarmUpsOut() {
         XCTAssertEqual(WorkoutEffort.preset(workout([entry("run", mode: "cardio", sets: 3)]), efforts: rated("run", [7, 7, 7]), kind: "rpe"), 7)
         // The warm-up's RIR 5 does not count; three work sets at RIR 2 do.
-        XCTAssertEqual(WorkoutEffort.preset(workout([entry("0025", sets: 4, warmups: 1)]), efforts: rated("0025", [5, 2, 2, 2]), kind: "rir"), 6)
+        XCTAssertEqual(WorkoutEffort.preset(workout([entry("0025", sets: 4, warmups: 1)]), efforts: rated("0025", [5, 2, 2, 2]), kind: "rir"), 7)
     }
 
     func testNoPresetWithTooFewRatedSets() {
