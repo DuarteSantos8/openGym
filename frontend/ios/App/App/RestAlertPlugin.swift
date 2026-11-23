@@ -192,7 +192,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                     call.reject("could not play the tone")
                     return
                 }
-                // Plays over the user's music, which ducks for it and never stops (CueAudioLedger).
+                // Plays over the user's music and never stops it; the music ducks for it only with
+                // "Play even on silent" (CueAudioLedger).
                 let id = self.beginSound(.tone, onSilent: onSilent)
                 self.players[id] = p
                 p.play()
@@ -259,6 +260,13 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     private func beginSound(_ kind: CueAudioLedger.Kind, onSilent: Bool) -> Int {
         let (id, step) = ledger.begin(kind, onSilent: onSilent)
         apply(step)
+        // Whatever happened above, never sound in .soloAmbient (the session iOS starts an app in,
+        // and the one WebKit can leave behind): it stops the music. A .playback shape the ledger
+        // holds is set again, so a sound meant to ring through the silent switch still does;
+        // anything else gets .ambient, which mixes with the music.
+        if AVAudioSession.sharedInstance().category == .soloAmbient {
+            if let shape = ledger.activeShape, shape.category == .playback { apply(.activate(shape)) } else { RestAlertPlugin.mixWithMusic() }
+        }
         return id
     }
 
@@ -277,7 +285,12 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 try session.setActive(true)
                 ledger.didActivate(shape)
             } catch {
-                // Played anyway, without the duck; the session stays the mixing kind it was.
+                // Played anyway, without the duck. A category that took stays (play() activates
+                // it, so an onSilent cue keeps .playback); one that did not falls back to the
+                // mixing kind, never .soloAmbient. The next cue tries the activation again, and
+                // the session is still let go once nothing sounds (CueAudioLedger.holdsSession).
+                if session.category != shape.avCategory { RestAlertPlugin.mixWithMusic() }
+                ledger.didFailActivation()
             }
         case .deactivate(let grace):
             DispatchQueue.main.asyncAfter(deadline: .now() + grace) { self.letGo(attempt: 0) }
@@ -287,7 +300,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     /// Music back up: the session goes inactive with notifyOthersOnDeactivation once nothing of
     /// ours sounds, retried while the system still calls it busy, then back to the resting kind.
     private func letGo(attempt: Int) {
-        guard ledger.isIdle, ledger.activeShape != nil else { return }
+        guard ledger.isIdle, ledger.holdsSession else { return }
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
         } catch {
