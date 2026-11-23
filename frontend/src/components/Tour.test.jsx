@@ -528,6 +528,8 @@ describe('Create your own exercise', () => {
   it('the form’s own Create makes it, and the tour follows', async () => {
     await toForm()
     for (let k = 0; k < 3; k++) await click(btn('Next'))
+    // The missing media field is passed over only after the anchor wait: a slow runner needs longer.
+    for (let n = 0; n < 20 && step() !== 'c-save'; n++) await settle(50)
     expect(step()).toBe('c-save')
     await click(anchor('cx-save'))
     await settle(300)
