@@ -11,7 +11,8 @@ const fire = java.slice(java.indexOf('public static void fire('), java.indexOf('
 describe('an early rest alarm on Android (#995)', () => {
   it('is judged before it claims the end or touches the card', () => {
     expect(fire.indexOf('alarmVerdict(')).toBeGreaterThan(-1)
-    expect(fire.indexOf('alarmVerdict(')).toBeLessThan(fire.indexOf('claim(at)'))
+    // Any arguments after `at`: the call grew one before (900ac8c62) and the check must not break on the next.
+    expect(fire.search(/\bclaim\(at\b/)).toBeGreaterThan(fire.indexOf('alarmVerdict('))
     expect(fire).toMatch(/REBOOK\) \{[\s\S]*?rebook\(ctx, intent, at\);\s*return;/)
     expect(fire).toMatch(/STALE\) \{[\s\S]*?return;/)
   })
