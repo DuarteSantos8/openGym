@@ -35,7 +35,12 @@ struct EffortRating: View {
                 .onChange(of: index) { i in if focused, (1...10).contains(i), i != value { value = i } }
                 .onAppear {
                     index = value ?? start
-                    if editing { if value == nil { value = start }; focused = true }
+                    // CI's edit shot: the Crown taken a moment after the screen opens, as a tap would,
+                    // so a summary that takes it on appearing (#1314's medal) does not keep it.
+                    if editing {
+                        if value == nil { value = start }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { focused = true }
+                    }
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("How hard was it?"))
