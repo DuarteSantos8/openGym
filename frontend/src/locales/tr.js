@@ -6293,4 +6293,5 @@ export default {
   "Too hard": "Çok zor",
   "Use this weight": "Bu ağırlığı kullan",
   "With form guide": "Teknik rehberi olanlar",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Bundan daha hafifi yok. Çok zor geldiyse önce daha kolay bir egzersiz dene.",
 }

@@ -73,3 +73,30 @@ test('a Beginner\'s Library opens on guided exercises and one tap shows everythi
   await expect(chip).toHaveAttribute('aria-pressed', 'false')
   await expect.poll(() => page.locator('.item .tt').count()).toBeGreaterThan(guidedRows - 10)
 })
+
+// Review of #60: the empty bar is the least a barbell lift can weigh, so "too hard" there says
+// so and offers no weight, instead of suggesting 15 kg on a 20 kg bar.
+test('too hard on the empty bar says it cannot go lighter and writes nothing', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await enterAsGuest(page)
+  await page.evaluate(id => {
+    const S = JSON.parse(localStorage.getItem('gym_state_v1') || '{}')
+    S.active = { id: 'e2e-lf2', d: new Date().toISOString().slice(0, 10), name: 'First session', start: Date.now(), cur: 0, routineIds: [], bw: null,
+      entries: [{ id, target: { mode: 'reps', sets: 3, reps: 8 }, sets: [0, 1, 2].map(() => ({ w: 0, r: 8, done: false })) }] }
+    localStorage.setItem('gym_state_v1', JSON.stringify(S))
+  }, '0025')
+  await page.reload()
+  await openRoute(page, '/workout')
+  await click(page.locator('[data-load-finder]'))
+  const lf = page.locator('.iv-lf')
+  await expect(lf).toBeVisible()
+  const bar = await lf.getAttribute('data-weight')
+  await click(lf.locator('[data-feel="hard"]'))
+  await expect(lf.locator('.iv-lf-floor')).toBeVisible()
+  await expect(lf).toHaveAttribute('data-weight', bar)
+  await expect(lf.locator('[data-use]')).toHaveCount(0)
+  expect(await seriousOn(page)).toEqual([])
+  await click(lf.getByRole('button', { name: 'Close' }))
+  await expect(page.locator('.iv-lf')).toHaveCount(0)
+  expect((await state(page)).active.entries[0].sets.map(s => s.w)).toEqual([0, 0, 0])
+})

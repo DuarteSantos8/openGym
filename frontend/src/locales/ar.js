@@ -6348,4 +6348,5 @@ export default {
   "Too hard": "صعب جدًا",
   "Use this weight": "استخدم هذا الوزن",
   "With form guide": "مع دليل الأداء",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "هذا أخف ما يمكن. إذا كان صعبًا جدًا فجرّب تمرينًا أسهل أولًا.",
 }

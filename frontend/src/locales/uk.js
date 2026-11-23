@@ -6290,4 +6290,5 @@ export default {
   "Too hard": "Занадто важко",
   "Use this weight": "Використати цю вагу",
   "With form guide": "З підказками щодо техніки",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Легше вже не буває. Якщо було занадто важко, спершу спробуй простішу вправу.",
 }

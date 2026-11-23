@@ -6259,4 +6259,5 @@ export default {
   "Too hard": "خیلی سخت",
   "Use this weight": "از این وزنه استفاده کن",
   "With form guide": "با راهنمای اجرا",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "از این سبک‌تر نمی‌شود. اگر خیلی سخت بود، اول یک تمرین آسان‌تر را امتحان کن.",
 }

@@ -4703,6 +4703,7 @@ export const PT_BR_OVERRIDES = {
   "Too hard": "Difícil demais",
   "Use this weight": "Usar este peso",
   "With form guide": "Com guia de técnica",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Isto é o mais leve possível. Se foi difícil demais, tente primeiro um exercício mais fácil.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

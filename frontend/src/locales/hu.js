@@ -6296,4 +6296,5 @@ export default {
   "Too hard": "Túl nehéz",
   "Use this weight": "Ezt a súlyt használom",
   "With form guide": "Technikai útmutatóval",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Ennél könnyebb nem lehet. Ha túl nehéz volt, próbálj előbb egy könnyebb gyakorlatot.",
 }

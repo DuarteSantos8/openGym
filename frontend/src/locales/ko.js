@@ -6293,4 +6293,5 @@ export default {
   "Too hard": "너무 힘듦",
   "Use this weight": "이 무게 사용",
   "With form guide": "자세 가이드 있음",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "이보다 가볍게는 할 수 없습니다. 너무 힘들었다면 더 쉬운 운동부터 해 보세요.",
 }

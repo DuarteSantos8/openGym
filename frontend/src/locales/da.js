@@ -6233,4 +6233,5 @@ export default {
   "Too hard": "For tungt",
   "Use this weight": "Brug denne vægt",
   "With form guide": "Med teknikguide",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Lettere end dette bliver det ikke. Hvis det var for tungt, så prøv en lettere øvelse først.",
 }

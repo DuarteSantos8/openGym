@@ -6259,4 +6259,5 @@ export default {
   "Too hard": "Příliš těžké",
   "Use this weight": "Použít tuto váhu",
   "With form guide": "S návodem na techniku",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Lehčí to už být nemůže. Pokud to bylo příliš těžké, zkus nejdřív snazší cvik.",
 }

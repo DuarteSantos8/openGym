@@ -6293,4 +6293,5 @@ export default {
   "Too hard": "Za ciężko",
   "Use this weight": "Użyj tego ciężaru",
   "With form guide": "Z instrukcją techniki",
+  "That is the lightest this goes. If it was too hard, try an easier exercise first.": "Lżej się już nie da. Jeśli było za ciężko, spróbuj najpierw łatwiejszego ćwiczenia.",
 }

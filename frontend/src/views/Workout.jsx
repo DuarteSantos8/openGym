@@ -1042,10 +1042,22 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
         <p className="small dim firsttime">{t('First time? Start light: pick a weight you could lift a few more reps than the plan asks, then adjust the next set.')}</p>
         {/* Or let two or three test sets find it (EP22-T04, lib/load-finder.js). The weight goes
             into the first set not yet ticked through onField, so it carries down the work sets
-            and the warm-ups ramp to it like a weight typed by hand. Not for per-side rows. */}
-        {firstWork >= 0 && !isSideSet(entry.sets[firstWork]) && onField &&
+            and the warm-ups ramp to it like a weight typed by hand. It starts on the athlete's
+            own bar and never suggests less, and with owned dumbbells or a machine stack listed it
+            only names weights from that list, under the same heading as the column. Not for per-side rows, and not for an assisted
+            machine, where more weight is easier and "too hard" would have to add some. */}
+        {firstWork >= 0 && !isSideSet(entry.sets[firstWork]) && !isAssisted(cfg) && onField &&
           <div className="firsttime-find"><Button size="sm" variant="tinted" icon="target" data-load-finder="" onClick={() => loadFinderSheet({
-            ex, unit: S.unit, step: loadStep, reps: Number(entry.sets[firstWork].r) || 0, onUse: w => onField(firstWork, 'w', w),
+            ex, unit: S.unit, step: loadStep, floor: barFloor(S, entry.id), weights: owned, label: loadCol.hd, pair: bells === 'total',
+            reps: Number(entry.sets[firstWork].r) || 0,
+            // Into the first work set still open when the weight is used, not the one that was
+            // open when the sheet came up: a watch may have logged a set in between.
+            onUse: w => {
+              const live = useStore.getState().S.active?.entries?.[entryIdx]
+              if (!live || live.id !== entry.id) return
+              const i = live.sets.findIndex(x => !x.done && !isWarmupRow(x))
+              if (i >= 0 && !isSideSet(live.sets[i])) onField(i, 'w', w)
+            },
           })}>{t('Find my weight')}</Button></div>}
       </>}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
