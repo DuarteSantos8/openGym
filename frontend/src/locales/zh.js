@@ -5903,4 +5903,6 @@ export default {
   "Hide": "隐藏",
   "Totals": "总计",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
+  "Effort on warm-ups": "热身组强度",
+  "Rate warm-up sets too, not just work sets.": "热身组也打分，不只是正式组。",
 }

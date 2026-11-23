@@ -5900,4 +5900,6 @@ export default {
   "Hide": "Сховати",
   "Totals": "Підсумки",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
+  "Effort on warm-ups": "Зусилля в розминці",
+  "Rate warm-up sets too, not just work sets.": "Оцінюйте й розминкові підходи, а не лише робочі.",
 }

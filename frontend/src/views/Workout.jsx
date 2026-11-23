@@ -11,7 +11,7 @@ import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, warmupEffortOn, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
@@ -589,6 +589,10 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   const videosOn = isOn(S, 'videos')
   // Settings → Modules → Effort off: no cardio chip either (the set menu keeps its row).
   const effortOn = isOn(S, 'effort')
+  // Settings → Workout → Effort on warm-ups off: a warm-up row keeps an empty slot in the effort
+  // column so its weight and reps stay lined up with the work sets below.
+  const noWarmEffort = s => !warmupEffortOn(S) && isWarmupRow(s)
+  const effortGap = <span className="effcell" aria-hidden="true" style={{ visibility: 'hidden' }} />
   const filmAt = videosOn ? filmTarget(entry) : -1
   const setTitle = (s, i) => isWarmupRow(s) ? t('Warm-up') : sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))
   // A timed per-side hold is one set over two rows; its video sits on the first of them.
@@ -850,7 +854,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       <span className="sidetag" aria-hidden="true">{side === 'L' ? t('L') : t('R')}</span>
       {sideCell(s, sd, i, side, col1, 'w')}
       {col2 && sideCell(s, sd, i, side, col2, 'r')}
-      {col3 && sideEffortCell(s, sd, i, side, col3)}
+      {col3 && (noWarmEffort(s) ? effortGap : sideEffortCell(s, sd, i, side, col3))}
       <Check checked={sd.done} label={doneSay(s, i, side)} onChange={() => onToggleSide(i, side)} />
     </div>
   }
@@ -906,7 +910,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span className="full">{sideTagOf(s)}</span><span className="short" aria-hidden="true">{s.side === 'L' ? t('L') : t('R')}</span></span>}
       {cell(s, i, col1, 'w')}
       {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
-      {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
+      {col3 && (col3.eff ? (noWarmEffort(s) ? effortGap : effortCell(s, i, col3)) : cell(s, i, col3, 'r inc'))}
       {/* A timed set is started, not typed: the timer counts the hold down and checks the
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
       {timed && !editing && <button className="setgo" aria-label={inSet(s, i, t('Start set'))} disabled={s.done || !!working}

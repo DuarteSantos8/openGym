@@ -5903,4 +5903,6 @@ export default {
   "Hide": "छिपाएँ",
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
+  "Effort on warm-ups": "वार्म-अप पर मेहनत",
+  "Rate warm-up sets too, not just work sets.": "सिर्फ़ वर्किंग सेट नहीं, वार्म-अप सेट को भी रेट करें।",
 }

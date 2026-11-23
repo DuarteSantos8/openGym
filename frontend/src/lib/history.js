@@ -145,6 +145,9 @@ export const effortOf = S => {
   const e = S && S.effort
   return e === 'none' || EFFORT[e] ? e : (S && S.showRir ? 'rir' : 'none')
 }
+// Settings → Workout → "Effort on warm-ups", on unless switched off. Off only hides the cell on a
+// warm-up row; a rating already logged on one stays stored.
+export const warmupEffortOn = S => S?.warmupEffort !== false
 // The "(RIR 2)" / "(RPE 8)" tail on a set summary, empty when nothing was logged.
 const effortTail = s => {
   const k = s.rir != null ? 'rir' : s.rpe != null ? 'rpe' : null

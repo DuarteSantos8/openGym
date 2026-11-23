@@ -5869,4 +5869,6 @@ export default {
   "Hide": "Skrýt",
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
+  "Effort on warm-ups": "Náročnost u rozcvičky",
+  "Rate warm-up sets too, not just work sets.": "Hodnoť i rozcvičovací série, nejen pracovní.",
 }

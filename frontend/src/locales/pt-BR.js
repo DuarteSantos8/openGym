@@ -4328,6 +4328,8 @@ export const PT_BR_OVERRIDES = {
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
   // Arrange your own Home and Stats (#1119)
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
+  "Effort on warm-ups": "Esforço no aquecimento",
+  "Rate warm-up sets too, not just work sets.": "Avalie também as séries de aquecimento, não só as de trabalho.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
