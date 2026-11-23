@@ -48,13 +48,14 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
+import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
 import { useTour } from './lib/tour.js'
 import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
-import { startOrPreview, startPickerSheet } from './components/StartSheets.jsx'
+import { startOrPreview, startPickerFromBar } from './components/StartSheets.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
@@ -132,6 +133,7 @@ const prefetchViews = () => {
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
 
+document.documentElement.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
 // theme === 'system' follows the OS/browser preference instead of a fixed choice.
@@ -454,9 +456,9 @@ function Shell() {
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerFromBar} />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      <RestTimer docked={noTabs} />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />

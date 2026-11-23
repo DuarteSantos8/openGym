@@ -1,5 +1,8 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−۱۵ ث",
+  "{0} past zero": "{0} بعد از صفر",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",
   "Set once": "یک‌بار تنظیم",
@@ -5536,6 +5539,13 @@ export default {
   "Saved to Photos": "در عکس‌ها ذخیره شد",
   "Could not save the picture.": "ذخیرهٔ تصویر ممکن نشد.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym اجازهٔ افزودن تصویر به عکس‌ها را ندارد. می‌توانی در تنظیمات گوشی اجازه بدهی.",
+  "Sections": "بخش‌ها",
+  "More sections": "بخش‌های بیشتر",
+  "Choose routine": "انتخاب برنامه",
+  "{0}, show all tabs": "{0}، نمایش همهٔ زبانه‌ها",
+  "Resume workout, {0} elapsed": "ادامهٔ تمرین، {0} گذشته است",
+  "Workout started": "تمرین شروع شد",
+  "Rest over": "استراحت تمام شد",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "یک الگو همه جاها را تنظیم می‌کند. بعد هرچه خواستی عوض کن.",
   "Add a button": "افزودن دکمه",
