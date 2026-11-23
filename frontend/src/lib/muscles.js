@@ -17,6 +17,8 @@ import { isWarmupRow } from './workout-model.js'
 import { EXIDX, smOf, isBuiltinEx } from './exercises.js'
 import { todayISO, weekKey, MONDAY } from './format.js'
 import { queueOf } from './queue.js'
+import { REST, sequenceOf } from './rotation.js'
+import { weekTargetOf } from './week-left.js'
 import { workoutAt } from './history.js'
 
 // The muscles a map can shade, in head-to-toe order — also the order of any list
@@ -386,26 +388,32 @@ export function sessionLevels({ done, planned }) {
 
 /**
  * Effective sets programmed by the live recurring week; overrides and history are not plans.
- * A floating week or rotation (S.queue, lib/queue.js) is the plan too: each of its sessions once,
+ * A planner's floating week (S.queue, lib/queue.js) is the plan too: each of its sessions once,
  * beside your own weekday routines — the same split the Home streak card tallies (weekTally).
+ * The in-app rotation is not a week: its pass is one segment of the loop, so the whole loop counts
+ * instead, every session slot (repeats too, rests not), scaled to the Workouts per week target
+ * (S.weekTarget) when one is set.
  */
 export function loadOfWeeklyPlan(S) {
   const routines = new Map((S?.routines || []).map(routine => [routine.id, routine]))
   const exercises = Object.fromEntries((S?.customEx || []).map(exercise => [exercise.id, exercise]))
   const q = queueOf(S)
-  const queued = new Set(q ? (S.queue.ids || []) : [])
-  const ids = [
-    ...Object.values(S?.week || {}).flatMap(value => [].concat(value || [])).filter(id => !queued.has(id)),
-    ...(q ? q.ids : []),
-  ]
+  const loop = q && S.rotation && q.rotationId === S.rotation.id ? sequenceOf(S).filter(id => id !== REST) : null
+  const sessions = loop && loop.length ? loop : (q ? q.ids : [])
+  const scale = loop && loop.length && weekTargetOf(S) ? weekTargetOf(S) / loop.length : 1
+  const queued = new Set(q ? [...(S.queue.ids || []), ...sessions] : [])
   const load = {}
-  for (const id of ids) {
-    const routine = routines.get(id)
-    if (!routine) continue
-    for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises))) {
-      load[slug] = (load[slug] || 0) + sets
+  const add = (ids, factor) => {
+    for (const id of ids) {
+      const routine = routines.get(id)
+      if (!routine) continue
+      for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises))) {
+        load[slug] = (load[slug] || 0) + sets * factor
+      }
     }
   }
+  add(Object.values(S?.week || {}).flatMap(value => [].concat(value || [])).filter(id => !queued.has(id)), 1)
+  add(sessions, scale)
   return load
 }
 
