@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-22, after PRs #56, #57 and #58 were merged and with `next/EP23-exercise-guidance` in review. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-22, after PRs #56 to #59 were merged and with `next/EP22-load-finder` in review. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 
@@ -49,7 +49,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|---|---|
 | EP18-T01 | Edition flag | `frontend/src/lib/edition.js` + test | `editionOf` is `cloud` only for the exact word; a test reads `src/` and fails on a static import of `lib/cloud` or a provider's name outside it | done, #58 |
 | EP18-T02 | E2E network guard per edition | `frontend/e2e/fixtures.mjs`, `frontend/playwright.config.mjs` | default projects unchanged; a `cloud` project allows only ADR 0008's four origins | open |
-| EP18-T03 | Bundle budget | NEW `scripts/check-bundle-budget.mjs`, CI | red when the entry chunk grows more than 10 KB gzip without the budget file changing | open |
+| EP18-T03 | Bundle budget | NEW `frontend/bundle-budget.json`, `scripts/check-bundle-budget.mjs` + test | the first load (what `index.html` asks for up front) stays under 950 kB of script and 62 kB of styles, gzipped, and the guides and Learn text stay out of it | **done** in `next/EP22-load-finder`: measured 905 kB and 58 kB. The budget is today's size plus 5%, not a target: the first load is heavy and nothing here has made it lighter |
 | EP18-T04 | Media manifest and cloud build filter | `scripts/catalogue/build.mjs`, NEW `catalogue/media-sources.json` | a cloud build holds no file without a commercial-use licence; attribution screen lists every author | open, **blocks a paid deploy** |
 | EP18-T05 | Secret scan and env template | `api/test/no-secrets.test.js`, `.env.example` | CI fails on a committed Stripe or Supabase key or a private key block | done, #58 |
 
@@ -81,13 +81,13 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP22-T01 | Planner | `frontend/src/lib/planner.js`, `lib/starter.js` `buildPlanFrom` | all 1,200 answer combinations give a valid plan, deterministic, equipment respected, within the minutes | done, same branch. Draws on the 8 starter plans; `routines/opengym/` is not used yet |
 | EP22-T02 | Find my plan | `views/Onboarding.jsx`, `App.jsx` `/start` | six questions, a plan with reasons, "Use this plan"; limitations never stored; E2E with axe | done, same branch |
 | EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | **part**: the chooser now opens with Find my plan (`next/EP23-exercise-guidance`). The cards themselves are unchanged |
-| EP22-T04 | First-session load finder | NEW `lib/load-finder.js`, `Workout.jsx` | an exercise with no history offers "two easy test sets" | open (the Learn guide "How heavy should I start?" covers it as text) |
+| EP22-T04 | First-session load finder | NEW `lib/load-finder.js`, `components/LoadFinder.jsx`, `Workout.jsx` | an exercise with no history offers "Find my weight": up to three test sets, a fifth up or down each time, and the weight found fills the open sets | **done** in `next/EP22-load-finder`: unit, component, workout and E2E tests. Test sets are not logged. Not offered for bodyweight, band or per-side rows |
 | EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **part**: the first-run question no longer opens over the quiz. Still open: a Beginner tour of 8 stops or fewer |
 | EP23-T01 | Exercise guidance: level, pattern, cues, mistakes, feel, breathing, easier and harder | `frontend/src/content/exercise-guides.js`, `lib/exercise-guide.js` | `problems()` is empty: fields complete, ids real, ladders never circular, review status valid | done, `next/EP23-exercise-guidance`. **Kept out of `catalogue/` on purpose for now**: the generated catalogue files stay untouched and the text loads on demand. Moving it into `catalogue/exercises/*.json` is a mechanical step once upstream settles its own "top three mistakes" field |
 | EP23-T02 | Seed level and pattern | NEW `scripts/catalogue/seed-level.mjs` | 90% of exercises get a pattern; reviewed diff | open |
 | EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 exercises, which is every exercise a starter plan uses, so every Find my plan result is covered (a test holds that). All `draft`: **the owner or a named reviewer still has to read them** (ADR 0012). About 35 more for the routines library are open |
 | EP23-T04 | Guidance on the exercise sheet | `sheets.jsx`, `components/ExerciseGuide.jsx` | cues, mistakes with fixes, where to feel it, breathing, easier and harder open the other exercise; a draft is never called reviewed | done, `next/EP23-exercise-guidance` |
-| EP23-T05 | Library opens on Essentials for a Beginner | Library view, search index in `build.mjs` | search p95 under 50 ms on the Pixel 7 profile | open |
+| EP23-T05 | Library opens on guided exercises for a Beginner | `views/Library.jsx`, `lib/exercise-guide.js` | a Beginner's Library opens on the exercises with a form guide, as a chip anyone can set or clear; a search with nothing guided in it shows what it found | **done** in `next/EP22-load-finder`. The search index and the 50 ms target were not needed for this and are not built |
 | EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 terms, searchable, one `Term` in use (the plan result). Still open: `Term` in Workout, Plan and Progress; translations of the entries |
 | EP24-T02 | Learn | `views/Learn.jsx`, `App.jsx` `/learn` | done, same branch: 8 guides and the glossary, offline, no link out, axe clean |
 | EP24-T03 | Warm-up, cool-down and mobility as guided sessions | NEW `routines/learn/*.json`, circuit player | 8 routines playable with spoken cues | open (the guide exists as text) |
@@ -120,7 +120,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 1. Owner: read the 45 exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
 2. Owner: create the Supabase project and the Stripe test account. Nothing more of the Cloud edition can be verified without them: ADR 0013's five checks, EP19-T03, T05, EP20-T01, T07 and EP18-T02 all wait on this.
-3. Agent: EP23-T03's remaining exercises (the routines library), EP23-T05 (Library opens on the guided exercises for a Beginner), EP22-T04 (load finder), EP24-T03 (warm-up sessions).
+3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (the glossary on more screens).
 4. EP18-T04 and EP26-T01 before any live key.
 
 ## What "production ready" still needs, and who can give it
@@ -136,7 +136,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 ## Verification record (2026-11-22)
 
-What was run, where, and what was not. #56, #57 and #58 are merged; nothing has been deployed by an agent.
+What was run, where, and what was not. #56 to #59 are merged; nothing has been deployed by an agent.
 
 | Check | Result |
 |---|---|
@@ -152,6 +152,9 @@ What was run, where, and what was not. #56, #57 and #58 are merged; nothing has 
 | Guidance branch (`next/EP23-exercise-guidance`), full frontend suite | 964 files, 10,763 tests, all passed |
 | Guidance branch, E2E on the three profiles | 53 passed, 1 skipped (the same camera test). The new sheet scan found an older fault, fixed in the branch: the Last and Est. 1RM tiles had spoken names that did not contain the words on them (WCAG 2.5.3) |
 | Guidance branch, locale checks, build, Safari 15.5 bundle check, secrets check | passed; 10 new strings in all 25 packs |
+| Load finder branch (`next/EP22-load-finder`), full frontend suite | 966 files, 10,785 tests. 4 tests in 2 older files failed here and on `main`: they dated a workout by the UTC day, which on a Sunday evening west of Greenwich is next week. Fixed in the branch and passing in three time zones; CI (UTC) never saw it |
+| Load finder branch, E2E on the three profiles | 59 passed, 1 skipped (the same camera test) |
+| Load finder branch, bundle budget | first load 905 kB script and 58 kB styles gzipped, inside the budget; guides and Learn text load on demand |
 | **Not run** | Real phones; a screen reader by hand; anything against a real Supabase project or Stripe; the native apps |
 
 ### Grades, honestly
@@ -160,7 +163,7 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 
 | Category | Grade | What keeps it from higher |
 |---|---|---|
-| Beginner-friendliness and clarity | 7 | Every starter-plan exercise now has cues, mistakes, where to feel it and an easier version, but all 45 are unreviewed drafts in English; no load finder; glossary reaches one screen |
+| Beginner-friendliness and clarity | 7 | Every starter-plan exercise has cues, mistakes, where to feel it and an easier version, and a first weight can be found in three test sets. But all 45 guides are unreviewed drafts in English, the glossary reaches one screen, and no first-time lifter has tried any of it |
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
-| Feature completeness (all in one) | 5 | 23 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, the load finder, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
+| Feature completeness (all in one) | 5 | 26 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
 | Technical quality and backend | 6 | What exists is tested hard, including by breaking it. But no sign-in, no paywall, and nothing run against the real services. ADR 0013 may remove the API wiring altogether, once checked on a real project |

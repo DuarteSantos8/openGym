@@ -4833,6 +4833,7 @@ button.ex-num:not(:disabled):active{transform:scale(var(--press-scale-sm))}
 }
 /* First time on an exercise (release pass): the hint sits where "Last time" would. */
 .firsttime{margin:0 0 6px;line-height:1.35;color:var(--label-2)}
+.firsttime-find{margin:0 0 8px}
 :root[data-theme="light"] .intg-pill.connected{color:#166a30}
 /* Light theme: an unselected segment's label on the grey track reaches 4.5:1 (it sat at 4.45). */
 :root[data-theme="light"] .seg button:not(.on){color:#5c5c63}

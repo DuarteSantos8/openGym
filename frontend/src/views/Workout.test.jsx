@@ -130,6 +130,9 @@ vi.mock('../components/WorkoutThumb.jsx', () => ({
   hasWorkoutMedia: () => true,
 }))
 vi.mock('../components/DurationWheel.jsx', () => ({ durationSheet: mocks.durationSheet }))
+// The load finder's own sheet is its own test's (components/LoadFinder.test.jsx).
+const finderMocks = vi.hoisted(() => ({ loadFinderSheet: vi.fn() }))
+vi.mock('../components/LoadFinder.jsx', () => ({ loadFinderSheet: finderMocks.loadFinderSheet }))
 vi.mock('../components/WorkoutSettingsSheet.jsx', () => ({ workoutSettingsSheet: mocks.workoutSettingsSheet }))
 // api.js reads navigator.userAgent at module scope. This file installs its own DOM inside the
 // tests rather than declaring a vitest environment, so it must not depend on an ambient one.
@@ -749,6 +752,31 @@ describe('active workout weight controls', () => {
     await mount([exercise('plain-bench', [false])])
     await press('Increase', '.setrow .stp.w')
     expect(mocks.S.active.entries[0].sets[0].w).toBe(62.5)
+  })
+
+  // The first-session load finder (EP22-T04): offered under the "First time?" line of an exercise
+  // never logged, and the weight it finds goes in like one typed into the first open set, so it
+  // carries down the work sets.
+  it('offers Find my weight on a never-logged exercise and fills the open sets with what it finds', async () => {
+    finderMocks.loadFinderSheet.mockClear()
+    await mount([exercise('plain-bench', [false, false, false], {
+      target: { mode: 'reps', reps: 8, weight: 0, bodyweight: false },
+    })])
+    const button = container.querySelector('[data-load-finder]')
+    expect(button).toBeTruthy()
+    expect(button.textContent).toContain('Find my weight')
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(finderMocks.loadFinderSheet).toHaveBeenCalledTimes(1)
+    const opts = finderMocks.loadFinderSheet.mock.calls[0][0]
+    expect(opts.unit).toBe('kg')
+    expect(opts.step).toBe(2.5)
+    expect(opts.ex.id).toBe('plain-bench')
+    await act(async () => { opts.onUse(25) })
+    expect(mocks.S.active.entries[0].sets.map(x => x.w)).toEqual([25, 25, 25])
+    // once a set is ticked the hint and its button are gone
+    await unmount()
+    await mount([exercise('plain-bench', [true, false])])
+    expect(container.querySelector('[data-load-finder]')).toBeNull()
   })
 
   // "Your last session" carries only the warm-ups you set up (#525): stepping a ramp rung makes it

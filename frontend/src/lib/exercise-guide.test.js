@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { EXERCISE_GUIDES, guideFor, guidedIds, ladderFor, isReviewed, problems, GUIDE_LEVELS, PATTERNS } from './exercise-guide.js'
+import { EXERCISE_GUIDES, guideFor, guidedIds, ladderFor, isReviewed, problems, GUIDE_LEVELS, PATTERNS, guidedView } from './exercise-guide.js'
 import { EXIDX } from './exercises.js'
 import { STARTER_PLANS } from '../../../api/coach/core/starter-plans.js'
 import { planFor, everyAnswer } from './planner.js'
@@ -90,5 +90,18 @@ describe('problems', () => {
   it('reports an exercise the catalogue does not have', () => {
     expect(problems(id => id !== '1197').some(p => p.startsWith('1197: not in the catalogue'))).toBe(true)
     expect(problems(id => id !== '0043').some(p => p.includes('harder is not in the catalogue'))).toBe(true)
+  })
+
+  // The Library's "With form guide" view (EP23-T05).
+  it('guidedView keeps only exercises with a guide, in their order, when it is on', () => {
+    const list = [{ id: '0001' }, { id: '1760' }, { id: 'nope' }, { id: '1197' }]
+    expect(guidedView(list, true)).toEqual({ on: true, list: [{ id: '1760' }, { id: '1197' }] })
+    expect(guidedView(list, false)).toEqual({ on: false, list })
+  })
+
+  it('guidedView never leaves a dead end: with nothing guided in the results it shows them all', () => {
+    const list = [{ id: 'nope' }, { id: 'also-nope' }]
+    expect(guidedView(list, true)).toEqual({ on: false, list })
+    expect(guidedView([], true)).toEqual({ on: false, list: [] })
   })
 })
