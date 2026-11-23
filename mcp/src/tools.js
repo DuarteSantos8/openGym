@@ -190,7 +190,9 @@ export const getRoutine = {
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
           min: mode === 'cardio' ? (cfg.min || 0) : undefined,
           minutes: mode === 'cardio' ? (cfg.min || 0) : undefined,
-          speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
+          // The editor treats an unset/zero speed as its 8 km/h default. Report that effective target
+          // so it agrees with the summary and the session the app opens.
+          speed: mode === 'cardio' ? (cfg.speed || 8) : undefined,
           speed_unit: mode === 'cardio' ? 'kmh' : undefined,
           incline: mode === 'cardio' && cfg.incline != null ? cfg.incline : undefined,
           weight: cfg.weight != null ? cfg.weight : undefined,
