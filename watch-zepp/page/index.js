@@ -335,13 +335,26 @@ Page(
         if (others[0]) { button(t('quick_start'), y + u(44), () => this.startSession(others[0]), { primary: true }); y += u(134) } else y += u(60)
       }
       if (!ready.today && !others.length) { label(t('start_on_phone'), y, { h: u(90), wrap: true }); return }
-      // A few more, as quiet tiles, as many as fit the round screen.
-      for (const r of (ready.today ? others : others.slice(1)).slice(0, 2)) {
-        if (y + u(64) > H - u(30)) break
+      // The others as quiet tiles, as many as fit the round screen. When there are more, they
+      // come in pages with ‹ 1/3 › at the bottom, so every routine can be started here (#1479).
+      const rest = ready.today ? others : others.slice(1)
+      const fits = bottom => Math.max(1, Math.floor((bottom - y + u(12)) / u(76)))
+      const all = fits(H - u(30))
+      const per = rest.length > all ? fits(H - u(104)) : all
+      const pages = Math.max(1, Math.ceil(rest.length / per))
+      const page = Math.min(Math.max(0, this.startPage || 0), pages - 1)
+      this.startPage = page
+      for (const r of rest.slice(page * per, page * per + per)) {
         button(r.name, y, () => this.startSession(r), { h: u(64), size: T.label })
         y += u(76)
       }
-      if (link.away) label(t('phone_away'), H - u(70), { size: 20, h: u(40) })
+      if (pages > 1) {
+        const py = H - u(92), bw = u(72), bh = u(56)
+        const turn = d => { this.startPage = (page + d + pages) % pages; this.go('start') }
+        button('‹', py, () => turn(-1), { x: Math.round(W / 2 - u(70) - bw), w: bw, h: bh, size: T.label })
+        label(`${page + 1}/${pages}`, py + u(8), { size: 22, h: u(40), w: u(110) })
+        button('›', py, () => turn(1), { x: Math.round(W / 2 + u(70)), w: bw, h: bh, size: T.label })
+      } else if (link.away) label(t('phone_away'), H - u(70), { size: 20, h: u(40) })
     },
 
     startSession (session) {
