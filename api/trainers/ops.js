@@ -17,6 +17,7 @@
  * (null: it did not exist), or for the week plan the weekday's value. */
 import crypto from 'node:crypto';
 import { stampEntry } from '../sync-stamps.js';
+import { cleanOrigin } from '../origin.js';
 
 export class OpError extends Error {
   constructor(status, code, message) { super(message); this.status = status; this.code = code; }
@@ -80,6 +81,9 @@ function cleanWorkout(w) {
   return { d: w.d, name: text(w.name, 80) || 'Workout', start, end, entries, prs: [], routineIds: [], routineId: null };
 }
 
+// A trainer may only say a routine came from a trainer (applyOps makes it this trainer).
+const trainerOrigin = raw => { const og = cleanOrigin(raw); return og?.kind === 'trainer' ? { origin: og } : {}; };
+
 /** The ops of one request, checked and cleaned. Unknown ops and fields never get through. */
 export function cleanOps(raw) {
   if (!Array.isArray(raw) || !raw.length) throw bad('ops must be a non-empty list');
@@ -87,7 +91,7 @@ export function cleanOps(raw) {
   return raw.map(o => {
     if (!isMap(o) || !(o.op in OP_CATEGORY) || INTERNAL.has(o.op)) throw bad('unknown op');
     switch (o.op) {
-      case 'routine.put': return { op: o.op, ...(o.id != null ? (idOk(o.id) ? { id: o.id } : (() => { throw bad('bad routine id'); })()) : {}), routine: cleanRoutine(o.routine), ...(isMap(o.origin) ? { origin: o.origin } : {}) };
+      case 'routine.put': return { op: o.op, ...(o.id != null ? (idOk(o.id) ? { id: o.id } : (() => { throw bad('bad routine id'); })()) : {}), routine: cleanRoutine(o.routine), ...trainerOrigin(o.origin) };
       case 'routine.remove': if (!idOk(o.id)) throw bad('bad routine id'); return { op: o.op, id: o.id };
       case 'week.set': {
         const day = Number(o.day);
@@ -193,14 +197,15 @@ export function applyOps(S, ops, { by, t, rand = crypto.randomBytes } = {}) {
       case 'routine.put': {
         // The same trainer's routine again (a new version of an assigned one) replaces the copy.
         let id = o.id;
-        if (id == null && o.origin?.sourceId) {
-          const prev = list(S, 'routines').find(r => r?.origin?.kind === 'trainer' && r.origin.id === o.origin.id && r.origin.sourceId === o.origin.sourceId);
+        const origin = o.origin && by ? { ...o.origin, id: String(by.id), by: label.name } : o.origin;
+        if (id == null && origin?.sourceId) {
+          const prev = list(S, 'routines').find(r => r?.origin?.kind === 'trainer' && r.origin.id === origin.id && r.origin.sourceId === origin.sourceId);
           if (prev) id = prev.id;
         }
         if (id != null && findIn(S, 'routines', id) < 0) throw new OpError(404, 'no-routine', 'no such routine');
         if (id == null) id = newId('tr_', rand);
         const before = snapshot(S, 'routines', id);
-        const value = { ...(before || {}), ...o.routine, id, ...(o.origin ? { origin: o.origin } : {}), ...(label ? { _by: label } : {}) };
+        const value = { ...(before || {}), ...o.routine, id, ...(origin ? { origin } : {}), ...(label ? { _by: label } : {}) };
         delete value._ts; delete value._f; delete value._u;
         rec.inverse.push({ list: 'routines', key: id, value: before });
         putEntry(S, 'routines', id, value, t);
