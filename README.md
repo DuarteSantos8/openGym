@@ -1,3 +1,5 @@
+> **This fork:** the AI Coach set up on Claude and a local Ollama model, and why self-hosting beats the plain download. See [docs/MY_FORK.md](docs/MY_FORK.md).
+
 <div align="center">
 
 <p>

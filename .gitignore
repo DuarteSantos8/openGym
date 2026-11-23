@@ -56,3 +56,4 @@ frontend/ios/App/WatchCore/.build/
 /dist/
 .wrangler/
 .taste-skill/
+/ollama/
