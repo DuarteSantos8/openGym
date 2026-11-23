@@ -66,11 +66,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// A string in the app's language, for what is not a view (the rest notification).
     func L(_ key: String) -> String {
-        guard let name = SessionStore.lproj(for: state.settings.lang),
-              let path = Bundle.main.path(forResource: name, ofType: "lproj"),
-              let bundle = Bundle(path: path) else {
-            return state.settings.lang == nil ? NSLocalizedString(key, comment: "") : key
-        }
+        guard let lang = state.settings.lang else { return NSLocalizedString(key, comment: "") }
+        // English, and a language with no pack here, read en.lproj, as `locale` falls back to "en":
+        // some keys are not their English words ("min (minutes)" is "min").
+        guard let path = Bundle.main.path(forResource: SessionStore.lproj(for: lang) ?? "en", ofType: "lproj"),
+              let bundle = Bundle(path: path) else { return key }
         return bundle.localizedString(forKey: key, value: key, table: nil)
     }
     var crownStartsOnWeight: Bool { state.settings.crown == "weight" }
