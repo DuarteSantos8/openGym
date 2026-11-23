@@ -6316,4 +6316,5 @@ export default {
   "Sign in or create account": "Zaloguj się lub utwórz konto",
   "Your training stays on this device. An account is for your plan and purchases.": "Twój trening zostaje na tym urządzeniu. Konto służy do planu i zakupów.",
   "Signed in as {0}. Your training is stored on this device.": "Zalogowano jako {0}. Twój trening jest zapisany na tym urządzeniu.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Z kontem Twój trening jest z Tobą także na innych urządzeniach. Bez konta zostaje na tym urządzeniu.",
 }

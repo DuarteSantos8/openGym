@@ -6363,4 +6363,5 @@ export default {
   "Sign in or create account": "Logga in eller skapa konto",
   "Your training stays on this device. An account is for your plan and purchases.": "Din träning stannar på den här enheten. Kontot är till för din plan och dina köp.",
   "Signed in as {0}. Your training is stored on this device.": "Inloggad som {0}. Din träning sparas på den här enheten.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Med ett konto följer din träning med till dina andra enheter. Utan konto stannar den på den här enheten.",
 }

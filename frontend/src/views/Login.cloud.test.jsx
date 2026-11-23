@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Login, { sentences } from './Login.jsx'
+import { takeOidcReturn, clearOidcArrival } from '../lib/oidc.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -85,6 +86,39 @@ describe('Login in the Cloud edition', () => {
     expect(buttons(page)).toContain('Sign in with passkey')
     expect(buttons(page)).toContain('Create new profile')
     expect(buttons(page)).not.toContain('Sign in or create account')
+  })
+
+  // The app's own server, once it exists, signs people in with this same account (ADR 0013).
+  // The first screen stays the Cloud one: the way in is still the account, and the account's
+  // Continue is what goes through the server's sign-in (lib/cloud/enter-app.js).
+  it('where the server signs people in with the account, the first screen is still the account and this device', () => {
+    mocks.config = { allow_guest: true, oidc: { label: 'Ironvane', only: true } }
+    const page = mount(<Login />)
+    expect(buttons(page)).toEqual(['Sign in or create account', 'Continue without account'])
+    expect(buttons(page)).not.toContain('Sign in with Ironvane')
+  })
+
+  // With that server, training does follow the account, so the line under the buttons must not
+  // go on saying it stays on this device.
+  it('and the line under the buttons says what an account now does', () => {
+    mocks.config = { allow_guest: true, oidc: { label: 'Ironvane', only: true } }
+    const page = mount(<Login />)
+    expect(page.textContent).toContain('With an account your training follows you to your other devices. Without one it stays on this device.')
+    expect(page.textContent).not.toContain('An account is for your plan and purchases.')
+  })
+
+  it('and offers this device only where that server allows it', () => {
+    mocks.config = { allow_guest: false, oidc: { label: 'Ironvane', only: true } }
+    const page = mount(<Login />)
+    expect(buttons(page)).toEqual(['Sign in or create account'])
+  })
+
+  it('a server sign-in that came back with an error says so there', () => {
+    takeOidcReturn({ search: '?oidc-error=token', pathname: '/', hash: '' }, null)
+    mocks.config = { allow_guest: true, oidc: { label: 'Ironvane', only: true } }
+    const page = mount(<Login />)
+    expect(page.querySelector('[role="alert"]').textContent).toMatch(/Ironvane sent back something we could not verify/)
+    clearOidcArrival()
   })
 
   it('the default edition is untouched: no server answering still shows its ways in', () => {

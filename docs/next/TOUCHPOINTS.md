@@ -56,3 +56,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/App.jsx` | `next/EP19-app-knows-the-account` | +8 | Cloud edition only: starts the account watcher through a dynamic import. |
 | `frontend/src/views/Login.jsx` | `next/EP19-app-knows-the-account` | +12 −8 | The Cloud first screen's layout (classes from `views/first-screen.css`); still behind `isCloud()`. |
 | `frontend/src/views/Settings.jsx` | `next/EP19-account-follow-ups` | +6 −3 | The Cloud edition's account card at the top of Settings says who is signed in; a default build is untouched. |
+| `frontend/src/views/Login.jsx` | `next/EP19-continue-links-server` | +10 −5 | The Cloud first screen also stands where the app's own server signs people in with the account; still behind `isCloud()`. |

@@ -37,11 +37,11 @@ function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) 
 
 let where = ''
 function Where() { where = useLocation().pathname; return null }
-async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn(), from = null } = {}) {
+async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn(), link = vi.fn(), from = null } = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  await act(async () => { root.render(<MemoryRouter initialEntries={from ? [from, url] : [url]} initialIndex={from ? 1 : 0}><Where /><Account client={client} go={go} enter={enter} /></MemoryRouter>) })
+  await act(async () => { root.render(<MemoryRouter initialEntries={from ? [from, url] : [url]} initialIndex={from ? 1 : 0}><Where /><Account client={client} go={go} enter={enter} link={link} /></MemoryRouter>) })
   await act(async () => {})
   return go
 }
@@ -433,6 +433,31 @@ describe('Account', () => {
     await mount(c, { enter })
     await click('[data-continue]')
     expect(enter).toHaveBeenCalledTimes(1)
+  })
+
+  // Where the app's own server signs people in with this account, Continue leaves for that
+  // sign-in instead of opening a profile on this device (lib/cloud/enter-app.js).
+  it('Continue leaves for the server\'s sign-in when that is the way in, and does not go to the app first', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    const link = vi.fn()
+    await mount(c, { enter: () => 'link', link })
+    await click('[data-continue]')
+    expect(link).toHaveBeenCalledTimes(1)
+    expect(where).toBe('/account')
+    // On its way: the button waits, so a second press cannot start a second sign-in.
+    expect($('[data-continue]').disabled).toBe(true)
+  })
+
+  it('Continue goes to the app in every other case, and starts no sign-in', async () => {
+    for (const how of ['already', 'device', 'server']) {
+      const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+      const link = vi.fn()
+      await mount(c, { enter: () => how, link })
+      await click('[data-continue]')
+      expect(link).not.toHaveBeenCalled()
+      expect(where).toBe('/home')
+      act(() => root.unmount()); container.remove(); root = container = null
+    }
   })
 
   it('deleting needs the word, then deletes, signs out and returns to sign in', async () => {

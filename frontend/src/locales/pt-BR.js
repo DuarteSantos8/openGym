@@ -4726,6 +4726,7 @@ export const PT_BR_OVERRIDES = {
   "Sign in or create account": "Entrar ou criar conta",
   "Your training stays on this device. An account is for your plan and purchases.": "Seu treino fica neste dispositivo. A conta serve para seu plano e suas compras.",
   "Signed in as {0}. Your training is stored on this device.": "Conectado como {0}. Seu treino fica salvo neste dispositivo.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Com uma conta, seu treino acompanha você nos seus outros dispositivos. Sem conta, ele fica neste dispositivo.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

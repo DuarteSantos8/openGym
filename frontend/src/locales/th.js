@@ -6327,4 +6327,5 @@ export default {
   "Sign in or create account": "เข้าสู่ระบบหรือสร้างบัญชี",
   "Your training stays on this device. An account is for your plan and purchases.": "การฝึกของคุณอยู่ในอุปกรณ์นี้ บัญชีมีไว้สำหรับแพ็กเกจและการซื้อของคุณ",
   "Signed in as {0}. Your training is stored on this device.": "เข้าสู่ระบบในชื่อ {0} การฝึกของคุณเก็บไว้ในอุปกรณ์นี้",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "เมื่อมีบัญชี การฝึกของคุณจะตามไปยังอุปกรณ์เครื่องอื่นของคุณด้วย หากไม่มีบัญชี ข้อมูลจะอยู่ในอุปกรณ์เครื่องนี้เท่านั้น",
 }
