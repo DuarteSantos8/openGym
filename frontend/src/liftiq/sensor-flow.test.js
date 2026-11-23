@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { decodeTelemetry } from './vendor/liftiq-sensor/index.js'
 import { parseSimCsv, createSimTransport, encodePacket, playbackStart } from './sim-transport.js'
-import { createController } from './controller.js'
+import { createController, fail } from './controller.js'
 import { createMiniStore, INITIAL_SENSOR_STATE } from './mini-store.js'
 import { pickAnalysis, vbtFromReview, writeBack, defaultIncludeSetup } from './review.js'
 import { sanitizeVbt } from './sanitize.js'
@@ -148,7 +148,18 @@ describe('controller with the simulated sensor', () => {
     const store = createMiniStore({ ...INITIAL_SENSOR_STATE })
     const sensor = createController({ store, makeTransport: async () => ({ isSupported: () => true, requestDevice: async () => { const e = new Error('chooser closed'); e.name = 'NotFoundError'; throw e }, isConnected: () => false, disconnect() {}, onDisconnect: () => () => {} }), support: () => ({ ok: true }) })
     await sensor.connect()
-    expect(store.getState()).toMatchObject({ status: 'error', error: 'No sensor chosen.' })
+    expect(store.getState().status).toBe('error')
+    expect(store.getState().error).toMatch(/NotFoundError: chooser closed/)
+  })
+
+  it('explains the different Chrome failures behind NotFoundError', () => {
+    const mk = (name, message) => { const e = new Error(message); e.name = name; return e }
+    expect(fail(mk('NotFoundError', 'User cancelled the requestDevice() chooser.'))).toMatch(/^No sensor chosen\./)
+    expect(fail(mk('NotFoundError', 'Bluetooth adapter not available.'))).toMatch(/Bluetooth is off/)
+    expect(fail(mk('NotFoundError', 'User denied the browser permission to scan for Bluetooth devices.'))).toMatch(/Nearby devices/)
+    expect(fail(mk('NotFoundError', 'No Bluetooth devices in range.'))).toMatch(/No sensor found/)
+    expect(fail(mk('SecurityError', 'Failed to execute requestDevice'))).toMatch(/https/)
+    expect(fail(mk('NotFoundError', 'Bluetooth adapter not available.'))).toContain('NotFoundError: Bluetooth adapter not available.')
   })
 })
 

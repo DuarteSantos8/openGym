@@ -11,11 +11,24 @@ import { simRequested, simSpeed, bluetoothSupport, SUPPORT_TEXT } from './featur
 
 export const MAX_SAMPLES = 50 * 60 * 10 // 10 minutes at 50 Hz: a set never takes that long
 
-function fail(error) {
+// LIFTIQ-FORK: Chrome reports very different problems as the same NotFoundError (chooser cancelled, Bluetooth
+// off, permission to scan denied, nothing found). Say which one, and always show Chrome's own wording.
+export function fail(error) {
   const msg = error && error.message ? String(error.message) : String(error || 'Unknown error')
-  // The chooser being dismissed is not an error worth shouting about.
-  if (error && (error.name === 'NotFoundError' || /cancelled|canceled|user cancel/i.test(msg))) return 'No sensor chosen.'
-  return msg
+  const name = error && error.name ? String(error.name) : ''
+  const raw = `${name ? name + ': ' : ''}${msg}`
+  if (/cancelled|canceled|user cancel/i.test(msg)) return `No sensor chosen. (${raw})`
+  if (/adapter not available|bluetooth.*(off|disabled|unavailable)/i.test(msg)) {
+    return `Bluetooth is off or not available. Turn Bluetooth on and try again. (${raw})`
+  }
+  if (/denied|permission|blocked|not allowed/i.test(msg)) {
+    return `Chrome is not allowed to scan for Bluetooth devices. In the phone's settings allow "Nearby devices" for Chrome (and Location on Android 11 or older), then try again. (${raw})`
+  }
+  if (name === 'NotFoundError') {
+    return `No sensor found or chosen. Check the sensor is powered and not connected to anything else. (${raw})`
+  }
+  if (name === 'SecurityError') return `Bluetooth was blocked by the browser. Use the https address in Chrome. (${raw})`
+  return raw
 }
 
 /**
