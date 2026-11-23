@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-22, after PRs #56 to #63 were merged and with `next/EP19-cloud-refresh-identity` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-22, after PRs #56 to #64 were merged. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 
@@ -155,7 +155,7 @@ What was run, where, and what was not. #56 to #60 are merged; nothing has been d
 | Load finder branch (`next/EP22-load-finder`), full frontend suite | 966 files, 10,785 tests. 4 tests in 2 older files failed here and on `main`: they dated a workout by the UTC day, which on a Sunday evening west of Greenwich is next week. Fixed in the branch and passing in three time zones; CI (UTC) never saw it |
 | Load finder branch, E2E on the three profiles | 59 passed, 1 skipped (the same camera test) |
 | Load finder branch, bundle budget | first load 905 kB script and 58 kB styles gzipped, inside the budget; guides and Learn text load on demand |
-| Cloud backend branch (`next/EP19-cloud-backend`), on the real project | 4 migrations written, 3 applied (the fourth, which answers the project's own advisors, waits for the owner's confirmation). 10 live tests passed: sign-in, wrong password, row level security over REST as two users, token refresh, billing tables closed, the API's token check on a real token, the OIDC discovery document, export, the refusals, and a real account deletion |
+| Cloud backend branch (`next/EP19-cloud-backend`), on the real project | All 4 migrations applied (the fourth, which answers the project's own advisors, after the owner confirmed it; the performance advisor now reports nothing). 10 live tests passed: sign-in, wrong password, row level security over REST as two users, token refresh, billing tables closed, the API's token check on a real token, the OIDC discovery document, export, the refusals, and a real account deletion |
 | Cloud backend branch, real browser | The cloud build signed in, saved a name, kept the session over a reload and signed out, on a phone and a desktop viewport, talking only to the project. It found two races that are now fixed and tested |
 | Cloud backend branch, the usual suites | Frontend 970 files, 10,847 tests; API 1,304 tests (3 skipped as before); E2E on the default build 62 passed, 1 skipped; row level security on PostgreSQL 16 with all four migrations; axe clean on all five account steps of the cloud build; the bundle check fails a default build that contains any cloud code |
 | **Not run** | Real phones; a screen reader by hand; Stripe; sign-up and reset emails end to end; a sign-in through the API's OIDC; the native apps |

@@ -29,7 +29,7 @@ Epic status:
 - **Merged (#61):** Five faults in the load finder that the reviews of #60 found after it merged: it could suggest less than the bar weighs, it ran the wrong way on assisted machines (now not offered there), it ignored owned dumbbells and machine stacks, it did not say whether a dumbbell number meant one or both, and a set logged from a watch while it was open could be written over. Tier A: `Workout.jsx`.
 - **Merged (#62):** The Cloud edition's backend on a real Supabase project: schema and row level security applied, the app's own sign-in client and account screen (cloud build only), account export and deletion as deployed functions, and live tests that run against the project. Tier A: `App.jsx` (one route, cloud build only), `Settings.jsx` (one row, cloud build only).
 - **Merged (#63):** Four faults the review of #62 found after it merged, in the cloud build's account screen and sign-in client: a token refresh could undo a sign-out, the word typed to delete one account carried over to the next, the name could be saved (as empty) before it had loaded, and the account screen had no way on into the app.
-- **In review: `next/EP19-cloud-refresh-identity`.** One fault the review of #63 found after it merged: a token refresh that outlived an account switch handed its caller the new account's token, so a request made for one account could act on another.
+- **Merged (#64):** One fault the review of #63 found after it merged: a token refresh that outlived an account switch handed its caller the new account's token, so a request made for one account could act on another.
 - **Needs the owner before any paid deploy:** the media route (ADR 0009: replace or buy a licence), a Supabase project, a Stripe account, the price and the Pro list (ADR 0011).
 - **Needs a person:** EP16-T03 on real phones, translation review.
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
@@ -55,7 +55,7 @@ Epic status:
 | 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
 | 10 | **Read the 45 exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the remaining exercises of the routines library (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
 | 11 | EP24-T03 (warm-up sessions), EP24-T01 (the glossary on more screens), the remaining exercises of EP23-T03 | agent | Per the plan's acceptance column |
-| 12 | Cloud, owner's dashboard steps (`supabase/README.md`, "What only the owner can switch on"): confirm the advisors migration, custom SMTP, the email templates' links, the OAuth server for ADR 0013, `APP_ORIGIN`, and the cloud build's three variables in Vercel | owner | Sign-up and reset emails arrive; the API's "Sign in with Ironvane" completes on a preview |
+| 12 | Cloud, owner's dashboard steps (`supabase/README.md`, "What only the owner can switch on"): leaked-password protection, custom SMTP, the email templates' links, the OAuth server for ADR 0013, `APP_ORIGIN`, and the cloud build's three variables in Vercel | owner | Sign-up and reset emails arrive; the API's "Sign in with Ironvane" completes on a preview |
 | 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos) | agent | Before any live Stripe key |
 
 ## 4. Environment (WSL2 Ubuntu)

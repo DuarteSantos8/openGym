@@ -78,10 +78,10 @@ A project exists and the following ran against it. Its address and publishable k
 
 | | |
 |---|---|
-| Applied | `…_profiles`, `…_billing`, `…_content`. `…_advisors` (below) is written and passes locally; applying it replaces two policies, which the project asks its owner to confirm |
+| Applied | All four: `…_profiles`, `…_billing`, `…_content`, `…_advisors` (the last after the owner confirmed it, since it replaces two policies) |
 | Deployed | `export-account`, `delete-account` (both check the caller themselves, so the platform's own token check is off for them) |
 | Live tests | `tests/live.test.mjs` and `tests/live-account.test.mjs`: 10 tests, all passing. They are skipped unless the project is named in the environment |
-| Advisors | Security: `has_entitlement` ran as its owner and was callable over REST (fixed in `…_advisors`); `webhook_events` has row level security and no policy, on purpose. Performance: two SELECT policies on `content_items` for one role (merged in `…_advisors`) |
+| Advisors | After `…_advisors`: performance has nothing to report. Security has two notes left: `webhook_events` has row level security and no policy, on purpose (only the service reads it), and leaked-password protection is off, which is a dashboard setting (step 2 below) |
 
 ### Test users
 
@@ -106,12 +106,13 @@ node --test supabase/tests/live.test.mjs supabase/tests/live-account.test.mjs
 
 None of these can be done from the repository or by an agent; each is a setting in the project's dashboard (or Vercel's).
 
-1. **Confirm the `…_advisors` migration** when the project asks.
-2. **Custom SMTP** (Authentication, Emails). Until then nobody but the owner receives a sign-up or reset email, and the sign-up form answers "that email address is not accepted" for anyone else.
-3. **Email templates.** Point the confirm and reset links at the app: `{{ .SiteURL }}/#/account?token_hash={{ .TokenHash }}&type=signup` and `…&type=recovery`. Set the Site URL and allowed redirect URLs to the app's address.
-4. **OAuth server** (Authentication, OAuth Server), for ADR 0013: switch it on, set the authorization path to `/#/account`, register one client whose redirect is `<the API's origin>/api/oidc/callback`.
-5. **`APP_ORIGIN`** as a function secret: the web app's origin. Without it a browser cannot call `export-account` or `delete-account` (they answer, but the browser's cross-origin check refuses the reply). One origin only for now.
-6. **The cloud build's variables** in Vercel: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Setting them turns that deployment into the Cloud edition; the default build has none of this code.
+1. ~~Confirm the `…_advisors` migration~~ Done, 2026-11-23.
+2. **Leaked-password protection** (Authentication, Passwords): refuses passwords known from breaches. The project's security advisor asks for it; it may need a paid plan.
+3. **Custom SMTP** (Authentication, Emails). Until then nobody but the owner receives a sign-up or reset email, and the sign-up form answers "that email address is not accepted" for anyone else.
+4. **Email templates.** Point the confirm and reset links at the app: `{{ .SiteURL }}/#/account?token_hash={{ .TokenHash }}&type=signup` and `…&type=recovery`. Set the Site URL and allowed redirect URLs to the app's address.
+5. **OAuth server** (Authentication, OAuth Server), for ADR 0013: switch it on, set the authorization path to `/#/account`, register one client whose redirect is `<the API's origin>/api/oidc/callback`.
+6. **`APP_ORIGIN`** as a function secret: the web app's origin. Without it a browser cannot call `export-account` or `delete-account` (they answer, but the browser's cross-origin check refuses the reply). One origin only for now.
+7. **The cloud build's variables** in Vercel: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Setting them turns that deployment into the Cloud edition; the default build has none of this code.
 
 ## First deploy of the payment functions, in order (owner only; not run against real Stripe)
 
