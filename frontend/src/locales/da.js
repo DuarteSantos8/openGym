@@ -3076,6 +3076,7 @@ export default {
   "Reps: {0} is more than twice your most, {1}.": "Gentagelser: {0} er mere end det dobbelte af dit højeste, {1}.",
   "Weight: {0} is under a third of last time’s {1}.": "Vægt: {0} er under en tredjedel af sidste gangs {1}.",
   "Reps: {0} is under a third of last time’s {1}.": "Gentagelser: {0} er under en tredjedel af sidste gangs {1}.",
+  "{0} is {1}% off your last weigh-in, {2}. Save it?": "{0} afviger {1} % fra din seneste vejning, {2}. Gem den?",
   "Fix it": "Ret det",
   "Log as typed": "Log som skrevet",
   "Time per exercise": "Tid pr. øvelse",

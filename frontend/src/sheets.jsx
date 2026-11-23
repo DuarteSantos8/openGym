@@ -66,6 +66,7 @@ import { isGymSplit, brandAt, withExGym, currentGymId, cleanBrand, BRAND_MAX, pl
 import { exerciseMuscleSnapshot, loadOfWorkouts, rankOf, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle, MUSCLE_MODEL } from './lib/muscles.js'
 import { mergeImport, importHasWeighIn, measurementImportPlan } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
+import { weighInOff } from './lib/weigh-in-check.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
 import { importHevyData, parseHevyAccount, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
 import { aliasMatches, choiceOpts, combineNames, rememberPicks } from './lib/import-choices.js'
@@ -412,11 +413,25 @@ function BwSheet({ required, onDone, close, initial, edit }) {
   const [time, setTime] = useState(editing ? (editing.at || DEFAULT_TIME) : timeOf(Date.now()))
   const [timeSet, setTimeSet] = useState(!!editing)
   const pickDate = d => { setDate(d); if (!timeSet) setTime(defaultTimeFor(st, d, todayISO())) }
-  const save = () => {
+  const save = (_, sure) => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
     if (bwTooHeavy(n, unit)) return
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > todayISO()) { toast(t('Choose a valid date')); return }
+    // A new weigh-in far off the last asks first (lib/weigh-in-check.js); Fix it keeps this sheet open
+    // to correct, Save saves as typed. Editing one never asks: that is the correction.
+    const off = !sure && !editing ? weighInOff(n, bw?.w) : null
+    if (off != null) {
+      const kg = x => fmtNum(x) + ' ' + unit
+      confirmSheet({
+        title: t('Is that right?'),
+        message: t('{0} is {1}% off your last weigh-in, {2}. Save it?', kg(n), Math.round(off * 100), kg(bw.w)),
+        confirmText: t('Fix it'),
+        cancelText: t('Save'),
+        onCancel: () => save(null, true),
+      })
+      return
+    }
     // The check-in before a workout is now; a weigh-in at the same time of a day corrects it.
     const at = required ? timeOf(Date.now()) : cleanTime(time) || (date === todayISO() ? timeOf(Date.now()) : DEFAULT_TIME)
     update(s => {

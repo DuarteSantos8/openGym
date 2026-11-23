@@ -3102,6 +3102,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'Повт.: {0}, это больше чем вдвое выше вашего рекорда, {1}.',
   'Weight: {0} is under a third of last time’s {1}.': 'Вес: {0}, это меньше трети от прошлого раза, {1}.',
   'Reps: {0} is under a third of last time’s {1}.': 'Повт.: {0}, это меньше трети от прошлого раза, {1}.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} отличается на {1}% от последнего взвешивания, {2}. Сохранить?',
   'Fix it': 'Исправить',
   'Log as typed': 'Записать как есть',
   // --- stats: time per exercise ---

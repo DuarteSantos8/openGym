@@ -3177,6 +3177,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'রেপ: {0} আপনার সর্বোচ্চ {1}-এর দ্বিগুণেরও বেশি।',
   'Weight: {0} is under a third of last time’s {1}.': 'ওজন: {0} গতবারের {1}-এর এক-তৃতীয়াংশেরও কম।',
   'Reps: {0} is under a third of last time’s {1}.': 'রেপ: {0} গতবারের {1}-এর এক-তৃতীয়াংশেরও কম।',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} আপনার শেষ ওজন {2} থেকে {1}% আলাদা। সেভ করবেন?',
   'Fix it': 'ঠিক করুন',
   'Log as typed': 'যেমন লেখা তেমন লগ করুন',
   // --- stats: time per exercise ---

@@ -3109,6 +3109,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'ครั้ง: {0} มากกว่าสองเท่าของสถิติสูงสุดของคุณ {1}',
   'Weight: {0} is under a third of last time’s {1}.': 'น้ำหนัก: {0} น้อยกว่าหนึ่งในสามของครั้งก่อน {1}',
   'Reps: {0} is under a third of last time’s {1}.': 'ครั้ง: {0} น้อยกว่าหนึ่งในสามของครั้งก่อน {1}',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} ต่างจากน้ำหนักครั้งล่าสุด {2} อยู่ {1}% บันทึกไหม?',
   'Fix it': 'แก้ไข',
   'Log as typed': 'บันทึกตามที่พิมพ์',
   // --- stats: time per exercise ---
