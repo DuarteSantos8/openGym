@@ -221,9 +221,11 @@ fun OgTimeText() {
     TimeText { time ->
         // A word too long for the arc leaves the check alone.
         if (summary != null) curvedComposable {
+            // A workout ended on the phone gets a phone, as on the Apple Watch.
+            val badge = if (summary?.endedOnPhone == true) G.PHONE else G.CHECK
             // Always On: a ring and a check, no lit fill.
-            if (ambient) Box(Modifier.size(18.dp).border(1.5.dp, accent.accent.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) { Glyph(G.CHECK, accent.accent.copy(alpha = 0.6f), 10.dp) }
-            else Box(Modifier.size(18.dp).clip(CircleShape).background(accent.accent), contentAlignment = Alignment.Center) { Glyph(G.CHECK, accent.on, 11.dp) }
+            if (ambient) Box(Modifier.size(18.dp).border(1.5.dp, accent.accent.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) { Glyph(badge, accent.accent.copy(alpha = 0.6f), 10.dp) }
+            else Box(Modifier.size(18.dp).clip(CircleShape).background(accent.accent), contentAlignment = Alignment.Center) { Glyph(badge, accent.on, 11.dp) }
         }
         if (lead != null) { curvedText(lead, color = if (summary != null) Og.Text else Og.Label2); timeTextSeparator() }
         timeTextCurvedText(time)

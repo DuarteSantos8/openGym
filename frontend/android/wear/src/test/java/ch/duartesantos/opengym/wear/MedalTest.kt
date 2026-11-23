@@ -89,6 +89,8 @@ class MedalTest {
     @Test fun onlyLettersThatStandAloneGoRoundTheRim() {
         for (s in listOf("Push day", "Upper body: push, pull & core 💪", "Oberkörper Ü", "Тяга", "Ngày đẩy", "胸の日", "가슴 날")) assertTrue(s, Medal.arcable(s))
         for (s in listOf("يوم الصدر", "פוש", "पुश डे", "วันอก")) assertFalse(s, Medal.arcable(s))
+        // A letter with its accent as a separate mark would split on the rim: the whole name goes straight.
+        assertFalse(Medal.arcable("Cafe\u0301")); assertTrue(Medal.arcable("Café"))
     }
 
     @Test fun theEntranceHaptics() {

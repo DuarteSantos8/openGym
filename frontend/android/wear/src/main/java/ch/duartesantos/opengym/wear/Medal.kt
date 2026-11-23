@@ -46,11 +46,12 @@ object Medal {
     /**
      * Whether a name can be set one letter at a time round the rim. Scripts whose letters join or
      * stack (Arabic, Hebrew, Indic, Thai) or run right to left would break apart, so they go straight.
+     * So do combining marks and variation selectors: split by code point, the accent would drift off its letter.
      */
     fun arcable(s: String): Boolean = s.codePoints().allMatch { u ->
-        u in 0x20..0x24F || u in 0x300..0x36F || u in 0x370..0x52F || u in 0x1E00..0x1FFF || u in 0x2000..0x206F ||
+        u in 0x20..0x24F || u in 0x370..0x52F || u in 0x1E00..0x1FFF || u in 0x2000..0x206F ||
             u in 0x20A0..0x20CF || u in 0x2100..0x27BF || u in 0x3000..0x30FF || u in 0x3400..0x9FFF || u in 0xAC00..0xD7AF ||
-            u in 0x1100..0x11FF || u in 0xFE00..0xFE0F || u in 0xFF00..0xFFEF || u in 0x1F000..0x1FAFF
+            u in 0x1100..0x11FF || u in 0xFF00..0xFFEF || u in 0x1F000..0x1FAFF
     }
 
     /** "62.5" in the app's language ("62,5" in German), at most two decimals. */

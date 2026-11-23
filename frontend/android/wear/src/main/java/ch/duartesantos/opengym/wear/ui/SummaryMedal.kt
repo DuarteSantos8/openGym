@@ -37,6 +37,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
@@ -126,7 +127,7 @@ import kotlin.math.sqrt
 private class Words(
     val name: String, val arcable: Boolean, val time: String, val timeLabel: String, val legend: String,
     val sets: String, val setsWord: String, val volume: String, val unit: String, val avgLabel: String, val kcalLabel: String,
-    val hrAvg: String?, val peak: String?, val kcal: String?, val date: String?, val reps: String, val spoken: String,
+    val hrAvg: String?, val peak: String?, val kcal: String?, val kcalOn: Boolean, val date: String?, val reps: String, val spoken: String,
 )
 
 /** Where the medal sits on this screen (dp), and how the crown's stops map to points. */
@@ -269,6 +270,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             if (ambient) { t.floatValue = 99f; c.snapTo(0f); return@LaunchedEffect }
             if (played) return@LaunchedEffect
             played = true
+            t.floatValue = 0f // woken from Always On: the clock sat at the end, the entrance starts now
             val demo = WearStore.demoScreen
             if (demo == "summary-back") c.snapTo(1f)
             if (demo == "summary-records") c.snapTo(2f)
@@ -282,7 +284,10 @@ fun SummaryScreen(sum: WorkoutSummary) {
             t.floatValue = 99f
         }
         // TalkBack: open at the end, where the records and Done are on screen (and the shots' end screen).
-        LaunchedEffect(talkBack, lay.cMax) { if (talkBack || WearStore.demoScreen == "summary-end") c.snapTo(lay.cMax) }
+        LaunchedEffect(talkBack, lay.cMax, ambient) { if (!ambient && (talkBack || WearStore.demoScreen == "summary-end")) c.snapTo(lay.cMax) }
+
+        // The drag handler outlives a remeasure that keeps cMax: it reads the latest layout.
+        val cur by rememberUpdatedState(lay)
 
         fun turn(to: Float) { scope.launch { c.animateTo(to.coerceIn(0f, lay.cMax), spring) } }
 
@@ -297,12 +302,12 @@ fun SummaryScreen(sum: WorkoutSummary) {
                         onDragStart = { from = c.value; moved = 0f },
                         onDragEnd = {
                             val a = from.roundToInt()
-                            val aim = lay.c(lay.points(from.toDouble()) - moved / density.density).roundToInt()
-                            turn(aim.coerceIn(max(a - 1, 0), min(a + 1, lay.cMax.toInt())).toFloat())
+                            val aim = cur.c(cur.points(from.toDouble()) - moved / density.density).roundToInt()
+                            turn(aim.coerceIn(max(a - 1, 0), min(a + 1, cur.cMax.toInt())).toFloat())
                         },
                         onVerticalDrag = { _, dy ->
                             moved += dy
-                            scope.launch { c.snapTo(lay.c(lay.points(from.toDouble()) - moved / density.density).toFloat().coerceIn(0f, lay.cMax)) }
+                            scope.launch { c.snapTo(cur.c(cur.points(from.toDouble()) - moved / density.density).toFloat().coerceIn(0f, cur.cMax)) }
                         },
                     )
                 },
@@ -339,14 +344,14 @@ private fun rememberWords(sum: WorkoutSummary, locale: Locale, showKcal: Boolean
     val hrLine = if (sum.hrAvg != null && sum.hrMax != null) stringResource(R.string.heart_rate) + " " + stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax) else null
     val dur = sum.duration?.let { duration(it, locale) }
     val spoken = listOfNotNull(saved, sum.name, dur, if (k == 0) setsLine else "$legend: " + sum.prs.joinToString(", "),
-        if (k > 0) setsLine else null, "$volume ${sum.unit}", hrLine, kcalValue?.let { "$it kcal" }).joinToString(", ")
+        if (k > 0) setsLine else null, "$volume ${sum.unit}", hrLine, kcalValue?.let { "$it kcal" }, date).joinToString(", ")
     val avg = stringResource(R.string.avg)
     val reps = stringResource(R.string.reps).lowercase(locale)
     return remember(sum, locale, showKcal, spoken) {
         Words(
             name = up(sum.name), arcable = Medal.arcable(sum.name), time = time?.first ?: sets, timeLabel = timeLabel, legend = up(legend),
             sets = sets, setsWord = up(setsWord), volume = volume, unit = up(sum.unit), avgLabel = up("$avg $bpm"), kcalLabel = "KCAL",
-            hrAvg = sum.hrAvg?.toString(), peak = sum.hrMax?.let { up("$max $it $bpm") }, kcal = kcalValue?.toString(),
+            hrAvg = sum.hrAvg?.toString(), peak = sum.hrMax?.let { up("$max $it $bpm") }, kcal = kcalValue?.toString(), kcalOn = showKcal,
             date = date?.let(up), reps = reps, spoken = spoken,
         )
     }
@@ -463,7 +468,7 @@ private fun Face(
             Canvas(Modifier.fillMaxSize()) { frame().glint.takeIf { it >= 0 }?.let { drawGlint(it) } }
         } else {
             // Heart rate and calories reach the back a moment late: each fills its own engraved recess, and the peak fades in on the bottom arc.
-            Canvas(Modifier.fillMaxSize()) { drawRecesses(metal, hrIn, kcalIn, dimmed) }
+            Canvas(Modifier.fillMaxSize()) { drawRecesses(metal, hrIn, kcalIn.takeIf { words.kcalOn }, dimmed) }
             if (words.hrAvg != null) Canvas(Modifier.fillMaxSize().graphicsLayer { alpha = hrIn }) {
                 stamp(listOf(Mark.Text(words.hrAvg, 24.0, -0.4, -4.0, 22.0, Align.TRAILING, valueWidth(22.0), mono = true)) +
                     (words.peak?.let { listOf(Mark.Arc(it, 16.0, 1.4, 79.0, false, 190.0)) } ?: emptyList()), metal, dimmed)
@@ -501,7 +506,8 @@ private fun frontMarks(w: Words, records: Int, dimmed: Boolean): List<Mark> {
 private fun backMarks(w: Words): List<Mark> {
     val m = mutableListOf<Mark>()
     w.date?.let { m += Mark.Arc(it, 16.0, 1.6, 70.0, true, 200.0) }
-    val rows = listOf(Triple(-30.0, w.sets, w.setsWord), Triple(-4.0, w.volume, w.unit), Triple(22.0, null, w.avgLabel), Triple(48.0, null, w.kcalLabel))
+    val rows = listOf(Triple(-30.0, w.sets, w.setsWord), Triple(-4.0, w.volume, w.unit), Triple(22.0, null, w.avgLabel)) +
+        if (w.kcalOn) listOf(Triple(48.0, null, w.kcalLabel)) else emptyList()
     for ((y, value, label) in rows) {
         if (value != null) m += Mark.Text(value, 24.0, -0.4, -4.0, y, Align.TRAILING, valueWidth(y), mono = true)
         m += Mark.Text(label, 16.0, 0.4, 2.0, y, Align.LEADING, labelWidth(y))
@@ -596,8 +602,9 @@ private fun DrawScope.drawNotchLights(sets: Int, t: Double) = face {
 }
 
 /** The back's two empty slots for heart rate and calories, until the readings fill them. */
-private fun DrawScope.drawRecesses(metal: Metal, hr: Float, kcal: Float, aod: Boolean) = face {
-    for ((y, filled) in listOf(3.5f to hr, 29.5f to kcal)) {
+private fun DrawScope.drawRecesses(metal: Metal, hr: Float, kcal: Float?, aod: Boolean) = face {
+    // kcal null: calories are switched off, no slot for them.
+    for ((y, filled) in listOfNotNull(3.5f to hr, kcal?.let { 29.5f to it })) {
         val a = 1 - filled
         if (aod) drawRoundRect(metal.aodLine.copy(alpha = metal.aodLine.alpha * a), Offset(-38f, y), Size(32f, 20f), CornerRadius(5f), Stroke(0.7f))
         else drawRoundRect(metal.ink.copy(alpha = 0.14f * a), Offset(-38f, y), Size(32f, 20f), CornerRadius(5f))
