@@ -105,6 +105,8 @@ module G {
 
 class OpenGymApp extends Application.AppBase {
     private var _timer = null;
+    private var _min = -1;
+    private var _bpm = null;
 
     function initialize() {
         AppBase.initialize();
@@ -163,6 +165,12 @@ class OpenGymApp extends Application.AppBase {
             ended["hr"] = Workout.hrTotals();
             Actions.ended(ended);
         } else if (G.state["w"] == null) {
+            // Discarded on the phone while the watch had it running: the recording is thrown away
+            // and the heart-rate sensor goes off (Workout.end), as Discard here does.
+            if (had != null) {
+                Workout.end(false);
+                Workout.hrTotals();
+            }
             Actions.reset();
         } else {
             if (had == null) {
@@ -179,14 +187,22 @@ class OpenGymApp extends Application.AppBase {
         Link.heard();
     }
 
-    //! Once a second: the rest, the heart rate, a retry of what the phone has not had yet.
+    //! Once a second: the rest, the heart rate, a retry of what the phone has not had yet. The
+    //! screen is drawn each second in a workout (the time, the rest, a hold) and, without one, only
+    //! when what it shows moved: the clock's minute, the heart rate.
     function onTick() as Void {
         Workout.sample();
         Rest.tick();
         Actions.holdTick();
         Actions.askTick();
         Link.retry();
-        WatchUi.requestUpdate();
+        var min = System.getClockTime().min;
+        var draw = G.state["w"] != null || min != _min || G.bpm != _bpm;
+        _min = min;
+        _bpm = G.bpm;
+        if (draw) {
+            WatchUi.requestUpdate();
+        }
     }
 }
 
@@ -325,6 +341,8 @@ module Link {
             G.saveOb();
         }
         flush();
+        // The "waiting to sync" line counts what is still unsent: no longer left to the 1 s redraw.
+        WatchUi.requestUpdate();
     }
 
     function failed(g) {
