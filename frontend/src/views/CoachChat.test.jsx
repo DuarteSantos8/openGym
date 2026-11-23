@@ -45,6 +45,8 @@ vi.mock('../lib/coach-api.js', () => ({
   setCohortShare: vi.fn(() => Promise.resolve({ ok: true, sharing: true })),
   JOB_ERRORS: { internal: 'x' },
   ensureAiConsent: vi.fn(() => Promise.resolve(true)),
+  agreeCadence: vi.fn(() => Promise.resolve('openai|api.openai.com')),
+  recheckCadence: vi.fn(() => Promise.resolve()),
   isDeclined: e => e?.code === 'declined',
   awaitedJob: () => null,
   settleAwaited: vi.fn(),

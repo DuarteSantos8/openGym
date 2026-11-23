@@ -50,6 +50,8 @@ vi.mock('../lib/coach-api.js', () => ({
   jobErrorText: () => 'err',
   JOB_ERRORS: { busy: 'the app’s busy line' },
   ensureAiConsent: vi.fn(() => Promise.resolve(true)),
+  agreeCadence: vi.fn(() => Promise.resolve('openai|api.openai.com')),
+  recheckCadence: vi.fn(() => Promise.resolve()),
   isDeclined: e => e?.code === 'declined',
 }))
 vi.mock('../sheets.jsx', () => ({ startFlow: vi.fn(), confirmSheet: vi.fn() }))

@@ -32,7 +32,7 @@ import {
 } from '../lib/coach.js'
 import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
+import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, agreeCadence, recheckCadence, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { ActionCards, Sources } from '../components/CoachActions.jsx'
 import { CoachSeesSection } from '../components/CoachSees.jsx'
@@ -141,6 +141,10 @@ export default function CoachChat() {
     const decided = pending && (S.coach?.log || []).find(l => l.proposalId === pending.id)
     if (decided) resolvePending(decisionBody(decided)).catch(() => {}).finally(refresh)
   }, [pending?.id])
+
+  // Automatic reviews agreed for a provider or host the server no longer uses are paused there
+  // until this asks again (lib/coach-api.js recheckCadence).
+  useEffect(() => { if (ready) recheckCadence().catch(() => {}) }, [ready])
 
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
@@ -834,12 +838,14 @@ function CadenceSheet({ update }) {
   // Automatic reviews send your training while nobody is looking, so switching them on is where
   // the data-sharing question is asked for them. "Not now" leaves them off.
   const setMode = async m => {
+    let target
     if (m !== 'off') {
-      try { await ensureAiConsent() } catch (e) { if (!isDeclined(e)) useUI.getState().toast(e.message || t('Could not ask the Coach')); return }
+      try { target = await agreeCadence() } catch (e) { if (!isDeclined(e)) useUI.getState().toast(e.message || t('Could not ask the Coach')); return }
     }
     update(s => {
       const c = (s.coach = s.coach || emptyCoach())
       c.cadence = m === 'off' ? 'off' : m === 'weekly' ? { weekly: { day: 0, time: '18:00' } } : { everyWorkouts: 4 }
+      if (target) c.cadenceFor = target
     })
   }
   const patch = fn => update(s => { const c = (s.coach = s.coach || emptyCoach()); fn(c) })

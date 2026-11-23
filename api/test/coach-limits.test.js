@@ -158,7 +158,7 @@ const newWorkout = id => ({ ...sampleState().workouts[0], id, d: today, start: D
 
 test('a scheduled review reads a batch of workouts once, not once per tick', async () => {
   const uid = 'u-cadence';
-  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 } } });
+  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 }, cadenceFor: 'fixture|' } });
   writeState(DIR, uid, S);
   const tick = captureTick({ users: () => [{ id: uid }], userNow: () => ({ date: today, hhmm: '18:00', weekday: 4 }) });
   process.env.FIXTURE_MODE = 'nochange';
@@ -194,7 +194,7 @@ test('a workout the phone dated tomorrow is not re-read once the review has cove
   // The phone stamps `d` in its own timezone: a morning session in Tokyo already carries
   // tomorrow's date by the server's UTC clock. Its `end` is on the clock the review is timed on.
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 } } });
+  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 }, cadenceFor: 'fixture|' } });
   S.workouts.push({ ...newWorkout('w-ahead'), d: tomorrow, start: Date.now() - 45 * 60000, end: Date.now() - 60000 });
   writeState(DIR, uid, S);
   const tick = captureTick({ users: () => [{ id: uid }], userNow: () => ({ date: today, hhmm: '18:00', weekday: 4 }) });
@@ -213,7 +213,7 @@ test('a workout the phone dated tomorrow is not re-read once the review has cove
 
 test('an answer the model was paid for counts as the review, even when it was unusable', async () => {
   const uid = 'u-cadence-unusable';
-  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 } } });
+  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 }, cadenceFor: 'fixture|' } });
   writeState(DIR, uid, S);
   const tick = captureTick({ users: () => [{ id: uid }], userNow: () => ({ date: today, hhmm: '18:00', weekday: 4 }) });
   process.env.FIXTURE_MODE = 'invalid';
@@ -243,7 +243,7 @@ test('an answer the model was paid for counts as the review, even when it was un
 
 test('a proposal nobody has answered is not replaced by the next scheduled review', async () => {
   const uid = 'u-cadence-pending';
-  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 } } });
+  const S = sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 }, cadenceFor: 'fixture|' } });
   writeState(DIR, uid, S);
   const tick = captureTick({ users: () => [{ id: uid }], userNow: () => ({ date: today, hhmm: '18:00', weekday: 4 }) });
 
@@ -282,4 +282,19 @@ test('a rejected answer tells the admin which rule broke, without quoting the pl
   const why = whyUnusable(['routines[0].ex[1].id "0009" needs equipment the user does not have', 'routines[1].name is required']);
   assert.ok(why.includes('needs equipment') && why.includes('routines[1].name is required'));
   assert.ok(!why.includes('0009'), 'quoted values are cut out');
+});
+
+test('automatic reviews pause when the provider or host they were agreed for has changed', () => {
+  const uid = 'u-cadence-target';
+  const tick = captureTick({ users: () => [{ id: uid }], userNow: () => ({ date: today, hhmm: '18:00', weekday: 4 }) });
+  // Switched on while the server sent reviews to OpenAI; the admin has since pointed it elsewhere
+  // (here the test fixture). Nothing goes to the new provider until the member says yes to it.
+  writeState(DIR, uid, sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 }, cadenceFor: 'openai|api.openai.com' } }));
+  tick();
+  assert.equal(jobs.status(uid).job, null, 'agreed for another provider');
+  // Switched on before the target was kept: nobody knows what was agreed to, so the app asks first.
+  writeState(DIR, uid, sampleState({ coach: { ...sampleState().coach, cadence: { everyWorkouts: 1 } } }));
+  tick();
+  assert.equal(jobs.status(uid).job, null, 'no target kept');
+  assert.equal(jobs.readUser(uid).history.length, 0);
 });
