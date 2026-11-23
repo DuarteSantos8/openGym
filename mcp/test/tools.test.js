@@ -1147,6 +1147,15 @@ describe('preview_session', () => {
     expect(e.changed).toContain('reps')
   })
 
+  test('a skill ladder\'s first session opens at the bottom of the range, and says the policy set it (#1436)', () => {
+    only({ id: '0662', sets: 3, reps: 12, repsMin: 5, weight: 0, bodyweight: true, prog: 'ladder' })
+    const e = call('preview_session').exercises[0]
+    expect(e.prescription.kind).toBe('first')
+    expect(e.opening_sets.map(s => s.r)).toEqual([5, 5, 5])
+    expect(e.reps_source).toBe('progression')
+    expect(e.changed).toContain('reps')
+  })
+
   test('the weight comes from this routine\'s own last session, not another routine\'s (#216)', () => {
     only({ id: '0025', sets: 2, reps: 10, weight: 60 }, {
       workouts: [

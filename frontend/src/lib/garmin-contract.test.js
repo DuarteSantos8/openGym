@@ -216,6 +216,33 @@ describe('the ids both ends find each other by', () => {
   })
 })
 
+// Battery: nothing Monkey C can run here, so these read the source for the three places that kept
+// the heart-rate sensor, the recording or the redraw running with no workout on the watch.
+describe('the watch rests when there is no workout', () => {
+  const actions = mc('Actions.mc')
+  const body = (src, name) => src.match(new RegExp(`function ${name}\\([^)]*\\)[^{]*\\{([\\s\\S]*?)\\n    \\}`))[1]
+
+  it('a workout discarded on the phone stops the recording and the sensor', () => {
+    // the branch of onPhone with no workout left and no summary: it ends what the watch had running
+    expect(has(body(app, 'onPhone'), /else if \(G\.state\["w"\] == null\) \{\s*if \(had != null\) \{\s*Workout\.end\(false\);\s*Workout\.hrTotals\(\);\s*\}\s*Actions\.reset\(\);/)).toBe(true)
+    // Workout.end turns the sensor off when no workout is left
+    expect(has(body(app, 'end'), /G\.state\["w"\] == null && \(Sensor has :setEnabledSensors\)\) \{\s*Sensor\.setEnabledSensors\(\[\]\)/)).toBe(true)
+  })
+
+  it('cancelling the 3-2-1 turns the sensor it warmed up off, unless a workout runs', () => {
+    expect(has(body(actions, 'cancelStart'), /G\.state\["w"\] == null && \(Sensor has :setEnabledSensors\)\) \{\s*Sensor\.setEnabledSensors\(\[\]\)/)).toBe(true)
+  })
+
+  it('the 1 s tick draws in a workout and, without one, when the minute or the heart rate moves', () => {
+    const tick = body(app, 'onTick')
+    expect(has(tick, /var draw = G\.state\["w"\] != null \|\| min != _min \|\| G\.bpm != _bpm;/)).toBe(true)
+    expect(has(tick, /if \(draw\) \{\s*WatchUi\.requestUpdate\(\);\s*\}/)).toBe(true)
+    // no other unconditional redraw in the tick, and Link.sent now asks for its own (the sync line)
+    expect(tick.match(/requestUpdate/g).length).toBe(1)
+    expect(has(body(app, 'sent'), /flush\(\);\s*WatchUi\.requestUpdate\(\);/)).toBe(true)
+  })
+})
+
 describe('the iPhone app is set up for Garmin Connect', () => {
   const plist = read('ios', 'App', 'App', 'Info.plist')
   const scheme = swift.match(/static let urlScheme = "([a-z-]+)"/)[1]

@@ -361,7 +361,7 @@ struct OverviewRowView: View {
                 .stroke(row.current ? accent : Theme.surface2, lineWidth: row.current ? 1.5 : (dimmed ? 1 : 0)))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         // Not while a hold runs: its seconds belong to the exercise on the set page.
         .disabled(store.holdEndsAt != nil)
         .accessibilityElement(children: .ignore)

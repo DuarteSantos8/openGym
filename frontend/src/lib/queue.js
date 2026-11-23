@@ -26,9 +26,13 @@
 // session: on its day it is the day's session (the weekday's own routines ride along, as on any
 // queue day — effectiveRoutineIds in history.js), on every other day from today on the floating
 // rule skips it, and once it is done — on its day or early — the pin is fulfilled and reads as no
-// override. A pin on a past date is stale: the session floats again. Pins change which session
-// is NEXT, never what counts as DONE, so weekTally, the reminders' tally and whatever a planner
-// reads back are untouched.
+// override. A pin on a past date is stale: the session floats again. A pin dated today or later
+// on a session the pass already counts done is not fulfilled by that alone: the day trains what
+// was picked for it, unless that routine was trained in the pin's own calendar week (the
+// profile's week start), on or before its day. Such a pin is not an active pin for the floating
+// rule (the pass has nothing left of it to skip); it is read through pinState with the pin's date.
+// Pins change which session is NEXT, never what counts as DONE, so weekTally, the reminders'
+// tally and whatever a planner reads back are untouched.
 //
 // DONE RULE — kept word for word with the api's reminder copy (api/queue.js), and the rule a
 // planner has to mirror, so nobody disagrees about which session is next: a session is done
@@ -145,14 +149,20 @@ export function queueLiveOn(S, iso, today) {
 }
 
 /**
- * What a per-date override pointing at `id` means for the queue as of `today`: 'open' — a pin on
- * a session still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be
- * read as no override; null — not a queue session (or no queue), the plain override rules apply.
+ * What a per-date override pointing at `id` on the date `iso` means for the queue as of `today`:
+ * 'open': the day trains the session (a session still to do, skipped elsewhere; or one the pass
+ * already did, picked again for a day from today on). 'done': a fulfilled pin, to be read as no
+ * override. null: not a queue session (or no queue), the plain override rules apply. Without
+ * `iso` a done session's pin is fulfilled, the rule for a pin before today.
  */
-export function pinState(S, id, today = todayISO()) {
+export function pinState(S, id, today = todayISO(), iso) {
   const q = queueOf(S)
   if (!q || !id || !q.ids.includes(id)) return null
-  return isDone(S, q, id, today) ? 'done' : 'open'
+  if (!isDone(S, q, id, today)) return 'open'
+  if (!iso || iso < today) return 'done'
+  // Planned for today or later: fulfilled only by training it in that day's own week, up to the day.
+  const from = weekKey(iso, weekStartOf(S))
+  return S.workouts.some(w => String(w.d || '') >= from && String(w.d || '') <= iso && routineIdsOf(w).includes(id)) ? 'done' : 'open'
 }
 
 /**

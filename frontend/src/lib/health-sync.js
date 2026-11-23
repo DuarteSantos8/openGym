@@ -352,7 +352,8 @@ async function readOnce(getState, force, now, applyFn) {
   if (!p) return cached
   const src = srcOf(p.platform)
   const every = force ? RESUME_EVERY_MS : READ_EVERY_MS
-  let h = { ...(await loadHealth()) }
+  const was = await loadHealth()
+  let h = { ...was }
   let error = null
   // `decide` runs on a copy first: an update that changes nothing would still stamp and push.
   const apply = (decide, fn = decide) => {
@@ -452,7 +453,10 @@ async function readOnce(getState, force, now, applyFn) {
   }
 
   h.readError = error
-  await saveHealth(h)
-  told(h)
+  // A pass runs on every save, a set tick included: one that found nothing new writes no file.
+  if (Object.keys(h).some(k => h[k] !== was[k] && JSON.stringify(h[k]) !== JSON.stringify(was[k]))) {
+    await saveHealth(h)
+    told(h)
+  }
   return h
 }

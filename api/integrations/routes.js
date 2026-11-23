@@ -9,7 +9,7 @@ export function integrationRoutes({ json, readBody, readSession, hub, audit = ()
   // redirects, the second back to Settings → Integrations with how it went in the query.
   const base = String(origin).replace(/\/$/, '');
   const callbackUrl = base + '/api/integrations/oauth/callback';
-  const back = (res, q) => { res.writeHead(302, { Location: base + '/settings/integrations?' + new URLSearchParams(q).toString(), 'Cache-Control': 'no-store' }); res.end(); };
+  const back = (res, q) => { res.writeHead(302, { Location: base + '/#/settings/integrations?' + new URLSearchParams(q).toString(), 'Cache-Control': 'no-store' }); res.end(); };
   // A refusal the hub throws ({ status, code, message }) is the caller's to read, never a 500.
   const guard = fn => async (req, res) => {
     const user = readSession(req);

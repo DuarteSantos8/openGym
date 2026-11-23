@@ -2059,7 +2059,7 @@ export const PT_BR_OVERRIDES = {
   'Tap to plan something': 'Toque para planejar algo',
   'Drag to reorder': 'Arraste para reordenar',
   'Drag to reorder. Tap the minus to delete.': 'Arraste para reordenar. Toque no sinal de menos para excluir.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Toque em uma rotina para editar. Reordenar e excluir ficam em Editar.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Toque em uma rotina para editar ou segure para mover. Excluir fica em Editar.",
   'Pick one routine, or more to train them together.': 'Escolha uma rotina, ou várias para treinar juntas.',
   'Planned sets per week, from your plan.': 'Séries planejadas por semana, a partir do seu plano.',
   // --- Settings (v1.3.11) ---
@@ -4327,7 +4327,8 @@ export const PT_BR_OVERRIDES = {
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
   // Arrange your own Home and Stats (#1119)
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. As setas mudam a ordem.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. Toque e segure um cartão para movê-lo.",
+  "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

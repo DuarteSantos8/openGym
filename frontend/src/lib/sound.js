@@ -190,6 +190,19 @@ export function chime(enabled, kind) {
 
 // Call from inside a tap. Gets the context created and running while the browser still counts
 // this as a user gesture; it goes back to sleep on its own. Nothing audible.
+/**
+ * Makes the audio context ahead of the first tone, while the phone is idle (review 1.4.6: the
+ * first set ticked in a session took a quarter second longer on a slow phone, most of it the
+ * context being made inside the tap). It starts suspended, as any context made outside a tap
+ * does; unlock() on the first tap resumes it as before. Nothing plays and nothing is asked of
+ * the phone's audio session until then.
+ */
+export function prepareAudio(enabled) {
+  if (!enabled || typeof window === 'undefined' || !(window.AudioContext || window.webkitAudioContext)) return
+  const idle = window.requestIdleCallback || (fn => setTimeout(fn, 200))
+  idle(() => { try { if (!audioCtx || audioCtx.state === 'closed') ctxFor() } catch (e) { /* */ } })
+}
+
 export function unlock(enabled) {
   if (!enabled) return
   try { wake(); sleepAfter(0) } catch (e) { /* */ }
@@ -199,8 +212,10 @@ export function unlock(enabled) {
 // a WebKit with the audio-session API (iOS 17+) on a device that has a ring/silent switch or its
 // Control Centre equivalent — iPhone, or an iPad (which reports itself as a Mac with a touch
 // screen). macOS Safari has the API but no switch, and other browsers have neither.
-// 'playback' ignores the switch; 'auto' is the browser's own choice (Ambient for a page like
-// this one). Applied by App.jsx whenever the setting is loaded or changed.
+// 'playback' ignores the switch (and pauses other apps' music); 'ambient' (falling back to 'auto'
+// if unsupported) mixes with background audio while keeping to the switch. WebKit sets no ducking
+// option for web pages on iOS, so timer tones cannot duck other apps' audio. Applied by App.jsx
+// whenever the setting is loaded or changed.
 export const playOnSilentSupported = () => {
   if (typeof navigator === 'undefined' || !navigator.audioSession) return false
   return appleTouchDevice()
@@ -215,7 +230,9 @@ export const appleTouchDevice = () => {
 // In the iPhone app the page never takes 'playback' (Discord, baodor: "the app pauses my music").
 // The end of a rest rings natively there (RestAlertPlugin.swift tone), which can play through the
 // switch and only turns the music down for a moment, so the page stays 'ambient': it mixes with
-// whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch.
+// whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch. In Safari
+// and PWAs when "play on silent" is off, 'ambient' avoids WebKit promoting 'auto' to 'playback'
+// (mixing without interrupting music; ducking is unavailable to web pages on iOS).
 const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
   // In the app any WebKit with the API stays 'ambient', whatever it says it is (an iPad, a Mac).
@@ -224,7 +241,14 @@ export function setPlayOnSilent(on) {
     return
   }
   if (!playOnSilentSupported()) return
-  try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
+  const target = !inApp() && on ? 'playback' : 'ambient'
+  try {
+    navigator.audioSession.type = target
+  } catch (e) {
+    if (target === 'ambient') {
+      try { navigator.audioSession.type = 'auto' } catch (e2) { /* */ }
+    }
+  }
 }
 
 // Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set

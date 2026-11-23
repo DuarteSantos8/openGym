@@ -6,7 +6,7 @@ import App from './App.jsx'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 
-vi.mock('./lib/sound.js', () => ({
+vi.mock('./lib/sound.js', () => ({ prepareAudio: vi.fn(),
   setPlayOnSilent: vi.fn(), setVibrate: vi.fn(), setAlarmBuzzer: vi.fn(),
   beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(),
 }))

@@ -6,7 +6,7 @@ import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
@@ -95,7 +95,7 @@ import { savedEntryRecords, repRecordTable, liveRecordsOn } from './lib/set-reco
 import { RecordBadge } from './components/SetRecord.jsx'
 import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { reopenRecord, saveReopen, readReopen, canReopen, applyReopen } from './lib/forgotten-workout.js'
-import { refillAfter } from './lib/rotation.js'
+import { refillAfter, restartOnRedo } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork, isSideSet } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
@@ -1728,14 +1728,20 @@ function ExerciseHistory({ exId }) {
     <FormVideosSection exId={exId} />
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
-      {h.sessions.map(s => <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>
-        <div className="grow">
-          <div className="tt">{fmtDate(s.d, true)} {s.pr && <span className="pr"><Icon name="trophy" />PR</span>}</div>
-          <div className="ss">{(recs => s.sets.map((x, j) => <Fragment key={j}>{j > 0 && '  ·  '}{setLabel(exId, x, s.target, speedUnitOf(st))}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(exId)} />}</Fragment>))(recsOf(s))}</div>
-          {tail(s) && <div className="small dim" style={{ marginTop: 3 }}>{tail(s)}</div>}
+      {h.sessions.map(s => {
+        const recs = recsOf(s)
+        // The session badge summarizes the same records as its set trophies. Keep the
+        // metric-based marker for modes without set records and when they are turned off.
+        const pr = liveRecordsOn(st) && s.mode === 'reps' ? recs.some(kinds => kinds.length > 0) : s.pr
+        return <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>
+          <div className="grow">
+            <div className="tt">{fmtDate(s.d, true)} {pr && <span className="pr"><Icon name="trophy" />PR</span>}</div>
+            <div className="ss">{s.sets.map((x, j) => <Fragment key={j}>{j > 0 && '  ·  '}{setLabel(exId, x, s.target, speedUnitOf(st))}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(exId)} />}</Fragment>)}</div>
+            {tail(s) && <div className="small dim" style={{ marginTop: 3 }}>{tail(s)}</div>}
+          </div>
+          {s.value != null && s.value > 0 && <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(s.value)} {unit}</b>}
         </div>
-        {s.value != null && s.value > 0 && <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(s.value)} {unit}</b>}
-      </div>)}
+      })}
     </div>
   </>
 }
@@ -2043,6 +2049,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   const onSearchFocus = useSheetKeyboard(searchRef)
   const moreRef = useAutoMore(() => setShown(s => s + 50))
   const all = allExercises(st).filter(e => e.id !== like)
+  // The search words, built while the phone is idle before the first letter (review 1.4.6).
+  useEffect(() => { warmSearch(all) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const gymS = gym == null ? st : { ...st, equipFilterOn: !!gym, activeEquipId: gym || st.activeEquipId }
   const profile = activeProfile(gymS)
   const profiles = st.equipProfiles || []
@@ -2751,7 +2759,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         reps = range.reps
       }
       // The bands each set starts with (lib/bands.js), only on a band exercise and only when picked.
-      const planBands = bandsOn && !perSide ? setBandsOf({ bands: c.bands }) : []
+      const planBands = bandsOn ? setBandsOf({ bands: c.bands }) : []
       const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs, ...(planBands.length ? { bands: planBands } : {}) }
       const tempo = normalizeTempo(c.tempo)
       if (tempo) out.tempo = tempo
@@ -3049,7 +3057,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         subtitle={bandsOn ? t('Each set gets band chips. Pick the ones it starts with below.') : t('Pick the band colour per set, "15 × Red".')}>
         <Switch checked={bandsOn} onChange={setBandsOn} />
       </Row>}
-      {bandsOn && !perSide && <div style={{ padding: '4px 12px 10px' }}>
+      {bandsOn && <div style={{ padding: '4px 12px 10px' }}>
         <BandChips className="plan" label={t('Bands every set starts with')} value={setBandsOf({ bands: c.bands })}
           onToggle={id => setC(x => ({ ...x, bands: toggleSetBand({ bands: x.bands }, id).bands }))} />
       </div>}
@@ -3383,7 +3391,7 @@ function DayOverride({ iso, close }) {
   const hasOvr = st.dayPlan[iso] !== undefined
   // A fulfilled pin (a coach session pinned here and since done) reads as no override, as it does
   // everywhere else — the row to clear the leftover entry stays.
-  const changed = hasOvr && pinState(st, st.dayPlan[iso]) !== 'done'
+  const changed = hasOvr && pinState(st, st.dayPlan[iso], todayISO(), iso) !== 'done'
   // The plan the day would have without its override — the weekday's routines, and in a coach
   // week the queue's session for the day in front of them, same as the Home row shows.
   const { [iso]: _ovr, ...noOvr } = st.dayPlan
@@ -3915,7 +3923,7 @@ function Calendar({ start, close, help = false }) {
   for (let d = 1; d <= daysIn; d++) {
     const iso = y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0')
     // A fulfilled pin (a coach session pinned here and since done) reads as no override, as it does everywhere else.
-    const ws = byDay[iso], planned = effectiveRoutineIds(st, iso).length > 0, ovr = st.dayPlan[iso] !== undefined && pinState(st, st.dayPlan[iso]) !== 'done'
+    const ws = byDay[iso], planned = effectiveRoutineIds(st, iso).length > 0, ovr = st.dayPlan[iso] !== undefined && pinState(st, st.dayPlan[iso], todayISO(), iso) !== 'done'
     // A day off with a note on it (#261) shows the note's dot instead of the plan's, and its
     // note as the tooltip; tapping it opens the day sheet, where the note is.
     const note = !ws && dayNoteOf(st, iso)
@@ -4821,6 +4829,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
     s.active = null
     // A rotation pass this app manages starts its next pass the moment the last session lands
     // (lib/rotation.js). A planner's queue is left alone: it completes and waits for its writer.
+    // A session redone first starts the pass over from it.
+    restartOnRedo(s, w)
     refillAfter(s, w)
   })
   useStore.getState().autoBackupNow()

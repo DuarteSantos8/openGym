@@ -37,10 +37,12 @@ struct RestView: View {
                 HStack(spacing: 4) {
                     if store.lastLogged != nil {
                         Button { store.fixLast() } label: {
+                            // The glass inside the button: the whole circle takes the tap and shows the press.
                             Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold)).frame(width: 34, height: 34)
+                                .glass(Circle(), fill: Theme.surface, dimmed: false)
+                                .contentShape(Circle())
                         }
-                        .buttonStyle(.plain)
-                        .glass(Circle(), fill: Theme.surface, dimmed: false)
+                        .buttonStyle(PressStyle())
                         .opacity(dimmed ? 0 : 1)
                         .accessibilityLabel(Text("Back"))
                     }
@@ -98,6 +100,9 @@ struct RestView: View {
                 // Always On hides the chips but keeps their place, so the screen is the same one
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
+                        // In from the edges like the ±15 row: on a 42 mm Series 12 the 0 and 3+ chips ran
+                        // under the display's rounded edge (fine in a screenshot, cut on the wrist).
+                        .padding(.horizontal, 4)
                 }
                 if store.show.showNext { upNext(roomy: roomy, name: true, bigCase: g.size.height >= Self.roomyHeight).padding(.top, 2) }
             }
@@ -167,7 +172,7 @@ struct RestView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 4)
+            .padding(.horizontal, 4) // trailing too: the workout time sat on the right edge (42 mm Series 12)
         }
     }
 }
@@ -229,6 +234,7 @@ struct OutlineCapsule: ButtonStyle {
             .glass(Capsule(), fill: configuration.isPressed ? Theme.surface2 : Color.clear, dimmed: false)
             .overlay(Capsule().strokeBorder(.white.opacity(Theme.hasGlass ? 0 : 0.5), lineWidth: 1.5))
             .contentShape(Capsule())
+            .opacity(configuration.isPressed && Theme.hasGlass ? 0.6 : 1)   // the glass ignores `fill`: the press shows here
     }
 }
 
@@ -267,8 +273,9 @@ struct EffortChips: View {
                 .padding(.horizontal, 10)
                 .frame(minHeight: tall ? 38 : 34)
                 .glass(Capsule(), tint: Effort.color(kind, rated).opacity(0.35), fill: Effort.color(kind, rated).opacity(0.18), dimmed: false)
+                .contentShape(Capsule())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressStyle())
             .accessibilityLabel(Text("Effort"))
             .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, rated))"))
             .accessibilityHint(Text("Tap to change it."))

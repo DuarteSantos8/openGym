@@ -72,14 +72,14 @@ test('the sign-in start sends a signed-in browser to Strava, anyone else back to
   assert.ok(to.searchParams.get('state'));
   const anon = await go(h, '/api/integrations/oauth/start?provider=strava');
   assert.equal(anon.status, 302);
-  assert.equal(anon.headers.get('location'), 'https://gym.example.com/settings/integrations?intg=strava&error=signin');
+  assert.equal(anon.headers.get('location'), 'https://gym.example.com/#/settings/integrations?intg=strava&error=signin');
 });
 
 test('a callback that is not ours, or a refusal, goes back with the reason', async t => {
   const h = await startServer(t, STRAVA);
   const bad = await go(h, '/api/integrations/oauth/callback?state=nope&code=x&scope=activity:write', page('u_t_1'));
   assert.equal(bad.status, 302);
-  assert.equal(bad.headers.get('location'), 'https://gym.example.com/settings/integrations?intg=strava&error=state');
+  assert.equal(bad.headers.get('location'), 'https://gym.example.com/#/settings/integrations?intg=strava&error=state');
   // a real state, but the person said no on Strava's page
   const r = await go(h, '/api/integrations/oauth/start?provider=strava', page('u_t_1'));
   const state = new URL(r.headers.get('location')).searchParams.get('state');

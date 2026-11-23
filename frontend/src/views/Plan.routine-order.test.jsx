@@ -145,3 +145,50 @@ describe('routine order', () => {
     expect(nav).toHaveBeenCalledWith('/plan/r/' + created.id)
   })
 })
+
+// 1.4.6 (owner, 2026-11-23: "why not just hold to move? and keep the Edit button too"): outside
+// Edit a hold on a routine moves it like every list in the app; a tap still opens it, and the
+// release of a hold opens nothing.
+describe('hold to move, outside Edit', () => {
+  const wrappers = () => [...host.querySelectorAll('.plan-routines [data-reorder-row]')]
+  const layOutRows = () => wrappers().forEach((row, i) => {
+    row.getBoundingClientRect = () => ({ top: i * 68, bottom: i * 68 + 60, height: 60, left: 0, right: 300, width: 300 })
+  })
+  const at = (el, type, y) => act(() => { el.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 4, button: 0, clientX: 40, clientY: y })) })
+
+  it('a hold lifts the routine, dragging it down two places moves it there, and the release is no tap', () => {
+    vi.useFakeTimers()
+    try {
+      mount()
+      layOutRows()
+      const row = rows()[0]
+      at(row, 'pointerdown', 30)
+      act(() => vi.advanceTimersByTime(400))
+      expect(wrappers()[0].hasAttribute('data-held')).toBe(true)
+      at(row, 'pointermove', 30 + 150)
+      at(row, 'pointerup', 30 + 150)
+      click(row)
+      expect(stored()).toEqual(['Pull A', 'Legs A', 'Push A'])
+      expect(nav).not.toHaveBeenCalled()
+      expect(host.querySelector('[data-held]')).toBe(null)
+    } finally { vi.useRealTimers() }
+  })
+
+  it('a short tap still opens the routine, and a finger that moves first scrolls instead', () => {
+    vi.useFakeTimers()
+    try {
+      mount()
+      layOutRows()
+      const row = rows()[1]
+      at(row, 'pointerdown', 100)
+      at(row, 'pointermove', 125)
+      act(() => vi.advanceTimersByTime(400))
+      expect(host.querySelector('[data-held]')).toBe(null)
+      at(row, 'pointerup', 125)
+      vi.advanceTimersByTime(500)
+      click(row)
+      expect(nav).toHaveBeenCalledWith('/plan/r/b')
+      expect(stored()).toEqual(['Push A', 'Pull A', 'Legs A'])
+    } finally { vi.useRealTimers() }
+  })
+})

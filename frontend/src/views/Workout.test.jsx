@@ -2437,6 +2437,13 @@ describe('the plan line', () => {
     expect(line()).toBe('Plan: 2 × 10')
   })
 
+  it('leads the same row as the muscle and equipment pills', async () => {
+    await mount([{ ...planned(), id: '0025' }])   // a real exercise, so it has muscle and equipment pills
+    const row = container.querySelector('.planline').parentElement
+    expect(row.firstElementChild).toBe(container.querySelector('.planline'))
+    expect(row.querySelectorAll('.tag').length).toBeGreaterThan(0)
+  })
+
   it('says when progression moved the sets or reps', async () => {
     await mount([planned({ target: { mode: 'reps', sets: 3, reps: 10, weight: 0, bodyweight: true } })])
     expect(line()).toBe('Plan: 2 × 10 · today 3 × 10')
@@ -3017,7 +3024,8 @@ describe('workout controls: the more menu and the set menu', () => {
     expect(mocks.S.active.cur).toBe(1)
     await unmount()
     mocks.timer = null
-    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0)
+    // weighted work with "Next exercise when the rest ends" switched off stays where it is
+    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: false })
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 124 }
     await rerender()
     expect(mocks.S.active.cur).toBe(0)
@@ -3025,8 +3033,9 @@ describe('workout controls: the more menu and the set menu', () => {
   })
 
   // #1017: "Next exercise when the rest ends" does the same for weighted work, not mid-superset.
-  it('with next exercise when the rest ends on, weighted work moves on too; a running rest or the last exercise does not', async () => {
-    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: true })
+  // On unless switched off (#1149): lifters expect the app to move on after the last set.
+  it('by default weighted work moves on too; a running rest or the last exercise does not', async () => {
+    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0)
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 125 }
     await rerender()
     expect(mocks.S.active.cur).toBe(1)

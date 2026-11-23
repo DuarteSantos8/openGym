@@ -26,7 +26,11 @@ COPY frontend/ ./
 ARG APP_BUILD=""
 RUN APP_BUILD="$APP_BUILD" npm run build
 
-FROM nginxinc/nginx-unprivileged:1-alpine
+# nginx/nginx-unprivileged, not nginxinc/: upstream moved its Docker Hub repository in October 2026
+# (nginxinc/docker-nginx-unprivileged#428) and stopped pushing to the old name at 1.31.7, so
+# the old name never got 1.31.9 and the fixes in it (https://nginx.org/en/CHANGES). Same image,
+# same Dockerfiles, same uid 101 layout. Dependabot and Renovate do not follow a renamed image.
+FROM nginx/nginx-unprivileged:1-alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
 # The base's last instruction is USER 101, and apk then exits 99 — it cannot open its log as
 # that user. Upgrade as root, then switch back. 101 has to be the last USER in this file so
@@ -79,6 +83,10 @@ COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 USER root
 COPY --chmod=755 web/05-check-base-path.sh /docker-entrypoint.d/
 RUN sed -i 's/\r$//' /docker-entrypoint.d/05-check-base-path.sh
+# Listens on IPv6 too: the base image's script for that runs before the template is rendered (20)
+# and loses its line, so this one (30) adds it back after.
+COPY --chmod=755 web/30-listen-on-ipv6.sh /docker-entrypoint.d/
+RUN sed -i 's/\r$//' /docker-entrypoint.d/30-listen-on-ipv6.sh
 USER 101
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
@@ -122,8 +130,8 @@ ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-G6hve
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as
-# 127.0.0.1: envsubst rewrites the conf after the image's IPv6 script, so nginx ends up
-# listening on IPv4 only while "localhost" resolves to ::1 first.
+# 127.0.0.1: "localhost" resolves to ::1 first, and on a host without IPv6 nginx listens on
+# IPv4 only (30-listen-on-ipv6.sh).
 # Every 30 s, so a fresh container reads "healthy" half a minute after it starts instead of after
 # five (TrueNAS and Portainer wait for it before they call the app running, #844).
 # wget is BusyBox's, already in the Alpine image, so nothing is added for it.

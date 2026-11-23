@@ -114,6 +114,17 @@ public class GymReminderRulesTest {
     }
 
     @Test
+    public void theWorkoutStartArrivesWhateverItsNumberType() {
+        // A millisecond timestamp is past the int range: the page's start time reaches the
+        // plugin as a Long, which getDouble dropped, so a leave never asked (#1332).
+        assertEquals(1794903630123L, GymReminderRules.millis(1794903630123L));
+        assertEquals(1794903630123L, GymReminderRules.millis(1794903630123.0));
+        assertEquals(42L, GymReminderRules.millis(42));
+        assertEquals(0L, GymReminderRules.millis(null));
+        assertEquals(0L, GymReminderRules.millis("1794903630123"));
+    }
+
+    @Test
     public void onlyPlacesOnEarthAreWatched() {
         // LocationManager throws IllegalArgumentException for any other (v1.4.5).
         assertTrue(GymReminderRules.validPlace(47.37, 8.54));

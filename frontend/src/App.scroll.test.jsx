@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.jsx'
 import { DEF, useStore } from './store/useStore.js'
 
-vi.mock('./lib/sound.js', () => ({ setPlayOnSilent: vi.fn(), setVibrate: vi.fn(), setAlarmBuzzer: vi.fn() }))
+vi.mock('./lib/sound.js', () => ({ prepareAudio: vi.fn(), setPlayOnSilent: vi.fn(), setVibrate: vi.fn(), setAlarmBuzzer: vi.fn() }))
 vi.mock('./lib/api.js', async importOriginal => {
   const actual = await importOriginal()
   return { ...actual, api: vi.fn(() => Promise.resolve({})), beacon: vi.fn() }

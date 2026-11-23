@@ -447,6 +447,8 @@ jobs:
           docker run -d --name web --network og -p 8080:80 opengym-web:ci
           for i in $(seq 1 30); do curl -fsS http://localhost:8080/ >/dev/null 2>&1 && break; sleep 1; done
           curl -fsS http://localhost:8080/ | grep -q 'id="root"'
+          # 30-listen-on-ipv6.sh: nginx listens on IPv6 too, not only on the rendered IPv4 line
+          docker exec web grep -q 'listen \[::\]:80;' /etc/nginx/conf.d/default.conf
           curl -fsS http://localhost:8080/api/config | grep -q '"invite_only"'
           # Without the mcp container, /mcp says so in JSON instead of nginx's 502 page.
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/mcp)" = 503

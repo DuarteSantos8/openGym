@@ -928,7 +928,7 @@ export const LADDER_BOTTOM = 5
 function ladderPrescription(S, cfg, last, policy) {
   const range = normalizeRepRange(cfg.reps || LADDER_TOP, cfg.repsMin ?? Math.min(LADDER_BOTTOM, Math.max(1, (cfg.reps || LADDER_TOP) - 1)), 1)
   const weight = last && last.weight > 0 ? { weight: last.weight } : {}
-  if (!last) return { policy, kind: 'first', reps: range.repsMin, why: ['Nothing logged yet, so this session sets the baseline.'] }
+  if (!last) return { policy, kind: 'first', reps: range.repsMin, rowReps: Array(Math.max(1, cfg.sets || 1)).fill(range.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
   const goal = Math.max(range.repsMin, Math.min(range.reps, last.goal || range.repsMin))
   if (!last.ok) return { policy, kind: 'hold', ...weight, reps: goal, why: ['Not every set made {0} yet. Same again.', goal] }
   if (goal >= range.reps) {

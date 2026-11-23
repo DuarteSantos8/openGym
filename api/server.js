@@ -2782,6 +2782,8 @@ const routes = {
     // Every scoped token ends with the sessions (its version would stop matching anyway); gone
     // from the list too, so Settings shows what still works.
     for (const r of revokeTokens(db, user.id)) logToken(user.id, 'token.end', r);
+    // A lost or shared device stops getting this account's reminders and rest alerts too.
+    db.subs = db.subs.filter(s => s.userId !== user.id);
     saveDb();
     audit(req, 'auth.logout.all', { user });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
@@ -2952,6 +2954,8 @@ const routes = {
     const link = watchLinkFor(req);
     if (!link) return json(res, 401, { error: 'not paired', code: 'watch-unpaired' });
     const body = await readBody(req);
+    // Awaited: the account (and with it this link) may be gone, and its mailbox must stay gone.
+    if (!watchLinkFor(req)) return json(res, 401, { error: 'not paired', code: 'watch-unpaired' });
     const box = readBox(link.userId);
     const accepted = pushEvents(box, body.events);
     if (accepted.length) writeBox(link.userId, box);
@@ -3178,6 +3182,9 @@ const routes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
+    // The upload awaited: the account may have been deleted meanwhile (removeAccount), and a write
+    // now would put its whole history back on disk with no profile left to remove it.
+    if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     // An object with nothing of the profile in it empties the document with the counter left
     // intact: what lands on disk is `{"_rev":n+1}`, every routine, workout and weigh-in gone, and

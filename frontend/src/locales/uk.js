@@ -2146,7 +2146,7 @@ export default {
   'Tap to plan something': 'Натисни, щоб щось запланувати',
   'Drag to reorder': 'Перетягни, щоб змінити порядок',
   'Drag to reorder. Tap the minus to delete.': 'Перетягни, щоб змінити порядок. Натисни мінус, щоб видалити.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Натисни на програму, щоб змінити її. Порядок і видалення в розділі Змінити.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Натисни на програму, щоб змінити її, або утримуй, щоб перемістити. Видалення в розділі Змінити.",
   'Pick one routine, or more to train them together.': 'Вибери одну програму або кілька, щоб робити їх разом.',
   'Planned sets per week, from your plan.': 'Заплановані підходи на тиждень за твоїм планом.',
   // --- Settings (v1.3.11) ---
@@ -5899,5 +5899,6 @@ export default {
   "Collapsed": "Згорнута",
   "Hide": "Сховати",
   "Totals": "Підсумки",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Стрілки змінюють порядок.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Утримуйте картку, щоб перемістити її.",
+  "Shows up when there is something to show": "З’явиться, коли буде що показати",
 }

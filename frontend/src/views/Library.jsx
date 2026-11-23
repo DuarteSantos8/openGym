@@ -1,9 +1,9 @@
 import { laddersSheet } from '../components/Ladders.jsx'
-import { useDeferredValue, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
+import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, warmSearch, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
@@ -41,6 +41,8 @@ export default function Library() {
   // Your own exercises, counted the way the list below shows them (allExercises puts every
   // custom entry in front of the catalogue; deleting one removes it from customEx outright).
   const ownCount = (S.customEx || []).filter(c => c && c.id).length
+  // The search words of every exercise, built while the phone is idle before the first letter.
+  useEffect(() => { warmSearch(allExercises(useStore.getState().S)) }, [])
   const inPart = searchExercises(allExercises(S).filter(e => !bp || e.bp === bp), q)
   // Kind of exercise (strength, stretching, cardio...), the same fallback as equipment below: a
   // choice the search or body part has narrowed away is ignored for now, never a dead end.

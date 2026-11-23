@@ -10,7 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const ui = vi.hoisted(() => ({ toast: null }))
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: ui.toast }) } }))
 const buzz = vi.hoisted(() => ({ vibrate: null }))
-vi.mock('../lib/sound.js', () => ({ vibrate: p => buzz.vibrate(p) }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), vibrate: p => buzz.vibrate(p) }))
 
 let host, root, reduce = false
 // Each test gets the module afresh: the spider's and the witch's "this session" live in it.

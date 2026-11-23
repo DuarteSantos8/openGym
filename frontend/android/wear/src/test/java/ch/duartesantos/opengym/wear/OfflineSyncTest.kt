@@ -309,6 +309,9 @@ class OfflineSyncTest {
         // another app records the workout already: measure only, never end its exercise
         assertTrue(HrPlan.measureOnly(1, otherAppInProgress = 1))
         assertFalse(HrPlan.measureOnly(0, 1)); assertFalse(HrPlan.measureOnly(2, 1)); assertFalse(HrPlan.measureOnly(null, 1))
+        // our own exercise with no service behind it ends; another app's, or one a service holds, never
+        assertTrue(HrPlan.stray(2, ownedInProgress = 2, serviceUp = false))
+        assertFalse(HrPlan.stray(2, 2, serviceUp = true)); assertFalse(HrPlan.stray(1, 2, false)); assertFalse(HrPlan.stray(null, 2, false))
         // the word before the clock: "Today" on any watch, "Quick check-in" only where the arc is long enough
         assertTrue(TopLine.leadFits("Today", 198)); assertFalse(TopLine.leadFits("Quick check-in", 198))
         assertTrue(TopLine.leadFits("Quick check-in", 227)); assertFalse(TopLine.leadFits("Aujourd’hui", 192))
