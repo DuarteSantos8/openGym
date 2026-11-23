@@ -154,7 +154,7 @@ describe('where set types show', () => {
 
   it('the text export lists it', () => {
     const w = { d: '2026-10-01', start: 0, end: 0, name: 'Push', entries: [{ id: 'bench', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 11, done: true, failure: true }] }] }
-    expect(workoutText(w, { unit: 'kg', nameOf: () => 'bench' })).toContain('60×8, 60×11 F')
+    expect(workoutText(w, { unit: 'kg', nameOf: () => 'bench' })).toContain('60 kg × 8, 60 kg × 11 F')
   })
 
   it('the finish summary keeps the mark on today’s sets', () => {

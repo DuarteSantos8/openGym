@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': 'Toca para planificar algo',
   'Drag to reorder': 'Arrastra para reordenar',
   'Drag to reorder. Tap the minus to delete.': 'Arrastra para reordenar. Toca el signo menos para eliminar.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Toca una rutina para editarla. Reordenar y eliminar están en Editar.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Toca una rutina para editarla o mantenla pulsada para moverla. Eliminar está en Editar.",
   'Pick one routine, or more to train them together.': 'Elige una rutina, o varias para entrenarlas juntas.',
   'Planned sets per week, from your plan.': 'Series planificadas por semana, según tu plan.',
   // --- Settings (v1.3.11) ---
@@ -5902,5 +5902,6 @@ export default {
   "Collapsed": "Plegada",
   "Hide": "Ocultar",
   "Totals": "Totales",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Las flechas cambian el orden.",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Mantén pulsada una tarjeta para moverla.",
+  "Shows up when there is something to show": "Aparece cuando hay algo que mostrar",
 }

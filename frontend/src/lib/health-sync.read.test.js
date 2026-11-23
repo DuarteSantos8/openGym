@@ -16,7 +16,7 @@ vi.mock('@capacitor/filesystem', () => ({
       if (!h.files.has(path)) throw new Error('File does not exist')
       return { data: h.files.get(path) }
     },
-    writeFile: async ({ path, data }) => { h.files.set(path, data) },
+    writeFile: async ({ path, data }) => { h.files.set(path, data); h.saves++ },
   },
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
@@ -71,7 +71,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
+  h.files.clear(); h.saves = 0; h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
   S = { unit: 'kg', workouts: [workout('w1')], bodyweight: [] }
   applied = 0
   hs = await import('./health-sync.js')
@@ -177,6 +177,21 @@ describe('weigh-ins', () => {
     expect(applied).toBe(1)
     await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
     expect(applied).toBe(1)
+  })
+
+  // A read runs on every save, a set tick included: one that found nothing new writes no file.
+  it('a pass with nothing new leaves the file alone', async () => {
+    h.weights = [rec(2, 80.4)]
+    await hs.enableRead('weight', getState, { apply })
+    const saves = h.saves
+    await hs.readHealth(getState, { now: NOW + 60e3, apply })
+    expect(h.saves).toBe(saves)
+    await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
+    expect(h.saves).toBe(saves)   // read again, the same weigh-in
+    h.weights.push(rec(1, 80.2))
+    await hs.readHealth(getState, { force: true, now: NOW + 6 * 60e3, apply })
+    expect(h.saves).toBe(saves + 1)
+    expect(file().wCursor).toBe(NOW - 3600e3)
   })
 
   // #859: the scale's weigh-in joins the typed one at its own time; the typed one is not touched.

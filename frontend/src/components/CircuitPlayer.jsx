@@ -69,7 +69,7 @@ function Ready({ S, close }) {
   const stations = stationsOf(A.entries, g.unit, cfg => modeOf(cfg))
   const cfg = { ...g.cfg, roundRest: g.roundRest }
   const len = plannedLength(cfg, stations)
-  const last = previousResult(S.workouts, { mode: g.cfg.mode, ids: stations.map(s => s.id) })
+  const last = previousResult(S.workouts, { mode: g.cfg.mode, ids: [...new Set(stations.map(s => s.id))] })
   return <div className="cp-body cp-ready">
     <div className="cp-top">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
@@ -198,9 +198,12 @@ function Running({ S, run, close }) {
       </div>
     </div>
     {/* A screen reader hears the step change, not every second. */}
-    <span className="vh" aria-live="polite">{word} {nameOf(focusSt?.id)}</span>
+    {/* A per-side hold (#1394): the side is part of the step, so it is part of the announcement. */}
+    <span className="vh" aria-live="polite">{word} {nameOf(focusSt?.id)} {focusSt?.side ? (focusSt.side === 'L' ? t('Left') : t('Right')) : ''}</span>
     <section className="cp-station" aria-label={showRest ? t('Up next') : nameOf(focusSt?.id)}>
       {showRest && <span className="cp-kicker">{t('Up next')}</span>}
+      {/* A per-side hold (#1394): which side this step is, on the work and on what comes next. */}
+      {focusSt?.side && <span className="cp-kicker">{focusSt.side === 'L' ? t('Left') : t('Right')}</span>}
       {ex && <div className="cp-media"><Media ex={ex} compact /></div>}
       <h2 className="cp-name">{nameOf(focusSt?.id)}</h2>
       {repsStation ? <div className="cp-reps">

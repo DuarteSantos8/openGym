@@ -27,7 +27,15 @@ describe('sniffKind', () => {
   it('reads HEIC and AVIF photos as input only', () => {
     expect(sniffKind(ftyp('heic'))).toMatchObject({ mime: 'image/heic', kind: 'image', input: true })
     expect(sniffKind(ftyp('mif1'))).toMatchObject({ mime: 'image/heic', input: true })
-    expect(sniffKind(ftyp('avif'))).toMatchObject({ mime: 'image/avif', input: true })
+    expect(sniffKind(ftyp('avif'))).toMatchObject({ mime: 'image/avif', input: true })  })
+
+  it('reads a HEIF photo by its compatible brands when the major brand is one nobody lists (#1268)', () => {
+    const heif = (major, compat) => box('ftyp', major, [0, 0, 0, 0], compat)
+    expect(sniffKind(heif('MiHE', 'MiHEmiafMiHBheic'))).toMatchObject({ mime: 'image/heic', input: true })
+    expect(sniffKind(heif('abcd', 'mif1miaf'))).toMatchObject({ mime: 'image/heic', input: true })
+    expect(sniffKind(heif('abcd', 'miafavif'))).toMatchObject({ mime: 'image/avif', input: true })
+    // A video or an audio file is never taken for a photo that way: only HEIF/AVIF brands count.
+    expect(sniffKind(heif('M4A ', 'M4A mp42isom'))).toBeNull()
   })
 
   it('refuses SVG, HTML, PDF, ZIP, BMP, TIFF, ICO, M4A and Matroska', () => {

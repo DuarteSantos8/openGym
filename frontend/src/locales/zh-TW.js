@@ -2142,7 +2142,7 @@ export default {
   'Tap to plan something': '點一下來安排訓練',
   'Drag to reorder': '拖曳調整順序',
   'Drag to reorder. Tap the minus to delete.': '拖曳可調整順序。點減號可刪除。',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': '點課表即可編輯。調整順序和刪除在「編輯」裡。',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "點課表即可編輯，長按即可移動。刪除在「編輯」裡。",
   'Pick one routine, or more to train them together.': '選一個課表，或選多個一起練。',
   'Planned sets per week, from your plan.': '依你的計畫，每週計畫的組數。',
   // --- Settings (v1.3.11) ---
@@ -5895,5 +5895,6 @@ export default {
   "Collapsed": "已摺疊",
   "Hide": "隱藏",
   "Totals": "總計",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "顯示常用的，摺疊很少打開的，隱藏其餘的。長按卡片即可移動。",
+  "Shows up when there is something to show": "有內容時才會顯示",
 }

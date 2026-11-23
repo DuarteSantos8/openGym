@@ -511,6 +511,25 @@ export function matchExercise(e, query) {
   return matchTokens(e, tokens, new Set(tokens))
 }
 
+/**
+ * Builds the search words of `list` ahead of the first keystroke (review 1.4.6: on a slow phone
+ * the first letter typed in Library or the exercise picker took up to a second, because the
+ * words of all 5,600 exercises were made inside that keystroke). A few hundred at a time while
+ * the phone is idle; what is already built is skipped, and a search that comes first simply
+ * builds the rest itself as before.
+ */
+export function warmSearch(list, { chunk = 300 } = {}) {
+  const items = Array.isArray(list) ? list : []
+  let at = 0
+  const idle = globalThis.requestIdleCallback || (fn => setTimeout(() => fn({ timeRemaining: () => 8 }), 50))
+  const step = () => {
+    const end = Math.min(items.length, at + chunk)
+    for (; at < end; at++) corpusOf(items[at])
+    if (at < items.length) idle(step)
+  }
+  idle(step)
+}
+
 // Search a list, exact hits first: a token that appears literally in at least one exercise is
 // taken at its word for the whole list, and only a token with no exact hit anywhere ("bnech",
 // "dumbell", "wirst") is allowed the typo tolerance. Otherwise a correctly spelled query such

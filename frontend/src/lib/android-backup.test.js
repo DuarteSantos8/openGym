@@ -29,10 +29,11 @@ describe('Android backup rules', () => {
     // An <include> would turn either list into an allowlist and drop everything else.
     expect(legacy).not.toMatch(/<include/)
     expect(modern).not.toMatch(/<include/)
-    // Device transfer takes everything but the pairing and the gym reminder's places.
+    // Device transfer takes everything but the pairing, the gym reminder's places and the
+    // health file.
     const transfer = modern.match(/<device-transfer>([\s\S]*?)<\/device-transfer>/)?.[1] || ''
     expect(transfer).not.toMatch(EXCLUDE)
-    expect(transfer.match(/<exclude/g)).toHaveLength(2)
+    expect(transfer.match(/<exclude/g)).toHaveLength(3)
   })
 
   it('the gym reminder\'s places (#614) never leave the phone: out of every backup and transfer', () => {
@@ -49,6 +50,16 @@ describe('Android backup rules', () => {
     expect(legacy).toMatch(TOKEN)
     expect(modern.match(/<cloud-backup>([\s\S]*?)<\/cloud-backup>/)?.[1]).toMatch(TOKEN)
     expect(modern.match(/<device-transfer>([\s\S]*?)<\/device-transfer>/)?.[1]).toMatch(TOKEN)
+  })
+
+  it('what was read from Health Connect stays on this phone: out of every backup and transfer', () => {
+    const HEALTH = /<exclude\s+domain="file"\s+path="opengym-health\.json"\s*\/>/
+    expect(legacy).toMatch(HEALTH)
+    expect(modern.match(/<cloud-backup>([\s\S]*?)<\/cloud-backup>/)?.[1]).toMatch(HEALTH)
+    expect(modern.match(/<device-transfer>([\s\S]*?)<\/device-transfer>/)?.[1]).toMatch(HEALTH)
+    // the file name the page writes
+    const js = readFileSync(new URL('./health-sync.js', import.meta.url), 'utf8')
+    expect(js).toMatch(/HEALTH_FILE = 'opengym-health\.json'/)
   })
 
   it('no comment carries a double dash, which breaks the Android build (v1.3.6)', () => {

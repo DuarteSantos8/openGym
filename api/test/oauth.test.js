@@ -22,6 +22,10 @@ test('registration takes https and loopback redirects only, and caps the number 
   assert.equal(oauth.registerClient(db, { redirect_uris: ['http://evil.example/cb'] }).status, 400);
   assert.equal(oauth.registerClient(db, { redirect_uris: ['https://x.example/cb#frag'] }).status, 400);
   assert.equal(oauth.registerClient(db, { redirect_uris: [] }).status, 400);
+  // Gemini registers six redirect addresses (#1297); more than ten is still refused.
+  const six = Array.from({ length: 6 }, (_, i) => `https://gemini.example/cb${i}`);
+  assert.equal(oauth.registerClient(db, { client_name: 'Gemini', redirect_uris: six }).status, 201);
+  assert.equal(oauth.registerClient(db, { redirect_uris: Array.from({ length: 11 }, (_, i) => `https://x.example/cb${i}`) }).status, 400);
   const ok = oauth.registerClient(db, { client_name: 'Claude', redirect_uris: [CLAUDE, 'http://localhost/callback'] });
   assert.equal(ok.status, 201);
   assert.match(ok.body.client_id, /^ogc_/);

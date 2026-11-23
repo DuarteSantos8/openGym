@@ -61,6 +61,16 @@ final class GymReminderRules {
     }
 
     /**
+     * A time from the page, in ms. A JSON number reaches a plugin as an Integer, a Long or a
+     * Double, and Capacitor's PluginCall.getDouble returns null for a Long, which a millisecond
+     * timestamp always is: read that way, the running workout's start was lost and a leave never
+     * asked (#1332). Anything that is not a number is 0.
+     */
+    static long millis(Object v) {
+        return v instanceof Number ? ((Number) v).longValue() : 0L;
+    }
+
+    /**
      * Settings → Workout → Forgotten workouts: whether walking out of a gym now asks about the
      * workout running ("Looks like you left the gym"). The reminder on, the switch on (the page's
      * status says), and a session that started less than 12 hours ago, not in the future.

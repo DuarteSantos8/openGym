@@ -71,7 +71,11 @@ export function roundLabel(cfg, step, stations) {
 
 /** What the voice and the lock screen say when a step begins. */
 export const cueWords = {
-  work: (name, step) => (step?.r === 0 || step?.m !== 0 ? t('Go! {0}', name) : t('Round {0}. Go! {1}', step.r + 1, name)),
-  rest: (name, step) => (step?.warm ? t('Warm-up walk. Easy does it.') : step?.round ? t('Round done. Breathe. {0} is next', name) : t('Rest. {0} is next', name)),
+  work: (name, step) => {
+    const nm = step?.side ? `${name} ${step.side === 'L' ? t('Left') : t('Right')}` : name
+    return step?.r === 0 || step?.m !== 0 ? t('Go! {0}', nm) : t('Round {0}. Go! {1}', step.r + 1, nm)
+  },
+  // Between the sides of a hold: the same station again, the other side.
+  rest: (name, step) => (step?.warm ? t('Warm-up walk. Easy does it.') : step?.side ? t('Switch sides') : step?.round ? t('Round done. Breathe. {0} is next', name) : t('Rest. {0} is next', name)),
   end: () => t('Time! That’s the circuit.'),
 }

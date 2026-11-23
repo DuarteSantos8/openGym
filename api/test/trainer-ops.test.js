@@ -74,6 +74,25 @@ test('routine.remove takes it off the week too; undo brings both back', () => {
   assert.throws(() => applyOps(base(), cleanOps([{ op: 'week.set', day: 2, ids: ['nope'] }]), { by, t: 1 }), /no such routine/);
 });
 
+test('a routine.put origin is cleaned, and can only name the trainer who sends it', () => {
+  const routine = { name: 'Push', ex: [{ id: 'bench' }] };
+  // A library origin never comes from a trainer.
+  const [lib] = cleanOps([{ op: 'routine.put', routine, origin: { kind: 'library', id: 's_aaaaaaaaaaaaaaaa', by: 'openGym team' } }]);
+  assert.equal(lib.origin, undefined);
+  // A trainer origin keeps only the known fields, and a non-web server is dropped.
+  const [tr] = cleanOps([{ op: 'routine.put', routine, origin: { kind: 'trainer', id: 'u_marco', sourceId: 'm1', server: 'javascript:x', junk: { deep: 'x' } } }]);
+  assert.deepEqual(tr.origin, { kind: 'trainer', id: 'u_marco', by: '', at: 0, sourceId: 'm1' });
+  // Another trainer's id and name are replaced with the sender's, so their copy is left alone.
+  const S = { ...base(), routines: [{ id: 'tr_other', name: 'Theirs', ex: [], origin: { kind: 'trainer', id: 'u_other', sourceId: 'r1', by: 'Other' } }] };
+  const ops = cleanOps([{ op: 'routine.put', routine, origin: { kind: 'trainer', id: 'u_other', sourceId: 'r1', by: 'Other' } }]);
+  const [rec] = applyOps(S, ops, { by, t: 10 });
+  assert.equal(rec.summary.isNew, true);
+  assert.equal(S.routines.find(r => r.id === 'tr_other').name, 'Theirs');
+  const mine = S.routines.find(r => r.id === rec.summary.id);
+  assert.equal(mine.origin.id, 'u_marco');
+  assert.equal(mine.origin.by, 'Marco');
+});
+
 test('assigning the same routine again replaces the copy, with its custom exercises and a weekday', () => {
   const S = base();
   const origin = { kind: 'trainer', id: 'u_marco', sourceId: 'm1' };

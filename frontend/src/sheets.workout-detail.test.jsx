@@ -131,7 +131,7 @@ describe('workout detail', () => {
     expect(writeText).toHaveBeenCalledTimes(1)
     const text = writeText.mock.calls[0][0]
     expect(text.split('\n')[0]).toMatch(/^Push · /)
-    expect(text).toContain('\n80×5\n')
+    expect(text).toContain('\n80 kg × 5\n')
     expect(text).not.toContain('60×5')
     expect(text.endsWith('\n\nGood day')).toBe(true)
     expect(toast).toHaveBeenCalledWith('Copied')

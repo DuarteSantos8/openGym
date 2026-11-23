@@ -77,6 +77,11 @@ const FROM_APP = {
   // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
   'Back': 'Back',
 }
+// The watch's own word where the app's is too long for its buttons; every other language keeps the app's.
+const SHORTER = {
+  // #1400: "Überspringen" barely fits between −15 and +15; the owner picked "Weiter".
+  'Skip': { de: 'Weiter' },
+}
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
   // The set menu: the phone's "Set {0}" and its short "Add" ("Add set" is too wide under 75 pt in German).
@@ -370,7 +375,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
     if (/—/.test(v)) { console.error(`${lproj}: em dash in "${k}"`); problems++ }
     lines.push(`"${esc(k)}" = "${esc(v)}";`)
   }
-  for (const [k, appKey] of Object.entries(FROM_APP)) put(k, dict[appKey])
+  for (const [k, appKey] of Object.entries(FROM_APP)) put(k, SHORTER[k]?.[lproj] || dict[appKey])
   for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey], lproj))
   for (const [k, tr] of Object.entries(OWN)) put(k, tr[lproj])
   mkdirSync(join(out, `${lproj}.lproj`), { recursive: true })
