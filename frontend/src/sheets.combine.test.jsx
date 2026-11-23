@@ -28,6 +28,20 @@ beforeEach(() => {
   ])
 })
 
+describe('beginWorkout with a first exercise (a scanned machine)', () => {
+  it('a freestyle session opens on that exercise alone', () => {
+    act(() => beginWorkout([], null, { first: ids[0] }))
+    const a = useStore.getState().S.active
+    expect(a.entries.map(e => e.id)).toEqual([ids[0]])
+    expect(a.cur).toBe(0)
+    expect(a.name).toBe('Freestyle')
+  })
+  it('a routine that already builds entries keeps them', () => {
+    act(() => beginWorkout(['core'], null, { first: ids[0] }))
+    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual([ids[1], ids[2]])
+  })
+})
+
 describe('beginWorkout with a routine-id list', () => {
   it('concatenates the routines’ entries in order, stamps rid, derives the name', () => {
     act(() => beginWorkout(['strength', 'core'], null))

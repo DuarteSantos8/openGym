@@ -17,6 +17,9 @@ import { leftoversBefore } from '../lib/leftovers.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
 
+// Loaded on a tap, like Plan's scan: the scanner stays out of the first chunk.
+const scanMachineSheet = o => import('./ScanMachine.jsx').then(m => m.scanMachineSheet(o))
+
 const ui = () => useUI.getState()
 const S = () => useStore.getState().S
 
@@ -97,6 +100,7 @@ function StartPicker({ close }) {
     </>}
     <div className="list menu-list" style={{ marginBottom: 14 }}>
       <Row icon="shuffle" title={t('Freestyle workout (pick as you go)')} accessory="chevron" onClick={() => { close(); startFlow([]) }} />
+      <Row icon="qr" title={t('Scan a machine to start freestyle')} accessory="chevron" onClick={() => { close(); scanMachineSheet({ onExercise: id => startFlow([], { first: id }), live: null }) }} />
     </div>
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>

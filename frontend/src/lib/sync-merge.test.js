@@ -235,6 +235,10 @@ describe('mergeStates', () => {
 describe('sign-in adoption helpers', () => {
   const server = { _ts: 100, unit: 'lb', restSec: 60, workouts: [{ id: 'w1', d: '2026-09-01' }], bodyweight: [{ d: '2026-09-01', w: 80, t: 1 }], routines: [{ id: 'r1', name: 'A' }], week: { 1: ['r1'] } }
   const local = { _ts: 900, unit: 'kg', restSec: 90, workouts: [{ id: 'w9', d: '2026-09-11' }], bodyweight: [{ d: '2026-09-11', w: 81, t: 2 }, { d: '2026-09-01', w: 79, t: 9 }], routines: [{ id: 'rg', name: 'Guest' }], customEx: [{ id: 'c1', name: 'x' }], week: { 2: ['rg'] } }
+  it('localExtras counts the machine codes the device linked', () => {
+    expect(localExtras({ machineCodes: { '0150': ['t:A'] } }, { machineCodes: {} }).setup).toBe(1)
+    expect(localExtras({ machineCodes: { '0150': ['t:A'] } }, { machineCodes: { '0150': ['t:A'] } }).setup).toBeUndefined()
+  })
   it('localExtras counts what the device has that the server does not', () => {
     // the new day, and 09-01: the device's weigh-in of a day the server has too, entered later
     // and different (79 kg is 174.2 lb, not the server's 80 lb)
@@ -994,5 +998,21 @@ describe('body measurements across devices (#82)', () => {
     const next = { ...base, measurements: [{ d: '2026-10-01', t: 201, waist: 78 }] }
     stampChange(prev, next, 1000)
     expect(next.measurements[0].t).toBe(1000)
+  })
+})
+
+describe('machineCodes', () => {
+  it('keeps a code added to two exercises on two devices', () => {
+    const b0 = base({ machineCodes: {} })
+    const a = stampEdits(b0, { ...clone(b0), machineCodes: { '0150': ['t:A'] }, _ts: 1000 }, 1000)
+    const b = stampEdits(b0, { ...clone(b0), machineCodes: { '0151': ['t:A'] }, _ts: 2000 }, 2000)
+    expect(a.edited['machineCodes.0150']).toBe(1000)
+    expect(mergeStates(a, b).machineCodes).toEqual({ '0150': ['t:A'], '0151': ['t:A'] })
+  })
+  it('an unlink stays unlinked', () => {
+    const empty = base({ machineCodes: {} })
+    const linked = stampEdits(empty, { ...clone(empty), machineCodes: { '0150': ['t:A'] }, _ts: 1000 }, 1000)
+    const gone = stampEdits(linked, { ...clone(linked), machineCodes: {}, _ts: 3000 }, 3000)
+    expect(mergeStates(gone, linked).machineCodes).toEqual({})
   })
 })

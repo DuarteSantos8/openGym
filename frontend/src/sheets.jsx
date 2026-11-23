@@ -16,6 +16,7 @@ import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
+import { entryToAdd } from './lib/session-add.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -50,6 +51,7 @@ import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
+import { codesOf, unlink, shownCode } from './lib/machine-codes.js'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -1549,6 +1551,7 @@ function ExerciseDetail({ ex, close }) {
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
   const nfcOK = useNfcSupported()
+  const machineCodes = codesOf(useStore(s => s.S), ex.id)
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
@@ -1586,6 +1589,16 @@ function ExerciseDetail({ ex, close }) {
     <FormVideosSection exId={ex.id} />
     {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
+    {/* Codes already on the machine (QR or NFC) that open this exercise (lib/machine-codes.js).
+        The camera works on every platform, so this is not gated on nfcOK. Codes are text only. */}
+    {!ex.missing && <Button icon="qr" style={{ marginTop: 4 }} onClick={() => import('./components/ScanMachine.jsx').then(m => m.linkMachineSheet(ex))}>
+      {t('Link a code on this machine')}
+      {machineCodes.length > 0 && <span className="tag dim machine-code-count" style={{ marginInlineStart: 8 }}>{machineCodes.length}</span>}
+    </Button>}
+    {!ex.missing && machineCodes.map(code => <div key={code} className="row machine-code-row" style={{ gap: 8, margin: '4px 0' }}>
+      <span className="small muted machine-code-text" style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{shownCode(code)}</span>
+      <button type="button" className="iconbtn" aria-label={t('Remove')} onClick={() => { update(s => { unlink(s, ex.id, code) }); toast(t('Code removed')) }}>✕</button>
+    </div>)}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
     {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
@@ -1951,6 +1964,7 @@ export function deleteCustomEx(ex, afterDelete) {
         s.customEx = (s.customEx || []).filter(x => x.id !== ex.id)
         s.routines.forEach(r => { r.ex = r.ex.filter(e => e.id !== ex.id); cleanupSg(r.ex) })
         delete s.exWeights[ex.id]
+        if (s.machineCodes) delete s.machineCodes[ex.id]
         s.favEx = (s.favEx || []).filter(id => id !== ex.id)
       })
       toast(t('Exercise deleted'))
@@ -2003,7 +2017,7 @@ function usageMap(st) {
 }
 // The swap pickers' own scope (#473): exercises sharing the swapped exercise's target muscle.
 const SAME = '≈'
-function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCoach }) {
+function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCoach, query }) {
   const st = useStore(s => s.S)
   const isSwap = !!like || title === t('Swap exercise') || title === t('Replace exercise') || title === 'Swap exercise' || title === 'Replace exercise'
   const quickIcon = actionIcon || (isSwap ? 'swap' : 'plus')
@@ -2011,7 +2025,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
     ? (title ? `${title}: ${exerciseNameText(e)}` : `${t('Swap exercise')}: ${exerciseNameText(e)}`)
     : t('Add “{0}”', exerciseNameText(e))
   const usage = usageMap(st)
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(query || '')
   const backupList = (Array.isArray(backups) ? backups : []).map(id => EXIDX[id]).filter(Boolean)
   // What a swap is away from: the picker opens on what trains the same muscle, if anything you
   // can use does, and "All" is one tap back to everything. Suggested substitutes (#674) lead
@@ -2190,7 +2204,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
 // train the same muscle, same equipment first (#473), with suggested substitutes on top and a gym
 // choice that filters only this list (#674).
 // `backups`: the slot's planned substitutes (lib/routine-backups.js), listed first in a swap.
-export const exercisePicker = (onPick, { title, like, actionIcon, backups, askCoach } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} backups={backups} askCoach={askCoach} close={close} />)
+// `query`: the search it opens with (a scanned machine code's words, lib/machine-codes.js).
+export const exercisePicker = (onPick, { title, like, actionIcon, backups, askCoach, query } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} backups={backups} askCoach={askCoach} query={query} close={close} />)
 
 /** Start a safe swap for one exact active-workout occurrence. */
 // `opts.askCoach`: offered at the top of the picker when the Coach can answer (#1003).
@@ -4029,14 +4044,16 @@ function dailyCheckinSheet(routineIds, opts) {
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.
-export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null, lighter = null } = {}) {
+export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null, lighter = null, first: firstId = null } = {}) {
   const st = S()
   const built = buildCombinedEntries(st, routineIds)
   const { routineIds: rids, routines } = built
   // The leftovers keep their own routine's `rid`, so the history reads them back per routine;
   // the session stays today's (routineIds), so the plan and the queue count today only.
   const first = leadEntries(st, lead)
-  const entries = first.length ? [...first, ...built.entries] : built.entries
+  let entries = first.length ? [...first, ...built.entries] : built.entries
+  // A machine scanned to start (components/ScanMachine.jsx): a freestyle session opens on it.
+  if (firstId && !entries.length) entries = [entryToAdd(st, firstId, null)]
   const startAt = Number.isFinite(start) && start > 0 ? start : Date.now()
   update(s => {
     s.active = {

@@ -36,7 +36,7 @@ const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)))
 // Per-exercise settings maps: the target keeps its own, the source's moves only where it has none.
 const MOVE_MAPS = ['barWeights', 'loadKind', 'dbLoad', 'stackWeights', 'exUnit']
 // What an Undo puts back whole.
-const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'exShownName', 'favEx', 'balanceOverrides', ...MOVE_MAPS]
+const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'exShownName', 'favEx', 'balanceOverrides', 'machineCodes', ...MOVE_MAPS]
 
 /** Where `id` went, following merges of merges; `id` itself when it was never merged. */
 export function mergedInto(S, id) {
@@ -161,6 +161,17 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
   return changed
 }
 
+// Machine codes (lib/machine-codes.js): the target's own first, then the source's, each once.
+// Here and not there, since machine-codes.js reads mergedInto from this file.
+function moveMachineCodes(S, fromId, toId) {
+  if (!isMap(S.machineCodes) || !Object.hasOwn(S.machineCodes, fromId)) return
+  const m = { ...S.machineCodes }
+  const joined = [...new Set([...list(m[toId]), ...list(m[fromId])])]
+  delete m[fromId]
+  if (joined.length) m[toId] = joined
+  S.machineCodes = m
+}
+
 /**
  * Merges `fromId` into `toId` in `S` (a store draft) at `now`. Returns `{ undo }`: what Undo needs
  * to put it all back (the touched workouts as they were, and the fields replaced whole). Throws
@@ -213,6 +224,7 @@ export function mergeExercise(S, fromId, toId, { now = Date.now(), names = [] } 
     delete m[fromId]
     S[f] = m
   }
+  moveMachineCodes(S, fromId, toId)
   if (isMap(S.balanceOverrides)) {
     let touched = false
     const m = {}
@@ -267,6 +279,7 @@ export function applyExerciseMerges(S) {
     const toId = mergedInto(S, fromId)
     if (!toId || toId === fromId) continue
     n += redirect(S, fromId, toId).length
+    moveMachineCodes(S, fromId, toId)
     if (list(S.customEx).some(c => c?.id === fromId)) S.customEx = S.customEx.filter(c => c?.id !== fromId)
   }
   return n

@@ -10,12 +10,14 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * openGym's NFC stickers (lib/nfc.js, components/Nfc.jsx): writes one openGym link onto a sticker,
@@ -30,6 +32,12 @@ import java.io.IOException;
  * here, not to the system's tag dispatch, and is written as one NDEF URI record (a blank sticker
  * is NDEF-formatted first). Only NDEF stickers: no card emulation, nothing reads a gym's card.
  *
+ * Reading for a machine (the scan sheet) uses reader mode too: `read` keeps it on and every sticker
+ * that reaches it goes to the page as a `tag` event ({ uid, records: [{ type, value }] }) until
+ * `stopRead`. Only the well-known URI and text records are passed on, as plain strings: a
+ * sticker's content is untrusted, so nothing here opens, starts or acts on it. Reader mode takes
+ * the stickers away from the system's dispatch, so an openGym sticker does not also fire `open`.
+ *
  * Usage from JS:
  *   const NfcTags = registerPlugin('NfcTags')
  *   await NfcTags.isAvailable()               // { supported: true, enabled: true }
@@ -39,6 +47,8 @@ import java.io.IOException;
 @CapacitorPlugin(name = "NfcTags")
 public class NfcTagsPlugin extends Plugin {
     private PluginCall pending;
+    private volatile boolean reading; // reader mode is on for a read (set on the UI thread, read on the adapter's)
+    private boolean resumeRead; // a read was on when the app paused: it comes back on resume (UI thread)
 
     @Override
     public void load() {
@@ -108,6 +118,8 @@ public class NfcTagsPlugin extends Plugin {
         Activity act = getActivity();
         act.runOnUiThread(() -> {
             if (pending != null) pending.reject("replaced by a newer write", "cancelled");
+            reading = false; // one reader callback at a time: this write takes over from a read
+            resumeRead = false;
             pending = call;
             int flags = NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B | NfcAdapter.FLAG_READER_NFC_F
                     | NfcAdapter.FLAG_READER_NFC_V | NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS;
@@ -116,7 +128,40 @@ public class NfcTagsPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void read(PluginCall call) {
+        NfcAdapter a = adapter();
+        if (a == null) {
+            call.reject("this phone has no NFC", "unsupported");
+            return;
+        }
+        if (!a.isEnabled()) {
+            call.reject("NFC is disabled", "disabled");
+            return;
+        }
+        Activity act = getActivity();
+        act.runOnUiThread(() -> {
+            if (pending != null) {
+                pending.reject("replaced by a read", "cancelled");
+                pending = null;
+            }
+            resumeRead = false;
+            startReading(a, act);
+            call.resolve(); // reading goes on; the stickers arrive as `tag` events
+        });
+    }
+
+    /** On the UI thread: reader mode for a machine read. */
+    private void startReading(NfcAdapter a, Activity act) {
+        reading = true;
+        // No FLAG_READER_SKIP_NDEF_CHECK: the cached NDEF message is read for us.
+        int flags = NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B | NfcAdapter.FLAG_READER_NFC_F
+                | NfcAdapter.FLAG_READER_NFC_V | NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS;
+        a.enableReaderMode(act, this::onReadTag, flags, null);
+    }
+
+    @PluginMethod
     public void cancel(PluginCall call) {
+        resumeRead = false;
         stopReader();
         if (pending != null) {
             pending.reject("cancelled", "cancelled");
@@ -125,15 +170,88 @@ public class NfcTagsPlugin extends Plugin {
         call.resolve();
     }
 
+    @PluginMethod
+    public void stopRead(PluginCall call) {
+        Activity act = getActivity();
+        if (act == null) {
+            call.resolve();
+            return;
+        }
+        act.runOnUiThread(() -> {
+            resumeRead = false;
+            // Only a read's own reader mode: a write that took over keeps its.
+            if (reading) {
+                reading = false;
+                stopReader();
+            }
+            call.resolve();
+        });
+    }
+
     @Override
     protected void handleOnPause() {
         super.handleOnPause();
-        // Reader mode belongs to a resumed activity; a write left waiting ends with it.
+        // Reader mode belongs to a resumed activity; a read or a write left waiting ends with it.
+        // A read comes back on resume (the scan sheet is still open); a write does not.
+        resumeRead = reading;
+        reading = false;
         if (pending != null) {
-            stopReader();
             pending.reject("cancelled", "cancelled");
             pending = null;
         }
+        stopReader();
+    }
+
+    @Override
+    protected void handleOnResume() {
+        super.handleOnResume();
+        if (!resumeRead) return;
+        resumeRead = false;
+        if (pending != null) return; // a write that started meanwhile keeps the reader
+        Activity act = getActivity();
+        NfcAdapter a = adapter();
+        if (act == null || a == null || !a.isEnabled()) return;
+        try {
+            startReading(a, act);
+        } catch (IllegalStateException e) {
+            reading = false; // the activity was not resumed after all: the sheet can be opened again
+        }
+    }
+
+    /** On the adapter's own thread: one sticker for a machine read, as text only (never acted on). */
+    private void onReadTag(Tag tag) {
+        if (!reading) return;
+        JSArray records = new JSArray();
+        try {
+            Ndef ndef = Ndef.get(tag);
+            NdefMessage message = ndef == null ? null : ndef.getCachedNdefMessage();
+            NdefRecord[] all = message == null ? null : message.getRecords();
+            if (all != null) {
+                for (NdefRecord r : all) {
+                    if (records.length() >= 8) break;
+                    if (r == null || r.getTnf() != NdefRecord.TNF_WELL_KNOWN) continue;
+                    String type, value;
+                    if (Arrays.equals(r.getType(), NdefRecord.RTD_URI)) {
+                        type = "uri";
+                        value = NfcRecords.uriFromPayload(r.getPayload());
+                    } else if (Arrays.equals(r.getType(), NdefRecord.RTD_TEXT)) {
+                        type = "text";
+                        value = NfcRecords.textFromPayload(r.getPayload());
+                    } else continue;
+                    if (value.isEmpty() || value.length() > 512) continue;
+                    JSObject rec = new JSObject();
+                    rec.put("type", type);
+                    rec.put("value", value);
+                    records.put(rec);
+                }
+            }
+        } catch (RuntimeException e) {
+            // A sticker that answered oddly: it still has its uid, with no records.
+        }
+        JSObject ev = new JSObject();
+        ev.put("uid", NfcRecords.hex(tag.getId()));
+        ev.put("records", records);
+        notifyListeners("tag", ev);
     }
 
     private void stopReader() {

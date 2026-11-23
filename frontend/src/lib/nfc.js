@@ -12,6 +12,7 @@
 // Only NDEF stickers of our own: no card emulation, nothing that reads or copies a gym card.
 import { MOBILE } from './mobile.js'
 import { platformNow } from './platform-now.js'
+import { tagDebouncer } from './nfc-tags.js'
 
 // Kept inside an object: a Capacitor plugin proxy answers `then` with a native call that never
 // settles, so a promise resolved with the bare proxy would hang (the Coach hang, #42).
@@ -59,6 +60,7 @@ export const writeErrorCode = e => {
 }
 
 let webAbort = null
+let machineAbort = null // a machine read is on (readMachineTags, web)
 
 /**
  * Writes `url` as the sticker's one record. iOS shows its own sheet with `alert` and `done`;
@@ -119,7 +121,7 @@ export function onTagLink(cb) {
       if (gone || st?.state !== 'granted') return
       const reader = new globalThis.NDEFReader()
       reader.addEventListener('reading', ev => {
-        if (webAbort) return // a write is on: the sticker is being written, not read
+        if (webAbort || machineAbort) return // a write is on: the sticker is being written, not read
         for (const rec of ev?.message?.records || []) { const u = urlOf(rec); if (u) { cb(u); break } }
       })
       return reader.scan(ctrl ? { signal: ctrl.signal } : undefined)
@@ -128,4 +130,91 @@ export function onTagLink(cb) {
   return () => { gone = true; handles.splice(0).forEach(h => { try { h?.remove?.() } catch { /* gone already */ } }) }
 }
 
-export function _resetNfcForTests() { pluginP = null; webAbort = null; supportP = null }
+/**
+ * Reading ANY tag, only while the app asks (the Scan a machine sheet, or one tap on iPhone).
+ * { supported, enabled, mode }: 'hold' reads while the sheet is open (Android app, Web NFC),
+ * 'button' is one session per tap (iPhone), null when this device cannot.
+ */
+export async function nfcReadSupport() {
+  if (webNfc()) return { supported: true, enabled: true, mode: 'hold' }
+  try {
+    const w = await nfcPlugin()
+    if (!w) return { supported: false, enabled: false, mode: null }
+    const r = await w.p.isAvailable()
+    if (!r?.supported) return { supported: false, enabled: false, mode: null }
+    return { supported: true, enabled: r?.enabled !== false, mode: platformNow() === 'ios' ? 'button' : 'hold' }
+  } catch {
+    return { supported: false, enabled: false, mode: null }
+  }
+}
+
+// Records are only decoded as text, never acted on.
+const webRecord = rec => {
+  try {
+    const t = rec?.recordType
+    if (t === 'url' || t === 'absolute-url') return { type: 'uri', value: new TextDecoder().decode(rec.data) }
+    if (t === 'text') return { type: 'text', value: new TextDecoder(rec.encoding || 'utf-8').decode(rec.data) }
+  } catch { /* unreadable record */ }
+  return null
+}
+
+/**
+ * Calls `onTag({ uid, records: [{ type: 'uri' | 'text', value }] })` for each tag held to the
+ * phone until the returned function stops it. The same tag held on is reported once.
+ */
+export function readMachineTags(onTag) {
+  const ok = tagDebouncer({ sameMs: 4000, anyMs: 1200 })
+  const emit = tag => {
+    if (!tag?.uid) return
+    const records = Array.isArray(tag.records) ? tag.records : []
+    if (!ok(tag.uid + '|' + (records[0]?.value || ''))) return
+    try { onTag({ uid: String(tag.uid), records }) } catch { /* the caller's problem */ }
+  }
+  let gone = false
+  const cleanups = []
+  if (webNfc()) {
+    const ctrl = typeof AbortController === 'function' ? new AbortController() : null
+    const mine = machineAbort = {}
+    cleanups.push(() => { ctrl?.abort(); if (machineAbort === mine) machineAbort = null })
+    try {
+      const reader = new globalThis.NDEFReader()
+      reader.addEventListener('reading', ev => {
+        const records = (ev?.message?.records || []).map(webRecord).filter(Boolean)
+        emit({ uid: String(ev?.serialNumber || '').replace(/:/g, ''), records })
+      })
+      Promise.resolve(reader.scan(ctrl ? { signal: ctrl.signal } : undefined)).catch(() => {})
+    } catch { /* no reader */ }
+  } else {
+    nfcPlugin().then(async w => {
+      if (!w || gone) return
+      const h = await w.p.addListener('tag', emit)
+      if (gone) { h?.remove?.(); return }
+      cleanups.push(() => h?.remove?.())
+      await w.p.read()
+      if (gone) w.p.stopRead?.()
+    }).catch(() => {})
+    cleanups.push(() => { nfcPlugin().then(w => w?.p.stopRead?.()).catch(() => {}) })
+  }
+  return () => {
+    if (gone) return
+    gone = true
+    cleanups.splice(0).forEach(f => { try { f() } catch { /* gone already */ } })
+  }
+}
+
+/** iPhone: one read session per tap. Resolves { uid, records }, null when cancelled; other
+ *  failures reject with an Error whose `code` is one of writeErrorCode's. */
+export async function readMachineTagOnce({ alert = '' } = {}) {
+  const w = await nfcPlugin()
+  const fail = e => { const err = new Error(String(e?.message || e)); err.code = writeErrorCode(e); throw err }
+  if (!w) fail('unsupported')
+  try {
+    const r = await w.p.read({ alert })
+    return r?.uid ? { uid: String(r.uid), records: Array.isArray(r.records) ? r.records : [] } : null
+  } catch (e) {
+    if (writeErrorCode(e) === 'cancelled') return null
+    fail(e)
+  }
+}
+
+export function _resetNfcForTests() { pluginP = null; webAbort = null; machineAbort = null; supportP = null }

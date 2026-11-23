@@ -69,7 +69,10 @@ import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
-import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
+import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry, moveActiveWorkoutUnitTo } from '../lib/active-workout-order.js'
+import { scanInWorkout } from '../lib/machine-scan.js'
+import { entryProgress } from '../lib/exercise-chips.js'
+import { entryToAdd } from '../lib/session-add.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
@@ -94,6 +97,9 @@ import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
 import { BandChips } from '../components/Bands.jsx'
 import { isoDir } from '../lib/bidi.js'
+
+// Loaded on a tap, like Plan's scan: the scanner stays out of the first chunk.
+const scanMachineSheet = o => import('../components/ScanMachine.jsx').then(m => m.scanMachineSheet(o))
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -127,6 +133,8 @@ function StartChooser() {
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
     <div style={{ height: 14 }} />
     <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
+    <div style={{ height: 10 }} />
+    <Button icon="qr" onClick={() => scanMachineSheet({ onExercise: id => startFlow([], { first: id }), live: null })}>{t('Scan a machine to start freestyle')}</Button>
     {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
   </div>
 }
@@ -1671,14 +1679,89 @@ function ActiveWorkout() {
       if (!moved) return
       // The marker follows its unit: the superset card's scroll must not read that as a move.
       lastCur.current = s.active.cur
-      progressHighWater.current = moved.indices.map(index => progressHighWater.current[index])
-      const rest = useUI.getState().timer
-      if (rest && rest.forIdx != null) {
-        const forIdx = moved.indices.indexOf(rest.forIdx)
-        if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
-      }
+      followReorder(moved.indices)
     }, true)
   }
+  // After a reorder (`indices`: new position → old index) the progress marks and the running
+  // rest's owner (timer.forIdx) go where their exercises went.
+  const followReorder = indices => {
+    progressHighWater.current = indices.map(index => progressHighWater.current[index])
+    const rest = useUI.getState().timer
+    if (rest && rest.forIdx != null) {
+      const forIdx = indices.indexOf(rest.forIdx)
+      if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
+    }
+  }
+  // A machine scanned in the workout (docs/dev/MACHINE_CODES.md, lib/machine-scan.js): an
+  // exercise already in place, or done, is selected; one still to come moves up to be next; one
+  // not in the workout is added there. A move or an add can be undone from its toast.
+  const scanApply = exId => {
+    const before = useStore.getState().S.active
+    if (!before || before.editingWorkoutId || before.backfill) return
+    const plan = scanInWorkout(before, exId)
+    const activeId = before.id
+    const prevCur = before.cur
+    const name = exerciseNameText(exOr(exId))
+    const ui = useUI.getState()
+    if (plan.do === 'jump') {
+      if (focusMode) focusPointerEpoch.current++
+      update(s => { if (s.active?.id === activeId) s.active.cur = plan.idx })
+      return
+    }
+    if (plan.do === 'move') {
+      ui.stopWork()
+      focusPointerEpoch.current++
+      let indices = null
+      let order = null
+      update(s => {
+        const moved = moveActiveWorkoutUnitTo(s.active, plan.idx, plan.slot)
+        if (!moved) return
+        indices = moved.indices
+        order = s.active.entries.map(e => e.id)
+        lastCur.current = s.active.cur
+        followReorder(indices)
+      }, true)
+      if (!indices) return
+      // Undo puts each exercise back where it was: the inverse of the move (new position → old).
+      const back = indices.map((_, old) => indices.indexOf(old))
+      ui.toast(t('“{0}” is next', name), { action: t('Undo'), onAction: () => {
+        const now = useStore.getState().S.active
+        if (!now || now.id !== activeId || now.entries.map(e => e.id).join() !== order.join()) return
+        useUI.getState().stopWork()
+        focusPointerEpoch.current++
+        update(s => {
+          s.active.entries = back.map(index => s.active.entries[index])
+          s.active.cur = prevCur
+          lastCur.current = prevCur
+          followReorder(back)
+        }, true)
+      } })
+      return
+    }
+    // An add shifts every index from `slot` up, and a hold can be running on the exercise there
+    // (an untouched one counts as not started): end its timed callback first, as a move does.
+    ui.stopWork()
+    focusPointerEpoch.current++
+    let added = null
+    update(s => {
+      if (s.active?.id !== activeId) return
+      added = entryToAdd(s, exId, s.active.entries[s.active.cur])
+      s.active.entries.splice(plan.slot, 0, added)
+      s.active.cur = plan.slot
+      useUI.getState().shiftRestOwner(plan.slot, 1)
+    })
+    if (!added) return
+    ui.toast(t('“{0}” added', name), { action: t('Undo'), onAction: () => {
+      const now = useStore.getState().S.active
+      // Once a set of it is ticked it is part of the workout: Undo no longer takes it out.
+      const there = now?.id === activeId ? now.entries[plan.slot] : null
+      if (there?.id !== exId || entryProgress(there) !== 'todo') return
+      removeActiveExercise(plan.slot)
+      update(s => { if (s.active) s.active.cur = Math.min(prevCur, s.active.entries.length - 1) })
+    } })
+  }
+  const scanMachine = () => { scanMachineSheet({ onExercise: scanApply, live: useStore.getState().S.active }) }
+  const canScan = !editing && !A.backfill
 
   const moveCurrentUnit = direction => moveUnitAt(cur, direction)
 
@@ -1974,6 +2057,7 @@ function ActiveWorkout() {
           sub: paused ? undefined : t('The clock and the rest wait for you'), onClick: togglePause },
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
         { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
+        canScan && { icon: 'qr', label: t('Scan a machine'), onClick: scanMachine },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
         { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
       ] },
@@ -2588,7 +2672,7 @@ function ActiveWorkout() {
   // spare on a phone (a second line under the name). With the chips off it sits in the header.
   const sessionMap = wc.muscleMap ? <SessionMapButton entries={A.entries} body={S.body} /> : null
   const chipRow = wc.exerciseChips && A.entries.length > 0
-    ? <div className="wchips-row"><WorkoutChips entries={A.entries} cur={listMode ? visibleExercise : cur} onPick={pickChip} />{sessionMap}</div>
+    ? <div className="wchips-row"><WorkoutChips entries={A.entries} cur={listMode ? visibleExercise : cur} onPick={pickChip} />{canScan && <button type="button" className="iconbtn wchips-scan" aria-label={t('Scan a machine')} title={t('Scan a machine')} onClick={scanMachine}><Icon name="qr" /></button>}{sessionMap}</div>
     : null
 
   // Hardware keys (issue #133, lib/workout-keys.js): Space or Enter ticks the next set, ← and →
