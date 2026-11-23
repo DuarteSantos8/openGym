@@ -25,6 +25,27 @@ describe('enterApp: a signed-in account going on into the app', () => {
     }
   })
 
+  // The app's own server, where there is one, signs people in with this same account (ADR 0013).
+  // Then going on into the app means becoming a profile on that server, so that training
+  // follows the account: a device profile would leave them signed in and still on their own.
+  it('goes through the server\'s sign-in where the server signs people in with the account', () => {
+    for (const config of [{ oidc: { label: 'Ironvane' } }, { oidc: { label: 'Ironvane', only: true }, allow_guest: true }, { oidc: { label: 'Ironvane' }, allow_guest: false }]) {
+      const st = store({ config })
+      expect(enterApp(st)).toBe('link')
+      expect(st.setGuest).not.toHaveBeenCalled()
+    }
+  })
+
+  it('also for someone already on this device\'s profile: that is the profile to attach', () => {
+    const st = store({ config: { oidc: { label: 'Ironvane' } }, isGuest: () => true })
+    expect(enterApp(st)).toBe('link')
+    expect(st.setGuest).not.toHaveBeenCalled()
+  })
+
+  it('but not for someone already on a server profile', () => {
+    expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } }, user: { id: 1 } }))).toBe('already')
+  })
+
   it('leaves it to the server\'s own sign-in where the server says an account is required', () => {
     const st = store({ config: { allow_guest: false } })
     expect(enterApp(st)).toBe('server')

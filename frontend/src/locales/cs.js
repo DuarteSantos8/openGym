@@ -6282,4 +6282,5 @@ export default {
   "Sign in or create account": "Přihlásit se nebo vytvořit účet",
   "Your training stays on this device. An account is for your plan and purchases.": "Tvůj trénink zůstává v tomto zařízení. Účet je pro tvůj tarif a nákupy.",
   "Signed in as {0}. Your training is stored on this device.": "Přihlášen/a jako {0}. Tvůj trénink je uložený v tomto zařízení.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "S účtem máš trénink i na svých dalších zařízeních. Bez něj zůstává v tomto zařízení.",
 }

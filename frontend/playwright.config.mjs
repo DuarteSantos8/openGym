@@ -24,6 +24,10 @@ const reuse = process.env.E2E_BASE_URL
 // (e2e/cloud/pretend-project.mjs), so the rule that nothing leaves this device still holds.
 const CLOUD_URL = process.env.E2E_CLOUD_BASE_URL || 'http://localhost:4174'
 const CLOUD_ENV = { VITE_EDITION: 'cloud', VITE_SUPABASE_URL: 'http://127.0.0.1:4175', VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_e2e' }
+// The Cloud preview's /api goes to a server of its own (e2e/cloud/linked-server.mjs): a real API
+// whose one way in is an identity provider, as the hosted one will be (docs/next/CLOUD-SERVER.md).
+// A test about the Cloud edition with no server answers /api itself (page.route) instead.
+const LINKED_PORT = '3001'
 const cloud = !reuse || !!process.env.E2E_CLOUD_BASE_URL
 const CLOUD_TESTS = /cloud\/.*\.e2e\.mjs$/
 const dataDir = reuse ? '' : mkdtempSync(join(tmpdir(), 'og-e2e-'))
@@ -59,9 +63,11 @@ export default defineConfig({
     { command: 'node server.js', cwd: '../api', port: 3000, reuseExistingServer: false,
       env: { PORT: '3000', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080' } },
     { command: 'npx vite preview --port 4173 --strictPort', port: 4173, reuseExistingServer: false },
+    { command: `node e2e/cloud/linked-server.mjs ${LINKED_PORT} ${CLOUD_URL}`, port: Number(LINKED_PORT), reuseExistingServer: false },
     // Builds the Cloud edition into its own folder, then serves it. Slower to come up than the
     // others because of the build, hence the longer wait.
     { command: 'npx vite build --outDir dist-cloud --emptyOutDir --logLevel error && npx vite preview --outDir dist-cloud --port 4174 --strictPort',
-      port: 4174, reuseExistingServer: false, timeout: 300_000, env: { ...CLOUD_ENV, NODE_ENV: 'production' } },
+      port: 4174, reuseExistingServer: false, timeout: 300_000,
+      env: { ...CLOUD_ENV, NODE_ENV: 'production', API_TARGET: `http://127.0.0.1:${LINKED_PORT}`, API_ORIGIN: CLOUD_URL } },
   ],
 })

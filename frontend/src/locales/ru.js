@@ -6320,4 +6320,5 @@ export default {
   "Sign in or create account": "Войти или создать аккаунт",
   "Your training stays on this device. An account is for your plan and purchases.": "Твои тренировки остаются на этом устройстве. Аккаунт нужен для тарифа и покупок.",
   "Signed in as {0}. Your training is stored on this device.": "Вход выполнен: {0}. Твои тренировки хранятся на этом устройстве.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "С аккаунтом тренировки доступны и на других ваших устройствах. Без аккаунта они остаются на этом устройстве.",
 }

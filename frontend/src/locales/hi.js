@@ -6316,4 +6316,5 @@ export default {
   "Sign in or create account": "साइन इन करें या खाता बनाएँ",
   "Your training stays on this device. An account is for your plan and purchases.": "आपकी ट्रेनिंग इसी डिवाइस पर रहती है। खाता आपके प्लान और खरीदारी के लिए है।",
   "Signed in as {0}. Your training is stored on this device.": "{0} के रूप में साइन इन हैं। आपकी ट्रेनिंग इसी डिवाइस पर सहेजी जाती है।",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "खाते के साथ आपकी ट्रेनिंग आपके दूसरे डिवाइसों पर भी साथ रहती है। खाते के बिना वह इसी डिवाइस पर रहती है।",
 }

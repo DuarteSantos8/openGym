@@ -6319,4 +6319,5 @@ export default {
   "Sign in or create account": "Bejelentkezés vagy fiók létrehozása",
   "Your training stays on this device. An account is for your plan and purchases.": "Az edzéseid ezen az eszközön maradnak. A fiók a csomagodhoz és a vásárlásaidhoz kell.",
   "Signed in as {0}. Your training is stored on this device.": "Bejelentkezve mint {0}. Az edzéseid ezen az eszközön vannak tárolva.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Fiókkal az edzéseid a többi eszközödön is elérhetők. Fiók nélkül ezen az eszközön maradnak.",
 }

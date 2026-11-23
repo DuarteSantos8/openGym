@@ -134,20 +134,25 @@ export default function Login() {
     </div>
   )
 
-  // Cloud edition, and no server of the app's own answered: a profile on one cannot be made or
-  // opened from here, so those buttons would only fail. What works is the account, and this
-  // device (ADR 0008, 0013). Where a server does answer, everything below is offered as before.
-  if (isCloud() && !config) return (
+  // Cloud edition. No server of the app's own answered: a profile on one cannot be made or
+  // opened from here, so those buttons would only fail, and what works is the account and this
+  // device (ADR 0008, 0013). Or one answered and signs people in with that same account: the way
+  // in is still the account, whose Continue goes through the server's sign-in
+  // (lib/cloud/enter-app.js). A server with other ways in is offered as before, below.
+  if (isCloud() && (!config || sso)) return (
     <div className="narrow iv-first">
       <div className="iv-first-mark"><BrandLogo size={30} /></div>
       {/* The statement is the screen: one sentence a line, set large. */}
       <h1 className="iv-first-say">{sentences(t('Your workouts. Your weights. Your profile.')).map((line, i) => <span key={i}>{line}</span>)}</h1>
       <p className="iv-first-lead">{t('Answer six questions for a plan that fits you, or pick one yourself.')}</p>
+      {ssoNote}
       <div className="iv-first-do">
         <AccountButton />
         {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       </div>
-      <p className="iv-first-note">{t('Your training stays on this device. An account is for your plan and purchases.')}</p>
+      <p className="iv-first-note">{sso
+        ? t('With an account your training follows you to your other devices. Without one it stays on this device.')
+        : t('Your training stays on this device. An account is for your plan and purchases.')}</p>
     </div>
   )
 

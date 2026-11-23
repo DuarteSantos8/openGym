@@ -181,3 +181,31 @@ test('the first screen offers the account and this device; signed in, Continue g
   await expect(card.locator('.lrow-t')).toHaveText('Sam')
   await expect(card.locator('.lrow-s')).toHaveText('Signed in as sam@example.com. Your training is stored on this device.')
 })
+
+// The app's own server, once it exists (docs/next/CLOUD-SERVER.md): a real API here, whose one
+// way in is an identity provider (./linked-server.mjs). The provider is a stand-in that signs the
+// person straight in; the hosted one shows our consent page first, which the test above covers.
+test("where the app's own server signs people in with the account, Continue makes them a profile there", async ({ page }) => {
+  await pretendProject(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  // The first screen is still the account and this device, not the server's own sign-in page.
+  const account = page.getByRole('button', { name: 'Sign in or create account' })
+  await expect(account).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: 'Sign in with Ironvane' })).toHaveCount(0)
+  expect(await serious(page)).toEqual([])
+  await account.click()
+  await signIn(page)
+  await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+  await page.click('[data-continue]')
+  // Off to the server's sign-in and back again: in the app, as a profile on the server.
+  await expect(page.locator('.iv-acct')).toHaveCount(0, { timeout: 20_000 })
+  await expect.poll(() => page.evaluate(() => fetch('api/me').then(r => (r.ok ? r.json() : null)).then(j => j?.user?.name || null)), { timeout: 20_000 }).toBe('Sam')
+  // Home greets them by the name the server has, and Settings says the same.
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('button', { name: 'Settings' }).click()
+  const card = page.locator('.sp-acct')
+  await expect(card.locator('.lrow-t')).toHaveText('Sam')
+  await expect(card).not.toContainText('Guest')
+  await expect(page.getByText('Guest mode')).toHaveCount(0)
+})
