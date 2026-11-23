@@ -800,7 +800,8 @@ paths:
         Bearer token ever issued for it, on every device, including a copy someone
         walked off with. Passkeys are untouched; signing back in works immediately.
         Also clears the caller's own cookie. Unredeemed pairing codes for the account
-        are voided too.
+        are voided too, and its Web Push subscriptions are removed, so no device keeps
+        getting its notifications.
       responses:
         '200':
           description: All sessions revoked.

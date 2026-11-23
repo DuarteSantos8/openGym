@@ -2782,6 +2782,8 @@ const routes = {
     // Every scoped token ends with the sessions (its version would stop matching anyway); gone
     // from the list too, so Settings shows what still works.
     for (const r of revokeTokens(db, user.id)) logToken(user.id, 'token.end', r);
+    // A lost or shared device stops getting this account's reminders and rest alerts too.
+    db.subs = db.subs.filter(s => s.userId !== user.id);
     saveDb();
     audit(req, 'auth.logout.all', { user });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
