@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login.jsx'
 
@@ -40,12 +41,14 @@ vi.mock('../lib/demo.js', () => ({ DEMO: false, REPO: 'https://example.invalid' 
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: vi.fn(), confirmSheet: vi.fn() }))
 
 const mounted = []
+let where = ''
+function Where() { where = useLocation().pathname; return null }
 function mount(el) {
   const host = document.createElement('div')
   document.body.appendChild(host)
   const root = createRoot(host)
   mounted.push({ root, host })
-  act(() => root.render(el))
+  act(() => root.render(<MemoryRouter initialEntries={['/home']}><Where />{el}</MemoryRouter>))
   return host
 }
 const buttons = host => [...host.querySelectorAll('button')].map(b => b.textContent)
@@ -66,8 +69,12 @@ describe('Login in the Cloud edition', () => {
 
   it('the account button goes to the account screen; the other opens this device', () => {
     const page = mount(<Login />)
+    // Through the router, not by writing the address: only then is the step numbered in this
+    // session's history, which is how the account's Back knows it can return here (#71's review).
+    const hashBefore = window.location.hash
     act(() => { button(page, 'Sign in or create account').click() })
-    expect(window.location.hash).toBe('#/account')
+    expect(where).toBe('/account')
+    expect(window.location.hash).toBe(hashBefore)
     act(() => { button(page, 'Continue without account').click() })
     expect(mocks.setGuest).toHaveBeenCalledWith(true)
   })
