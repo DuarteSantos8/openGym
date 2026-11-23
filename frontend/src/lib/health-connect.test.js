@@ -108,6 +108,17 @@ describe('sessionRecord', () => {
       notes: 'Barbell Bench Press\n60×8, 60×8\n\nFelt strong.',
     })
   })
+  it('writes the calories a watch measured, less the resting burn, only when calories are allowed (#724)', () => {
+    // 330 kcal total in an hour at 80 kg: 80 of them the body burns at rest anyway
+    expect(sessionRecord(workout([strength], { kcal: 330 }), { unit: 'kg', nameOf, kg: 80 }).kcal).toBe(250)
+    expect(sessionRecord(workout([strength], { kcal: 330 }), { unit: 'kg', nameOf }).kcal).toBeUndefined()
+    // nothing left over the resting burn: the estimate, never 0 or less
+    const estimate = sessionRecord(workout([strength]), { unit: 'kg', nameOf, kg: 80 }).kcal
+    expect(estimate).toBeGreaterThan(0)
+    expect(sessionRecord(workout([strength], { kcal: 60 }), { unit: 'kg', nameOf, kg: 80 }).kcal).toBe(estimate)
+    expect(sessionRecord(workout([strength], { kcal: 30000 }), { unit: 'kg', nameOf, kg: 80 }).kcal).toBeUndefined()
+    expect(sessionRecord(workout([strength], { end: at(18) + 2 * 86400e3, kcal: 312 }), { unit: 'kg', nameOf, kg: 80 })?.kcal).toBeUndefined()
+  })
   it('leaves out a workout without real times instead of inventing them', () => {
     expect(sessionRecord(workout([strength], { start: undefined }), { unit: 'kg', nameOf })).toBeNull()
     expect(sessionRecord(workout([strength], { end: at(18) }), { unit: 'kg', nameOf })).toBeNull()

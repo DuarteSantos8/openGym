@@ -568,12 +568,20 @@ class KcalCount {
         base = value ?: 0.0; from = 0.0; raw = 0.0
     }
 
-    /** The workout changed under a running exercise: the count starts again from its total now. */
-    fun switchTo(id: String?) { wid = id; value = null; base = 0.0; from = raw; lost = false }
+    /**
+     * The workout changed under a running exercise: the count starts again from its total now. One picked
+     * up `late` (it began a while before, KcalCount.late) sends none: the count would miss its start.
+     */
+    fun switchTo(id: String?, late: Boolean = false) { wid = id; value = null; base = 0.0; from = raw; lost = late }
 
     /** The running exercise's total so far. */
     // raw is still tracked while lost, so a later switchTo counts from the right point.
     fun total(kcal: Double) { if (kcal >= 0) { raw = kcal; if (!lost) value = base + kcal - from } }
+
+    companion object {
+        /** A workout that began more than a minute before the watch took it up (`start` on this watch's clock, ms). */
+        fun late(start: Double?, now: Double) = start != null && now - start > 60_000
+    }
 }
 
 /**
