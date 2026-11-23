@@ -5830,4 +5830,9 @@ export default {
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "メインページの設定に従います。オンにすると、このタイプの表示内容とボタンを個別に選べます。",
   "Preview on": "プレビュー対象",
   "shorter": "短く",
+  "Customize": "カスタマイズ",
+  "Collapsed": "折りたたみ",
+  "Hide": "非表示",
+  "Totals": "合計",
+  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "使うものは表示、あまり開かないものは折りたたみ、残りは非表示に。矢印で順番を変えられます。",
 }
