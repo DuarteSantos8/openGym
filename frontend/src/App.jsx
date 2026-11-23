@@ -44,6 +44,7 @@ import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
+import { useQuiet } from './lib/wakelock-quiet.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
@@ -355,7 +356,12 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(wantsWakeLock(S))
+  // ...but not for ever: a workout left quiet for 15 min lets the screen lock (lib/wakelock-quiet.js)
+  const resting = useUI(u => !!(u.timer && !u.timer.ready && !u.timer.paused) || !!(u.work && !u.work.paused))
+  // a circuit clock counts too: an interval step can run 60 min untouched, and our release is global
+  const circuitOn = useCircuit(c => !!c.run && !c.run.ended && c.run.paused == null)
+  const quiet = useQuiet(S.active, resting || circuitOn)
+  useWakeLock(wantsWakeLock(S) && !quiet)
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
