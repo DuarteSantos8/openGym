@@ -5,10 +5,11 @@ import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Account, { wordFor, forgetLink } from './Account.jsx'
+import { RESET_KEY } from '../../lib/cloud/pending-reset.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, container
-afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null; forgetLink() })
+afterEach(() => { if (root) act(() => root.unmount()); container?.remove(); root = container = null; forgetLink(); window.sessionStorage.clear() })
 
 const err = code => Object.assign(new Error(code), { code })
 function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) {
@@ -149,6 +150,39 @@ describe('Account', () => {
     act(() => root.unmount()); container.remove()
     await mount(c, { url: '/account' })
     expect(mode()).toBe('account')
+  })
+
+  // Found in review of #66: the step was kept in the page's memory, so loading the page again
+  // lost it while the session the link gave stayed, and the account opened with the old password
+  // still in force. It is kept for the tab now, tied to the account the link signed in.
+  it('still asks for the new password when the page is loaded again in the same tab', async () => {
+    const c = fakeClient()
+    await mount(c, { url: '/account?token_hash=h-1&type=recovery' })
+    expect(window.sessionStorage.getItem(RESET_KEY)).toBe('u-1')
+    act(() => root.unmount()); container.remove()
+    forgetLink()                                        // a reload: the page's memory is gone, the tab's is not
+    await mount(c, { url: '/account' })
+    expect(mode()).toBe('newpass')
+    await type('password', 'a-new-long-password')
+    await submit()
+    expect(mode()).toBe('account')
+    expect(window.sessionStorage.getItem(RESET_KEY)).toBeNull()
+  })
+
+  it('a reset left unfinished is not asked of a different account, and signing out forgets it', async () => {
+    window.sessionStorage.setItem(RESET_KEY, 'u-other')
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    await mount(c)
+    expect(mode()).toBe('account')
+    expect(window.sessionStorage.getItem(RESET_KEY)).toBeNull()
+
+    window.sessionStorage.setItem(RESET_KEY, 'u-1')
+    act(() => root.unmount()); container.remove()
+    await mount(c)
+    expect(mode()).toBe('newpass')
+    await act(async () => { c.set(null) })
+    expect(mode()).toBe('signin')
+    expect(window.sessionStorage.getItem(RESET_KEY)).toBeNull()
   })
 
   it('a dead link still says so after the screen is remounted, until something else is done', async () => {
