@@ -139,6 +139,44 @@ describe('staying signed in', () => {
     expect(blip.auth.session().refresh_token).toBe('rt-1')
   })
 
+  // Review of #62: signing out while a refresh is on its way must stay signed out.
+  it('a refresh that lands after signing out does not sign anyone back in', async () => {
+    let land
+    const { auth, storage, tick } = setup({
+      'POST /auth/v1/token?grant_type=password': res(200, tokens()),
+      'POST /auth/v1/token?grant_type=refresh_token': () => new Promise(r => { land = () => r(res(200, tokens({ access_token: 'at-2', refresh_token: 'rt-2' }))) }),
+      'POST /auth/v1/logout': res(204, {}),
+    })
+    await auth.signIn('a@example.com', 'pw')
+    tick(3600_000)
+    const pending = auth.fresh()
+    await Promise.resolve()
+    await auth.signOut()
+    land()
+    expect(await pending).toBeNull()
+    expect(auth.session()).toBeNull()
+    expect(storage.getItem(SESSION_KEY)).toBeNull()
+  })
+
+  it('nor does it replace the session of whoever signed in meanwhile', async () => {
+    let land
+    const { auth, tick } = setup({
+      'POST /auth/v1/token?grant_type=password': c => res(200, c.body.email === 'b@example.com' ? tokens({ access_token: 'at-b', refresh_token: 'rt-b', user: { id: 'u-b', email: 'b@example.com' } }) : tokens()),
+      'POST /auth/v1/token?grant_type=refresh_token': () => new Promise(r => { land = () => r(res(200, tokens({ access_token: 'at-2', refresh_token: 'rt-2' }))) }),
+      'POST /auth/v1/logout': res(204, {}),
+    })
+    await auth.signIn('a@example.com', 'pw')
+    tick(3600_000)
+    const pending = auth.fresh()
+    await Promise.resolve()
+    await auth.signOut()
+    await auth.signIn('b@example.com', 'pw')
+    land()
+    await pending
+    expect(auth.session().user.id).toBe('u-b')
+    expect(auth.session().access_token).toBe('at-b')
+  })
+
   it('picks the session up again from storage, and ignores one that is not a session', async () => {
     const a = setup({ 'POST /auth/v1/token?grant_type=password': res(200, tokens()) })
     await a.auth.signIn('a@example.com', 'pw')

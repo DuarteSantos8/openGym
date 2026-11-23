@@ -164,6 +164,40 @@ describe('Account', () => {
     expect($('input[name="name"]').value).toBe('Typed first')
   })
 
+  // Review of #62.
+  it('the word typed to delete one account does not carry over to the next one signed in', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    await mount(c)
+    await type('confirm', 'delete')
+    expect($('[data-delete]').disabled).toBe(false)
+    await click('[data-signout]')
+    await act(async () => { c.set({ user: { id: 'u-2', email: 'b@example.com' } }) })
+    await act(async () => {})
+    expect(mode()).toBe('account')
+    expect($('input[name="confirm"]').value).toBe('')
+    expect($('[data-delete]').disabled).toBe(true)
+  })
+
+  it('the name cannot be saved before it has loaded, so an empty field never erases it', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    let arrive
+    c.profiles.get.mockImplementationOnce(() => new Promise(r => { arrive = r }))
+    await mount(c)
+    expect($('[data-save]').disabled).toBe(true)
+    await submit('form')
+    expect(c.profiles.update).not.toHaveBeenCalled()
+    await act(async () => { arrive({ display_name: 'Sam' }) })
+    expect($('[data-save]').disabled).toBe(false)
+    expect($('input[name="name"]').value).toBe('Sam')
+  })
+
+  it('offers a way on into the app from the account', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    await mount(c)
+    expect($('[data-continue]')).not.toBeNull()
+    expect($('[data-continue]').textContent).toBe('Continue')
+  })
+
   it('deleting needs the word, then deletes, signs out and returns to sign in', async () => {
     const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
     await mount(c)

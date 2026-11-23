@@ -70,6 +70,9 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
   const base = String(url).replace(/\/+$/, '') + '/auth/v1'
   let current = readStored(storage)
   let refreshing = null
+  // Goes up whenever who is signed in changes on purpose (sign in, sign out, a link). A refresh
+  // that was already on its way when that happened belongs to the past and is thrown away.
+  let epoch = 0
   const listeners = new Set()
 
   const keep = s => {
@@ -104,11 +107,15 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
     if (!current) return null
     if (current.expires_at - now() > REFRESH_EARLY_MS) return current.access_token
     refreshing ||= (async () => {
+      const at = epoch
       try {
         const s = sessionOf(await call('POST', '/token?grant_type=refresh_token', { body: { refresh_token: current.refresh_token } }), now())
+        // Signed out, or someone else signed in, while this was on its way: it must not undo that.
+        if (epoch !== at) return current?.access_token ?? null
         if (!s) throw new CloudAuthError('unknown')
         return keep(s).access_token
       } catch (e) {
+        if (epoch !== at) return current?.access_token ?? null
         if (e instanceof CloudAuthError && DEAD_REFRESH.has(e.code)) { keep(null); return null }
         throw e
       } finally { refreshing = null }
@@ -126,6 +133,7 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
     async signIn(email, password) {
       const s = sessionOf(await call('POST', '/token?grant_type=password', { body: { email: cleanEmail(email), password: String(password ?? '') } }), now())
       if (!s) throw new CloudAuthError('unknown')
+      epoch++
       return keep(s)
     },
 
@@ -133,11 +141,13 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
     async signUp(email, password, { redirectTo } = {}) {
       const body = await call('POST', withRedirect('/signup', redirectTo), { body: { email: cleanEmail(email), password: String(password ?? '') } })
       const s = sessionOf(body, now())
+      if (s) epoch++
       return s ? { session: keep(s), needsConfirmation: false } : { session: null, needsConfirmation: true }
     },
 
     async signOut() {
       const token = current?.access_token
+      epoch++
       keep(null)
       if (token) { try { await call('POST', '/logout?scope=local', { token }) } catch { /* already signed out here, which is what was asked */ } }
     },
@@ -152,6 +162,7 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
       if (!LINK_TYPES.has(type) || typeof tokenHash !== 'string' || !tokenHash) throw new CloudAuthError('validation_failed')
       const s = sessionOf(await call('POST', '/verify', { body: { type, token_hash: tokenHash } }), now())
       if (!s) throw new CloudAuthError('unknown')
+      epoch++
       return keep(s)
     },
 
