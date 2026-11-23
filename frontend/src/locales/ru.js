@@ -6317,4 +6317,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Для подтверждения введи слово delete. Аккаунт будет удалён, и вернуть его нельзя.",
   "We sent a link to {0}. Open it on this device to continue.": "Мы отправили ссылку на {0}. Открой её на этом устройстве, чтобы продолжить.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Письмо не пришло за минуту? Возможно, у этого адреса уже есть аккаунт: войди или сбрось пароль.",
+  "Sign in or create account": "Войти или создать аккаунт",
+  "Your training stays on this device. An account is for your plan and purchases.": "Твои тренировки остаются на этом устройстве. Аккаунт нужен для тарифа и покупок.",
 }

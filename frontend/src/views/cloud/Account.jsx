@@ -11,6 +11,8 @@ import { t } from '../../lib/i18n.js'
 import { Button, TextField } from '../../components/ui.jsx'
 import { cloud } from '../../lib/cloud/client.js'
 import { createPendingReset } from '../../lib/cloud/pending-reset.js'
+import { enterApp } from '../../lib/cloud/enter-app.js'
+import { useStore } from '../../store/useStore.js'
 import './account.css'
 
 export const MIN_PASSWORD = 8
@@ -55,7 +57,7 @@ function save(name, text) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
-export default function Account({ client = cloud(), go = url => { location.assign(url) } }) {
+export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = () => enterApp(useStore.getState()) }) {
   const [params, setParams] = useSearchParams()
   const nav = useNavigate()
   const tokenHash = params.get('token_hash'), linkType = params.get('type'), authorizationId = params.get('authorization_id')
@@ -167,7 +169,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
         <Button variant="ghost" disabled={busy} type="button" data-change="" onClick={() => { setError(''); setPassword(''); setMode('newpass') }}>{t('Change password')}</Button>
         {/* The way on: into the app itself. Someone who arrived from an email in a fresh browser
             has no tab bar yet, and without this the account screen would be a dead end. */}
-        <Button variant="ghost" disabled={busy} type="button" data-continue="" onClick={() => nav('/home')}>{t('Continue')}</Button>
+        <Button variant="ghost" disabled={busy} type="button" data-continue="" onClick={() => { enter(); nav('/home') }}>{t('Continue')}</Button>
         <Button variant="ghost" disabled={busy} type="button" data-signout="" onClick={() => { setMode('signin'); setPassword(''); run(() => client.auth.signOut()) }}>{t('Sign out')}</Button>
       </div>
     </form>

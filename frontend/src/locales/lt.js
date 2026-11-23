@@ -6309,4 +6309,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Patvirtindamas įrašyk žodį delete. Tavo paskyra bus pašalinta ir jos atkurti nepavyks.",
   "We sent a link to {0}. Open it on this device to continue.": "Išsiuntėme nuorodą adresu {0}. Atidaryk ją šiame įrenginyje ir tęsk.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Po minutės laiško vis dar nėra? Šis adresas galbūt jau turi paskyrą: prisijunk arba atkurk slaptažodį.",
+  "Sign in or create account": "Prisijungti arba sukurti paskyrą",
+  "Your training stays on this device. An account is for your plan and purchases.": "Tavo treniruotės lieka šiame įrenginyje. Paskyra skirta tavo planui ir pirkiniams.",
 }

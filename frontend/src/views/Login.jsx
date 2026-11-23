@@ -13,6 +13,7 @@ import { passwordOn, PasswordRegisterForm, openPasswordSignIn } from '../compone
 import { openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { openLostAccess } from '../components/LostAccess.jsx'
 import { oidcOn, oidcOnly, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText } from '../lib/oidc.js'
+import { isCloud } from '../lib/edition.js'
 
 function RegisterSheet({ close }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
@@ -116,6 +117,20 @@ export default function Login() {
       <div className="dim small" style={{ marginTop: 22, lineHeight: 1.6 }}>
         <a href={REPO} target="_blank" rel="noopener">{t('Self-host it in a minute →')}</a>
       </div>
+    </div>
+  )
+
+  // Cloud edition, and no server of the app's own answered: a profile on one cannot be made or
+  // opened from here, so those buttons would only fail. What works is the account, and this
+  // device (ADR 0008, 0013). Where a server does answer, everything below is offered as before.
+  if (isCloud() && !config) return (
+    <div className="narrow" style={wrap}>
+      {head}
+      <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
+      <Button variant="primary" icon="person" onClick={() => { window.location.hash = '#/account' }}>{t('Sign in or create account')}</Button>
+      <div style={{ height: 10 }} />
+      {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Your training stays on this device. An account is for your plan and purchases.')}</div>
     </div>
   )
 
