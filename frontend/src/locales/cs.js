@@ -6278,4 +6278,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Příliš mnoho pokusů. Počkej minutu a zkus to znovu.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Pro potvrzení napiš slovo delete. Tvůj účet bude odstraněn a nelze ho obnovit.",
   "We sent a link to {0}. Open it on this device to continue.": "Poslali jsme odkaz na {0}. Otevři ho na tomto zařízení a pokračuj.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Po minutě žádný e-mail? Tato adresa už možná účet má: přihlas se, nebo si obnov heslo.",
 }

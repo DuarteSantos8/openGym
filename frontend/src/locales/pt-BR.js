@@ -4722,6 +4722,7 @@ export const PT_BR_OVERRIDES = {
   "Too many tries. Wait a minute and try again.": "Tentativas demais. Espere um minuto e tente de novo.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Digite a palavra delete para confirmar. Sua conta é removida e não pode ser recuperada.",
   "We sent a link to {0}. Open it on this device to continue.": "Enviamos um link para {0}. Abra neste dispositivo para continuar.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Nenhum e-mail depois de um minuto? Este endereço talvez já tenha uma conta: entre ou redefina sua senha.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

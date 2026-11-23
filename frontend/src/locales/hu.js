@@ -6315,4 +6315,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Túl sok próbálkozás. Várj egy percet, és próbáld újra.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "A megerősítéshez írd be a delete szót. A fiókod törlődik, és nem állítható vissza.",
   "We sent a link to {0}. Open it on this device to continue.": "Küldtünk egy linket ide: {0}. Nyisd meg ezen az eszközön a folytatáshoz.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Egy perc után sincs e-mail? Lehet, hogy ehhez a címhez már tartozik fiók: jelentkezz be, vagy állítsd vissza a jelszavad.",
 }

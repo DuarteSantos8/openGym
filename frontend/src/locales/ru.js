@@ -6316,4 +6316,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Слишком много попыток. Подожди минуту и попробуй ещё раз.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Для подтверждения введи слово delete. Аккаунт будет удалён, и вернуть его нельзя.",
   "We sent a link to {0}. Open it on this device to continue.": "Мы отправили ссылку на {0}. Открой её на этом устройстве, чтобы продолжить.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Письмо не пришло за минуту? Возможно, у этого адреса уже есть аккаунт: войди или сбрось пароль.",
 }

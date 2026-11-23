@@ -6391,4 +6391,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "অনেকবার চেষ্টা হয়েছে। এক মিনিট অপেক্ষা করে আবার চেষ্টা করুন।",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "নিশ্চিত করতে delete শব্দটি লিখুন। আপনার অ্যাকাউন্ট মুছে যাবে এবং ফেরানো যাবে না।",
   "We sent a link to {0}. Open it on this device to continue.": "আমরা {0}-এ একটি লিংক পাঠিয়েছি। চালিয়ে যেতে এই ডিভাইসেই খুলুন।",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "এক মিনিট পরেও ইমেইল আসেনি? এই ঠিকানায় হয়তো আগে থেকেই একটি অ্যাকাউন্ট আছে: সাইন ইন করুন, অথবা পাসওয়ার্ড রিসেট করুন।",
 }

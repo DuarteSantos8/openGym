@@ -24,6 +24,7 @@
 .iv-acct-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;margin-top:14px}
 .iv-acct-links .btn{padding-inline:4px}
 .iv-acct-who{margin:0 0 14px;color:var(--label-2);overflow-wrap:anywhere}
+.iv-acct-hint{margin:0 0 14px;color:var(--label-2);line-height:var(--lh-small);max-width:44ch}
 .iv-acct-who b{color:var(--label);font-weight:600}
 .iv-acct-danger{margin-top:22px;padding-top:16px;border-top:var(--hair) solid var(--sep)}
 @media (prefers-reduced-motion:no-preference){
