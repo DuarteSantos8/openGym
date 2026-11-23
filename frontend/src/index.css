@@ -4673,6 +4673,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    column, under the thumb. With nothing at the bottom, the page and the rest bar take the
    workout screen's bottom reserves (body.no-tabbar above), and the page and everything pinned to
    the screen's sides stop at the column. */
+:root[data-vbar]{--vbar-free:calc(100vw - var(--sal) - var(--sar))}
 :root[data-vbar] body{padding-left:var(--sal);padding-right:var(--sar)}
 :root[data-vbar] #tabbar{
   top:0;bottom:0;flex-direction:column;justify-content:flex-start;align-items:center;gap:14px;
@@ -4686,7 +4687,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-vbar] #tabbar button.start{order:1;margin-top:auto;padding:0}
 :root[data-vbar] :is(.conn-bar,#timer,.composer,.sheet,#app > .page.under){left:var(--sal);right:var(--sar)}
 :root[data-vbar] :is(#toast,.center){left:calc(50% + (var(--sal) - var(--sar)) / 2)}
+:root[data-vbar] .center{width:min(calc(var(--vbar-free) * .84),300px)}
+:root[data-vbar] .center.wide{width:min(calc(var(--vbar-free) * .94),440px)}
+:root[data-vbar] #toast{max-width:calc(var(--vbar-free) * .88)}
 :root[data-vbar] #totop{inset-inline-end:calc(16px + var(--sal) + var(--sar));bottom:calc(24px + var(--sab))}
 :root[data-vbar] body.resting #totop{bottom:calc(100px + var(--sab))}
+:root[data-vbar] body.totop-on #app{padding-bottom:calc(88px + var(--sab))}
+:root[data-vbar] body.totop-on.resting #app{padding-bottom:calc(160px + var(--sab))}
 :root[data-vbar] .cp-screen{padding-left:calc(16px + var(--sal));padding-right:calc(16px + var(--sar))}
 :root[data-vbar] .wrapped{padding-left:var(--sal);padding-right:var(--sar)}
