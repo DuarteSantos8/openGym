@@ -37,7 +37,8 @@ vi.mock('../store/useUI.js', () => {
   return { useUI }
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
-vi.mock('../lib/demo.js', () => ({ DEMO: true, DEMO_SEEDED: 'gym_demo_seeded_v1', REPO: '' }))
+// LIFTIQ-FORK: STANDALONE added because lib/coach.js now imports it (the fork's standalone flavour)
+vi.mock('../lib/demo.js', () => ({ DEMO: true, STANDALONE: false, DEMO_SEEDED: 'gym_demo_seeded_v1', REPO: '' }))
 vi.mock('../sheets.jsx', () => ({ startFlow: vi.fn(), confirmSheet: vi.fn() }))
 vi.mock('../lib/api.js', () => ({
   api: vi.fn(() => Promise.resolve({})), IS_APPLE: false, IS_ANDROID: false, BIO: 'biometrics',
