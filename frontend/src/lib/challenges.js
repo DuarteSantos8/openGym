@@ -30,6 +30,7 @@
 import { workoutDay, sessionVolume, completedRepsOf, doneUnits } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { EXIDX, isCardio, canonicalExId } from './exercises.js'
+import { kindOfName } from './cardio-kind.js'
 import { musclesOf } from './muscles.js'
 import { isoOf, weekKey, weekStartOf } from './format.js'
 import { LB_KG } from './units.js'
@@ -87,9 +88,13 @@ const PULLUP = /\b(pull|chin)[\s-]?ups?\b/
 const PUSHUP = /\bpush[\s-]?ups?\b/
 const workRows = e => (Array.isArray(e?.sets) ? e.sets : []).filter(s => s && !isWarmupRow(s))
 const repsOf = e => workRows(e).reduce((n, s) => n + completedRepsOf(s), 0)
-// Cardio minutes of one entry: a cardio row's `min`, or a timed row's `sec` on a cardio exercise.
+// Jump rope starts as sets and reps since 1.4.3 (#796), so it is no cardio exercise any more, but a
+// rope skipped for time is still cardio: its seconds count, a plank's do not (#1296).
+const isRope = id => { const ex = EXIDX[id]; return !!ex && kindOfName(ex.n, ex.eq) === 'rope' }
+// Cardio minutes of one entry: a cardio row's `min`, or a timed row's `sec` on a cardio exercise
+// or a jump rope.
 export function cardioMinOf(e) {
-  const cardio = isCardio(e?.id)
+  const cardio = isCardio(e?.id) || isRope(e?.id)
   let m = 0
   for (const s of workRows(e)) {
     if (!doneUnits(s)) continue
