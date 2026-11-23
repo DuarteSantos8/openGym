@@ -15,7 +15,7 @@ Each category is **Off**, **See** or **Change directly**:
 | Category | Covers in your profile | Most it can get |
 |---|---|---|
 | Workouts | the workout history, confirmed weights, your own exercises | Change directly |
-| Plans & routines | routines, the weekly plan, the floating week (`queue`), rotations, programmes, date targets, your own exercises | Change directly |
+| Plans & routines | routines, the weekly plan, the floating week (`queue`), rotations, programmes, date targets, your own exercises, how each exercise is loaded (per side or a single stack, the bar or machine weight) | Change directly |
 | Body weight | weigh-ins, goal weight, weekly rate | Change directly |
 | Body measurements | check-ins and your own fields | Change directly |
 | Notes | day notes, standing exercise notes | See |

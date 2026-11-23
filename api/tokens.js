@@ -45,6 +45,7 @@ export const KEY_CATEGORY = {
   customEx: ['workouts', 'plans'],
   routines: ['plans'], week: ['plans'], dayPlan: ['plans'], queue: ['plans'], rotation: ['plans'],
   scheduleMode: ['plans'], programmes: ['plans'], programme: ['plans'],
+  loadKind: ['plans'], barWeights:['plans'],
   bodyweight: ['bodyweight'], targetW: ['bodyweight'], rateGoal: ['bodyweight'],
   measurements: ['measurements'], customMeasurements: ['measurements'], measurementEnabled: ['measurements'],
   dayNotes: ['notes'], exNotes: ['notes'], gymNotes: ['notes'], journalFolders: ['notes'],
