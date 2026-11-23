@@ -118,6 +118,7 @@ beforeEach(() => {
 afterEach(async () => {
   if (root) await act(async () => { root.unmount() })
   root = null; container = null; dom = null
+  vi.unstubAllGlobals()
 })
 
 describe('the superset card after a rating', () => {
@@ -306,6 +307,17 @@ describe('the superset card after a rating', () => {
     await mount(superset(), 1, {}, () => { rowsAt(30); topBars(0) })
     expect(dom.Element.prototype.scrollIntoView).not.toHaveBeenCalled()
   })
+  // The iPhone's workout header is fixed over the page (index.css .gh.wk): a row under it is not on screen.
+  it('on the iPhone a row under the fixed header counts as off screen', async () => {
+    await mount(superset(), 1, {}, () => {
+      document.documentElement.dataset.platform = 'ios'; dom.innerHeight = 659
+      vi.stubGlobal('getComputedStyle', () => ({ fontSize: '17px' }))   // the iPhone header reads the text size
+      dom.Element.prototype.getBoundingClientRect = function () { return this.classList?.contains('wk') ? { top: 0, bottom: 150 } : { top: 120, bottom: 164 } }
+    })
+    const scroll = dom.Element.prototype.scrollIntoView
+    expect(scroll).toHaveBeenCalledTimes(1)
+    expect(scroll.mock.contexts[0]).toBe(partnerFirstRow())
+  })
   // The rest and tab bars are fixed over the page: a row under either is not on screen.
   it('a row under the rest bar counts as off screen', async () => {
     await mount(superset(), 0, { workoutView: 'list' })
@@ -314,5 +326,15 @@ describe('the superset card after a rating', () => {
     dom.Element.prototype.getBoundingClientRect = function () { return this.id === 'timer' ? { top: 380, bottom: 659 } : { top: 400, bottom: 444 } }
     mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
     expect(seen).toEqual([container.querySelectorAll('.setrow')[0]])
+  })
+  // On the iPhone a rest docks its row (.trow.dock, RestTimer.jsx) in place of #timer.
+  it('a row under the docked rest row counts as off screen', async () => {
+    await mount(superset(), 0, { workoutView: 'list' })
+    rowsAt(400); const seen = watchScrolls()
+    const bar = document.createElement('div'); bar.className = 'trow dock'; document.body.appendChild(bar)
+    dom.Element.prototype.getBoundingClientRect = function () { return this.classList?.contains('dock') ? { top: 380, bottom: 659 } : { top: 400, bottom: 444 } }
+    mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
+    expect(seen).toEqual([container.querySelectorAll('.setrow')[0]])
+    bar.remove()
   })
 })
