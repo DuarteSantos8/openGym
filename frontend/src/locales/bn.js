@@ -2191,7 +2191,7 @@ export default {
   'Tap to plan something': 'কিছু প্ল্যান করতে ট্যাপ করুন',
   'Drag to reorder': 'ক্রম বদলাতে টেনে সরান',
   'Drag to reorder. Tap the minus to delete.': 'ক্রম বদলাতে টেনে সরান। মুছতে মাইনাসে ট্যাপ করুন।',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'এডিট করতে একটি রুটিনে ট্যাপ করুন। ক্রম বদলানো ও মুছে ফেলা “এডিট”-এর ভেতরে।',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "এডিট করতে একটি রুটিনে ট্যাপ করুন, সরাতে চেপে ধরুন। মুছে ফেলা “এডিট”-এর ভেতরে।",
   'Pick one routine, or more to train them together.': 'একটি রুটিন বেছে নিন, অথবা একসাথে ট্রেন করতে একাধিক।',
   'Planned sets per week, from your plan.': 'আপনার প্ল্যান অনুযায়ী প্রতি সপ্তাহে পরিকল্পিত সেট।',
   // --- Settings (v1.3.11) ---

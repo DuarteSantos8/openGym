@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': 'कुछ प्लान करने के लिए टैप करें',
   'Drag to reorder': 'क्रम बदलने के लिए खींचें',
   'Drag to reorder. Tap the minus to delete.': 'क्रम बदलने के लिए खींचें। हटाने के लिए माइनस पर टैप करें।',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'किसी रूटीन को संपादित करने के लिए उस पर टैप करें। क्रम बदलना और हटाना संपादित करें में है।',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "किसी रूटीन को संपादित करने के लिए उस पर टैप करें, खिसकाने के लिए दबाकर रखें। हटाना संपादित करें में है।",
   'Pick one routine, or more to train them together.': 'एक रूटीन चुनें, या साथ में करने के लिए कई।',
   'Planned sets per week, from your plan.': 'आपके प्लान के अनुसार प्रति सप्ताह नियोजित सेट।',
   // --- Settings (v1.3.11) ---

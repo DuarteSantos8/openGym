@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': '点一下来安排训练',
   'Drag to reorder': '拖动调整顺序',
   'Drag to reorder. Tap the minus to delete.': '拖动可调整顺序。点减号可删除。',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': '点训练日即可编辑。调整顺序和删除在“编辑”里。',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "点训练日即可编辑，长按即可移动。删除在“编辑”里。",
   'Pick one routine, or more to train them together.': '选一个训练日，或选多个一起练。',
   'Planned sets per week, from your plan.': '按你的计划，每周计划的组数。',
   // --- Settings (v1.3.11) ---

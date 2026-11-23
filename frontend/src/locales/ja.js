@@ -1848,7 +1848,7 @@ export default {
   "Tap to plan something": "タップして予定を追加",
   "Drag to reorder": "ドラッグして並べ替え",
   "Drag to reorder. Tap the minus to delete.": "ドラッグで並べ替え、マイナスをタップして削除します。",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "ルーティンをタップすると編集できます。並べ替えと削除は「編集」から行えます。",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "ルーティンはタップで編集、長押しで移動できます。削除は「編集」から行えます。",
   "Pick one routine, or more to train them together.": "ルーティンを1つ選んでください。複数選ぶと、まとめてトレーニングできます。",
   "Planned sets per week, from your plan.": "プランに基づく1週間の予定セット数。",
   "Timer alerts": "タイマーの通知",

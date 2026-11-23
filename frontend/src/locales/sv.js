@@ -2170,7 +2170,7 @@ export default {
   'Tap to plan something': 'Tryck för att planera något',
   'Drag to reorder': 'Dra för att ändra ordning',
   'Drag to reorder. Tap the minus to delete.': 'Dra för att ändra ordning. Tryck på minus för att ta bort.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Tryck på en rutin för att redigera den. Ändra ordning och ta bort finns under Redigera.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Tryck på en rutin för att redigera den, eller håll in för att flytta den. Ta bort finns under Redigera.",
   'Pick one routine, or more to train them together.': 'Välj en rutin, eller flera för att träna dem tillsammans.',
   'Planned sets per week, from your plan.': 'Planerade set per vecka, enligt din plan.',
   // --- Settings (v1.3.11) ---

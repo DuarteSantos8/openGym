@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': '탭해서 계획하기',
   'Drag to reorder': '드래그해서 순서 변경',
   'Drag to reorder. Tap the minus to delete.': '드래그해서 순서를 바꾸세요. 삭제하려면 마이너스를 탭하세요.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': '루틴을 탭하면 편집할 수 있어요. 순서 변경과 삭제는 편집에 있어요.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "루틴을 탭하면 편집하고, 길게 누르면 옮길 수 있어요. 삭제는 편집에 있어요.",
   'Pick one routine, or more to train them together.': '루틴 하나를 고르거나, 함께 하려면 여러 개를 고르세요.',
   'Planned sets per week, from your plan.': '플랜에 따른 주간 계획 세트 수.',
   // --- Settings (v1.3.11) ---

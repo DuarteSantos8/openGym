@@ -374,7 +374,7 @@ function Schedule({ S, update, nav, mode }) {
           const key = looped ? i + ':' + id : id
           // The loop's swipe is remove-only (v1.3.11): a routine is in the loop once, so there is
           // nothing to copy. The row the reorder measures is the swipe's outer element.
-          const reorderProps = { 'data-reorder-row': '', 'data-reorder-key': looped ? undefined : id, style: loopReorder.rowStyle(i) }
+          const reorderProps = { 'data-reorder-row': '', 'data-reorder-key': looped ? undefined : id, style: loopReorder.rowStyle(i), ...(external ? {} : loopReorder.press(i)) }
           const name = rest ? t('Rest day') : r?.name ?? id
           // A loop may hold a routine or a rest day more than once: its place tells them apart (P4).
           const sayName = seq.filter(x => x === id).length > 1 ? `${i + 1}. ${name}` : name
@@ -392,8 +392,9 @@ function Schedule({ S, update, nav, mode }) {
               {...loopReorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>
           return swipe
-            ? <SwipeRow key={key} {...reorderProps} className="swrow-item" deleteLabel={t('Remove')} deleteName={t('Remove {0}', said(sayName))} deleteIcon="minus"
-              onDelete={() => takeOut(i)}>{row}</SwipeRow>
+            // The row the reorder measures and holds wraps the swipe, which keeps its own pointer handlers.
+            ? <div key={key} {...reorderProps}><SwipeRow canSwipe={() => !loopReorder.lifted()} className="swrow-item" deleteLabel={t('Remove')} deleteName={t('Remove {0}', said(sayName))} deleteIcon="minus"
+              onDelete={() => takeOut(i)}>{row}</SwipeRow></div>
             : row
         })}
       </div> : <div className="empty">{t('No rotation yet. Add routines in the order you want to train them. The first one you haven’t logged stays up next.')}</div>}
@@ -431,6 +432,23 @@ function Schedule({ S, update, nav, mode }) {
 }
 
 /* ================================ Routines ================================ */
+
+/**
+ * One list of Plan's routines (all of them, the Favourites, or one folder) that a hold reorders
+ * (lib/use-list-reorder.js), the way every list in the app moves. A move puts the routine where
+ * the one it was dropped on sits in S.routines, so the routines of other folders keep their place.
+ */
+function HeldRoutines({ list, className, data, update, children }) {
+  const ids = list.map(r => r.id)
+  const r = useListReorder(list.length, (from, to) => update(s => {
+    const a = s.routines.findIndex(x => x.id === ids[from]), b = s.routines.findIndex(x => x.id === ids[to])
+    if (a < 0 || b < 0 || a === b) return
+    const [m] = s.routines.splice(a, 1)
+    s.routines.splice(b, 0, m)
+  }))
+  return <div className={className} ref={r.listRef} {...data}>{list.map((x, i) =>
+    <div key={x.id} data-reorder-row data-reorder-key={x.id} style={r.rowStyle(i)} {...r.press(i)}>{children(x, () => !r.lifted())}</div>)}</div>
+}
 
 function Routines({ S, update, nav }) {
   const [edit, setEdit] = useState(false)
@@ -484,7 +502,7 @@ function Routines({ S, update, nav }) {
     {routines.length ? <>
       {edit
         ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
-          <div key={r.id} data-reorder-row data-reorder-key={r.id} className="item plan-routine" style={reorder.rowStyle(i)}>
+          <div key={r.id} data-reorder-row data-reorder-key={r.id} className="item plan-routine" style={reorder.rowStyle(i)} {...reorder.press(i)}>
             <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
@@ -497,8 +515,9 @@ function Routines({ S, update, nav }) {
           ...groupRoutines(routines.filter(r => !isFavRoutine(r)))].map(g => {
           if (!g.routines.length) return null
           const open = !g.folder || (openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder))
-          const list = open && <div key={'l' + (g.fav ? '*' : g.folder)} className="list routine-list plan-routines" data-folder={g.folder || undefined} data-favs={g.fav || undefined}>{g.routines.map(r => {
-          const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
+          const list = open && <HeldRoutines key={'l' + (g.fav ? '*' : g.folder)} list={g.routines} update={update} className="list routine-list plan-routines"
+            data={{ 'data-folder': g.folder || undefined, 'data-favs': g.fav || undefined }}>{(r, canSwipe) => {
+          const row = <div className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub(r)}</div></div>
             <MiniBodyMap routines={[r]} body={S.body} />
@@ -507,11 +526,11 @@ function Routines({ S, update, nav }) {
           // toward the end duplicates. Edit's minus and the routine's own page stay the way in
           // for a keyboard and a screen reader.
           return swipe
-            ? <SwipeRow key={r.id} className="swrow-item" copyLabel={t('Duplicate')} deleteName={t('Delete {0}', said(r.name))} copyName={nameIn(r.name, t('Duplicate'))}
-              onDelete={() => remove(r)} onCopy={() => duplicate(r)}
+            ? <SwipeRow className="swrow-item" copyLabel={t('Duplicate')} deleteName={t('Delete {0}', said(r.name))} copyName={nameIn(r.name, t('Duplicate'))}
+              onDelete={() => remove(r)} onCopy={() => duplicate(r)} canSwipe={canSwipe}
               flash={flash?.id === r.id ? flash.n : 0}>{row}</SwipeRow>
             : row
-        })}</div>
+        }}</HeldRoutines>
           if (g.fav) return <div key="favs" className="plan-folder-sect plan-favs">
             <h4 className="sec plan-favs-h"><Icon name="starFill" className="fav-star" />{t('Favourites')}</h4>
             {list}
@@ -526,7 +545,7 @@ function Routines({ S, update, nav }) {
             {list}
           </div>
         })}
-      <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it. Reorder and delete are behind Edit.')}</p>
+      <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it, or hold it to move it. Delete is behind Edit.')}</p>
     </> : <>
       <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
         <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>

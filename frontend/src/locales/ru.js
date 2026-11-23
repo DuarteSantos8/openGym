@@ -2153,7 +2153,7 @@ export default {
   'Tap to plan something': 'Нажмите, чтобы что-то запланировать',
   'Drag to reorder': 'Перетащите, чтобы изменить порядок',
   'Drag to reorder. Tap the minus to delete.': 'Перетащите, чтобы изменить порядок. Нажмите минус, чтобы удалить.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Нажмите на программу, чтобы изменить её. Порядок и удаление в разделе Изменить.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Нажмите на программу, чтобы изменить её, или удерживайте, чтобы переместить. Удаление в разделе Изменить.",
   'Pick one routine, or more to train them together.': 'Выберите одну программу или несколько, чтобы делать их вместе.',
   'Planned sets per week, from your plan.': 'Запланированные подходы в неделю по вашему плану.',
   // --- Settings (v1.3.11) ---

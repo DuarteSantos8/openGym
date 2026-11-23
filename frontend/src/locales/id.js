@@ -2177,7 +2177,7 @@ export default {
   "Tap to plan something": "Ketuk untuk merencanakan sesuatu",
   "Drag to reorder": "Tarik untuk menyusun ulang",
   "Drag to reorder. Tap the minus to delete.": "Tarik untuk menyusun ulang. Ketuk tanda minus untuk menghapus.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "Ketuk rutinitas untuk mengeditnya. Penyusunan ulang dan penghapusan berada di belakang Edit.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Ketuk rutinitas untuk mengeditnya, atau tahan untuk memindahkannya. Penghapusan ada di Edit.",
   "Pick one routine, or more to train them together.": "Pilih satu rutinitas, atau lebih untuk melatihnya bersama.",
   "Planned sets per week, from your plan.": "Set yang direncanakan per minggu, dari rencanamu.",
   "Timer alerts": "Peringatan timer",

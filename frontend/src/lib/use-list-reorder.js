@@ -1,25 +1,24 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { vibrate } from './sound.js'
+import { scrollHostFor, autoScrollStep } from './drag-scroll.js'
 
-// Reorder a flat list by its handle, the way iOS does in Edit mode: press the handle and the row
-// follows the finger at once (no long press: the handle only exists while you are reordering, so
-// there is no scroll to tell apart), the rows it passes slide out of its way, and letting go
-// commits one move. The arrow keys on a focused handle move the row one place, for a keyboard.
+// Moving a row in a list, the same way everywhere in the app (owner, 2026-11-23: "these little
+// things should be the same everywhere, otherwise you feel like you have to learn the app again
+// and again"). One gesture, one look:
 //
-// Since 1.4.6 (owner, 2026-11-23: "smoother … pressing and holding to push something up or down"):
-//   - `press(i)` on a whole row starts the same drag after a hold (HOLD_MS) that did not move
-//     more than SLOP px, with a short buzz, so the list scrolls as usual until a finger rests.
-//     While a row is held the page cannot scroll under it (a non-passive touchmove on the list).
-//   - Every change of order animates (FLIP, transform only): each row is measured after every
-//     render and slides from where it was to where it is. Letting go of a held row measures the
-//     rows where they are on screen at that moment, so the held one glides into its slot from
-//     the finger and the ones it passed stay put; the arrows and moves from elsewhere slide too.
-//   - The frame the move lands in runs without CSS transitions, so no row slides back first.
-// With reduced motion (the system's, or Settings → Motion: Less, which answers the same query)
-// nothing glides; the held row still tracks the finger.
-//
-// The routine editor has its own, superset-aware drag (RoutineEdit.jsx). This one is for lists
-// with nothing grouped: Plan's routines, the rotation's loop, the Home and Stats card lists.
+//   - Hold a row (HOLD_MS, a finger that stays within SLOP px) and it lifts: a light buzz, a
+//     shadow, a touch larger. Until then the list scrolls as usual. Its buttons and fields keep
+//     their own taps.
+//   - Or press its grip (`handle(i)`), which picks it up at once.
+//   - The rows it passes make room; at the list's edge the page scrolls along; past the first or
+//     last row it meets a soft edge instead of a wall. A buzz each time it changes places.
+//   - Letting go glides it into its slot (FLIP from where it is on screen), the frame the move
+//     lands in runs without transitions, and the tap a release would fire is swallowed.
+//   - Escape, a second finger or the app going to the background put it back.
+//   - The arrow keys on a focused grip move it one place, for a keyboard.
+// With reduced motion (the system's, or Settings → Motion: Less) nothing glides; the row still
+// follows the finger. The routine editor keeps its own superset-aware drag (RoutineEdit.jsx) with
+// the same timings and the same look.
 //
 //   const r = useListReorder(items.length, (from, to) => …)
 //   <div ref={r.listRef}>{items.map((x, i) => <div data-reorder-row data-reorder-key={x.id}
@@ -28,18 +27,20 @@ import { vibrate } from './sound.js'
 // `to` is the row's index after the move, so splice(from, 1) then splice(to, 0, row) applies it.
 export const HOLD_MS = 320
 export const SLOP = 8
-const SLIDE_MS = 180
-const FLIP_MS = 260
-const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
+export const SLIDE_MS = 180
+export const FLIP_MS = 260
+export const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
 const reduced = () => {
   try { return !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches } catch { return false }
 }
+const scrollOf = host => (host === window ? (window.scrollY || document.scrollingElement?.scrollTop || 0) : host.scrollTop)
 
 export function useListReorder(count, onMove) {
   const listRef = useRef(null)
   const gesture = useRef(null)
   const hold = useRef(null)
+  const swallow = useRef(0)
   const onMoveRef = useRef(onMove)
   onMoveRef.current = onMove
   // { from, to, dy, stride } while a row is held; { quiet: true } for the frame a move lands in.
@@ -57,17 +58,31 @@ export function useListReorder(count, onMove) {
   }
 
   const cancelHold = () => { if (hold.current) { clearTimeout(hold.current.timer); hold.current = null } }
-  useEffect(() => () => { gesture.current = null; cancelHold() }, [])
 
-  // No page scroll under a held row: pointer events alone cannot stop a touch scroll once the
-  // browser has started one, a non-passive touchmove can.
+  // Listeners that live as long as the list: no page scroll under a held row (only a non-passive
+  // touchmove can stop a touch scroll the browser has begun), the release's tap swallowed, and
+  // a drag put back on Escape or when the app goes away.
   useEffect(() => {
     const el = listRef.current
     if (!el) return undefined
     const stop = e => { if (gesture.current) e.preventDefault() }
+    const click = e => { if (Date.now() < swallow.current) { swallow.current = 0; e.preventDefault(); e.stopPropagation() } }
     el.addEventListener('touchmove', stop, { passive: false })
-    return () => el.removeEventListener('touchmove', stop)
+    el.addEventListener('click', click, true)
+    return () => { el.removeEventListener('touchmove', stop); el.removeEventListener('click', click, true) }
   })
+  useEffect(() => {
+    const key = e => { if (e.key === 'Escape' && gesture.current) { e.preventDefault(); end(false) } }
+    const away = () => { if (document.visibilityState === 'hidden') end(false) }
+    document.addEventListener('keydown', key)
+    document.addEventListener('visibilitychange', away)
+    return () => {
+      document.removeEventListener('keydown', key)
+      document.removeEventListener('visibilitychange', away)
+      gesture.current = null
+      cancelHold()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // FLIP: a row whose place changed since it was last measured slides from there to here.
   useLayoutEffect(() => {
@@ -84,28 +99,12 @@ export function useListReorder(count, onMove) {
     tops.current = now
   })
 
-  const begin = (i, pointerId, y, el) => {
-    const rows = rowsOf()
-    if (!rows[i]) return false
-    const rects = rows.map(row => row.getBoundingClientRect())
-    // The distance from one row to the next, gap included, is how far a passed row slides.
-    const stride = rects.length > 1 ? Math.abs(rects[1].top - rects[0].top) || rects[0].height : rects[0].height
-    gesture.current = { id: pointerId, el, from: i, to: i, y0: y, rects, stride }
-    // A bottom sheet the list sits in reads this and leaves the pull to the row (Modals.jsx).
-    listRef.current?.setAttribute('data-reordering', '')
-    try { el.setPointerCapture?.(pointerId) } catch { /* unsupported, or the pointer is gone */ }
-    setDrag({ from: i, to: i, dy: 0, stride })
-    return true
-  }
-
-  const follow = e => {
-    const g = gesture.current
-    if (!g || e.pointerId !== g.id) return
-    e.preventDefault()
-    // Past the first and the last row the held one meets a soft edge instead of a wall.
+  const place = g => {
+    // Where the held row is in the list's own coordinates: the finger's travel plus how far the
+    // page scrolled under it since the lift.
     const top = g.rects[0].top - g.rects[g.from].top, bottom = g.rects[g.rects.length - 1].top - g.rects[g.from].top
     const band = x => (x * 60) / (60 + Math.abs(x))
-    let dy = e.clientY - g.y0
+    let dy = g.y - g.y0 + (scrollOf(g.host) - g.scroll0)
     if (dy < top) dy = top + band(dy - top)
     else if (dy > bottom) dy = bottom + band(dy - bottom)
     const held = g.rects[g.from]
@@ -117,12 +116,54 @@ export function useListReorder(count, onMove) {
     setDrag({ from: g.from, to, dy, stride: g.stride })
   }
 
-  const end = commit => {
+  const tick = () => {
+    const g = gesture.current
+    if (!g) return
+    g.frame = null
+    const step = autoScrollStep(g.host, g.y)
+    if (!step) return
+    if (g.host === window) window.scrollBy(0, step); else g.host.scrollTop += step
+    place(g)
+    g.frame = requestAnimationFrame(tick)
+  }
+
+  const begin = (i, pointerId, y, el) => {
+    const rows = rowsOf()
+    if (!rows[i] || !listRef.current) return false
+    const rects = rows.map(row => row.getBoundingClientRect())
+    // The distance from one row to the next, gap included, is how far a passed row slides.
+    const stride = rects.length > 1 ? Math.abs(rects[1].top - rects[0].top) || rects[0].height : rects[0].height
+    const host = scrollHostFor(listRef.current)
+    gesture.current = { id: pointerId, el, row: rows[i], from: i, to: i, y0: y, y, rects, stride, host, scroll0: scrollOf(host), frame: null }
+    // The lifted look (index.css [data-held]): the same shadow on every list.
+    rows[i].setAttribute('data-held', '')
+    // A bottom sheet the list sits in, and a row's swipe, read this and leave the finger alone.
+    listRef.current.setAttribute('data-reordering', '')
+    try { el.setPointerCapture?.(pointerId) } catch { /* unsupported, or the pointer is gone */ }
+    setDrag({ from: i, to: i, dy: 0, stride })
+    return true
+  }
+
+  const follow = e => {
+    const g = gesture.current
+    if (!g) return
+    if (e.pointerId !== g.id) { end(false); return }
+    e.preventDefault()
+    g.y = e.clientY
+    place(g)
+    if (g.frame == null && typeof requestAnimationFrame === 'function') g.frame = requestAnimationFrame(tick)
+  }
+
+  function end(commit) {
     const g = gesture.current
     if (!g) return
     gesture.current = null
+    if (g.frame != null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(g.frame)
     listRef.current?.removeAttribute('data-reordering')
+    g.row?.removeAttribute('data-held')
     try { g.el.releasePointerCapture?.(g.id) } catch { /* already released */ }
+    // The tap a release fires right after pointerup is not a tap on the row.
+    swallow.current = Date.now() + 400
     // Where every row is on screen right now is where the landing animation starts from.
     tops.current = measure()
     setDrag({ quiet: true })
@@ -139,7 +180,7 @@ export function useListReorder(count, onMove) {
       if (gesture.current) return
       e.preventDefault()
       e.stopPropagation()
-      begin(i, e.pointerId, e.clientY, e.currentTarget)
+      if (begin(i, e.pointerId, e.clientY, e.currentTarget)) vibrate(12)
     },
     onPointerMove: follow,
     onPointerUp: e => { if (gesture.current && e.pointerId === gesture.current.id) end(true) },
@@ -159,8 +200,9 @@ export function useListReorder(count, onMove) {
   const press = i => ({
     onPointerDown: e => {
       if (e.button != null && e.button !== 0) return
-      if (gesture.current || count < 2) return
-      if (e.target?.closest?.('button, input, select, textarea, a, [role="radio"], [role="switch"], [data-reorder-handle]')) return
+      if (gesture.current) { if (e.pointerId !== gesture.current.id) end(false); return }
+      if (count < 2) return
+      if (e.target?.closest?.('input, select, textarea, a, [role="radio"], [role="switch"], [data-reorder-handle], [data-nodrag], button:not([data-row-open])')) return
       const el = e.currentTarget
       cancelHold()
       const h = { id: e.pointerId, x: e.clientX, y: e.clientY }
@@ -174,7 +216,7 @@ export function useListReorder(count, onMove) {
     onPointerMove: e => {
       const h = hold.current
       if (h && e.pointerId === h.id && Math.hypot(e.clientX - h.x, e.clientY - h.y) > SLOP) cancelHold()
-      follow(e)
+      if (gesture.current) follow(e)
     },
     onPointerUp: e => {
       cancelHold()
@@ -198,7 +240,7 @@ export function useListReorder(count, onMove) {
   }
 
   const live = drag && !drag.quiet ? drag : null
-  return { listRef, drag: live, handle, press, rowStyle, held: i => !!live && i === live.from }
+  return { listRef, drag: live, handle, press, rowStyle, held: i => !!live && i === live.from, lifted: () => !!gesture.current }
 }
 
 /** `list` with the entry at `from` moved to index `to` (a new array). */

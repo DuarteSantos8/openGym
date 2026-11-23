@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': 'Bir şey planlamak için dokun',
   'Drag to reorder': 'Sıralamak için sürükle',
   'Drag to reorder. Tap the minus to delete.': 'Sıralamak için sürükle. Silmek için eksiye dokun.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Düzenlemek için bir rutine dokun. Sıralama ve silme Düzenle altında.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Düzenlemek için bir rutine dokun, taşımak için basılı tut. Silme Düzenle altında.",
   'Pick one routine, or more to train them together.': 'Bir rutin seç ya da birlikte yapmak için birkaç tane.',
   'Planned sets per week, from your plan.': 'Planına göre haftalık planlanan setler.',
   // --- Settings (v1.3.11) ---

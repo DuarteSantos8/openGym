@@ -7,7 +7,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 ## Unreleased
 
 - Customize Home and Stats: hold a card and drag it where you want it, or drag it by its grip. The others make room as it passes and it glides into its slot, with a light buzz on the way. The list only offers the cards that have something to show today (Your week, for one, shows after a week ends), plus the ones you hid; one you turn on that has nothing yet says it will show up when there is something.
-- Plan: a routine or a loop day dragged to a new place glides into it instead of jumping.
+- Moving things works the same on every list now: hold a row until it lifts (a light buzz), drag it, and the others make room; let go and it glides into place. That is Plan's routines (no need to tap Edit first, Edit stays for deleting), the rotation's loop, a routine's exercises, Customize Home and Stats, your resistance bands and a ladder's rungs. With a mouse, the grip on the left picks a row up at once. The move arrows are gone from sight; a keyboard and a screen reader still have them.
 - Plan and workout swipes: the Delete and Duplicate side is its colour all the way to the row, with no paler strip in between.
 - Your motion and text size choices and the voice for spoken cues are saved with your profile, so a second phone or the web app signed in to the same server uses them too. The Live Activity switch stays per phone.
 - Fixed: switching on Per side for an exercise logged with bands no longer hides the band chips in its settings or drops the planned bands. Each L and R pair starts with them, and the set reads "L 12 · R 12 · Red" (#1351).

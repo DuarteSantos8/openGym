@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': 'Toca para planear algo',
   'Drag to reorder': 'Arrasta para reordenar',
   'Drag to reorder. Tap the minus to delete.': 'Arrasta para reordenar. Toca no sinal de menos para eliminar.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Toca numa rotina para a editar. Reordenar e eliminar estão em Editar.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Toca numa rotina para a editar ou mantém premido para a mover. Eliminar está em Editar.",
   'Pick one routine, or more to train them together.': 'Escolhe uma rotina, ou várias para as treinar juntas.',
   'Planned sets per week, from your plan.': 'Séries planeadas por semana, a partir do teu plano.',
   // --- Settings (v1.3.11) ---

@@ -8,6 +8,7 @@ import { exOr } from '../lib/exercises.js'
 import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
 import { LADDER_TOP, LADDER_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
+import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { DEFAULT_GLYPH, glyphOf } from '../lib/glyphs.js'
 import Icon from './Icon.jsx'
 import { Button, TextField } from './ui.jsx'
@@ -104,6 +105,8 @@ export function LadderEditor ({ ladder, close }) {
   const nameRef = useRef(null)
   const [steps, setSteps] = useState(ladder?.steps || [])
   const move = (i, d) => setSteps(list => { const n = [...list]; const j = i + d; if (j < 0 || j >= n.length) return n; [n[i], n[j]] = [n[j], n[i]]; return n })
+  // Hold a rung and drag it, like every list in the app; the arrows stay for a keyboard.
+  const reorder = useListReorder(steps.length, (from, to) => setSteps(list => moved(list, from, to)))
   const add = () => exercisePicker(ex => setSteps(list => (list.includes(ex.id) || list.length >= STEPS_MAX ? list : [...list, ex.id])), { title: t('Add a rung') })
   const save = () => {
     const name = (nameRef.current?.value || '').trim() || t('My ladder')
@@ -122,12 +125,13 @@ export function LadderEditor ({ ladder, close }) {
     <h3>{ladder ? t('Edit ladder') : t('New ladder')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Easiest first. The Skill ladder rule moves you one rung up when every set hits the top.')}</div>
     <TextField ref={nameRef} defaultValue={ladder?.name || ''} placeholder={t('Ladder name')} maxLength={NAME_MAX} aria-label={t('Ladder name')} />
-    <ol className="list ladder-edit-list" style={{ marginTop: 12 }}>
-      {steps.map((id, i) => <li key={id} className="item">
+    <ol className="list ladder-edit-list" style={{ marginTop: 12 }} ref={reorder.listRef}>
+      {steps.map((id, i) => <li key={id} className="item" data-reorder-row data-reorder-key={id} style={reorder.rowStyle(i)} {...reorder.press(i)}>
+        {steps.length > 1 && <button type="button" className="reorder-grip" aria-label={t('Move {0}', said(exerciseNameText(exOr(id))))} title={t('Drag to reorder')} {...reorder.handle(i)}><Icon name="grip" /></button>}
         <span className="ladder-num" aria-hidden="true">{i + 1}</span>
         <span className="grow tt">{exerciseNameFor(exOr(id))}</span>
-        <button type="button" className="iconbtn" aria-label={t('Move {0} up', said(exerciseNameText(exOr(id))))} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
-        <button type="button" className="iconbtn" aria-label={t('Move {0} down', said(exerciseNameText(exOr(id))))} disabled={i === steps.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
+        <button type="button" className="vh" aria-label={t('Move {0} up', said(exerciseNameText(exOr(id))))} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
+        <button type="button" className="vh" aria-label={t('Move {0} down', said(exerciseNameText(exOr(id))))} disabled={i === steps.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
         <button type="button" className="iconbtn" aria-label={t('Remove {0}', said(exerciseNameText(exOr(id))))} onClick={() => setSteps(list => list.filter(x => x !== id))}><Icon name="xmark" /></button>
       </li>)}
     </ol>

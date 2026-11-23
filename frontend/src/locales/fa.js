@@ -2148,7 +2148,7 @@ export default {
   "Tap to plan something": "برای برنامه‌ریزی چیزی ضربه بزنید",
   "Drag to reorder": "برای تغییر ترتیب بکشید",
   "Drag to reorder. Tap the minus to delete.": "برای تغییر ترتیب بکشید. برای حذف روی منفی بزنید.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "برای ویرایش روی روتین بزنید. تغییر ترتیب و حذف در بخش «ویرایش» هستند.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "برای ویرایش روی روتین بزنید یا برای جابه‌جایی نگهش دارید. حذف در بخش «ویرایش» است.",
   "Pick one routine, or more to train them together.": "یک روتین یا چند روتین برای تمرین هم‌زمان انتخاب کنید.",
   "Planned sets per week, from your plan.": "ست‌های برنامه‌ریزی شده در هفته، از برنامه شما.",
   "Timer alerts": "هشدارهای تایمر",

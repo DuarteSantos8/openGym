@@ -2178,7 +2178,7 @@ export default {
   "Tap to plan something": "Tryk for at planlægge noget",
   "Drag to reorder": "Træk for at ændre rækkefølge",
   "Drag to reorder. Tap the minus to delete.": "Træk for at ændre rækkefølge. Tryk på minus for at slette.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "Tryk på en rutine for at redigere den. Rækkefølge og sletning ligger under Rediger.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Tryk på en rutine for at redigere den, eller hold på den for at flytte den. Sletning ligger under Rediger.",
   "Pick one routine, or more to train them together.": "Vælg én rutine, eller flere for at træne dem sammen.",
   "Planned sets per week, from your plan.": "Planlagte sæt pr. uge, fra din plan.",
   "Timer alerts": "Timeralarmer",

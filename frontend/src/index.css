@@ -537,20 +537,23 @@ h4.sec{
    into place (lib/use-list-reorder.js). EMIL: transform/opacity only, ease-out, under 300 ms. */
 .lay-group{margin-top:14px}
 .lay-list{position:relative}
-.lay-row{padding:10px 14px 12px 6px;background:var(--surface);border-radius:inherit;position:relative;
+.lay-row{padding:10px 14px 12px;background:var(--surface);border-radius:inherit;position:relative;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y;
   transition:box-shadow .2s var(--ease),background-color .2s var(--ease)}
 .lay-row+.lay-row{box-shadow:inset 0 .5px 0 var(--separator)}
-.lay-row.held{z-index:2;border-radius:14px;background:var(--surface-2);
-  box-shadow:0 10px 28px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18)}
+.lay-row.held{z-index:2;border-radius:14px;background:var(--surface-2)}
 .lay-top{display:flex;align-items:center;gap:6px;margin-bottom:8px;min-height:36px}
-.lay-grip{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:10px;color:var(--label-3);
+.lay-grip,.reorder-grip{flex:none;width:32px;height:36px;display:none;place-items:center;border-radius:10px;color:var(--label-3);
   touch-action:none;cursor:grab;transition:color .16s var(--ease),transform .16s var(--ease)}
-.lay-grip:active,.lay-row.held .lay-grip{color:var(--acc);cursor:grabbing;transform:scale(.94)}
+/* The grip shows where a mouse looks for it, like the routine editor's (#277); a finger holds the
+   row anywhere instead, on every list (lib/use-list-reorder.js). */
+@media (hover:hover) and (pointer:fine){.lay-grip,.reorder-grip{display:grid}.lay-grip:hover,.reorder-grip:hover{color:var(--label-2)}}
+.lay-grip:active,.lay-row.held .lay-grip,.reorder-grip:active,[data-held] .reorder-grip{color:var(--acc);cursor:grabbing;transform:scale(.94)}
 .lay-name{flex:1;font-weight:600;min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:2px}
 .lay-hint{font-weight:400;font-size:var(--fs-footnote);color:var(--label-2)}
 .lay-row.off .lay-name{color:var(--label-2)}
-.lay-row .seg{margin-inline-start:42px}
+.lay-row .seg{margin-inline-start:0}
+@media (hover:hover) and (pointer:fine){.lay-row{padding-inline-start:6px}.lay-row .seg{margin-inline-start:38px}}
 .lay-move{display:contents}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
@@ -852,7 +855,9 @@ h4.sec{
 /* The routine editor's rail (P4): the superset link beside Move up over Move down. Each button is
    40px wide; up and down reach into the row's padding, so each is a 40x40 target and the link a
    40px square, where they were 28x24 and 32x28 in three separate places. */
-.re-rail{flex:none;display:grid;grid-template-columns:40px 40px;grid-template-rows:30px 30px;column-gap:4px;align-items:stretch;margin-block:-4px}
+/* The arrows are out of sight since 1.4.6 (a hold moves an exercise, as on every list); only the
+   superset link is left on the rail. */
+.re-rail{flex:none;display:grid;grid-template-columns:40px;grid-template-rows:30px 30px;align-items:stretch;margin-block:-4px}
 .re-rail .iconbtn{width:auto;height:auto;border-radius:9px;font-size:var(--fs-subhead);position:relative;background:var(--surface-2)}
 .re-rail .re-link{grid-column:1;grid-row:1 / span 2;align-self:center;height:40px}
 .re-rail .re-up{grid-column:2;grid-row:1;border-end-start-radius:4px;border-end-end-radius:4px}
@@ -883,7 +888,7 @@ h4.sec{
 #app .list.routine-list{display:flex;flex-direction:column}
 .routine-drag-row{touch-action:pan-y;-webkit-touch-callout:none;position:relative;transition:transform var(--fast) var(--ease)}
 .routine-list.is-reordering{user-select:none;-webkit-user-select:none}
-.routine-list.is-reordering .routine-drag-row{transition:none}
+.routine-list.is-reordering .routine-drag-row.is-dragging{transition:none}
 .routine-drag-row.is-dragging{z-index:2;pointer-events:none}
 .routine-drag-row.is-dragging .item{box-shadow:0 10px 28px rgba(0,0,0,.22);background:var(--surface-2)}
 .routine-drop-indicator{
@@ -3524,6 +3529,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 }
 .plan-handle:active{cursor:grabbing;color:var(--label-2)}
 .plan [data-reorder-row]{transition:transform var(--fast) var(--ease)}
+/* Every movable list looks the same while a row is held (lib/use-list-reorder.js, the routine
+   editor too): lifted on a shadow, its corners rounded, nothing selectable or callable out. */
+[data-reorder-row]{-webkit-touch-callout:none}
+[data-reordering],[data-reordering] *{-webkit-user-select:none;user-select:none}
+[data-reorder-row][data-held]{border-radius:var(--r-card);box-shadow:0 10px 28px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18)}
+[data-reorder-row][data-held] > .item,[data-reorder-row][data-held].item{background:var(--surface-2)}
 .plan-link{margin-top:24px}
 .plan-empty{padding:28px 20px}
 /* Stats: the card Plan links to clears the sticky banners when it is scrolled to */
@@ -4520,7 +4531,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .banddot{width:10px;height:10px;border-radius:50%;background:var(--band);flex:none;box-shadow:inset 0 0 0 1px var(--sep);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent)}
 .banddot.big{width:16px;height:16px}
 .banddots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
-.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep)}
+.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep);background:var(--surface)}
 .bandrow:last-child{border-bottom:0}
 .bandrow-main{flex:1;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;min-width:0}
 .bandrow-name{flex:1;min-width:0;overflow-wrap:anywhere}

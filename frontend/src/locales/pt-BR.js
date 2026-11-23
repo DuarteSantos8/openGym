@@ -2059,7 +2059,7 @@ export const PT_BR_OVERRIDES = {
   'Tap to plan something': 'Toque para planejar algo',
   'Drag to reorder': 'Arraste para reordenar',
   'Drag to reorder. Tap the minus to delete.': 'Arraste para reordenar. Toque no sinal de menos para excluir.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Toque em uma rotina para editar. Reordenar e excluir ficam em Editar.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Toque em uma rotina para editar ou segure para mover. Excluir fica em Editar.",
   'Pick one routine, or more to train them together.': 'Escolha uma rotina, ou várias para treinar juntas.',
   'Planned sets per week, from your plan.': 'Séries planejadas por semana, a partir do seu plano.',
   // --- Settings (v1.3.11) ---

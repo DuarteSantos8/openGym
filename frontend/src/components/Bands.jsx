@@ -9,6 +9,7 @@ import { fmtNum } from '../lib/format.js'
 import { bandsOf, cleanBands, starterBands, newBandId, setBandsOf, bandLabel, BAND_COLORS, BAND_NAME_MAX, BAND_LEVEL_MAX, MAX_BANDS } from '../lib/bands.js'
 import { Button, TextField, NumberField } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { useListReorder, moved } from '../lib/use-list-reorder.js'
 
 const KG_PER_LB = 0.45359237
 const update = (...a) => useStore.getState().update(...a)
@@ -62,6 +63,8 @@ function BandsSheet({ close }) {
     save(next)
   }
   const patch = (id, p) => save(bands.map(b => (b.id === id ? { ...b, ...p } : b)))
+  // Hold a band and drag it, like every list in the app; the arrows stay for a keyboard.
+  const reorder = useListReorder(bands.length, (from, to) => save(moved(bands, from, to)))
   const add = () => {
     const id = newBandId(bands)
     save([...bands, { id, name: t('Band {0}', bands.length + 1), color: BAND_COLORS[bands.length % BAND_COLORS.length] }])
@@ -76,15 +79,16 @@ function BandsSheet({ close }) {
       {t('Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.')}
     </div>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('No colours on yours? Name them by level instead, like “Level 3”, and keep the grey.')}</div>
-    {bands.length > 0 && <div className="list menu-list bandlist" style={{ marginBottom: 12 }}>
-      {bands.map((b, i) => <div key={b.id} className="bandrow">
-        <button type="button" className="bandrow-main" aria-expanded={editing === b.id} onClick={() => setEditing(editing === b.id ? null : b.id)}>
+    {bands.length > 0 && <div className="list menu-list bandlist" style={{ marginBottom: 12 }} ref={reorder.listRef}>
+      {bands.map((b, i) => <div key={b.id} className="bandrow" data-reorder-row data-reorder-key={b.id} style={reorder.rowStyle(i)} {...reorder.press(i)}>
+        {bands.length > 1 && <button type="button" className="reorder-grip" aria-label={t('Move {0}', b.name)} title={t('Drag to reorder')} {...reorder.handle(i)}><Icon name="grip" /></button>}
+        <button type="button" className="bandrow-main" data-row-open aria-expanded={editing === b.id} onClick={() => setEditing(editing === b.id ? null : b.id)}>
           <span className="banddot big" style={{ '--band': b.color }} aria-hidden="true" />
           <span className="bandrow-name">{bandLabel(b)}</span>
           <span className="dim small">{b.kg > 0 ? `${fmtNum(shown(b.kg))} ${S.unit}` : ''}</span>
         </button>
-        <button type="button" className="iconbtn" aria-label={t('Move {0} up', b.name)} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
-        <button type="button" className="iconbtn" aria-label={t('Move {0} down', b.name)} disabled={i === bands.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
+        <button type="button" className="vh" aria-label={t('Move {0} up', b.name)} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
+        <button type="button" className="vh" aria-label={t('Move {0} down', b.name)} disabled={i === bands.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
         {editing === b.id && <div className="bandedit">
           <DraftField value={b.name} maxLength={BAND_NAME_MAX} aria-label={t('Name')}
             onSave={v => { if (v.trim()) patch(b.id, { name: v }) }} />

@@ -2121,7 +2121,7 @@ export default {
   "Tap to plan something": "Paspauskite, kad suplanuotumėte",
   "Drag to reorder": "Vilkite, kad pakeistumėte tvarką",
   "Drag to reorder. Tap the minus to delete.": "Vilkite, kad pakeistumėte tvarką. Paspauskite minusą, kad ištrintumėte.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "Paspauskite programą, kad ją redaguotumėte. Perdėliojimas ir trynimas yra Redaguoti.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Paspauskite programą, kad ją redaguotumėte, arba palaikykite, kad perkeltumėte. Trynimas yra Redaguoti.",
   "Pick one routine, or more to train them together.": "Pasirinkite vieną programą arba daugiau, kad treniruotumėte jas kartu.",
   "Planned sets per week, from your plan.": "Suplanuotos serijos per savaitę, iš jūsų plano.",
   "Timer alerts": "Laikmačio įspėjimai",
