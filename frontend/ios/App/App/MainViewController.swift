@@ -40,6 +40,16 @@ class MainViewController: CAPBridgeViewController {
         webView?.evaluateJavaScript(MainViewController.textScaleScript(event: true), completionHandler: nil)
     }
 
+    /// The system's vertical bar on iPhone Duo's outer display, for the page's tab bar.
+    private let verticalBar = VerticalBarPlugin()
+
+    // Folding, unfolding and turning the phone all lay the view out again, and the bar's column
+    // and the system's region in it can arrive a pass after the size.
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        verticalBar.update(from: view)
+    }
+
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(PrintPlugin())
         bridge?.registerPluginInstance(SaveImagePlugin())
@@ -58,6 +68,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(AppIconPlugin())
         bridge?.registerPluginInstance(NfcTagsPlugin())
         bridge?.registerPluginInstance(VoiceBridgePlugin())
+        bridge?.registerPluginInstance(verticalBar)
         WidgetPreview.runIfAsked()
         NotificationCenter.default.addObserver(self, selector: #selector(textSizeChanged),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)

@@ -107,6 +107,9 @@
      the bars does not count them twice. */
   --sab:max(env(safe-area-inset-bottom,0px),var(--native-sab,0px));
   --sat:max(env(safe-area-inset-top,0px),var(--native-sat,0px));
+  /* The sides: only the iPhone Duo's vertical bar column is read from them ("vertical bar" below). */
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
@@ -320,8 +323,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
    screenful of blank scroll space. The stacked rest timer needs the larger reserve. */
 body.resting #app{padding-bottom:calc(166px + var(--sab))}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
-body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
-body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
+body.no-tabbar #app,:root[data-vbar] #app{padding-bottom:calc(24px + var(--sab))}
+body.no-tabbar.resting #app,:root[data-vbar] body.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
 .wk-end{margin-top:2px}
@@ -2209,12 +2212,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 #timer.working .acts{flex:none}
 /* Docked on the workout screen: edge to edge, flush with the bottom, the home indicator's inset
    inside it. */
-body.no-tabbar #timer{
+body.no-tabbar #timer,:root[data-vbar] #timer{
   inset-inline-start:0;inset-inline-end:0;bottom:0;
   border-radius:var(--r-xl) var(--r-xl) 0 0;padding:14px 14px calc(10px + var(--sab));
   box-shadow:inset 0 var(--hair) 0 var(--raised-line),0 -10px 30px -14px rgba(0,0,0,.55);
 }
-body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+body.no-tabbar #timer.working,:root[data-vbar] #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 @media (max-width:399px){
   #timer .acts{gap:4px}
   #timer .acts .adj{padding-inline:6px;gap:1px}
@@ -2239,7 +2242,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 #timer .autorow.next .btn{flex:none}
 /* The count-in: a big number in the accent, which pops on each second (still under reduced motion). */
 #timer.countin{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
-body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+body.no-tabbar #timer.countin,:root[data-vbar] #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 #timer.countin .tclock{flex:1 1 0;min-width:0}
 #timer.countin .t{font-size:2.5rem;color:var(--acc-ink);animation:countpop .35s var(--ease)}
 #timer.countin .lbl{display:block}
@@ -2948,8 +2951,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 #toast .toast-x{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--label-2)}
 #toast .toast-x:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
 #toast .toast-x .icn{font-size:var(--fs-subhead)}
-body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
-body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
+body.no-tabbar #toast,:root[data-vbar] #toast{bottom:calc(24px + var(--sab))}
+body.no-tabbar.resting #toast,:root[data-vbar] body.resting #toast{bottom:calc(100px + var(--sab))}
 
 /* --- back to top (components/ScrollTopButton.jsx) --- */
 /* Above the tab bar, at the end of the 560px column on a computer, and up over the rest bar while
@@ -4661,3 +4664,35 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* ---------------------------------------------------------- vertical bar -- */
+/* iPhone Duo closed (lib/vertical-bar.js, VerticalBarPlugin.swift): the status bar is a column on
+   one side, given to the app as that side's safe-area inset, and the tab bar stands in it below
+   the system's own region at its top (--vbar-top). The four tabs are icons there, the way iOS
+   shows its own vertical bars, their names kept for VoiceOver; Start sits at the foot of the
+   column, under the thumb. With nothing at the bottom, the page and the rest bar take the
+   workout screen's bottom reserves (body.no-tabbar above), and the page and everything pinned to
+   the screen's sides stop at the column. */
+:root[data-vbar]{--vbar-free:calc(100vw - var(--sal) - var(--sar))}
+:root[data-vbar] body{padding-left:var(--sal);padding-right:var(--sar)}
+:root[data-vbar] #tabbar{
+  top:0;bottom:0;flex-direction:column;justify-content:flex-start;align-items:center;gap:14px;
+  padding:calc(var(--vbar-top) + 18px) 0 calc(16px + var(--sab));border-top:0;
+}
+:root[data-vbar="right"] #tabbar{left:auto;right:0;width:var(--sar);border-left:var(--hair) solid var(--sep-op)}
+:root[data-vbar="left"] #tabbar{left:0;right:auto;width:var(--sal);border-right:var(--hair) solid var(--sep-op)}
+:root[data-vbar] #tabbar button{flex:none;width:52px;padding:8px 0;border-radius:var(--r)}
+:root[data-vbar] #tabbar button.on:not(.start){background:var(--acc-soft)}
+:root[data-vbar] #tabbar button:not(.start) > span:last-child{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:root[data-vbar] #tabbar button.start{order:1;margin-top:auto;padding:0}
+:root[data-vbar] :is(.conn-bar,#timer,.composer,.sheet,#app > .page.under){left:var(--sal);right:var(--sar)}
+:root[data-vbar] :is(#toast,.center){left:calc(50% + (var(--sal) - var(--sar)) / 2)}
+:root[data-vbar] .center{width:min(calc(var(--vbar-free) * .84),300px)}
+:root[data-vbar] .center.wide{width:min(calc(var(--vbar-free) * .94),440px)}
+:root[data-vbar] #toast{max-width:calc(var(--vbar-free) * .88)}
+:root[data-vbar] #totop{inset-inline-end:calc(16px + var(--sal) + var(--sar));bottom:calc(24px + var(--sab))}
+:root[data-vbar] body.resting #totop{bottom:calc(100px + var(--sab))}
+:root[data-vbar] body.totop-on #app{padding-bottom:calc(88px + var(--sab))}
+:root[data-vbar] body.totop-on.resting #app{padding-bottom:calc(160px + var(--sab))}
+:root[data-vbar] .cp-screen{padding-left:calc(16px + var(--sal));padding-right:calc(16px + var(--sar))}
+:root[data-vbar] .wrapped{padding-left:var(--sal);padding-right:var(--sar)}

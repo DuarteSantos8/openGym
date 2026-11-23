@@ -25,6 +25,7 @@ import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { applyProfileSteps, profileStep } from './lib/weight-step.js'
 import { stepPlaces } from './lib/progression.js'
 import { applyOrientation } from './lib/orientation.js'
+import { watchVerticalBar } from './lib/vertical-bar.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
@@ -197,6 +198,8 @@ function Shell() {
   useEffect(() => { setNav(navigate) }, [navigate])
   // Android: Settings → Screen orientation (#821), this device's own choice.
   useEffect(() => { if (MOBILE) applyOrientation() }, [])
+  // iPhone Duo closed: the tabs go in the system's side column (lib/vertical-bar.js).
+  useEffect(() => { if (MOBILE) watchVerticalBar() }, [])
   const lastEditPath = useRef(loc.pathname)
   // Any in-app route exit, browser back included, returns to the persisted draft and asks for a
   // save decision. Reload needs no prompt because the draft itself is already in local storage.
