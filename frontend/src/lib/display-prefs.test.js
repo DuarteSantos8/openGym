@@ -83,4 +83,21 @@ describe('display prefs', () => {
     expect(document.documentElement.style.fontSize).toBe('140%')
     _resetDisplay()
   })
+
+  it('the class follows the phone live, and the app\'s own less stays on', () => {
+    _resetDisplay()
+    let fire
+    const real = { matches: false, addEventListener: (_, f) => { fire = f } }
+    const win = { matchMedia: () => real, document, addEventListener () {} }
+    const cls = () => document.documentElement.classList.contains('reduce-motion')
+    applyDisplay({ motion: 'system', text: 'default' }, { win })
+    expect(cls()).toBe(false)
+    real.matches = true; fire()
+    expect(cls()).toBe(true)
+    real.matches = false; fire()
+    expect(cls()).toBe(false)
+    applyDisplay({ motion: 'less', text: 'default' }, { save: true, win })
+    fire()
+    expect(cls()).toBe(true)   // the phone says no, the app says less: less wins
+  })
 })

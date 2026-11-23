@@ -239,10 +239,11 @@ export function setVibrate(on) { buzz = on !== false }
 let nativeBuzzer = null
 export function setNativeBuzzer(fn) { nativeBuzzer = typeof fn === 'function' ? fn : null }
 export const vibrateSupported = () => !!nativeBuzzer || (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function')
-export function vibrate(p) {
+// `style`: an optional haptic style for a short pulse on the iPhone (lib/haptics.js).
+export function vibrate(p, style) {
   if (!buzz) return
   if (nativeBuzzer) {
-    try { Promise.resolve(nativeBuzzer(p)).catch(() => {}) } catch (e) { /* */ }
+    try { Promise.resolve(nativeBuzzer(p, style)).catch(() => {}) } catch (e) { /* */ }
     return
   }
   try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ }

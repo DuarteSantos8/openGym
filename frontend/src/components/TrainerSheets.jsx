@@ -1,6 +1,7 @@
 // The trainer dashboard's sheets: inviting a member (code + QR), assigning a routine to one or many,
 // a comment on a workout, a weigh-in, a check-in, a workout logged or corrected. Each one says
 // before sending what will happen per member.
+import { activeRoutines } from '../lib/routine-folders.js'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -86,8 +87,10 @@ export function GymCodeSheet({ gym, close }) {
 export function AssignSheet({ members, close, done }) {
   const toast = useUI(s => s.toast)
   const S = useStore(s => s.S)
-  const routines = (S.routines || []).filter(r => r && r.ex?.length)
+  const routines = activeRoutines(S).filter(r => r.ex?.length)
   const [rid, setRid] = useState(routines[0]?.id ?? null)
+  // The pick may be archived by a sync while the sheet is open: then the first live routine stands in.
+  const selected = routines.some(r => r.id === rid) ? rid : (routines[0]?.id ?? null)
   const [day, setDay] = useState('')
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
@@ -96,7 +99,7 @@ export function AssignSheet({ members, close, done }) {
   const n = plan.filter(p => p.outcome !== 'skipped').length
   const go = () => {
     setBusy(true)
-    assignRoutine({ memberIds: members.map(m => m.member.id), routineId: rid, day: day === '' ? null : +day, message: msg.trim() || undefined })
+    assignRoutine({ memberIds: members.map(m => m.member.id), routineId: selected, day: day === '' ? null : +day, message: msg.trim() || undefined })
       .then(r => { toast(assignResult(r)); close(); done?.(r) })
       .catch(e => { setBusy(false); toast(trainerError(e)) })
   }
@@ -106,7 +109,7 @@ export function AssignSheet({ members, close, done }) {
   return <>
     <h3>{t('Assign a routine')}</h3>
     <Section>
-      <SelectRow icon="dumbbell" iconTint="var(--acc)" title={t('Routine')} value={rid} options={routines.map(r => ({ value: r.id, label: r.name }))} onChange={setRid} />
+      <SelectRow icon="dumbbell" iconTint="var(--acc)" title={t('Routine')} value={selected} options={routines.map(r => ({ value: r.id, label: r.name }))} onChange={setRid} />
       <SelectRow icon="calendar" iconTint="var(--orange)" title={t('On their week')} value={day}
         options={[{ value: '', label: t('Not on a day') }, ...order.map(d => ({ value: String(d), label: t('Every {0}', weekdayName(d)) }))]} onChange={setDay} />
     </Section>
@@ -120,7 +123,7 @@ export function AssignSheet({ members, close, done }) {
         icon={p.outcome === 'applied' ? 'checkCircle' : p.outcome === 'suggested' ? 'lightbulb' : 'xmark'}
         iconTint={p.outcome === 'applied' ? 'var(--green)' : p.outcome === 'suggested' ? 'var(--orange)' : 'var(--grey)'} />)}
     </Section>
-    <Button variant="primary" disabled={busy || !n || rid == null} onClick={go}>{n ? t('Send to {0}', n) : t('Nobody can take it')}</Button>
+    <Button variant="primary" disabled={busy || !n || selected == null} onClick={go}>{n ? t('Send to {0}', n) : t('Nobody can take it')}</Button>
     <div style={{ height: 8 }} />
     <Button onClick={close}>{t('Cancel')}</Button>
   </>

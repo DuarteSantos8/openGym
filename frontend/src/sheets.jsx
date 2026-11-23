@@ -15,6 +15,7 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { activeRoutines, isLive } from './lib/routine-folders.js'
 import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -53,7 +54,9 @@ import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
-import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
+import { glyphOf, DEFAULT_GLYPH } from './lib/glyphs.js'
+import RoutineTile from './components/RoutineTile.jsx'
+import { tileStyle } from './lib/routine-colors.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import GymHiddenLine from './components/GymHiddenLine.jsx'
@@ -139,6 +142,7 @@ import { isOn } from './lib/modules.js'
 import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
 import { sleepHoursOn } from './lib/vitals.js'
 import DailyCheckin from './components/DailyCheckin.jsx'
+import { still } from './lib/flip.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -201,7 +205,8 @@ export function askAddDeviceData(extras) {
 // items: [{ icon, label, sub, onClick, danger, disabled, on }] — `on` draws a check for toggles.
 // sections: [{ title, items }] instead of `items` splits a longer menu into groups, each with an
 // optional small header; a group whose items are all falsy is left out, header and all.
-// `accent` tints a row's icon, for the one entry a menu leads with.
+// `accent` tints a row's icon, for the one entry a menu leads with. `cancel` puts a Cancel button
+// before the title (a sheet that asks for a choice); `labelStyle` styles one row's label.
 // A title is shown as written: most are sentences ("Convert to lb?", "Set 2"), which a default
 // title-casing turned into "Convert To Lb?". An exercise name passes exerciseNameClass as
 // titleClass, which title-cases the lower-case packs and leaves a cased one alone.
@@ -213,8 +218,9 @@ export function askAddDeviceData(extras) {
 const menuGroups = list => (list || [])
   .map(g => g.more ? g : { title: g.title, items: (g.items || []).filter(Boolean) })
   .filter(g => g.more || g.items.length)
-function MenuSheet({ title, titleClass = '', subtitle, items, sections, close }) {
+function MenuSheet({ title, titleClass = '', subtitle, items, sections, cancel, close }) {
   const [open, setOpen] = useState(false)
+  const [picked, setPicked] = useState(null)   // an item with `closeAfter`: its check shows at once, the sheet goes after that many ms
   const firstMore = useRef(null)
   useEffect(() => { if (open) firstMore.current?.focus() }, [open])
   const groups = []
@@ -229,7 +235,9 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
       fold: true, expanded: false, onClick: () => setOpen(true) }] })
   }
   return <>
-    {title && <h3 className={titleClass || undefined} style={{ marginBottom: subtitle ? 2 : 10 }}>{title}</h3>}
+    {title && cancel
+      ? <div className="menu-head"><button type="button" className="plan-textbtn" onClick={() => close()}>{t('Cancel')}</button><h3 className={titleClass || undefined}>{title}</h3><span /></div>
+      : title && <h3 className={titleClass || undefined} style={{ marginBottom: subtitle ? 2 : 10 }}>{title}</h3>}
     {subtitle && <div className="muted small" style={{ marginBottom: 10 }}>{subtitle}</div>}
     {groups.map((g, gi) => <div key={gi} className={'menu-group' + (sections ? ' grouped' : '')}>
       {g.title && <div className="menu-sec">{g.title}</div>}
@@ -238,10 +246,13 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
           className={'item menu-item' + (it.danger ? ' danger' : '') + (it.disabled ? ' disabled' : '') + (it.accent ? ' accent' : '') + (it.fold ? ' menu-more' : '')}
           aria-disabled={it.disabled || undefined}
           aria-expanded={it.fold ? false : undefined}
-          {...tappable(it.disabled ? null : it.fold ? it.onClick : () => { close(); it.onClick && it.onClick() })}>
-          {it.lead ? <span className="lrow-i" aria-hidden="true">{it.lead}</span> : it.icon && <span className="lrow-i"><Icon name={it.icon} /></span>}
-          <div className="grow"><div className="tt">{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
-          {it.on != null && <span className={'menu-on' + (it.on ? ' is-on' : '')}><Icon name="check" /></span>}
+          {...tappable(it.disabled || picked ? null : it.fold ? it.onClick : () => {
+            if (it.closeAfter && !still()) { setPicked(gi + '.' + i); setTimeout(close, it.closeAfter) } else close()
+            it.onClick && it.onClick()
+          })}>
+          {it.lead ? <span className="lrow-i" aria-hidden="true">{it.lead}</span> : it.icon && <span className="lrow-i" style={it.iconStyle}><Icon name={it.icon} /></span>}
+          <div className="grow"><div className="tt" style={it.labelStyle}>{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
+          {it.on != null && <span className={'menu-on' + ((picked ? picked === gi + '.' + i : it.on) ? ' is-on' : '')}><Icon name="check" /></span>}
           {it.chevron && <Icon name="chevronRight" className="menu-chev" />}
           {it.fold && <Icon name="chevronDown" className="menu-chev" />}
         </div>)}
@@ -288,7 +299,7 @@ export function loadStarterPlan(planId, profile) {
     const idOf = {}
     const sameLift = (a, b) => a.ex.length === b.ex.length && a.ex.every((e, i) => e.id === b.ex[i].id)
     plan.routines.forEach(r => {
-      const have = st.routines.find(x => x.name === r.name && sameLift(x, r))
+      const have = st.routines.find(x => isLive(x) && x.name === r.name && sameLift(x, r))
       if (have) idOf[r.id] = have.id
       else { st.routines.push(r); idOf[r.id] = r.id }
     })
@@ -1780,8 +1791,8 @@ function AddToRoutine({ ex, close }) {
     <h3 className={exerciseNameClass(ex)}>{t('Add “{0}”', exerciseNameFor(ex))}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick a routine. Sets, reps and weight come next.')}</div>
     <div className="list">
-      {st.routines.map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+      {activeRoutines(st).map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
+        <RoutineTile r={r} />
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
         {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
       </div>)}
@@ -3196,30 +3207,6 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
 export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
 
-/* ============================ glyph picker ============================ */
-// Grouped by what the glyph means for a training day, so picking one is a scan
-// of four short rows rather than a hunt through twenty loose icons.
-export const glyphPicker = (current, onPick) => {
-  const cur = glyphOf(current)
-  return ui().openSheet(close => <>
-    <h3>{t('Pick an icon')}</h3>
-    {GLYPH_GROUPS.map(g => (
-      <div key={g.key} style={{ marginBottom: 14 }}>
-        <div className="sect-t" style={{ padding: '0 2px 7px' }}>{t(g.key)}</div>
-        <div className="glyph-grid">
-          {g.items.map(n => (
-            <button key={n} className={'glyph-cell' + (n === cur ? ' on' : '')}
-              onClick={() => { close(); onPick(n) }} aria-label={n}>
-              <Icon name={n} />
-            </button>
-          ))}
-        </div>
-      </div>
-    ))}
-    <div style={{ height: 4 }} />
-  </>)
-}
-
 /* ============================ effort quick picker (RIR / RPE) ============================ */
 // Rating a set used to mean walking a +/- stepper up the scale — eleven taps to log "5 reps
 // left". This is the one-tap replacement: a colour-coded button per preset, plus a free field
@@ -3301,7 +3288,7 @@ export const effortPickerSheet = (kind, value, onPick, { cardio = false } = {}) 
 export const planHasRoutines = st => (st.routines || []).some(r => r.ex && r.ex.length)
 export async function exportPlanFile() {
   const st = S(), user = useStore.getState().user
-  const bundle = buildPlanBundle(st, user?.name ? t('{0}’s plan', user.name) : '')
+  const bundle = buildPlanBundle({ ...st, routines: activeRoutines(st) }, user?.name ? t('{0}’s plan', user.name) : '')
   const json = JSON.stringify(bundle, null, 2)
   const name = 'opengym-plan-' + todayISO() + '.json'
   if (MOBILE) { try { await shareExport(json, name) } catch (e) { /* dismissed */ } return }
@@ -3421,7 +3408,7 @@ function DayOverride({ iso, close }) {
     toast(v === '' ? t('Back to weekly plan') : v === 'rest' ? t('{0} set to rest', fmtDate(iso)) : t('{0} planned for {1}', (st.routines.find(r => r.id === v) || {}).name, fmtDate(iso)))
   }
   const row = r => <div key={r.id} className="item" {...tappable(() => set(r.id))}>
-    <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+    <RoutineTile r={r} />
     <div className="grow"><div className="tt">{r.name}</div><div className="ss">{pinnedOn[r.id] && pinnedOn[r.id] !== iso ? fmtDate(pinnedOn[r.id], true) : exCount(r.ex.length)}</div></div>
     {effIds.includes(r.id) && <Icon name="check" className="accent" />}</div>
   return <>
@@ -3460,7 +3447,7 @@ function DayOverride({ iso, close }) {
       <div className="list" style={{ marginBottom: 8 }}>{coach.map(row)}</div>
     </>}
     <div className="list">
-      {st.routines.filter(r => !remaining.includes(r.id)).map(row)}
+      {activeRoutines(st).filter(r => !remaining.includes(r.id)).map(row)}
       <div className="item" {...tappable(() => set('rest'))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="moon" /></span><div className="grow"><div className="tt">{t('Rest / skip this day')}</div></div>{effIds.length === 0 && <Icon name="check" className="accent" />}</div>
       {hasOvr && <div className="item" {...tappable(() => set(''))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="reset" /></span><div className="grow"><div className="tt">{t('Back to weekly plan')}</div></div></div>}
     </div>
@@ -3523,10 +3510,10 @@ function DayAssign({ day, close }) {
     <div className="muted small" style={{ marginBottom: 10 }}>{t('Pick one routine, or more to train them together.')}</div>
     <div className="list menu-list">
       <div className="item menu-item" {...tappable(rest)}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="moon" /></span><div className="grow"><div className="tt">{t('Rest day')}</div></div><span className={'menu-on' + (!cur.length ? ' is-on' : '')}><Icon name="check" /></span></div>
-      {st.routines.map(r => {
+      {activeRoutines(st).map(r => {
         const on = cur.includes(r.id)
         return <div key={r.id} className="item menu-item" aria-pressed={on} {...tappable(() => toggle(r.id))}>
-          <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+          <RoutineTile r={r} />
           <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
           <span className={'menu-on' + (on ? ' is-on' : '')}><Icon name="check" /></span>
         </div>
@@ -3977,10 +3964,11 @@ export const calendarSheet = (start, { help = false } = {}) => ui().openSheet(cl
 /* shared small workout row (used in lists) */
 export function WorkoutRow({ w, onClick, tour }) {
   const st = useStore(s => s.S)
-  const glyph = glyphOf((st.routines.find(r => r.id === w.routineId) || {}).emoji)
+  const routine = st.routines.find(r => r.id === w.routineId)
+  const glyph = glyphOf(routine?.emoji)
   const mediaN = workoutMediaCount(w)
   return <div className="item" data-tour={tour} {...tappable(onClick)}>
-    <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
+    <span className="lrow-i" style={{ ...tileStyle(routine), width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
     <div className="grow"><div className="tt">{w.name}</div>
       <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(sessionVolume(w, st), st.unit)].join(' · ')}</div></div>
     {mediaN > 0 && <span className="wrow-media" title={tn('{0} photo or video', '{0} photos or videos', mediaN)} aria-label={tn('{0} photo or video', '{0} photos or videos', mediaN)}><Icon name="image" />{mediaN}</span>}
@@ -4133,17 +4121,22 @@ const PLANNED_DAY = '__planned-day'
 function LogPastWorkout({ initial, close }) {
   const st = useStore(s => s.S)
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1)
-  const planned = [].concat(initial?.routineIds || []).map(id => st.routines.find(r => r.id === id)).filter(Boolean)
+  // Live only: buildCombinedEntries drops an archived routine, which would open an empty Freestyle.
+  const live = activeRoutines(st)
+  const planned = [].concat(initial?.routineIds || []).map(id => live.find(r => r.id === id)).filter(Boolean)
   const [date, setDate] = useState(initial?.iso || isoOf(yesterday))
   const [time, setTime] = useState('18:00')
   const [dur, setDur] = useState(60)
-  const [routineId, setRoutineId] = useState(planned.length > 1 ? PLANNED_DAY : planned[0]?.id || '')
+  const firstPick = planned.length > 1 ? PLANNED_DAY : planned[0]?.id || ''
+  const [picked, setRoutineId] = useState(firstPick)
   const today = todayISO()
   const options = [
     { value: '', label: t('Freestyle') },
     ...(planned.length > 1 ? [{ value: PLANNED_DAY, label: deriveSessionName(planned.map(r => r.name)) }] : []),
-    ...st.routines.map(r => ({ value: r.id, label: r.name })),
+    ...live.map(r => ({ value: r.id, label: r.name })),
   ]
+  // A sync can archive a routine while this is open: a pick no longer offered falls back.
+  const routineId = options.some(o => o.value === picked) ? picked : firstPick
 
   const go = replaceId => {
     close()
@@ -4256,13 +4249,13 @@ function AddRoutineToSession({ close }) {
   return <>
     <h3>{t('Add routine')}</h3>
     <div className="list">
-      {st.routines.map(r => {
+      {activeRoutines(st).map(r => {
         const already = inSession.has(r.id)
         const empty = !(r.ex || []).length
         const disabled = already || empty
         return <div key={r.id} className={'item' + (disabled ? ' disabled' : '')} aria-disabled={disabled || undefined}
           {...tappable(disabled ? null : () => add(r))}>
-          <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+          <RoutineTile r={r} />
           <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
           {already ? <span className="tag">{t('already added')}</span> : empty ? <span className="tag">{t('no exercises')}</span> : <Icon name="chevronRight" className="chev" />}
         </div>

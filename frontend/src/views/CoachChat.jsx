@@ -15,6 +15,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { closeThenNav } from '../lib/nav.js'
+import { activeRoutines } from '../lib/routine-folders.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
@@ -45,6 +46,7 @@ import { activeProfile } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import { tileStyle } from '../lib/routine-colors.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
 import '../coach.css'
@@ -160,7 +162,7 @@ export default function CoachChat() {
       // answer that there is no workout to look at, which is how people got stuck. Anything else
       // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
       // review the whole plan. A review is the chip and the menu's, as it always was.
-      if (live?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
+      if (live?.kind === 'create' || !activeRoutines(S).length) await refinePlan(msg)
       else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
@@ -197,8 +199,8 @@ export default function CoachChat() {
   const pickRoutine = () => openSheet(close => <div className="chat-menu">
     <h3>{t('Improve which routine?')}</h3>
     <div className="sect-b">
-      {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" title={r.name} subtitle={tn('{0} exercise', '{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
-      {!(S.routines || []).length && <div className="chat-empty">{t('You don’t have any routines yet. Ask the Coach for a plan first.')}</div>}
+      {activeRoutines(S).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" iconStyle={tileStyle(r)} title={r.name} subtitle={tn('{0} exercise', '{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
+      {!activeRoutines(S).length && <div className="chat-empty">{t('You don’t have any routines yet. Ask the Coach for a plan first.')}</div>}
     </div>
     <div style={{ height: 10 }} />
   </div>)
@@ -212,7 +214,7 @@ export default function CoachChat() {
     <div className="sect-b">
       {idle && <Row icon="sparkles" iconTint="var(--acc)" title={t('Ask for a review')} subtitle={t('What would the Coach change after your last sessions?')} accessory="chevron" onClick={() => { close(); askReview() }} />}
       {idle && !!lastWorkout && <Row icon="checkCircle" iconTint="var(--green)" title={t('Review my last workout')} subtitle={t('What went well, what to watch, what to do next time')} accessory="chevron" onClick={() => { close(); askDebrief() }} />}
-      {idle && !!(S.routines || []).length && <Row icon="wrench" iconTint="var(--orange)" title={t('Improve a routine')} subtitle={t('Pick one; the Coach works on just that')} accessory="chevron" onClick={() => { close(); pickRoutine() }} />}
+      {idle && !!activeRoutines(S).length && <Row icon="wrench" iconTint="var(--orange)" title={t('Improve a routine')} subtitle={t('Pick one; the Coach works on just that')} accessory="chevron" onClick={() => { close(); pickRoutine() }} />}
       {community && <Row icon="person" iconTint="var(--teal)" title={t('Compare with others here')} subtitle={t('Anonymous medians from this instance')} accessory="chevron" onClick={() => { close(); showCohort() }} />}
       <Row icon="history" iconTint="var(--blue)" title={t('Everything the Coach proposed')} subtitle={t('Plans, suggestions and debriefs, kept')} accessory="chevron" onClick={() => { close(); showHistory() }} />
       {idle && <Row icon="clipboard" iconTint="var(--indigo)" title={t('Start a new plan')} subtitle={t('A fresh plan from your answers; your workouts stay')} accessory="chevron" onClick={() => { close(); askNewPlan() }} />}
@@ -275,7 +277,7 @@ export default function CoachChat() {
       {idle && !busy && <div className="chips-row">
         <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
         {!!lastWorkout && <button className="qchip" onClick={askDebrief}><Icon name="checkCircle" />{t('Last workout')}</button>}
-        {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
+        {!!activeRoutines(S).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
         {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
       </div>}
       <div className={'composer-in' + (expanded ? ' tall' : '')}>

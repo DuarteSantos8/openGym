@@ -157,6 +157,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
      */
     @objc func buzz(_ call: CAPPluginCall) {
         let pattern = (call.getArray("pattern") as? [NSNumber])?.map { $0.doubleValue } ?? [400]
+        // Optional haptic for a short pulse (lib/haptics.js): light, medium or selection.
+        let style = call.getString("style")
         DispatchQueue.main.async {
             var at = 0.0
             for (i, ms) in pattern.enumerated() {
@@ -166,7 +168,11 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                         if long {
                             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
                         } else {
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            switch style {
+                            case "selection": UISelectionFeedbackGenerator().selectionChanged()
+                            case "light": UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            default: UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            }
                         }
                     }
                 }
