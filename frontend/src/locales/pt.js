@@ -6313,4 +6313,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Escreve a palavra delete para confirmar. A tua conta é removida e não pode ser recuperada.",
   "We sent a link to {0}. Open it on this device to continue.": "Enviámos uma ligação para {0}. Abre-a neste dispositivo para continuar.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Nenhum e-mail ao fim de um minuto? Este endereço pode já ter uma conta: inicia sessão ou repõe a palavra-passe.",
+  "Sign in or create account": "Iniciar sessão ou criar conta",
+  "Your training stays on this device. An account is for your plan and purchases.": "O teu treino fica neste dispositivo. A conta serve para o teu plano e as tuas compras.",
 }

@@ -129,3 +129,30 @@ test('approving a sign-in to the app\'s own server: sign in first, see who asks,
   expect(page.url()).toBe(`${PROJECT}/api/oidc/callback?code=c-1`)
   expect(state.consents).toEqual([{ id: 'az-1', action: 'approve' }])
 })
+
+// Found by the owner on the real project: after signing in, Continue left them on the app's own
+// sign-in screen, whose "Create new profile" asks a server of the app's own that did not answer.
+test('the first screen offers the account and this device; signed in, Continue goes into the app', async ({ page }) => {
+  await pretendProject(page)
+  // As on the real deployment that day: what stands where the app's own server would be refuses
+  // everything. (The E2E run has such a server; the hosted edition does not have to.)
+  await page.route('**/api/**', route => route.fulfill({ status: 401, contentType: 'text/plain', body: '401 Unauthorized' }))
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const account = page.getByRole('button', { name: 'Sign in or create account' })
+  await expect(account).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: 'Continue without account' })).toBeVisible()
+  for (const name of ['Create new profile', 'Sign in with passkey']) await expect(page.getByRole('button', { name })).toHaveCount(0)
+  expect(await serious(page)).toEqual([])
+
+  await account.click()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  await signIn(page)
+  await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+  await page.click('[data-continue]')
+  // In the app on this device: not the account screen, and not asked to sign in a second time.
+  await expect(page.locator('.iv-acct')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Sign in or create account' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Create new profile' })).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('gym_guest'))).toBe('1')
+})

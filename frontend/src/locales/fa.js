@@ -6279,4 +6279,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "برای تأیید واژه delete را بنویس. حسابت حذف می‌شود و برنمی‌گردد.",
   "We sent a link to {0}. Open it on this device to continue.": "پیوندی به {0} فرستادیم. برای ادامه آن را روی همین دستگاه باز کن.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "بعد از یک دقیقه ایمیلی نیامد؟ شاید این نشانی از قبل حساب داشته باشد: وارد شوید یا گذرواژه را بازنشانی کنید.",
+  "Sign in or create account": "ورود یا ساخت حساب",
+  "Your training stays on this device. An account is for your plan and purchases.": "تمرین‌های شما روی همین دستگاه می‌ماند. حساب برای طرح و خریدهای شماست.",
 }
