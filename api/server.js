@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
+import zlib from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 import {
   generateRegistrationOptions, verifyRegistrationResponse,
@@ -983,7 +984,7 @@ function json(res, code, obj, extraHeaders) {
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
-function readBody(req) {
+function readBody(req, { gzip = false } = {}) {
   return new Promise((resolve, reject) => {
     let size = 0, over = false; const chunks = [];
     req.on('data', d => {
@@ -1016,8 +1017,16 @@ function readBody(req) {
       if (!/^application\/json\s*(;|$)/i.test(req.headers['content-type'] || '')) {
         return reject(new HttpError(415, 'content-type must be application/json'));
       }
+      let raw = Buffer.concat(chunks);
+      // A gzipped body (the app's sync push, when GET /api/config says gzip_body): the cap is on
+      // what it unzips to, so a few KB that expand past it are a 413 like any big body. Only a
+      // route that asks, after its session check: a stranger's 5 KB must not buy 5 MiB of parsing.
+      if (gzip && /^\s*gzip\s*$/i.test(req.headers['content-encoding'] || '')) {
+        try { raw = zlib.gunzipSync(raw, { maxOutputLength: MAX_BODY }); }
+        catch (e) { return reject(e.code === 'ERR_BUFFER_TOO_LARGE' ? new HttpError(413, 'body too large') : new HttpError(400, 'invalid gzip')); }
+      }
       let body;
-      try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+      try { body = JSON.parse(raw.toString('utf8')); }
       catch { return reject(new HttpError(400, 'invalid json')); }
       // Every handler reads fields off the result, so a JSON `null`, string, number or array is
       // as much a client mistake as unparseable text — refused once here rather than dereferenced
@@ -2575,6 +2584,8 @@ const routes = {
       // `false` here the app does not ask. /api/me itself answers 401 as it always did: paired
       // phones, older apps and scripts read that status.
       signed_in: !!readSession(req),
+      // PUT /api/data may be gzipped (readBody). Older servers leave it out, and the app sends plain.
+      gzip_body: true,
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a
@@ -3177,7 +3188,7 @@ const routes = {
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    const body = await readBody(req);
+    const body = await readBody(req, { gzip: true });
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     // An object with nothing of the profile in it empties the document with the counter left
     // intact: what lands on disk is `{"_rev":n+1}`, every routine, workout and weigh-in gone, and
@@ -3695,7 +3706,8 @@ const server = http.createServer(async (req, res) => {
       // for an Access application that passes OPTIONS through to the origin.
       // X-OpenGym-Account: the account a media upload is meant for (GHSA-699c-6p5r-q574).
       // PATCH and If-Match: a new version of a shared item (library/routes.js).
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match',
+      // Content-Encoding: a gzipped sync push (readBody).
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match, Content-Encoding',
       'Access-Control-Max-Age': '86400',
       ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });

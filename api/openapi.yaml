@@ -314,6 +314,11 @@ paths:
                       or Bearer). The cookie is HttpOnly, so this is how the app learns that
                       nobody is signed in without asking `GET /api/me` and logging its 401.
                       Since v1.4.5; absent on an older server, where the app asks as before.
+                  gzip_body:
+                    type: boolean
+                    description: >-
+                      True when `PUT /api/data` takes a gzipped body (`Content-Encoding: gzip`).
+                      Absent on an older server, where the app sends the body plain.
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -2297,6 +2302,10 @@ paths:
         server stamps the new revision into the document as `_rev`; a `_rev` sent by
         the client is ignored.
 
+        The body may be gzipped, with `Content-Encoding: gzip` (`GET /api/config` says so
+        with `gzip_body`). The 5 MiB limit applies to the unzipped body. Only this route
+        unzips: anywhere else a gzipped body is `invalid json`.
+
         The records of removals (`deleted`) and of edits (`edited`) never shrink: the
         stored ones are joined into the write (a reset keeps its own). A writer that does
         not stamp its own changes (no `stamped: true`; an API script, an older app) and
@@ -2323,6 +2332,12 @@ paths:
         Every accepted write also starts the grace period of each stored file (tag `media`)
         the new state no longer references, and stops it for each one it references again.
         That bookkeeping never changes the answer.
+      parameters:
+        - name: Content-Encoding
+          in: header
+          required: false
+          description: '`gzip` when the body is gzipped. Leave it out for a plain body.'
+          schema: { type: string, enum: [gzip] }
       requestBody:
         required: true
         content:
@@ -2393,13 +2408,21 @@ paths:
             `workouts`/`routines` set to anything other than an array or null. Entries inside
             those two arrays that are not objects (`null`, numbers, nested arrays) are dropped
             before the write rather than refused, so a client with a damaged copy still syncs.
+            Also a body sent with `Content-Encoding: gzip` that is not gzip (`invalid gzip`).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               examples:
                 missing: { value: { error: "state required" } }
                 invalid: { value: { error: "invalid state" } }
+                gzip: { value: { error: "invalid gzip" } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '413':
+          description: The body, unzipped when it came gzipped, is over 5 MiB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "body too large" }
 
   /api/data/rev:
     get:
