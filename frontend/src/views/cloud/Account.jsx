@@ -10,20 +10,23 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { t } from '../../lib/i18n.js'
 import { Button, TextField } from '../../components/ui.jsx'
 import { cloud } from '../../lib/cloud/client.js'
+import { createPendingReset } from '../../lib/cloud/pending-reset.js'
 import './account.css'
 
 export const MIN_PASSWORD = 8
 
-// A reset link has been followed and the new password not yet chosen. Kept outside the
-// component because the app remounts a view when its address changes, and taking the link's hash
-// out of the address is such a change: component state alone would forget the step it had just
-// reached, and the person would land on their account without ever being asked for the password.
-let choosingPassword = false
-// Why a followed link failed (its code), kept for the same reason: the remount would otherwise
-// wipe the message, and a dead link would show nothing at all. Cleared by the next thing done.
+// A reset link has been followed and the new password not yet chosen: kept for the tab
+// (lib/cloud/pending-reset.js), not in component state. The app remounts a view when its address
+// changes, and taking the link's hash out of the address is such a change; and the page can be
+// loaded again while the session the link gave is still there. Either way the person would land
+// on their account without ever being asked for the password.
+let pending = createPendingReset()
+// Why a followed link failed (its code), kept outside the component for the first reason: the
+// remount would otherwise wipe the message, and a dead link would show nothing at all. Cleared
+// by the next thing done.
 let linkFailure = null
-/** For tests: forget a followed link. */
-export const forgetLink = () => { choosingPassword = false; linkFailure = null }
+/** For tests: what loading the page again does here. Its memory goes; what the tab keeps stays. */
+export const forgetLink = () => { pending = createPendingReset(); linkFailure = null }
 
 /** A refusal's code, in words. Anything not listed gets the general line: never the raw code. */
 export function wordFor(code) {
@@ -57,8 +60,8 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const nav = useNavigate()
   const tokenHash = params.get('token_hash'), linkType = params.get('type'), authorizationId = params.get('authorization_id')
   const [session, setSession] = useState(() => client?.auth.session() ?? null)
-  const [mode, setModeState] = useState(() => (choosingPassword && client?.auth.session() ? 'newpass' : 'signin'))   // signin | signup | forgot | sent | newpass
-  const setMode = m => { choosingPassword = m === 'newpass'; setModeState(m) }
+  const [mode, setModeState] = useState(() => (pending.isFor(client?.auth.session()?.user?.id) ? 'newpass' : 'signin'))   // signin | signup | forgot | sent | newpass
+  const setMode = m => { if (m === 'newpass') pending.mark(client?.auth.session()?.user?.id); else pending.clear(); setModeState(m) }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -95,6 +98,13 @@ export default function Account({ client = cloud(), go = url => { location.assig
   // Whoever is signed in has changed: nothing typed for the last account carries over to this
   // one. Above all not the word that confirms deleting it.
   useEffect(() => { setWord(''); setName(''); setReady(false) }, [session?.user?.id])
+  // Nor a password to choose: that step belongs to the account the link signed in. Signed out,
+  // or signed in as someone else, it is over.
+  useEffect(() => {
+    if (pending.isFor(session?.user?.id)) return
+    pending.clear()
+    setModeState(m => (m === 'newpass' ? 'signin' : m))
+  }, [session?.user?.id])
 
   useEffect(() => {
     if (!client || !session) return
