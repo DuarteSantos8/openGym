@@ -80,9 +80,9 @@ const exerciseSchema = z.object({
   sets: z.number().int().min(1).max(ROUTINE_LIMITS.maxSets).optional().describe('Number of sets. Omit for the profile\'s default (3 unless they set their own).'),
   reps: z.number().int().min(1).max(ROUTINE_LIMITS.maxReps).optional().describe('Reps per set, for a rep exercise.'),
   seconds: z.number().int().min(1).max(ROUTINE_LIMITS.maxSec).optional().describe('Seconds per set, for a hold (plank). Not with reps.'),
-  minutes: z.number().int().min(1).max(360).optional().describe('Cardio target duration in whole minutes. For cardio exercises only; a note does not set this numeric target.'),
-  speed: z.number().min(0).optional().describe('Cardio target speed in speed_unit, or the profile speed unit when omitted. For cardio exercises only.'),
-  incline: z.number().min(0).max(40).optional().describe('Cardio incline in percent (0–40), only on incline-capable cardio such as treadmill/walking. 0 clears an existing incline.'),
+  minutes: z.number().int().min(1).max(360).optional().describe('Cardio target duration in whole minutes. Only for cardio-mode slots; distance-mode slots are rejected. A note does not set this numeric target.'),
+  speed: z.number().positive().optional().describe('Positive cardio target speed in speed_unit, or the profile speed unit when omitted. Omit to keep the existing/default speed. For cardio-mode slots only; distance-mode slots are rejected.'),
+  incline: z.number().min(0).max(40).optional().describe('Cardio incline in percent (0–40), only on incline-capable cardio such as treadmill/walking in cardio mode. Distance-mode slots are rejected; 0 clears an existing incline.'),
   weight: z.number().min(0).optional().describe('Planned load in `unit`; omit or 0 to start from what the user lifted last time.'),
   rest_sec: z.number().int().min(0).max(ROUTINE_LIMITS.maxRestSec).optional().describe('Rest after each set, seconds. 0 or omitted: the global rest timer.'),
   note: z.string().max(ROUTINE_LIMITS.maxNote).optional().describe('A note shown with this exercise in the workout.'),
@@ -94,7 +94,7 @@ export const createRoutineTool = {
   description: [
     'Create a routine in the user\'s openGym plan (it syncs to all their devices), e.g. "squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays".',
     'Exercises are matched against the library like log_workout: when a name matches several or none, nothing is saved and `problems` lists candidates to put to the user.',
-    'Each exercise starts the way picking it in the app starts it; only what you pass is set on top. For cardio, set numeric targets on that exercise, for example {exercise: "treadmill", minutes: 10, speed: 5, incline: 1}. `minutes` is 1–360 whole minutes; `incline` is 0–40 percent on incline-capable cardio. A note is text only and does not set duration. `speed` uses top-level `speed_unit` (`kmh` or `mph`), defaulting to the profile unit. `weekdays` puts it on those days of the weekly plan, next to whatever is planned there already.',
+    'Each exercise starts the way picking it in the app starts it; only what you pass is set on top. For cardio, set numeric targets on that exercise, for example {exercise: "treadmill", minutes: 10, speed: 5, incline: 1}. `minutes` is 1–360 whole minutes; `incline` is 0–40 percent on incline-capable cardio. A note is text only and does not set duration. Do not set these fields on a slot already configured in distance mode; change its mode in the app first. `speed` uses top-level `speed_unit` (`kmh` or `mph`), defaulting to the profile unit. `weekdays` puts it on those days of the weekly plan, next to whatever is planned there already.',
     'Call with dry_run: true first when you interpreted anything, show the preview, and save once the user agrees.',
   ].join(' '),
   schema: {
@@ -116,7 +116,7 @@ export const updateRoutineTool = {
   name: 'update_routine',
   description: [
     'Change a routine: rename it, replace its exercise list, append exercises, or move it to other weekdays. Use routine_id from list_routines.',
-    '`exercises` is the whole new list in order; an exercise named again keeps everything its slot had (rest, warm-ups, progression, notes) except what you pass. For cardio, set numeric targets on the exercise itself, e.g. {exercise: "treadmill", minutes: 10, speed: 5, incline: 1}. `minutes` is 1–360 whole minutes; `incline` is 0–40 percent when supported. Notes are text only and do not set duration. `speed` uses top-level `speed_unit` (`kmh` or `mph`), defaulting to the profile unit. `add_exercises` appends. `weekdays` is every day it should be on (it leaves the others); omit it to leave the schedule alone.',
+    '`exercises` is the whole new list in order; an exercise named again keeps everything its slot had (rest, warm-ups, progression, notes) except what you pass. For cardio, set numeric targets on the exercise itself, e.g. {exercise: "treadmill", minutes: 10, speed: 5, incline: 1}. `minutes` is 1–360 whole minutes; `incline` is 0–40 percent when supported. Notes are text only and do not set duration. Do not set these fields on a slot already configured in distance mode; change its mode in the app first. `speed` uses top-level `speed_unit` (`kmh` or `mph`), defaulting to the profile unit. `add_exercises` appends. `weekdays` is every day it should be on (it leaves the others); omit it to leave the schedule alone.',
     'Pass expected_revision (from get_routine) when the user confirmed a change against what they saw: if the profile moved since, nothing is saved and you get a conflict to read again.',
   ].join(' '),
   schema: {

@@ -11,6 +11,7 @@ describe('routine cardio target contract', () => {
     expect(z.object(updateRoutineTool.schema).parse({ routine_id: 'r1', exercises: [exercise], speed_unit: 'kmh' })).toMatchObject({
       exercises: [exercise], speed_unit: 'kmh'
     })
+    expect(z.object(createRoutineTool.schema).safeParse({ name: 'Warm-up', exercises: [{ exercise: 'treadmill', minutes: 10, speed: 0 }] }).success).toBe(false)
   })
 })
 
@@ -29,8 +30,8 @@ test('published MCP tool descriptions expose the cardio fields to clients', asyn
       const props = tool.inputSchema.properties
       expect(props.speed_unit).toBeDefined()
       expect(props.exercises.items.properties.minutes.description).toContain('whole')
-      expect(props.exercises.items.properties.speed.description).toContain('speed_unit')
-      expect(props.exercises.items.properties.incline.description).toContain('incline-capable')
+      expect(props.exercises.items.properties.speed.description).toContain('Positive')
+      expect(props.exercises.items.properties.incline.description).toContain('Distance-mode')
       expect(tool.description).toContain('numeric targets')
     }
     expect(tools.find(item => item.name === 'get_routine').description).toContain('minutes')

@@ -61,6 +61,21 @@ describe('createRoutine', () => {
     expect(createRoutine(base(), { name: 'Bad', exercises: [{ exercise: 'squat', minutes: 10 }] }).problems.map(p => p.field)).toContain('exercises[0].minutes')
     expect(createRoutine(base(), { name: 'Bad', exercises: [{ exercise: 'stationary bike', incline: 5 }] }).problems.map(p => p.field)).toContain('exercises[0].incline')
   })
+  test('rejects cardio targets on distance-mode slots without changing the distance plan', () => {
+    const S = base()
+    S.routines[0].ex.push({ id: '3666', mode: 'distance', distance: 5000 })
+    const before = JSON.stringify(S)
+    const r = updateRoutine(S, 'r1', { exercises: [
+      { exercise: '0025' }, { exercise: '0025' },
+      { exercise: '3666', minutes: 10, speed: 5 },
+    ] })
+    expect(r.problems.map(p => p.field)).toEqual(['exercises[2]'])
+    expect(JSON.stringify(S)).toBe(before)
+  })
+  test('rejects zero speed because the app treats it as its default speed', () => {
+    const r = createRoutine(base(), { name: 'Zero speed', exercises: [{ exercise: 'treadmill', minutes: 10, speed: 0 }] })
+    expect(r.problems.map(p => p.field)).toContain('exercises[0].speed')
+  })
 })
 
 describe('updateRoutine', () => {

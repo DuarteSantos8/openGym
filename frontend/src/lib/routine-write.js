@@ -55,6 +55,10 @@ function slotOf(S, ex, base, unit, speedUnit, at, problems) {
     for (const k of ['minutes', 'speed', 'incline']) if (ex?.[k] != null) problems.push({ field: `${at}.${k}`, problem: 'cardio targets can only be set on a cardio exercise' })
     return null
   }
+  if (cardio && base?.mode === 'distance' && ['minutes', 'speed', 'incline'].some(k => ex?.[k] != null)) {
+    problems.push({ field: at, problem: 'this cardio exercise is configured in distance mode; change it to cardio mode in the app before setting minutes, speed, or incline' })
+    return null
+  }
   const slot = base && base.id === hit.id ? { ...base } : { id: hit.id, ...pickedExerciseConfig(hit.id, timed ? 'time' : undefined, S) }
   if (timed && slot.mode !== 'time') { slot.mode = 'time'; delete slot.reps; delete slot.repsMin }
   if (ex?.reps != null && slot.mode === 'time') { slot.mode = 'reps'; delete slot.sec }
@@ -81,7 +85,7 @@ function slotOf(S, ex, base, unit, speedUnit, at, problems) {
     if (ex?.speed != null) {
       const value = num(ex.speed)
       const kmh = value == null || value < 0 ? null : fromSpeed(value, speedUnit)
-      if (kmh == null || kmh > 60) problems.push({ field: `${at}.speed`, problem: 'must be 0 to 60 km/h after converting speed_unit' })
+      if (kmh == null || kmh <= 0 || kmh > 60) problems.push({ field: `${at}.speed`, problem: 'must be more than 0 and at most 60 km/h after converting speed_unit; omit it to keep the existing/default speed' })
       else slot.speed = kmh
     }
     if (ex?.incline != null) {
