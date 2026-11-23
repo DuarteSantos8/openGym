@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': '탭해서 계획하기',
   'Drag to reorder': '드래그해서 순서 변경',
   'Drag to reorder. Tap the minus to delete.': '드래그해서 순서를 바꾸세요. 삭제하려면 마이너스를 탭하세요.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': '루틴을 탭하면 편집할 수 있어요. 순서 변경과 삭제는 편집에 있어요.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "루틴을 탭하면 편집하고, 길게 누르면 옮길 수 있어요. 삭제는 편집에 있어요.",
   'Pick one routine, or more to train them together.': '루틴 하나를 고르거나, 함께 하려면 여러 개를 고르세요.',
   'Planned sets per week, from your plan.': '플랜에 따른 주간 계획 세트 수.',
   // --- Settings (v1.3.11) ---
@@ -5904,7 +5904,6 @@ export default {
   "Collapsed": "접힘",
   "Hide": "숨기기",
   "Totals": "합계",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "연결 중입니다. 잠시 후 다시 시도하세요.",
   "Pair a watch in the Watch app.": "Watch 앱에서 워치를 페어링하세요.",
@@ -5920,4 +5919,6 @@ export default {
   "Not set up": "설정 안 됨",
   "Update watch app": "워치 앱 업데이트",
   "Last heard {0}": "마지막 연결: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 카드를 길게 눌러 옮기세요.",
+  "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
 }

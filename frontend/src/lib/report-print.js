@@ -12,7 +12,7 @@ import { speedUnitOf } from './speed.js'
 import { printedName } from './plan-share.js'
 import { esc, printShell, printDocument, probeMarks, paperDate } from './print-doc.js'
 import { reportData, workSetsOf } from './report.js'
-import { viewEntry, exUnitTag } from './ex-unit.js'
+import { viewEntry, exUnitOf } from './ex-unit.js'
 import { SPORT_LABEL } from './activities.js'
 import { isoRun } from './bidi.js'
 
@@ -278,14 +278,15 @@ function workoutUnits(w) {
 
 // The sets of one exercise as small boxes: warm-ups dashed, sets not done faint. Wraps onto as
 // many lines as it needs and never runs past the page edge.
-// An exercise in a unit of its own (#657) comes in converted, its unit (`tag`) on every set.
-function setsHTML(e, speedUnit, tag = '') {
+// An exercise in a unit of its own (#657) comes in converted, and `unit` is the one it is written
+// in: "87.5 kg × 8", so no weight on paper is left bare.
+function setsHTML(e, speedUnit, unit) {
   let n = 0
   const rows = (e.sets || []).map(s => {
     const warm = isWarmupRow(s)
     const done = hasCompletedWork(s)
     const key = warm ? t('Warm-up') : t('Set {0}', ++n)
-    const value = done ? setLabel(e.id, s, e.target, speedUnit) + tag : '–'
+    const value = done ? setLabel(e.id, s, e.target, speedUnit, unit) : '–'
     return `<div class="set${warm ? ' warm' : ''}${done ? '' : ' skip'}"><span class="k">${esc(key)}</span><span class="v">${esc(value)}</span></div>`
   })
   return rows.length ? `<div class="sets">${rows.join('')}</div>` : ''
@@ -320,7 +321,7 @@ export function workoutPrintHTML(S, w, { owner = '', probe = false } = {}) {
     const done = (e.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).length
     const sum = [t('{0} sets', done), v > 0 ? fmtVol(v, unit) : ''].filter(Boolean).join(' · ')
     return `<div class="wx"><div class="wx-h"><div class="wx-num">${++num}</div><div class="wx-main">${nameHTML(e, { pr: prs.has(e.id) })}</div><div class="wx-sum">${esc(sum)}</div></div>`
-      + setsHTML(viewEntry(S, e), speedUnit, exUnitTag(S, e.id))
+      + setsHTML(viewEntry(S, e), speedUnit, exUnitOf(S, e.id))
       + (e.note ? `<div class="wx-note">${esc(e.note)}</div>` : '') + '</div>'
   }
   const units = workoutUnits(w)
@@ -462,7 +463,9 @@ function workoutListItem(S, w, unit, speedUnit, m, id, lead = '') {
   const ms = workoutDuration(w)
   const facts = [ms >= 60000 ? fmtDur(ms) : '', fmtVol(sessionVolume(w, S), unit), t('{0} sets', workSetsOf(w))].filter(Boolean).join(' · ')
   const rows = workoutUnits(w).flat().map((e, j) => {
-    const sets = (e.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).map(s => setLabel(e.id, s, e.target, speedUnit))
+    // Written the way "Copy as text" writes it ("100 kg × 5"); these are stored weights, which are in
+    // the profile's unit.
+    const sets = (e.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).map(s => setLabel(e.id, s, e.target, speedUnit, unit))
     if (!sets.length) return ''
     return `<tr><td class="n">${m.s(id + 'r' + j)}${nameHTML(e, { pr: prs.has(e.id), short: true })}</td><td class="s">${esc(sets.join(', '))}${m.e(id + 'r' + j)}</td></tr>`
   }).join('')

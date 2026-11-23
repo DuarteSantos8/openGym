@@ -20,7 +20,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = snap
   return { useUI }
 })
-vi.mock('../lib/sound.js', () => ({
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(),
   unlock: () => {},
   vibrate: p => mocks.buzz.push(p),
   queueTones: (on, notes) => { if (on) mocks.tones.push(...notes); return () => { mocks.silenced++ } },

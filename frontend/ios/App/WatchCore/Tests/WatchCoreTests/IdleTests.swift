@@ -77,6 +77,19 @@ final class IdleTests: XCTestCase {
         XCTAssertEqual(Idle.verdict(since: 0, now: 25 * min, wid: "w1", reply: nil), .ask)
     }
 
+    // The drain: past 45 minutes with the phone out of reach the verdict is only "ask", so the
+    // Apple Health session kept the sensor at workout rate until SensorPlan's 3 hours. It rests then.
+    func testTheSensorRestsWhenTheWorkoutIsPastEndingAndThePhoneCouldNotBeAsked() {
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 44 * min, reply: nil), "before the end: only asked")
+        XCTAssertTrue(Idle.sensorRests(since: 0, now: 45 * min, reply: nil))
+        XCTAssertTrue(Idle.sensorRests(since: 0, now: 300 * min, reply: nil))
+        // The phone answered: it ends the workout, or says it is in use. Either way not the sensor's call.
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 45 * min, reply: Idle.PhoneReply(wid: "w1", activeAt: 44 * min)))
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 45 * min, reply: Idle.PhoneReply(wid: "w2", activeAt: nil)))
+        // Forgotten workouts switched off: nothing is ever past ending (SensorPlan's 3 hours stay the net).
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 300 * min, reply: nil, rules: Idle.Rules(askAfter: 0, grace: 5 * min, leaveGym: false)))
+    }
+
     func testThePhoneStillLoggingKeepsTheWorkoutGoing() {
         // The issue's case: the phone's last tick 24 s ago.
         let reply = Idle.PhoneReply(wid: "w1", activeAt: 45 * min - 24_000)

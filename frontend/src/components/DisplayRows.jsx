@@ -1,5 +1,8 @@
-// Settings → Look & Home: Motion and Text size (lib/display-prefs.js), this device only.
+// Settings → Look & Home: Motion and Text size (lib/display-prefs.js). Applied here at once and
+// kept in the profile too (lib/device-prefs-sync.js), so another device signed in gets them.
 import { useState } from 'react'
+import { useStore } from '../store/useStore.js'
+import { savePrefs } from '../lib/device-prefs-sync.js'
 import { t } from '../lib/i18n.js'
 import { readDisplay, applyDisplay, followsSystemText, systemTextScale } from '../lib/display-prefs.js'
 import { useUI } from '../store/useUI.js'
@@ -56,7 +59,11 @@ export function TextSizeSheet({ value, onChange, close }) {
 
 export default function DisplayRows() {
   const [d, setD] = useState(readDisplay)
-  const set = patch => setD(prev => applyDisplay({ ...prev, ...patch }, { save: true }))
+  const set = patch => {
+    const next = applyDisplay({ ...d, ...patch }, { save: true })
+    setD(next)
+    savePrefs(useStore.getState().update)
+  }
   const cur = textSizeOptions().find(o => o.value === d.text)
   const openText = () => useUI.getState().openSheet(close => <TextSizeSheet value={d.text} onChange={v => set({ text: v })} close={close} />)
   return <>

@@ -309,6 +309,12 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 .nocap,.tag.nocap,.chip.nocap{text-transform:none}
 
 /* ---------------------------------------------------------------- layout -- */
+/* The status bar sits on the page's frosted ground, as the pinned headers do (Apple: obscure what is
+   under the status bar, prefer a blur): what scrolls up passes under it, never behind the clock
+   (1.4.5, owner). Over the pinned headers (20), under the connection bar (45) and sheets. */
+body::before{content:'';position:fixed;inset-inline:0;top:0;height:var(--sat);z-index:30;pointer-events:none;
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px)}
 #app{
   padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) calc(88px + var(--sab));
   max-width:560px;margin:0 auto;
@@ -526,15 +532,29 @@ h4.sec{
 .fold-b[hidden]{display:none}
 .arr{display:contents}
 .customize-link{display:flex;justify-content:center;margin:4px 0 12px}
+/* The Customize sheet (1.4.6): a row per card, held and dragged like an iOS list in Edit mode.
+   The row lifts (shadow, a touch larger) while it is held, the others make room, and it glides
+   into place (lib/use-list-reorder.js). EMIL: transform/opacity only, ease-out, under 300 ms. */
 .lay-group{margin-top:14px}
-.lay-row{padding:12px 14px}
+.lay-list{position:relative}
+.lay-row{padding:10px 14px 12px;background:var(--surface);border-radius:inherit;position:relative;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y;
+  transition:box-shadow .2s var(--ease),background-color .2s var(--ease)}
 .lay-row+.lay-row{box-shadow:inset 0 .5px 0 var(--separator)}
-.lay-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.lay-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.lay-row.held{z-index:2;border-radius:14px;background:var(--surface-2)}
+.lay-top{display:flex;align-items:center;gap:6px;margin-bottom:8px;min-height:36px}
+.lay-grip,.reorder-grip{flex:none;width:32px;height:36px;display:none;place-items:center;border-radius:10px;color:var(--label-3);
+  touch-action:none;cursor:grab;transition:color .16s var(--ease),transform .16s var(--ease)}
+/* The grip shows where a mouse looks for it, like the routine editor's (#277); a finger holds the
+   row anywhere instead, on every list (lib/use-list-reorder.js). */
+@media (hover:hover) and (pointer:fine){.lay-grip,.reorder-grip{display:grid}.lay-grip:hover,.reorder-grip:hover{color:var(--label-2)}}
+.lay-grip:active,.lay-row.held .lay-grip,.reorder-grip:active,[data-held] .reorder-grip{color:var(--acc);cursor:grabbing;transform:scale(.94)}
+.lay-name{flex:1;font-weight:600;min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:2px}
+.lay-hint{font-weight:400;font-size:var(--fs-footnote);color:var(--label-2)}
 .lay-row.off .lay-name{color:var(--label-2)}
-.lay-move{display:flex;gap:8px;flex:none}
-.lay-move .iconbtn{width:44px;height:36px;border-radius:10px}
-.lay-move .iconbtn:disabled{opacity:.35}
+.lay-row .seg{margin-inline-start:0}
+@media (hover:hover) and (pointer:fine){.lay-row{padding-inline-start:6px}.lay-row .seg{margin-inline-start:38px}}
+.lay-move{display:contents}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -761,9 +781,12 @@ h4.sec{
 #tabbar button.start .cir{color:var(--on-acc)}
 #tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px var(--orange);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
 #tabbar button.start.rec span{color:var(--orange-ink)}   /* the running clock is read: #ff9500 was 2.1:1 on the light bar */
+/* Three pings when a workout starts, then still (review 1.4.6): an endless ring kept the phone's
+   compositor busy for the whole workout, the biggest battery cost the Android pass measured.
+   The orange disc and the running clock already say a workout is on. */
 #tabbar button.start.rec .cir::after{
   content:'';position:absolute;inset:0;border-radius:50%;
-  border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
+  border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3 both;
 }
 @keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.45);opacity:0}}
 
@@ -785,14 +808,15 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .lay-row.held{box-shadow:0 0 0 1px var(--separator)}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,body::before{-webkit-backdrop-filter:none;backdrop-filter:none}
   .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
   .tr-bulk{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
-  .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
+  .conn-bar,.whdr.stick,.stats-index,.gl-sticky,body::before{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -834,7 +858,9 @@ h4.sec{
 /* The routine editor's rail (P4): the superset link beside Move up over Move down. Each button is
    40px wide; up and down reach into the row's padding, so each is a 40x40 target and the link a
    40px square, where they were 28x24 and 32x28 in three separate places. */
-.re-rail{flex:none;display:grid;grid-template-columns:40px 40px;grid-template-rows:30px 30px;column-gap:4px;align-items:stretch;margin-block:-4px}
+/* The arrows are out of sight since 1.4.6 (a hold moves an exercise, as on every list); only the
+   superset link is left on the rail. */
+.re-rail{flex:none;display:grid;grid-template-columns:40px;grid-template-rows:30px 30px;align-items:stretch;margin-block:-4px}
 .re-rail .iconbtn{width:auto;height:auto;border-radius:9px;font-size:var(--fs-subhead);position:relative;background:var(--surface-2)}
 .re-rail .re-link{grid-column:1;grid-row:1 / span 2;align-self:center;height:40px}
 .re-rail .re-up{grid-column:2;grid-row:1;border-end-start-radius:4px;border-end-end-radius:4px}
@@ -865,7 +891,7 @@ h4.sec{
 #app .list.routine-list{display:flex;flex-direction:column}
 .routine-drag-row{touch-action:pan-y;-webkit-touch-callout:none;position:relative;transition:transform var(--fast) var(--ease)}
 .routine-list.is-reordering{user-select:none;-webkit-user-select:none}
-.routine-list.is-reordering .routine-drag-row{transition:none}
+.routine-list.is-reordering .routine-drag-row.is-dragging{transition:none}
 .routine-drag-row.is-dragging{z-index:2;pointer-events:none}
 .routine-drag-row.is-dragging .item{box-shadow:0 10px 28px rgba(0,0,0,.22);background:var(--surface-2)}
 .routine-drop-indicator{
@@ -1776,8 +1802,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   transition:background var(--fast),border-color var(--fast);
 }
 .effcell-stp button{color:inherit}
-.effcell-stp>button[aria-label="Decrease"],
-.effcell-stp>button[aria-label="Increase"]{width:26px;height:44px;font-size:var(--fs-subhead);opacity:.85;flex:0 1 auto;min-width:16px}
+.effcell-stp>button:not(.val){width:26px;height:44px;font-size:var(--fs-subhead);opacity:.85;flex:0 1 auto;min-width:16px}
 /* the value is the tap target for the picker, so it keeps a 28 px finger's width for "8.5" and
    the −/+ shrink first — on a 368 px phone it had collapsed to 4 px under its own digits, and a
    tap on the number stepped the rating instead of opening the picker (QA C22) */
@@ -1804,8 +1829,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    "10.5" needs more than a reps count, at 360 px it read "10.!" (full QA 146). The incline beside
    it gives the width back. */
 .setrow.eff3 .stp.r.dec,.sethead.eff3 .r-sp.dec{--num:calc(36px * var(--num-k))}
-.setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
-.setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
+.setrow.eff3 .effcell-stp>button:not(.val){width:22px}
 .setrow.eff3 .effcell-stp .val{font-size:.875rem}
 /* effort quick picker sheet: colour-coded preset buttons, hardest (purple) first */
 /* effort picker: the ⋯-menu list with the value in the icon square, tinted per band; the
@@ -1840,23 +1864,25 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* Its own layer only while it moves: on every row it was a layer per set (#431). */
 .swrow.dragging .swfront,.swrow.go-del .swfront,.swrow.go-cp .swfront{will-change:transform}
 .swpane{position:absolute;top:0;bottom:0;width:0;overflow:hidden;z-index:0}
-.swpane.del{inset-inline-end:0;background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}
-.swpane.cp{inset-inline-start:0;background:var(--acc-soft)}
-.swpane button{position:absolute;top:0;bottom:0;width:76px;padding:0;color:#fff;transition:width .16s var(--ease)}
+/* The pane is its action's colour edge to edge from the first pixel, like iOS Mail: a paler strip
+   between the button and the row read as a gap (owner, 2026-11-23). Arming shows in the label. */
+.swpane.del{inset-inline-end:0;background:var(--red)}
+.swpane.cp{inset-inline-start:0;background:var(--acc)}
+.swpane button{position:absolute;top:0;bottom:0;width:100%;padding:0;color:#fff}
 .swpane.del button{inset-inline-end:0;background:var(--red)}
 .swpane.cp button{inset-inline-start:0;background:var(--acc);color:var(--on-acc)}
-.swpane.armed button{width:100%}
 .swpane .lab{position:absolute;top:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs-caption)}
 .swpane.del .lab{inset-inline-start:0}
 .swpane.cp .lab{inset-inline-end:0}
 .swpane .lab .icn{font-size:1.3125rem;transform:scale(.8);transition:transform .16s var(--ease)}
+.swpane .lab{transition:opacity .16s var(--ease)}
+.swpane:not(.armed) .lab{opacity:.85}
 .swpane .lab b{font-weight:500}
 .swpane.armed .lab .icn{transform:scale(1)}
 .swpane.armed .lab b{font-weight:800}
 /* The last set cannot go: the delete side shows grey and never fills. */
-.swpane.del.dis{background:var(--surface-2)}
+.swpane.del.dis{background:var(--surface-3)}
 .swpane.del.dis button{background:var(--surface-3);color:var(--label-3)}
-.swpane.del.dis.armed button{width:76px}
 .swrow.flash .swfront{animation:swflash .4s ease}
 @keyframes swflash{0%,35%{background:linear-gradient(var(--acc-line),var(--acc-line)),var(--surface);background:color-mix(in srgb,var(--acc) 28%,var(--surface))}100%{background:var(--surface)}}
 .swrow.flash-red .swfront{animation:swflashr .5s ease}
@@ -1935,8 +1961,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    below is more specific and keeps the cell at 34 px. */
 @media (min-width:360px) and (max-width:365px){
   .setrow.side .effcell,.setrow.side .effcell-stp,.sethead.per-side .eff-sp{min-width:56px}
-  .setrow.side .effcell-stp>button[aria-label="Decrease"],
-  .setrow.side .effcell-stp>button[aria-label="Increase"]{min-width:12px}
+  .setrow.side .effcell-stp>button:not(.val){min-width:12px}
 }
 /* An L/R row with an effort column inside a superset in the list view sits behind three insets
    (unit, superset card, sets card). It used to drop the RIR −/+ here and hand the width to an
@@ -1946,8 +1971,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    weight column gives up the matching width (a per-side weight is one limb's load, so its 48 px
    reserve was generous), so the row's total is unchanged and everything still fits at 412 px. */
 @media (max-width:429px){
-  .wl-unit .ss-card .setrow.side .effcell-stp>button[aria-label="Decrease"],
-  .wl-unit .ss-card .setrow.side .effcell-stp>button[aria-label="Increase"]{min-width:12px}
+  .wl-unit .ss-card .setrow.side .effcell-stp>button:not(.val){min-width:12px}
   .wl-unit .ss-card .setrow.side .effcell,.wl-unit .ss-card .setrow.side .effcell-stp,.wl-unit .ss-card .sethead.per-side .eff-sp{min-width:54px}
   /* reclaim the +/-'s room from the weight column: a slimmer number reserve and tighter button
      floors, the same shape the 320 px step-down below already gives weight on these rows */
@@ -1961,7 +1985,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    border), still opens the picker on tap, and the picker's exact row steps in halves as before;
    weight and reps keep their buttons. */
 @media (max-width:359px){
-  .setrow .effcell-stp>button[aria-label="Decrease"],.setrow .effcell-stp>button[aria-label="Increase"]{display:none}
+  .setrow .effcell-stp>button:not(.val){display:none}
   .setrow .effcell,.setrow .effcell-stp,.setrow.eff3 .effcell-stp,.sethead .eff-sp,
   .wl-unit .ss-card .setrow.side .effcell,.wl-unit .ss-card .setrow.side .effcell-stp,.wl-unit .ss-card .sethead.per-side .eff-sp{min-width:29px}
   .setrow .effcell-stp .val{min-width:26px}
@@ -2146,6 +2170,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The plan and the last time are what you read between sets, so they sit in the secondary grey, not
    the tertiary one (2.5:1, which the gym's light washed out). .dim stays on them for the markup. */
 .planline.dim,.refline.dim{color:var(--label-2)}
+.planline{min-width:0;overflow-wrap:anywhere}   /* one item in the tag row: wraps inside itself, never clips */
 .refline svg{flex:none;margin-top:2px;font-size:var(--fs-caption)}
 /* an exercise kept out of progression for this session, with its undo */
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:var(--fs-footnote);line-height:1.38;color:var(--orange)}
@@ -3533,6 +3558,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 }
 .plan-handle:active{cursor:grabbing;color:var(--label-2)}
 .plan [data-reorder-row]{transition:transform var(--fast) var(--ease)}
+/* Every movable list looks the same while a row is held (lib/use-list-reorder.js, the routine
+   editor too): lifted on a shadow, its corners rounded, nothing selectable or callable out. */
+[data-reorder-row]{-webkit-touch-callout:none}
+[data-reordering],[data-reordering] *{-webkit-user-select:none;user-select:none}
+[data-reorder-row][data-held]{border-radius:var(--r-card);box-shadow:0 10px 28px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18)}
+[data-reorder-row][data-held] > .item,[data-reorder-row][data-held].item{background:var(--surface-2)}
 .plan-link{margin-top:24px}
 .plan-empty{padding:28px 20px}
 /* Stats: the card Plan links to clears the sticky banners when it is scrolled to */
@@ -3842,10 +3873,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .sbar-n{min-width:0;font-size:var(--fs-subhead);line-height:var(--lh-small);overflow-wrap:break-word}
 .sbar-row.on .sbar-n{font-weight:600}
 .sbar-t{position:relative;height:8px;border-radius:4px;background:var(--surface-2)}
-.sbar-f{position:absolute;inset-block:0;inset-inline-start:0;border-radius:4px;background:var(--label-2)}
+/* The fill sits 2px inside the track on every row, not only where there is a band: a band-less row
+   at the full 8px read as a taller bar next to its neighbours (#1395). */
+.sbar-f{position:absolute;inset-block:2px;inset-inline-start:0;border-radius:3px;background:var(--label-2)}
 .sbar-band{position:absolute;inset-block:0;background:rgba(48,209,88,.22);background:color-mix(in srgb,var(--green-ink) 22%,transparent)}
 :root[data-theme="light"] .sbar-band{background:rgba(26,127,55,.18);background:color-mix(in srgb,var(--green-ink) 18%,transparent)}
-.sbar-row:has(.sbar-band) .sbar-f{inset-block:2px;border-radius:3px}
 .sbar-tick{position:absolute;inset-block:-3px;width:2px;border-radius:1px;background:var(--label)}
 .sbar-row.acc .sbar-f{background:var(--acc)}
 .sbar-row.in .sbar-f{background:var(--green-ink)}
@@ -4239,6 +4271,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    guide's stage. The phase tints the stage so a glance from the bench says lower or lift. */
 .tag.tempo-tag{border:0;font:inherit;font-size:var(--fs-caption);font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
 .tag.tempo-tag .icn{font-size:var(--fs-caption)}
+/* the pill stays small; its tap area is 44px tall (neighbours are text and non-tappable pills) */
+.tag.tempo-tag{position:relative}
+.tag.tempo-tag::after{content:"";position:absolute;inset:50% -4px auto;height:44px;transform:translateY(-50%)}
 .tempo-big{font-size:2.125rem;font-weight:700;letter-spacing:.04em;text-align:center;margin:4px 0 12px;font-variant-numeric:tabular-nums;color:var(--label)}
 .tempo-stage{display:grid;place-items:center;gap:2px;min-height:168px;margin:6px 0 14px;padding:18px 12px;border-radius:18px;
   background:var(--surface-2);text-align:center;transition:background-color .25s ease}
@@ -4525,7 +4560,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .banddot{width:10px;height:10px;border-radius:50%;background:var(--band);flex:none;box-shadow:inset 0 0 0 1px var(--sep);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent)}
 .banddot.big{width:16px;height:16px}
 .banddots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
-.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep)}
+.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep);background:var(--surface)}
 .bandrow:last-child{border-bottom:0}
 .bandrow-main{flex:1;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;min-width:0}
 .bandrow-name{flex:1;min-width:0;overflow-wrap:anywhere}

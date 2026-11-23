@@ -2120,7 +2120,7 @@ export default {
   'Tap to plan something': 'Klepni a něco naplánuj',
   'Drag to reorder': 'Přetažením změníš pořadí',
   'Drag to reorder. Tap the minus to delete.': 'Přetažením změníš pořadí. Klepnutím na minus smažeš.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Klepnutím na sestavu ji upravíš. Řazení a mazání najdeš pod „Upravit“.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Klepnutím na sestavu ji upravíš, podržením ji přesuneš. Mazání najdeš pod „Upravit“.",
   'Pick one routine, or more to train them together.': 'Vyber jednu sestavu, nebo víc, pokud je chceš odcvičit společně.',
   'Planned sets per week, from your plan.': 'Naplánované série za týden podle tvého plánu.',
   'Timer alerts': 'Upozornění časovače',
@@ -5870,7 +5870,6 @@ export default {
   "Collapsed": "Sbalené",
   "Hide": "Skrýt",
   "Totals": "Součty",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Šipky mění pořadí.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Připojuje se. Zkuste to za chvíli.",
   "Pair a watch in the Watch app.": "Spárujte hodinky v aplikaci Watch.",
@@ -5886,4 +5885,6 @@ export default {
   "Not set up": "Nenastaveno",
   "Update watch app": "Aktualizujte aplikaci v hodinkách",
   "Last heard {0}": "Poslední spojení: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
+  "Shows up when there is something to show": "Objeví se, až bude co ukázat",
 }

@@ -346,7 +346,8 @@ iPhone runs one, the same `HKWorkoutSession` + `HKLiveWorkoutBuilder` the Apple 
 - **Apple Health:** finishing saves the live workout (`finishWorkout`, sync id `opengym-w-<id>`,
   version 1, the workout's name as `OpenGymTitle`). `AppleHealthPlugin.saveSession` asks
   `PhoneWorkoutLedger` and skips its post-hoc write for it, as it does for the watch's copy (it waits
-  up to 20 s for a save still in flight). Discarding drops it (`discardWorkout`).
+  up to 20 s for a save still in flight). Discarding drops it (`discardWorkout`), and so does
+  removing it from Apple Health (`AppleHealthPlugin.remove` clears its ledger entry).
 - **AirPods out:** readings stop, the session keeps going, they resume when the buds go back in.
 - **Crash or kill:** iOS keeps the session and hands it back on the next launch
   (`UIScene.ConnectionOptions.shouldHandleActiveWorkoutRecovery` in `AppDelegate`,

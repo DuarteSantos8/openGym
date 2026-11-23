@@ -2152,7 +2152,7 @@ export default {
   'Tap to plan something': 'Koppints, és tervezz valamit',
   'Drag to reorder': 'Húzd az átrendezéshez',
   'Drag to reorder. Tap the minus to delete.': 'Húzd az átrendezéshez. Koppints a mínuszra a törléshez.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Koppints egy rutinra a szerkesztéshez. Átrendezés és törlés a Szerkesztés alatt.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Koppints egy rutinra a szerkesztéshez, vagy tartsd lenyomva az áthelyezéshez. A törlés a Szerkesztés alatt van.",
   'Pick one routine, or more to train them together.': 'Válassz egy rutint, vagy többet, hogy együtt edzd őket.',
   'Planned sets per week, from your plan.': 'Tervezett sorozatok hetente, a terved alapján.',
   // --- Settings (v1.3.11) ---
@@ -5907,7 +5907,6 @@ export default {
   "Collapsed": "Összecsukva",
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Csatlakozás. Próbáld újra egy pillanat múlva.",
   "Pair a watch in the Watch app.": "Párosíts egy órát a Watch appban.",
@@ -5923,4 +5922,6 @@ export default {
   "Not set up": "Nincs beállítva",
   "Update watch app": "Frissítsd az óra appját",
   "Last heard {0}": "Utoljára jelentkezett: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. Tarts lenyomva egy kártyát az áthelyezéshez.",
+  "Shows up when there is something to show": "Akkor jelenik meg, ha van mit mutatnia",
 }

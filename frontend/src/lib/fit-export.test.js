@@ -264,6 +264,46 @@ describe('a strength workout as FIT', () => {
     expect(s2.at(-1)[254]).toBe(fitTime(T0 + 30000))
   })
 
+  it('places a circuit\'s sets in the order they were ticked, with the rests between them', () => {
+    // Three rounds of bench then plank, logged exercise after exercise: the ticks alternate.
+    const round = k => T0 + min(4 * k)
+    const circuit = { id: 'circuit', d: '2026-11-19', start: T0, end: T0 + min(12), entries: [
+      { id: BENCH, target: { mode: 'reps' }, sets: [1, 2, 3].map(k => ({ w: 60, r: 10, done: true, at: round(k) - min(2) })) },
+      { id: PLANK, target: { mode: 'time' }, sets: [1, 2, 3].map(k => ({ sec: 40, w: 0, done: true, at: round(k) - 20000 })) },
+    ] }
+    const s = of(decode(workoutFit(circuit)), MSG.set)
+    const act = s.filter(x => x[5] === 1)
+    expect(act.map(x => x[7])).toEqual([0, CATEGORY.plank, 0, CATEGORY.plank, 0, CATEGORY.plank])
+    expect(act.map(x => x[254])).toEqual([1, 2, 3].flatMap(k => [fitTime(round(k) - min(2)), fitTime(round(k) - 20000)]))
+    // Each rest is the real gap, not the session shared out evenly.
+    const rests = s.filter(x => x[5] === 0).map(x => x[0] / 1000)
+    expect(rests).toEqual([60, 110, 60, 110, 60])
+  })
+
+  it('keeps a drop behind its set and both sides together when a circuit is put in tick order', () => {
+    // Two rounds of a bench drop set then curls left and right, logged exercise after exercise.
+    const at = (round, m) => T0 + min(6 * round + m)
+    const w = { id: 'circuit-drops', d: '2026-11-19', start: T0, end: T0 + min(12), entries: [
+      { id: BENCH, target: { mode: 'reps' }, sets: [0, 1].map(k => ({ w: 60, r: 10, done: true, type: 'dropset', drops: [{ w: 40, r: 8 }], at: at(k, 2) })) },
+      { id: CURL, target: { mode: 'reps' }, sets: [0, 1].map(k => ({ w: 12, r: 10, done: true, at: at(k, 4),
+        sides: { L: { w: 12, r: 10, done: true, at: at(k, 4) }, R: { w: 12, r: 10, done: true, at: at(k, 4) } } })) },
+    ] }
+    const s = of(decode(workoutFit(w)), MSG.set)
+    const act = s.filter(x => x[5] === 1)
+    expect(act.map(x => [x[7], x[4] / 16])).toEqual([0, 1].flatMap(() => [[0, 60], [0, 40], [7, 12], [7, 12]]))
+    // Each drop starts the moment its set ends, with no rest between them.
+    for (let k = 1; k < s.length; k++) if (s[k][5] === 1 && s[k][4] === 40 * 16) expect(s[k][6]).toBe(s[k - 1][254])
+  })
+
+  it('keeps the list\'s order when ticks after the end send the sets back to the even spread', () => {
+    const late = { id: 'late-order', d: '2026-10-09', start: T0, end: T0 + min(2), entries: [
+      { id: BENCH, target: { mode: 'reps' }, sets: [{ w: 60, r: 5, done: true, at: T0 + min(4) }] },
+      { id: PLANK, target: { mode: 'time' }, sets: [{ sec: 30, w: 0, done: true, at: T0 + min(3) }] },
+    ] }
+    const act = of(decode(workoutFit(late)), MSG.set).filter(x => x[5] === 1)
+    expect(act.map(x => x[7])).toEqual([0, CATEGORY.plank])
+  })
+
   it('does not let ticks bunched after the end stretch the session', () => {
     const late = { id: 'late', d: '2026-10-09', start: T0, end: T0 + min(10), entries: [
       { id: BENCH, target: { mode: 'reps' }, sets: [5, 5, 5].map(r => ({ w: 60, r, done: true, at: T0 + min(60) })) },

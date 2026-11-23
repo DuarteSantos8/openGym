@@ -2149,7 +2149,7 @@ export default {
   'Tap to plan something': 'Toca para planear algo',
   'Drag to reorder': 'Arrasta para reordenar',
   'Drag to reorder. Tap the minus to delete.': 'Arrasta para reordenar. Toca no sinal de menos para eliminar.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Toca numa rotina para a editar. Reordenar e eliminar estão em Editar.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Toca numa rotina para a editar ou mantém premido para a mover. Eliminar está em Editar.",
   'Pick one routine, or more to train them together.': 'Escolhe uma rotina, ou várias para as treinar juntas.',
   'Planned sets per week, from your plan.': 'Séries planeadas por semana, a partir do teu plano.',
   // --- Settings (v1.3.11) ---
@@ -5904,7 +5904,6 @@ export default {
   "Collapsed": "Recolhido",
   "Hide": "Ocultar",
   "Totals": "Totais",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. As setas mudam a ordem.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "A ligar. Tenta de novo daqui a pouco.",
   "Pair a watch in the Watch app.": "Emparelha um relógio na app Watch.",
@@ -5920,4 +5919,6 @@ export default {
   "Not set up": "Não configurado",
   "Update watch app": "Atualiza a app do relógio",
   "Last heard {0}": "Último contacto: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. Mantém um cartão premido para o mover.",
+  "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
 }

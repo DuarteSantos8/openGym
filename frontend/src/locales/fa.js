@@ -2148,7 +2148,7 @@ export default {
   "Tap to plan something": "برای برنامه‌ریزی چیزی ضربه بزنید",
   "Drag to reorder": "برای تغییر ترتیب بکشید",
   "Drag to reorder. Tap the minus to delete.": "برای تغییر ترتیب بکشید. برای حذف روی منفی بزنید.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "برای ویرایش روی روتین بزنید. تغییر ترتیب و حذف در بخش «ویرایش» هستند.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "برای ویرایش روی روتین بزنید یا برای جابه‌جایی نگهش دارید. حذف در بخش «ویرایش» است.",
   "Pick one routine, or more to train them together.": "یک روتین یا چند روتین برای تمرین هم‌زمان انتخاب کنید.",
   "Planned sets per week, from your plan.": "ست‌های برنامه‌ریزی شده در هفته، از برنامه شما.",
   "Timer alerts": "هشدارهای تایمر",
@@ -5870,7 +5870,6 @@ export default {
   "Collapsed": "جمع‌شده",
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "در حال اتصال. کمی بعد دوباره امتحان کنید.",
   "Pair a watch in the Watch app.": "یک ساعت را در برنامهٔ Watch جفت کنید.",
@@ -5886,4 +5885,6 @@ export default {
   "Not set up": "راه‌اندازی نشده",
   "Update watch app": "برنامهٔ ساعت را به‌روز کنید",
   "Last heard {0}": "آخرین تماس: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. برای جابه‌جایی، یک کارت را نگه دار.",
+  "Shows up when there is something to show": "وقتی چیزی برای نشان دادن باشد ظاهر می\u200cشود",
 }

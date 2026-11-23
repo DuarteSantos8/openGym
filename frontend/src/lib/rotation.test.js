@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { scheduleModeOf, queueRecovery, rotationIds, startPass, saveRotation, startNewPass, stopPass, refillAfter, refillIfComplete, chooseRotation, chooseFixedWeek, segmentAt, sequenceOf, isSimpleSequence, REST } from './rotation.js'
+import { scheduleModeOf, queueRecovery, rotationIds, startPass, saveRotation, startNewPass, stopPass, refillAfter, refillIfComplete, restartOnRedo, chooseRotation, chooseFixedWeek, segmentAt, sequenceOf, isSimpleSequence, REST } from './rotation.js'
 import { queueNext, queueRemaining, queueView } from './queue.js'
 import { effectiveRoutineIds } from './history.js'
 
@@ -284,12 +284,12 @@ describe('refilling a completed managed pass', () => {
     expect(s.queue.startsOn).toBe('2026-09-12')
   })
 
-  it("sweeps every future pin the closing pass left behind, so a fulfilled one does not reopen on the next pass", () => {
+  it("keeps the days planned ahead: they are the user's plan for the next pass", () => {
     const last = w('c', TODAY)
     const s = managed(['a', 'b', 'c'], [w('a', '2026-09-10'), w('b', '2026-09-11'), last])
     s.dayPlan = { '2026-09-13': 'a', '2026-09-14': 'c', '2026-09-09': 'b' }
     expect(refillAfter(s, last, TODAY, NOW)).toBe(true)
-    expect(s.dayPlan).toEqual({ '2026-09-09': 'b' })   // dated before today: already stale on its own
+    expect(s.dayPlan).toEqual({ '2026-09-13': 'a', '2026-09-14': 'c', '2026-09-09': 'b' })
   })
 
   it("uses the rotation's own label, never the closing pass's — an adopted pass's planner name must not repeat on every pass after it", () => {
@@ -366,7 +366,7 @@ describe('the finished-workout boundary', () => {
       rotation: { id: 'r1', sequence: ['a', 'b'], label: 'My split' },
       queue: pass(['a', 'b'], { rotationId: 'r1' }),
       workouts: [w('a', '2026-09-11')],
-      // a pin on an adopted coach queue, dated after today — must not bleed into the next pass
+      // a day planned ahead stays planned: the next pass trains it there
       dayPlan: { '2026-09-13': 'a' },
     })
     s.workouts.push(done)                       // what doFinishWorkout does, in order
@@ -378,7 +378,62 @@ describe('the finished-workout boundary', () => {
     // the pass has not started yet.
     expect(queueRemaining(s, TODAY)).toEqual(['a', 'b'])
     expect(queueView(s, TODAY).waiting).toBe(true)
-    expect(s.dayPlan).toEqual({})
+    expect(s.dayPlan).toEqual({ '2026-09-13': 'a' })
+  })
+})
+
+describe('redoing a session restarts the pass from it', () => {
+  const H = 3600000
+  // The pass began 09-10; a was done 09-10, b 09-11, c is still to do.
+  const running = (over = {}) => S({
+    rotation: { id: 'r1', sequence: ['a', 'b', 'c'], label: 'My split' },
+    queue: pass(['a', 'b', 'c'], { rotationId: 'r1' }),
+    workouts: [w('a', '2026-09-10', NOW - 2 * 86400000), w('b', '2026-09-11', NOW - 86400000 + H)],
+    ...over,
+  })
+  const finish = (s, x) => { s.workouts.push(x); return restartOnRedo(s, x, TODAY) }
+
+  it('a redo of a done session starts the pass from it, strict from this workout, plans kept', () => {
+    const s = running({ dayPlan: { '2026-09-14': 'c', '2026-09-15': 'a' } })
+    const redo = w('a', TODAY, NOW)
+    expect(finish(s, redo)).toBe(true)
+    expect(s.queue).toEqual({ ids: ['a', 'b', 'c'], since: NOW, startsOn: TODAY, label: 'My split', rotationId: 'r1', strict: true })
+    // this workout counts for a, nothing from the old pass does
+    expect(queueRemaining(s, TODAY)).toEqual(['b', 'c'])
+    expect(s.dayPlan).toEqual({ '2026-09-14': 'c', '2026-09-15': 'a' })
+    expect(refillAfter(s, redo, TODAY, NOW)).toBe(false)
+  })
+
+  it('redoing b begins the pass at b; several redone at once begin at the earliest in sequence order', () => {
+    const s = running()
+    expect(finish(s, w('b', TODAY, NOW))).toBe(true)
+    expect(s.queue.ids).toEqual(['b', 'c', 'a'])
+    const both = running()
+    expect(finish(both, { ...w('b', TODAY, NOW), routineIds: ['b', 'a'], name: 'B + A' })).toBe(true)
+    expect(both.queue.ids).toEqual(['a', 'b', 'c'])
+    expect(queueRemaining(both, TODAY)).toEqual(['c'])
+  })
+
+  it('a session still to do only credits', () => {
+    const s = running()
+    const before = s.queue
+    expect(finish(s, w('c', TODAY, NOW))).toBe(false)
+    expect(s.queue).toBe(before)
+  })
+
+  it('a backdated redo older than a workout of the pass started later only credits', () => {
+    const s = running()
+    expect(finish(s, w('a', '2026-09-10', NOW - 86400000))).toBe(false)   // before b's start
+    expect(s.queue.ids).toEqual(['a', 'b', 'c'])
+  })
+
+  it('leaves a planner\'s queue, a loop with rest days and a pass that no longer matches its rotation alone', () => {
+    const planner = running({ queue: pass(['a', 'b', 'c']) })
+    expect(finish(planner, w('a', TODAY, NOW))).toBe(false)
+    const loop = running({ rotation: { id: 'r1', sequence: ['a', 'b', 'c', REST], label: 'My split', at: 0 } })
+    expect(finish(loop, w('a', TODAY, NOW))).toBe(false)
+    const stale = running({ queue: pass(['a', 'b'], { rotationId: 'r1' }) })
+    expect(finish(stale, w('a', TODAY, NOW))).toBe(false)
   })
 })
 
@@ -495,12 +550,62 @@ describe('rest days and repeats (#536)', () => {
     expect(queueNext(s, '2026-09-13', '2026-09-13')).toBe('b')
   })
 
+  it('a plan on an earlier segment\'s routine survives the refill, and stopping, restarting or leaving the loop clears it', () => {
+    const advanced = () => {
+      const s = loop(['a', REST, 'b'], { rotation: { at: 0 } })
+      startPass(s, '2026-09-11', NOW - 2 * 86400000)
+      s.workouts = [w('a', TODAY)]
+      s.dayPlan = { '2026-09-20': 'a', '2026-09-21': 'b', '2026-09-10': 'a', '2026-09-22': 'own' }
+      expect(refillAfter(s, s.workouts[0], TODAY, NOW)).toBe(true)
+      expect(s.queue.ids).toEqual(['b'])
+      expect(s.dayPlan['2026-09-20']).toBe('a')   // refills keep plans
+      return s
+    }
+    // Dated before today, or not a routine of the loop: left alone.
+    const left = { '2026-09-10': 'a', '2026-09-22': 'own' }
+    const stopped = advanced()
+    stopPass(stopped, TODAY)
+    expect(stopped.dayPlan).toEqual(left)
+    const restarted = advanced()
+    startNewPass(restarted, TODAY, NOW)
+    expect(restarted.dayPlan).toEqual(left)
+    const fixed = advanced()
+    chooseFixedWeek(fixed, TODAY)
+    expect(fixed.dayPlan).toEqual(left)
+  })
+
+  it('saving the loop without a routine clears that routine\'s plans, even from a segment no longer running', () => {
+    const advanced = () => {
+      const s = loop(['a', REST, 'b'], { rotation: { at: 0 } })
+      startPass(s, '2026-09-11', NOW - 2 * 86400000)
+      s.workouts = [w('a', TODAY)]
+      s.dayPlan = { '2026-09-20': 'a', '2026-09-21': 'b', '2026-09-10': 'a', '2026-09-22': 'own' }
+      expect(refillAfter(s, s.workouts[0], TODAY, NOW)).toBe(true)
+      expect(s.queue.ids).toEqual(['b'])
+      return s
+    }
+    const kept = { '2026-09-21': 'b', '2026-09-10': 'a', '2026-09-22': 'own' }
+    const simple = advanced()
+    saveRotation(simple, ['b'], 'Loop', TODAY, NOW)
+    expect(simple.dayPlan).toEqual(kept)
+    const looped = advanced()
+    saveRotation(looped, ['c', REST, 'b'], 'Loop', TODAY, NOW)   // b still runs (at 2)
+    expect(looped.queue.ids).toEqual(['b'])
+    expect(looped.dayPlan).toEqual(kept)
+    // A routine still in the loop keeps its plans.
+    const same = advanced()
+    saveRotation(same, ['b', REST, 'a'], 'Loop', TODAY, NOW)
+    expect(same.dayPlan['2026-09-20']).toBe('a')
+  })
+
   it('a rest day after a segment: the next one starts a day later, and the day in between has no session', () => {
     const s = loop(['a', 'b', REST, 'c'], { rotation: { at: 0 } })
     startPass(s, '2026-09-11', NOW - 2 * 86400000)
     s.workouts = [w('a', '2026-09-11', NOW - 2 * 86400000 + 1000), w('b', TODAY)]
+    s.dayPlan = { '2026-09-15': 'a' }
     expect(refillAfter(s, s.workouts[1], TODAY, NOW)).toBe(true)
     expect(s.queue).toMatchObject({ ids: ['c'], startsOn: '2026-09-14' })
+    expect(s.dayPlan).toEqual({ '2026-09-15': 'a' })   // a refill keeps the days planned ahead
     expect(queueView(s, '2026-09-13').waiting).toBe(true)
     expect(queueNext(s, '2026-09-13', '2026-09-13')).toBeNull()
     expect(effectiveRoutineIds(s, '2026-09-13', '2026-09-13')).toEqual([])

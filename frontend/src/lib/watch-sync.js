@@ -1291,7 +1291,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         try { const r = await p.WatchBridge.sendRoutines?.({ json: f.json, hash: f.hash }); if (r?.sent) { lastRoutines = f.hash; routinesAt = Date.now() } } catch { /* tried again with the next snapshot */ }
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
-      const clips = prefs.enabled && withClips ? clipsFor(S) : []
+      // Not with the watch's Animation switch off: nothing on the watch would draw them (Wear OS hides them too).
+      const clips = prefs.enabled && withClips && prefs.show.clip !== false ? clipsFor(S) : []
       const key = S.active ? S.active.id + '|' + clips.map(c => c.exId).join(',') : ''
       if (clips.length && key !== lastClips) {
         await p.WatchBridge.sendClips({ wid: S.active.id, clips })

@@ -153,8 +153,12 @@
         own server, that's you.</li>
     <li><b>The AI coach.</b> Optional and off until you set it up with an API key from an AI
         provider of your choice (for example Anthropic, OpenAI or Google). Before the first
-        request it shows which data it sends (your training history, plan, goals and the
-        answers you gave it) and to which provider, and asks you. The request goes straight from
+        request it shows which data it sends (your training history, plan, weigh-ins, goals and the
+        answers you gave it, and your records and body measurements unless you switch those off)
+        and to which provider, and asks you. Health is a switch of its own there, off until you
+        turn it on. With it on, questions and reviews also carry your check-ins, your latest blood
+        pressure and a summary of the sleep, resting heart rate, heart rate variability and steps
+        you let openGym read. The request goes straight from
         your phone to that provider, under your key and that provider's privacy policy. Your
         name and other account details are never part of it. Using the coach of your own
         server instead, the request goes through that server to the provider its admin picked,
@@ -164,13 +168,30 @@
         network is not a third party, so nothing to ask there.</li>
     <li><b>Health Connect</b> (Android) and <b>Apple Health</b> (iPhone). Each part has its own
         switch, all off until you turn them on. Writing puts finished workouts and weigh-ins into
-        the health store on your phone. Reading (since v1.4.3) takes two things back: the heart
-        rate your watch saved during a workout you logged (from the last day, while the app is
-        open) and weigh-ins other apps saved (from the last 30 days; on Android up to a year back the first
-        time, if you also allow Health Connect's "past data" access). They go into your own
-        workout log on the phone and never leave it, except inside that log when you sync it to
-        your own server. Nothing is read in the background, nothing else is read, and no health
-        data goes to us or to anyone else. Health data is never sold, never used for advertising
+        the health store on your phone. Reading takes back only what you switch
+        on, and only while the app is open:
+        <ul>
+          <li><b>Heart rate</b> your watch saved during a workout you logged (from the last day),
+              and <b>weigh-ins</b> other apps saved (from the last 30 days; on Android up to a year
+              back the first time, if you also allow Health Connect's "past data" access). They go
+              into your workout log.</li>
+          <li><b>Workouts from other apps</b>, such as a run or a ride (from the last 30 days the
+              first time), to show them in your calendar, in muscle recovery and, if you want, in
+              your streak. They go into your workout log.</li>
+          <li><b>Body composition</b>: body fat and lean mass, and on Android also bone mass, body
+              water and basal metabolic rate, next to your body weight. Kept on this phone only.</li>
+          <li><b>Vitals</b>: sleep, resting heart rate, heart rate variability and steps (the last
+              30 days the first time), for your daily check-in and the insights. Kept on this phone
+              only, for up to 120 days.</li>
+        </ul>
+        What is in your workout log leaves the phone when you sync it to your own server, back it
+        up, or use the AI coach. What is kept on this phone only is never synced and not in the
+        backups you export. Two ways out remain: the AI coach's Health switch described above (it
+        sends a summary of the vitals, not the body composition), and the backup of the phone
+        itself (Google's or Apple's, in your own account, if you have it on), which can include
+        what apps store. The check-in you save is part of your log, and its sleep score can be
+        filled in from your sleep. Nothing is read in the background, and no health data
+        goes to us. Health data is never sold, never used for advertising
         and never used to decide anything about credit, insurance or work.</li>
     <li><b>Apple Watch</b> (iPhone). During a workout the Apple Watch app reads your heart rate
         to show it next to each set. The watch talks to your iPhone directly. Health data is never
@@ -178,8 +199,8 @@
     <li><b>Wear OS watch</b> (Android, beta). The watch app and your phone talk through Google
         Play services' Wearable Data Layer: directly over Bluetooth or Wi-Fi, or, when they are apart,
         through Google's encrypted sync, under Google's privacy policy. During a workout the watch
-        reads your heart rate to show it next to each set and puts it into the workout on your phone.
-        Health data is never sent to us and never used for advertising.</li>
+        reads your heart rate and measures the calories you burn, and puts both into the workout on
+        your phone. Health data is never sent to us and never used for advertising.</li>
     <li><b>Sharper animations</b> (store versions). A basic set of exercise animations comes
         with the app. Sharper sets are optional downloads under Settings → Animation quality,
         delivered by Google Play or Apple like the app itself (on Auto, only over Wi-Fi).</li>
@@ -201,7 +222,9 @@
   <p>The built-in exercise animations are inside the app, so browsing exercises needs no connection.
      The camera is used only when you scan your gym membership code or take a photo or video of
      an exercise you add yourself; scanned images are read on the phone and never stored or
-     sent. Notifications (workout reminder, end of a rest) are scheduled on the phone itself.</p>
+     sent. The microphone is used only while you record a voice clip for your own workout cues. The
+     clip stays on your phone, and goes to your own server if you connected one, like the rest of
+     your log. Notifications (workout reminder, end of a rest) are scheduled on the phone itself.</p>
   <p><b>Gym reminder</b> (phone app, off until you switch it on). Where your gyms are stays on your
      phone: not synced, not in backups, not sent to us or to your server. The phone itself notices
      when you walk in (Android's location service or iOS region monitoring), so nobody, us
@@ -251,8 +274,8 @@
      out. E-mail to contact@duarte-santos.ch is hosted by Zoho in its EU data centre. Where data
      goes to the USA, the transfer rests on the EU-US and Swiss-US Data Privacy Frameworks or the
      EU standard contractual clauses. We sell no data and share none for advertising.</p>
-  <p><b>Health data.</b> Body weight, heart rate and workouts count as health data under the
-     FADP and the GDPR (Art. 9). openGym keeps them on your device. They only leave it when you
+  <p><b>Health data.</b> Body weight, body composition, heart rate, sleep, steps, check-ins and
+     workouts count as health data under the FADP and the GDPR (Art. 9). openGym keeps them on your device. They only leave it when you
      switch something on yourself: sync with your own server, Apple Health or Health Connect, an
      AI provider, or a watch. Switching it on is your explicit consent for exactly that
      (Art. 9(2)(a) GDPR), and switching it off withdraws it. Nothing of it reaches us.</p>

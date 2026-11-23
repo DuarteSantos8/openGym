@@ -70,6 +70,12 @@ function Sheet({ sheet }) {
   const move = (e, x, y) => {
     const el = ref.current, d = drag.current
     if (d.startY === null) return
+    // A row lifted for reordering (lib/use-list-reorder.js) owns the finger from then on.
+    if (e.target?.closest?.('[data-reordering]')) {
+      if (d.delta > 0) { el.style.transition = 'transform .2s'; el.style.transform = '' }
+      drag.current = idle()
+      return
+    }
     // synthetic events (tests) may carry no x at all: treat that as straight down
     const dx = Number.isFinite(x) ? x - d.startX : 0, dy = y - d.startY
     if (d.axis === null) {

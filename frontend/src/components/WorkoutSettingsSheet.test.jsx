@@ -9,7 +9,7 @@ import { useStore } from '../store/useStore.js'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const sound = vi.hoisted(() => ({ canVibrate: true, iPhone: false }))
-vi.mock('../lib/sound.js', () => ({
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(),
   unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(),
   vibrateSupported: () => sound.canVibrate, appleTouchDevice: () => sound.iPhone,
 }))

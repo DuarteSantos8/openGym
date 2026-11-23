@@ -84,7 +84,7 @@ export function dayRoutines(S, iso, today) {
     const queued = new Set(Array.isArray(S.queue?.ids) ? S.queue.ids : []);
     return [].concat(S.week?.[wd] || []).filter(id => known.has(id) && !queued.has(id));
   }
-  const first = effectiveRoutineId(S, iso);
+  const first = effectiveRoutineId(S, iso, today);
   if (!first) return [];
   // A plain weekday can combine routines; an override or a queue session is one.
   const wd = new Date(iso + 'T12:00:00').getDay();

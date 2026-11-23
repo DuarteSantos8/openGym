@@ -20,14 +20,14 @@ public class RestCountdownPlanTest {
 
     @Test
     public void screenOnTicksOnWholeSecondsAndLandsOnTheEnd() {
-        assertEquals(1000, RestCountdownPlan.nextTickMs(90_000, true));
-        assertEquals(500, RestCountdownPlan.nextTickMs(89_500, true));
-        assertEquals(1, RestCountdownPlan.nextTickMs(1, true));
+        assertEquals(1000, RestCountdownPlan.nextTickMs(90_000, true, false));
+        assertEquals(500, RestCountdownPlan.nextTickMs(89_500, true, false));
+        assertEquals(1, RestCountdownPlan.nextTickMs(1, true, false));
         // Walk a whole 90 s rest: 90 runs, the last exactly on the end.
         long left = 90_000;
         int runs = 0;
         while (left > 0) {
-            left -= RestCountdownPlan.nextTickMs(left, true);
+            left -= RestCountdownPlan.nextTickMs(left, true, false);
             runs++;
         }
         assertEquals(90, runs);
@@ -35,9 +35,26 @@ public class RestCountdownPlanTest {
     }
 
     @Test
+    public void appInFrontRepostsTheBarEveryFiveSecondsAndStillLandsOnTheEnd() {
+        long left = 90_000;
+        int runs = 0;
+        while (left > 0) {
+            left -= RestCountdownPlan.nextTickMs(left, true, true);
+            runs++;
+        }
+        assertEquals(18, runs);
+        assertEquals(0, left);
+        // The last wait is the remainder, so the end is not late; a short rest has one run.
+        assertEquals(2_500, RestCountdownPlan.nextTickMs(2_500, true, true));
+        assertEquals(5_000, RestCountdownPlan.nextTickMs(7_500, true, true));
+        // Screen off wins over in front: no reposts, only the end.
+        assertEquals(90_000, RestCountdownPlan.nextTickMs(90_000, false, true));
+    }
+
+    @Test
     public void screenOffWakesOnlyForTheEnd() {
-        assertEquals(90_000, RestCountdownPlan.nextTickMs(90_000, false));
-        assertEquals(0, RestCountdownPlan.nextTickMs(0, false));
+        assertEquals(90_000, RestCountdownPlan.nextTickMs(90_000, false, false));
+        assertEquals(0, RestCountdownPlan.nextTickMs(0, false, false));
     }
 
     @Test
@@ -100,5 +117,35 @@ public class RestCountdownPlanTest {
         // Two native callers: only the very same end, a chain's cues are seconds apart.
         assertTrue(RestCountdownPlan.alreadyRang(end, end, false));
         assertFalse(RestCountdownPlan.alreadyRang(end + 1_000, end, false));
+    }
+
+    @Test
+    public void withTheAppOpenTheCountdownLeavesTheEndToThePageWhichRingsIt() {
+        // Android 1.4.5: the card's countdown reached the end first, claimed it and kept quiet
+        // because the app was in front; the page's tone a few hundred ms later was refused as
+        // already rung. Beeps for the last seconds, then silence (reported by mail, 2026-11-17).
+        RestCountdownPlan.EndLedger ledger = new RestCountdownPlan.EndLedger();
+        long end = 1_800_000_000_000L;
+        assertFalse(ledger.claimNative(end, true));
+        assertTrue(ledger.claimPage(end + 400));
+        // and once the page rang it, an alarm landing after the app went away stays quiet (#1007)
+        assertFalse(ledger.claimNative(end, false));
+        assertTrue(ledger.pageRang(end));
+    }
+
+    @Test
+    public void inTheBackgroundTheEndRingsOnceWhoeverComesFirst() {
+        long end = 1_800_000_000_000L;
+        // countdown and exact alarm at the same instant: one rings
+        RestCountdownPlan.EndLedger both = new RestCountdownPlan.EndLedger();
+        assertTrue(both.claimNative(end, false));
+        assertFalse(both.claimNative(end, false));
+        assertFalse(both.pageRang(end));
+        // the alarm rang, then the WebView thaws and catches up: no second chime (#1007)
+        RestCountdownPlan.EndLedger thaw = new RestCountdownPlan.EndLedger();
+        assertTrue(thaw.claimNative(end, false));
+        assertFalse(thaw.claimPage(end + 1_500));
+        // the next rest is its own end
+        assertTrue(thaw.claimPage(end + 90_000));
     }
 }

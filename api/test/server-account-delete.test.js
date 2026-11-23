@@ -11,6 +11,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import http from 'node:http';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { hashPassword } from '../password.js';
@@ -244,4 +245,42 @@ test('with password sign-in off, a password proves nothing', async t => {
   assert.equal(res.status, 403);
   assert.equal(res.body.code, 'passkey-required');
   assert.equal(h.db().users.length, 2);
+});
+
+/* A request whose body is still on the wire: the first bytes are sent, `between` runs (the
+   account is deleted in it), then the rest follows. Each route read the session before it read
+   the body, so what came after the delete was a signed-out request writing for a gone profile. */
+function slowRequest(h, method, route, headers, payload, between) {
+  return new Promise((resolve, reject) => {
+    const data = Buffer.from(JSON.stringify(payload));
+    const req = http.request(h.api + route, { method, headers: { ...headers, 'Content-Length': data.length } }, res => {
+      let text = '';
+      res.on('data', d => text += d);
+      res.on('end', () => resolve({ status: res.statusCode, text }));
+    });
+    req.on('error', reject);
+    req.write(data.subarray(0, 8));
+    new Promise(r => setTimeout(r, 100)).then(between).then(() => req.end(data.subarray(8)), reject);
+  });
+}
+
+test('a sync push still uploading when the account is deleted does not bring the history back', async t => {
+  const h = await startServer(t);
+  const state = { unit: 'kg', workouts: [{ id: 'w1', d: '2026-01-01', name: 'Push', entries: [] }], routines: [] };
+  const push = await slowRequest(h, 'PUT', '/api/data', as(USER), { state },
+    () => h.del(USER, { name: 'Mallory', current: GOOD }).then(r => assert.equal(r.status, 200)));
+  assert.equal(push.status, 401, 'the profile is gone, so the push is not signed in');
+  assert.equal(fs.existsSync(path.join(h.dataDir, `state-${USER}.json`)), false, 'their history stays deleted');
+});
+
+test('a watch posting its events while the account is deleted does not recreate the mailbox', async t => {
+  const h = await startServer(t);
+  const call = (method, route, headers, body) => fetch(h.api + route, { method, headers, body: JSON.stringify(body) }).then(async r => ({ status: r.status, body: await r.json() }));
+  const { body: { code } } = await call('POST', '/api/watch/pair', as(USER), {});
+  const { body: { token } } = await call('POST', '/api/watch/redeem', { 'Content-Type': 'application/json' }, { code, name: 'Watch' });
+  const events = [{ id: 'z-1', type: 'finish', wid: 'w-1', at: 1 }];
+  const post = await slowRequest(h, 'POST', '/api/watch/box', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, { events },
+    () => h.del(USER, { name: 'Mallory', current: GOOD }).then(r => assert.equal(r.status, 200)));
+  assert.equal(post.status, 401, 'the link went with the account');
+  assert.equal(fs.existsSync(path.join(h.dataDir, `watch-${USER}.json`)), false, 'no mailbox for a gone profile');
 });

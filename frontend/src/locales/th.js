@@ -2160,7 +2160,7 @@ export default {
   'Tap to plan something': 'แตะเพื่อวางแผน',
   'Drag to reorder': 'ลากเพื่อจัดลำดับ',
   'Drag to reorder. Tap the minus to delete.': 'ลากเพื่อจัดลำดับ แตะเครื่องหมายลบเพื่อลบ',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'แตะรูทีนเพื่อแก้ไข การจัดลำดับและการลบอยู่ในแก้ไข',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "แตะรูทีนเพื่อแก้ไข หรือกดค้างเพื่อย้าย การลบอยู่ในแก้ไข",
   'Pick one routine, or more to train them together.': 'เลือกหนึ่งรูทีน หรือหลายรูทีนเพื่อฝึกด้วยกัน',
   'Planned sets per week, from your plan.': 'เซ็ตที่วางแผนต่อสัปดาห์ จากแผนของคุณ',
   // --- Settings (v1.3.11) ---
@@ -5915,7 +5915,6 @@ export default {
   "Collapsed": "ย่อไว้",
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "กำลังเชื่อมต่อ ลองอีกครั้งในอีกสักครู่",
   "Pair a watch in the Watch app.": "จับคู่นาฬิกาในแอป Watch",
@@ -5931,4 +5930,6 @@ export default {
   "Not set up": "ยังไม่ได้ตั้งค่า",
   "Update watch app": "อัปเดตแอปบนนาฬิกา",
   "Last heard {0}": "ติดต่อล่าสุด: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ กดค้างที่การ์ดเพื่อย้าย",
+  "Shows up when there is something to show": "จะแสดงเมื่อมีข้อมูลให้ดู",
 }

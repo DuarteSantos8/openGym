@@ -10,7 +10,7 @@ import { useUI } from '../store/useUI.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 
 let host, root, saved
 const spies = () => ({

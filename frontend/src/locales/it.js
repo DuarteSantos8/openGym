@@ -2153,7 +2153,7 @@ export default {
   'Tap to plan something': 'Tocca per pianificare qualcosa',
   'Drag to reorder': 'Trascina per riordinare',
   'Drag to reorder. Tap the minus to delete.': 'Trascina per riordinare. Tocca il meno per eliminare.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Tocca una routine per modificarla. Riordina ed elimina sono sotto Modifica.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Tocca una routine per modificarla o tienila premuta per spostarla. Elimina è sotto Modifica.",
   'Pick one routine, or more to train them together.': 'Scegli una routine, o più di una per farle insieme.',
   'Planned sets per week, from your plan.': 'Serie pianificate a settimana, dal tuo piano.',
   // --- Settings (v1.3.11) ---
@@ -5914,7 +5914,6 @@ export default {
   "Collapsed": "Compressa",
   "Hide": "Nascondi",
   "Totals": "Totali",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Connessione in corso. Riprova tra un attimo.",
   "Pair a watch in the Watch app.": "Abbina un orologio nell’app Watch.",
@@ -5930,4 +5929,6 @@ export default {
   "Not set up": "Non configurato",
   "Update watch app": "Aggiorna l’app dell’orologio",
   "Last heard {0}": "Ultime notizie: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Tieni premuta una scheda per spostarla.",
+  "Shows up when there is something to show": "Compare quando c’è qualcosa da mostrare",
 }

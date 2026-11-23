@@ -16,7 +16,8 @@ import android.os.PowerManager;
 /**
  * Foreground while a rest is running. Shows one clock and one bar, and applies the same controls
  * as the in-app timer: pause, −15s, +15s, skip. The clock is a Chronometer the system runs; the
- * card is reposted every second only while the screen is on (for the bar), see RestCountdownPlan.
+ * card is reposted every second only while the screen is on and the app is not in front (for the
+ * bar), see RestCountdownPlan.
  */
 public class RestTimerService extends Service {
     // Up between onCreate and onDestroy: the workout card (WorkoutNotification) shares this
@@ -51,7 +52,7 @@ public class RestTimerService extends Service {
             // Turning the screen on runs this loop at once (screenOn), so the bar catches up.
             boolean interactive = interactive();
             if (interactive) show();
-            handler.postDelayed(this, RestCountdownPlan.nextTickMs(left, interactive));
+            handler.postDelayed(this, RestCountdownPlan.nextTickMs(left, interactive, RestAlertPlugin.appInFront()));
         }
     };
 

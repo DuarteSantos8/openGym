@@ -68,6 +68,9 @@ struct DemoEnvironment: ViewModifier {
     }
 }
 
+/// One reload of the complications for the changes of a set ticked (tick, "waiting to sync", the reply).
+private let widgetReload = Debounce(after: 1)
+
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.scenePhase) private var scenePhase
@@ -120,8 +123,15 @@ struct RootView: View {
         }
         .onChange(of: store.widgetState) { state in
             guard !store.isDemo else { return }
-            state.write()
-            WidgetCenter.shared.reloadAllTimelines()
+            state.write()   // at once: a reload a moment later already reads it
+            let reload = { WidgetCenter.shared.reloadAllTimelines() }
+            // The wait only while the workout session keeps the app awake to run it: without one, and
+            // for a workout's end, at once (a suspended app would leave the complications stale).
+            if store.health.running && (state.mode == "set" || state.mode == "rest") { widgetReload.call(reload) } else { reload() }
+        }
+        // The session ended inside that wait (lost, or ended by watchOS): reload now, the app may be suspended next.
+        .onReceive(store.health.$running.dropFirst()) { running in
+            if !running, !store.isDemo { WidgetCenter.shared.reloadAllTimelines() }
         }
     }
 }

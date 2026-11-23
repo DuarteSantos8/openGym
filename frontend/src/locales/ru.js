@@ -2153,7 +2153,7 @@ export default {
   'Tap to plan something': 'Нажмите, чтобы что-то запланировать',
   'Drag to reorder': 'Перетащите, чтобы изменить порядок',
   'Drag to reorder. Tap the minus to delete.': 'Перетащите, чтобы изменить порядок. Нажмите минус, чтобы удалить.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Нажмите на программу, чтобы изменить её. Порядок и удаление в разделе Изменить.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Нажмите на программу, чтобы изменить её, или удерживайте, чтобы переместить. Удаление в разделе Изменить.",
   'Pick one routine, or more to train them together.': 'Выберите одну программу или несколько, чтобы делать их вместе.',
   'Planned sets per week, from your plan.': 'Запланированные подходы в неделю по вашему плану.',
   // --- Settings (v1.3.11) ---
@@ -5908,7 +5908,6 @@ export default {
   "Collapsed": "Свёрнута",
   "Hide": "Скрыть",
   "Totals": "Итоги",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Подключение. Попробуйте чуть позже.",
   "Pair a watch in the Watch app.": "Создайте пару с часами в приложении Watch.",
@@ -5924,4 +5923,6 @@ export default {
   "Not set up": "Не настроено",
   "Update watch app": "Обновите приложение на часах",
   "Last heard {0}": "Последняя связь: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Удерживайте карточку, чтобы переместить её.",
+  "Shows up when there is something to show": "Появится, когда будет что показать",
 }

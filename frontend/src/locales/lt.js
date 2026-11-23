@@ -2121,7 +2121,7 @@ export default {
   "Tap to plan something": "Paspauskite, kad suplanuotumėte",
   "Drag to reorder": "Vilkite, kad pakeistumėte tvarką",
   "Drag to reorder. Tap the minus to delete.": "Vilkite, kad pakeistumėte tvarką. Paspauskite minusą, kad ištrintumėte.",
-  "Tap a routine to edit it. Reorder and delete are behind Edit.": "Paspauskite programą, kad ją redaguotumėte. Perdėliojimas ir trynimas yra Redaguoti.",
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Paspauskite programą, kad ją redaguotumėte, arba palaikykite, kad perkeltumėte. Trynimas yra Redaguoti.",
   "Pick one routine, or more to train them together.": "Pasirinkite vieną programą arba daugiau, kad treniruotumėte jas kartu.",
   "Planned sets per week, from your plan.": "Suplanuotos serijos per savaitę, iš jūsų plano.",
   "Timer alerts": "Laikmačio įspėjimai",
@@ -5900,7 +5900,6 @@ export default {
   "Collapsed": "Suskleista",
   "Hide": "Slėpti",
   "Totals": "Sumos",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Jungiamasi. Pabandyk po akimirkos.",
   "Pair a watch in the Watch app.": "Susiek laikrodį programėlėje Watch.",
@@ -5916,4 +5915,6 @@ export default {
   "Not set up": "Nenustatyta",
   "Update watch app": "Atnaujink laikrodžio programėlę",
   "Last heard {0}": "Paskutinį kartą: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Palaikyk kortelę, kad ją perkeltum.",
+  "Shows up when there is something to show": "Atsiras, kai bus ką rodyti",
 }

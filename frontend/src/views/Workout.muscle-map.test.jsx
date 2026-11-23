@@ -18,7 +18,7 @@ vi.mock('../components/BodyMap.jsx', () => ({
   default: props => { maps.push(props); return React.createElement('div', { 'data-body-map': props.className || '' }) },
   BodyMapLegend: () => null,
 }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn(), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

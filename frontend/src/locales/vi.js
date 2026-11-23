@@ -2120,7 +2120,7 @@ export default {
   'Tap to plan something': 'Nhấn để lên kế hoạch tập',
   'Drag to reorder': 'Kéo để đổi thứ tự',
   'Drag to reorder. Tap the minus to delete.': 'Kéo để đổi thứ tự. Nhấn dấu trừ để xóa.',
-  'Tap a routine to edit it. Reorder and delete are behind Edit.': 'Nhấn vào lịch tập để chỉnh sửa. Đổi thứ tự và xóa nằm trong mục Sửa.',
+  "Tap a routine to edit it, or hold it to move it. Delete is behind Edit.": "Nhấn vào lịch tập để chỉnh sửa, hoặc nhấn giữ để di chuyển. Xóa nằm trong mục Sửa.",
   'Pick one routine, or more to train them together.': 'Chọn một lịch tập, hoặc nhiều hơn để kết hợp tập cùng nhau.',
   'Planned sets per week, from your plan.': 'Số hiệp dự kiến mỗi tuần, dựa theo kế hoạch của bạn.',
   'Timer alerts': 'Âm báo bộ đếm giờ',
@@ -5870,7 +5870,6 @@ export default {
   "Collapsed": "Thu gọn",
   "Hide": "Ẩn",
   "Totals": "Tổng",
-  "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Đang kết nối. Thử lại sau giây lát.",
   "Pair a watch in the Watch app.": "Ghép nối đồng hồ trong ứng dụng Watch.",
@@ -5886,4 +5885,6 @@ export default {
   "Not set up": "Chưa thiết lập",
   "Update watch app": "Cập nhật ứng dụng đồng hồ",
   "Last heard {0}": "Lần cuối: {0}",
+  "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Nhấn giữ một thẻ để di chuyển.",
+  "Shows up when there is something to show": "Sẽ hiện khi có nội dung để hiển thị",
 };
