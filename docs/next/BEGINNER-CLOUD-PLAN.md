@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-22, after PRs #56 to #65 were merged and with `next/EP18-cloud-e2e` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-23, after PRs #56 to #66 were merged and with `next/EP19-reset-survives-reload` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 
@@ -159,6 +159,7 @@ What was run, where, and what was not. #56 to #60 are merged; nothing has been d
 | Cloud backend branch, real browser | The cloud build signed in, saved a name, kept the session over a reload and signed out, on a phone and a desktop viewport, talking only to the project. It found two races that are now fixed and tested |
 | Cloud backend branch, the usual suites | Frontend 970 files, 10,847 tests; API 1,304 tests (3 skipped as before); E2E on the default build 62 passed, 1 skipped; row level security on PostgreSQL 16 with all four migrations; axe clean on all five account steps of the cloud build; the bundle check fails a default build that contains any cloud code |
 | Cloud E2E branch (`next/EP18-cloud-e2e`) | The whole E2E run, both builds: 75 passed, 1 skipped (62 as before, 3 showing the default build has no account screen, 10 on the cloud build across Chromium and WebKit, each step scanned with axe) |
+| Reset step kept over a reload (`next/EP19-reset-survives-reload`) | Two unit tests that fail on the code before it; the cloud E2E reloads between the link and the new password on Chromium and WebKit, and the dead-link step run 4 times per engine without a failure |
 | Cloud preview | Deployed from the `next/cloud-preview` branch with the three variables set for that branch only; production and other previews are unchanged. `APP_ORIGIN` is set to it: the export function answers that origin and no other. Not opened by an agent (it is behind the owner's Vercel sign-in) |
 | **Not run** | Real phones; a screen reader by hand; Stripe; sign-up and reset emails end to end; a sign-in through the API's OIDC; the native apps |
 

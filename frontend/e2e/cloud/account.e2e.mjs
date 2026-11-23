@@ -77,15 +77,23 @@ test('a reset link lands on a new password; a dead link says so', async ({ page 
   await open(page, '#/account?token_hash=good-hash&type=recovery')
   await expect(mode(page)).toHaveAttribute('data-mode', 'newpass')
   await expect(page).not.toHaveURL(/token_hash/)
+  // Loading the page again must not skip the step: the link's session is kept, so the account
+  // would open with the old password still in force.
+  await page.reload()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'newpass')
   await page.fill('input[name="password"]', 'a-brand-new-password')
   expect(await serious(page)).toEqual([])
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(mode(page)).toHaveAttribute('data-mode', 'account')
   expect(state.users[0].password).toBe('a-brand-new-password')
+  await page.reload()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'account')
 
   await page.click('[data-signout]')
+  // Only the hash changes, so this is the same document: the app follows the link by itself. (A
+  // reload here would race it: once the link is spent and gone from the address, loading the page
+  // again is a fresh start with nothing to say.)
   await page.goto('/#/account?token_hash=stale&type=signup')
-  await page.reload()
   await expect(page.getByRole('alert')).toHaveText('This link has expired. Ask for a new one.')
   await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
 })
