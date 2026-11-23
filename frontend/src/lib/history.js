@@ -231,7 +231,7 @@ function setLabelText(id, s, cfg, speedUnit) {
     return ['L', 'R'].map(key => {
       const side = s.sides[key]
       return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + effortTail(side)}`
-    }).join(' · ') + fail
+    }).join(' · ') + (setBandsOf(s).length ? ' · ' + bandText(setBandsOf(s)) : '') + fail
   }
   // Bands (lib/bands.js, Reddit): "15 × Red + Yellow", or "20×15 + Red" with a weight as well.
   const bands = setBandsOf(s)
@@ -665,11 +665,12 @@ function bandSeed(S, cfg, options = {}) {
   if (!cfg || modeOf(cfg) !== 'reps' || !usesBands(S, cfg.id, cfg)) return null
   const plan = setBandsOf({ bands: cfg.bands })
   const last = options.useTarget ? null : lastEntryFor(S, cfg.id, options.rid)
-  const lastWork = last ? (last.sets || []).filter(x => !isWarmupRow(x) && !isSideSet(x)) : []
+  // Per-side sets keep one band choice for the pair (#1351), so they seed like any work set.
+  const lastWork = last ? (last.sets || []).filter(x => !isWarmupRow(x)) : []
   const anyBands = lastWork.some(x => setBandsOf(x).length)
   if (!anyBands && !plan.length) return null
   const top = cfg.repsMax > 0 ? cfg.repsMax : cfg.reps
-  const climb = anyBands && cfg.prog !== 'off' && !(cfg.weight > 0) && top > 0 && lastWork.every(x => Number(x.r) >= top)
+  const climb = anyBands && cfg.prog !== 'off' && !(cfg.weight > 0) && top > 0 && lastWork.every(x => !isSideSet(x) && Number(x.r) >= top)
   const from = cfg.repsMin > 0 ? cfg.repsMin : cfg.reps
   return { plan, lastWork, anyBands, climb, from }
 }
@@ -694,7 +695,7 @@ export function seedBands(S, cfg, rows, options = {}) {
   const list = bandsOf(S)
   let wi = 0
   return rows.map(r => {
-    if (isWarmupRow(r) || isSideSet(r)) return r
+    if (isWarmupRow(r)) return r
     const prev = lastWork[wi] || lastWork[lastWork.length - 1]
     wi++
     let ids = anyBands ? setBandsOf(prev) : plan

@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: switching on Per side for an exercise logged with bands no longer hides the band chips in its settings or drops the planned bands. Each L and R pair starts with them, and the set reads "L 12 · R 12 · Red" (#1351).
 - Photos: a HEIF photo whose file names a newer brand first is read by the brands listed after it, instead of being refused as "That file type isn't supported". A likely cause of iPhone photos being refused in a workout (#1268); not yet confirmed on an iPhone.
 - Fixed: Gemini can add openGym as an MCP connector. It registers six return addresses and the server took at most five (#1297).
 - Zepp OS: the start screen offers every routine. With more than fit, they come in pages with ‹ and › at the bottom; before, only two more besides today's could be started from the wrist (#1479).

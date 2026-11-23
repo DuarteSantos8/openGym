@@ -49,3 +49,24 @@ describe('the bands a new session starts with', () => {
     expect(seedBands({ bands: BANDS, workouts: [] }, { id: LIFT, sets: 1, reps: 8, mode: 'reps' }, rows)).toBe(rows)
   })
 })
+
+// #1351: an exercise done per side keeps its bands, one choice for the L/R pair.
+describe('per-side exercises with bands', () => {
+  it("start with the plan's bands the first time and last time's after", () => {
+    setKnownBands(BANDS)
+    const side = cfg({ side: true, reps: 24, bands: ['r'] })
+    const first = buildSets({ bands: BANDS, workouts: [] }, side)
+    expect(first.every(s => s.sides?.L && s.sides?.R)).toBe(true)
+    expect(first.map(s => s.bands)).toEqual([['r'], ['r']])
+    const S = after(first.map((s, i) => ({ ...s, bands: i ? ['y'] : ['g'], done: true, sides: { L: { ...s.sides.L, done: true }, R: { ...s.sides.R, done: true } } })))
+    expect(buildSets(S, side).map(s => s.bands)).toEqual([['g'], ['y']])
+  })
+
+  it('never climbs a band on per-side sets, and the set line names the bands', () => {
+    const side = cfg({ side: true, reps: 24, repsMin: 16, repsMax: 24 })
+    const first = buildSets({ bands: BANDS, workouts: [] }, { ...side, bands: ['y'] })
+    const S = after(first.map(s => ({ ...s, done: true, sides: { L: { ...s.sides.L, r: 12, done: true }, R: { ...s.sides.R, r: 12, done: true } } })))
+    expect(buildSets(S, side).map(s => s.bands)).toEqual([['y'], ['y']])
+    expect(setLabel(BAND_EX, S.workouts[0].entries[0].sets[0], side)).toMatch(/· Yellow$/)
+  })
+})

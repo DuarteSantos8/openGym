@@ -2751,7 +2751,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         reps = range.reps
       }
       // The bands each set starts with (lib/bands.js), only on a band exercise and only when picked.
-      const planBands = bandsOn && !perSide ? setBandsOf({ bands: c.bands }) : []
+      const planBands = bandsOn ? setBandsOf({ bands: c.bands }) : []
       const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs, ...(planBands.length ? { bands: planBands } : {}) }
       const tempo = normalizeTempo(c.tempo)
       if (tempo) out.tempo = tempo
@@ -3049,7 +3049,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         subtitle={bandsOn ? t('Each set gets band chips. Pick the ones it starts with below.') : t('Pick the band colour per set, "15 × Red".')}>
         <Switch checked={bandsOn} onChange={setBandsOn} />
       </Row>}
-      {bandsOn && !perSide && <div style={{ padding: '4px 12px 10px' }}>
+      {bandsOn && <div style={{ padding: '4px 12px 10px' }}>
         <BandChips className="plan" label={t('Bands every set starts with')} value={setBandsOf({ bands: c.bands })}
           onToggle={id => setC(x => ({ ...x, bands: toggleSetBand({ bands: x.bands }, id).bands }))} />
       </div>}
