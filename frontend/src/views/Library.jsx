@@ -1,5 +1,5 @@
 import { laddersSheet } from '../components/Ladders.jsx'
-import { useDeferredValue, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -23,6 +23,7 @@ import { isFav, sortYoursFirst, usageOf } from '../lib/favourites.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { libraryOn } from '../lib/shared-api.js'
 import { isOn } from '../lib/modules.js'
+import { experienceOf } from '../lib/experience.js'
 import './Library.css'
 
 export default function Library() {
@@ -38,6 +39,17 @@ export default function Library() {
   const [eq, setEq] = useState('')
   const [cat, setCat] = useState('')
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
+  // "With form guide" (EP23-T05): on for a Beginner, so the Library opens on the exercises that
+  // say how to do them well rather than on 5,600 names; a chip anyone can set or clear. The
+  // guides load on their own (they are text nobody needs before the list shows), and until
+  // they have, the chip is not there and the list is whole.
+  const [guided, setGuided] = useState(() => experienceOf(S) === 'beginner')
+  const [guides, setGuides] = useState(null)
+  useEffect(() => {
+    let live = true
+    import('../lib/exercise-guide.js').then(m => { if (live) setGuides(() => m.guidedView) }).catch(() => {})
+    return () => { live = false }
+  }, [])
   const [shown, setShown] = useState(40)
   // Ids picked with Select, in the order picked. Nothing is picked until the user picks: the Add
   // bar appears with the first one, so no tap can add an exercise nobody chose. Picks survive a
@@ -61,7 +73,9 @@ export default function Library() {
   const eqOn = eqOpts.includes(eq) ? eq : ''
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order;
   // while searching, the exercises you have logged or planned follow right after them.
-  const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
+  const eqList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
+  // Never a dead end either: a search with nothing guided in it shows what it found.
+  const { on: guidedOn, list: narrowedList } = guides ? guides(eqList, guided) : { on: false, list: eqList }
   // Not only while searching: with no query either, what you train comes first, so the list does
   // not open on the catalogue's alphabetical start ("1 2 Stick Drill").
   const usage = useMemo(() => usageOf(S), [S.routines, S.workouts])
@@ -146,6 +160,8 @@ export default function Library() {
       <button type="button" className={'chip nocap ichip lib-fbtn' + (sheetOn ? ' on' : '')} aria-haspopup="dialog" onClick={openFilters}>
         <Icon name="slider" />{t('Filters')}{sheetOn ? <span className="lib-fn">{sheetOn}</span> : null}
       </button>
+      {guides && <button type="button" className={'chip nocap' + (guidedOn ? ' on ichip' : '')} data-guided="" aria-pressed={guidedOn}
+        onClick={() => { setGuided(!guidedOn); setShown(40) }}>{t('With form guide')}{guidedOn && <Icon name="xmark" />}</button>}
       {catOn && <button type="button" className="chip on ichip" aria-label={t('Clear') + ': ' + t(catOn)} onClick={() => { setCat(''); setShown(40) }}>{t(catOn)}<Icon name="xmark" /></button>}
       {eqOn && <button type="button" className="chip on ichip" aria-label={t('Clear') + ': ' + t(eqOn)} onClick={() => { setEq(''); setShown(40) }}>{t(eqOn)}<Icon name="xmark" /></button>}
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on ichip' : '')} aria-pressed={bp === b}

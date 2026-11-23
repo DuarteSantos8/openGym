@@ -4688,6 +4688,21 @@ export const PT_BR_OVERRIDES = {
   "Reviewed by {0}.": "Revisado por {0}.",
   "Where you should feel it": "Onde você deve sentir",
   "Why rest days matter": "Por que os dias de descanso importam",
+  "About right": "Mais ou menos certo",
+  "Do {0} reps with this weight, then say how it felt.": "Faça {0} repetições com este peso e depois diga como foi.",
+  "Easy": "Fácil",
+  "Find my weight": "Encontrar meu peso",
+  "How did that feel?": "Como foi?",
+  "I could not finish, or it got shaky": "Não consegui terminar, ou comecei a tremer",
+  "I had 1 to 3 reps left": "Sobravam de 1 a 3 repetições",
+  "I had 4 or more reps left": "Sobravam 4 repetições ou mais",
+  "If the last reps of your first set feel easy, add a little next time. That is how it is meant to go.": "Se as últimas repetições da sua primeira série parecerem fáceis, aumente um pouco na próxima vez. É assim que deve ser.",
+  "Rest for a minute, then try this.": "Descanse um minuto e depois tente isto.",
+  "Start with {0}.": "Comece com {0}.",
+  "Test sets are not logged. Stop if something hurts.": "As séries de teste não são registradas. Pare se algo doer.",
+  "Too hard": "Difícil demais",
+  "Use this weight": "Usar este peso",
+  "With form guide": "Com guia de técnica",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

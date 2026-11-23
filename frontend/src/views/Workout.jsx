@@ -55,6 +55,7 @@ import { rpeAs } from '../lib/programmes.js'
 import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
 import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups, replaceSlotExercise } from '../lib/routines.js'
 import { ownRowsLine } from '../lib/warmup-ramp.js'
+import { loadFinderSheet } from '../components/LoadFinder.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 // Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
 // opened a moment later (after a dynamic import) took the menu's history entry with it on close.
@@ -442,6 +443,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // Resistance bands per set (lib/bands.js): band equipment, or switched on in the exercise's settings.
   const bandsHere = mode === 'reps' && usesBands(S, entry.id, entry.target)
   const loadStep = mode === 'reps' ? weightIncrement(cfg, S.unit) : 2.5
+  // The first work set not yet ticked: where the load finder writes the weight it found.
+  const firstWork = entry.sets.findIndex(x => !x.done && !isWarmupRow(x))
   // With the dumbbells you own listed (issue #376), + and − walk from bell to bell — 9, 11, 13 —
   // instead of along the increment's grid; an off-list weight goes to the nearest bell that way.
   // A machine's own stack (#688) is walked the same way: 5, 11.3, 18.1.
@@ -1035,7 +1038,16 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     {/* Never logged before (release pass): no number to aim at, so a first-timer gets the one rule
         that keeps the first set safe instead of a blank weight to guess. Gone after the first tick. */}
     {!refLine && !last && mode === 'reps' && !bw && !entry.sets.some(x => x.done) &&
-      <p className="small dim firsttime">{t('First time? Start light: pick a weight you could lift a few more reps than the plan asks, then adjust the next set.')}</p>}
+      <>
+        <p className="small dim firsttime">{t('First time? Start light: pick a weight you could lift a few more reps than the plan asks, then adjust the next set.')}</p>
+        {/* Or let two or three test sets find it (EP22-T04, lib/load-finder.js). The weight goes
+            into the first set not yet ticked through onField, so it carries down the work sets
+            and the warm-ups ramp to it like a weight typed by hand. Not for per-side rows. */}
+        {firstWork >= 0 && !isSideSet(entry.sets[firstWork]) && onField &&
+          <div className="firsttime-find"><Button size="sm" variant="tinted" icon="target" data-load-finder="" onClick={() => loadFinderSheet({
+            ex, unit: S.unit, step: loadStep, reps: Number(entry.sets[firstWork].r) || 0, onUse: w => onField(firstWork, 'w', w),
+          })}>{t('Find my weight')}</Button></div>}
+      </>}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={inEx(t('Open exercise settings'))} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' || plan.prog?.deload ? 'arrowDown' : plan.kind === 'programme' ? 'calendar' : 'lightbulb'} />

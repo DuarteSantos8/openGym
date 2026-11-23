@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { presetModules } from '../lib/modules.js'
 import Home from './Home.jsx'
+import { todayISO } from '../lib/format.js'
 
 const mocks = vi.hoisted(() => ({ nav: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
@@ -25,7 +26,9 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 
-const today = new Date().toISOString().slice(0, 10)
+// The app's own local date: the UTC date is a day ahead on an evening west of Greenwich, and on
+// a Sunday that put this workout in next week.
+const today = todayISO()
 const mountWith = (modules, extra = {}) => {
   useStore.setState(s => ({
     S: { ...s.S, routines: [{ id: 'r1', name: 'Push', ex: [] }], workouts: [{ id: 'w1', d: today, start: Date.now() - 4e6, end: Date.now() - 3e6, entries: [{ id: '0025', sets: [{ w: 20, r: 8, done: true }] }] }],

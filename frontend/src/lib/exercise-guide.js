@@ -65,4 +65,15 @@ export function problems(exists = () => true) {
   return out
 }
 
+/**
+ * The Library's "With form guide" view (EP23-T05): only the exercises that have a guide, in the
+ * order given. Never a dead end: when nothing in the results has one (a search for something
+ * else), the results stay as they are and `on` says the view is not in effect.
+ */
+export function guidedView(list, want) {
+  if (!want) return { on: false, list }
+  const kept = list.filter(e => guideFor(e?.id))
+  return kept.length ? { on: true, list: kept } : { on: false, list }
+}
+
 export { EXERCISE_GUIDES, PATTERNS }
