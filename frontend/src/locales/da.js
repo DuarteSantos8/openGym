@@ -5837,10 +5837,15 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "En kopi hver dag i iCloud Drive eller en vilkårlig mappe i Filer.",
+  "A full copy after each workout or routine edit, one file per day.": "En fuld kopi efter hver træning eller rutineændring, en fil om dagen.",
+  "The last 14 are kept in the folder you choose.": "De seneste 14 gemmes i den mappe, du vælger.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Tilpas",
   "Collapsed": "Foldet sammen",
   "Hide": "Skjul",
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Pilene ændrer rækkefølgen.",
+  "iCloud Drive": "iCloud Drive",
 }
