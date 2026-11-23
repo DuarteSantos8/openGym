@@ -52,6 +52,7 @@
   --acc:  var(--green);
   --acc-2:#248a3d;
   --on-acc:#000000;
+  --livebar-a:.86; /* the most see-through the live workout bar's fill may be; presets whose text needs more override it */
   --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
   --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
   /* The accent as text, an icon or a focus ring: the accent itself in the dark theme. In the light
@@ -151,11 +152,11 @@
 :root[data-theme="light"][data-accent="brand"] { --acc:#84cc16; --acc-2:#65a30d; --green:#84cc16; --green-ink:#4a7a0e; --win-ink:#4a7a0e }
 /* the other accents: Apple's system colours, so a recolour never looks off-system */
 :root[data-accent="lime"]  { --acc:var(--green);  --acc-2:#248a3d; --on-acc:#000 }
-:root[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff }
+:root[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff; --livebar-a:1 }
 :root[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c76b00; --on-acc:#000 }
-:root[data-accent="violet"]{ --acc:var(--purple); --acc-2:#8944ab; --on-acc:#fff }
-:root[data-accent="pink"]  { --acc:var(--pink);   --acc-2:#d70036; --on-acc:#fff }
-:root[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff }
+:root[data-accent="violet"]{ --acc:var(--purple); --acc-2:#8944ab; --on-acc:#fff; --livebar-a:1 }
+:root[data-accent="pink"]  { --acc:var(--pink);   --acc-2:#d70036; --on-acc:#fff; --livebar-a:1 }
+:root[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff; --livebar-a:1 }
 :root[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
 :root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000; --knob-ring:rgba(0,0,0,.28) }
 /* --acc-ink in the light theme, per preset: 4.5:1 or better on both --bg (#f2f2f7) and white. A
@@ -214,6 +215,7 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --label-2:rgba(60,60,67,.82); --label-3:rgba(60,60,67,.6); --label-4:rgba(60,60,67,.4);
     --label-dim:var(--label-2);
     --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
+    --livebar-a:1; /* these deeper light colours reach 4.5:1 with their text only when the glass is solid */
   }
   /* The brand's green keeps its own shades; its words go one step deeper (7:1 on white). */
   :root[data-theme="light"][data-accent="brand"]{ --green-ink:#3f6212; --acc-ink:#3f6212; --win-ink:#3f6212 }
@@ -333,6 +335,14 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .wk-end .lrow+.lrow::before{inset-inline-start:46px}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app > .page.vfade{animation:viewfade var(--med) var(--ease)}
+/* The live bar's rise and the workout's fold (App.jsx, state.rise): the page grows up from the bottom
+   edge, or settles down from a touch larger. Transform and opacity only, so it costs the phone nothing.
+   Reduced motion: the global rule above removes it. */
+@keyframes viewrise{from{transform:translateY(24px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+@keyframes viewfold{from{transform:scale(1.02);opacity:0}to{transform:none;opacity:1}}
+/* origin: the screen's edge, not the page's: the page is as tall as the whole workout and arrives at the top. */
+#app > .page.vrise{animation:viewrise 280ms var(--ease);transform-origin:50% 100vh}
+#app > .page.vfold{animation:viewfold 280ms var(--ease);transform-origin:50% 50vh}
 /* Drilling into a settings page and back (App.jsx pageMotion): the iPhone's own push and pop.
    The page slides, the window never scrolls sideways while it does. */
 /* Only the page moves: no background and no edge shadow, not even during the slide. The page sits
@@ -753,19 +763,8 @@ h4.sec{
 #tabbar button.start:active .cir{transform:scale(.93)}
 #tabbar button.start .cir .icn{font-size:1.625rem;--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.start span{color:var(--acc-ink);font-weight:600}
-#tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
-/* `.cir` is itself a <span>, so the label rules above and below reach it too and
-   outrank the `.cir` block — which is how the running state ended up painting an
-   orange play glyph onto an orange disc. Both states restate their own colour.
-   The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
+/* `.cir` is itself a <span>, so the label rule above reaches it too; restate its colour. */
 #tabbar button.start .cir{color:var(--on-acc)}
-#tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px var(--orange);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
-#tabbar button.start.rec span{color:var(--orange-ink)}   /* the running clock is read: #ff9500 was 2.1:1 on the light bar */
-#tabbar button.start.rec .cir::after{
-  content:'';position:absolute;inset:0;border-radius:50%;
-  border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
-}
-@keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.45);opacity:0}}
 
 /* NOTE on every backdrop-filter pair in this file: the -webkit- line comes first and the
    standard property last, which is the order a prefixed/standard pair wants — whichever is
@@ -792,6 +791,8 @@ h4.sec{
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
+  /* body .livebar: the bar's own rule comes later in the file, so .livebar alone lost to it (review, #1312). */
+  .livebar,body .livebar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--acc)}
   .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
@@ -1367,7 +1368,69 @@ body.chips-dragging *{cursor:inherit}
    never shrinks. */
 .hdr.whdr-bar{align-items:center;gap:8px;margin:4px 0 12px}
 .whdr-mid{flex:1;min-width:0;text-align:center}
-.whdr-name{font-weight:600;font-size:var(--fs-callout);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.whdr-name{display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--fs-callout)}
+.whdr-title{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The device button (LinkSign.jsx): the ⋯ button's twin. The glow is the status green, never the
+   accent the user picks. One authored moment, the screen waking: the green rises through the watch's
+   screen when it first answers. Everything else is a quiet transition; Live never breathes. All of it
+   keys on data-state, so a re-render or a remount lands in place without replaying. */
+.dev-sign{--lit:var(--green);--warn:var(--orange);--out:cubic-bezier(.16,1,.3,1);transition:background-color var(--med),color var(--med),transform var(--fast)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-sign{--lit:#1f9d48;--warn:#c55300}}
+.dev-sign svg{position:absolute;pointer-events:none;overflow:visible}
+.ds-glyph{inset:0;margin:auto;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ds-body{transition:stroke var(--med),opacity var(--med)}
+.ds-fill{fill:var(--lit);stroke:none;transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform 180ms ease-in,opacity 180ms ease-in}
+.ds-bloom{fill:var(--lit);stroke:none;opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(1.2);transition:opacity 180ms ease-in}
+.ds-clock,.ds-alert{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.6);transition:opacity 100ms ease-in,transform 100ms ease-in}
+.ds-clock{stroke-width:1.2;stroke:var(--label-2)}
+.ds-alert{stroke-width:1.9}
+/* Live: the screen is lit. Back from sleep it brightens in place; waking from nothing (data-wake,
+   set only on a real change) the light opens from the middle of the screen until it fills it, and
+   the glow reaches past it a beat later. */
+.dev-sign[data-state="live"] .ds-fill{transform:none;transition:opacity 420ms var(--out)}
+.dev-sign[data-state="live"] .ds-bloom{opacity:1;transition:opacity 700ms var(--out) 180ms}
+.dev-sign[data-wake] .ds-fill{animation:ds-wake 640ms var(--out)}
+@keyframes ds-wake{from{transform:scale(0)}}
+.dev-sign[data-device="cloud"][data-state="live"] .ds-fill{opacity:.32}
+/* Bluetooth: the rune itself lights up, with a soft glow behind it. */
+.ds-bt-bloom{stroke:var(--lit);stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
+.dev-sign[data-device="bluetooth"][data-state="live"] .ds-rune{stroke:var(--lit);transition:stroke 420ms var(--out)}
+.dev-sign[data-device="bluetooth"][data-state="live"] .ds-bt-bloom{opacity:.75;transition:opacity 700ms var(--out) 120ms}
+/* Earbuds: the heartbeat trace lights up; on the wake it draws itself left to right, then the glow. */
+.ds-trace{opacity:.35}
+.ds-pulse,.ds-pulse-bloom{stroke:var(--lit);stroke-dasharray:1 2;stroke-dashoffset:1.01}
+.ds-pulse-bloom{stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
+.dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse{stroke-dashoffset:0}
+.dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse-bloom{stroke-dashoffset:0;opacity:.75;transition:opacity 700ms var(--out) 120ms}
+.dev-sign[data-device="earbuds"][data-wake] .ds-pulse,.dev-sign[data-device="earbuds"][data-wake] .ds-pulse-bloom{animation:ds-draw 800ms cubic-bezier(.45,0,.25,1)}
+@keyframes ds-draw{from{stroke-dashoffset:1.01}}
+/* Checking: the light swells from the middle and settles back while the first look runs (a still half
+   fill under Reduce Motion). */
+.dev-sign[data-state="checking"] .ds-fill{opacity:.55;animation:ds-look 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.dev-sign[data-state="checking"] .ds-fill{transform:scale(.5)}}
+@keyframes ds-look{0%,100%{transform:scale(.15)}50%{transform:scale(.9)}}
+/* Delayed: the display goes to sleep and shows the time, the way a resting watch does. */
+.dev-sign[data-state="delayed"] .ds-fill{transform:none;opacity:0;transition:opacity 900ms var(--out)}
+.dev-sign[data-state="delayed"] .ds-clock{opacity:1;transform:none;transition:opacity 400ms var(--out) 350ms,transform 400ms var(--out) 350ms}
+/* Nothing linked: the phone, dim. */
+.dev-sign[data-state="none"] .ds-glyph{opacity:.5}
+/* Trouble: the ring draws round the button and the mark settles in; no shake. It leaves faster. */
+.ds-ring{inset:0;width:100%;height:100%;fill:none;stroke:var(--warn);stroke-width:1.5;transform:rotate(-90deg);stroke-dasharray:107.5;stroke-dashoffset:107.5;opacity:0;transition:stroke-dashoffset 220ms ease-in,opacity 220ms ease-in}
+.dev-sign[data-state="trouble"]{background:rgba(255,159,10,.18);background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.dev-sign[data-state="trouble"] .ds-ring{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset 480ms var(--out),opacity 120ms linear}
+.dev-sign[data-state="trouble"] .ds-alert{opacity:1;transform:none;transition:opacity 260ms var(--out) 160ms,transform 360ms var(--out) 160ms}
+/* Devices sheet: a row per link; the state is a glyph and a word, speed a bars glyph and a word. */
+.dev-item+.dev-item{border-top:var(--hair) solid var(--sep)}
+.dev-state,.dev-speed{display:inline-flex;align-items:center;gap:4px;flex:none;font-size:var(--fs-footnote);font-weight:600;color:var(--label-2)}
+.dev-state .icn,.dev-speed .icn{width:16px;height:16px}
+.dev-state.warn{color:var(--orange-ink)}
+/* a link that syncs: its glyph in the button's status green, with the same soft glow; the word keeps the label colour to stay readable */
+.dev-item{--lit:var(--green)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-item{--lit:#1f9d48}}
+.dev-state.ok .icn,.dev-speed.fast .icn{color:var(--lit);filter:drop-shadow(0 0 3px var(--lit))}
+.dev-bpm{flex:none;font-size:var(--fs-footnote);color:var(--label-2)}
+.dev-note{padding:0 14px 10px 55px}
+.dev-fix{width:auto;min-height:44px;margin:0 14px 12px 55px}
 /* The clock and set count may take a second line: in ru/uk the count is the long half and a
    one-line ellipsis cut exactly the 0/19 the line is there for. */
 .whdr-mid .sub{font-size:var(--fs-footnote);margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
@@ -3017,10 +3080,72 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 #totop:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 #totop .icn{font-size:1.3125rem;--icon-stroke:2.1}
 body.resting #totop{bottom:calc(172px + var(--sab))}
+/* --- live workout bar (components/LiveBar.jsx): the running workout above the tab bar --- */
+/* A capsule of translucent accent glass, 8px over the tab bar inside the same side margins. --livebar-a
+   is how see-through the fill may be (accent.js sets it per accent so the ink keeps its contrast).
+   All text is full ink; the second line differs by size and weight, never by fading. Digits sit in
+   fixed-width slots so nothing moves as clocks tick or a pulse arrives. */
+.livebar{
+  position:fixed;z-index:51;inset-inline:12px;bottom:calc(66px + var(--sab) + var(--lb-grow));max-width:520px;margin-inline:auto;
+  container-type:inline-size;container-name:livebar;
+  min-height:58px;box-sizing:border-box;border-radius:29px;padding-block:10px 8px;padding-inline:10px 12px;
+  display:flex;align-items:center;gap:12px;text-align:start;color:var(--on-acc);
+  font-size:min(1rem,28px); /* follows the root text size, up to 1.75 times */
+  background:var(--acc);background:color-mix(in srgb,var(--acc) calc(var(--livebar-a) * 100%),transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 26px -8px rgba(0,0,0,.45);
+}
+.livebar:focus-visible{outline:2px solid var(--on-acc);outline-offset:2px}
+/* A press answers at once, before the page rises (the haptic is iPhone-only). Reduce Motion: no shrink. */
+.livebar{transition:transform var(--fast) cubic-bezier(.23,1,.32,1)}
+.livebar:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){.livebar:active{transform:none}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.livebar{background:var(--acc)}}
+/* The progress line: one section per exercise, as long as its sets (flex-grow inline), each filling with its own. */
+.livebar-hl{position:absolute;top:5px;inset-inline:26px;height:2.5px;display:flex;gap:3px}
+.livebar-hl>span{flex:1 1 0;min-width:0;border-radius:2px;background:rgba(128,128,128,.55);background:color-mix(in srgb,var(--on-acc) 55%,transparent);overflow:hidden}
+.livebar-hl i{display:block;height:100%;background:var(--on-acc);transform-origin:left;transition:transform .4s var(--ease)}
+:root[dir="rtl"] .livebar-hl i{transform-origin:right}
+.livebar-dev{flex:none;display:flex;line-height:0}
+.livebar-dev svg{overflow:visible}
+.livebar-dev .w{fill:none;stroke:var(--on-acc);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.livebar-dev .bd{fill:var(--on-acc)}
+.livebar-dev .gl{fill:none;stroke:var(--acc);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.livebar-dev .sp{transform-origin:21.5px 21.5px;animation:livebar-spin 1.4s linear infinite}
+@keyframes livebar-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.livebar-dev .sp{animation:none}}
+.livebar-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.livebar-l1,.livebar-l2{display:flex;align-items:baseline;gap:.5em;min-width:0;white-space:nowrap}
+.livebar-l1{font-size:.75em;font-weight:500;line-height:1.35}
+.livebar-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.livebar-num{font-variant-numeric:tabular-nums;unicode-bidi:isolate;direction:ltr}
+.livebar-el{flex:none;min-width:3.6em;text-align:end} /* room for three-digit minutes */
+.livebar-l2{font-size:.9375em;font-weight:600;letter-spacing:-.01em;line-height:1.5;align-items:center}
+.livebar-ex{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.livebar-st,.livebar-rl,.livebar-nx{flex:none;font-size:.8125em;font-variant-numeric:tabular-nums}
+.livebar-st{font-weight:400}
+.livebar-rl{font-weight:500;margin-inline-end:-2px}
+.livebar-cd{flex:none;font-size:1.4em;font-weight:800;letter-spacing:-.02em;line-height:1;min-width:4.4ch;text-align:start}
+.livebar-nx{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.livebar-up{flex:none;margin-inline-end:-6px} /* the icon's own side space stands in for most of the 12px gap */
+/* The recording light: a slow breath while the workout runs, still while paused or with Reduce Motion. */
+.livebar-on{display:inline-block;vertical-align:middle;margin-inline-end:.45em;width:6px;height:6px;border-radius:50%;background:var(--on-acc);animation:livebar-on 2s ease-in-out infinite}
+.livebar-on.paused{animation:none;opacity:.5}
+@keyframes livebar-on{50%{opacity:.3;transform:scale(.7)}}
+@media (prefers-reduced-motion:reduce){.livebar-on{animation:none}}
+/* Largest text: both lines stay (the time too); only the mark grows. */
+@container livebar (max-width:17em){
+  .livebar-dev svg{width:36px;height:36px}
+}
+/* How much taller than its usual 58px the tab bar is (larger text): LiveBar.jsx measures its top edge */
+body{--lb-grow:max(0px, calc(var(--tabbar-top, 0px) - 58px - var(--sab)))}
+body.has-livebar #app{padding-bottom:calc(154px + var(--sab) + var(--lb-grow))} /* the tab bar's 88, the capsule's 58, and 8 */
+body.has-livebar #totop{bottom:calc(146px + var(--sab) + var(--lb-grow))}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
 body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
+body.totop-on.has-livebar #app{padding-bottom:calc(210px + var(--sab) + var(--lb-grow))} /* 144 + the capsule's 58 + 8 */
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
@@ -3384,9 +3509,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
   /* Back to top: at the end of the wide column, level with the floating tab bar and clear of it,
      so the page's own 128px at the bottom already keeps the last row out from under it. */
-  #totop,body.resting #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
+  #totop,body.resting #totop,body.has-livebar #totop{inset-inline-end:max(16px,calc(50vw - 540px + var(--pad)));bottom:calc(20px + var(--sab))}
+  body{--lb-grow:max(0px, calc(var(--tabbar-top, 0px) - 75px))}   /* the floating bar's top: 16px up, 59px high */
+  .livebar{bottom:calc(83px + var(--lb-grow))}
+  body.has-livebar #app{padding-bottom:calc(194px + var(--sab) + var(--lb-grow))}
   body.totop-on #app{padding-bottom:calc(128px + var(--sab))}
   body.totop-on.resting #app{padding-bottom:calc(220px + var(--sab))}
+  body.totop-on.has-livebar #app{padding-bottom:calc(194px + var(--sab) + var(--lb-grow))}
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}

@@ -61,6 +61,8 @@ import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
+import LiveBar from './components/LiveBar.jsx'
+import { liveBarHidesRest, liveBarShows } from './lib/live-bar.js'
 import TimerFlash from './components/TimerFlash.jsx'
 import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
@@ -367,9 +369,11 @@ function Shell() {
   }, [inWorkout])
   // The chat owns the bottom of the screen as well: its composer sits where the tabs would be.
   // The first-launch card has no tabs either: they changed the route behind it.
+  const barHidesRest = useUI(liveBarHidesRest) // a boolean, so a rest ticking each second does not re-render the shell
   const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
+  const barOn = !noTabs && !!authed && liveBarShows(S, loc.pathname) && barHidesRest
   // The first setup is through (sign-in or "Use on this device", and the phone's permission
   // steps): "Want a 1-minute tour?" once, on a profile with nothing logged yet, or "Finish the
   // tour?" once after one was closed halfway (lib/tour.js). In the first idle moment after the
@@ -447,7 +451,8 @@ function Shell() {
           lands it simply stays: same key, same parent, so React keeps it instead of mounting
           the route again. */}
       <div id="app">
-        <Page key={loc.pathname} loc={loc} render={view} motion={pageMotion(pathRef.current, loc.pathname, navType)} />
+        {/* The bar's rise or fold is that tap's own: Back to the same entry gets the usual motion (its state stays in history). */}
+        <Page key={loc.pathname} loc={loc} render={view} motion={(navType !== 'POP' && loc.state?.rise) || pageMotion(pathRef.current, loc.pathname, navType)} />
         {showPreview && <Page key={preview} loc={previewLoc(preview)} render={view} under scrollY={scrollPositions.get(preview) || 0} />}
       </div>
       {/* Outside #app: the view's fade-in animates a transform, and a fixed element inside it
@@ -455,8 +460,12 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {barOn && <LiveBar />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      {/* The live bar's rest line is the countdown for a plain rest wherever the bar shows. The rest keeps
+          running in the store (sounds, notifications, haptics are not RestTimer's), so unmounting only
+          hides it; a timed hold, a count-in and a paused rest keep the old bar (liveBarHidesRest). */}
+      {!barOn && <RestTimer />}
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />
@@ -491,7 +500,7 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
     const el = ref.current
     if (el) { el.style.transform = ''; el.style.transition = ''; el.style.visibility = '' }
   }, [under])
-  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
+  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'rise' ? ' vrise' : arrival.current === 'fold' ? ' vfold' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
     data-path={loc.pathname} data-promoted={promoted ? '' : undefined}
     aria-hidden={under || undefined} inert={under || undefined}>
     <div className="page-in" style={under && scrollY ? { transform: `translateY(${-scrollY}px)` } : undefined}>

@@ -44,14 +44,24 @@ afterEach(() => {
 
 // The owner, 2026-10-14: no extra bottom button to complete or finish during a workout (#563 is
 // undone). The running workout has the whole screen again; Finish lives in its header.
-it('a running workout has no tab bar and no bottom action; minimized, the tabs and Resume are back', async () => {
+it('a running workout has no tab bar and no bottom action; minimized, the tabs and the Workout tab are back', async () => {
   await act(async () => root.render(<App />))
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(document.body.classList.contains('no-tabbar')).toBe(true)
   await act(async () => host.querySelector('.whdr button[aria-label="Minimize"]').click())
   expect(host.querySelectorAll('#tabbar button')).toHaveLength(5)
-  expect(host.querySelector('#tabbar .start').getAttribute('aria-label')).toBe('Resume')
-  await act(async () => host.querySelector('#tabbar .start').click())
+  // The live bar carries the clock now; the centre tab is plain and just reads "Workout".
+  expect(host.querySelector('#tabbar [data-tour="start"]').textContent).toBe('Workout')
+  expect(host.querySelector('#tabbar .start')).toBeNull()
+  // The fold: the page it returns to plays the fold entrance (no view transition).
+  expect(host.querySelector('.page[data-path="/home"]').classList.contains('vfold')).toBe(true)
+  // The rise: the live bar opens the workout, whose page plays the rise entrance.
+  await act(async () => host.querySelector('#livebar').click())
+  expect(host.querySelector('.page[data-path="/workout"]').classList.contains('vrise')).toBe(true)
+  await act(async () => host.querySelector('.whdr button[aria-label="Minimize"]').click())
+  await act(async () => host.querySelector('#tabbar [data-tour="start"]').click())
+  // A plain tab tap: no rise entrance.
+  expect(host.querySelector('.page[data-path="/workout"]').classList.contains('vrise')).toBe(false)
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(useStore.getState().S.active.entries[0].sets.map(s => s.done)).toEqual([false, false])
 })
@@ -61,4 +71,31 @@ it.each([{ editingWorkoutId: 'saved' }, { backfill: true }])('past workouts have
   await act(async () => root.render(<App />))
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(document.body.classList.contains('no-tabbar')).toBe(true)
+})
+
+// The capsule is the countdown for a plain rest. A timed hold, a count-in, a paused rest and a rest that
+// starts a hold by itself need the old rest bar, so the capsule steps aside completely for them.
+it.each([
+  ['a running rest', { timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0 } }, false],
+  ['a timed hold', { work: { left: 30, total: 30, endsAt: Date.now() + 3e4, label: 'Plank' } }, true],
+  ['a paused rest', { timer: { left: 60, total: 90, paused: true, forIdx: 0 } }, true],
+  ['a rest before an auto hold', { timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0, autoNext: { label: 'Plank' } } }, true],
+  ['a count-in', { countIn: { owner: { label: 'Plank' }, left: 3, total: 3, endsAt: Date.now() + 3e3 } }, true],
+])('on Home, %s', async (_n, ui, oldBar) => {
+  window.location.hash = '#/home'
+  useUI.setState({ timer: null, work: null, countIn: null, ...ui })
+  await act(async () => root.render(<App />))
+  expect(!!host.querySelector('#timer')).toBe(oldBar)
+  expect(!!host.querySelector('#livebar')).toBe(!oldBar)
+  expect(document.body.classList.contains('has-livebar')).toBe(!oldBar)
+})
+
+// A stale running workout on the sign-in screen (the server just ended the session): no bar.
+it('shows no live bar when nobody is signed in', async () => {
+  localStorage.removeItem('gym_guest')
+  window.location.hash = '#/home'
+  useUI.setState({ timer: { left: 60, total: 90, endsAt: Date.now() + 6e4, forIdx: 0 } })
+  await act(async () => root.render(<App />))
+  expect(host.querySelector('#livebar')).toBeNull()
+  expect(host.querySelector('#tabbar')).toBeNull()
 })

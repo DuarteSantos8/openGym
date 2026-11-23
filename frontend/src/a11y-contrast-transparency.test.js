@@ -128,9 +128,6 @@ describe('small text that is read, not decoration', () => {
 
 describe('status colours as words use their ink shade (light theme, QA 1.4.5)', () => {
   const src = f => readFileSync(resolve(process.cwd(), 'src', f), 'utf8')
-  it('the running clock under the tab bar\'s Start button', () => {
-    expect(rule(read('index.css'), '#tabbar button.start.rec span')).toContain('color:var(--orange-ink)')
-  })
   it('Home\'s Resume tag and the balance check\'s verdicts', () => {
     expect(src('views/Home.jsx')).toMatch(/className="tag" style=\{\{ color: 'var\(--orange-ink\)'/)
     const sb = src('views/StructuralBalance.jsx')
@@ -138,3 +135,24 @@ describe('status colours as words use their ink shade (light theme, QA 1.4.5)', 
     expect(sb).not.toMatch(/balanced: 'var\(--green\)'/)
   })
 })
+
+// The rise and fold (App.jsx state.rise) are plain `animation`s, so the app's global reduced-motion
+// rule removes them. Only the CSS is read: the class is still set under reduced motion.
+describe('the rise and fold under reduced motion', () => {
+  const css = read('index.css')
+  it('the global rule stops every animation', () => {
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\{\*\{animation:none!important/)
+  })
+  it('.vrise and .vfold animate with `animation`, which that rule covers', () => {
+    expect(css).toMatch(/\.page\.vrise\{animation:viewrise/)
+    expect(css).toMatch(/\.page\.vfold\{animation:viewfold/)
+  })
+})
+
+// On a computer the back-to-top button sits level with the floating tab bar, with the live bar showing
+// too: the base `body.has-livebar #totop` (a phone offset) ties the desktop rule on specificity, so the
+// desktop group has to name it and come later.
+it('the desktop back-to-top place also holds while the live bar shows', () => {
+  expect(read('index.css')).toContain('#totop,body.resting #totop,body.has-livebar #totop{inset-inline-end')
+})
+
