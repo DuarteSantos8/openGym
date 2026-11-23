@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-22, after PRs #56 to #60 were merged and with `next/EP22-load-finder-fixes` in review. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-22, after PRs #56 to #61 were merged and with `next/EP19-cloud-backend` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
 
 ## Why
 
@@ -59,10 +59,10 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|---|---|
 | EP19-T01 | Schema: profiles | `supabase/migrations/…_profiles.sql` | applies cleanly; a trigger makes the profile; the user can change name and level only | done, #58 |
 | EP19-T02 | Schema: billing and content, RLS, tests | `supabase/migrations/…_billing.sql`, `…_content.sql`, `supabase/tests/rls.sql`, `run-rls-local.sh` | every expectation in `rls.sql` holds; breaking a policy makes it fail | done, same branch (run on PostgreSQL 16; **not** yet on a Supabase project) |
-| EP19-T03 | Sign-in, sign-up, reset and consent pages | NEW `frontend/src/lib/cloud/auth.js`, `components/cloud/SignIn.jsx`, `Consent.jsx` | sign up, sign in, reset and approve pass the cloud E2E; axe clean | open; needs a Supabase project. ADR 0013 adds the consent page |
-| EP19-T04 | API accepts a cloud sign-in | `api/oidc/` (already there), `.env.example`; fallback `api/supabase-jwt.js` | **ADR 0013 (proposed): no new server code.** The API's existing OIDC sign-in is pointed at the Supabase project. Confirm ADR 0013's five checks on a real project | **part**: decision written, verifier kept as the tested fallback, nothing confirmed against Supabase |
+| EP19-T03 | Sign-in, sign-up, reset, account and consent | NEW `frontend/src/lib/cloud/{auth,profile,client}.js`, `views/cloud/Account.jsx` | sign in, sign up, reset, change name, export, delete and approve, each tested; a real browser round trip on a real project | **done** in `next/EP19-cloud-backend` for sign in, name, reload and sign out (real browser, real project, phone and desktop). **Not exercised for real:** sign-up and reset emails (the project's built-in mail only reaches the owner's own address; custom SMTP is the owner's to set), and approving, because the project's OAuth server is off |
+| EP19-T04 | API accepts a cloud sign-in | `api/oidc/` (already there), `.env.example`; fallback `api/supabase-jwt.js` | ADR 0013: the API's existing OIDC sign-in is pointed at the project | **part**: on the real project the discovery document's issuer, PKCE S256, ES256 keys, the public-client method and `email_verified` all match what the API needs, and `api/supabase-jwt.js` verifies a real access token and refuses a forged one. **Not done:** a full sign-in through the API, which needs the OAuth server switched on in the dashboard and a running API |
 | EP19-T05 | Link an existing account; guest keeps their data | the OIDC flow's own link mode (ADR 0013) | a guest with 10 workouts signs in and has 10 on the server; a passkey user links without a second user | open: to be shown on a real project, not built |
-| EP19-T06 | Delete account and export | NEW `supabase/functions/delete-account`, `export-data` | after delete: auth user, rows, `state-<uid>.json` and the Stripe subscription are gone | open |
+| EP19-T06 | Delete account and export | NEW `supabase/functions/{export-account,delete-account}`, `_shared/{account,http}.js` | export returns only the caller's rows; delete needs the word, removes the auth user and every row with it, and is refused while a subscription runs | **done** in `next/EP19-cloud-backend`: both deployed and run on the real project, including a real deletion. **Not covered:** the app server's own `state-<uid>.json` (it has its own export and delete) and cancelling a Stripe subscription (refused instead, until Stripe is back) |
 | EP20-T01 | Stripe catalogue seed | NEW `scripts/stripe/seed.mjs` | product and two prices created idempotently in test mode | open; needs a Stripe account |
 | EP20-T02 | Checkout | `supabase/functions/create-checkout-session`, `_shared/handlers.js` | guest 403, unknown price 400, already subscribed 409, double tap one session | done against a pretend Stripe, same branch. **Not** run against Stripe |
 | EP20-T03 | Webhook | `supabase/functions/stripe-webhook` | bad signature 400; replay acted on once; out-of-order events end where Stripe is; failure leaves the event open for the retry | done against a pretend Stripe, same branch |
@@ -155,7 +155,10 @@ What was run, where, and what was not. #56 to #60 are merged; nothing has been d
 | Load finder branch (`next/EP22-load-finder`), full frontend suite | 966 files, 10,785 tests. 4 tests in 2 older files failed here and on `main`: they dated a workout by the UTC day, which on a Sunday evening west of Greenwich is next week. Fixed in the branch and passing in three time zones; CI (UTC) never saw it |
 | Load finder branch, E2E on the three profiles | 59 passed, 1 skipped (the same camera test) |
 | Load finder branch, bundle budget | first load 905 kB script and 58 kB styles gzipped, inside the budget; guides and Learn text load on demand |
-| **Not run** | Real phones; a screen reader by hand; anything against a real Supabase project or Stripe; the native apps |
+| Cloud backend branch (`next/EP19-cloud-backend`), on the real project | 4 migrations written, 3 applied (the fourth, which answers the project's own advisors, waits for the owner's confirmation). 10 live tests passed: sign-in, wrong password, row level security over REST as two users, token refresh, billing tables closed, the API's token check on a real token, the OIDC discovery document, export, the refusals, and a real account deletion |
+| Cloud backend branch, real browser | The cloud build signed in, saved a name, kept the session over a reload and signed out, on a phone and a desktop viewport, talking only to the project. It found two races that are now fixed and tested |
+| Cloud backend branch, the usual suites | Frontend 970 files, 10,847 tests; API 1,304 tests (3 skipped as before); E2E on the default build 62 passed, 1 skipped; row level security on PostgreSQL 16 with all four migrations; axe clean on all five account steps of the cloud build; the bundle check fails a default build that contains any cloud code |
+| **Not run** | Real phones; a screen reader by hand; Stripe; sign-up and reset emails end to end; a sign-in through the API's OIDC; the native apps |
 
 ### Grades, honestly
 
@@ -166,4 +169,4 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 | Beginner-friendliness and clarity | 7 | Every starter-plan exercise has cues, mistakes, where to feel it and an easier version, and a first weight can be found in three test sets. But all 45 guides are unreviewed drafts in English, the glossary reaches one screen, and no first-time lifter has tried any of it |
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
 | Feature completeness (all in one) | 5 | 26 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
-| Technical quality and backend | 6 | What exists is tested hard, including by breaking it. But no sign-in, no paywall, and nothing run against the real services. ADR 0013 may remove the API wiring altogether, once checked on a real project |
+| Technical quality and backend | 7 | A real project runs the schema, row level security, sign-in, export and deletion, and the app's client is tested against it. Still missing: email that reaches real people, the OIDC hand-off to the API, payments, and a deployed cloud build |

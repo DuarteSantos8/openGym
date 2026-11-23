@@ -2,7 +2,7 @@
 // Every path of the four Edge Functions, against a pretend project and a pretend Stripe (world.mjs).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createCheckoutSession, createPortalSession, entitlementToken, stripeWebhook } from '../functions/_shared/handlers.js'
+import { createCheckoutSession, createPortalSession, entitlementToken, stripeWebhook, exportAccount, deleteAccount } from '../functions/_shared/handlers.js'
 import { generateKeyPair } from '../functions/_shared/token.js'
 import { verifyEntitlement } from '../../frontend/src/lib/cloud/entitlement.js'
 import { makeWorld, signStripe, post } from './world.mjs'
@@ -277,3 +277,94 @@ test('nothing in any path talks to a host other than the project and Stripe', as
   const hosts = new Set(w.calls.map(c => new URL(c.url).origin))
   assert.deepEqual([...hosts].sort(), ['https://api.stripe.com', 'https://proj.example'])
 })
+
+// ───────────────────────────── the account: take it with you, or take it away ─────────────────────────────
+
+test('export: a signed-in user gets their own rows and nobody else\'s', async () => {
+  const w = world()
+  w.table('profiles').push({ id: A, display_name: 'Sam', experience: 'beginner', node_uid: 'n-1', created_at: iso(NOW), updated_at: iso(NOW) }, { id: B, display_name: 'Other', experience: null, node_uid: null })
+  w.table('subscriptions').push({ id: 'sub_a', user_id: A, status: 'active', price_id: 'price_month', current_period_end: iso(NOW + 100), cancel_at_period_end: false, source: 'stripe' }, { id: 'sub_b', user_id: B, status: 'active' })
+  w.table('entitlements').push({ user_id: A, feature: 'pro', source: 'stripe', expires_at: null }, { user_id: B, feature: 'pro', source: 'promo', expires_at: null })
+  w.table('customers').push({ user_id: A, stripe_customer_id: 'cus_secretish' })
+  const res = await exportAccount(post('export-account', { token: 'tok-a' }), w.env, w.fetchImpl, NOW)
+  assert.equal(res.status, 200)
+  assert.equal(res.headers.get('cache-control'), 'no-store')
+  const out = await res.json()
+  assert.equal(out.exported_at, iso(NOW))
+  assert.deepEqual(out.account, { id: A, email: 'a@example.test' })
+  assert.equal(out.profile.display_name, 'Sam')
+  assert.deepEqual(out.subscriptions.map(x => x.id), ['sub_a'])
+  assert.deepEqual(out.entitlements.map(x => x.feature), ['pro'])
+  const text = JSON.stringify(out)
+  assert.ok(!text.includes(B) && !text.includes('Other'))
+  // the payment provider's own id for the customer is not the person's data to carry around
+  assert.ok(!text.includes('cus_secretish'))
+  assert.ok(!text.includes(w.env.SUPABASE_SECRET_KEY))
+})
+
+test('export and delete: nobody signed in is refused, and only POST is answered', async () => {
+  const w = world()
+  for (const fn of [exportAccount, deleteAccount]) {
+    assert.equal((await fn(post('x', { body: { confirm: 'delete' } }), w.env, w.fetchImpl, NOW)).status, 401)
+    assert.equal((await fn(post('x', { token: 'nope', body: { confirm: 'delete' } }), w.env, w.fetchImpl, NOW)).status, 401)
+    assert.equal((await fn(new Request('https://fn.example/x', { method: 'GET', headers: { authorization: 'Bearer tok-a' } }), w.env, w.fetchImpl, NOW)).status, 405)
+    const pre = await fn(new Request('https://fn.example/x', { method: 'OPTIONS' }), w.env, w.fetchImpl, NOW)
+    assert.equal(pre.status, 204)
+    assert.equal(pre.headers.get('access-control-allow-origin'), 'https://app.example')
+  }
+  assert.deepEqual(w.admin.deleted, [])
+})
+
+test('delete: needs the word, then removes the account and everything that hangs off it', async () => {
+  const w = world()
+  w.table('profiles').push({ id: A, display_name: 'Sam' }, { id: B, display_name: 'Other' })
+  w.table('entitlements').push({ user_id: A, feature: 'pro', source: 'promo', expires_at: null }, { user_id: B, feature: 'pro', source: 'promo', expires_at: null })
+  for (const body of [undefined, {}, { confirm: true }, { confirm: 'DELETE' }, { confirm: 'yes' }]) {
+    const no = await deleteAccount(post('delete-account', { token: 'tok-a', body }), w.env, w.fetchImpl, NOW)
+    assert.equal(no.status, 400)
+    assert.deepEqual(await no.json(), { error: 'confirm' })
+  }
+  assert.deepEqual(w.admin.deleted, [])
+  const res = await deleteAccount(post('delete-account', { token: 'tok-a', body: { confirm: 'delete' } }), w.env, w.fetchImpl, NOW)
+  assert.equal(res.status, 200)
+  assert.deepEqual(await res.json(), { deleted: true })
+  assert.deepEqual(w.admin.deleted, [A])
+  assert.deepEqual(w.table('profiles').map(r => r.id), [B])
+  assert.deepEqual(w.table('entitlements').map(r => r.user_id), [B])
+  // the token no longer names anyone
+  assert.equal((await exportAccount(post('export-account', { token: 'tok-a' }), w.env, w.fetchImpl, NOW)).status, 401)
+})
+
+test('delete: only ever the caller, whatever the body says', async () => {
+  const w = world()
+  const res = await deleteAccount(post('delete-account', { token: 'tok-a', body: { confirm: 'delete', id: B, user_id: B } }), w.env, w.fetchImpl, NOW)
+  assert.equal(res.status, 200)
+  assert.deepEqual(w.admin.deleted, [A])
+})
+
+test('delete: refused while a subscription is still being paid for, so nobody is billed for an account that is gone', async () => {
+  const w = world()
+  for (const status of ['active', 'trialing', 'past_due']) {
+    w.table('subscriptions').length = 0
+    w.table('subscriptions').push({ id: 'sub_1', user_id: A, status, source: 'stripe' })
+    const res = await deleteAccount(post('delete-account', { token: 'tok-a', body: { confirm: 'delete' } }), w.env, w.fetchImpl, NOW)
+    assert.equal(res.status, 409, status)
+    assert.deepEqual(await res.json(), { error: 'subscription_active' })
+  }
+  assert.deepEqual(w.admin.deleted, [])
+  // one that has ended, or someone else's, does not stand in the way
+  w.table('subscriptions').length = 0
+  w.table('subscriptions').push({ id: 'sub_old', user_id: A, status: 'canceled', source: 'stripe' }, { id: 'sub_b', user_id: B, status: 'active', source: 'stripe' })
+  assert.equal((await deleteAccount(post('delete-account', { token: 'tok-a', body: { confirm: 'delete' } }), w.env, w.fetchImpl, NOW)).status, 200)
+})
+
+test('delete: says so when the account could not be removed, and removes nothing by halves', async () => {
+  const w = world()
+  w.table('profiles').push({ id: A, display_name: 'Sam' })
+  w.admin.down = true
+  const res = await deleteAccount(post('delete-account', { token: 'tok-a', body: { confirm: 'delete' } }), w.env, w.fetchImpl, NOW)
+  assert.equal(res.status, 502)
+  assert.deepEqual(await res.json(), { error: 'upstream' })
+  assert.equal(w.table('profiles').length, 1)
+})
+

@@ -1,0 +1,32 @@
+/* The Cloud edition's account screen (views/cloud/Account.jsx). Dark first, type-led: one large
+   line that says where you are, one raised panel that holds the form, one accent edge. The glow
+   behind the title is a single soft light, not a gradient wash, and nothing moves for someone who
+   asked for less motion. Each color-mix() has a plain stand-in before it for Safari before 16.2. */
+.iv-acct{position:relative;max-width:460px;margin:0 auto;padding:8px var(--pad) 40px;isolation:isolate}
+.iv-acct::before{content:"";position:absolute;inset:-40px -20px auto;height:260px;z-index:-1;pointer-events:none;
+  background:radial-gradient(60% 70% at 50% 0%,rgba(255,255,255,.05),transparent 70%);
+  background:radial-gradient(60% 70% at 50% 0%,color-mix(in srgb,var(--acc) 14%,transparent),transparent 70%)}
+.iv-acct-eyebrow{margin:18px 0 6px;font-size:var(--fs-caption);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc-ink)}
+.iv-acct-title{margin:0;font-size:var(--fs-large);line-height:var(--lh-tight);letter-spacing:var(--ls-large);font-weight:800;text-wrap:balance}
+.iv-acct-title:focus-visible{outline:none}
+.iv-acct-lead{margin:10px 0 0;color:var(--label-2);line-height:var(--lh-small);max-width:38ch}
+.iv-acct-panel{position:relative;margin-top:22px;padding:18px;border-radius:var(--r-xl);
+  background:linear-gradient(180deg,var(--surface),var(--bg-el));
+  box-shadow:inset 0 0 0 var(--hair) var(--raised-line),inset 0 1px 0 rgba(255,255,255,.06),0 24px 60px -30px rgba(0,0,0,.9)}
+.iv-acct-panel::before{content:"";position:absolute;inset:0 22px auto;height:1px;background:linear-gradient(90deg,transparent,var(--acc-line),transparent)}
+.iv-acct-form{display:flex;flex-direction:column;gap:14px}
+.iv-acct-field{display:flex;flex-direction:column;gap:6px}
+.iv-acct-field>span{font-size:var(--fs-footnote);font-weight:600;color:var(--label-2)}
+.iv-acct-field small{color:var(--label-dim);font-size:var(--fs-caption)}
+.iv-acct-error{margin:0 0 14px;padding:10px 12px;border-radius:var(--r);background:rgba(255,69,58,.14);background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--label);font-size:var(--fs-subhead);line-height:var(--lh-small);box-shadow:inset 0 0 0 var(--hair) rgba(255,69,58,.45);box-shadow:inset 0 0 0 var(--hair) color-mix(in srgb,var(--red) 45%,transparent)}
+.iv-acct-actions{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.iv-acct-actions .btn{width:100%;justify-content:center}
+.iv-acct-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;margin-top:14px}
+.iv-acct-links .btn{padding-inline:4px}
+.iv-acct-who{margin:0 0 14px;color:var(--label-2);overflow-wrap:anywhere}
+.iv-acct-who b{color:var(--label);font-weight:600}
+.iv-acct-danger{margin-top:22px;padding-top:16px;border-top:var(--hair) solid var(--sep)}
+@media (prefers-reduced-motion:no-preference){
+  .iv-acct-panel{animation:iv-acct-in var(--med) var(--ease) both}
+  @keyframes iv-acct-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}

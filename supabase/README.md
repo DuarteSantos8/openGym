@@ -14,6 +14,8 @@ touches it: the default build makes no third-party request and has no paid tier
 | `functions/_shared/` | The functions' logic as plain modules: Stripe signature check and requests, subscription to entitlement, the signed entitlement token, the four handlers |
 | `functions/<name>/index.ts` | Three lines each: hand the request to the handler |
 | `tests/*.test.mjs` | Every handler path against a pretend project and a pretend Stripe |
+| `functions/_shared/account.js`, `http.js` | Account export and deletion, and what every function shares (replies, the secret-key database client, "who is calling") |
+| `tests/live*.test.mjs` | The same things against a real project. Skipped unless one is named in the environment |
 
 Training data is **not** here. Workouts, routines and settings stay in the app's own API
 (`state-<uid>.json`). Supabase holds who the account is and what it pays for.
@@ -39,6 +41,8 @@ cp -r supabase /tmp/sb && chmod -R a+rX /tmp/sb && runuser -u postgres -- /tmp/s
 | `create-checkout-session` | the app, signed in | `POST { priceId }` → `{ url }` of a Stripe Checkout page. Guests are refused, the price must be on the allow-list, someone already subscribed gets 409 |
 | `create-portal-session` | the app, signed in | `POST` → `{ url }` of the Stripe Customer Portal for the caller's own customer |
 | `entitlement-token` | the app, signed in | `POST` → `{ token, features, exp }`: a signed note the app checks offline (`frontend/src/lib/cloud/entitlement.js`) |
+| `export-account` | the app, signed in | `POST` → the caller's own rows as one JSON document. Never anyone else's, never the payment provider's customer id |
+| `delete-account` | the app, signed in | `POST { confirm: "delete" }` → removes the caller's account and every row with it. Refused while a subscription is running |
 | `stripe-webhook` | Stripe | Verifies the signature, writes the event id down, re-reads the subscription from Stripe and makes the rows match |
 
 No SDK is used: `fetch` and Web Crypto only. That is on purpose. The code depends on no library
@@ -68,7 +72,48 @@ node -e "import('./supabase/functions/_shared/token.js').then(async m => console
 Run it on your own machine and paste the two halves straight into where they go. Do not commit
 the output. `api/test/no-secrets.test.js` fails the build on a committed key.
 
-## First deploy, in order (owner only; nothing here has been run against a real project)
+## On a real project (2026-11-23)
+
+A project exists and the following ran against it. Its address and publishable key are not in this repository: they go in the cloud build's environment (`.env.example`).
+
+| | |
+|---|---|
+| Applied | `…_profiles`, `…_billing`, `…_content`. `…_advisors` (below) is written and passes locally; applying it replaces two policies, which the project asks its owner to confirm |
+| Deployed | `export-account`, `delete-account` (both check the caller themselves, so the platform's own token check is off for them) |
+| Live tests | `tests/live.test.mjs` and `tests/live-account.test.mjs`: 10 tests, all passing. They are skipped unless the project is named in the environment |
+| Advisors | Security: `has_entitlement` ran as its owner and was callable over REST (fixed in `…_advisors`); `webhook_events` has row level security and no policy, on purpose. Performance: two SELECT policies on `content_items` for one role (merged in `…_advisors`) |
+
+### Test users
+
+The live tests need two confirmed users, and a third to delete. The project's built-in mail only delivers to its owner's own address, so make them in the SQL editor instead of signing up (pick your own addresses and passwords; keep them out of this repository):
+
+```sql
+with u as (
+  insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token)
+  values ('00000000-0000-0000-0000-000000000000', gen_random_uuid(), 'authenticated', 'authenticated', '<email>', extensions.crypt('<password>', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', '')
+  returning id, email)
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+select gen_random_uuid(), id, id::text, jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true), 'email', now(), now(), now() from u;
+```
+
+```sh
+LIVE_SUPABASE_URL=https://<ref>.supabase.co LIVE_SUPABASE_KEY=sb_publishable_… \
+LIVE_USER_A=<email>:<password> LIVE_USER_B=<email>:<password> [LIVE_USER_DISPOSABLE=<email>:<password>] \
+node --test supabase/tests/live.test.mjs supabase/tests/live-account.test.mjs
+```
+
+### What only the owner can switch on
+
+None of these can be done from the repository or by an agent; each is a setting in the project's dashboard (or Vercel's).
+
+1. **Confirm the `…_advisors` migration** when the project asks.
+2. **Custom SMTP** (Authentication, Emails). Until then nobody but the owner receives a sign-up or reset email, and the sign-up form answers "that email address is not accepted" for anyone else.
+3. **Email templates.** Point the confirm and reset links at the app: `{{ .SiteURL }}/#/account?token_hash={{ .TokenHash }}&type=signup` and `…&type=recovery`. Set the Site URL and allowed redirect URLs to the app's address.
+4. **OAuth server** (Authentication, OAuth Server), for ADR 0013: switch it on, set the authorization path to `/#/account`, register one client whose redirect is `<the API's origin>/api/oidc/callback`.
+5. **`APP_ORIGIN`** as a function secret: the web app's origin. Without it a browser cannot call `export-account` or `delete-account` (they answer, but the browser's cross-origin check refuses the reply). One origin only for now.
+6. **The cloud build's variables** in Vercel: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Setting them turns that deployment into the Cloud edition; the default build has none of this code.
+
+## First deploy of the payment functions, in order (owner only; not run against real Stripe)
 
 1. Create the Supabase project and the Stripe account (test mode first).
 2. `supabase link --project-ref <ref>` then `supabase db push` (applies `migrations/`).
@@ -89,8 +134,9 @@ the output. `api/test/no-secrets.test.js` fails the build on a committed key.
 | | |
 |---|---|
 | Checked | Schema applies to PostgreSQL 16; every RLS expectation in `rls.sql`; every handler path with a pretend Stripe and database; signature, token and JWT checks, each also verified to fail when the check is removed |
-| **Not** checked | Anything against a real Supabase project or real Stripe: the platform's key headers, the Deno entry points, CLI commands, Checkout and Portal pages, live webhooks. Step 7 above is where that happens |
-| Not built yet | The sign-in, consent and paywall screens in the app, account deletion and export, native store billing. See `docs/next/BEGINNER-CLOUD-PLAN.md` |
+| Checked on a real project | See "On a real project" above: schema, row level security over REST as two users, sign-in and refresh through the app's own client, the two account functions as deployed, a real deletion |
+| **Not** checked | Anything against real Stripe (Checkout and Portal pages, live webhooks, the four payment functions as deployed); sign-up and reset emails end to end; the OAuth server |
+| Not built yet | The paywall, native store billing, more than one allowed origin for the functions. See `docs/next/BEGINNER-CLOUD-PLAN.md` |
 
 ## How the API learns who someone is
 

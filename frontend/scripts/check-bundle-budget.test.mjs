@@ -64,6 +64,14 @@ describe('the budget', () => {
     expect(problems(measure(fine), budget)).toEqual([])
   })
 
+  it('catches Cloud edition code anywhere in the build, loaded up front or not', () => {
+    const b = { ...budget, absent: [{ what: 'cloud code', marker: 'gym_cloud_session_v1' }] }
+    const d = dist({ 'index.js': '1', 'vendor.js': '', 'index.css': '', 'Account-abc.js': 'const KEY="gym_cloud_session_v1"' }, page)
+    expect(problems(measure(d), b)).toEqual(['cloud code is in this build (assets/Account-abc.js); a default build must not contain it'])
+    const clean = dist({ 'index.js': '1', 'vendor.js': '', 'index.css': '' }, page)
+    expect(problems(measure(clean), b)).toEqual([])
+  })
+
   it('does not pass a page that loads no script at all', () => {
     const d = dist({}, '<!doctype html><html><head></head><body></body></html>')
     expect(problems(measure(d), budget)).toEqual(['index.html loads no script: the build or this check is broken'])
@@ -76,6 +84,7 @@ describe('the budget', () => {
     expect(b.lazyOnly.length).toBeGreaterThanOrEqual(2)
     const src = ['src/content/exercise-guides.js', 'src/content/learn.js'].map(f => readFileSync(join(frontend, f), 'utf8')).join('\n')
     for (const { marker } of b.lazyOnly) expect(src.includes(marker), marker).toBe(true)
+    for (const { marker } of b.absent) expect(readFileSync(join(frontend, 'src/lib/cloud/auth.js'), 'utf8').includes(marker), marker).toBe(true)
   })
 })
 

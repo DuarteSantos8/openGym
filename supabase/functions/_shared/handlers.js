@@ -17,63 +17,7 @@ import { verifyStripeEvent, stripeRequest, StripeSignatureError } from './stripe
 import { subscriptionRow, entitlementRows, liveFeatures, userIdOf } from './entitlements.js'
 import { signEntitlement, TOKEN_TTL_SEC } from './token.js'
 
-const secretKey = env => env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY
-
-const cors = env => ({
-  'Access-Control-Allow-Origin': env.APP_ORIGIN || 'null',
-  'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  Vary: 'Origin',
-})
-const json = (env, status, body) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...cors(env) } })
-const fail = (env, status, code) => json(env, status, { error: code })
-
-/* A small PostgREST client for the secret key. Every call names its table and filter outright. */
-function database(env, fetchImpl) {
-  const key = secretKey(env)
-  const base = String(env.SUPABASE_URL).replace(/\/+$/, '') + '/rest/v1/'
-  const headers = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }
-  const call = async (method, path, { body, prefer } = {}) => {
-    const res = await fetchImpl(base + path, { method, headers: { ...headers, ...(prefer ? { Prefer: prefer } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
-    return res
-  }
-  const must = async res => { if (!res.ok) throw new Error('database ' + res.status); return res }
-  return {
-    async select(table, query) { return (await must(await call('GET', `${table}?${query}`))).json() },
-    async upsert(table, rows, onConflict) { await must(await call('POST', `${table}?on_conflict=${onConflict}`, { body: rows, prefer: 'resolution=merge-duplicates,return=minimal' })) },
-    /** Inserts a row that must be new. False when it already exists (409), true when inserted. */
-    async insertOnce(table, row) {
-      const res = await call('POST', table, { body: row, prefer: 'return=minimal' })
-      if (res.status === 409) return false
-      await must(res)
-      return true
-    },
-    async update(table, query, patch) { await must(await call('PATCH', `${table}?${query}`, { body: patch, prefer: 'return=minimal' })) },
-    async remove(table, query) { await must(await call('DELETE', `${table}?${query}`, { prefer: 'return=minimal' })) },
-  }
-}
-
-const q = v => encodeURIComponent(String(v))
-
-/** The signed-in user behind a request's bearer token: { id, email, anonymous }, or null. */
-async function userOf(req, env, fetchImpl) {
-  const auth = req.headers.get('authorization') || ''
-  if (!/^Bearer\s+\S+/i.test(auth)) return null
-  const res = await fetchImpl(String(env.SUPABASE_URL).replace(/\/+$/, '') + '/auth/v1/user', { headers: { apikey: secretKey(env), Authorization: auth } })
-  if (!res.ok) return null
-  const u = await res.json().catch(() => null)
-  if (!u || typeof u.id !== 'string') return null
-  return { id: u.id, email: typeof u.email === 'string' && u.email ? u.email : null, anonymous: u.is_anonymous === true }
-}
-
-/* What every browser-facing function does first. Returns a Response to send, or the user. */
-async function enter(req, env, fetchImpl) {
-  if (req.method === 'OPTIONS') return { response: new Response(null, { status: 204, headers: cors(env) }) }
-  if (req.method !== 'POST') return { response: fail(env, 405, 'method') }
-  const user = await userOf(req, env, fetchImpl)
-  if (!user) return { response: fail(env, 401, 'unauthorized') }
-  return { user }
-}
+import { secretKey, cors, json, fail, database, q, enter } from './http.js'
 
 const priceAllowed = (env, id) => typeof id === 'string' && String(env.STRIPE_PRICE_IDS || '').split(',').map(s => s.trim()).filter(Boolean).includes(id)
 const appUrl = (env, hash) => String(env.APP_ORIGIN).replace(/\/+$/, '') + '/#' + hash
@@ -206,3 +150,6 @@ export async function stripeWebhook(req, env, fetchImpl = fetch, nowSec = Math.f
   await db.update('webhook_events', `id=eq.${q(event.id)}`, { processed_at: new Date(nowSec * 1000).toISOString() })
   return new Response(JSON.stringify({ received: true, outcome }), { status: 200, headers: { 'Content-Type': 'application/json' } })
 }
+
+// Account export and deletion live in ./account.js; re-exported so one import still finds everything.
+export { exportAccount, deleteAccount } from './account.js'
