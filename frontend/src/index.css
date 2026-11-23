@@ -552,7 +552,6 @@ h4.sec{
 .lay-row.off .lay-name{color:var(--label-2)}
 .lay-row .seg{margin-inline-start:42px}
 .lay-move{display:contents}
-@media (prefers-reduced-transparency: reduce){.lay-row.held{box-shadow:0 0 0 1px var(--separator)}}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -803,6 +802,7 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
+  .lay-row.held{box-shadow:0 0 0 1px var(--separator)}
   #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,body::before{-webkit-backdrop-filter:none;backdrop-filter:none}
   .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
   .tr-bulk{background:var(--bg-el)}

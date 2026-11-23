@@ -91,6 +91,8 @@ export function useListReorder(count, onMove) {
     // The distance from one row to the next, gap included, is how far a passed row slides.
     const stride = rects.length > 1 ? Math.abs(rects[1].top - rects[0].top) || rects[0].height : rects[0].height
     gesture.current = { id: pointerId, el, from: i, to: i, y0: y, rects, stride }
+    // A bottom sheet the list sits in reads this and leaves the pull to the row (Modals.jsx).
+    listRef.current?.setAttribute('data-reordering', '')
     try { el.setPointerCapture?.(pointerId) } catch { /* unsupported, or the pointer is gone */ }
     setDrag({ from: i, to: i, dy: 0, stride })
     return true
@@ -119,6 +121,7 @@ export function useListReorder(count, onMove) {
     const g = gesture.current
     if (!g) return
     gesture.current = null
+    listRef.current?.removeAttribute('data-reordering')
     try { g.el.releasePointerCapture?.(g.id) } catch { /* already released */ }
     // Where every row is on screen right now is where the landing animation starts from.
     tops.current = measure()
