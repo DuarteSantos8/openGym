@@ -14,6 +14,17 @@ import './account.css'
 
 export const MIN_PASSWORD = 8
 
+// A reset link has been followed and the new password not yet chosen. Kept outside the
+// component because the app remounts a view when its address changes, and taking the link's hash
+// out of the address is such a change: component state alone would forget the step it had just
+// reached, and the person would land on their account without ever being asked for the password.
+let choosingPassword = false
+// Why a followed link failed (its code), kept for the same reason: the remount would otherwise
+// wipe the message, and a dead link would show nothing at all. Cleared by the next thing done.
+let linkFailure = null
+/** For tests: forget a followed link. */
+export const forgetLink = () => { choosingPassword = false; linkFailure = null }
+
 /** A refusal's code, in words. Anything not listed gets the general line: never the raw code. */
 export function wordFor(code) {
   switch (code) {
@@ -46,12 +57,13 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const nav = useNavigate()
   const tokenHash = params.get('token_hash'), linkType = params.get('type'), authorizationId = params.get('authorization_id')
   const [session, setSession] = useState(() => client?.auth.session() ?? null)
-  const [mode, setMode] = useState('signin')          // signin | signup | forgot | sent | newpass
+  const [mode, setModeState] = useState(() => (choosingPassword && client?.auth.session() ? 'newpass' : 'signin'))   // signin | signup | forgot | sent | newpass
+  const setMode = m => { choosingPassword = m === 'newpass'; setModeState(m) }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [word, setWord] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(() => (linkFailure ? wordFor(linkFailure) : ''))
   const [busy, setBusy] = useState(false)
   const [request, setRequest] = useState(null)
   const [ready, setReady] = useState(false)          // the profile has loaded: only then may the name be saved
@@ -65,6 +77,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
   /** Runs one action: busy while it does, its refusal in words, never two at once. */
   const run = async fn => {
     if (busy) return
+    linkFailure = null
     setBusy(true); setError('')
     try { await fn() } catch (e) { setError(wordFor(e?.code)) } finally { setBusy(false) }
   }
@@ -74,6 +87,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
     if (!client || !tokenHash || !linkType) return
     run(async () => {
       try { await client.auth.verify({ type: linkType, tokenHash }); if (linkType === 'recovery') setMode('newpass') }
+      catch (e) { linkFailure = e?.code || 'unknown'; throw e }
       finally { setParams(p => { p.delete('token_hash'); p.delete('type'); return p }, { replace: true }) }
     })
   }, [])
@@ -115,7 +129,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const passwordField = (auto, hint, fresh = false) => <label className="iv-acct-field"><span>{fresh ? t('New password') : t('Password')}</span>
     <TextField className="input" type="password" name="password" autoComplete={auto} required minLength={auto === 'new-password' ? MIN_PASSWORD : undefined} value={password} onChange={e => setPassword(e.target.value)} />
     {hint && <small>{t('At least 8 characters')}</small>}</label>
-  const swap = (to, label) => <button type="button" className="btn ghost sm" data-go={to} onClick={() => { setMode(to); setError(''); setPassword('') }}>{label}</button>
+  const swap = (to, label) => <button type="button" className="btn ghost sm" data-go={to} onClick={() => { linkFailure = null; setMode(to); setError(''); setPassword('') }}>{label}</button>
 
   if (session && request) return frame(t('Allow {0} to sign you in?', request.client?.name || t('Account')), t('Signed in as {0}', session.user.email), <div className="iv-acct-actions">
     <Button variant="primary" disabled={busy} type="button" data-allow="" onClick={() => run(async () => { const { redirectTo } = await client.auth.consent(authorizationId, true); if (redirectTo) go(redirectTo) })}>{t('Allow')}</Button>

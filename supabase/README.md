@@ -111,8 +111,12 @@ None of these can be done from the repository or by an agent; each is a setting 
 3. **Custom SMTP** (Authentication, Emails). Until then nobody but the owner receives a sign-up or reset email, and the sign-up form answers "that email address is not accepted" for anyone else.
 4. **Email templates.** Point the confirm and reset links at the app: `{{ .SiteURL }}/#/account?token_hash={{ .TokenHash }}&type=signup` and `…&type=recovery`. Set the Site URL and allowed redirect URLs to the app's address.
 5. **OAuth server** (Authentication, OAuth Server), for ADR 0013: switch it on, set the authorization path to `/#/account`, register one client whose redirect is `<the API's origin>/api/oidc/callback`.
-6. **`APP_ORIGIN`** as a function secret: the web app's origin. Without it a browser cannot call `export-account` or `delete-account` (they answer, but the browser's cross-origin check refuses the reply). One origin only for now.
-7. **The cloud build's variables** in Vercel: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Setting them turns that deployment into the Cloud edition; the default build has none of this code.
+6. ~~`APP_ORIGIN`~~ Set on 2026-11-23 to the cloud preview's origin, and checked: the functions answer that origin and no other. For the record, it is a function secret holding the web app's origin. Without it a browser cannot call `export-account` or `delete-account` (they answer, but the browser's cross-origin check refuses the reply). One origin only for now.
+7. ~~The cloud build's variables~~ Set on 2026-11-23 for the `next/cloud-preview` branch only (see "The cloud preview" below). For production they are still to set, in Vercel: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Setting them turns that deployment into the Cloud edition; the default build has none of this code.
+
+### The cloud preview
+
+The branch `next/cloud-preview` is the Cloud edition's preview deployment. Vercel builds it with `VITE_EDITION=cloud` and the project's address and publishable key, set as preview variables scoped to that one branch, so production and every other preview stay the default edition. The branch carries no changes of its own: bring it up to date with `git merge origin/main` and push. Its address is the branch's Vercel preview address, which is what `APP_ORIGIN`, the Site URL and the redirect URLs should name while it is the only cloud deployment.
 
 ## First deploy of the payment functions, in order (owner only; not run against real Stripe)
 

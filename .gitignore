@@ -11,6 +11,8 @@ data/
 
 # Build output / deps
 frontend/dist/
+# the Cloud edition's build, made by the E2E run (frontend/playwright.config.mjs)
+frontend/dist-cloud/
 node_modules/
 *.log
 .DS_Store
