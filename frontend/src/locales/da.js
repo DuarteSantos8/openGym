@@ -6253,4 +6253,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Skriv ordet delete for at bekræfte. Din konto fjernes og kan ikke gendannes.",
   "We sent a link to {0}. Open it on this device to continue.": "Vi har sendt et link til {0}. Åbn det på denne enhed for at fortsætte.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Ingen e-mail efter et minut? Adressen har måske allerede en konto: log ind, eller nulstil din adgangskode.",
+  "Sign in or create account": "Log ind eller opret en konto",
+  "Your training stays on this device. An account is for your plan and purchases.": "Din træning bliver på denne enhed. En konto er til dit abonnement og dine køb.",
 }

@@ -6316,4 +6316,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "A megerősítéshez írd be a delete szót. A fiókod törlődik, és nem állítható vissza.",
   "We sent a link to {0}. Open it on this device to continue.": "Küldtünk egy linket ide: {0}. Nyisd meg ezen az eszközön a folytatáshoz.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Egy perc után sincs e-mail? Lehet, hogy ehhez a címhez már tartozik fiók: jelentkezz be, vagy állítsd vissza a jelszavad.",
+  "Sign in or create account": "Bejelentkezés vagy fiók létrehozása",
+  "Your training stays on this device. An account is for your plan and purchases.": "Az edzéseid ezen az eszközön maradnak. A fiók a csomagodhoz és a vásárlásaidhoz kell.",
 }

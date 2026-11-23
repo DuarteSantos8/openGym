@@ -6368,4 +6368,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "اكتب كلمة delete للتأكيد. سيُحذف حسابك ولا يمكن استرجاعه.",
   "We sent a link to {0}. Open it on this device to continue.": "أرسلنا رابطًا إلى {0}. افتحه على هذا الجهاز للمتابعة.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "لم تصلك رسالة بعد دقيقة؟ قد يكون لهذا العنوان حساب بالفعل: سجّل الدخول أو أعد تعيين كلمة المرور.",
+  "Sign in or create account": "سجّل الدخول أو أنشئ حسابًا",
+  "Your training stays on this device. An account is for your plan and purchases.": "تمارينك تبقى على هذا الجهاز. الحساب لخطتك ومشترياتك.",
 }

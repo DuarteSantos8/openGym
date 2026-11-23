@@ -6310,4 +6310,6 @@ export default {
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Для підтвердження введи слово delete. Акаунт буде видалено, і повернути його не можна.",
   "We sent a link to {0}. Open it on this device to continue.": "Ми надіслали посилання на {0}. Відкрий його на цьому пристрої, щоб продовжити.",
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Лист не надійшов за хвилину? Можливо, ця адреса вже має обліковий запис: увійди або скинь пароль.",
+  "Sign in or create account": "Увійти або створити обліковий запис",
+  "Your training stays on this device. An account is for your plan and purchases.": "Твої тренування залишаються на цьому пристрої. Обліковий запис потрібен для тарифу й покупок.",
 }

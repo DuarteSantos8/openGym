@@ -34,11 +34,11 @@ function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) 
   return { auth, profiles, fn, set, user }
 }
 
-async function mount(client, { url = '/account', go = vi.fn() } = {}) {
+async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn() } = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  await act(async () => { root.render(<MemoryRouter initialEntries={[url]}><Account client={client} go={go} /></MemoryRouter>) })
+  await act(async () => { root.render(<MemoryRouter initialEntries={[url]}><Account client={client} go={go} enter={enter} /></MemoryRouter>) })
   await act(async () => {})
   return go
 }
@@ -286,6 +286,16 @@ describe('Account', () => {
     await mount(c)
     expect($('[data-continue]')).not.toBeNull()
     expect($('[data-continue]').textContent).toBe('Continue')
+  })
+
+  // Found by the owner on the real project: Continue went to the app's address and nothing more,
+  // so someone signed in to their account landed on the app's own sign-in screen.
+  it('Continue takes a signed-in person into the app, not just to its address', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    const enter = vi.fn()
+    await mount(c, { enter })
+    await click('[data-continue]')
+    expect(enter).toHaveBeenCalledTimes(1)
   })
 
   it('deleting needs the word, then deletes, signs out and returns to sign in', async () => {
