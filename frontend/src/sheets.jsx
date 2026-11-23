@@ -3279,7 +3279,7 @@ function EffortPicker({ kind, value, onPick, close, cardio = false }) {
         <div className="stp effcell-stp"
           style={curColor ? { color: curColor, background: `color-mix(in srgb, ${curColor} 20%, var(--surface-2))` } : undefined}>
           <button aria-label={t('Decrease')} onClick={() => set(stepEffort(kind, v, -1))}><Icon name="minus" /></button>
-          <span className="val"><NumberField decimal nullable value={v ?? ''} placeholder="–"
+          <span className="val"><NumberField decimal nullable value={v ?? ''} placeholder={t('Not set')}
             onChange={nv => set(capEffort(kind, nv))} /></span>
           <button aria-label={t('Increase')} onClick={() => set(stepEffort(kind, v, 1))}><Icon name="plus" /></button>
         </div>
