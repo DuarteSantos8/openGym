@@ -6,7 +6,7 @@
 .iv-acct::before{content:"";position:absolute;inset:-40px -20px auto;height:260px;z-index:-1;pointer-events:none;
   background:radial-gradient(60% 70% at 50% 0%,rgba(255,255,255,.05),transparent 70%);
   background:radial-gradient(60% 70% at 50% 0%,color-mix(in srgb,var(--acc) 14%,transparent),transparent 70%)}
-.iv-acct-eyebrow{margin:18px 0 6px;font-size:var(--fs-caption);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc-ink)}
+.iv-acct-eyebrow{margin:18px 0 6px;font-size:var(--fs-subhead);font-weight:600;color:var(--acc-ink)}
 .iv-acct-title{margin:0;font-size:var(--fs-large);line-height:var(--lh-tight);letter-spacing:var(--ls-large);font-weight:800;text-wrap:balance}
 .iv-acct-title:focus-visible{outline:none}
 .iv-acct-lead{margin:10px 0 0;color:var(--label-2);line-height:var(--lh-small);max-width:38ch}
@@ -26,7 +26,25 @@
 .iv-acct-who{margin:0 0 14px;color:var(--label-2);overflow-wrap:anywhere}
 .iv-acct-hint{margin:0 0 14px;color:var(--label-2);line-height:var(--lh-small);max-width:44ch}
 .iv-acct-who b{color:var(--label);font-weight:600}
-.iv-acct-danger{margin-top:22px;padding-top:16px;border-top:var(--hair) solid var(--sep)}
+/* Signed in: the way on first, then the one field, then plain rows. */
+.iv-acct-block{margin-top:20px;padding-top:18px;border-top:var(--hair) solid var(--sep)}
+.iv-acct-inline{display:flex;gap:8px;align-items:stretch}
+.iv-acct-inline>:first-child{flex:1 1 auto;min-width:0}
+.iv-acct-inline>.btn{flex:0 0 auto;width:auto;padding-inline:20px}
+.iv-acct-ok{margin:-6px 0 0;min-height:1.4em;font-size:var(--fs-footnote);font-weight:600;color:var(--acc-ink)}
+.iv-acct-list{margin-top:18px;border-radius:var(--r-lg);overflow:hidden;box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.iv-acct-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:0 14px;border:0;background:none;color:var(--label);font:inherit;font-size:var(--fs-callout);text-align:start;cursor:pointer}
+.iv-acct-row+.iv-acct-row{border-top:var(--hair) solid var(--sep)}
+.iv-acct-row svg{width:18px;height:18px;flex:none;color:var(--label-3);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.iv-acct-row:hover{background:var(--surface-2)}
+.iv-acct-row:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.iv-acct-row:disabled{opacity:.5;cursor:default}
+.iv-acct-danger{margin-top:18px}
+.iv-acct-danger>summary{display:inline-block;padding:10px 2px;font-size:var(--fs-subhead);color:var(--label-2);cursor:pointer;list-style:none}
+.iv-acct-danger>summary::-webkit-details-marker{display:none}
+.iv-acct-danger>summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:var(--r-sm)}
+.iv-acct-danger[open]>summary{color:var(--label)}
+.iv-acct-danger .iv-acct-form{margin-top:8px}
 @media (prefers-reduced-motion:no-preference){
   .iv-acct-panel{animation:iv-acct-in var(--med) var(--ease) both}
   @keyframes iv-acct-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}

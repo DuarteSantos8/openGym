@@ -6326,4 +6326,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "ผ่านไปหนึ่งนาทีแล้วยังไม่มีอีเมลใช่ไหม ที่อยู่นี้อาจมีบัญชีอยู่แล้ว: เข้าสู่ระบบ หรือรีเซ็ตรหัสผ่าน",
   "Sign in or create account": "เข้าสู่ระบบหรือสร้างบัญชี",
   "Your training stays on this device. An account is for your plan and purchases.": "การฝึกของคุณอยู่ในอุปกรณ์นี้ บัญชีมีไว้สำหรับแพ็กเกจและการซื้อของคุณ",
+  "Signed in as {0}. Your training is stored on this device.": "เข้าสู่ระบบในชื่อ {0} การฝึกของคุณเก็บไว้ในอุปกรณ์นี้",
 }

@@ -6281,4 +6281,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Po minutě žádný e-mail? Tato adresa už možná účet má: přihlas se, nebo si obnov heslo.",
   "Sign in or create account": "Přihlásit se nebo vytvořit účet",
   "Your training stays on this device. An account is for your plan and purchases.": "Tvůj trénink zůstává v tomto zařízení. Účet je pro tvůj tarif a nákupy.",
+  "Signed in as {0}. Your training is stored on this device.": "Přihlášen/a jako {0}. Tvůj trénink je uložený v tomto zařízení.",
 }

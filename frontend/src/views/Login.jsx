@@ -15,6 +15,7 @@ import { openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { openLostAccess } from '../components/LostAccess.jsx'
 import { oidcOn, oidcOnly, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText } from '../lib/oidc.js'
 import { isCloud } from '../lib/edition.js'
+import './first-screen.css'
 
 function RegisterSheet({ close }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
@@ -68,6 +69,10 @@ function RegisterSheet({ close }) {
     <Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
   </>
 }
+
+/** A line of short sentences, one to a row: "A. B. C." becomes ["A.", "B.", "C."]. Any script's
+    full stop counts; a line with none stays whole. */
+export const sentences = line => String(line || '').match(/[^.!?。！？]+[.!?。！？]*/g)?.map(s => s.trim()).filter(Boolean) || []
 
 /** To the account, through the router: that numbers the step in this session's history, which is
     how the account's Back can return here. Its own component so that only the Cloud edition's
@@ -133,13 +138,16 @@ export default function Login() {
   // opened from here, so those buttons would only fail. What works is the account, and this
   // device (ADR 0008, 0013). Where a server does answer, everything below is offered as before.
   if (isCloud() && !config) return (
-    <div className="narrow" style={wrap}>
-      {head}
-      <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
-      <AccountButton />
-      <div style={{ height: 10 }} />
-      {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
-      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Your training stays on this device. An account is for your plan and purchases.')}</div>
+    <div className="narrow iv-first">
+      <div className="iv-first-mark"><BrandLogo size={30} /></div>
+      {/* The statement is the screen: one sentence a line, set large. */}
+      <h1 className="iv-first-say">{sentences(t('Your workouts. Your weights. Your profile.')).map((line, i) => <span key={i}>{line}</span>)}</h1>
+      <p className="iv-first-lead">{t('Answer six questions for a plan that fits you, or pick one yourself.')}</p>
+      <div className="iv-first-do">
+        <AccountButton />
+        {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+      </div>
+      <p className="iv-first-note">{t('Your training stays on this device. An account is for your plan and purchases.')}</p>
     </div>
   )
 

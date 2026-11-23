@@ -6315,4 +6315,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "1분이 지나도 이메일이 오지 않나요? 이 주소로 이미 계정이 있을 수 있습니다. 로그인하거나 비밀번호를 재설정하세요.",
   "Sign in or create account": "로그인 또는 계정 만들기",
   "Your training stays on this device. An account is for your plan and purchases.": "운동 기록은 이 기기에 남습니다. 계정은 요금제와 구매를 위한 것입니다.",
+  "Signed in as {0}. Your training is stored on this device.": "{0}(으)로 로그인했습니다. 운동 기록은 이 기기에 저장됩니다.",
 }

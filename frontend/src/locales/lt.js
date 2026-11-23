@@ -6311,4 +6311,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Po minutės laiško vis dar nėra? Šis adresas galbūt jau turi paskyrą: prisijunk arba atkurk slaptažodį.",
   "Sign in or create account": "Prisijungti arba sukurti paskyrą",
   "Your training stays on this device. An account is for your plan and purchases.": "Tavo treniruotės lieka šiame įrenginyje. Paskyra skirta tavo planui ir pirkiniams.",
+  "Signed in as {0}. Your training is stored on this device.": "Prisijungta kaip {0}. Tavo treniruotės saugomos šiame įrenginyje.",
 }

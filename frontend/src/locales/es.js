@@ -6315,4 +6315,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "¿Ningún correo después de un minuto? Puede que esta dirección ya tenga una cuenta: inicia sesión o restablece tu contraseña.",
   "Sign in or create account": "Inicia sesión o crea una cuenta",
   "Your training stays on this device. An account is for your plan and purchases.": "Tu entrenamiento se queda en este dispositivo. La cuenta es para tu plan y tus compras.",
+  "Signed in as {0}. Your training is stored on this device.": "Sesión iniciada como {0}. Tu entrenamiento se guarda en este dispositivo.",
 }

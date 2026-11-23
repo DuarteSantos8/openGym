@@ -6,6 +6,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Account, { wordFor, forgetLink } from './Account.jsx'
 import { RESET_KEY } from '../../lib/cloud/pending-reset.js'
+import { cloudAccount, setCloudAccount } from '../../lib/account-badge.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, container
@@ -246,6 +247,43 @@ describe('Account', () => {
     expect(c.profiles.update).toHaveBeenCalledWith({ display_name: 'Samira' })
   })
 
+  // Found by the owner on the real project: Save was pressed eight times in a row. Every one of
+  // them was accepted by the server, and the screen showed nothing.
+  it('Save says that it saved, and has nothing to do until the name changes again', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    await mount(c)
+    expect($('[data-saved]').textContent).toBe('')
+    expect($('[data-save]').disabled).toBe(true)                 // "Sam" is what is saved already
+    await type('name', 'Samira')
+    expect($('[data-save]').disabled).toBe(false)
+    await click('[data-save]')
+    expect($('[data-saved]').textContent).toBe('Saved')
+    expect($('[data-saved]').getAttribute('role')).toBe('status')
+    expect($('[data-save]').disabled).toBe(true)
+    await type('name', 'Samira K')
+    expect($('[data-saved]').textContent).toBe('')
+    expect($('[data-save]').disabled).toBe(false)
+  })
+
+  it('a save that fails does not say Saved', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    c.profiles.update = vi.fn(async () => { throw err('network') })
+    await mount(c)
+    await type('name', 'Samira')
+    await click('[data-save]')
+    expect($('[data-saved]').textContent).toBe('')
+    expect($('[role="alert"]')).not.toBeNull()
+  })
+
+  it('the rest of the app hears the saved name', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    await mount(c)
+    await type('name', 'Samira')
+    await click('[data-save]')
+    expect(cloudAccount()).toEqual({ email: 'a@example.com', name: 'Samira' })
+    setCloudAccount(null)
+  })
+
   it('a profile that loads late does not write over a name already being typed', async () => {
     const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
     let arrive
@@ -279,8 +317,11 @@ describe('Account', () => {
     await submit('form')
     expect(c.profiles.update).not.toHaveBeenCalled()
     await act(async () => { arrive({ display_name: 'Sam' }) })
-    expect($('[data-save]').disabled).toBe(false)
     expect($('input[name="name"]').value).toBe('Sam')
+    // loaded now, and what is in the field is what is saved: Save has nothing to do yet
+    expect($('[data-save]').disabled).toBe(true)
+    await type('name', 'Sam K')
+    expect($('[data-save]').disabled).toBe(false)
   })
 
   it('offers a way on into the app from the account', async () => {

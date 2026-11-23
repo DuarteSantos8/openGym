@@ -6308,4 +6308,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "一分鐘後仍未收到電子郵件？這個地址可能已有帳號：請登入，或重設密碼。",
   "Sign in or create account": "登入或建立帳號",
   "Your training stays on this device. An account is for your plan and purchases.": "你的訓練資料留在這台裝置上。帳號用於你的方案和購買。",
+  "Signed in as {0}. Your training is stored on this device.": "已以 {0} 登入。你的訓練資料儲存在這台裝置上。",
 }

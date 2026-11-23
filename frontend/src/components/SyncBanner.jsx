@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { DEMO } from '../lib/demo.js'
 import { t } from '../lib/i18n.js'
 import { connectionView, actionLabel, syncNowWithToast, pairAgain, connectServer, signInAgain, useOnline } from './ServerSync.jsx'
+import { useCloudAccount } from '../lib/account-badge.js'
 import Icon from './Icon.jsx'
 
 // How long a change may sit unsent while the server is reachable before it is worth a word: the
@@ -41,7 +42,8 @@ function useConnection() {
     return () => clearTimeout(tm)
   }, [status])
 
-  const view = connectionView(sync, { online })
+  const account = useCloudAccount()      // Cloud edition: the line follows who is signed in
+  const view = connectionView(sync, { online, account })
   // Signed out on the web, the sign-in screen is the whole app: it hears only that the server
   // ended the session, and that the changes are still here.
   const show = !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
@@ -99,6 +101,7 @@ export default function SyncBanner() {
     // Signed in, or with a session the server ended: the passkey right here. A guest goes to
     // Settings, where signing in sits next to creating a profile.
     signin: () => (user || status === 'auth' ? signInAgain() : nav('/settings/account')),
+    account: () => nav('/account'),
   }[view.action]
   const label = actionLabel(view)
   const inner = <>

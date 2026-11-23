@@ -6281,4 +6281,5 @@ export default {
   "No email after a minute? This address may already have an account: sign in, or reset your password.": "Sau một phút vẫn chưa có email? Địa chỉ này có thể đã có tài khoản: hãy đăng nhập hoặc đặt lại mật khẩu.",
   "Sign in or create account": "Đăng nhập hoặc tạo tài khoản",
   "Your training stays on this device. An account is for your plan and purchases.": "Việc tập luyện của bạn nằm trên thiết bị này. Tài khoản dùng cho gói và các giao dịch mua của bạn.",
+  "Signed in as {0}. Your training is stored on this device.": "Đã đăng nhập với tên {0}. Việc tập luyện của bạn được lưu trên thiết bị này.",
 };
