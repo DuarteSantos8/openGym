@@ -216,6 +216,9 @@ export default function Account({ client = cloud(), go = url => { location.assig
     <div className="iv-acct-links">
       {swap(signup ? 'signin' : 'signup', signup ? t('Sign in') : t('Create account'))}
       {!signup && swap('forgot', t('Forgot password?'))}
+      {/* The way out for someone who will not sign in: an app installed to the home screen has no
+          browser back, and the first screen is where "Continue without account" is. */}
+      <button type="button" className="btn ghost sm" data-back="" onClick={() => nav('/home')}>{t('Back')}</button>
     </div>
   </>)
 }

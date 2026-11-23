@@ -147,6 +147,13 @@ test('the first screen offers the account and this device; signed in, Continue g
 
   await account.click()
   await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  // Not signing in after all: back to the first screen, where this device is offered. (An app
+  // installed to the home screen has no browser back to do this with.)
+  await page.click('[data-back]')
+  await expect(page.getByRole('button', { name: 'Continue without account' })).toBeVisible()
+  await account.click()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  expect(await serious(page)).toEqual([])
   await signIn(page)
   await expect(mode(page)).toHaveAttribute('data-mode', 'account')
   await page.click('[data-continue]')
