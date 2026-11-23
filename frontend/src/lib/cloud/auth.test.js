@@ -172,9 +172,35 @@ describe('staying signed in', () => {
     await auth.signOut()
     await auth.signIn('b@example.com', 'pw')
     land()
-    await pending
+    // Review of #63: whoever asked as A must never be handed B's token. A request made for A
+    // (deleting the account, say) would then act on B.
+    expect(await pending).toBeNull()
     expect(auth.session().user.id).toBe('u-b')
     expect(auth.session().access_token).toBe('at-b')
+  })
+
+  it('a refresh left over from the last account does not stand in for the new account\'s own', async () => {
+    const lands = []
+    const { auth, calls, tick } = setup({
+      'POST /auth/v1/token?grant_type=password': c => res(200, c.body.email === 'b@example.com' ? tokens({ access_token: 'at-b', refresh_token: 'rt-b', user: { id: 'u-b', email: 'b@example.com' } }) : tokens()),
+      'POST /auth/v1/token?grant_type=refresh_token': c => new Promise(r => { lands.push(() => r(res(200, c.body.refresh_token === 'rt-b' ? tokens({ access_token: 'at-b2', refresh_token: 'rt-b2', user: { id: 'u-b', email: 'b@example.com' } }) : tokens({ access_token: 'at-2', refresh_token: 'rt-2' })))) }),
+      'POST /auth/v1/logout': res(204, {}),
+    })
+    await auth.signIn('a@example.com', 'pw')
+    tick(3600_000)
+    const asA = auth.fresh()
+    await Promise.resolve()
+    await auth.signOut()
+    await auth.signIn('b@example.com', 'pw')
+    tick(3600_000)
+    const asB = auth.fresh()
+    await Promise.resolve()
+    expect(calls.filter(c => c.path.includes('refresh_token')).map(c => c.body.refresh_token)).toEqual(['rt-1', 'rt-b'])
+    lands.forEach(fn => fn())
+    expect(await asA).toBeNull()
+    expect(await asB).toBe('at-b2')
+    expect(auth.session().user.id).toBe('u-b')
+    expect(auth.session().refresh_token).toBe('rt-b2')
   })
 
   it('picks the session up again from storage, and ignores one that is not a session', async () => {
