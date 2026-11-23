@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Photos: a HEIF photo whose file names a newer brand first is read by the brands listed after it, instead of being refused as "That file type isn't supported". A likely cause of iPhone photos being refused in a workout (#1268); not yet confirmed on an iPhone.
 - Fixed: Gemini can add openGym as an MCP connector. It registers six return addresses and the server took at most five (#1297).
 - Zepp OS: the start screen offers every routine. With more than fit, they come in pages with ‹ and › at the bottom; before, only two more besides today's could be started from the wrist (#1479).
 - Fixed: on Android the file with what openGym read from Health Connect (sleep, heart rate variability, body composition and so on) no longer goes into the phone's Google backup or a transfer to a new phone. It was meant to stay on this phone.
