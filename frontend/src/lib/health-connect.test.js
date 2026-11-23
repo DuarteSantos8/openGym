@@ -106,7 +106,7 @@ describe('sessionRecord', () => {
     const rec = sessionRecord(workout([strength], { note: 'Felt strong.' }), { unit: 'kg', nameOf })
     expect(rec).toEqual({
       id: 'opengym-w-w1', start: at(18), end: at(19), type: 'strength_training', title: 'Push',
-      notes: 'Barbell Bench Press\n60×8, 60×8\n\nFelt strong.',
+      notes: 'Barbell Bench Press\n60 kg × 8, 60 kg × 8\n\nFelt strong.',
     })
   })
   it('leaves out a workout without real times instead of inventing them', () => {
