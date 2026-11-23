@@ -111,7 +111,8 @@ object WearStore {
     private var idleSnooze = 0L
     /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
     private var demoOn = false
-    private val picked = mutableMapOf<Int, Int>()
+    // Snapshot state, so the set page sees a set picked in the same exercise (a skipped one leaves no other trace).
+    private val picked = androidx.compose.runtime.mutableStateMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
     /** The id of the last set ticked here until a snapshot names it applied (the phone's rest for it is ours). */
     private var echoOf: String? = null
@@ -237,6 +238,8 @@ object WearStore {
         val before = _state.value
         val after = SessionCore.applySnapshot(before, snap, off)
         val gone = before.workout
+        // Another workout, or none: a removal held for Undo was the old one's (its Undo would point into this one).
+        if (gone?.id != after.workout?.id) { undo.flush(); clearRemoval() }
         // The phone ended the workout the watch had (finished or discarded there).
         if (gone != null && after.workout == null) {
             closeRest(now())
@@ -283,6 +286,8 @@ object WearStore {
         commit(after)
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
+        // A set logged on the phone ends a removal's Undo too (after commit: the release is on this state).
+        if (ticks.isNotEmpty()) flushRemoval()
         ticks.lastOrNull()?.let { followPhoneTick(it) }
         if (after.workout != null && after.workout != before.workout) noteActivity()
         loadTargets()
@@ -474,6 +479,8 @@ object WearStore {
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
     fun completeSet(heldFor: Double? = null) {
+        // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
+        flushRemoval()
         val s0 = _state.value
         val w = s0.workout ?: return
         val e = entry() ?: return
@@ -656,8 +663,10 @@ object WearStore {
         val h = undo.flush() ?: return
         clearRemoval()
         val (next, event) = SetMenu.release(_state.value, h.id)
-        commit(next)
+        // Queued before the held mark is cleared: the outbox is saved at once, the state a moment later, and
+        // a relaunch in between releases it again under the same id (the outbox keeps one).
         event?.let { PhoneLink.send(app, it) }
+        commit(next)
     }
 
     private fun clearRemoval() {

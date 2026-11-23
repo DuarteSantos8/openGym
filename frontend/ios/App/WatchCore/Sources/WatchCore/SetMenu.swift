@@ -179,8 +179,8 @@ enum SetMenu {
         edits.reduce(w) { apply($1, on: $0)?.0 ?? $0 }
     }
 
-    /// "exerciseId#setIndex" keys (skipped sets, efforts) and the place-keyed pending ticks
-    /// ("e<entry>:exerciseId#setIndex", or the 1.4.4 form) of one exercise moved to the rows' new
+    /// The keys of one exercise's rows (skipped sets and efforts, "n<copy>:exerciseId#setIndex";
+    /// pending ticks, "e<entry>:exerciseId#setIndex" or the 1.4.4 form) moved to the rows' new
     /// places; nil drops the key. Ticks keyed by the set's id ("s:<sid>") need no move.
     static func remapKeys(_ s0: SessionState, exId: String, entry: Int, map: (Int) -> Int?) -> SessionState {
         func move(_ k: String, _ prefix: String) -> String? {
@@ -191,11 +191,12 @@ enum SetMenu {
             parts[0] = String(n)
             return prefix + parts.joined(separator: "#")
         }
-        func plain(_ k: String) -> String? { move(k, exId + "#") }
+        let copy = s0.workout.map { w in w.entries.prefix(entry).filter { $0.id == exId }.count } ?? 0
+        func placed(_ k: String) -> String? { move(k, "n\(copy):\(exId)#") }
         var s = s0
-        s.skipped = s0.skipped.map { $0.compactMap(plain).sorted() }
-        s.efforts = s0.efforts.map { Dictionary($0.compactMap { k, v in plain(k).map { ($0, v) } }) { a, _ in a } }
-        s.pending = Dictionary(s0.pending.compactMap { k, v in (k.hasPrefix("e\(entry):") ? move(k, "e\(entry):\(exId)#") : plain(k)).map { ($0, v) } }) { a, _ in a }
+        s.skipped = s0.skipped.map { $0.compactMap(placed).sorted() }
+        s.efforts = s0.efforts.map { Dictionary($0.compactMap { k, v in placed(k).map { ($0, v) } }) { a, _ in a } }
+        s.pending = Dictionary(s0.pending.compactMap { k, v in move(k, k.hasPrefix("e\(entry):") ? "e\(entry):\(exId)#" : exId + "#").map { ($0, v) } }) { a, _ in a }
         return s
     }
 
@@ -256,7 +257,7 @@ enum SetMenu {
         return (ei, si)
     }
 
-    private static func find(_ w: ActiveWorkout, sid: String) -> (Int, Int)? {
+    static func find(_ w: ActiveWorkout, sid: String) -> (Int, Int)? {
         for (ei, e) in w.entries.enumerated() {
             if let si = e.sets.firstIndex(where: { $0.sid == sid }) { return (ei, si) }
         }

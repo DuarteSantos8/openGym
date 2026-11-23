@@ -196,7 +196,30 @@ object SessionCore {
             entries[ei].sets.indices.filter { si -> entries[ei].sets[si].let { it.done || it.sides?.let { d -> d.L.done || d.R.done } == true } }
                 .map { effortKey(entries, ei, it) }
         }.toSet()
-        return s.copy(workout = next, pending = pending, entryIndex = at, efforts = s.efforts?.filterKeys { it in rated })
+        val efforts = s.efforts?.let { followEfforts(it, s0.workout?.entries ?: emptyList(), entries) }
+        return s.copy(workout = next, pending = pending, entryIndex = at, efforts = efforts?.filterKeys { it in rated })
+    }
+
+    /**
+     * Ratings are keyed by place: each follows its set by the set's id from the rows it was keyed on to
+     * where that set is now (a replay that refuses a local move puts the rows back); a rating whose set is
+     * gone is dropped, one on a set without an id keeps its place.
+     */
+    private fun followEfforts(m: Map<String, Double>, from: List<Entry>, to: List<Entry>): Map<String, Double> {
+        val out = LinkedHashMap<String, Double>()
+        for ((k, v) in m) {
+            // effortKey: "<exId>@<nth>#<set>"
+            val at = k.lastIndexOf('@')
+            val parts = k.substring(at + 1).split("#")
+            val nth = parts[0].toIntOrNull()
+            val si = parts.getOrNull(1)?.toIntOrNull()
+            val ei0 = if (at < 0 || nth == null) null else from.indices.filter { from[it].id == k.substring(0, at) }.getOrNull(nth)
+            val sid = if (ei0 == null || si == null) null else from[ei0].sets.getOrNull(si)?.sid
+            if (sid == null) { out.putIfAbsent(k, v); continue }
+            val ei1 = to.indices.firstOrNull { ei -> to[ei].sets.any { it.sid == sid } } ?: continue
+            out.putIfAbsent(effortKey(to, ei1, to[ei1].sets.indexOfFirst { it.sid == sid }), v)
+        }
+        return out
     }
 
     /** One side of a per-side set done, the row following both sides (the phone's syncSideAggregate). */
@@ -267,6 +290,7 @@ object SessionCore {
      * first (the Apple Watch's phoneTicks). A set the watch ticked itself is done in `before`
      * already, so only the phone's show up; one without the phone's `at` is left out (no time to
      * measure up to). One side of a per-side set counts too: the row's `at` is that side's tick.
+     * A set is matched by its id, so sets the phone moves are no tick; one without an id by place.
      */
     fun phoneTicks(before: ActiveWorkout?, after: ActiveWorkout?): List<PhoneTick> {
         val b = before ?: return emptyList()
@@ -275,10 +299,12 @@ object SessionCore {
         if (wid != b.id) return emptyList()
         val out = mutableListOf<PhoneTick>()
         a.entries.forEachIndexed { ei, e ->
-            val old = b.entries.getOrNull(ei)?.takeIf { it.id == e.id }?.sets ?: return@forEachIndexed
+            val old = b.entries.getOrNull(ei)?.takeIf { it.id == e.id }?.sets.orEmpty()
             e.sets.forEachIndexed { si, row ->
                 val at = row.at ?: return@forEachIndexed
-                val was = old.getOrNull(si) ?: return@forEachIndexed
+                val sid = row.sid?.takeIf { it.isNotEmpty() }
+                val was = (if (sid != null) b.entries.flatMap { it.sets }.firstOrNull { it.sid == sid } else old.getOrNull(si))
+                    ?: return@forEachIndexed
                 val newSide = listOf("L", "R").any { row.sides?.get(it)?.done == true && was.sides?.get(it)?.done != true }
                 if ((row.done && !was.done) || newSide) out += PhoneTick(e.id, ei, si, at, row.sid)
             }

@@ -576,6 +576,7 @@ struct TimeBar: View {
     let end: Date
     var color: Color
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: dimmed ? 1 : 0.25)) { ctx in
@@ -584,7 +585,7 @@ struct TimeBar: View {
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.surface2)
                     Capsule().fill(color.opacity(dimmed ? 0.6 : 1)).frame(width: max(0, g.size.width * left))
-                        .animation(dimmed ? nil : .spring(response: 0.35, dampingFraction: 0.7), value: end) // ±15 slides, not jumps
+                        .animation(dimmed || reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.7), value: end) // ±15 slides, not jumps
                 }
             }
         }

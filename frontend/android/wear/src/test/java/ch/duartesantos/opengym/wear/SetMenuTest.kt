@@ -164,6 +164,51 @@ class SetMenuTest {
         assertEquals(listOf("n0:x#1"), s.skipped); assertEquals(mapOf("x@0#1" to 8.0), s.efforts)
     }
 
+    @Test fun aWarmupMoveRemapsAPendingTickByPlace() {
+        // no ids: the tick on the 60 is kept by its place, which the warm-up moves
+        val (t, _) = SessionCore.tick(state(listOf(row(), row(w = 50.0), row(w = 70.0))), 0, 0, w = 65.0, r = 8.0, at = 4.0, id = "t1")
+        val (s1, _) = SetMenu.mark(t, 0, 1, MarkKind.WARMUP, true, 5.0, "m1")
+        assertEquals(setOf("n0:x#1"), s1.pending.keys)
+        // an older snapshot: the move is replayed and the tick stays on the 60, not the 50 now in its old place
+        val s2 = SessionCore.applySnapshot(s1, snap(workout(listOf(row(), row(w = 50.0), row(w = 70.0)))))
+        assertEquals(listOf(50.0, 65.0, 70.0), rows(s2).map { it.w }); assertEquals(listOf(false, true, false), rows(s2).map { it.done })
+    }
+
+    @Test fun aRatingStaysOnItsSetWhenTheReplayRefusesAMove() {
+        val done = listOf(row(done = true, sid = "a").copy(at = 1.0), row(done = true, sid = "b", w = 50.0).copy(at = 2.0), row(sid = "c", w = 70.0))
+        val s0 = state(done).copy(efforts = mapOf("x@0#0" to 8.0))
+        val (s1, _) = SetMenu.mark(s0, 0, 1, MarkKind.WARMUP, true, 5.0, "m1")   // "b" to the top, "a"'s rating to place 1
+        assertEquals(mapOf("x@0#1" to 8.0), s1.efforts)
+        // the phone made "b" a drop set meanwhile: the warm-up is refused there and here, "a" is back at place 0
+        val there = done.toMutableList().also { it[1] = it[1].copy(drops = 1) }
+        val s2 = SessionCore.applySnapshot(s1, snap(workout(there)))
+        assertEquals(listOf("a", "b", "c"), rows(s2).map { it.sid })
+        assertEquals(mapOf("x@0#0" to 8.0), s2.efforts)
+    }
+
+    @Test fun aTickOnARowAWarmupMovedStaysOnItWhenTheReplayRefusesTheMove() {
+        val sets = listOf(row(sid = "a"), row(sid = "b", w = 40.0), row(sid = "c", w = 70.0))
+        val (s1, _) = SetMenu.mark(state(sets), 0, 1, MarkKind.WARMUP, true, 5.0, "m1")   // [b, a, c]
+        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 60.0, r = 8.0, at = 6.0, id = "t1")    // the displaced 60
+        // the phone made "b" a drop set without moving it: the warm-up is refused, the tick stays on "a"
+        val there = sets.toMutableList().also { it[1] = it[1].copy(drops = 1) }
+        val s3 = SessionCore.applySnapshot(s2, snap(workout(there)))
+        assertEquals(listOf("a", "b", "c"), rows(s3).map { it.sid })
+        assertEquals(listOf(true, false, false), rows(s3).map { it.done }); assertEquals(40.0, rows(s3)[1].w!!, 0.0)
+    }
+
+    @Test fun aTickDoesNotChangeWhatALaterAddCopied() {
+        val sets = listOf(row(sid = "a"), row(sid = "b"))
+        val (s1, _) = SetMenu.addSet(state(sets), 0, 5.0, "a1", sid = "w1")
+        val (s2, _) = SetMenu.addSet(s1, 0, 6.0, "a2", sid = "w2")
+        val (s3, _) = SessionCore.tick(s2, 0, 2, w = 70.0, r = 6.0, at = 7.0, id = "t1")
+        val (s4, _) = SetMenu.mark(s3, 0, 3, MarkKind.FAILURE, true, 8.0, "m1")
+        val s5 = SessionCore.applySnapshot(s4, snap(workout(sets)))   // the phone has none of it yet
+        val w2 = rows(s5).first { it.sid == "w2" }
+        assertEquals(60.0, w2.w!!, 0.0); assertEquals(8.0, w2.r!!, 0.0); assertEquals(true, w2.failure)
+        assertEquals(70.0, rows(s5).first { it.sid == "w1" }.w!!, 0.0)
+    }
+
     @Test fun warmupOffGoesToTheEdgeOfTheWarmups() {
         val s0 = state(listOf(row(warmup = true), SetRow(w = 30.0, r = 5.0, warmup = true), row()))
         val (s, _) = SetMenu.mark(s0, 0, 0, MarkKind.WARMUP, false, 5.0, "m1")

@@ -183,7 +183,7 @@ object SetMenu {
         if (ref == null || ref.entry != ei) ref else remapSet(ref.set, moved)?.let { SetRef(ei, it) }
 
     /**
-     * The keys of entry [ei] that name a set by its place (skips of a set without an id, efforts)
+     * The keys of entry [ei] that name a set by its place (skips and pending ticks of a set without an id, efforts)
      * moved to the rows' new places; null drops the key. Keys by the set's id need no move.
      */
     fun remapKeys(s: SessionState, ei: Int, map: (Int) -> Int?): SessionState {
@@ -205,7 +205,9 @@ object SetMenu {
             for ((k, v) in m) move(k, rate)?.let { out.putIfAbsent(it, v) }
             out
         }
-        return s.copy(skipped = s.skipped.mapNotNull { move(it, skip) }.sorted(), efforts = efforts)
+        val pending = LinkedHashMap<String, PendingTick>()
+        for ((k, v) in s.pending) move(k, skip)?.let { pending[it] = v }
+        return s.copy(skipped = s.skipped.mapNotNull { move(it, skip) }.sorted(), efforts = efforts, pending = pending)
     }
 
     /**

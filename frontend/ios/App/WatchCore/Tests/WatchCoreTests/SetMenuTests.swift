@@ -140,12 +140,12 @@ final class SetMenuTests: XCTestCase {
 
     func testAWarmupMoveKeepsTheSetsIdAndItsPendingTickFollows() {
         var s0 = state(abc)
-        s0.skipped = ["x#2"]
+        s0.skipped = ["n0:x#2"]
         let (t, _) = SessionCore.tick(s0, entry: 0, set: 1, w: 50, r: 8, at: 4, id: "t1")   // "b" done here
         let (s1, ev) = SetMenu.mark(t, entry: 0, set: 1, .warmup, on: true, at: 5, id: "m1")
         XCTAssertEqual(ev?["warmup"] as? Bool, true)
         XCTAssertEqual(rows(s1).map(\.sid), ["b", "a", "c"]); XCTAssertTrue(rows(s1)[0].warmup)
-        XCTAssertEqual(s1.skipped, ["x#2"])
+        XCTAssertEqual(s1.skipped, ["n0:x#2"])
         XCTAssertNotNil(s1.pending["s:b"])
         // the phone has neither yet: the move is replayed, and the tick lands on "b" where it is now
         let s2 = SessionCore.applySnapshot(s1, snap(workout(abc)))
@@ -158,11 +158,23 @@ final class SetMenuTests: XCTestCase {
 
     func testAWarmupMoveRemapsSkippedAndEfforts() {
         var s0 = state(abc)
-        s0.skipped = ["x#0"]
-        s0.efforts = ["x#0": 8]
+        s0.skipped = ["n0:x#0"]
+        s0.efforts = ["n0:x#0": 8]
         let (s, _) = SetMenu.mark(s0, entry: 0, set: 2, .warmup, on: true, at: 5, id: "m1")   // "c" to the top
         XCTAssertEqual(rows(s).map(\.sid), ["c", "a", "b"])
-        XCTAssertEqual(s.skipped, ["x#1"]); XCTAssertEqual(s.efforts, ["x#1": 8])
+        XCTAssertEqual(s.skipped, ["n0:x#1"]); XCTAssertEqual(s.efforts, ["n0:x#1": 8])
+    }
+
+    func testARatingStaysOnItsSetWhenTheReplayRefusesAMove() {
+        var s0 = state([row(done: true, sid: "a"), row(sid: "b", w: 50), row(sid: "c", w: 70)])
+        s0.efforts = ["n0:x#0": 8]
+        let (s1, _) = SetMenu.mark(s0, entry: 0, set: 2, .warmup, on: true, at: 5, id: "m1")   // "c" to the top, "a"'s rating to place 1
+        XCTAssertEqual(s1.efforts, ["n0:x#1": 8])
+        // the phone made "c" a drop set meanwhile: the warm-up is refused there and here, "a" is back at place 0
+        var there = rows(s0); there[2].drops = 1
+        let s2 = SessionCore.applySnapshot(s1, snap(workout(there)))
+        XCTAssertEqual(rows(s2).map(\.sid), ["a", "b", "c"])
+        XCTAssertEqual(s2.efforts, ["n0:x#0": 8])
     }
 
     func testAWarmupMoveRemapsAPendingTickKeyedByPlace() {
@@ -226,16 +238,16 @@ final class SetMenuTests: XCTestCase {
 
     func testAHeldRemovalIsReplayedAndUndoPutsTheSetBack() throws {
         var s0 = state(abc)
-        s0.skipped = ["x#2"]
+        s0.skipped = ["n0:x#2"]
         let s1 = try XCTUnwrap(SetMenu.removeSet(s0, entry: 0, set: 1, at: 5, id: "r1"))
-        XCTAssertEqual(rows(s1).map(\.sid), ["a", "c"]); XCTAssertEqual(s1.skipped, ["x#1"])
+        XCTAssertEqual(rows(s1).map(\.sid), ["a", "c"]); XCTAssertEqual(s1.skipped, ["n0:x#1"])
         XCTAssertEqual(SetMenu.held(s1), ["r1"])
         // a snapshot meanwhile does not bring it back, nor end the Undo
         let s2 = SessionCore.applySnapshot(s1, snap(workout(abc)))
         XCTAssertEqual(rows(s2).map(\.sid), ["a", "c"]); XCTAssertEqual(SetMenu.held(s2), ["r1"])
         // Undo: the set in its place, nothing to send
         let u = SetMenu.undo(s2, id: "r1")
-        XCTAssertEqual(rows(u).map(\.sid), ["a", "b", "c"]); XCTAssertNil(u.edits); XCTAssertEqual(u.skipped, ["x#2"])
+        XCTAssertEqual(rows(u).map(\.sid), ["a", "b", "c"]); XCTAssertNil(u.edits); XCTAssertEqual(u.skipped, ["n0:x#2"])
         // or its time is over: it goes out, by the set's id, and stays until acked
         let (s3, ev) = SetMenu.release(s2, id: "r1")
         XCTAssertEqual(ev?["type"] as? String, "removeSet"); XCTAssertEqual(ev?["sid"] as? String, "b"); XCTAssertEqual(ev?["setIdx"] as? Int, 1)
