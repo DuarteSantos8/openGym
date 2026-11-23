@@ -155,6 +155,7 @@ struct SummaryView: View {
         let date = summary.endedAt.map { Date(timeIntervalSince1970: $0 / 1000).formatted(.dateTime.day().month(.abbreviated).year().locale(locale)) }
         // VoiceOver: the whole medal, front and back, in one sentence.
         var spoken = [store.L(summary.endedOnPhone ? "Ended on your iPhone" : "Workout saved"), summary.name]
+        if let d = date { spoken.append(d) }
         if let d = summary.duration { spoken.append(Self.spokenDuration(d, locale: locale)) }
         spoken.append(k == 0 ? String(format: store.L("%@ sets"), sets)
                       : legend + ": " + summary.prs.joined(separator: ", "))

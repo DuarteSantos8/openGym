@@ -96,7 +96,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
-    @Published private(set) var summary: WorkoutSummary?
+    @Published private(set) var summary: WorkoutSummary? {
+        didSet { if summary == nil { Haptics.cancelFinished() } }   // the medal's taps stop with its screen
+    }
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
     @Published private(set) var queued = 0
@@ -1811,17 +1813,25 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  */
 enum Haptics {
     private static var device: WKInterfaceDevice { WKInterfaceDevice.current() }
-    private static func play(_ steps: [(Double, WKHapticType)]) {
+    private static var finishedTaps: [DispatchWorkItem] = []
+    @discardableResult
+    private static func play(_ steps: [(Double, WKHapticType)]) -> [DispatchWorkItem] {
+        var later: [DispatchWorkItem] = []
         for (delay, type) in steps {
-            if delay == 0 { device.play(type) } else { DispatchQueue.main.asyncAfter(deadline: .now() + delay) { device.play(type) } }
+            if delay == 0 { device.play(type); continue }
+            let item = DispatchWorkItem { device.play(type) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+            later.append(item)
         }
+        return later
     }
+    static func cancelFinished() { finishedTaps.forEach { $0.cancel() }; finishedTaps = [] }
     static func done() { play([(0, .success)]) }
     static func side() { play([(0, .click)]) }
     static func restOver() { play([(0, .notification), (0.45, .notification), (0.9, .directionUp)]) }
     static func start() { play([(0, .start)]) }
     static func finished(records: Int) {
-        play(Medal.beats(records: records).map { b -> (Double, WKHapticType) in
+        finishedTaps = play(Medal.beats(records: records).map { b -> (Double, WKHapticType) in
             (b.at, b.beat == .strike ? .stop : b.beat == .settled ? .success : .directionUp)
         })
     }
