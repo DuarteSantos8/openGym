@@ -202,8 +202,8 @@ describe('exerciseCandidates: what a name could mean, for a caller that must not
     expect(exerciseCandidates('Bench Press (Barbell)')).toEqual({ id: '0025', candidates: [], kind: 'alias' })
   })
   it('an exact name the catalogue spells twice is every entry, not the first (matchExercise keeps the first)', () => {
-    expect(exerciseCandidates('lever chest press')).toEqual({ id: null, candidates: ['0576', '0577'], kind: 'exact' })
-    expect(matchExercise('lever chest press')).toBe('0576')
+    expect(exerciseCandidates('ez barbell spider curl')).toEqual({ id: null, candidates: ['0454', '1628'], kind: 'exact' })
+    expect(matchExercise('ez barbell spider curl')).toBe('0454')
   })
   it('several equally near entries are candidates, the closest first', () => {
     // ("plank" was the example until the 1.4.4 importers gave it an alias: the front plank.)

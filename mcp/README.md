@@ -117,7 +117,7 @@ device shows it within half a minute. Asking for the same thing twice logs it on
 Exercise names are matched the way a CSV import matches them. A common name resolves to the
 library's default variant ("shoulder press" is the barbell one, "leg press" the 45° sled), and the
 reply shows what it was matched to so the LLM can check with you. What it will not do is pick
-between two entries: "lever chest press" is two in the library, and a name like that, or one that
+between two entries: "ez barbell spider curl" is two in the library, and a name like that, or one that
 matches nothing, comes back as a question with candidates. It only creates one of your own
 exercises when you confirm the library has none.
 
