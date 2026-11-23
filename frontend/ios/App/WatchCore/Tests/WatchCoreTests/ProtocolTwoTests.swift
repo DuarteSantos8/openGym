@@ -248,6 +248,15 @@ final class ProtocolTwoTests: XCTestCase {
         XCTAssertEqual(SessionCore.phoneTicks(before, after).first?.sid, "s1")
     }
 
+    // CodeRabbit #1185: sets the phone moves are no tick, or a removal's Undo ends early.
+    func testSetsMovedOnThePhoneAreMatchedByTheirId() {
+        let before = workout("w1", [entry("a", [row(60, 8, done: true, at: 5, sid: "s1"), row(60, 8, sid: "s2")])])
+        let moved = workout("w1", [entry("a", [row(60, 8, sid: "s2"), row(60, 8, done: true, at: 5, sid: "s1")])])
+        XCTAssertEqual(SessionCore.phoneTicks(before, moved), [])
+        let ticked = workout("w1", [entry("a", [row(60, 8, done: true, at: 9, sid: "s2"), row(60, 8, done: true, at: 5, sid: "s1")])])
+        XCTAssertEqual(SessionCore.phoneTicks(before, ticked), [SessionCore.PhoneTick(exId: "a", entryIdx: 0, setIdx: 0, at: 9, sid: "s2")])
+    }
+
     /* ---------- #1101: a phone tick on any exercise moves the watch ---------- */
 
     func testAPhoneTickOnAnotherExerciseMovesTheWatchThere() {

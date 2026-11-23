@@ -165,6 +165,18 @@ final class SetMenuTests: XCTestCase {
         XCTAssertEqual(s.skipped, ["n0:x#1"]); XCTAssertEqual(s.efforts, ["n0:x#1": 8])
     }
 
+    func testARatingStaysOnItsSetWhenTheReplayRefusesAMove() {
+        var s0 = state([row(done: true, sid: "a"), row(sid: "b", w: 50), row(sid: "c", w: 70)])
+        s0.efforts = ["n0:x#0": 8]
+        let (s1, _) = SetMenu.mark(s0, entry: 0, set: 2, .warmup, on: true, at: 5, id: "m1")   // "c" to the top, "a"'s rating to place 1
+        XCTAssertEqual(s1.efforts, ["n0:x#1": 8])
+        // the phone made "c" a drop set meanwhile: the warm-up is refused there and here, "a" is back at place 0
+        var there = rows(s0); there[2].drops = 1
+        let s2 = SessionCore.applySnapshot(s1, snap(workout(there)))
+        XCTAssertEqual(rows(s2).map(\.sid), ["a", "b", "c"])
+        XCTAssertEqual(s2.efforts, ["n0:x#0": 8])
+    }
+
     func testAWarmupMoveRemapsAPendingTickKeyedByPlace() {
         let (t, _) = SessionCore.tick(state([row(), row(w: 50), row(w: 70)]), entry: 0, set: 1, w: 50, r: 8, at: 4, id: "t1")   // no ids: keyed "e0:x#1"
         XCTAssertNotNil(t.pending["e0:x#1"])
