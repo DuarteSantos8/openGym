@@ -7,9 +7,10 @@
 // src/lib/garmin-contract.test.js fails when the constants and field names below stop matching
 // the Monkey C sources. Change one, change the other.
 //
-// Left out (they do not touch the link): per-side sets, holds, the rest's buzzes and ring, the
+// Left out (they do not touch the link): per-side sets, the rest's buzzes and ring, the
 // Instinct's 6-set outbox, drawing. The rest itself is in (protocol 2, docs/WATCH_SYNC.md "One
-// rest"): Core.tickRest, restEvent and followRest, Rest.add / skip and the rest running out.
+// rest"): Core.tickRest, restEvent and followRest, Rest.add / skip and the rest running out. So
+// is a hold (Actions.holdStart / holdTick), as far as the set it logs at its end.
 
 export const EV_KEYS = ['id', 'type', 'at', 'wid', 'exId', 'entryIdx', 'setIdx', 'w', 'r', 'sec', 'side', 'hr', 'rir', 'rpe', 'routineIds', 'sid', 'restEnd', 'endsAt', 'off']
 export const BATCH = 4            // Link.flush: events per message
@@ -113,6 +114,7 @@ export class GarminWatch {
     this.ask = true
     this.quiet = 0
     this.ended = null
+    this.hold = null
     this.sentMessages = 0
     this.n = 0
   }
@@ -412,6 +414,15 @@ export class GarminWatch {
     this.save()
     return ev
   }
+  /** Actions.holdStart: a hold of `sec` s on the set up now; at zero it logs itself, its rest `rest` s. */
+  holdStart (sec, rest = 0) { this.hold = { from: this.now(), sec, rest, up: this.upNow() } }
+
+  /** Actions.upNow: the set up now (Core.pkey), what a hold is for. */
+  upNow () {
+    const e = this.entryAt(this.s.pos), si = this.setIndex(this.s.pos)
+    return e && si != null ? pkey(e, this.s.pos, si) : null
+  }
+
   /** Seconds left on the rest here (Rest.left), or null. */
   restLeft () {
     const s = this.s
@@ -454,6 +465,7 @@ export class GarminWatch {
     s.p = {}; s.sk = []; s.pos = 0; s.rest = null; s.rh = null; s.ra = 0
     const ev = { id: this.newId(), type: 'start', routineIds: arrOf(session.routineIds), wid, at }
     this.ended = null
+    this.hold = null   // Actions.reset
     this.send(ev)
     this.save()
     return ev
@@ -472,6 +484,7 @@ export class GarminWatch {
     const ev = { id: this.newId(), type: discard ? 'discard' : 'finish', wid, at }
     this.send(ev)
     this.ended = discard ? null : { ended: false }
+    this.hold = null   // Actions.reset
     this.save()
     return ev
   }
@@ -526,6 +539,13 @@ export class GarminWatch {
   second () {
     // Rest.tick: the rest runs out by itself (nothing is sent)
     if (isNum(this.s.rest) && this.s.rest <= this.nowMs()) this.s.rest = null
+    // Actions.holdTick: at zero the hold logs the set up now (Actions.logHold)
+    const h = this.hold
+    if (h && this.now() - h.from >= h.sec * 1000) {
+      this.hold = null
+      const pos = this.s.pos, si = this.setIndex(pos)
+      if (si != null) this.tick(pos, si, this.entryAt(pos).sets[si].w ?? null, null, { rest: h.rest })
+    }
     const now = this.now()
     if (this.busy && now - this.began > GIVE_UP_MS) { this.busy = false; this.gen += 1 }
     if (this.busy) return
@@ -565,10 +585,12 @@ export class GarminWatch {
     if (!dictOf(data)) return
     const ended = this.applySnapshot(data)
     if (ended) this.ended = ended
-    // Actions.followTick: the phone ticked a set, the watch moves on as its own Done would
-    else if (this.ptick && dictOf(this.s.w)) {
-      const to = this.next(this.ptick[0])
-      if (!(to >= this.entries().length && this.hasMore()) && to !== this.s.pos) this.s.pos = to
+    // Actions.followTick: the set a hold runs for, logged on the phone, ends the hold here unlogged;
+    // the phone ticked a set, the watch moves on as its own Done would (not while a hold runs)
+    else if (dictOf(this.s.w)) {
+      if (this.hold && this.hold.up !== this.upNow()) this.hold = null
+      const to = this.ptick && !this.hold ? this.next(this.ptick[0]) : null
+      if (to != null && !(to >= this.entries().length && this.hasMore()) && to !== this.s.pos) this.s.pos = to
     }
     this.save()
     this.heard()

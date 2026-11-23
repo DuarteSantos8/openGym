@@ -783,6 +783,51 @@ describe('one rest, the two clocks, set ids (protocol 2, docs/WATCH_SYNC.md)', (
     expect(w.watch.setIndex(w.watch.s.pos)).toBe(1)
   })
 
+  it('a hold running on both ends first on the phone: the watch\'s ends with it, one set logged (Discord Mircuz)', async () => {
+    const w = world()
+    w.restSec = 60
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    // "Timed holds start by themselves": both count the hold of the first set in, the watch a moment later
+    w.watch.holdStart(30, 60)
+    await w.run(27)
+    // the phone's hold runs out first: its set is ticked there and its rest starts (Workout.jsx holdDone)
+    w.update(s => { Object.assign(s.active.entries[0].sets[0], { done: true, sec: 30, at: Date.now() }) })
+    w.ui.startRest(60)
+    await w.run(10)
+    expect(w.watch.hold).toBe(null)
+    expect(w.done()).toEqual(['0025'])
+    expect(w.setDone).toEqual([])
+    // the watch is on the next set, resting with the phone
+    expect(w.watch.setIndex(w.watch.s.pos)).toBe(1)
+    expect(apart(w)).toBeLessThan(1000)
+  })
+
+  it('a hold running when the watch discards the workout does not carry into the next one', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.holdStart(30, 60)
+    w.watch.finish(true)
+    expect(w.watch.hold).toBe(null)
+  })
+
+  it('the held set removed on the phone: the next set slides into its index, the watch\'s hold ends unlogged', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.holdStart(30, 60)
+    await w.run(5)
+    // same exercise, same index 0, another set (another sid)
+    w.update(s => { s.active.entries[0].sets.splice(0, 1) })
+    await w.run(30)
+    expect(w.watch.hold).toBe(null)
+    expect(w.done()).toEqual([])
+  })
+
   it('a set ticked on the phone moves the watch on, also on another exercise', async () => {
     const w = world()
     await w.launch()

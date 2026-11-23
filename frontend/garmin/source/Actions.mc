@@ -150,10 +150,19 @@ module Actions {
     function followTick() {
         var t = Core.ptick;
         Core.ptick = null;
+        // The set this hold runs for was logged on the phone (its own hold ended first): that is
+        // this hold's end too, not a second set on the one after it (Discord Mircuz).
+        if (G.hold != null && !Core.same(G.hold[2], upNow())) {
+            holdCancel();
+        }
         var s = G.state;
         var e = t == null ? null : Core.entryAt(s, t[0]);
         if (e == null) {
             return;
+        }
+        // A set logged on the phone during the 3-2-1: no hold starts on it, it would log the set again.
+        if (G.hcd != null && G.hold == null) {
+            holdCancel();
         }
         G.last = [e["id"], t[1], null];
         G.rated = null;
@@ -218,9 +227,22 @@ module Actions {
         G.hcd = null;
         Motion.stop();
         var sec = Ed.target();
-        G.hold = [System.getTimer(), sec == null || sec < 1 ? 30 : sec];
+        G.hold = [System.getTimer(), sec == null || sec < 1 ? 30 : sec, upNow()];
         Workout.newSet();
         WatchUi.requestUpdate();
+    }
+
+    //! The set up now, as its key (Core.pkey: the set's id, else its place), or null: what a hold is
+    //! for. A set removed on the phone leaves its place to the next one, which has another id.
+    (:big)
+    function upNow() {
+        var s = G.state;
+        var e = Core.entryAt(s, s["pos"]);
+        var si = Core.setIndex(s, s["pos"]);
+        if (e == null || si == null) {
+            return null;
+        }
+        return Core.pkey(e, s["pos"], si, Core.sideUp(Core.dictOf(Core.arrOf(e["sets"])[si])));
     }
 
     (:small)
