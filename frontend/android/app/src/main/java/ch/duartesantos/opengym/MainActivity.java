@@ -29,10 +29,13 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ChannelPlugin.class);
         FlavorPlugins.register(this);
         registerPlugin(PrintPlugin.class);
+        registerPlugin(SaveImagePlugin.class);
         registerPlugin(RestAlertPlugin.class);
+        registerPlugin(LiveActivityPlugin.class);
         registerPlugin(BackupFolderPlugin.class);
         registerPlugin(BarIconsPlugin.class);
         registerPlugin(DeviceAuthPlugin.class);
+        registerPlugin(OidcBrowserPlugin.class);
         registerPlugin(AnimationPacksPlugin.class);
         registerPlugin(NudgeCheckPlugin.class);
         registerPlugin(GymReminderPlugin.class);
@@ -40,8 +43,43 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NfcTagsPlugin.class);
         registerPlugin(WidgetBridgePlugin.class);
         registerPlugin(WatchBridgePlugin.class);
+        registerPlugin(OrientationPlugin.class);
+        registerPlugin(ReminderSoundPlugin.class);
+        // Text size "Like the phone": the system font scale goes to the page, not to the WebView's zoom.
+        registerPlugin(TextScalePlugin.class);
+        // Settings → Screen orientation (#821), before the first frame: no turn on the way in.
+        OrientationPlugin.applySaved(this);
         super.onCreate(savedInstanceState);
+        // After super: BridgeActivity swaps the splash theme for the app's own there, and the
+        // overlay has to go on top of that one (AccentTheme.java, #980).
+        AccentTheme.apply(this);
         passSystemBarsToPage();
+        stopOverscrollStretch();
+        hideScrollbars();
+    }
+
+    /**
+     * From Android 12 the WebView answers a pull past the top or the bottom of the page by
+     * stretching itself, all of it, as one picture. The tab bar is fixed to the bottom of that
+     * picture, so it stretched and bounced with the page instead of staying put like a native
+     * bar. The page asks for no overscroll effect already (index.css overscroll-behavior: none),
+     * but that stretch is the WebView's own and does not hear it. Off here, the page stops at its
+     * edges.
+     */
+    private void stopOverscrollStretch() {
+        if (getBridge() == null || getBridge().getWebView() == null) return;
+        getBridge().getWebView().setOverScrollMode(View.OVER_SCROLL_NEVER);
+    }
+
+    /**
+     * The bar that slides in at the edge while the page scrolls is the WebView's own as well, not
+     * the page's, so index.css cannot hide it (it already does for the strips that scroll inside
+     * the page). A phone app does not show one; neither does this.
+     */
+    private void hideScrollbars() {
+        if (getBridge() == null || getBridge().getWebView() == null) return;
+        getBridge().getWebView().setVerticalScrollBarEnabled(false);
+        getBridge().getWebView().setHorizontalScrollBarEnabled(false);
     }
 
     @Override
@@ -112,6 +150,11 @@ public class MainActivity extends BridgeActivity {
         bridge.addWebViewListener(new WebViewListener() {
             @Override
             public void onPageLoaded(WebView view) {
+                // A new document starts without the variables, even when the bars themselves
+                // have not moved since the last page. Forget what applyBars last passed so it
+                // writes them again (it skips an unchanged top/bottom).
+                barTop = -1;
+                barBottom = -1;
                 applyBars(view);
                 view.evaluateJavascript(keyboardScript(keyboard), null);
             }

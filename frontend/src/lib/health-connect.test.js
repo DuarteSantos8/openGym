@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { EXIDX } from './exercises.js'
+import { bodyKgFor } from './active-energy.js'
 import { exerciseType, goneIds, healthRecords, planSync, plannedType, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
 
 // #200: what the Android app writes to Health Connect, worked out from the state alone.
@@ -83,7 +84,7 @@ describe('the native tables', () => {
     for (const name of SESSION_TYPES) expect(s).toContain(`"${name}": .`)
   })
   it('Health Connect knows every type it has a constant for', () => {
-    const s = src('../../android/app/src/main/java/ch/duartesantos/opengym/HealthConnectPlugin.java')
+    const s = src('../../android/app/src/main/java/ch/duartesantos/opengym/HealthWrite.java')
     for (const name of SESSION_TYPES.filter(n => !['jump_rope', 'mixed_cardio', 'other_workout'].includes(n))) {
       expect(s).toContain(`case "${name}": return`)
     }
@@ -105,7 +106,7 @@ describe('sessionRecord', () => {
     const rec = sessionRecord(workout([strength], { note: 'Felt strong.' }), { unit: 'kg', nameOf })
     expect(rec).toEqual({
       id: 'opengym-w-w1', start: at(18), end: at(19), type: 'strength_training', title: 'Push',
-      notes: 'Barbell Bench Press\n60×8, 60×8\n\nFelt strong.',
+      notes: 'Barbell Bench Press\n60 kg × 8, 60 kg × 8\n\nFelt strong.',
     })
   })
   it('leaves out a workout without real times instead of inventing them', () => {
@@ -266,5 +267,112 @@ describe('writtenIds', () => {
   it('lists what this phone wrote, by type', () => {
     expect(writtenIds({ a: { k: 'session', h: '1' }, b: { k: 'weight', h: '2' }, c: { k: 'other' } }))
       .toEqual({ sessions: ['a'], weights: ['b'] })
+  })
+})
+
+// #881: Hevy history imported on the iPhone was written to Apple Health again, beside Hevy's own.
+describe('imported workouts and the health hub (#881)', async () => {
+  const { isImportedWorkout } = await import('./health-connect.js')
+  const { parseImport, mergeImport } = await import('./import-csv.js')
+  const opts = { nameOf: () => 'x' }
+  const mine = { id: 'mh2k3j4abcd', d: '2026-10-01', start: Date.UTC(2026, 9, 1, 8), end: Date.UTC(2026, 9, 1, 9), entries: [] }
+  it('a workout from another app\'s export is never written; one done here is', () => {
+    const imported = { id: 'iw3k2j1h0g', d: '2026-09-01', start: 1000, end: 4000000, entries: [] }
+    expect(isImportedWorkout(imported)).toBe(true)
+    expect(isImportedWorkout(mine)).toBe(false)
+    expect(healthRecords({ workouts: [imported, mine] }, opts).sessions.map(s => s.id)).toEqual(['opengym-w-' + mine.id])
+  })
+  it('what an import really brings carries the mark', () => {
+    const S = { workouts: [], customEx: [], exWeights: {}, bodyweight: [] }
+    const csv = 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n2026-09-01 18:00:00,Push,1h,Bench Press (Barbell),1,60,8,0,0,,,'
+    const parsed = parseImport(csv, {})
+    expect(parsed.kind).toBe('workouts')
+    mergeImport(S, parsed)
+    expect(S.workouts.length).toBe(1)
+    expect(S.workouts.every(isImportedWorkout)).toBe(true)
+    expect(healthRecords(S, opts).sessions).toEqual([])
+  })
+  it('a copy written before is taken out, and only openGym\'s own', () => {
+    const imported = { id: 'iwabc', d: '2026-09-01', start: 1000, end: 4000000, entries: [] }
+    const S = { workouts: [imported, mine] }
+    const written = { 'opengym-w-iwabc': { k: 'session', h: 'x' }, ['opengym-w-' + mine.id]: { k: 'session', h: 'y' } }
+    const plan = planSync(healthRecords(S, opts), written, goneIds(S))
+    expect(plan.remove.sessions).toEqual(['opengym-w-iwabc'])
+  })
+})
+
+// A set tick changes S.active only; every finished workout stays the same object (store/useStore.js
+// draftOf), so its record is kept and rebuilt only once something it is made from changes.
+describe('the record of a finished workout is kept between saves', async () => {
+  const { _setLangState } = await import('./i18n-core.js')
+  const opts = { nameOf, speedUnit: 'km', kcal: true, segments: true }
+  const S = { unit: 'kg', workouts: [workout([strength])], bodyweight: [{ d: '2026-09-17', w: 80, t: at(7) }] }
+  const first = () => healthRecords(S, opts).sessions[0]
+
+  it('a set tick reuses it', () => {
+    const was = first()
+    const ticked = { ...S, active: { id: 'a1', start: at(20), entries: [strength] } }
+    expect(healthRecords(ticked, opts).sessions[0]).toBe(was)
+  })
+  it('a changed workout is built again', () => {
+    const was = first()
+    const rec = healthRecords({ ...S, workouts: [{ ...S.workouts[0], name: 'Pull' }] }, opts).sessions[0]
+    expect(rec).not.toBe(was)
+    expect(rec.title).toBe('Pull')
+  })
+  it('a language switch builds it again', () => {
+    const was = first()
+    try {
+      _setLangState('de', { Superset: 'Supersatz' })
+      expect(first()).not.toBe(was)
+    } finally { _setLangState('en') }
+    expect(first()).toEqual(was)
+  })
+  it('a switch to two weight decimals builds it again', async () => {
+    const { setWeightDecimals } = await import('./format.js')
+    const S2 = { ...S, workouts: [workout([{ ...strength, sets: [{ w: 60.25, r: 8, done: true }] }])] }
+    expect(healthRecords(S2, opts).sessions[0].notes).toContain('60.3')
+    try {
+      setWeightDecimals(2)
+      expect(healthRecords(S2, opts).sessions[0].notes).toContain('60.25')
+    } finally { setWeightDecimals(1) }
+  })
+  it('a unit switch builds it again', () => {
+    const lb = healthRecords({ ...S, unit: 'lb' }, opts).sessions[0]
+    expect(lb).not.toBe(first())
+    expect(lb.kcal).toBeLessThan(first().kcal)   // the 80 on the scale is pounds now
+  })
+  it('a weigh-in that changes the body weight builds it again, with the new calories', () => {
+    const was = first()
+    const rec = healthRecords({ ...S, bodyweight: [{ d: '2026-09-17', w: 120, t: at(7) }] }, opts).sessions[0]
+    expect(rec).not.toBe(was)
+    expect(rec.kcal).toBeGreaterThan(was.kcal)
+  })
+  it('one left out for being ahead of the clock is written once its time comes', () => {
+    const w = workout([strength])
+    const early = at(18) - 3 * 24 * 3600e3
+    expect(healthRecords({ workouts: [w] }, { ...opts, now: early }).sessions).toEqual([])
+    expect(healthRecords({ workouts: [w] }, { ...opts, now: at(20) }).sessions).toHaveLength(1)
+  })
+  it('gives what building every record afresh gives, on a big history', () => {
+    const ids = ['0025', '0027', '0043', '0293', '0017', '0032', '3666', '2138']
+    const day = 24 * 3600e3, t0 = at(18) - 450 * day
+    const big = {
+      unit: 'kg',
+      bodyweight: Array.from({ length: 450 }, (_, i) => ({ d: new Date(t0 + i * day).toISOString().slice(0, 10), w: 80 + (i % 7), t: t0 + i * day })),
+      workouts: Array.from({ length: 450 }, (_, i) => ({
+        id: 'w' + i, start: t0 + i * day, end: t0 + i * day + 3600e3, name: 'Day ' + (i % 4), ...(i % 3 ? { bw: 82 } : {}),
+        entries: ids.slice(i % 4, (i % 4) + 4).map(id => id === '3666' || id === '2138' ? { ...treadmill, id } : { ...strength, id }),
+      })),
+    }
+    const fresh = () => ({
+      sessions: big.workouts.map(w => sessionRecord(w, { unit: 'kg', nameOf, speedUnit: 'km', kg: bodyKgFor(big, w), segments: true, customEx: big.customEx })).filter(Boolean),
+      weights: healthRecords({ ...big, workouts: [] }, opts).weights,
+    })
+    const want = planSync(fresh(), {})
+    healthRecords(big, opts)
+    const got = planSync(healthRecords({ ...big, active: {} }, opts), {})
+    expect(got).toEqual(want)
+    expect(planSync(healthRecords(big, opts), want.written).sessions).toEqual([])
   })
 })

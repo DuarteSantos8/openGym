@@ -5,10 +5,9 @@
 // belongs here and not in Admin.jsx: it is the only part of the feature that can be wrong in a way
 // a person sees, and as a plain module it is testable without mounting the dashboard.
 //
-// Like the rest of the admin screen this is English-only — the operator surface deliberately
-// stays out of the per-language string packs (see the header of views/Admin.jsx). Times still
-// follow the UI language, the way numbers and dates already do.
+// English source labels stay local to the operator surface and are translated by adminT.
 import { dateLocale } from './i18n-core.js'
+import { adminT } from './admin-i18n.js'
 
 // The first segment of an event name is also the filter chip it belongs to.
 export const auditCat = ev => String(ev || '').split('.')[0]
@@ -28,10 +27,28 @@ const LABELS = {
   'auth.pair.create': 'Created a pairing code',
   'auth.pair.ok': 'Paired a phone',
   'auth.pair.fail': 'Pairing failed',
+  // Sign-in with the identity provider (OIDC). `msg` on a failure is the check that refused it
+  // (state, nonce, expired, audience, issuer, signature, group, link-needed, ...).
+  'auth.oidc.ok': 'Signed in with the identity provider',
+  'auth.oidc.create': 'Created a profile through the identity provider',
+  'auth.oidc.app': 'Signed the phone app in through the identity provider',
+  'auth.oidc.link': 'Linked the identity provider',
+  'auth.oidc.unlink': 'Unlinked the identity provider',
+  'auth.oidc.reauth': 'Confirmed it is them at the identity provider',
+  'auth.oidc.fail': 'Identity provider sign-in failed',
+  'auth.oidc.denied': 'Identity provider sign-in refused',
+  'admin.oidc.check': 'Checked the identity provider',
   'auth.watch.pair': 'Created a watch pairing code',
   'auth.watch.ok': 'Paired a Zepp OS watch',
   'auth.watch.fail': 'Watch pairing failed',
   'auth.watch.unlink': 'Unpaired a watch',
+  // Scoped tokens (Settings → API tokens). `msg` is the token's name, never the token; on a write,
+  // also the categories it changed. A refused token is throttled like other anonymous failures.
+  'auth.token.create': 'Made an API token',
+  'auth.token.revoke': 'Revoked an API token',
+  'auth.token.fail': 'An API token was refused',
+  'token.write': 'An API token changed the profile',
+  'token.denied': 'An API token tried a change outside its scopes',
   // Password sign-in (#118), where the instance offers it.
   'auth.password.ok': 'Signed in with a password',
   'auth.password.fail': 'Password sign-in failed',
@@ -71,6 +88,16 @@ const LABELS = {
   'admin.role.revoke': 'Removed someone as admin',
   'admin.owner.transfer': 'Handed the owner role on',
   'admin.invite.create': 'Created an invite code',
+  // ADMIN_DATA_VIEW (1.4.5): an admin opened someone's workouts and weigh-ins, or the list with last-workout dates.
+  'admin.data-view': 'Looked at training data',
+  // Trainers and studios (docs/TRAINERS.md).
+  'admin.gym.create': 'Created a gym',
+  'admin.gym.update': 'Changed a gym',
+  'admin.gym.staff.add': 'Gave someone a gym role',
+  'admin.gym.staff.remove': 'Took a gym role away',
+  'admin.trainer.add': 'Made someone a free trainer',
+  'admin.trainer.remove': 'Took free trainer away',
+  'trainer.code': 'Made a trainer invite code',
   'admin.invite.revoke': 'Revoked an invite code',
   'admin.audit.clear': 'Cleared the activity log',
   // FIRST_USER_ADMIN=1: the first profile on a fresh instance is made admin as it signs up.
@@ -83,10 +110,13 @@ const LABELS = {
 }
 // An unknown event is shown raw rather than dropped or rendered as "undefined": a dashboard
 // that is one version behind the server should still say *something* truthful.
-export const auditLabel = ev => LABELS[ev] || String(ev || 'Unknown event')
+export const auditLabel = ev => adminT(LABELS[ev] || String(ev || 'Unknown event'))
 
 const REASONS = {
   'challenge-expired': 'the sign-in took too long and expired',
+  // A scoped token or a calendar feed's address that is unknown, revoked or ended (api tokenAuth).
+  'token-invalid': 'an unknown, revoked or ended token',
+  'no-token': 'no token was sent',
   'unknown-credential': 'unknown passkey',
   'verify-error': 'the passkey could not be verified',
   'not-verified': 'the passkey was rejected',
@@ -113,11 +143,33 @@ const REASONS = {
   'signup': 'wrong invite codes on password signup',
   'link': 'wrong one-time device codes',
   'email': 'e-mail addresses already in use',
+  'oidc': 'wrong identity provider sign-ins',
+  // Identity provider sign-in (OIDC): the check that refused it, or why it was not let in.
+  'oidc-only': 'this server takes the identity provider only, and they are not an admin',
+  'state': 'the sign-in came back unknown, used, late or in another browser',
+  'nonce': 'the ID token was made for another sign-in (nonce)',
+  'expired': 'the ID token had expired or was not valid yet',
+  'audience': 'the ID token was issued for another client',
+  'issuer': 'the ID token came from another issuer',
+  'signature': 'the ID token signature did not verify',
+  'alg': 'the ID token used a signing algorithm that is not allowed',
+  'no-key': 'no usable provider key matched the ID token',
+  'malformed': 'the ID token could not be read',
+  'stale': 'the provider did not ask them to sign in again',
+  'provider': 'the identity provider could not be reached or refused',
+  'provider-down': 'the identity provider could not be reached',
+  'app-redeem': 'the phone app came back with a wrong or expired code',
+  'group': 'not in a group this server lets in',
+  'link-needed': 'a profile already has that e-mail; it has to be linked from Settings',
+  'invite': 'invite-only server, and no group setting lets them in',
+  'disabled': 'the account is disabled',
+  'taken': 'that provider account is linked to another profile',
+  'wrong-account': 'a different provider account than the linked one',
   // What a `media.throttled` pause was for.
   'upload': 'photo and video uploads',
   'sweep': 'clearing unused photos and videos'
 }
-export const auditReason = msg => REASONS[msg] || (msg ? String(msg) : '')
+export const auditReason = msg => adminT(REASONS[msg] || (msg ? String(msg) : ''))
 
 // What an `auth.proof.fail` was confirming (the server's `act`).
 const ACTS = {
@@ -131,7 +183,8 @@ const ACTS = {
   'pair': 'making a code to pair the phone app',
   'account-delete': 'deleting their account'
 }
-export const auditAct = act => ACTS[act] || (act ? String(act) : '')
+export const AUDIT_DYNAMIC_SOURCES = { labels: Object.values(LABELS), reasons: Object.values(REASONS), acts: Object.values(ACTS) }
+export const auditAct = act => adminT(ACTS[act] || (act ? String(act) : ''))
 
 // → { title, sub }. `sub` is the house "a · b · c" metadata line used by every list row.
 export function auditLine(e) {
@@ -139,7 +192,7 @@ export function auditLine(e) {
   const parts = []
   if (e.name) parts.push(e.name)
   else if (e.uid) parts.push(e.uid)
-  else if (!e.ok) parts.push('unknown caller')
+  else if (!e.ok) parts.push(adminT('unknown caller'))
   if (e.tname) parts.push('→ ' + e.tname)
   if (e.act) parts.push(auditAct(e.act))
   // The reason codes and the invite codes share the msg field; only failures read as a reason.
@@ -156,7 +209,7 @@ export function fmtWhen(ts, now = Date.now()) {
   const time = d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' })
   const n = new Date(now)
   const sameDay = d.toDateString() === n.toDateString()
-  if (sameDay) return 'today ' + time
+  if (sameDay) return adminT('today ') + time
   if (now - ts < 6 * 86400000 && ts <= now) return d.toLocaleDateString(dateLocale(), { weekday: 'short' }) + ' ' + time
   return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' }) + ' ' + time
 }

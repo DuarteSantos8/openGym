@@ -3,10 +3,11 @@
   "name": "lever overhand triceps dip",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "triceps-machine",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "On a dip machine, you press the handles down and extend your elbows. Focuses on the triceps and chest.",

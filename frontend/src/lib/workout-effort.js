@@ -12,6 +12,7 @@
 // others (AppleHealthPlugin.swift), so one score is never written twice.
 import { anchorsByWorkout, resolveSetRir } from './recovery.js'
 import { isWarmupRow } from './workout-model.js'
+import { isCardio } from './exercises.js'
 import { bodyweightKgOf } from './structuralBalance.js'
 
 export const EFFORT_MODES = ['ask', 'auto', 'never']
@@ -19,6 +20,11 @@ export const EFFORT_MIN = 1
 export const EFFORT_MAX = 10
 // Below this many sets with a known effort the average is a guess, and none is written.
 export const AUTO_MIN_SETS = 3
+// How much lower people rate a whole lifting session than the average of its sets: about 1 to 1.6
+// on the RPE scale (Sweet 2004, doi:10.1519/14153.1; Singh 2007, doi:10.1123/ijspp.2.1.34; Enes
+// 2023, doi:10.1177/00315125231176729). Taken off each strength set, not cardio, which is rated
+// on the same scale as the whole session already. Mean RIR 2 reads Moderate (6), RIR 1 Hard (7).
+export const SESSION_OFFSET = 1.5
 
 export const effortModeOf = S => (EFFORT_MODES.includes(S?.workoutEffort) ? S.workoutEffort : 'ask')
 
@@ -32,7 +38,7 @@ export function cleanEffort(v) {
 export const EFFORT_LEVELS = [
   { max: 3, word: 'Easy' },
   { max: 6, word: 'Moderate' },
-  { max: 8, word: 'Hard' },
+  { max: 8, word: 'Hard effort' },
   { max: 10, word: 'All out' },
 ]
 export function effortWord(v) {
@@ -43,7 +49,7 @@ export function effortWord(v) {
 
 /**
  * The workout's effort from its sets, for 'auto': the average of each finished work set's effort
- * on the RPE scale (RIR 2 is RPE 8), rounded to a whole number. A set nobody rated is estimated
+ * on the RPE scale (RIR 2 is RPE 8), less SESSION_OFFSET for strength sets, rounded to a whole number. A set nobody rated is estimated
  * from its load against the lifter's recent best (recovery.js resolveSetRir), the same reading
  * Stats and the muscle map give it. Warm-ups do not count. null when fewer than AUTO_MIN_SETS
  * sets have an effort at all: an empty workout or one of cardio nobody rated gets no score.
@@ -55,16 +61,18 @@ export function autoEffort(S, w) {
   const anchors = anchorsByWorkout(all, opts).get(w)
   let sum = 0, n = 0
   for (const e of w.entries) {
+    const cardio = isCardio(e?.id)
     for (const s of e?.sets || []) {
       if (!s?.done || isWarmupRow(s)) continue
       const r = resolveSetRir(s, s, e, w, anchors, opts)
       if (r == null || !Number.isFinite(r.rir)) continue
-      sum += 10 - Math.max(0, r.rir)
+      sum += 10 - Math.max(0, r.rir) - (cardio ? 0 : SESSION_OFFSET)
       n++
     }
   }
   if (n < AUTO_MIN_SETS) return null
-  return Math.min(EFFORT_MAX, Math.max(EFFORT_MIN, Math.round(sum / n)))
+  // Halves round down: a session that sits on the line between two words reads as the easier one.
+  return Math.min(EFFORT_MAX, Math.max(EFFORT_MIN, Math.ceil(sum / n - 0.5)))
 }
 
 /**

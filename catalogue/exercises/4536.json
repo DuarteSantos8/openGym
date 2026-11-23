@@ -3,11 +3,10 @@
   "name": "kettlebell rear delt row",
   "bodyPart": "back",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "upper back",
     "rhomboids",
-    "rear deltoids",
     "biceps"
   ],
   "category": "strength",

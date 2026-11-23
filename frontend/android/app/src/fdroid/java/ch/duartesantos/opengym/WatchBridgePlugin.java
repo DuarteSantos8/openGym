@@ -13,6 +13,9 @@ import com.getcapacitor.JSArray;
  * Google Play services. Same name and calls as the real plugin (src/gms), so the page needs no
  * second code path: status() says "no watch" and lib/watch-sync.js then sends nothing at all.
  * Settings → About says so in words (views/Settings.jsx, channel "fdroid").
+ *
+ * No Garmin either: Garmin's Connect IQ Mobile SDK is closed source (docs/GARMIN.md). The Garmin
+ * calls answer "not in this build" (`state: "build"`), and Settings → Garmin says so.
  */
 @CapacitorPlugin(name = "WatchBridge")
 public class WatchBridgePlugin extends Plugin {
@@ -25,8 +28,27 @@ public class WatchBridgePlugin extends Plugin {
         out.put("paired", false);
         out.put("installed", false);
         out.put("reachable", false);
+        out.put("garmin", false);
         call.resolve(out);
     }
+
+    @PluginMethod
+    public void garminStatus(PluginCall call) {
+        JSObject out = new JSObject();
+        out.put("supported", false);
+        out.put("state", "build");
+        out.put("installed", false);
+        out.put("reachable", false);
+        out.put("store", false);
+        out.put("devices", new JSArray());
+        call.resolve(out);
+    }
+
+    @PluginMethod
+    public void garminPick(PluginCall call) { call.resolve(new JSObject().put("ok", false)); }
+
+    @PluginMethod
+    public void garminStore(PluginCall call) { call.resolve(new JSObject().put("ok", false)); }
 
     @PluginMethod
     public void sendSnapshot(PluginCall call) { call.resolve(new JSObject().put("sent", false)); }

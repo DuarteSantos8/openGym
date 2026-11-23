@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The logo mark (assets/logo/opengym-mark.svg) for the status bar: an alpha mask, so white. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <!-- Status-bar icons are an alpha mask, so this stays white. -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M2,8h2.4v8H2zM4.8,9.6h1.8v4.8H4.8zM7,11.1h10v1.8H7zM17.4,9.6h1.8v4.8h-1.8zM19.6,8H22v8h-2.4z" />
+        android:pathData="M2.00,11.20h20.00v1.59h-20.00zM2.00,8.76h2.05v6.48h-2.05zM4.90,7.06h2.67v9.89h-2.67zM16.43,7.06h2.67v9.89h-2.67zM19.95,8.76h2.05v6.48h-2.05z" />
 </vector>

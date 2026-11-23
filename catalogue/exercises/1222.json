@@ -3,6 +3,7 @@
   "name": "assisted close grip underhand chin up",
   "bodyPart": "back",
   "equipment": "assisted",
+  "machineKind": "assisted-pullup",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

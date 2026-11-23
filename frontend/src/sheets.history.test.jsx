@@ -35,7 +35,7 @@ const session = (i, rows) => ({
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   useUI.setState({ sheets: [], toastMsg: '' })
-  useStore.setState(s => ({ S: { ...s.S, unit: 'kg', workouts: [], active: null } }))
+  useStore.setState(s => ({ S: { ...s.S, unit: 'kg', liveRecords: true, workouts: [], active: null } }))
   document.body.innerHTML = ''
 })
 
@@ -70,6 +70,34 @@ describe('exercise history sheet', () => {
     expect(host.querySelector('.chart svg')).toBeTruthy()
     expect(host.textContent).toContain('Best:')
     expect(host.textContent).toContain('70 kg')
+  })
+
+  it('marks each session with a set record, including more reps at the same load', () => {
+    useStore.setState(s => ({ S: { ...s.S, liveRecords: true, workouts: [
+      session(0, [{ w: 91, r: 10, done: true }]),
+      session(1, [{ w: 91, r: 11, done: true }]),
+      session(2, [{ w: 91, r: 12, done: true }]),
+      session(3, [{ w: 91, r: 12, done: true }, { w: 100, r: 15, done: false }]),
+    ] } }))
+    const before = structuredClone(useStore.getState().S.workouts)
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    const rows = [...host.querySelectorAll('.list .item')]
+    expect(rows.map(r => !!r.querySelector('.tt .pr'))).toEqual([false, true, true, false])
+    expect(rows.map(r => !!r.querySelector('.setrec-mark'))).toEqual([false, true, true, false])
+    expect(host.textContent).toContain('91 kg')
+    expect(useStore.getState().S.workouts).toEqual(before)
+  })
+
+  it('keeps the legacy best-weight badge when live set records are disabled', () => {
+    useStore.setState(s => ({ S: { ...s.S, liveRecords: false, workouts: [
+      session(0, [{ w: 91, r: 11, done: true }]),
+      session(1, [{ w: 91, r: 12, done: true }]),
+    ] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    expect([...host.querySelectorAll('.list .item')].map(r => !!r.querySelector('.tt .pr'))).toEqual([false, true])
+    expect(host.querySelector('.setrec-mark')).toBeNull()
   })
 
   it('offers a Bodyweight curve only with two sessions that have a body weight, and Best becomes a percentage', () => {
@@ -143,5 +171,25 @@ describe('exercise history sheet', () => {
     expect(useUI.getState().sheets).toHaveLength(2)
     const top = renderTop()
     expect(top.querySelectorAll('.list .item')).toHaveLength(1)
+  })
+
+  it('shows the rep-record table with what the best e1RM says is possible, and trophies on record sets', () => {
+    useStore.setState(s => ({ S: { ...s.S, workouts: [
+      session(0, [{ w: 60, r: 5, done: true }]),
+      session(2, [{ w: 70, r: 5, done: true }, { w: 50, r: 10, done: true }]),
+    ] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    const rows = [...host.querySelectorAll('.reptable tbody tr')]
+    expect(rows).toHaveLength(12)
+    expect(rows[0].querySelector('th').textContent).toBe('1')
+    expect(rows[4].textContent).toContain('70 kg')
+    expect(rows[9].textContent).toContain('50 kg')
+    // 11 reps: nothing done, but 70 × 5 says possible.
+    expect(rows[10].textContent).toMatch(/11 × [\d.]+ kg/)
+    // The newer session beat the older one's load: its first set wears the trophy.
+    const marks = host.querySelectorAll('.list .setrec-mark')
+    expect(marks.length).toBeGreaterThan(0)
+    expect(marks[0].getAttribute('aria-label')).toContain('Heaviest yet')
   })
 })

@@ -3,6 +3,7 @@
   "name": "assisted single leg press",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-press",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",
@@ -18,5 +19,23 @@
     "Lower back with control.",
     "Keep your hips on the seat. Finish the reps, then switch legs."
   ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
   "textSource": "opengym"
 }

@@ -11,12 +11,18 @@
  */
 import * as jobs from './jobs.js';
 import * as cfgStore from './config.js';
-import { isDue } from './core/due.js';
+import { isDue, reviewedAtOf, retryWaiting } from './core/due.js';
+import { baseUrlFor } from './core/providers.js';
 
 // Re-exported so nothing that reached it through this module has to move.
 export { isDue };
 
 const TICK_MS = 60000;
+
+// The provider and host reviews go to, as `GET /api/coach/disclosure` names them: the app keeps
+// the one automatic reviews were switched on for in S.coach.cadenceFor (views/CoachChat.jsx).
+const hostOf = url => { try { return url ? new URL(url).host : ''; } catch { return ''; } };
+export const cadenceTarget = cfg => `${cfg.provider}|${hostOf(baseUrlFor(cfg.provider, cfg))}`;
 
 /**
  * @param {object} deps  { users(): [{id}], userNow(tz): {date,hhmm,weekday}, skip?(uid): bool }
@@ -24,6 +30,7 @@ const TICK_MS = 60000;
 export function startCadence(deps) {
   const timer = setInterval(() => {
     if (!cfgStore.isEnabled() || !cfgStore.isConnected()) return;
+    const target = cadenceTarget(cfgStore.load());
     for (const user of deps.users()) {
       try {
         // A profile that never agreed to the Coach is skipped before its whole state is read.
@@ -33,6 +40,9 @@ export function startCadence(deps) {
         if (!coach?.consent?.agreedAt) continue;         // consent revoked ⇒ cadence stops
         // Settings → Modules: the AI Coach switched off pauses the reviews; its setup stays.
         if (S?.modules?.coach === false) continue;
+        // Agreed for another provider or host (the admin changed it since, or it was switched on
+        // before this was kept): paused until the app asks the member again.
+        if (coach.cadenceFor !== target) continue;
         // A job still running, or a proposal nobody has answered, is not a reason for another:
         // a second review would only replace the first unread. status() also retires an
         // expired proposal, which a phone that stays closed never polls for.
@@ -41,10 +51,11 @@ export function startCadence(deps) {
         // Reviewed means the model read those workouts and answered — with a proposal, with
         // "nothing to change", or with an answer that failed validation and was paid for all the
         // same. A call that never reached it (timeout, no runtime, consent, switched off) is retried.
-        const reviewedAt = Math.max(0, ...jobs.readUser(user.id).history
-          .filter(h => h.kind === 'review' && (h.outcome === 'ready' || h.outcome === 'nochange'
-            || (h.outcome === 'failed' && h.errorClass === 'unusable')))
-          .map(h => h.at || 0));
+        // A failure no retry fixes (a refused key, no runtime) counts too, or the tick queued it
+        // again every minute and spent the day's cap on it (core/due.js reviewedAtOf).
+        const history = jobs.readUser(user.id).history;
+        const reviewedAt = reviewedAtOf(history);
+        if (retryWaiting(history)) continue;
         const tz = coach.cadence?.weekly ? (S.reminder?.tz || 'UTC') : null;
         const now = tz ? deps.userNow(tz) : null;
         if (!isDue(coach, S, now, reviewedAt, tz)) continue;

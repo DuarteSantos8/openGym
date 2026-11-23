@@ -64,4 +64,27 @@ describe('strength level per lift', () => {
     expect(seg.getAttribute('role')).toBe('group')
     expect(host.querySelector('#' + seg.getAttribute('aria-labelledby')).textContent).toBe('Sex')
   })
+  it('lifts the About you sheet when the keyboard reduces the visual viewport', () => {
+    const viewport = new EventTarget()
+    Object.assign(viewport, { height: 400, offsetTop: 0 })
+    const original = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: viewport })
+    try {
+      aboutYouSheet()
+      const host = document.createElement('div')
+      host.className = 'sheet'
+      document.body.appendChild(host)
+      const root = createRoot(host)
+      mounted.push(root)
+      act(() => root.render(useUI.getState().sheets.at(-1).render(() => {})))
+      expect(host.querySelector('.kb-lift input')).not.toBeNull()
+      expect(host.style.getPropertyValue('--picker-keyboard-bottom')).toBe(`${Math.max(0, window.innerHeight - 400)}px`)
+      viewport.height = window.innerHeight
+      act(() => viewport.dispatchEvent(new Event('resize')))
+      expect(host.style.getPropertyValue('--picker-keyboard-bottom')).toBe('0px')
+    } finally {
+      if (original) Object.defineProperty(window, 'visualViewport', original)
+      else delete window.visualViewport
+    }
+  })
 })

@@ -4,6 +4,8 @@
 import { z } from 'zod'
 import { getState, getUser } from './state.js'
 import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
+import { setTagCell } from '../../frontend/src/lib/set-tags.js'
+import { speedUnitOf } from '../../frontend/src/lib/speed.js'
 import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
@@ -11,7 +13,7 @@ import {
   modeOf, workoutVolume, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
-import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
+import { exOr, registerCustom, allExercises, searchScore, CATEGORIES } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow, isFailureSet } from '../../frontend/src/lib/workout-model.js'
 import {
   bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
@@ -22,6 +24,7 @@ import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/sess
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
+import { t } from './i18n.js'
 
 /* ---------- helpers ---------- */
 
@@ -32,9 +35,9 @@ import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js
 // as a zod refine that is a -32602 at the SDK boundary instead of a confident wrong answer.
 const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 const todayIso = () => localIso(new Date())
-export const isoDate = () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD').refine(
+export const isoDate = () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, t('date_format')).refine(
   v => { const d = new Date(v + 'T12:00:00'); return !Number.isNaN(d.getTime()) && localIso(d) === v },
-  { message: 'not a date the calendar has (YYYY-MM-DD)' }
+  { message: t('invalid_date') }
 )
 
 // A custom exercise lives in S.customEx and is merged into EXIDX by registerCustom() at
@@ -55,7 +58,7 @@ export function withCustomsIndexed(S, build) {
   try { return build() } finally { registerCustom([]) }
 }
 
-export function entryView(e, S) {
+export function entryView(e, S, speedUnit = speedUnitOf(S)) {
   const ex = exerciseOf(e.id, S)
   // Spread id into the cfg the way every call site in the app does (Workout.jsx, Stats.jsx,
   // progression.js) — the sheet saves a cardio target as {sets, min, speed} with no id and no
@@ -70,7 +73,8 @@ export function entryView(e, S) {
     target: e.target || null,
     sets: (e.sets || []).map(s => ({
       done: !!s.done,
-      label: setLabel(e.id, { ...s, done: undefined }, cfg),
+      // Cardio in the profile's speed unit (mph on an lb profile that never chose), as the app shows it.
+      label: setLabel(e.id, { ...s, done: undefined }, cfg, speedUnit),
       // Taken to failure (the app's "F"): RIR 0 for effort when nothing was rated by hand.
       ...(isFailureSet(s) ? { failure: true } : {}),
       w: Number(s.w) || 0,
@@ -79,7 +83,9 @@ export function entryView(e, S) {
       min: Number(s.min) || 0,
       speed: Number(s.speed) || 0,
       // The set's own note (set menu → Note in the app), when it has one.
-      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {})
+      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {}),
+      // The set's colour tag (set menu → Colour tag), the lifter's own code: "red", "blue", …
+      ...(setTagCell(s) ? { color_tag: setTagCell(s) } : {})
     })),
     // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
     // videos themselves, their files and their refs never reach a client of this server.
@@ -120,13 +126,15 @@ function prTable(S, formula) {
 /** list_routines — names + counts of each routine in the user's plan. */
 export const listRoutines = {
   name: 'list_routines',
-  description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
+  description: t('tool_list_routines'),
   schema: {},
   handler: () => {
     const S = getState()
     if (!S) return noState()
     return {
       unit: S.unit || 'kg',
+      // The profile's revision: what update_routine and delete_routine take as expected_revision.
+      revision: typeof S._rev === 'number' ? S._rev : null,
       routines: (S.routines || []).map(r => ({
         id: r.id,
         name: r.name,
@@ -143,13 +151,13 @@ export const listRoutines = {
 /** get_routine — the full exercise list for one routine, including set/rep targets. */
 export const getRoutine = {
   name: 'get_routine',
-  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
+  description: t('tool_get_routine'),
   schema: { routine_id: z.string().min(1) },
   handler: ({ routine_id }) => {
     const S = getState()
     if (!S) return noState()
     const r = (S.routines || []).find(x => x.id === routine_id)
-    if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
+    if (!r) { const e = new Error(t('no_routine', { id: JSON.stringify(routine_id) })); e.code = 'ENOENT'; throw e }
     return {
       id: r.id,
       name: r.name,
@@ -158,6 +166,7 @@ export const getRoutine = {
       policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
+      revision: typeof S._rev === 'number' ? S._rev : null,
       exercises: (r.ex || []).map((cfg, i) => {
         const ex = exerciseOf(cfg.id, S)
         const mode = modeOf(cfg)
@@ -197,10 +206,10 @@ export const getRoutine = {
 }
 
 /** get_week_plan — what's scheduled each weekday + today, and the coach week when one is running. */
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const DAY_NAMES = t('weekday_names')
 export const getWeekPlan = {
   name: 'get_week_plan',
-  description: 'Show the user\'s training plan. `days` is the authoritative answer to "what is planned when": the next seven dates from today with the routines planned for each (a date can hold several — a combined day) and how each was decided: a coach-week session ("coach"), a session the user pinned to that date ("pinned"), a one-off routine override ("override"), a "rest" override ("rest_override"), the weekday plan ("weekday") or nothing ("rest"). `coach_week` is the current coach week when one is running (a week written by an external planner through the API, never by the app): its sessions are done IN ORDER on whatever days the user trains (no weekday attached), the first undone one is today\'s session, a session can be pinned to a date, and `waiting` means the week starts on `starts_on`. `weekdays` is the user\'s own weekly plan keyed by JS getDay() (Sunday=0 … Saturday=6, the openGym state convention) — in a coach week it holds only the routines the user planned themselves, which ride along beside the coach-week session.',
+  description: t('tool_get_week_plan'),
   schema: {},
   handler: () => {
     const S = getState()
@@ -218,7 +227,7 @@ export const getWeekPlan = {
     const plannedBy = (iso, ids) => {
       const ov = S.dayPlan?.[iso]
       if (ov === 'rest') return 'rest_override'
-      const pin = pinState(S, ov)
+      const pin = pinState(S, ov, isoToday, iso)
       if (pin === 'open') return 'pinned'
       if (!pin && ov && routines.some(x => x.id === ov)) return 'override'
       if (ids.length && queueNext(S, iso, isoToday) === ids[0]) return 'coach'
@@ -268,11 +277,11 @@ export const getWeekPlan = {
 /** list_workouts — newest-first summary of recent sessions. */
 export const listWorkouts = {
   name: 'list_workouts',
-  description: 'List recent finished workouts, newest first. Each item summarises the date, exercise count, sets done / planned, total volume (in the user\'s unit), duration and whether PRs were set. Use this before drilling into a specific date with get_workout.',
+  description: t('tool_list_workouts'),
   schema: {
-    from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD. Defaults to no lower bound (list most recent).'),
-    to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.'),
-    limit: z.number().int().min(1).max(200).optional().describe('Max items to return. Defaults to 25.')
+    from: isoDate().optional().describe(t('arg_from_workouts')),
+    to: isoDate().optional().describe(t('arg_to')),
+    limit: z.number().int().min(1).max(200).optional().describe(t('arg_workout_limit'))
   },
   handler: ({ from, to, limit }) => {
     const S = getState()
@@ -328,10 +337,10 @@ const gymOf = w => (w && w.gym && typeof w.gym === 'object' && String(w.gym.name
 /** get_workout — full entry/set breakdown for one date. */
 export const getWorkout = {
   name: 'get_workout',
-  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), and form_videos: how many sets the user filmed (a count only; the videos are never shared). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
+  description: t('tool_get_workout'),
   schema: {
-    date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
-    workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
+    date: isoDate().optional().describe(t('arg_workout_date')),
+    workout_id: z.string().min(1).optional().describe(t('arg_workout_id'))
   },
   handler: ({ date, workout_id }) => {
     const S = getState()
@@ -340,17 +349,17 @@ export const getWorkout = {
     let w
     if (workout_id) {
       w = workouts.find(x => x.id === workout_id)
-      if (!w) { const e = new Error(`no workout with id ${workout_id}`); e.code = 'ENOENT'; throw e }
+      if (!w) { const e = new Error(t('no_workout_id', { id: workout_id })); e.code = 'ENOENT'; throw e }
     } else if (date) {
       const sameDay = workouts.filter(x => x.d === date)
-      if (!sameDay.length) { const e = new Error(`no workout on ${date}`); e.code = 'ENOENT'; throw e }
+      if (!sameDay.length) { const e = new Error(t('no_workout_date', { date })); e.code = 'ENOENT'; throw e }
       // Answering with the first of two is how a question about the evening run gets the
       // morning's lifting numbers, stated with total confidence. Say there are two instead.
       if (sameDay.length > 1) {
         return {
           ambiguous: true,
           date,
-          message: `${sameDay.length} workouts were logged on ${date} — call get_workout again with one of these workout_id values.`,
+          message: t('ambiguous_workouts', { count: sameDay.length, date }),
           workouts: sameDay.map(x => ({
             id: x.id || null,
             routine_name: x.name || null,
@@ -362,7 +371,7 @@ export const getWorkout = {
       }
       w = sameDay[0]
     } else {
-      const e = new Error('get_workout needs either workout_id or date'); e.code = 'EINVAL'; throw e
+      const e = new Error(t('need_workout_selector')); e.code = 'EINVAL'; throw e
     }
     return {
       id: w.id || null,
@@ -390,10 +399,10 @@ export const getWorkout = {
 /** get_bodyweight — recent weigh-ins with the goal line. */
 export const getBodyweight = {
   name: 'get_bodyweight',
-  description: 'Get the body-weight log: one entry per day, chronological, with the day\'s weight, current goal, deltas vs goal (signed positive = above goal), and a latest summary. A day can hold several weigh-ins: each entry lists them under `readings` with their local time (HH:MM, null when unknown), and the day\'s `weight` is the one the profile\'s daily-value setting picks (`daily_value`: first = morning, avg = average of the day, last). Useful for "am I trending toward my weight goal?" questions.',
+  description: t('tool_get_bodyweight'),
   schema: {
-    from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD.'),
-    to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
+    from: isoDate().optional().describe(t('arg_from_bodyweight')),
+    to: isoDate().optional().describe(t('arg_to'))
   },
   handler: ({ from, to }) => {
     const S = getState()
@@ -426,12 +435,12 @@ export const getBodyweight = {
 /** estimate_1rm — best-ever 1RM for one exercise or a PR table across all reps-mode exercises. */
 export const estimate1rm = {
   name: 'estimate_1rm',
-  description: `Estimate one-rep max using Epley, Brzycki or Lombardi formulas. If an exercise_id is given, returns the all-time best estimate for that exercise with the source set (weight × reps + date) and the trend across history. If no exercise_id is given, returns a PR table across all reps-mode exercises (sorted highest first). Refuses to guess above ${REP_CAP} reps — above that, formulas diverge past 10% and "work capacity" is read instead of "maximal strength".`,
+  description: t('tool_estimate_1rm', { cap: REP_CAP }),
   schema: {
     // .min(1): an empty string is falsy, so it used to fall through to "no exercise_id given" and
     // answer a question about one exercise with the whole PR table.
-    exercise_id: z.string().min(1).optional().describe('An exercise id from list_routines or get_workout entries. If omitted, returns a full PR table.'),
-    formula: z.enum(['epley', 'brzycki', 'lombardi']).optional().describe(`Formula to use. Defaults to ${DEFAULT_FORMULA}.`)
+    exercise_id: z.string().min(1).optional().describe(t('arg_estimate_exercise')),
+    formula: z.enum(['epley', 'brzycki', 'lombardi']).optional().describe(t('arg_formula', { formula: DEFAULT_FORMULA }))
   },
   handler: ({ exercise_id, formula }) => {
     const S = getState()
@@ -455,20 +464,20 @@ export const estimate1rm = {
       return {
         exercise: { id: exercise_id, name: ex.n, body_part: ex.bp || null, ...(unknown ? { unknown: true } : {}) },
         formula: f,
-        formula_note: `Estimates use the ${f} formula. Cap at ${REP_CAP} reps applies; r=1 is treated as the measurement, not an estimate.`,
+        formula_note: t('estimate_note', { formula: f, cap: REP_CAP }),
         best: best ? { est: best.est, w: best.w, r: best.r, date: best.d } : null,
         no_estimate_reason: best ? null
           : trainedAtAll
-            ? `This exercise has logged sets, but none of them qualify: every set was above the ${REP_CAP}-rep cap, or carried no weight. That is not the same as never having trained it.`
+            ? t('no_qualifying_sets', { cap: REP_CAP })
             : unknown
-              ? `No exercise with id ${JSON.stringify(exercise_id)} exists — not in the catalogue, not among this profile's custom exercises, and nothing is logged against it. Check the id against list_routines or a get_workout entry.`
-              : 'No completed sets logged for this exercise.',
+              ? t('unknown_exercise', { id: JSON.stringify(exercise_id) })
+              : t('no_completed_sets'),
         trend: series.map(p => ({ date: p.d, est: p.y, w: p.w, r: p.r }))
       }
     }
     return {
       formula: f,
-      formula_note: `Estimates use the ${f} formula. Cap at ${REP_CAP} reps applies; r=1 is treated as the measurement, not an estimate.`,
+      formula_note: t('estimate_note', { formula: f, cap: REP_CAP }),
       pr_table: prTable(S, f)
     }
   }
@@ -477,9 +486,9 @@ export const estimate1rm = {
 /** muscle_balance — training distribution per muscle over a period (week/month/all). */
 export const muscleBalance = {
   name: 'muscle_balance',
-  description: 'Show which muscles the user has trained in a period, ranked by "effective sets" (volume in kg is intentionally not used — 100 kg leg press vs 12 kg lateral raise say nothing about which muscle worked harder). Reports worked muscles with a 0-4 relative level (1 = some work, 4 = most worked) and the muscles trained zero times in that period — useful for "what am I neglecting?" questions.',
+  description: t('tool_muscle_balance'),
   schema: {
-    period: z.enum(['week', 'month', 'all']).describe('window: last 7 days, last 30 days, or all-time')
+    period: z.enum(['week', 'month', 'all']).describe(t('arg_period'))
   },
   handler: ({ period }) => {
     const S = getState()
@@ -547,7 +556,9 @@ function sourceOf(S, cfg, plan, field, routine) {
     const fromLast = startsFromLast(S) && routine?.excludeFromProgression !== true
     return fromLast && lastEntryFor(S, cfg.id, routine && routine.id) ? 'last_session' : 'routine_plan'
   }
-  const decided = plan.kind !== 'first' && plan[field] != null
+  // A first session decides nothing, unless it carries per-set rows (steady, triple, ladder):
+  // applyPrescription writes those, so the reps are the policy's.
+  const decided = (plan.kind !== 'first' || Array.isArray(plan.rowReps)) && plan[field] != null
   // A policy that settles on the routine's own reps or hold — a restart after the plan was
   // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.
   if (decided) return field !== 'weight' && plan[field] === cfg[field] ? 'routine_plan' : 'progression'
@@ -558,22 +569,15 @@ function sourceOf(S, cfg, plan, field, routine) {
   return conf && conf.w > 0 ? 'confirmed_weight' : 'routine_plan'
 }
 
-const SOURCE_TEXT = {
-  programme: 'the running programme\'s %1RM target for this week, from the best estimated 1RM',
-  progression: 'the progression policy overrode the routine',
-  confirmed_weight: 'your confirmed working weight for this exercise',
-  last_session: 'carried over from the last time this routine had this exercise (or any routine, if this one never has)',
-  routine_plan: "the routine's own target"
-}
+const SOURCE_TEXT = Object.fromEntries(['programme', 'progression', 'confirmed_weight', 'last_session', 'routine_plan'].map(key => [key, t(`source_${key}`)]))
 
 /** preview_session — what starting this routine will actually put on screen. */
 export const previewSession = {
   name: 'preview_session',
-  description:
-    'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy progressed or deloaded from that routine\'s last logged session. The reps are the routine\'s own unless a policy that moves reps moved them, or the profile starts planned sessions from the last session (starts_from). Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
+  description: t('tool_preview_session'),
   schema: {
-    routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
-    date: isoDate().optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
+    routine_id: z.string().min(1).optional().describe(t('arg_preview_routine')),
+    date: isoDate().optional().describe(t('arg_preview_date'))
   },
   handler: ({ routine_id, date }) => {
     const S = getState()
@@ -584,10 +588,10 @@ export const previewSession = {
     let r
     if (routine_id) {
       r = (S.routines || []).find(x => x.id === routine_id)
-      if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
+      if (!r) { const e = new Error(t('no_routine', { id: JSON.stringify(routine_id) })); e.code = 'ENOENT'; throw e }
     } else {
       r = effectiveRoutine(S, iso)
-      if (!r) return { date: iso, routine_id: null, routine_name: null, rest_day: true, note: 'no routine is scheduled for this date (rest day)', exercises: [] }
+      if (!r) return { date: iso, routine_id: null, routine_name: null, rest_day: true, note: t('no_routine_scheduled'), exercises: [] }
     }
 
     const unit = S.unit || 'kg'
@@ -741,13 +745,58 @@ export const getProgramme = {
   }
 }
 
+/* ---------- search_exercises ---------- */
+
+const BODY_PARTS = ['back', 'cardio', 'chest', 'lower arms', 'lower legs', 'neck', 'shoulders', 'upper arms', 'upper legs', 'waist']
+/** search_exercises — the exercise library (thousands built in, plus the user's own), with ids. */
+export const searchExercises = {
+  name: 'search_exercises',
+  description: [
+    'Search openGym\'s exercise library (the built-in catalogue plus the user\'s own exercises) by name, muscle or equipment, e.g. "romanian deadlift", "rear delt dumbbell", "pull-up bar".',
+    'Returns ids with name, body part, target muscle, equipment and category, best match first.',
+    'Use it before create_routine, update_routine or log_workout whenever a name could mean several exercises (there are many curls and presses): pass the id you picked as `exercise`, and the save cannot land on the wrong one.',
+    'Filter with body_part, equipment (as the results spell it: "barbell", "dumbbell", "body weight", "cable", "leverage machine", "band"...) or category to build a plan from what the user owns.',
+  ].join(' '),
+  schema: {
+    query: z.string().max(80).optional().describe('Words to look for. Omit to list by the filters alone.'),
+    body_part: z.enum(BODY_PARTS).optional(),
+    equipment: z.string().max(40).optional(),
+    category: z.enum(CATEGORIES).optional(),
+    limit: z.number().int().min(1).max(50).optional().describe('How many to return, 15 by default.'),
+  },
+  handler: p => {
+    const S = getState() || {}
+    const eq = String(p.equipment || '').toLowerCase().trim()
+    const scored = []
+    for (const ex of allExercises(S)) {
+      if (!ex || !ex.id || !ex.n) continue
+      if (p.body_part && ex.bp !== p.body_part) continue
+      if (eq && !String(ex.eq || '').toLowerCase().includes(eq)) continue
+      if (p.category && (ex.cat || 'strength') !== p.category) continue
+      const score = p.query ? searchScore(ex, p.query) : 1
+      if (score > 0) scored.push([score, ex])
+    }
+    scored.sort((a, b) => b[0] - a[0] || String(a[1].n).localeCompare(String(b[1].n)))
+    const limit = p.limit || 15
+    return {
+      total: scored.length,
+      exercises: scored.slice(0, limit).map(([, ex]) => ({
+        id: ex.id, name: ex.n, body_part: ex.bp || null, target: ex.tg || null, equipment: ex.eq || null,
+        category: ex.cat || 'strength', ...(ex.hd ? { mode: 'time' } : ex.bp === 'cardio' ? { mode: 'cardio' } : {}),
+        ...((S.customEx || []).some(c => c && c.id === ex.id) ? { own: true } : {}),
+      })),
+      ...(scored.length > limit ? { more: `${scored.length - limit} more: narrow the query or add a filter` } : {}),
+    }
+  }
+}
+
 export const TOOLS = [
-  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme
+  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme, searchExercises
 ]
 
 function noState() {
   return {
-    error: 'no synced state yet — sign in at least once from a device so the openGym api can save a state file for this profile',
+    error: t('no_state'),
     unit: 'kg'
   }
 }

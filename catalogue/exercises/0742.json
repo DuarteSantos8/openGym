@@ -3,6 +3,7 @@
   "name": "sled forward angled calf raise",
   "bodyPart": "lower legs",
   "equipment": "sled machine",
+  "machineKind": "calf-raise",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings",

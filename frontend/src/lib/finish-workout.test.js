@@ -332,6 +332,37 @@ describe('sessionEnd: a workout finished long after its last set', () => {
     expect(sessionEnd(hold, T0 + 25 * MIN)).toBe(T0 + 25 * MIN)
   })
 
+  it('keeps the work after a long break in the middle (#1021)', () => {
+    // 7 minutes of sets, 25 minutes on an unlogged bike, sets until 105, Finish at 107.
+    const active = at(0, 3, 7, 32, 35, 40, 60, 80, 100, 105)
+    expect(sessionEnd(active, T0 + 107 * MIN)).toBe(T0 + 107 * MIN)
+    // Left open overnight, it ends at its last set, not after the first seven minutes.
+    expect(sessionEnd(active, T0 + 20 * 60 * MIN)).toBe(T0 + 105 * MIN)
+    // One more set after another 30-minute break still counts.
+    expect(sessionEnd(at(0, 7, 40, 75), T0 + 76 * MIN)).toBe(T0 + 76 * MIN)
+  })
+
+  it('still lets a burst of catch-up ticks after the workout leave the clock alone', () => {
+    // 45 minutes of work, then three sets ticked seconds apart an hour later, Finish right after.
+    const active = at(0, 15, 30, 45)
+    const s = active.entries[0].sets
+    s.push(...[0, 5, 9].map(sec => ({ done: true, w: 50, r: 8, at: T0 + 105 * MIN + sec * 1000 })))
+    expect(sessionEnd(active, T0 + 106 * MIN)).toBe(T0 + 45 * MIN)
+  })
+
+  it('does not read a pause as the workout being over (#976, #1021)', () => {
+    // Sets at 0 and 5, paused from 10 to 50, sets at 52 and 60, Finish at 62.
+    const active = { ...at(0, 5, 52, 60), pauses: [{ from: T0 + 10 * MIN, to: T0 + 50 * MIN }] }
+    expect(sessionEnd(active, T0 + 62 * MIN)).toBe(T0 + 62 * MIN)
+    // Without the pause on record, the same 47-minute gap is a break, and the work after it
+    // still counts.
+    expect(sessionEnd(at(0, 5, 52, 60), T0 + 62 * MIN)).toBe(T0 + 62 * MIN)
+    // Paused right after the last set and finished an hour later: the pause is not a forgotten
+    // session (Finish then ends it at the pause, lib/workout-pause.js stopAt).
+    const paused = { ...at(0, 5), pausedAt: T0 + 6 * MIN }
+    expect(sessionEnd(paused, T0 + 66 * MIN)).toBe(T0 + 66 * MIN)
+  })
+
   it('counts a per-side set once one side is done', () => {
     const active = { entries: [{ id: 'x', sets: [{
       w: 20, r: 8, done: false, at: T0,

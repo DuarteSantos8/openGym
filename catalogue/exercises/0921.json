@@ -3,10 +3,9 @@
   "name": "band standing external shoulder rotation",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "An external rotation with a band. It strengthens the rotator cuff.",

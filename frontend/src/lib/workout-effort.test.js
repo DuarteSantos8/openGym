@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { effortModeOf, cleanEffort, effortWord, autoEffort, setWorkoutEffort, AUTO_MIN_SETS } from './workout-effort.js'
+import { effortModeOf, cleanEffort, effortWord, autoEffort, setWorkoutEffort, AUTO_MIN_SETS, SESSION_OFFSET } from './workout-effort.js'
 
 const W = (sets, extra = {}) => ({
   id: 'w1', d: '2026-11-01', start: Date.parse('2026-11-01T10:00:00Z'), end: Date.parse('2026-11-01T11:00:00Z'),
@@ -31,37 +31,53 @@ describe('cleanEffort', () => {
 
 describe('effortWord', () => {
   it('uses Apple Fitness’s bands', () => {
-    expect([1, 3, 4, 6, 7, 8, 9, 10].map(effortWord)).toEqual(['Easy', 'Easy', 'Moderate', 'Moderate', 'Hard', 'Hard', 'All out', 'All out'])
+    expect([1, 3, 4, 6, 7, 8, 9, 10].map(effortWord)).toEqual(['Easy', 'Easy', 'Moderate', 'Moderate', 'Hard effort', 'Hard effort', 'All out', 'All out'])
     expect(effortWord(null)).toBe(null)
   })
 })
 
 describe('autoEffort', () => {
-  it('averages the logged effort of the work sets on the RPE scale', () => {
-    // RIR 2, 1, 0 → RPE 8, 9, 10 → 9
+  it('averages the logged effort of the work sets on the RPE scale, less the session offset', () => {
+    // RIR 2, 1, 0 → RPE 8, 9, 10 → 9, less 1.5 → 7.5, a half: the easier word
     const w = W([{ rir: 2 }, { rir: 1 }, { rir: 0 }])
-    expect(autoEffort({ workouts: [w] }, w)).toBe(9)
-    // RPE straight
+    expect(autoEffort({ workouts: [w] }, w)).toBe(7)
+    // RPE straight: 7.33 less 1.5 → 6
     const r = W([{ rpe: 7 }, { rpe: 7 }, { rpe: 8 }])
-    expect(autoEffort({ workouts: [r] }, r)).toBe(7)
+    expect(autoEffort({ workouts: [r] }, r)).toBe(6)
+  })
+
+  it('reads a session the way people rate one: RIR 2 Moderate, RIR 1 Hard, RIR 3 below', () => {
+    expect(SESSION_OFFSET).toBe(1.5)
+    const at = rir => { const w = W([{ rir }, { rir }, { rir }]); return autoEffort({ workouts: [w] }, w) }
+    expect(at(0)).toBe(8)
+    expect(at(1)).toBe(7)
+    expect(effortWord(at(1))).toBe('Hard effort')
+    expect(at(2)).toBe(6)
+    expect(effortWord(at(2))).toBe('Moderate')
+    expect(at(3)).toBe(5)
+  })
+
+  it('takes no offset off cardio, which is rated like a whole session already', () => {
+    const w = { id: 'c1', d: '2026-11-01', entries: [{ id: '1161', sets: [{ sec: 600, rpe: 7, done: true }, { sec: 600, rpe: 7, done: true }, { sec: 600, rpe: 7, done: true }] }] }
+    expect(autoEffort({ workouts: [w] }, w)).toBe(7)
   })
 
   it('leaves warm-ups and unticked sets out', () => {
     const w = W([{ rir: 6, warmup: true }, { rir: 1, done: false }, { rir: 2 }, { rir: 2 }, { rir: 2 }])
-    expect(autoEffort({ workouts: [w] }, w)).toBe(8)
+    expect(autoEffort({ workouts: [w] }, w)).toBe(6)
   })
 
   it('estimates the sets nobody rated, against the workout’s own best', () => {
-    // No rating at all: the top set is the anchor, so it reads close to failure.
+    // No rating at all: the top set is the anchor, so it reads close to failure (less the offset).
     const w = W([{ w: 100, r: 5 }, { w: 100, r: 5 }, { w: 100, r: 5 }])
     const v = autoEffort({ workouts: [w] }, w)
-    expect(v).toBeGreaterThanOrEqual(8)
-    expect(v).toBeLessThanOrEqual(10)
+    expect(v).toBeGreaterThanOrEqual(7)
+    expect(v).toBeLessThanOrEqual(9)
   })
 
   it('works for a workout not yet in the history (the one being finished)', () => {
     const w = W([{ rir: 3 }, { rir: 3 }, { rir: 3 }])
-    expect(autoEffort({ workouts: [] }, w)).toBe(7)
+    expect(autoEffort({ workouts: [] }, w)).toBe(5)
   })
 
   it('gives none with too few sets to go by', () => {

@@ -21,16 +21,24 @@
 // body-weight records are interesting here. parseBodyweight() scans for those without
 // building a DOM.
 
+import { normalizeTempo } from './tempo.js'
+import { cleanBands, bandsFromCell } from './bands.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
+import { activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
 import {
-  MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
+  MEASUREMENT_FIELDS, MEASUREMENT_KEYS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
 } from './measurements.js'
 import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-model.js'
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
-import { clampIncline, inclineFrom } from './incline.js'
+import { clampIncline, inclineFrom, clampLevel, levelFrom } from './incline.js'
+import { NOTE_MAX } from './history.js'
+import { pickFor, inRange } from './import-choices.js'
+import { SET_TAGS } from './set-tags.js'
+import { SET_NOTE_MAX } from './set-notes.js'
+const SET_TAG_IDS = new Set(SET_TAGS.map(x => x.id))
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -49,7 +57,7 @@ export function parseCSV(text) {
     if (quoted) {
       if (c === '"') { if (s[i + 1] === '"') { field += '"'; i++ } else quoted = false }
       else field += c
-    } else if (c === '"') quoted = true
+    } else if (c === '"' && field === '') quoted = true // FitNotes writes `Step Ups 16"` unescaped (#1106)
     else if (c === sep) { row.push(field); field = '' }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && s[i + 1] === '\n') i++
@@ -102,6 +110,8 @@ const COLUMNS = [
   ['distanceUnit', ['distance unit']],
   // gravl writes a treadmill's grade per set; "Incline (%)" normalises to the same name.
   ['incline', ['incline', 'incline percent']],
+  // A bike's or rower's resistance knob, 1 to 30 (ours writes resistance_level).
+  ['level', ['resistance level']],
   ['seconds', ['seconds', 'duration seconds', 'set duration sec', 'duration s']],
   ['time', ['time', 'duration']],
   // Strong's current export: the whole workout's length, in seconds, on every row.
@@ -121,6 +131,13 @@ const COLUMNS = [
   ['measurementType', ['measurement type']],
   ['value', ['value']],
   ['note', ['comment', 'comments', 'notes', 'note', 'exercise notes']],
+  // The lifting tempo of a set, "3-1-1-0" (ours writes it, #572).
+  ['tempo', ['tempo']],
+  // The bands of a set, by name (ours writes it, lib/bands.js).
+  ['bands', ['bands']],
+  // A set's own note and its colour tag (ours writes them: lib/set-notes.js, lib/set-tags.js).
+  ['setNote', ['set note']],
+  ['setColor', ['set color', 'set colour']],
 ]
 
 function mapHeader(header) {
@@ -208,6 +225,9 @@ const ALIAS_EX = {
   squat: '0043', 'back squat': '0043', 'barbell squat': '0043', 'front squat': '0042',
   deadlift: '0032', 'romanian deadlift': '0085', rdl: '0085', 'sumo deadlift': '0117',
   'lat pulldown': '2330', 'lat pull down': '2330', pulldown: '2330',
+  // Strong names the equipment in brackets; the bag with "cable" in it missed the alias above and
+  // fell to five near ties, so the most common pulldown arrived as a new exercise of your own.
+  'lat pulldown (cable)': '2330', 'lat pulldown (machine)': '0579',
   shrug: '0095', shrugs: '0095',
   'overhead press': '0091', 'military press': '0091', 'shoulder press': '0091', ohp: '0091',
   'barbell row': '0027', 'bent over row': '0027', 'bent-over row': '0027',
@@ -516,23 +536,23 @@ const monthOf = w => {
 /** "2020-12-30 18:51:52" · "2024-03-07" · "2024/03/07" · "2024.03.07" · "22 Dec 2025, 08:00" · "21 août 2024, 18:00" · "07/03/2024" -> { d, t } */
 export function parseWhen(s) {
   const v = String(s || '').trim()
-  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/)
-  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5])
+  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/)
+  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5], m[6], m[7])
   // \p{L} rather than [A-Za-z]: the month word carries an accent in most languages.
-  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/u)
   let mon = m && monthOf(m[2])
-  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5])
-  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5], m[6], m[7])
+  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/u)
   mon = m && monthOf(m[1])
-  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5])
+  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5], m[6], m[7])
   // Day-first when ambiguous: FitNotes/Strong/Hevy all write unambiguous dates, so a
   // bare numeric one came through a spreadsheet, and those are usually European.
-  m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2}))?/)
+  m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/)
   if (m) {
     const [, a, b, y] = m
     const day = +a > 12 ? a : +b > 12 ? b : a
     const mon = day === a ? b : a
-    return calendarDay(y, mon, day, m[4], m[5])
+    return calendarDay(y, mon, day, m[4], m[5], m[6], m[7])
   }
   return null
 }
@@ -545,18 +565,33 @@ export const daysBetween = (a, b) => {
 // before 1900 and not in the future. A day of slack covers a file written in a time zone
 // ahead of this one. Anything else is a broken cell, and filed as a workout it would sit
 // in the history as "Invalid Date" or a session from the year 9999.
-function calendarDay(y, mo, d, h, mi) {
+function calendarDay(y, mo, d, h, mi, sec, ampm) {
   y = +y; mo = +mo; d = +d
   const at = new Date(Date.UTC(y, mo - 1, d))
   if (y < 1900 || at.getUTCFullYear() !== y || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null
-  if (h !== undefined && (+h > 23 || +mi > 59)) return null
+  if (h !== undefined && (ampm ? (+h < 1 || +h > 12 || +mi > 59 || +sec > 59) : (+h > 23 || +mi > 59 || +sec > 59))) return null
   const now = new Date()
   if (at.getTime() > Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1)) return null
-  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi) }
+  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi, sec, ampm) }
 }
-const hm = (h, mi) => (h === undefined ? null : (parseInt(h, 10) || 0) * 3600000 + (parseInt(mi, 10) || 0) * 60000)
+const hm = (h, mi, sec, ampm) => {
+  if (h === undefined) return null
+  let hour = parseInt(h, 10) || 0
+  if (ampm) {
+    hour %= 12
+    if (ampm.toLowerCase() === 'p') hour += 12
+  }
+  return hour * 3600000 + (parseInt(mi, 10) || 0) * 60000 + (parseInt(sec, 10) || 0) * 1000
+}
 
 /** "HH:MM:SS" · "MM:SS" · "90" -> minutes */
+// "0:01:30" or "1:30" as seconds; 0 for anything that is not a clock time.
+function clockSeconds(v) {
+  const s = String(v ?? '').trim()
+  if (!/^\d+(:\d{1,2}){1,2}$/.test(s)) return 0
+  const p = s.split(':').map(x => parseInt(x, 10) || 0)
+  return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1]
+}
 function toMinutes(v) {
   const s = String(v ?? '').trim()
   if (!s) return 0
@@ -625,7 +660,10 @@ export function parseWorkoutCSV(text, opts = {}) {
  * catalogue when the app's own display name leaves out what it means (Liftosaur's "Front Raise"
  * is a dumbbell one). `skipped` counts rows the caller already threw away.
  */
-export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0 } = {}) {
+export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0, matches, skip, from, to, notes: keepNotes = true, effort: keepEffort = true, bands: ownBands = [] } = {}) {
+  // Bands by name (lib/bands.js): matched to the profile's, a name it lacks becomes a new band.
+  const bandList = cleanBands(ownBands)
+  const addedBands = []
   // Our own export (lib/export-csv.js) says more than the others: the catalogue id, which side of
   // a per-side set a row is, a drop-set's drops as rows of their own. Read that way only when the
   // header says it is ours.
@@ -652,6 +690,11 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
   const rowNotes = new Map()         // session key -> Strong's Note rows, as [exact title, name key, text]
   let sets = 0, skipped = preSkipped, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
   let sawLb = false, sawKg = false
+  // What the summary lets you choose (lib/import-choices.js): every name the file uses with what it
+  // became and what the automatic match would make it, and what was left out on purpose.
+  const autoOf = new Map()           // exact title -> the automatic match (null: your own)
+  const stats = new Map()            // exact title -> { name, sets, sessions }
+  let excluded = 0, notesSeen = 0, effortSeen = 0
 
   // The export puts an apostrophe in front of a name a spreadsheet would run as a formula.
   const cell = (r, f) => {
@@ -680,7 +723,8 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     // the sets have placed it.
     if (order === 'note') {
       const text = cell(r, 'note')
-      if (text) {
+      if (text) notesSeen++
+      if (text && keepNotes && inRange(when.d, from, to)) {
         const sk = sessionKeyOf(when, r)
         if (!rowNotes.has(sk)) rowNotes.set(sk, [])
         rowNotes.get(sk).push([name.trim().toLowerCase(), keyOf(name), text])
@@ -702,7 +746,11 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
 
     const reps = Math.round(num(cell(r, 'reps')))
     const secs = num(cell(r, 'seconds'))
-    const setNote = source === 'Hevy' ? hevyNote(cell(r, 'note')) : cell(r, 'note')
+    // FitNotes keeps a hold (a plank, a dead hang) only in its Time column, "0:01:30": the set's
+    // own time, as exact seconds. Its treadmill rows have a distance and stay cardio below.
+    const fnSecs = /^FitNotes/.test(source) && map.seconds === undefined ? clockSeconds(cell(r, 'time')) : 0
+    const setNoteRaw = source === 'Hevy' ? hevyNote(cell(r, 'note')) : cell(r, 'note')
+    const setNote = keepNotes ? setNoteRaw : ''
     // Ours keeps cardio minutes to hundredths, the way the app stores them.
     const mins = secs > 0 ? Math.round(secs / 60 * (own ? 100 : 10)) / (own ? 100 : 10) : toMinutes(cell(r, 'time'))
     const km = map.distanceKm !== undefined && cell(r, 'distanceKm')
@@ -715,8 +763,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
     const maxW = rowUnit === 'lb' || (!rowUnit && unit === 'lb') ? MAX_KG / LB_TO_KG : MAX_KG
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
+    // Sessions outside the days you chose stay in the file.
+    if (!inRange(when.d, from, to)) { excluded++; continue }
     const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
-    if (warmup) warmups++
 
     // Our own file names the exercise by id: a catalogue id is taken as it is, and a custom one
     // keeps its id too, so the same exercise on another device is the same exercise. Never a key
@@ -738,10 +787,22 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
         // stays custom: it was not in the catalogue on purpose.
         const alt = map.matchName !== undefined ? cell(r, 'matchName') : ''
         const byName = () => (alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(name)) : matchExercise(name))
-        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
+        const auto = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
+        autoOf.set(exact, auto)
+        // Your pick for the name beats every guess; "keep it as your own" still finds the one an
+        // earlier import made. Our own file names its exercises by id and has nothing to pick.
+        const pick = fileId ? undefined : pickFor(matches, name, customEx)
+        id = pick === undefined ? auto : pick === null ? (mine ? mine.id : null) : pick
       }
       resolved.set(exact, id)
     }
+    let st = stats.get(exact)
+    if (!st) stats.set(exact, st = { name, sets: 0, sessions: new Set() })
+    st.sets++
+    st.sessions.add(sessionKeyOf(when, r))
+    // An exercise you unticked stays out, and so does the exercise of your own it would have made.
+    if (skip && skip.has(nameKey(name))) { excluded++; continue }
+    if (warmup) warmups++
     if (id) matched++
     else {
       let c = created.get(key)
@@ -768,17 +829,38 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     const nameBp = bpFromName(name.toLowerCase())
     const exCardio = isCardioEx(id) || (created.get(key) || prior.get(key))?.bp === 'cardio' || nameBp === 'cardio'
     // Ours says it outright: a cardio row always has a distance, "0" included, a timed one none.
-    const ownCardio = own && cell(r, 'distanceKm') !== ''
+    // A carry or a sled of ours (Reddit, #1011): a distance with no seconds on an exercise that is
+    // not cardio is metres with a load, not a run at zero minutes.
+    const ownDistance = own && cell(r, 'distanceKm') !== '' && cell(r, 'seconds') === '' && !reps && !exCardio && km > 0
+    const ownCardio = own && cell(r, 'distanceKm') !== '' && !ownDistance
     // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
-    const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp)
+    const timed = own ? secs > 0 && !reps && !ownCardio
+      : (secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp))
+        || (fnSecs > 0 && !km && !reps && !exCardio)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
-    const set = timed
-      ? { sec: Math.round(secs), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+    const set = ownDistance
+      ? { m: Math.round(km * 1000), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+      : timed
+      ? { sec: Math.round(secs || fnSecs), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
       : isCardio
-        ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * (own ? 100 : 10)) / (own ? 100 : 10) : 0, ...inclineFrom({ incline: clampIncline(num(cell(r, 'incline'))) }), done: true, ...(warmup ? { phase: 'warmup' } : {}) }
+        ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * (own ? 100 : 10)) / (own ? 100 : 10) : 0, ...inclineFrom({ incline: clampIncline(num(cell(r, 'incline'))) }), ...levelFrom({ level: clampLevel(num(cell(r, 'level'))) }), done: true, ...(warmup ? { phase: 'warmup' } : {}) }
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+    const tempo = !timed && !isCardio ? normalizeTempo(cell(r, 'tempo')) : null
+    if (tempo) set.tempo = tempo
+    if (own && !timed && !isCardio && map.bands !== undefined && cell(r, 'bands')) {
+      const b = bandsFromCell(cell(r, 'bands'), bandList, 1_700_000_000_000 + addedBands.length * 100)
+      if (b.ids.length) set.bands = b.ids
+      bandList.push(...b.added)
+      addedBands.push(...b.added)
+    }
+    if (own) {
+      const tag = cell(r, 'setColor').trim().toLowerCase()
+      if (SET_TAG_IDS.has(tag)) set.tag = tag
+      const ownNote = keepNotes ? cell(r, 'setNote').trim() : ''
+      if (ownNote) set.note = ownNote.slice(0, SET_NOTE_MAX)
+    }
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
     if (!warmup && !isCardio && (/^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim()) || order === 'f')) set.failure = true
@@ -790,7 +872,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       // duration-based fatigue estimate. Keep RIR reserved for reps-mode exercises.
       const rir = isCardio ? null : effortNum(cell(r, 'rir'), true)
       const rpe = rir == null ? effortNum(cell(r, 'rpe'), false) : null
-      if (rir != null) { set.rir = rir; rirSets++ }
+      if (rir != null || rpe != null) effortSeen++
+      if (!keepEffort) { /* left behind on purpose */ }
+      else if (rir != null) { set.rir = rir; rirSets++ }
       else if (rpe != null) { set.rpe = rpe; rpeSets++ }
     }
 
@@ -805,7 +889,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       byDate.set(sessionKey, day)
     }
     if (!day.name) day.name = cell(r, 'workoutName') || ''
-    if (!day.note) day.note = source === 'Hevy' ? hevyNote(cell(r, 'workoutNote')) : cell(r, 'workoutNote')
+    const workoutNote = source === 'Hevy' ? hevyNote(cell(r, 'workoutNote')) : cell(r, 'workoutNote')
+    if (workoutNote && !day.seenNote) { day.seenNote = true; notesSeen++ }
+    if (!day.note && keepNotes) day.note = workoutNote
     // The end is kept as time since the start day's midnight, so a session that runs past
     // midnight ends on the next day's clock plus 24 h rather than before it began.
     if (map.endTime !== undefined) { const e = parseWhen(cell(r, 'endTime')); if (e && e.t != null) day.end = e.t + daysBetween(when.d, e.d) * 86400000 }
@@ -837,11 +923,15 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       }
       const row = { done: true, u: rowUnit, sides: { L: { w: 0, r: 0, done: false }, R: { w: 0, r: 0, done: false } }, _no: setNo, _sides: [side] }
       row.sides[side] = half
+      if (set.tempo) row.tempo = set.tempo
       if (set.phase) row.phase = set.phase
       if (set.failure) row.failure = true
+      if (set.tag) row.tag = set.tag
+      if (set.note) row.note = set.note
       list.push(row)
     } else list.push(set)
     // A note written against a set belongs to the exercise that day; the app keeps one per entry.
+    if (setNoteRaw) notesSeen++
     if (setNote) {
       const list = day.notes.get(id) || []
       if (!list.includes(setNote)) list.push(setNote)
@@ -906,7 +996,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
         return { ...s, w: c(s.w), ...drops(s.drops) }
       })
       const mx = Math.max(0, ...conv2.filter(s => !isWarmupRow(s)).map(s => s.w || 0))
-      const note = (day.notes.get(id) || []).join(' · ').slice(0, 280)
+      const note = (day.notes.get(id) || []).join(' · ').slice(0, NOTE_MAX)
       return { id, sets: conv2, topW: mx || null, ...(day.sg.has(id) ? { sg: day.sg.get(id) } : {}), ...(note ? { note } : {}) }
     })
     // A superset is exercises next to each other; one left without a neighbour sharing its
@@ -927,16 +1017,26 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     return w
   })
 
+  // Only what lands in the history counts: an exercise you unticked was resolved, but brings nothing.
+  const used = new Set(workouts.flatMap(w => w.entries.map(e => e.id)))
+  const matchedIds = [...new Set([...resolved.values()].filter(id => id && used.has(id)))]
+  const names = [...stats.entries()].map(([exact, st]) => {
+    const id = resolved.get(exact) || created.get(keyOf(st.name))?.id || null
+    return { key: nameKey(st.name), name: st.name, id: id || null, auto: autoOf.has(exact) ? autoOf.get(exact) || null : id || null, sets: st.sets, workouts: st.sessions.size }
+  })
   return {
     kind: 'workouts', source, workouts, customEx: [...created.values()],
+    ...(addedBands.length ? { bands: addedBands } : {}),
     // distinct library exercises behind the matched rows — the summary calls this
     // "exercises matched", and counting rows there made three exercises read as five
-    matched: new Set([...resolved.values()].filter(Boolean)).size,
-    matchedIds: [...new Set([...resolved.values()].filter(Boolean))],
+    matched: matchedIds.length,
+    matchedIds,
     matchedSets: matched,
     created: created.size, unmatchedNames: [...unmatched].sort(),
     sets, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,
     from: dates[0] || null, to: dates[dates.length - 1] || null,
+    // For the summary's choices: every name with its match, what was left out, what could be.
+    names: own ? [] : names, excluded, notesSeen, effortSeen,
   }
 }
 
@@ -962,6 +1062,9 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     out.set(d, day)
   }
   let fileUnit = '', source = 'Apple Health', measurements = []
+  // The export's runs, rides and matches come along as activities (lib/activities.js, gm-hooks):
+  // they used to be dropped on the floor, every one of them.
+  const activities = activitiesFromHealthExport(s)
 
   if (s.includes('HKQuantityTypeIdentifierBodyMass')) {
     const re = /<Record[^>]*type="HKQuantityTypeIdentifierBodyMass"[^>]*>/g
@@ -982,6 +1085,8 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
       if (!isFinite(w) || !w || !bodyOk(w, recUnit || unit)) continue
       put(when.d, { w, unit: recUnit, t: new Date(dt[1]).getTime() || null }, when.t)
     }
+  } else if (activities.length) {
+    // An export with workouts and no weigh-in at all: the activities alone.
   } else {
     const rows = parseCSV(s)
     if (rows.length < 2) return { error: 'empty' }
@@ -1017,7 +1122,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     }
   }
 
-  return finishBodyweight(out, unit, source, fileUnit, measurements)
+  return finishBodyweight(out, unit, source, fileUnit, measurements, activities)
 }
 
 // Our own body CSV (lib/export-csv.js bodyCSV) carries the measurements too (#718): a column per
@@ -1048,8 +1153,8 @@ function bodyCsvMeasurements(rows) {
 
 /** The weigh-ins collected per day, converted to `unit` — each in its own record's unit if it
  *  had one, else the file's. Measurements from our own body CSV ride along as they are. */
-function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
-  if (!out.size && !measurements.length) return { error: 'unrecognised' }
+function finishBodyweight(out, unit, source, fileUnit = '', measurements = [], activities = []) {
+  if (!out.size && !measurements.length && !activities.length) return { error: 'unrecognised' }
   const units = new Set([...out.values()].flat().map(b => b.unit || fileUnit).filter(Boolean))
   fileUnit = [...units].sort().join(' / ')
   const converted = [...units].some(sourceUnit => sourceUnit !== unit)
@@ -1061,7 +1166,7 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
     return roundWeight(w)
   }
   const dates = [...out.keys()].sort()
-  const all = [...new Set([...dates, ...measurements.map(m => m.d)])].sort()
+  const all = [...new Set([...dates, ...measurements.map(m => m.d), ...activities.map(a => a.d)])].sort()
   return {
     kind: 'bodyweight', source,
     // One entry per weigh-in, several on a day that has them, each with its time (`at`) when the
@@ -1069,6 +1174,7 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
     bodyweight: dates.flatMap(d => out.get(d).slice().sort((x, y) => (x.at || '') < (y.at || '') ? -1 : 1)
       .map(b => ({ d, w: conv(b), t: b.t || new Date(d).getTime(), ...(b.at ? { at: b.at } : {}) }))),
     ...(measurements.length ? { measurements } : {}),
+    ...(activities.length ? { activities } : {}),
     fileUnit, converted, from: all[0], to: all[all.length - 1],
   }
 }
@@ -1076,37 +1182,100 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
 /** A weigh-in a person could have: above zero and below MAX_BODY_KG in the given unit. */
 const bodyOk = (w, u) => w > 0 && w <= (u === 'lb' ? MAX_BODY_KG / LB_TO_KG : MAX_BODY_KG)
 
+// The custom fields the imported days need, by lower-cased name: the profile's own first, then
+// one made for each column that has none yet (with the column's unit).
+function measurementFieldsFor(S, days) {
+  const byName = new Map((S.customMeasurements || []).map(c => [String(c.name).toLowerCase(), c]))
+  const made = []
+  for (const m of days) for (const o of m.other) {
+    if (byName.has(o.name.toLowerCase())) continue
+    const field = { id: uid(), name: o.name.slice(0, 60), enabled: true, unit: o.unit }
+    byName.set(o.name.toLowerCase(), field)
+    made.push(field)
+  }
+  return { byName, made }
+}
+
+// One record per date: rows that share one are halves of the same check-in, and the first
+// non-empty value of a field wins (the way measurements.js mergeMeasurementEntries folds them).
+function groupMeasurementDays(days) {
+  const byDay = new Map()
+  for (const m of days) {
+    const cur = byDay.get(m.d)
+    if (!cur) { byDay.set(m.d, { d: m.d, values: { ...m.values }, other: [...m.other] }); continue }
+    for (const [key, v] of Object.entries(m.values)) if (cur.values[key] == null) cur.values[key] = v
+    const seen = new Set(cur.other.map(o => o.name.toLowerCase()))
+    for (const o of m.other) if (!seen.has(o.name.toLowerCase())) { seen.add(o.name.toLowerCase()); cur.other.push(o) }
+  }
+  return [...byDay.values()]
+}
+
+// What the file's rows for one date amount to as a check-in against the given custom fields.
+// Normalizing drops what no field could hold (a 140 % or a negative).
+function measurementEntryFrom(m, custom, byName) {
+  const entry = emptyMeasurement(m.d, custom)
+  for (const [key, v] of Object.entries(m.values)) entry[key] = v
+  for (const o of m.other) {
+    const field = byName.get(o.name.toLowerCase())
+    if (!sameMeasurementKind(field.unit, o.unit)) continue
+    const item = entry.other.find(x => x.id === field.id)
+    if (item) item.value = fromCsvUnit(o.value, o.unit)
+  }
+  return normalizeMeasurementEntry(entry, custom)
+}
+
+// A check-in that is already here keeps every value it has; the file's go only where it has
+// none (#1206). The entries are normalized against the same custom fields, so `other` ids line up.
+function fillCheckIn(have, entry) {
+  const out = { ...have, other: have.other.map(o => ({ ...o })) }
+  for (const key of MEASUREMENT_KEYS) if (out[key] == null && entry[key] != null) out[key] = entry[key]
+  for (const o of entry.other) {
+    if (o.value == null) continue
+    const item = out.other.find(x => x.id === o.id)
+    if (!item) { out.other.push({ ...o }); continue }
+    if (item.value == null) { item.value = o.value; if (o.unit) item.unit = o.unit }
+  }
+  if (!out.note && entry.note) out.note = entry.note
+  return out
+}
+
+// Whether filling brought the day anything at all: same values, field by field.
+function sameCheckIn(a, b) {
+  for (const key of MEASUREMENT_KEYS) if ((a[key] ?? null) !== (b[key] ?? null)) return false
+  if ((a.note || '') !== (b.note || '')) return false
+  const vals = x => new Map((x.other || []).map(o => [o.id, o.value ?? null]))
+  const A = vals(a), B = vals(b)
+  for (const [id, v] of A) if ((B.has(id) ? B.get(id) : null) !== v) return false
+  for (const [id, v] of B) if ((A.has(id) ? A.get(id) : null) !== v) return false
+  return true
+}
+
 /**
  * Measurements read from our own body CSV (bodyCsvMeasurements), into state the way weigh-ins
- * go: a day that already has a check-in keeps it. A custom column goes to the field of the same
- * name, made with the column's unit if there is none; one whose unit is another kind than that
- * field's (kg into a % field) is left out rather than relabelled. Returns how many days came in.
+ * go: a check-in keeps the values it has, and the file fills the ones it has not (#1206) — a day
+ * with some measurements no longer swallows the rest of its row. A custom column goes to the
+ * field of the same name, made with the column's unit if there is none; one whose unit is
+ * another kind than that field's (kg into a % field) is left out rather than relabelled.
+ * Returns how many days came in or gained a value.
  */
 function mergeMeasurements(S, days) {
   normalizeMeasurementsState(S)
-  const have = new Set(S.measurements.map(e => e.d))
-  const fresh = days.filter(m => !have.has(m.d))
-  const byName = new Map(S.customMeasurements.map(c => [c.name.toLowerCase(), c]))
-  for (const m of fresh) for (const o of m.other) {
-    if (byName.has(o.name.toLowerCase())) continue
-    const field = { id: uid(), name: o.name.slice(0, 60), enabled: true, unit: o.unit }
-    S.customMeasurements.push(field)
-    byName.set(o.name.toLowerCase(), field)
-  }
+  const { byName, made } = measurementFieldsFor(S, days)
+  if (made.length) { S.customMeasurements.push(...made); normalizeMeasurementsState(S) }
   let n = 0
-  for (const m of fresh) {
-    const entry = emptyMeasurement(m.d, S.customMeasurements)
-    for (const [key, v] of Object.entries(m.values)) entry[key] = v
-    for (const o of m.other) {
-      const field = byName.get(o.name.toLowerCase())
-      if (!sameMeasurementKind(field.unit, o.unit)) continue
-      const item = entry.other.find(x => x.id === field.id)
-      if (item) item.value = fromCsvUnit(o.value, o.unit)
+  for (const m of groupMeasurementDays(days)) {
+    const entry = measurementEntryFrom(m, S.customMeasurements, byName)
+    const i = S.measurements.findIndex(e => e.d === m.d)
+    if (i < 0) {
+      if (!measurementEntryHasValues(entry)) continue
+      S.measurements.push(entry)
+      n++
+      continue
     }
-    // Normalizing drops what no field could hold (a 140 % or a negative); nothing left, no day.
-    const clean = normalizeMeasurementEntry(entry, S.customMeasurements)
-    if (!measurementEntryHasValues(clean)) continue
-    S.measurements.push(clean)
+    const filled = normalizeMeasurementEntry(fillCheckIn(S.measurements[i], entry), S.customMeasurements)
+    if (sameCheckIn(filled, S.measurements[i])) continue
+    filled.t = Date.now() // an edit of the day, stamped so the sync carries it (lib/sync-merge.js)
+    S.measurements[i] = filled
     n++
   }
   normalizeMeasurementsState(S)
@@ -1114,14 +1283,36 @@ function mergeMeasurements(S, days) {
 }
 
 /**
- * Whether the profile already has an imported weigh-in: one at the same time on its day, or, for
- * one without a time, any weigh-in on its day (the day keeps its own, as it always did).
+ * What importing the measurement `days` would do to each of their dates, without touching the
+ * state: 'add' a check-in where the day has none, 'fill' one where the day's check-in is empty,
+ * or 'keep' the day as it is (the file brings it nothing). The import summary counts the days
+ * that are kept as already here (#1206).
+ */
+export function measurementImportPlan(S, days) {
+  const st = normalizeMeasurementsState({ measurements: S?.measurements || [], customMeasurements: S?.customMeasurements || [] })
+  const { byName, made } = measurementFieldsFor(st, days)
+  const custom = [...st.customMeasurements, ...made]
+  const plan = new Map()
+  for (const m of groupMeasurementDays(days)) {
+    const entry = measurementEntryFrom(m, custom, byName)
+    const have = st.measurements.find(e => e.d === m.d)
+    if (!have) { plan.set(m.d, measurementEntryHasValues(entry) ? 'add' : 'keep'); continue }
+    const filled = normalizeMeasurementEntry(fillCheckIn(have, entry), custom)
+    plan.set(m.d, sameCheckIn(filled, have) ? 'keep' : 'fill')
+  }
+  return plan
+}
+
+/**
+ * Whether the profile already has an imported weigh-in: the same import again (its id), one at
+ * the same time on its day, or — for one without a time — one of the same weight on its day.
+ * A different weight that day is another weigh-in, not a duplicate (#1206).
  */
 export function importHasWeighIn(S, b) {
   const day = (S?.bodyweight || []).find(x => x && x.d === b?.d)
   if (!day) return false
-  if (!b.at) return true
-  return readingsOf(day).some(r => r.id === importReadingId(b) || r.at === b.at)
+  return readingsOf(day).some(r =>
+    r.id === importReadingId(b) || (b.at ? r.at === b.at : Number(r.w) === Number(b.w)))
 }
 // The same imported weigh-in gets the same id on every device that imports the file.
 const importReadingId = b => 'i' + hashId(`${b.d}|${b.at || ''}|${b.w}`)
@@ -1157,8 +1348,15 @@ export function mergeImport(S, parsed) {
     }
     const res = { added, skipped: parsed.bodyweight.length - added }
     if (parsed.measurements?.length) res.measurements = mergeMeasurements(S, parsed.measurements)
+    if (parsed.activities?.length) res.activities = mergeImportedActivities(S, parsed.activities)
     return res
   }
+  // A session that was only sport (Hevy's "Padel", Strong's "Football", minutes and nothing else)
+  // comes in as an activity, not as a workout with no sets worth the name (lib/activities.js).
+  const named = e => parsed.customEx?.find(c => c.id === e.id)?.n || EXIDX[e.id]?.n || e.ex?.n || ''
+  const split = splitSportWorkouts(parsed.workouts, named)
+  const sportIn = split.activities.length ? mergeImportedActivities(S, split.activities) : 0
+  parsed = { ...parsed, workouts: split.workouts }
   const have = new Set(S.workouts.map(w => w.d))
   // Every parse invents fresh ids for the names it cannot match, and a later export of the same
   // account names those exercises again. So a custom exercise is looked up by name among the ones
@@ -1178,11 +1376,13 @@ export function mergeImport(S, parsed) {
   const known = new Set(S.customEx.map(c => c?.id))
   const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id] && !known.has(c.id))
   S.customEx = [...S.customEx, ...customs]
+  // Bands the file named that this profile did not have yet (lib/bands.js bandsFromCell).
+  if (parsed.bands?.length) S.bands = cleanBands([...(Array.isArray(S.bands) ? S.bands : []), ...parsed.bands])
   S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift
   fresh.forEach(w => w.entries.forEach(e => {
     const mx = Math.max(0, ...e.sets.map(s => s.w || 0), e.topW || 0)
     if (mx > 0) { const cur = S.exWeights[e.id]; if (!cur || w.d >= cur.d) S.exWeights[e.id] = { w: mx, d: w.d } }
   }))
-  return { added: fresh.length, skipped: parsed.workouts.length - fresh.length }
+  return { added: fresh.length, skipped: parsed.workouts.length - fresh.length, ...(split.activities.length ? { activities: sportIn } : {}) }
 }

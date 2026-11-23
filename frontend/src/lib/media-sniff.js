@@ -83,11 +83,20 @@ export function sniffKind(bytes) {
   const sig = ascii(b, 0, 6)
   if (sig === 'GIF87a' || sig === 'GIF89a') return { mime: 'image/gif', kind: 'gif', category: 'still' }
   if (ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 4) === 'WEBP') return { mime: 'image/webp', kind: 'image', category: 'still' }
+  // A sound of one's own (lib/sound-ingest.js writes it): a 16-bit PCM WAV, as api/media.js sniffMedia takes it.
+  if (ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 4) === 'WAVE') return ascii(b, 12, 4) === 'fmt ' && b.length >= 22 && (b[20] | (b[21] << 8)) === 1 ? { mime: 'audio/wav', kind: 'audio', category: 'audio' } : null
   if (ascii(b, 4, 4) === 'ftyp') {
     const brand = ascii(b, 8, 4)
     if (brand === 'qt  ') return { mime: 'video/quicktime', kind: 'video', category: 'video' }
     if (MP4_BRANDS.has(brand)) return { mime: 'video/mp4', kind: 'video', category: 'video' }
     if (HEIF_BRANDS.has(brand)) return { mime: brand.startsWith('avi') ? 'image/avif' : 'image/heic', kind: 'image', category: 'still', input: true }
+    // The major brand can be one nobody lists (a newer camera's own); the compatible brands after
+    // it still say what the file is (ISO/IEC 14496-12 4.3). Only HEIF/AVIF are taken that way (#1268).
+    const size = u32be(b, 0)
+    for (let i = 16; i + 4 <= Math.min(size, b.length, 64); i += 4) {
+      const c = ascii(b, i, 4)
+      if (HEIF_BRANDS.has(c)) return { mime: c.startsWith('avi') ? 'image/avif' : 'image/heic', kind: 'image', category: 'still', input: true }
+    }
     return null
   }
   if (at(b, 0, [0x1a, 0x45, 0xdf, 0xa3])) {

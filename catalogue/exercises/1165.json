@@ -3,11 +3,12 @@
   "name": "barbell standing military press (without rack)",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A strict overhead press where you clean or lift the bar to your shoulders without a rack.",

@@ -33,7 +33,7 @@
 // old pass would immediately tick an item of the new one.
 
 import { isoOf, todayISO, uid } from './format.js'
-import { queueOf, queueView } from './queue.js'
+import { queueOf, queueView, queueDone } from './queue.js'
 
 const routineIdsOf = w => (Array.isArray(w?.routineIds) ? w.routineIds : (w?.routineId ? [w.routineId] : []))
 const dayAfter = iso => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + 1); return isoOf(d) }
@@ -103,9 +103,11 @@ const sinceAfter = (s, q, now) => Math.max(now, ...creditWindow(s, q).map(w => (
 
 /**
  * Clears dayPlan pins dated `today` or later that name one of `ids` — a pass no longer owns
- * them (dropped, replaced by a refill, or ended outright), so a leftover pin never resurfaces as
- * an "open" pin on a session that isn't this pass's any more (pinState, queue.js) or, once no
- * queue is left at all, as a plain routine override history.js was never meant to read it as.
+ * them (dropped by an edit, thrown away by a restart, or ended outright), so a leftover pin never
+ * resurfaces as an "open" pin on a session that isn't this pass's any more (pinState, queue.js)
+ * or, once no queue is left at all, as a plain routine override history.js was never meant to
+ * read it as. A refill (refillAfter) does not call it: a day planned ahead for a session of the
+ * rotation is the user's plan for the next round too.
  */
 const sweepPins = (s, ids, today) => {
   if (!ids.length) return
@@ -113,6 +115,13 @@ const sweepPins = (s, ids, today) => {
     if (iso >= today && ids.includes(s.dayPlan[iso])) delete s.dayPlan[iso]
   })
 }
+
+/**
+ * The ids an explicit stop or restart sweeps: the pass's own, and for a pass this app manages
+ * every routine of its loop. A loop with rest days or repeats runs one segment at a time and a
+ * refill keeps plans, so a pin on another segment's routine can still be waiting.
+ */
+const ownedIds = (s, q) => (q.rotationId && q.rotationId === s.rotation?.id ? [...new Set([...q.ids, ...rotationIds(s)])] : q.ids)
 
 /** Settings → Rotation with a saved rotation and no queue. False when nothing valid is left to start. */
 export function startPass(s, today = todayISO(), now = Date.now()) {
@@ -139,6 +148,7 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
   if (!ids.length) return
   if (!isSimpleSequence(ids)) { saveLoop(s, ids, label, today, now); return }
   const prev = queueOf(s)
+  const owned = prev ? ownedIds(s, prev) : []
   s.rotation = { id: s.rotation?.id ?? uid(), sequence: ids, label }
   s.queue = {
     ids,
@@ -151,6 +161,8 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
   // A session dropped from the rotation leaves its future pin behind otherwise — dayPlan then
   // still resolves that date to a session the queue no longer has (pinState/queue.js).
   sweepPins(s, (prev?.ids || []).filter(id => !ids.includes(id)), today)
+  // Refills keep plans, so a routine of another segment of the old loop can still have one.
+  sweepPins(s, owned.filter(id => !ids.includes(id)), today)
   // An edit (e.g. removing the last session still to do) can leave the pass complete on the
   // spot — without this it would sit idle until a workout happened to reach refillAfter. Only an
   // edit that removed or reordered sessions of a pass that already existed: a pass this save just
@@ -160,7 +172,7 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
   // the day after the last workout that credited this one, so nothing already logged re-ticks it.
   if (prev && ids.every(id => prev.ids.includes(id)) && queueView(s, today)?.complete) {
     const q = queueOf(s)
-    const last = lastCreditDay(s)
+    const last = lastCreditDay(s, today)
     sweepPins(s, q.ids, today)
     s.queue = newPass(rotationIds(s), label, s.rotation.id, last ? dayAfter(last) : today, sinceAfter(s, q, now))
   }
@@ -175,6 +187,7 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
 function saveLoop(s, seq, label, today, now) {
   const prev = queueOf(s)
   const ownPrev = !!prev && !!s.rotation && prev.rotationId === s.rotation.id
+  const owned = prev ? ownedIds(s, prev) : []
   const at = Number.isInteger(s.rotation?.at) && s.rotation.at < seq.length && seq[s.rotation.at] !== REST ? s.rotation.at : 0
   s.rotation = { id: s.rotation?.id ?? uid(), sequence: seq, label, at }
   const seg = segmentAt(seq, at)
@@ -188,9 +201,12 @@ function saveLoop(s, seq, label, today, now) {
     ...(prev?.strict === true ? { strict: true } : {}),
   }
   sweepPins(s, (prev?.ids || []).filter(id => !seg.ids.includes(id)), today)
+  // Refills keep plans, so a routine of another segment of the old loop can still have one.
+  sweepPins(s, owned.filter(id => !seq.includes(id)), today)
   if (prev && ownPrev && queueView(s, today)?.complete) {
     const q = queueOf(s)
     const last = lastCreditDay(s)
+    sweepPins(s, q.ids, today)
     advanceLoop(s, q, last, today, now)
   }
 }
@@ -200,7 +216,6 @@ function advanceLoop(s, q, bound, today, now) {
   const seq = sequenceOf(s)
   const seg = segmentAt(seq, s.rotation.at)
   const next = segmentAt(seq, seg.next)
-  sweepPins(s, q.ids, today)
   s.rotation = { ...s.rotation, at: next.start }
   const startsOn = addDays(bound ? dayAfter(bound) : today, seg.rest)
   s.queue = newPass(next.ids, s.rotation.label || '', s.rotation.id, startsOn, sinceAfter(s, q, now))
@@ -213,7 +228,7 @@ function advanceLoop(s, q, bound, today, now) {
  */
 export function stopPass(s, today = todayISO()) {
   const q = queueOf(s)
-  if (q) sweepPins(s, q.ids, today)
+  if (q) sweepPins(s, ownedIds(s, q), today)
   s.queue = null
 }
 
@@ -241,11 +256,23 @@ export function chooseFixedWeek(s, today = todayISO()) {
   s.scheduleMode = 'week'
 }
 
-/** The latest day a workout could have credited the current pass, or null. */
-const lastCreditDay = s => {
+/**
+ * The latest date a workout that has happened can carry: today, plus a day of slack for a device
+ * in a time zone ahead of this one (the CSV import allows the same). A date past it came from a
+ * calendar that is wrong, or from an API client.
+ */
+const latestDay = today => dayAfter(today)
+
+/**
+ * The latest day a workout could have credited the current pass, or null. A date past
+ * latestDay(today) is left out: taken as the day the pass was last credited, it parked the next
+ * pass until the day after it. A workout dated tomorrow still counts, so the next pass starts
+ * after it and that workout cannot be credited to both.
+ */
+const lastCreditDay = (s, today) => {
   const q = queueOf(s)
   if (!q) return null
-  const days = creditWindow(s, q).map(w => w.d)
+  const days = creditWindow(s, q).map(w => w.d).filter(d => d <= latestDay(today))
   return days.length ? days.sort().at(-1) : null
 }
 
@@ -264,7 +291,7 @@ export function startNewPass(s, today = todayISO(), now = Date.now()) {
   const ids = loop ? loop.ids : rotationIds(s)
   if (!ids.length) return
   const q = queueOf(s)
-  if (q) sweepPins(s, q.ids, today)
+  if (q) sweepPins(s, ownedIds(s, q), today)
   // A live workout on one of the loop's routines, already running when the loop is started over,
   // belongs to the new pass: otherwise `strict` + since=now means it never counts once finished.
   // Still never earlier than the old pass's own workouts (sinceAfter's floor).
@@ -285,6 +312,34 @@ const isCircular = (ids, seq) => {
 const rotate = (seq, afterId) => {
   const i = seq.indexOf(afterId)
   return i < 0 ? seq : [...seq.slice(i + 1), ...seq.slice(0, i + 1)]
+}
+
+/**
+ * Called with the state a finished workout has just been written into, before refillAfter. A
+ * workout on a session the running pass this app manages already counted done (a redo) starts
+ * the pass over from that session: the rotation rotated to begin with it (the earliest in
+ * sequence order when it credits several), strict from this workout's start and dated from its
+ * day, so this workout counts for its first session and nothing logged before it does. Plans are
+ * kept. A loop with rest days or repeats (#536) keeps its segments, and a pass that no longer
+ * matches its rotation is left for the editor. Returns true when it replaced `s.queue`.
+ */
+export function restartOnRedo(s, w, today = todayISO()) {
+  const q = queueOf(s)
+  if (!q?.rotationId || !s.rotation?.id || q.rotationId !== s.rotation.id) return false
+  if (!isSimpleSequence(sequenceOf(s))) return false
+  const seq = rotationIds(s)
+  if (!isCircular(q.ids, seq) || !Number.isFinite(w?.start) || !w.d) return false
+  const others = (s.workouts || []).filter(x => x !== w && (w.id == null || x.id !== w.id))
+  // The new pass counts by clock from this start, so a workout of the pass started after it would
+  // count for it too: a backdated redo like that only credits.
+  if (others.some(x => (x.start ?? 0) >= w.start && routineIdsOf(x).some(id => q.ids.includes(id)))) return false
+  const before = queueDone({ ...s, workouts: others }, w.d > today ? w.d : today)
+  const credited = routineIdsOf(w)
+  const redo = seq.find(id => credited.includes(id) && before.includes(id))
+  if (!redo) return false
+  const i = seq.indexOf(redo)
+  s.queue = { ...newPass([...seq.slice(i), ...seq.slice(0, i)], s.rotation.label || '', s.rotation.id, w.d, w.start), strict: true }
+  return true
 }
 
 /**
@@ -313,12 +368,13 @@ export function refillAfter(s, w, today = todayISO(), now = Date.now()) {
   if (!isCircular(q.ids, seq)) return false
   const credited = routineIdsOf(w)
   const last = q.ids.filter(id => credited.includes(id)).at(-1) ?? null
-  const bound = [w.d, lastCreditDay(s)].filter(Boolean).sort().at(-1)
-  sweepPins(s, q.ids, today)
+  // The same dates as lastCreditDay; with none of them left, the next pass starts today, as an
+  // edit's does (saveRotation).
+  const bound = [w.d, lastCreditDay(s, today)].filter(d => d && d <= latestDay(today)).sort().at(-1)
   // The rotation's own label only — never the closing pass's (q.label): once adopted from a
   // planner, that would otherwise repeat its original week name ("US W1") on every pass this app
   // generates on its own from then on.
-  s.queue = newPass(rotate(seq, last), s.rotation.label || '', s.rotation.id, dayAfter(bound), sinceAfter(s, q, now))
+  s.queue = newPass(rotate(seq, last), s.rotation.label || '', s.rotation.id, bound ? dayAfter(bound) : today, sinceAfter(s, q, now))
   return true
 }
 
@@ -333,7 +389,7 @@ export function refillIfComplete(s, today = todayISO(), now = Date.now()) {
   const q = queueOf(s)
   if (!q?.rotationId || !s.rotation?.id || q.rotationId !== s.rotation.id) return false
   if (!queueView(s, today)?.complete) return false
-  const last = creditWindow(s, q)
+  const last = creditWindow(s, q).filter(w => w.d <= latestDay(today))
     .sort((x, y) => (x.d === y.d ? (x.start || 0) - (y.start || 0) : x.d < y.d ? -1 : 1)).at(-1)
   return last ? refillAfter(s, last, today, now) : false
 }

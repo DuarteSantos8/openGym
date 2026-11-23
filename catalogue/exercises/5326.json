@@ -1,8 +1,9 @@
 {
   "id": "5326",
-  "name": "lever multy mode rope lat pulldown",
+  "name": "lever multi-mode rope lat pulldown",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

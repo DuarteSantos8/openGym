@@ -98,6 +98,28 @@ describe('makeBackHandler', () => {
     expect(h.calls.exit).toBe(0)
   })
 
+  // Android 16's WebView answered canGoBack false on Settings → Data & backup, reached by two
+  // taps, so back offered to exit instead of going up to Settings.
+  it('goes back a page the router pushed even when the WebView says it cannot', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/settings/data', key: 'data', idx: 2 })
+    expect(h.handler({ canGoBack: false })).toBe('history')
+    expect(h.calls.back).toBe(1)
+    expect(h.calls.toasts).toEqual([])
+  })
+
+  it('still offers to exit from the first page the app opened on', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/settings/data', key: 'data', idx: 0 })
+    expect(h.handler({ canGoBack: false })).toBe('arm-exit')
+  })
+
+  it('leaves a root tab whatever the router history holds', () => {
+    const h = harness()
+    h.setLocation({ pathname: '/home', key: 'home', idx: 5 })
+    expect(h.handler({ canGoBack: false })).toBe('arm-exit')
+  })
+
   it('treats a missing event payload as no history', () => {
     const h = harness()
     expect(h.handler()).toBe('arm-exit')
@@ -144,5 +166,22 @@ describe('back from a root tab', () => {
     expect(h.calls.toasts).toHaveLength(2)
     h.tick(100)
     expect(h.handler({ canGoBack: true })).toBe('exit')
+  })
+})
+
+describe('a full-screen layer takes back first', () => {
+  it('closes the layer when no sheet sits on it, and lets a sheet go first', async () => {
+    const { setOverlayBack, overlayTakesBack } = await import('./back.js')
+    const { useUI } = await import('../store/useUI.js')
+    let closed = 0
+    setOverlayBack(() => { closed++; return true })
+    useUI.setState({ sheets: [] })
+    expect(overlayTakesBack()).toBe(true)
+    useUI.setState({ sheets: [{ id: 1 }] })
+    expect(overlayTakesBack()).toBe(false)
+    setOverlayBack(null)
+    useUI.setState({ sheets: [] })
+    expect(overlayTakesBack()).toBe(false)
+    expect(closed).toBe(1)
   })
 })

@@ -12,7 +12,7 @@ import { watchAsksEffort } from '../lib/watch-sync.js'
 
 const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 // Apple Fitness's four words (lib/workout-effort.js EFFORT_LEVELS), each a t() of its own.
-const WORDS = { Easy: () => t('Easy'), Moderate: () => t('Moderate'), Hard: () => t('Hard'), 'All out': () => t('All out') }
+const WORDS = { Easy: () => t('Easy'), Moderate: () => t('Moderate'), 'Hard effort': () => t('Hard effort'), 'All out': () => t('All out') }
 const colorOf = n => (n <= 3 ? 'var(--green)' : n <= 6 ? 'var(--yellow)' : n <= 8 ? 'var(--orange)' : 'var(--red)')
 
 /** Whether this phone asks for, or shows, a workout's effort: iOS 18 with Apple Health on. */

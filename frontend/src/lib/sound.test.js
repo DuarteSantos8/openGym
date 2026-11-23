@@ -197,10 +197,23 @@ describe('play on silent (Settings switch, WebKit only)', () => {
     expect(session.type).toBe('playback')
   })
 
-  it("off: hands the choice back to the browser ('auto')", () => {
+  it("off: sets 'ambient' so timer sounds mix with background music instead of interrupting it", () => {
     sound.setPlayOnSilent(true)
     sound.setPlayOnSilent(false)
-    expect(session.type).toBe('auto')
+    expect(session.type).toBe('ambient')
+  })
+
+  it("falls back to 'auto' if 'ambient' is rejected", () => {
+    let currentType = 'auto'
+    Object.defineProperty(session, 'type', {
+      set(v) { if (v === 'ambient') throw new TypeError('Unsupported'); currentType = v },
+      get() { return currentType },
+      configurable: true,
+    })
+    sound.setPlayOnSilent(true)
+    expect(currentType).toBe('playback')
+    sound.setPlayOnSilent(false)
+    expect(currentType).toBe('auto')
   })
 
   // Discord (baodor): the app paused the music on the rest sound. In the iPhone app the page's
@@ -213,6 +226,21 @@ describe('play on silent (Settings switch, WebKit only)', () => {
       sound.setPlayOnSilent(false)
       expect(session.type).toBe('ambient')
     } finally { vi.unstubAllEnvs() }
+  })
+
+  // Reddit (v1.4.5): an app WebKit that does not say iPhone (an iPad as a Mac) still mixes.
+  it("in the app: 'ambient' even where the user agent is not an iPhone's", () => {
+    vi.stubEnv('VITE_MOBILE', '1')
+    const ua = Object.getOwnPropertyDescriptor(window.navigator, 'userAgent')
+    Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', configurable: true })
+    try {
+      session.type = 'auto'
+      sound.setPlayOnSilent(true)
+      expect(session.type).toBe('ambient')
+    } finally {
+      vi.unstubAllEnvs()
+      if (ua) Object.defineProperty(navigator, 'userAgent', ua); else delete navigator.userAgent
+    }
   })
 
   it('is a no-op in a browser without navigator.audioSession', () => {

@@ -30,11 +30,14 @@ export function makeBackHandler({ getSheets, getLocation = () => ({}), closeShee
   let armedAt = -Infinity, armedKey
   return (ev = {}) => {
     const sheets = getSheets()
-    const { pathname, key } = getLocation()
+    const { pathname, key, idx } = getLocation()
     const action = decideBack({
       top: sheets[sheets.length - 1],
       pathname,
-      canGoBack: !!ev.canGoBack,
+      // The WebView's own answer can be false on a page the app pushed (Android 16: Settings →
+      // Data & backup offered to exit). The router's position counts too: past its first entry,
+      // there is an app page to go back to.
+      canGoBack: !!ev.canGoBack || idx > 0,
       // A tab switch, even away and back, cancels the warning from the previous entry.
       exitArmed: key === armedKey && now() - armedAt < EXIT_WINDOW,
     })
@@ -45,6 +48,15 @@ export function makeBackHandler({ getSheets, getLocation = () => ({}), closeShee
     else if (action === 'exit') exit()
     return action
   }
+}
+
+// A full-screen layer that is not a sheet (the circuit player, components/CircuitPlayer.jsx) takes a
+// back press while it is up and no sheet sits on it: `fn` closes it and answers true.
+let overlayBack = null
+export function setOverlayBack(fn) { overlayBack = typeof fn === 'function' ? fn : null }
+export function overlayTakesBack() {
+  if (!overlayBack || useUI.getState().sheets.length) return false
+  try { return overlayBack() === true } catch { return false }
 }
 
 // Registers the listener for the native shell. No-op in web builds, where the browser
@@ -58,6 +70,7 @@ export async function initBackButton() {
       getLocation: () => ({
         pathname: window.location.hash.slice(1).split('?')[0] || '/',
         key: window.history.state?.key ?? window.location.hash,
+        idx: window.history.state?.idx ?? 0,   // react-router's place in its own history
       }),
       closeSheet: id => useUI.getState().closeSheet(id),
       toast: msg => useUI.getState().toast(msg),
@@ -65,7 +78,7 @@ export async function initBackButton() {
       exit: () => App.exitApp(),
     })
     // The app tour takes a back press first: it closes (lib/tour.js).
-    const sub = await App.addListener('backButton', ev => (tourBack() ? 'tour' : handler(ev)))
+    const sub = await App.addListener('backButton', ev => (tourBack() ? 'tour' : overlayTakesBack() ? 'overlay' : handler(ev)))
     return () => sub.remove()
   } catch (e) {
     return () => {}   // no plugin (older install): leave back to the default behaviour

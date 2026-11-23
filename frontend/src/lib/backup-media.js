@@ -17,6 +17,7 @@
  * A backup file is someone else's data as much as a plan file is: the imported state's media refs
  * and links go through the same gates as everywhere else (sanitizeCustomMedia).
  */
+import { dropBrokenRows } from './backup-sane.js'
 import { zipStore, readZip, looksLikeZip } from './zip.js'
 import { referencedFiles, normalizeMediaRef, workoutMediaOf, cleanUrl, MEDIA_MIMES } from './media-refs.js'
 import { sniffKind } from './media-sniff.js'
@@ -25,9 +26,14 @@ import { mediaStore } from './media-store.js'
 import { setVideosOf } from './set-videos.js'
 import { DEFAULT_LIMITS, MB } from './media-limits.js'
 import { t } from './i18n-core.js'
+import { sanitizeAvatar } from './avatar.js'
+
+// The server's default cap for a sound of one's own (api/media.js MEDIA_AUDIO_MAX_MB).
+const AUDIO_MB = 2
 
 export const BACKUP_JSON = 'opengym-backup.json'
-const MEDIA_ENTRY = /^media\/([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm)$/
+// .wav: a sound of one's own (lib/user-sounds.js), exported since v1.4.5 but read back only now.
+const MEDIA_ENTRY = /^media\/([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm|wav)$/
 
 const README = `openGym backup with photos and videos
 =====================================
@@ -67,6 +73,8 @@ export function sanitizeCustomMedia(state) {
     const list = workoutMediaOf(w, Infinity)
     if (list.length) w.media = list; else delete w.media
   }
+  // The profile picture (lib/avatar.js): a well-formed image ref or a known preset, else none.
+  sanitizeAvatar(state)
   return state
 }
 
@@ -132,7 +140,8 @@ export async function readBackupFile(file) {
     state = JSON.parse(await file.text())
     if (!isBackup(state)) throw notBackup()
   }
-  return { state: sanitizeCustomMedia(state), files, zip }
+  // Rows no screen can read (a null among the workouts) stay out: lib/backup-sane.js.
+  return { state: sanitizeCustomMedia(dropBrokenRows(state).state), files, zip }
 }
 
 /**
@@ -142,7 +151,7 @@ export async function readBackupFile(file) {
  */
 export async function storeBackupMedia(files, { media = mediaStore, limits = DEFAULT_LIMITS } = {}) {
   let stored = 0, skipped = 0
-  const cap = { image: limits.imageMB, gif: limits.gifMB, video: limits.videoMB }
+  const cap = { image: limits.imageMB, gif: limits.gifMB, video: limits.videoMB, audio: limits.audioMB || AUDIO_MB }
   for (const { hash, entry } of files) {
     try {
       const head = new Uint8Array(await entry.blob.slice(0, 64).arrayBuffer())

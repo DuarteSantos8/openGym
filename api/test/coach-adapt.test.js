@@ -139,6 +139,10 @@ test('validateAdapt: each type, against the open part of the session only', () =
   bad({ type: 'reps', entry: 7, reps: 8, why: 'x' }, /index/);
   bad({ type: 'delete-workout', entry: 1, why: 'x' }, /not allowed/);
   bad({ type: 'reps', entry: 1, reps: 8 }, /why/);
+  // An add keeps the id of the exercise it follows, so the app can find it again if the session moves on.
+  const added = validateAdapt({ coach_contract: 1, summary: 's', changes: [{ type: 'add', entry: 1, to: swapTo, why: 'x' }] }, p.today);
+  assert.deepEqual([added.proposal.changes[0].entry, added.proposal.changes[0].exId], [1, '0294']);
+  assert.equal('exId' in validateAdapt({ coach_contract: 1, summary: 's', changes: [{ type: 'add', to: swapTo, why: 'x' }] }, p.today).proposal.changes[0], false);
   const twice = validateAdapt({ coach_contract: 1, summary: 's', changes: [{ type: 'reps', entry: 1, reps: 8, why: 'a' }, { type: 'rest', entry: 1, rest: 90, why: 'b' }] }, p.today);
   assert.match(twice.errors.join(' '), /one change per exercise/);
   assert.equal(validateAdapt({ coach_contract: 1, nochange: true, reading: 'Carry on.' }, p.today).nochange, true);

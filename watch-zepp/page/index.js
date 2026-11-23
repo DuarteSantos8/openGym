@@ -13,7 +13,7 @@
 // Everything reaches the phone as the Apple Watch's events, through the Side Service and the
 // user's own server (app-side/index.js, docs/ZEPP_OS.md). No exercise media: text and numbers only.
 import { BasePage } from '@zeppos/zml/base-page'
-import { createWidget, deleteWidget, widget, prop, align, text_style, event } from '@zos/ui'
+import { createWidget, deleteWidget, getTextLayout, widget, prop, align, text_style, event } from '@zos/ui'
 import { getDeviceInfo } from '@zos/device'
 import { LocalStorage } from '@zos/storage'
 import { getText } from '@zos/i18n'
@@ -71,6 +71,38 @@ function button (text, y, onClick, { w = null, h = u(TAP + 16), x = null, primar
   }
   if (onLong) props.longpress_func = () => onLong()
   return add(widget.BUTTON, props)
+}
+
+// The openGym lockup (assets/logo/opengym-logo-dark.svg): the official mark as its five plain
+// rectangles (352 x 174 grid, square corners), then "open" in light ink and "Gym" in brand green.
+// The mark is 1.07x the type, 0.2x away from it, as in the SVG and card-draw.js drawBrand. Drawn
+// from FILL_RECTs and two TEXTs, so no image asset and next to no memory.
+const MARK = [[0, 73, 352, 28], [0, 30, 36, 114], [51, 0, 47, 174], [254, 0, 47, 174], [316, 30, 36, 114]]
+function textWidth (text, size) {
+  try {
+    const l = getTextLayout(text, { text_size: size, text_width: 0, wrapped: 0 })
+    if (l && l.width > 0) return Math.ceil(l.width)
+  } catch (e) { /* firmware without it */ }
+  return Math.ceil(text.length * size * 0.58)
+}
+function lockup (y, size = T.title) {
+  const px = u(size)
+  const h = Math.round(px * 1.4)
+  const markH = Math.round(px * 1.07)
+  const markW = Math.round(markH * 352 / 174)
+  const gap = Math.round(px * 0.2)
+  const openW = textWidth('open', px)
+  const gymW = textWidth('Gym', px)
+  const x0 = Math.round((W - (markW + gap + openW + gymW)) / 2)
+  const my = y + Math.round((h - markH) / 2)
+  const s = markH / 174
+  for (const [rx, ry, rw, rh] of MARK) {
+    add(widget.FILL_RECT, { x: x0 + Math.round(rx * s), y: my + Math.round(ry * s), w: Math.max(1, Math.round(rw * s)), h: Math.max(1, Math.round(rh * s)), color: C.brand })
+  }
+  const tx = x0 + markW + gap
+  const t1 = { y, h, text_size: px, align_h: align.LEFT, align_v: align.CENTER_V, text_style: text_style.NONE }
+  add(widget.TEXT, { ...t1, x: tx, w: openW + u(8), text: 'open', color: C.brandInk })
+  add(widget.TEXT, { ...t1, x: tx + openW, w: gymW + u(8), text: 'Gym', color: C.brand })
 }
 
 function tap (w, fn) { try { w.addEventListener(event.CLICK_UP, fn) } catch (e) { /* not tappable */ } }
@@ -277,12 +309,12 @@ Page(
         return
       }
       if (link.paired === false) {
-        label('openGym', cy - u(110), { size: T.title, color: C.lime })
+        lockup(cy - u(110))
         label(t('not_paired'), cy - u(60), { size: T.body, color: C.text, h: u(150), wrap: true })
         return
       }
       if (!s.synced) {
-        label('openGym', cy - u(110), { size: T.title, color: C.lime })
+        lockup(cy - u(110))
         label(link.away ? t('phone_away') : t('syncing'), cy - u(50), { size: T.body, color: C.text, h: u(110), wrap: true })
         label(t('open_phone_once'), cy + u(70), { h: u(100), wrap: true })
         return
@@ -303,13 +335,26 @@ Page(
         if (others[0]) { button(t('quick_start'), y + u(44), () => this.startSession(others[0]), { primary: true }); y += u(134) } else y += u(60)
       }
       if (!ready.today && !others.length) { label(t('start_on_phone'), y, { h: u(90), wrap: true }); return }
-      // A few more, as quiet tiles, as many as fit the round screen.
-      for (const r of (ready.today ? others : others.slice(1)).slice(0, 2)) {
-        if (y + u(64) > H - u(30)) break
+      // The others as quiet tiles, as many as fit the round screen. When there are more, they
+      // come in pages with ‹ 1/3 › at the bottom, so every routine can be started here (#1479).
+      const rest = ready.today ? others : others.slice(1)
+      const fits = bottom => Math.max(1, Math.floor((bottom - y + u(12)) / u(76)))
+      const all = fits(H - u(30))
+      const per = rest.length > all ? fits(H - u(104)) : all
+      const pages = Math.max(1, Math.ceil(rest.length / per))
+      const page = Math.min(Math.max(0, this.startPage || 0), pages - 1)
+      this.startPage = page
+      for (const r of rest.slice(page * per, page * per + per)) {
         button(r.name, y, () => this.startSession(r), { h: u(64), size: T.label })
         y += u(76)
       }
-      if (link.away) label(t('phone_away'), H - u(70), { size: 20, h: u(40) })
+      if (pages > 1) {
+        const py = H - u(92), bw = u(72), bh = u(56)
+        const turn = d => { this.startPage = (page + d + pages) % pages; this.go('start') }
+        button('‹', py, () => turn(-1), { x: Math.round(W / 2 - u(70) - bw), w: bw, h: bh, size: T.label })
+        label(`${page + 1}/${pages}`, py + u(8), { size: 22, h: u(40), w: u(110) })
+        button('›', py, () => turn(1), { x: Math.round(W / 2 + u(70)), w: bw, h: bh, size: T.label })
+      } else if (link.away) label(t('phone_away'), H - u(70), { size: 20, h: u(40) })
     },
 
     startSession (session) {

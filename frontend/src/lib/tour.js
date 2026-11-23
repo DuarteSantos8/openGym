@@ -61,8 +61,9 @@ export const STEPS = [
   { id: 'stats-records', route: '/stats', anchor: 'stats-records', when: c => c.workouts, optional: true },
   { id: 'go-home', route: '/stats', anchor: 'tab-home', go: '/home' },
   { id: 'go-settings', route: '/home', anchor: 'settings-gear', go: '/settings' },
-  { id: 'look', route: '/settings', anchor: 'settings-look' },
+  // Top to bottom, as the Settings screen lists them (#1105).
   { id: 'units', route: '/settings', anchor: 'settings-units' },
+  { id: 'look', route: '/settings', anchor: 'settings-look' },
   { id: 'data', route: '/settings', anchor: 'settings-data' },
   { id: 'done', route: null, anchor: null },
 ]
@@ -234,6 +235,14 @@ export function visiblePart(r, view, min = 16) {
   const left = Math.max(r.left, 0), right = Math.min(r.left + r.width, view.vw)
   if (bottom - top < Math.min(min, r.height) || right - left < Math.min(min, r.width)) return null
   return { top, left, width: right - left, height: bottom - top }
+}
+
+/**
+ * The band less the app's own bottom tab bar (`barTop`: its top edge, null when there is none), for
+ * a spotlight on anything not in the bar: a row behind the bar is not on screen (#1036).
+ */
+export function aboveBar(view, barTop) {
+  return barTop > view.top && barTop < view.bottom ? { ...view, bottom: barTop } : view
 }
 
 /* ---------------- the record: { offered, done, at, resumeAsked, tutorials } ---------------- */

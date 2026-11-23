@@ -3,6 +3,7 @@
   "name": "leverage single leg deadlift on hack squat machine",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hack-squat",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

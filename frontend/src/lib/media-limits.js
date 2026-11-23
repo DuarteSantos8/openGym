@@ -15,7 +15,7 @@ export const DEFAULT_LIMITS = Object.freeze({
   imageMB: 2,       // a photo after it has been re-encoded here
   rawPhotoMB: 40,   // a photo as picked, before decoding; the pixel guard below applies as well
   gifMB: 8,
-  videoMB: 40,      // videos are not transcoded, so this is the file as picked
+  videoMB: 100,     // the file as kept: a big video is shrunk on the device first (video-shrink.js)
   videoSec: 60,
   quotaMB: 200      // per profile on the server; 0 = no cap
 })

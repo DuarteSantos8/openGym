@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
+import { resolvePending } from '../lib/coach-api.js'
 import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
@@ -44,6 +45,8 @@ vi.mock('../lib/coach-api.js', () => ({
   setCohortShare: vi.fn(() => Promise.resolve({ ok: true, sharing: true })),
   JOB_ERRORS: { internal: 'x' },
   ensureAiConsent: vi.fn(() => Promise.resolve(true)),
+  agreeCadence: vi.fn(() => Promise.resolve('openai|api.openai.com')),
+  recheckCadence: vi.fn(() => Promise.resolve()),
   isDeclined: e => e?.code === 'declined',
   awaitedJob: () => null,
   settleAwaited: vi.fn(),
@@ -146,6 +149,21 @@ describe('the Coach chat', () => {
     expect(mocks.S.routines.length).toBe(2)
   })
 
+  // Full QA 146: "make me 3 routines" in the chat comes back as a plan with no week. The switch
+  // was on by default, and importing replaced the whole week with rest days.
+  it('keeps the week when the routines asked for in the chat come without one', async () => {
+    const S = state()
+    S.routines = [{ id: 'old', name: 'Old', ex: [{ id: '0001', sets: 3, reps: 5 }] }]
+    S.week = { 1: ['old'], 4: ['old'] }
+    await mount({ id: 'p1', kind: 'create', bundle: bundle({}) }, null, { S })
+    expect(container.querySelector('[role="switch"]')).toBeNull()
+    expect(container.textContent).not.toContain('Use this weekly schedule')
+    await click(byText(/Import this plan/))
+    expect(mocks.S.week).toEqual({ 1: ['old'], 4: ['old'] })
+    expect(mocks.S.routines.length).toBe(3)
+    expect(mocks.S.coach.chat.at(-1).text).toContain('Your week is unchanged')
+  })
+
   it('shows the typing bubble with an estimate while a job runs, and disables the composer', async () => {
     await mount(null, { id: 'j1', kind: 'create', state: 'running', startedAt: Date.now() })
     expect(container.querySelector('.typing')).toBeTruthy()
@@ -213,6 +231,24 @@ describe('the Coach chat', () => {
     expect(mocks.S.coach.log.at(-1).score).toBe(8)
     expect(mocks.S.coach.chat.at(-1).kind).toBe('debrief')
     expect(mocks.S.coach.chat.at(-1).ref).toBe(mocks.S.coach.log.at(-1).id)
+  })
+
+  it('does not bring a decided card back while the server still lists it as pending', async () => {
+    await mount({ id: 'd1', kind: 'debrief', workout: { id: 'w1', name: 'Push', d: '2026-08-29' }, summary: 'ok', score: 8, highlights: [], watch: [], nextTime: [] })
+    await click(byText(/Got it/))
+    expect(mocks.refresh).toHaveBeenCalled()   // only after the resolve call settled
+    await act(async () => { root.render(React.createElement(CoachChat)) })   // the poll still says d1 is pending
+    expect(byText(/Got it/)).toBeFalsy()
+    expect(mocks.S.coach.chat.filter(m => m.kind === 'debrief')).toHaveLength(1)
+  })
+
+  it('sends the answer again for a card decided here that the server still lists, and frees the quick actions', async () => {
+    const S = state()
+    S.coach.log.push({ id: 'l1', kind: 'review', proposalId: 'r9', at: 1, dismissed: true, decisions: [] })
+    await mount({ id: 'r9', kind: 'review', changes: [] }, null, { S })
+    expect(resolvePending).toHaveBeenCalledWith({ id: 'r9', dismissed: true })
+    expect(byText(/Dismiss all/)).toBeFalsy()
+    expect(byText(/Review my training/)).toBeTruthy()
   })
 
   it('lays the plan’s week out from the day the week is set to start on', async () => {

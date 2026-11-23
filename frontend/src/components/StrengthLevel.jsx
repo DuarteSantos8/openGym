@@ -1,9 +1,10 @@
 // Strength level per lift (lib/strength-level.js): the block in an exercise's details, the Stats
 // card, and the small "About you" sheet (sex and year of birth) the levels read.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { fmtNum, exerciseNameText } from '../lib/format.js'
 import { dateLocale } from '../lib/i18n-core.js'
 
@@ -14,6 +15,7 @@ import { strengthLevel, strengthLevels, liftOf, LEVELS, LEVEL_NAME, sexOf } from
 import Icon from './Icon.jsx'
 import { Button, Segmented, Stepper } from './ui.jsx'
 import { isOn } from '../lib/modules.js'
+import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
 
 const weightOf = (lv, w, unit) => (lv.perBell ? t('{0} each', fmtNum(w)) : fmtNum(w)) + ' ' + unit
 
@@ -72,13 +74,15 @@ export function StrengthLevelsCard({ S }) {
       <span className="slevel-ex">{EXIDX[lv.id] ? exerciseNameText(EXIDX[lv.id]) : lv.id}</span>
       <span className="slevel-meta" aria-hidden="true"><b>{t(LEVEL_NAME[lv.name])}</b> · {fmtRatio(lv.ratio)}×</span>
     </div>)}
-    {rows.length > LEVEL_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all}
+    {rows.length > LEVEL_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all} aria-label={nameIn(t('Strength levels'), t(all ? 'Show less' : 'Show more'))}
       onClick={() => setAll(v => !v)}>{t(all ? 'Show less' : 'Show more')}</Button>}
     <SexHint S={S} />
   </div>
 }
 
 function AboutYou() {
+  const fieldsRef = useRef(null)
+  const syncKeyboard = useSheetKeyboard(fieldsRef, true, { reveal: true })
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const year = new Date().getFullYear()
@@ -91,7 +95,7 @@ function AboutYou() {
       value={sexOf(S) || ''} onChange={v => update(s => { if (v) s.sex = v; else delete s.sex })} />
     <div style={{ height: 16 }} />
     <div className="about-lbl">{t('Year of birth')}</div>
-    <div className="row" style={{ gap: 8 }}>
+    <div ref={fieldsRef} className="row kb-lift" style={{ gap: 8 }} onFocus={syncKeyboard}>
       {/* Unset, the stepper offers a starting year in the placeholder grey, so it does not read
           as a saved 1996 above the words "Not set". */}
       <Stepper ariaLabel={t('Year of birth')} className={born ? '' : 'unset'} value={born ?? year - 30} step={1} min={1920} max={year - 10} decimal={false}

@@ -11,8 +11,10 @@
  * and appearance settings, and every other profile's everything.
  */
 import { glyphStr } from './glyphs.js';
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells } from './library.js';
-import { muscleLoad, gymOf, challengesOf } from './context.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
+import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, rotationOf } from './context.js';
+import { shareOf } from './categories.js';
+import { asksForBodyweight, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -26,7 +28,7 @@ export const MIN_REVIEW_SESSIONS = 12;
 // by api/test/payload-parity.test.js), so a note the athlete wrote arrives whole and the bound only
 // holds for a document edited outside the app. It was 300 here, and a 500-character note reached
 // the model cut off mid-sentence.
-export const NOTE_MAX = 500;
+export const NOTE_MAX = 2000;
 // Last-resort ceiling for a free-text note/refine (issue #267). The real limit is the admin's
 // `maxMessageLen`, enforced in jobs.js before a message ever reaches this module — this module
 // stays a pure allowlist with no config import of its own, so it keeps its own constant instead.
@@ -49,6 +51,8 @@ export const MAX_PAYLOAD_CHARS = 300_000;
    payload, to the limits the intake screen shows (CoachIntake.jsx). The system prompt already
    reads this text as data rather than instruction (common rule 3); the bound is about size.
    A field of the wrong type reads as absent rather than as "[object Object]". */
+// A routine exercise's plan note as the model reads it: enough for a cue or two.
+export const EX_NOTE_MAX = 300;
 export const PROFILE_TEXT_MAX = { limitations: 600, likes: 300, dislikes: 300, notes: 600 };
 // Goal and experience are enum words today (strength, returning, ...); 40 leaves room for new
 // ones without letting either carry a paragraph.
@@ -82,7 +86,7 @@ const weekday = d => (typeof d === 'number' ? d : typeof d === 'string' && /^\d$
 // any id an import or an older build ever wrote, and no room for a paragraph.
 export const ID_MAX = 64;
 // The progression engine's policies (frontend/src/lib/progression.js POLICIES, validate.js).
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'ladder', 'time'];
 const ident = v => (typeof v === 'string' ? v.slice(0, ID_MAX) : typeof v === 'number' && Number.isFinite(v) ? v : null);
 const policy = v => (POLICIES.includes(v) ? v : null);
 // A finite number, or a number written as a short string (the app writes numbers, but a
@@ -93,6 +97,23 @@ const num = v => ((typeof v === 'number' && Number.isFinite(v)) || (typeof v ===
 // A date is the ISO day every screen writes; anything else is not a date.
 const day = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : null);
 const list = v => (Array.isArray(v) ? v : []);
+
+/* ---------- the profile's own exercises ----------
+   Custom exercises live in the state, not in the catalogue, so LIB_BY_ID cannot resolve them.
+   Every name the Coach reads — the plan, the logged entries, the stall list, the working
+   weights — has to fall back to them, or a real exercise reaches the model as `name: null` and
+   reads as a broken id. The same lookup `canonicalPlan` already did for its fingerprint. */
+const customOf = S => new Map(list(S?.customEx).filter(c => c && typeof c === 'object' && c.id).map(c => [c.id, c]));
+const exOf = (id, custom) => LIB_BY_ID.get(id) || custom?.get(id);
+const nameOf = (id, custom) => LIB_BY_ID.get(id)?.n || word(custom?.get(id)?.n, NAME_MAX);
+// A custom exercise's body part is whatever the person typed, and the coverage aggregate uses it
+// as an object key. Bound it the way librarySlice and context.js already do, or a long (or
+// non-string) value rides into the payload where every other field is capped.
+const bpOf = (id, custom) => {
+  const bp = exOf(id, custom)?.bp;
+  return typeof bp === 'string' && bp ? bp.slice(0, 40) : null;
+};
+
 // The equipment of the profile the app is filtering by, or nothing when filtering is off.
 function activeEquipment(S) {
   if (!S.equipFilterOn) return [];
@@ -199,9 +220,10 @@ export function stallCount(sessions) {
 }
 
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
-function cleanEx(e) {
-  const o = { id: ident(e.id), name: LIB_BY_ID.get(e.id)?.n || null, sets: num(e.sets) };
-  const mode = modeOf(e, LIB_BY_ID.get(e.id));
+function cleanEx(e, custom) {
+  const catalogue = exOf(e.id, custom);
+  const o = { id: ident(e.id), name: nameOf(e.id, custom), sets: num(e.sets) };
+  const mode = modeOf(e, catalogue);
   o.mode = mode;
   const put = (k, v) => { if (num(v) !== undefined) o[k] = v; };
   if (mode === 'cardio') { put('min', e.min); put('speed', e.speed); }
@@ -221,6 +243,10 @@ function cleanEx(e) {
   if (e.side) o.side = true;
   // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
   if (e.sg) o.sg = ident(e.sg);
+  // The plan's own note on the exercise and its backups (#1003), so a review or a revision
+  // keeps what the person (or an earlier plan) wrote instead of starting it over.
+  if (typeof e.note === 'string' && e.note.trim()) o.note = text(e.note.trim(), EX_NOTE_MAX);
+  if (Array.isArray(e.subs)) { const subs = e.subs.filter(x => typeof x === 'string' && x).slice(0, 5).map(ident); if (subs.length) o.subs = subs; }
   // How the slot warms up (frontend/src/lib/warmup-ramp.js), so the Coach can explain it or
   // suggest another: its own choice, a block of its own as shares of the work weight, or the
   // older number of ramp sets. Absent means it follows the app's setting (`prefs.warmups`).
@@ -303,13 +329,12 @@ function runWeek(run, now, weeks) {
  * pins them together against shared fixtures.
  */
 export function canonicalPlan(S) {
-  const custom = new Map((S.customEx || []).map(c => [c.id, c]));
-  const exOf = id => LIB_BY_ID.get(id) || custom.get(id);
+  const custom = customOf(S);
   return {
     routines: (S.routines || []).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
-        const mode = modeOf(e, exOf(e.id));
+        const mode = modeOf(e, exOf(e.id, custom));
         return {
           id: e.id, mode, sets: e.sets || 0,
           reps: mode === 'reps' ? (e.reps || 0) : 0,
@@ -321,7 +346,7 @@ export function canonicalPlan(S) {
           // Resolved rather than copied: the fingerprint has to change when a plan starts
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
-          bodyweight: isBw(e, exOf(e.id)), side: isPerSide(e),
+          bodyweight: isBw(e, exOf(e.id, custom)), side: isPerSide(e),
           sg: e.sg || ''
         };
       })
@@ -338,11 +363,12 @@ export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
+  const custom = customOf(S);
   const routines = list(S.routines).filter(r => r && typeof r === 'object').map(r => ({
     id: ident(r.id), name: r.name == null ? r.name : text(String(r.name), NAME_MAX),
     emoji: r.emoji == null ? r.emoji : glyphStr(String(r.emoji)),
     ...(policy(r.prog) ? { prog: r.prog } : {}),
-    ex: list(r.ex).filter(e => e && typeof e === 'object').map(cleanEx)
+    ex: list(r.ex).filter(e => e && typeof e === 'object').map(e => cleanEx(e, custom))
   }));
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
@@ -381,7 +407,7 @@ export function reviewWindow(S, since) {
   return (fresh.length >= MIN_REVIEW_SESSIONS ? fresh : recent.slice(-MIN_REVIEW_SESSIONS)).slice(-MAX_SESSIONS);
 }
 
-function aggregates(S, workouts) {
+function aggregates(S, workouts, custom = customOf(S)) {
   // Per-exercise stall/deload picture, computed over the same sessions the engine would see.
   const byEx = new Map();
   const planCfg = new Map();
@@ -395,7 +421,7 @@ function aggregates(S, workouts) {
   for (const [id, sessions] of byEx) {
     const stalls = stallCount(sessions);
     if (stalls > 0 || sessions.length >= 3) {
-      exercises.push({ id: ident(id), name: libraryName(id), sessions: sessions.length, stalls, lastOk: !!sessions[sessions.length - 1]?.ok });
+      exercises.push({ id: ident(id), name: nameOf(id, custom), sessions: sessions.length, stalls, lastOk: !!sessions[sessions.length - 1]?.ok });
     }
   }
 
@@ -406,19 +432,21 @@ function aggregates(S, workouts) {
   const reschedules = Object.entries(S.dayPlan || {}).filter(([d]) => workouts.some(w => w.d === d) || d >= (workouts[0]?.d || '')).length;
 
   // Muscle coverage in the window, by body part — the "not trained" gap the Stats screen shows.
-  const hit = {};
+  // A Map, because a custom body part is free text: "constructor" or "__proto__" would otherwise
+  // read through to Object.prototype and count a string instead of the sets.
+  const hit = new Map();
   workouts.forEach(w => (w.entries || []).forEach(en => {
     const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
-    const bp = LIB_BY_ID.get(en.id)?.bp;
-    if (bp) hit[bp] = (hit[bp] || 0) + work.length;
+    const bp = bpOf(en.id, custom);
+    if (bp) hit.set(bp, (hit.get(bp) || 0) + work.length);
   }));
 
   const durations = workouts.map(w => (w.end && w.start ? Math.round((w.end - w.start) / 60000) : null)).filter(Boolean);
   return {
     exercises,
     adherence: { plannedPerWeek: plannedDays, sessionsInWindow: workouts.length, distinctDays: trained.size, dayOverrides: reschedules },
-    setsByBodyPart: hit,
+    setsByBodyPart: Object.fromEntries(hit),
     sessionMinutes: durations.length
       ? { median: durations.slice().sort((a, b) => a - b)[Math.floor(durations.length / 2)], min: Math.min(...durations), max: Math.max(...durations) }
       : null
@@ -445,6 +473,8 @@ function trainedIds(S, workouts) {
 export const FULL_DETAIL_SESSIONS = 3;
 // The sessions a question in the chat sees: enough for "last week", not a review's whole window.
 export const ASK_SESSIONS = 8;
+// The library slice a chat question gets, for actions that name exercises (coach-146).
+export const ASK_LIBRARY = 90;
 
 // A set taken to failure (the app's "F", `failure: true`) is RIR 0 when nothing was rated.
 const fmtSet = s => {
@@ -469,7 +499,7 @@ const targetOf = en => (en.target && typeof en.target === 'object'
   : null);
 
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
-function compactWorkout(w) {
+function compactWorkout(w, custom) {
   return {
     d: day(w.d),
     name: word(w.name, NAME_MAX),
@@ -486,7 +516,7 @@ function compactWorkout(w) {
       const target = targetOf(en);
       return {
         id: ident(en.id),
-        name: libraryName(en.id),
+        name: nameOf(en.id, custom),
         done: done.length + '/' + sets.length,
         ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
         ...(top ? { top: fmtSet(top) } : {})
@@ -496,7 +526,7 @@ function compactWorkout(w) {
 }
 
 /** One workout, reduced to what a coach reads. */
-function cleanWorkout(w) {
+function cleanWorkout(w, custom) {
   return {
     d: day(w.d),
     name: word(w.name, NAME_MAX),
@@ -506,7 +536,7 @@ function cleanWorkout(w) {
     prs: list(w.prs).length,
     entries: entriesOf(w).map(en => ({
       id: ident(en.id),
-      name: libraryName(en.id),
+      name: nameOf(en.id, custom),
       target: targetOf(en),
       // A set's own note rides along like the workout's note above (the app's set menu → Note).
       sets: setsOf(en).slice(0, MAX_SETS_PER_ENTRY).map(s => {
@@ -525,10 +555,10 @@ const MAX_SETS_PER_ENTRY = 30;
 const MAX_ENTRIES_TODAY = 40;
 
 /** The session running on the phone as the question is asked, bounded like a logged one. */
-function cleanToday(a) {
+function cleanToday(a, custom) {
   if (!a || typeof a !== 'object' || !Array.isArray(a.entries)) return null;
   const w = { ...a, entries: a.entries.filter(en => en && typeof en === 'object').slice(0, MAX_ENTRIES_TODAY), end: null };
-  const out = cleanWorkout(w);
+  const out = cleanWorkout(w, custom);
   out.minutes = num(a.minutes) ?? null;
   return out;
 }
@@ -606,6 +636,8 @@ export function build(S, opts = {}) {
   if (typeof opts.handle !== 'string' || !opts.handle) throw new Error('payload.build: opts.handle is required');
   const coach = S.coach || {};
   const profile = opts.intake || coach.profile || null;
+  // The profile's own exercises, resolved for every name below. Built once per payload.
+  const custom = customOf(S);
   // The one clock the payload reads, so a test can pin it.
   const now = Number.isFinite(opts.now) ? opts.now : Date.now();
   const p = {
@@ -621,7 +653,9 @@ export function build(S, opts = {}) {
       effortScale: effortOf(S),
       // Settings → Workout → Automatic warm-ups, what a slot without a choice of its own follows.
       warmups: S.warmupAuto === 'compounds' || S.warmupAuto === 'all' ? S.warmupAuto : 'off',
-      today: iso(new Date(now))
+      today: iso(new Date(now)),
+      // The provider can search the web for this answer (a chat question with research on).
+      ...(opts.web === true && opts.kind === 'ask' ? { web: true } : {})
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
     plan: cleanPlan(S, now)
@@ -637,6 +671,17 @@ export function build(S, opts = {}) {
     const challenges = opts.kind === 'review' || opts.kind === 'ask' ? challengesOf(S, now) : null;
     if (challenges) p.challenges = challenges;
   }
+  // The switchable categories (core/categories.js OPTIONAL_CATEGORIES): strength trends, body
+  // measurements and, only when switched on, health. A review and a question read them; the loop
+  // order goes along with the plan.
+  if (opts.kind === 'review' || opts.kind === 'ask') {
+    const share = shareOf(S);
+    if (share.records) { const r = recordsOf(S, now); if (r.length) p.records = r; }
+    if (share.measurements) { const m = measurementsOf(S, now); if (m.length) p.measurements = m; }
+    if (share.health) { const h = healthOf(S, now, opts.vitals); if (h) p.health = h; }
+    const rot = rotationOf(S);
+    if (rot) p.rotation = rot;
+  }
   // Someone who set up a home gym under Settings → Equipment and left the Coach's own equipment
   // question empty was handed the whole catalogue, leverage machines and all. The profile they
   // are filtering the app with is the better answer than "everything".
@@ -645,6 +690,10 @@ export function build(S, opts = {}) {
   }
   // Owning no dumbbells (the app's switch) wins over an equipment answer that lists them: they go
   // from what the model is told it has, and the validator turns a dumbbell lift away (noDumbbells).
+  // The gym's machine list (#923) narrows the machine exercises the same way, in the library slice
+  // and in the validator: a leg extension the gym does not have is not proposed.
+  const machines = gymMachines(S);
+  if (machines) p.machines = machines;
   if (ownsNoDumbbells(S)) {
     p.noDumbbells = true;
     if (p.coachProfile) p.coachProfile.equipment = p.coachProfile.equipment.filter(e => e.toLowerCase() !== 'dumbbell');
@@ -669,10 +718,10 @@ export function build(S, opts = {}) {
       const all = (S.workouts || []).filter(x => x && x.d);
       const idx = all.indexOf(w);
       const previous = all.slice(0, idx).filter(x => x.name && x.name === w.name).slice(-3);
-      p.session = { id: ident(w.id) || null, ...cleanWorkout(w) };
-      p.previous = previous.map(cleanWorkout);
+      p.session = { id: ident(w.id) || null, ...cleanWorkout(w, custom) };
+      p.previous = previous.map(x => cleanWorkout(x, custom));
       const inSession = new Set(entriesOf(w).map(en => ident(en.id)));
-      const agg = aggregates(S, [w]);
+      const agg = aggregates(S, [w], custom);
       p.aggregates = { ...agg, exercises: agg.exercises.filter(e => inSession.has(e.id)) };
       // The four weeks before the session. A session whose date does not parse has no "before",
       // and used to throw here instead.
@@ -695,18 +744,32 @@ export function build(S, opts = {}) {
     p.window = {
       from: day(workouts[0]?.d),
       to: day(workouts[workouts.length - 1]?.d),
-      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
+      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w, custom) : compactWorkout(w, custom)))
     };
-    p.aggregates = aggregates(S, workouts);
-    const today = cleanToday(opts.today);
+    p.aggregates = aggregates(S, workouts, custom);
+    const today = cleanToday(opts.today, custom);
     if (today) p.today = today;
+    // Four weeks of weigh-ins, typed in or synced from Apple Health / Health Connect (they land in
+    // the same S.bodyweight). Without them "what do I weigh?" got "I don't know your weight" while
+    // Home showed it (Discord, becory, a smart scale through Apple Health).
+    const since = new Date(now);
+    since.setDate(since.getDate() - 28);
+    p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, iso(since), null) };
+    // What the Coach may do from the chat (core/ask-actions.js) names exercises by id, so the
+    // question gets a library slice, leaning to what the question names. "Only bodyweight" narrows
+    // it to exercises that need nothing.
+    const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
+    p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    // Routines from the library (core/routine-library.js) the app found for this question.
+    const hits = cleanHits(opts.routines);
+    if (hits.length) p.routineLibrary = hits;
   } else if (opts.kind === 'adapt') {
     // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
     // short day, feeling great. The session as it stands (each entry with its index, so a change
     // can name exactly which one), the last few sessions for the usual loads, and candidates
     // like the exercise asked about (same muscle first) to swap to. The server never holds the
     // running session; the phone sends it, bounded here like a logged one.
-    const today = cleanToday(opts.today);
+    const today = cleanToday(opts.today, custom);
     if (today) today.entries = today.entries.map((en, i) => ({ i, ...en }));
     p.today = today;
     const at = Number.isInteger(opts.focus?.entry) ? opts.focus.entry : -1;
@@ -717,7 +780,7 @@ export function build(S, opts = {}) {
     } : null;
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     const recent = (S.workouts || []).filter(w => w && w.d).slice(-ADAPT_RECENT);
-    p.window = { workouts: recent.map(compactWorkout) };
+    p.window = { workouts: recent.map(x => compactWorkout(x, custom)) };
     p.library = swapSlice(S, p.coachProfile?.equipment?.length ? p.coachProfile.equipment : (p.gym?.equipment || []), entry?.id, {
       keep: (today?.entries || []).map(en => en.id), max: 36
     });
@@ -727,9 +790,9 @@ export function build(S, opts = {}) {
     p.window = {
       from: day(workouts[0]?.d),
       to: day(workouts[workouts.length - 1]?.d),
-      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
+      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w, custom) : compactWorkout(w, custom)))
     };
-    p.aggregates = aggregates(S, workouts);
+    p.aggregates = aggregates(S, workouts, custom);
     p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
@@ -749,7 +812,7 @@ export function build(S, opts = {}) {
       p.history = {
         sessions: (S.workouts || []).length,
         since: day((S.workouts || [])[0]?.d),
-        workingWeights: Object.entries(best).map(([id, w]) => ({ id: ident(id), name: libraryName(id), best: w }))
+        workingWeights: Object.entries(best).map(([id, w]) => ({ id: ident(id), name: nameOf(id, custom), best: w }))
       };
     }
     if (opts.refine && opts.previous) {

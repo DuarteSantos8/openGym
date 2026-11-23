@@ -237,7 +237,8 @@ function itemsOf(w, exOf) {
         ex, mode, category, len, chained, at: Number.isFinite(at) ? at : null,
         reps: mode === 'reps' && reps > 0 ? reps : null,
         w: mode === 'cardio' ? null : Number(row.w) || 0,
-        km: mode === 'cardio' ? (Number(row.speed) || 0) * min / 60 : 0,
+        // a set logged by its distance (#887) keeps it as typed
+        km: mode === 'cardio' ? (Number(row.km) > 0 ? Number(row.km) : (Number(row.speed) || 0) * min / 60) : 0,
       })
     }
     for (const s of entry.sets || []) {
@@ -252,17 +253,30 @@ function itemsOf(w, exOf) {
   return items
 }
 
-// Each item's start and end (ms). With every set ticked (`at`), a set ends at its tick and
+// Each item's start and end (ms). With every set ticked (`at`), the sets go in the order they
+// were ticked, each drop right behind its set (a circuit or a superset takes its exercises in
+// turn, which the list, exercise after exercise, does not say). A set ends at its tick and
 // starts its length earlier, but not before the one ahead of it ended: the gaps are the rests.
 // Ticks that do not leave the sets room (a log caught up after the session, all in one go) say
-// nothing about when they happened, and those sets are spread like the ones below. Without ticks
-// the sets share the session evenly: back to back when their lengths fill it, otherwise with the
-// same rest after each one (a drop follows its set at once).
+// nothing about when they happened, and those sets are spread like the ones below, in the
+// list's order. Without ticks the sets share the session evenly: back to back when their
+// lengths fill it, otherwise with the same rest after each one (a drop follows its set at once).
 function placeItems(items, start, end) {
   if (!items.length) return []
   if (items.every(x => x.at != null || x.chained)) {
+    const units = []
+    for (const x of items) {
+      if (x.chained && units.length) units[units.length - 1].push(x)
+      else units.push([x])
+    }
+    // By tick, then by place in the list (the two sides of a set share their tick). A unit led by
+    // a drop with no set ahead of it has no tick and goes first.
+    const tickOf = u => u[0].at ?? 0
+    const ordered = units.map((u, i) => [u, i])
+      .sort((a, b) => tickOf(a[0]) - tickOf(b[0]) || a[1] - b[1])
+      .flatMap(([u]) => u)
     let cursor = start
-    const placed = items.map(x => {
+    const placed = ordered.map(x => {
       const tick = x.chained ? cursor + x.len : Math.max(x.at, cursor)
       const s = x.chained ? cursor : Math.max(cursor, tick - x.len)
       const e = Math.max(tick, s + x.len)

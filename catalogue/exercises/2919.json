@@ -3,10 +3,11 @@
   "name": "smith hex press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders",
+    "front delts",
     "upper chest"
   ],
   "category": "strength",

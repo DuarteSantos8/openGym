@@ -3,10 +3,11 @@
   "name": "dumbbell seated shoulder press (parallel grip)",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated, you press dumbbells overhead with palms facing each other. A shoulder-friendly press for the shoulders and triceps.",
@@ -19,13 +20,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "femaleVariant": "2593",

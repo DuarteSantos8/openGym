@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, lastLoggedShape, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf, newExDefaultsOf, NEW_EX_DEFAULTS } from './history.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
@@ -356,8 +356,47 @@ describe('pickedExerciseConfig', () => {
     expect(pickedExerciseConfig(LIFT)).toEqual(defaultConfig(LIFT))
     expect(pickedExerciseConfig(CARDIO)).toEqual(defaultConfig(CARDIO))
   })
+  // Q10: the profile's own start, 2 × 8 instead of 3 × 10.
+  it('starts with the profile\'s own sets and reps when it picked some, cardio and saved targets aside', () => {
+    const S = { newExDefaults: { sets: 2, reps: 8, sec: 30 } }
+    expect(pickedExerciseConfig(LIFT, undefined, S)).toMatchObject({ mode: 'reps', sets: 2, reps: 8 })
+    expect(pickedExerciseConfig(LIFT, 'time', S)).toMatchObject({ mode: 'time', sets: 2, sec: 30 })
+    expect(pickedExerciseConfig('4837', undefined, S)).toMatchObject({ side: true, sets: 2, reps: 16 })   // 8 a side
+    expect(pickedExerciseConfig(CARDIO, undefined, S)).toEqual(defaultConfig(CARDIO))
+    expect(defaultConfig(LIFT)).toMatchObject({ sets: 3, reps: 10 })                                       // the base under saved targets stays
+    expect(pickedExerciseConfig(LIFT, undefined, {})).toEqual(defaultConfig(LIFT))
+  })
+  it('reads the pick defensively: clamped, rounded, the rest from 3 × 10', () => {
+    expect(newExDefaultsOf({})).toEqual(NEW_EX_DEFAULTS)
+    expect(newExDefaultsOf({ newExDefaults: { sets: 99, reps: 2.6, sec: 'x' } })).toEqual({ sets: 10, reps: 3, sec: 45 })
+    expect(newExDefaultsOf({ newExDefaults: { sets: 0, reps: -1, sec: 2 } })).toEqual(NEW_EX_DEFAULTS)
+    expect(newExDefaultsOf({ newExDefaults: 'nope' })).toEqual(NEW_EX_DEFAULTS)
+  })
   it('keeps defaultConfig flat, so a saved target without the flag stays one row a set', () => {
     expect('side' in defaultConfig('4837')).toBe(false)
+  })
+  it('starts the way the exercise was logged last time: a timed hold, per side, or both', () => {
+    const last = sets => ({ workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets }] }] })
+    const held = last([{ sec: 40, done: true }, { sec: 30, done: true }])
+    expect(lastLoggedShape(held, LIFT)).toEqual({ time: true, side: false })
+    expect(pickedExerciseConfig(LIFT, undefined, held)).toEqual(defaultConfig(LIFT, 'time'))
+    const sided = last([1, 2].map(() => ({ ...makeSideSet({ w: 10, r: 16 }), done: true })))
+    expect(pickedExerciseConfig(LIFT, undefined, sided)).toMatchObject({ mode: 'reps', side: true, reps: 20 })
+    const both = last([{ sec: 30, done: true, sides: { L: { sec: 30 }, R: { sec: 30 } } }])
+    expect(pickedExerciseConfig(LIFT, undefined, both)).toMatchObject({ mode: 'time', side: true, sec: 45 })
+  })
+  it('reads only the work sets, and lets a named mode win', () => {
+    const S = { workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 20, r: 10, phase: 'warmup', warmup: true, done: true }, { sec: 40, done: true }] }] }] }
+    expect(lastLoggedShape(S, LIFT).time).toBe(true)
+    expect(pickedExerciseConfig(LIFT, 'reps', S)).toEqual(defaultConfig(LIFT, 'reps'))
+  })
+  it('changes nothing with no history, a rep history, or for cardio', () => {
+    expect(lastLoggedShape({ workouts: [] }, LIFT)).toEqual({ time: false, side: false })
+    const reps = { workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 8, done: true }] }] }] }
+    expect(pickedExerciseConfig(LIFT, undefined, reps)).toEqual(defaultConfig(LIFT))
+    const run = { workouts: [{ d: '2026-01-01', entries: [{ id: CARDIO, sets: [{ sec: 600, done: true }] }] }] }
+    expect(pickedExerciseConfig(CARDIO, undefined, run)).toEqual(defaultConfig(CARDIO))
+    expect(pickedExerciseConfig('4837', undefined, reps)).toMatchObject({ side: true })   // one arm still per side
   })
 })
 
@@ -760,6 +799,21 @@ describe('buildSets', () => {
 })
 
 describe('applyIntensifierPlan', () => {
+  // Reddit: "dropsets only on the last set, applied in the plan".
+  it("drops on the last work set only with on: 'last', warm-ups and earlier sets straight", () => {
+    const sets = [{ w: 40, r: 8, done: false, phase: 'warmup' }, { w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }]
+    const out = applyIntensifierPlan(sets, { intensifier: { type: 'dropset', count: 2, pct: 20, on: 'last' } })
+    expect(out.slice(0, 3)).toEqual(sets.slice(0, 3))
+    expect(out[3]).toEqual({ w: 100, r: 8, done: false, type: 'dropset', drops: [{ w: 80, r: 8 }, { w: 64, r: 8 }] })
+  })
+
+  it("a per-side last set drops on both sides with on: 'last'", () => {
+    const out = applyIntensifierPlan([makeSideSet({ w: 20, r: 8, done: false }), makeSideSet({ w: 20, r: 8, done: false })], { side: true, intensifier: { type: 'dropset', count: 1, pct: 25, on: 'last' } })
+    expect(out[0].sides.L.drops).toBeUndefined()
+    expect(out[1].sides.L.drops).toEqual([{ w: 15, r: 4 }])
+    expect(out[1].sides.R.drops).toEqual([{ w: 15, r: 4 }])
+  })
+
   it('pre-fills every work row with a chain of drops, each pct% lighter than the one before', () => {
     const sets = [{ w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { intensifier: { type: 'dropset', count: 2, pct: 20 } })
@@ -1398,10 +1452,30 @@ describe('effectiveRoutineIds — coach queue', () => {
     expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'd1' }, workouts: [done('d1')] }), TODAY, TODAY)).toEqual(['d2'])
   })
 
+  it('a session the pass already did, planned again for a later week, is that day\'s session', () => {
+    // d1 done Tuesday 09-08; planned for Tuesday 09-15 and for today. Today shares Tuesday's week, so
+    // its pin is fulfilled; next week's is not, and that day trains d1 with its own routine beside it.
+    const s = S({ dayPlan: { '2026-09-15': 'd1' }, workouts: [done('d1')], week: { 2: ['own'] } })
+    expect(effectiveRoutineIds(s, '2026-09-15', TODAY)).toEqual(['d1', 'own'])
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['d2'])
+    const last = S({ dayPlan: { [TODAY]: 'd1' }, workouts: [{ ...done('d1'), d: '2026-09-04', start: SINCE - 86400000 * 3 }], queue: { ids: ['d1', 'd2'], since: SINCE - 86400000 * 4, startsOn: '2026-09-03', label: 'US W1' } })
+    expect(effectiveRoutineIds(last, TODAY, TODAY)).toEqual(['d1'])
+  })
+
   it('with every remaining session pinned to other days, today shows only your own routines — a coach pointer on the weekday stays hidden', () => {
     const s = S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: ['d2', 'own'] } })
     expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['own'])
     expect(effectiveRoutineIds(S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: 'd1' } }), TODAY, TODAY)).toEqual([])
+  })
+
+  it('a pin is read as of the day asked about: a session logged for a later date has not fulfilled it yet', () => {
+    // The DONE RULE stops at today (queue.js). On Wednesday a D1 dated Thursday, started before
+    // the apply, has not happened, so Friday's pin still holds; asked on Friday, as the reminder
+    // builder asks each date, it is fulfilled and the next session floats in.
+    const thu = { ...done('d1'), d: '2026-09-10', start: SINCE - 1 }
+    const s = S({ dayPlan: { '2026-09-11': 'd1' }, workouts: [thu] })
+    expect(effectiveRoutineIds(s, '2026-09-11', TODAY)).toEqual(['d1'])
+    expect(effectiveRoutineIds(s, '2026-09-11', '2026-09-11')).toEqual(['d2'])
   })
 
   it('a plain routine override is still single-pick, and \'rest\' still wins over a pin', () => {
@@ -1610,5 +1684,58 @@ describe('timed per-side pairs come off as a pair', () => {
     expect(removeRowAt(pairs(3), 2).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(removeRowAt(pairs(3), 3).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(setSpanAt([{ sec: 30, side: 'L' }, { sec: 30 }], 0)).toEqual([0, 1])
+  })
+})
+
+/* ---------- the weight unit written next to each weight (text export, workout PDF, report) ---------- */
+
+// "87.5×8 (kg)" left it open which number was the weight. With a unit, every weight reads on its
+// own: "87.5 kg × 8". Without one, a label reads exactly as it always did (the history screen).
+describe('setLabel — with a weight unit', () => {
+  const lifted = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
+  const reps = { id: LIFT, mode: 'reps' }
+
+  it('writes the unit right after the weight, spaced from the reps', () => {
+    expect(setLabel(LIFT, lifted(87.5, 8), reps, undefined, 'kg')).toBe('87.5 kg × 8')
+    expect(setLabel(LIFT, lifted(60, 8), reps, undefined, 'lb')).toBe('60 lb × 8')
+    expect(setLabel(LIFT, lifted(0, 10), reps, undefined, 'kg')).toBe('0 kg × 10')
+  })
+
+  it('reads as before when no unit is given', () => {
+    expect(setLabel(LIFT, lifted(87.5, 8), reps)).toBe('87.5×8')
+    expect(setLabel(LIFT, lifted(87.5, 8), reps, undefined, '')).toBe('87.5×8')
+  })
+
+  it('keeps the effort and the failure mark behind the numbers', () => {
+    expect(setLabel(LIFT, lifted(60, 8, { rir: 2 }), reps, undefined, 'kg')).toBe('60 kg × 8 (RIR 2)')
+  })
+
+  it('gives every drop of a drop-set its own unit', () => {
+    const drop = lifted(100, 8, { type: 'dropset', drops: [{ w: 80, r: 6 }, { w: 60, r: 5 }] })
+    expect(setLabel(LIFT, drop, reps, undefined, 'kg')).toBe('100 kg × 8 ↘ 80 kg × 6 ↘ 60 kg × 5')
+  })
+
+  it('writes each side of a one-arm set with its unit', () => {
+    const s = setSideField(setSideField(makeSideSet({ w: 15, r: 16 }), 'R', 'r', 7), 'L', 'r', 8)
+    expect(setLabel(LIFT, s, { id: LIFT, side: true }, undefined, 'kg')).toBe('L 15 kg × 8 · R 15 kg × 7')
+  })
+
+  it('reads added bodyweight as "+10 kg × 12" and a bare bodyweight set as just the reps', () => {
+    expect(setLabel(BW, lifted(10, 12), { id: BW, mode: 'reps', bodyweight: true }, undefined, 'kg')).toBe('+10 kg × 12')
+    expect(setLabel(BW, lifted(0, 12), { id: BW, mode: 'reps', bodyweight: true }, undefined, 'kg')).toBe('12')
+  })
+
+  it('puts the unit after the weight of a timed set, and nothing on a bare hold', () => {
+    expect(setLabel(LIFT, { sec: 30, w: 20, done: true }, { id: LIFT, mode: 'time' }, undefined, 'kg')).toBe(`${fmtSec(30)} · 20 kg`)
+    expect(setLabel(LIFT, { sec: 45, done: true }, { id: LIFT, mode: 'time' }, undefined, 'kg')).toBe(fmtSec(45))
+  })
+
+  it('says what a dumbbell weight means, with the unit inside it', () => {
+    expect(setLabel('0289', lifted(20, 8), { id: '0289', mode: 'reps', dbLoad: 'each' }, undefined, 'kg')).toBe('20 kg each × 8')
+    expect(setLabel('0289', lifted(40, 8), { id: '0289', mode: 'reps', dbLoad: 'total' }, undefined, 'kg')).toBe('40 kg total × 8')
+  })
+
+  it('leaves cardio alone: minutes and a speed have their own units', () => {
+    expect(setLabel(CARDIO, { min: 20, speed: 10, done: true }, { id: CARDIO, mode: 'cardio' }, undefined, 'kg')).toBe('20 min @ 10 km/h')
   })
 })

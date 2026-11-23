@@ -33,7 +33,7 @@ describe('design review 1.4.5: text inks', () => {
   })
   it('every preset accent as text reaches 4.5:1 in the light theme', () => {
     const inks = [...css.matchAll(/:root\[data-theme="light"\]\[data-accent="(\w+)"\]\s*\{\s*--acc-ink:(#\w+)/g)]
-    expect(inks.map(m => m[1]).sort()).toEqual(['gold', 'lime', 'orange', 'pink', 'red', 'sky', 'teal', 'violet'])
+    expect(inks.map(m => m[1]).sort()).toEqual(['brand', 'gold', 'lime', 'orange', 'pink', 'red', 'sky', 'teal', 'violet'])
     for (const [, name, ink] of inks) for (const g of grounds(light)) expect(on(ink, g), name).toBeGreaterThanOrEqual(4.5)
   })
   it('the gold ink reaches 4.5:1 in the light theme', () => {
@@ -99,7 +99,10 @@ describe('1.4.5 features pass', () => {
     const chip = rule('.setrow .n .settrend,.setrow-side>.n .settrend')
     expect(chip).toMatch(/background:var\(--surface-raised\)/)
     expect(chip).toMatch(/var\(--raised-line\)/)
-    expect(Number(chip.match(/font-size:(\d+)px/)[1])).toBeGreaterThanOrEqual(11)
+    // In rem since 1.4.5 (it follows Settings → Text size): 16 CSS px a rem at the default size.
+    const fs = chip.match(/font-size:(?:var\(--fs-caption2\)|([\d.]+)(px|rem))/)
+    expect(fs).toBeTruthy()
+    expect(fs[1] ? Number(fs[1]) * (fs[2] === 'rem' ? 16 : 1) : 11).toBeGreaterThanOrEqual(11)
   })
   it('rows divide between themselves, not above the first (no :first-of-type that never matched)', () => {
     expect(css).not.toMatch(/\.(wsets|slevel)-row:first-of-type/)
@@ -126,8 +129,8 @@ describe('1.4.5 features pass', () => {
   })
   it('a ticked set fades its parts, not the number that carries the arrow', () => {
     expect(rule('.setrow.done')).toBe('')
-    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.45/)
-    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\);\s*background:color-mix/)
+    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.6\b/)
+    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\)/)
   })
 })
 
@@ -250,6 +253,13 @@ describe('Stats redesign', () => {
     expect(rule('.sbar-row.above .sbar-f')).toMatch(/var\(--orange-ink\)/)
     expect(rule('.slegend-m.band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
     expect(rule('.sbar-v')).toMatch(/font-variant-numeric:tabular-nums/)
+  })
+  it('every fill is the same thickness, whether or not its row has a target band (#1395)', () => {
+    // A row without a range used to keep the fill at the full 8px track while a row with one
+    // pulled it in to 4px, so the band-less rows (adductors, traps) read as taller bars.
+    expect(rule('.sbar-f')).toMatch(/inset-block:2px/)
+    expect(rule('.sbar-f')).toMatch(/border-radius:3px/)
+    expect(rule('.sbar-row:has(.sbar-band) .sbar-f')).toBe('')
   })
   it('tapped rows are 44px and fill on press; nothing physical, no px type', () => {
     expect(rule('.sbar-row.tap')).toMatch(/min-height:44px/)

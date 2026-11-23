@@ -7,12 +7,28 @@ import HealthKitUI
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // The Live Activity's timing log (WorkoutActivity.swift LiveLog): when the process came up,
+        // and whether iOS started it in the background (for a button, the watch, a region).
+        LiveLog.launched(background: application.applicationState == .background)
         // The background check before a nudge (NudgeCheckPlugin): iOS hands the task only to a
         // handler registered before launching ends.
         NudgeCheckPlugin.registerTask()
         // The gym reminder (GymReminderPlugin): iOS relaunches the app in the background for a
         // region it watches and delivers the event to the location delegate that exists then.
         GymReminderCenter.shared.start()
+        // The Apple Watch link (WatchBridgePlugin.swift WatchLink), up before any page: iOS launches
+        // the app in the background for a set the watch sends, and only a session that is activated
+        // then receives it (and answers the watch's "still going?") with the app closed.
+        WatchLink.shared.start()
+        // The Garmin link (GarminLink.swift): up at launch when a Garmin was picked before, so a
+        // Bluetooth relaunch for the watch finds it listening. Without one it waits (no Bluetooth
+        // question for an iPhone that has no Garmin).
+        GarminLink.shared.start()
+        // No shake to undo (#921): iOS offers "Undo Typing" on a shake after any text was typed in
+        // the page, and a phone carried in a pocket or jostled between sets shakes. The alert then
+        // waited on screen at the next unlock, an Undo nobody asked for. Nothing in openGym undoes
+        // by shaking; its own Undo buttons stay where they are.
+        application.applicationSupportsShakeToEdit = false
         return true
     }
 

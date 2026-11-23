@@ -3,6 +3,7 @@
   "name": "pilates machine lying frog and leg circle",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "adductors",
   "secondaryMuscles": [
     "glutes",

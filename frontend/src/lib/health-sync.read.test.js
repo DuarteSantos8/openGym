@@ -16,7 +16,7 @@ vi.mock('@capacitor/filesystem', () => ({
       if (!h.files.has(path)) throw new Error('File does not exist')
       return { data: h.files.get(path) }
     },
-    writeFile: async ({ path, data }) => { h.files.set(path, data) },
+    writeFile: async ({ path, data }) => { h.files.set(path, data); h.saves++ },
   },
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
@@ -37,6 +37,16 @@ vi.mock('@capacitor/core', () => ({
       h.calls.push(['readWeights', arg])
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return { records: h.weights.filter(r => r.t >= arg.since) }
+    },
+    readBody: async arg => {
+      h.calls.push(['readBody', arg])
+      if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
+      return { records: (h.body || []).filter(r => r.t >= arg.since) }
+    },
+    readVitals: async arg => {
+      h.calls.push(['readVitals', arg])
+      if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
+      return h.vitals || {}
     },
     write: async () => { h.calls.push(['write']) },
     remove: async () => {},
@@ -61,7 +71,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
+  h.files.clear(); h.saves = 0; h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
   S = { unit: 'kg', workouts: [workout('w1')], bodyweight: [] }
   applied = 0
   hs = await import('./health-sync.js')
@@ -169,6 +179,21 @@ describe('weigh-ins', () => {
     expect(applied).toBe(1)
   })
 
+  // A read runs on every save, a set tick included: one that found nothing new writes no file.
+  it('a pass with nothing new leaves the file alone', async () => {
+    h.weights = [rec(2, 80.4)]
+    await hs.enableRead('weight', getState, { apply })
+    const saves = h.saves
+    await hs.readHealth(getState, { now: NOW + 60e3, apply })
+    expect(h.saves).toBe(saves)
+    await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
+    expect(h.saves).toBe(saves)   // read again, the same weigh-in
+    h.weights.push(rec(1, 80.2))
+    await hs.readHealth(getState, { force: true, now: NOW + 6 * 60e3, apply })
+    expect(h.saves).toBe(saves + 1)
+    expect(file().wCursor).toBe(NOW - 3600e3)
+  })
+
   // #859: the scale's weigh-in joins the typed one at its own time; the typed one is not touched.
   it('keeps a weigh-in typed into openGym that day, the scale\'s beside it', async () => {
     S.bodyweight = [{ d: '2026-10-15', w: 82, t: NOW - 10 * 3600e3 }]
@@ -246,5 +271,51 @@ describe('weigh-ins with the history permission', () => {
     h.calls = []
     await hs.enableRead('weight', getState, { apply })
     expect(h.calls[0]).toEqual(['request', { read: ['weight'], write: [] }])
+  })
+})
+
+describe('body composition (v1.4.5)', () => {
+  it('asks for the four reads, keeps what the scale saved in this phone\'s file, never in the log', async () => {
+    h.granted = { heartRate: false, weight: false, body: true }
+    h.body = [{ kind: 'fat', t: NOW - 3600e3, v: 18.2, id: 'a', origin: 'com.withings.wiscale2' }, { kind: 'bmr', t: NOW - 3600e3, v: 1790, id: 'b' }]
+    const r = await hs.enableRead('body', getState, { apply })
+    expect(r.ok).toBe(true)
+    expect(reads('request')[0][1].read).toEqual(['bodyFat', 'leanMass', 'boneMass', 'bodyWater', 'bmr'])
+    expect(reads('readBody')).toHaveLength(1)
+    expect(file().body.fat).toEqual([{ t: NOW - 3600e3, v: 18.2, id: 'a' }])
+    expect(file().body.bmr).toHaveLength(1)
+    expect(applied).toBe(0)
+    // Off keeps what came in.
+    const off = await hs.disableRead('body')
+    expect(off.readBody).toBe(false)
+    expect(off.body.fat).toHaveLength(1)
+  })
+  it('turns down when Health Connect refused all four', async () => {
+    h.granted = { heartRate: false, weight: false, body: false }
+    expect((await hs.enableRead('body', getState, { apply })).reason).toBe('denied')
+  })
+})
+
+describe('vitals (v1.4.5)', () => {
+  it('asks for sleep, resting heart rate, HRV and steps, keeps them in this phone\'s file, never in the log', async () => {
+    h.granted = { heartRate: false, weight: false, vitals: true }
+    h.vitals = {
+      sleep: [{ s: new Date(2026, 9, 14, 23).getTime(), e: new Date(2026, 9, 15, 7).getTime(), a: 0 }],
+      rhr: [{ t: NOW - 3600e3 * 10, v: 54 }], hrv: [], steps: [{ d: '2026-10-15', n: 6400 }], hrvKind: 'rmssd',
+    }
+    const r = await hs.enableRead('vitals', getState, { apply })
+    expect(r.ok).toBe(true)
+    expect(reads('request')[0][1].read).toEqual(['sleep', 'restingHeartRate', 'hrv', 'steps'])
+    // The first read goes a month back.
+    expect(reads('readVitals')[0][1]).toEqual({ from: '2026-09-15' })
+    expect(file().vitals.days['2026-10-15']).toEqual({ sleepMin: 480, rhr: 54, steps: 6400 })
+    expect(applied).toBe(0)
+    const off = await hs.disableRead('vitals')
+    expect(off.readVitals).toBe(false)
+    expect(off.vitals.days['2026-10-15'].steps).toBe(6400)
+  })
+  it('turns down when none of the four was allowed', async () => {
+    h.granted = { heartRate: false, weight: false, vitals: false }
+    expect((await hs.enableRead('vitals', getState, { apply })).reason).toBe('denied')
   })
 })

@@ -9,10 +9,14 @@
 // github.com's download redirect has no CORS headers for a WebView fetch anyway), checked
 // against its SHA-256 by the native Install plugin and handed to the system installer.
 
+import { logRequest } from './net-log.js'
 import { MOBILE } from './mobile.js'
 import { APK_VARIANTS, APK_VARIANT } from './apk-variant.js'
 
-const REPO = 'DuarteSantos8/openGym'
+// Which repository's releases update this build: openGym's own, unless the build names another —
+// a fork passes VITE_UPDATE_REPO=someone/openGym so its phones update from its own releases.
+export const updateRepo = (env = import.meta.env || {}) => env.VITE_UPDATE_REPO || 'DuarteSantos8/openGym'
+const REPO = updateRepo()
 const LATEST_URL = `https://api.github.com/repos/${REPO}/releases/latest`
 export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`
 
@@ -41,11 +45,15 @@ function compareSemver(a, b) {
 /**
  * Checks GitHub for a newer version. `releases/latest` is the newest release that is neither a
  * draft nor a pre-release, so a beta never offers itself as an update.
- * Returns { hasUpdate, latestVersion, apkUrl, hashUrl } or throws on network failure.
+ * Returns { hasUpdate, latestVersion, apkUrl, hashUrl, apkApiUrl, hashApiUrl, apkName, sumsUrl,
+ * sumsApiUrl } or throws on network failure.
  *   - hasUpdate: true if the latest release tag is newer than the running build
  *   - latestVersion: the semver string of the latest release (without "v" prefix)
- *   - apkUrl: direct download URL of the first .apk asset, or null
+ *   - apkUrl: direct download URL of this build's kind of .apk asset, or null
  *   - hashUrl: direct download URL of the .apk.sha256 hash file, or null
+ *   - apkName: the chosen APK's file name, or null
+ *   - sumsUrl: direct download URL of the combined SHA256SUMS file when the release has no
+ *     per-APK .sha256 (v1.4.5 shipped only that), or null; sumsApiUrl is its API link
  */
 // One request per app session: Settings is opened often, GitHub does not need to hear
 // about it every time. The promise is cached, a failure is not.
@@ -64,9 +72,15 @@ async function fetchLatest() {
   const latestVersion = String(latest.tag_name || '').replace(/^v/, '')
   if (!latestVersion) return { hasUpdate: false, latestVersion: __APP_VERSION__, apkUrl: null, hashUrl: null }
   const hasUpdate = compareSemver(latestVersion, __APP_VERSION__) > 0
-  const { apk, hash } = pickApk(latest.assets || [])
-  return { hasUpdate, latestVersion, apkUrl: apk?.browser_download_url || null, hashUrl: hash?.browser_download_url || null }
+  const { apk, hash, sums } = pickApk(latest.assets || [])
+  return { hasUpdate, latestVersion, apkUrl: apk?.browser_download_url || null, hashUrl: hash?.browser_download_url || null,
+    apkApiUrl: apk?.url || null, hashApiUrl: hash?.url || null,
+    apkName: apk?.name || null, sumsUrl: sums?.browser_download_url || null, sumsApiUrl: sums?.url || null }
 }
+// The API's link to an asset (assets[].url) answers with the file itself when asked for
+// octet-stream. It is the fallback for when github.com's download link fails: on 2026-11-09 the
+// 1.4.x checksum's github.com link answered 504 for hours while the API link served the file.
+const API_ASSET = { Accept: 'application/octet-stream' }
 
 /**
  * Since v1.4.2 a release carries three sideloaded APKs, the same app with different animations
@@ -87,27 +101,63 @@ export const apkKind = name => tagged(name, 'hd') ? 'hd' : tagged(name, 'plus') 
 export function pickApk(assets, variant = APK_VARIANT) {
   const apk = assets.find(a => /\.apk$/i.test(a.name) && apkKind(a.name) === variant) || null
   const hash = apk ? assets.find(a => a.name === `${apk.name}.sha256`) || null : null
-  return { apk, hash }
+  // The combined coreutils checksum file, read only when the release ships no per-APK .sha256
+  // (v1.4.5 didn't, and every older app answered "checksum not available").
+  const sums = apk && !hash ? assets.find(a => /^sha256sums$/i.test(a.name)) || null : null
+  return { apk, hash, sums }
 }
 
 /**
  * The SHA-256 the release publishes next to its APK, as 64 hex characters, or null. In the app it
  * comes down natively like the APK itself (github.com answers a WebView fetch without CORS).
  */
-export async function fetchChecksum(hashUrl) {
-  if (!hashUrl) return null
-  let text
-  if (MOBILE) {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    await Filesystem.downloadFile({ url: hashUrl, path: 'opengym-update.apk.sha256', directory: Directory.Cache })
-    text = (await Filesystem.readFile({ path: 'opengym-update.apk.sha256', directory: Directory.Cache, encoding: Encoding.UTF8 })).data
-  } else {
-    const res = await fetch(hashUrl)
-    if (!res.ok) return null
-    text = await res.text()
+// The browser link first, then the API link (`hashApiUrl`) when that one throws, answers an
+// error, or gives no hash (a 504 page the native download wrote to the file). When the release
+// carries no per-APK .sha256 at all, the combined SHA256SUMS (`sumsUrl`, its API link
+// `sumsApiUrl`) is read instead, and the line naming `apkName` gives the hash.
+export async function fetchChecksum(hashUrl, hashApiUrl = null, sumsUrl = null, sumsApiUrl = null, apkName = null) {
+  if (!hashApiUrl && !sumsUrl && !sumsApiUrl) return readChecksum(hashUrl)
+  const hex = (hashUrl ? await readChecksum(hashUrl).catch(() => null) : null)
+    || (hashApiUrl ? await readChecksum(hashApiUrl, API_ASSET).catch(() => null) : null)
+  if (hex || !apkName) return hex
+  // Each response is parsed before the next link is tried: an error page is text too (a 504 the
+  // native download wrote to the file), and the API link may still hold the real file.
+  for (const [url, headers] of [[sumsUrl], [sumsApiUrl, API_ASSET]]) {
+    const text = url ? await downloadText(url, headers).catch(() => null) : null
+    const found = text && hashFromSums(text, apkName)
+    if (found) return found
   }
+  return null
+}
+
+// The combined file has one "<hash>  <name>" line per asset (coreutils sha256sum format, a "*"
+// marks binary mode). The name must match exactly: another APK's hash is not a near miss, it is
+// the wrong file — the install would be refused, or worse.
+function hashFromSums(text, apkName) {
+  for (const line of String(text).split('\n')) {
+    const m = line.match(/^([0-9a-fA-F]{64})\s+\*?(\S.*?)\s*$/)
+    if (m && m[2] === apkName) return m[1].toLowerCase()
+  }
+  return null
+}
+
+async function readChecksum(hashUrl, headers) {
+  const text = await downloadText(hashUrl, headers)
+  if (text == null) return null
   const hex = String(text).trim().split(/\s/)[0]
   return /^[0-9a-f]{64}$/i.test(hex) ? hex.toLowerCase() : null
+}
+async function downloadText(url, headers) {
+  if (!url) return null
+  if (MOBILE) {
+    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    logRequest(url, { via: 'native' })
+    await Filesystem.downloadFile({ url, path: 'opengym-update.apk.sha256', directory: Directory.Cache, ...(headers && { headers }) })
+    return (await Filesystem.readFile({ path: 'opengym-update.apk.sha256', directory: Directory.Cache, encoding: Encoding.UTF8 })).data
+  }
+  const res = await (headers ? fetch(url, { headers }) : fetch(url))
+  if (!res.ok) return null
+  return await res.text()
 }
 
 /**
@@ -159,8 +209,10 @@ const installPlugin = async () => {
  * @param {string} url - Direct download URL for the APK
  * @param {string} expectedHash - Expected SHA-256 hex string (from the .sha256 asset)
  * @param {function|null} onProgress - Called with (received, total) bytes during download, or null
+ * @param {string|null} apiUrl - The API's link to the same APK, used once when the
+ *   download from `url` fails or the file it gave is refused (an error page saved as the APK)
  */
-export async function downloadAndInstall(url, expectedHash, onProgress = null) {
+export async function downloadAndInstall(url, expectedHash, onProgress = null, apiUrl = null) {
   if (!MOBILE) {
     window.open(RELEASES_PAGE, '_blank', 'noopener')
     return
@@ -175,16 +227,31 @@ export async function downloadAndInstall(url, expectedHash, onProgress = null) {
     return
   } catch { /* nothing usable in the cache yet: download it */ }
   const { Filesystem, Directory } = await import('@capacitor/filesystem')
-  const listener = onProgress
-    ? await Filesystem.addListener('progress', p => onProgress(p.bytes, p.contentLength))
-    : null
-  try {
-    await Filesystem.downloadFile({ url, path: UPDATE_FILE, directory: Directory.Cache, progress: !!onProgress })
-  } finally {
-    await listener?.remove()
+  const download = async (from, headers) => {
+    const listener = onProgress
+      ? await Filesystem.addListener('progress', p => onProgress(p.bytes, p.contentLength))
+      : null
+    try {
+      logRequest(from, { via: 'native' })
+      await Filesystem.downloadFile({ url: from, path: UPDATE_FILE, directory: Directory.Cache, progress: !!onProgress, ...(headers && { headers }) })
+    } finally {
+      await listener?.remove()
+    }
+  }
+  // One fallback to the API link, when the download fails or the installer refuses its file
+  let fromApi = false
+  try { await download(url) } catch (e) {
+    if (!apiUrl) throw e
+    await download(apiUrl, API_ASSET)
+    fromApi = true
   }
   await whenInForeground()
-  await Install.installApk({ fileName: UPDATE_FILE, sha256 })
+  try { await Install.installApk({ fileName: UPDATE_FILE, sha256 }) } catch (e) {
+    if (!apiUrl || fromApi) throw e
+    await download(apiUrl, API_ASSET)
+    await whenInForeground()
+    await Install.installApk({ fileName: UPDATE_FILE, sha256 })
+  }
 }
 
 /**

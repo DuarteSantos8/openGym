@@ -71,13 +71,13 @@ export function AdaptProposal({ p, onDone }) {
       const at = (useStore.getState().S.active?.entries || []).findIndex(e => e.id === owner)
       if (at >= 0 && useUI.getState().timer) useUI.setState({ timer: { ...useUI.getState().timer, forIdx: at } })
     }
-    resolvePending({ accepted: applied, rejected: marked.filter(c => !applied.includes(c.id)).map(c => c.id) }).catch(() => {})
+    resolvePending({ id: p.id, accepted: applied, rejected: marked.filter(c => !applied.includes(c.id)).map(c => c.id) }).catch(() => {})
     toast(applied.length ? tn('{0} change made to this workout', '{0} changes made to this workout', applied.length) : t('Nothing could be applied any more.'))
     finish()
   }
   const dismiss = () => {
     update(s => { appendLog(s, adaptLogEntry(p, [], { dismissed: true })) })
-    resolvePending({ dismissed: true }).catch(() => {})
+    resolvePending({ id: p.id, dismissed: true }).catch(() => {})
     finish()
   }
 
@@ -107,11 +107,11 @@ export function AdaptProposal({ p, onDone }) {
 }
 
 /** The sheet: the question, the wait, the answer. */
-export default function WorkoutCoachSheet({ entryIdx, close }) {
+export default function WorkoutCoachSheet({ entryIdx, reason: startReason = null, close }) {
   const S = useStore(s => s.S)
   const entry = S.active?.entries?.[entryIdx]
   const { job, pending, last, lastError, refresh } = useCoachStatus(true)
-  const [reason, setReason] = useState(null)
+  const [reason, setReason] = useState(ADAPT_REASONS.includes(startReason) ? startReason : null)
   const [text, setText] = useState('')
   const [sent, setSent] = useState(null)        // the job this sheet started
   const [busy, setBusy] = useState(false)
@@ -172,7 +172,8 @@ export default function WorkoutCoachSheet({ entryIdx, close }) {
   </div>
 }
 
-/** Opens the sheet for the exercise at `entryIdx` of the running session. */
-export function workoutCoachSheet(entryIdx) {
-  useUI.getState().openSheet(close => <WorkoutCoachSheet entryIdx={entryIdx} close={close} />)
+/** Opens the sheet for the exercise at `entryIdx` of the running session, `reason` picked already
+ *  when it is known (the swap picker's "Ask the Coach for a swap" opens on "Machine's taken"). */
+export function workoutCoachSheet(entryIdx, reason = null) {
+  useUI.getState().openSheet(close => <WorkoutCoachSheet entryIdx={entryIdx} reason={reason} close={close} />)
 }

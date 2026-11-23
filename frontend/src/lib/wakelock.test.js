@@ -7,7 +7,7 @@ let requests, released, live, listeners, reject
 
 // Node 21+ defines globalThis.navigator itself, as a getter with no setter — a plain
 // assignment throws under ESM's strict mode. defineProperty works on both that and the older
-// runtimes where the global simply doesn't exist. Production images are node:22-alpine, so
+// runtimes where the global simply doesn't exist. Production images are node:26-alpine, so
 // the tests have to run there too.
 const setNavigator = value =>
   Object.defineProperty(globalThis, 'navigator', { value, configurable: true, writable: true })
@@ -85,6 +85,16 @@ describe('requestWakeLock', () => {
     expect(live).not.toBeNull()
   })
 
+  it('a new hold retries after the browser refused the last request', async () => {
+    reject = true
+    requestWakeLock(); await settle()   // the workout, refused (Low Power Mode)
+    expect(live).toBeNull()
+    reject = false
+    requestWakeLock(); await settle()   // the circuit player starts
+    expect(requests).toBe(2)
+    expect(live).not.toBeNull()
+  })
+
   it('survives a rejection and retries when the document comes back', async () => {
     reject = true
     requestWakeLock(); await settle()
@@ -112,5 +122,29 @@ describe('releaseWakeLock', () => {
     expect(live).toBeNull()          // the arriving sentinel was released immediately
     await foreground()
     expect(requests).toBe(1)         // and we did not start wanting it again
+  })
+
+  // The workout (App.jsx) and the circuit player hold the screen on separately. The player
+  // closing, pausing or finishing used to switch it off for the rest of the workout.
+  it('keeps the lock while another holder still wants it', async () => {
+    requestWakeLock(); await settle()   // the workout
+    requestWakeLock(); await settle()   // the circuit player
+    releaseWakeLock(); await settle()   // the player closes
+    expect(released).toBe(0)
+    expect(live).not.toBeNull()
+    await background(); await foreground()
+    expect(live).not.toBeNull()          // still re-acquired after the phone was locked
+    releaseWakeLock(); await settle()   // the workout ends
+    expect(live).toBeNull()
+    await background(); await foreground()
+    expect(live).toBeNull()
+  })
+
+  it('a release with nothing held does not cancel the next request', async () => {
+    releaseWakeLock(); await settle()
+    requestWakeLock(); await settle()
+    expect(live).not.toBeNull()
+    releaseWakeLock(); await settle()
+    expect(live).toBeNull()
   })
 })

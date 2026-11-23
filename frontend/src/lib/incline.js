@@ -49,3 +49,57 @@ export const hasIncline = s => Number(s?.incline) > 0
 
 /** What a new row takes over from the set it follows: its incline, when it had one. */
 export const inclineFrom = s => (hasIncline(s) ? { incline: Number(s.incline) } : {})
+
+/* ---------------------------------------------------------------- resistance level -- */
+//
+// The same idea for the machines that have no grade but a resistance knob (Discord "Add the
+// resistance level selector for cardio machines", 2026-11-05): an exercise bike, a rower, a cross
+// trainer, a stepper. `level` on the set, 1 to 30, a whole step: { min: 20, speed: 25, level: 8 }.
+// Optional and additive in exactly the way `incline` is.
+export const LEVEL_MAX = 30
+
+/** A typed or stepped level as it is stored: a whole number from 1 to 30; nothing (or 0) is no level. */
+export function clampLevel(v) {
+  if (v == null || v === '') return null
+  const n = Math.round(Number(v))
+  if (!Number.isFinite(n) || n <= 0) return null
+  return Math.min(LEVEL_MAX, n)
+}
+
+const LEVELED = /bike|bicycl|cycl|spin|row(ing|er)?\b|\berg\b|elliptical|cross ?trainer|stepper|stepmill|stair ?master|stair climber machine|arc trainer|ski ?erg/i
+const LEVELED_EQ = new Set(['stationary bike', 'elliptical machine', 'stepmill machine', 'skierg machine', 'upper body ergometer'])
+const NO_KNOB = /\brope\b|jump|jack|burpee|run|walk|swim|skat/i
+
+/**
+ * Whether a cardio exercise offers the resistance level: a catalogue or own exercise whose name
+ * or equipment says bike, rower, elliptical, cross trainer or stepper. A run, a walk or a rope has
+ * no knob to turn.
+ */
+export function levelFits(ex) {
+  if (!ex || typeof ex !== 'object') return false
+  const name = String(ex.n || '')
+  // A treadmill has a grade, not a knob, and a bike outdoors has gears (whatever the catalogue
+  // files "run on treadmill" under).
+  if (/treadmill|outdoor|aqua/i.test(name)) return false
+  if (NO_KNOB.test(name) && !LEVELED_EQ.has(String(ex.eq || '').toLowerCase())) return false
+  return LEVELED.test(name) || LEVELED_EQ.has(String(ex.eq || '').toLowerCase())
+}
+
+/** Whether a set (or a routine slot) carries a level. */
+export const hasLevel = s => Number(s?.level) > 0
+
+/** What a new row takes over from the set it follows: its level, when it had one. */
+export const levelFrom = s => (hasLevel(s) ? { level: Number(s.level) } : {})
+
+/**
+ * The cardio row's third column: 'level' or 'incline' or null. What the rows already carry wins,
+ * so a log never changes column under you; a machine with both (an elliptical) opens on its
+ * level, the one most people turn.
+ */
+export function cardioCol(ex, sets = []) {
+  if (sets.some(hasLevel)) return 'level'
+  if (sets.some(hasIncline)) return 'incline'
+  if (levelFits(ex)) return 'level'
+  if (inclineFits(ex)) return 'incline'
+  return null
+}

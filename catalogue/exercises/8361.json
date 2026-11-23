@@ -3,10 +3,9 @@
   "name": "resistance band standing shoulder external rotation",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rotator cuff",
-    "rear deltoids",
     "upper back"
   ],
   "category": "rehab",

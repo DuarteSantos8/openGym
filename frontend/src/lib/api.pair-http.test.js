@@ -32,7 +32,7 @@ describe('pairRedeem from the phone app with an http:// address', () => {
     vi.stubGlobal('fetch', fetch)
     const e = await pairRedeem('http://192.168.1.20:8080', 'ABCD2345', { probeMs: 20 }).catch(x => x)
     expect(e.code).toBe('unreachable')
-    expect(e.message).toBe('Could not reach 192.168.1.20:8080. Check the address and that this phone can reach it.')
+    expect(e.message).toBe('Could not reach 192.168.1.20:8080. Check the address and that this phone can reach it. (unreachable)')
     expect(fetch.mock.calls[1][0]).toBe('http://192.168.1.20:8080/api/health')
   })
 
@@ -48,13 +48,13 @@ describe('an https:// try at a home address that gets nowhere', () => {
     const e = await pairRedeem(base, 'ABCD2345', { probeMs: 20 }).catch(x => x)
     const host = base.slice('https://'.length)
     expect(e.code).toBe('unreachable')
-    expect(e.message).toBe(`Could not reach ${host} over https://. If your server runs on plain http (common at home), type http://${host} instead.`)
+    expect(e.message).toBe(`Could not reach ${host} over https://. If your server runs on plain http (common at home), type http://${host} instead. (unreachable)`)
   })
 
   it('a public name keeps the plain message', async () => {
     vi.stubGlobal('fetch', vi.fn(failed))
     const e = await pairRedeem('https://gym.example.com', 'ABCD2345', { probeMs: 20 }).catch(x => x)
-    expect(e.message).toBe('Could not reach gym.example.com. Check the address and that this phone can reach it.')
+    expect(e.message).toBe('Could not reach gym.example.com. Check the address and that this phone can reach it. (unreachable)')
   })
 })
 
@@ -67,5 +67,48 @@ describe('looksLocal', () => {
   })
   it('public addresses and names', () => {
     for (const a of ['8.8.8.8', '172.32.0.1', '100.128.0.1', 'gym.example.com', 'localhost.example.org', '2001:db8::1', '']) expect(looksLocal(a), a).toBe(false)
+  })
+})
+
+// #870: the Android WebView refused a self-hosted server (home network, private CA) that the
+// phone's browser opened fine: pairing said "Could not reach" over https and over http alike.
+describe('a server only the app itself can reach (#870)', () => {
+  it('pairs through the native network stack, and keeps talking to it that way', async () => {
+    const { _viaNativeForTests, api, setRemoteAuth } = await import('./api.js')
+    const core = await import('@capacitor/core')
+    const native = vi.fn(async ({ url }) => ({ status: 200, data: url.endsWith('/redeem') ? JSON.stringify({ token: 'T', user: { id: 'u1' } }) : JSON.stringify({ rev: 7 }) }))
+    core.CapacitorHttp.request = native
+    const fetch = vi.fn(failed)
+    vi.stubGlobal('fetch', fetch)
+    try {
+      const r = await pairRedeem('https://192.168.1.20:8443', 'ABCD2345', { probeMs: 20 })
+      expect(r.token).toBe('T')
+      expect(native.mock.calls[0][0]).toMatchObject({ url: 'https://192.168.1.20:8443/api/pair/redeem', method: 'POST', data: { code: 'ABCD2345' } })
+      setRemoteAuth('https://192.168.1.20:8443', 'T')
+      await expect(api('/api/data/rev')).resolves.toEqual({ rev: 7 })
+      // The WebView is not tried again for that server.
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(native.mock.calls[1][0].headers.Authorization).toBe('Bearer T')
+    } finally {
+      _viaNativeForTests.clear()
+      setRemoteAuth('', null)
+      core.CapacitorHttp.request = () => Promise.reject(new Error('unreachable'))
+    }
+  })
+  it('unreachable both ways: the message carries what the app itself was told', async () => {
+    const core = await import('@capacitor/core')
+    core.CapacitorHttp.request = () => Promise.reject(new Error('Unable to resolve host "gym.home.example":\n No address associated with hostname'))
+    vi.stubGlobal('fetch', vi.fn(failed))
+    try {
+      const e = await pairRedeem('https://gym.home.example', 'ABCD2345', { probeMs: 20 }).catch(x => x)
+      expect(e.code).toBe('unreachable')
+      expect(e.message).toBe('Could not reach gym.home.example. Check the address and that this phone can reach it. (Unable to resolve host "gym.home.example": No address associated with hostname)')
+    } finally { core.CapacitorHttp.request = () => Promise.reject(new Error('unreachable')) }
+  })
+  it('off the Android app nothing changes', async () => {
+    h.native = false
+    vi.stubGlobal('fetch', vi.fn(failed))
+    const e = await pairRedeem('https://gym.example.com', 'ABCD2345', { probeMs: 20 }).catch(x => x)
+    expect(e.code).toBe('unreachable')
   })
 })

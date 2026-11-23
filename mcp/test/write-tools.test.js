@@ -72,6 +72,24 @@ describe('log_workout writes through the server', () => {
     expect(r.revision).toBe(8)
   })
 
+  test('dry_run shows the PR badge the save gives, and the save gives it (#942)', async () => {
+    const dry = await call({ ...CURLS, dry_run: true })
+    expect(dry.would_log.prs).toEqual(['dumbbell biceps curl'])
+    const real = await call(CURLS)
+    expect(real.prs).toEqual(dry.would_log.prs)
+    expect(api.puts).toHaveLength(1)
+  })
+
+  test('cardio: minutes at a speed in the unit given, read back with its distance (#942)', async () => {
+    const r = await call({ speed_unit: 'mph', exercises: [{ exercise: 'treadmill', sets: [{ minutes: 20, speed: 3.5, incline: 7 }] }] })
+    expect(r.logged).toBe(true)
+    expect(r.exercises[0].sets[0]).toMatchObject({ minutes: 20, speed: 3.5, speed_unit: 'mph', distance_mi: 1.17, incline: 7 })
+    expect(r.exercises[0].sets[0].label).toMatch(/3\.5 mph/)
+    const saved = api.puts[0].state.workouts.at(-1)
+    expect(saved.entries[0].sets[0]).toEqual({ min: 20, speed: 5.63, incline: 7, done: true })
+    expect(saved.prs).toEqual([])
+  })
+
   test('dry_run builds the preview and writes nothing', async () => {
     const r = await call({ ...CURLS, dry_run: true })
     expect(r).toMatchObject({ logged: false, dry_run: true })
@@ -236,7 +254,8 @@ describe('found in review', () => {
 
 describe('limits and the trail a write leaves', () => {
   beforeEach(async () => { api = await stubApi(DOC()) })
-  const day = n => { const d = new Date(Date.now() - n * 86400000); return { ...CURLS, start: '07:00', date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') } }
+  // Calendar days back, at noon: n × 24 h lands on the same date twice across a DST change.
+  const day = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return { ...CURLS, start: '07:00', date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') } }
 
   test('a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile', async () => {
     for (let i = 1; i <= WRITE_LIMIT; i++) expect((await call(day(i))).logged).toBe(true)

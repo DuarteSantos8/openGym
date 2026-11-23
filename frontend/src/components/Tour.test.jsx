@@ -280,7 +280,8 @@ describe('the ways between screens', () => {
     expect(step()).toBe('go-settings')
     await click(anchor('settings-gear'))
     expect(where).toBe('/settings')
-    expect(step()).toBe('look')
+    // top to bottom, as the screen lists them since #1105: Units & language comes before Look & Home
+    expect(step()).toBe('units')
   })
 })
 
@@ -306,6 +307,23 @@ describe('the spotlight follows its element', () => {
     await settle(100)
     expect(parseFloat(document.querySelector('.tour-hole').style.top)).toBe(294)
     expect(card().classList.contains('tour-center')).toBe(false)
+  })
+  it('a row in a sheet over the tab bar is on screen, a page row behind it is not', async () => {
+    const bar = document.createElement('nav')
+    bar.id = 'tabbar'
+    bar.getBoundingClientRect = () => ({ top: 600, left: 0, width: 400, height: 80, bottom: 680, right: 400, x: 0, y: 600 })
+    document.body.appendChild(bar)
+    host.id = 'modal-root'   // the anchors stand in for a sheet's rows: sheets sit above the bar
+    await run('today')
+    const el = anchor('today')
+    el.getBoundingClientRect = () => ({ top: 620, left: 20, width: 200, height: 50, bottom: 670, right: 220, x: 20, y: 620 })
+    el.scrollIntoView = vi.fn()
+    await settle(100)
+    expect(parseFloat(document.querySelector('.tour-hole').style.top)).toBe(614)
+    host.id = ''
+    await settle(900)
+    expect(el.scrollIntoView).toHaveBeenCalled()
+    bar.remove()
   })
   it('waits while the user is still scrolling before bringing it back', async () => {
     let top = 5000
@@ -510,6 +528,8 @@ describe('Create your own exercise', () => {
   it('the form’s own Create makes it, and the tour follows', async () => {
     await toForm()
     for (let k = 0; k < 3; k++) await click(btn('Next'))
+    // The missing media field is passed over only after the anchor wait: a slow runner needs longer.
+    for (let n = 0; n < 20 && step() !== 'c-save'; n++) await settle(50)
     expect(step()).toBe('c-save')
     await click(anchor('cx-save'))
     await settle(300)

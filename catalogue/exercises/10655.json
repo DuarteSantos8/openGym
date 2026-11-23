@@ -3,6 +3,7 @@
   "name": "pilates machine lying knee extension",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "quads",
   "secondaryMuscles": [
     "calves",

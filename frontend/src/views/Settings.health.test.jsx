@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => {
     return { ok: true, health: state.health }
   })
   state.disableRead = vi.fn(async kind => { state.health = { ...state.health, [kind === 'hr' ? 'readHr' : 'readWeight']: false }; return state.health })
+  state.allowBirthDate = vi.fn(async () => {})
   state.menuSheet = vi.fn()
   state.toast = vi.fn()
   state.update = vi.fn(fn => fn(state.S))
@@ -65,6 +66,7 @@ vi.mock('../lib/health-sync.js', () => ({
   disableRead: (...a) => mocks.disableRead(...a),
   effortSupport: () => Promise.resolve(mocks.effort),
   askEffort: (...a) => mocks.askEffort(...a),
+  allowBirthDate: (...a) => mocks.allowBirthDate(...a),
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
@@ -83,7 +85,7 @@ beforeEach(() => {
   mocks.health = { on: false, written: {}, error: null }
   mocks.readGrant = true
   mocks.effort = { supported: false, on: false, granted: false }
-  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead', 'update', 'askEffort']) mocks[k].mockClear()
+  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead', 'allowBirthDate', 'update', 'askEffort']) mocks[k].mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -177,6 +179,31 @@ describe('Settings — Apple Health', () => {
     expect(mocks.menuSheet.mock.calls[0][0].title).toBe('Stop writing to Apple Health?')
   })
 
+  // The Apple Watch's Zones page (#1108): the age from Apple Health, asked for from here too.
+  it('switches the watch’s heart-rate zones, asking for the birth date when on, on the iPhone only', async () => {
+    await mount()
+    const zones = () => row('Birth date, for heart-rate zones').querySelector('[role="switch"]')
+    expect(zones().getAttribute('aria-checked')).toBe('true')
+    await act(async () => { zones().click() })
+    expect(JSON.parse(localStorage.getItem('gym_watch_v1')).show.zones).toBe(false)
+    expect(mocks.allowBirthDate).not.toHaveBeenCalled()
+    await act(async () => { zones().click() })
+    expect(JSON.parse(localStorage.getItem('gym_watch_v1')).show.zones).toBe(true)
+    expect(mocks.allowBirthDate).toHaveBeenCalledTimes(1)
+    mocks.android = true
+    mocks.status = { status: 'available', granted: false }
+    await mount()
+    expect(row('Birth date, for heart-rate zones')).toBeFalsy()
+  })
+
+  // watch-apple (#1108 review): the row belongs to the Apple Watch, so it goes with the Watch module.
+  it('leaves the birth date row out with the Watch module off', async () => {
+    mocks.S.modules = { watch: false }
+    await mount()
+    expect(appleSwitch()).toBeTruthy()
+    expect(row('Birth date, for heart-rate zones')).toBeFalsy()
+  })
+
   it('is not there on an iPhone without Apple Health', async () => {
     mocks.status = { status: 'unsupported', granted: false, platform: 'ios' }
     await mount()
@@ -211,6 +238,13 @@ describe('Settings — Apple Health', () => {
     mocks.effort = { supported: true, on: false, granted: false }
     await mount()
     expect(row('Effort after a workout')).toBeUndefined()
+  })
+
+  // The "Export & import" tutorial stops on Data & backup: its health stop is the row that leads here.
+  it('gives the tour its health stop on Data & backup', async () => {
+    await act(async () => { root.render(<Settings page="data" />) })
+    await act(async () => { await Promise.resolve(); await Promise.resolve() })
+    expect(host.querySelector('[data-tour="data-health"]').textContent).toContain('Apple Health')
   })
 })
 

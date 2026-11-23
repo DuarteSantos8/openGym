@@ -57,6 +57,18 @@ afterEach(() => {
 })
 
 describe('Focus workout view', () => {
+  // TestFlight 11-08: the band chips were on the set list only.
+  it('picks the bands of the set on screen, as the list does', () => {
+    mount({ id: SQUAT, target: { sets: 1, reps: 10 }, sets: [{ w: 0, r: 10, done: false }] }, {
+      bands: [{ id: 'b-red', name: 'Red', color: '#eb5757', level: 'Heavy' }], bandEx: { [SQUAT]: true },
+    })
+    const chip = [...container.querySelectorAll('.focus-bands .chip.band')].find(b => b.textContent.includes('Red'))
+    expect(chip).toBeTruthy()
+    expect(chip.textContent).toContain('Heavy')
+    act(() => chip.click())
+    expect(useStore.getState().S.active.entries[0].sets[0].bands).toEqual(['b-red'])
+  })
+
   // FocusView.css spaces the steppers and greys a finished set's numbers through .focus-set,
   // which the set's wrapper had lost: the label sat closer to the stepper above it than to its own.
   it('gives the set its focus-set class, with complete once it is done', () => {
@@ -97,6 +109,32 @@ describe('Focus workout view', () => {
     expect(plan.textContent).toBe('Plan: 3 × 5')
     expect(summary.textContent).toContain('8 Reps')
     expect(summary.textContent).not.toContain('today')
+  })
+
+  // Issue #1104: after a weight increase double progression aims at the floor of its range, so
+  // target.reps equals target.repsMin. The badge used to print "8–8" instead of the plan's range.
+  it('shows the plan\'s whole rep range when today aims at the floor of it', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 3, reps: 8, repsMin: 8, weight: 95 },
+      planned: { sets: 3, reps: 12, repsMin: 8, weight: 95 },
+      plan: { kind: 'up' },
+      sets: Array.from({ length: 3 }, () => ({ w: 95, r: 8, done: false })),
+    })
+
+    const summary = container.querySelector('.focus-prescription')
+    expect(summary.textContent).toContain('8–12 Reps')
+    expect(summary.textContent).not.toContain('8–8')
+  })
+
+  it('keeps a rep range readable when there is no plan to read it from', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 3, reps: 12, repsMin: 8, weight: 95 },
+      sets: Array.from({ length: 3 }, () => ({ w: 95, r: 12, done: false })),
+    })
+
+    expect(container.querySelector('.focus-prescription').textContent).toContain('8–12 Reps')
   })
 
   it('offers the per-exercise progression switch and marks the current exercise', () => {

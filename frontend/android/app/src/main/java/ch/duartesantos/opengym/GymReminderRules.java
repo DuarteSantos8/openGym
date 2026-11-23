@@ -18,6 +18,11 @@ final class GymReminderRules {
 
     private GymReminderRules() {}
 
+    /** Whether a gym's saved place is one on Earth (lat -90..90, lng -180..180, both real numbers). */
+    static boolean validPlace(double lat, double lng) {
+        return !Double.isNaN(lat) && !Double.isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    }
+
     /** "HH:MM" as minutes after midnight, or -1. */
     static int minuteOf(String hhmm) {
         if (hhmm == null) return -1;
@@ -53,6 +58,25 @@ final class GymReminderRules {
         int minute = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
         if (!inWindow(windowFrom, windowTo, minute)) return "window";
         return null;
+    }
+
+    /**
+     * A time from the page, in ms. A JSON number reaches a plugin as an Integer, a Long or a
+     * Double, and Capacitor's PluginCall.getDouble returns null for a Long, which a millisecond
+     * timestamp always is: read that way, the running workout's start was lost and a leave never
+     * asked (#1332). Anything that is not a number is 0.
+     */
+    static long millis(Object v) {
+        return v instanceof Number ? ((Number) v).longValue() : 0L;
+    }
+
+    /**
+     * Settings → Workout → Forgotten workouts: whether walking out of a gym now asks about the
+     * workout running ("Looks like you left the gym"). The reminder on, the switch on (the page's
+     * status says), and a session that started less than 12 hours ago, not in the future.
+     */
+    static boolean asksOnLeave(boolean on, boolean leaveGym, long activeSince, long nowMs) {
+        return on && leaveGym && activeSince > 0 && nowMs >= activeSince && nowMs - activeSince < ACTIVE_FRESH_MS;
     }
 
     // ---------------------------------------------------------------- the approach check (Android)

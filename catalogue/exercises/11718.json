@@ -3,9 +3,9 @@
   "name": "lever incline chest supported reverse delt fly (plate loaded)",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "pec-deck",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "upper back",
     "trapezius"

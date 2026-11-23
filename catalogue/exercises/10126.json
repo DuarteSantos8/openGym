@@ -3,10 +3,9 @@
   "name": "standing isometric shoulder external rotation with towel",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rotator cuff",
-    "rear deltoids",
     "upper back"
   ],
   "category": "isometric",

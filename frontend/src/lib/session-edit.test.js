@@ -23,7 +23,7 @@ describe('saved workout editing', () => {
       state.active.entries[0].sets.forEach(x => { x.rir = 4 })
       return saveWorkoutEdit(state)
     }
-    expect(withSets('auto', 10)).toMatchObject({ effort: 6, effortBy: 'auto' })
+    expect(withSets('auto', 10)).toMatchObject({ effort: 4, effortBy: 'auto' })
     expect(withSets('phone', 10)).toMatchObject({ effort: 10, effortBy: 'phone' })
     // Too few sets left to go by: the automatic score goes rather than staying wrong.
     const state = fixture()

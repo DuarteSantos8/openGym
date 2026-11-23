@@ -9,7 +9,7 @@ final class WorkoutEffortTests: XCTestCase {
 
     func testWordsFollowAppleFitnessBands() {
         XCTAssertEqual([1, 3, 4, 6, 7, 8, 9, 10].map(WorkoutEffort.word),
-                       ["Easy", "Easy", "Moderate", "Moderate", "Hard", "Hard", "All out", "All out"])
+                       ["Easy", "Easy", "Moderate", "Moderate", "Hard effort", "Hard effort", "All out", "All out"])
     }
 
     func testStepStartsInTheMiddleAndStaysInRange() {

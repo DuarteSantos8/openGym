@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: the e2e rig's way in (RigReceiver), so a script can play the phone. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name=".RigReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver"
+            xmlns:tools="http://schemas.android.com/tools">
+            <intent-filter>
+                <action android:name="ch.duartesantos.opengym.wear.RIG" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

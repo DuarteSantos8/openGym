@@ -11,8 +11,11 @@ describe('matchLocale', () => {
   })
   it('falls back to the base language, and to nothing for one the app does not have', () => {
     expect(matchLocale('de-AT')).toBe('de')
+    expect(matchLocale('lt-LT')).toBe('lt')
     expect(matchLocale('en-US')).toBe('en')
     expect(matchLocale('pt')).toBe('pt')
+    expect(matchLocale('ja-JP')).toBe('ja')
+    expect(matchLocale('JA_jp')).toBe('ja')
     expect(matchLocale('nl-NL')).toBe(null)
     expect(matchLocale('')).toBe(null)
     expect(matchLocale(undefined)).toBe(null)
@@ -37,8 +40,10 @@ describe('autoLang', () => {
   })
   it('puts DEFAULT_LANG before the browser, the browser before English', () => {
     expect(autoLang(fresh, { default_lang: 'pt-BR' }, ['de-DE'])).toBe('pt-BR')
+    expect(autoLang(fresh, { default_lang: 'lt-LT' }, ['de-DE'])).toBe('lt')
     expect(autoLang(fresh, {}, ['nl-NL', 'de-DE'])).toBe('de')
     expect(autoLang(fresh, {}, ['nl-NL'])).toBe('en')
     expect(autoLang(fresh, { default_lang: 'xx' }, ['fr-FR'])).toBe('fr')
+    expect(autoLang(fresh, {}, ['ja-JP', 'en-US'])).toBe('ja')
   })
 })

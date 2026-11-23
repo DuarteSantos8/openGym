@@ -3,9 +3,8 @@
   "name": "cable 45 degrees reverse grip reverse fly",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids"
   ],

@@ -5,7 +5,9 @@ package ch.duartesantos.opengym;
  *
  * The clock in the countdown card is a Chronometer that the system draws itself, so the card is
  * reposted only for the bar, and only while someone can see it (screen on). With the screen off
- * nothing is reposted, and turning the screen on brings the card up to date at once.
+ * nothing is reposted, and turning the screen on brings the card up to date at once. With the app
+ * itself in front the card is behind it (only a pulled-down shade shows it), so it moves in
+ * coarse steps; the app draws its own clock.
  *
  * The end is sounded by an exact alarm where Android allows one: that alarm wakes the phone,
  * also in Doze, and RestAlert.fire holds the CPU for the few seconds of the alert. The countdown
@@ -15,6 +17,9 @@ package ch.duartesantos.opengym;
 final class RestCountdownPlan {
     /** Held past the end so the alert can take over before this lock runs out. */
     static final long END_GRACE_MS = 10_000;
+
+    /** Bar step while the app is in front (see nextTickMs). */
+    static final long IN_FRONT_TICK_MS = 5_000;
 
     private RestCountdownPlan() {}
 
@@ -27,11 +32,15 @@ final class RestCountdownPlan {
     /**
      * Delay to the next run of the countdown loop. With the screen on, the next whole second so
      * the bar moves with the clock and the last run lands on the end itself. With the screen off
-     * nothing is drawn, so the loop only wakes for the end.
+     * nothing is drawn, so the loop only wakes for the end. With the app in front the card is
+     * seen only through a pulled-down shade, so the bar steps every IN_FRONT_TICK_MS instead
+     * (the Chronometer clock stays exact); it is back to every second within that long of the
+     * app leaving the front.
      */
-    static long nextTickMs(long leftMs, boolean interactive) {
+    static long nextTickMs(long leftMs, boolean interactive, boolean inFront) {
         if (leftMs <= 0) return 0;
         if (!interactive) return leftMs;
+        if (inFront) return Math.min(leftMs, IN_FRONT_TICK_MS);
         return ((leftMs - 1) % 1000) + 1;
     }
 
@@ -48,6 +57,81 @@ final class RestCountdownPlan {
     /** Seconds a Chronometer counting down to `base` shows at `elapsedNow` (its own rounding). */
     static long chronometerShows(long base, long elapsedNow) {
         return (base - elapsedNow) / 1000;
+    }
+
+    /** An alarm this close before its end rings as it is (the clocks of two calls never match). */
+    static final long EARLY_SLACK_MS = 1_500;
+    /** An alarm at most this early waits for the end itself, with the CPU held. */
+    static final long WAIT_MAX_MS = 5_000;
+    static final int FIRE = 0, WAIT = 1, REBOOK = 2, STALE = 3;
+
+    /**
+     * How far apart the page's end and the alarm's end may be and still be the one rest (#1007).
+     * Both come from the same endsAt, but a WebView thawing after a freeze reads its clock late.
+     */
+    static final long SAME_END_MS = 2_000;
+
+    /**
+     * Whether an end already rang (`rang`, 0 for none) covers `at`: the page played the tone on
+     * screen and the alarm for that rest arrives, or the other way round. Exactly the same end
+     * between two native callers, since a chain of holds rings its cues seconds apart.
+     */
+    static boolean alreadyRang(long at, long rang, boolean nearEnough) {
+        if (at <= 0 || rang <= 0) return false;
+        return nearEnough ? Math.abs(at - rang) <= SAME_END_MS : at == rang;
+    }
+
+    /**
+     * Which end rang last and who rang it: one alert per end (#1007). Plain state so the order of
+     * the native countdown, the exact alarm and the page can be tested; RestAlert holds the one
+     * instance and calls it under its lock.
+     */
+    static final class EndLedger {
+        long firedFor;
+        boolean byPage;
+
+        /**
+         * A native caller (the countdown or the alarm) reached `at`: true when it rings the end.
+         * With the app on screen the page rings it, so the end is left unclaimed for the page:
+         * claimed here and then kept quiet, the page's tone was refused as already rung and the
+         * end made no sound at all with the app open (Android, 1.4.5).
+         */
+        boolean claimNative(long at, boolean appInFront) {
+            if (appInFront) return false;
+            if (alreadyRang(at, firedFor, byPage)) return false;
+            firedFor = at;
+            byPage = false;
+            return true;
+        }
+
+        /** The page is about to play the end of `at` itself: false when this end already rang. */
+        boolean claimPage(long at) {
+            if (alreadyRang(at, firedFor, true)) return false;
+            if (at > 0) {
+                firedFor = at;
+                byPage = true;
+            }
+            return true;
+        }
+
+        boolean pageRang(long at) {
+            return byPage && alreadyRang(at, firedFor, true);
+        }
+    }
+
+    /**
+     * What an arriving rest alarm does (#995). Some phones (ColorOS seen) hand an exact alarm over
+     * a minute early, and the alert then ended a rest the page and the card still ran: an alarm
+     * for an end still ahead is booked again for that end (or waited out when it is seconds away).
+     * `bookedAt` is the end booked last in this process (0: none known, after a restart); an alarm
+     * for any other end is left over and stays quiet. `fromCountdown`: the card's own clock
+     * reached the end, which is always the current rest.
+     */
+    static int alarmVerdict(long at, long now, long bookedAt, boolean fromCountdown) {
+        if (!fromCountdown && bookedAt > 0 && at > 0 && at != bookedAt) return STALE;
+        long early = at - now;
+        if (at <= 0 || early <= EARLY_SLACK_MS) return FIRE;
+        return early <= WAIT_MAX_MS ? WAIT : REBOOK;
     }
 
     /** The in-app clock's seconds for `leftMs` (round up), what the card used to print. */
