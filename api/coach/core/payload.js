@@ -190,9 +190,11 @@ function readSession(entry, fallback) {
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null;
   // A pyramid carries one target per set too, and it owns the flat `reps`. Without reading it a
   // clean 12-10-8-6 session is graded against 12 on every set, so its lower sets read as misses
-  // and three of them manufacture a stall the athlete never had. "max" has no fixed goal.
+  // and three of them manufacture a stall the athlete never had. "max" has no fixed goal; a
+  // numeric target is at least one rep, as the plan and history normalisers write it, so a
+  // corrupt zero cannot make a zero-rep set a hit.
   const pyrGoals = mode === 'reps' && entry && entry.target && Array.isArray(target.pyramid)
-    ? target.pyramid.slice(0, MAX_PYRAMID_SETS).map(v => (v === PYRAMID_MAX ? 0 : Math.max(0, Number(v) || 0)))
+    ? target.pyramid.slice(0, MAX_PYRAMID_SETS).map(v => (v === PYRAMID_MAX ? 0 : Math.max(1, Number(v) || 0)))
     : null;
   const setGoals = rowGoals || (pyrGoals && pyrGoals.length ? pyrGoals : null);
   const planned = setGoals ? setGoals.length : (target.sets || logged.length);

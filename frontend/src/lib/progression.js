@@ -314,9 +314,11 @@ export function readSession(entry, fallback) {
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null
   // A pyramid owns one target per set too, so it has to be read before the flat `reps`: grading a
   // 12-10-8-6 session against 12 counts every lower set as a miss and invents a stall. "max" has
-  // no fixed goal. The coach payload (api/coach/core/payload.js) mirrors this read.
+  // no fixed goal; a numeric target is at least one rep, as the plan and history normalisers
+  // write it, so a corrupt zero cannot make a zero-rep set a hit. The coach payload
+  // (api/coach/core/payload.js) mirrors this read.
   const pyrGoals = mode === 'reps' && entry && entry.target && isPyramid(target)
-    ? target.pyramid.slice(0, MAX_PYRAMID_SETS).map(v => (v === PYRAMID_MAX ? 0 : Math.max(0, Number(v) || 0))) : null
+    ? target.pyramid.slice(0, MAX_PYRAMID_SETS).map(v => (v === PYRAMID_MAX ? 0 : Math.max(1, Number(v) || 0))) : null
   const setGoals = rowGoals || (pyrGoals && pyrGoals.length ? pyrGoals : null)
   const plannedRows = setGoals ? setGoals.length : (target.sets || logged.length)
   const planned = mode === 'time' && isPerSide(target) ? plannedRows * 2 : plannedRows

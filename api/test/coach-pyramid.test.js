@@ -338,6 +338,23 @@ test('a clean pyramid session reads as a hit, not a run of misses', () => {
   assert.equal(unfinished.stalls, 1);
 });
 
+test('a pyramid target of zero still asks for one rep', () => {
+  // The plan and history normalisers hold a numeric target to at least one rep; a hand-edited
+  // [0] must not turn a zero-rep set into a hit just because the list is non-empty.
+  const ex = { id: '0001', sets: 1, reps: 0, mode: 'reps', pyramid: [0] };
+  const S = sampleState({
+    routines: [{ id: 'r1', name: 'Push', emoji: '💪', ex: [ex] }],
+    week: { 1: 'r1' },
+    workouts: [{
+      id: 'w1', d: D('2026-07-20'), name: 'Push', start: 1000, end: 1000 + 45 * 60000,
+      entries: [{ id: '0001', target: ex, sets: [{ w: 40, r: 0, done: true }] }]
+    }]
+  });
+  const row = payload.build(S, { handle: H, kind: 'review' }).aggregates.exercises.find(e => e.id === '0001');
+  assert.equal(row.lastOk, false);
+  assert.equal(row.stalls, 1);
+});
+
 /* ---------------- a logged session keeps its target ---------------- */
 
 test('a logged pyramid target keeps its per-set aims, in full and compact sessions', () => {

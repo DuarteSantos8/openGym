@@ -185,6 +185,11 @@ describe('a pyramid session is graded against its own targets', () => {
     // …but every prescribed row still has to be ticked.
     expect(readSession({ id: LIFT, target: allMax, sets: [{ w: 0, r: 5, done: true }, { w: 0, r: 0, done: false }, { w: 0, r: 3, done: true }] }, allMax).ok).toBe(false)
   })
+
+  it('a zero numeric target still asks for one rep', () => {
+    const zero = pyramidCfg({ sets: 1, reps: 0, pyramid: [0] })
+    expect(readSession({ id: LIFT, target: zero, sets: [{ w: 60, r: 0, done: true }] }, zero).ok).toBe(false)
+  })
 })
 
 describe('a planned session builds the pyramid with useTarget (progression off)', () => {
