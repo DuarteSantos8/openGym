@@ -5896,4 +5896,7 @@ export default {
   "Hide": "隱藏",
   "Totals": "總計",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
+  // --- cardio set clock (#131) ---
+  "Start timing": "開始計時",
+  "Stop timing": "停止計時",
 }

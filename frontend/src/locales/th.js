@@ -5914,4 +5914,7 @@ export default {
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
+  // --- cardio set clock (#131) ---
+  "Start timing": "เริ่มจับเวลา",
+  "Stop timing": "หยุดจับเวลา",
 }

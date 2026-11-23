@@ -5869,4 +5869,7 @@ export default {
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "شروع زمان‌گیری",
+  "Stop timing": "توقف زمان‌گیری",
 }

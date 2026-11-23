@@ -5903,4 +5903,7 @@ export default {
   "Hide": "Gizle",
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Süre tutmayı başlat",
+  "Stop timing": "Süre tutmayı durdur",
 }

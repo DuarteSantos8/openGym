@@ -5903,4 +5903,7 @@ export default {
   "Hide": "छिपाएँ",
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
+  // --- cardio set clock (#131) ---
+  "Start timing": "समय गिनना शुरू करें",
+  "Stop timing": "समय गिनना रोकें",
 }

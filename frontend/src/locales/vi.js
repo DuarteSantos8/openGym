@@ -5869,4 +5869,7 @@ export default {
   "Hide": "Ẩn",
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Các mũi tên đổi thứ tự.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Bắt đầu bấm giờ",
+  "Stop timing": "Dừng bấm giờ",
 };

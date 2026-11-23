@@ -5903,4 +5903,7 @@ export default {
   "Hide": "Ocultar",
   "Totals": "Totales",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Muestra lo que usas, pliega lo que abres poco y oculta el resto. Las flechas cambian el orden.",
+  // --- cardio set clock (#131) ---
+  "Start timing": "Iniciar el cronómetro",
+  "Stop timing": "Detener el cronómetro",
 }
