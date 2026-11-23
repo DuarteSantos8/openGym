@@ -5890,6 +5890,32 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Routine folders: icon picker groups
+  'Split': '分化',
+  'Kit': '器材',
+  'Session': '訓練課',
+  // Routine folders: colour and icon sheet
+  "Indigo": "靛藍",
+  "Mint": "薄荷綠",
+  "Brown": "棕色",
+  "Grey": "灰色",
+  "Colour and icon": "顏色與圖示",
+  // Routine glyph names (screen readers)
+  "Pull day": "拉日",
+  "Upper body": "上半身",
+  "Lower body": "下半身",
+  "Full body": "全身",
+  "Pull-ups": "引體向上",
+  "Barbell": "槓鈴",
+  "Weight plate": "槓片",
+  "Machine": "器械",
+  "Grip": "握法",
+  "Travel": "旅行",
+  "Home gym": "居家健身",
+  "Bike": "單車",
+  "Boxing": "拳擊",
+  "Timer": "計時器",
+  "Stretch": "伸展",
   // Arrange your own Home and Stats (#1119)
   "Customize": "自訂",
   "Collapsed": "已摺疊",

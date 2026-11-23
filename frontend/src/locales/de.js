@@ -5917,6 +5917,32 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  // Routine folders: icon picker groups
+  'Split': 'Split',
+  'Kit': 'Ausrüstung',
+  'Session': 'Einheit',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mint",
+  "Brown": "Braun",
+  "Grey": "Grau",
+  "Colour and icon": "Farbe und Symbol",
+  // Routine glyph names (screen readers)
+  "Pull day": "Pull-Tag",
+  "Upper body": "Oberkörper",
+  "Lower body": "Unterkörper",
+  "Full body": "Ganzkörper",
+  "Pull-ups": "Klimmzüge",
+  "Barbell": "Langhantel",
+  "Weight plate": "Hantelscheibe",
+  "Machine": "Maschine",
+  "Grip": "Griff",
+  "Travel": "Reise",
+  "Home gym": "Heimstudio",
+  "Bike": "Fahrrad",
+  "Boxing": "Boxen",
+  "Timer": "Timer",
+  "Stretch": "Dehnen",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Anpassen",
   "Collapsed": "Eingeklappt",

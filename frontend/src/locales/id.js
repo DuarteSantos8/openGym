@@ -5862,6 +5862,32 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // Routine folders: icon picker groups
+  "Split": "Pembagian",
+  "Kit": "Alat",
+  "Session": "Sesi",
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mint",
+  "Brown": "Cokelat",
+  "Grey": "Abu-abu",
+  "Colour and icon": "Warna dan ikon",
+  // Routine glyph names (screen readers)
+  "Pull day": "Hari pull",
+  "Upper body": "Tubuh atas",
+  "Lower body": "Tubuh bawah",
+  "Full body": "Seluruh tubuh",
+  "Pull-ups": "Pull-up",
+  "Barbell": "Barbel",
+  "Weight plate": "Plat beban",
+  "Machine": "Mesin",
+  "Grip": "Genggaman",
+  "Travel": "Perjalanan",
+  "Home gym": "Gym di rumah",
+  "Bike": "Sepeda",
+  "Boxing": "Tinju",
+  "Timer": "Timer",
+  "Stretch": "Peregangan",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Sesuaikan",
   "Collapsed": "Diciutkan",

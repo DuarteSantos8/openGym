@@ -5908,6 +5908,32 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Routine folders: icon picker groups
+  'Split': 'สปลิต',
+  'Kit': 'อุปกรณ์',
+  'Session': 'เซสชัน',
+  // Routine folders: colour and icon sheet
+  "Indigo": "คราม",
+  "Mint": "มินต์",
+  "Brown": "น้ำตาล",
+  "Grey": "เทา",
+  "Colour and icon": "สีและไอคอน",
+  // Routine glyph names (screen readers)
+  "Pull day": "วันดึง",
+  "Upper body": "ร่างกายส่วนบน",
+  "Lower body": "ร่างกายส่วนล่าง",
+  "Full body": "ทั้งร่างกาย",
+  "Pull-ups": "พูลอัพ",
+  "Barbell": "บาร์เบล",
+  "Weight plate": "แผ่นน้ำหนัก",
+  "Machine": "เครื่อง",
+  "Grip": "การจับ",
+  "Travel": "เดินทาง",
+  "Home gym": "ยิมที่บ้าน",
+  "Bike": "จักรยาน",
+  "Boxing": "มวย",
+  "Timer": "ตัวจับเวลา",
+  "Stretch": "ยืดเหยียด",
   // Arrange your own Home and Stats (#1119)
   "Customize": "ปรับแต่ง",
   "Collapsed": "ย่อไว้",

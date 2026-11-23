@@ -5837,6 +5837,32 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // Routine folders: icon picker groups
+  "Split": "Split",
+  "Kit": "Udstyr",
+  "Session": "Session",
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mint",
+  "Brown": "Brun",
+  "Grey": "Grå",
+  "Colour and icon": "Farve og ikon",
+  // Routine glyph names (screen readers)
+  "Pull day": "Pulldag",
+  "Upper body": "Overkrop",
+  "Lower body": "Underkrop",
+  "Full body": "Hele kroppen",
+  "Pull-ups": "Pull-ups",
+  "Barbell": "Stang",
+  "Weight plate": "Vægtskive",
+  "Machine": "Maskine",
+  "Grip": "Greb",
+  "Travel": "Rejse",
+  "Home gym": "Hjemmetræning",
+  "Bike": "Cykel",
+  "Boxing": "Boksning",
+  "Timer": "Timer",
+  "Stretch": "Udstrækning",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Tilpas",
   "Collapsed": "Foldet sammen",

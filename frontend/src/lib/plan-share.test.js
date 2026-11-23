@@ -413,3 +413,21 @@ describe('distance work in a shared plan (night QA 146)', () => {
     expect(carry[1].reps).toBeUndefined()
   })
 })
+
+describe('plan-share routine colour', () => {
+  const src = color => ({ unit: 'kg', week: {}, customEx: [], routines: [{ id: 'r', name: 'Push', emoji: 'arm', color, ex: [] }] })
+  it('carries a routine colour through the bundle and the merge', () => {
+    const bundle = buildPlanBundle(src('mint'), 'P')
+    expect(bundle.routines[0].color).toBe('mint')
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, bundle)
+    expect(target.routines[0].color).toBe('mint')
+  })
+  it('drops a colour that is not one of ours', () => {
+    const bundle = buildPlanBundle(src('mint'), 'P')
+    bundle.routines[0].color = 'chartreuse'
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, bundle)
+    expect(target.routines[0]).not.toHaveProperty('color')
+  })
+})

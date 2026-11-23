@@ -5952,6 +5952,32 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // Routine folders: icon picker groups
+  'Split': 'التقسيم',
+  'Kit': 'العتاد',
+  'Session': 'الجلسة',
+  // Routine folders: colour and icon sheet
+  "Indigo": "نيلي",
+  "Mint": "نعناعي",
+  "Brown": "بني",
+  "Grey": "رمادي",
+  "Colour and icon": "اللون والأيقونة",
+  // Routine glyph names (screen readers)
+  "Pull day": "يوم السحب",
+  "Upper body": "الجزء العلوي",
+  "Lower body": "الجزء السفلي",
+  "Full body": "الجسم كله",
+  "Pull-ups": "عقلة",
+  "Barbell": "بار",
+  "Weight plate": "قرص الأوزان",
+  "Machine": "جهاز",
+  "Grip": "القبضة",
+  "Travel": "سفر",
+  "Home gym": "النادي المنزلي",
+  "Bike": "دراجة",
+  "Boxing": "ملاكمة",
+  "Timer": "مؤقت",
+  "Stretch": "تمدد",
   // Arrange your own Home and Stats (#1119)
   "Customize": "تخصيص",
   "Collapsed": "مطوية",

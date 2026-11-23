@@ -5863,6 +5863,32 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // Routine folders: icon picker groups
+  'Split': 'Chia buổi',
+  'Kit': 'Dụng cụ',
+  'Session': 'Buổi tập',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Chàm",
+  "Mint": "Bạc hà",
+  "Brown": "Nâu",
+  "Grey": "Xám",
+  "Colour and icon": "Màu và biểu tượng",
+  // Routine glyph names (screen readers)
+  "Pull day": "Ngày kéo",
+  "Upper body": "Thân trên",
+  "Lower body": "Thân dưới",
+  "Full body": "Toàn thân",
+  "Pull-ups": "Kéo xà",
+  "Barbell": "Tạ đòn",
+  "Weight plate": "Tạ đĩa",
+  "Machine": "Máy tập",
+  "Grip": "Cách cầm",
+  "Travel": "Du lịch",
+  "Home gym": "Phòng tập tại nhà",
+  "Bike": "Xe đạp",
+  "Boxing": "Đấm bốc",
+  "Timer": "Hẹn giờ",
+  "Stretch": "Giãn cơ",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Tùy chỉnh",
   "Collapsed": "Thu gọn",
