@@ -4,7 +4,7 @@
 // to do nothing.
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { closeThenNav, nav, navToWorkout, setNav } from './nav.js'
+import { afterSheets, closeThenNav, nav, navToWorkout, setNav } from './nav.js'
 
 let calls
 beforeEach(() => {
@@ -48,5 +48,45 @@ describe('nav', () => {
   it('starting from Home pushes, so back returns there', () => {
     navToWorkout()
     expect(calls).toEqual([['/workout']])
+  })
+
+  it('afterSheets goes at once on a page, and after the sheet entry is gone on a sheet', () => {
+    const go = vi.fn()
+    afterSheets(go)
+    expect(go).toHaveBeenCalledTimes(1)
+    history.pushState({ openGymSheet: true }, '')
+    afterSheets(go)
+    expect(go).toHaveBeenCalledTimes(1)
+    history.replaceState(null, '', '#/home')   // the sheet's step back landed
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    expect(go).toHaveBeenCalledTimes(2)   // once, not per popstate
+  })
+
+  // CodeRabbit on #1050: no blind step back while a sheet is still up, and none from a page moved on to.
+  it('afterSheets waits while a sheet is up and never goes from another page', () => {
+    vi.useFakeTimers()
+    try {
+      const go = vi.fn()
+      history.pushState({ openGymSheet: true }, '')
+      afterSheets(go)
+      vi.advanceTimersByTime(600)
+      expect(go).not.toHaveBeenCalled()
+      history.replaceState(null, '', '#/library')   // closeThenNav took the sheet's entry for another page
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      expect(go).not.toHaveBeenCalled()
+    } finally { vi.useRealTimers() }
+  })
+
+  // CodeRabbit on #1050: a detail page left another way (closeThenNav) drops its wait, or a later
+  // Back onto the same URL would run it and skip the page.
+  it('afterSheets can be cancelled when the page is left another way', () => {
+    const go = vi.fn()
+    history.pushState({ openGymSheet: true }, '')
+    const cancel = afterSheets(go)
+    cancel()
+    history.replaceState(null, '', '#/home')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    expect(go).not.toHaveBeenCalled()
   })
 })

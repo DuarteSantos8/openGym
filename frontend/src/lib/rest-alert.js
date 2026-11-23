@@ -175,6 +175,14 @@ export function buzzAsAlarm(pattern) {
     .catch(() => false)
 }
 
+// One of the iPhone's haptics (lib/sound.js haptic): 'success', 'selection' or 'light'.
+export function hapticNative(kind) {
+  if (!MOBILE) return Promise.resolve(false)
+  return restPlugin()
+    .then(plugin => (plugin ? plugin.RestAlert.haptic({ kind: String(kind) }).then(() => true) : false))
+    .catch(() => false)
+}
+
 // The end tone through the native side, which ducks music for it (a page cannot). Resolves true
 // once it was handed over, false anywhere it cannot (the web, a failed call) for the caller
 // to play the page's own chime instead. Never resolves with the plugin itself — see restPlugin.
