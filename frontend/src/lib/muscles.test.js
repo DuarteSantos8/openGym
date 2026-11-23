@@ -240,6 +240,33 @@ describe('planned weekly muscle volume', () => {
     expect(loadOfWeeklyPlan(queued)).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
   })
 
+  // The in-app rotation (#1249): its pass is one segment of the loop, so the whole loop counts,
+  // every session slot once, scaled to the Workouts per week target.
+  const rotating = (sequence, weekTarget) => ({
+    ...state, week: {}, weekTarget,
+    rotation: { id: 'rot', sequence, label: 'Loop' },
+    queue: { ids: ['push', 'arms'], since: 1, startsOn: '2026-08-17', rotationId: 'rot' },
+  })
+
+  it('counts every slot of a rotation, repeats included, when no weekly target is set', () => {
+    expect(loadOfWeeklyPlan(rotating(['push', 'arms', 'push']))).toEqual({ chest: 4, triceps: 1.6, biceps: 3 })
+  })
+
+  it('scales a rotation to the workouts planned per week', () => {
+    // 3 slots, 6 workouts a week: the loop runs twice.
+    expect(loadOfWeeklyPlan(rotating(['push', 'arms', 'push'], 6))).toEqual({ chest: 8, triceps: 3.2, biceps: 6 })
+    // 4 slots, 2 a week: half the loop.
+    expect(loadOfWeeklyPlan(rotating(['push', 'arms', 'push', 'arms'], 2))).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
+  })
+
+  it('leaves rest days out of a rotation\'s slot count', () => {
+    expect(loadOfWeeklyPlan(rotating(['push', 'rest', 'arms', 'rest'], 4))).toEqual({ chest: 4, triceps: 1.6, biceps: 6 })
+  })
+
+  it('keeps a fixed week as it is, whatever the weekly target says', () => {
+    expect(loadOfWeeklyPlan({ ...state, weekTarget: 6 })).toEqual({ chest: 4, triceps: 1.6, biceps: 3 })
+  })
+
   it('returns an empty projection for missing or empty plans', () => {
     expect(loadOfWeeklyPlan()).toEqual({})
     expect(loadOfWeeklyPlan({ routines: [], week: { 1: ['missing'] } })).toEqual({})
