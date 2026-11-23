@@ -6278,4 +6278,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Thử quá nhiều lần. Chờ một phút rồi thử lại.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Gõ từ delete để xác nhận. Tài khoản của bạn sẽ bị xóa và không thể khôi phục.",
   "We sent a link to {0}. Open it on this device to continue.": "Chúng tôi đã gửi liên kết tới {0}. Mở trên thiết bị này để tiếp tục.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Sau một phút vẫn chưa có email? Địa chỉ này có thể đã có tài khoản: hãy đăng nhập hoặc đặt lại mật khẩu.",
 };

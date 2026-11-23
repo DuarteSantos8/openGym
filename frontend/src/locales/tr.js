@@ -6312,4 +6312,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Çok fazla deneme. Bir dakika bekle ve tekrar dene.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Onaylamak için delete kelimesini yaz. Hesabın silinir ve geri getirilemez.",
   "We sent a link to {0}. Open it on this device to continue.": "{0} adresine bir bağlantı gönderdik. Devam etmek için bu cihazda aç.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Bir dakika geçti, e-posta gelmedi mi? Bu adresin zaten bir hesabı olabilir: giriş yap ya da şifreni sıfırla.",
 }

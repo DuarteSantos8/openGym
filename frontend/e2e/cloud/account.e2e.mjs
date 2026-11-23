@@ -60,6 +60,7 @@ test('create an account and ask for a reset: both end at "check your email", wit
   expect(await serious(page)).toEqual([])
   await page.click('[data-submit]')
   await expect(mode(page)).toHaveAttribute('data-mode', 'sent')
+  await expect(page.locator('.iv-acct-hint')).toContainText('may already have an account')
   await expect(page.locator('.iv-acct-lead')).toContainText('new@example.com')
   expect(await serious(page)).toEqual([])
 

@@ -6323,4 +6323,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "ลองหลายครั้งเกินไป รอสักครู่แล้วลองอีกครั้ง",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "พิมพ์คำว่า delete เพื่อยืนยัน บัญชีของคุณจะถูกลบและกู้คืนไม่ได้",
   "We sent a link to {0}. Open it on this device to continue.": "เราส่งลิงก์ไปที่ {0} แล้ว เปิดบนอุปกรณ์นี้เพื่อดำเนินการต่อ",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "ผ่านไปหนึ่งนาทีแล้วยังไม่มีอีเมลใช่ไหม ที่อยู่นี้อาจมีบัญชีอยู่แล้ว: เข้าสู่ระบบ หรือรีเซ็ตรหัสผ่าน",
 }

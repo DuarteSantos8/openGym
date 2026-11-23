@@ -69,6 +69,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const [error, setError] = useState(() => (linkFailure ? wordFor(linkFailure) : ''))
   const [busy, setBusy] = useState(false)
   const [request, setRequest] = useState(null)
+  const [sentAfter, setSentAfter] = useState('')     // what led to "check your email": signup | forgot
   const [ready, setReady] = useState(false)          // the profile has loaded: only then may the name be saved
   const title = useRef(null)
   const typedName = useRef(false)   // the name field has been edited: a late profile load must not replace it
@@ -184,9 +185,16 @@ export default function Account({ client = cloud(), go = url => { location.assig
     </form>
   </>)
 
-  if (mode === 'sent') return frame(t('Check your email'), t('We sent a link to {0}. Open it on this device to continue.', email), <div className="iv-acct-actions">{swap('signin', t('Sign in'))}</div>)
+  // After a sign-up the server answers the same whether the address is new or already has an
+  // account, and for the second it sends nothing, so that nobody can probe which addresses are
+  // registered. This screen cannot know either. It says what to do if nothing arrives, the same
+  // for everyone, and puts the reset one tap away.
+  if (mode === 'sent') return frame(t('Check your email'), t('We sent a link to {0}. Open it on this device to continue.', email), <>
+    {sentAfter === 'signup' && <p className="iv-acct-hint">{t('No email after a minute? This address may already have an account: sign in, or reset your password.')}</p>}
+    <div className="iv-acct-actions">{swap('signin', t('Sign in'))}{sentAfter === 'signup' && swap('forgot', t('Forgot password?'))}</div>
+  </>)
 
-  if (mode === 'forgot') return frame(t('Reset your password'), null, <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => { await client.auth.recover(email, { redirectTo: here() }); setMode('sent') }) }}>
+  if (mode === 'forgot') return frame(t('Reset your password'), null, <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => { await client.auth.recover(email, { redirectTo: here() }); setSentAfter('forgot'); setMode('sent') }) }}>
     {emailField}
     <div className="iv-acct-actions"><Button variant="primary" type="submit" disabled={busy || !email.trim()}>{t('Send reset link')}</Button>{swap('signin', t('Back'))}</div>
   </form>)
@@ -197,7 +205,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
       if (!signup) { await client.auth.signIn(email, password); setPassword(''); return }
       const out = await client.auth.signUp(email, password, { redirectTo: here() })
       setPassword('')
-      if (out.needsConfirmation) setMode('sent')
+      if (out.needsConfirmation) { setSentAfter('signup'); setMode('sent') }
     }) }}>
       {emailField}
       {passwordField(signup ? 'new-password' : 'current-password', signup)}
