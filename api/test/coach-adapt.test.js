@@ -50,13 +50,13 @@ const today = {
 
 test('context: weekly sets, the last 72 hours and days since, per target muscle', () => {
   const m = muscleLoad(S, NOW);
-  const pecs = m.find(x => x.muscle === 'pectorals');
+  const pecs = m.find(x => x.muscle === 'chest');
   assert.ok(pecs, JSON.stringify(m));
   assert.equal(pecs.sets7d, 3, 'warm-ups are not work sets, and day 20 is outside the week');
   assert.equal(pecs.sets72h, 3);
   assert.equal(pecs.daysSince, 1);
   assert.equal(pecs.weeklyAvg, 1.3);   // 5 work sets over 4 weeks
-  assert.equal(m.find(x => x.muscle === 'glutes' || x.muscle === 'quads').daysSince, 5);
+  assert.equal(m.find(x => x.muscle === 'gluteal' || x.muscle === 'quadriceps').daysSince, 5);
 });
 
 test('context: the active gym loads by size only, never by name; challenges are this month’s, cleaned', () => {

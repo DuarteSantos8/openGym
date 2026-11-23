@@ -89,7 +89,8 @@ export function benchAllows(kind, id) {
 export const MAX_LIBRARY = 160;
 
 // What one library entry tells the model: enough to pick it, nothing more. The taxonomy
-// fields beyond body part never appear in a rationale and cost ~30 tokens an entry.
+// fields beyond body part never appear in a rationale and cost ~30 tokens an entry. The muscle fields in library-data.js (mg, sm, ...)
+// are for muscle-weights.js only and never ride in a slice.
 const slim = e => ({ id: e.id, n: e.n, bp: e.bp, ...(e.custom ? { custom: true } : {}) });
 
 /* Mobility work is not what a plan is built from, and at an even share per body part the

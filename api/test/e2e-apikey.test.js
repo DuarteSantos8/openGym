@@ -21,7 +21,9 @@ forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite
 
 /* ---------- a provider on localhost ---------- */
 const seen = [];
-const REVIEW_NOCHANGE = { coach_contract: 1, nochange: true, reading: 'Plan not trained long enough to judge.' };
+// A sound first answer gives every kind of plan check an answer (validate.js answerGaps).
+const KEPT = ['volume', 'frequency', 'sets-per-exercise', 'volume-cap'].map(ref => ({ ref, why: 'The plan stays as it is for now.' }));
+const REVIEW_NOCHANGE = { coach_contract: 1, nochange: true, reading: 'Plan not trained long enough to judge.', kept: KEPT };
 const REVIEW_CHANGE = {
   coach_contract: 1,
   summary: 'Top sets at RPE 10 on the dumbbell press; one set less.',

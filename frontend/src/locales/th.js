@@ -5914,4 +5914,10 @@ export default {
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: สัปดาห์ละ {1} เซ็ต ช่วงของคุณคือ {2} ถึง {3}",
+  "{0}: trained in one session a week": "{0}: ฝึกในเซสชันเดียวต่อสัปดาห์",
+  "{0} sets on this exercise": "{0} เซ็ตในท่านี้",
+  "Based on {0}": "อ้างอิงจาก {0}",
+  "our rule": "กฎของเรา",
 }

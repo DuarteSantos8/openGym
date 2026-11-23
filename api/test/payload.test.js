@@ -439,3 +439,12 @@ test('the plan the Coach reads carries each exercise note and its backups (#1003
   assert.equal('note' in p.routines[0].ex[1], false);
   assert.equal('subs' in p.routines[0].ex[1], false);
 });
+
+test('only a review carries checks, and only when the plan has some', async () => {
+  const S = sampleState({ routines: [{ id: 'r1', name: 'A', ex: [{ id: '0025', sets: 5, reps: 8, mode: 'reps' }] }], week: { 1: ['r1'] } });
+  const h = handleFor('u');
+  const rev = payload.build(S, { handle: h, kind: 'review' });
+  assert.ok(rev.checks.some(c => c.id === 'sets-per-exercise:r1:0025'));
+  for (const kind of ['create', 'ask', 'adapt']) assert.equal(payload.build(S, { handle: h, kind }).checks, undefined, kind);
+  assert.equal(payload.build(sampleState({ routines: [], week: {} }), { handle: h, kind: 'review' }).checks, undefined);
+});

@@ -5899,4 +5899,10 @@ export default {
   "Hide": "Slėpti",
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} serijos per savaitę, tavo intervalas – nuo {2} iki {3}",
+  "{0}: trained in one session a week": "{0}: treniruojama vienoje treniruotėje per savaitę",
+  "{0} sets on this exercise": "{0} serijos šiam pratimui",
+  "Based on {0}": "Remiantis: {0}",
+  "our rule": "mūsų taisyklė",
 }

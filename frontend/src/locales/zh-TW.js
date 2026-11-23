@@ -5896,4 +5896,10 @@ export default {
   "Hide": "隱藏",
   "Totals": "總計",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "顯示常用的，摺疊很少打開的，隱藏其餘的。箭頭用來調整順序。",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}：每週 {1} 組，你的範圍是 {2} 到 {3} 組",
+  "{0}: trained in one session a week": "{0}：每週只在一次訓練中練到",
+  "{0} sets on this exercise": "這個動作 {0} 組",
+  "Based on {0}": "依據：{0}",
+  "our rule": "我們的規則",
 }

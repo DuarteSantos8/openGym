@@ -4,6 +4,10 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} séries por semana, seu intervalo é de {2} a {3}",
+  "{0}: trained in one session a week": "{0}: treinado em uma só sessão por semana",
+  "our rule": "nossa regra",
   // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
   "Set once": "Configurar uma vez",
   "Connections": "Conexões",

@@ -5903,4 +5903,10 @@ export default {
   "Hide": "隐藏",
   "Totals": "总计",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "显示常用的，折叠很少打开的，隐藏其余的。箭头用于调整顺序。",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}：每周 {1} 组，你的范围是 {2} 到 {3} 组",
+  "{0}: trained in one session a week": "{0}：每周只在一次训练中练到",
+  "{0} sets on this exercise": "这个动作 {0} 组",
+  "Based on {0}": "依据：{0}",
+  "our rule": "我们的规则",
 }

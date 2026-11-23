@@ -16,6 +16,7 @@ Pick the part that matches what you're doing. If you just have a question, try t
 | [Zepp OS watch](ZEPP_OS.md) | You want openGym on an Amazfit (Zepp OS) watch, or you work on that watch app or the watch relay |
 | [Importing data](DATA_IMPORTS.md) | You're coming from FitNotes, Strong, Hevy or Apple Health, or sharing a plan with someone |
 | [AI coach](AI_COACH.md) | Your instance has the coach switched on and you want to know what it sees and can change |
+| [Coach research](COACH_EVIDENCE.md) | You want to see the studies behind the Coach's advice, and which numbers are only our rule |
 | [Integrations](INTEGRATIONS.md) | You want Apple Health, Health Connect, your watch or scale, or a webhook to Home Assistant, n8n or ntfy |
 | [Backup to WebDAV](WEBDAV_BACKUP.md) | You want a daily copy in your own Nextcloud or WebDAV folder, and to restore it on a new phone |
 | [Calendar feed](CALENDAR.md) | Your planned sessions (and finished workouts) should show up in Apple, Google or Outlook calendar |

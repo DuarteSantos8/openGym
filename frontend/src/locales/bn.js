@@ -5982,4 +5982,10 @@ export default {
   "Hide": "লুকান",
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। তীরগুলো ক্রম বদলায়।",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: সপ্তাহে {1} সেট, আপনার সীমা {2} থেকে {3}",
+  "{0}: trained in one session a week": "{0}: সপ্তাহে এক সেশনে করা হয়",
+  "{0} sets on this exercise": "এই ব্যায়ামে {0} সেট",
+  "Based on {0}": "{0}-এর ওপর ভিত্তি করে",
+  "our rule": "আমাদের নিয়ম",
 }

@@ -5950,4 +5950,10 @@ export default {
   "Hide": "Dölj",
   "Totals": "Totalt",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Pilarna ändrar ordningen.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} set i veckan, ditt intervall är {2} till {3}",
+  "{0}: trained in one session a week": "{0}: tränas i ett pass i veckan",
+  "{0} sets on this exercise": "{0} set på den här övningen",
+  "Based on {0}": "Bygger på {0}",
+  "our rule": "vår egen regel",
 }

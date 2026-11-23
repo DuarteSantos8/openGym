@@ -39,8 +39,10 @@ const state = () => ({
   coach: { consent: { agreedAt: '2026-08-01T00:00:00Z', version: 1 }, profile: null, cadence: 'off', lastReview: null, log: [], snapshots: [] }
 })
 const chat = content => ({ status: 200, body: { choices: [{ finish_reason: 'stop', message: { content } }] } })
+// A sound first answer gives every kind of plan check an answer (api/coach/core/validate.js answerGaps).
+const KEPT = ['volume', 'frequency', 'sets-per-exercise', 'volume-cap'].map(ref => ({ ref, why: 'The plan stays.' }))
 const review = { coach_contract: 1, summary: 'One tweak.', evidence: { from: '2026-08-01', to: '2026-08-20', sessions: 1 },
-  changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: EX }, after: 4, why: 'every set was clean' }] }
+  changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: EX }, after: 4, why: 'every set was clean' }], kept: KEPT }
 
 async function settle() {
   for (let i = 0; i < 200; i++) {

@@ -5869,4 +5869,10 @@ export default {
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. فلش‌ها ترتیب را عوض می‌کنند.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} ست در هفته، محدودهٔ تو {2} تا {3} است",
+  "{0}: trained in one session a week": "{0}: در یک جلسه در هفته تمرین شده",
+  "{0} sets on this exercise": "{0} ست در این حرکت",
+  "Based on {0}": "بر پایهٔ {0}",
+  "our rule": "قاعدهٔ ما",
 }

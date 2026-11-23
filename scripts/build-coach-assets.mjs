@@ -13,9 +13,10 @@
  * reach into frontend/, the index is generated and committed — the same arrangement the
  * translated instruction packs in src/instr/ already use.
  *
- * Only the fields the Coach reasons over are kept: an id, a name, and the three taxonomy
- * fields it filters on. Instructions, images and secondary muscles stay out — they would
- * quadruple a payload the model has no use for.
+ * Only the fields the Coach reasons over are kept: an id, a name, and the taxonomy fields it
+ * filters on. Instructions and images stay out. The muscle fields (mg, sm, and for the compound
+ * lifts primaries / secondaries / muscleWeights) are kept for api/coach/core/muscle-weights.js,
+ * the Stats card's muscle weighting; librarySlice never sends them to the model.
  *
  * The prompts are generated for a different reason: the server runs under bare node and the
  * phone under Vite, and neither `fs.readFileSync` nor a `?raw` import works in both. A plain
@@ -35,6 +36,9 @@ const outputs = [];
 {
   const src = join(root, 'frontend', 'src', 'lib', 'exercises-data.js');
   const { EXDB } = await import(pathToFileURL(src).href);
+  // The muscle model the app draws (muscle-map overlay and secondary additions applied).
+  const { CATALOGUE, smOf } = await import(pathToFileURL(join(root, 'frontend', 'src', 'lib', 'exercises.js')).href);
+  const catById = new Map(CATALOGUE.map(c => [c.id, c]));
   // The library slice a prompt gets is capped (MAX_LIBRARY) and takes each body part's entries in
   // this order, so the order decides what the Coach can pick from. Since the catalogue grew past
   // 5,000 exercises (v1.4.0), the well-known core comes first: the 1,324 exercises openGym always
@@ -49,7 +53,13 @@ const outputs = [];
   } catch { /* no catalogue checked out: keep EXDB's order */ }
   const rank = e => (LATE.has(e.cat) ? 2 : classic.size && !classic.has(e.id) ? 1 : 0);
   const ranked = EXDB.map((e, i) => [rank(e), i, e]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  const index = ranked.map(([, , e]) => ({ id: e.id, n: e.n, bp: e.bp, tg: e.tg, eq: e.eq, ...(e.mk && e.mk !== 'none' ? { mk: e.mk } : {}) }));
+  const index = ranked.map(([, , e]) => {
+    const c = catById.get(e.id) || e, sm = smOf(c);
+    return { id: e.id, n: e.n, bp: e.bp, tg: e.tg, eq: e.eq, ...(e.mk && e.mk !== 'none' ? { mk: e.mk } : {}),
+      ...(c.mg ? { mg: c.mg } : {}), ...(sm.length ? { sm } : {}),
+      ...(c.primaries ? { primaries: c.primaries } : {}), ...(c.secondaries ? { secondaries: c.secondaries } : {}),
+      ...(c.muscleWeights ? { muscleWeights: c.muscleWeights } : {}) };
+  });
   // Where the newer lifts and the late group start, so the slice can spread its picks over each
   // group instead of taking a catalogue prefix (#829).
   const startOf = r => { const at = ranked.findIndex(x => x[0] >= r); return at < 0 ? index.length : at; };

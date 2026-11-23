@@ -351,7 +351,7 @@ export function lightBundle(b) {
     }))
   }
 }
-const decisionOf = (c, status) => ({ id: c.id, type: c.type, target: c.target || null, before: c.before ?? null, after: c.after ?? null, why: c.why, routineName: c.routineName || null, status })
+const decisionOf = (c, status) => ({ id: c.id, type: c.type, target: c.target || null, before: c.before ?? null, after: c.after ?? null, why: c.why, routineName: c.routineName || null, status, ...(c.ref ? { ref: c.ref, ...(c.refCheck ? { refCheck: c.refCheck } : {}) } : {}) })
 
 
 /**

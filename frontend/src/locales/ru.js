@@ -5907,4 +5907,10 @@ export default {
   "Hide": "Скрыть",
   "Totals": "Итоги",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
+  // --- coach evidence line ---
+  "{0}: {1} sets a week, your range {2} to {3}": "{0}: {1} подходов в неделю, твой диапазон от {2} до {3}",
+  "{0}: trained in one session a week": "{0}: тренируется на одной тренировке в неделю",
+  "{0} sets on this exercise": "{0} подходов в этом упражнении",
+  "Based on {0}": "Основано на: {0}",
+  "our rule": "наше правило",
 }

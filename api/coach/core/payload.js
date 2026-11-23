@@ -14,6 +14,7 @@ import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
 import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, rotationOf } from './context.js';
 import { shareOf } from './categories.js';
+import { planChecks } from './checks.js';
 import { asksForBodyweight, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
@@ -771,6 +772,8 @@ export function build(S, opts = {}) {
       workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
     };
     p.aggregates = aggregates(S, workouts);
+    const checks = planChecks(S, profile);
+    if (checks.length) p.checks = checks;
     p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
