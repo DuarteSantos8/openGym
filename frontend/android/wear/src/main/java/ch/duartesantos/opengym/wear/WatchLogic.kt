@@ -194,6 +194,9 @@ data class Keypad(val decimals: Int, val text: String = "") {
 
     fun fits(range: ClosedFloatingPointRange<Double>) = value?.let { it in range } ?: false
 
+    /** Whether ✓ answers: nothing typed (it keeps the number shown and closes) or a number that fits. */
+    fun confirms(range: ClosedFloatingPointRange<Double>) = text.isEmpty() || fits(range)
+
     companion object { const val MAX_WHOLE = 4 }
 }
 
