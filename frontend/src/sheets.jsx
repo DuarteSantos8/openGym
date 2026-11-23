@@ -1728,14 +1728,20 @@ function ExerciseHistory({ exId }) {
     <FormVideosSection exId={exId} />
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
-      {h.sessions.map(s => <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>
-        <div className="grow">
-          <div className="tt">{fmtDate(s.d, true)} {s.pr && <span className="pr"><Icon name="trophy" />PR</span>}</div>
-          <div className="ss">{(recs => s.sets.map((x, j) => <Fragment key={j}>{j > 0 && '  ·  '}{setLabel(exId, x, s.target, speedUnitOf(st))}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(exId)} />}</Fragment>))(recsOf(s))}</div>
-          {tail(s) && <div className="small dim" style={{ marginTop: 3 }}>{tail(s)}</div>}
+      {h.sessions.map(s => {
+        const recs = recsOf(s)
+        // The session badge summarizes the same records as its set trophies. Keep the
+        // metric-based marker for modes without set records and when they are turned off.
+        const pr = liveRecordsOn(st) && s.mode === 'reps' ? recs.some(kinds => kinds.length > 0) : s.pr
+        return <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>
+          <div className="grow">
+            <div className="tt">{fmtDate(s.d, true)} {pr && <span className="pr"><Icon name="trophy" />PR</span>}</div>
+            <div className="ss">{s.sets.map((x, j) => <Fragment key={j}>{j > 0 && '  ·  '}{setLabel(exId, x, s.target, speedUnitOf(st))}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(exId)} />}</Fragment>)}</div>
+            {tail(s) && <div className="small dim" style={{ marginTop: 3 }}>{tail(s)}</div>}
+          </div>
+          {s.value != null && s.value > 0 && <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(s.value)} {unit}</b>}
         </div>
-        {s.value != null && s.value > 0 && <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(s.value)} {unit}</b>}
-      </div>)}
+      })}
     </div>
   </>
 }
