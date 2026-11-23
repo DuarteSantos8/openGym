@@ -81,7 +81,7 @@ A project exists and the following ran against it. Its address and publishable k
 | Applied | All four: `…_profiles`, `…_billing`, `…_content`, `…_advisors` (the last after the owner confirmed it, since it replaces two policies) |
 | Deployed | `export-account`, `delete-account` (both check the caller themselves, so the platform's own token check is off for them) |
 | Live tests | `tests/live.test.mjs` and `tests/live-account.test.mjs`: 10 tests, all passing. They are skipped unless the project is named in the environment |
-| Advisors | After `…_advisors`: performance has nothing to report. Security has two notes left: `webhook_events` has row level security and no policy, on purpose (only the service reads it), and leaked-password protection is off, which is a dashboard setting (step 2 below) |
+| Advisors | After `…_advisors`: performance has nothing to report. Security has one note left: `webhook_events` has row level security and no policy, on purpose (only the service reads it). The other, leaked-password protection being off, went when it was switched on in the dashboard on 2026-11-23 (step 2 below) |
 
 ### Test users
 
@@ -104,12 +104,12 @@ node --test supabase/tests/live.test.mjs supabase/tests/live-account.test.mjs
 
 ### What only the owner can switch on
 
-None of these can be done from the repository or by an agent; each is a setting in the project's dashboard (or Vercel's).
+None of these can be done from the repository; each is a setting in the project's dashboard (or Vercel's). Those struck through are done. Two are left: custom SMTP (the owner enters the mail provider's password) and the OAuth server (it needs the API server's address).
 
 1. ~~Confirm the `…_advisors` migration~~ Done, 2026-11-23.
-2. **Leaked-password protection** (Authentication, Passwords): refuses passwords known from breaches. The project's security advisor asks for it; it may need a paid plan.
+2. ~~Leaked-password protection~~ On since 2026-11-23 (Authentication, Sign In / Providers, Email), on the free plan; the security advisor no longer asks for it. The minimum password length was raised from 6 to 8 at the same time, to match what the account screen asks for.
 3. **Custom SMTP** (Authentication, Emails). Until then nobody but the owner receives a sign-up or reset email, and the sign-up form answers "that email address is not accepted" for anyone else.
-4. **Email templates.** Point the confirm and reset links at the app: `{{ .SiteURL }}/#/account?token_hash={{ .TokenHash }}&type=signup` and `…&type=recovery`. Set the Site URL and allowed redirect URLs to the app's address.
+4. ~~Email templates and URL configuration~~ Done for the preview, 2026-11-23: the confirm and reset links point at the app (`{{ .SiteURL }}/#/account?token_hash={{ .TokenHash }}&type=signup` and `…&type=recovery`), and the Site URL and the one allowed redirect are the cloud preview's address. Not yet followed from a real email: that waits on step 3 or a sign-up with the owner's own address. For production, set them again to the production address.
 5. **OAuth server** (Authentication, OAuth Server), for ADR 0013: switch it on, set the authorization path to `/#/account`, register one client whose redirect is `<the API's origin>/api/oidc/callback`.
 6. ~~`APP_ORIGIN`~~ Set on 2026-11-23 to the cloud preview's origin, and checked: the functions answer that origin and no other. For the record, it is a function secret holding the web app's origin. Without it a browser cannot call `export-account` or `delete-account` (they answer, but the browser's cross-origin check refuses the reply). One origin only for now.
 7. ~~The cloud build's variables~~ Set on 2026-11-23 for the `next/cloud-preview` branch only (see "The cloud preview" below). For production they are still to set, in Vercel: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Setting them turns that deployment into the Cloud edition; the default build has none of this code.
