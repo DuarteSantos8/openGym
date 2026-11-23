@@ -954,7 +954,8 @@ export function validateAdapt(data, today, ctx = {}) {
         out.sets = isInt(c.sets, 1, 6) ? c.sets : 3;
         if (isInt(c.sec, 5, 600)) out.sec = c.sec; else out.reps = isInt(c.reps, 1, 50) ? c.reps : 10;
         if (isNum(c.weight) && c.weight > 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;
-        if (isInt(c.entry, 0, entries.length - 1)) out.entry = c.entry;
+        // The anchor's id travels with its index, so the app can find it again if the session changes.
+        if (isInt(c.entry, 0, entries.length - 1)) { out.entry = c.entry; out.exId = entries[c.entry].id; }
         inSession.add(c.to);
         break;
       }
