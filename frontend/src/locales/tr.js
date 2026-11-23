@@ -6316,4 +6316,5 @@ export default {
   "Sign in or create account": "Giriş yap veya hesap oluştur",
   "Your training stays on this device. An account is for your plan and purchases.": "Antrenmanların bu cihazda kalır. Hesap, planın ve satın alımların içindir.",
   "Signed in as {0}. Your training is stored on this device.": "{0} olarak giriş yapıldı. Antrenmanların bu cihazda saklanır.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Hesabın varsa antrenmanların diğer cihazlarına da gelir. Hesap olmadan bu cihazda kalır.",
 }

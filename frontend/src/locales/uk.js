@@ -6313,4 +6313,5 @@ export default {
   "Sign in or create account": "Увійти або створити обліковий запис",
   "Your training stays on this device. An account is for your plan and purchases.": "Твої тренування залишаються на цьому пристрої. Обліковий запис потрібен для тарифу й покупок.",
   "Signed in as {0}. Your training is stored on this device.": "Вхід виконано: {0}. Твої тренування зберігаються на цьому пристрої.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "З обліковим записом тренування доступні й на інших ваших пристроях. Без нього вони залишаються на цьому пристрої.",
 }

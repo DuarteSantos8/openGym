@@ -6309,4 +6309,5 @@ export default {
   "Sign in or create account": "登入或建立帳號",
   "Your training stays on this device. An account is for your plan and purchases.": "你的訓練資料留在這台裝置上。帳號用於你的方案和購買。",
   "Signed in as {0}. Your training is stored on this device.": "已以 {0} 登入。你的訓練資料儲存在這台裝置上。",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "有了帳號，你的訓練紀錄會同步到你的其他裝置。沒有帳號，紀錄只會留在這台裝置上。",
 }

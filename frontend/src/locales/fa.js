@@ -6282,4 +6282,5 @@ export default {
   "Sign in or create account": "ورود یا ساخت حساب",
   "Your training stays on this device. An account is for your plan and purchases.": "تمرین‌های شما روی همین دستگاه می‌ماند. حساب برای طرح و خریدهای شماست.",
   "Signed in as {0}. Your training is stored on this device.": "با نام {0} وارد شده‌اید. تمرین‌های شما روی همین دستگاه ذخیره می‌شود.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "با حساب کاربری، تمرین‌هایتان در دستگاه‌های دیگرتان هم همراه شماست. بدون آن، روی همین دستگاه می‌ماند.",
 }

@@ -6281,4 +6281,5 @@ export default {
   "Sign in or create account": "Masuk atau buat akun",
   "Your training stays on this device. An account is for your plan and purchases.": "Latihanmu tetap di perangkat ini. Akun dipakai untuk paket dan pembelianmu.",
   "Signed in as {0}. Your training is stored on this device.": "Masuk sebagai {0}. Latihanmu disimpan di perangkat ini.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Dengan akun, latihanmu ikut ke perangkatmu yang lain. Tanpa akun, latihan tetap di perangkat ini.",
 };

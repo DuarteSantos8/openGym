@@ -6371,4 +6371,5 @@ export default {
   "Sign in or create account": "سجّل الدخول أو أنشئ حسابًا",
   "Your training stays on this device. An account is for your plan and purchases.": "تمارينك تبقى على هذا الجهاز. الحساب لخطتك ومشترياتك.",
   "Signed in as {0}. Your training is stored on this device.": "تم تسجيل الدخول باسم {0}. تمارينك محفوظة على هذا الجهاز.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "مع حساب، تنتقل تمارينك معك إلى أجهزتك الأخرى. بدونه تبقى على هذا الجهاز.",
 }

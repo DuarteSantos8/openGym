@@ -12,6 +12,7 @@ import { Button, TextField } from '../../components/ui.jsx'
 import { cloud } from '../../lib/cloud/client.js'
 import { createPendingReset } from '../../lib/cloud/pending-reset.js'
 import { enterApp } from '../../lib/cloud/enter-app.js'
+import { startWebSignIn } from '../../lib/oidc.js'
 import { setCloudAccount } from '../../lib/account-badge.js'
 import Icon from '../../components/Icon.jsx'
 import { useStore } from '../../store/useStore.js'
@@ -59,7 +60,7 @@ function save(name, text) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
-export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = () => enterApp(useStore.getState()) }) {
+export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = () => enterApp(useStore.getState()), link = () => startWebSignIn() }) {
   const [params, setParams] = useSearchParams()
   const nav = useNavigate()
   const tokenHash = params.get('token_hash'), linkType = params.get('type'), authorizationId = params.get('authorization_id')
@@ -72,6 +73,10 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const [word, setWord] = useState('')
   const [error, setError] = useState(() => (linkFailure ? wordFor(linkFailure) : ''))
   const [busy, setBusy] = useState(false)
+  const [leaving, setLeaving] = useState(false)   // off to the app's own server to sign in there
+  // Back from that sign-in with the browser's back button: the page comes out of the cache as it
+  // was left, so the button wakes up again (as views/Login.jsx does for its own).
+  useEffect(() => { const f = () => setLeaving(false); window.addEventListener('pageshow', f); return () => window.removeEventListener('pageshow', f) }, [])
   const [request, setRequest] = useState(null)
   const [sentAfter, setSentAfter] = useState('')     // what led to "check your email": signup | forgot
   const [ready, setReady] = useState(false)          // the profile has loaded: only then may the name be saved
@@ -163,10 +168,13 @@ export default function Account({ client = cloud(), go = url => { location.assig
   // one thing to edit, with a Save that says when it saved. The rest are plain rows, and deleting
   // the account stays folded away until it is asked for.
   const dirty = name.trim() !== savedName.trim()
+  // Into the app. Where its own server signs people in with this account, that sign-in is the
+  // way in and the page leaves for it; otherwise the app opens here (lib/cloud/enter-app.js).
+  const onward = () => { if (enter() === 'link') { setLeaving(true); link() } else nav('/home') }
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
     <div className="iv-acct-actions">
-      <Button variant="primary" disabled={busy} type="button" data-continue="" onClick={() => { enter(); nav('/home') }}>{t('Continue')}</Button>
+      <Button variant="primary" disabled={busy || leaving} aria-busy={leaving || undefined} type="button" data-continue="" onClick={onward}>{t('Continue')}</Button>
     </div>
     <form className="iv-acct-form iv-acct-block" onSubmit={e => { e.preventDefault(); if (!ready || !dirty) return; run(async () => {
       const me = session.user, typed = edits.current

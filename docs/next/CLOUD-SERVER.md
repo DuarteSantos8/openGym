@@ -94,6 +94,9 @@ Then, in order:
    discovery `issuer`, and the round trip completes on the web.
 8. Coach: Settings, Account, Admin dashboard, AI Coach, Set up the Coach. Pick a provider, paste
    an API key, set the daily limit. Set a monthly spend limit at the provider as well.
+   The app side of step 6 is in place: where the server signs people in with the account, the
+   account's Continue goes through that sign-in (`frontend/src/lib/cloud/enter-app.js`), walked
+   end to end in the Cloud E2E against a real API with a stand-in provider.
 9. MCP comes after: it is a second small service (`docs/MCP_REMOTE.md`) and `MCP=on` here.
 
 ## Checked before any of this was deployed

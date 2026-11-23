@@ -6312,4 +6312,5 @@ export default {
   "Sign in or create account": "Prisijungti arba sukurti paskyrą",
   "Your training stays on this device. An account is for your plan and purchases.": "Tavo treniruotės lieka šiame įrenginyje. Paskyra skirta tavo planui ir pirkiniams.",
   "Signed in as {0}. Your training is stored on this device.": "Prisijungta kaip {0}. Tavo treniruotės saugomos šiame įrenginyje.",
+  "With an account your training follows you to your other devices. Without one it stays on this device.": "Su paskyra tavo treniruotės keliauja kartu į kitus tavo įrenginius. Be jos jos lieka šiame įrenginyje.",
 }
