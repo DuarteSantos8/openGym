@@ -6312,4 +6312,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "尝试次数过多。请等一分钟再试。",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "输入 delete 以确认。你的账号会被移除且无法恢复。",
   "We sent a link to {0}. Open it on this device to continue.": "我们已发送链接到 {0}。请在这台设备上打开以继续。",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "一分钟后仍未收到邮件？这个地址可能已有账号：请登录，或重置密码。",
 }

@@ -6312,4 +6312,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "시도가 너무 많습니다. 1분 후 다시 시도하세요.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "확인하려면 delete를 입력하세요. 계정이 삭제되며 되돌릴 수 없습니다.",
   "We sent a link to {0}. Open it on this device to continue.": "{0}(으)로 링크를 보냈습니다. 계속하려면 이 기기에서 여세요.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "1분이 지나도 이메일이 오지 않나요? 이 주소로 이미 계정이 있을 수 있습니다. 로그인하거나 비밀번호를 재설정하세요.",
 }

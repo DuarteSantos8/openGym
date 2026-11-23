@@ -6252,4 +6252,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "For mange forsøg. Vent et minut, og prøv igen.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Skriv ordet delete for at bekræfte. Din konto fjernes og kan ikke gendannes.",
   "We sent a link to {0}. Open it on this device to continue.": "Vi har sendt et link til {0}. Åbn det på denne enhed for at fortsætte.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Ingen e-mail efter et minut? Adressen har måske allerede en konto: log ind, eller nulstil din adgangskode.",
 }

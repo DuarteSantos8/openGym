@@ -6312,4 +6312,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Za dużo prób. Poczekaj minutę i spróbuj ponownie.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Wpisz słowo delete, aby potwierdzić. Twoje konto zostanie usunięte i nie da się go przywrócić.",
   "We sent a link to {0}. Open it on this device to continue.": "Wysłaliśmy link na adres {0}. Otwórz go na tym urządzeniu, aby kontynuować.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Po minucie nadal nie ma e-maila? Ten adres może już mieć konto: zaloguj się albo zresetuj hasło.",
 }

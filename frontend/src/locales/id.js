@@ -6277,4 +6277,5 @@ export default {
   "Too many tries. Wait a minute and try again.": "Terlalu banyak percobaan. Tunggu sebentar dan coba lagi.",
   "Type the word delete to confirm. Your account is removed and cannot be brought back.": "Ketik kata delete untuk konfirmasi. Akun Anda dihapus dan tidak bisa dikembalikan.",
   "We sent a link to {0}. Open it on this device to continue.": "Kami mengirim tautan ke {0}. Buka di perangkat ini untuk melanjutkan.",
+  "No email after a minute? This address may already have an account: sign in, or reset your password.": "Belum ada email setelah semenit? Alamat ini mungkin sudah punya akun: masuk, atau atur ulang kata sandimu.",
 };

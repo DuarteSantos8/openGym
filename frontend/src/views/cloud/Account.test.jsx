@@ -114,6 +114,30 @@ describe('Account', () => {
     expect(container.textContent).toContain('new@example.com')
   })
 
+  // Found by the owner on the real project: signing up with an address that already has an
+  // account. The server answers exactly as for a new one and sends nothing, so that nobody can
+  // probe which addresses are registered. The screen said "we sent a link" and stopped there.
+  // It cannot know either, so it says what to do if nothing arrives, the same for everyone.
+  it('after creating an account, says what to do if no email comes: sign in, or reset the password', async () => {
+    const c = fakeClient()
+    await mount(c)
+    await click('[data-go="signup"]')
+    await type('email', 'taken@example.com'); await type('password', 'long-enough')
+    await submit()
+    expect(mode()).toBe('sent')
+    expect($('.iv-acct-hint').textContent).toBe('No email after a minute? This address may already have an account: sign in, or reset your password.')
+    expect($('[data-go="signin"]')).not.toBeNull()
+    await click('[data-go="forgot"]')
+    expect(mode()).toBe('forgot')
+    expect($('input[name="email"]').value).toBe('taken@example.com')   // not asked for twice
+    await submit()
+    expect(c.auth.recover).toHaveBeenCalledWith('taken@example.com', expect.any(Object))
+    expect(mode()).toBe('sent')
+    // a reset was asked for this time: offering another reset here would be a loop
+    expect($('.iv-acct-hint')).toBeNull()
+    expect($('[data-go="forgot"]')).toBeNull()
+  })
+
   it('a forgotten password: the reset is asked for and the next step is the inbox', async () => {
     const c = fakeClient()
     await mount(c)
