@@ -926,10 +926,13 @@ export function nextPrescription(S, cfg, routine) {
 export const LADDER_TOP = 12
 export const LADDER_BOTTOM = 5
 function ladderPrescription(S, cfg, last, policy) {
-  const range = normalizeRepRange(cfg.reps || LADDER_TOP, cfg.repsMin ?? Math.min(LADDER_BOTTOM, Math.max(1, (cfg.reps || LADDER_TOP) - 1)), 1)
+  // Per-side work steps by two, so the total stays even and each side gets whole reps.
+  const k = repStep(cfg)
+  const range = normalizeRepRange(cfg.reps || LADDER_TOP, cfg.repsMin ?? Math.min(LADDER_BOTTOM, Math.max(1, (cfg.reps || LADDER_TOP) - 1)), k)
   const weight = last && last.weight > 0 ? { weight: last.weight } : {}
   if (!last) return { policy, kind: 'first', reps: range.repsMin, why: ['Nothing logged yet, so this session sets the baseline.'] }
-  const goal = Math.max(range.repsMin, Math.min(range.reps, last.goal || range.repsMin))
+  // An odd goal (stamped before this step, or from a plain range) rounds down to a whole pair.
+  const goal = Math.max(range.repsMin, Math.min(range.reps, Math.floor((last.goal || range.repsMin) / k) * k))
   if (!last.ok) return { policy, kind: 'hold', ...weight, reps: goal, why: ['Not every set made {0} yet. Same again.', goal] }
   if (goal >= range.reps) {
     const next = nextRung(S, cfg.id)
@@ -937,7 +940,7 @@ function ladderPrescription(S, cfg, last, policy) {
       ? { policy, kind: 'ladder', ...weight, reps: range.reps, next, why: ['Every set at {0}. You’re ready for the next rung.', range.reps] }
       : { policy, kind: 'hold', ...weight, reps: range.reps, why: ['Top of the ladder. Add weight, slow the tempo or make your own next rung.'] }
   }
-  return { policy, kind: 'up', ...weight, reps: goal + 1, why: ['Every set hit {0}. One more rep each.', goal] }
+  return { policy, kind: 'up', ...weight, reps: goal + k, why: ['Every set hit {0}. One more rep each.', goal] }
 }
 
 function undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted }) {
