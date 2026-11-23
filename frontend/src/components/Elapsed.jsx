@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 // that re-renders every second is this text: the workout header and the tab bar's Resume button
 // both show it.
 // `pausedAt` (#976, lib/workout-pause.js): a paused workout's clock stands at its pause.
-export default function Elapsed({ start, pausedAt = 0 }) {
+export function useElapsed(start, pausedAt = 0) {
   const [t, setT] = useState('0:00')
   useEffect(() => {
     const tick = () => { const s = Math.max(0, Math.floor(((pausedAt > 0 ? pausedAt : Date.now()) - start) / 1000)); setT(Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0')) }
@@ -16,5 +16,9 @@ export default function Elapsed({ start, pausedAt = 0 }) {
     document.addEventListener('visibilitychange', onTick)
     return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onTick) }
   }, [start, pausedAt])
-  return <span>{t}</span>
+  return t
+}
+
+export default function Elapsed({ start, pausedAt = 0 }) {
+  return <span>{useElapsed(start, pausedAt)}</span>
 }
