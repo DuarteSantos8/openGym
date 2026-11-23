@@ -295,6 +295,19 @@ describe('Account', () => {
     expect($('input[name="name"]')).toBeNull()
   })
 
+  it('a save that lands after leaving the screen and signing out does not bring the account back either', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    let land
+    c.profiles.update = vi.fn(() => new Promise(r => { land = () => r({ display_name: 'Samira' }) }))
+    await mount(c)
+    await type('name', 'Samira')
+    await click('[data-save]')
+    act(() => root.unmount()); root = null
+    c.set(null)
+    await act(async () => { land() })
+    expect(cloudAccount()).toBeNull()
+  })
+
   it('a save that fails does not say Saved', async () => {
     const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
     c.profiles.update = vi.fn(async () => { throw err('network') })

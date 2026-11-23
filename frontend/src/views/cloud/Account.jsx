@@ -79,7 +79,6 @@ export default function Account({ client = cloud(), go = url => { location.assig
   const [savedName, setSavedName] = useState('')     // the name as the server has it: Save has work only when the field differs
   const [saved, setSaved] = useState(false)          // the last Save went through, and nothing was typed since
   const edits = useRef(0)           // how many times the name was typed in: a save that lands after more typing leaves the field alone
-  const signedIn = useRef(null)     // whose account is on screen right now, for a save that lands after that changed
   const typedName = useRef(false)   // the name field has been edited: a late profile load must not replace it
 
   useEffect(() => client?.auth.onChange(setSession), [client])
@@ -164,7 +163,6 @@ export default function Account({ client = cloud(), go = url => { location.assig
   // one thing to edit, with a Save that says when it saved. The rest are plain rows, and deleting
   // the account stays folded away until it is asked for.
   const dirty = name.trim() !== savedName.trim()
-  signedIn.current = session?.user?.id || null
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
     <div className="iv-acct-actions">
@@ -174,7 +172,8 @@ export default function Account({ client = cloud(), go = url => { location.assig
       const me = session.user, typed = edits.current
       const p = await client.profiles.update({ display_name: name })
       // Signed out, or someone else signed in, while this was under way: it is not theirs to hear.
-      if (!p || signedIn.current !== me.id) return
+      // Asked of the client, not of this screen: the screen may be gone by now.
+      if (!p || client.auth.session()?.user?.id !== me.id) return
       const kept = p.display_name || ''
       setSavedName(kept)
       setCloudAccount({ email: me.email, name: kept })
