@@ -587,12 +587,13 @@ export function bestWeightFor(S, exId, as) {
  *
  * An override naming a queue session is a PIN (queue.js): the session is that day's, with the
  * weekday's own routines riding along as on any queue day, and the floating rule skips it on
- * other days. Once the session is done the pin is fulfilled and the day reads as if unpinned.
+ * other days. Once the session is done the pin is fulfilled and the day reads as if unpinned;
+ * from today on, only when it was done in the pinned day's own week (pinState).
  */
 export function effectiveRoutineIds(S, iso, today = todayISO()) {
   const ov = S.dayPlan[iso]
   if (ov === 'rest') return []
-  const pin = pinState(S, ov, today)
+  const pin = pinState(S, ov, today, iso)
   if (!pin && ov && S.routines.some(r => r.id === ov)) return [ov]
   const wd = new Date(iso + 'T12:00:00').getDay()
   const weekday = [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
