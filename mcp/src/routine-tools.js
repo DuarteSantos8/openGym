@@ -80,6 +80,9 @@ const exerciseSchema = z.object({
   sets: z.number().int().min(1).max(ROUTINE_LIMITS.maxSets).optional().describe('Number of sets. Omit for the profile\'s default (3 unless they set their own).'),
   reps: z.number().int().min(1).max(ROUTINE_LIMITS.maxReps).optional().describe('Reps per set, for a rep exercise.'),
   seconds: z.number().int().min(1).max(ROUTINE_LIMITS.maxSec).optional().describe('Seconds per set, for a hold (plank). Not with reps.'),
+  minutes: z.number().int().min(1).max(360).optional().describe('Cardio target duration in whole minutes. For cardio exercises only; a note does not set this numeric target.'),
+  speed: z.number().min(0).optional().describe('Cardio target speed in speed_unit, or the profile speed unit when omitted. For cardio exercises only.'),
+  incline: z.number().min(0).max(40).optional().describe('Cardio incline in percent (0–40), only on incline-capable cardio such as treadmill/walking. 0 clears an existing incline.'),
   weight: z.number().min(0).optional().describe('Planned load in `unit`; omit or 0 to start from what the user lifted last time.'),
   rest_sec: z.number().int().min(0).max(ROUTINE_LIMITS.maxRestSec).optional().describe('Rest after each set, seconds. 0 or omitted: the global rest timer.'),
   note: z.string().max(ROUTINE_LIMITS.maxNote).optional().describe('A note shown with this exercise in the workout.'),
@@ -91,7 +94,7 @@ export const createRoutineTool = {
   description: [
     'Create a routine in the user\'s openGym plan (it syncs to all their devices), e.g. "squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays".',
     'Exercises are matched against the library like log_workout: when a name matches several or none, nothing is saved and `problems` lists candidates to put to the user.',
-    'Each exercise starts the way picking it in the app starts it; only what you pass is set on top. `weekdays` puts it on those days of the weekly plan, next to whatever is planned there already.',
+    'Each exercise starts the way picking it in the app starts it; only what you pass is set on top. For cardio, pass `minutes`, `speed`, and optional `incline` as numeric targets; a note does not change these fields. `speed` uses `speed_unit` or the profile speed unit. `weekdays` puts it on those days of the weekly plan, next to whatever is planned there already.',
     'Call with dry_run: true first when you interpreted anything, show the preview, and save once the user agrees.',
   ].join(' '),
   schema: {
@@ -99,6 +102,7 @@ export const createRoutineTool = {
     exercises: z.array(exerciseSchema).min(1).max(ROUTINE_LIMITS.maxExercises),
     weekdays: weekdaysSchema.optional().describe('The weekdays to plan it on.'),
     unit: z.enum(['kg', 'lb']).optional().describe('The unit weights are given in; defaults to the profile\'s.'),
+    speed_unit: z.enum(['kmh', 'mph']).optional().describe('The unit cardio speed is given in; defaults to the profile speed unit.'),
     dry_run: z.boolean().optional(),
   },
   handler: async (p, { env = process.env, fetchImpl } = {}) => writePlan({
@@ -112,7 +116,7 @@ export const updateRoutineTool = {
   name: 'update_routine',
   description: [
     'Change a routine: rename it, replace its exercise list, append exercises, or move it to other weekdays. Use routine_id from list_routines.',
-    '`exercises` is the whole new list in order; an exercise named again keeps everything its slot had (rest, warm-ups, progression, notes) except what you pass. `add_exercises` appends. `weekdays` is every day it should be on (it leaves the others); omit it to leave the schedule alone.',
+    '`exercises` is the whole new list in order; an exercise named again keeps everything its slot had (rest, warm-ups, progression, notes) except what you pass. For cardio, pass `minutes`, `speed`, and optional `incline` as numeric targets; a note does not change these fields. `speed` uses `speed_unit` or the profile speed unit. `add_exercises` appends. `weekdays` is every day it should be on (it leaves the others); omit it to leave the schedule alone.',
     'Pass expected_revision (from get_routine) when the user confirmed a change against what they saw: if the profile moved since, nothing is saved and you get a conflict to read again.',
   ].join(' '),
   schema: {
@@ -122,6 +126,7 @@ export const updateRoutineTool = {
     add_exercises: z.array(exerciseSchema).min(1).max(ROUTINE_LIMITS.maxExercises).optional(),
     weekdays: weekdaysSchema.optional(),
     unit: z.enum(['kg', 'lb']).optional(),
+    speed_unit: z.enum(['kmh', 'mph']).optional(),
     expected_revision: z.number().int().min(0).optional(),
     dry_run: z.boolean().optional(),
   },

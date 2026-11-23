@@ -150,7 +150,7 @@ export const listRoutines = {
 /** get_routine — the full exercise list for one routine, including set/rep targets. */
 export const getRoutine = {
   name: 'get_routine',
-  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
+  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio); cardio includes `minutes`, `speed` in `speed_unit` (canonical kmh), and `incline` when set; also set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
   schema: { routine_id: z.string().min(1) },
   handler: ({ routine_id }) => {
     const S = getState()
@@ -165,6 +165,8 @@ export const getRoutine = {
       policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
+      // Cardio speed stored in a routine is always canonical km/h.
+      speed_unit: 'kmh',
       revision: typeof S._rev === 'number' ? S._rev : null,
       exercises: (r.ex || []).map((cfg, i) => {
         const ex = exerciseOf(cfg.id, S)
@@ -187,7 +189,10 @@ export const getRoutine = {
           pyramid_weight: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidWeight) && cfg.pyramidWeight.length ? cfg.pyramidWeight : undefined,
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
           min: mode === 'cardio' ? (cfg.min || 0) : undefined,
+          minutes: mode === 'cardio' ? (cfg.min || 0) : undefined,
           speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
+          speed_unit: mode === 'cardio' ? 'kmh' : undefined,
+          incline: mode === 'cardio' && cfg.incline != null ? cfg.incline : undefined,
           weight: cfg.weight != null ? cfg.weight : undefined,
           increment: cfg.inc != null ? cfg.inc : undefined,
           deload_factor: cfg.deloadFactor != null ? cfg.deloadFactor : undefined,

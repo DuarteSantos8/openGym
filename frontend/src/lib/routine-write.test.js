@@ -41,6 +41,26 @@ describe('createRoutine', () => {
     expect(createRoutine(base(), { name: 'C', exercises: [{ exercise: 'treadmill', reps: 10 }] }).problems[0].problem).toMatch(/minutes/)
     expect(createRoutine(base(), { name: 'C', exercises: [{ exercise: 'treadmill' }] }).routine.ex[0]).toMatchObject({ id: '3666', min: 20 })
   })
+  test('sets explicit cardio minutes, speed in the requested unit, and incline', () => {
+    const r = createRoutine(base(), { name: 'Warm-up', speed_unit: 'mph', exercises: [{ exercise: 'treadmill', minutes: 10, speed: 3.5, incline: 7 }] })
+    expect(r.problems).toBeUndefined()
+    expect(r.routine.ex[0]).toMatchObject({ id: '3666', min: 10, speed: 5.63, incline: 7 })
+  })
+  test('edits cardio targets while preserving omitted values and accepts zero incline as clear', () => {
+    const S = base()
+    S.routines[0].ex.push({ id: '3666', mode: 'cardio', sets: 1, min: 20, speed: 8, incline: 5 })
+    const r = updateRoutine(S, 'r1', { speed_unit: 'mph', exercises: [
+      { exercise: '0025' }, { exercise: '0025' },
+      { exercise: '3666', minutes: 10, speed: 4, incline: 0 },
+    ] })
+    expect(r.problems).toBeUndefined()
+    expect(r.routine.ex[2]).toMatchObject({ id: '3666', min: 10, speed: 6.44 })
+    expect(r.routine.ex[2]).not.toHaveProperty('incline')
+  })
+  test('rejects cardio targets on non-cardio and incline on flat cardio', () => {
+    expect(createRoutine(base(), { name: 'Bad', exercises: [{ exercise: 'squat', minutes: 10 }] }).problems.map(p => p.field)).toContain('exercises[0].minutes')
+    expect(createRoutine(base(), { name: 'Bad', exercises: [{ exercise: 'stationary bike', incline: 5 }] }).problems.map(p => p.field)).toContain('exercises[0].incline')
+  })
 })
 
 describe('updateRoutine', () => {

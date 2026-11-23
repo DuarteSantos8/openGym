@@ -226,7 +226,7 @@ describe('get_routine', () => {
     // returns a placeholder named "Unknown exercise" — that's fine, we test the cfg fields.
     const push = S.routines.find(r => r.name === 'Push Day')
     push.ex.push({ id: 'synth-plank', sets: 3, sec: 60, weight: 0, mode: 'time' })
-    push.ex.push({ id: 'synth-treadmill', sets: 1, min: 20, speed: 8, mode: 'cardio' })
+    push.ex.push({ id: 'synth-treadmill', sets: 1, min: 20, speed: 8, incline: 7, mode: 'cardio' })
     const r = call('get_routine', { routine_id: push.id })
     const t = r.exercises[r.exercises.length - 2]
     const c = r.exercises[r.exercises.length - 1]
@@ -235,7 +235,10 @@ describe('get_routine', () => {
     expect(t.reps).toBeUndefined()
     expect(c.mode).toBe('cardio')
     expect(c.min).toBe(20)
+    expect(c.minutes).toBe(20)
     expect(c.speed).toBe(8)
+    expect(c.speed_unit).toBe('kmh')
+    expect(c.incline).toBe(7)
   })
 })
 
