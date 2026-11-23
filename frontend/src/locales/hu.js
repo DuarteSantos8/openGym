@@ -1,5 +1,20 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Edzés begépelése",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Soronként egy gyakorlat, ahogy a jegyzeteidbe írnád. Nézd meg, minek olvasta az app az egyes sorokat, aztán mentsd.",
+  "Bench press 60x8, 60x8, 62.5x6": "Fekvenyomás 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Guggolás 100kg 5x5",
+  "Plank 3x60s": "Plank 3x60s",
+  "No exercise found for this name.": "Nincs ilyen nevű gyakorlat.",
+  "No sets found. Write them like 60x8, 60x8.": "Nincs sorozat. Írd így: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Hány ismétlés? Írd így: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "A kardiót percben rögzíted, például 20 min vagy 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Egy gyakorlatnál ismétlés vagy idő, nem mindkettő.",
+  "Check the numbers on this line.": "Nézd át a számokat ebben a sorban.",
+  "Not read: {0}": "Nem olvasható: {0}",
+  "That workout is already in your history.": "Ez az edzés már az előzményeid között van.",
+  "Workout saved": "Edzés elmentve",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Órák",
   "Set once": "Egyszer beállítandó",

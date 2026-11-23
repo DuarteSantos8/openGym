@@ -1,5 +1,20 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "वर्कआउट टाइप करें",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "हर लाइन में एक व्यायाम, जैसे आप नोट्स में लिखते हैं। देखें कि हर लाइन कैसे पढ़ी गई, फिर सहेजें।",
+  "Bench press 60x8, 60x8, 62.5x6": "बेंच प्रेस 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "स्क्वाट 100kg 5x5",
+  "Plank 3x60s": "प्लैंक 3x60s",
+  "No exercise found for this name.": "इस नाम का कोई व्यायाम नहीं मिला।",
+  "No sets found. Write them like 60x8, 60x8.": "कोई सेट नहीं मिला। ऐसे लिखें: 60x8, 60x8।",
+  "How many reps? Write them like 60x8.": "कितने रेप्स? ऐसे लिखें: 60x8।",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "कार्डियो मिनटों में दर्ज होता है, जैसे 20 min या 20 min 3 km।",
+  "Use either reps or a time on one exercise, not both.": "एक व्यायाम पर या तो रेप्स या समय, दोनों नहीं।",
+  "Check the numbers on this line.": "इस लाइन की संख्याएँ जाँचें।",
+  "Not read: {0}": "पढ़ा नहीं गया: {0}",
+  "That workout is already in your history.": "यह वर्कआउट पहले से आपके इतिहास में है।",
+  "Workout saved": "वर्कआउट सहेजा गया",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "घड़ियाँ",
   "Set once": "एक बार सेट करें",

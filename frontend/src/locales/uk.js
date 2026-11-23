@@ -1,5 +1,20 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Ввести тренування текстом",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Одна вправа на рядок, як ти записав би її в нотатках. Перевір, як прочитано кожен рядок, і збережи.",
+  "Bench press 60x8, 60x8, 62.5x6": "Жим лежачи 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Присідання 100kg 5x5",
+  "Plank 3x60s": "Планка 3x60s",
+  "No exercise found for this name.": "Вправу з такою назвою не знайдено.",
+  "No sets found. Write them like 60x8, 60x8.": "Підходів не знайдено. Запиши їх так: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Скільки повторень? Запиши так: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Кардіо записується в хвилинах, наприклад 20 min або 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "В одній вправі або повторення, або час, не все разом.",
+  "Check the numbers on this line.": "Перевір числа в цьому рядку.",
+  "Not read: {0}": "Не прочитано: {0}",
+  "That workout is already in your history.": "Це тренування вже є в історії.",
+  "Workout saved": "Тренування збережено",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Годинники",
   "Set once": "Налаштовується один раз",

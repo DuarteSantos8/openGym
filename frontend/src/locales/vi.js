@@ -1,5 +1,20 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Gõ buổi tập",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Mỗi dòng một bài tập, như cách bạn ghi trong ghi chú. Kiểm tra mỗi dòng được đọc thành gì, rồi lưu.",
+  "Bench press 60x8, 60x8, 62.5x6": "Bench press 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Squat 100kg 5x5",
+  "Plank 3x60s": "Plank 3x60s",
+  "No exercise found for this name.": "Không tìm thấy bài tập có tên này.",
+  "No sets found. Write them like 60x8, 60x8.": "Không thấy hiệp nào. Hãy viết như 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Bao nhiêu reps? Hãy viết như 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Cardio được ghi theo phút, ví dụ 20 min hoặc 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Mỗi bài tập dùng reps hoặc thời gian, không dùng cả hai.",
+  "Check the numbers on this line.": "Kiểm tra các con số ở dòng này.",
+  "Not read: {0}": "Không đọc được: {0}",
+  "That workout is already in your history.": "Buổi tập này đã có trong lịch sử của bạn.",
+  "Workout saved": "Đã lưu buổi tập",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Đồng hồ",
   "Set once": "Đặt một lần",

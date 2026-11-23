@@ -1,5 +1,20 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Skriv ett pass",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "En övning per rad, som du skulle skriva i dina anteckningar. Kolla vad varje rad lästes som och spara sedan.",
+  "Bench press 60x8, 60x8, 62.5x6": "Bänkpress 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Knäböj 100kg 5x5",
+  "Plank 3x60s": "Plankan 3x60s",
+  "No exercise found for this name.": "Ingen övning hittades med det namnet.",
+  "No sets found. Write them like 60x8, 60x8.": "Inga set hittades. Skriv dem som 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Hur många reps? Skriv dem som 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Kondition loggas i minuter, till exempel 20 min eller 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Antingen reps eller en tid på en övning, inte båda.",
+  "Check the numbers on this line.": "Kolla siffrorna på den här raden.",
+  "Not read: {0}": "Inte läst: {0}",
+  "That workout is already in your history.": "Det passet finns redan i din historik.",
+  "Workout saved": "Passet sparat",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Klockor",
   "Set once": "Ställ in en gång",

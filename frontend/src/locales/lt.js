@@ -1,5 +1,20 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Įrašyti treniruotę tekstu",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Vienas pratimas eilutėje, kaip užsirašytumėte užrašuose. Patikrinkite, kaip perskaityta kiekviena eilutė, ir išsaugokite.",
+  "Bench press 60x8, 60x8, 62.5x6": "Spaudimas gulint 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Pritūpimai 100kg 5x5",
+  "Plank 3x60s": "Lenta 3x60s",
+  "No exercise found for this name.": "Pratimo tokiu pavadinimu nerasta.",
+  "No sets found. Write them like 60x8, 60x8.": "Serijų nerasta. Rašykite taip: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Kiek kartojimų? Rašykite taip: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Kardio įrašomas minutėmis, pvz. 20 min arba 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Vienam pratimui kartojimai arba laikas, ne abu.",
+  "Check the numbers on this line.": "Patikrinkite šios eilutės skaičius.",
+  "Not read: {0}": "Neperskaityta: {0}",
+  "That workout is already in your history.": "Ši treniruotė jau yra istorijoje.",
+  "Workout saved": "Treniruotė išsaugota",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Laikrodžiai",
   "Set once": "Nustatoma kartą",

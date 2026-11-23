@@ -1,5 +1,20 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Ketik latihan",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Satu latihan per baris, seperti yang kamu tulis di catatan. Periksa bagaimana setiap baris dibaca, lalu simpan.",
+  "Bench press 60x8, 60x8, 62.5x6": "Bench press 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Squat 100kg 5x5",
+  "Plank 3x60s": "Plank 3x60s",
+  "No exercise found for this name.": "Tidak ada latihan dengan nama ini.",
+  "No sets found. Write them like 60x8, 60x8.": "Tidak ada set yang terbaca. Tulis seperti 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Berapa repetisi? Tulis seperti 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Kardio dicatat dalam menit, misalnya 20 min atau 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Pakai repetisi atau waktu untuk satu latihan, jangan keduanya.",
+  "Check the numbers on this line.": "Periksa angka di baris ini.",
+  "Not read: {0}": "Tidak terbaca: {0}",
+  "That workout is already in your history.": "Latihan itu sudah ada di riwayatmu.",
+  "Workout saved": "Latihan disimpan",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Jam tangan",
   "Set once": "Atur sekali",

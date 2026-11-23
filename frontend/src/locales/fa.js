@@ -1,5 +1,20 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "تایپ یک تمرین",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "در هر خط یک حرکت، همان‌طور که در یادداشت‌هایتان می‌نویسید. ببینید هر خط چطور خوانده شده و بعد ذخیره کنید.",
+  "Bench press 60x8, 60x8, 62.5x6": "پرس سینه 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "اسکات 100kg 5x5",
+  "Plank 3x60s": "پلانک 3x60s",
+  "No exercise found for this name.": "حرکتی با این نام پیدا نشد.",
+  "No sets found. Write them like 60x8, 60x8.": "ستی پیدا نشد. این‌طور بنویسید: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "چند تکرار؟ این‌طور بنویسید: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "کاردیو با دقیقه ثبت می‌شود، مثلاً 20 min یا 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "برای یک حرکت یا تکرار یا زمان، نه هر دو.",
+  "Check the numbers on this line.": "عددهای این خط را بررسی کنید.",
+  "Not read: {0}": "خوانده نشد: {0}",
+  "That workout is already in your history.": "این تمرین از قبل در تاریخچه شما هست.",
+  "Workout saved": "تمرین ذخیره شد",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",
   "Set once": "یک‌بار تنظیم",

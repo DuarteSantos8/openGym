@@ -1,6 +1,21 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Skriv en træning",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Én øvelse pr. linje, som du ville skrive den i dine noter. Tjek hvad hver linje blev læst som, og gem så.",
+  "Bench press 60x8, 60x8, 62.5x6": "Bænkpres 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Squat 100kg 5x5",
+  "Plank 3x60s": "Planke 3x60s",
+  "No exercise found for this name.": "Ingen øvelse fundet med det navn.",
+  "No sets found. Write them like 60x8, 60x8.": "Ingen sæt fundet. Skriv dem som 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Hvor mange gentagelser? Skriv dem som 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Kondition logges i minutter, fx 20 min eller 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Enten gentagelser eller en tid på en øvelse, ikke begge.",
+  "Check the numbers on this line.": "Tjek tallene på denne linje.",
+  "Not read: {0}": "Ikke læst: {0}",
+  "That workout is already in your history.": "Den træning er allerede i din historik.",
+  "Workout saved": "Træning gemt",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",
   "Set once": "Indstil én gang",
