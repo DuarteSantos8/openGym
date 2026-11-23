@@ -17,7 +17,7 @@ Ollama add-on (`docker-compose.ollama.yml`) and this guide.
 |---|---|---|
 | **Cost** | Free app; the Coach needs your own provider key either way | Free. The local model costs nothing per request |
 | **Which AI** | Whatever you set up on the phone | Any provider openGym supports, switched per week if I like: Claude, Ollama, OpenAI, Gemini, OpenRouter… |
-| **Privacy** | Data on the phone; Coach requests go to the provider you pick | With Ollama, workouts and heart-rate data never leave my home network |
+| **Privacy** | Data on the phone; Coach requests go to the provider you pick | With Ollama, Coach requests are answered by a model on my own server, so no AI provider sees my training data. Workouts and heart rate still sync from a paired phone to my server, including over the internet if I make the server reachable from outside |
 | **Sync** | One device, or someone else's server | My own server: phone, Watch and browser all synced, data in a `./data` folder I back up |
 | **Change it** | No | Edit the Coach's prompts (`api/coach/prompts`), progression rules (`frontend/src/lib/progression.js`), fatigue model (`frontend/src/lib/recovery.js`), rest timers, exercises |
 | **Verify it** | Trust the binary | Read every line (AGPL-3.0) |
@@ -40,8 +40,11 @@ In `.env`, set `FIRST_USER_ADMIN=1` **before** creating your first profile, so y
 admin dashboard where the Coach is switched on.
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d --build
 ```
+
+`--build` builds the api and web containers from this checkout, so the fork's own code runs
+instead of the upstream images.
 
 Open http://localhost:8080 and create your profile.
 
@@ -78,8 +81,17 @@ Each chip on the card keeps its own key and model, so switching never loses a se
 
 Turn the master switch on, then open **Plan → menu (top right) → Coach**.
 
-On the phone, **Settings → AI Coach** can use this server's Coach, so the iPhone and Apple Watch
-get whichever model the server is set to.
+To use the server's Coach on the iPhone (and so on the Apple Watch), pair the phone first:
+
+1. In a browser signed in to the server: **Settings → Account → Pair the mobile app**. It shows a
+   one-time code, valid for 5 minutes.
+2. On the phone: **Settings → Account → Connect to my server**, then enter the server's address
+   and the code. Use `https://` where you can; on your home network a plain `http://` address
+   with the computer's IP and port works too, for example `http://192.168.1.20:8080`.
+3. On the phone: **Settings → AI Coach → Use my self-hosted openGym.** The iPhone and Apple Watch
+   now get whichever model the server is set to.
+
+Details and troubleshooting: [MOBILE.md, "Connecting the app to your own server"](MOBILE.md#connecting-the-app-to-your-own-server).
 
 ## 5. Customise
 
@@ -92,7 +104,7 @@ get whichever model the server is set to.
 | Warm-ups | `frontend/src/lib/warmup-ramp.js` |
 | Apple Watch app | `frontend/ios/` (Watch, WatchCore, WatchWidgets) |
 
-After a code change: `docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d --build`.
+After a code change, run the same `up -d --build` command again.
 For the iPhone/Watch app, see `docs/MOBILE.md` (needs a Mac with Xcode).
 
 ## What about Jev (TypeSafe)?
