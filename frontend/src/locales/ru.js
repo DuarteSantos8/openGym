@@ -5907,4 +5907,7 @@ export default {
   "Hide": "Скрыть",
   "Totals": "Итоги",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Стрелки меняют порядок.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Завершённые тренировки, взвешивания и талия, только с этого телефона.",
+  "Read waist": "Читать талию",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Талия, сохранённая в Apple Здоровье, заполнит пустой день. То, что вы вводите сами, всегда главнее.",
 }

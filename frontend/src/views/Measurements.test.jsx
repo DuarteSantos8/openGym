@@ -106,6 +106,22 @@ describe('logging body measurements', () => {
     expect(entries()[0].waist).toBe(88)
   })
 
+  it('a waist read from Health stays Health\'s when another field is edited, and becomes the user\'s when it changes', () => {
+    const day = todayISO()
+    seed({ measurements: [{ d: day, t: 1, waist: 90, chest: null, bodyFat: null, other: [], src: 'health' }] })
+    act(() => measurementLogSheet(day))
+    let form = topSheet()
+    setValue(field(form, 'Chest'), '100')
+    click(form, 'Save')
+    expect(entries()[0]).toMatchObject({ waist: 90, chest: 100, src: 'health' })
+    act(() => measurementLogSheet(day))
+    form = topSheet()
+    setValue(field(form, 'Waist'), '88')
+    click(form, 'Save')
+    expect(entries()[0].waist).toBe(88)
+    expect(entries()[0].src).toBeUndefined()
+  })
+
   it('deleting a check-in asks first and then removes only that day', () => {
     seed({ measurements: [
       { d: '2026-09-01', t: 1, waist: 92, chest: null, bodyFat: null, other: [] },

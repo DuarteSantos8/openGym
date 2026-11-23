@@ -5913,4 +5913,7 @@ export default {
   "Hide": "Nascondi",
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Le frecce cambiano l’ordine.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Allenamenti conclusi, pesate e la tua vita, solo da questo telefono.",
+  "Read waist": "Leggi vita",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Una vita salvata in Apple Salute riempie un giorno vuoto. Quella che scrivi tu vince sempre.",
 }

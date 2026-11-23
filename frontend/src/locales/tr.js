@@ -5903,4 +5903,7 @@ export default {
   "Hide": "Gizle",
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Oklar sırayı değiştirir.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Biten antrenmanlar, tartılmalar ve bel ölçün, yalnızca bu telefondan.",
+  "Read waist": "Beli oku",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Apple Sağlık’a kaydedilen bel ölçüsü boş bir günü doldurur. Kendi yazdığın her zaman kazanır.",
 }

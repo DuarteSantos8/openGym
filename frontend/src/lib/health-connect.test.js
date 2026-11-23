@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { EXIDX } from './exercises.js'
-import { exerciseType, goneIds, healthRecords, planSync, plannedType, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
+import { exerciseType, goneIds, healthRecords, planSync, plannedType, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, waistRecord, weightRecord, writtenIds } from './health-connect.js'
 
 // #200: what the Android app writes to Health Connect, worked out from the state alone.
 const nameOf = e => ({ '0025': 'barbell bench press', '3666': 'walking on incline treadmill', '2138': 'stationary bike run v. 3' })[e.id] || e.id
@@ -152,7 +152,7 @@ describe('healthRecords', () => {
     expect(r.weights.map(s => s.id)).toEqual(['opengym-bw-2026-09-17'])
   })
   it('copes with a state that has neither', () => {
-    expect(healthRecords({}, { nameOf })).toEqual({ sessions: [], weights: [] })
+    expect(healthRecords({}, { nameOf })).toEqual({ sessions: [], weights: [], waists: [] })
   })
 })
 
@@ -164,7 +164,7 @@ describe('planSync', () => {
     const plan = planSync(records(), {})
     expect(plan.sessions).toHaveLength(1)
     expect(plan.weights).toHaveLength(1)
-    expect(plan.remove).toEqual({ sessions: [], weights: [] })
+    expect(plan.remove).toEqual({ sessions: [], weights: [], waists: [] })
     expect(Object.keys(plan.written)).toEqual(['opengym-w-w1', 'opengym-bw-2026-09-17'])
   })
   it('writes nothing again when nothing changed', () => {
@@ -184,13 +184,13 @@ describe('planSync', () => {
   it('removes what was deleted from openGym, and only what this phone wrote', () => {
     const { written } = planSync(records(), {})
     const plan = planSync({ sessions: [], weights: [] }, written)
-    expect(plan.remove).toEqual({ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'] })
+    expect(plan.remove).toEqual({ sessions: ['opengym-w-w1'], weights: ['opengym-bw-2026-09-17'], waists: [] })
     expect(plan.written).toEqual({})
   })
   it('with the deletions on record, removes only those and keeps the merely missing as written', () => {
     const { written } = planSync(records(), {})
     const plan = planSync({ sessions: [], weights: [] }, written, new Set(['opengym-bw-2026-09-17']))
-    expect(plan.remove).toEqual({ sessions: [], weights: ['opengym-bw-2026-09-17'] })
+    expect(plan.remove).toEqual({ sessions: [], weights: ['opengym-bw-2026-09-17'], waists: [] })
     expect(Object.keys(plan.written)).toEqual(['opengym-w-w1'])
   })
   it('goneIds reads removals, add-backs and a reset', () => {
@@ -200,6 +200,10 @@ describe('planSync', () => {
     })
     expect([...ids].sort()).toEqual(['opengym-bw-2026-09-01', 'opengym-bw-2026-09-01-*', 'opengym-bw-2026-09-02', 'opengym-bw-2026-09-02-*', 'opengym-bw-2026-09-03', 'opengym-bw-2026-09-03-*', 'opengym-w-a', 'opengym-w-c'])
     expect(goneIds(null).size).toBe(0)
+  })
+  it('goneIds: a reset takes the waist samples, and an out-of-range waist counts as cleared', () => {
+    const ids = goneIds({ resetIds: { measurements: ['2026-09-02|123'] }, measurements: [{ d: '2026-09-04', waist: 5000 }, { d: '2026-09-05', waist: 80 }] })
+    expect([...ids].sort()).toEqual(['opengym-waist-2026-09-02', 'opengym-waist-2026-09-04'])
   })
 
   // #859: each weigh-in of a day is its own record, at its own time.
@@ -243,8 +247,8 @@ describe('recordKey', () => {
 
 describe('writtenIds', () => {
   it('lists what this phone wrote, by type', () => {
-    expect(writtenIds({ a: { k: 'session', h: '1' }, b: { k: 'weight', h: '2' }, c: { k: 'other' } }))
-      .toEqual({ sessions: ['a'], weights: ['b'] })
+    expect(writtenIds({ a: { k: 'session', h: '1' }, b: { k: 'weight', h: '2' }, w: { k: 'waist', h: '3' }, c: { k: 'other' } }))
+      .toEqual({ sessions: ['a'], weights: ['b'], waists: ['w'] })
   })
 })
 
@@ -276,5 +280,52 @@ describe('imported workouts and the health hub (#881)', async () => {
     const written = { 'opengym-w-iwabc': { k: 'session', h: 'x' }, ['opengym-w-' + mine.id]: { k: 'session', h: 'y' } }
     const plan = planSync(healthRecords(S, opts), written, goneIds(S))
     expect(plan.remove.sessions).toEqual(['opengym-w-iwabc'])
+  })
+})
+
+describe('waist records', () => {
+  const noon = d => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8), 12).getTime()
+  const S = { measurements: [{ d: '2026-11-10', t: noon('2026-11-10'), waist: 82.4 }, { d: '2026-11-11', t: noon('2026-11-11'), waist: null }] }
+  const opts = { nameOf: x => x, now: noon('2026-11-20') }
+  const recs = (st = S, o = {}) => healthRecords(st, { ...opts, waist: true, ...o })
+
+  it('emits one record per check-in with a waist, only when asked', () => {
+    expect(recs().waists).toEqual([{ id: 'opengym-waist-2026-11-10', time: noon('2026-11-10'), cm: 82.4 }])
+    expect(recs(S, { waist: false }).waists).toEqual([])
+  })
+  it('puts a check-in typed on another day at local noon of its own day', () => {
+    const st = { measurements: [{ d: '2026-11-10', t: noon('2026-11-15'), waist: 80 }] }
+    expect(recs(st).waists[0].time).toBe(noon('2026-11-10'))
+    expect(waistRecord({ d: '2026-11-10', waist: 80 }, opts.now).time).toBe(noon('2026-11-10'))
+  })
+  it('skips an out-of-range waist and a time in the far future', () => {
+    expect(waistRecord({ d: '2026-11-10', waist: 5 })).toBeNull()
+    expect(waistRecord({ d: '2026-11-10', waist: 80, src: 'health' })).toBeNull()
+    expect(waistRecord({ d: '2026-11-10', waist: 'x' })).toBeNull()
+    expect(waistRecord({ d: '2031-01-01', waist: 80 }, opts.now)).toBeNull()
+  })
+  it('writes a new waist, skips an unchanged one, rewrites a changed one', () => {
+    const first = planSync(recs(), {})
+    expect(first.waists).toHaveLength(1)
+    expect(first.written['opengym-waist-2026-11-10'].k).toBe('waist')
+    expect(planSync(recs(), first.written).waists).toEqual([])
+    const edited = { measurements: [{ ...S.measurements[0], waist: 81 }] }
+    const plan = planSync(recs(edited), first.written)
+    expect(plan.waists.map(w => [w.id, w.cm])).toEqual([['opengym-waist-2026-11-10', 81]])
+  })
+  it('removes a waist cleared on a check-in that stays', () => {
+    const { written } = planSync(recs(), {})
+    const st = { measurements: [{ ...S.measurements[0], waist: null }] }
+    expect(goneIds(st).has('opengym-waist-2026-11-10')).toBe(true)
+    expect(planSync(recs(st), written, goneIds(st)).remove.waists).toEqual(['opengym-waist-2026-11-10'])
+  })
+  it('removes a waist of a deleted check-in, keeps one that is merely missing', () => {
+    const { written } = planSync(recs(), {})
+    const st = { measurements: [], deleted: { measurements: { '2026-11-10': 500 } } }
+    expect(planSync(recs(st), written, goneIds(st)).remove.waists).toEqual(['opengym-waist-2026-11-10'])
+    const missing = { measurements: [] }
+    const plan = planSync(recs(missing), written, goneIds(missing))
+    expect(plan.remove.waists).toEqual([])
+    expect(plan.written['opengym-waist-2026-11-10']).toBeTruthy()
   })
 })

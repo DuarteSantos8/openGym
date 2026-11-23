@@ -2,11 +2,12 @@
 // fills what is missing (the Apple Watch's own reading is never replaced), weigh-ins typed into
 // openGym always win, openGym's own records are never read back, nothing imported is written back.
 import { describe, expect, it } from 'vitest'
-import { isOwnRecord, mergeHeartRate, mergeWeighIns, lacksHeartRate, hubReadingId } from './health-read.js'
+import { isOwnRecord, mergeHeartRate, mergeWeighIns, mergeWaists, lacksHeartRate, hubReadingId } from './health-read.js'
 import { removeWeighIn } from './weigh-ins.js'
 import { healthRecords, planSync } from './health-connect.js'
 import { mergeBodyweight, mergeStates, stampChange } from './sync-merge.js'
 import { logWeighIn } from './bodyweight.js'
+import { emptyMeasurement } from './measurements.js'
 
 const T0 = Date.UTC(2026, 9, 15, 17, 0, 0)
 const s = sec => T0 + sec * 1000
@@ -173,5 +174,66 @@ describe('a typed weigh-in beats an imported one in a sync merge', () => {
     const S = { bodyweight: [{ d: '2026-10-15', w: 80, t: at(15, 7), src: 'hc' }] }
     logWeighIn(S, 81, at(15, 7))
     expect(S.bodyweight[0].ins.map(r => [r.at, r.w, r.src || null])).toEqual([['07:00', 80, 'hc'], ['07:00', 81, null]])
+  })
+})
+
+describe('mergeWaists', () => {
+  const wrec = (d, h, cm, extra = {}) => ({ t: at(d, h), cm, id: `w${d}${h}`, origin: 'com.apple.Health', clientId: null, ...extra })
+  const entry = (d, waist, t = at(d, 12)) => ({ ...emptyMeasurement(`2026-10-${String(d).padStart(2, '0')}`), waist, t })
+
+  it('skips openGym’s own records and out-of-range waists', () => {
+    const S = { measurements: [] }
+    expect(mergeWaists(S, [wrec(14, 7, 80, { clientId: 'opengym-waist-2026-10-14' }), wrec(15, 7, 400)])).toEqual([])
+    expect(S.measurements).toEqual([])
+  })
+
+  it('fills an empty waist on a check-in and stamps it as edited', () => {
+    const S = { measurements: [entry(14, null)] }
+    const old = S.measurements[0].t
+    expect(mergeWaists(S, [wrec(14, 7, 82.44)])).toEqual(['2026-10-14'])
+    expect(S.measurements[0].waist).toBe(82.4)
+    expect(S.measurements[0].t).toBeGreaterThan(old)
+    expect(S.measurements[0].src).toBeUndefined()
+  })
+
+  it('makes a check-in holding only the waist on a day with none', () => {
+    const S = { measurements: [], customMeasurements: [] }
+    mergeWaists(S, [wrec(14, 7, 82.4)])
+    expect(S.measurements).toEqual([{ ...emptyMeasurement('2026-10-14'), waist: 82.4, t: at(14, 7), src: 'health' }])
+  })
+
+  it('keeps a waist typed in openGym', () => {
+    const S = { measurements: [entry(14, 85)] }
+    expect(mergeWaists(S, [wrec(14, 7, 82.4)])).toEqual([])
+    expect(S.measurements[0].waist).toBe(85)
+  })
+
+  it('skips a day deleted in openGym after the sample was taken', () => {
+    const S = { measurements: [], deleted: { measurements: { '2026-10-14': at(14, 9) } } }
+    expect(mergeWaists(S, [wrec(14, 7, 82.4)])).toEqual([])
+    expect(S.measurements).toEqual([])
+  })
+
+  it('is a no-op the second time, and a waist cleared since stays cleared', () => {
+    const S = { measurements: [entry(14, null)] }
+    const seen = {}
+    const recs = [wrec(14, 7, 82.4)]
+    expect(mergeWaists(S, recs, { seen })).toEqual(['2026-10-14'])
+    expect(mergeWaists(S, recs, { seen })).toEqual([])
+    S.measurements[0].waist = null
+    expect(mergeWaists(S, recs, { seen })).toEqual([])
+    expect(S.measurements[0].waist).toBeNull()
+  })
+
+  it('stores cm whatever the profile shows', () => {
+    const S = { measureUnit: 'in', measurements: [] }
+    mergeWaists(S, [wrec(14, 7, 82.4)])
+    expect(S.measurements[0].waist).toBe(82.4)
+  })
+
+  it('takes the latest sample of a day when two come in', () => {
+    const S = { measurements: [] }
+    expect(mergeWaists(S, [wrec(14, 9, 83), wrec(14, 7, 82)])).toEqual(['2026-10-14'])
+    expect(S.measurements[0].waist).toBe(83)
   })
 })

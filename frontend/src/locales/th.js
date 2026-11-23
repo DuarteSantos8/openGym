@@ -5914,4 +5914,7 @@ export default {
   "Hide": "ซ่อน",
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ ลูกศรใช้เปลี่ยนลำดับ",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "การออกกำลังกายที่เสร็จแล้ว การชั่งน้ำหนัก และรอบเอวของคุณ จากโทรศัพท์เครื่องนี้เท่านั้น",
+  "Read waist": "อ่านรอบเอว",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "รอบเอวที่บันทึกใน Apple Health จะเติมวันที่ว่าง ส่วนที่คุณกรอกเองมาก่อนเสมอ",
 }

@@ -186,3 +186,27 @@ describe('the length unit (#932)', async () => {
     expect(measurementSeries({ ...S, measureUnit: null }, 'waist')[0].y).toBeCloseTo(31.5, 1)
   })
 })
+
+describe('a check-in read from Health', () => {
+  it('keeps its src through normalizing, and a blank one is dropped', () => {
+    const s = normalizeMeasurementsState({ measurements: [
+      { d: '2026-10-14', t: 1, waist: 82.4, src: 'health' },
+      { d: '2026-10-15', t: 1, waist: 80, src: '' },
+    ] })
+    expect(s.measurements.map(e => e.src)).toEqual(['health', undefined])
+  })
+
+  it('loses to a typed check-in of the same day whichever is newer, and the fold is not tagged Health', () => {
+    const typed = { d: '2026-10-14', t: 5, waist: 80, chest: 100 }
+    const health = { d: '2026-10-14', t: 9, waist: 82.4, neck: 38, src: 'health' }
+    for (const rows of [[typed, health], [{ ...health, t: 1 }, typed]]) {
+      const [e] = normalizeMeasurementsState({ measurements: rows.map(r => ({ ...r })) }).measurements
+      expect(e.waist).toBe(80)
+      expect(e.chest).toBe(100)
+      expect(e.neck).toBe(38)
+      expect(e.src).toBeUndefined()
+      // The fold keeps the newer time, or a sync would take the other device's older copy over it.
+      expect(e.t).toBe(Math.max(...rows.map(r => r.t)))
+    }
+  })
+})

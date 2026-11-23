@@ -5899,4 +5899,7 @@ export default {
   "Hide": "Slėpti",
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Rodyklės keičia tvarką.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Baigtos treniruotės, sveriamės ir tavo liemuo, tik iš šio telefono.",
+  "Read waist": "Skaityti liemenį",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Apple Health išsaugotas liemuo užpildo tuščią dieną. Tai, ką įvedi pats, visada nugali.",
 }

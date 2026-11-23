@@ -73,6 +73,7 @@ function MeasurementLog({ sourceDate, close }) {
     }
     const base = source ? normalizeMeasurementEntry(source, S.customMeasurements) : emptyMeasurement(date, S.customMeasurements)
     base.d = date
+    delete base.src   // an edit makes the check-in the user's own again
     base.t = source && date === source.d ? source.t : (date === todayISO() ? Date.now() : new Date(date + 'T12:00:00').getTime())
     for (const field of fields) {
       const raw = values[field.key]
@@ -91,6 +92,9 @@ function MeasurementLog({ sourceDate, close }) {
       } else if (field.key === 'bodyFat') base.bodyFat = value
       else base[field.key] = value == null ? null : fromMeasurementDisplay(value, lengthUnitOf(S), field)
     }
+    // Only a changed waist makes it the user's: one read from Health and left as it was is not written back.
+    const waist = fields.find(f => f.key === 'waist')
+    if (source?.src && waist && values.waist === shownValue(source, waist, lengthUnitOf(S))) base.src = source.src
     const cleanNote = note.trim().slice(0, MEASUREMENT_NOTE_MAX)
     if (cleanNote) base.note = cleanNote; else delete base.note
     if (!measurementEntryHasValues(base) && !cleanNote) { toast(t('Enter at least one measurement')); return }

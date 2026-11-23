@@ -5903,4 +5903,7 @@ export default {
   "Hide": "숨기기",
   "Totals": "합계",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 화살표로 순서를 바꿉니다.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "완료한 운동, 체중 기록, 허리 둘레, 이 휴대전화에서만.",
+  "Read waist": "허리 읽기",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Apple 건강에 저장된 허리 둘레가 빈 날을 채웁니다. 직접 입력한 값이 항상 우선합니다.",
 }

@@ -2148,6 +2148,8 @@ export const PT_BR_OVERRIDES = {
   'Health Connect': 'Health Connect',
   'Write to Health Connect': 'Gravar no Health Connect',
   'Finished workouts and weigh-ins, from this phone only.': 'Treinos concluídos e pesagens, só deste celular.',
+  'Finished workouts, weigh-ins and your waist, from this phone only.': 'Treinos concluídos, pesagens e sua cintura, só deste celular.',
+  'A waist saved in Apple Health fills an empty day. One you type in yourself always wins.': 'Uma cintura salva no Apple Saúde preenche um dia vazio. A que você digita sempre vence.',
   'Open Health Connect': 'Abrir o Health Connect',
   'Install Health Connect to share workouts and weigh-ins with other apps.': 'Instale o Health Connect para compartilhar treinos e pesagens com outros apps.',
   'Update Health Connect to share workouts and weigh-ins with other apps.': 'Atualize o Health Connect para compartilhar treinos e pesagens com outros apps.',

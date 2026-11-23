@@ -5903,4 +5903,7 @@ export default {
   "Hide": "छिपाएँ",
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। तीर क्रम बदलते हैं।",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "पूरे हुए वर्कआउट, वज़न और आपकी कमर, सिर्फ़ इसी फ़ोन से।",
+  "Read waist": "कमर पढ़ें",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Apple Health में सहेजी गई कमर खाली दिन भर देती है। जो आप खुद लिखते हैं, वही हमेशा जीतता है।",
 }

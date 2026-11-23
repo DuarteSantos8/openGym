@@ -5906,4 +5906,7 @@ export default {
   "Hide": "Elrejtés",
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. The arrows change the order.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. A nyilak a sorrendet változtatják.",
+  "Finished workouts, weigh-ins and your waist, from this phone only.": "Befejezett edzések, mérlegelések és a derékméreted, csak erről a telefonról.",
+  "Read waist": "Derék olvasása",
+  "A waist saved in Apple Health fills an empty day. One you type in yourself always wins.": "Az Apple Egészségben mentett derékméret kitölti az üres napot. A magad beírta mindig előnyt élvez.",
 }
