@@ -151,6 +151,8 @@ test('the first screen offers the account and this device; signed in, Continue g
   // installed to the home screen has no browser back to do this with.)
   await page.click('[data-back]')
   await expect(page.getByRole('button', { name: 'Continue without account' })).toBeVisible()
+  // Back went back: the account is not left behind in the history to be reopened by the next back.
+  expect(await page.evaluate(() => [location.hash.replace(/^#\/?/, ''), history.state?.idx ?? 0])).toEqual(['', 0])
   await account.click()
   await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
   expect(await serious(page)).toEqual([])

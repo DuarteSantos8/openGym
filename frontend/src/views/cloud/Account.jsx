@@ -201,6 +201,10 @@ export default function Account({ client = cloud(), go = url => { location.assig
     <div className="iv-acct-actions"><Button variant="primary" type="submit" disabled={busy || !email.trim()}>{t('Send reset link')}</Button>{swap('signin', t('Back'))}</div>
   </form>)
 
+  // Back means back: to the screen they came from (Settings, the first screen), with the account
+  // no longer behind them in the history. The router numbers this session's entries; at the first
+  // one there is nothing of the app's to go back to (a link, a bookmark), so go to the app.
+  const leave = () => { if ((window.history.state?.idx ?? 0) > 0) nav(-1); else nav('/home', { replace: true }) }
   const signup = mode === 'signup'
   return frame(signup ? t('Create account') : t('Sign in'), t('One account for your plan and purchases. Your training stays where it is.'), <>
     <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => {
@@ -218,7 +222,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
       {!signup && swap('forgot', t('Forgot password?'))}
       {/* The way out for someone who will not sign in: an app installed to the home screen has no
           browser back, and the first screen is where "Continue without account" is. */}
-      <button type="button" className="btn ghost sm" data-back="" onClick={() => nav('/home')}>{t('Back')}</button>
+      <button type="button" className="btn ghost sm" data-back="" onClick={leave}>{t('Back')}</button>
     </div>
   </>)
 }
