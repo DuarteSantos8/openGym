@@ -1,7 +1,7 @@
 # Optional add-on: a local Ollama model for the AI Coach, so workout data never leaves your network.
 #
 #   docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d
-#   docker compose exec ollama ollama pull qwen2.5:3b
+#   docker compose -f docker-compose.yml -f docker-compose.ollama.yml exec ollama ollama pull qwen2.5:3b
 #
 # The service is called `ollama` on purpose: the Coach's "Find Ollama or LM Studio" button
 # checks that name first, so the admin card finds it without typing an address

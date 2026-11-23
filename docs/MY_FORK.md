@@ -54,7 +54,7 @@ Pull a model that fits the machine. On a 4–6 GB box without a GPU, a small one
 big one that thrashes:
 
 ```bash
-docker compose exec ollama ollama pull qwen2.5:3b
+docker compose -f docker-compose.yml -f docker-compose.ollama.yml exec ollama ollama pull qwen2.5:3b
 ```
 
 With a GPU or more memory, try a bigger model such as `qwen2.5:14b` or `llama3.1:8b`.
