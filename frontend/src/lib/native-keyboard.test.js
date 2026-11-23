@@ -127,6 +127,8 @@ describe('the two halves agree', () => {
     // The connect sheet (.kb-lift) stands on the keyboard the way the picker does.
     expect(css).toMatch(/\.sheet:has\(\.picker-search\),\.sheet:has\(\.kb-lift\)\{\s*bottom:max\(var\(--picker-keyboard-bottom,0px\),var\(--native-kb,0px\)\);/)
     expect(css).toMatch(/max-height:min\(90vh,calc\(100dvh - var\(--sat\) - 8px - var\(--native-kb,0px\)\)\)/)
+    // CodeRabbit on #1050: the iPhone's large sheet is sized to what the keys leave, not the whole screen
+    expect(css).toMatch(/\.sheet\.lg\{[^}]*height:calc\(var\(--picker-visual-height,100dvh\) - 58px\)/)
   })
 
   it('the tab bar is left under the keyboard', () => {

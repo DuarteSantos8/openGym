@@ -832,6 +832,7 @@ export const useStore = create((set, get) => {
   // real change this device now holds — while `ts` in the base stays old, so a pull that
   // happens before the push lands still sees it as unsent.
   const mergeInto = (local, remote, rev) => {
+    dropUndo()
     const ts = metaOf().base?.ts || 0
     // The first merge of an older app's owed copy: what that app changed besides its lists is
     // stamped so the merge keeps it (lib/sync-legacy.js). When that cannot be told, the copy as
@@ -862,6 +863,10 @@ export const useStore = create((set, get) => {
     const fu = from?.unit || 'kg', tu = to?.unit || 'kg'
     return !a || fu === tu ? a : inUnitOf({ unit: fu, active: a }, to).active
   }
+  // An Undo toast holds a copy from before its action (undoMerge puts whole lists back): taken after
+  // another device's changes came in, it would wipe them. It goes as they arrive. useUI imports
+  // this store, hence the lazy import.
+  const dropUndo = () => import('./useUI.js').then(({ useUI }) => { const ui = useUI.getState(); if (ui.toastAction) ui.dismissToast() }).catch(() => {})
   // Take the server's copy as this device's own, timestamp and all (see persist).
   const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts, next._wid); markOwed(false) }
 
@@ -1935,7 +1940,7 @@ export const useStore = create((set, get) => {
           if (!serverMoved) { if (changed) await get().pushState(); else confirmed(S); return }
           if (!state) { writeSync(rev, 0); if (hasData(S)) await get().pushState(); return }
           if (!descends) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
-          if (!changed) { const next = sanitizeAccent(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
+          if (!changed) { const next = sanitizeAccent(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); dropUndo(); adopt(next, rev); confirmed(get().S); return }
           mergeInto(S, state, rev)
           pushPending = false
           await get().pushState()
