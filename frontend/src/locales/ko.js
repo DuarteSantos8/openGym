@@ -1,5 +1,13 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "운동 화면을 어떻게 볼까요?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "마음에 드는 쪽을 고르세요. ⋯ → 레이아웃에서 언제든 바꿀 수 있고, 설정 → 운동에서 아예 정할 수도 있어요.",
+  "One at a time": "하나씩",
+  "One exercise per page. Next takes you on.": "한 페이지에 운동 하나. 다음을 누르면 넘어가요.",
+  "All on one page": "한 페이지에 전부",
+  "The whole workout as a list, ticks and all.": "운동 전체를 목록으로, 체크 표시까지.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "레이아웃은 여기 있어요: 한 페이지에 운동 하나, 또는 운동 전체를 목록으로. 메모, 운동 추가, 운동 설정도요.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "나만의 워밍업 단계",
   "Built-in": "기본",

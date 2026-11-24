@@ -1,5 +1,13 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Jak má tvůj trénink vypadat?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vyber, co ti sedí. Přepnout můžeš kdykoli přes ⋯ → Rozložení, nebo natrvalo v Nastavení → Trénink.",
+  "One at a time": "Jeden po druhém",
+  "One exercise per page. Next takes you on.": "Jeden cvik na stránku. Dál tě posune Další.",
+  "All on one page": "Vše na jedné stránce",
+  "The whole workout as a list, ticks and all.": "Celý trénink jako seznam, i s fajfkami.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Tady je rozložení: jeden cvik na stránku, nebo celý trénink jako seznam. A taky poznámky, další cviky a nastavení tréninku.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Tvoje rozcvičovací schody",
   "Built-in": "Vestavěné",

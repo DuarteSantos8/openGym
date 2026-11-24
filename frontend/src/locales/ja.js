@@ -1,5 +1,13 @@
 // Japanese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "トレーニング画面の見た目は？",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "しっくりくる方を選んでください。⋯ → レイアウトでいつでも切り替えられ、設定 → トレーニングで固定もできます。",
+  "One at a time": "1種目ずつ",
+  "One exercise per page. Next takes you on.": "1ページに1種目。「次へ」で進みます。",
+  "All on one page": "全部を1ページに",
+  "The whole workout as a list, ticks and all.": "トレーニング全体をリストで。チェックもそのまま。",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "レイアウトはここ：1ページに1種目か、トレーニング全体をリストで。メモや種目の追加、トレーニング設定もここです。",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "自分のウォームアップ段階",
   "Built-in": "標準",

@@ -1,5 +1,13 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Как показывать тренировку?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Выбери, как удобнее. Переключить можно в любой момент через ⋯ → Вид, а насовсем в Настройки → Тренировка.",
+  "One at a time": "По одному",
+  "One exercise per page. Next takes you on.": "Одно упражнение на странице. «Далее» ведёт к следующему.",
+  "All on one page": "Всё на одной странице",
+  "The whole workout as a list, ticks and all.": "Вся тренировка списком, с галочками.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Здесь живёт вид: одно упражнение на странице или вся тренировка списком. А ещё заметки, дополнительные упражнения и настройки тренировки.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Твоя разминочная лесенка",
   "Built-in": "Встроенная",

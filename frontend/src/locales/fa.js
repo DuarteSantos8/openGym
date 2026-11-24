@@ -1,5 +1,13 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "تمرینت چطور نمایش داده شود؟",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "هر کدام راحت‌تر است انتخاب کن. هر وقت خواستی از ⋯ → چیدمان عوضش کن، یا برای همیشه در تنظیمات → تمرین.",
+  "One at a time": "یکی‌یکی",
+  "One exercise per page. Next takes you on.": "هر صفحه یک حرکت. «بعدی» می‌بردت جلو.",
+  "All on one page": "همه در یک صفحه",
+  "The whole workout as a list, ticks and all.": "کل تمرین به شکل فهرست، با تیک‌هایش.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "چیدمان اینجاست: هر صفحه یک حرکت، یا کل تمرین به شکل فهرست. یادداشت‌ها، حرکت‌های اضافه و تنظیمات تمرین هم.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "پلکان گرم‌کردن شما",
   "Built-in": "پیش‌فرض",

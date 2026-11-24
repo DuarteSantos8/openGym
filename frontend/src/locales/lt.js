@@ -1,5 +1,13 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Kaip turi atrodyti tavo treniruotė?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Rinkis, kas patinka. Perjungti gali bet kada per ⋯ → Išdėstymas, arba visam laikui Nustatymai → Treniruotė.",
+  "One at a time": "Po vieną",
+  "One exercise per page. Next takes you on.": "Vienas pratimas puslapyje. Toliau nuveda prie kito.",
+  "All on one page": "Viskas viename puslapyje",
+  "The whole workout as a list, ticks and all.": "Visa treniruotė sąraše, su varnelėmis.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Čia gyvena išdėstymas: vienas pratimas puslapyje arba visa treniruotė sąraše. Taip pat užrašai, papildomi pratimai ir treniruotės nustatymai.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Tavo apšilimo laiptai",
   "Built-in": "Įtaisyti",

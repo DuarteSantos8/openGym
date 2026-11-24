@@ -1,5 +1,13 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Hur ska ditt pass se ut?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Välj det som känns rätt. Du kan byta när som helst under ⋯ → Layout, eller för gott i Inställningar → Pass.",
+  "One at a time": "En i taget",
+  "One exercise per page. Next takes you on.": "En övning per sida. Nästa tar dig vidare.",
+  "All on one page": "Allt på en sida",
+  "The whole workout as a list, ticks and all.": "Hela passet som en lista, bockar och allt.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Här bor layouten: en övning per sida eller hela passet som en lista. Anteckningar, fler övningar och passinställningar också.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Din uppvärmningstrappa",
   "Built-in": "Inbyggd",

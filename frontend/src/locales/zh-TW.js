@@ -1,4 +1,12 @@
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "訓練要怎麼顯示？",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "選你順手的。隨時可以在 ⋯ → 畫面佈局 裡切換，或在 設定 → 訓練 裡固定下來。",
+  "One at a time": "一次一個",
+  "One exercise per page. Next takes you on.": "每頁一個動作，點「下一個」繼續。",
+  "All on one page": "全部在一頁",
+  "The whole workout as a list, ticks and all.": "整個訓練排成清單，打勾都在。",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "畫面佈局在這裡：每頁一個動作，或整個訓練排成清單。備註、加動作和訓練設定也在這兒。",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "你的熱身階梯",
   "Built-in": "內建",

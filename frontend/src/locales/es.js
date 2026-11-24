@@ -1,5 +1,13 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "¿Cómo quieres ver tu entreno?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Elige lo que te encaje. Puedes cambiarlo cuando quieras en ⋯ → Diseño, o para siempre en Ajustes → Entreno.",
+  "One at a time": "Uno a uno",
+  "One exercise per page. Next takes you on.": "Un ejercicio por página. Siguiente te lleva al próximo.",
+  "All on one page": "Todo en una página",
+  "The whole workout as a list, ticks and all.": "Todo el entreno en una lista, con sus ticks.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Aquí está el diseño: un ejercicio por página o todo el entreno en una lista. También notas, ejercicios extra y ajustes del entreno.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Tu rampa de calentamiento",
   "Built-in": "La de serie",

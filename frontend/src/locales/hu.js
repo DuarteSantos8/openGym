@@ -1,5 +1,13 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Hogy nézzen ki az edzésed?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Válaszd, ami jólesik. Bármikor átválthatsz a ⋯ → Elrendezés alatt, vagy végleg a Beállítások → Edzés részben.",
+  "One at a time": "Egyenként",
+  "One exercise per page. Next takes you on.": "Oldalanként egy gyakorlat. A Következő visz tovább.",
+  "All on one page": "Minden egy oldalon",
+  "The whole workout as a list, ticks and all.": "Az egész edzés listában, pipákkal együtt.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Itt lakik az elrendezés: oldalanként egy gyakorlat, vagy az egész edzés listában. Jegyzetek, extra gyakorlatok és edzésbeállítások is.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "A saját bemelegítő lépcsőd",
   "Built-in": "Beépített",

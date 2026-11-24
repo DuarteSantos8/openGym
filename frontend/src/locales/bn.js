@@ -1,5 +1,13 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "আপনার ওয়ার্কআউট দেখতে কেমন হবে?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "যেটা ভালো লাগে বেছে নিন। যেকোনো সময় ⋯ → লেআউট থেকে বদলাতে পারবেন, বা স্থায়ীভাবে সেটিংস → ওয়ার্কআউট থেকে।",
+  "One at a time": "একটা একটা করে",
+  "One exercise per page. Next takes you on.": "প্রতি পাতায় একটি ব্যায়াম। পরবর্তী চাপলে এগোবেন।",
+  "All on one page": "সব এক পাতায়",
+  "The whole workout as a list, ticks and all.": "পুরো ওয়ার্কআউট একটি তালিকায়, টিক চিহ্নসহ।",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "লেআউট এখানে: প্রতি পাতায় একটি ব্যায়াম, বা পুরো ওয়ার্কআউট তালিকায়। নোট, বাড়তি ব্যায়াম আর ওয়ার্কআউট সেটিংসও।",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "আপনার ওয়ার্ম-আপ ধাপ",
   "Built-in": "বিল্ট-ইন",

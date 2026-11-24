@@ -2,6 +2,14 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Come vuoi vedere il tuo allenamento?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Scegli quello che ti va. Puoi cambiare quando vuoi da ⋯ → Layout, o per sempre in Impostazioni → Allenamento.",
+  "One at a time": "Uno alla volta",
+  "One exercise per page. Next takes you on.": "Un esercizio per pagina. Avanti ti porta al prossimo.",
+  "All on one page": "Tutto in una pagina",
+  "The whole workout as a list, ticks and all.": "Tutto l’allenamento in lista, spunte comprese.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Qui c’è il layout: un esercizio per pagina, o tutto l’allenamento in lista. E anche note, esercizi in più e impostazioni dell’allenamento.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "La tua rampa di riscaldamento",
   "Built-in": "Quella di serie",

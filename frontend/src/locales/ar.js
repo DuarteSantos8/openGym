@@ -1,5 +1,13 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "كيف تريد أن يبدو تمرينك؟",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "اختر ما يناسبك. يمكنك التبديل في أي وقت من ⋯ ← التخطيط، أو نهائيًا من الإعدادات ← التمرين.",
+  "One at a time": "واحد تلو الآخر",
+  "One exercise per page. Next takes you on.": "تمرين واحد في كل صفحة. «التالي» ينقلك.",
+  "All on one page": "الكل في صفحة واحدة",
+  "The whole workout as a list, ticks and all.": "التمرين كاملًا كقائمة، مع علامات الإنجاز.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "التخطيطات هنا: تمرين في كل صفحة، أو التمرين كاملًا كقائمة. وكذلك الملاحظات والتمارين الإضافية وإعدادات التمرين.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "تدرّج الإحماء الخاص بك",
   "Built-in": "المدمج",

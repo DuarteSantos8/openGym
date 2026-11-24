@@ -4,6 +4,14 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Como você quer ver seu treino?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Escolha o que parecer melhor. Dá para trocar a qualquer momento em ⋯ → Layout, ou de vez em Configurações → Treino.",
+  "One at a time": "Um de cada vez",
+  "One exercise per page. Next takes you on.": "Um exercício por página. Próximo leva você adiante.",
+  "All on one page": "Tudo em uma página",
+  "The whole workout as a list, ticks and all.": "O treino inteiro em uma lista, com os checks e tudo.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "O layout fica aqui: um exercício por página, ou o treino inteiro em uma lista. Notas, exercícios extras e configurações do treino também.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Sua rampa de aquecimento",
   "Built-in": "A padrão",

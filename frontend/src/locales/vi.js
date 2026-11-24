@@ -1,5 +1,13 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Bạn muốn buổi tập hiển thị thế nào?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Chọn kiểu bạn thấy hợp. Có thể đổi bất cứ lúc nào ở ⋯ → Bố cục, hoặc cố định trong Cài đặt → Buổi tập.",
+  "One at a time": "Từng bài một",
+  "One exercise per page. Next takes you on.": "Mỗi trang một bài. Bấm Tiếp để đi tiếp.",
+  "All on one page": "Tất cả trên một trang",
+  "The whole workout as a list, ticks and all.": "Cả buổi tập thành một danh sách, có cả dấu tích.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Bố cục nằm ở đây: mỗi trang một bài, hoặc cả buổi tập thành danh sách. Ghi chú, thêm bài tập và cài đặt buổi tập cũng ở đây.",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "Bậc khởi động của bạn",
   "Built-in": "Mặc định",

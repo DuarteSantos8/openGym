@@ -1,5 +1,13 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "训练要怎么显示？",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "选你顺手的。随时可以在 ⋯ → 布局 里切换，或在 设置 → 训练 里固定下来。",
+  "One at a time": "一次一个",
+  "One exercise per page. Next takes you on.": "每页一个动作，点“下一个”继续。",
+  "All on one page": "全部在一页",
+  "The whole workout as a list, ticks and all.": "整个训练排成清单，勾选都在。",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "布局在这里：每页一个动作，或整个训练排成清单。备注、加动作和训练设置也在这儿。",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "你的热身阶梯",
   "Built-in": "内置",

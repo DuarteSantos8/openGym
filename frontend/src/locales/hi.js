@@ -1,5 +1,13 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "आपका वर्कआउट कैसा दिखे?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "जो ठीक लगे चुनें। कभी भी ⋯ → लेआउट से बदल सकते हैं, या हमेशा के लिए सेटिंग्स → वर्कआउट में।",
+  "One at a time": "एक-एक करके",
+  "One exercise per page. Next takes you on.": "हर पेज पर एक व्यायाम। अगला दबाकर आगे बढ़ें।",
+  "All on one page": "सब एक पेज पर",
+  "The whole workout as a list, ticks and all.": "पूरा वर्कआउट एक सूची में, टिक समेत।",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "लेआउट यहीं है: हर पेज पर एक व्यायाम, या पूरा वर्कआउट एक सूची में। नोट्स, और व्यायाम और वर्कआउट सेटिंग्स भी।",
   // --- Settings → Workout → Your warm-up ramp (#1423) ---
   "Your warm-up ramp": "आपकी वार्म-अप सीढ़ी",
   "Built-in": "बिल्ट-इन",
