@@ -4307,6 +4307,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-folder .n{font-weight:400;font-variant-numeric:tabular-nums}
 .plan-folder .chev{transition:transform var(--fast) var(--ease)}
 .plan-folder[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.plan-folder.is-static{padding-inline:4px;cursor:default}
 [dir="rtl"] .plan-folder[aria-expanded="false"] .chev{transform:rotate(180deg)}
 @media (prefers-reduced-motion:reduce){.plan-folder .chev{transition:none}}
 

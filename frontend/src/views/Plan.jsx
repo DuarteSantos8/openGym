@@ -32,7 +32,7 @@ import {
   chooseRotation, chooseFixedWeek, sequenceOf, isSimpleSequence, segmentAt, REST,
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
-import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routine-folders.js'
+import { groupRoutines, folderOpen, setFolderOpen } from '../lib/routine-folders.js'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
 import { routineSources } from '../lib/session-routines.js'
@@ -450,6 +450,25 @@ function HeldRoutines({ list, className, data, update, children }) {
     <div key={x.id} data-reorder-row data-reorder-key={x.id} style={r.rowStyle(i)} {...r.press(i)}>{children(x, () => !r.lifted())}</div>)}</div>
 }
 
+/** One folder's routines in Edit: the minus deletes, the handle moves it inside its folder. */
+function EditRoutines({ list, update, sub, remove, folder }) {
+  const ids = list.map(r => r.id)
+  const r = useListReorder(list.length, (from, to) => update(s => {
+    const a = s.routines.findIndex(x => x.id === ids[from]), b = s.routines.findIndex(x => x.id === ids[to])
+    if (a < 0 || b < 0 || a === b) return
+    const [m] = s.routines.splice(a, 1)
+    s.routines.splice(b, 0, m)
+  }))
+  return <div className="list routine-list plan-routines is-editing" ref={r.listRef} data-folder={folder || undefined}>{list.map((x, i) =>
+    <div key={x.id} data-reorder-row data-reorder-key={x.id} className="item plan-routine" style={r.rowStyle(i)} {...r.press(i)}>
+      <button className="plan-minus" aria-label={t('Delete {0}', x.name)} title={t('Delete routine')} onClick={() => remove(x)}><Icon name="minus" /></button>
+      <span className="lrow-i"><Icon name={glyphOf(x.emoji)} /></span>
+      <div className="grow"><div className="tt">{x.name}</div><div className="ss">{sub(x)}</div></div>
+      {list.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', x.name)} title={t('Drag to reorder')}
+        {...r.handle(i)}><Icon name="chevronsUpDown" /></button>}
+    </div>)}</div>
+}
+
 function Routines({ S, update, nav }) {
   const [edit, setEdit] = useState(false)
   const [flash, setFlash] = useState(null)
@@ -460,12 +479,7 @@ function Routines({ S, update, nav }) {
   const routines = S.routines
   // The order of this list is the order of `S.routines`, and every other screen reads the same
   // array (the Start screen, the day sheets, the routine pickers), so moving a routine here moves
-  // it everywhere (#142). Reordering lives behind Edit, like on an iPhone.
-  const reorder = useListReorder(routines.length, (from, to) => update(s => {
-    if (to < 0 || to >= s.routines.length) return
-    const [m] = s.routines.splice(from, 1)
-    s.routines.splice(to, 0, m)
-  }))
+  // it everywhere (#142). A hold moves one, in Edit too (EditRoutines, HeldRoutines).
 
   const addRoutine = () => newRoutine(update, nav)
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
@@ -490,7 +504,7 @@ function Routines({ S, update, nav }) {
   const order = weekOrder(weekStartOf(S))
   const daysOf = id => order.filter(d => [].concat(S.week[d] || []).includes(id)).map(d => t(DAYS[d]))
   // A routine a trainer assigned or changed says who (docs/TRAINERS.md, `_by`).
-  const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', '), r._by?.kind === 'trainer' && r._by.name ? t('from {0}', r._by.name) : null, edit ? folderOf(r) : null].filter(Boolean).join(' · ')
+  const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', '), r._by?.kind === 'trainer' && r._by.name ? t('from {0}', r._by.name) : null].filter(Boolean).join(' · ')
 
   return <>
     <div className="row between plan-sec-h plan-routines-bar">
@@ -501,14 +515,19 @@ function Routines({ S, update, nav }) {
     </div>
     {routines.length ? <>
       {edit
-        ? <div className="list routine-list plan-routines is-editing" ref={reorder.listRef}>{routines.map((r, i) =>
-          <div key={r.id} data-reorder-row data-reorder-key={r.id} className="item plan-routine" style={reorder.rowStyle(i)} {...reorder.press(i)}>
-            <button className="plan-minus" aria-label={t('Delete {0}', r.name)} title={t('Delete routine')} onClick={() => remove(r)}><Icon name="minus" /></button>
-            <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
-            {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
-              {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
-          </div>)}</div>
+        // Edit keeps the folders (#1534): each one under its header, open and not folding while
+        // you edit, a drag moving a routine within its folder as the hold does outside Edit.
+        ? groupRoutines(routines).map(g => {
+          if (!g.routines.length) return null
+          const list = <EditRoutines key={'e' + g.folder} list={g.routines} update={update} sub={sub} remove={remove} folder={g.folder} />
+          if (!g.folder) return list
+          return <div key={'ef' + g.folder} className="plan-folder-sect">
+            <div className="plan-folder is-static" role="heading" aria-level={4}>
+              <Icon name="folder" /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span>
+            </div>
+            {list}
+          </div>
+        })
         // Starred routines first, under Favourites (#327, lib/routine-favs.js): out of their
         // folder while starred, so each routine shows once. Edit still orders S.routines itself.
         : [...(routines.some(isFavRoutine) ? [{ folder: '', fav: true, routines: routines.filter(isFavRoutine) }] : []),

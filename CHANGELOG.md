@@ -115,6 +115,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Logging a workout after you trained? Mark all sets done is now in a live workout too, under ⋯ More. It asks first, starts no rest timers and the toast has Undo (thanks Discord, #1345).
 - Start workout: the other routines sit under their folders like on Plan, so two Leg Days from different blocks are no longer twins. A folder folds here too, and the Archive starts folded (#1347, thanks Discord).
 - Home: tapping today's row once the workout is done opens what you did, instead of starting the same routine again. Up for round two? Start another session is right there (thanks Discord).
+- Plan: Edit keeps your folders. Each one has its header while you delete or drag, and a drag moves a routine inside its folder. You don't need Edit to reorder any more, by the way: hold a routine to move it (#1534).
 
 ## v1.4.5 (2026-11-14)
 
