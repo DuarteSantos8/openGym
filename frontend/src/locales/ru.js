@@ -5987,4 +5987,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Ярлык в Фото и Замерах",
   "A row on those two pages that opens this sheet.": "Строка на этих двух страницах, открывающая эту панель.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Скрыто до следующей сводки.",
 }

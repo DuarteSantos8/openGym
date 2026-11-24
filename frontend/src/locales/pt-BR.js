@@ -4403,6 +4403,8 @@ export const PT_BR_OVERRIDES = {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Relatar um problema",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de bugs no GitHub com a versão do app e o dispositivo já preenchidos. O app não envia nada sozinho.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Oculto até o próximo resumo.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

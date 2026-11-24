@@ -5983,4 +5983,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Skrót w Zdjęciach i Pomiarach",
   "A row on those two pages that opens this sheet.": "Wiersz na tych dwóch stronach, który otwiera ten arkusz.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Ukryte do następnego podsumowania.",
 }

@@ -5976,4 +5976,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "在照片和身體數據中顯示捷徑",
   "A row on those two pages that opens this sheet.": "在這兩個頁面顯示一列，點開就是這裡。",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "已隱藏，直到下一次回顧。",
 }

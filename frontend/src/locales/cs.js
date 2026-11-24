@@ -5949,4 +5949,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Zkratka ve Fotkách a Mírách",
   "A row on those two pages that opens this sheet.": "Řádek na těch dvou stránkách, který otevře tento panel.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Skryto do dalšího shrnutí.",
 }

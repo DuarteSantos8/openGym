@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: the week and month recap comes back too. Its × used to keep it away even after switching Week and month recap off and on; now the switch brings it back, and Customize Home lists it as hidden until the next recap with Show (thanks Discord).
 - Fixed: moving things around a superset by press and hold. In the routine editor a row that slid past a superset could not be taken back, and the rows jumped; in a running workout an exercise could not get below a superset at the end, a superset not above a short exercise at the top, and a card you had opened could fold up after the move. They all follow your finger now.
 - Check-in reminders: the shortcut row on Photos and Measurements can be switched off in the reminder sheet ("Shortcut on Photos and Measurements"). Settings → Notifications keeps it either way.
 - Webhooks: a new Workout started event, sent once when you start a session, so your smart home can dim the lights or your status can say you are at the gym. The same id comes back when the workout finishes (#1152).

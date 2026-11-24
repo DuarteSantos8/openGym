@@ -6062,4 +6062,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "ছবি আর মাপে শর্টকাট",
   "A row on those two pages that opens this sheet.": "ওই দুই পাতায় একটা সারি, যা এই শিট খোলে।",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "পরের সারাংশ পর্যন্ত লুকানো।",
 }

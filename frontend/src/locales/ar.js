@@ -6038,4 +6038,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "اختصار في الصور والقياسات",
   "A row on those two pages that opens this sheet.": "صف في هاتين الصفحتين يفتح هذه الورقة.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "مخفي حتى الملخص التالي.",
 }

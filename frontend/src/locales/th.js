@@ -5994,4 +5994,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "ทางลัดในรูปภาพและการวัด",
   "A row on those two pages that opens this sheet.": "แถวในสองหน้านั้นที่เปิดแผ่นนี้",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "ซ่อนไว้จนถึงสรุปครั้งถัดไป",
 }

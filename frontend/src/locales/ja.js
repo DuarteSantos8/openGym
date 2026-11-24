@@ -5915,4 +5915,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "写真と計測にショートカット",
   "A row on those two pages that opens this sheet.": "その2ページに、このシートを開く行を表示します。",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "次の振り返りまで非表示です。",
 }

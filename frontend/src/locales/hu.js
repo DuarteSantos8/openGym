@@ -5986,4 +5986,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Parancsikon a Fotóknál és a Méreteknél",
   "A row on those two pages that opens this sheet.": "Egy sor azon a két oldalon, ami megnyitja ezt a lapot.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Rejtve a következő összefoglalóig.",
 }

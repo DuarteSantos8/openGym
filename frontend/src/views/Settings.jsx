@@ -1175,7 +1175,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Monday's Your week and the 1st's Your month (lib/recap.js). On unless switched off. */}
         {on('motivation') && <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
           subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
-          <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
+          <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v; if (v) s.recapSeen = null })} />
         </Row>}
         <WrappedBodyRow S={S} update={update} />
         {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}

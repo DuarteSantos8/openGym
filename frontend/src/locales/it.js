@@ -5993,4 +5993,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Scorciatoia in Foto e Misure",
   "A row on those two pages that opens this sheet.": "Una riga su quelle due pagine che apre questo foglio.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Nascosto fino al prossimo riepilogo.",
 }

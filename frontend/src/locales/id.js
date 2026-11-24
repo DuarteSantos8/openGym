@@ -5948,4 +5948,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Pintasan di Foto dan Ukuran",
   "A row on those two pages that opens this sheet.": "Baris di kedua halaman itu yang membuka lembar ini.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Disembunyikan sampai rangkuman berikutnya.",
 };

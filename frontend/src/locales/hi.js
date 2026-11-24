@@ -5983,4 +5983,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "फ़ोटो और माप में शॉर्टकट",
   "A row on those two pages that opens this sheet.": "उन दोनों पेजों पर एक पंक्ति जो यह शीट खोलती है।",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "अगले सारांश तक छिपा है।",
 }

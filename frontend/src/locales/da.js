@@ -5923,4 +5923,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Genvej i Billeder og Mål",
   "A row on those two pages that opens this sheet.": "En række på de to sider, der åbner dette ark.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Skjult indtil næste opsummering.",
 }

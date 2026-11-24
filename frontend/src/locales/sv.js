@@ -6030,4 +6030,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Genväg i Foton och Mått",
   "A row on those two pages that opens this sheet.": "En rad på de två sidorna som öppnar det här bladet.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Dold till nästa sammanfattning.",
 }

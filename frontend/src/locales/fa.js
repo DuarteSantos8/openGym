@@ -5949,4 +5949,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "میان‌بر در عکس‌ها و اندازه‌ها",
   "A row on those two pages that opens this sheet.": "ردیفی در آن دو صفحه که این برگه را باز می‌کند.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "تا خلاصهٔ بعدی پنهان است.",
 }

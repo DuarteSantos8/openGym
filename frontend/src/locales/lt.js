@@ -5979,4 +5979,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Nuoroda Nuotraukose ir Matavimuose",
   "A row on those two pages that opens this sheet.": "Eilutė tuose dviejuose puslapiuose, atidaranti šį lapą.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Paslėpta iki kitos santraukos.",
 }

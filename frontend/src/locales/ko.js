@@ -5983,4 +5983,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "사진과 측정에 바로가기",
   "A row on those two pages that opens this sheet.": "두 페이지에 이 시트를 여는 줄이 생겨요.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "다음 요약까지 숨김.",
 }

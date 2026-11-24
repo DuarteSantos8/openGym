@@ -5983,4 +5983,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "在照片和身体数据中显示快捷入口",
   "A row on those two pages that opens this sheet.": "在这两个页面显示一行，点开就是这里。",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "已隐藏，直到下一次回顾。",
 }

@@ -115,4 +115,12 @@ describe('cards put away with their own × (Discord 2026-11-20)', () => {
     expect(s.challengesHidden).toBe(null)
     expect(dismissedNote({ challengesHidden: '2026-11' }, 'stats', 'challenges', now)).toBe(null)
   })
+  it('the week recap put away on its day is listed, and Show brings it back (Discord 2026-11-24)', () => {
+    const monday = new Date(2026, 10, 23, 12)
+    const s = { weekStart: 1, recapSeen: 'w:2026-11-16' }
+    expect(dismissedNote(s, 'home', 'recap', monday)).toBe('Hidden until the next recap.')
+    expect(dismissedNote(s, 'home', 'recap', new Date(2026, 10, 30, 12))).toBe(null)
+    setCardState(s, 'home', 'recap', 'shown')
+    expect(s.recapSeen).toBe(null)
+  })
 })

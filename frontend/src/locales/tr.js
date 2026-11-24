@@ -5983,4 +5983,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Fotoğraflar ve Ölçümlerde kısayol",
   "A row on those two pages that opens this sheet.": "O iki sayfada bu sayfayı açan bir satır.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Bir sonraki özete kadar gizli.",
 }

@@ -5949,4 +5949,6 @@ export default {
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Lối tắt ở Ảnh và Số đo",
   "A row on those two pages that opens this sheet.": "Một dòng trên hai trang đó để mở bảng này.",
+  // --- Recap card put away with its × ---
+  "Hidden until the next recap.": "Ẩn cho đến bản tóm tắt tiếp theo.",
 };

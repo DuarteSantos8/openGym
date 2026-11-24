@@ -12,6 +12,8 @@
 // The labels are existing strings, translated where they are shown (t(label)). `needs` is the
 // module (Settings → Modules) a card belongs to: with it off the card is not offered at all.
 
+import { recapPeriod } from './recap.js'
+
 export const PAGES = {
   home: [
     { id: 'recap', label: 'Your week' },
@@ -110,8 +112,9 @@ function slot(s, page) {
   return l
 }
 
-// Two Home cards also have their own × that puts them away for a while: the challenges until next
-// month (S.challengesHidden = 'YYYY-MM'), the recovery tip for today (S.recoveryHintDay). Such a
+// Some Home cards also have their own × that puts them away for a while: the challenges until next
+// month (S.challengesHidden = 'YYYY-MM'), the recovery tip for today (S.recoveryHintDay), the week
+// or month recap until the next one (S.recapSeen, the recap's key; Discord 2026-11-24). Such a
 // card drew nothing, so the sheet left it out and nothing brought it back (Discord 2026-11-20).
 // The sheet now lists it as hidden, says until when, and Show clears the ×.
 const pad2 = n => String(n).padStart(2, '0')
@@ -119,6 +122,7 @@ const monthOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`
 const dayOf = d => `${monthOf(d)}-${pad2(d.getDate())}`
 const DISMISS = {
   home: {
+    recap: { on: (S, now) => !!S.recapSeen && S.recapSeen === recapPeriod(S, dayOf(now))?.key, clear: s => { s.recapSeen = null }, note: 'Hidden until the next recap.' },
     challenges: { on: (S, now) => S.challengesHidden === monthOf(now), clear: s => { s.challengesHidden = null }, note: 'Hidden until next month.' },
     recovery: { on: (S, now) => S.recoveryHintDay === dayOf(now), clear: s => { s.recoveryHintDay = null }, note: 'Hidden for today. Back tomorrow.' },
   },
