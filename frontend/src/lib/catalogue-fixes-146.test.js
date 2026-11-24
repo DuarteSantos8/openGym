@@ -34,3 +34,15 @@ describe('static stretches start as timed holds (#1537)', () => {
     }
   })
 })
+
+describe('leg presses and hack squats do not list the calves (#1034)', () => {
+  // The body map has weighed them at 0 since v1.4.5 (7b890962); the list of secondary muscles,
+  // which screens print, still said calves.
+  it('in the secondary muscles, matching the body map\'s weight of 0', async () => {
+    const map = (await import('./exercise-muscle-map.json')).default
+    for (const id of ['0046', '0739', '0743', '0760', '2267', '2951']) {
+      expect(EXIDX[id].sm, id).not.toContain('calves')
+      expect(map[id].muscleWeights.calves, id).toBe(0)
+    }
+  })
+})

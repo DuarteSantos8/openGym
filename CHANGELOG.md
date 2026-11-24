@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Exercise list: leg presses and hack squats no longer name the calves as a muscle they work. The body map already left them out since 1.4.5; the list of muscles under the exercise said otherwise (#1034).
 - Static stretches start as timed holds: picking a hamstring stretch, child's pose or one of 434 others now opens it as 3 × 30 seconds instead of 3 × 10 reps. Stretches you move through (toy soldiers, neck circles, cat cow) stay on reps, and routines you already have keep what they are (#1537).
 - Exercise list: "dumbbell incline breeding" (0316) is now the dumbbell incline fly (palms forward), with fly steps to match. Its name had turned into a press or even a curl in several languages (#1302, thanks @Ituking).
 - Fixed: the cable assisted inverse leg curl counts its weight as help, so progression asks for less of it, not more. The exercise list can now mark any exercise as assisted, not just the machines (#1220).
