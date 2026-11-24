@@ -95,6 +95,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
+    /// The set a hold (or its 3-2-1) runs for: if the phone logs it first, that is over (SessionCore.holdOpen).
+    private var holdFor: (entry: Int, set: Int, side: String?, sid: String?)?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
     @Published private(set) var summary: WorkoutSummary?
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
@@ -636,6 +638,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             for tick in ticks {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
             }
+            // The phone logged the set this hold runs for (its own hold ended first): this one ends with
+            // it, unlogged, instead of logging the set after it.
+            if let h = self.holdFor, !SessionCore.holdOpen(self.state, entry: h.entry, set: h.set, side: h.side, sid: h.sid) {
+                self.stopHold()
+            }
             // The newest of them takes the watch to the set after it, on whichever exercise (#1101,
             // the twin of Wear's #1165): not while a set is open to be fixed or a hold runs here.
             if let last = ticks.last, self.viewing == nil, self.holdEndsAt == nil, self.holdCountFrom == nil,
@@ -815,10 +822,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest is over (or a hold ended with none after it): with the phone's "Timed holds start
     /// by themselves" on and a timed set up next, a 3-2-1 with a tap each second, then the hold.
     func autoHoldIfDue() {
-        guard state.settings.autoHolds == true, workout != nil, entry?.isTimed == true, setIndex != nil,
+        guard state.settings.autoHolds == true, workout != nil, entry?.isTimed == true, let si = setIndex,
               holdEndsAt == nil, restEndsAt == nil, holdCountFrom == nil, seconds > 0 else { return }
         let from = Date()
         holdCountFrom = from
+        holdFor = (entryIndex, si, entry?.sets[si].sideUp, entry?.sets[si].sid)
         Haptics.count()
         holdCountTimer?.invalidate()
         holdCountTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -840,6 +848,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         holdCountTimer?.invalidate()
         holdCountTimer = nil
         holdCountFrom = nil
+        holdFor = nil
     }
 
     /// Skip on the rest: the rest ends, and a hold that starts by itself counts in.
@@ -923,6 +932,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let end = now.addingTimeInterval(seconds)
         holdStartedAt = now
         holdEndsAt = end
+        if let si = setIndex { holdFor = (entryIndex, si, entry?.sets[si].sideUp, entry?.sets[si].sid) }
         Haptics.start()
         holdTimer?.invalidate()
         holdTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
@@ -943,18 +953,30 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func endHold(early: Bool) {
         guard let from = holdStartedAt, let end = holdEndsAt else { return }
         let lasted = early ? Date().timeIntervalSince(from).rounded() : end.timeIntervalSince(from).rounded()
+        // The set the hold began for, as the phone has it now: a set it added before this one, or its Next
+        // to another exercise meanwhile, must not take the log.
+        let own = holdFor.flatMap { SessionCore.holdPlace(state, entry: $0.entry, set: $0.set, sid: $0.sid) }
         stopHold()
-        if lasted >= 1 { completeSet(sec: lasted) }
+        if lasted >= 1 {
+            if let own = own, own.entry != entryIndex || own.set != setIndex {
+                state.entryIndex = own.entry
+                picked[own.entry] = own.set
+                loadTargets()   // the numbers on screen were the other set's (a weighted hold logs its weight)
+            }
+            completeSet(sec: lasted)
+        }
     }
 
     /// The hold ends without a set (the workout ended meanwhile).
     func stopHold() {
+        stopHoldCount()     // a 3-2-1 still running would start a hold on the next workout's set
         holdTimer?.invalidate()
         holdTimer = nil
         holdTicks.forEach { $0.cancel() }
         holdTicks = []
         holdEndsAt = nil
         holdStartedAt = nil
+        holdFor = nil
     }
 
     /* ---------- the summary ---------- */

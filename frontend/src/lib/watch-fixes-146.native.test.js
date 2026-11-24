@@ -32,3 +32,27 @@ describe('Android rest countdown (RestTimerService.java, #1453 / #1454)', () => 
     expect(tail).not.toMatch(/!interactive\(\)\) show\(\)/)
   })
 })
+
+const WATCH = '../../ios/App/Watch/'
+const CORE = '../../ios/App/WatchCore/Sources/WatchCore/'
+
+describe('Apple Watch hold the phone logged first (SessionStore.swift, #1409 / #1410)', () => {
+  const store = code(WATCH + 'SessionStore.swift')
+  const core = code(CORE + 'SessionCore.swift')
+  it('remembers the set a hold or its 3-2-1 runs for', () => {
+    expect(between(store, 'func autoHoldIfDue', '\n    func ')).toMatch(/holdFor = \(entryIndex, si,/)
+    expect(core).toMatch(/static func holdOpen\(/)
+    expect(core).toMatch(/static func holdPlace\(/)
+  })
+  it('ends a hold unlogged once a snapshot shows its set done', () => {
+    expect(store).toMatch(/if let h = self\.holdFor, !SessionCore\.holdOpen\(self\.state,[^\n]*\{\s*self\.stopHold\(\)/)
+  })
+  it('logs the hold on its own set, not on the first open one', () => {
+    const end = between(store, 'func endHold(early: Bool)', 'func stopHold()')
+    expect(end).toMatch(/SessionCore\.holdPlace\(state,/)
+    expect(end).toMatch(/state\.entryIndex = own\.entry/)
+  })
+  it('a hold that stops also stops its count-in', () => {
+    expect(between(store, 'func stopHold()', '\n    }')).toMatch(/stopHoldCount\(\)/)
+  })
+})
