@@ -1,8 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-23. The hosted API and Cloud preview are live. Linked profile deletion is proposed in ADR 0014 and awaits hosted verification. Stripe is parked. Read after `NEXT-STEPS.md`.
-Status as of 2026-11-23. The Render API is live, and the optional hosted MCP layout is in review. It has not been provisioned. Read after `NEXT-STEPS.md`. The decisions behind Cloud are ADR 0008 to 0013.
-Status as of 2026-11-23. The Render API is live behind the Vercel rewrite, and Supabase OAuth is enabled. The browser sign-in origin guard is in review. Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0013.
+Status as of 2026-11-23. The browser OIDC origin guard, hosted MCP Blueprint and linked deletion prototype merged in PRs #85 to #87. Hosted rollout and fresh deletion proof still need verification. Browser sign-in guidance and mobile Settings are in follow-up. Read after `NEXT-STEPS.md`.
 
 ## Why
 

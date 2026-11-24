@@ -168,6 +168,7 @@ export default function Login() {
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
       {ssoNote}
       {ssoButton}
+      {!sso && !canGuest && <p>{t('Sign-in is only available on the server’s configured website.')}</p>}
       {/* A real button, not grey small print: trying the app on this device is a full way in. */}
       {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       {sso && <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('This server signs everyone in with {0}. New here? Signing in makes your profile.', label)}</div>}

@@ -1,5 +1,6 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "Só podes iniciar sessão no site configurado para este servidor.",
   "Check the amount and calculated totals.": "Verifica a quantidade e os totais calculados.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Configurado neste servidor. A ligação só é verificada quando escolhes Consultar.",
   "Connect this phone to a server to look up food.": "Liga este telemóvel a um servidor para consultar alimentos.",

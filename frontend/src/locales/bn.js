@@ -1,5 +1,6 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "শুধু এই সার্ভারের জন্য নির্ধারিত ওয়েবসাইটেই সাইন ইন করা যায়।",
   "Check the amount and calculated totals.": "পরিমাণ ও গণনা করা মোট মান পরীক্ষা করুন।",
   "Configured on this server. Connection is checked only when you choose Lookup.": "এই সার্ভারে কনফিগার করা আছে। খুঁজুন বেছে নিলেই সংযোগ পরীক্ষা করা হয়।",
   "Connect this phone to a server to look up food.": "খাবার খুঁজতে এই ফোনটি একটি সার্ভারের সঙ্গে যুক্ত করুন।",

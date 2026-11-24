@@ -2,6 +2,7 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  "Sign-in is only available on the server’s configured website.": "Puoi accedere solo dal sito web configurato per questo server.",
   "Check the amount and calculated totals.": "Controlla la quantità e i totali calcolati.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Configurato su questo server. La connessione viene verificata solo quando scegli Cerca.",
   "Connect this phone to a server to look up food.": "Collega questo telefono a un server per cercare alimenti.",

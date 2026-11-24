@@ -1,5 +1,6 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "Kamu hanya dapat masuk di situs web yang dikonfigurasi untuk server ini.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Jam tangan",
   "Set once": "Atur sekali",
