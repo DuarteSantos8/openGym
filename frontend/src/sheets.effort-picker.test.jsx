@@ -6,6 +6,8 @@
 // workout-complete dialog on top of it. Every earlier test mocked the sheet away and called
 // onPick directly, so nothing rendered the real component. This does.
 import React, { act } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useUI } from './store/useUI.js'
@@ -133,6 +135,21 @@ describe('the effort picker steppers', () => {
     const names = kind => [...openPicker(kind, null, vi.fn()).host.querySelectorAll('.effpick-free button')].map(b => b.getAttribute('aria-label'))
     expect(names('rir')).toEqual(['RIR: Decrease', 'RIR: Increase'])
     expect(names('rpe')).toEqual(['RPE: Decrease', 'RPE: Increase'])
+  })
+})
+
+// Between − and + a bare "–" read as a third minus; the unset field says so in words.
+describe('the effort picker exact field', () => {
+  it('says Not set while empty', () => {
+    const p = openPicker('rir', null, vi.fn())
+    expect(field(p.host).placeholder).toBe('Not set')
+  })
+  // The words are longer than the old dash: the stepper grows for them and a long one (German
+  // "Nicht angegeben") ends in an ellipsis on a narrow phone rather than being cut off.
+  it('has room for the words', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+    expect(css).toMatch(/\.effpick \.effpick-free \.stp\{flex:0 1 188px;min-width:148px\}/)
+    expect(css).toMatch(/\.effpick \.effpick-free \.stp \.num\{[^}]*text-overflow:ellipsis/)
   })
 })
 

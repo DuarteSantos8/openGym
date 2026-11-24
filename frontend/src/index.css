@@ -1841,9 +1841,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .effpick .menu-item.on{background:var(--surface);background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
 .effpick .menu-on.is-on{color:var(--bc)}
 .effpick .effpick-free{padding-inline-end:8px}
-.effpick .effpick-free .stp{flex:none;width:148px}
-.effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600}
-.effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
+/* room for "Not set" in words (German "Nicht angegeben" is the longest), shrinking to the old
+   148 px on a narrow phone, where a long one ends in an ellipsis instead of being cut mid-letter */
+.effpick .effpick-free .stp{flex:0 1 188px;min-width:148px}
+.effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600;text-overflow:ellipsis}
+.effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500;font-size:var(--fs-subhead)}
 /* A ticked set fades back. Its parts fade, not the row: the number keeps full opacity and is drawn
    in the faded colours instead, so the set-vs-last arrow and the failure mark on it stay readable
    (at .45 the light theme's arrow was 2:1). The look is the same as the old row opacity. */
