@@ -60,7 +60,7 @@ export function StreakExcuseRow () {
   const cap = useStore(s => excuseCapOf(s.S))
   const update = useStore(s => s.update)
   return <Row icon="cloud" iconTint="var(--indigo)" title={t('Sick and travel weeks')}
-    subtitle={t('A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.')}>
+    subtitle={t('How many weeks a year a sick, travel or injured day note can save your streak.')}>
     <Segmented className="seg-inline"
       options={EXCUSE_CHOICES.map(n => ({ value: String(n), label: n ? String(n) : t('Off') }))}
       value={String(cap)} onChange={v => update(s => { setExcuseCap(s, Number(v)) })} />

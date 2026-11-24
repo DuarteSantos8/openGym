@@ -1,5 +1,10 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Початок",
+  "Workout screen": "Екран тренування",
+  "Training rules": "Правила тренувань",
+  "Timed sets": "Підходи на час",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Годинники",
   "Set once": "Налаштовується один раз",
@@ -1745,6 +1750,7 @@ export default {
   'Replaced with “{0}”': 'Замінено на «{0}»',
   'Speed (mph)': 'Швидкість (миль/год)',
   'Speed unit': 'Одиниця швидкості',
+  'Units': 'Одиниці',
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'ID акаунта',
   'Account ID copied': 'ID акаунта скопійовано',
@@ -5344,7 +5350,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Міні-підхід",
   "A classic for {0}": "Класика для {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Нотатка дня «хворію», «у поїздці» чи «травма» зберігає серію, стільки тижнів на рік.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Скільки тижнів на рік нотатка дня «хворію», «у поїздці» чи «травма» може врятувати серію.",
   "A ladder needs at least two rungs.": "Драбині потрібно щонайменше два щаблі.",
   "A lighter week might do more than a harder one.": "Легший тиждень може дати більше, ніж важчий.",
   "A lighter week on a rhythm, no programme needed.": "Легший тиждень за розкладом, без жодної програми.",
