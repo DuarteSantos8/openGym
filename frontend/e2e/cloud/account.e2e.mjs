@@ -243,3 +243,40 @@ test('the server profile ends with the account: signed out here, or signed out e
   await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
   await expect.poll(onServer, { timeout: 15_000 }).toBeNull()
 })
+
+// Found in review of #79: a tab left open, signed out, went on believing nobody was signed in to
+// the account. When another tab signed in and opened the server profile, the old tab took that
+// for "signed out" and ended the profile for both.
+test('a tab left open does not undo a sign-in made in another tab, and lets go when that tab signs out', async ({ page }) => {
+  const context = page.context()
+  await pretendProject(context)                       // one pretend project for both tabs
+  const onServer = p => p.evaluate(() => fetch('api/me').then(r => (r.ok ? r.json() : null)).then(j => j?.user?.name || null))
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')                                // tab A: open, nobody signed in
+  await expect(page.getByRole('button', { name: 'Sign in or create account' })).toBeVisible({ timeout: 15_000 })
+
+  const other = await context.newPage()               // tab B: signs in and goes on into the app
+  await other.emulateMedia({ reducedMotion: 'reduce' })
+  await other.goto('/')
+  await other.getByRole('button', { name: 'Sign in or create account' }).click()
+  await signIn(other)
+  await expect(mode(other)).toHaveAttribute('data-mode', 'account')
+  await other.click('[data-continue]')
+  await expect(other.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
+
+  // Tab A takes the server profile over by itself. It must not then sign it out.
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
+  await page.waitForTimeout(2000)
+  expect(await onServer(other)).toBe('Sam')
+  expect(await onServer(page)).toBe('Sam')
+
+  // Tab B signs out of the account: the server profile ends, and tab A is not left inside it.
+  await other.evaluate(() => { location.hash = '#/account' })
+  await expect(mode(other)).toHaveAttribute('data-mode', 'account')
+  // The first-run tour may be lying over the page: a real click would land on it (fixtures.mjs).
+  await other.locator('[data-signout]').evaluate(el => el.click())
+  await expect(mode(other)).toHaveAttribute('data-mode', 'signin')
+  await expect.poll(() => onServer(other), { timeout: 15_000 }).toBeNull()
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toHaveCount(0, { timeout: 20_000 })
+  await other.close()
+})
