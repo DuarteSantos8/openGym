@@ -21,6 +21,7 @@ struct RestView: View {
     private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
     @Environment(\.accent) private var accent
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The screen's height from which the effort label and 38 pt chips fit: 45, 46 and 49 mm (242, 248, 257 pt), not 41 or 44 mm (215, 224).
     private static let roomyHeight: CGFloat = 235
 
@@ -54,12 +55,19 @@ struct RestView: View {
                 .frame(height: 36)
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
-                    countdown
-                        .font(.system(size: min(76, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
-                        .lineLimit(1)
-                        .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
-                        .frame(width: t.size.width, height: t.size.height)
+                    // The ±15 circle sits right of the digits, which step left for it: same size, nothing overlaps.
+                    HStack(spacing: 5) {
+                        countdown
+                            .font(.system(size: min(76, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
+                            .lineLimit(1)
+                            .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
+                        if let label = RestMath.shift(store.restShift) {
+                            RestShiftCircle(label: label, added: store.restShift > 0)
+                        }
+                    }
+                    .frame(width: t.size.width, height: t.size.height)
+                    .animation(dimmed ? nil : .easeOut(duration: reduceMotion ? 0.15 : 0.25), value: store.restShift)
                 }
                 if store.show.restRing && store.restPausedAt == nil {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
@@ -174,6 +182,34 @@ struct RestView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4) // trailing too: the workout time sat on the right edge (42 mm Series 12)
         }
+    }
+}
+
+/// The net change made with −15 and +15 in this rest, in seconds ("+30", "−15"), a circle right of the
+/// countdown (owner: there, not on the bar, where it met the buttons). The sign says which way.
+struct RestShiftCircle: View {
+    let label: String
+    let added: Bool
+    @Environment(\.accent) private var accent
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
+
+    var body: some View {
+        let tint: Color = dimmed ? .clear : added ? accent.opacity(0.28) : Color.white.opacity(0.14)
+        let stroke: Color = dimmed ? Color.white.opacity(0.55) : added ? accent.opacity(0.85) : Color.white.opacity(0.4)
+        Text(verbatim: label)
+            .font(.system(size: 12, weight: .bold, design: .rounded).monospacedDigit())
+            .foregroundStyle(Color.white.opacity(dimmed ? 0.88 : 1))
+            .contentTransition(.numericText())
+            .lineLimit(1)
+            .minimumScaleFactor(0.7) // "+105" still fits the circle
+            .padding(3)
+            .frame(width: 34, height: 34)
+            .background(Circle().fill(tint))
+            .overlay(Circle().strokeBorder(stroke, lineWidth: 1.5))
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.8)))
+            .accessibilityLabel(Text(verbatim: label + " s"))
     }
 }
 
