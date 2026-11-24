@@ -190,7 +190,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         } else if let data = UserDefaults.standard.data(forKey: SessionStore.stateKey),
                   let saved = try? JSONDecoder().decode(SessionState.self, from: data) {
             // Relaunched (mid-workout or not): the session as it was, then the latest from the phone.
-            state = saved
+            state = SessionCore.upgraded(saved)   // 1.4.5 keyed skips and ratings by exercise only (#1455)
             loadTargets()
             // A rest that was running: its countdown goes on (a snapshot no longer brings back a rest
             // this watch already knows of, protocol 2).
@@ -315,7 +315,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the sets logged here have reached the iPhone (WatchCore SyncState).
     var sync: SyncState { SyncState.of(waiting: unsentSets, reachable: reachable) }
 
-    func isSkipped(_ exId: String, _ si: Int) -> Bool { SessionCore.isSkipped(state, exId, si) }
+    func isSkipped(entry ei: Int, _ si: Int) -> Bool { SessionCore.isSkipped(state, entry: ei, si) }
 
     /// The side of a per-side set that is up ("L" or "R"), or nil.
     var sideUp: String? {
@@ -1811,7 +1811,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
                     self.state.settings.effort = "rir"
-                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.key($0.id, 0), $1) })
+                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries.indices, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.placeKey(w, entry: $0, set: 0), $1) })
                 }
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true

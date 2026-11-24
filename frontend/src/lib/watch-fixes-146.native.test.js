@@ -194,3 +194,17 @@ describe('Watch rest: a circle with the seconds added or taken off (#1319)', () 
     expect(code(WEAR + 'ui/Screens.kt')).toMatch(/RestShiftCircle\(rest\.shift\)/)
   })
 })
+
+describe('Apple Watch: the same exercise twice keeps its own skips and ratings (#1455)', () => {
+  const core = code(CORE + 'SessionCore.swift')
+  it('keys skips and ratings by the exercise\'s copy and the set, not the exercise alone', () => {
+    expect(core).toMatch(/static func placeKey\(_ w: ActiveWorkout, entry ei: Int, set si: Int\) -> String/)
+    expect(between(core, 'static func skip(', '\n    }')).toMatch(/placeKey\(w, entry: ei, set: si\)/)
+    expect(between(core, 'static func isSkipped(', '\n    }')).toMatch(/placeKey\(w, entry: ei, set: si\)/)
+    expect(core).toMatch(/merging\(\[placeKey\(workout, entry: ei, set: si\): r\.value\]\)/)
+    expect(code(CORE + 'Metrics.swift')).toMatch(/efforts\[SessionCore\.placeKey\(w, entry: ei, set: \$0\)\]/)
+  })
+  it('moves a 1.4.5 state\'s keys over on launch', () => {
+    expect(code(WATCH + 'SessionStore.swift')).toMatch(/state = SessionCore\.upgraded\(saved\)/)
+  })
+})
