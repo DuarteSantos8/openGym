@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Dar nėra serijų</string>
     <string name="no_workout">Treniruotė nevyksta</string>
     <string name="none">Nėra</string>
+    <string name="not_a_watch_body">Ji veikia tik Wear OS laikrodyje. Kol kas jos nešalink: pašalinus ištrinamos šio telefono treniruotės. Kaip susigrąžinti telefono programėlę: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Tai programėlė laikrodžiui</string>
     <string name="not_now">Ne dabar</string>
     <string name="not_synced">Dar nesinchronizuota</string>
     <string name="notif_running">Treniruotė vyksta. Bakstelėk, kad grįžtum.</string>

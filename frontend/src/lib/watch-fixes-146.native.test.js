@@ -152,3 +152,24 @@ describe('Apple Watch corners and the set count (#1414)', () => {
     expect(pill).toMatch(/\.fixedSize\(\)/)
   })
 })
+
+describe('the Wear OS APK on a phone (#1359)', () => {
+  const main = code(WEAR + 'MainActivity.kt')
+  it('shows "this is the watch app" and runs nothing else when the device is not a watch', () => {
+    expect(main).toMatch(/private val onPhone by lazy \{ !packageManager\.hasSystemFeature\(PackageManager\.FEATURE_WATCH\) \}/)
+    expect(between(main, 'override fun onCreate', 'lifecycle.addObserver(ambient)')).toMatch(/if \(onPhone\) \{\s*setContentView\(notAWatch\(\)\)\s*return/)
+    expect(between(main, 'override fun onResume()', '\n    }')).toMatch(/if \(onPhone\) return/)
+  })
+  it('says so in every language the watch speaks', () => {
+    for (const lang of ['values', 'values-de', 'values-pt-rBR', 'values-zh-rTW', 'values-in', 'values-da']) {
+      const xml = read(`../../android/wear/src/main/res/${lang}/strings.xml`)
+      expect(xml, lang).toMatch(/name="not_a_watch_title"/)
+      expect(xml, lang).toMatch(/name="not_a_watch_body">[^<]*issues\/1359</)
+    }
+  })
+  it('the release names the APK for the watch only', () => {
+    const sh = read('../../../scripts/android/build-wear.sh')
+    expect(sh).toMatch(/APK="openGym-WearOS-watch-only-\$VER\.apk"/)
+    expect(sh).not.toMatch(/openGym-Wear-\$VER\.apk/)
+  })
+})

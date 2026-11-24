@@ -67,6 +67,8 @@
     <string name="no_sets_yet">ยังไม่มีเซ็ต</string>
     <string name="no_workout">ไม่มีการฝึกที่กำลังทำอยู่</string>
     <string name="none">ไม่มี</string>
+    <string name="not_a_watch_body">แอปนี้ใช้ได้บนนาฬิกา Wear OS เท่านั้น อย่าเพิ่งถอนการติดตั้ง เพราะจะลบการออกกำลังกายในโทรศัพท์เครื่องนี้ วิธีเอาแอปโทรศัพท์กลับมา: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">นี่คือแอปสำหรับนาฬิกา</string>
     <string name="not_now">ไม่ใช่ตอนนี้</string>
     <string name="not_synced">ยังไม่ได้ซิงค์</string>
     <string name="notif_running">กำลังฝึกอยู่ แตะเพื่อกลับไป</string>

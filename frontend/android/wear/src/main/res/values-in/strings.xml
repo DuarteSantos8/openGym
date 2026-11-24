@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Belum ada set</string>
     <string name="no_workout">Tidak ada latihan berjalan</string>
     <string name="none">Tidak ada</string>
+    <string name="not_a_watch_body">Aplikasi ini hanya berjalan di jam tangan Wear OS. Jangan dicopot dulu: mencopotnya menghapus latihan di ponsel ini. Cara mendapatkan kembali aplikasi ponsel: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Ini aplikasi untuk jam tangan</string>
     <string name="not_now">Tidak sekarang</string>
     <string name="not_synced">Belum disinkronkan</string>
     <string name="notif_running">Latihan berjalan. Ketuk untuk kembali.</string>

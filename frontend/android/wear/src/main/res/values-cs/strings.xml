@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Zatím žádné série</string>
     <string name="no_workout">Žádný trénink neběží</string>
     <string name="none">Žádná</string>
+    <string name="not_a_watch_body">Běží jen na hodinkách s Wear OS. Zatím ji neodinstalovávej: odinstalace smaže tréninky v tomhle telefonu. Jak získat zpět aplikaci pro telefon: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Tohle je aplikace pro hodinky</string>
     <string name="not_now">Teď ne</string>
     <string name="not_synced">Zatím nesynchronizováno</string>
     <string name="notif_running">Trénink běží. Klepni a jsi zpátky.</string>

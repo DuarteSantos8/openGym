@@ -67,6 +67,8 @@
     <string name="no_sets_yet">还没有组</string>
     <string name="no_workout">没有进行中的训练</string>
     <string name="none">无</string>
+    <string name="not_a_watch_body">它只能在 Wear OS 手表上运行。先别卸载：卸载会删除这部手机上的训练记录。找回手机应用的方法：github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">这是手表应用</string>
     <string name="not_now">暂不</string>
     <string name="not_synced">尚未同步</string>
     <string name="notif_running">训练进行中。点按返回。</string>

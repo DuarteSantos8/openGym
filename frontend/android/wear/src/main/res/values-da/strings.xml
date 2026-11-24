@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Ingen sæt endnu</string>
     <string name="no_workout">Ingen træning i gang</string>
     <string name="none">Ingen</string>
+    <string name="not_a_watch_body">Den kører kun på et Wear OS-ur. Lad den blive installeret indtil videre: afinstallerer du den, slettes træningerne på denne telefon. Sådan får du telefonappen tilbage: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Det her er ur-appen</string>
     <string name="not_now">Ikke nu</string>
     <string name="not_synced">Ikke synkroniseret endnu</string>
     <string name="notif_running">Træning i gang. Tryk for at hoppe ind igen.</string>

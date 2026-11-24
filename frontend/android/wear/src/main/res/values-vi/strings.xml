@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Chưa có hiệp nào</string>
     <string name="no_workout">Không có buổi tập nào đang chạy</string>
     <string name="none">Không</string>
+    <string name="not_a_watch_body">Ứng dụng này chỉ chạy trên đồng hồ Wear OS. Đừng gỡ vội: gỡ sẽ xóa các buổi tập trên điện thoại này. Cách lấy lại ứng dụng cho điện thoại: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Đây là ứng dụng cho đồng hồ</string>
     <string name="not_now">Để sau</string>
     <string name="not_synced">Chưa đồng bộ</string>
     <string name="notif_running">Đang tập. Chạm để quay lại.</string>

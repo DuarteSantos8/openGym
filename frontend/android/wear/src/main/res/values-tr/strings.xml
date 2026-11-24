@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Henüz set yok</string>
     <string name="no_workout">Devam eden antrenman yok</string>
     <string name="none">Yok</string>
+    <string name="not_a_watch_body">Yalnızca Wear OS saatte çalışır. Şimdilik kaldırma: kaldırırsan bu telefondaki antrenmanlar silinir. Telefon uygulamasını geri almanın yolu: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Bu saat uygulaması</string>
     <string name="not_now">Şimdi değil</string>
     <string name="not_synced">Henüz eşitlenmedi</string>
     <string name="notif_running">Antrenman sürüyor. Geri dönmek için dokun.</string>

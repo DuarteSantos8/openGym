@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Inga set än</string>
     <string name="no_workout">Inget pass pågår</string>
     <string name="none">Ingen</string>
+    <string name="not_a_watch_body">Den fungerar bara på en Wear OS-klocka. Låt den vara installerad tills vidare: avinstallerar du den raderas passen på den här telefonen. Så får du tillbaka telefonappen: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Det här är klockappen</string>
     <string name="not_now">Inte nu</string>
     <string name="not_synced">Inte synkat än</string>
     <string name="notif_running">Passet pågår. Tryck för att hoppa in igen.</string>

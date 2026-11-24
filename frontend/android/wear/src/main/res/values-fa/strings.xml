@@ -67,6 +67,8 @@
     <string name="no_sets_yet">هنوز ستی نیست</string>
     <string name="no_workout">هیچ تمرینی در جریان نیست</string>
     <string name="none">هیچ‌کدام</string>
+    <string name="not_a_watch_body">فقط روی ساعت Wear OS اجرا می‌شود. فعلاً حذفش نکن: حذف آن تمرین‌های این گوشی را پاک می‌کند. راه برگرداندن برنامهٔ گوشی: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">این برنامهٔ ساعت است</string>
     <string name="not_now">اکنون نه</string>
     <string name="not_synced">هنوز همگام نشده</string>
     <string name="notif_running">تمرین در جریان است. برای برگشتن بزن.</string>

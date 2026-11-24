@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Aucune série</string>
     <string name="no_workout">Aucune séance en cours</string>
     <string name="none">Aucun</string>
+    <string name="not_a_watch_body">Elle ne fonctionne que sur une montre Wear OS. Garde-la installée pour l’instant : la désinstaller efface les séances de ce téléphone. Pour retrouver l’app du téléphone : github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">C’est l’app pour montre</string>
     <string name="not_now">Pas maintenant</string>
     <string name="not_synced">Pas encore synchronisé</string>
     <string name="notif_running">Séance en cours. Touche pour y revenir.</string>

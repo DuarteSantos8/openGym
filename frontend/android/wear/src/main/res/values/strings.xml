@@ -68,6 +68,8 @@
     <string name="no_sets_yet">No sets yet</string>
     <string name="no_workout">No workout running</string>
     <string name="none">None</string>
+    <string name="not_a_watch_body">It only runs on a Wear OS watch. Keep it installed for now: uninstalling it deletes the workouts on this phone. How to get the phone app back: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">This is the watch app</string>
     <string name="not_now">Not now</string>
     <string name="not_synced">Not synced yet</string>
     <string name="notif_running">Workout running. Tap to jump back in.</string>

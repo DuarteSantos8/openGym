@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Még nincs sorozat</string>
     <string name="no_workout">Nincs folyamatban edzés</string>
     <string name="none">Nincs</string>
+    <string name="not_a_watch_body">Csak Wear OS órán fut. Egyelőre ne töröld: az eltávolítás törli az edzéseket erről a telefonról. Így kapod vissza a telefonos alkalmazást: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Ez az órás alkalmazás</string>
     <string name="not_now">Most nem</string>
     <string name="not_synced">Még nincs szinkronizálva</string>
     <string name="notif_running">Edzés folyamatban. Koppints a visszatéréshez.</string>

@@ -113,7 +113,7 @@ with the same package name **and the same signing key**, so:
 | Phone app | Watch app |
 | --- | --- |
 | Google Play | Play Store on the watch → "Apps on your phone" → openGym |
-| The APK from opengym.ch / GitHub | `openGym-Wear-<version>.apk` of the same release (same key) |
+| The APK from opengym.ch / GitHub | `openGym-WearOS-watch-only-<version>.apk` of the same release (same key; up to 1.4.5 it was `openGym-Wear-<version>.apk`) |
 | F-Droid, openGym Offline | none: no Google Play services, no Wear OS link |
 
 A watch with the other one looks to the phone exactly like a watch without the app. Settings →
@@ -124,7 +124,7 @@ Sideloading the APK (Galaxy Watch 4 and newer, Pixel Watch):
 1. On the watch: Settings → About watch → Software → tap "Software version" seven times, then
    Settings → Developer options → ADB debugging on, Wireless debugging on. Note the IP and port.
 2. On a computer in the same Wi-Fi: `adb pair <ip>:<pair-port>` (the code is on the watch), then
-   `adb connect <ip>:<port>` and `adb install openGym-Wear-<version>.apk`. No computer? A
+   `adb connect <ip>:<port>` and `adb install openGym-WearOS-watch-only-<version>.apk`. No computer? A
    sideloading app on the phone such as Wear Installer does the same over wireless debugging.
 3. Open openGym on the phone once, then on the watch. Settings → Wear OS watch on the phone should
    say "openGym is on your watch and in reach" and, a moment later, when it last heard from the watch.

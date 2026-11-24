@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Подходов пока нет</string>
     <string name="no_workout">Тренировка не идёт</string>
     <string name="none">Нет</string>
+    <string name="not_a_watch_body">Оно работает только на часах с Wear OS. Пока не удаляйте его: удаление сотрёт тренировки на этом телефоне. Как вернуть приложение для телефона: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Это приложение для часов</string>
     <string name="not_now">Не сейчас</string>
     <string name="not_synced">Ещё не синхронизировано</string>
     <string name="notif_running">Тренировка идёт. Нажмите, чтобы вернуться.</string>

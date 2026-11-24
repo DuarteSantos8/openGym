@@ -67,6 +67,8 @@
     <string name="no_sets_yet">還沒有組</string>
     <string name="no_workout">沒有進行中的訓練</string>
     <string name="none">無</string>
+    <string name="not_a_watch_body">它只能在 Wear OS 手錶上執行。先別解除安裝：解除安裝會刪除這支手機上的訓練紀錄。找回手機 App 的方法：github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">這是手錶 App</string>
     <string name="not_now">暫不啟用</string>
     <string name="not_synced">尚未同步</string>
     <string name="notif_running">訓練進行中。點一下返回。</string>

@@ -67,6 +67,8 @@
     <string name="no_sets_yet">لا مجموعات بعد</string>
     <string name="no_workout">لا يوجد تمرين جارٍ</string>
     <string name="none">بدون</string>
+    <string name="not_a_watch_body">يعمل فقط على ساعة Wear OS. أبقِه مثبتًا الآن: إلغاء تثبيته يحذف التمارين على هذا الهاتف. طريقة استعادة تطبيق الهاتف: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">هذا تطبيق الساعة</string>
     <string name="not_now">ليس الآن</string>
     <string name="not_synced">لم تتم المزامنة بعد</string>
     <string name="notif_running">التمرين جارٍ. اضغط للعودة.</string>

@@ -67,6 +67,8 @@
     <string name="no_sets_yet">अभी कोई सेट नहीं</string>
     <string name="no_workout">कोई वर्कआउट नहीं चल रहा</string>
     <string name="none">कोई नहीं</string>
+    <string name="not_a_watch_body">यह सिर्फ़ Wear OS घड़ी पर चलता है। अभी इसे इंस्टॉल रहने दें: अनइंस्टॉल करने से इस फ़ोन के वर्कआउट मिट जाते हैं। फ़ोन वाला ऐप वापस पाने का तरीका: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">यह घड़ी वाला ऐप है</string>
     <string name="not_now">अभी नहीं</string>
     <string name="not_synced">अभी सिंक नहीं हुआ</string>
     <string name="notif_running">वर्कआउट चल रहा है। वापस जाने के लिए टैप करें।</string>

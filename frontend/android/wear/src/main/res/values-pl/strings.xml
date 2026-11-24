@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Jeszcze bez serii</string>
     <string name="no_workout">Żaden trening nie trwa</string>
     <string name="none">Brak</string>
+    <string name="not_a_watch_body">Działa tylko na zegarku z Wear OS. Na razie jej nie odinstalowuj: to usunie treningi z tego telefonu. Jak odzyskać aplikację na telefon: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">To aplikacja na zegarek</string>
     <string name="not_now">Nie teraz</string>
     <string name="not_synced">Jeszcze nie zsynchronizowano</string>
     <string name="notif_running">Trening trwa. Stuknij, by wrócić.</string>

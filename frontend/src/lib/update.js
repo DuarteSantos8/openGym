@@ -98,8 +98,12 @@ export { APK_VARIANTS, APK_VARIANT }
 const tagged = (name, tag) => new RegExp(`(^|[-_.])${tag}([-_.]|$)`, 'i').test(name)
 /** Which kind an APK file name is: 'hd', 'plus' or 'standard'. */
 export const apkKind = name => tagged(name, 'hd') ? 'hd' : tagged(name, 'plus') ? 'plus' : 'standard'
+// APKs no phone updates to: the Wear OS watch app (same applicationId, higher versionCode, so it
+// would replace the phone app, #1359), openGym Offline and the F-Droid build. Their names read as
+// Standard otherwise, and only the order GitHub lists them in kept the phone off them.
+const NOT_A_PHONE_UPDATE = /(^|[-_.])(offline|fdroid|wear|wearos)([-_.]|$)/i
 export function pickApk(assets, variant = APK_VARIANT) {
-  const apk = assets.find(a => /\.apk$/i.test(a.name) && apkKind(a.name) === variant) || null
+  const apk = assets.find(a => /\.apk$/i.test(a.name) && !NOT_A_PHONE_UPDATE.test(a.name) && apkKind(a.name) === variant) || null
   const hash = apk ? assets.find(a => a.name === `${apk.name}.sha256`) || null : null
   // The combined coreutils checksum file, read only when the release ships no per-APK .sha256
   // (v1.4.5 didn't, and every older app answered "checksum not available").

@@ -67,6 +67,8 @@
     <string name="no_sets_yet">এখনো কোনো সেট নেই</string>
     <string name="no_workout">কোনো ওয়ার্কআউট চলছে না</string>
     <string name="none">কিছু না</string>
+    <string name="not_a_watch_body">এটি শুধু Wear OS ঘড়িতে চলে। এখনই আনইনস্টল করবেন না: করলে এই ফোনের ওয়ার্কআউট মুছে যাবে। ফোনের অ্যাপ ফিরে পাওয়ার উপায়: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">এটি ঘড়ির অ্যাপ</string>
     <string name="not_now">এখন না</string>
     <string name="not_synced">এখনো সিঙ্ক হয়নি</string>
     <string name="notif_running">ওয়ার্কআউট চলছে। ফিরে যেতে ট্যাপ করুন।</string>

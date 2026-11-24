@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Aún sin series</string>
     <string name="no_workout">Ningún entreno en curso</string>
     <string name="none">Ninguno</string>
+    <string name="not_a_watch_body">Solo funciona en un reloj Wear OS. Déjala instalada por ahora: desinstalarla borra los entrenamientos de este móvil. Cómo recuperar la app del móvil: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Esta es la app del reloj</string>
     <string name="not_now">Ahora no</string>
     <string name="not_synced">Aún sin sincronizar</string>
     <string name="notif_running">Entreno en curso. Toca para volver.</string>

@@ -67,6 +67,8 @@
     <string name="no_sets_yet">Noch keine Sätze</string>
     <string name="no_workout">Kein Training läuft</string>
     <string name="none">Keine</string>
+    <string name="not_a_watch_body">Sie läuft nur auf einer Wear-OS-Uhr. Lass sie vorerst installiert: Deinstallieren löscht die Trainings auf diesem Handy. So bekommst du die Handy-App zurück: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Das ist die Uhren-App</string>
     <string name="not_now">Jetzt nicht</string>
     <string name="not_synced">Noch nicht synchronisiert</string>
     <string name="notif_running">Training läuft. Tippen und weiter geht’s.</string>
