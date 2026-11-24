@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- VoiceOver and TalkBack: a choice like Off / RIR / RPE in a settings row is named by its row ("Effort per set"), and a titled group by its heading. At Larger and Largest text a row's value wraps instead of ending in "…", the biggest phones get long values under the title too, and the accent dots have a full 44 pt tap area (thanks @cubetes, from #1127).
 - Android: Settings → Alerts → Light up the screen at rest end. On, as before; switch it off and a locked phone in your pocket stays dark at the end of each rest while the buzz and the sound still come (#1475, thanks @cubetes, whose #1476 had the idea).
 - Machine weight stacks are quicker to set up: the sheet says which field adds one weight and which fills a whole run, and the run goes from the lightest plate to the heaviest ("Up to") instead of asking you to count them (#1163).
 - Import: the activities.csv from your Strava archive brings years of runs, rides, swims and matches in as activities, without the gym sessions and walks. A run that Health Connect or Apple Health already brought in is not counted twice (#1313, thanks @christophercuongkim, whose PR had the idea).
