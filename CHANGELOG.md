@@ -123,6 +123,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Exercise settings in a workout keep what you changed however you close them: swipe them away, tap outside or go Back, and the new rest time or per-side switch stays. Its button says Done now (#1079, thanks @lodepav, whose #1213 had the idea).
 - Changes kept for a server that is never coming back can go now: Settings, the Changes kept row, Remove. It warns first that they are gone for good, with Save as a backup file right above it (#1269).
 - Search: type a machine brand you set for an exercise at your gym, like Technogym or "life fit", and that exercise comes up first. Other words still narrow by name, so "life fitness press" keeps the presses (#1082, thanks @lodepav, whose #1211 had the idea).
+- History: with two gyms or more, each workout says which gym it was done at, on its row and in its details. A gym you renamed shows its new name (#1097, thanks @lodepav).
 
 ## v1.4.5 (2026-11-14)
 

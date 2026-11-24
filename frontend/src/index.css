@@ -1578,6 +1578,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wmedia-add:disabled{opacity:.5;cursor:default}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
 .wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-caption);color:var(--label-2);flex:none}
+.wrow-gym{display:flex;align-items:center;gap:4px;min-width:0}
+.wrow-gym .icn{flex:none;font-size:var(--fs-caption)}
 /* A set's own form video (SetVideo.jsx): the film sheet, the badge under a set row, the player
    (inline under the row, or in a sheet), an exercise's strip of videos and two dates side by side. */
 .fv-film{display:flex;flex-direction:column;gap:8px}
