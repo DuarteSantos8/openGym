@@ -6044,4 +6044,6 @@ export default {
   "Tick them all": "সব টিক দিন",
   "Every set ticked": "সব সেট টিক হয়েছে",
   "Logging after training? Ticks the rest in one go": "ট্রেনিংয়ের পরে লিখছেন? বাকিগুলো একবারে টিক দেয়",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "আরেকটি সেশন শুরু করুন",
 }

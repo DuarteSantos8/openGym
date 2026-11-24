@@ -8,7 +8,7 @@ import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { StreakRuleWelcome } from '../components/StreakRule.jsx'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet, workoutDetailSheet } from '../sheets.jsx'
 import { startOrPreview, startPickerSheet } from '../components/StartSheets.jsx'
 import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
@@ -125,7 +125,14 @@ export default function Home() {
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
-  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
+  // Once today is done, a tap opens what you did (Discord), and a second session is one more
+  // tap from there (Start another session) instead of starting the routine over by accident.
+  const onToday = () => {
+    if (S.active) nav('/workout')
+    else if (doneToday) workoutDetailSheet(doneToday, todayRoutines.length ? { again: () => startOrPreview(effectiveRoutineIds(useStore.getState().S, todayISO())) } : {})
+    else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO()))
+    else dayOverrideSheet(todayISO())
+  }
   // A chip on the coach week's progress row starts that one routine, in any order. A session
   // already in progress wins, as on the today row — starting another would overwrite it.
   const progChip = programmeChip(S)
@@ -167,8 +174,8 @@ export default function Home() {
       {/* Once today's session is logged the row stops asking for it. The week strip already
           knew (its dot goes 'done'); this row did not, so a finished day kept showing the
           routine name behind a green Start tag and read as still outstanding (issue #4).
-          An in-progress session still wins — that one is happening right now. Tapping the
-          row keeps working, so a second session in one day is a tap away, just not urged. */}
+          An in-progress session still wins — that one is happening right now. Tapping a done
+          row opens that workout, with Start another session there for a second one. */}
       {splitDay ? apartSessions.map((x, i) => {
         const name = deriveSessionName(x.routines.map(r => r.name))
         return <div key={x.ids.join('+')} className="today-row today-split" data-tour={i ? undefined : 'today'} {...tappable(() => startOrPreview(x.ids))}>

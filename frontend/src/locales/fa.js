@@ -5931,4 +5931,6 @@ export default {
   "Tick them all": "همه را علامت بزن",
   "Every set ticked": "همهٔ ست‌ها علامت خوردند",
   "Logging after training? Ticks the rest in one go": "بعد از تمرین ثبت می‌کنی؟ بقیه را یکجا علامت می‌زند",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "شروع یک جلسهٔ دیگر",
 }

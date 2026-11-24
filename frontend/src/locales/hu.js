@@ -5968,4 +5968,6 @@ export default {
   "Tick them all": "Mindet kipipálom",
   "Every set ticked": "Minden sorozat kipipálva",
   "Logging after training? Ticks the rest in one go": "Edzés után rögzítesz? A maradékot egyszerre pipálja ki",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Újabb edzés indítása",
 }

@@ -5976,4 +5976,6 @@ export default {
   "Tick them all": "ติ๊กทั้งหมด",
   "Every set ticked": "ติ๊กครบทุกเซ็ตแล้ว",
   "Logging after training? Ticks the rest in one go": "บันทึกหลังซ้อม? ติ๊กที่เหลือทีเดียว",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "เริ่มอีกเซสชัน",
 }

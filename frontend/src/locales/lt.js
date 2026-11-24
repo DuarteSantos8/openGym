@@ -5961,4 +5961,6 @@ export default {
   "Tick them all": "Pažymėti visas",
   "Every set ticked": "Visos serijos pažymėtos",
   "Logging after training? Ticks the rest in one go": "Žymi po treniruotės? Pažymi likusias iš karto",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Pradėti dar vieną treniruotę",
 }

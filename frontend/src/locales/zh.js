@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "全部勾选",
   "Every set ticked": "所有组已勾选",
   "Logging after training? Ticks the rest in one go": "练完再记录？一次勾选剩下的",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "再开始一次训练",
 }

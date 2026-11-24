@@ -5969,4 +5969,6 @@ export default {
   "Tick them all": "Отметить все",
   "Every set ticked": "Все подходы отмечены",
   "Logging after training? Ticks the rest in one go": "Записываете после тренировки? Отметит остальное разом",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Начать ещё одну тренировку",
 }

@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "Odhacz wszystkie",
   "Every set ticked": "Wszystkie serie odhaczone",
   "Logging after training? Ticks the rest in one go": "Zapisujesz po treningu? Odhacza resztę za jednym razem",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Zacznij kolejny trening",
 }

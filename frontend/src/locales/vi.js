@@ -5931,4 +5931,6 @@ export default {
   "Tick them all": "Đánh dấu hết",
   "Every set ticked": "Đã đánh dấu tất cả hiệp",
   "Logging after training? Ticks the rest in one go": "Ghi sau buổi tập? Đánh dấu phần còn lại một lần",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Bắt đầu buổi tập khác",
 };

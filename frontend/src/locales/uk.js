@@ -5962,4 +5962,6 @@ export default {
   "Tick them all": "Позначити всі",
   "Every set ticked": "Усі підходи позначено",
   "Logging after training? Ticks the rest in one go": "Записуєте після тренування? Позначить решту разом",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Почати ще одне тренування",
 }

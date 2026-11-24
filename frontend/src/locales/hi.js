@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "सब पर टिक करें",
   "Every set ticked": "सभी सेट पर टिक हो गया",
   "Logging after training? Ticks the rest in one go": "ट्रेनिंग के बाद लिख रहे हैं? बाकी सब एक साथ टिक",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "एक और सेशन शुरू करें",
 }

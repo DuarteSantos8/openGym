@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "Tout cocher",
   "Every set ticked": "Toutes les séries cochées",
   "Logging after training? Ticks the rest in one go": "Tu notes après la séance ? Coche le reste d’un coup",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Démarrer une autre séance",
 }

@@ -5897,4 +5897,6 @@ export default {
   "Tick them all": "すべてチェック",
   "Every set ticked": "すべてのセットをチェックしました",
   "Logging after training? Ticks the rest in one go": "トレーニング後に記録？残りをまとめてチェック",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "もう1回トレーニングを始める",
 }

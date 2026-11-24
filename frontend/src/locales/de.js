@@ -5985,4 +5985,6 @@ export default {
   "Tick them all": "Alle abhaken",
   "Every set ticked": "Alle Sätze abgehakt",
   "Logging after training? Ticks the rest in one go": "Erst nach dem Training eintragen? Hakt den Rest auf einmal ab",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Noch ein Training starten",
 }

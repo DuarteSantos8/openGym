@@ -114,6 +114,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Garmin: the watch app now runs on the fēnix 9 line (fēnix 9, 9 Pro and 9 Pro Solar, every size), the Forerunner 70 and 170, Enduro 4, MARQ (Gen 3), Approach S50 and S72 and the D2 Air X10. Some older watches it had skipped are in too: fēnix 5 Plus, Forerunner 645 Music, the first MARQ, Descent G1, D2 Air, Venu Sq Music and the Legacy Hero and Legacy Saga watches. That is 36 more models, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
 - Logging a workout after you trained? Mark all sets done is now in a live workout too, under ⋯ More. It asks first, starts no rest timers and the toast has Undo (thanks Discord, #1345).
 - Start workout: the other routines sit under their folders like on Plan, so two Leg Days from different blocks are no longer twins. A folder folds here too, and the Archive starts folded (#1347, thanks Discord).
+- Home: tapping today's row once the workout is done opens what you did, instead of starting the same routine again. Up for round two? Start another session is right there (thanks Discord).
 
 ## v1.4.5 (2026-11-14)
 

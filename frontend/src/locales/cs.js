@@ -5931,4 +5931,6 @@ export default {
   "Tick them all": "Odškrtnout vše",
   "Every set ticked": "Všechny série odškrtnuty",
   "Logging after training? Ticks the rest in one go": "Zapisuješ až po tréninku? Odškrtne zbytek najednou",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Začít další trénink",
 }

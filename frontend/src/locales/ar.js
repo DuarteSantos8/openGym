@@ -6020,4 +6020,6 @@ export default {
   "Tick them all": "حدّدها كلها",
   "Every set ticked": "حُدّدت كل المجموعات",
   "Logging after training? Ticks the rest in one go": "تسجّل بعد التمرين؟ يحدّد الباقي دفعة واحدة",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "ابدأ جلسة أخرى",
 }

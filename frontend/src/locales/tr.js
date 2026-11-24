@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "Hepsini işaretle",
   "Every set ticked": "Tüm setler işaretlendi",
   "Logging after training? Ticks the rest in one go": "Antrenmandan sonra mı kaydediyorsun? Kalanı tek seferde işaretler",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Bir seans daha başlat",
 }

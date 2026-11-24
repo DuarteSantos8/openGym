@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "모두 체크",
   "Every set ticked": "모든 세트 체크됨",
   "Logging after training? Ticks the rest in one go": "운동 후에 기록하나요? 나머지를 한 번에 체크",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "한 세션 더 시작",
 }

@@ -5905,4 +5905,6 @@ export default {
   "Tick them all": "Markér dem alle",
   "Every set ticked": "Alle sæt markeret",
   "Logging after training? Ticks the rest in one go": "Logger du efter træningen? Markerer resten på én gang",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Start en træning mere",
 }

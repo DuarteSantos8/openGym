@@ -5965,4 +5965,6 @@ export default {
   "Tick them all": "Marcar todas",
   "Every set ticked": "Todas as séries marcadas",
   "Logging after training? Ticks the rest in one go": "A registar depois do treino? Marca o resto de uma vez",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Começar outra sessão",
 }

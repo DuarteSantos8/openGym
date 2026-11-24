@@ -5975,4 +5975,6 @@ export default {
   "Tick them all": "Spunta tutto",
   "Every set ticked": "Tutte le serie spuntate",
   "Logging after training? Ticks the rest in one go": "Registri dopo l’allenamento? Spunta il resto in un colpo",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Inizia un’altra sessione",
 }

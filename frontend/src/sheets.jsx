@@ -3632,7 +3632,7 @@ function WorkoutDurationEdit({ w, onDone, close }) {
 }
 export const workoutDurationSheet = (w, onDone) => ui().openSheet(close => <WorkoutDurationEdit w={w} onDone={onDone} close={close} />)
 
-function WorkoutDetail({ w, close }) {
+function WorkoutDetail({ w, close, again }) {
   const noteRef = useRef(null)
   const onNoteFocus = useSheetKeyboard(noteRef)
   const st = useStore(s => s.S)
@@ -3843,6 +3843,10 @@ function WorkoutDetail({ w, close }) {
       onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} onBlur={saveNote} />
     <div style={{ height: 14 }} />
     {st.active && <p className="small muted">{t('Finish the current workout first.')}</p>}
+    {/* Opened from Home's today row once today is done (Discord): the routine again, as a second
+        session, the way a tap on that row used to start it straight away. */}
+    {again && !st.active && <><Button icon="play" onClick={() => { flushNote(); close(); again() }}>{t('Start another session')}</Button>
+      <div style={{ height: 8 }} /></>}
     {/* The editor starts from the record as it is, so a note typed here goes in first — the same
         flush the date row does, and the unmount hook then has nothing left to write over it. */}
     <Button icon="pencil" data-tour="wd-edit" disabled={!!st.active} onClick={() => {
@@ -3888,7 +3892,8 @@ function mediaGoesToo(rec) {
   const n = workoutMediaOf(rec, Infinity).length + workoutSetVideos(rec).length
   return n ? ' ' + tn('Its photo or video is deleted with it.', 'Its {0} photos or videos are deleted with it.', n) : ''
 }
-export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w={w} close={close} />)
+// `again`, from Home's today row: a Start another session button that runs it after closing.
+export const workoutDetailSheet = (w, { again } = {}) => ui().openSheet(close => <WorkoutDetail w={w} close={close} again={again} />)
 
 /* ============================ calendar ============================ */
 function Calendar({ start, close, help = false }) {

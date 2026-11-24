@@ -5930,4 +5930,6 @@ export default {
   "Tick them all": "Centang semua",
   "Every set ticked": "Semua set dicentang",
   "Logging after training? Ticks the rest in one go": "Mencatat setelah latihan? Centang sisanya sekaligus",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Mulai sesi lain",
 };
