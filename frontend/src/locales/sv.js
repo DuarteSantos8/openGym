@@ -825,6 +825,8 @@ export default {
   // --- media ---
   'tap to pause': 'tryck för att pausa',
   'tap to play': 'tryck för att spela',
+  'Pause animation': 'Pausa animationen',
+  'Play animation': 'Spela animationen',
   // --- data terms: body parts ---
   'back': 'rygg', 'cardio': 'kondition', 'chest': 'bröst', 'lower arms': 'underarmar',
   'lower legs': 'underben', 'neck': 'nacke', 'shoulders': 'axlar',

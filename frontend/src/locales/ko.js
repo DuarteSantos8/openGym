@@ -809,6 +809,8 @@ export default {
   'Could not change notification settings': '알림 설정을 변경할 수 없었어요',
   'tap to pause': '탭하여 일시정지',
   'tap to play': '탭하여 재생',
+  'Pause animation': '애니메이션 일시정지',
+  'Play animation': '애니메이션 재생',
   'back': '등', 'cardio': '유산소', 'chest': '가슴', 'lower arms': '전완',
   'lower legs': '종아리', 'neck': '목', 'shoulders': '어깨',
   'upper arms': '팔', 'upper legs': '허벅지', 'waist': '복부',

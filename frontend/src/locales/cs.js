@@ -817,6 +817,8 @@ export default {
   'Could not change notification settings': 'Nastavení oznámení se nepodařilo změnit',
   'tap to pause': 'klepnutím pozastavíš',
   'tap to play': 'klepnutím přehraješ',
+  'Pause animation': 'Pozastavit animaci',
+  'Play animation': 'Přehrát animaci',
   'back': 'záda',
   'cardio': 'kardio',
   'chest': 'prsa',

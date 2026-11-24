@@ -530,6 +530,8 @@ export default {
   "Could not change notification settings": "通知設定を変更できませんでした",
   "tap to pause": "タップで一時停止",
   "tap to play": "タップで再生",
+  "Pause animation": "アニメーションを一時停止",
+  "Play animation": "アニメーションを再生",
   "back": "背中",
   "cardio": "有酸素運動",
   "chest": "胸",

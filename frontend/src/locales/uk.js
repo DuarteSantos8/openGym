@@ -645,6 +645,8 @@ export default {
   'Could not change notification settings': 'Не вдалося змінити налаштування сповіщень',
   'tap to pause': 'натисни для паузи',
   'tap to play': 'натисни для запуску',
+  'Pause animation': 'Призупинити анімацію',
+  'Play animation': 'Відтворити анімацію',
   'back': 'спина', 'cardio': 'кардіо', 'chest': 'груди', 'lower arms': 'передпліччя',
   'lower legs': 'гомілки', 'neck': 'шия', 'shoulders': 'плечі',
   'upper arms': 'руки', 'upper legs': 'стегна', 'waist': 'прес',

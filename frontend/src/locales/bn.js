@@ -838,6 +838,8 @@ export default {
   'Could not change notification settings': 'নোটিফিকেশন সেটিংস বদলানো যায়নি',
   'tap to pause': 'থামাতে ট্যাপ করুন',
   'tap to play': 'চালাতে ট্যাপ করুন',
+  'Pause animation': 'অ্যানিমেশন থামান',
+  'Play animation': 'অ্যানিমেশন চালান',
   'back': 'পিঠ',
   'cardio': 'কার্ডিও',
   'chest': 'বুক',

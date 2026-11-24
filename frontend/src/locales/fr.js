@@ -809,6 +809,8 @@ export default {
   'Could not change notification settings': 'Impossible de modifier les réglages de notification',
   'tap to pause': 'toucher pour mettre en pause',
   'tap to play': 'toucher pour lire',
+  'Pause animation': 'Mettre l’animation en pause',
+  'Play animation': 'Lire l’animation',
   'back': 'dos', 'cardio': 'cardio', 'chest': 'pectoraux', 'lower arms': 'avant-bras',
   'lower legs': 'mollets', 'neck': 'cou', 'shoulders': 'épaules',
   'upper arms': 'bras', 'upper legs': 'cuisses', 'waist': 'abdos',

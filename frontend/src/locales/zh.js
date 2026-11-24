@@ -809,6 +809,8 @@ export default {
   'Could not change notification settings': '无法更改通知设置',
   'tap to pause': '点按暂停',
   'tap to play': '点按播放',
+  'Pause animation': '暂停动画',
+  'Play animation': '播放动画',
   'back': '背部', 'cardio': '有氧', 'chest': '胸部', 'lower arms': '前臂',
   'lower legs': '小腿', 'neck': '颈部', 'shoulders': '肩部',
   'upper arms': '上臂', 'upper legs': '大腿', 'waist': '腰腹',

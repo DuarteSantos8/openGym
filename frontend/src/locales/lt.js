@@ -818,6 +818,8 @@ export default {
   "Could not change notification settings": "Nepavyko pakeisti pranešimų nustatymų",
   "tap to pause": "palieskite, kad sustabdytumėte",
   "tap to play": "palieskite, kad paleistumėte",
+  "Pause animation": "Pristabdyti animaciją",
+  "Play animation": "Paleisti animaciją",
   "back": "atgal",
   "cardio": "kardio",
   "chest": "krūtinė",

@@ -838,6 +838,8 @@ export default {
   "Could not change notification settings": "Tidak dapat mengubah pengaturan notifikasi",
   "tap to pause": "ketuk untuk menjeda",
   "tap to play": "ketuk untuk memutar",
+  "Pause animation": "Jeda animasi",
+  "Play animation": "Putar animasi",
   "back": "punggung",
   "cardio": "kardio",
   "chest": "dada",

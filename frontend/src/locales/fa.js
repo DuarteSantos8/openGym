@@ -642,6 +642,8 @@ export default {
   "Could not change notification settings": "نمی‌توان تنظیمات اعلان را تغییر داد",
   "tap to pause": "برای مکث ضربه بزنید",
   "tap to play": "برای پخش ضربه بزنید",
+  "Pause animation": "توقف انیمیشن",
+  "Play animation": "پخش انیمیشن",
   "back": "پشت",
   "cardio": "هوازی",
   "chest": "سینه",

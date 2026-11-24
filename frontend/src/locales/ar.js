@@ -657,6 +657,8 @@ export default {
   'Could not change notification settings': 'تعذّر تغيير إعدادات الإشعارات',
   'tap to pause': 'اضغط للإيقاف المؤقت',
   'tap to play': 'اضغط للتشغيل',
+  'Pause animation': 'إيقاف الرسم المتحرك مؤقتًا',
+  'Play animation': 'تشغيل الرسم المتحرك',
   'back': 'الظهر',
   'cardio': 'كارديو',
   'chest': 'الصدر',
