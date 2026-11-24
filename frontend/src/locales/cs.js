@@ -3082,6 +3082,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': "Opakování: {0} je víc než dvojnásobek tvého maxima ({1}).",
   'Weight: {0} is under a third of last time’s {1}.': "Váha: {0} je méně než třetina minulé váhy ({1}).",
   'Reps: {0} is under a third of last time’s {1}.': "Opakování: {0} je méně než třetina minulého počtu ({1}).",
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} se liší o {1} % od tvého posledního vážení, {2}. Uložit?',
   'Fix it': 'Opravit',
   'Log as typed': "Zapsat takto",
   'Time per exercise': 'Čas na cvik',

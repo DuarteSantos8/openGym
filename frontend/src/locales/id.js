@@ -3069,6 +3069,7 @@ export default {
   "Reps: {0} is more than twice your most, {1}.": "Repetisi: {0} lebih dari dua kali lipat repetisi terbanyakmu, {1}.",
   "Weight: {0} is under a third of last time’s {1}.": "Beban: {0} kurang dari sepertiga sesi sebelumnya, {1}.",
   "Reps: {0} is under a third of last time’s {1}.": "Repetisi: {0} kurang dari sepertiga sesi sebelumnya, {1}.",
+  "{0} is {1}% off your last weigh-in, {2}. Save it?": "{0} selisih {1}% dari timbangan terakhirmu, {2}. Simpan?",
   "Fix it": "Perbaiki",
   "Log as typed": "Tetap catat",
   "Time per exercise": "Waktu per latihan",

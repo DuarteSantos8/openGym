@@ -3098,6 +3098,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'Tekrar: {0}, en yükseğinin ({1}) iki katından fazla.',
   'Weight: {0} is under a third of last time’s {1}.': 'Ağırlık: {0}, geçen seferkinin ({1}) üçte birinden az.',
   'Reps: {0} is under a third of last time’s {1}.': 'Tekrar: {0}, geçen seferkinin ({1}) üçte birinden az.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0}, son tartımından ({2}) %{1} farklı. Kaydedilsin mi?',
   'Fix it': 'Düzelt',
   'Log as typed': 'Yazıldığı gibi kaydet',
   // --- stats: time per exercise ---

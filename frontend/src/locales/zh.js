@@ -3098,6 +3098,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': '次数：{0} 超过你最多次数 {1} 的两倍。',
   'Weight: {0} is under a third of last time’s {1}.': '重量：{0} 不到上次 {1} 的三分之一。',
   'Reps: {0} is under a third of last time’s {1}.': '次数：{0} 不到上次 {1} 的三分之一。',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} 与你上次的体重 {2} 相差 {1}%。要保存吗？',
   'Fix it': '修改',
   'Log as typed': '按输入记录',
   // --- stats: time per exercise ---

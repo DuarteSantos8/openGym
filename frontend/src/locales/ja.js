@@ -2736,6 +2736,7 @@ export default {
   "Reps: {0} is more than twice your most, {1}.": "回数：{0}回は過去最多の{1}回の2倍を超えています。",
   "Weight: {0} is under a third of last time’s {1}.": "重量：{0}は前回の{1}の3分の1未満です。",
   "Reps: {0} is under a third of last time’s {1}.": "回数：{0}回は前回の{1}回の3分の1未満です。",
+  "{0} is {1}% off your last weigh-in, {2}. Save it?": "{0}は前回の体重{2}と{1}%違います。保存しますか？",
   "Fix it": "修正する",
   "Log as typed": "このまま記録",
   "Time per exercise": "種目ごとの時間",

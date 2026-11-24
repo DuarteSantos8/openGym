@@ -3101,6 +3101,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'Ism.: {0} több mint kétszerese a csúcsodnak, {1}.',
   'Weight: {0} is under a third of last time’s {1}.': 'Súly: {0} kevesebb, mint a legutóbbi {1} harmada.',
   'Reps: {0} is under a third of last time’s {1}.': 'Ism.: {0} kevesebb, mint a legutóbbi {1} harmada.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} {1}%-kal eltér a legutóbbi mérésedtől, {2}. Mented?',
   'Fix it': 'Javítás',
   'Log as typed': 'Naplózás így',
   // --- stats: time per exercise ---

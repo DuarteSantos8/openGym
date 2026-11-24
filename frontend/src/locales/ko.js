@@ -3098,6 +3098,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': '횟수: {0}은(는) 최고 기록 {1}의 두 배가 넘어요.',
   'Weight: {0} is under a third of last time’s {1}.': '무게: {0}은(는) 지난번 {1}의 3분의 1도 안 돼요.',
   'Reps: {0} is under a third of last time’s {1}.': '횟수: {0}은(는) 지난번 {1}의 3분의 1도 안 돼요.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0}은(는) 마지막 체중 {2}와(과) {1}% 차이 나요. 저장할까요?',
   'Fix it': '고치기',
   'Log as typed': '입력한 대로 기록',
   // --- stats: time per exercise ---

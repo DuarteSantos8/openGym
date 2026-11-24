@@ -3118,6 +3118,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'Wdh.: {0} ist mehr als doppelt so viel wie dein Bestwert, {1}.',
   'Weight: {0} is under a third of last time’s {1}.': 'Gewicht: {0} ist weniger als ein Drittel vom letzten Mal, {1}.',
   'Reps: {0} is under a third of last time’s {1}.': 'Wdh.: {0} ist weniger als ein Drittel vom letzten Mal, {1}.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} weicht um {1} % von deiner letzten Wägung ab, {2}. Speichern?',
   'Fix it': 'Korrigieren',
   'Log as typed': 'So eintragen',
   // --- stats: time per exercise ---

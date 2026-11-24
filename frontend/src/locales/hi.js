@@ -3098,6 +3098,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'रेप्स: {0} आपके सबसे ज़्यादा {1} से दोगुने से भी ज़्यादा है।',
   'Weight: {0} is under a third of last time’s {1}.': 'वज़न: {0} पिछली बार के {1} के एक-तिहाई से भी कम है।',
   'Reps: {0} is under a third of last time’s {1}.': 'रेप्स: {0} पिछली बार के {1} के एक-तिहाई से भी कम है।',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} आपके पिछले वज़न {2} से {1}% अलग है। सेव करें?',
   'Fix it': 'ठीक करें',
   'Log as typed': 'जैसा लिखा, वैसा दर्ज करें',
   // --- stats: time per exercise ---

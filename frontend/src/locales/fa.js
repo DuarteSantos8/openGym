@@ -3081,6 +3081,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'تکرار: {0} بیش از دو برابر بیشترین تکرار شما ({1}) است.',
   'Weight: {0} is under a third of last time’s {1}.': 'وزن: {0} کمتر از یک‌سوم دفعه قبل ({1}) است.',
   'Reps: {0} is under a third of last time’s {1}.': 'تکرار: {0} کمتر از یک‌سوم دفعه قبل ({1}) است.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} با آخرین وزن‌کشی شما ({2}) {1}٪ فاصله دارد. ذخیره شود؟',
   'Fix it': 'درستش کن',
   'Log as typed': 'همان‌طور که نوشتم ثبت کن',
   'Time per exercise': 'زمان هر تمرین',

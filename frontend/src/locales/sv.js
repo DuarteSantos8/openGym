@@ -3145,6 +3145,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'Reps: {0} är mer än dubbelt så många som ditt bästa, {1}.',
   'Weight: {0} is under a third of last time’s {1}.': 'Vikt: {0} är under en tredjedel av förra gångens {1}.',
   'Reps: {0} is under a third of last time’s {1}.': 'Reps: {0} är under en tredjedel av förra gångens {1}.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} skiljer sig {1} % från din senaste vägning, {2}. Spara den?',
   'Fix it': 'Rätta',
   'Log as typed': 'Logga som skrivet',
   // --- stats: time per exercise ---

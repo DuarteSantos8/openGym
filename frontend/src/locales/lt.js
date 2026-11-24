@@ -3107,6 +3107,7 @@ export default {
   "Reps: {0} is more than twice your most, {1}.": "Pakartojimai: {0} viršija jūsų maksimumą daugiau nei dvigubai, {1}.",
   "Weight: {0} is under a third of last time’s {1}.": "Svoris: {0} yra mažiau nei trečdalis praėjusio karto {1}.",
   "Reps: {0} is under a third of last time’s {1}.": "Pakartojimai: {0} yra mažiau nei trečdalis praėjusio karto {1}.",
+  "{0} is {1}% off your last weigh-in, {2}. Save it?": "{0} skiriasi {1}% nuo paskutinio svėrimo, {2}. Išsaugoti?",
   "Fix it": "Pataisyti",
   "Log as typed": "Įvesti kaip įvesta",
   "Time per exercise": "Laikas vienam pratimui",

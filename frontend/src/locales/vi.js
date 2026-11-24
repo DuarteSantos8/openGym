@@ -3082,6 +3082,7 @@ export default {
   'Reps: {0} is more than twice your most, {1}.': 'Reps: {0} nhiều hơn gấp đôi mức cao nhất của bạn, {1}.',
   'Weight: {0} is under a third of last time’s {1}.': 'Mức tạ: {0} chưa tới một phần ba so với {1} lần trước.',
   'Reps: {0} is under a third of last time’s {1}.': 'Reps: {0} chưa tới một phần ba so với {1} lần trước.',
+  '{0} is {1}% off your last weigh-in, {2}. Save it?': '{0} lệch {1}% so với lần cân gần nhất của bạn, {2}. Lưu lại?',
   'Fix it': 'Sửa lại',
   'Log as typed': 'Ghi đúng như đã nhập',
   'Time per exercise': 'Thời gian mỗi bài tập',
