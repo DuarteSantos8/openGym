@@ -787,7 +787,55 @@ with root squash, or a TrueNAS dataset whose ACL maps root away, refuses those w
 API log says `EACCES` or `EPERM`. Give the dataset to root, or run `api` with `user: "568:568"`
 (TrueNAS's `apps` user, say) and make `data/` that user's first. Coach providers with an API key
 work either way; only the in-container CLI runtimes (`API_TARGET=coach`) need root. Your backup
-job reads `data/` as root, or as that user.
+job reads `data/` as root, or as that user. To lock the containers down further on any host, see
+[Hardening the containers](#hardening-the-containers-optional).
+
+### Hardening the containers (optional)
+
+The defaults keep things simple. The `web` container already runs as an unprivileged user (uid
+101), and `api` runs as root so the Coach's in-container runtimes can drop to their own user. If
+you don't use those (`API_TARGET=coach`), you can run both with no root, no capabilities and a
+read-only filesystem. Put this in a `compose.override.yml` next to `docker-compose.yml`; Compose
+reads it on its own:
+
+```yaml
+services:
+  api:
+    user: "1000:1000"          # the host user that owns data/
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  web:
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /etc/nginx/conf.d:uid=101,gid=101
+      - /var/cache/nginx:uid=101,gid=101
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+```
+
+Three things to get right:
+
+**`data/` has to belong to that user before the first start.** Create it yourself (`mkdir data`).
+If Docker creates it, it is root's, and the API restarts in a loop with
+`EACCES: permission denied, open '/data/secret'`. On an existing instance the files are root's
+too: `docker compose down`, `sudo chown -R 1000:1000 data`, then `docker compose up -d`. Profiles,
+passkeys and sessions carry over.
+
+**The `web` tmpfs mounts need `uid=101,gid=101`.** nginx renders its config into
+`/etc/nginx/conf.d` when the container starts, and a tmpfs is mounted as root. Without the owner,
+the log says `/etc/nginx/conf.d is not writable`, and the container keeps running with nothing
+answering on its port. Besides that folder, nginx only writes to `/tmp` and `/var/cache/nginx`,
+and the API only to `data/` and `/tmp`.
+
+**The Coach.** Providers with an API key keep working as before. If you build the `coach` image
+for its CLI runtimes, leave the `api` part out: the API has to run as root with the capabilities
+it needs to switch those jobs to their own user.
+
+Nothing else changes: `NGINX_PORT` can stay 80 with `cap_drop: [ALL]`, for the reason given
+above.
 
 ### Serving openGym under a subpath
 
