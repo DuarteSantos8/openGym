@@ -55,6 +55,15 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { ro
 import { startWebSignIn, takeOidcReturn } from '../lib/oidc.js'
 
 describe('Login with an identity provider', () => {
+  it('offers only device use when the provider-only server belongs to another origin', () => {
+    mocks.config = { oidc: { label: 'Ironvane', only: true, webOrigin: 'https://other.example' }, allow_guest: true }
+    expect(buttons(mount(<Login />))).toEqual(['Continue without account'])
+  })
+
+  it('offers provider sign-in when the browser and callback share an origin', () => {
+    mocks.config = { oidc: { label: 'Ironvane', only: true, webOrigin: window.location.origin } }
+    expect(buttons(mount(<Login />))).toContain('Sign in with Ironvane')
+  })
   it('no oidc in the config: no provider button', () => {
     const page = mount(<Login />)
     expect(buttons(page).some(b => /Sign in with (?!passkey)/.test(b))).toBe(false)

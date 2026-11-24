@@ -487,6 +487,7 @@ paths:
                     properties:
                       label: { type: string, example: Authentik }
                       only: { type: boolean, const: true }
+                      webOrigin: { type: string, format: uri, description: Browser origin of the registered callback }
                   default_lang:
                     type: string
                     example: pt-BR

@@ -56,3 +56,29 @@ services:
         sync: false
       - key: ADMIN_UIDS
         sync: false
+
+  - type: web
+    name: ironvane-mcp
+    runtime: docker
+    plan: starter
+    region: virginia
+    branch: main
+    dockerfilePath: ./mcp/Dockerfile
+    dockerContext: .
+    healthCheckPath: /mcp/health
+    autoDeployTrigger: checksPass
+    buildFilter:
+      paths:
+        - mcp/**
+        - frontend/package.json
+        - frontend/src/lib/**
+        - api/package.json
+        - api/coach/core/**
+        - render.yaml
+    envVars:
+      - key: MCP_PORT
+        value: "3100"
+      - key: OPENGYM_API_URL
+        sync: false
+      - key: ORIGIN
+        sync: false

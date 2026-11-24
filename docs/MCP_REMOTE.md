@@ -146,6 +146,23 @@ comes back as a conflict to read again, never a retry against data nobody looked
 - The connector sign-in's two open doors, registering a client and starting a sign-in, take 30
   requests a minute per address on the api (`OAUTH_ANON_PER_MIN`), then 429.
 
+## Hosted preview on Render and Vercel
+
+The optional Ironvane Blueprint service runs the same MCP image in Virginia on port 3100.
+It has its own Starter instance and no disk. Keep the Blueprint change in draft until
+the owner approves that additional service. Merging into the synced branch can provision it.
+
+After approval and provisioning, set OPENGYM_API_URL to the API service's internal HTTP
+address, including its port. Set the MCP service's ORIGIN to the client-facing HTTPS
+origin. Check GET /mcp/health on the MCP service for HTTP 200.
+
+Connector OAuth requires one reachable HTTPS origin serving MCP transport, /.well-known
+discovery and /api/oauth. Vercel reserves /.well-known and cannot rewrite it, and preview
+deployment protection can block connectors. Choose and verify a suitable HTTPS origin and
+confirm the API advertises that origin before enabling MCP=on on the API. Then verify a
+bearer challenge, a scoped read and write, and refusal of a write with a read-only token.
+To roll back, turn off MCP on the API and suspend the MCP service.
+
 ## Settings of the container
 
 | Variable | Default | |

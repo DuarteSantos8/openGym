@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { enterApp } from './enter-app.js'
 
+it('keeps training on this device when the callback belongs to another origin', () => {
+  const st = store({ config: { oidc: { only: true, webOrigin: 'https://other.example' }, allow_guest: true } })
+  expect(enterApp(st)).toBe('device')
+  expect(st.setGuest).toHaveBeenCalledWith(true)
+})
+
 // Like the app's store: choosing this device's profile is kept, and isGuest reads it back.
 const store = (over = {}) => { let guest = false; return { user: null, config: null, isGuest: () => guest, setGuest: vi.fn(v => { guest = !!v }), ...over } }
 
