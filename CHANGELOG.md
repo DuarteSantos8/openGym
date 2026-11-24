@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Wear OS: the start screen says along its bottom edge whether your phone is connected or away, in words and with a phone sign, checked every 30 seconds while it is up (thanks @cubetes for #1199).
 - Watches: every routine now travels to the watch as its own file, so none drop off however many you have, and Settings → Apple Watch and → Wear OS watch show one status pill that says whether the watch has them all and what to do when it doesn't (thanks @cubetes for #1329).
 - Watches: your routines show under their folders like on the phone's Plan, and archived ones stay on the phone (thanks @cubetes for #1276).
 - Wear OS: the same medal for your workout summary, turned with the crown or a swipe (thanks @cubetes for #1328).
