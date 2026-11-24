@@ -5915,4 +5915,8 @@ export default {
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ กดค้างที่การ์ดเพื่อย้าย",
   "Shows up when there is something to show": "จะแสดงเมื่อมีข้อมูลให้ดู",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access ปฏิเสธคำขอ",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access ที่อยู่หน้าเซิร์ฟเวอร์ของคุณปฏิเสธโทรศัพท์เครื่องนี้ ตรวจสอบโทเค็นบริการในส่วน Cloudflare Access การเปลี่ยนแปลงของคุณยังเก็บไว้ที่นี่",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access ที่อยู่หน้าเซิร์ฟเวอร์ของคุณปฏิเสธเบราว์เซอร์นี้ โหลดหน้าใหม่เพื่อลงชื่อเข้าใช้อีกครั้ง การเปลี่ยนแปลงของคุณยังเก็บไว้ที่นี่",
 }

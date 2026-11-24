@@ -169,6 +169,14 @@ describe('not connected — it says so, and what to do', () => {
     expect(text()).toBe('Your server’s address answered with something other than openGym (HTTP 200). Your changes are kept here.')
   })
 
+  it('Cloudflare Access saying no is named as such, not "unreachable" (#1529)', () => {
+    mocks.MOBILE = true
+    const v = connectionView(sync('error', { lastError: { status: 403, code: 'cf-access' } }), { mobile: true, online: true })
+    expect(v.line).toBe('Cloudflare Access refused the request')
+    expect(v.banner).toMatch(/service token/)
+    expect(v.action).toBe('retry')
+  })
+
   it('phone refused by its server: "Pair again" opens the connect sheet with the address it had', () => {
     mocks.MOBILE = true
     mocks.sync = sync('auth', { auth: true, pending: true, lastError: { status: 401, code: 'auth' } })

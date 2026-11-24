@@ -5844,4 +5844,8 @@ export default {
   "Totals": "Totaler",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Vis det, du bruger, fold det sammen, du sjældent åbner, og skjul resten. Hold på et kort for at flytte det.",
   "Shows up when there is something to show": "Vises, når der er noget at vise",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access afviste forespørgslen",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access foran din server afviste denne telefon. Tjek service-tokenet under Cloudflare Access. Dine ændringer gemmes her.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access foran din server afviste denne browser. Genindlæs siden for at logge ind igen. Dine ændringer gemmes her.",
 }

@@ -5904,4 +5904,8 @@ export default {
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Taşımak için bir karta basılı tut.",
   "Shows up when there is something to show": "Gösterecek bir şey olduğunda görünür",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access isteği reddetti",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Sunucunun önündeki Cloudflare Access bu telefonu reddetti. Cloudflare Access altındaki hizmet belirtecini kontrol et. Değişikliklerin burada saklanıyor.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Sunucunun önündeki Cloudflare Access bu tarayıcıyı reddetti. Yeniden giriş yapmak için sayfayı yenile. Değişikliklerin burada saklanıyor.",
 }

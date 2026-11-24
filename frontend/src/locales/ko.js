@@ -5904,4 +5904,8 @@ export default {
   "Totals": "합계",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 카드를 길게 눌러 옮기세요.",
   "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access가 요청을 거부했습니다",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "서버 앞의 Cloudflare Access가 이 휴대폰을 거부했습니다. Cloudflare Access에서 서비스 토큰을 확인하세요. 변경 사항은 여기에 보관됩니다.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "서버 앞의 Cloudflare Access가 이 브라우저를 거부했습니다. 페이지를 새로고침해 다시 로그인하세요. 변경 사항은 여기에 보관됩니다.",
 }

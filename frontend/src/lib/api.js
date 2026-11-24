@@ -28,6 +28,7 @@ export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToke
 let accessHeaders = {}
 let accessOrigin = ''
 export function setAccessHeaders(h, origin) { accessHeaders = Object.assign({}, h); accessOrigin = origin || '' }
+export const accessHeadersActive = () => !!accessOrigin && Object.keys(accessHeaders).length > 0
 const originOf = base => { try { return new URL(base).origin } catch { return '' } }
 const accessFor = base => (base && accessOrigin && originOf(base) === accessOrigin ? accessHeaders : {})
 const remoteHeaders = () => Object.assign({}, accessFor(remoteBase), remoteToken ? { Authorization: 'Bearer ' + remoteToken } : {})
@@ -115,12 +116,27 @@ async function transport(url, init) {
   }
 }
 
+// An answer from Cloudflare Access rather than from openGym: a 401/403 whose body is not openGym's
+// JSON from a Cloudflare edge (cf-ray) or with Access's own markers, or any answer that ended on
+// Access's sign-in page (the redirect a request without a valid token gets).
+const header = (r, k) => { try { return (r.headers && typeof r.headers.get === 'function' && r.headers.get(k)) || '' } catch { return '' } }
+export function cfAccessRefusal(r, body) {
+  const url = String((r && r.url) || '')
+  if (/\.cloudflareaccess\.com\//i.test(url) || /\/cdn-cgi\/access\//i.test(url)) return true
+  if (!r || (r.status !== 401 && r.status !== 403)) return false
+  if (body && typeof body.error === 'string') return false   // openGym's own refusal
+  return !!(header(r, 'cf-ray') || header(r, 'cf-access-domain') || /cloudflareaccess/i.test(header(r, 'www-authenticate')))
+}
+
 async function exchange(url, init) {
   const r = await transport(url, init)
   let data
   let parsed = true
   try { data = await r.json() } catch { parsed = false }
   const body = parsed && data && typeof data === 'object' ? data : null
+  // Cloudflare Access at the edge, not openGym, said no (#1529): it was shown as a plain server
+  // error, or as "not openGym" for its login page. Its own words say what to look at.
+  if (cfAccessRefusal(r, body)) throw failure(t('Cloudflare Access refused the request'), 'cf-access', r.status)
   // The body rides along on the error: a 409 from /api/data carries the server's document.
   if (!r.ok) { const e = new Error(refusal(r.status, body)); e.status = r.status; e.data = body || {}; throw e }
   if (!body) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', r.status)

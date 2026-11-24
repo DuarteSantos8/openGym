@@ -24,7 +24,7 @@ import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, connectWithProvider, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { takeOidcReturn } from '../lib/oidc.js'
-import { loadCfAccess } from '../lib/cf-access.js'
+import { loadCfAccess, reloadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { initCoachSchedule } from '../lib/coach-schedule.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
@@ -542,7 +542,8 @@ export const useStore = create((set, get) => {
     if (Object.keys(next).some(k => (k === 'lastError' ? !sameError(next[k], cur[k]) : next[k] !== cur[k]))) set({ sync: next })
   }
   const isNetworkError = e => e && e.status == null   // fetch itself failed, or gave up: no response at all
-  const refused = e => e?.status === 401 || e?.code === 'not-paired'
+  // Cloudflare Access saying no is not the server refusing this device: the pairing is fine (#1529).
+  const refused = e => (e?.status === 401 && e?.code !== 'cf-access') || e?.code === 'not-paired'
   // The server answered: whatever was wrong with the connection is over.
   const reached = (extra = {}) => setSync({ offline: false, auth: false, lastError: null, ...extra })
   // What a failed request says about the connection. A refused token and a phone without a
@@ -824,7 +825,9 @@ export const useStore = create((set, get) => {
   window.addEventListener('focus', () => checkRev())
   window.addEventListener('pageshow', e => { if (e.persisted) checkRev() })
   window.addEventListener('online', () => checkRev(true))   // also retries a push that failed offline
-  onAppActive(() => checkRev())
+  // Back in the app: a Cloudflare Access token the last start could not read (a locked iPhone that
+  // started the app in the background, #1529) is read again before the check goes out.
+  onAppActive(() => { reloadCfAccess().catch(() => false).then(() => checkRev()) })
   schedulePoll()
 
   // Both copies changed: keep both sides' entries, let the newer copy decide the rest
@@ -1960,6 +1963,7 @@ export const useStore = create((set, get) => {
     // "Sync now": what is waiting goes, the server's copy is checked, and the answer is the
     // `sync` every screen reads — status 'ok' when the two agree.
     async syncNow() {
+      if (MOBILE) await reloadCfAccess().catch(() => false)   // #1529: Try again reads the Access token again first
       if (!get().user) { setSync({}); return get().sync }
       // Held for a sign-in's question: "Sync now" is asking it (again), and the sync follows.
       if (adoptHold) { await get().resumeAdoption(); if (adoptHold) return get().sync }
@@ -2329,7 +2333,7 @@ export const useStore = create((set, get) => {
         // same account merges it (adoptProfile). A later reload still says so while that copy
         // owes its account changes — the user is gone by then, the owner and the copy are not —
         // unless whoever is here chose to go on as a guest.
-        if (e.status === 401) {
+        if (e.status === 401 && e.code !== 'cf-access') {
           const kept = !!get().user || (!get().isGuest() && !!localStorage.getItem('gym_owner') && owes())
           get().setUser(null)
           if (kept) failed(e, { pending: owes() })

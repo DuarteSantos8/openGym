@@ -5869,4 +5869,8 @@ export default {
   "Totals": "Total",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Tahan kartu untuk memindahkannya.",
   "Shows up when there is something to show": "Muncul saat ada yang bisa ditampilkan",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access menolak permintaan",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access di depan server Anda menolak ponsel ini. Periksa token layanan di bagian Cloudflare Access. Perubahan Anda tetap tersimpan di sini.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access di depan server Anda menolak browser ini. Muat ulang halaman untuk masuk lagi. Perubahan Anda tetap tersimpan di sini.",
 };

@@ -5983,4 +5983,8 @@ export default {
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। সরাতে একটি কার্ড চেপে ধরুন।",
   "Shows up when there is something to show": "দেখানোর মতো কিছু থাকলে দেখা যাবে",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access অনুরোধটি প্রত্যাখ্যান করেছে",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "আপনার সার্ভারের সামনে থাকা Cloudflare Access এই ফোনটি প্রত্যাখ্যান করেছে। Cloudflare Access-এর অধীনে সার্ভিস টোকেনটি দেখুন। আপনার পরিবর্তনগুলো এখানে রাখা আছে।",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "আপনার সার্ভারের সামনে থাকা Cloudflare Access এই ব্রাউজারটি প্রত্যাখ্যান করেছে। আবার সাইন ইন করতে পেজটি রিলোড করুন। আপনার পরিবর্তনগুলো এখানে রাখা আছে।",
 }

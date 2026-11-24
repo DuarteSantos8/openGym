@@ -4329,6 +4329,10 @@ export const PT_BR_OVERRIDES = {
   // Arrange your own Home and Stats (#1119)
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. Toque e segure um cartão para movê-lo.",
   "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "O Cloudflare Access recusou a solicitação",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "O Cloudflare Access na frente do seu servidor recusou este celular. Verifique o token de serviço em Cloudflare Access. Suas alterações ficam salvas aqui.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "O Cloudflare Access na frente do seu servidor recusou este navegador. Recarregue a página para entrar de novo. Suas alterações ficam salvas aqui.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

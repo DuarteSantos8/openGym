@@ -5904,4 +5904,8 @@ export default {
   "Totals": "Totaux",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Maintiens une carte pour la déplacer.",
   "Shows up when there is something to show": "Apparaît quand il y a quelque chose à montrer",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access a refusé la requête",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access, devant ton serveur, a refusé ce téléphone. Vérifie le jeton de service sous Cloudflare Access. Tes modifications sont conservées ici.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access, devant ton serveur, a refusé ce navigateur. Recharge la page pour te reconnecter. Tes modifications sont conservées ici.",
 }

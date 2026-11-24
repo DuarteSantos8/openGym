@@ -83,6 +83,8 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline(), off
         banner: sync.pending ? t('Offline. Your changes are saved on this device and sync when you’re back online.') : t('Offline. Showing the last copy synced with the server.'),
       }
     case 'error':
+      // Cloudflare Access in front of the server said no (#1529): its token, not the server.
+      if (err.code === 'cf-access') return { tone: 'bad', icon: 'lock', action: 'retry', line: t('Cloudflare Access refused the request'), banner: mobile ? t('Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.') : t('Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.') }
       return err.code === 'bad-response'
         ? { tone: 'bad', icon: 'warning', action: 'retry', line: t('Not an openGym answer (HTTP {0})', err.status), banner: t('Your server’s address answered with something other than openGym (HTTP {0}). Your changes are kept here.', err.status) }
         : { tone: 'bad', icon: 'warning', action: 'retry', line: t('Server error (HTTP {0})', err.status), banner: t('Your server answered with an error (HTTP {0}). Your changes are kept here.', err.status) }

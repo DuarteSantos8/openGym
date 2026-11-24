@@ -5901,4 +5901,8 @@ export default {
   "Totals": "Підсумки",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Утримуйте картку, щоб перемістити її.",
   "Shows up when there is something to show": "З’явиться, коли буде що показати",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access відхилив запит",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access перед вашим сервером відхилив цей телефон. Перевірте сервісний токен у розділі Cloudflare Access. Ваші зміни збережено тут.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access перед вашим сервером відхилив цей браузер. Перезавантажте сторінку, щоб увійти знову. Ваші зміни збережено тут.",
 }

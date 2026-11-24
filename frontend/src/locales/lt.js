@@ -5900,4 +5900,8 @@ export default {
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Palaikyk kortelę, kad ją perkeltum.",
   "Shows up when there is something to show": "Atsiras, kai bus ką rodyti",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access atmetė užklausą",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access prieš jūsų serverį atmetė šį telefoną. Patikrinkite paslaugos raktą skiltyje Cloudflare Access. Jūsų pakeitimai išsaugoti čia.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access prieš jūsų serverį atmetė šią naršyklę. Įkelkite puslapį iš naujo ir vėl prisijunkite. Jūsų pakeitimai išsaugoti čia.",
 }

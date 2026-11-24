@@ -5870,4 +5870,8 @@ export default {
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
   "Shows up when there is something to show": "Objeví se, až bude co ukázat",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access požadavek odmítl",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access před vaším serverem tento telefon odmítl. Zkontrolujte servisní token v části Cloudflare Access. Vaše změny zůstávají zde.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access před vaším serverem tento prohlížeč odmítl. Načtěte stránku znovu a znovu se přihlaste. Vaše změny zůstávají zde.",
 }

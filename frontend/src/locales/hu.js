@@ -5907,4 +5907,8 @@ export default {
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. Tarts lenyomva egy kártyát az áthelyezéshez.",
   "Shows up when there is something to show": "Akkor jelenik meg, ha van mit mutatnia",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "A Cloudflare Access elutasította a kérést",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "A szervered előtti Cloudflare Access elutasította ezt a telefont. Ellenőrizd a szolgáltatási tokent a Cloudflare Access alatt. A változtatásaid itt megmaradnak.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "A szervered előtti Cloudflare Access elutasította ezt a böngészőt. Töltsd újra az oldalt, hogy újra bejelentkezz. A változtatásaid itt megmaradnak.",
 }

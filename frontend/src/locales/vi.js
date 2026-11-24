@@ -5870,4 +5870,8 @@ export default {
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Nhấn giữ một thẻ để di chuyển.",
   "Shows up when there is something to show": "Sẽ hiện khi có nội dung để hiển thị",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access đã từ chối yêu cầu",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access phía trước máy chủ của bạn đã từ chối điện thoại này. Hãy kiểm tra service token trong mục Cloudflare Access. Thay đổi của bạn vẫn được giữ ở đây.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access phía trước máy chủ của bạn đã từ chối trình duyệt này. Hãy tải lại trang để đăng nhập lại. Thay đổi của bạn vẫn được giữ ở đây.",
 };

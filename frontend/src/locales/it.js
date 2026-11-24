@@ -5914,4 +5914,8 @@ export default {
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Tieni premuta una scheda per spostarla.",
   "Shows up when there is something to show": "Compare quando c’è qualcosa da mostrare",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access ha rifiutato la richiesta",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access davanti al tuo server ha rifiutato questo telefono. Controlla il token di servizio in Cloudflare Access. Le tue modifiche restano salvate qui.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access davanti al tuo server ha rifiutato questo browser. Ricarica la pagina per accedere di nuovo. Le tue modifiche restano salvate qui.",
 }

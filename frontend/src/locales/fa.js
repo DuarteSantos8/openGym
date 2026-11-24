@@ -5870,4 +5870,8 @@ export default {
   "Totals": "مجموع‌ها",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. برای جابه‌جایی، یک کارت را نگه دار.",
   "Shows up when there is something to show": "وقتی چیزی برای نشان دادن باشد ظاهر می\u200cشود",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access درخواست را رد کرد",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access که جلوی سرور شماست این گوشی را رد کرد. توکن سرویس را در بخش Cloudflare Access بررسی کنید. تغییرات شما اینجا نگه داشته می‌شود.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access که جلوی سرور شماست این مرورگر را رد کرد. برای ورود دوباره صفحه را بارگذاری مجدد کنید. تغییرات شما اینجا نگه داشته می‌شود.",
 }

@@ -5836,4 +5836,8 @@ export default {
   "Totals": "合計",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "使うものは表示、あまり開かないものは折りたたみ、残りは非表示に。カードを長押しして移動できます。",
   "Shows up when there is something to show": "表示する内容があるときに現れます",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access がリクエストを拒否しました",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "サーバーの前にある Cloudflare Access がこのスマートフォンを拒否しました。Cloudflare Access のサービストークンを確認してください。変更はこの端末に保存されています。",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "サーバーの前にある Cloudflare Access がこのブラウザを拒否しました。ページを再読み込みして、もう一度サインインしてください。変更はここに保存されています。",
 }

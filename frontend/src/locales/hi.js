@@ -5904,4 +5904,8 @@ export default {
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। खिसकाने के लिए किसी कार्ड को दबाकर रखें।",
   "Shows up when there is something to show": "जब दिखाने को कुछ होगा तब दिखेगा",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access ने अनुरोध अस्वीकार कर दिया",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "आपके सर्वर के आगे लगे Cloudflare Access ने इस फ़ोन को अस्वीकार कर दिया। Cloudflare Access में सर्विस टोकन जाँचें। आपके बदलाव यहीं सहेजे हुए हैं।",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "आपके सर्वर के आगे लगे Cloudflare Access ने इस ब्राउज़र को अस्वीकार कर दिया। फिर से साइन इन करने के लिए पेज रीलोड करें। आपके बदलाव यहीं सहेजे हुए हैं।",
 }

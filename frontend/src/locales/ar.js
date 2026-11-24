@@ -5959,4 +5959,8 @@ export default {
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. اضغط مطولاً على بطاقة لنقلها.",
   "Shows up when there is something to show": "تظهر عندما يكون فيها ما تعرضه",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "رفض Cloudflare Access الطلب",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "رفض Cloudflare Access الموجود أمام خادمك هذا الهاتف. تحقّق من رمز الخدمة ضمن Cloudflare Access. تغييراتك محفوظة هنا.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "رفض Cloudflare Access الموجود أمام خادمك هذا المتصفح. أعد تحميل الصفحة لتسجيل الدخول من جديد. تغييراتك محفوظة هنا.",
 }

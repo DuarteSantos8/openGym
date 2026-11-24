@@ -5897,4 +5897,8 @@ export default {
   "Totals": "總計",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "顯示常用的，摺疊很少打開的，隱藏其餘的。長按卡片即可移動。",
   "Shows up when there is something to show": "有內容時才會顯示",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access 拒絕了這個請求",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "伺服器前面的 Cloudflare Access 拒絕了這支手機。請檢查 Cloudflare Access 下的服務權杖。你的變更保存在這裡。",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "伺服器前面的 Cloudflare Access 拒絕了這個瀏覽器。請重新載入頁面再次登入。你的變更保存在這裡。",
 }

@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Cloudflare Access: a phone that could not read its service token at start (an iPhone opening the app in the background while locked, say) no longer quietly sends every request without it until you save it again. It keeps what it had, reads it again on its own, when you come back to the app and when you tap Try again, and the token is now readable once the phone has been unlocked after a restart. When Cloudflare Access itself says no, the app says so instead of "server unreachable" (#1529).
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).
 - Garmin: supersets no longer stall on "Next exercise is on its way from your phone". The watch gets the next superset before you reach it, and when it does have to wait, it asks the phone again within seconds instead of minutes (#1295).
 - Garmin: long circuits fit on the watch. Six exercises used to be too much for one message, and the exercise you were on could be the one left out (#1471).
