@@ -1033,7 +1033,9 @@ object WearStore {
         askDone.value = false; idleLeft.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
         applySnapshotJson(snapshot)
         when (screen) {
-            "start" -> commit(_state.value.copy(workout = null))
+            // Pinned, so the start screen's 30 s link check keeps the chosen state on an unpaired emulator.
+            "start" -> { commit(_state.value.copy(workout = null)); PhoneLink.nearForTest = true; phoneNear.value = true }
+            "start-away" -> { commit(_state.value.copy(workout = null)); PhoneLink.nearForTest = false; phoneNear.value = false }
             "rest" -> { completeSet(); if (_rest.value == null) startRest(75) }
             "overview" -> page.value = Page.OVERVIEW
             "metrics" -> {
