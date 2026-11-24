@@ -16,21 +16,26 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import java.util.ArrayList;
 import java.util.Calendar;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * The gym reminder's approach check (GymReminder.startCheck): the phone entered the wide zone
- * around a gym, so for a few minutes it asks for live location (one fix every 15 s) to notice the
- * walk through the door, instead of waiting for Android's next proximity-alert look, which for an
- * app in the background can be half an hour away. Ends as soon as one of these is true: the phone
- * is inside a gym (the reminder posts, or the no-nag rule keeps it quiet), it left every approach
- * zone, today got settled meanwhile, or 15 minutes passed. A foreground service because Android
- * only gives background apps a few fixes an hour otherwise; its notification is a silent one on
- * its own channel and goes away with the check.
+ * around a gym, so for a few minutes it asks for live location to notice the walk through the
+ * door, instead of waiting for Android's next proximity-alert look, which for an app in the
+ * background can be half an hour away. Ends as soon as one of these is true: the phone is inside
+ * a gym (the reminder posts, or the no-nag rule keeps it quiet), it left every approach zone,
+ * today got settled meanwhile, it stayed put somewhere else for 3 minutes (well clear of every
+ * gym, not in its car park), or 15 minutes passed (the last two remember the spot if it was
+ * clear, GymReminderRules.addSpot). A foreground service because
+ * Android only gives background apps a few fixes an hour otherwise; its notification is a silent
+ * one on its own channel and goes away with the check.
  *
- * Battery: at most 15 minutes of GPS per check and at most 3 checks a day, none once the reminder
+ * Battery: while every gym is more than 400 m away the fixes are the cheap kind (balanced power,
+ * every 30 s; below Android 12 the network provider, never the GPS chip); GPS-grade fixes every
+ * 15 s only inside 400 m. At most 15 minutes and at most 3 checks a day, none once the reminder
  * went off, a workout is logged or the time window is closed. A typical day is one check of a
  * minute or two on the way in.
  */
@@ -44,6 +49,13 @@ public class GymScanService extends Service implements LocationListener {
     private boolean running;
     private long startedAt;
     private int fixes;
+    /** Whether the cheap kind of fix is being asked for (every gym more than 400 m away). */
+    private boolean far = true;
+    private Location lastFix;
+    /** Whether lastFix was clear of every gym (GymReminderRules.clearOfAll): only then is it a spot. */
+    private boolean clear;
+    /** {at, lat, lng, accuracy} of the fixes of the last few minutes that were clear of every gym. */
+    private final ArrayList<double[]> track = new ArrayList<>();
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -68,48 +80,69 @@ public class GymScanService extends Service implements LocationListener {
         thread.start();
         handler = new Handler(thread.getLooper());
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        String provider = provider(lm);
-        if (provider == null || !GymReminder.hasFine(ctx)) {
+        if (!GymReminder.hasFine(ctx) || !request(far)) {
             finish("no location");
             return START_NOT_STICKY;
         }
-        try {
-            if (Build.VERSION.SDK_INT >= 31) {
-                LocationRequest req = new LocationRequest.Builder(GymReminderRules.SCAN_INTERVAL_MS)
-                        .setQuality(LocationRequest.QUALITY_HIGH_ACCURACY)
-                        .setMinUpdateIntervalMillis(5_000L)
-                        .setDurationMillis(GymReminderRules.SCAN_MAX_MS)
-                        .build();
-                lm.requestLocationUpdates(provider, req, command -> handler.post(command), this);
-            } else {
-                lm.requestLocationUpdates(provider, GymReminderRules.SCAN_INTERVAL_MS, 0f, this, thread.getLooper());
-            }
-        } catch (Exception e) {
-            finish("no location (" + e.getClass().getSimpleName() + ")");
-            return START_NOT_STICKY;
-        }
-        handler.postDelayed(() -> finish("time up"), GymReminderRules.SCAN_MAX_MS);
-        GymReminder.note(ctx, "check: watching with " + provider);
+        handler.postDelayed(() -> {
+            rememberLastFix();
+            finish("time up");
+        }, GymReminderRules.SCAN_MAX_MS);
         return START_NOT_STICKY;
     }
 
-    /** Fused where there is one (Android 12+: GPS and network together), else GPS, else network. */
-    private static String provider(LocationManager lm) {
+    /**
+     * (Re)starts the location updates for the cheap or the sharp kind of fix. False when no
+     * provider fits (far away below Android 12 that means the network one) or Android refuses.
+     */
+    private boolean request(boolean cheap) {
+        String provider = provider(lm, cheap);
+        if (provider == null) return false;
+        long interval = GymReminderRules.intervalFor(cheap);
+        try {
+            lm.removeUpdates(this);
+            if (Build.VERSION.SDK_INT >= 31) {
+                LocationRequest req = new LocationRequest.Builder(interval)
+                        .setQuality(cheap ? LocationRequest.QUALITY_BALANCED_POWER_ACCURACY : LocationRequest.QUALITY_HIGH_ACCURACY)
+                        .setMinUpdateIntervalMillis(5_000L)
+                        .setDurationMillis(Math.max(1_000L, GymReminderRules.SCAN_MAX_MS - (System.currentTimeMillis() - startedAt)))
+                        .build();
+                lm.requestLocationUpdates(provider, req, command -> handler.post(command), this);
+            } else {
+                lm.requestLocationUpdates(provider, interval, 0f, this, thread.getLooper());
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        GymReminder.note(getApplicationContext(), "check: watching with " + provider + (cheap ? " (far)" : " (near)"));
+        return true;
+    }
+
+    /** The first provider the rules allow that this phone has and has switched on. */
+    private static String provider(LocationManager lm, boolean cheap) {
         if (lm == null) return null;
-        String[] order = { Build.VERSION.SDK_INT >= 31 ? LocationManager.FUSED_PROVIDER : null, LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER };
-        for (String p : order) {
+        for (String p : GymReminderRules.providersFor(cheap, Build.VERSION.SDK_INT)) {
             try {
-                if (p != null && lm.getAllProviders().contains(p) && lm.isProviderEnabled(p)) return p;
+                if (lm.getAllProviders().contains(p) && lm.isProviderEnabled(p)) return p;
             } catch (Exception ignored) {
             }
         }
         return null;
     }
 
+    /** The check ends without an arrival: where the phone is counts as "not the gym". */
+    private void rememberLastFix() {
+        if (lastFix == null || !clear) return;
+        GymReminder.rememberSpot(getApplicationContext(), lastFix.getLatitude(), lastFix.getLongitude(),
+                lastFix.hasAccuracy() ? lastFix.getAccuracy() : 1000);
+    }
+
     @Override
     public void onLocationChanged(Location loc) {
         if (!running || loc == null) return;
         fixes++;
+        lastFix = loc;
+        clear = false;
         Context ctx = getApplicationContext();
         Calendar now = Calendar.getInstance();
         String why = GymReminder.skipNow(ctx, now);
@@ -140,6 +173,22 @@ public class GymScanService extends Service implements LocationListener {
             finish("inside after " + (System.currentTimeMillis() - startedAt) / 1000 + " s");
         } else if (n == 0 || GymReminderRules.awayFromAll(dist, radius)) {
             finish("left the area");
+        } else {
+            long at = System.currentTimeMillis();
+            clear = GymReminderRules.clearOfAll(dist, radius);
+            if (!clear) track.clear();
+            else track.add(new double[] { at, loc.getLatitude(), loc.getLongitude(), loc.hasAccuracy() ? loc.getAccuracy() : 1000 });
+            while (!track.isEmpty() && track.get(0)[0] < at - 2 * GymReminderRules.SETTLE_MS) track.remove(0);
+            if (clear && GymReminderRules.stayedPut(track.toArray(new double[0][]))) {
+                rememberLastFix();
+                finish("stayed put");
+                return;
+            }
+            boolean cheap = GymReminderRules.farFromAll(dist, far);
+            if (cheap != far) {
+                far = cheap;
+                if (!request(far)) finish("no location");
+            }
         }
     }
 
