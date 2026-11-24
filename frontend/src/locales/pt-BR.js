@@ -4387,6 +4387,8 @@ export const PT_BR_OVERRIDES = {
   "Logging after training? Ticks the rest in one go": "Registrando depois do treino? Marca o resto de uma vez",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "Começar outra sessão",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Escolha uma rotina ou mais. Séries, repetições e peso vêm depois.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

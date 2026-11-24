@@ -116,6 +116,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Start workout: the other routines sit under their folders like on Plan, so two Leg Days from different blocks are no longer twins. A folder folds here too, and the Archive starts folded (#1347, thanks Discord).
 - Home: tapping today's row once the workout is done opens what you did, instead of starting the same routine again. Up for round two? Start another session is right there (thanks Discord).
 - Plan: Edit keeps your folders. Each one has its header while you delete or drag, and a drag moves a routine inside its folder. You don't need Edit to reorder any more, by the way: hold a routine to move it (#1534).
+- Add to my plan: tick as many routines as you like, set the sets and reps once, and the exercise lands in all of them (#1466, thanks @devcoons, whose #1134 had the idea).
 
 ## v1.4.5 (2026-11-14)
 

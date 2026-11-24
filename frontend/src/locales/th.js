@@ -5978,4 +5978,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "บันทึกหลังซ้อม? ติ๊กที่เหลือทีเดียว",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "เริ่มอีกเซสชัน",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "เลือกรูทีนหนึ่งอันขึ้นไป เซ็ต จำนวนครั้ง และน้ำหนักตามมาทีหลัง",
 }

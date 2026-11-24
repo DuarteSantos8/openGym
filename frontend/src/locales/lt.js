@@ -5963,4 +5963,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "Žymi po treniruotės? Pažymi likusias iš karto",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "Pradėti dar vieną treniruotę",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Pasirink vieną ar kelias programas. Serijos, kartojimai ir svoris bus po to.",
 }

@@ -5907,4 +5907,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "Logger du efter træningen? Markerer resten på én gang",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "Start en træning mere",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Vælg én eller flere rutiner. Sæt, gentagelser og vægt kommer bagefter.",
 }

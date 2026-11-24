@@ -5967,4 +5967,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "운동 후에 기록하나요? 나머지를 한 번에 체크",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "한 세션 더 시작",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "루틴을 하나 이상 고르세요. 세트, 반복, 무게는 그다음이에요.",
 }

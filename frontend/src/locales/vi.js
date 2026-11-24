@@ -5933,4 +5933,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "Ghi sau buổi tập? Đánh dấu phần còn lại một lần",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "Bắt đầu buổi tập khác",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Chọn một hoặc nhiều lịch tập. Hiệp, reps và mức tạ sẽ đến sau.",
 };

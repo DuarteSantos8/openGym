@@ -5964,4 +5964,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "Записуєте після тренування? Позначить решту разом",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "Почати ще одне тренування",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Вибери одну програму або кілька. Підходи, повторення й вага будуть далі.",
 }

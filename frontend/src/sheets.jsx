@@ -1767,34 +1767,50 @@ function RepRecords({ rows, unit, assisted }) {
 export const exerciseHistorySheet = exId => ui().openSheet(close => <ExerciseHistory exId={exId} close={close} />)
 
 /* ============================ add to routine ============================ */
+// One routine or several (#1466, thanks @devcoons, whose #1134 had the idea of copying an
+// exercise between routines): tap the routines to tick them, then one settings sheet, and the
+// same sets, reps and weight go into each. New routine still starts one straight away.
 function AddToRoutine({ ex, close }) {
   const st = useStore(s => s.S)
-  const pick = rid => {
+  const [picked, setPicked] = useState([])
+  const toggle = id => setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id]))
+  const addNew = () => {
     close()
-    const isNew = rid === '_new'
     exConfigSheet(ex, null, cfg => {
-      update(s => {
-        let r = isNew ? { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] } : s.routines.find(x => x.id === rid)
-        if (isNew) s.routines.push(r)
-        if (r) r.ex.push({ id: ex.id, ...cfg })
-      })
-      const r = isNew ? S().routines[S().routines.length - 1] : st.routines.find(x => x.id === rid)
-      toast(t('“{0}” added to {1}', exerciseNameText(ex), r ? r.name : t('routine')))
-      if (isNew && r) nav('/plan/r/' + r.id)
-    }, null, isNew ? null : st.routines.find(x => x.id === rid))
+      const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [{ id: ex.id, ...cfg }] }
+      update(s => { s.routines.push(r) })
+      toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
+      nav('/plan/r/' + r.id)
+    }, null, null)
+  }
+  const next = () => {
+    // In the order of the plan, not the order they were ticked.
+    const ids = st.routines.map(r => r.id).filter(id => picked.includes(id))
+    if (!ids.length) return
+    close()
+    exConfigSheet(ex, null, cfg => {
+      update(s => { for (const r of s.routines) if (ids.includes(r.id)) r.ex.push({ id: ex.id, ...structuredClone(cfg) }) })   // a copy each: an edit to one slot later must not reach the others
+      const names = S().routines.filter(r => ids.includes(r.id)).map(r => r.name)
+      if (names.length) toast(t('“{0}” added to {1}', exerciseNameText(ex), names.join(', ')))
+    }, null, ids.length === 1 ? st.routines.find(x => x.id === ids[0]) : null)
   }
   return <>
     <h3 className={exerciseNameClass(ex)}>{t('Add “{0}”', exerciseNameFor(ex))}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick a routine. Sets, reps and weight come next.')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick one routine or more. Sets, reps and weight come next.')}</div>
     <div className="list">
-      {st.routines.map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
-      </div>)}
-      <div className="item" {...tappable(() => pick('_new'))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="plusCircle" /></span>
+      {st.routines.map(r => {
+        const on = picked.includes(r.id)
+        return <div key={r.id} className="item" {...tappable(() => toggle(r.id))} role="checkbox" aria-checked={on}>
+          <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+          <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
+          {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}
+          <Icon name={on ? 'checkCircle' : 'plus'} className="chev" style={on ? { color: 'var(--acc)' } : undefined} />
+        </div>
+      })}
+      <div className="item" {...tappable(addNew)}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="plusCircle" /></span>
         <div className="grow"><div className="tt">{t('New routine')}</div><div className="ss">{t('Create one and start with this exercise')}</div></div><Icon name="plus" className="chev" /></div>
     </div>
+    {st.routines.length > 0 && <Button variant="primary" style={{ marginTop: 12 }} disabled={!picked.length} onClick={next}>{t('Next')}</Button>}
   </>
 }
 export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex={ex} close={close} />)

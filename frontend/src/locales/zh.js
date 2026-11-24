@@ -5967,4 +5967,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "练完再记录？一次勾选剩下的",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "再开始一次训练",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "选一个或多个训练日。组数、次数和重量随后设置。",
 }

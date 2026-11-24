@@ -6046,4 +6046,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "ট্রেনিংয়ের পরে লিখছেন? বাকিগুলো একবারে টিক দেয়",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "আরেকটি সেশন শুরু করুন",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "এক বা একাধিক রুটিন বেছে নিন। সেট, রেপ ও ওজন এর পরে।",
 }

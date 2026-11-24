@@ -5933,4 +5933,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "بعد از تمرین ثبت می‌کنی؟ بقیه را یکجا علامت می‌زند",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "شروع یک جلسهٔ دیگر",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "یک یا چند روتین انتخاب کن. ست، تکرار و وزن بعدش می‌آید.",
 }

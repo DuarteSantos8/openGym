@@ -5960,4 +5960,6 @@ export default {
   "Logging after training? Ticks the rest in one go": "練完再記錄？一次勾選剩下的",
   // --- Home: today's finished workout opens its details (Discord) ---
   "Start another session": "再開始一次訓練",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "選一個或多個課表。組數、次數和重量隨後設定。",
 }
