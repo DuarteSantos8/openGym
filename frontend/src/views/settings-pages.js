@@ -280,6 +280,7 @@ export const SEARCH = [
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'weight card home' },
   { page: 'look', title: 'Customize', icon: 'layout', tint: 'var(--blue)', kw: 'customize customise arrange reorder order hide collapse fold cards tiles home stats layout personalize move' },
   { page: 'look', title: 'Recovery tips', icon: 'figureStrength', tint: 'var(--green)', mod: 'health', kw: 'recovery recovering rest muscle fatigue hint tip card home sore' },
+  { page: 'look', title: 'Body weight in my year', icon: 'scale', tint: 'var(--acc)', mod: 'motivation', kw: 'your year wrapped body weight weigh-in leave out undo recap' },
   { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', mod: 'motivation', kw: 'recap summary weekly monthly report your week your month card home share' },
   { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
   { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', mod: 'motivation', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
