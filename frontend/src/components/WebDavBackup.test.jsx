@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Settings → Integrations → WebDAV backup (#582): connecting tries the folder before keeping
+// Settings → Data & backup → Back up to WebDAV (#582): connecting tries the folder before keeping
 // anything, keeps the password out of the settings, and the connected sheet backs up and restores.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'

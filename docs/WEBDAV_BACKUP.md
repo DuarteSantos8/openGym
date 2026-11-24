@@ -1,6 +1,6 @@
 # Backup to WebDAV
 
-Settings → Integrations → **WebDAV backup** (also in Settings → Data & backup → Back up to WebDAV)
+Settings → Data & backup → **Back up to WebDAV**
 writes the same JSON backup as "Export backup (JSON)" to a folder on a WebDAV server of your own:
 Nextcloud, ownCloud, a Synology or QNAP NAS, Koofr, Apache or nginx with WebDAV. It runs once a
 day while the app is open, and whenever you tap **Back up now**. On a new phone, connect the same

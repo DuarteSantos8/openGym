@@ -23,9 +23,9 @@ describe('a long worded value goes under a row’s text on a phone', () => {
     expect(cls(<Row title="x" subtitle="y" value="Wie die Arbeitssätze" />)).not.toContain('lrow-vlong')
     expect('Like the work sets'.length).toBeGreaterThan(VALUE_BESIDE_MAX)
   })
-  it('index.css stacks it under the text up to phone width', () => {
+  it('index.css stacks it under the text up to phone width, Pro Max (440) included', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
-    const block = css.slice(css.indexOf('@media (max-width:430px){\n  .lrow.lrow-vlong'))
+    const block = css.slice(css.indexOf('@media (max-width:440px){\n  .lrow.lrow-vlong'))
     expect(block).toMatch(/\.lrow\.lrow-vlong>\.lrow-v\{grid-column:2;grid-row:2;max-width:none/)
   })
 })

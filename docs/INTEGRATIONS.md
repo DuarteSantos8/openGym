@@ -8,10 +8,6 @@ you switch it on.
 |---|---|---|
 | **Apple Health** | iPhone app | Finished workouts and weigh-ins go to Apple Health; heart rate from your watch and weigh-ins from your scale come back. |
 | **Health Connect** | Android app | The same, with Health Connect. |
-| **Hevy** | everywhere | A one-off import of your Hevy history with a Hevy Pro API key. |
-| **Import a file** | everywhere | Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export, once ([details](DATA_IMPORTS.md)). |
-| **Spreadsheet (CSV)** | everywhere | Every set, weigh-in and measurement as a CSV openGym can read back. |
-| **WebDAV backup** | everywhere | A copy of your data every day in your own Nextcloud or WebDAV folder, and restore on a new phone ([details](WEBDAV_BACKUP.md)). |
 | **Calendar feed** | needs your own server | Your planned sessions (and finished workouts) in Apple, Google or Outlook calendar ([details](CALENDAR.md)). |
 | **Strava** | needs your own server, with a Strava app of its own | Finished cardio workouts, and strength ones if you like, go up to Strava (below). |
 | **Webhooks** | needs your own server | A signed message to Home Assistant, n8n, ntfy, Node-RED and friends when you finish a workout, set a record or weigh in. |
@@ -19,8 +15,9 @@ you switch it on.
 | **MCP server** | needs your own server | A link to setting up the MCP server ([mcp/README.md](../mcp/README.md)). |
 
 Apple Health and Health Connect keep their switches on their own page (Settings → Integrations →
-Apple Health / Health Connect; Data & backup has a way there too). The imports and the CSV export
-are the same sheets Data & backup opens.
+Apple Health / Health Connect). Files and backups live on Settings → **Data & backup** alone: the
+Hevy import, importing another app's file ([details](DATA_IMPORTS.md)), the CSV export and the
+daily WebDAV backup ([details](WEBDAV_BACKUP.md)).
 
 ## Works with: Garmin, COROS, Polar, Fitbit, Samsung Health, Oura, Withings, Renpho
 

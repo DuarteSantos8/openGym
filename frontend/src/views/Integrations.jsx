@@ -13,14 +13,12 @@ import { platformNow } from '../lib/platform-now.js'
 import { coachAvailable } from '../lib/coach.js'
 import { healthStatus, loadHealth, onHealthChange, disableHealth, disableRead } from '../lib/health-sync.js'
 import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl } from '../lib/integrations.js'
-import { importFromApp, importFromHevy, confirmSheet, menuSheet } from '../sheets.jsx'
-import { csvExportSheet } from '../components/CsvExportSheet.jsx'
+import { confirmSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 import { isOn } from '../lib/modules.js'
 import { tokensOn } from '../lib/api-tokens.js'
-import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
 import { calendarSheet } from '../components/CalendarFeed.jsx'
 import { useNutritionLink, nutritionSheet } from '../components/SisterApps.jsx'
 import { getCalendar } from '../lib/api-tokens.js'
@@ -119,20 +117,18 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const config = useStore(s => s.config)
   const coachLocal = useStore(s => s.coachLocal)
   const toast = useUI(s => s.toast)
-  const fileRef = useRef(null)
   const offered = config?.integrations?.providers || []
   const server = useServerIntegrations(!!user && !DEMO && offered.length > 0)
   const health = useHealth()
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
-  const webdav = useWebdavConfig()
   const nutrition = useNutritionLink()
   const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
   // The calendar feed's state, asked once per visit where the server has tokens.
   const [calendar, setCalendarState] = useState(null)
   useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
-    offline: offlineBuild(), webdav, tokens, calendar, nutrition,
+    offline: offlineBuild(), tokens, calendar, nutrition,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
@@ -155,9 +151,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       case 'apple-health': case 'health-connect':
         if (status === 'device') return infoSheet(card, t('This one lives in the openGym phone app: Apple Health on iPhone, Health Connect on Android.'))
         return nav('/settings/' + card.id)
-      case 'hevy': return importFromHevy()
-      case 'files': return fileRef.current?.click()
-      case 'csv': return csvExportSheet()
       case 'webhook':
         if (status === 'server') return infoSheet(card, t('Webhooks are sent by your own openGym server, so they need one. Connect this device to it in Account.'))
         if (action === 'open') return infoSheet(card, t('Webhooks are off on this server. Add INTEGRATIONS=webhook to its .env and restart it.'), INTEGRATIONS_DOCS)
@@ -168,7 +161,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         if (action === 'open') return infoSheet(card, t('Strava is off on this server. Register a Strava API app, then add strava to INTEGRATIONS and its STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET to the .env, and restart.'), INTEGRATIONS_DOCS + '#strava')
         if (action === 'connect') return startStrava(card)
         return stravaSheet((server.data?.connections || []).find(c => c.provider === 'strava'), webhookCtx)
-      case 'webdav': return webdavSheet()
       case 'calendar':
         if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
         return calendarSheet(setCalendarState)
@@ -187,7 +179,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     if (card.state.status === 'device' || card.state.status === 'server' || card.state.action === 'open' && card.id === 'webhook') return act(card)
     if (card.id === 'webhook') return card.state.action === 'connect' ? detailSheet(card, { act: () => act(card) }) : webhookListSheet(webhookCtx)
     if (card.id === 'strava' && card.state.action === 'manage') return act(card)
-    if (card.id === 'webdav' && card.state.action === 'manage') return webdavSheet()
     if (card.id === 'calendar' && card.state.action === 'manage') return calendarSheet(setCalendarState)
     if (card.id === 'opennutrition' && card.state.action === 'manage') return nutritionSheet()
     if (card.id === 'apple-health' || card.id === 'health-connect') {
@@ -210,8 +201,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     {tokens && <Section footer={t('For AI assistants over MCP, planners and scripts. Each sees only what you tick.')}>
       <Row icon="key" iconTint="var(--purple)" title={t('API tokens')} accessory="chevron" onClick={() => nav('/settings/api-tokens')} />
     </Section>}
-    <input ref={fileRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
-      onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
   </>
 }
 

@@ -1,5 +1,6 @@
 // Settings → Integrations (v1.4.4): which cards the directory shows on this device, and what each
-// one says. Pure, so the rules ("Apple Health lives in the iPhone app", "webhooks need your own
+// one says. Live links to other services only: files and backups (Hevy, imports, CSV, WebDAV) live
+// on Data & backup alone (#1105). Pure, so the rules ("Apple Health lives in the iPhone app", "webhooks need your own
 // server") are tested here and the page only draws them.
 //
 // The directory is meant to stay short: a card shows only where it can do something or where
@@ -12,7 +13,6 @@ import { OFFLINE_OFF_CARDS } from './build-caps.js'
 export const CATEGORIES = [
   { id: 'health', title: 'Health & devices' },
   { id: 'training', title: 'Training apps' },
-  { id: 'backup', title: 'Backups & calendar' },
   { id: 'automation', title: 'Automation' },
   { id: 'ai', title: 'AI & API' },
   // openGym's own family (gm-hooks, docs/dev/SISTER_APPS.md): read-only links, off until linked.
@@ -32,32 +32,12 @@ export const CARDS = [
     syncs: ['Finished workouts and weigh-ins go to Health Connect.', 'Heart rate from your watch fills in each set.', 'Weigh-ins from your smart scale land here.'],
   },
   {
-    id: 'hevy', cat: 'training', name: 'Hevy', icon: 'key', tint: 'var(--teal)',
-    desc: 'Bring your Hevy history over with a Pro API key.',
-    syncs: ['Workouts, routines and weigh-ins, once.', 'The key is used for this import and then forgotten.'],
-  },
-  {
     id: 'strava', cat: 'training', name: 'Strava', icon: 'figureRun', tint: 'var(--orange)',
     desc: 'Your runs, rides and rows go up to Strava, strength too if you like.',
     syncs: ['Finished cardio workouts, with their time and distance.', 'Strength sessions as Weight Training, if you switch it on.', 'Sent by your server, from whichever device you logged on.'],
   },
   {
-    id: 'files', cat: 'training', name: 'Import a file', translate: true, icon: 'download', tint: 'var(--teal)',
-    desc: 'Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export.',
-    syncs: ['Reads the export file of another app, once.', 'Exercises are matched to the library, you check the rest.'],
-  },
-  {
-    id: 'csv', cat: 'training', name: 'Spreadsheet (CSV)', translate: true, icon: 'share', tint: 'var(--green)',
-    desc: 'Every set, weigh-in and measurement, for Excel and friends.',
-    syncs: ['One row per set, plus body weight and measurements.', 'openGym can read it back in later.'],
-  },
-  {
-    id: 'webdav', cat: 'backup', name: 'WebDAV backup', translate: true, icon: 'cloud', tint: 'var(--blue)',
-    desc: 'A copy every day in your own Nextcloud or any WebDAV folder.',
-    syncs: ['The full backup, once a day while the app is open, and whenever you tap Back up now.', 'Restore it on a new phone in two taps.'],
-  },
-  {
-    id: 'calendar', cat: 'backup', name: 'Calendar feed', translate: true, icon: 'calendar', tint: 'var(--red)',
+    id: 'calendar', cat: 'automation', name: 'Calendar feed', translate: true, icon: 'calendar', tint: 'var(--red)',
     desc: 'Your planned sessions in Apple, Google or Outlook calendar.',
     syncs: ['Planned sessions from a week back to eight weeks ahead, as all-day events.', 'Finished workouts too, if you like.'],
   },
@@ -116,10 +96,9 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
  *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode,
- *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
  *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null,
  *        nutrition: this device's openNutrition link (lib/sister-nutrition.js loadLink) | null }
- * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
+ * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'open' | null }.
  */
 export function cardState(id, ctx) {
   const phone = ctx.mobile ? ctx.platform : null
@@ -136,11 +115,6 @@ export function cardState(id, ctx) {
       if (healthTrouble(h)) return { status: 'attention', action: 'manage' }
       return healthOn(h) ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
     }
-    case 'hevy':
-    case 'files':
-      return ctx.demo && id === 'hevy' ? null : { status: null, action: 'import' }
-    case 'csv':
-      return { status: null, action: 'export' }
     case 'webhook': {
       if (ctx.demo || !ctx.user) return { status: 'server', action: null }
       const offered = (ctx.offered || []).includes('webhook')
@@ -158,16 +132,6 @@ export function cardState(id, ctx) {
       if (!mine.length) return { status: 'off', action: 'connect' }
       if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
       return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
-    }
-    case 'webdav': {
-      // This device talks to your WebDAV server itself: no openGym server needed (#582).
-      if (ctx.demo) return null
-      const w = ctx.webdav
-      if (!w) return { status: 'off', action: 'connect' }
-      // Set up by another account on this device: paused, the sheet only offers Disconnect.
-      if (w.foreign) return { status: 'attention', action: 'manage' }
-      if (w.last && w.last.ok === false) return { status: 'attention', action: 'manage' }
-      return { status: 'connected', action: 'manage' }
     }
     case 'calendar':
       // A private address your server serves (api/integrations/calendar.js), on its token system.

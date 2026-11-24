@@ -10,7 +10,7 @@ import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, Switch, Button, TextField } from './ui.jsx'
 import Icon from './Icon.jsx'
 
-/* Settings → Integrations → WebDAV backup (#582), also reached from Data & backup: the folder,
+/* Settings → Data & backup → Back up to WebDAV (#582): the folder,
    the name and password, a daily backup on this device, Back up now and Restore. The rules and
    the client are lib/webdav.js; the runs lib/webdav-run.js. */
 

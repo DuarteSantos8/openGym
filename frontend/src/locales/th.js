@@ -1,5 +1,10 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "การเริ่ม",
+  "Workout screen": "หน้าจอการฝึก",
+  "Training rules": "กฎการฝึก",
+  "Timed sets": "เซ็ตจับเวลา",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "นาฬิกา",
   "Set once": "ตั้งครั้งเดียว",
@@ -761,6 +766,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'จอจะไม่ปิดขณะออกกำลังกาย จะได้ไม่ต้องปลดล็อกโทรศัพท์ระหว่างเซ็ต',
   'Weight unit': 'หน่วยน้ำหนัก',
   'Speed unit': 'หน่วยความเร็ว',
+  'Units': 'หน่วย',
   'Week starts on': 'สัปดาห์เริ่มวัน',
   'Weight decimals': 'ทศนิยมของน้ำหนัก',
   'How precisely weights are shown.': 'แสดงน้ำหนักละเอียดแค่ไหน',
@@ -5358,7 +5364,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ มินิเซ็ต",
   "A classic for {0}": "ท่าคลาสสิกสำหรับ {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "บันทึกประจำวันที่บอกว่าป่วย เดินทาง หรือบาดเจ็บ จะช่วยให้สถิติต่อเนื่องไม่ขาด ได้ปีละเท่านี้สัปดาห์",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "จำนวนสัปดาห์ต่อปีที่บันทึกประจำวันว่าป่วย เดินทาง หรือบาดเจ็บ ช่วยรักษาสถิติต่อเนื่องไว้ได้",
   "A ladder needs at least two rungs.": "บันไดต้องมีอย่างน้อยสองขั้น",
   "A lighter week might do more than a harder one.": "สัปดาห์ที่เบาลงอาจได้ผลมากกว่าสัปดาห์ที่หนักขึ้น",
   "A lighter week on a rhythm, no programme needed.": "สัปดาห์เบาตามจังหวะ ไม่ต้องมีโปรแกรม",
