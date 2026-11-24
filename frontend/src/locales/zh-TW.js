@@ -5901,4 +5901,6 @@ export default {
   "Cloudflare Access refused the request": "Cloudflare Access 拒絕了這個請求",
   "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "伺服器前面的 Cloudflare Access 拒絕了這支手機。請檢查 Cloudflare Access 下的服務權杖。你的變更保存在這裡。",
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "伺服器前面的 Cloudflare Access 拒絕了這個瀏覽器。請重新載入頁面再次登入。你的變更保存在這裡。",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym 在背景時連線中斷了。教練已從中斷的地方繼續。",
 }

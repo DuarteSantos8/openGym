@@ -5908,4 +5908,6 @@ export default {
   "Cloudflare Access refused the request": "Cloudflare Access odrzucił żądanie",
   "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access przed Twoim serwerem odrzucił ten telefon. Sprawdź token usługi w sekcji Cloudflare Access. Twoje zmiany są zapisane tutaj.",
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access przed Twoim serwerem odrzucił tę przeglądarkę. Odśwież stronę, aby zalogować się ponownie. Twoje zmiany są zapisane tutaj.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Połączenie zerwało się, gdy openGym działał w tle. Trener wznowił tam, gdzie skończył.",
 }
