@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Wear OS: the calories your watch measured go to Health Connect with the workout, less what your body burns at rest anyway, instead of the phone's estimate. A workout that ended by itself still gets the estimate (#724, thanks @cubetes for #1173).
 - Apple Watch: the start screen shows an iPhone sign beside the clock, green while the phone is in reach and an orange crossed-out one with "Phone away" when it is not (thanks @cubetes for #1198).
 - Wear OS: the start screen says along its bottom edge whether your phone is connected or away, in words and with a phone sign, checked every 30 seconds while it is up (thanks @cubetes for #1199).
 - Watches: every routine now travels to the watch as its own file, so none drop off however many you have, and Settings → Apple Watch and → Wear OS watch show one status pill that says whether the watch has them all and what to do when it doesn't (thanks @cubetes for #1329).
