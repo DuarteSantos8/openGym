@@ -6396,4 +6396,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "আপনার ট্রেনিং এই ডিভাইসেই থাকে। অ্যাকাউন্টটি আপনার প্ল্যান ও কেনাকাটার জন্য।",
   "Signed in as {0}. Your training is stored on this device.": "{0} হিসেবে সাইন ইন করা আছে। আপনার ট্রেনিং এই ডিভাইসে সংরক্ষিত।",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "অ্যাকাউন্ট থাকলে আপনার ট্রেনিং আপনার অন্য ডিভাইসগুলোতেও পাওয়া যাবে। না থাকলে তা এই ডিভাইসেই থাকে।",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "সার্ভারে থাকা আপনার ট্রেনিং থেকে সাইন আউট করা যায়নি, তাই কিছুই বদলানো হয়নি। অনলাইনে থাকলে আবার চেষ্টা করুন।",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "আগে আপনার ট্রেনিং মুছুন: অ্যাপে «সেটিংস», তারপর «অ্যাকাউন্ট», তারপর «আমার অ্যাকাউন্ট মুছুন» খুলুন। এরপর এই অ্যাকাউন্ট মুছতে এখানে ফিরে আসুন।",
 }

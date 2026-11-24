@@ -76,6 +76,7 @@ import { tintCss } from './lib/streak-icons.js'
 import Plan from './views/Plan.jsx'
 import Workout from './views/Workout.jsx'
 import { lookOf } from './lib/look.js'
+import { oidcArrival, clearOidcArrival, oidcLabel } from './lib/oidc.js'
 
 // Screens most sessions never open (the Coach, the admin dashboard, photos, measurements, the
 // balance check) are their own chunks rather than part of the code every start parses: ~200 KB
@@ -171,9 +172,12 @@ function Shell() {
   // them a guest (lib/account-badge.js). Nothing of this is in a default build.
   useEffect(() => {
     if (!CLOUD) return
-    let stop = null, gone = false
+    let stop = null, stopLink = null, gone = false
     import('./lib/cloud/account-watch.js').then(m => { if (!gone) stop = m.watchAccount() }, () => {})
-    return () => { gone = true; stop?.() }
+    // A profile open on the app's own server ends with the account it was opened through
+    // (lib/cloud/link-watch.js).
+    import('./lib/cloud/link-watch.js').then(m => { if (!gone) stopLink = m.watchLink({ store: useStore }) }, () => {})
+    return () => { gone = true; stop?.(); stopLink?.() }
   }, [])
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
   // The band names the set lines read (lib/bands.js), in step before this render's set lines.
@@ -533,6 +537,16 @@ export default function App() {
   const boot = useStore(s => s.boot)
   const ready = useStore(s => s.ready)
   useEffect(() => { boot() }, [boot])
+  // Cloud edition: back from the server's sign-in with a refusal, as someone who stays in the
+  // app on this device's profile. The sign-in screen that says why is not shown to them, so it
+  // is said here (lib/cloud/link-watch.js).
+  useEffect(() => {
+    if (!CLOUD || !ready) return
+    import('./lib/cloud/link-watch.js').then(m => {
+      const st = useStore.getState()
+      m.tellLinkFailure({ arrival: oidcArrival(), guest: st.isGuest(), label: oidcLabel(st.config), toast: msg => useUI.getState().toast(msg), clear: clearOidcArrival })
+    }, () => {})
+  }, [ready])
   useEffect(() => { prefetchViews() }, [])
   // Android system back — sheet, then page, then press-again-to-exit (see lib/back.js)
   useEffect(() => {

@@ -6310,4 +6310,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "你的訓練資料留在這台裝置上。帳號用於你的方案和購買。",
   "Signed in as {0}. Your training is stored on this device.": "已以 {0} 登入。你的訓練資料儲存在這台裝置上。",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "有了帳號，你的訓練紀錄會同步到你的其他裝置。沒有帳號，紀錄只會留在這台裝置上。",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "無法登出伺服器上的訓練紀錄，因此沒有任何變更。請在連上網路後再試一次。",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "請先刪除你的訓練紀錄：在 App 中依序開啟「設定」、「帳號」、「刪除我的帳號」。完成後再回到這裡刪除此帳號。",
 }

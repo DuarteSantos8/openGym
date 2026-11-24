@@ -209,3 +209,37 @@ test("where the app's own server signs people in with the account, Continue make
   await expect(card).not.toContainText('Guest')
   await expect(page.getByText('Guest mode')).toHaveCount(0)
 })
+
+// The two sessions end together (lib/cloud/server-link.js, found in review of #78): a profile
+// left open on the server would show this person's training to whoever uses the browser next.
+test('the server profile ends with the account: signed out here, or signed out elsewhere', async ({ page }) => {
+  const onServer = () => page.evaluate(() => fetch('api/me').then(r => (r.ok ? r.json() : null)).then(j => j?.user?.name || null))
+  const linkUp = async () => {
+    await page.getByRole('button', { name: 'Sign in or create account' }).click()
+    await signIn(page)
+    await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+    await page.click('[data-continue]')
+    await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
+    await expect.poll(onServer, { timeout: 15_000 }).toBe('Sam')
+  }
+  await pretendProject(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByRole('button', { name: 'Sign in or create account' })).toBeVisible({ timeout: 15_000 })
+  await linkUp()
+
+  // Signed out of the account somewhere else (another tab), then this page is loaded again:
+  // the server profile is signed out too, and the app is back at its first screen.
+  await page.evaluate(() => localStorage.removeItem('gym_cloud_session_v1'))
+  await page.reload()
+  await expect.poll(onServer, { timeout: 15_000 }).toBeNull()
+  await expect(page.getByRole('button', { name: 'Sign in or create account' })).toBeVisible({ timeout: 15_000 })
+
+  // Signed out on the account screen itself: the same, before the account is signed out.
+  await linkUp()
+  await page.evaluate(() => { location.hash = '#/account' })
+  await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+  await page.click('[data-signout]')
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  await expect.poll(onServer, { timeout: 15_000 }).toBeNull()
+})

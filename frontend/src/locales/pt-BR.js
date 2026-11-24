@@ -4727,6 +4727,8 @@ export const PT_BR_OVERRIDES = {
   "Your training stays on this device. An account is for your plan and purchases.": "Seu treino fica neste dispositivo. A conta serve para seu plano e suas compras.",
   "Signed in as {0}. Your training is stored on this device.": "Conectado como {0}. Seu treino fica salvo neste dispositivo.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Com uma conta, seu treino acompanha você nos seus outros dispositivos. Sem conta, ele fica neste dispositivo.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Não foi possível sair do seu treino no servidor, então nada foi alterado. Tente de novo quando estiver online.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Exclua seu treino primeiro: no app, abra Configurações, depois Conta, depois Excluir minha conta. Em seguida, volte aqui para excluir esta conta.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

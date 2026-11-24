@@ -6372,4 +6372,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "تمارينك تبقى على هذا الجهاز. الحساب لخطتك ومشترياتك.",
   "Signed in as {0}. Your training is stored on this device.": "تم تسجيل الدخول باسم {0}. تمارينك محفوظة على هذا الجهاز.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "مع حساب، تنتقل تمارينك معك إلى أجهزتك الأخرى. بدونه تبقى على هذا الجهاز.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "تعذّر تسجيل الخروج من تمارينك على الخادم، لذلك لم يتغيّر شيء. حاول مجددًا عندما تكون متصلًا بالإنترنت.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "احذف تمارينك أولًا: في التطبيق افتح «الإعدادات» ثم «الحساب» ثم «حذف حسابي». بعد ذلك عُد إلى هنا لحذف هذا الحساب.",
 }

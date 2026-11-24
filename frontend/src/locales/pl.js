@@ -6317,4 +6317,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Twój trening zostaje na tym urządzeniu. Konto służy do planu i zakupów.",
   "Signed in as {0}. Your training is stored on this device.": "Zalogowano jako {0}. Twój trening jest zapisany na tym urządzeniu.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Z kontem Twój trening jest z Tobą także na innych urządzeniach. Bez konta zostaje na tym urządzeniu.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Nie udało się wylogować Twojego treningu na serwerze, więc nic nie zostało zmienione. Spróbuj ponownie, gdy będziesz online.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Najpierw usuń swój trening: w aplikacji otwórz Ustawienia, potem Konto, potem Usuń moje konto. Następnie wróć tutaj, aby usunąć to konto.",
 }

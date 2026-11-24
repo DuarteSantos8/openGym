@@ -37,11 +37,13 @@ function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) 
 
 let where = ''
 function Where() { where = useLocation().pathname; return null }
-async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn(), link = vi.fn(), from = null } = {}) {
+const noServer = () => ({ user: () => null, signOut: vi.fn(async () => ({ owed: false })) })
+const noNote = () => ({ leaving: vi.fn(), forget: vi.fn(), owner: () => null })
+async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn(), link = vi.fn(), server = noServer(), note = noNote(), from = null } = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  await act(async () => { root.render(<MemoryRouter initialEntries={from ? [from, url] : [url]} initialIndex={from ? 1 : 0}><Where /><Account client={client} go={go} enter={enter} link={link} /></MemoryRouter>) })
+  await act(async () => { root.render(<MemoryRouter initialEntries={from ? [from, url] : [url]} initialIndex={from ? 1 : 0}><Where /><Account client={client} go={go} enter={enter} link={link} server={server} note={note} /></MemoryRouter>) })
   await act(async () => {})
   return go
 }
@@ -446,6 +448,92 @@ describe('Account', () => {
     expect(where).toBe('/account')
     // On its way: the button waits, so a second press cannot start a second sign-in.
     expect($('[data-continue]').disabled).toBe(true)
+  })
+
+  // The two sessions end together (lib/cloud/server-link.js; found in review of #78). ----------
+  const me = { user: { id: 'u-1', email: 'a@example.com' } }
+  // A server profile is open; signing out of it works unless `stuck`.
+  const openServer = ({ stuck = false } = {}) => {
+    let user = { id: 7, name: 'Sam' }
+    return { user: () => user, signOut: vi.fn(async () => { if (stuck) return { owed: true, count: 2, stashed: false }; user = null; return { owed: false } }) }
+  }
+
+  it('Continue notes whose account is on its way before leaving for the server\'s sign-in', async () => {
+    const c = fakeClient({ session: me })
+    const order = []
+    const note = { ...noNote(), leaving: vi.fn(() => order.push('note')) }
+    await mount(c, { enter: () => 'link', link: () => order.push('leave'), note })
+    await click('[data-continue]')
+    expect(note.leaving).toHaveBeenCalledWith('u-1')
+    expect(order).toEqual(['note', 'leave'])
+  })
+
+  it('a server profile opened through another account is signed out first, then Continue goes through the sign-in', async () => {
+    const c = fakeClient({ session: me })
+    const server = openServer(), link = vi.fn(), note = noNote()
+    await mount(c, { enter: () => 'switch', link, server, note })
+    await click('[data-continue]')
+    expect(server.signOut).toHaveBeenCalledWith({ force: true })
+    expect(note.leaving).toHaveBeenCalledWith('u-1')
+    expect(link).toHaveBeenCalledTimes(1)
+    expect(where).toBe('/account')
+  })
+
+  it('and if that profile cannot be signed out, Continue goes nowhere and says so', async () => {
+    const c = fakeClient({ session: me })
+    const server = openServer({ stuck: true }), link = vi.fn()
+    await mount(c, { enter: () => 'switch', link, server })
+    await click('[data-continue]')
+    expect(link).not.toHaveBeenCalled()
+    expect(where).toBe('/account')
+    expect($('[role="alert"]').textContent).toMatch(/could not be signed out/)
+    expect($('[data-continue]').disabled).toBe(false)
+  })
+
+  it('signing out of the account signs out of the server profile too, and first', async () => {
+    const c = fakeClient({ session: me })
+    const server = openServer(), note = noNote()
+    const order = []
+    const really = server.signOut.getMockImplementation()
+    server.signOut.mockImplementationOnce(async o => { order.push('server'); return really(o) })
+    c.auth.signOut.mockImplementationOnce(async () => { order.push('account'); c.set(null) })
+    await mount(c, { server, note })
+    await click('[data-signout]')
+    expect(server.signOut).toHaveBeenCalledWith({ force: true })
+    expect(order).toEqual(['server', 'account'])
+    expect(note.forget).toHaveBeenCalled()
+    expect(mode()).toBe('signin')
+  })
+
+  it('a server profile that cannot be signed out keeps the account signed in, and says so', async () => {
+    const c = fakeClient({ session: me })
+    const server = openServer({ stuck: true })
+    await mount(c, { server })
+    await click('[data-signout]')
+    expect(c.auth.signOut).not.toHaveBeenCalled()
+    expect(mode()).toBe('account')
+    expect($('[role="alert"]').textContent).toMatch(/could not be signed out/)
+  })
+
+  it('with no server profile open, signing out touches nothing on the server', async () => {
+    const c = fakeClient({ session: me })
+    const server = noServer()
+    await mount(c, { server })
+    await click('[data-signout]')
+    expect(server.signOut).not.toHaveBeenCalled()
+    expect(c.auth.signOut).toHaveBeenCalled()
+  })
+
+  // Deleting the account here removes the account, not the training on the server. With a
+  // server profile open, saying "deleted" would leave that behind: it has to go first, and the
+  // app's own Settings is where that is done, with its own proof.
+  it('with a server profile open, the account cannot be deleted from here until the training is', async () => {
+    const c = fakeClient({ session: me })
+    await mount(c, { server: openServer() })
+    expect($('.iv-acct-danger').textContent).toMatch(/Delete your training first/)
+    expect($('[data-delete]')).toBeNull()
+    expect($('input[name="confirm"]')).toBeNull()
+    expect(c.fn).not.toHaveBeenCalled()
   })
 
   it('Continue goes to the app in every other case, and starts no sign-in', async () => {
