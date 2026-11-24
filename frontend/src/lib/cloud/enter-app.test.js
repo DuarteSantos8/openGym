@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { enterApp } from './enter-app.js'
 
-const store = (over = {}) => ({ user: null, config: null, isGuest: () => false, setGuest: vi.fn(), ...over })
+// Like the app's store: choosing this device's profile is kept, and isGuest reads it back.
+const store = (over = {}) => { let guest = false; return { user: null, config: null, isGuest: () => guest, setGuest: vi.fn(v => { guest = !!v }), ...over } }
 
 describe('enterApp: a signed-in account going on into the app', () => {
   it('opens this device\'s own profile when nobody is in the app yet', () => {
@@ -66,6 +67,19 @@ describe('enterApp: a signed-in account going on into the app', () => {
     // said or not said, the default is that it lasts
     expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } } }), { hostedId: 'u-1', lasting: true })).toBe('link')
     expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } } }), { hostedId: 'u-1' })).toBe('link')
+  })
+
+  // Found in review of #82: a browser whose storage refuses everything cannot open a device
+  // profile either (the store keeps that choice in storage, and writing it throws). That is an
+  // answer of its own, not an error to trip over.
+  it('says so when this device\'s profile cannot be opened because storage refuses it', () => {
+    const throws = store({ config: { allow_guest: true }, setGuest: () => { throw new Error('QuotaExceededError') } })
+    expect(enterApp(throws)).toBe('refused')
+    // or the write went nowhere without a word
+    const silent = store({ config: { allow_guest: true }, setGuest: () => {}, isGuest: () => false })
+    expect(enterApp(silent)).toBe('refused')
+    const full = store({ config: { oidc: { label: 'Ironvane', only: true }, allow_guest: true }, setGuest: () => { throw new Error('QuotaExceededError') } })
+    expect(enterApp(full, { hostedId: 'u-1', lasting: false })).toBe('refused')
   })
 
   it('but not for someone already on a server profile', () => {

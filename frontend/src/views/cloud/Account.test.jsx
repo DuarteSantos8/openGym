@@ -565,6 +565,20 @@ describe('Account', () => {
     expect(where).toBe('/home')
   })
 
+  // Found in review of #82: nothing can be stored at all. The line must not promise that training
+  // is kept, and Continue must say why it goes nowhere.
+  it('where the browser stores nothing, the line promises nothing and Continue says why it cannot go on', async () => {
+    const c = fakeClient({ session: me })
+    c.auth.lasting = () => false
+    await mount(c, { enter: () => 'refused' })
+    expect($('[data-not-kept]').textContent).not.toMatch(/stays on this device/)
+    expect($('[data-not-kept]').textContent).toMatch(/may not be kept/)
+    await click('[data-continue]')
+    expect(where).toBe('/account')
+    expect($('[role="alert"]').textContent).toMatch(/will not store anything/)
+    expect($('[data-continue]').disabled).toBe(false)
+  })
+
   it('a session that lasts shows no such line', async () => {
     const c = fakeClient({ session: me })
     await mount(c)
