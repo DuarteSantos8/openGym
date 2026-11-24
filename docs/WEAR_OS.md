@@ -44,6 +44,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   - Hold: the seconds left big, a teal bar whose last 5 s turn orange, a tick for each of the last
     three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
     phone: a 3-2-1 after the rest, then the hold.
+    If the phone logged that hold's set first (its own hold ended first), the hold here ends with it,
+    unlogged (`HoldSet`), so one hold is one set.
   - Metrics: the workout's time (it stands still while the phone has the workout paused), heart
     rate, volume, sets. Under it, by the crown or a swipe up, as on the Apple Watch: Pulse (the
     average heart rate and the line of every reading, when there is one), Effort (the mean

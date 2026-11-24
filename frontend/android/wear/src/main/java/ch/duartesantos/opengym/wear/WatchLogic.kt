@@ -394,6 +394,27 @@ fun OutboxCore.eventType(item: OutItem): String? = try {
     WireJson.parseToJsonElement(item.json).jsonObject["type"]?.jsonPrimitive?.content
 } catch (_: Exception) { null }
 
+/**
+ * The set a running hold will log when it ends (the Apple Watch's holdFor). With "Timed holds start by
+ * themselves" the phone runs the hold too and logs it first; this one is then over, unlogged, or it
+ * would log the set after it. The set is found by its id when it has one (a set added or removed on the
+ * phone moves the places), else by place. `w` is the weight on the screen when the hold began: a weighted
+ * hold logs that, not the numbers of whatever set is picked by the time it ends.
+ */
+data class HoldSet(val entry: Int, val set: Int, val side: String?, val sid: String?, val w: Double? = null) {
+    /** Where that set (and side, on a per-side set) is now in `s` as (entry, place), if it is still there and still to log. */
+    fun placeIn(s: SessionState): Pair<Int, Int>? {
+        val w = s.workout ?: return null
+        val at = (if (!sid.isNullOrEmpty()) w.entries.indices.firstNotNullOfOrNull { ei ->
+            w.entries[ei].sets.indexOfFirst { it.sid == sid }.takeIf { it >= 0 }?.let { ei to it }
+        } else entry to set) ?: return null
+        val row = w.entries.getOrNull(at.first)?.sets?.getOrNull(at.second) ?: return null
+        return at.takeIf { !row.done && row.sideUp == side }
+    }
+
+    fun openIn(s: SessionState): Boolean = placeIn(s) != null
+}
+
 /* ---------- the 3-2-1, the touch lock, the weigh-in, a workout left running ---------- */
 
 object Countdown {
