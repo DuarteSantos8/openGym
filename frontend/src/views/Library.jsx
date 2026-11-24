@@ -3,7 +3,8 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { EXDB, BODYPARTS, allExercises, byCategories, byEquipment, togglePick, searchExercises, warmSearch, similarExercises } from '../lib/exercises.js'
+import { searchWithBrands } from '../lib/brand-search.js'
+import { EXDB, BODYPARTS, allExercises, byCategories, byEquipment, togglePick, warmSearch, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
@@ -44,7 +45,8 @@ export default function Library() {
   const ownCount = (S.customEx || []).filter(c => c && c.id).length
   // The search words of every exercise, built while the phone is idle before the first letter.
   useEffect(() => { warmSearch(allExercises(useStore.getState().S)) }, [])
-  const inPart = searchExercises(allExercises(S).filter(e => !bp || e.bp === bp), q)
+  // By name, and by the machine brand you gave it at a gym (#1082, lib/brand-search.js).
+  const inPart = searchWithBrands(allExercises(S).filter(e => !bp || e.bp === bp), S, q)
   // Kind of exercise (strength, stretching, cardio...), the same fallback as equipment below: a
   // choice the search or body part has narrowed away is ignored for now, never a dead end.
   const { on: catOn, list: base } = byCategories(inPart, cat)

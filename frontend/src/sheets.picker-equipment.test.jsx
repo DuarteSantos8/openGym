@@ -87,3 +87,21 @@ describe('exercise picker equipment filter', () => {
     expect(isOn(chipByText(host, 'dumbbell'))).toBe(false)
   })
 })
+
+// #1082: the picker finds an exercise by the machine brand set for it at a gym.
+describe('exercise picker: search by machine brand', () => {
+  it('lists the exercise kept per gym under its brand', async () => {
+    const { CATALOGUE } = await import('./lib/exercises.js')
+    const ext = CATALOGUE.find(e => /^lever leg extension$/i.test(e.n))
+    useStore.setState(s => ({ S: { ...s.S, exGym: { [ext.id]: { split: true, brands: { g1: 'Technogym' } } } } }))
+    exercisePicker(vi.fn())
+    const host = renderTop()
+    const input = host.querySelector('input')
+    act(() => {
+      Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set.call(input, 'technogym')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    const names = [...host.querySelectorAll('.item .tt')].map(x => x.textContent.toLowerCase()).filter(n => n !== 'create your own exercise')
+    expect(names[0]).toContain('lever leg extension')
+  })
+})

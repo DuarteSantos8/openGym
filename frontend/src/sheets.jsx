@@ -7,7 +7,8 @@ import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
 import { weighInOff } from './lib/weigh-in-check.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, byCategories, byEquipment, togglePick, smOf, searchExercises, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { searchWithBrands } from './lib/brand-search.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, byCategories, byEquipment, togglePick, smOf, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
@@ -2089,7 +2090,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   const profile = activeProfile(gymS)
   const profiles = st.equipProfiles || []
   const inScope = e => bp === '★' ? usage[e.id] : bp === '☆' ? isFav(st, e.id) : (!bp || e.bp === bp)
-  let inPart = searchExercises(bp === SAME ? sameMuscleFirst(all, likeEx) : all.filter(inScope), q)
+  // By name, and by the machine brand you gave it at a gym (#1082, lib/brand-search.js).
+  let inPart = searchWithBrands(bp === SAME ? sameMuscleFirst(all, likeEx) : all.filter(inScope), st, q)
   if (bp === '★') inPart = [...inPart].sort((a, b) => (usage[b.id] - usage[a.id]) || exerciseNameFor(a).localeCompare(exerciseNameFor(b)))
   // The Library's Type row (issue #521), with its fallback: a type the search or muscle group
   // narrowed away is ignored for this view, not forgotten.
