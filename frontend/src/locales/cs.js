@@ -6285,4 +6285,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "S účtem máš trénink i na svých dalších zařízeních. Bez něj zůstává v tomto zařízení.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Tvůj trénink na serveru se nepodařilo odhlásit, takže se nic nezměnilo. Zkus to znovu, až budeš online.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Nejdřív smaž svůj trénink: v aplikaci otevři Nastavení, pak Účet a pak Smazat můj účet. Potom se vrať sem a smaž tento účet.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "Tento prohlížeč tě nenechává přihlášeného (anonymní režim, nebo má plné úložiště). Tvůj trénink tady zůstává v tomto zařízení.",
 }

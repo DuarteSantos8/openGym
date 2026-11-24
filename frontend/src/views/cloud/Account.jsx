@@ -184,10 +184,19 @@ export default function Account({ client = cloud(), go = url => { location.assig
     await server.signOut({ force: true })
     if (server.user()) throw { code: 'server_signout' }
   }
+  // Whether this browser keeps the account session over a page load. The server's sign-in is a
+  // full-page trip, so where it does not, that trip is never started (lib/cloud/enter-app.js).
+  const lasting = typeof client.auth.lasting !== 'function' || client.auth.lasting()
   const onward = () => run(async () => {
-    const how = enter({ hostedId: session.user.id, owner: note.ownerOf(server.user()) })
-    if (how === 'switch') await endServer()
-    if (how !== 'link' && how !== 'switch') { nav('/home'); return }
+    const who = () => ({ hostedId: session.user.id, owner: note.ownerOf(server.user()), lasting })
+    let how = enter(who())
+    if (how === 'switch') {
+      await endServer()
+      // Someone else's profile is out of the way. Without a session that lasts, what comes next
+      // is asked again: this device's profile, not the server's sign-in.
+      if (!lasting) how = enter(who())
+    }
+    if (!lasting || (how !== 'link' && how !== 'switch')) { nav('/home'); return }
     note.leaving(session.user.id)
     setLeaving(true)
     link()
@@ -202,6 +211,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
   }
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
+    {!lasting && <p className="iv-acct-hint" data-not-kept="">{t('This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.')}</p>}
     <div className="iv-acct-actions">
       <Button variant="primary" disabled={busy || leaving} aria-busy={leaving || undefined} type="button" data-continue="" onClick={onward}>{t('Continue')}</Button>
     </div>

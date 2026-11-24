@@ -53,6 +53,21 @@ describe('enterApp: a signed-in account going on into the app', () => {
     expect(enterApp(st)).toBe('already')
   })
 
+  // Found in review of #81: the server's sign-in is a full-page trip. Where the browser is not
+  // keeping the account session (private browsing, storage full), the person comes back signed
+  // out, and the profile just opened is ended again. So that trip is not offered there: what
+  // works is this device's profile.
+  it('where the account session will not outlive the page, the server\'s sign-in is not the way in', () => {
+    const open = store({ config: { oidc: { label: 'Ironvane', only: true }, allow_guest: true } })
+    expect(enterApp(open, { hostedId: 'u-1', lasting: false })).toBe('device')
+    expect(open.setGuest).toHaveBeenCalledWith(true)
+    expect(enterApp(store({ config: { oidc: { label: 'Ironvane' }, allow_guest: true }, isGuest: () => true }), { hostedId: 'u-1', lasting: false })).toBe('already')
+    expect(enterApp(store({ config: { oidc: { label: 'Ironvane', only: true }, allow_guest: false } }), { hostedId: 'u-1', lasting: false })).toBe('server')
+    // said or not said, the default is that it lasts
+    expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } } }), { hostedId: 'u-1', lasting: true })).toBe('link')
+    expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } } }), { hostedId: 'u-1' })).toBe('link')
+  })
+
   it('but not for someone already on a server profile', () => {
     expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } }, user: { id: 1 } }))).toBe('already')
   })

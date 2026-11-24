@@ -6319,4 +6319,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "계정이 있으면 운동 기록이 다른 기기에서도 이어집니다. 계정이 없으면 이 기기에만 남습니다.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "서버에 있는 운동 기록에서 로그아웃하지 못해 아무것도 변경되지 않았습니다. 온라인 상태일 때 다시 시도해 주세요.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "먼저 운동 기록을 삭제하세요. 앱에서 설정, 계정, 내 계정 삭제를 차례로 여세요. 그런 다음 여기로 돌아와 이 계정을 삭제하세요.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "이 브라우저는 로그인 상태를 유지하지 않습니다(시크릿 모드이거나 저장 공간이 가득 참). 여기서는 운동 기록이 이 기기에만 남습니다.",
 }
