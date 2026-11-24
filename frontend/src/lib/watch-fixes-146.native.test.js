@@ -107,3 +107,12 @@ describe('iPhone rest alarm follows the watch while locked (RestAlertPlugin.swif
     expect(read('../../ios/App/App.xcodeproj/project.pbxproj')).toMatch(/PhoneRestAlarm\.swift in Sources/)
   })
 })
+
+describe('Apple Watch summary takes the crown (SideScreens.swift, #1308 / #1310)', () => {
+  const summary = between(code(WATCH + 'SideScreens.swift'), 'struct SummaryView', '\nstruct ')
+  it('focuses its scroll view when it opens', () => {
+    expect(summary).toMatch(/@FocusState private var crown: Bool/)
+    expect(summary).toMatch(/\.focused\(\$crown\)/)
+    expect(summary).toMatch(/crown = true/)
+  })
+})

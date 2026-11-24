@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Apple Watch: the workout summary scrolls with the crown straight away, no touch needed first (#1308, thanks @cubetes for #1310).
 - iPhone: +15, -15 and Skip on the watch move the phone's rest alarm and Live Activity countdown even while the phone is locked in your pocket, so it no longer rings at the old time (#1405, thanks @cubetes for #1406).
 - Apple Watch: the iPhone sends the watch its workout as plain ASCII. One "×" in a history line made the whole message count double, and a big workout could go over the limit and lose its "last time" lines (#1469, thanks @cubetes for #1470).
 - Fixed: finishing on the watch while the phone showed "That's the whole workout!" left that sheet under the summary, so closing the summary asked you to finish a workout already saved (#1278, thanks @cubetes for #1279).
