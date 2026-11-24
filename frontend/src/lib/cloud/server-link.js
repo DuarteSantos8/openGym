@@ -28,6 +28,7 @@ export const LINK_KEY = 'gym_cloud_link_v1'
 export const PENDING_MS = 15 * 60_000
 /** How long "this profile was ended" is said to the other tabs. */
 export const ENDED_MS = 2 * 60_000
+const DELETE_MS = 30_000
 
 function browserStorage() {
   try { return typeof localStorage === 'undefined' ? null : localStorage } catch { return null }
@@ -36,6 +37,10 @@ const idOf = user => (user && (typeof user.id === 'string' || typeof user.id ===
 
 function valid(v) {
   if (!v || typeof v.id !== 'string' || !v.id) return null
+  if (v.state === 'deleting' && Number.isFinite(v.at)) {
+    const prior = v.prior?.state === 'deleting' ? null : valid(v.prior)
+    return { id: v.id, state: 'deleting', at: v.at, prior }
+  }
   if (v.state === 'pending' && typeof v.at === 'number') return { id: v.id, state: 'pending', at: v.at }
   if (v.state === 'linked' && typeof v.server === 'string' && v.server) return { id: v.id, state: 'linked', server: v.server }
   if (v.state === 'ended' && typeof v.server === 'string' && v.server && typeof v.at === 'number') return { id: v.id, state: 'ended', server: v.server, at: v.at }
@@ -58,6 +63,17 @@ export function createServerLink(storage = browserStorage(), now = () => Date.no
     try { if (note) storage?.setItem(LINK_KEY, JSON.stringify(note)); else storage?.removeItem(LINK_KEY) } catch { /* the page's memory will do */ }
   }
   return {
+    /** Pause the watcher for the matching hosted account during server deletion. */
+    beginDeletion(id) {
+      const before = read()
+      const prior = before?.state === 'deleting' ? before.prior : before
+      const at = now()
+      write({ id, state: 'deleting', at, prior })
+      return () => {
+        const current = read()
+        if (current?.state === 'deleting' && current.id === id && current.at === at) write(prior)
+      }
+    },
     /** This account is about to go through the server's sign-in. */
     leaving(hostedId) {
       if (typeof hostedId !== 'string' || !hostedId) return
@@ -78,7 +94,12 @@ export function createServerLink(storage = browserStorage(), now = () => Date.no
      * @returns {'ok'|'end'} 'end': that server profile is not this account's and has to be signed out
      */
     check({ hostedId, serverUser }) {
-      const note = read()
+      let note = read()
+      if (note?.state === 'deleting') {
+        if (now() - note.at <= DELETE_MS && note.id === hostedId) return 'ok'
+        note = note.prior
+        write(note)
+      }
       if (!note) return 'ok'
       if (note.state === 'pending') {
         if (now() - note.at > PENDING_MS) { write(null); return 'ok' }

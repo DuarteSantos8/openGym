@@ -1,5 +1,6 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "只能在为此服务器配置的网站上登录。",
   "Check the amount and calculated totals.": "请检查数量和计算出的总量。",
   "Configured on this server. Connection is checked only when you choose Lookup.": "此服务器已配置。仅在选择查询时检查连接。",
   "Connect this phone to a server to look up food.": "请将此手机连接到服务器以查询食物。",

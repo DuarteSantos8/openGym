@@ -57,9 +57,13 @@ export function oidcRoutes(d) {
   const flows = pending();
   const handoffs = pending();
   const tickets = pending();
+  const deletionProofs = pending();
   const FLOW_COOKIE = d.secure ? '__Host-gymoidc' : 'gymoidc';
   const flowCookie = v => `${FLOW_COOKIE}=${v}; Path=/; Max-Age=${FLOW_TTL_MS / 1000}; HttpOnly;${d.secure ? ' Secure;' : ''} SameSite=Lax`;
   const clearFlowCookie = `${FLOW_COOKIE}=; Path=/; Max-Age=0; HttpOnly;${d.secure ? ' Secure;' : ''} SameSite=Lax`;
+  const deleteCookie = d.secure ? '__Host-gymoidc-delete' : 'gymoidc-delete';
+  const deletionCookie = (value, seconds = 0) => deleteCookie + '=' + value + '; Path=/; Max-Age=' + seconds + '; HttpOnly;' + (d.secure ? ' Secure;' : '') + ' SameSite=Lax';
+  const deleteLanding = result => cfg.appBase + '/#/account?server-delete=' + result;
   // A redirect that carries a code or a state must not leak it onward, nor be cached.
   const NO_LEAK = { 'Cache-Control': 'no-store', Pragma: 'no-cache', 'Referrer-Policy': 'no-referrer' };
 
@@ -71,6 +75,7 @@ export function oidcRoutes(d) {
   // tidies the address bar). Settings → Account for the two flows that started there.
   const webLanding = (flow, q) => `${cfg.appBase}/?${q}#/${flow && (flow.mode === 'link' || flow.mode === 'reauth') ? 'settings/account' : ''}`;
   function finishError(res, flow, code) {
+    if (flow?.mode === 'delete') return redirect(res, deleteLanding('failed'), [clearFlowCookie, deletionCookie('')]);
     if (flow?.mode === 'app') {
       return redirect(res, `${flow.app.ret}?error=${encodeURIComponent(code)}&astate=${encodeURIComponent(flow.app.astate)}`, [clearFlowCookie]);
     }
@@ -114,19 +119,26 @@ export function oidcRoutes(d) {
 
   async function verifiedClaims(flow, code, meta) {
     const tok = await provider.exchange({ code, verifier: flow.verifier });
+    const checkedAt = now();
     const claims = await verifyIdToken(tok.id_token, {
       jwks: await provider.jwks(), refetch: () => provider.jwks({ force: true }),
-      issuer: meta.issuer, clientId: cfg.clientId, nonce: flow.nonce, now: now(),
+      issuer: meta.issuer, clientId: cfg.clientId, nonce: flow.nonce, now: checkedAt,
       algs: allowedAlgs(meta.id_token_signing_alg_values_supported),
       maxAgeSec: flow.mode === 'reauth' ? PROOF_WINDOW_MS / 1000 : null
     });
+    if (flow.mode === 'delete') {
+      const age = checkedAt - claims.auth_time * 1000;
+      if (!Number.isFinite(claims.auth_time) || age < 0 || age > PROOF_WINDOW_MS) {
+        throw new OidcError('stale', 'the ID token does not confirm recent authentication');
+      }
+    }
     // Groups and the e-mail often live only in userinfo (Authelia, Keycloak without a mapper).
     // Its answer is used only when it is about the same person (OIDC Core 5.3.2).
     const needs = claims[cfg.groupsClaim] === undefined || claims.email === undefined;
     if (needs && tok.access_token) {
       const ui = await provider.userinfo(tok.access_token);
       if (ui && typeof ui === 'object' && ui.sub === claims.sub) {
-        const { iss, aud, exp, iat, nonce, azp, ...rest } = ui;
+        const { iss, aud, exp, iat, nonce, azp, auth_time, ...rest } = ui;
         return { ...rest, ...claims };
       }
     }
@@ -137,7 +149,7 @@ export function oidcRoutes(d) {
     'GET /api/oidc/start': async (req, res) => {
       const q = new URL(req.url, 'http://x').searchParams;
       const mode = q.get('mode') || 'web';
-      if (!['web', 'app', 'link', 'reauth'].includes(mode)) return json(res, 400, { error: 'unknown mode' });
+      if (!['web', 'app', 'link', 'reauth', 'delete'].includes(mode)) return json(res, 400, { error: 'unknown mode' });
       let app = null;
       if (mode === 'app') {
         // Checked before anything else and answered here, never by redirecting: an address that
@@ -178,8 +190,29 @@ export function oidcRoutes(d) {
       p.set('nonce', nonce);
       p.set('code_challenge', s256(verifier));
       p.set('code_challenge_method', 'S256');
-      if (mode === 'reauth') p.set('prompt', 'login');
+      if (['reauth', 'delete'].includes(mode)) p.set('prompt', 'login');
       redirect(res, u.toString(), [flowCookie(binding)]);
+    },
+
+    'POST /api/oidc/delete-profile': async (req, res) => {
+      const clear = { 'Set-Cookie': [deletionCookie('')] };
+      const { subject, confirm } = await readBody(req);
+      if (confirm !== 'delete') return json(res, 400, { error: 'confirm profile deletion' });
+      const [cookie] = d.cookieValues(req, deleteCookie) || [];
+      const proof = deletionProofs.take(cookie, now());
+      if (!proof || proof.sub !== subject) return json(res, 403, { error: 'identity not confirmed' }, clear);
+      const user = linkedTo(d.db(), proof.iss, proof.sub);
+      const current = readSession(req);
+      if (current && current !== user) return json(res, 409, { error: 'another profile is signed in' }, clear);
+      if (!user) return json(res, 200, { deleted: false }, clear);
+      if (user.disabled) return json(res, 403, { error: 'this account has been disabled', code: 'disabled' }, clear);
+      if (d.lastAdminLeaving(user)) {
+        return json(res, 409, { error: 'the last admin cannot leave while other profiles remain', code: 'last-admin' }, clear);
+      }
+      d.removeAccount(user);
+      audit(req, 'auth.account.delete', { user, msg: 'provider' });
+      if (current) clear['Set-Cookie'].push(...d.clearCookie);
+      return json(res, 200, { deleted: true, profileId: user.id }, clear);
     },
 
     'GET /api/oidc/callback': async (req, res) => {
@@ -212,6 +245,13 @@ export function oidcRoutes(d) {
       }
       const db = d.db();
       const at = now();
+
+      if (flow.mode === 'delete') {
+        if (!accessOf(claims, cfg).allowed) return finishError(res, flow, 'group');
+        const proof = rand();
+        deletionProofs.put(proof, { iss: claims.iss, sub: claims.sub }, TICKET_TTL_MS, at);
+        return redirect(res, deleteLanding('ready'), [clearFlowCookie, deletionCookie(proof, TICKET_TTL_MS / 1000)]);
+      }
 
       // Linking from Settings, or confirming it is you: the browser that started it must still be
       // signed in as the profile it started for.

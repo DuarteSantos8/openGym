@@ -53,6 +53,14 @@ Epic status:
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
 
 - **Hosted API (2026-11-23):** The Render Blueprint is live with one Starter API service and a 1 GB disk. Direct health returns HTTP 200 with a writable data directory, and API config offers OIDC. The Vercel rewrite needs to reach the preview before the live sign-in and admin checks.
+- **Linked account deletion:** `next/EP19-delete-fixes` implements ADR 0014 with
+  a deletion-only proof, local-workout preservation and hosted subscription
+  preflight. Deploy the Edge Function and verify the hosted issuer's
+  `auth_time` before activating the preview build.
+
+- **In review: `next/EP19-hosted-mcp`.** The optional hosted MCP service and preview routing are prepared. Provisioning needs owner approval and external connectors need a reachable HTTPS address.
+- **Merged (#85): `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
+- **OIDC follow-up:** Explain when the current website has no sign-in or guest path, and keep the provider row in native Settings.
 
 ## 2. Merging (only the owner merges)
 

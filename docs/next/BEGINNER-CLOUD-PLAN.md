@@ -1,7 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-23, after PR #81 merged. The Render API is live and Supabase OAuth is enabled. The Vercel rewrite and live sign-in checks are pending. Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
-Status as of 2026-11-23, after PRs #56 to #83 were merged and with `next/EP19-storage-refused` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status 2026-11-24. The origin guard, MCP Blueprint and linked deletion prototype are merged in #85–#87. Browser sign-in guidance is merged in #88. Linked deletion fixes are under review and hosted verification is pending. Read after `NEXT-STEPS.md`.
 
 ## Why
 

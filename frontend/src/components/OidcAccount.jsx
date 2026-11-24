@@ -6,7 +6,8 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
-import { oidcOn, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText, oidcOkText } from '../lib/oidc.js'
+import { MOBILE } from '../lib/mobile.js'
+import { oidcOn, oidcWebOn, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText, oidcOkText } from '../lib/oidc.js'
 import { Row } from './ui.jsx'
 import { ProveOwner, passwordError } from './PasswordAuth.jsx'
 
@@ -34,7 +35,7 @@ export function OidcRow({ state, changed }) {
     const msg = a.error ? oidcErrorText(a.error, label) : oidcOkText(a.ok, label)
     if (msg && a.error !== 'cancelled') ui().toast(msg)
   }, [])
-  if (!oidcOn(config) || !user) return null
+  if (!user || !(MOBILE ? oidcOn(config) && linked : oidcWebOn(config))) return null
   const open = () => ui().openSheet(close => <OidcSheet close={close} linked={linked} label={label} state={state}
     unlinked={() => { setLinked(false); changed?.() }} />)
   return <Row icon="shield" iconTint="var(--indigo)" title={t('Sign in with {0}', label)} accessory="chevron"

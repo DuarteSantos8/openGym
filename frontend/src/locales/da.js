@@ -1,6 +1,7 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  "Sign-in is only available on the server’s configured website.": "Du kan kun logge ind på det websted, der er konfigureret til denne server.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",
   "Set once": "Indstil én gang",

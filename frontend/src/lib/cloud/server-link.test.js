@@ -108,6 +108,23 @@ describe('whose server profile this is', () => {
     expect(b.tab().check({ hostedId: null, serverUser: sam })).toBe('end')      // the profile that then arrives is not theirs
   })
 
+  it('pauses the ended note during deletion, then restores it on failure or timeout', () => {
+    const b = browser(), tab = linked(b)
+    tab.ended()
+    const finish = tab.beginDeletion('u-1')
+    const seen = { hostedId: 'u-1', serverUser: sam }
+    expect(b.tab().check(seen)).toBe('ok')
+    finish()
+    expect(b.tab().check(seen)).toBe('end')
+    tab.beginDeletion('u-1')
+    b.tick(30_001)
+    expect(b.tab().check(seen)).toBe('end')
+  })
+  it('does not suppress a different account while deletion is pending', () => {
+    const b = browser(), tab = linked(b)
+    tab.beginDeletion('u-1')
+    expect(b.tab().check({ hostedId: 'u-2', serverUser: sam })).toBe('end')
+  })
   it('going through the sign-in again replaces an ended note at once', () => {
     const b = browser(), tab = linked(b)
     tab.ended()

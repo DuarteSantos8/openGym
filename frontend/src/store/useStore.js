@@ -2159,10 +2159,16 @@ export const useStore = create((set, get) => {
     async deleteAccount(name, proof = {}) {
       const uid = get().user?.id
       await api('/api/account/delete', { method: 'POST', body: JSON.stringify({ name, ...proof }) })
+      await get().forgetDeletedAccount(uid)
+    },
+    // A deletion proof can remove a profile that was never opened on this device.
+    async forgetDeletedAccount(uid) {
+      if (!uid || get().user?.id !== uid) return
       await stopTimers()
       const all = await readStashes()
       const key = stashKey(serverBase(), uid)
       if (all[key]) { delete all[key]; await writeStashes(all) }
+      if (get().user?.id !== uid) return
       await clearLocalSession()
       if (MOBILE) {
         await forgetRemote()

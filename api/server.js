@@ -2395,7 +2395,7 @@ if (OIDC.enabled) {
     json, readBody, readSession, sessionOf, audit, auditFail, saveDb, publicUser, requireAdmin,
     db: () => db, sessionCookie, makeSession, claimFirstAdmin, isAdmin, nameTaken, normalizeEmail,
     inviteOnly: INVITE_ONLY, proveOwner, otherWaysIn: u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0),
-    cookieValues,
+    cookieValues, clearCookie, removeAccount, lastAdminLeaving,
     syncRoles: TRAINERS ? (uid, roles) => org.syncClaimRoles(uid, roles) : null,
     throttle: req => { const a = limitAddress(req); return OIDC_BURST.take(a) || ADDR_FAILS.retryAfter('oidc|' + a); },
     strike: req => strikeAddress(req, 'oidc')
@@ -2606,7 +2606,7 @@ const routes = {
       // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
       ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
-      ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
+      ...(oidcApi ? { oidc: { label: OIDC.label, webOrigin: OIDC.webOrigin, deleteProfile: true, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
@@ -2855,6 +2855,8 @@ const routes = {
     if (typeof body.name !== 'string' || body.name.trim() !== user.name) {
       return json(res, 400, { error: 'type the account name to confirm', code: 'confirm-name' });
     }
+    const sameIdentity = () => body.subject === undefined || (oidcWayIn(user) && user.oidc.sub === body.subject);
+    if (!sameIdentity()) return json(res, 403, { error: 'identity not confirmed' });
     const lastAdmin = () => lastAdminLeaving(user);
     const refuseLastAdmin = () => json(res, 409, { error: 'the last admin cannot leave while other profiles remain', code: 'last-admin' });
     if (lastAdmin()) return refuseLastAdmin();
@@ -2867,6 +2869,7 @@ const routes = {
     if (!proof) return;
     // Everything above awaited: the session may have ended, and another admin may have left.
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
+    if (!sameIdentity()) return json(res, 403, { error: 'identity not confirmed' });
     if (lastAdmin()) return refuseLastAdmin();
     removeAccount(user);
     audit(req, 'auth.account.delete', { user, msg: proof });

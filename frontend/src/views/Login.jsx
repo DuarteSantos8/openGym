@@ -13,7 +13,7 @@ import { askAddDeviceData } from '../sheets.jsx'
 import { passwordOn, PasswordRegisterForm, openPasswordSignIn } from '../components/PasswordAuth.jsx'
 import { openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { openLostAccess } from '../components/LostAccess.jsx'
-import { oidcOn, oidcOnly, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText } from '../lib/oidc.js'
+import { oidcWebOn, oidcOnly, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText } from '../lib/oidc.js'
 import { isCloud } from '../lib/edition.js'
 import './first-screen.css'
 
@@ -90,7 +90,7 @@ export default function Login() {
   const register = () => useUI.getState().openSheet(close => <RegisterSheet close={close} />)
   // Sign in with the identity provider (OIDC): first where the server offers it, the only button
   // with OIDC_ONLY, where passkeys are left for admins one tap further down.
-  const sso = oidcOn(config)
+  const sso = oidcWebOn(config)
   const ssoOnly = oidcOnly(config)
   const label = oidcLabel(config)
   const [ssoBack] = useState(() => oidcArrival()?.error || null)
@@ -151,12 +151,12 @@ export default function Login() {
         <AccountButton />
         {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       </div>
-      <p className="iv-first-note">{ssoOnly
+      <p className="iv-first-note">{ssoOnly && sso
         ? t('With an account your training follows you to your other devices. Without one it stays on this device.')
         : t('Your training stays on this device. An account is for your plan and purchases.')}</p>
       {/* The break-glass way, as on the provider-only screen below: an admin's passkey still
           works on that server when the provider is down. */}
-      {ssoOnly && webauthnOK() && (adminWay
+      {ssoOnly && sso && webauthnOK() && (adminWay
         ? <Button icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button>
         : <Button variant="ghost" className="dim" onClick={() => setAdminWay(true)}>{t('Admin? Use your passkey')}</Button>)}
     </div>
@@ -168,11 +168,12 @@ export default function Login() {
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
       {ssoNote}
       {ssoButton}
+      {!sso && !canGuest && <p>{t('Sign-in is only available on the server’s configured website.')}</p>}
       {/* A real button, not grey small print: trying the app on this device is a full way in. */}
       {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
-      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('This server signs everyone in with {0}. New here? Signing in makes your profile.', label)}</div>
+      {sso && <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('This server signs everyone in with {0}. New here? Signing in makes your profile.', label)}</div>}
       {/* The break-glass way: an admin's passkey still works when the provider is down. */}
-      {webauthnOK() && (adminWay
+      {sso && webauthnOK() && (adminWay
         ? <><div style={{ height: 14 }} /><Button icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button></>
         : <Button variant="ghost" className="dim" onClick={() => setAdminWay(true)} style={{ marginTop: 10 }}>{t('Admin? Use your passkey')}</Button>)}
     </div>

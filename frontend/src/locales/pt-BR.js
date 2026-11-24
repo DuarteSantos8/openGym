@@ -4,6 +4,7 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Sign-in is only available on the server’s configured website.": "Você só pode entrar pelo site configurado para este servidor.",
   "Check the amount and calculated totals.": "Confira a quantidade e os totais calculados.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Configurado neste servidor. A conexão só é verificada quando você escolhe Consultar.",
   "Connect this phone to a server to look up food.": "Conecte este celular a um servidor para consultar alimentos.",

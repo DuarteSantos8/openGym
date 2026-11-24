@@ -35,15 +35,19 @@ const BILLING = ['active', 'trialing', 'past_due', 'unpaid', 'paused', 'incomple
  * `on delete cascade`). Always the caller, never an id from the body. Needs `{ confirm: "delete" }`
  * so a stray request cannot do it, and is refused while a subscription is still running: the
  * account is what a later refund or cancellation would be looked up by, so that comes first.
+ * `{ confirm: "check" }` checks eligibility without deleting anything.
+ * An optional `subject` must match the signed-in user in either mode.
  */
 export async function deleteAccount(req, env, fetchImpl = fetch) {
   const { response, user } = await enter(req, env, fetchImpl)
   if (response) return response
   const body = await req.json().catch(() => null)
-  if (body?.confirm !== 'delete') return fail(env, 400, 'confirm')
+  if (body?.confirm !== 'delete' && body?.confirm !== 'check') return fail(env, 400, 'confirm')
+  if (Object.hasOwn(body, 'subject') && body.subject !== user.id) return fail(env, 403, 'subject_mismatch')
   const db = database(env, fetchImpl)
   const running = await db.select('subscriptions', `select=id&user_id=eq.${q(user.id)}&status=in.(${BILLING.join(',')})`)
   if (running.length) return fail(env, 409, 'subscription_active')
+  if (body.confirm === 'check') return json(env, 200, { allowed: true })
   const key = secretKey(env)
   const res = await fetchImpl(String(env.SUPABASE_URL).replace(/\/+$/, '') + '/auth/v1/admin/users/' + q(user.id), { method: 'DELETE', headers: { apikey: key, Authorization: 'Bearer ' + key } })
   if (!res.ok) return fail(env, 502, 'upstream')

@@ -1,5 +1,6 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "साइन इन केवल इस सर्वर के लिए तय की गई वेबसाइट पर किया जा सकता है।",
   "Check the amount and calculated totals.": "मात्रा और गणना किए गए कुल मान जाँचें।",
   "Configured on this server. Connection is checked only when you choose Lookup.": "इस सर्वर पर कॉन्फ़िगर किया गया है। कनेक्शन केवल खोजें चुनने पर जाँचा जाता है।",
   "Connect this phone to a server to look up food.": "खाद्य पदार्थ खोजने के लिए इस फ़ोन को सर्वर से जोड़ें।",

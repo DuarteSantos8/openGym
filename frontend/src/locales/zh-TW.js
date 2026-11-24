@@ -1,4 +1,5 @@
 export default {
+  "Sign-in is only available on the server’s configured website.": "只能在為此伺服器設定的網站上登入。",
   "Check the amount and calculated totals.": "請檢查數量與計算出的總量。",
   "Configured on this server. Connection is checked only when you choose Lookup.": "此伺服器已設定。僅在選擇查詢時檢查連線。",
   "Connect this phone to a server to look up food.": "請將此手機連接至伺服器以查詢食物。",

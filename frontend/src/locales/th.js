@@ -1,5 +1,6 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "ลงชื่อเข้าใช้ได้เฉพาะบนเว็บไซต์ที่ตั้งค่าไว้สำหรับเซิร์ฟเวอร์นี้เท่านั้น",
   "Check the amount and calculated totals.": "ตรวจสอบปริมาณและยอดรวมที่คำนวณแล้ว",
   "Configured on this server. Connection is checked only when you choose Lookup.": "ตั้งค่าบนเซิร์ฟเวอร์นี้แล้ว ระบบจะตรวจสอบการเชื่อมต่อเมื่อเลือกค้นหาเท่านั้น",
   "Connect this phone to a server to look up food.": "เชื่อมต่อโทรศัพท์นี้กับเซิร์ฟเวอร์เพื่อค้นหาอาหาร",
