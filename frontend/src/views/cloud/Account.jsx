@@ -66,7 +66,7 @@ function save(name, text) {
 
 // The app's own server, as this screen needs it: the profile open there, and signing out of it.
 const DELETE_SUBJECT = 'opengym.cloud.delete-subject'
-const appServer = { config: () => api('/api/config'), deleteProfile: (name, subject) => useStore.getState().deleteAccount(name, { provider: true, subject }), user: () => useStore.getState().user, signOut: opts => useStore.getState().signOut(opts) }
+const appServer = { config: () => useStore.getState().loadConfig(), deleteProfile: (name, subject) => useStore.getState().deleteAccount(name, { provider: true, subject }), user: () => useStore.getState().user, signOut: opts => useStore.getState().signOut(opts) }
 
 export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = who => enterApp(useStore.getState(), who), link = () => startWebSignIn(), server = appServer, note = serverLink() }) {
   const [params, setParams] = useSearchParams()
