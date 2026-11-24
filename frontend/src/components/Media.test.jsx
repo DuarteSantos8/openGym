@@ -380,3 +380,52 @@ describe('Thumb — a custom exercise', () => {
     expect(host.querySelector('img')).toBeNull()
   })
 })
+
+describe('Media — built-in exercise tap to pause', () => {
+  const VIDEO_EX = { id: 'squat', n: 'squat', gif: 'squat.mp4', img: 'squat.jpg' }
+  let origPlay, origPause
+
+  beforeEach(() => {
+    origPlay = HTMLMediaElement.prototype.play
+    origPause = HTMLMediaElement.prototype.pause
+    HTMLMediaElement.prototype.play = vi.fn(() => Promise.resolve())
+    HTMLMediaElement.prototype.pause = vi.fn()
+  })
+
+  afterEach(() => {
+    HTMLMediaElement.prototype.play = origPlay
+    HTMLMediaElement.prototype.pause = origPause
+  })
+
+  it('pauses a built-in video in place on the current frame and resumes on the next tap', () => {
+    mount({ ex: VIDEO_EX })
+    const v = host.querySelector('.exmedia video')
+    expect(v).toBeTruthy()
+    expect(host.querySelector('.exmedia img')).toBeNull()
+    expect(host.querySelector('.gifhint').textContent).toContain('tap to pause')
+    const playsBefore = HTMLMediaElement.prototype.play.mock.calls.length
+
+    act(() => { host.querySelector('.exmedia').click() })
+    expect(host.querySelector('.exmedia video')).toBe(v)
+    expect(host.querySelector('.exmedia img')).toBeNull()
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled()
+    expect(v.dataset.paused).toBe('1')
+    expect(host.querySelector('.gifhint').textContent).toContain('tap to play')
+
+    act(() => { host.querySelector('.exmedia').click() })
+    expect(host.querySelector('.exmedia video')).toBe(v)
+    expect(v.dataset.paused).toBeUndefined()
+    expect(HTMLMediaElement.prototype.play.mock.calls.length).toBeGreaterThan(playsBefore)
+    expect(host.querySelector('.gifhint').textContent).toContain('tap to pause')
+  })
+
+  it('still swaps a built-in GIF to its still image on tap', () => {
+    mount({ ex: EX })
+    const img = () => host.querySelector('.exmedia img')
+    const animated = img().getAttribute('src')
+    expect(animated).toContain('bench.gif')
+    act(() => { host.querySelector('.exmedia').click() })
+    expect(img().getAttribute('src')).toContain('bench.jpg')
+    expect(host.querySelector('.gifhint').textContent).toContain('tap to play')
+  })
+})
