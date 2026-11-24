@@ -13,9 +13,13 @@ import { ProveOwner, passwordError } from './PasswordAuth.jsx'
 
 const ui = () => useUI.getState()
 
-export function oidcError(e, label) {
+// `only`: the server signs members in with the provider alone. A passkey would not help there,
+// so the refusal does not ask for one.
+export function oidcError(e, label, only = false) {
   const code = e?.data?.code
-  if (code === 'last-way-in') return t('{0} is the only way into this profile, so it stays linked. Add a passkey first.', label)
+  if (code === 'last-way-in') return only
+    ? t('{0} is the only way into this profile on this server, so it stays linked.', label)
+    : t('{0} is the only way into this profile, so it stays linked. Add a passkey first.', label)
   if (code === 'already-linked') return oidcErrorText('already-linked', label)
   return passwordError(e)
 }
@@ -71,7 +75,7 @@ export function OidcSheet({ close, linked, label, state, unlinked }) {
         ? <div className="dim small">{providerOnly
           ? t('{0} is the only way into this profile on this server, so it stays linked.', label)
           : t('{0} is the only way into this profile, so it stays linked. Add a passkey first.', label)}</div>
-        : <ProveOwner passkey={passkeys > 0} password={password} danger submitText={t('Unlink')} onProof={unlink} explain={e => oidcError(e, label)} />}
+        : <ProveOwner passkey={passkeys > 0} password={password} danger submitText={t('Unlink')} onProof={unlink} explain={e => oidcError(e, label, !!config?.oidc?.only)} />}
     </>
   }
   return <>

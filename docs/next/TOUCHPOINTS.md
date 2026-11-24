@@ -73,3 +73,6 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Login.jsx` | `next/EP19-oidc-review-fixes` | +6 -3 | The Cloud first screen says when sign-in cannot work from this address. |
 | `api/test/server-oidc.test.js`, `frontend/src/components/OidcAccount.test.jsx` | `next/EP19-oidc-review-fixes` | Tests | The lockout, shown first; the sheet; the held profile. |
 | 25 files in `frontend/src/locales/` | `next/EP19-oidc-review-fixes` | +25 | One sentence for the sheet. |
+| `api/oidc/routes.js` | `next/EP19-unlink-group-admins` | +7 -3 | Unlink asks whether the profile is still an admin once the link is gone. |
+| `frontend/src/components/OidcAccount.jsx` | `next/EP19-unlink-group-admins` | +6 -3 | A refused unlink on a provider-only server gets the sentence that fits. |
+| `api/test/server-oidc.test.js`, `frontend/src/components/OidcAccount.test.jsx` | `next/EP19-unlink-group-admins` | Tests | The owner and the group-made admin; the refusal's wording. |

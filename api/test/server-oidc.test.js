@@ -437,6 +437,36 @@ test('OIDC_ONLY: a member keeps the provider link, since nothing else would sign
   assert.equal(h.db().users.find(u => u.id === 'u_a').oidc, undefined);
 });
 
+// Found in review of #92. Unlinking takes away an admin role the provider's groups gave, but
+// never the owner's (applyRoles). So an owner made admin that way keeps a passkey that works and
+// may unlink; any other group-made admin would be a member again, with nothing to sign in with.
+test('OIDC_ONLY with a role map: the owner may unlink, another group-made admin may not', async t => {
+  const owner = softPasskey(ORIGIN), ops = softPasskey(ORIGIN);
+  const created = new Date().toISOString();
+  const h = await setup(t, {
+    env: { OIDC_ONLY: '1', OIDC_ROLE_MAP: 'admin=ops' }, creds: [owner.row('u_o'), ops.row('u_g')],
+    users: mock => [
+      { id: 'u_o', name: 'Ow', created, admin: true, adminFrom: 'oidc', owner: true, oidc: { iss: mock.issuer, sub: 'ow' } },
+      { id: 'u_g', name: 'Gi', created, admin: true, adminFrom: 'oidc', oidc: { iss: mock.issuer, sub: 'gi' } }]
+  });
+  h.mock.next = { sub: 'gi', name: 'Gi', groups: ['ops'] };
+  const gi = await roundTrip(h);
+  const s1 = await h.post('/api/login/options', {});
+  const refused = await h.post('/api/oidc/unlink', { cid: s1.body.cid, credential: ops.assertion(s1.body.options.challenge) }, { cookie: gi.session });
+  assert.equal(refused.status, 409);
+  assert.equal(refused.body.code, 'last-way-in');
+  assert.equal(h.db().users.find(u => u.id === 'u_g').oidc.sub, 'gi');
+
+  h.mock.next = { sub: 'ow', name: 'Ow', groups: ['ops'] };
+  const ow = await roundTrip(h);
+  const s2 = await h.post('/api/login/options', {});
+  const done = await h.post('/api/oidc/unlink', { cid: s2.body.cid, credential: owner.assertion(s2.body.options.challenge) }, { cookie: ow.session });
+  assert.equal(done.status, 200);
+  const kept = h.db().users.find(u => u.id === 'u_o');
+  assert.equal(kept.oidc, undefined);
+  assert.equal(kept.admin, true, 'the owner stays admin without the link');
+});
+
 test('provider proof: fresh after a provider sign-in, refused on a session without one', async t => {
   const key = softPasskey(ORIGIN);
   const h = await setup(t, { users: [{ id: 'u_bo', name: 'Bo', created: new Date().toISOString() }], creds: [key.row('u_bo')] });
