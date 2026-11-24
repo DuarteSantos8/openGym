@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build && node ../scripts/catalogue/check-media.mjs && node ../scripts/catalogue/stage-media.mjs dist && node ../scripts/catalogue/stage-photos.mjs dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://srv1836616.hstgr.cloud/api/:path*" }
+    { "source": "/api/:path*", "destination": "https://ironvane-api.onrender.com/api/:path*" }
   ],
   "headers": [
     {
