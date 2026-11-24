@@ -199,6 +199,7 @@ jobs:
       # session in a 42 mm simulator, not only photographed (a control can look right and take no tap).
       # A failing test gets two more tries, as in the iPhone's ui-tests job.
       - name: Tap the watch app
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         timeout-minutes: 30
         run: |
           ruby ios/ci/add-watch-ui-tests.rb
@@ -270,10 +271,10 @@ jobs:
                 || xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
             if [ "$size" = s40 ] || [ "$size" = s42 ]; then
-              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-end ended"
+              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-back summary-end summary-steel ended"
               AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort metrics-muscles prompt summary summary-end"
             else
-              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary"
+              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary summary-steel"
               AX="set rest overview metrics-muscles"
             fi
             for screen in $SCREENS; do shot "$screen" "$screen"; done

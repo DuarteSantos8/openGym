@@ -47,9 +47,15 @@
 "Keep going" = "Lanjut";
 "Finish now" = "Selesai sekarang";
 "Back" = "Kembali";
+"Saved" = "Disimpan";
+"Hours" = "Jam";
+"min (minutes)" = "menit";
+"Records" = "Rekor";
+"New record" = "Rekor baru";
 "Last time: %@" = "Terakhir kali: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Sudah lama tidak ada catatan. Kalau sudah selesai, latihan berakhir sendiri pukul %@, disimpan di set terakhirmu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Selesaikan latihan sekarang? Kalau tidak, selesai sendiri pukul %@.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Tidak ada latihan berjalan";
 "Not synced yet" = "Belum disinkronkan";
 "Open openGym on your iPhone once and your routines show up here." = "Buka openGym sekali di iPhone kamu, rutinitasmu akan muncul di sini.";
@@ -91,4 +97,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Aktifkan Apple Health di iPhone, dan openGym tetap di layar saat istirahat dan durasi tahan.";
 "No sets yet" = "Belum ada set";
 "+%lld more" = "+%lld lagi";
+"On iPhone" = "Di iPhone";
 "%@ sets" = "%@ set";

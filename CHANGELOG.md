@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Apple Watch: the workout summary is a medal now. Your time on the front, turn it with the crown or a swipe for sets, volume, records, heart rate and calories (thanks @cubetes for #1314).
 - Watches: write the workout's note from the Overview, under Finish. If you changed the note on the phone in the meantime, the phone's version wins (thanks @cubetes for #1330).
 - Watches: tap +15 or -15 during a rest and a small circle next to the countdown shows the net change, "+30" or "-15" (thanks @cubetes for #1319).
 - Watches: "Up next" on the rest screen says which set out of how many, "Bench Press, set 2/4", like the set count at the top. A long name gives way before the count does (thanks @cubetes for #1435).

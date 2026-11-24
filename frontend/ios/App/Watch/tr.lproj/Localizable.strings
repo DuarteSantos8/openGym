@@ -47,9 +47,15 @@
 "Keep going" = "Devam et";
 "Finish now" = "Şimdi bitir";
 "Back" = "Geri";
+"Saved" = "Kaydedildi";
+"Hours" = "Saat";
+"min (minutes)" = "dk";
+"Records" = "Rekorlar";
+"New record" = "Yeni rekor";
 "Last time: %@" = "Geçen sefer: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Bir süredir kayıt yok. Bitirdiysen %@ saatinde kendiliğinden biter, son setinde kaydedilir.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Antrenman şimdi bitsin mi? Yoksa %@ saatinde kendiliğinden biter.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";
 "Open openGym on your iPhone once and your routines show up here." = "openGym’i iPhone’unda bir kez aç, rutinlerin burada görünür.";
@@ -91,4 +97,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone’da Apple Sağlık’ı aç, openGym dinlenmelerde ve tutuşlarda ekranda kalsın.";
 "No sets yet" = "Henüz set yok";
 "+%lld more" = "+%lld daha";
+"On iPhone" = "iPhone’da";
 "%@ sets" = "%@ set";

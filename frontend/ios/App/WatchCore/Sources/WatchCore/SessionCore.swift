@@ -522,6 +522,7 @@ enum SessionCore {
     static func summary(_ w: ActiveWorkout, end: Double, startedAt: Double? = nil, endedOnPhone: Bool = false) -> WorkoutSummary {
         var sets = 0, volume = 0.0
         var prs: [String] = []
+        var records: [RecordLine] = []
         for e in w.entries {
             let work = e.sets.filter { !$0.warmup }
             // An exercise in a unit of its own (#657) counts in the workout's unit.
@@ -535,11 +536,33 @@ enum SessionCore {
                     if !e.isTimed && !e.isCardio { volume += (row.w ?? 0) * (row.r ?? 0) * f }
                 }
             }
-            if let best = e.best, beatsBest(e, work.filter { $0.done }, best) { prs.append(e.name) }
+            if let best = e.best, let record = record(e, work.filter { $0.done }, best, unit: w.unit) {
+                prs.append(e.name)
+                records.append(record)
+            }
         }
         let from = w.start ?? startedAt
         return WorkoutSummary(name: w.name, unit: w.unit, duration: from.map { max(0, (end - $0) / 1000) },
-                              sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone)
+                              sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone,
+                              records: records, endedAt: end)
+    }
+
+    /// The record these done sets set, with the best they beat (beatsBest): the heaviest weight past
+    /// it (the lightest when assisted), else the most reps at the best weight, or the longest hold.
+    static func record(_ e: Entry, _ done: [SetRow], _ best: BestSet, unit: String) -> RecordLine? {
+        guard beatsBest(e, done, best) else { return nil }
+        let u = e.weightUnit(unit)
+        if e.isTimed {
+            return RecordLine(name: e.name, kind: .hold, old: best.sec ?? 0, new: done.compactMap { $0.sec }.max() ?? 0, unit: u)
+        }
+        let bw = best.w ?? 0, br = best.r ?? 0
+        let assisted = e.assisted == true
+        let past = done.compactMap { $0.w }.filter { $0 > 0 && (assisted ? $0 < bw : $0 > bw) }
+        if let w = assisted ? past.min() : past.max() {
+            return RecordLine(name: e.name, kind: .weight, old: bw, new: w, unit: u)
+        }
+        let reps = done.filter { ($0.w ?? 0) == bw }.compactMap { $0.r }.max() ?? br
+        return RecordLine(name: e.name, kind: .reps, old: br, new: reps, unit: u)
     }
 
     /// Whether one of these done sets beats the best before this workout: a heavier weight (a
@@ -576,6 +599,46 @@ struct WorkoutSummary: Codable, Equatable {
     var calories: Double?
     /// The phone ended it (finished or discarded there) while the watch had it running.
     var endedOnPhone: Bool
+    /// Each record with the best it beat (the medal's record bars), in the order of `prs`.
+    var records: [RecordLine] = []
+    /// When it ended, ms since 1970 (the date on the medal's back).
+    var endedAt: Double? = nil
+}
+
+extension WorkoutSummary {
+    /// A summary written by an older build has no records or end: they read as none.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        unit = try c.decode(String.self, forKey: .unit)
+        duration = try c.decodeIfPresent(Double.self, forKey: .duration)
+        sets = try c.decode(Int.self, forKey: .sets)
+        volume = try c.decode(Double.self, forKey: .volume)
+        prs = try c.decode([String].self, forKey: .prs)
+        hrAvg = try c.decodeIfPresent(Double.self, forKey: .hrAvg)
+        hrMax = try c.decodeIfPresent(Double.self, forKey: .hrMax)
+        calories = try c.decodeIfPresent(Double.self, forKey: .calories)
+        endedOnPhone = try c.decode(Bool.self, forKey: .endedOnPhone)
+        records = try c.decodeIfPresent([RecordLine].self, forKey: .records) ?? []
+        endedAt = try c.decodeIfPresent(Double.self, forKey: .endedAt)
+    }
+}
+
+/// A record on the summary: the exercise, its best before this workout and the one that beat it.
+struct RecordLine: Codable, Equatable {
+    enum Kind: String, Codable { case weight, reps, hold }
+    var name: String
+    var kind: Kind
+    /// A weight (in `unit`), a number of reps, or a hold's seconds.
+    var old: Double
+    var new: Double
+    /// The exercise's weight unit, kg or lb.
+    var unit: String
+
+    /// The two bests as the record bar shows them, "100" and "105", "8" and "10", "1:00" and "1:15".
+    func texts(locale: Locale) -> (old: String, new: String) {
+        kind == .hold ? (Medal.clock(old), Medal.clock(new)) : (Medal.number(old, locale: locale), Medal.number(new, locale: locale))
+    }
 }
 
 /// After the watch turns the page by itself (a superset's partner, the next exercise, the end of a

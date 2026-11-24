@@ -47,9 +47,15 @@
 "Keep going" = "Fortsätt";
 "Finish now" = "Avsluta nu";
 "Back" = "Tillbaka";
+"Saved" = "Sparat";
+"Hours" = "Timmar";
+"min (minutes)" = "min";
+"Records" = "Rekord";
+"New record" = "Nytt rekord";
 "Last time: %@" = "Förra gången: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Inget loggat på ett tag. Om du är klar slutar det av sig självt kl. %@, sparat vid ditt sista set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Avsluta passet nu? Annars slutar det av sig självt kl. %@.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Inget pass pågår";
 "Not synced yet" = "Inte synkat än";
 "Open openGym on your iPhone once and your routines show up here." = "Öppna openGym på din iPhone en gång så dyker dina rutiner upp här.";
@@ -91,4 +97,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Slå på Apple Hälsa på iPhone så stannar openGym kvar på skärmen under vila och hållningar.";
 "No sets yet" = "Inga set än";
 "+%lld more" = "+%lld till";
+"On iPhone" = "På iPhone";
 "%@ sets" = "%@ set";

@@ -20,7 +20,7 @@
 "Volume" = "Volume";
 "Time" = "Time";
 "Skip set" = "Skip set";
-"Personal records" = "Personal records";
+"Personal records" = "PRs";
 "Quick check-in" = "Quick check-in";
 "Save & start workout" = "Save & start workout";
 "Start without weighing in" = "Start without weighing in";
@@ -47,9 +47,15 @@
 "Keep going" = "Keep going";
 "Finish now" = "Finish now";
 "Back" = "Back";
+"Saved" = "Saved";
+"Hours" = "Hours";
+"min (minutes)" = "min";
+"Records" = "Records";
+"New record" = "New record";
 "Last time: %@" = "Last time: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Finish the workout now? Otherwise it ends by itself at %@.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "No workout running";
 "Not synced yet" = "Not synced yet";
 "Open openGym on your iPhone once and your routines show up here." = "Open openGym on your iPhone once and your routines show up here.";
@@ -91,4 +97,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.";
 "No sets yet" = "No sets yet";
 "+%lld more" = "+%lld more";
+"On iPhone" = "On iPhone";
 "%@ sets" = "%@ sets";
