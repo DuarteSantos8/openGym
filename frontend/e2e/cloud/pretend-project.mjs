@@ -50,6 +50,9 @@ export async function pretendProject(page, { users = [{ id: 'u-1', email: 'sam@e
     }
     if (path === '/functions/v1/export-account') return json(route, 200, { exported_at: 'now', account: { id: me.id, email: me.email }, profile: { display_name: me.name }, subscriptions: [], entitlements: [] })
     if (path === '/functions/v1/delete-account') {
+      if ('subject' in body && body.subject !== me.id) return json(route, 403, { error: 'subject_mismatch' })
+      if (state.subscriptionActive) return json(route, 409, { error: 'subscription_active' })
+      if (body.confirm === 'check') return json(route, 200, { allowed: true })
       if (body.confirm !== 'delete') return json(route, 400, { error: 'confirm' })
       state.deleted.push(me.id); state.users = state.users.filter(u => u !== me)
       return json(route, 200, { deleted: true })

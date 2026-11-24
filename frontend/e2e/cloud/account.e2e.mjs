@@ -2,7 +2,7 @@
 // a pretend project (./pretend-project.mjs). Every step is scanned with axe, and the shared
 // fixture fails the test if any request leaves this machine.
 import AxeBuilder from '@axe-core/playwright'
-import { test, expect } from '../fixtures.mjs'
+import { test, expect, workout } from '../fixtures.mjs'
 import { pretendProject, PROJECT } from './pretend-project.mjs'
 
 async function serious(page) {
@@ -300,19 +300,34 @@ test('a signed-out server profile goes first, and a server refusal leaves the ho
   await open(page)
   await page.click('[data-signout]')
   await expect.poll(async () => (await page.request.get('/api/me')).status()).toBe(401)
+  const deviceWorkout = workout(17, 'bench-press', 1)
+  await page.evaluate(w => {
+    localStorage.setItem('gym_guest', '1')
+    const current = JSON.parse(localStorage.getItem('gym_state_v1') || '{}')
+    localStorage.setItem('gym_state_v1', JSON.stringify({ ...current, workouts: [w] }))
+  }, deviceWorkout)
+  await open(page)
   await signIn(page)
 
-  const failDelete = route => route.fulfill({ status: 503, json: { error: 'not available' } })
-  await page.route('**/api/account/delete', failDelete)
+  let refusals = 0
+  const failDelete = route => {
+    refusals++
+    return route.fulfill({ status: 503, json: { error: 'not available' } })
+  }
+  await page.route('**/api/oidc/delete-profile', failDelete)
   await confirmDelete()
   await expect(page.getByRole('alert')).toBeVisible()
+  expect(refusals).toBe(1)
   expect(state.deleted).toEqual([])
+  expect((await page.request.get('/api/me')).status()).toBe(401)
 
-  await page.unroute('**/api/account/delete', failDelete)
+  await page.unroute('**/api/oidc/delete-profile', failDelete)
   await open(page)
   await confirmDelete()
   await expect(mode(page)).toHaveAttribute('data-mode', 'signin', { timeout: 20_000 })
   expect(state.deleted).toEqual(['u-1'])
+  await page.reload()
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1')).workouts.map(w => w.id))).toContain(deviceWorkout.id)
   await expect.poll(async () => (await page.request.get('/api/me')).status()).toBe(401)
 
   await page.getByRole('button', { name: 'Create account', exact: true }).click()
@@ -325,4 +340,43 @@ test('a signed-out server profile goes first, and a server refusal leaves the ho
   await page.click('[data-continue]')
   await expect.poll(user, { timeout: 20_000 }).toMatchObject({ name: 'Sam' })
   expect((await user()).id).not.toBe(first.id)
+})
+
+test('active subscription refuses before deleting a linked training profile', async ({ page }) => {
+  const { state, seen } = await pretendProject(page)
+  await open(page)
+  await signIn(page)
+  await page.click('[data-continue]')
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
+  const originalProfile = (await (await page.request.get('/api/me')).json()).user.id
+  await page.evaluate(() => { location.hash = '#/account' })
+  await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+  await page.locator('[data-signout]').evaluate(el => el.click())
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  await signIn(page)
+  state.subscriptionActive = true
+  let profileDeletes = 0
+  page.on('request', request => { if (new URL(request.url()).pathname === '/api/oidc/delete-profile') profileDeletes++ })
+  await page.locator('.iv-acct-danger > summary').click()
+  await page.fill('input[name="confirm"]', 'delete')
+  await page.locator('[data-delete]').evaluate(el => el.click())
+  await expect(page.getByRole('alert')).toHaveText('Cancel your subscription first, then delete the account.')
+  expect(seen.filter(r => r.path === '/functions/v1/delete-account').map(r => r.body.confirm)).toEqual(['check'])
+  expect(profileDeletes).toBe(0)
+  expect(state.deleted).toEqual([])
+
+  state.subscriptionActive = false
+  await page.route(url => url.pathname === '/api/oidc/start' && url.searchParams.get('mode') === 'delete', route => {
+    state.subscriptionActive = true
+    return route.continue()
+  })
+  const recheck = page.waitForResponse(response => response.url().endsWith('/functions/v1/delete-account') && response.status() === 409)
+  await page.locator('[data-delete]').evaluate(el => el.click())
+  await recheck
+  await expect(page.getByRole('alert')).toBeVisible()
+  expect(seen.filter(r => r.path === '/functions/v1/delete-account').map(r => r.body.confirm)).toEqual(['check', 'check', 'check'])
+  expect(profileDeletes).toBe(0)
+  expect(state.deleted).toEqual([])
+  await page.click('[data-continue]')
+  await expect.poll(async () => (await (await page.request.get('/api/me')).json()).user?.id).toBe(originalProfile)
 })

@@ -74,7 +74,83 @@ const landed = r => new URL(r.location, 'http://x').searchParams;
 test('config: the provider button is public, and so is OIDC_ONLY', async t => {
   const h = await setup(t, { env: { OIDC_ONLY: '1' } });
   const cfg = await (await h.get('/api/config')).json();
-  assert.deepEqual(cfg.oidc, { label: 'VoidAuth', only: true, webOrigin: ORIGIN });
+  assert.deepEqual(cfg.oidc, { label: 'VoidAuth', only: true, webOrigin: ORIGIN, deleteProfile: true });
+});
+
+test('hosted deletion consumes a proof, removes the profile, and never opens a session', async t => {
+  const h = await setup(t);
+  const signedIn = await roundTrip(h);
+  const profileId = h.db().users[0].id;
+  const proof = await roundTrip(h, { query: '?mode=delete' });
+  assert.match(proof.location, /server-delete=ready$/);
+  assert.equal(proof.session, null);
+  const cookie = cookieNamed(proof.cb, 'gymoidc-delete');
+  assert.ok(cookie);
+
+  const legacy = await h.post('/api/oidc/delete-profile', { subject: 'user-1' }, { cookie });
+  assert.equal(legacy.status, 400);
+  assert.equal(legacy.cookie, null);
+  assert.equal(h.db().users.length, 1);
+
+  const deletion = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie });
+  assert.equal(deletion.status, 200);
+  assert.equal(deletion.cookie, null);
+  assert.deepEqual(deletion.body, { deleted: true, profileId });
+  assert.equal(h.db().users.length, 0);
+  assert.equal((await h.get('/api/me', { cookie: signedIn.session })).status, 401);
+  assert.equal((await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie })).status, 403);
+
+  const retry = await roundTrip(h, { query: '?mode=delete' });
+  const absent = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: cookieNamed(retry.cb, 'gymoidc-delete') });
+  assert.deepEqual(absent, { status: 200, body: { deleted: false }, cookie: null });
+});
+
+test('hosted deletion refuses a disabled profile and never creates a session for it', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  h.mock.next = { sub: 'admin', name: 'Admin' };
+  const admin = await roundTrip(h);
+  h.mock.next = { sub: 'member', name: 'Member' };
+  await roundTrip(h);
+  const memberId = h.db().users.find(user => user.oidc?.sub === 'member').id;
+  const disabled = await h.post('/api/admin/user/disable', { id: memberId, disabled: true }, { cookie: admin.session });
+  assert.equal(disabled.status, 200);
+
+  const proof = await roundTrip(h, { query: '?mode=delete' });
+  const deletion = await h.post('/api/oidc/delete-profile', { subject: 'member', confirm: 'delete' }, { cookie: cookieNamed(proof.cb, 'gymoidc-delete') });
+  assert.equal(deletion.status, 403);
+  assert.equal(deletion.body.code, 'disabled');
+  assert.equal(deletion.cookie, null);
+  assert.equal(h.db().users.length, 2);
+});
+
+test('hosted deletion requires auth_time in the ID token even when userinfo supplies an old value', async t => {
+  const h = await setup(t, { mock: { userinfoGroups: true } });
+  h.mock.tamper = { claims: { auth_time: undefined }, userinfo: { auth_time: Math.floor(Date.now() / 1000) - 3600 } };
+
+  const proof = await roundTrip(h, { query: '?mode=delete' });
+  assert.match(proof.location, /server-delete=failed$/);
+  assert.equal(cookieNamed(proof.cb, 'gymoidc-delete'), null);
+  assert.equal(proof.session, null);
+});
+
+test('hosted deletion leaves an unrelated session and the last admin intact', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  const admin = await roundTrip(h);
+  h.mock.next = { sub: 'member', name: 'Member' };
+  const member = await roundTrip(h);
+  h.mock.next = { sub: 'user-1', name: 'Ana' };
+
+  const proof = await roundTrip(h, { query: '?mode=delete', cookie: member.session });
+  const conflict = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: [member.session, cookieNamed(proof.cb, 'gymoidc-delete')].join('; ') });
+  assert.equal(conflict.status, 409);
+  assert.equal((await h.get('/api/me', { cookie: member.session })).status, 200);
+
+  const retry = await roundTrip(h, { query: '?mode=delete', cookie: admin.session });
+  const blocked = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: [admin.session, cookieNamed(retry.cb, 'gymoidc-delete')].join('; ') });
+  assert.equal(blocked.status, 409);
+  assert.equal(blocked.body.code, 'last-admin');
+  assert.equal((await h.get('/api/me', { cookie: admin.session })).status, 200);
+  assert.equal(h.db().users.length, 2);
 });
 
 test('start: PKCE S256, a state and a nonce, and a short-lived flow cookie', async t => {

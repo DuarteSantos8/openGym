@@ -23,11 +23,21 @@ const reuse = process.env.E2E_BASE_URL
 // address on this machine that no server listens on; each test answers for it with page.route
 // (e2e/cloud/pretend-project.mjs), so the rule that nothing leaves this device still holds.
 const CLOUD_URL = process.env.E2E_CLOUD_BASE_URL || 'http://localhost:4174'
+const CLOUD_WEBKIT_URL = reuse ? CLOUD_URL : 'http://localhost:4176'
 const CLOUD_ENV = { VITE_EDITION: 'cloud', VITE_SUPABASE_URL: 'http://127.0.0.1:4175', VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_e2e' }
 // The Cloud preview's /api goes to a server of its own (e2e/cloud/linked-server.mjs): a real API
 // whose one way in is an identity provider, as the hosted one will be (docs/next/CLOUD-SERVER.md).
-// A test about the Cloud edition with no server answers /api itself (page.route) instead.
-const LINKED_PORT = '3001'
+// Each browser project gets its own OIDC request budget and server state.
+function cloudServers(origin, apiPort, folder) {
+  const port = Number(new URL(origin).port)
+  const outDir = `dist-cloud/${folder}`
+  return [
+    { command: `node e2e/cloud/linked-server.mjs ${apiPort} ${origin}`, port: apiPort, reuseExistingServer: false },
+    { command: `npx vite build --outDir ${outDir} --emptyOutDir --logLevel error && npx vite preview --outDir ${outDir} --port ${port} --strictPort`,
+      port, reuseExistingServer: false, timeout: 300_000,
+      env: { ...CLOUD_ENV, NODE_ENV: 'production', API_TARGET: `http://127.0.0.1:${apiPort}`, API_ORIGIN: origin } },
+  ]
+}
 const cloud = !reuse || !!process.env.E2E_CLOUD_BASE_URL
 const CLOUD_TESTS = /cloud\/.*\.e2e\.mjs$/
 const dataDir = reuse ? '' : mkdtempSync(join(tmpdir(), 'og-e2e-'))
@@ -56,18 +66,14 @@ export default defineConfig({
     { name: 'pixel-chromium', testIgnore: CLOUD_TESTS, use: { ...devices['Pixel 7'], channel: process.env.E2E_CHANNEL || undefined, ...fakeCamera } },
     ...(cloud ? [
       { name: 'cloud-chromium', testMatch: CLOUD_TESTS, use: { baseURL: CLOUD_URL, viewport: { width: 390, height: 844 }, channel: process.env.E2E_CHANNEL || undefined } },
-      { name: 'cloud-iphone-webkit', testMatch: CLOUD_TESTS, use: { ...devices['iPhone 13'], baseURL: CLOUD_URL } },
+      { name: 'cloud-iphone-webkit', testMatch: CLOUD_TESTS, use: { ...devices['iPhone 13'], baseURL: CLOUD_WEBKIT_URL } },
     ] : []),
   ],
   webServer: reuse ? undefined : [
     { command: 'node server.js', cwd: '../api', port: 3000, reuseExistingServer: false,
       env: { PORT: '3000', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080' } },
     { command: 'npx vite preview --port 4173 --strictPort', port: 4173, reuseExistingServer: false },
-    { command: `node e2e/cloud/linked-server.mjs ${LINKED_PORT} ${CLOUD_URL}`, port: Number(LINKED_PORT), reuseExistingServer: false },
-    // Builds the Cloud edition into its own folder, then serves it. Slower to come up than the
-    // others because of the build, hence the longer wait.
-    { command: 'npx vite build --outDir dist-cloud --emptyOutDir --logLevel error && npx vite preview --outDir dist-cloud --port 4174 --strictPort',
-      port: 4174, reuseExistingServer: false, timeout: 300_000,
-      env: { ...CLOUD_ENV, NODE_ENV: 'production', API_TARGET: `http://127.0.0.1:${LINKED_PORT}`, API_ORIGIN: CLOUD_URL } },
+    ...cloudServers(CLOUD_URL, 3001, 'chromium'),
+    ...cloudServers(CLOUD_WEBKIT_URL, 3002, 'webkit'),
   ],
 })

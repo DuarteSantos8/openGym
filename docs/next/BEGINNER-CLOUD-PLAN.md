@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-23. The browser OIDC origin guard, hosted MCP Blueprint and linked deletion prototype merged in PRs #85 to #87. Hosted rollout and fresh deletion proof still need verification. Browser sign-in guidance and mobile Settings are in follow-up. Read after `NEXT-STEPS.md`.
+Status 2026-11-24. The origin guard, MCP Blueprint and linked deletion prototype are merged in #85–#87. Browser sign-in guidance is merged in #88. Linked deletion fixes are under review and hosted verification is pending. Read after `NEXT-STEPS.md`.
 
 ## Why
 

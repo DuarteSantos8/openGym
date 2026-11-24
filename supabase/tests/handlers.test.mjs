@@ -342,6 +342,45 @@ test('delete: only ever the caller, whatever the body says', async () => {
   assert.deepEqual(w.admin.deleted, [A])
 })
 
+test('delete preflight: authenticates and checks the subscription without deleting the account', async () => {
+  const w = world()
+  const check = token => deleteAccount(post('delete-account', { token, body: { confirm: 'check' } }), w.env, w.fetchImpl, NOW)
+  assert.equal((await check()).status, 401)
+
+  w.table('subscriptions').push({ id: 'sub_1', user_id: A, status: 'active', source: 'stripe' })
+  const refused = await check('tok-a')
+  assert.equal(refused.status, 409)
+  assert.deepEqual(await refused.json(), { error: 'subscription_active' })
+
+  w.table('subscriptions')[0].status = 'canceled'
+  const allowed = await check('tok-a')
+  assert.equal(allowed.status, 200)
+  assert.deepEqual(await allowed.json(), { allowed: true })
+  assert.deepEqual(w.admin.deleted, [])
+})
+
+test('delete: an expected subject must match the verified caller before either mode proceeds', async () => {
+  const w = world()
+  const requests = []
+  const fetchImpl = (url, ...args) => {
+    requests.push(new URL(url).pathname)
+    return w.fetchImpl(url, ...args)
+  }
+  const request = (confirm, subject) => deleteAccount(post('delete-account', { token: 'tok-a', body: { confirm, subject } }), w.env, fetchImpl)
+  for (const confirm of ['check', 'delete']) {
+    for (const subject of [B, null, { id: A }]) {
+      const refused = await request(confirm, subject)
+      assert.equal(refused.status, 403)
+      assert.deepEqual(await refused.json(), { error: 'subject_mismatch' })
+    }
+  }
+  assert.deepEqual(requests, Array(6).fill('/auth/v1/user'))
+  assert.deepEqual(w.admin.deleted, [])
+  assert.deepEqual(await (await request('check', A)).json(), { allowed: true })
+  assert.deepEqual(await (await request('delete', A)).json(), { deleted: true })
+  assert.deepEqual(w.admin.deleted, [A])
+})
+
 test('delete: refused while a subscription is still being paid for, so nobody is billed for an account that is gone', async () => {
   const w = world()
   for (const status of ['active', 'trialing', 'past_due']) {

@@ -867,10 +867,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m post">POST</span>
     <span class="ep-path"><code>/api/oidc/delete-profile</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Resolve the existing profile after OIDC confirmation for hosted deletion</span>
+    <span class="ep-sum">Delete a linked profile with a hosted deletion proof</span>
   </summary>
   <div class="ep-body">
-<p>Consumes the short-lived browser proof from mode=delete for the matching provider subject. Signs in only an existing linked profile.</p>
+<p>Consumes a one-use browser proof from mode=delete matching the provider subject. Removes the linked profile without opening a session.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -879,20 +879,29 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">string</span>
     <span class="p-desc"></span>
   </div>
+  <div class="prow">
+    <span class="p-name">confirm<em class="p-req" title="required">required</em></span>
+    <span class="p-type">always &quot;delete&quot;</span>
+    <span class="p-desc"></span>
+  </div>
 </div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The existing profile name or a null profile, with a fresh session cookie only for an existing profile.</span>
+    <span class="p-desc">The linked profile was deleted or verified absent.<span class="r-sig">{ deleted: boolean, profileId: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Deletion was not explicitly confirmed.</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">Proof absent, expired, already used, or for a different subject.</span>
+    <span class="p-desc">Proof absent, expired, already used, or for a different subject, or the profile is disabled.</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
-    <span class="p-desc">A different profile is signed in.</span>
+    <span class="p-desc">A different profile is signed in, or the last admin cannot leave while other profiles remain.</span>
   </div>
     </div>
   </div>
