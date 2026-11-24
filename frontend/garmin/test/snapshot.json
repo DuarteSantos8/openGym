@@ -38,57 +38,41 @@
       {
         "id": "0025",
         "name": "Barbell Bench Press",
-        "mode": "reps",
         "restSec": 120,
         "last": "55×8, 57.5×6",
         "sets": [
           {
             "w": 60,
             "r": 8,
-            "sec": null,
             "done": true,
-            "warmup": false,
             "at": 1761742900000
           },
           {
             "w": 60,
-            "r": 8,
-            "sec": null,
-            "done": false,
-            "warmup": false
+            "r": 8
           }
         ],
         "best": {
           "w": 57.5,
           "r": 6
         },
-        "step": 2.5,
         "i": 0
       },
       {
         "id": "0001",
         "name": "3/4 Sit-Up",
-        "mode": "reps",
-        "restSec": null,
-        "last": null,
         "sets": [
           {
             "w": 20,
             "r": 10,
-            "sec": null,
-            "done": false,
             "warmup": true
           },
           {
             "w": 30,
-            "r": 10,
-            "sec": null,
-            "done": false,
-            "warmup": false
+            "r": 10
           }
         ],
         "bodyweight": true,
-        "step": 2.5,
         "i": 1
       }
     ]

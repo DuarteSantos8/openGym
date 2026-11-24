@@ -615,7 +615,7 @@ describe('both sides changing the same set', () => {
     await vi.advanceTimersByTimeAsync(250)
     expect(w.toWatch.length).toBe(before + 1)
     // the snapshot was made before the tick: it shows the set open
-    expect(w.toWatch.at(-1).active.entries[0].sets[0].done).toBe(false)
+    expect(w.toWatch.at(-1).active.entries[0].sets[0].done).toBeFalsy()
     expect(w.watch.entryAt(0).sets[0]).toMatchObject({ done: true, w: 60, r: 8 })
     expect(w.watch.entryAt(1).sets[0].w).toBe(12.5)
     await w.run(3)

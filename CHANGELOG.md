@@ -7,6 +7,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 ## Unreleased
 
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).
+- Garmin: long circuits fit on the watch. Six exercises used to be too much for one message, and the exercise you were on could be the one left out (#1471).
 - Fixed: Back closes Your month and Your year, on Android and in a browser. It used to change the page underneath (or, on Android, offer to leave the app) while the story stayed open.
 - Smoother on slower phones: the first letter typed in Library or the exercise picker no longer stalls (the search is prepared while the phone is idle), the first set you tick no longer waits for the sound to get ready, and Stats opens without a forced layout pass.
 - Zepp OS: "Phone out of reach" shows again when your routines come in pages; it takes the place of the streak's caption.

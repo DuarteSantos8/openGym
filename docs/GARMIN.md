@@ -166,9 +166,14 @@ settings, streak and discarded) down to what a Connect IQ message carries:
   discarded ids;
 - at most **3 KB as JSON** (`GARMIN_MAX_BYTES`; 4 KB until the 1.4.5 watch round: in the
   simulator an Instinct 2 runs out of memory parsing 3.5 KB), cutting the least useful parts first.
-  Today's rows go without their nulls and noes (a missing key reads as null or no on the watch),
-  and while a workout runs today goes by name only, so the snapshot that goes with every set stays
-  small.
+  Today's rows and, since 1.4.6, the workout's go without their nulls and noes (a missing key reads
+  as null or no on the watch), an exercise without `mode` when it is reps and without `step` when
+  it is the watch's default; while a workout runs today goes by name only, so the snapshot that
+  goes with every set stays small. When it is still too big, the block after the one up now goes
+  whole (half a superset would be done in the wrong order), then long names are cut, then (only
+  with more than one exercise in the superset up now) half of `acked`, and last the superset's
+  exercises that come furthest after the one up now, never that one: a six-exercise circuit fits
+  whole even with the catalogue's longest names (#1471).
 
 Same field names as the other watches' snapshot. The fixture `frontend/garmin/test/snapshot.json`
 is what the watch is written against; `garmin-snapshot.test.js` builds it from the Wear OS fixture

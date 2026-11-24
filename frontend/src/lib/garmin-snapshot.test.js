@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { garminSnapshot, garminWindow, garminTotals, garminLook, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
+import { garminSnapshot, garminWindow, garminUpNow, garminTotals, garminLook, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
+import { EXIDX } from './exercises.js'
+import { exerciseNameText } from './format.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const wearSnap = () => JSON.parse(readFileSync(join(here, '..', '..', 'android', 'wear', 'src', 'test', 'resources', 'snapshot.json'), 'utf8'))
@@ -28,7 +30,11 @@ describe('the Garmin snapshot', () => {
     expect(out.active.id).toBe('w-1')
     expect(out.active.count).toBe(2)
     expect(out.active.entries.map(e => e.i)).toEqual([0, 1])
-    expect(out.active.entries[0].sets[0]).toEqual({ w: 60, r: 8, sec: null, done: true, warmup: false, at: 1761742900000 })
+    // lean rows: what is null or no stays home (the watch reads a missing key as null or no)
+    expect(out.active.entries[0].sets[0]).toEqual({ w: 60, r: 8, done: true, at: 1761742900000 })
+    expect(out.active.entries[0].sets[1]).toEqual({ w: 60, r: 8 })
+    expect(out.active.entries[1].sets[0]).toEqual({ w: 20, r: 10, warmup: true })
+    expect(out.active.entries[1]).not.toHaveProperty('last')
     expect(out.active.rest).toEqual({ endsAt: 1761743000000 })
     expect(out.active.progress).toEqual([1, 3])
     expect(out.active.volume).toBe(480)
@@ -122,6 +128,79 @@ describe('the Garmin snapshot', () => {
     expect(out.active.entries[0].sets).toHaveLength(10)
     // today's routine is still there to start, by name
     expect(out.ready.today.name).toBe('Today')
+  })
+
+  // #1471: a circuit of six exercises, four rows each, with real catalogue names (the longest
+  // there are, and ordinary ones): every snapshot fits, and always has the exercise up now with
+  // all of its sets, wherever in the circuit it is and however far the circuit has got.
+  describe('a six-exercise circuit (#1471)', () => {
+    const all = Object.values(EXIDX).map(e => ({ id: e.id, name: exerciseNameText(e) })).filter(e => e.name)
+    const longest = [...all].sort((a, b) => b.name.length - a.name.length).slice(0, 6)
+    const usual = ['0025', '0001', '0003', '0027', '0047', '0048'].map(id => ({ id, name: exerciseNameText(EXIDX[id]) }))
+    let sid = 0
+    const circuit = (exs, upNow, done, extra = []) => ({
+      id: 'w-c', name: 'Circuit', cur: upNow, unit: 'kg', restSec: 90, start: 1761742800000,
+      rest: { endsAt: 1761743000000, total: 90 }, restAt: 1761742990000, activeAt: 1761742990000,
+      entries: [
+        ...exs.map((e, k) => ({
+          id: e.id, name: e.name, mode: 'reps', restSec: 60, last: '62.5×10, 62.5×10, 60×10, 60×9', step: 2.5, group: '7',
+          best: { w: 70, r: 8 }, muscles: { chest: 1, triceps: 0.5 },
+          sets: [0, 1, 2, 3].map(j => ({ w: 62.5, r: 10, sec: null, done: j < done || (j === done && k < upNow), warmup: false, sid: 's' + (++sid).toString(36).padStart(7, '0'), ...(j < done || (j === done && k < upNow) ? { at: 1761742900000 + j * 1000 } : {}) })),
+        })),
+        ...extra,
+      ],
+    })
+    const snapOf = active => ({ unit: 'kg', restSec: 90, now: 1761743000000, acked: Array.from({ length: 16 }, (_, k) => 'g17617429' + String(k).padStart(5, '0') + '-' + (123456 + k)), discarded: ['w-old'],
+      settings: { lang: 'en', accent: '#a3e635', onAccent: '#000000', crown: 'reps', effort: 'rir', autoHolds: true, forgotten: { askMin: 20 } },
+      streak: { weeks: 12, thisWeekDone: true }, active, ready: { today: { name: 'Circuit', routineIds: ['r'], entries: [] }, others: [{ name: 'Pull', routineIds: ['p'] }] } })
+
+    for (const [label, exs] of [['the longest names', longest], ['ordinary names', usual]]) {
+      it('fits under 3 KB with ' + label + ', the exercise up now whole', () => {
+        for (let done = 0; done < 4; done++) {
+          for (let upNow = 0; upNow < 6; upNow++) {
+            const A = circuit(exs, upNow, done)
+            const out = garminSnapshot(snapOf(A))
+            expect(bytes(out)).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+            const mine = out.active.entries.find(e => e.i === upNow)
+            expect(mine, `up now ${upNow}, round ${done}`).toBeTruthy()
+            expect(mine.sets).toHaveLength(4)
+            expect(mine.sets.map(r => !!r.done)).toEqual(A.entries[upNow].sets.map(r => r.done))
+            expect(mine.sets.every(r => typeof r.sid === 'string')).toBe(true)
+            // the whole circuit goes: the watch does it in turns, in the right order
+            expect(out.active.entries.map(e => e.i)).toEqual([0, 1, 2, 3, 4, 5])
+          }
+        }
+      })
+    }
+
+    it('a superset that ends the workout, its last member up now: the cut never drops it', () => {
+      const A = circuit(longest, 5, 3)
+      for (const max of [3072, 2048, 1200, 900, 600]) {
+        const out = garminSnapshot(snapOf(A), { max })
+        const mine = out.active.entries.find(e => e.i === 5)
+        expect(mine, 'max ' + max).toBeTruthy()
+        expect(mine.sets).toHaveLength(4)
+        // what was cut from the circuit is what comes furthest after it (from the top, in turn)
+        const kept = out.active.entries.map(e => e.i)
+        expect(kept).toEqual([0, 1, 2, 3, 4, 5].slice(0, kept.length - 1).concat(5).sort())
+      }
+    })
+
+    it('a circuit too big for any window keeps the exercise up now and the ones right after it', () => {
+      const twelve = [...longest, ...longest].map((e, k) => ({ ...e, id: e.id + '-' + k }))
+      const A = circuit(twelve, 9, 1)
+      const out = garminSnapshot(snapOf(A))
+      expect(bytes(out)).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+      const kept = out.active.entries.map(e => e.i)
+      expect(kept).toContain(9)
+      expect(kept).toContain(10)
+      expect(out.active.entries.find(e => e.i === 9).sets).toHaveLength(4)
+      // the members in turn after 9 (10, 11, then 0, 1 ...): a run from 9 on, round to the top
+      const turn = [10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+      const n = kept.length - 1
+      expect(kept.filter(i => i !== 9).sort((a, b) => turn.indexOf(a) - turn.indexOf(b))).toEqual(turn.slice(0, n))
+    })
+
   })
 
   it('without a workout or anything ready, says so', () => {

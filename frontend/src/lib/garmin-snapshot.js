@@ -36,6 +36,8 @@ export const GARMIN_OTHERS_MAX = 8
 // workout logged with the phone away can leave more on the watch than this: the phone names an id
 // again whenever the watch sends it again (lib/watch-sync.js applyEach), so they all get through.
 export const GARMIN_ACKED_MAX = 16
+// How many go when the snapshot is short of room (a long circuit while a workout drains).
+export const GARMIN_ACKED_CUT = 8
 
 const bytesOf = v => new TextEncoder().encode(JSON.stringify(v)).length
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
@@ -58,25 +60,38 @@ export function garminLook (st = {}) {
 const openRow = s => !!s && !s.done
 const openEntry = e => e?.mode !== 'cardio' && (e?.sets || []).some(openRow)
 
+// The block an exercise belongs to: its whole superset (the exercises next to each other with the
+// same group), else just itself, as [first, last].
+function blockOf (entries, at) {
+  let lo = at, hi = at
+  const g = entries[at].group
+  if (g != null) {
+    while (lo > 0 && entries[lo - 1].group === g) lo--
+    while (hi + 1 < entries.length && entries[hi + 1].group === g) hi++
+  }
+  return [lo, hi]
+}
+
+/** Where the exercise up now is: the phone's `cur`, or the first after it with a set to do, else the first anywhere. */
+export function garminUpNow (active) {
+  const entries = active?.entries || []
+  const n = entries.length
+  if (!n) return -1
+  const cur = Math.max(0, Math.min(n - 1, active.cur || 0))
+  for (let k = 0; k < n; k++) { const i = (cur + k) % n; if (openEntry(entries[i])) return i }
+  return cur
+}
+
 /**
- * Which exercises of the running workout go to the watch: the one up now (the phone's `cur`, or
- * the first after it with a set to do, else the first anywhere), its whole superset when it has
- * one, and the exercise after that, so the watch can move on before the phone's next message.
+ * Which exercises of the running workout go to the watch: the one up now, its whole superset
+ * when it has one, and the exercise after that, so the watch can move on before the phone's next
+ * message.
  */
 export function garminWindow (active) {
   const entries = active?.entries || []
   const n = entries.length
   if (!n) return []
-  const cur = Math.max(0, Math.min(n - 1, active.cur || 0))
-  let at = -1
-  for (let k = 0; k < n && at < 0; k++) { const i = (cur + k) % n; if (openEntry(entries[i])) at = i }
-  if (at < 0) at = cur
-  let lo = at, hi = at
-  const g = entries[at].group
-  if (g != null) {
-    while (lo > 0 && entries[lo - 1].group === g) lo--
-    while (hi + 1 < n && entries[hi + 1].group === g) hi++
-  }
+  const [lo, hi] = blockOf(entries, garminUpNow(active))
   const out = []
   for (let i = lo; i <= hi; i++) out.push(i)
   if (hi + 1 < n) out.push(hi + 1)
@@ -104,12 +119,34 @@ const slim = (e, ...keys) => { const o = { ...e }; for (const k of keys) delete 
 // (the bridges leave nulls out anyway; counted here they cost a long routine its exercises).
 const leanRow = row => Object.fromEntries(Object.entries(row || {}).filter(([, v]) => v != null && v !== false))
 const nameOnly = r => ({ routineIds: r.routineIds || [], name: r.name || '', entries: [] })
+// A running workout's exercise as the watch reads it: the same lean rows (a set not done and not a
+// warm-up goes without `done: false`, `warmup: false`, `sec: null`), and the exercise without its
+// nulls and noes, without `mode` when it is reps and without `step` when it is the watch's own
+// default (2.5 kg, 5 lb: Core.stepOf). Half the bytes: a six-exercise circuit fits (#1471).
+const leanEntry = (e, unit) => {
+  const out = { ...leanRow(e), sets: (e.sets || []).map(r => (r && typeof r === 'object' && !Array.isArray(r) ? leanRow(r) : r)) }
+  if (out.mode === 'reps') delete out.mode
+  if (out.step === ((e.unit || unit) === 'lb' ? 5 : 2.5)) delete out.step
+  return out
+}
+// A name cut for room, at a space, to at most this long (the watch shows two lines of it at the
+// most, and cuts what is longer itself).
+const NAME_MAX = 32
+const cutName = n => {
+  if (typeof n !== 'string' || n.length <= NAME_MAX) return n
+  const at = n.lastIndexOf(' ', NAME_MAX)
+  return n.slice(0, at > NAME_MAX / 2 ? at : NAME_MAX).trimEnd()
+}
+const shortName = e => ({ ...e, name: cutName(e.name) })
 
 /**
  * The snapshot (buildSnapshot's, with settings, streak and discarded as startWatchSync adds them)
  * made into what a Garmin watch gets. Under `max` bytes as JSON, cutting first what matters least:
  * the other routines' count, the records, the "last time" lines, today's exercises (the watch then
- * asks the phone to start it), and last of all the exercise after the one up now.
+ * asks the phone to start it), then the block after the one up now (whole: half a superset would
+ * be done in the wrong order), long names, and last of all the members of the superset up now
+ * that come furthest after it (#1471: a six-exercise circuit did not fit). The exercise up now
+ * always stays, with every set.
  */
 export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   const st = snap?.settings || {}
@@ -133,12 +170,15 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
     ready: null,
   }
   const A = snap?.active
+  // where the exercise up now is in the whole workout (its `i`): never cut
+  let upNow = -1
   if (A && Array.isArray(A.entries)) {
     const win = garminWindow(A)
     const { progress, volume } = garminTotals(A)
     // The Garmin watch has no Muscles page: the muscle weights and names would only cost bytes.
     const { entries, muscleNames, ...rest } = A
-    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...slim(entries[i], 'muscles'), i })) }
+    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...leanEntry(slim(entries[i], 'muscles'), A.unit), i })) }
+    upNow = garminUpNow(A)
   }
   const R = snap?.ready
   if (R) {
@@ -153,15 +193,38 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   const steps = [
     () => { if (out.ready) out.ready.others = out.ready.others.slice(0, 4) },
     () => { if (out.active) out.active.entries = out.active.entries.map(e => slim(e, 'best')) },
-    () => { if (out.active) out.active.entries = out.active.entries.map((e, k) => (k ? slim(e, 'last') : e)) },
+    () => { if (out.active) out.active.entries = out.active.entries.map(e => (e.i === upNow ? e : slim(e, 'last'))) },
     () => { if (out.ready?.today) out.ready.today = nameOnly(out.ready.today) },
     () => { if (out.active) out.active.entries = out.active.entries.map(e => slim(e, 'last')) },
     () => { if (out.ready) out.ready.others = [] },
-    () => { if (out.active && out.active.entries.length > 1) out.active.entries = out.active.entries.slice(0, -1) },
+    // the block after the one up now, all of it
+    () => { if (out.active && upNow >= 0) out.active.entries = out.active.entries.filter(e => inBlock(e.i)) },
+    () => { if (out.active) out.active.entries = out.active.entries.map(shortName) },
+    () => { if (out.ready?.today) out.ready.today = shortName(out.ready.today) },
+    // what the watch takes as said when it is missing: every line shown, the language (unused)
+    () => { const sh = out.settings.show; for (const k of Object.keys(sh)) if (sh[k]) delete sh[k]; delete out.settings.lang },
+    // fewer of the applied ids, rather than an exercise of the superset up now: the phone names
+    // one again whenever the watch sends it again (otherwise they always go whole)
+    () => { if (out.acked && out.active?.entries.length > 1) out.acked = out.acked.slice(-GARMIN_ACKED_CUT) },
   ]
+  // whether the exercise at `i` (in the whole workout) is of the block up now
+  const inBlock = i => { const [lo, hi] = blockOf(A.entries, upNow); return i >= lo && i <= hi }
   for (const step of steps) {
     if (bytesOf(out) <= max) break
     step()
+  }
+  // Still too big (a circuit of many exercises with long names): the superset's exercises that
+  // come furthest after the one up now go, one by one. The phone's next snapshot, a set later,
+  // brings them again.
+  if (out.active && upNow >= 0 && bytesOf(out) > max) {
+    const [lo, hi] = blockOf(A.entries, upNow)
+    const turn = []
+    for (let i = upNow + 1; i <= hi; i++) turn.push(i)
+    for (let i = lo; i < upNow; i++) turn.push(i)
+    while (turn.length && bytesOf(out) > max) {
+      const drop = turn.pop()
+      out.active.entries = out.active.entries.filter(e => e.i !== drop)
+    }
   }
   return out
 }

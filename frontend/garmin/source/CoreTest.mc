@@ -1242,4 +1242,29 @@ module CoreTest {
         Test.assert(ok);
         return true;
     }
+
+    //! The snapshot as the phone sends it since #1471: rows without done: false, warmup: false and
+    //! sec: null, exercises without mode "reps", their default step and their nulls. It reads as
+    //! the full one did.
+    (:test)
+    function leanSnapshotReadsTheSame(logger as Test.Logger) as Boolean {
+        var sn = coreSnap();
+        var es = sn["active"]["entries"];
+        es[0] = { "id" => "0025", "name" => "Barbell Bench Press", "restSec" => 120, "last" => "55×8, 57.5×6", "i" => 0,
+            "sets" => [{ "w" => 60, "r" => 8, "done" => true, "at" => 1761742900000l }, { "w" => 60, "r" => 8 }] };
+        es[1] = { "id" => "0001", "name" => "3/4 Sit-Up", "bodyweight" => true, "i" => 1,
+            "sets" => [{ "w" => 20, "r" => 10, "warmup" => true }, { "w" => 30, "r" => 10 }] };
+        var s = Core.emptyState();
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(Core.setIndex(s, 0), 1);
+        Test.assert(!Core.isTimed(Core.entryAt(s, 0)) && !Core.isCardio(Core.entryAt(s, 0)));
+        Test.assertEqual(Core.stepOf(s, Core.entryAt(s, 0)), 2.5);
+        Test.assertEqual(Core.place(Core.entryAt(s, 1), 0)[1], 1);
+        Test.assertEqual(Core.place(Core.entryAt(s, 1), 1)[1], 1);
+        Test.assertEqual(Core.progress(s)[0], 1);
+        var ev = Core.tick(s, 1, 0, null, 20.0, 10.0, null, null);
+        Test.assert(Core.same(ev["exId"], "0001"));
+        Test.assert(Core.isTrue(coreRow(s, 1, 0)["done"]));
+        return true;
+    }
 }
