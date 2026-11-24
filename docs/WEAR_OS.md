@@ -21,7 +21,7 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   from watchExtras), green until the phone has said. Always On draws outlines, no lit fills, and
   nothing moves.
 - **Start**: "Today" beside the clock, the routine's name, its exercises and sets, one wide Start,
-  the other routines as rows, the build number at the bottom. Quick start on a day without a plan.
+  the other routines as rows under their phone folders (archived ones stay on the phone, and a note says so), the build number at the bottom. Quick start on a day without a plan.
   Before anything came from the phone it says so. Start waits a second after the summary's Done.
 - **Weigh-in** before a start on the watch (unless the phone's check-in is off), then a 3-2-1 ring
   that ends on Go! while the heart-rate sensor warms up.

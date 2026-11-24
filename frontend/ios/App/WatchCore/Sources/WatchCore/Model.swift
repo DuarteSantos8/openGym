@@ -41,6 +41,8 @@ struct ReadySession: Codable, Equatable {
     var healthType: String?
     /// Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it.
     var muscleNames: [String: String]? = nil
+    /// The phone's folder for it (Plan, lib/routine-folders.js); none from an older phone or for a routine in no folder.
+    var folder: String? = nil
 }
 
 struct ActiveWorkout: Codable, Equatable {

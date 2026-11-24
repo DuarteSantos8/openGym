@@ -8,6 +8,7 @@
     <string name="all_sets_done">Todas las series hechas</string>
     <string name="all_synced">Todo sincronizado</string>
     <string name="allow">Permitir</string>
+    <string name="archived_stay_on_phone">Las rutinas archivadas se quedan en tu móvil.</string>
     <string name="avg">media</string>
     <string name="band_over">%1$d o más</string>
     <string name="band_to">%1$d a %2$d</string>

@@ -12,6 +12,14 @@ enum Plan {
         let sets = real.reduce(0) { $0 + $1.sets.filter { !$0.warmup }.count }
         return (real.count, sets)
     }
+
+    /// The folder name to draw above the routine at `index`: where it differs from the routine
+    /// before it (the phone sends them grouped), nil for no folder or a repeat.
+    static func folderHeader(at index: Int, in others: [ReadySession]) -> String? {
+        guard others.indices.contains(index),
+              let f = others[index].folder?.trimmingCharacters(in: .whitespacesAndNewlines), !f.isEmpty else { return nil }
+        return index > 0 && others[index - 1].folder == others[index].folder ? nil : f
+    }
 }
 
 /// "#30d158" as three channels from 0 to 1, or nil for anything that is not a #rrggbb colour.

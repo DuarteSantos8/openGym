@@ -726,4 +726,22 @@ class WatchLogicTest {
         val logged = SessionCore.tick(removed, ei, si, null, hold.w, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
         assertEquals(10.0, logged.first { it.sid == "b" }.w!!, 0.0)
     }
+
+    private fun routine(folder: String?) = ReadySession(routineIds = listOf("r"), name = "R", folder = folder)
+
+    @Test fun aHeaderWhereTheFolderChanges() {
+        val o = listOf(routine(null), routine("Legs"), routine("Legs"), routine("Push"))
+        assertEquals(listOf(null, "Legs", null, "Push"), o.indices.map { Plan.folderHeader(it, o) })
+    }
+
+    @Test fun noFoldersMeansNoHeaders() {
+        val o = listOf(routine(null), routine(null))
+        assertEquals(listOf(null, null), o.indices.map { Plan.folderHeader(it, o) })
+    }
+
+    @Test fun aBlankFolderIsNoHeaderAndAFirstFolderGetsOne() {
+        assertNull(Plan.folderHeader(0, listOf(routine("  "))))
+        assertEquals("Legs", Plan.folderHeader(0, listOf(routine("Legs"))))
+        assertNull(Plan.folderHeader(5, listOf(routine("Legs"))))
+    }
 }

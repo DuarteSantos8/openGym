@@ -130,6 +130,8 @@ clock stands at that moment. On resume the field goes and `start` moves on by th
 watch needs nothing else. The rest screen's "Next" shows the next set's weight and reps from the
 set rows the snapshot already holds (#911); nothing new is sent for it.
 
+`ready.others` are the phone's routines in its folder order (no folder first), each with `folder` (its name, spelled as the first routine of that folder; absent for none) and none archived (the Archive folder or `archived: true`); the watches draw a header where `folder` changes. An older phone sends no `folder` and the list stays flat.
+
 Display-only fields for the Metrics pages (1.4.5, #1187, #1188): each entry of `active` and of
 `ready.today`/`ready.others` may carry `muscles` (muscle slug to the phone's weight for one set:
 main 1, helper 0.4, only the muscles the phone's map draws), and `active.muscleNames` and
