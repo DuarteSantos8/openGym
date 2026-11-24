@@ -1599,12 +1599,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private func updateLink() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
-        let r = session.activationState == .activated && session.isReachable
         let o = box
         let q = OutboxCore.waiting(o)
         let sets = OutboxCore.waitingSets(o)
         DispatchQueue.main.async {
-            if self.reachable != r { self.reachable = r }
+            // Read here, not before the hop: updates queued out of order must not leave an old state on screen.
+            let r = session.activationState == .activated && session.isReachable
+            // The demo screens set reachability by hand (idle-away); a live link must not undo it.
+            if !self.isDemo, self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
             if self.unsentSets != sets { self.unsentSets = sets }
         }
@@ -1761,7 +1763,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "countdown" ? SessionStore.demoReadyJSON : screen == "folders" ? SessionStore.demoFoldersJSON : SessionStore.demoJSON)) }
+        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "idle-away" || screen == "countdown" ? SessionStore.demoReadyJSON : screen == "folders" ? SessionStore.demoFoldersJSON : SessionStore.demoJSON)) }
         // The 3-2-1 as it runs before a workout started here (without Apple Health, which the demo has not).
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
@@ -1856,6 +1858,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
+            if screen == "idle-away" { self.reachable = false }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
             // The medal: a records day (gold), its back, its end with Done, a day without records (steel).
             if screen.hasPrefix("summary") || screen == "ended" {

@@ -271,7 +271,7 @@ jobs:
                 || xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
             if [ "$size" = s40 ] || [ "$size" = s42 ]; then
-              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-back summary-end summary-steel ended"
+              SCREENS="idle idle-away empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-back summary-end summary-steel ended"
               AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort metrics-muscles prompt summary summary-end"
             else
               SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary summary-steel"
@@ -314,7 +314,7 @@ jobs:
             if [ "$size" = s42 ]; then
               cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
               # set-noclip: the same screen without the animation, to tell what the animation costs.
-              for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+              for spec in idle:idle idle-away:idle-away set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
                 IFS=: read -r file screen flag noclip <<< "$spec"
                 if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
                 KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
