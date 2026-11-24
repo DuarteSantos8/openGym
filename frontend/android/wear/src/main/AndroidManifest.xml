@@ -85,6 +85,10 @@
                 <!-- The snapshot as a message too (protocol 2), for the clock offset (WatchBridgePlugin.java). -->
                 <data android:scheme="wear" android:host="*" android:path="/opengym/snapshot" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.REQUEST_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:path="/opengym/ping" />
+            </intent-filter>
         </service>
 
         <!-- The Tile: the streak and today's plan, or the set up next while a workout runs. -->

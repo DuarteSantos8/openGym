@@ -13,6 +13,7 @@ package ch.duartesantos.opengym.wear
  *   /opengym/routines      data item, phone → watch: "json" (an Asset: {"h": hash, "others": [...]}, every
  *                          routine the watch can start; the snapshot's routinesHash names the current one), "h".
  *                          One item, replaced by the next. Read at launch too (PhoneLink.pull).
+ *   /opengym/ping          request, phone → watch: the link check; the watch answers with one byte.
  *   /opengym/still/<exId>  data item, phone → watch: "img" (an Asset: the exercise's 180 px WebP
  *                          still from the phone's app package), "wid" (the workout it is for). For
  *                          the Overview's rows (Stills in WatchLogic.kt); the phone deletes them when
@@ -23,6 +24,7 @@ object Paths {
     const val SNAPSHOT = "/opengym/snapshot"
     const val EVENT_PREFIX = "/opengym/event/"
     const val OPEN = "/opengym/open"
+    const val PING = "/opengym/ping"
     const val STILL_PREFIX = "/opengym/still/"
     const val ROUTINES = "/opengym/routines"
     const val KEY_JSON = "json"
