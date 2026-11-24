@@ -360,6 +360,20 @@ describe('a session storage would not keep', () => {
     expect(t.auth.sync().user.id).toBe('u-1')
   })
 
+  // Found in review of #81. Whoever is about to send the person through a full-page redirect
+  // has to know whether they will still be signed in when the page comes back.
+  it('lasting() says whether the session will outlive the page', async () => {
+    const lost = make(refusing())
+    expect(lost.auth.lasting()).toBe(false)             // nobody signed in
+    await lost.auth.signIn('a@example.com', 'right-password')
+    expect(lost.auth.lasting()).toBe(false)             // signed in, in memory only
+    const kept = make(memory())
+    await kept.auth.signIn('a@example.com', 'right-password')
+    expect(kept.auth.lasting()).toBe(true)
+    await kept.auth.signOut()
+    expect(kept.auth.lasting()).toBe(false)
+  })
+
   it('signing out still signs out, and a session that was kept still follows another tab\'s sign-out', async () => {
     const t = make(refusing())
     await t.auth.signIn('a@example.com', 'right-password')

@@ -6366,4 +6366,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Med ett konto följer din träning med till dina andra enheter. Utan konto stannar den på den här enheten.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Det gick inte att logga ut din träning på servern, så inget ändrades. Försök igen när du är online.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Ta bort din träning först: öppna Inställningar i appen, sedan Konto och sedan Ta bort mitt konto. Kom sedan tillbaka hit för att ta bort det här kontot.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "Den här webbläsaren håller dig inte inloggad (privat surfning, eller så är dess lagring full). Här stannar din träning på den här enheten.",
 }

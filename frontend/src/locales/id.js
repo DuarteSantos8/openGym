@@ -6284,4 +6284,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Dengan akun, latihanmu ikut ke perangkatmu yang lain. Tanpa akun, latihan tetap di perangkat ini.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Latihanmu di server tidak bisa dikeluarkan, jadi tidak ada yang diubah. Coba lagi saat kamu online.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Hapus latihanmu dulu: di aplikasi, buka Pengaturan, lalu Akun, lalu Hapus akun saya. Setelah itu, kembali ke sini untuk menghapus akun ini.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "Browser ini tidak menjaga kamu tetap masuk (penjelajahan pribadi, atau penyimpanannya penuh). Di sini latihanmu tetap di perangkat ini.",
 };

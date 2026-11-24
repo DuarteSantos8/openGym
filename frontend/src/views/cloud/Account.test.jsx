@@ -534,7 +534,41 @@ describe('Account', () => {
     const enter = vi.fn(() => 'already')
     await mount(c, { enter, server: openServer(), note: theirs('u-9') })
     await click('[data-continue]')
-    expect(enter).toHaveBeenCalledWith({ hostedId: 'u-1', owner: 'u-9' })
+    expect(enter).toHaveBeenCalledWith({ hostedId: 'u-1', owner: 'u-9', lasting: true })
+  })
+
+  // Found in review of #81: a browser that is not keeping the account session.
+  it('Continue is told when the session will not outlive the page, and the screen says so', async () => {
+    const c = fakeClient({ session: me })
+    c.auth.lasting = () => false
+    const enter = vi.fn(() => 'device'), link = vi.fn(), note = noNote()
+    await mount(c, { enter, link, note })
+    expect($('[data-not-kept]').textContent).toMatch(/not keeping you signed in/)
+    await click('[data-continue]')
+    expect(enter).toHaveBeenCalledWith({ hostedId: 'u-1', owner: null, lasting: false })
+    expect(link).not.toHaveBeenCalled()
+    expect(note.leaving).not.toHaveBeenCalled()
+    expect(where).toBe('/home')
+  })
+
+  it('and never leaves for the server\'s sign-in then, even after swapping out someone else\'s profile', async () => {
+    const c = fakeClient({ session: me })
+    c.auth.lasting = () => false
+    const server = openServer(), link = vi.fn(), note = noNote()
+    const enter = vi.fn().mockReturnValueOnce('switch').mockReturnValueOnce('device')
+    await mount(c, { enter, link, server, note })
+    await click('[data-continue]')
+    expect(server.signOut).toHaveBeenCalledWith({ force: true })
+    expect(enter).toHaveBeenCalledTimes(2)
+    expect(link).not.toHaveBeenCalled()
+    expect(note.leaving).not.toHaveBeenCalled()
+    expect(where).toBe('/home')
+  })
+
+  it('a session that lasts shows no such line', async () => {
+    const c = fakeClient({ session: me })
+    await mount(c)
+    expect($('[data-not-kept]')).toBeNull()
   })
 
   // Deleting the account here removes the account, not the training on the server. With a

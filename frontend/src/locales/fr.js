@@ -6319,4 +6319,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Avec un compte, ton entraînement te suit sur tes autres appareils. Sans compte, il reste sur cet appareil.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Impossible de déconnecter ton entraînement sur le serveur, donc rien n’a été modifié. Réessaie quand tu seras en ligne.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Supprime d’abord ton entraînement : dans l’app, ouvre Réglages, puis Compte, puis Supprimer mon compte. Reviens ensuite ici pour supprimer ce compte.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "Ce navigateur ne te garde pas connecté (navigation privée, ou son stockage est plein). Ici, ton entraînement reste sur cet appareil.",
 }

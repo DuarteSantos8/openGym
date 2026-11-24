@@ -6285,4 +6285,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "با حساب کاربری، تمرین‌هایتان در دستگاه‌های دیگرتان هم همراه شماست. بدون آن، روی همین دستگاه می‌ماند.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "خروج از تمرین‌های شما روی سرور انجام نشد، بنابراین چیزی تغییر نکرد. وقتی آنلاین هستید دوباره تلاش کنید.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "ابتدا تمرین‌هایتان را حذف کنید: در برنامه «تنظیمات»، سپس «حساب» و بعد «حذف حساب من» را باز کنید. پس از آن برای حذف این حساب به اینجا برگردید.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "این مرورگر شما را واردشده نگه نمی‌دارد (مرور خصوصی، یا فضای ذخیره‌سازی آن پر است). در اینجا تمرین‌هایتان روی همین دستگاه می‌ماند.",
 }
