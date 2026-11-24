@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Import: the activities.csv from your Strava archive brings years of runs, rides, swims and matches in as activities, without the gym sessions and walks. A run that Health Connect or Apple Health already brought in is not counted twice (#1313, thanks @christophercuongkim, whose PR had the idea).
 - Import: Anneal's CSV export comes in as it is, warm-ups, timed sets and pounds included (thanks @BisonMeatMan, #1061).
 - Exercise videos: a tap pauses the built-in animation right where it is, so you can study the bottom of the squat, and a second tap carries on from there. Scrolling it out of view and back no longer starts a paused one again (thanks @m-ridha, #1271).
 - Settings → Workout: Rate warm-ups too. Switch it off and warm-up rows lose their RIR or RPE cell in every layout and in Focus, so you only rate the sets that count. Ratings you already logged stay (#1374, thanks @lodepav, whose PR had the idea).

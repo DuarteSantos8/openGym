@@ -26,7 +26,7 @@ import { cleanBands, bandsFromCell } from './bands.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
-import { activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
+import { activitiesFromHealthExport, activitiesFromStravaExport, isStravaExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
 import {
   MEASUREMENT_FIELDS, MEASUREMENT_KEYS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
@@ -1331,6 +1331,13 @@ const importReadingId = b => 'i' + hashId(`${b.d}|${b.at || ''}|${b.w}`)
 export function parseImport(text, opts) {
   const s = String(text)
   if (s.includes('HKQuantityTypeIdentifier') || /^\s*</.test(s)) return parseBodyweight(s, opts)
+  // Strava's activities.csv (#1313): runs, rides and matches, as activities. Told by its first line.
+  const firstLine = s.slice(0, (s.search(/[\r\n]/) + 1) || s.length)
+  if (isStravaExport(parseCSV(firstLine)[0])) {
+    const acts = activitiesFromStravaExport(parseCSV(s))
+    // only gym sessions and walks in it: nothing to bring, and the sheet says so
+    return acts.length ? finishBodyweight(new Map(), opts?.unit || 'kg', 'Strava', '', [], acts) : { kind: 'bodyweight', source: 'Strava', bodyweight: [] }
+  }
   const asWorkouts = parseWorkoutCSV(s, opts)
   if (!asWorkouts.error) return asWorkouts
   const asWeights = parseBodyweight(s, opts)
