@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Apple Watch: the iPhone sends the watch its workout as plain ASCII. One "×" in a history line made the whole message count double, and a big workout could go over the limit and lose its "last time" lines (#1469, thanks @cubetes for #1470).
 - Fixed: finishing on the watch while the phone showed "That's the whole workout!" left that sheet under the summary, so closing the summary asked you to finish a workout already saved (#1278, thanks @cubetes for #1279).
 - iPhone: a workout you forgot to finish no longer keeps the phone's own heart-rate session running all night. It ends and saves by itself once "Still training?" goes unanswered, even with the phone locked. A long hold also pushes that question back instead of asking mid-plank (#1464, thanks @cubetes for #1465).
 - Fixed: "Still training?" no longer turns up on the phone after you finished the workout on the watch (#1280, thanks @cubetes for #1281).
