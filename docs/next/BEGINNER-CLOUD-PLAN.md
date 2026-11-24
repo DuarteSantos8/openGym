@@ -1,7 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status as of 2026-11-23, after PR #81 merged. The Render API is live and Supabase OAuth is enabled. The Vercel rewrite and live sign-in checks are pending. Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
-Status as of 2026-11-23, after PRs #56 to #83 were merged and with `next/EP19-storage-refused` in review. A real Supabase project now exists (2026-11-23); Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0012.
+Status as of 2026-11-23. The Render API is live behind the Vercel rewrite, and Supabase OAuth is enabled. The browser sign-in origin guard is in review. Stripe is parked. Read after `NEXT-STEPS.md`. The decisions behind it are ADR 0008 to 0013.
 
 ## Why
 

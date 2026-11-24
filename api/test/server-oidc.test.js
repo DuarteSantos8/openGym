@@ -74,7 +74,7 @@ const landed = r => new URL(r.location, 'http://x').searchParams;
 test('config: the provider button is public, and so is OIDC_ONLY', async t => {
   const h = await setup(t, { env: { OIDC_ONLY: '1' } });
   const cfg = await (await h.get('/api/config')).json();
-  assert.deepEqual(cfg.oidc, { label: 'VoidAuth', only: true });
+  assert.deepEqual(cfg.oidc, { label: 'VoidAuth', only: true, webOrigin: ORIGIN });
 });
 
 test('start: PKCE S256, a state and a nonce, and a short-lived flow cookie', async t => {
