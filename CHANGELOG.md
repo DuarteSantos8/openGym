@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Watches: the last three seconds of a rest tap your wrist once each, like a timed hold's count-in, so you know it is time without looking (thanks @cubetes for #1287).
 - Wear OS: a quarter of the screen is enough to swipe to the next metrics page. Half a screen on a small watch kept springing back to the numbers (#1288, thanks @cubetes for #1289).
 - Apple Watch: the workout summary scrolls with the crown straight away, no touch needed first (#1308, thanks @cubetes for #1310).
 - iPhone: +15, -15 and Skip on the watch move the phone's rest alarm and Live Activity countdown even while the phone is locked in your pocket, so it no longer rings at the old time (#1405, thanks @cubetes for #1406).

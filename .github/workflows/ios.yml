@@ -207,7 +207,9 @@ jobs:
           UDID=$(xcrun simctl list devices available -j | node -e '
             const d = JSON.parse(require("fs").readFileSync(0)).devices
             const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v).filter(x => /\(42mm\)/.test(x.name) && !/SE/.test(x.name))
-            process.stdout.write(all.pop().udid)')
+            const pick = all.pop()
+            if (!pick) { console.error("no available watchOS 42 mm simulator"); process.exit(1) }
+            process.stdout.write(pick.udid)')
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           set -o pipefail

@@ -123,3 +123,14 @@ describe('Wear OS metrics pages turn at a quarter swipe (Screens.kt, #1288 / #12
     expect(stack).toMatch(/flingBehavior = PagerDefaults\.snapFlingBehavior\(state = pager, snapPositionalThreshold = 0\.25f\)/)
   })
 })
+
+describe('Watch rest: a tap at 3, 2 and 1 s left (#1287)', () => {
+  it('Apple Watch: each tap belongs to the rest that armed it', () => {
+    const store = code(WATCH + 'SessionStore.swift')
+    expect(store).toMatch(/for s in \[3\.0, 2\.0, 1\.0\] where left > s \+ 1/)
+    expect(store).toMatch(/self\.restArm == arm, self\.restEndsAt == end, self\.restPausedAt == nil/)
+  })
+  it('Wear OS: inside the rest job, so a rest moved or skipped cancels them', () => {
+    expect(code(WEAR + 'WearStore.kt')).toMatch(/for \(left in listOf\(3, 2, 1\)\)[\s\S]{0,200}Haptics\.restCount\(app\)/)
+  })
+})
