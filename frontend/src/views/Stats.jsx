@@ -891,7 +891,7 @@ export default function Stats() {
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
   ]
   const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
-  const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
+  const wrapped = motivationOn ? wrappedYears(S) : []
   // Your month (v1.4.5): last month's story once it is over, this month's so far before that.
   const storyMonth = motivationOn ? offeredMonth(S, todayISO()) : null
   const thisYear = new Date().getFullYear()
