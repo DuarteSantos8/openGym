@@ -45,9 +45,15 @@
 "Keep going" = "Seguir";
 "Finish now" = "Terminar ahora";
 "Back" = "Atrás";
+"Saved" = "Guardado";
+"Hours" = "Horas";
+"min (minutes)" = "min";
+"Records" = "Récords";
+"New record" = "Nuevo récord";
 "Last time: %@" = "La última vez: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nada anotado en un rato. Si ya terminaste, termina solo a las %@, guardado en tu última serie.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "¿Terminar el entreno ahora? Si no, termina solo a las %@.";
+"%@ bpm" = "%@ lpm";
 "No workout running" = "Ningún entreno en curso";
 "Not synced yet" = "Aún sin sincronizar";
 "Open openGym on your iPhone once and your routines show up here." = "Abre openGym una vez en tu iPhone y tus rutinas aparecerán aquí.";
@@ -88,4 +94,5 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Activa Apple Salud en tu iPhone y openGym se queda en pantalla durante descansos y aguantes.";
 "No sets yet" = "Aún sin series";
 "+%lld more" = "+%lld más";
+"On iPhone" = "En el iPhone";
 "%@ sets" = "%@ series";
