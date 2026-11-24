@@ -127,9 +127,10 @@ export default function Home() {
   // today's session shown right under the week strip
   // Once today is done, a tap opens what you did (Discord), and a second session is one more
   // tap from there (Start another session) instead of starting the routine over by accident.
+  const againOpts = () => todayRoutines.length ? { again: () => startOrPreview(effectiveRoutineIds(useStore.getState().S, todayISO())) } : {}
   const onToday = () => {
     if (S.active) nav('/workout')
-    else if (doneToday) workoutDetailSheet(doneToday, todayRoutines.length ? { again: () => startOrPreview(effectiveRoutineIds(useStore.getState().S, todayISO())) } : {})
+    else if (doneToday) workoutDetailSheet(doneToday, againOpts())
     else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO()))
     else dayOverrideSheet(todayISO())
   }
@@ -141,6 +142,10 @@ export default function Home() {
   // its own Start and its own Done. Only while nothing runs; a running one is the row above.
   const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
+  // Two or more sessions done today (#1538): each gets its row, in the order you did them, and
+  // opens its own workout. The row used to name only the last one, so the first looked lost.
+  const doneRows = !S.active && !splitDay && doneToday && loggedToday.length > 1
+    ? [...loggedToday].sort((a, b) => (a.start || 0) - (b.start || 0)) : null
 
   return <div className="narrow">
     <div className="hdr">
@@ -191,7 +196,16 @@ export default function Home() {
           {x.done ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
             : <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={x.routines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>}
         </div>
-      }) : <div className="today-row" data-tour="today" {...tappable(onToday)}>
+      }) : doneRows ? doneRows.map((w, i) => <div key={w.id} className="today-row today-split" data-tour={i ? undefined : 'today'} {...tappable(() => workoutDetailSheet(w, againOpts()))}>
+          <div className="row" style={{ gap: 9, minWidth: 0 }}>
+            <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="checkCircle" style={{ color: 'var(--green)' }} /></span>
+            <div style={{ minWidth: 0 }}>
+              <div className="lbl2">{t('Today')} · {t('{0} of {1}', String(i + 1), String(doneRows.length))}</div>
+              <div className="ttl">{w.name ? t('{0} (done)', w.name) : t('Workout done')}</div>
+            </div>
+          </div>
+          <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
+        </div>) : <div className="today-row" data-tour="today" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
           <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)',
             // the rest day's moon on the grey square: white on #e3e3e8 vanished in the light theme

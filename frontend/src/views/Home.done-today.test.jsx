@@ -58,4 +58,22 @@ describe('Home: the today row once today is done', () => {
     expect(workoutDetailSheet).not.toHaveBeenCalled()
     expect(startOrPreview).toHaveBeenCalledWith(['r1'])
   })
+
+  it('lists every workout done today, in order, each opening its own (#1538)', () => {
+    const now = Date.now()
+    const a = { id: 'w1', name: 'Push', d: todayISO(), start: now - 7200e3, end: now - 5400e3, routineIds: ['r1'], entries: [] }
+    const b = { id: 'w2', name: 'Evening run', d: todayISO(), start: now - 3600e3, end: now, routineIds: [], entries: [] }
+    setS({ workouts: [b, a] })
+    act(() => root.render(<Home />))
+    const rows = [...host.querySelectorAll('.today-row')]
+    expect(rows).toHaveLength(2)
+    expect(rows[0].textContent).toContain('Push')
+    expect(rows[0].textContent).toContain('1 of 2')
+    expect(rows[1].textContent).toContain('Evening run')
+    act(() => { rows[0].dispatchEvent(new MouseEvent('click', { bubbles: true })) })
+    expect(workoutDetailSheet.mock.calls[0][0].id).toBe('w1')
+    act(() => { rows[1].dispatchEvent(new MouseEvent('click', { bubbles: true })) })
+    expect(workoutDetailSheet.mock.calls[1][0].id).toBe('w2')
+    expect(startOrPreview).not.toHaveBeenCalled()
+  })
 })
