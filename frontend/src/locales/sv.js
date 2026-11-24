@@ -6032,4 +6032,7 @@ export default {
   "A row on those two pages that opens this sheet.": "En rad på de två sidorna som öppnar det här bladet.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Dold till nästa sammanfattning.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Betygsätt uppvärmning också",
+  "Off keeps RIR or RPE for the sets that count.": "Av: RIR eller RPE bara för de set som räknas.",
 }

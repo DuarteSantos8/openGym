@@ -6064,4 +6064,7 @@ export default {
   "A row on those two pages that opens this sheet.": "ওই দুই পাতায় একটা সারি, যা এই শিট খোলে।",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "পরের সারাংশ পর্যন্ত লুকানো।",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "ওয়ার্ম-আপেরও রেটিং দিন",
+  "Off keeps RIR or RPE for the sets that count.": "বন্ধ থাকলে RIR বা RPE শুধু আসল সেটগুলোর জন্য থাকে।",
 }

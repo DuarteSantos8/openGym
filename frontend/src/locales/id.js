@@ -5950,4 +5950,8 @@ export default {
   "A row on those two pages that opens this sheet.": "Baris di kedua halaman itu yang membuka lembar ini.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Disembunyikan sampai rangkuman berikutnya.",
-};
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Nilai pemanasan juga",
+  "Off keeps RIR or RPE for the sets that count.": "Mati: RIR atau RPE hanya untuk set yang dihitung.",
+}
+;

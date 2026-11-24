@@ -5917,4 +5917,7 @@ export default {
   "A row on those two pages that opens this sheet.": "その2ページに、このシートを開く行を表示します。",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "次の振り返りまで非表示です。",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "ウォームアップも評価する",
+  "Off keeps RIR or RPE for the sets that count.": "オフにすると、RIRやRPEは本番セットだけになります。",
 }

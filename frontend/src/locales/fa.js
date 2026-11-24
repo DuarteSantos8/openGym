@@ -5951,4 +5951,7 @@ export default {
   "A row on those two pages that opens this sheet.": "ردیفی در آن دو صفحه که این برگه را باز می‌کند.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "تا خلاصهٔ بعدی پنهان است.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "گرم‌کردن را هم امتیاز بده",
+  "Off keeps RIR or RPE for the sets that count.": "خاموش: RIR یا RPE فقط برای ست‌هایی که حساب می‌شوند.",
 }

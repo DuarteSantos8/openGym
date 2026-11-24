@@ -5985,4 +5985,7 @@ export default {
   "A row on those two pages that opens this sheet.": "O iki sayfada bu sayfayı açan bir satır.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Bir sonraki özete kadar gizli.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Isınmaları da puanla",
+  "Off keeps RIR or RPE for the sets that count.": "Kapalıyken RIR veya RPE yalnızca sayılan setlerde kalır.",
 }

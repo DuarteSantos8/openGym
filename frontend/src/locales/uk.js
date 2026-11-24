@@ -5982,4 +5982,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Рядок на цих двох сторінках, що відкриває цю панель.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Приховано до наступного підсумку.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Оцінювати й розминку",
+  "Off keeps RIR or RPE for the sets that count.": "Вимк.: RIR або RPE лише для робочих підходів.",
 }

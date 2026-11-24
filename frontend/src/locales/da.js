@@ -5925,4 +5925,7 @@ export default {
   "A row on those two pages that opens this sheet.": "En række på de to sider, der åbner dette ark.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Skjult indtil næste opsummering.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Bedøm også opvarmning",
+  "Off keeps RIR or RPE for the sets that count.": "Fra: RIR eller RPE kun på de sæt, der tæller.",
 }

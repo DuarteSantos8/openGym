@@ -5951,4 +5951,8 @@ export default {
   "A row on those two pages that opens this sheet.": "Một dòng trên hai trang đó để mở bảng này.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Ẩn cho đến bản tóm tắt tiếp theo.",
-};
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Chấm cả hiệp khởi động",
+  "Off keeps RIR or RPE for the sets that count.": "Tắt: RIR hoặc RPE chỉ cho các hiệp chính.",
+}
+;

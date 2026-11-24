@@ -5978,4 +5978,7 @@ export default {
   "A row on those two pages that opens this sheet.": "在這兩個頁面顯示一列，點開就是這裡。",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "已隱藏，直到下一次回顧。",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "熱身組也評分",
+  "Off keeps RIR or RPE for the sets that count.": "關閉後，RIR 或 RPE 只用於正式組。",
 }

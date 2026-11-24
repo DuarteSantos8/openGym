@@ -5995,4 +5995,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Una riga su quelle due pagine che apre questo foglio.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Nascosto fino al prossimo riepilogo.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Valuta anche il riscaldamento",
+  "Off keeps RIR or RPE for the sets that count.": "Spento, RIR o RPE solo per le serie che contano.",
 }

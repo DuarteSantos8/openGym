@@ -6040,4 +6040,7 @@ export default {
   "A row on those two pages that opens this sheet.": "صف في هاتين الصفحتين يفتح هذه الورقة.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "مخفي حتى الملخص التالي.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "قيّم الإحماء أيضًا",
+  "Off keeps RIR or RPE for the sets that count.": "عند الإيقاف يبقى RIR أو RPE للمجموعات التي تُحتسب فقط.",
 }

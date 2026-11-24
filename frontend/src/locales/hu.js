@@ -5988,4 +5988,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Egy sor azon a két oldalon, ami megnyitja ezt a lapot.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Rejtve a következő összefoglalóig.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Bemelegítést is értékeld",
+  "Off keeps RIR or RPE for the sets that count.": "Kikapcsolva RIR vagy RPE csak a számító sorozatoknál.",
 }

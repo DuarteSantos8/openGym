@@ -1394,6 +1394,35 @@ describe('saving progression settings unchanged', () => {
   })
 })
 
+// Settings → Workout → Rate warm-ups too (#1374, thanks @lodepav for the idea in #1374).
+describe('rate warm-ups too, switched off', () => {
+  const ramped = () => exercise('plain-bench', [false, false], {
+    sets: [{ w: 30, r: 5, done: false, phase: 'warmup', rir: 2 }, { w: 60, r: 5, done: false }],
+  })
+  const shownEffort = () => [...container.querySelectorAll('.setrow .effcell:not(.effgap), .setrow .effcell-stp')]
+
+  it('rates warm-ups like any set by default', async () => {
+    await mount([ramped()], 0, { effort: 'rir' })
+    expect(shownEffort()).toHaveLength(2)
+  })
+
+  for (const view of ['cards', 'list', 'compact']) {
+    it(`${view}: the warm-up keeps a hidden slot, the work set its cell, the logged rating its value`, async () => {
+      await mount([ramped()], 0, { effort: 'rir', warmupEffort: false, active: { workoutView: view } })
+      const rows = [...container.querySelectorAll('.setrow')]
+      expect(rows[0].querySelector('.effgap[aria-hidden="true"]')).toBeTruthy()
+      expect(rows[0].querySelector('.effcell:not(.effgap), .effcell-stp')).toBeNull()
+      expect(rows[1].querySelector('.effcell')).toBeTruthy()
+      expect(mocks.S.active.entries[0].sets[0].rir).toBe(2)
+    })
+  }
+
+  it('Focus shows no effort button on the warm-up', async () => {
+    await mount([ramped()], 0, { effort: 'rir', warmupEffort: false, active: { workoutView: 'focus' } })
+    expect(container.querySelector('.focus-effort')).toBeNull()
+  })
+})
+
 describe('effort cell (colour-coded RIR/RPE quick picker)', () => {
   // A rep exercise whose sets can carry an effort rating. `rir` per set is optional — an
   // unrated set simply omits the key, which is what the empty cell has to represent.

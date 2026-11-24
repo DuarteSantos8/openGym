@@ -5985,4 +5985,7 @@ export default {
   "A row on those two pages that opens this sheet.": "두 페이지에 이 시트를 여는 줄이 생겨요.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "다음 요약까지 숨김.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "워밍업도 평가",
+  "Off keeps RIR or RPE for the sets that count.": "끄면 RIR이나 RPE는 본 세트에만 남아요.",
 }

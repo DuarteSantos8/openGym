@@ -12,7 +12,7 @@ import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, warmupEffortOn, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
@@ -797,7 +797,12 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // rating or change one. rirOf-via-effortColor keeps the colour identical whether the value
   // is logged as RIR or RPE. With the +/- buttons switched off (Workout controls) a logged
   // rating is just the tinted value, which still opens the picker.
+  // Rate warm-ups too off (#1374): a warm-up row keeps an empty, hidden slot so its weight and
+  // reps stay in line with the work sets. A rating it already has stays stored, just not drawn.
+  const effortGap = s => (isWarmupRow(s) && !warmupEffortOn(S) ? <span className="effcell effgap" aria-hidden="true" /> : null)
   const effortCell = (s, i, col) => {
+    const gap = effortGap(s)
+    if (gap) return gap
     const v = s[col.f] ?? null
     const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
     const color = effortColor(rir)
@@ -848,6 +853,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     </div>
   )
   const sideEffortCell = (s, sd, i, side, col) => {
+    const gap = effortGap(s)
+    if (gap) return gap
     const v = sd[col.f] ?? null
     const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
     const color = effortColor(rir)

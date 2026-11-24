@@ -5981,4 +5981,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Eilutė tuose dviejuose puslapiuose, atidaranti šį lapą.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Paslėpta iki kitos santraukos.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Vertinti ir apšilimą",
+  "Off keeps RIR or RPE for the sets that count.": "Išjungus RIR ar RPE lieka tik tikriems serijoms.",
 }

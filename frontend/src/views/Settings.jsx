@@ -19,7 +19,7 @@ import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { activeProfile as activeEquipment, benchKindOf, withBench, profileEquipment, ACC_V } from '../lib/equipment.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, warmupEffortOn } from '../lib/history.js'
 import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.jsx'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
@@ -477,7 +477,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const ctx = {
     user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
-    recordHints: recordHintsOn(S),
+    recordHints: recordHintsOn(S), effortScale: effortOf(S) !== 'none',
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     nfc: nfcOK, gymReminder,
@@ -633,6 +633,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Segmented className="seg-inline"
             options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
             value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
+        </Row>}
+        {/* Off: warm-up rows lose their effort cell, in every layout and Focus (#1374). */}
+        {effortOf(S) !== 'none' && <Row icon="sunrise" iconTint="var(--orange)" title={t('Rate warm-ups too')}
+          subtitle={t('Off keeps RIR or RPE for the sets that count.')}>
+          <Switch aria-label={t('Rate warm-ups too')} checked={warmupEffortOn(S)} onChange={v => update(s => { s.warmupEffort = v })} />
         </Row>}
         {/* The line under each exercise that the rows are held against (#173). Tapping the line in
             a workout switches it too; this is where the choice can be found without knowing that. */}

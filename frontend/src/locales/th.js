@@ -5996,4 +5996,7 @@ export default {
   "A row on those two pages that opens this sheet.": "แถวในสองหน้านั้นที่เปิดแผ่นนี้",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "ซ่อนไว้จนถึงสรุปครั้งถัดไป",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "ให้คะแนนการวอร์มอัพด้วย",
+  "Off keeps RIR or RPE for the sets that count.": "ปิดไว้ RIR หรือ RPE จะมีแค่เซ็ตที่นับจริง",
 }

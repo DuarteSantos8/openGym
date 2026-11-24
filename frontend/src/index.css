@@ -1835,6 +1835,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   transition:background var(--fast),transform var(--fast),border-color var(--fast);
 }
 .effcell:active{transform:scale(var(--press-scale-sm))}
+.effcell.effgap{visibility:hidden}  /* a warm-up left unrated (#1374): the slot stays, the row lines up */
 .effcell.is-empty{color:var(--label-2);font-weight:500;font-size:var(--fs-caption);letter-spacing:.02em}
 /* a logged rating becomes a −/value/+ stepper, tinted by its effort band: the band colour
    fills the cell at low opacity (set inline via color-mix), borders it, and colours the value.

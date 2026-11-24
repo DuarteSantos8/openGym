@@ -6005,4 +6005,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Eine Zeile auf diesen beiden Seiten, die dieses Blatt öffnet.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Bis zum nächsten Rückblick ausgeblendet.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Auch Aufwärmsätze bewerten",
+  "Off keeps RIR or RPE for the sets that count.": "Aus: RIR oder RPE nur für die Sätze, die zählen.",
 }

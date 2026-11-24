@@ -5989,4 +5989,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Строка на этих двух страницах, открывающая эту панель.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Скрыто до следующей сводки.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Оценивать и разминку",
+  "Off keeps RIR or RPE for the sets that count.": "Выкл.: RIR или RPE только для рабочих подходов.",
 }
