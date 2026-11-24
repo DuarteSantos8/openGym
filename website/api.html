@@ -7492,10 +7492,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <summary>
     <span class="sch-name"><code>IntegrationEvent</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum"><code>workout.finished</code>: a workout reached the server (from any device).</span>
+    <span class="ep-sum"><code>workout.started</code>: the workout running on a device reached the server, once per workout (since v1.4.6; only within six hours of its start).</span>
   </summary>
   <div class="ep-body">
-<p><code>workout.pr</code>: that workout set personal records. <code>weighin.logged</code>: a new or changed weigh-in. Only events from the last seven days that happened after the connection was made are sent.</p>
+<p><code>workout.finished</code>: a workout reached the server (from any device). <code>workout.pr</code>: that workout set personal records. <code>weighin.logged</code>: a new or changed weigh-in. Only events from the last seven days that happened after the connection was made are sent.</p>
 <p class="p-desc">Free-form object.</p>
   </div>
 </details>

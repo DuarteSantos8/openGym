@@ -3329,6 +3329,7 @@ export default {
   "Workout finished": "انتهى التمرين",
   "New personal record": "رقم شخصي جديد",
   "Weigh-in logged": "تم تسجيل الوزن",
+  "Workout started": "بدأ التمرين",
   "Paste the URL your tool gave you.": "الصق الرابط الذي أعطتك إياه أداتك.",
   "That does not look like a URL.": "هذا لا يبدو رابطًا.",
   "It has to start with https://.": "يجب أن يبدأ بـ https://.",

@@ -3241,6 +3241,7 @@ export default {
   "Workout finished": "Sesi latihan selesai",
   "New personal record": "Rekor pribadi baru",
   "Weigh-in logged": "Penimbangan badan dicatat",
+  "Workout started": "Sesi latihan dimulai",
   "Paste the URL your tool gave you.": "Tempel URL yang diberikan oleh alatmu.",
   "That does not look like a URL.": "Format tersebut tidak tampak seperti URL.",
   "It has to start with https://.": "Harus diawali dengan https://.",

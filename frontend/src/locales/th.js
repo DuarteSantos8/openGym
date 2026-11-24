@@ -3286,6 +3286,7 @@ export default {
   "Workout finished": "ฝึกเสร็จแล้ว",
   "New personal record": "สถิติส่วนตัวใหม่",
   "Weigh-in logged": "บันทึกน้ำหนักแล้ว",
+  "Workout started": "เริ่มฝึกแล้ว",
   "Paste the URL your tool gave you.": "วาง URL ที่เครื่องมือของคุณให้มา",
   "That does not look like a URL.": "อันนี้ดูไม่เหมือน URL",
   "It has to start with https://.": "ต้องขึ้นต้นด้วย https://",

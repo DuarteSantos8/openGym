@@ -3279,6 +3279,7 @@ export default {
   "Workout finished": "Тренировка завершена",
   "New personal record": "Новый личный рекорд",
   "Weigh-in logged": "Взвешивание записано",
+  "Workout started": "Тренировка начата",
   "Paste the URL your tool gave you.": "Вставь URL, который дал твой инструмент.",
   "That does not look like a URL.": "Это не похоже на URL.",
   "It has to start with https://.": "Он должен начинаться с https://.",

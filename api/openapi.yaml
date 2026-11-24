@@ -6220,9 +6220,10 @@ components:
   schemas:
     IntegrationEvent:
       type: string
-      enum: [workout.finished, workout.pr, weighin.logged]
+      enum: [workout.started, workout.finished, workout.pr, weighin.logged]
       description: >-
-        `workout.finished`: a workout reached the server (from any device). `workout.pr`: that
+        `workout.started`: the workout running on a device reached the server, once per workout
+        (since v1.4.6; only within six hours of its start). `workout.finished`: a workout reached the server (from any device). `workout.pr`: that
         workout set personal records. `weighin.logged`: a new or changed weigh-in. Only events
         from the last seven days that happened after the connection was made are sent.
 

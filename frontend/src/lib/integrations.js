@@ -208,6 +208,7 @@ export function directory(ctx) {
 
 // Webhook events, in the order the form offers them.
 export const WEBHOOK_EVENTS = [
+  { id: 'workout.started', label: 'Workout started' },
   { id: 'workout.finished', label: 'Workout finished' },
   { id: 'workout.pr', label: 'New personal record' },
   { id: 'weighin.logged', label: 'Weigh-in logged' },

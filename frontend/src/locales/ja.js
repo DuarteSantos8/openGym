@@ -2905,6 +2905,7 @@ export default {
   "Workout finished": "トレーニング完了",
   "New personal record": "自己ベスト更新",
   "Weigh-in logged": "体重を記録しました",
+  "Workout started": "トレーニング開始",
   "Paste the URL your tool gave you.": "ツールで発行されたURLを貼り付けてください。",
   "That does not look like a URL.": "URLの形式が正しくありません。",
   "It has to start with https://.": "https://で始まる必要があります。",

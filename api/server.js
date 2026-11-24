@@ -530,6 +530,9 @@ function writeStateAs(uid, fn, { skipIf = null } = {}) {
 // → { status, body } for the answer.
 function commitState(uid, cur, state, { overRead = false, stamped = false } = {}) {
   const curRev = cur?._rev || 0;
+  // The workout running on the device is never stored, but its start is news to a webhook that
+  // asked for workout.started (#1152): kept aside for the integrations below.
+  const running = state.active && typeof state.active === 'object' && !Array.isArray(state.active) ? state.active : null;
   delete state.active;              // in-progress workouts stay device-local
   // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
   // only moves forward: a write without it, or with an older one — a client from before it, a
@@ -580,7 +583,7 @@ function commitState(uid, cur, state, { overRead = false, stamped = false } = {}
   }
   // A finished workout, a record or a weigh-in the profile's integrations asked to hear about:
   // queued for delivery (integrations/outbox.js), never sent from inside this request.
-  try { integrations.onStateWrite(uid, cur, state); } catch (e) { console.error('integrations onStateWrite', e); }
+  try { integrations.onStateWrite(uid, cur, state, { active: running }); } catch (e) { console.error('integrations onStateWrite', e); }
   return { status: 200, body: { ok: true, ts: state._ts || null, rev: curRev + 1, wid: state._wid } };
 }
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the

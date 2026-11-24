@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Webhooks: a new Workout started event, sent once when you start a session, so your smart home can dim the lights or your status can say you are at the gym. The same id comes back when the workout finishes (#1152).
 - MCP: a new get_measurements tool reads your body measurements, with each field's change and unit, for a token allowed to see Measurements. muscle_balance takes any dates now, not only this week or month, so "what did I neglect in October" has an answer (#1205, thanks @aleixalonso, and #1099, thanks @danpetrv, whose PRs had the ideas).
 - MCP: create_routine and update_routine can set a progression rule (for the routine or one exercise), a rep range like 8 to 12, supersets of two, three or a whole circuit, and the bands a band exercise starts with. A weight on a band exercise is turned down with a reason now, instead of quietly stopping its bands from ever going up (#1258, #1257, #1371).
 - Sync: the phone sends your profile gzipped to a server that takes it, so each set uploads about a tenth of what it did. Older servers and older apps keep sending and taking it plain, and the server caps what a gzipped upload may grow to (#1489, thanks @cubetes, whose #1490 had the idea).

@@ -3275,6 +3275,7 @@ export default {
   "Workout finished": "Entrenamiento terminado",
   "New personal record": "Nuevo récord personal",
   "Weigh-in logged": "Pesaje registrado",
+  "Workout started": "Entrenamiento empezado",
   "Paste the URL your tool gave you.": "Pega la URL que te dio tu herramienta.",
   "That does not look like a URL.": "Eso no parece una URL.",
   "It has to start with https://.": "Tiene que empezar por https://.",

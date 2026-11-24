@@ -2791,6 +2791,7 @@ export const PT_BR_OVERRIDES = {
   "Let Claude Desktop, Cursor and friends read your training log.": "Deixe o Claude Desktop, o Cursor e companhia lerem seu registro de treino.",
   "Needs your server": "Precisa do seu servidor",
   "Weigh-in logged": "Pesagem registrada",
+  "Workout started": "Treino iniciado",
   "Paste the URL your tool gave you.": "Cole a URL que sua ferramenta deu.",
   "That does not look like a URL.": "Isso não parece uma URL.",
   "It has to start with https://.": "Tem que começar com https://.",

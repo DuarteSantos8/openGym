@@ -3,6 +3,9 @@
  * finish (the app, the watch, the MCP log_workout tool all end in that PUT), so this is the one
  * place events come from, whichever device logged them.
  *
+ *   workout.started   the workout running on the device that pushed (`active`, which is never
+ *                     stored), while it is not a logged workout yet: every push during a session
+ *                     carries it, and the outbox's key (one per workout id) sends it once
  *   workout.finished  a workout id the old document did not have
  *   workout.pr        the same workout, when it set records (w.prs, the app's own judgement)
  *   weighin.logged    a body-weight entry the old document did not have, or whose weight changed
@@ -13,8 +16,11 @@
  * than the connection itself. Pure, so the tests can feed it documents. */
 import { libraryName } from '../coach/core/library.js';
 
-export const EVENTS = ['workout.finished', 'workout.pr', 'weighin.logged'];
+export const EVENTS = ['workout.started', 'workout.finished', 'workout.pr', 'weighin.logged'];
 export const RECENT_MS = 7 * 86400_000;
+// A start is news for a few hours, not a week: a phone that comes back online with a session it
+// started yesterday and never finished is not starting a workout now.
+export const STARTED_RECENT_MS = 6 * 3600_000;
 export const MAX_PER_WRITE = 10;
 export const PAYLOAD_VERSION = 1;
 
@@ -30,9 +36,17 @@ export function workoutTime(w) {
 const weighinTime = b => num(b.t) || dayMs(b.d) || 0;
 
 /** [{ type, entity, at, data }] for what is new in `next`, newest last, at most MAX_PER_WRITE. */
-export function detectEvents(prev, next, { now = Date.now() } = {}) {
+export function detectEvents(prev, next, { now = Date.now(), active = null } = {}) {
   const out = [];
   const before = new Set(list(prev?.workouts).map(w => String(w.id)));
+  const a = active && typeof active === 'object' && !Array.isArray(active) ? active : null;
+  // Not an old workout opened to edit, nor one typed in after the fact (backfill), nor one that
+  // is already in the log (finished on this push, or reopened).
+  if (a && a.id != null && !a.editingWorkoutId && !a.backfill
+    && !before.has(String(a.id)) && !list(next?.workouts).some(w => String(w.id) === String(a.id))) {
+    const at = num(a.start) || 0;
+    if (at && now - at <= STARTED_RECENT_MS && at - now <= 86400_000) out.push({ type: 'workout.started', entity: String(a.id).slice(0, 80), at, data: a });
+  }
   for (const w of list(next?.workouts)) {
     if (w.id == null || before.has(String(w.id))) continue;
     const at = workoutTime(w);
@@ -130,8 +144,25 @@ function recordsPayload(w, doc) {
 
 const weighinPayload = (b, doc) => ({ date: b.d.slice(0, 10), weight: b.w, unit: doc?.unit === 'lb' ? 'lb' : 'kg' });
 
+// What a receiver hears when a session starts: what it is and what is planned, no sets yet.
+function startedPayload(a, doc) {
+  const start = num(a.start);
+  const rid = (Array.isArray(a.routineIds) ? a.routineIds.find(x => x != null) : null) ?? a.routineId ?? null;
+  const routine = rid != null ? list(doc?.routines).find(r => String(r.id) === String(rid)) : null;
+  return {
+    id: String(a.id).slice(0, 80),
+    name: text(a.name, NAME_MAX) || null,
+    date: typeof a.d === 'string' && /^\d{4}-\d{2}-\d{2}/.test(a.d) ? a.d.slice(0, 10) : start ? new Date(start).toISOString().slice(0, 10) : null,
+    startedAt: start ? new Date(start).toISOString() : null,
+    routine: routine ? { id: String(routine.id).slice(0, 80), name: text(routine.name, NAME_MAX) || null } : null,
+    unit: doc?.unit === 'lb' ? 'lb' : 'kg',
+    exercises: list(a.entries).slice(0, MAX_EXERCISES).map(e => ({ id: String(e.id).slice(0, 40), name: exerciseName(e.id, doc) })),
+  };
+}
+
 /** The `data` of an event, as a receiver gets it. */
 export function eventData(ev, doc) {
+  if (ev.type === 'workout.started') return { workout: startedPayload(ev.data, doc) };
   if (ev.type === 'workout.finished') return { workout: workoutPayload(ev.data, doc) };
   if (ev.type === 'workout.pr') return recordsPayload(ev.data, doc);
   if (ev.type === 'weighin.logged') return { weighin: weighinPayload(ev.data, doc) };
@@ -146,6 +177,9 @@ export function envelope({ id, type, data, at = Date.now(), test = false }) {
 /** What a "Send test event" delivers: a small made-up workout, marked test: true. */
 export function testData(type, now = Date.now()) {
   if (type === 'weighin.logged') return { weighin: { date: new Date(now).toISOString().slice(0, 10), weight: 80, unit: 'kg' } };
+  if (type === 'workout.started') {
+    return { workout: { id: 'test', name: 'Test workout', date: new Date(now).toISOString().slice(0, 10), startedAt: new Date(now).toISOString(), routine: null, unit: 'kg', exercises: [{ id: '0025', name: 'barbell bench press' }] } };
+  }
   const workout = {
     id: 'test', name: 'Test workout', date: new Date(now).toISOString().slice(0, 10),
     startedAt: new Date(now - 45 * 60000).toISOString(), endedAt: new Date(now).toISOString(), durationMin: 45,

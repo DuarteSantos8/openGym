@@ -3253,6 +3253,7 @@ export default {
   'Workout finished': 'تمرین تمام شد',
   'New personal record': 'رکورد شخصی جدید',
   'Weigh-in logged': 'وزن‌کشی ثبت شد',
+  'Workout started': 'تمرین شروع شد',
   'Paste the URL your tool gave you.': 'URL‌ای را که ابزارتان داده بچسبانید.',
   'That does not look like a URL.': 'این شبیه URL نیست.',
   'It has to start with https://.': 'باید با https:// شروع شود.',
