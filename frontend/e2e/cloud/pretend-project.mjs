@@ -58,6 +58,10 @@ export async function pretendProject(page, { users = [{ id: 'u-1', email: 'sam@e
       return json(route, 200, { deleted: true })
     }
     const az = /^\/auth\/v1\/oauth\/authorizations\/([^/]+)(\/consent)?$/.exec(path)
+    // The hosted server asks once: with consent on record it answers with where to go, and a
+    // consent sent after that is refused ("no longer pending").
+    if (az && !az[2] && state.allowedBefore) return json(route, 200, { redirect_url: `${PROJECT}/api/oidc/callback?code=c-2` })
+    if (az && state.allowedBefore) return json(route, 400, { error_code: 'validation_failed', msg: 'authorization request is no longer pending' })
     if (az && !az[2]) return json(route, 200, { authorization_id: az[1], client: { name: 'Ironvane server' }, scope: 'openid email' })
     if (az) { state.consents.push({ id: az[1], action: body.action }); return json(route, 200, { redirect_url: `${PROJECT}/api/oidc/callback?${body.action === 'approve' ? 'code=c-1' : 'error=access_denied'}` }) }
     return json(route, 404, { error_code: 'not_found' })
