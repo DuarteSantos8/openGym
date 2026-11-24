@@ -6,6 +6,22 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Progression: adding or dropping a set under double or steady progression no longer starts the exercise over with "Plan changed". A set more or less does not move where your rep range stands, so a raise you earned still comes (#1530, thanks @Brandon168 for #1533).
+- Ladder rule: a per-side rung climbs two reps at a time, so each side gets whole reps instead of 3.5 (#1441, thanks @cubetes).
+- Fixed: the live Calories tile counted every workout as weight training, so an hour's walk read 300 kcal live and 188 once saved. It now uses the same estimate the saved workout gets, and a finished workout's detail shows that number too (#1368, thanks @sharishtht for #1369).
+- Save as routine from a session you did not plan (or one you imported) keeps its drop-sets and its per side, instead of leaving them for you to set again on every exercise (#1261, thanks @CodeInIA).
+- Stats: every year you trained in gets its Your year row, not only the newest four. Long-time lifters, this one is for you (#1116, thanks @felixr234).
+- Body map: the slips on the side of your ribs are the serratus now, so an oblique exercise no longer lights them up (#1263, thanks @Ituking for #1522).
+- Library: the two "lever chest press" entries are told apart. The one with plate horns is "lever chest press (plate loaded)" (#1502, thanks @Ituking for #1519).
+- Fixed: two progression reasons ("Stuck for ... sessions. Hold ..." and the Epley deload one) showed in English in every language (#1318, thanks @RodiAda).
+- Fixed: ChatGPT can add openGym as an MCP connector. Its sign-in said it preferred a key and was turned away, even though it also signs in without one (#1251, thanks @christophercuongkim for #1305).
+- MCP: create_routine and update_routine can set a cardio exercise's minutes, speed and incline (#1270, thanks @FerrumLogic for #1520).
+- API tokens: a token allowed to change plans can now also change how an exercise is loaded (per side or one stack, the bar or machine weight), instead of getting refused (#1425, thanks @joeshipssw for #1528).
+- Reduce Motion: an exercise's animation opens on its still picture, and a tap still plays it. The "tap to pause" hint is a real button for the keyboard and screen readers too (thanks @lodepav, #1513).
+- Reduce Transparency: the timer, toasts and the other frosted bars really go opaque now. The opaque look was written in the wrong spot and lost to the see-through one (#1372, thanks @TheBlackSide243).
+- Effort picker: an unset exact value says "Not set" instead of a dash that read like a third minus, and the - and + buttons say which scale they step, RIR or RPE, to a screen reader (thanks @lodepav, #1511, #1512).
+- Fixed: closing a sheet that was opened over another sheet no longer forgets where the page underneath came from (thanks @lodepav, #1510).
+- Android and iPhone builds made straight from the source tree (F-Droid's, for one) include the splash screen plugin the app already uses (thanks @lodepav, #1508).
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).
 - Garmin: supersets no longer stall on "Next exercise is on its way from your phone". The watch gets the next superset before you reach it, and when it does have to wait, it asks the phone again within seconds instead of minutes (#1295).
 - Garmin: long circuits fit on the watch. Six exercises used to be too much for one message, and the exercise you were on could be the one left out (#1471).
