@@ -84,6 +84,8 @@ data class ActiveWorkout(
     val leftGymAt: Double? = null,
     /** Each muscle's name in the app's language, for the Muscles page. Older phones never send it. */
     val muscleNames: Map<String, String>? = null,
+    /** The workout's own note (the phone's session note, cut at 280), for the Overview's "Add session note". */
+    val note: String? = null,
 )
 
 @Serializable
@@ -168,6 +170,8 @@ data class WatchSettings(
     val onAccent: String? = null,
     /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
     val forgotten: ForgottenSettings? = null,
+    /** The Overview may offer "Add session note" (the phone applies workoutNote); null from an older phone. */
+    val workoutNote: Boolean? = null,
     /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
     val birthYear: Int? = null,
 )

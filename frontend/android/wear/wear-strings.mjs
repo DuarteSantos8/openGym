@@ -37,7 +37,7 @@ const FROM_APP = {
   today: 'Today', start_workout: 'Start workout', done: 'Done', warmup: 'Warm-up', reps: 'Reps',
   rest: 'Rest', finish_workout: 'Finish workout', finish_workout_q: 'Finish workout?',
   finish_and_save: 'Finish and save', discard_workout: 'Discard workout', continue_workout: 'Continue workout',
-  cancel: 'Cancel', rest_over: 'Rest’s over. Next set!', left: 'Left', right: 'Right', bodyweight: 'Bodyweight',
+  add_session_note: 'Add session note', edit_session_note: 'Edit session note', cancel: 'Cancel', rest_over: 'Rest’s over. Next set!', left: 'Left', right: 'Right', bodyweight: 'Bodyweight',
   superset: 'Superset', weight: 'Weight', sets: 'Sets', volume: 'Volume', time: 'Time', skip_set: 'Skip set',
   prs: 'PRs', routines: 'Routines', heart_rate: 'Heart rate', week_streak: 'Week streak', allow: 'Allow',
   not_now: 'Not now', workout: 'Workout', muscles: 'Muscles', less: 'Less', more: 'More',

@@ -85,7 +85,7 @@ import kotlin.math.abs
 
 /* ---------- glyphs: drawn, so they look the same on every watch (no emoji fonts) ---------- */
 
-enum class G { CLOSE, CHECK, LEFT, RIGHT, PLAY, PAUSE, PLAY_PAUSE, PREV, NEXT, FLAG, UP, PHONE_OFF, BACK, MINUS, PLUS, CROWN, HEART, STOP, LINK }
+enum class G { CLOSE, CHECK, LEFT, RIGHT, PLAY, PAUSE, PLAY_PAUSE, PREV, NEXT, FLAG, UP, PHONE_OFF, BACK, MINUS, PLUS, CROWN, HEART, STOP, LINK, NOTE }
 
 @Composable
 fun Glyph(g: G, color: Color, size: Dp = 16.dp, modifier: Modifier = Modifier) {
@@ -95,6 +95,8 @@ fun Glyph(g: G, color: Color, size: Dp = 16.dp, modifier: Modifier = Modifier) {
         fun tri(x0: Float, x1: Float) = Path().apply { moveTo(x0, h * 0.18f); lineTo(x1, h * 0.5f); lineTo(x0, h * 0.82f); close() }
         when (g) {
             G.CLOSE -> { drawLine(color, Offset(w * 0.24f, h * 0.24f), Offset(w * 0.76f, h * 0.76f), w * 0.13f, StrokeCap.Round); drawLine(color, Offset(w * 0.76f, h * 0.24f), Offset(w * 0.24f, h * 0.76f), w * 0.13f, StrokeCap.Round) }
+            // a page with two lines of writing
+            G.NOTE -> { drawRoundRect(color, Offset(w * 0.2f, h * 0.14f), androidx.compose.ui.geometry.Size(w * 0.6f, h * 0.72f), androidx.compose.ui.geometry.CornerRadius(w * 0.1f), style = st); drawLine(color, Offset(w * 0.36f, h * 0.42f), Offset(w * 0.64f, h * 0.42f), w * 0.11f, StrokeCap.Round); drawLine(color, Offset(w * 0.36f, h * 0.62f), Offset(w * 0.56f, h * 0.62f), w * 0.11f, StrokeCap.Round) }
             G.CHECK -> drawPath(Path().apply { moveTo(w * 0.18f, h * 0.52f); lineTo(w * 0.42f, h * 0.76f); lineTo(w * 0.84f, h * 0.26f) }, color, style = st)
             G.LEFT -> drawPath(Path().apply { moveTo(w * 0.64f, h * 0.18f); lineTo(w * 0.32f, h * 0.5f); lineTo(w * 0.64f, h * 0.82f) }, color, style = st)
             G.RIGHT -> drawPath(Path().apply { moveTo(w * 0.36f, h * 0.18f); lineTo(w * 0.68f, h * 0.5f); lineTo(w * 0.36f, h * 0.82f) }, color, style = st)

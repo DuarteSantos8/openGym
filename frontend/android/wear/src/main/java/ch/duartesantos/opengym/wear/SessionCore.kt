@@ -54,7 +54,13 @@ data class SessionState(
     val synced: Boolean = false,
     /** Today's effort ratings made here, by SessionCore.effortKey (the Apple Watch's efforts, for the Effort page). */
     val efforts: Map<String, Double>? = null,
+    /** The workout's note edited here, until the phone acks it (its snapshot cannot flash it away). */
+    val noteDraft: NoteDraft? = null,
 )
+
+/** A note edited on the Overview: its event's id, the workout it is for and its text. */
+@Serializable
+data class NoteDraft(val id: String, val wid: String, val text: String)
 
 /** The end of a workout, on one screen. */
 @Serializable
@@ -125,6 +131,7 @@ object SessionCore {
         snap.streak?.let { s = s.copy(streak = it) }
 
         val acked = snap.acked?.toSet() ?: emptySet()
+        if (s.noteDraft != null && s.noteDraft!!.id in acked) s = s.copy(noteDraft = null)
         // The phone applied the start: it had this workout, whatever its snapshot shows now.
         if (s.startedHere != null && s.startId != null && s.startId in acked) s = s.copy(startedHere = null, startId = null)
         // Ticks the phone applied: its copy of those sets is the one that counts from now on.
@@ -137,13 +144,13 @@ object SessionCore {
         if (next0 == null || (next0.id != null && s.finishedHere.contains(next0.id))) {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed) return s
-            return s.copy(workout = null, pending = emptyMap(), efforts = null)
+            return s.copy(workout = null, pending = emptyMap(), efforts = null, noteDraft = null)
         }
         val same = next0.id != null && next0.id == wid
         if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null, startId = null)
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
-        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = next0.cur)
+        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = next0.cur, noteDraft = null)
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         val was = s0.workout?.cur
@@ -372,6 +379,31 @@ object SessionCore {
             if (idle && left && !discard) put("left", true)
         }
         return s to event
+    }
+
+    /** The most of the workout's note the watch carries (the phone's own limit is higher). */
+    const val NOTE_MAX = 280
+
+    /** The Overview offers "Add session note": a workout is on, and the phone says it applies workoutNote. */
+    fun canNote(s: SessionState) = s.workout?.id != null && s.settings.workoutNote == true
+
+    /** The note the Overview shows: this watch's own edit until the phone acks it, else the phone's. */
+    fun shownNote(s: SessionState): String = s.noteDraft?.takeIf { it.wid == s.workout?.id }?.text ?: s.workout?.note ?: ""
+
+    /**
+     * The Overview's note edited: control characters out, trimmed, cut. `was` is what the phone has (or will have
+     * once an earlier edit is applied), so it can keep its own text when it changed meanwhile. null: no button
+     * here, or nothing changed.
+     */
+    fun workoutNote(s: SessionState, text: String, at: Double, id: String): Pair<SessionState, Event>? {
+        if (!canNote(s)) return null
+        val wid = s.workout?.id ?: return null
+        val clean = text.map { if (it.code < 32 || it.code == 127) ' ' else it }.joinToString("").trim().take(NOTE_MAX)
+        val was = shownNote(s)
+        if (clean == was) return null
+        return s.copy(noteDraft = NoteDraft(id, wid, clean)) to buildJsonObject {
+            put("id", id); put("type", "workoutNote"); put("wid", wid); put("note", clean); put("was", was); put("at", at.toLong())
+        }
     }
 
     /** "Keep going" on "Still training?": the phone stops asking too (lib/watch-sync.js stillHere). */

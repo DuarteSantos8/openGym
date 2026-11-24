@@ -438,6 +438,8 @@ export function buildSnapshot(S, { timer = null, ready = null, activeAt = null, 
     active: {
       id: A.id || null,
       name: A.name || '',
+      // the session note (cut): the Overview's "Add note" shows it; `was` of the watch's edit
+      ...(typeof A.note === 'string' && A.note ? { note: A.note.slice(0, WATCH_NOTE_MAX) } : {}),
       // when it started (ms), for the watch's summary at the finish
       ...(num(A.start) ? { start: num(A.start) } : {}),
       // paused on the phone (#976): the watch's clock stands at this moment (ms) until it resumes
@@ -631,6 +633,23 @@ function rowOf (A, ev) {
  * the watch gave. Once only: a row with that id already there is left as it is. Returns whether
  * the workout changed.
  */
+/** The most of the workout's note the watch carries and sends (the snapshot stays small; the phone's own limit is NOTE_MAX). */
+export const WATCH_NOTE_MAX = 280
+
+/**
+ * The watch's `workoutNote` onto the running workout. The note is only replaced when the phone's is still
+ * the one the watch last saw (`was`, '' for none): the phone wins a clash, and a phone note longer than
+ * the watch carries never matches, so the wrist cannot cut it. Cleaned as the session note sheet does.
+ */
+export function setWatchNote (s, ev) {
+  const A = s?.active
+  if (!A || A.editingWorkoutId || ev?.wid !== A.id || typeof ev.note !== 'string') return false
+  if ((A.note || '') !== (typeof ev.was === 'string' ? ev.was : '')) return false
+  const text = ev.note.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, WATCH_NOTE_MAX)
+  if (text) A.note = text; else delete A.note
+  return true
+}
+
 export function addWatchSet (s, ev) {
   const A = s?.active
   if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || !sidOk(ev?.sid) || rowBySid(A, ev.sid)) return false
@@ -699,6 +718,7 @@ function claim (ev) {
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   stillHere { wid, at }            "Keep going" on the watch's "Still training?" (1.4.5)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
+ *   workoutNote { wid, note, was, at }   the running workout's note from the watch's Overview (setWatchNote)
  *
  * A tick for a workout already saved (finished on the phone while the watch was away) is written
  * into that saved workout, stamped so the next sync keeps it. A tick while the workout screen is
@@ -707,7 +727,7 @@ function claim (ev) {
  */
 // The events about one workout: they wait for a watch-started workout's start, and they tell that
 // the watch runs that workout.
-const WORKOUT_EVENTS = ['setDone', 'setHr', 'finish', 'discard', 'rest', 'addSet', 'removeSet']
+const WORKOUT_EVENTS = ['setDone', 'setHr', 'finish', 'discard', 'rest', 'addSet', 'removeSet', 'workoutNote']
 export function applyEvents (events, getState, now) {
   if (!Array.isArray(events)) return []
   // What the watch's events change in the workout is the watch's activity, not the phone's.
@@ -807,6 +827,10 @@ function applyEach (events, getState, now = Date.now()) {
         // The watch's set menu (#1139, #1185), by the set's id (#1162).
         if (!appHandlers?.edit) break
         if (!A.editingWorkoutId) appHandlers.edit(s => (ev.type === 'addSet' ? addWatchSet(s, ev) : removeWatchSet(s, ev)))
+      } else if (ev.type === 'workoutNote' && ours) {
+        // The Overview's "Add note": the running workout's own note (A.note), the phone's text wins a clash.
+        if (!appHandlers?.edit) break
+        appHandlers.edit(s => setWatchNote(s, ev))
       } else if (ev.type === 'weighIn') {
         // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
         // day, as the phone's own check-in makes one (today's replaces today's).
@@ -1096,6 +1120,8 @@ export function watchExtras (S, show = {}) {
   return {
     lang,
     weighIn: S?.weighIn !== false,
+    // the Overview's "Add note" button: an older phone never says so, and the watch shows no button then
+    workoutNote: true,
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),

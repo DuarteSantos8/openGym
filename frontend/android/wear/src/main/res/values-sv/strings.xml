@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, sv. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Lägg till ditt födelseår i telefonappen</string>
+    <string name="add_session_note">Lägg till passanteckning</string>
     <string name="added_weight">Extra vikt</string>
     <string name="all_done_q">Klar?</string>
     <string name="all_sets_done">Alla set klara</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Släng passet?</string>
     <string name="done">Klar</string>
     <string name="edit">Redigera</string>
+    <string name="edit_session_note">Redigera passanteckning</string>
     <string name="effort">Ansträngning</string>
     <string name="ended_on_phone">Avslutat på telefonen</string>
     <string name="exercises">Övningar</string>

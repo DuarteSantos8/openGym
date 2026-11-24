@@ -71,6 +71,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -1017,6 +1021,7 @@ fun OverviewPage(onScreen: Boolean) {
     val list = rememberTransformingLazyColumnState()
     val (done, total) = SessionCore.progress(s)
     val rows = Overview.rows(w, s.entryIndex)
+    val ambient = LocalAmbient.current
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = if (LocalRound.current) ListTop else 30.dp, bottom = 40.dp),
@@ -1035,7 +1040,44 @@ fun OverviewPage(onScreen: Boolean) {
         }
         item { SyncLine(sync, heard = s.synced, modifier = Modifier.padding(top = 6.dp)) }
         item { HoldToFinish(Modifier.padding(top = 4.dp)) { WearStore.finish() } }
+        if (SessionCore.canNote(s) && !ambient) item { NoteButton(SessionCore.shownNote(s)) }
         item { RowButton(stringResource(R.string.discard_workout), Modifier.fillMaxWidth(), tint = Og.Red) { confirmDiscard = true } }
+    }
+}
+
+private const val NOTE_KEY = "workout_note"
+
+/**
+ * The workout's own note, under Finish: "Add session note" to dictate one, or the note itself (two lines) to
+ * say it again. The system's input opens (voice, handwriting or keyboard, no microphone permission here);
+ * backing out changes nothing, an emptied text clears the note.
+ */
+@Composable
+private fun NoteButton(shown: String) {
+    val a = LocalAccent.current
+    val label = stringResource(if (shown.isEmpty()) R.string.add_session_note else R.string.edit_session_note)
+    val launch = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        if (r.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
+        val text = r.data?.let { android.app.RemoteInput.getResultsFromIntent(it) }?.getCharSequence(NOTE_KEY)?.toString() ?: return@rememberLauncherForActivityResult
+        WearStore.saveNote(text)
+    }
+    val shape = RoundedCornerShape(Og.Radius)
+    Row(
+        Modifier.fillMaxWidth().padding(top = 4.dp).heightIn(min = Og.Tap).clip(shape).background(Og.Surface)
+            .combinedClickable(role = Role.Button, onClickLabel = label) {
+                val input = android.app.RemoteInput.Builder(NOTE_KEY).setLabel(label).build()
+                // The watch's own input screen, asked for by hand: wear-input's helper is these two strings, not worth a dependency.
+                val intent = Intent("android.support.wearable.input.action.REMOTE_INPUT")
+                    .putExtra("android.support.wearable.input.extra.REMOTE_INPUTS", arrayOf(input))
+                launch.launch(intent)
+            }
+            .semantics(mergeDescendants = true) { contentDescription = if (shown.isEmpty()) label else "$label: $shown" }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Glyph(G.NOTE, a.accent, 16.dp)
+        Spacer(Modifier.width(8.dp))
+        Text(shown.ifEmpty { label }, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
     }
 }
 
