@@ -189,7 +189,7 @@ export async function phoneSessionSupported () {
   try { const p = await phonePlugin(); return !!(p && (await p.PW.status())?.supported) } catch { return false }
 }
 
-// The last reading, for the workout screen's small live readout: { bpm, at } or null.
+// The last reading, for the workout screen's small live readout: { bpm, at, device? } or null.
 let latest = null
 const liveListeners = new Set()
 const tellLive = () => { for (const fn of liveListeners) { try { fn(latest) } catch { /* a closed screen */ } } }
@@ -337,7 +337,9 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
   const sub = await Promise.resolve(p.PW.addListener('heartRate', e => {
     const bpm = Math.round(Number(e?.bpm)), at = Number(e?.at) || Date.now()
     if (!running || !(bpm >= 25 && bpm <= 250)) return
-    latest = { bpm, at }
+    // the device that measured it, when iOS names one ("AirPods Pro"): the device button draws earbuds
+    const device = typeof e?.device === 'string' ? e.device.trim().slice(0, 60) : ''
+    latest = device ? { bpm, at, device } : { bpm, at }
     tellLive()
   })).catch(() => null)
   const onVisible = () => { if (document.visibilityState === 'visible') { evaluate(); settle() } }

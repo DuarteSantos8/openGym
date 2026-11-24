@@ -223,6 +223,11 @@ describe('the session with the workout', () => {
     // Live readout.
     p.listeners.heartRate({ bpm: 128, at: Date.now() })
     expect(liveHeartRate()).toEqual({ bpm: 128, at: now })
+    // The device that measured it, when iOS names one (the device button draws earbuds for AirPods).
+    p.listeners.heartRate({ bpm: 129, at: Date.now(), device: 'AirPods Pro' })
+    expect(liveHeartRate()).toEqual({ bpm: 129, at: now, device: 'AirPods Pro' })
+    p.listeners.heartRate({ bpm: 128, at: Date.now(), device: 42 })
+    expect(liveHeartRate()).toEqual({ bpm: 128, at: now })
     // A set ticked 60 s in.
     vi.setSystemTime(now + 60e3)
     S.setState({ S: { active: { id: 'w1', start: now, entries: [{ id: 'bench', sets: [{ w: 60, r: 8, done: true, at: now + 60e3 }] }] }, workouts: [] } })
