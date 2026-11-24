@@ -6319,5 +6319,6 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Hesabın varsa antrenmanların diğer cihazlarına da gelir. Hesap olmadan bu cihazda kalır.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Sunucudaki antrenmanlarından çıkış yapılamadı, bu yüzden hiçbir şey değişmedi. Çevrimiçi olduğunda tekrar dene.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Önce antrenmanlarını sil: uygulamada Ayarlar, ardından Hesap, ardından Hesabımı sil bölümünü aç. Sonra bu hesabı silmek için buraya dön.",
-  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "Bu tarayıcı oturumunu açık tutmuyor (gizli gezinme veya depolaması dolu). Burada antrenmanların bu cihazda kalır.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Bu tarayıcı oturumunu açık tutmuyor (gizli gezinme veya depolaması dolu). Burada kaydettiklerin de saklanmayabilir.",
+  "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Bu tarayıcı bu site için hiçbir şey saklamıyor, bu yüzden uygulama burada açılamıyor. Depolama alanı aç veya gizli gezinmeden çık, sonra tekrar dene.",
 }

@@ -26,13 +26,17 @@ import { oidcOn } from '../oidc.js'
 /**
  * @param {{user: unknown, config: {allow_guest?: boolean, oidc?: object}|null, isGuest: () => boolean, setGuest: (on: boolean) => void}} st the app's store
  * @param {{hostedId?: string|null, owner?: string|null, lasting?: boolean}} [who] the account signed in now, the account the open server profile was opened through (null: nobody noted), and whether the account session will outlive the page
- * @returns {'already'|'link'|'switch'|'device'|'server'} nothing to do; go through the server's sign-in with the account; the same after signing out the server profile that is open; this device's profile opened; left to the server's own sign-in
+ * @returns {'already'|'link'|'switch'|'device'|'server'|'refused'} nothing to do; go through the server's sign-in with the account; the same after signing out the server profile that is open; this device's profile opened; left to the server's own sign-in; this device's profile could not be opened because the browser stores nothing
  */
 export function enterApp(st, { hostedId = null, owner = null, lasting = true } = {}) {
   if (st.user) return owner && owner !== hostedId && oidcOn(st.config) ? 'switch' : 'already'
   if (oidcOn(st.config) && lasting) return 'link'
   if (st.isGuest()) return 'already'
   if (!guestAllowed(st.config)) return 'server'
-  st.setGuest(true)
-  return 'device'
+  // The store keeps this choice in the browser's storage. A browser that refuses to store
+  // anything for the site (storage full or switched off) throws there, or drops it: then there
+  // is no way in from this browser, and that is said rather than tripped over ('refused';
+  // found in review of #82).
+  try { st.setGuest(true) } catch { return 'refused' }
+  return st.isGuest() ? 'device' : 'refused'
 }

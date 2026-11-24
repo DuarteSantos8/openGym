@@ -6319,5 +6319,6 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "有了账号，你的训练记录会同步到你的其他设备。没有账号，记录只保留在这台设备上。",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "无法退出服务器上的训练记录，因此没有任何更改。请在联网后重试。",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "请先删除你的训练记录：在应用中依次打开“设置”、“账号”、“删除我的账号”。完成后再回到这里删除此账号。",
-  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "此浏览器不会保留你的登录状态（无痕浏览，或存储空间已满）。在这里，你的训练记录会留在这台设备上。",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "此浏览器不会保留你的登录状态（无痕浏览，或存储空间已满）。你在这里记录的内容也可能无法保留。",
+  "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "此浏览器不会为此网站存储任何数据，因此无法在这里打开应用。请释放存储空间或退出无痕浏览后重试。",
 }

@@ -46,6 +46,7 @@ export function wordFor(code) {
     case 'otp_expired': case 'flow_state_expired': case 'flow_state_not_found': return t('This link has expired. Ask for a new one.')
     case 'user_banned': return t('This account has been disabled.')
     case 'subscription_active': return t('Cancel your subscription first, then delete the account.')
+    case 'storage_refused': return t('This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.')
     case 'server_signout': return t('Your training on the server could not be signed out, so nothing was changed. Try again when you are online.')
     case 'network': return t('No connection. Check your network and try again.')
     default: return t('Something went wrong. Try again.')
@@ -196,6 +197,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
       // is asked again: this device's profile, not the server's sign-in.
       if (!lasting) how = enter(who())
     }
+    if (how === 'refused') throw { code: 'storage_refused' }
     if (!lasting || (how !== 'link' && how !== 'switch')) { nav('/home'); return }
     note.leaving(session.user.id)
     setLeaving(true)
@@ -211,7 +213,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
   }
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
-    {!lasting && <p className="iv-acct-hint" data-not-kept="">{t('This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.')}</p>}
+    {!lasting && <p className="iv-acct-hint" data-not-kept="">{t('This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.')}</p>}
     <div className="iv-acct-actions">
       <Button variant="primary" disabled={busy || leaving} aria-busy={leaving || undefined} type="button" data-continue="" onClick={onward}>{t('Continue')}</Button>
     </div>
