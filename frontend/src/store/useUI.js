@@ -45,7 +45,8 @@ const autoMustWait = () => {
 // timer this browser's own: a desktop tab finishing its rest on screen used to cancel the
 // alert the phone in the gym was waiting for, because the server held one timer per account.
 // `next` names the set waiting ("Bench press, 80 kg × 8"), which the push carries as its body.
-const pushRestTimer = (sec, next = '') => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId(), ...(next ? { next } : {}) }) }).catch(() => {}) }
+// `timer`: the workout Timer's countdown, whose push says the time is up instead.
+const pushRestTimer = (sec, next = '', timer = false) => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId(), ...(next ? { next } : {}), ...(timer ? { timer: true } : {}) }) }).catch(() => {}) }
 // The set this rest is for, in a line (lib/rest-next.js): read when the end is booked or shown,
 // so a set edited during the rest is named as it now stands.
 const nextLine = () => { try { return restNextLine(useStore.getState().S, useUI.getState().timer?.forIdx) } catch { return '' } }
@@ -60,18 +61,19 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   // The tour's practice workout (useStore enterTourSandbox) rests on screen only.
   if (useStore.getState().tourSandbox) return
   const switching = kind === 'switch'
-  const line = switching ? '' : nextLine()
-  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line); return }
+  const clock = !!useUI.getState().timer?.clock   // the workout Timer: no hold after it, no next set to name
+  const line = switching || clock ? '' : nextLine()
+  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line, clock); return }
   const { S } = useStore.getState()
   // The rest before a hold that starts by itself: its end is the count-in, and the alerts after
   // it (go, hold done, the next ones) are booked with it, for a phone that stays locked.
-  const next = autoPeek()
+  const next = clock ? null : autoPeek()
   const chain = next ? chainCues({ start: 'rest', at: endsAt, name: next.label, plan: next.plan, forecast: autoForecast(next), words: autoWords }) : null
-  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
+  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : clock ? t('Time’s up.') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
-      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line)
+      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)), line, clock)
     })
 }
 
@@ -111,7 +113,8 @@ const restAlertsOn = async reg => {
   try { return !!(await reg?.pushManager?.getSubscription?.()) } catch { return false }
 }
 
-const maybeRestNotification = async () => {
+// `title` is read from the countdown that ended, before the awaits below: by then another may run.
+const maybeRestNotification = async title => {
   if (!notificationsSupported()) return
   if (!document.hidden && document.visibilityState !== 'hidden') return
   try {
@@ -125,7 +128,6 @@ const maybeRestNotification = async () => {
     // iOS ignores the tag replacement (issue #172): close the previous one by hand, as the
     // worker does on a push, or the end of a rest leaves two banners stacked there.
     try { for (const n of (await reg?.getNotifications?.({ tag: 'rest-timer' })) || []) n.close() } catch { /* no getNotifications: the tag is all there is */ }
-    const title = restOverTitle(nextLine())
     if (reg?.showNotification) { reg.showNotification(title, opts); return }
     new Notification(title, opts)
   } catch {
@@ -254,7 +256,7 @@ const runRest = (set, get) => {
     const snd = st.sound, endSound = toneFor(st, 'rest', tm.kind === 'switch' ? null : tm.rk)
     // The rest before a hold that starts by itself: no Ready, no chime, the count-in is next and
     // says so itself. From the rest's own end, so a phone that was locked catches up from there.
-    if (left <= 0 && get().autoAfterRest(tm.endsAt)) return
+    if (left <= 0 && !tm.clock && get().autoAfterRest(tm.endsAt)) return
     if (left <= 0 && tm.kind === 'switch') {
       // Over like a hold is: the chime and its buzz, then the bar goes. No "Ready", no toast:
       // the other side is the next thing, one tap away.
@@ -277,8 +279,8 @@ const runRest = (set, get) => {
       // on reopen reads like a bug. Only the loud parts (beep, vibration, flash) are gated.
       // The native alarm is left armed: this tick can come a little early, and with the screen
       // locked it never runs at all.
-      get().toast(t('Rest’s over. Next set!'))
-      if (!MOBILE) maybeRestNotification()
+      get().toast(tm.clock ? t('Time’s up.') : t('Rest’s over. Next set!'))
+      if (!MOBILE) maybeRestNotification(tm.clock ? t('Time’s up.') : restOverTitle(nextLine()))
       cancelPushRestTimer()
       stopRestTicking()
       set({ timer: { ...tm, left: 0, ready: true } })
@@ -309,6 +311,7 @@ export const useUI = create((set, get) => ({
   setFlash: null,      // { idx, i, id }: the set row a copy or an undo just brought, flashed once
   timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx, ready?, paused?, kind? }
                        // kind: 'switch' for the short pause between the two sides of a timed set
+                       // clock: true for a countdown the workout's Timer started (components/WorkoutClock.jsx)
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // forSet: index of that set in the entry's rows, so removing the set stops its rest
                        // paused: held at `left`; `endsAt` means nothing until resumeRest sets it again
@@ -371,7 +374,8 @@ export const useUI = create((set, get) => ({
 
   // `rest`: what kind of rest this is (#165: 'warmup' | 'work' | 'superset' | 'exercise', from
   // lib/supersetFlow.js restKindAfter), kept on the timer as `rk` for the sound at its end.
-  startRest(sec, forIdx, { kind, forSet, rest } = {}) {
+  // `clock`: the workout Timer's countdown (components/WorkoutClock.jsx), which never leads into a hold.
+  startRest(sec, forIdx, { kind, forSet, rest, clock } = {}) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
@@ -392,13 +396,13 @@ export const useUI = create((set, get) => ({
     pageHiddenAt = document.hidden ? Date.now() : null
     const endsAt = Date.now() + sec * 1000
     // `autoNext`: the hold that counts in once this rest is over (lib/auto-holds.js), for the bar.
-    const next = get().countIn ? null : autoPeek()
+    const next = get().countIn || clock ? null : autoPeek()
     get().stopCountIn()
-    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}), ...(kind !== 'switch' && REST_KINDS.includes(rest) ? { rk: rest } : {}), ...(next ? { autoNext: next.label } : {}) } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}), ...(kind !== 'switch' && REST_KINDS.includes(rest) ? { rk: rest } : {}), ...(next ? { autoNext: next.label } : {}), ...(clock ? { clock: true } : {}) } })
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
-    // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js).
-    if (kind !== 'switch') cues.restStarted(forIdx)
+    // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js); the Timer is no rest before one.
+    if (kind !== 'switch' && !clock) cues.restStarted(forIdx)
   },
   // Holding the rest where it is — a longer break than planned, a machine to wait for, a phone
   // call (#193). Paused time does not count: the countdown stops, and so does everything that
@@ -431,7 +435,7 @@ export const useUI = create((set, get) => ({
   addRest(sec) {
     const tm = get().timer
     if (!tm) return
-    if (tm.ready) { if (sec > 0) get().startRest(Math.min(sec, REST_MAX), tm.forIdx, { forSet: tm.forSet, rest: tm.rk }); else get().stopRest(); return }
+    if (tm.ready) { if (sec > 0) get().startRest(Math.min(sec, REST_MAX), tm.forIdx, { forSet: tm.forSet, rest: tm.rk, clock: tm.clock }); else get().stopRest(); return }
     // +15 s stops where the wheel does (15:00), so the two never disagree about a rest's length.
     if (sec > 0) sec = Math.min(sec, Math.max(0, REST_MAX - tm.left))
     if (!sec) return
@@ -461,7 +465,8 @@ export const useUI = create((set, get) => ({
   followNativeRest({ endsAt, left, total, paused }) {
     const tm = get().timer
     const forIdx = tm?.forIdx
-    const kind = { ...(tm?.kind === 'switch' ? { kind: 'switch' } : {}), ...(tm?.forSet != null ? { forSet: tm.forSet } : {}), ...(tm?.autoNext ? { autoNext: tm.autoNext } : {}) }
+    // `clock`: the workout Timer's countdown stays the Timer's (components/WorkoutClock.jsx).
+    const kind = { ...(tm?.kind === 'switch' ? { kind: 'switch' } : {}), ...(tm?.forSet != null ? { forSet: tm.forSet } : {}), ...(tm?.autoNext ? { autoNext: tm.autoNext } : {}), ...(tm?.clock ? { clock: true } : {}) }
     if (paused) {
       stopRestTicking()
       set({ timer: { left, total, endsAt, forIdx, ...kind, paused: true } })
@@ -495,7 +500,7 @@ export const useUI = create((set, get) => ({
     const left = Math.max(1, Math.round((endsAt - now) / 1000))
     const tm = get().timer
     if (!tm || tm.ready) {
-      get().startRest(Math.min(left, REST_MAX), tm ? tm.forIdx : useStore.getState().S.active?.cur, tm ? { forSet: tm.forSet, rest: tm.rk } : {})
+      get().startRest(Math.min(left, REST_MAX), tm ? tm.forIdx : useStore.getState().S.active?.cur, tm ? { forSet: tm.forSet, rest: tm.rk, clock: tm.clock } : {})
       const t = get().timer
       if (!t) return
       set({ timer: { ...t, endsAt, left } })
@@ -696,7 +701,7 @@ export const useUI = create((set, get) => ({
   skipRest(at = Date.now()) {
     const tm = get().timer
     get().stopRest()
-    if (tm && !tm.ready) get().autoAfterRest(at)
+    if (tm && !tm.ready && !tm.clock) get().autoAfterRest(at)
   },
   // One button for whichever clock of the chain is running.
   pauseAuto() {
@@ -807,7 +812,7 @@ const saveRest = tm => {
   if (!ss) return
   try {
     if (!tm || tm.ready) { savedRestKey = null; ss.removeItem(REST_KEY); return }
-    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, ...(tm.rk ? { rk: tm.rk } : {}), paused: !!tm.paused, left: tm.left }
+    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, ...(tm.rk ? { rk: tm.rk } : {}), ...(tm.clock ? { clock: true } : {}), paused: !!tm.paused, left: tm.left }
     const key = JSON.stringify({ ...v, left: v.paused ? v.left : null })
     if (key === savedRestKey && ss.getItem(REST_KEY) !== null) return
     ss.setItem(REST_KEY, JSON.stringify(v))
@@ -822,7 +827,7 @@ export function restoreRest(now = Date.now()) {
   const total = Math.round(Number(saved.total))
   const ok = useStore.getState().S?.active && total > 0 && (saved.paused ? saved.left > 0 : saved.endsAt > now)
   if (!ok) { try { ss.removeItem(REST_KEY) } catch { /* nothing to drop */ } return false }
-  const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(saved.kind === 'switch' ? { kind: 'switch' } : {}), ...(REST_KINDS.includes(saved.rk) ? { rk: saved.rk } : {}) }
+  const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(saved.kind === 'switch' ? { kind: 'switch' } : {}), ...(REST_KINDS.includes(saved.rk) ? { rk: saved.rk } : {}), ...(saved.clock === true ? { clock: true } : {}) }
   if (saved.paused) {
     useUI.setState({ timer: { ...base, left: Math.round(saved.left), endsAt: saved.endsAt, paused: true } })
     if (MOBILE) holdRestAlert(Math.round(saved.left), total)

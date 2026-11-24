@@ -93,6 +93,8 @@ const gainedWorkoutMedia = (prev, next) => {
 }
 export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
+  // timerSec: the workout Timer's last time (components/WorkoutClock.jsx). Not in DEF on purpose:
+  // absent falls back to restSec. A plain setting for the sync (stamped as a whole in `edited`).
   // accent: the old iOS green on purpose. A loaded copy that never picked one (saved before accents,
   // a server document, a backup) keeps the green it always had; a new profile starts on the
   // brand's green instead (freshState, lib/accent.js NEW_ACCENT).

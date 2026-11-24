@@ -166,6 +166,59 @@ describe('a watch\'s rest event', () => {
     expect(u.calls).toHaveLength(2)
     stop()
   })
+
+  // The phone's workout Timer (components/WorkoutClock.jsx, `clock`) and a watch that logs a set
+  // this phone has no row for (ensureSet), or moves the rest (+15).
+  const timerUi = start => {
+    const u = { calls: [], timer: start }
+    u.getState = () => ({
+      timer: u.timer,
+      alignRest: e => { u.calls.push(['align', e]); u.timer = { ...u.timer, endsAt: e } },
+      skipRest: () => { u.calls.push(['skip']); u.timer = null },
+      stopRest: () => { u.calls.push(['stop']); u.timer = null },
+    })
+    return u
+  }
+  const READY = { endsAt: T - 1000, total: 60, left: 0, ready: true, clock: true }
+  const RUNNING = { endsAt: T + 30_000, total: 60, left: 30, clock: true }
+  const missingRow = { id: 't1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, sid: 'gone', w: 70, r: 3, at: T, restEnd: T + 90_000 }
+
+  for (const [name, start] of [['run out', READY], ['running', RUNNING]]) {
+    it(`the rest for a set logged there replaces the phone's Timer (${name}), so it is a rest`, async () => {
+      const S = S1(), u = timerUi({ ...start })
+      const stop = await linked(u, S)
+      bindWatchActions({ setDone: vi.fn() })
+      bindWatchAppActions({ ensureSet: (where, fields) => ensureWatchSet(S, where, () => null, fields) })
+      applyEvents([missingRow], () => ({ S }), T)
+      expect(u.calls).toEqual([['stop'], ['align', T + 90_000]])
+      expect(u.timer.clock).toBeUndefined()
+      stop()
+    })
+  }
+
+  for (const [name, restEnd] of [['a rest ahead', T + 90_000], ['no rest', 0], ['a rest over already', T - 5000]]) {
+    it(`a set the phone cannot take (an exercise it does not know) leaves the Timer as it is (${name})`, async () => {
+      const S = S1(), u = timerUi({ ...RUNNING })
+      const stop = await linked(u, S)
+      bindWatchActions({ setDone: vi.fn() })
+      const ensureSet = vi.fn(() => false)
+      bindWatchAppActions({ ensureSet })
+      applyEvents([{ ...missingRow, restEnd }], () => ({ S }), T)
+      expect(ensureSet).toHaveBeenCalledTimes(1)
+      expect(u.calls).toEqual([])
+      expect(u.timer).toEqual(RUNNING)
+      stop()
+    })
+  }
+
+  it('a +15 there moves a running Timer and keeps it the Timer', async () => {
+    const S = S1(), u = timerUi({ ...RUNNING })
+    const stop = await linked(u, S)
+    applyEvents([{ id: 't2', type: 'rest', wid: 'w1', endsAt: T + 45_000, at: T + 1 }], () => ({ S }), T)
+    expect(u.calls).toEqual([['align', T + 45_000]])
+    expect(u.timer.clock).toBe(true)
+    stop()
+  })
 })
 
 describe('a set\'s identity (#1162)', () => {

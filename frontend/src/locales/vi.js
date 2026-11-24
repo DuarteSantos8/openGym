@@ -1,5 +1,11 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- workout Timer and Stopwatch (#1078) ---
+  "Timer": "Bộ đếm giờ",
+  "Stopwatch": "Đồng hồ bấm giờ",
+  "Start timer": "Bắt đầu đếm giờ",
+  "Timer and stopwatch": "Bộ đếm giờ và đồng hồ bấm giờ",
+  "Time’s up.": "Hết giờ.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Đồng hồ",
   "Set once": "Đặt một lần",
