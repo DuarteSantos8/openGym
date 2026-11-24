@@ -166,6 +166,8 @@ export const getRoutine = {
       policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
+      // Cardio speed stored in a routine is always canonical km/h.
+      speed_unit: 'kmh',
       revision: typeof S._rev === 'number' ? S._rev : null,
       exercises: (r.ex || []).map((cfg, i) => {
         const ex = exerciseOf(cfg.id, S)
@@ -188,7 +190,12 @@ export const getRoutine = {
           pyramid_weight: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidWeight) && cfg.pyramidWeight.length ? cfg.pyramidWeight : undefined,
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
           min: mode === 'cardio' ? (cfg.min || 0) : undefined,
-          speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
+          minutes: mode === 'cardio' ? (cfg.min || 0) : undefined,
+          // The editor treats an unset/zero speed as its 8 km/h default. Report that effective target
+          // so it agrees with the summary and the session the app opens.
+          speed: mode === 'cardio' ? (cfg.speed || 8) : undefined,
+          speed_unit: mode === 'cardio' ? 'kmh' : undefined,
+          incline: mode === 'cardio' && cfg.incline != null ? cfg.incline : undefined,
           weight: cfg.weight != null ? cfg.weight : undefined,
           increment: cfg.inc != null ? cfg.inc : undefined,
           deload_factor: cfg.deloadFactor != null ? cfg.deloadFactor : undefined,
