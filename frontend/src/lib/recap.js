@@ -8,33 +8,15 @@
 // the card, the sheet and the PDF never disagree. A stretch with no workout gets no card at all:
 // nobody needs a recap of a week off.
 import { reportData } from './report.js'
-import { isoOf, todayISO, weekStartOf } from './format.js'
+import { todayISO } from './format.js'
+import { recapPeriod } from './recap-period.js'
 import { streakWeeks } from './streak.js'
 import { isOn } from './modules.js'
 
-const dateOf = iso => new Date(iso + 'T12:00:00')
-const addDays = (iso, n) => { const d = dateOf(iso); d.setDate(d.getDate() + n); return isoOf(d) }
 
 export const recapOn = S => S?.recap !== false && isOn(S, 'motivation')
 
-/**
- * The stretch due today, or null: `{ kind: 'month' | 'week', from, to, key }`. The 1st looks back on
- * the month before; the week's first day on the week before. A 1st that is also a Monday shows the
- * month (it is the bigger story, and the week is in it).
- */
-export function recapPeriod(S, today = todayISO()) {
-  const d = dateOf(today)
-  if (d.getDate() === 1) {
-    const to = addDays(today, -1)
-    const from = to.slice(0, 8) + '01'
-    return { kind: 'month', from, to, key: 'm:' + from.slice(0, 7) }
-  }
-  if (d.getDay() === weekStartOf(S)) {
-    const from = addDays(today, -7)
-    return { kind: 'week', from, to: addDays(today, -1), key: 'w:' + from }
-  }
-  return null
-}
+export { recapPeriod }
 
 /** The numbers of a stretch: workouts, volume, sets, PRs, active days, the streak and the top muscle. */
 export function recapOf(S, period, today = todayISO()) {
