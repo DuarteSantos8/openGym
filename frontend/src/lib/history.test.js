@@ -1062,6 +1062,33 @@ describe('session row helpers', () => {
     expect(next[2].sides.L.w).toBe(25)
   })
 
+  // #1166: 70/85/100/110 with set 2 changed to 95 became 70/95/95/95. A later set that still
+  // held the old weight follows; one with a load of its own keeps it.
+  it('cascadeWeight with the old weight leaves a pyramid\'s own loads alone', () => {
+    const rows = [70, 95, 100, 110].map(w => ({ w, r: 8, done: false }))
+    expect(cascadeWeight(rows, 1, 95, undefined, 0, { prev: 85 }).map(r => r.w)).toEqual([70, 95, 100, 110])
+    const flat = [62.5, 60, 60].map(w => ({ w, r: 5, done: false }))
+    expect(cascadeWeight(flat, 0, 62.5, undefined, 0, { prev: 60 }).map(r => r.w)).toEqual([62.5, 62.5, 62.5])
+    const mixed = [65, 60, 70, 60].map(w => ({ w, r: 5, done: false }))
+    expect(cascadeWeight(mixed, 0, 65, undefined, 0, { prev: 60 }).map(r => r.w)).toEqual([65, 65, 70, 65])
+    // typed one key at a time: cleared, then a new number, still carries through
+    const cleared = cascadeWeight([{ r: 5 }, { w: 60, r: 5 }], 0, null, undefined, 0, { prev: 60 })
+    expect('w' in cleared[1]).toBe(false)
+    expect(cascadeWeight([{ w: 7, r: 5 }, { r: 5 }], 0, 7, undefined, 0, { prev: undefined }).map(r => r.w)).toEqual([7, 7])
+  })
+
+  it('cascadeWeight with the old weight, per side: only the limb that held it follows', () => {
+    const a = makeSideSet({ w: 20, r: 8 }), b = makeSideSet({ w: 20, r: 8 })
+    b.sides.L = { ...b.sides.L, w: 22.5 }
+    const rows = [a, b]
+    rows[0] = { ...a, sides: { ...a.sides, L: { ...a.sides.L, w: 25 } } }
+    const next = cascadeWeight(rows, 0, 25, 'L', 0, { prev: 20 })
+    expect(next[1].sides.L.w).toBe(22.5)
+    const both = cascadeWeight([rows[0], makeSideSet({ w: 20, r: 8 })], 0, 25, 'L', 0, { prev: 20 })
+    expect(both[1].sides.L.w).toBe(25)
+    expect(both[1].sides.R.w).toBe(20)
+  })
+
   it('cascadeWeight deleting the weight removes the key from following undone rows only', () => {
     const rows = [
       { w: 60, done: true },

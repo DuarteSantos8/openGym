@@ -1144,13 +1144,21 @@ export { streakWeeks } from './streak.js'
  * `backoffStep` (an entry built with back-off sets, lib/backoff.js): each later work row lands
  * one more step below the edited one rather than at the same load, so 26 → 27.5 on the top set
  * makes the back-off sets 25.5 and 23.5, not 27.5 three times.
+ *
+ * `opts.prev` (#1166): the edited row's weight before the edit. With it, only a later row that
+ * still holds that same weight is inherited and follows; a row with a load of its own (a pyramid's
+ * 70/85/100/110, or each set's weight carried from last time) keeps it. Without it, every later
+ * undone row follows, as before. Back-off rows always follow, since they hang off the edited one.
  */
-export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
+export function cascadeWeight(rows, from, value, side, backoffStep = 0, opts = {}) {
   const source = rows[from]
   if (!source || isWarmupRow(source)) return rows.slice()
   const sides = isSideSet(source) ? (side ? [side] : ['L', 'R']) : null
   const next = rows.slice()
   const stepDown = backoffStep > 0 && value != null
+  const byPrev = !stepDown && opts != null && Object.prototype.hasOwnProperty.call(opts, 'prev')
+  const sameW = (a, b) => (a == null || a === '' ? b == null || b === '' : Number(a) === Number(b))
+  const inherits = w => !byPrev || sameW(w, opts.prev)
   let k = 0
   const setWeight = row => {
     const out = { ...row }
@@ -1160,7 +1168,7 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
   }
   const setSideWeight = (row, key) => {
     const current = row.sides?.[key]
-    if (!current || current.done === true || current.weightOrigin === WEIGHT_ORIGIN_MANUAL) return row
+    if (!current || current.done === true || current.weightOrigin === WEIGHT_ORIGIN_MANUAL || !inherits(current.w)) return row
     const nextSide = setWeight(current)
     return syncSideAggregate({ ...row, sides: { ...row.sides, [key]: nextSide } })
   }
@@ -1175,7 +1183,7 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
       let out = row
       for (const key of sides) out = setSideWeight(out, key)
       next[j] = out
-    } else if (!isSideSet(row) && !row.done && row.weightOrigin !== WEIGHT_ORIGIN_MANUAL) {
+    } else if (!isSideSet(row) && !row.done && row.weightOrigin !== WEIGHT_ORIGIN_MANUAL && inherits(row.w)) {
       next[j] = setWeight(row)
     }
   }

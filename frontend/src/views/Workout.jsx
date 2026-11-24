@@ -287,10 +287,11 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   const setSide = (i, side, field, v) => {
     if (field !== 'w') return mutSet(i, row => markWarmupEdited(setSideField(row, side, field, v), field))
     update(s => inEntryUnit(s, entryIdx, e => {
+      const prev = e.sets[i]?.sides?.[side]?.w
       const row = setSideField(e.sets[i], side, field, v)
       row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
       e.sets[i] = markWarmupEdited(row, field)
-      e.sets = cascadeWeight(e.sets, i, v, side, e.target?.backoffStep)
+      e.sets = cascadeWeight(e.sets, i, v, side, e.target?.backoffStep, { prev })
       rerampOpen(s, e, i)
     }), true)
   }
@@ -1600,6 +1601,7 @@ function ActiveWorkout() {
   // Clearing an optional field drops the key rather than storing null, so a set only carries
   // what was actually logged — in the session, in history and in a backup.
   const setField = (idx, i, field, v) => mutEntry(idx, e => {
+    const prev = e.sets[i]?.w
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
     // Typing a duration IS the new plan, the same way ticking the row ends it: a plan a displaced
     // hold put aside must not outrank what you just typed, or the field would read 45 and the ▶
@@ -1612,7 +1614,9 @@ function ActiveWorkout() {
     // warm-up edit stays on its own row, and the later rungs keep their ramp loads.
     if (field === 'w') {
       e.sets[i].weightOrigin = WEIGHT_ORIGIN_MANUAL
-      e.sets = cascadeWeight(e.sets, i, v, undefined, e.target?.backoffStep)
+      // Only the later sets that still held this set's old weight follow (#1166): a pyramid's
+      // or last time's per-set loads stay their own.
+      e.sets = cascadeWeight(e.sets, i, v, undefined, e.target?.backoffStep, { prev })
       rerampOpen(useStore.getState().S, e, i)
     }
     // A warm-up you changed is yours from now on ("Your last session" carries it, #525).

@@ -129,3 +129,22 @@ describe('a pinned exercise in a running session', () => {
 })
 
 function storedOf(lb) { return Math.round(lb * 0.45359237 * 1e4) / 1e4 }
+
+// #1166: a pyramid's planned loads are each set's own. Changing set 2 of 70/85/100/110 to 95
+// used to make it 70/95/95/95.
+describe('a weight typed into one set of a pyramid', () => {
+  const type = (input, v) => act(() => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+    set.call(input, v)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  it('leaves the later sets on their own loads, and flat sets still follow', () => {
+    mount([entry(SQUAT, [work(70), work(85), work(100), work(110)]), entry(BENCH, [work(60), work(60), work(60)])])
+    const inputs = u => [...container.querySelectorAll('.wl-unit')[u].querySelectorAll('.stp input')].filter((_, i) => i % 2 === 0)
+    type(inputs(0)[1], '95')
+    type(inputs(1)[0], '62.5')
+    const S = useStore.getState().S
+    expect(S.active.entries[0].sets.map(s => s.w)).toEqual([70, 95, 100, 110])
+    expect(S.active.entries[1].sets.map(s => s.w)).toEqual([62.5, 62.5, 62.5])
+  })
+})
