@@ -55,6 +55,7 @@
 "All sets done" = "ครบทุกเซ็ตแล้ว";
 "measuring" = "กำลังวัด …";
 "%@, set %lld" = "%@ เซ็ต %lld";
+"%@, set %lld/%lld" = "%@ เซ็ต %lld/%lld";
 "Calories" = "แคลอรี";
 "Heart rate" = "ชีพจร";
 "Hold" = "ค้างไว้";

@@ -106,7 +106,7 @@
     <string name="time">時間</string>
     <string name="today">今天</string>
     <string name="up_next">接下來</string>
-    <string name="up_next_set">%1$s，第 %2$d 組</string>
+    <string name="up_next_set">%1$s，第 %2$d/%3$d 組</string>
     <string name="volume">總訓練量</string>
     <string name="waiting_sync">等待同步中</string>
     <string name="warmup">熱身組</string>

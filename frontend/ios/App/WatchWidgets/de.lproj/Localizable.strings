@@ -55,6 +55,7 @@
 "All sets done" = "Alle Sätze erledigt";
 "measuring" = "misst …";
 "%@, set %lld" = "%@, Satz %lld";
+"%@, set %lld/%lld" = "%@, Satz %lld/%lld";
 "Calories" = "Kalorien";
 "Heart rate" = "Puls";
 "Hold" = "Halten";

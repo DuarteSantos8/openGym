@@ -141,18 +141,19 @@ struct RestView: View {
             .lineLimit(1).minimumScaleFactor(0.7) // "Als Nächstes" gives way to the readouts on 41 mm
     }
 
-    /// "Up next" in the accent, the set after it ("Bench Press, set 3 · Left") and what to load (#911).
+    /// "Up next" in the accent, the set after it ("Bench Press, set 3/4 · Left") and what to load (#911).
     @ViewBuilder private func upNext(roomy: Bool, name: Bool, bigCase: Bool) -> some View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
                 if name { // at accessibility sizes too: the countdown above gives way (it fills what is left)
+                    let place = SetNav.place(e, si) // the same count as the set pill: "set 2/4"
                     Group {
                         if let side = store.sideUp {
-                            Text("\(e.name), set \(Int64(SetNav.place(e, si).n))") + Text(verbatim: " · ")
+                            Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))") + Text(verbatim: " · ")
                                 + Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
                         } else {
-                            Text("\(e.name), set \(Int64(SetNav.place(e, si).n))")
+                            Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))")
                         }
                     }
                     .font(.system(.footnote, design: .rounded))

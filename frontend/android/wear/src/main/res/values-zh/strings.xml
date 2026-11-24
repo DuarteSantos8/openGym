@@ -106,7 +106,7 @@
     <string name="time">时间</string>
     <string name="today">今天</string>
     <string name="up_next">下一个</string>
-    <string name="up_next_set">%1$s，第 %2$d 组</string>
+    <string name="up_next_set">%1$s，第 %2$d/%3$d 组</string>
     <string name="volume">总量</string>
     <string name="waiting_sync">等待同步</string>
     <string name="warmup">热身</string>

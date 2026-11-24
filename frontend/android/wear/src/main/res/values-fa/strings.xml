@@ -106,7 +106,7 @@
     <string name="time">زمان</string>
     <string name="today">امروز</string>
     <string name="up_next">بعدی</string>
-    <string name="up_next_set">%1$s، ست %2$d</string>
+    <string name="up_next_set">%1$s، ست %2$d/%3$d</string>
     <string name="volume">حجم تمرین</string>
     <string name="waiting_sync">در انتظار همگام‌سازی</string>
     <string name="warmup">گرم‌کردن</string>

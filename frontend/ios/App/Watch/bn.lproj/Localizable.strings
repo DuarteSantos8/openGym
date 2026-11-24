@@ -55,6 +55,7 @@
 "All sets done" = "সব সেট শেষ";
 "measuring" = "মাপা হচ্ছে …";
 "%@, set %lld" = "%@, সেট %lld";
+"%@, set %lld/%lld" = "%@, সেট %lld/%lld";
 "Calories" = "ক্যালোরি";
 "Heart rate" = "হার্ট রেট";
 "Hold" = "ধরে রাখুন";

@@ -157,6 +157,17 @@ const OWN = {
     hi: '%@, सेट %lld', bn: '%@, সেট %lld', th: '%@ เซ็ต %lld', ko: '%@, %lld세트', 'zh-Hans': '%@，第 %lld 组', 'zh-Hant': '%@，第 %lld 組',
     cs: '%@, série %lld', fa: '%@، ست %lld', id: '%@, set %lld', lt: '%@, serija %lld', sv: '%@, set %lld', vi: '%@, hiệp %lld',
   },
+  '%@, set %lld/%lld': {
+    de: '%@, Satz %lld/%lld', fr: '%@, série %lld/%lld', es: '%@, serie %lld/%lld',
+    it: '%@, serie %lld/%lld', 'pt-PT': '%@, série %lld/%lld', 'pt-BR': '%@, série %lld/%lld',
+    pl: '%@, seria %lld/%lld', hu: '%@, sorozat %lld/%lld', tr: '%@, set %lld/%lld',
+    ru: '%@, подход %lld/%lld', uk: '%@, підхід %lld/%lld', ar: '%@، المجموعة %lld/%lld',
+    hi: '%@, सेट %lld/%lld', bn: '%@, সেট %lld/%lld', th: '%@ เซ็ต %lld/%lld',
+    ko: '%@, %lld/%lld세트', 'zh-Hans': '%@，第 %lld/%lld 组', 'zh-Hant': '%@，第 %lld/%lld 組',
+    cs: '%@, série %lld/%lld', fa: '%@، ست %lld/%lld', id: '%@, set %lld/%lld',
+    lt: '%@, serija %lld/%lld', sv: '%@, set %lld/%lld', vi: '%@, hiệp %lld/%lld',
+    da: '%@, sæt %lld/%lld',
+  },
   'Calories': {
     de: 'Kalorien', fr: 'Calories', es: 'Calorías', it: 'Calorie', 'pt-PT': 'Calorias', 'pt-BR': 'Calorias', pl: 'Kalorie', hu: 'Kalória', tr: 'Kalori', ru: 'Калории', uk: 'Калорії', ar: 'السعرات', hi: 'कैलोरी', bn: 'ক্যালোরি', th: 'แคลอรี', ko: '칼로리', 'zh-Hans': '卡路里', 'zh-Hant': '卡路里',
     cs: 'Kalorie', fa: 'کالری', id: 'Kalori', lt: 'Kalorijos', sv: 'Kalorier', vi: 'Calo',

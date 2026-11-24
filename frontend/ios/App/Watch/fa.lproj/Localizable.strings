@@ -55,6 +55,7 @@
 "All sets done" = "همه ست‌ها انجام شد";
 "measuring" = "در حال اندازه‌گیری …";
 "%@, set %lld" = "%@، ست %lld";
+"%@, set %lld/%lld" = "%@، ست %lld/%lld";
 "Calories" = "کالری";
 "Heart rate" = "ضربان قلب";
 "Hold" = "نگه‌داشتن";

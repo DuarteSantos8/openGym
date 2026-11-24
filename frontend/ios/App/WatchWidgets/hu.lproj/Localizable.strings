@@ -55,6 +55,7 @@
 "All sets done" = "Minden sorozat kész";
 "measuring" = "mérés …";
 "%@, set %lld" = "%@, %lld. sorozat";
+"%@, set %lld/%lld" = "%@, sorozat %lld/%lld";
 "Calories" = "Kalória";
 "Heart rate" = "Pulzus";
 "Hold" = "Tartás";
