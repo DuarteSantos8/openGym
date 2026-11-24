@@ -40,3 +40,21 @@ test('published MCP tool descriptions expose the cardio fields to clients', asyn
     await server.close()
   }
 })
+
+describe('rep range, policy, supersets and bands in the routine schema (#1257, #1258, #1371)', () => {
+  test('create and update accept them, and refuse what is not a rule', () => {
+    const exercises = [
+      { exercise: 'bench press', reps_min: 8, reps: 12, policy: 'double', superset: 'A' },
+      { exercise: '0784', bands: ['Red'], superset: 'A' },
+    ]
+    expect(z.object(createRoutineTool.schema).parse({ name: 'Home', policy: 'triple', exercises })).toMatchObject({ policy: 'triple', exercises })
+    expect(z.object(updateRoutineTool.schema).parse({ routine_id: 'r1', policy: 'default', exercises })).toMatchObject({ policy: 'default', exercises })
+    expect(z.object(createRoutineTool.schema).safeParse({ name: 'X', exercises: [{ exercise: 'squat', policy: 'sometimes' }] }).success).toBe(false)
+    expect(z.object(createRoutineTool.schema).safeParse({ name: 'X', policy: 'time', exercises: [{ exercise: 'squat' }] }).success).toBe(false)
+  })
+  test('update_routine with only a policy is a change', async () => {
+    // No api configured: anything past the "nothing to change" guard fails on the missing token.
+    await expect(updateRoutineTool.handler({ routine_id: 'r1', policy: 'double' }, { env: {} })).rejects.toThrow()
+    expect(await updateRoutineTool.handler({ routine_id: 'r1' }, { env: {} })).toMatchObject({ saved: false })
+  })
+})

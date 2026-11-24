@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- MCP: create_routine and update_routine can set a progression rule (for the routine or one exercise), a rep range like 8 to 12, supersets of two, three or a whole circuit, and the bands a band exercise starts with. A weight on a band exercise is turned down with a reason now, instead of quietly stopping its bands from ever going up (#1258, #1257, #1371).
 - Sync: the phone sends your profile gzipped to a server that takes it, so each set uploads about a tenth of what it did. Older servers and older apps keep sending and taking it plain, and the server caps what a gzipped upload may grow to (#1489, thanks @cubetes, whose #1490 had the idea).
 - Progression: adding or dropping a set under double or steady progression no longer starts the exercise over with "Plan changed". A set more or less does not move where your rep range stands, so a raise you earned still comes (#1530, thanks @Brandon168 for #1533).
 - Ladder rule: a per-side rung climbs two reps at a time, so each side gets whole reps instead of 3.5 (#1441, thanks @cubetes).

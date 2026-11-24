@@ -84,8 +84,8 @@ Eleven read-only tools, and four that write:
 | `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
 | `search_exercises` | Which exercise ids match "romanian deadlift" or "rear delt, dumbbell"? The library (built in plus your own) with body part, target and equipment, so a routine the assistant writes uses the exact exercise. |
 | `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Cardio too: "20 min treadmill at 3.5 mph, incline 7". Needs pairing or a token: [Logging workouts](#logging-workouts). |
-| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. |
-| `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention. `expected_revision` makes it all-or-nothing against what you saw. |
+| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. Also a progression rule (`policy`, for the routine or one exercise), a rep range (`reps_min` to `reps`), supersets (the same `superset` label on neighbouring exercises) and the bands a band exercise starts with (`bands`, by your band names; a weight there is refused, since it would stop the bands from moving up). |
+| `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention (its superset too). The same `policy`, `reps_min`, `superset` and `bands` as `create_routine`. `expected_revision` makes it all-or-nothing against what you saw. |
 | `delete_routine` | *Writes.* Only with `confirm: true` and the `expected_revision` from `get_routine`. |
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the

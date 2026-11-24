@@ -10,16 +10,27 @@
 // Names resolve like log_workout's (resolveExercise): a name the library spells twice, or one it
 // does not have, comes back as a problem with candidates instead of a guess.
 import { resolveExercise } from './log-workout.js'
-import { pickedExerciseConfig, cleanupSg } from './history.js'
+import { pickedExerciseConfig, cleanupSg, modeOf } from './history.js'
 import { deleteRoutine } from './routines.js'
 import { exerciseOf, isCardio } from './exercises.js'
 import { fromSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, inclineFits } from './incline.js'
+import { POLICIES_FOR, policyFor, profileRule } from './progression.js'
+import { normalizeRepRange } from './rep-range.js'
+import { bandsOf, usesBands, MAX_SET_BANDS } from './bands.js'
 
 const LB_TO_KG = 0.45359237
 export const ROUTINE_LIMITS = { maxExercises: 40, maxSets: 20, maxReps: 100, maxSec: 3600, maxRestSec: 900, maxKg: 2000, maxName: 80, maxNote: 280 }
 // JS getDay() order, the state's own (S.week is keyed 0 Sunday … 6 Saturday).
 export const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+// The rules whose reps climb a range (`repsMin` .. `reps`), the ones the editor shows "Reps from"
+// and "Reps up to" for (sheets.jsx climbsRange).
+export const RANGE_POLICIES = ['double', 'steady', 'triple']
+// A rule given as `policy`: one of the app's, or 'default' to take the override away (the slot
+// follows its routine, the routine follows the profile).
+export const POLICY_INPUTS = [...POLICIES_FOR.reps, 'time', 'default']
+const SG_LABEL_MAX = 20
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const clean = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n) : '')
@@ -38,7 +49,7 @@ export function weekdaysOf(list) {
 
 // One described exercise as a slot. `base` is the slot it edits (its settings stay), else a fresh
 // pick. Weight is in `unit` and stored in the profile's.
-function slotOf(S, ex, base, unit, speedUnit, at, problems) {
+function slotOf(S, ex, base, unit, speedUnit, at, problems, routine = null) {
   const want = ex?.exercise
   let hit
   if (base && (want == null || want === base.id)) hit = { id: base.id }
@@ -74,6 +85,44 @@ function slotOf(S, ex, base, unit, speedUnit, at, problems) {
   if (reps != null) { slot.reps = Math.round(reps); if (slot.repsMin >= slot.reps) delete slot.repsMin }
   const sec = check('seconds', ex?.seconds, 1, ROUTINE_LIMITS.maxSec)
   if (sec != null) slot.sec = Math.round(sec)
+  // The slot's own rule (#1258), what get_routine reads back as policy_override.
+  const mode = modeOf(slot)
+  if (ex?.policy != null) {
+    const allowed = POLICIES_FOR[mode] || ['off']
+    if (ex.policy === 'default') delete slot.prog
+    else if (!allowed.includes(ex.policy)) problems.push({ field: `${at}.policy`, problem: `not a rule for a ${mode} exercise; one of ${allowed.join(', ')}, or default` })
+    else slot.prog = ex.policy
+  }
+  // A rep range, the editor's "Reps from" (reps is "Reps up to"): only where the rule climbs one.
+  if (ex?.reps_min != null) {
+    const low = check('reps_min', ex.reps_min, 1, ROUTINE_LIMITS.maxReps)
+    const policy = policyFor(slot, routine, mode, profileRule(S))
+    if (low == null) { /* said above */ }
+    else if (mode !== 'reps') problems.push({ field: `${at}.reps_min`, problem: 'a rep range is for an exercise done in reps' })
+    else if (!RANGE_POLICIES.includes(policy)) problems.push({ field: `${at}.reps_min`, problem: `a rep range only climbs under double, steady or triple progression and this exercise follows ${policy}; pass policy (on the exercise or the routine) as well` })
+    else if (!(Math.round(low) < (slot.reps || 0))) problems.push({ field: `${at}.reps_min`, problem: 'must be below reps, which is the top of the range' })
+    else {
+      const range = normalizeRepRange(slot.reps, Math.round(low), slot.side ? 2 : 1)
+      slot.reps = range.reps
+      slot.repsMin = range.repsMin
+    }
+  }
+  // The bands each set starts with (#1371, lib/bands.js), by id or by name from the profile's own.
+  if (ex?.bands != null) {
+    const list = bandsOf(S)
+    const ids = []
+    for (const [k, want] of (Array.isArray(ex.bands) ? ex.bands : [ex.bands]).entries()) {
+      const key = String(want ?? '').trim().toLowerCase()
+      const hitBand = list.find(b => b.id.toLowerCase() === key) || list.find(b => b.name.toLowerCase() === key)
+      if (!hitBand) { problems.push({ field: `${at}.bands[${k}]`, input: want ?? null, problem: list.length ? 'not one of the profile\'s bands' : 'this profile has no bands yet; add them in the app (Settings, Bands) first', ...(list.length ? { candidates: list.map(b => ({ id: b.id, name: b.name, ...(b.kg ? { kg: b.kg } : {}) })) } : {}) }); continue }
+      if (!ids.includes(hitBand.id)) ids.push(hitBand.id)
+    }
+    if (mode !== 'reps') problems.push({ field: `${at}.bands`, problem: 'bands are for an exercise done in reps' })
+    else if (S?.bandEx?.[hit.id] === false) problems.push({ field: `${at}.bands`, problem: 'bands are switched off for this exercise in the app' })
+    else if (ids.length > MAX_SET_BANDS) problems.push({ field: `${at}.bands`, problem: `at most ${MAX_SET_BANDS} bands on one set` })
+    else if (ids.length) slot.bands = ids
+    else if (!(Array.isArray(ex.bands) && ex.bands.length)) delete slot.bands
+  }
   const rest = check('rest_sec', ex?.rest_sec, 0, ROUTINE_LIMITS.maxRestSec)
   if (rest != null) { if (rest > 0) slot.restSec = Math.round(rest); else delete slot.restSec }
   if (cardio) {
@@ -97,7 +146,11 @@ function slotOf(S, ex, base, unit, speedUnit, at, problems) {
       else delete slot.incline
     }
   }
-  if (ex?.weight != null) {
+  // A weight on a band-loaded slot stops its bands from ever moving up (history.js bandSeed): a
+  // band's resistance is not a load to add. Said, instead of the slot quietly losing its climb.
+  if (num(ex?.weight) > 0 && mode === 'reps' && usesBands(S, hit.id, slot)) {
+    problems.push({ field: `${at}.weight`, problem: 'this exercise is loaded with bands: a weight here would stop its bands from moving up. Leave weight out and set bands; an exercise with both bands and a weight is set up in the app' })
+  } else if (ex?.weight != null) {
     const w = num(ex.weight)
     const kg = w == null ? null : unit === 'lb' ? w * LB_TO_KG : w
     if (w == null || w < 0 || kg > ROUTINE_LIMITS.maxKg) problems.push({ field: `${at}.weight`, problem: `must be 0 to ${ROUTINE_LIMITS.maxKg} kg` })
@@ -112,11 +165,11 @@ function slotOf(S, ex, base, unit, speedUnit, at, problems) {
 
 // The slots a list of described exercises stands for. With `old` (an edit), each exercise named
 // again takes the next unused slot of that exercise, so repeated slots keep their own settings.
-function slotsOf(S, list, old, unit, speedUnit, field, problems) {
+function slotsOf(S, list, old, unit, speedUnit, field, problems, routine = null) {
   if (!Array.isArray(list) || !list.length) { problems.push({ field, problem: 'at least one exercise' }); return [] }
   if (list.length > ROUTINE_LIMITS.maxExercises) { problems.push({ field, problem: `at most ${ROUTINE_LIMITS.maxExercises}` }); return [] }
   const used = new Set()
-  return list.map((ex, i) => {
+  const slots = list.map((ex, i) => {
     let base = null
     if (old) {
       const ref = ex?.exercise
@@ -124,8 +177,42 @@ function slotsOf(S, list, old, unit, speedUnit, field, problems) {
       const j = old.findIndex((s, k) => !used.has(k) && s.id === id)
       if (j >= 0) { used.add(j); base = old[j] }
     }
-    return slotOf(S, ex, base, unit, speedUnit, `${field}[${i}]`, problems)
-  }).filter(Boolean)
+    return slotOf(S, ex, base, unit, speedUnit, `${field}[${i}]`, problems, routine)
+  })
+  groupSupersets(list, slots, field, problems)
+  return slots.filter(Boolean)
+}
+
+// Superset labels (#1257): consecutive exercises with the same `superset` ("A", "B") are one
+// group, a pair, a tri-set or a whole circuit. An empty label takes the exercise out of its group;
+// no label at all keeps whatever group the slot had. A group whose members already shared one
+// group keeps it, its name and its rest between rounds; a new one gets a fresh id (the routine
+// editor's 'sg' + id) and none of the meta its members brought from elsewhere.
+function groupSupersets(list, slots, field, problems) {
+  const labels = list.map(ex => (ex?.superset == null ? null : clean(String(ex.superset), SG_LABEL_MAX).toLowerCase()))
+  if (labels.every(l => l == null)) return
+  const runs = new Map()
+  labels.forEach((l, i) => {
+    if (!l) return
+    const run = runs.get(l)
+    if (run && run[run.length - 1] !== i - 1) { problems.push({ field: `${field}[${i}].superset`, input: list[i].superset, problem: 'the exercises of one superset go next to each other' }); return }
+    if (run) run.push(i); else runs.set(l, [i])
+  })
+  if (problems.length) return
+  const taken = new Set(slots.map(s => s?.sg).filter(Boolean))
+  labels.forEach((l, i) => {
+    if (l === '' && slots[i]) { delete slots[i].sg; delete slots[i].sgName; delete slots[i].sgRest; delete slots[i].sgCircuit }
+  })
+  for (const run of runs.values()) {
+    const members = run.map(i => slots[i])
+    const kept = members[0].sg
+    if (kept && members.every(m => m.sg === kept) && slots.filter(x => x?.sg === kept).length === members.length) continue
+    let sg
+    do sg = 'sg' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
+    while (taken.has(sg))
+    taken.add(sg)
+    for (const m of members) { delete m.sgName; delete m.sgRest; delete m.sgCircuit; m.sg = sg }
+  }
 }
 
 function placeOnWeekdays(S, id, days) {
@@ -140,9 +227,18 @@ function placeOnWeekdays(S, id, days) {
   }
 }
 
+// The routine's own rule (#1258): one of the reps rules, or 'default' for the profile's. → the
+// rule to store, or null (none given, 'default', or a problem said).
+function routinePolicy(v, problems) {
+  if (v == null || v === 'default') return null
+  if (!POLICIES_FOR.reps.includes(v)) { problems.push({ field: 'policy', problem: `one of ${POLICIES_FOR.reps.join(', ')}, or default` }); return null }
+  return v
+}
+
 /**
  * A new routine into `S` (mutated). `input`: { name, exercises: [{ exercise, sets?, reps? | seconds?,
- * weight?, rest_sec?, minutes?, speed?, incline?, note? }], weekdays?, unit?, speed_unit? }. → { routine } or { problems } (S untouched).
+ * reps_min?, policy?, superset?, bands?, weight?, rest_sec?, minutes?, speed?, incline?, note? }],
+ * policy?, weekdays?, unit?, speed_unit? }. → { routine } or { problems } (S untouched).
  */
 export function createRoutine(S, input, { id } = {}) {
   const problems = []
@@ -153,11 +249,12 @@ export function createRoutine(S, input, { id } = {}) {
   }
   const unit = input?.unit === 'lb' || input?.unit === 'kg' ? input.unit : S.unit === 'lb' ? 'lb' : 'kg'
   const speedUnit = input?.speed_unit === 'kmh' || input?.speed_unit === 'mph' ? input.speed_unit : speedUnitOf(S)
-  const ex = slotsOf(S, input?.exercises, null, unit, speedUnit, 'exercises', problems)
+  const prog = routinePolicy(input?.policy, problems)
+  const ex = slotsOf(S, input?.exercises, null, unit, speedUnit, 'exercises', problems, prog ? { prog } : null)
   const days = input?.weekdays == null ? { days: null } : weekdaysOf(input.weekdays)
   if (days.problem) problems.push({ field: 'weekdays', problem: days.problem })
   if (problems.length) return { problems }
-  const routine = { id: id || 'mr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, emoji: 'figureStrength', ex }
+  const routine = { id: id || 'mr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, emoji: 'figureStrength', ...(prog ? { prog } : {}), ex }
   cleanupSg(routine.ex)
   S.routines = [...(S.routines || []), routine]
   if (days.days) placeOnWeekdays(S, routine.id, days.days)
@@ -166,7 +263,7 @@ export function createRoutine(S, input, { id } = {}) {
 
 /**
  * An existing routine changed in `S` (mutated). `patch`: { name?, exercises? (the whole new list),
- * add_exercises? (appended), weekdays? (the days it is on, all of them), unit?, speed_unit? }.
+ * add_exercises? (appended), policy?, weekdays? (the days it is on, all of them), unit?, speed_unit? }.
  */
 export function updateRoutine(S, routineId, patch) {
   const i = (S.routines || []).findIndex(r => r && r.id === routineId)
@@ -182,9 +279,14 @@ export function updateRoutine(S, routineId, patch) {
   }
   const unit = patch?.unit === 'lb' || patch?.unit === 'kg' ? patch.unit : S.unit === 'lb' ? 'lb' : 'kg'
   const speedUnit = patch?.speed_unit === 'kmh' || patch?.speed_unit === 'mph' ? patch.speed_unit : speedUnitOf(S)
+  if (patch?.policy != null) {
+    const prog = routinePolicy(patch.policy, problems)
+    if (prog) next.prog = prog
+    else if (patch.policy === 'default') delete next.prog
+  }
   const oldEx = Array.isArray(old.ex) ? old.ex : []
-  if (patch?.exercises != null) next.ex = slotsOf(S, patch.exercises, oldEx, unit, speedUnit, 'exercises', problems)
-  if (patch?.add_exercises != null) next.ex = [...(next.ex || oldEx), ...slotsOf(S, patch.add_exercises, null, unit, speedUnit, 'add_exercises', problems)]
+  if (patch?.exercises != null) next.ex = slotsOf(S, patch.exercises, oldEx, unit, speedUnit, 'exercises', problems, next)
+  if (patch?.add_exercises != null) next.ex = [...(next.ex || oldEx), ...slotsOf(S, patch.add_exercises, null, unit, speedUnit, 'add_exercises', problems, next)]
   if ((next.ex || []).length > ROUTINE_LIMITS.maxExercises) problems.push({ field: 'exercises', problem: `at most ${ROUTINE_LIMITS.maxExercises}` })
   const days = patch?.weekdays == null ? { days: null } : weekdaysOf(patch.weekdays)
   if (days.problem) problems.push({ field: 'weekdays', problem: days.problem })
