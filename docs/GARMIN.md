@@ -156,8 +156,10 @@ screen's own actions. Only the wire differs: Connect IQ messages through Garmin 
 `lib/garmin-snapshot.js` `garminSnapshot(snap)` cuts the snapshot `startWatchSync` builds (with
 settings, streak and discarded) down to what a Connect IQ message carries:
 
-- the running workout's **window**: the exercise up now, its whole superset, and the one after it,
-  each with `i` (its place in the whole workout, the events' `entryIdx`); plus `count`,
+- the running workout's **window**: the exercise up now, its whole superset, and the whole block
+  after it (the next superset, or the next exercise; since 1.4.6, so the watch goes on into a
+  superset without waiting for the phone, #1295), each with `i` (its place in the whole workout,
+  the events' `entryIdx`); plus `count`,
   `progress: [done, total]` and `volume` over the whole workout, for the end page and the summary;
 - **today's routine** with its exercises (so the watch can start it with the phone away), the
   **other routines by name** only (up to 8; the watch asks the phone to start those);
@@ -228,6 +230,11 @@ ticked on the phone or the phone's next exercise, the hold counted in after a re
 pairs packing; and once less than 30 KB is free a new set past 6 waiting is held back as a pending
 tick and goes out when there is room (`Core.full` / `refill`, the Instinct 2 family's rule since
 1.4.5, now on all of them; such a set goes without its heart rate).
+
+While the lifter stands at "Next exercise is on its way from your phone" (or a workout started by
+name waits for its exercises, `Core.needsPhone`), all of that runs on 10 s instead of a minute,
+still doubling while the phone stays silent, and the phone is asked for its latest even after it
+answered once (#1295): a snapshot lost on the way used to keep that page up for minutes.
 
 Three more things keep the link from stopping (`Link.retry`, once a second): a `transmit` that
 never calls back at all is given up on after 45 s (`busy` used to stay true until the app was

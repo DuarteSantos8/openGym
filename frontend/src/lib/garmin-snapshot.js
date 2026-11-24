@@ -72,20 +72,27 @@ function blockOf (entries, at) {
   return [lo, hi]
 }
 
-/** Where the exercise up now is: the phone's `cur`, or the first after it with a set to do, else the first anywhere. */
+/**
+ * Where the exercise up now is: the phone's `cur`, or the first after it with a set to do, else
+ * the first anywhere; with only cardio left (logged on the phone), the first of that, so the
+ * watch says so instead of waiting for a next part that never comes.
+ */
 export function garminUpNow (active) {
   const entries = active?.entries || []
   const n = entries.length
   if (!n) return -1
   const cur = Math.max(0, Math.min(n - 1, active.cur || 0))
   for (let k = 0; k < n; k++) { const i = (cur + k) % n; if (openEntry(entries[i])) return i }
+  for (let k = 0; k < n; k++) { const i = (cur + k) % n; if ((entries[i]?.sets || []).some(openRow)) return i }
   return cur
 }
 
 /**
  * Which exercises of the running workout go to the watch: the one up now, its whole superset
- * when it has one, and the exercise after that, so the watch can move on before the phone's next
- * message.
+ * when it has one, and the whole block after that (the next superset, or the next exercise), so
+ * the watch moves on into it before the phone's next message (#1295: a superset's last round
+ * used to end on "Next exercise is on its way from your phone" until the phone answered, minutes
+ * when the link was slow; and a lone first member of the next superset was done as straight sets).
  */
 export function garminWindow (active) {
   const entries = active?.entries || []
@@ -94,7 +101,7 @@ export function garminWindow (active) {
   const [lo, hi] = blockOf(entries, garminUpNow(active))
   const out = []
   for (let i = lo; i <= hi; i++) out.push(i)
-  if (hi + 1 < n) out.push(hi + 1)
+  if (hi + 1 < n) { const [, hi2] = blockOf(entries, hi + 1); for (let i = hi + 1; i <= hi2; i++) out.push(i) }
   return out
 }
 

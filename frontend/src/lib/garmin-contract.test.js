@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, PLACES, emptyState } from '../../garmin/test/watch-model.mjs'
+import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, NEED_MS, PLACES, emptyState } from '../../garmin/test/watch-model.mjs'
 import { garminSnapshot, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { GARMIN_STORE_ID } from './garmin-view.js'
 
@@ -51,12 +51,16 @@ describe('the watch model is the Monkey C', () => {
     expect(has(app, new RegExp(`const MAX = ${MAX};`))).toBe(true)
     expect(has(app, new RegExp(`const HARD = ${HARD};`))).toBe(true)
     expect(has(app, new RegExp(`ob\\.size\\(\\) - from > ${BATCH} \\? ${BATCH} :`))).toBe(true)
-    expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) > 0 && since > ${RETRY_UNSENT_MS}`))).toBe(true)
-    // the waits double while the phone stays silent: 60 s << quiet, up to << 4
+    expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) > 0 && since > \\(need \\? wait : ${RETRY_UNSENT_MS}\\)\\) \\{\\s*if \\(need\\) \\{\\s*quiet \\+= 1;`))).toBe(true)
+    // the waits double while the phone stays silent: 60 s << quiet, up to << 4; 10 s << quiet
+    // while the lifter waits for the next part of the workout (#1295)
     expect(HELLO_EVERY_MS).toBe(RETRY_UNACKED_MS)
-    expect(has(app, new RegExp(`var wait = ${RETRY_UNACKED_MS} << \\(quiet > ${QUIET_MAX} \\? ${QUIET_MAX} : quiet\\);`))).toBe(true)
+    expect(has(app, new RegExp(`const NEED = ${NEED_MS};`))).toBe(true)
+    expect(has(app, new RegExp(`var wait = \\(need \\? NEED : ${RETRY_UNACKED_MS}\\) << \\(quiet > ${QUIET_MAX} \\? ${QUIET_MAX} : quiet\\);`))).toBe(true)
+    expect(has(app, /var need = Core\.needsPhone\(G\.state\);/)).toBe(true)
+    expect(has(core, /return n == 0 \|\| \(toI\(s\["pos"\], 0\) >= n && hasMore\(s\)\);/)).toBe(true)
     expect(has(app, /Core\.unsent\(G\.state\) == 0 && since > wait/)).toBe(true)
-    expect(has(app, /ask && now - began > wait && hello\(\)/)).toBe(true)
+    expect(has(app, /\(ask \|\| \(need && G\.state\["ob"\]\.size\(\) == 0\)\) && now - began > wait && hello\(\)/)).toBe(true)
     expect(has(app, new RegExp(`busy && now - began > ${GIVE_UP_MS}`))).toBe(true)
     // a snapshot is the phone speaking: what it did not name and was sent a while ago goes again
     expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) == 0 && System\\.getTimer\\(\\) - lastTry > ${HEARD_RESEND_MS}`))).toBe(true)

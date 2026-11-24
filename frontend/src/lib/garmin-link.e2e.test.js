@@ -102,7 +102,8 @@ function world (S = S0()) {
   const fire = name => { for (const fn of w.listeners[name] || []) fn({}) }
 
   // phone → watch
-  const deliver = snap => { if (w.inRange) setTimeout(() => { if (!w.inRange) return; w.toWatch.push(snap); w.watch.onPhone(clone(snap)) }, 300) }
+  // (w.lose: snapshots lost on the way to the watch while the watch's messages still get through)
+  const deliver = snap => { if (w.inRange) setTimeout(() => { if (!w.inRange || w.lose) return; w.toWatch.push(snap); w.watch.onPhone(clone(snap)) }, 300) }
   // watch → phone (GarminLink.onMessage)
   const onMessage = msg => {
     const evs = (Array.isArray(msg?.events) ? msg.events : []).filter(e => e && typeof e.id === 'string' && e.id)
@@ -336,6 +337,58 @@ describe('a workout from the phone, logged on the watch', () => {
     expect(w.watch.s.w.progress).toEqual([5, 7])
     // sent again while unconfirmed, applied once
     expect(new Set(w.transmits.flatMap(m => m.events).filter(e => e.type === 'setDone').map(e => e.id))).toEqual(new Set(ids))
+  })
+
+  it('the next superset is on the watch before it is up: done in a row with the phone out of reach (#1295)', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    // the second and third exercise are a superset
+    w.update(s => { s.active.entries[1].sg = 'b'; s.active.entries[2].sg = 'b' })
+    await w.run(2)
+    // the exercise up now, and the whole superset after it (it was the first member only)
+    expect(w.watch.entries().map(e => [e.id, e.i, e.group])).toEqual([['0025', 0, undefined], ['0001', 1, 'b'], ['0003', 2, 'b']])
+    w.inRange = false
+    for (let i = 0; i < 7; i++) { expect(w.watch.tickNext()).not.toBe(null); await w.run(5) }
+    expect(w.watch.unsent()).toBe(7)
+    w.reconnect()
+    await w.run(45)
+    expect(w.done()).toEqual(['0025', '0025', '0025', '0001', '0001', '0003', '0003'])
+    expect(w.watch.s.ob).toEqual([])
+  })
+
+  it('waiting for the next part of the workout, a snapshot lost on the way: asked again in seconds, not a minute (#1295)', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    // the window (0025 and 0001) done on the watch; the phone gets every set, its answers are lost
+    w.lose = true
+    for (let i = 0; i < 5; i++) { w.watch.tick(w.watch.s.pos, w.watch.setIndex(w.watch.s.pos), 60, 8, { rest: 0 }); await w.run(2) }
+    w.lose = false
+    expect(w.done()).toHaveLength(5)
+    // "Next exercise is on its way from your phone": the watch asks again soon
+    expect(w.watch.needsPhone()).toBe(true)
+    let waited = 0
+    while (w.watch.needsPhone() && waited < 120) { await w.run(1); waited++ }
+    expect(w.watch.entries().map(e => e.id)).toContain('0003')
+    expect(waited).toBeLessThanOrEqual(15)
+    expect(w.setDone).toHaveLength(5)
+  })
+
+  it('waiting for the phone that does not answer: asked again sooner, still fewer and fewer times', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.inRange = false
+    for (let i = 0; i < 5; i++) { w.watch.tick(w.watch.s.pos, w.watch.setIndex(w.watch.s.pos), 60, 8, { rest: 0 }); await w.run(3) }
+    expect(w.watch.needsPhone()).toBe(true)
+    const before = w.transmits.length
+    await w.run(3600)
+    // ten seconds, twenty, forty, eighty, then every 160 s: about 25 in an hour, not 360
+    expect(w.transmits.length - before).toBeLessThan(40)
+    expect(w.transmits.length - before).toBeGreaterThan(4)
   })
 
   it('more sets waiting than fit in one message, and more than the phone names at once', async () => {

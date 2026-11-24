@@ -735,6 +735,15 @@ module Core {
         return toI(w["count"], es.size()) > lastIdx + 1;
     }
 
+    //! Whether the lifter stands waiting for the phone: the window has nothing left to do and the
+    //! workout has more ("Next exercise is on its way from your phone"), or a workout started here
+    //! by name has no exercises yet. The link asks sooner then (Link.retry, #1295).
+    function needsPhone(s) {
+        if (dictOf(s["w"]) == null) { return false; }
+        var n = entries(s).size();
+        return n == 0 || (toI(s["pos"], 0) >= n && hasMore(s));
+    }
+
     /* ---------- sets ---------- */
 
     //! One side of a per-side set done, the row following both sides (the phone's syncSideAggregate).

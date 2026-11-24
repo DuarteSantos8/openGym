@@ -66,11 +66,34 @@ describe('the Garmin snapshot', () => {
     const B = { cur: 2, unit: 'kg', entries: [ex('a', [row(false)]), ex('b', [row(true)]), ex('c', [row(true)])] }
     expect(garminWindow(B)).toEqual([0, 1])
     expect(garminWindow({ entries: [] })).toEqual([])
+    // only cardio left (logged on the phone): that one, not the phone's cur, all done with
+    const C = { cur: 0, unit: 'kg', entries: [ex('a', [row(true)]), ex('b', [row(true)]), ex('c', [row(false)], { mode: 'cardio' })] }
+    expect(garminWindow(C)).toEqual([2])
   })
 
   it('sends a superset whole, plus the exercise after it', () => {
     const A = { cur: 1, unit: 'kg', entries: [ex('a', [row(true)]), ex('b', [row(false)], { group: 'g' }), ex('c', [row(false)], { group: 'g' }), ex('d', [row(false)]), ex('e', [row(false)])] }
     expect(garminWindow(A)).toEqual([1, 2, 3])
+  })
+
+  it('sends the next superset whole too, so the watch moves into it without waiting for the phone (#1295)', () => {
+    const g = (id, k, done = false) => ex(id, [row(done), row(done), row(done)], { group: 'g' + k })
+    // three supersets of four, as in the issue: the first one up now
+    const A = { cur: 0, unit: 'kg', entries: [g('a', 1), g('b', 1), g('c', 1), g('d', 1), g('e', 2), g('f', 2), g('g', 2), g('h', 2), g('i', 3), g('j', 3)] }
+    expect(garminWindow(A)).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
+    // the first superset done: the second, and the third after it
+    for (const e of A.entries.slice(0, 4)) e.sets.forEach(r => { r.done = true })
+    expect(garminWindow(A)).toEqual([4, 5, 6, 7, 8, 9])
+    // a single exercise after a superset, and a superset after a single exercise
+    const B = { cur: 0, unit: 'kg', entries: [ex('a', [row(false)]), g('b', 1), g('c', 1), ex('d', [row(false)])] }
+    expect(garminWindow(B)).toEqual([0, 1, 2])
+    expect(garminUpNow(B)).toBe(0)
+    // and it fits: the issue's workout, with real names, sends both supersets whole
+    const names = ['0025', '0001', '0003', '0027', '0047', '0048', '0050', '0060', '0070', '0080']
+    const C = { id: 'w', cur: 0, unit: 'kg', entries: A.entries.map((e, k) => ({ ...e, id: names[k], name: exerciseNameText(EXIDX[names[k]]), sets: e.sets.map((r, j) => ({ ...r, done: false, sid: 's' + k + 'x' + j + 'abcde' })) })) }
+    const out = garminSnapshot({ unit: 'kg', restSec: 90, settings: { lang: 'en' }, active: C, ready: null })
+    expect(bytes(out)).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+    expect(out.active.entries.map(e => e.i)).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
   })
 
   it('counts work sets and volume over the whole workout, in the workout unit', () => {
@@ -201,6 +224,15 @@ describe('the Garmin snapshot', () => {
       expect(kept.filter(i => i !== 9).sort((a, b) => turn.indexOf(a) - turn.indexOf(b))).toEqual(turn.slice(0, n))
     })
 
+    it('the block after the circuit goes whole or not at all', () => {
+      const next = [0, 1].map(k => ({ id: longest[k].id + '-n', name: longest[k].name, mode: 'reps', restSec: 60, last: '50×10', step: 2.5, group: '8', sets: [0, 1, 2, 3].map(j => ({ w: 50, r: 10, sec: null, done: false, warmup: false, sid: 'n' + k + 'x' + j + 'abcdef' })) }))
+      for (let upNow = 0; upNow < 6; upNow++) {
+        const out = garminSnapshot(snapOf(circuit(longest, upNow, 0, next)))
+        expect(bytes(out)).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+        const after = out.active.entries.filter(e => e.i >= 6).length
+        expect([0, 2]).toContain(after)
+      }
+    })
   })
 
   it('without a workout or anything ready, says so', () => {

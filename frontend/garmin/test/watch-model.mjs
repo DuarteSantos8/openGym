@@ -21,6 +21,7 @@ export const GIVE_UP_MS = 45000   // a transmit that never called back
 export const HELLO_EVERY_MS = 60000
 export const HEARD_RESEND_MS = 10000  // Link.heard: sent longer ago than this and not named → again
 export const QUIET_MAX = 4            // the waits double up to 60 s << 4
+export const NEED_MS = 10000          // Link.NEED: the waits while the lifter waits for the phone (#1295)
 export const CLOCK_SAMPLES = 8        // Core.noteClock
 export const CLOCK_WINDOW_MS = 300000 // Core.off: the last five minutes' samples
 export const REST_SLACK_MS = 250      // Core.followRest: a phone end this close is the watch's own
@@ -175,6 +176,13 @@ export class GarminWatch {
     if (!es.length) return toI(w.count, 0) > 0
     const last = dictOf(es[es.length - 1])
     return toI(w.count, es.length) > (last ? toI(last.i, es.length - 1) : es.length - 1) + 1
+  }
+
+  /** Core.needsPhone: the window done with and more to come, or a workout started by name. */
+  needsPhone () {
+    if (!dictOf(this.s.w)) return false
+    const n = this.entries().length
+    return n === 0 || (toI(this.s.pos, 0) >= n && this.hasMore())
   }
 
   setIndex (pos) {
@@ -529,11 +537,12 @@ export class GarminWatch {
     const now = this.now()
     if (this.busy && now - this.began > GIVE_UP_MS) { this.busy = false; this.gen += 1 }
     if (this.busy) return
-    const wait = RETRY_UNACKED_MS << Math.min(QUIET_MAX, this.quiet)
-    if (this.ask && now - this.began > wait && this.hello()) { this.quiet += 1; return }
+    const need = this.needsPhone()
+    const wait = (need ? NEED_MS : RETRY_UNACKED_MS) << Math.min(QUIET_MAX, this.quiet)
+    if ((this.ask || (need && !this.s.ob.length)) && now - this.began > wait && this.hello()) { this.quiet += 1; return }
     if (!this.s.ob.length) return
     const since = now - this.lastTry
-    if (this.unsent() > 0 && since > RETRY_UNSENT_MS) this.flush()
+    if (this.unsent() > 0 && since > (need ? wait : RETRY_UNSENT_MS)) { if (need) this.quiet += 1; this.flush() }
     else if (this.unsent() === 0 && since > wait) { this.s.obn = 0; this.quiet += 1; this.flush() }
   }
 

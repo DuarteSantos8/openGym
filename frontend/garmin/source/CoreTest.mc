@@ -1267,4 +1267,25 @@ module CoreTest {
         Test.assert(Core.isTrue(coreRow(s, 1, 0)["done"]));
         return true;
     }
+
+    //! "Next exercise is on its way from your phone": the watch knows it waits for the phone, and
+    //! asks sooner then (Link.retry, #1295).
+    (:test)
+    function knowsWhenItWaitsForThePhone(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Test.assert(!Core.needsPhone(s));
+        var sn = coreSnap();
+        sn["active"]["count"] = 4;
+        Core.applySnapshot(s, sn);
+        Test.assert(!Core.needsPhone(s));
+        s["pos"] = 2;
+        Test.assert(Core.needsPhone(s));
+        // the whole workout here: the end page is the workout's end, nothing to wait for
+        s["w"]["count"] = 2;
+        Test.assert(!Core.needsPhone(s));
+        // started here by name: its exercises come from the phone
+        Core.start(s, { "name" => "Pull", "routineIds" => ["r2"], "entries" => [] });
+        Test.assert(Core.needsPhone(s));
+        return true;
+    }
 }
