@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: finishing on the watch while the phone showed "That's the whole workout!" left that sheet under the summary, so closing the summary asked you to finish a workout already saved (#1278, thanks @cubetes for #1279).
 - iPhone: a workout you forgot to finish no longer keeps the phone's own heart-rate session running all night. It ends and saves by itself once "Still training?" goes unanswered, even with the phone locked. A long hold also pushes that question back instead of asking mid-plank (#1464, thanks @cubetes for #1465).
 - Fixed: "Still training?" no longer turns up on the phone after you finished the workout on the watch (#1280, thanks @cubetes for #1281).
 - Apple Watch and Wear OS: every routine reaches the watch, not only the first eight besides today's. When the message gets too big, the last ones wait on the phone instead of all of them (#1273, thanks @cubetes for #1274).
