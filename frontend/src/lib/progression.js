@@ -281,10 +281,12 @@ const planText = (p, mode) => setsRepsOf({ mode, sets: p.sets, reps: p.reps ?? '
 // Do two prescriptions ask for the same session? A field a policy leaves out (undefined) means the
 // plan's own: its sets, reps and seconds, and for `rest` the exercise's own rest, as the density
 // policy reads it (densityRestOf). Except the reps of a profile that starts from the last session
-// (`carried`, from carriedReps): there, left out means the rows keep last time's reps.
+// (`carried`, from carriedReps): there, left out means the rows keep last time's reps. A weight left
+// out is the one the rows open at: the last session's (buildSets copies it, a timed hold's
+// included), not the plan's, which only an edit of the plan's own weight names (`set` below).
 const PRESCRIBED = ['weight', 'reps', 'sets', 'sec', 'rest', 'rowReps']
-const sameTarget = (a, b, cfg, rest, carried) => PRESCRIBED.every(k => {
-  const own = k === 'reps' ? (carried === undefined ? cfg.reps : carried) : k === 'rest' ? rest : k === 'sets' || k === 'sec' ? cfg[k] : null
+const sameTarget = (a, b, cfg, { weight, rest, carried }) => PRESCRIBED.every(k => {
+  const own = k === 'reps' ? (carried === undefined ? cfg.reps : carried) : k === 'weight' ? weight : k === 'rest' ? rest : k === 'sets' || k === 'sec' ? cfg[k] : null
   return JSON.stringify(a[k] ?? own ?? null) === JSON.stringify(b[k] ?? own ?? null)
 })
 // The reps a session that starts from the last one opens its rows at: each row keeps what was
@@ -645,7 +647,8 @@ function prescribe(S, cfg, routine, plain) {
     const restart = r => {
       if (borrowed) return r
       const normal = prescribe(S, cfg, routine, true)
-      return sameTarget(r, normal, cfg, densityRestOf(S, cfg).start, S.startFrom === 'last' && mode === 'reps' ? carriedReps(last, cfg) : undefined) ? normal : r
+      const open = { weight: last.weight, rest: densityRestOf(S, cfg).start, carried: S.startFrom === 'last' && mode === 'reps' ? carriedReps(last, cfg) : undefined }
+      return sameTarget(r, normal, cfg, open) ? normal : r
     }
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,

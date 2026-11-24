@@ -920,6 +920,19 @@ describe('an edited plan restarts progression (#275)', () => {
       expect(p.why[0]).toMatch(/^Missed reps last time/)
     })
 
+    // A hold that leaves its weight out opens its rows at the last session's, not at the plan's:
+    // the edited plan weight is the same session only when that is what was lifted.
+    it('reads an omitted weight as the one the rows open at, the last session\'s', () => {
+      const was = { sets: 2, sec: 45, weight: 5 }
+      const hold = w => ({ unit: 'kg', workouts: [logged(LIFT, was, { mode: 'time', ...was, sec: 50 }, w, [], { sets: [{ sec: 40, w, done: true }, { sec: 40, w, done: true }] })] })
+      const cfg = { id: LIFT, mode: 'time', sets: 2, sec: 50, weight: 10, prog: 'time' }
+      // Lifted at the 10 the plan now names: the held target, nothing new.
+      expect(nextPrescription(hold(10), cfg, R).why[0]).toBe('Came up short last time. Same target again.')
+      // Lifted at 5: the plan's 10 is a new load, and the restart says so.
+      expect(nextPrescription(hold(5), cfg, R)).toMatchObject({ kind: 'hold', weight: 10, sec: 50 })
+      expect(nextPrescription(hold(5), cfg, R).why[0]).toBe('Plan changed ({0}), so starting from your new target.')
+    })
+
     it('keeps the plain wording when the edit is in a field the line does not show', () => {
       const was = { sets: 2, reps: 10, weight: 40 }
       const S = { unit: 'kg', workouts: [logged(LIFT, was, { ...was }, 40, [10, 10])] }
