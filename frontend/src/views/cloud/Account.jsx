@@ -185,7 +185,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
     if (server.user()) throw { code: 'server_signout' }
   }
   const onward = () => run(async () => {
-    const how = enter({ hostedId: session.user.id, owner: note.owner() })
+    const how = enter({ hostedId: session.user.id, owner: note.ownerOf(server.user()) })
     if (how === 'switch') await endServer()
     if (how !== 'link' && how !== 'switch') { nav('/home'); return }
     note.leaving(session.user.id)
@@ -194,9 +194,11 @@ export default function Account({ client = cloud(), go = url => { location.assig
   })
   // Signing out is immediate where there is only the account: a slow server cannot undo what is
   // tapped next. With a server profile open, that one ends first, and only then the account.
+  // With none open in this tab the note of whose profile is open is left as it is: another tab
+  // may have that profile open, and will end it when it hears of this sign-out.
   const signOut = () => {
-    if (!server.user()) { setMode('signin'); setPassword(''); note.forget(); return run(() => client.auth.signOut()) }
-    return run(async () => { await endServer(); note.forget(); setMode('signin'); setPassword(''); await client.auth.signOut() })
+    if (!server.user()) { setMode('signin'); setPassword(''); return run(() => client.auth.signOut()) }
+    return run(async () => { await endServer(); note.ended(); setMode('signin'); setPassword(''); await client.auth.signOut() })
   }
   if (session) return frame(savedName || session.user.email, null, <>
     <p className="iv-acct-who">{t('Signed in as {0}', session.user.email)}</p>
@@ -236,15 +238,18 @@ export default function Account({ client = cloud(), go = url => { location.assig
     </div>
     <details className="iv-acct-danger">
       <summary>{t('Delete account')}</summary>
-      {/* Deleting here removes the account, not the training on the app's own server. With a
-          profile open there, "deleted" would leave that behind, so it goes first, where the app
-          deletes it with its own proof (components/DeleteAccount.jsx). */}
-      {server.user() ? <p className="iv-acct-hint">{t('Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.')}</p>
+      {/* Deleting here removes the account, not the training on the app's own server. With this
+          account's own profile open there, "deleted" would leave that behind, so it goes first,
+          where the app deletes it with its own proof (components/DeleteAccount.jsx). Only that
+          profile: one that was not opened through this account (a server with its own ways in,
+          an admin's passkey) is not this account's training, and is never named as something
+          to delete. */}
+      {note.ownerOf(server.user()) === session.user.id ? <p className="iv-acct-hint">{t('Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.')}</p>
       : <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => {
         const { status, data } = await client.fn('delete-account', { confirm: 'delete' })
         if (status !== 200) throw { code: data?.error }
         // the step first, the server after: a slow sign-out must not move someone who has tapped on
-        setWord(''); setMode('signin'); note.forget()
+        setWord(''); setMode('signin')
         await client.auth.signOut()
       }) }}>
         <label className="iv-acct-field"><span>{t('Type the word delete to confirm. Your account is removed and cannot be brought back.')}</span>

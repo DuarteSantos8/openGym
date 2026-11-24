@@ -38,7 +38,9 @@ function fakeClient({ session = null, profile = { display_name: 'Sam' } } = {}) 
 let where = ''
 function Where() { where = useLocation().pathname; return null }
 const noServer = () => ({ user: () => null, signOut: vi.fn(async () => ({ owed: false })) })
-const noNote = () => ({ leaving: vi.fn(), forget: vi.fn(), owner: () => null })
+const noNote = () => ({ leaving: vi.fn(), ended: vi.fn(), ownerOf: () => null })
+// The open server profile was opened through this account (lib/cloud/server-link.js).
+const theirs = (id = 'u-1') => ({ ...noNote(), ownerOf: user => (user ? id : null) })
 async function mount(client, { url = '/account', go = vi.fn(), enter = vi.fn(), link = vi.fn(), server = noServer(), note = noNote(), from = null } = {}) {
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -501,7 +503,7 @@ describe('Account', () => {
     await click('[data-signout]')
     expect(server.signOut).toHaveBeenCalledWith({ force: true })
     expect(order).toEqual(['server', 'account'])
-    expect(note.forget).toHaveBeenCalled()
+    expect(note.ended).toHaveBeenCalled()
     expect(mode()).toBe('signin')
   })
 
@@ -515,25 +517,51 @@ describe('Account', () => {
     expect($('[role="alert"]').textContent).toMatch(/could not be signed out/)
   })
 
-  it('with no server profile open, signing out touches nothing on the server', async () => {
+  // No server profile in this tab proves nothing about other tabs, so the note of whose profile
+  // is open is not this tab's to drop (found in review of #79).
+  it('with no server profile open here, signing out touches nothing on the server and keeps the note', async () => {
     const c = fakeClient({ session: me })
-    const server = noServer()
-    await mount(c, { server })
+    const server = noServer(), note = noNote()
+    await mount(c, { server, note })
     await click('[data-signout]')
     expect(server.signOut).not.toHaveBeenCalled()
+    expect(note.ended).not.toHaveBeenCalled()
     expect(c.auth.signOut).toHaveBeenCalled()
+  })
+
+  it('Continue is told whose server profile is open, to judge whether it has to be swapped', async () => {
+    const c = fakeClient({ session: me })
+    const enter = vi.fn(() => 'already')
+    await mount(c, { enter, server: openServer(), note: theirs('u-9') })
+    await click('[data-continue]')
+    expect(enter).toHaveBeenCalledWith({ hostedId: 'u-1', owner: 'u-9' })
   })
 
   // Deleting the account here removes the account, not the training on the server. With a
   // server profile open, saying "deleted" would leave that behind: it has to go first, and the
   // app's own Settings is where that is done, with its own proof.
-  it('with a server profile open, the account cannot be deleted from here until the training is', async () => {
+  it('with their own server profile open, the account cannot be deleted from here until the training is', async () => {
     const c = fakeClient({ session: me })
-    await mount(c, { server: openServer() })
+    await mount(c, { server: openServer(), note: theirs('u-1') })
     expect($('.iv-acct-danger').textContent).toMatch(/Delete your training first/)
     expect($('[data-delete]')).toBeNull()
     expect($('input[name="confirm"]')).toBeNull()
     expect(c.fn).not.toHaveBeenCalled()
+  })
+
+  // Found in review of #79: the guard looked only at "a server profile is open". A profile that
+  // has nothing to do with this account (a server with its own passkeys, an admin) must not be
+  // named as something to delete.
+  it('a server profile that is not this account\'s is left out of it: the account deletes as before', async () => {
+    for (const note of [noNote(), theirs('u-2')]) {
+      const c = fakeClient({ session: me })
+      await mount(c, { server: openServer(), note })
+      expect($('.iv-acct-danger').textContent).not.toMatch(/Delete your training first/)
+      await type('confirm', 'delete')
+      await click('[data-delete]')
+      expect(c.fn).toHaveBeenCalledWith('delete-account', { confirm: 'delete' })
+      act(() => root.unmount()); container.remove(); root = container = null
+    }
   })
 
   it('Continue goes to the app in every other case, and starts no sign-in', async () => {

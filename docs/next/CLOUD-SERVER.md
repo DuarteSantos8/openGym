@@ -142,7 +142,10 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   account's delete has to remove the server profile for that identity, or the server has to
   accept proof from the hosted account. That is a design decision and its own piece of work.
 - **The two sessions end together** (`frontend/src/lib/cloud/server-link.js`). Check it once on
-  the real service: sign out of the account, and `/api/me` no longer answers.
+  the real service: sign out of the account, and `/api/me` no longer answers. And once with two
+  tabs: one left open signed out, the other signing in; the first must not end the profile.
+  Known wart: an admin who opened their own profile through the account, signed out, and within
+  two minutes uses their passkey on that same profile is signed out once and has to try again.
 - Backups, below. Sign-in throttling, above.
 
 ## Backups

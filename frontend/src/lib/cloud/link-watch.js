@@ -20,14 +20,22 @@ import { oidcErrorText } from '../oidc.js'
 export function watchLink({ client = cloud(), store, note = serverLink() } = {}) {
   if (!client || !store) return () => {}
   let ending = false, watching = true
+  // Who is signed in to the account, as the browser's storage says now. This tab may have been
+  // left open since before another one signed in or out, and what it remembers must not be
+  // acted on (found in review of #79: an older tab signed out the profile a newer one had just
+  // opened).
+  const hosted = () => (typeof client.auth.sync === 'function' ? client.auth.sync() : client.auth.session())?.user?.id ?? null
   const look = async () => {
     const st = store.getState()
     // Before the app has asked the server who this is, "no profile" would be a guess.
     if (!watching || ending || !st.ready) return
-    if (note.check({ hostedId: client.auth.session()?.user?.id ?? null, serverUser: st.user }) !== 'end') return
+    if (note.check({ hostedId: hosted(), serverUser: st.user }) !== 'end') return
     ending = true
     try { await st.signOut({ force: true }) } catch { /* still open: the next change looks again */ } finally { ending = false }
-    if (watching) note.check({ hostedId: client.auth.session()?.user?.id ?? null, serverUser: store.getState().user })
+    // Ended here: said in the note, so other tabs showing that profile let go of it as well.
+    // Still open (changes that could not be kept aside): the note stays as it was, and it is
+    // still known whose profile that is.
+    if (!store.getState().user) note.ended()
   }
   look()
   const offAccount = client.auth.onChange(() => { look() })
