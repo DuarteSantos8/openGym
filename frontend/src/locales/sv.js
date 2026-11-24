@@ -1,5 +1,12 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Din uppvärmningstrappa",
+  "Built-in": "Inbyggd",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Ställ in den en gång så följer varje automatisk uppvärmning den, skalad till arbetsvikten. En övning på Mina egna börjar också härifrån.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Ingen stång i övningen? Då hoppas raden över. Övningar med egen uppvärmning behåller den.",
+  "Back to the built-in ramp": "Tillbaka till den inbyggda trappan",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Din uppvärmningstrappa från Inställningar, skalad till arbetsvikten.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

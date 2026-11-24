@@ -1,4 +1,11 @@
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "你的熱身階梯",
+  "Built-in": "內建",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "設一次，之後每次自動熱身都照它來，依工作重量換算。設為「我自己的」的動作也從這裡開始。",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "動作沒有槓鈴桿？那一行會跳過。自帶熱身的動作維持不變。",
+  "Back to the built-in ramp": "恢復內建階梯",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "設定裡你的熱身階梯，依工作重量換算。",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} 大卡",
   "≈ {0} kcal ({1})": "≈ {0} 大卡 ({1})",

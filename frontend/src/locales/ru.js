@@ -1,5 +1,12 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Твоя разминочная лесенка",
+  "Built-in": "Встроенная",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Настрой один раз, и каждая автоматическая разминка будет по ней, под рабочий вес. Упражнение с «Свои» тоже начинается с неё.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "В упражнении нет грифа? Эта строка пропускается. Упражнения со своей разминкой её сохраняют.",
+  "Back to the built-in ramp": "Вернуть встроенную лесенку",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Твоя разминочная лесенка из Настроек, под рабочий вес.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} ккал",
   "≈ {0} kcal ({1})": "≈ {0} ккал ({1})",

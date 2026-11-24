@@ -2,6 +2,13 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "La tua rampa di riscaldamento",
+  "Built-in": "Quella di serie",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Impostala una volta e ogni riscaldamento automatico la segue, in scala col peso di lavoro. Un esercizio su I miei parte anche da qui.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "L’esercizio non ha bilanciere? Quella riga salta. Gli esercizi col loro riscaldamento lo tengono.",
+  "Back to the built-in ramp": "Torna alla rampa di serie",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "La tua rampa di riscaldamento dalle Impostazioni, in scala col peso di lavoro.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

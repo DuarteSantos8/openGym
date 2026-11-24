@@ -1,5 +1,12 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Twoja drabinka rozgrzewki",
+  "Built-in": "Wbudowana",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Ustaw raz, a każda automatyczna rozgrzewka będzie jej trzymać, w skali ciężaru roboczego. Ćwiczenie ustawione na Własne też od niej zaczyna.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Ćwiczenie bez sztangi? Ten wiersz jest pomijany. Ćwiczenia z własną rozgrzewką ją zachowują.",
+  "Back to the built-in ramp": "Wróć do wbudowanej drabinki",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Twoja drabinka rozgrzewki z Ustawień, w skali ciężaru roboczego.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

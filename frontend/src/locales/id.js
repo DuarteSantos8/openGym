@@ -1,5 +1,12 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tangga pemanasanmu",
+  "Built-in": "Bawaan",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Atur sekali dan setiap pemanasan otomatis mengikutinya, disesuaikan dengan beban kerja. Latihan yang diatur ke Pemanasan sendiri juga mulai dari sini.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Latihan tanpa barbel? Baris itu dilewati. Latihan dengan pemanasan sendiri tetap memakainya.",
+  "Back to the built-in ramp": "Kembali ke tangga bawaan",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tangga pemanasanmu dari Pengaturan, disesuaikan dengan beban kerja.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kkal",
   "≈ {0} kcal ({1})": "≈ {0} kkal ({1})",

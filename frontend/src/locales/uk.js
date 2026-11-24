@@ -1,5 +1,12 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Твоя розминкова драбинка",
+  "Built-in": "Вбудована",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Налаштуй раз, і кожна автоматична розминка йтиме за нею, під робочу вагу. Вправа з «Свої» теж починає з неї.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "У вправі немає грифа? Цей рядок пропускається. Вправи з власною розминкою її зберігають.",
+  "Back to the built-in ramp": "Повернути вбудовану драбинку",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Твоя розминкова драбинка з Налаштувань, під робочу вагу.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} ккал",
   "≈ {0} kcal ({1})": "≈ {0} ккал ({1})",

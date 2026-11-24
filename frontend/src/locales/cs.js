@@ -1,5 +1,12 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tvoje rozcvičovací schody",
+  "Built-in": "Vestavěné",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Nastav jednou a každé automatické rozcvičení se jím řídí, přepočtené na pracovní váhu. Cvik nastavený na Moje vlastní z nich taky vychází.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Cvik bez osy? Ten řádek se přeskočí. Cviky s vlastním rozcvičením si ho nechají.",
+  "Back to the built-in ramp": "Zpět na vestavěné schody",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tvoje rozcvičovací schody z Nastavení, přepočtené na pracovní váhu.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

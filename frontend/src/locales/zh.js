@@ -1,5 +1,12 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "你的热身阶梯",
+  "Built-in": "内置",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "设一次，之后每次自动热身都按它来，按工作重量换算。设为“我自己的”的动作也从这里开始。",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "动作没有杠铃杆？那一行会跳过。自带热身的动作保持不变。",
+  "Back to the built-in ramp": "恢复内置阶梯",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "设置里你的热身阶梯，按工作重量换算。",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} 千卡",
   "≈ {0} kcal ({1})": "≈ {0} 千卡 ({1})",

@@ -1,5 +1,12 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "A saját bemelegítő lépcsőd",
+  "Built-in": "Beépített",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Állítsd be egyszer, és minden automatikus bemelegítés ezt követi, a munkasúlyhoz igazítva. A Saját beállítású gyakorlat is ebből indul.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Nincs rúd a gyakorlatban? Az a sor kimarad. A saját bemelegítéssel bíró gyakorlatok megtartják azt.",
+  "Back to the built-in ramp": "Vissza a beépített lépcsőhöz",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "A saját bemelegítő lépcsőd a Beállításokból, a munkasúlyhoz igazítva.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

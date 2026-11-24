@@ -167,6 +167,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Cheer on a record', icon: 'bell', tint: 'var(--orange)', kw: 'record sound beep notes pr' },
   { page: 'workout', title: 'How close to a record', icon: 'target', tint: 'var(--blue)', kw: 'record hint percent e1rm reps close pr' },
   { page: 'workout', title: 'New exercises start with', icon: 'plus', tint: 'var(--green)', kw: 'new exercise default sets reps weight start added 3x10 2x8' },
+  { page: 'workout', title: 'Your warm-up ramp', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp own default scheme percent my own' },
   { page: 'workout', title: 'Live widget', icon: 'layout', tint: 'var(--green)', kw: 'live activity live activities lock screen dynamic island notification live update widget buttons heart rate next exercise rest customise customize personalise personalize off not showing try' },
   // The phone apps only: the help sheet of the live widget's page (components/LiveWidgetSettings.jsx).
   { page: 'live', title: 'Not showing up?', icon: 'info', tint: 'var(--grey)', kw: 'live widget live activities off not showing missing gone disappeared lock screen dynamic island notification permission allow help try', when: c => c.mobile },

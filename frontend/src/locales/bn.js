@@ -1,5 +1,12 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "আপনার ওয়ার্ম-আপ ধাপ",
+  "Built-in": "বিল্ট-ইন",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "একবার সেট করুন, প্রতিটি স্বয়ংক্রিয় ওয়ার্ম-আপ এটি মেনে চলবে, কাজের ওজন অনুযায়ী। ‘আমার নিজের’ বেছে নেওয়া ব্যায়ামও এখান থেকে শুরু হয়।",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "ব্যায়ামে বার নেই? সেই সারিটি বাদ যায়। নিজস্ব ওয়ার্ম-আপ থাকা ব্যায়াম সেগুলোই রাখে।",
+  "Back to the built-in ramp": "বিল্ট-ইন ধাপে ফিরুন",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "সেটিংস থেকে আপনার ওয়ার্ম-আপ ধাপ, কাজের ওজন অনুযায়ী।",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

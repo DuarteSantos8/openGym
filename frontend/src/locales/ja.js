@@ -1,5 +1,12 @@
 // Japanese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "自分のウォームアップ段階",
+  "Built-in": "標準",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "一度決めれば、自動ウォームアップはすべてこれに従い、作業重量に合わせて調整されます。「自分で設定」の種目もここから始まります。",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "バーを使わない種目では、その行は飛ばされます。独自のウォームアップがある種目はそのままです。",
+  "Back to the built-in ramp": "標準の段階に戻す",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "設定の自分のウォームアップ段階を、作業重量に合わせて。",
   "Same muscle and exercise type. The movement may differ.": "対象の筋肉と種目のタイプが同じです。動作は異なる場合があります。",
   "Related muscles and exercise type. The movement may differ.": "対象の筋肉と種目のタイプが近いものです。動作は異なる場合があります。",
   "Same muscle, different exercise type. Check suitability.": "対象の筋肉は同じですが、種目のタイプが異なります。適しているか確認してください。",

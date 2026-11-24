@@ -1,5 +1,12 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "A tua rampa de aquecimento",
+  "Built-in": "A de origem",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Define-a uma vez e cada aquecimento automático segue-a, à escala do peso de trabalho. Um exercício em Os meus também começa por ela.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "O exercício não tem barra? Essa linha é saltada. Exercícios com o seu próprio aquecimento mantêm-no.",
+  "Back to the built-in ramp": "Voltar à rampa de origem",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "A tua rampa de aquecimento das Definições, à escala do peso de trabalho.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

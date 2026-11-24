@@ -1,5 +1,12 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "تدرّج الإحماء الخاص بك",
+  "Built-in": "المدمج",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "اضبطه مرة واحدة وسيتبعه كل إحماء تلقائي، محسوبًا من وزن العمل. والتمرين المضبوط على «الخاص بي» يبدأ منه أيضًا.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "لا يوجد بار في التمرين؟ يُتخطّى ذلك الصف. والتمارين التي لها إحماؤها الخاص تحتفظ به.",
+  "Back to the built-in ramp": "العودة إلى التدرّج المدمج",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "تدرّج الإحماء الخاص بك من الإعدادات، محسوبًا من وزن العمل.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} سعرة",
   "≈ {0} kcal ({1})": "≈ {0} سعرة ({1})",

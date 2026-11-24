@@ -1,5 +1,12 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Kendi ısınma basamakların",
+  "Built-in": "Yerleşik",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Bir kez ayarla, her otomatik ısınma iş ağırlığına göre bunu izler. Kendi ısınmam olarak ayarlı bir egzersiz de buradan başlar.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Harekette bar yok mu? O satır atlanır. Kendi ısınması olan egzersizler onu korur.",
+  "Back to the built-in ramp": "Yerleşik basamaklara dön",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Ayarlar’daki ısınma basamakların, iş ağırlığına göre.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

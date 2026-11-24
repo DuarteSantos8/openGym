@@ -1,5 +1,12 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Bậc khởi động của bạn",
+  "Built-in": "Mặc định",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Đặt một lần, mọi bài khởi động tự động sẽ theo nó, tính theo mức tạ chính. Bài tập đặt là Của tôi cũng bắt đầu từ đây.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Bài tập không có thanh đòn? Hàng đó được bỏ qua. Bài tập có khởi động riêng vẫn giữ nguyên.",
+  "Back to the built-in ramp": "Quay lại bậc mặc định",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Bậc khởi động của bạn từ Cài đặt, tính theo mức tạ chính.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

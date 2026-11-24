@@ -1,5 +1,12 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "나만의 워밍업 단계",
+  "Built-in": "기본",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "한 번 정해 두면 모든 자동 워밍업이 작업 무게에 맞춰 이걸 따릅니다. ‘직접 설정’으로 둔 운동도 여기서 시작해요.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "바가 없는 운동이면 그 줄은 건너뜁니다. 자체 워밍업이 있는 운동은 그대로 유지해요.",
+  "Back to the built-in ramp": "기본 단계로 되돌리기",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "설정의 나만의 워밍업 단계를 작업 무게에 맞춰서.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0}kcal",
   "≈ {0} kcal ({1})": "≈ {0}kcal ({1})",

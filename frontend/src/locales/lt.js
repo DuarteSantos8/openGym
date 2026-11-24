@@ -1,5 +1,12 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tavo apšilimo laiptai",
+  "Built-in": "Įtaisyti",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Nustatyk kartą ir kiekvienas automatinis apšilimas jų laikysis, pritaikytas darbiniam svoriui. Pratimas su Mano taip pat nuo jų pradeda.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Pratime nėra grifo? Ta eilutė praleidžiama. Pratimai su savo apšilimu jį pasilieka.",
+  "Back to the built-in ramp": "Grįžti prie įtaisytų laiptų",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tavo apšilimo laiptai iš Nustatymų, pritaikyti darbiniam svoriui.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

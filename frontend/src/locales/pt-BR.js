@@ -4,6 +4,13 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Sua rampa de aquecimento",
+  "Built-in": "A padrão",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Defina uma vez e todo aquecimento automático segue ela, na escala do peso de trabalho. Um exercício em Os meus também começa por ela.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "O exercício não tem barra? Essa linha é pulada. Exercícios com o próprio aquecimento continuam com ele.",
+  "Back to the built-in ramp": "Voltar para a rampa padrão",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Sua rampa de aquecimento das Configurações, na escala do peso de trabalho.",
   // --- Check-in reminder shortcut as a setting ---
   "Shortcut on Photos and Measurements": "Atalho em Fotos e Medidas",
   "A row on those two pages that opens this sheet.": "Uma linha nessas duas páginas que abre esta tela.",
