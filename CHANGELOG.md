@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Coach: exercises it creates for you keep their equipment, main and supporting muscles and other names, instead of arriving as a bare name. Give it a table of your own exercises and the muscle map and equipment filters get it right (#1250).
 - Coach with your own key: an answer cut off because you switched apps or locked the phone is no longer lost. The phone asks again, once, when you are back, and says it picked up where it left off; you still get one reply, not two (#1290).
 - Cloudflare Access: a phone that could not read its service token at start (an iPhone opening the app in the background while locked, say) no longer quietly sends every request without it until you save it again. It keeps what it had, reads it again on its own, when you come back to the app and when you tap Try again, and the token is now readable once the phone has been unlocked after a restart. When Cloudflare Access itself says no, the app says so instead of "server unreachable" (#1529).
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).
