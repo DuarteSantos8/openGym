@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Settings → Plan & schedule: the week can start on Saturday too, not only Monday or Sunday. The Plan list, the Home strip, the calendar and every "this week" number follow it (#1216).
 - Self-hosting docs: how to run both containers without root, capabilities or a writable filesystem, and the three things that break if you get them wrong (thanks @jtravesi for #1540).
 - Home: two workouts on one day both show. Each gets its own row under the week, in the order you did them, and opens its own details; the row used to name only the last one (#1538, thanks @kusk).
 - Fixed: the week and month recap comes back too. Its × used to keep it away even after switching Week and month recap off and on; now the switch brings it back, and Customize Home lists it as hidden until the next recap with Show (thanks Discord).
