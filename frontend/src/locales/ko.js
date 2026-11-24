@@ -6317,4 +6317,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "운동 기록은 이 기기에 남습니다. 계정은 요금제와 구매를 위한 것입니다.",
   "Signed in as {0}. Your training is stored on this device.": "{0}(으)로 로그인했습니다. 운동 기록은 이 기기에 저장됩니다.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "계정이 있으면 운동 기록이 다른 기기에서도 이어집니다. 계정이 없으면 이 기기에만 남습니다.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "서버에 있는 운동 기록에서 로그아웃하지 못해 아무것도 변경되지 않았습니다. 온라인 상태일 때 다시 시도해 주세요.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "먼저 운동 기록을 삭제하세요. 앱에서 설정, 계정, 내 계정 삭제를 차례로 여세요. 그런 다음 여기로 돌아와 이 계정을 삭제하세요.",
 }

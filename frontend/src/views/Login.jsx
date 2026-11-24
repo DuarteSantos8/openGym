@@ -136,10 +136,11 @@ export default function Login() {
 
   // Cloud edition. No server of the app's own answered: a profile on one cannot be made or
   // opened from here, so those buttons would only fail, and what works is the account and this
-  // device (ADR 0008, 0013). Or one answered and signs people in with that same account: the way
-  // in is still the account, whose Continue goes through the server's sign-in
-  // (lib/cloud/enter-app.js). A server with other ways in is offered as before, below.
-  if (isCloud() && (!config || sso)) return (
+  // device (ADR 0008, 0013). Or one answered and signs everyone in with that same account
+  // (OIDC_ONLY): the way in is still the account, whose Continue goes through the server's
+  // sign-in (lib/cloud/enter-app.js), and an admin keeps the passkey that server still takes
+  // from them. A server with other ways in beside the provider offers them all, below.
+  if (isCloud() && (!config || ssoOnly)) return (
     <div className="narrow iv-first">
       <div className="iv-first-mark"><BrandLogo size={30} /></div>
       {/* The statement is the screen: one sentence a line, set large. */}
@@ -150,9 +151,14 @@ export default function Login() {
         <AccountButton />
         {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       </div>
-      <p className="iv-first-note">{sso
+      <p className="iv-first-note">{ssoOnly
         ? t('With an account your training follows you to your other devices. Without one it stays on this device.')
         : t('Your training stays on this device. An account is for your plan and purchases.')}</p>
+      {/* The break-glass way, as on the provider-only screen below: an admin's passkey still
+          works on that server when the provider is down. */}
+      {ssoOnly && webauthnOK() && (adminWay
+        ? <Button icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button>
+        : <Button variant="ghost" className="dim" onClick={() => setAdminWay(true)}>{t('Admin? Use your passkey')}</Button>)}
     </div>
   )
 

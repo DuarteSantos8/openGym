@@ -128,6 +128,23 @@ fix is for the server to be reached without a second proxy in between: its own s
 the web container in front of it as in `docker-compose.yml`. That is a decision for before
 launch, not for the beta.
 
+## Before real users
+
+Not needed for the owner's own bring-up, required before anyone else is let in.
+
+- **Deleting an account must delete the training too.** The account screen's Delete removes the
+  hosted account; the profile on this server is a separate thing. Where that profile is open in
+  the same browser the app now refuses to delete the account until the training is deleted
+  first. But an account deleted from a device where the server profile is not open leaves the
+  profile, and the training in it, on the server, with nobody able to sign in to it; and if the
+  same address signs up again the server may refuse the new identity because the old profile
+  still holds it (found in review of #78). Closing this needs the two systems to talk: the
+  account's delete has to remove the server profile for that identity, or the server has to
+  accept proof from the hosted account. That is a design decision and its own piece of work.
+- **The two sessions end together** (`frontend/src/lib/cloud/server-link.js`). Check it once on
+  the real service: sign out of the account, and `/api/me` no longer answers.
+- Backups, below. Sign-in throttling, above.
+
 ## Backups
 
 Everything is under `/data`. Before real users: confirm Render's disk snapshots are on for the

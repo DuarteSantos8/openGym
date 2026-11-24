@@ -14,12 +14,17 @@
 import { guestAllowed } from '../guest.js'
 import { oidcOn } from '../oidc.js'
 
+//
+// A server profile already open counts as "already in" only for the account it was opened
+// through (lib/cloud/server-link.js). Opened through another one, it is the previous person's:
+// 'switch' asks the caller to sign it out first and then go through the sign-in as this one.
 /**
  * @param {{user: unknown, config: {allow_guest?: boolean, oidc?: object}|null, isGuest: () => boolean, setGuest: (on: boolean) => void}} st the app's store
- * @returns {'already'|'link'|'device'|'server'} nothing to do, go through the server's sign-in with the account, this device's profile opened, or left to the server's own sign-in
+ * @param {{hostedId?: string|null, owner?: string|null}} [who] the account signed in now, and the account the open server profile was opened through (null: nobody noted)
+ * @returns {'already'|'link'|'switch'|'device'|'server'} nothing to do; go through the server's sign-in with the account; the same after signing out the server profile that is open; this device's profile opened; left to the server's own sign-in
  */
-export function enterApp(st) {
-  if (st.user) return 'already'
+export function enterApp(st, { hostedId = null, owner = null } = {}) {
+  if (st.user) return owner && owner !== hostedId && oidcOn(st.config) ? 'switch' : 'already'
   if (oidcOn(st.config)) return 'link'
   if (st.isGuest()) return 'already'
   if (!guestAllowed(st.config)) return 'server'

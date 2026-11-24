@@ -42,6 +42,17 @@ describe('enterApp: a signed-in account going on into the app', () => {
     expect(st.setGuest).not.toHaveBeenCalled()
   })
 
+  // Found in review of #78: the server profile left open by whoever was here before is not
+  // this person's to walk into (lib/cloud/server-link.js keeps whose it is).
+  it('a server profile opened through a different account is not "already in": it has to be swapped', () => {
+    const st = store({ config: { oidc: { label: 'Ironvane' } }, user: { id: 1 } })
+    expect(enterApp(st, { hostedId: 'u-2', owner: 'u-1' })).toBe('switch')
+    expect(enterApp(st, { hostedId: 'u-1', owner: 'u-1' })).toBe('already')
+    // nobody noted: an admin's passkey, or a profile from before. Left as it is.
+    expect(enterApp(st, { hostedId: 'u-2', owner: null })).toBe('already')
+    expect(enterApp(st)).toBe('already')
+  })
+
   it('but not for someone already on a server profile', () => {
     expect(enterApp(store({ config: { oidc: { label: 'Ironvane' } }, user: { id: 1 } }))).toBe('already')
   })

@@ -6282,4 +6282,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Latihanmu tetap di perangkat ini. Akun dipakai untuk paket dan pembelianmu.",
   "Signed in as {0}. Your training is stored on this device.": "Masuk sebagai {0}. Latihanmu disimpan di perangkat ini.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Dengan akun, latihanmu ikut ke perangkatmu yang lain. Tanpa akun, latihan tetap di perangkat ini.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Latihanmu di server tidak bisa dikeluarkan, jadi tidak ada yang diubah. Coba lagi saat kamu online.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Hapus latihanmu dulu: di aplikasi, buka Pengaturan, lalu Akun, lalu Hapus akun saya. Setelah itu, kembali ke sini untuk menghapus akun ini.",
 };

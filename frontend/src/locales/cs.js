@@ -6283,4 +6283,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Tvůj trénink zůstává v tomto zařízení. Účet je pro tvůj tarif a nákupy.",
   "Signed in as {0}. Your training is stored on this device.": "Přihlášen/a jako {0}. Tvůj trénink je uložený v tomto zařízení.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "S účtem máš trénink i na svých dalších zařízeních. Bez něj zůstává v tomto zařízení.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Tvůj trénink na serveru se nepodařilo odhlásit, takže se nic nezměnilo. Zkus to znovu, až budeš online.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Nejdřív smaž svůj trénink: v aplikaci otevři Nastavení, pak Účet a pak Smazat můj účet. Potom se vrať sem a smaž tento účet.",
 }

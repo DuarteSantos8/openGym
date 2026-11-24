@@ -6320,4 +6320,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Az edzéseid ezen az eszközön maradnak. A fiók a csomagodhoz és a vásárlásaidhoz kell.",
   "Signed in as {0}. Your training is stored on this device.": "Bejelentkezve mint {0}. Az edzéseid ezen az eszközön vannak tárolva.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Fiókkal az edzéseid a többi eszközödön is elérhetők. Fiók nélkül ezen az eszközön maradnak.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "A szerveren tárolt edzéseidből nem sikerült kijelentkezni, ezért semmi sem változott. Próbáld újra, amikor online vagy.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Először töröld az edzéseidet: az alkalmazásban nyisd meg a Beállítások, majd a Fiók, majd a Fiókom törlése pontot. Utána gyere vissza ide, és töröld ezt a fiókot.",
 }

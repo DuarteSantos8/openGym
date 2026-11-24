@@ -6313,4 +6313,6 @@ export default {
   "Your training stays on this device. An account is for your plan and purchases.": "Tavo treniruotės lieka šiame įrenginyje. Paskyra skirta tavo planui ir pirkiniams.",
   "Signed in as {0}. Your training is stored on this device.": "Prisijungta kaip {0}. Tavo treniruotės saugomos šiame įrenginyje.",
   "With an account your training follows you to your other devices. Without one it stays on this device.": "Su paskyra tavo treniruotės keliauja kartu į kitus tavo įrenginius. Be jos jos lieka šiame įrenginyje.",
+  "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Nepavyko atsijungti nuo tavo treniruočių serveryje, todėl niekas nepakeista. Bandyk dar kartą, kai būsi prisijungęs prie interneto.",
+  "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Pirmiausia ištrink savo treniruotes: programėlėje atidaryk Nustatymai, tada Paskyra, tada Ištrinti mano paskyrą. Po to grįžk čia ir ištrink šią paskyrą.",
 }
