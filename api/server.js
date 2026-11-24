@@ -2855,6 +2855,8 @@ const routes = {
     if (typeof body.name !== 'string' || body.name.trim() !== user.name) {
       return json(res, 400, { error: 'type the account name to confirm', code: 'confirm-name' });
     }
+    const sameIdentity = () => body.subject === undefined || (oidcWayIn(user) && user.oidc.sub === body.subject);
+    if (!sameIdentity()) return json(res, 403, { error: 'identity not confirmed' });
     const lastAdmin = () => lastAdminLeaving(user);
     const refuseLastAdmin = () => json(res, 409, { error: 'the last admin cannot leave while other profiles remain', code: 'last-admin' });
     if (lastAdmin()) return refuseLastAdmin();
@@ -2867,6 +2869,7 @@ const routes = {
     if (!proof) return;
     // Everything above awaited: the session may have ended, and another admin may have left.
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
+    if (!sameIdentity()) return json(res, 403, { error: 'identity not confirmed' });
     if (lastAdmin()) return refuseLastAdmin();
     removeAccount(user);
     audit(req, 'auth.account.delete', { user, msg: proof });

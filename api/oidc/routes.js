@@ -57,9 +57,13 @@ export function oidcRoutes(d) {
   const flows = pending();
   const handoffs = pending();
   const tickets = pending();
+  const deletionProofs = pending();
   const FLOW_COOKIE = d.secure ? '__Host-gymoidc' : 'gymoidc';
   const flowCookie = v => `${FLOW_COOKIE}=${v}; Path=/; Max-Age=${FLOW_TTL_MS / 1000}; HttpOnly;${d.secure ? ' Secure;' : ''} SameSite=Lax`;
   const clearFlowCookie = `${FLOW_COOKIE}=; Path=/; Max-Age=0; HttpOnly;${d.secure ? ' Secure;' : ''} SameSite=Lax`;
+  const deleteCookie = d.secure ? '__Host-gymoidc-delete' : 'gymoidc-delete';
+  const deletionCookie = (value, seconds = 0) => deleteCookie + '=' + value + '; Path=/; Max-Age=' + seconds + '; HttpOnly;' + (d.secure ? ' Secure;' : '') + ' SameSite=Lax';
+  const deleteLanding = result => cfg.appBase + '/#/account?server-delete=' + result;
   // A redirect that carries a code or a state must not leak it onward, nor be cached.
   const NO_LEAK = { 'Cache-Control': 'no-store', Pragma: 'no-cache', 'Referrer-Policy': 'no-referrer' };
 
@@ -71,6 +75,7 @@ export function oidcRoutes(d) {
   // tidies the address bar). Settings → Account for the two flows that started there.
   const webLanding = (flow, q) => `${cfg.appBase}/?${q}#/${flow && (flow.mode === 'link' || flow.mode === 'reauth') ? 'settings/account' : ''}`;
   function finishError(res, flow, code) {
+    if (flow?.mode === 'delete') return redirect(res, deleteLanding('failed'), [clearFlowCookie, deletionCookie('')]);
     if (flow?.mode === 'app') {
       return redirect(res, `${flow.app.ret}?error=${encodeURIComponent(code)}&astate=${encodeURIComponent(flow.app.astate)}`, [clearFlowCookie]);
     }
@@ -118,7 +123,7 @@ export function oidcRoutes(d) {
       jwks: await provider.jwks(), refetch: () => provider.jwks({ force: true }),
       issuer: meta.issuer, clientId: cfg.clientId, nonce: flow.nonce, now: now(),
       algs: allowedAlgs(meta.id_token_signing_alg_values_supported),
-      maxAgeSec: flow.mode === 'reauth' ? PROOF_WINDOW_MS / 1000 : null
+      maxAgeSec: ['reauth', 'delete'].includes(flow.mode) ? PROOF_WINDOW_MS / 1000 : null
     });
     // Groups and the e-mail often live only in userinfo (Authelia, Keycloak without a mapper).
     // Its answer is used only when it is about the same person (OIDC Core 5.3.2).
@@ -137,7 +142,7 @@ export function oidcRoutes(d) {
     'GET /api/oidc/start': async (req, res) => {
       const q = new URL(req.url, 'http://x').searchParams;
       const mode = q.get('mode') || 'web';
-      if (!['web', 'app', 'link', 'reauth'].includes(mode)) return json(res, 400, { error: 'unknown mode' });
+      if (!['web', 'app', 'link', 'reauth', 'delete'].includes(mode)) return json(res, 400, { error: 'unknown mode' });
       let app = null;
       if (mode === 'app') {
         // Checked before anything else and answered here, never by redirecting: an address that
@@ -178,8 +183,21 @@ export function oidcRoutes(d) {
       p.set('nonce', nonce);
       p.set('code_challenge', s256(verifier));
       p.set('code_challenge_method', 'S256');
-      if (mode === 'reauth') p.set('prompt', 'login');
+      if (['reauth', 'delete'].includes(mode)) p.set('prompt', 'login');
       redirect(res, u.toString(), [flowCookie(binding)]);
+    },
+
+    'POST /api/oidc/delete-profile': async (req, res) => {
+      const clear = { 'Set-Cookie': [deletionCookie('')] };
+      const { subject } = await readBody(req);
+      const [cookie] = d.cookieValues(req, deleteCookie) || [];
+      const proof = deletionProofs.take(cookie, now());
+      if (!proof || proof.sub !== subject) return json(res, 403, { error: 'identity not confirmed' }, clear);
+      const user = linkedTo(d.db(), proof.iss, proof.sub);
+      const current = readSession(req);
+      if (current && current !== user) return json(res, 409, { error: 'another profile is signed in' }, clear);
+      if (!user) return json(res, 200, { profile: null }, clear);
+      return json(res, 200, { profile: { name: user.name } }, { 'Set-Cookie': [...clear['Set-Cookie'], ...d.sessionCookie(user, proof.confirmedAt)] });
     },
 
     'GET /api/oidc/callback': async (req, res) => {
@@ -212,6 +230,14 @@ export function oidcRoutes(d) {
       }
       const db = d.db();
       const at = now();
+
+      if (flow.mode === 'delete') {
+        if (!Number.isFinite(claims.auth_time) || claims.auth_time * 1000 > at) return finishError(res, flow, 'token');
+        if (!accessOf(claims, cfg).allowed) return finishError(res, flow, 'group');
+        const proof = rand();
+        deletionProofs.put(proof, { iss: claims.iss, sub: claims.sub, confirmedAt: at }, TICKET_TTL_MS, at);
+        return redirect(res, deleteLanding('ready'), [clearFlowCookie, deletionCookie(proof, TICKET_TTL_MS / 1000)]);
+      }
 
       // Linking from Settings, or confirming it is you: the browser that started it must still be
       // signed in as the profile it started for.

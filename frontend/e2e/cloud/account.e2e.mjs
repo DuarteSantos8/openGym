@@ -280,3 +280,49 @@ test('a tab left open does not undo a sign-in made in another tab, and lets go w
   await expect(page.getByRole('heading', { name: 'Hi Sam' })).toHaveCount(0, { timeout: 20_000 })
   await other.close()
 })
+
+
+test('a signed-out server profile goes first, and a server refusal leaves the hosted account', async ({ page }) => {
+  const { state } = await pretendProject(page)
+  const { email, password } = state.users[0]
+  const user = async () => (await (await page.request.get('/api/me')).json()).user
+  const confirmDelete = async () => {
+    await page.locator('.iv-acct-danger > summary').click()
+    await page.fill('input[name="confirm"]', 'delete')
+    await page.click('[data-delete]')
+  }
+
+  await open(page)
+  await signIn(page)
+  await page.click('[data-continue]')
+  await expect.poll(user, { timeout: 20_000 }).toMatchObject({ name: 'Sam' })
+  const first = await user()
+  await open(page)
+  await page.click('[data-signout]')
+  await expect.poll(async () => (await page.request.get('/api/me')).status()).toBe(401)
+  await signIn(page)
+
+  const failDelete = route => route.fulfill({ status: 503, json: { error: 'not available' } })
+  await page.route('**/api/account/delete', failDelete)
+  await confirmDelete()
+  await expect(page.getByRole('alert')).toBeVisible()
+  expect(state.deleted).toEqual([])
+
+  await page.unroute('**/api/account/delete', failDelete)
+  await open(page)
+  await confirmDelete()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin', { timeout: 20_000 })
+  expect(state.deleted).toEqual(['u-1'])
+  await expect.poll(async () => (await page.request.get('/api/me')).status()).toBe(401)
+
+  await page.getByRole('button', { name: 'Create account', exact: true }).click()
+  await page.fill('input[name="email"]', email)
+  await page.fill('input[name="password"]', password)
+  await page.click('[data-submit]')
+  await expect.poll(() => state.emails.filter(e => e.kind === 'signup').length).toBe(1)
+  await page.click('[data-go="signin"]')
+  await signIn(page)
+  await page.click('[data-continue]')
+  await expect.poll(user, { timeout: 20_000 }).toMatchObject({ name: 'Sam' })
+  expect((await user()).id).not.toBe(first.id)
+})

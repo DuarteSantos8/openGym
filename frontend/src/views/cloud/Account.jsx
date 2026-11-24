@@ -10,9 +10,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { t } from '../../lib/i18n.js'
 import { Button, TextField } from '../../components/ui.jsx'
 import { cloud } from '../../lib/cloud/client.js'
+import { api } from '../../lib/api.js'
 import { createPendingReset } from '../../lib/cloud/pending-reset.js'
 import { enterApp } from '../../lib/cloud/enter-app.js'
-import { startWebSignIn } from '../../lib/oidc.js'
+import { startUrl, startWebSignIn } from '../../lib/oidc.js'
 import { serverLink } from '../../lib/cloud/server-link.js'
 import { setCloudAccount } from '../../lib/account-badge.js'
 import Icon from '../../components/Icon.jsx'
@@ -64,7 +65,8 @@ function save(name, text) {
 }
 
 // The app's own server, as this screen needs it: the profile open there, and signing out of it.
-const appServer = { user: () => useStore.getState().user, signOut: opts => useStore.getState().signOut(opts) }
+const DELETE_SUBJECT = 'opengym.cloud.delete-subject'
+const appServer = { config: () => api('/api/config'), deleteProfile: (name, subject) => useStore.getState().deleteAccount(name, { provider: true, subject }), user: () => useStore.getState().user, signOut: opts => useStore.getState().signOut(opts) }
 
 export default function Account({ client = cloud(), go = url => { location.assign(url) }, enter = who => enterApp(useStore.getState(), who), link = () => startWebSignIn(), server = appServer, note = serverLink() }) {
   const [params, setParams] = useSearchParams()
@@ -140,6 +142,36 @@ export default function Account({ client = cloud(), go = url => { location.assig
     client.auth.authorization(authorizationId).then(r => { if (live) setRequest(r || {}) }).catch(e => { if (live) setError(wordFor(e?.code)) })
     return () => { live = false }
   }, [client, session?.user?.id, authorizationId])
+
+  const deletion = params.get('server-delete')
+  const finishHostedDeletion = async subject => {
+    if (client.auth.session()?.user?.id !== subject) throw new Error('account changed')
+    const { status, data } = await client.fn('delete-account', { confirm: 'delete' })
+    if (status !== 200) throw { code: data?.error }
+    setWord(''); setMode('signin')
+    await client.auth.signOut()
+  }
+
+  useEffect(() => {
+    if (!client || !deletion) return
+    run(async () => {
+      const subject = sessionStorage.getItem(DELETE_SUBJECT)
+      sessionStorage.removeItem(DELETE_SUBJECT)
+      history.replaceState(history.state, '', here())
+      if (deletion !== 'ready' || !subject || client.auth.session()?.user?.id !== subject) {
+        throw new Error('identity not confirmed')
+      }
+      const finish = note.beginDeletion(subject)
+      try {
+        const { profile } = await api('/api/oidc/delete-profile', { method: 'POST', body: JSON.stringify({ subject }) })
+        if (profile !== null) {
+          if (!profile?.name) throw new Error('unexpected profile')
+          await server.deleteProfile(profile.name, subject)
+        }
+      } finally { finish() }
+      await finishHostedDeletion(subject)
+    })
+  }, [client, deletion])
 
   if (!client) return <div className="page iv-acct"><h1 className="iv-acct-title">{t('Account')}</h1><p className="iv-acct-lead" role="alert">{t('Something went wrong. Try again.')}</p></div>
 
@@ -250,19 +282,18 @@ export default function Account({ client = cloud(), go = url => { location.assig
     </div>
     <details className="iv-acct-danger">
       <summary>{t('Delete account')}</summary>
-      {/* Deleting here removes the account, not the training on the app's own server. With this
-          account's own profile open there, "deleted" would leave that behind, so it goes first,
-          where the app deletes it with its own proof (components/DeleteAccount.jsx). Only that
-          profile: one that was not opened through this account (a server with its own ways in,
-          an admin's passkey) is not this account's training, and is never named as something
-          to delete. */}
-      {note.ownerOf(server.user()) === session.user.id ? <p className="iv-acct-hint">{t('Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.')}</p>
+      {!server.config && note.ownerOf(server.user()) === session.user.id ? <p className="iv-acct-hint">{t('Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.')}</p>
       : <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => {
-        const { status, data } = await client.fn('delete-account', { confirm: 'delete' })
-        if (status !== 200) throw { code: data?.error }
-        // the step first, the server after: a slow sign-out must not move someone who has tapped on
-        setWord(''); setMode('signin')
-        await client.auth.signOut()
+        const subject = session.user.id
+        const config = await server.config?.()
+        if (server.config) {
+          if (!config?.oidc) throw new Error('identity provider unavailable')
+          if (config.oidc.webOrigin && config.oidc.webOrigin !== location.origin) throw new Error('wrong origin')
+          sessionStorage.setItem(DELETE_SUBJECT, subject)
+          go(startUrl('delete'))
+          return
+        }
+        await finishHostedDeletion(subject)
       }) }}>
         <label className="iv-acct-field"><span>{t('Type the word delete to confirm. Your account is removed and cannot be brought back.')}</span>
           <TextField className="input" name="confirm" autoComplete="off" autoCapitalize="none" spellCheck={false} value={word} onChange={e => setWord(e.target.value)} /></label>
