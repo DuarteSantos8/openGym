@@ -6027,4 +6027,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} يبعد أكثر من 15% عن آخر وزن سجّلته، {1}.",
   "Save as typed": "احفظ كما كُتب",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "إزالة التغييرات المحفوظة لـ {0}؟",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "ستُحذف نهائيًا. لن يعيدها هذا الجهاز حتى لو اتصل ذلك الحساب مجددًا. احفظها كملف نسخة احتياطية أولًا إن كنت قد تحتاجها.",
+  "Kept changes removed": "أُزيلت التغييرات المحفوظة",
 }

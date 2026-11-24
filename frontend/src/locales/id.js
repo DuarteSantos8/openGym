@@ -5937,4 +5937,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} berbeda lebih dari 15% dari timbangan terakhirmu, {1}.",
   "Save as typed": "Simpan apa adanya",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Hapus perubahan yang disimpan untuk {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Perubahan ini hilang selamanya. Perangkat ini tidak akan menambahkannya lagi, meski akun itu tersambung kembali. Simpan dulu sebagai file cadangan jika mungkin masih perlu.",
+  "Kept changes removed": "Perubahan yang disimpan dihapus",
 };

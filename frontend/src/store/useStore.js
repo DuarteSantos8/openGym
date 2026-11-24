@@ -2003,6 +2003,16 @@ export const useStore = create((set, get) => {
       const all = await readStashes()
       return all[stashKey(server, uid)]?.state || null
     },
+    // The copy kept for one account thrown away, from Settings (#1269): for a server that is not
+    // coming back, where "added back when it connects" never happens. Its photos and videos go
+    // with the next clean-up (stashedMediaHashes no longer lists them). False if nothing went.
+    async dropKept(server, uid) {
+      const all = await readStashes()
+      const key = stashKey(server, uid)
+      if (!all[key]) return false
+      delete all[key]
+      return writeStashes(all)
+    },
     // Every photo and video file the stashes refer to: they are kept on this device for as long
     // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
     async stashedMediaHashes() {

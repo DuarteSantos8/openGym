@@ -5976,4 +5976,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} отличается больше чем на 15% от прошлого взвешивания ({1}).",
   "Save as typed": "Сохранить как есть",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Удалить изменения, сохранённые для {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Они исчезнут насовсем. Это устройство не вернёт их, даже если тот аккаунт снова подключится. Если они могут понадобиться, сначала сохраните их как файл резервной копии.",
+  "Kept changes removed": "Сохранённые изменения удалены",
 }

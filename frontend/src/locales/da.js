@@ -5912,4 +5912,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} er mere end 15 % fra din seneste vejning, {1}.",
   "Save as typed": "Gem som skrevet",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Fjern de ændringer, der er gemt til {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "De forsvinder for altid. Enheden lægger dem ikke tilbage, heller ikke hvis kontoen forbinder igen. Gem dem som backupfil først, hvis du måske får brug for dem.",
+  "Kept changes removed": "De gemte ændringer er fjernet",
 }

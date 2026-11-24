@@ -41,6 +41,17 @@ describe('another account on a copy whose session ended', () => {
     expect(state.routines.map(r => r.id)).toEqual(['r1'])
   })
 
+  // #1269: a copy for a server that is never coming back can be thrown away.
+  it('a kept copy can be removed for good, and the others stay', async () => {
+    olgasCopy()
+    useStore.getState().setUser({ id: 'yuri', name: 'Yuri' })
+    const [k] = await useStore.getState().keptChanges()
+    expect(await useStore.getState().dropKept(k.server, 'nobody')).toBe(false)
+    expect(await useStore.getState().dropKept(k.server, 'olga')).toBe(true)
+    expect(await useStore.getState().keptChanges()).toEqual([])
+    expect(await useStore.getState().keptState(k.server, 'olga')).toBe(null)
+  })
+
   it('a running workout comes back when that account signs in here again', async () => {
     olgasCopy({ active: { id: 'run', start: 1, entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] } })
     useStore.getState().setUser({ id: 'yuri', name: 'Yuri' })

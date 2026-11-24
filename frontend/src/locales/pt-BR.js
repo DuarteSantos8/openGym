@@ -4392,6 +4392,10 @@ export const PT_BR_OVERRIDES = {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} está mais de 15% longe da sua última pesagem, {1}.",
   "Save as typed": "Salvar assim",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Remover as alterações mantidas para {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Elas somem de vez. Este dispositivo não vai adicioná-las de novo, mesmo que essa conta se conecte outra vez. Salve-as antes como arquivo de backup se puder precisar delas.",
+  "Kept changes removed": "Alterações mantidas removidas",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

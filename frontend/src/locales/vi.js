@@ -5938,4 +5938,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} lệch hơn 15% so với lần cân gần nhất, {1}.",
   "Save as typed": "Lưu như đã nhập",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Xóa các thay đổi đã giữ cho {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Chúng sẽ mất hẳn. Thiết bị này sẽ không thêm lại, kể cả khi tài khoản đó kết nối lại. Hãy lưu thành tệp sao lưu trước nếu có thể bạn cần.",
+  "Kept changes removed": "Đã xóa các thay đổi đã giữ",
 };

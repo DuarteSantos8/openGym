@@ -121,6 +121,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Your own exercise's photo: tap it to see it full screen, pinch to zoom in on the details and drag to look around. A tap or Back closes it (thanks Discord).
 - Body weight: a weigh-in more than 15% off your last one asks before it is saved, so 7.8 for 78 does not wreck your curve. Fix it goes back to the number, Save as typed keeps it, and editing a weigh-in never asks (thanks @lodepav, whose #1514 had the idea).
 - Exercise settings in a workout keep what you changed however you close them: swipe them away, tap outside or go Back, and the new rest time or per-side switch stays. Its button says Done now (#1079, thanks @lodepav, whose #1213 had the idea).
+- Changes kept for a server that is never coming back can go now: Settings, the Changes kept row, Remove. It warns first that they are gone for good, with Save as a backup file right above it (#1269).
 
 ## v1.4.5 (2026-11-14)
 

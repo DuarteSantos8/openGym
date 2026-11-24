@@ -5972,4 +5972,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} afasta-se mais de 15% da última pesagem, {1}.",
   "Save as typed": "Guardar assim",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Remover as alterações guardadas para {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Desaparecem de vez. Este dispositivo não as volta a juntar, mesmo que essa conta se ligue outra vez. Guarda-as primeiro como ficheiro de cópia de segurança se as puderes querer.",
+  "Kept changes removed": "Alterações guardadas removidas",
 }

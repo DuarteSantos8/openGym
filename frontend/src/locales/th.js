@@ -5983,4 +5983,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} ต่างจากน้ำหนักครั้งล่าสุด {1} เกิน 15%",
   "Save as typed": "บันทึกตามที่พิมพ์",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "ลบการเปลี่ยนแปลงที่เก็บไว้ให้ {0} ไหม?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "จะหายไปถาวร อุปกรณ์นี้จะไม่เพิ่มกลับ แม้บัญชีนั้นจะเชื่อมต่ออีกครั้ง ถ้าอาจต้องใช้ ให้บันทึกเป็นไฟล์สำรองก่อน",
+  "Kept changes removed": "ลบการเปลี่ยนแปลงที่เก็บไว้แล้ว",
 }

@@ -5972,4 +5972,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0}, son tartın olan {1} değerinden %15’ten fazla farklı.",
   "Save as typed": "Yazıldığı gibi kaydet",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0} için saklanan değişiklikler kaldırılsın mı?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Tamamen silinirler. O hesap yeniden bağlansa bile bu cihaz onları geri eklemez. Lazım olabilirse önce yedek dosyası olarak kaydet.",
+  "Kept changes removed": "Saklanan değişiklikler kaldırıldı",
 }

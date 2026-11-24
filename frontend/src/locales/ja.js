@@ -5904,4 +5904,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0}は前回の体重 {1} から15%以上離れています。",
   "Save as typed": "このまま保存",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0} 用に保管している変更を削除しますか？",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "完全に消えます。そのアカウントが再び接続しても、このデバイスは戻しません。必要になりそうなら、先にバックアップファイルとして保存してください。",
+  "Kept changes removed": "保管していた変更を削除しました",
 }

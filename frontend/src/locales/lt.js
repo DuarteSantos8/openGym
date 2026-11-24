@@ -5968,4 +5968,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} skiriasi daugiau nei 15 % nuo paskutinio svėrimo ({1}).",
   "Save as typed": "Išsaugoti kaip įvesta",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Pašalinti pakeitimus, išsaugotus {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Jie dings visam laikui. Šis įrenginys jų nebegrąžins, net jei ta paskyra vėl prisijungs. Jei jų gali prireikti, pirma išsaugok kaip atsarginę kopiją.",
+  "Kept changes removed": "Išsaugoti pakeitimai pašalinti",
 }

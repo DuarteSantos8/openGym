@@ -5965,4 +5965,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} 與上次量體重的 {1} 相差超過 15%。",
   "Save as typed": "照輸入儲存",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "刪除為 {0} 保留的變更？",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "它們會被永久刪除。即使那個帳號再次連線，這台裝置也不會加回來。如果之後可能還要，請先另存為備份檔案。",
+  "Kept changes removed": "已刪除保留的變更",
 }

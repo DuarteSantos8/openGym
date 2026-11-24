@@ -5969,4 +5969,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} відрізняється більш ніж на 15% від останнього зважування ({1}).",
   "Save as typed": "Зберегти як є",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Видалити зміни, збережені для {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Вони зникнуть назавжди. Цей пристрій не поверне їх, навіть якщо той обліковий запис під’єднається знову. Якщо вони можуть знадобитися, спершу збережіть їх як файл резервної копії.",
+  "Kept changes removed": "Збережені зміни видалено",
 }

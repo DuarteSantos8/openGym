@@ -5972,4 +5972,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} 与上次称重 {1} 相差超过 15%。",
   "Save as typed": "按输入保存",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "删除为 {0} 保留的更改？",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "它们会被永久删除。即使那个账户再次连接，此设备也不会加回来。如果之后可能还要，请先另存为备份文件。",
+  "Kept changes removed": "已删除保留的更改",
 }

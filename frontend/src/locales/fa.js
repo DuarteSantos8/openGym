@@ -5938,4 +5938,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} بیش از ۱۵٪ با آخرین وزن‌کشی‌ات، {1}، فاصله دارد.",
   "Save as typed": "همین را ذخیره کن",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "تغییرات نگه‌داشته‌شده برای {0} حذف شوند؟",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "برای همیشه از بین می‌روند. این دستگاه آن‌ها را برنمی‌گرداند، حتی اگر آن حساب دوباره وصل شود. اگر شاید لازمشان داشته باشی، اول به‌صورت فایل پشتیبان ذخیره‌شان کن.",
+  "Kept changes removed": "تغییرات نگه‌داشته‌شده حذف شدند",
 }

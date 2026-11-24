@@ -6051,4 +6051,8 @@ export default {
   // --- weigh-in typo check (idea from #1514) ---
   "{0} is more than 15% off your last weigh-in, {1}.": "{0} আপনার শেষ ওজন {1} থেকে ১৫%-এর বেশি আলাদা।",
   "Save as typed": "যেমন লেখা তেমন সেভ করুন",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0}-এর জন্য রাখা পরিবর্তনগুলো সরাবেন?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "এগুলো চিরতরে মুছে যাবে। ওই অ্যাকাউন্ট আবার যুক্ত হলেও এই ডিভাইস এগুলো ফিরিয়ে দেবে না। দরকার হতে পারে মনে হলে আগে ব্যাকআপ ফাইল হিসেবে সেভ করুন।",
+  "Kept changes removed": "রাখা পরিবর্তনগুলো সরানো হয়েছে",
 }
