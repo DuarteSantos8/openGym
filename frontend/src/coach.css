@@ -175,6 +175,9 @@
 /* The Android app reports the keyboard instead of shrinking the page (lib/native-keyboard.js):
    the composer rides on top of it. */
 :root[data-native-kb] .composer{bottom:var(--native-kb);padding-bottom:10px}
+/* iPhone: a rest docks its row (54 + safe area) at the bottom edge on /coach; the composer and the chat list sit above it. */
+:root[data-platform="ios"] body:has(.trow.dock) .composer{bottom:calc(54px + var(--sab));padding-bottom:10px}
+:root[data-platform="ios"] body:has(.trow.dock) .chat{padding-bottom:calc(94px + var(--sab) + var(--composer-extra,0px))}   /* shortcut: assumes the one-line row; measure it if the docked row ever wraps */
 .composer-in{max-width:560px;margin:0 auto;display:flex;gap:8px;align-items:flex-end;position:relative}
 /* The height is set by components/ChatInput.jsx: as tall as the text, up to 40% of the screen
    above the keyboard, or 70% opened into the tall editor. */

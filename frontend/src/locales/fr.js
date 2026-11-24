@@ -1,5 +1,8 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} après zéro",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Montres",
   "Set once": "À régler une fois",
@@ -5570,6 +5573,13 @@ export default {
   "Saved to Photos": "Enregistrée dans Photos",
   "Could not save the picture.": "Impossible d’enregistrer l’image.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym n’a pas le droit d’ajouter des images à Photos. Tu peux l’autoriser dans les réglages du téléphone.",
+  "Sections": "Sections",
+  "More sections": "Autres sections",
+  "Choose routine": "Choisir une routine",
+  "{0}, show all tabs": "{0}, afficher tous les onglets",
+  "Resume workout, {0} elapsed": "Reprendre la séance, {0} écoulées",
+  "Workout started": "Séance démarrée",
+  "Rest over": "Repos terminé",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Un modèle règle chaque surface. Ensuite, change ce que tu veux.",
   "Add a button": "Ajouter un bouton",

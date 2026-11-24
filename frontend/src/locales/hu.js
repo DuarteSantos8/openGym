@@ -1,5 +1,8 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 mp",
+  "{0} past zero": "{0} a nullán túl",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Órák",
   "Set once": "Egyszer beállítandó",
@@ -5573,6 +5576,13 @@ export default {
   "Saved to Photos": "Elmentve a Fotókba",
   "Could not save the picture.": "Nem sikerült menteni a képet.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "Az openGym nem adhat hozzá képeket a Fotókhoz. A telefon beállításaiban engedélyezheted.",
+  "Sections": "Szekciók",
+  "More sections": "További szekciók",
+  "Choose routine": "Rutin választása",
+  "{0}, show all tabs": "{0}, az összes fül megjelenítése",
+  "Resume workout, {0} elapsed": "Edzés folytatása, eltelt idő: {0}",
+  "Workout started": "Az edzés elindult",
+  "Rest over": "Vége a pihenőnek",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Egy sablon minden felületet beállít. Utána változtass, amit akarsz.",
   "Add a button": "Gomb hozzáadása",

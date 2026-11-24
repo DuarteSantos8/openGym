@@ -1,5 +1,8 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} över noll",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Klockor",
   "Set once": "Ställ in en gång",
@@ -5617,6 +5620,13 @@ export default {
   "Saved to Photos": "Sparad i Bilder",
   "Could not save the picture.": "Det gick inte att spara bilden.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym får inte lägga till bilder i Bilder. Du kan tillåta det i telefonens inställningar.",
+  "Sections": "Avsnitt",
+  "More sections": "Fler avsnitt",
+  "Choose routine": "Välj rutin",
+  "{0}, show all tabs": "{0}, visa alla flikar",
+  "Resume workout, {0} elapsed": "Fortsätt passet, {0} har gått",
+  "Workout started": "Passet har startat",
+  "Rest over": "Vilan är slut",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "En mall ställer in varje yta. Ändra sedan vad du vill.",
   "Add a button": "Lägg till en knapp",

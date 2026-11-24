@@ -50,6 +50,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
+import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
 import { useTour } from './lib/tour.js'
 import { useTourOffer } from './lib/tour-offer.js'
@@ -134,6 +135,7 @@ const prefetchViews = () => {
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
 
+document.documentElement.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
 // theme === 'system' follows the OS/browser preference instead of a fixed choice.
@@ -466,7 +468,7 @@ function Shell() {
       <SyncBanner />
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      <RestTimer docked={noTabs} />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />
