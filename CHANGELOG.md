@@ -118,6 +118,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Plan: Edit keeps your folders. Each one has its header while you delete or drag, and a drag moves a routine inside its folder. You don't need Edit to reorder any more, by the way: hold a routine to move it (#1534).
 - Add to my plan: tick as many routines as you like, set the sets and reps once, and the exercise lands in all of them (#1466, thanks @devcoons, whose #1134 had the idea).
 - Library and the exercise picker: pick more than one equipment or type. Cables and dumbbells together, say, and each pick gets its own chip to clear. The muscle map's list works the same (thanks Discord).
+- Your own exercise's photo: tap it to see it full screen, pinch to zoom in on the details and drag to look around. A tap or Back closes it (thanks Discord).
 
 ## v1.4.5 (2026-11-14)
 

@@ -1738,6 +1738,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia.viewer{flex:1;min-width:0;margin:0;border-radius:0;background:#000;display:flex;align-items:center;justify-content:center}
 .exmedia.viewer img,.exmedia.viewer video{width:100%;height:100%;max-height:100%;object-fit:contain;background:#000}
 .exmedia.viewer .exmedia-x{height:100%;color:rgba(255,255,255,.5)}
+.mviewer-stage.pzoom{overflow:hidden;align-items:center;justify-content:center;touch-action:none;user-select:none}
+.mviewer-stage.pzoom img{max-width:100%;max-height:100%;object-fit:contain;will-change:transform}
+.exmedia.zoomable{cursor:zoom-in}
 .mviewer-nav{display:flex;justify-content:space-between;padding:8px 12px;flex:none}
 [dir="rtl"] .mviewer-nav .icn{transform:scaleX(-1)}
 .mviewer-ask{flex:none;padding:12px 16px;background:rgba(255,255,255,.08)}
