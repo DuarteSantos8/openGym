@@ -6318,4 +6318,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Pirmiausia ištrink savo treniruotes: programėlėje atidaryk Nustatymai, tada Paskyra, tada Ištrinti mano paskyrą. Po to grįžk čia ir ištrink šią paskyrą.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Ši naršyklė neišlaiko tavęs prisijungusio (privatus naršymas arba jos saugykla pilna). Tai, ką čia užrašysi, taip pat gali neišlikti.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Ši naršyklė šiai svetainei nieko nesaugo, todėl programėlė čia negali atsidaryti. Atlaisvink saugyklos vietos arba išjunk privatų naršymą ir bandyk dar kartą.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "Šiame serveryje {0} yra vienintelis kelias į šį profilį, todėl jis lieka susietas.",
 }

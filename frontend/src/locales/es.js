@@ -6322,4 +6322,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Elimina primero tu entrenamiento: en la app, abre Ajustes, luego Cuenta y luego Eliminar mi cuenta. Después vuelve aquí para eliminar esta cuenta.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Este navegador no mantiene tu sesión iniciada (navegación privada, o su almacenamiento está lleno). Puede que lo que registres aquí tampoco se guarde.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Este navegador no guarda nada de este sitio, así que la app no puede abrirse aquí. Libera espacio o sal de la navegación privada y vuelve a intentarlo.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "{0} es la única forma de entrar en este perfil en este servidor, así que sigue vinculado.",
 }

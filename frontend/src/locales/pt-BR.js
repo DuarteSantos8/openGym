@@ -4732,6 +4732,7 @@ export const PT_BR_OVERRIDES = {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Exclua seu treino primeiro: no app, abra Configurações, depois Conta, depois Excluir minha conta. Em seguida, volte aqui para excluir esta conta.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Este navegador não está mantendo você conectado (navegação privada, ou o armazenamento dele está cheio). O que você registrar aqui também pode não ser guardado.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Este navegador não armazena nada para este site, então o app não pode abrir aqui. Libere espaço ou saia da navegação privada e tente de novo.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "O {0} é o único jeito de entrar neste perfil neste servidor, então ele continua conectado.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

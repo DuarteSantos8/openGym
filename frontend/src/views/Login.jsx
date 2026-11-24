@@ -151,9 +151,13 @@ export default function Login() {
         <AccountButton />
         {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       </div>
-      <p className="iv-first-note">{ssoOnly && sso
-        ? t('With an account your training follows you to your other devices. Without one it stays on this device.')
-        : t('Your training stays on this device. An account is for your plan and purchases.')}</p>
+      {/* Opened from an address that is not the server's own, with no use on this device: the
+          account cannot get anyone in from here, so the screen says so and promises nothing. */}
+      <p className="iv-first-note">{ssoOnly && !sso && !canGuest
+        ? t('Sign-in is only available on the server’s configured website.')
+        : ssoOnly && sso
+          ? t('With an account your training follows you to your other devices. Without one it stays on this device.')
+          : t('Your training stays on this device. An account is for your plan and purchases.')}</p>
       {/* The break-glass way, as on the provider-only screen below: an admin's passkey still
           works on that server when the provider is down. */}
       {ssoOnly && sso && webauthnOK() && (adminWay

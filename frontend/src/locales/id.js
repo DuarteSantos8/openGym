@@ -6287,4 +6287,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Hapus latihanmu dulu: di aplikasi, buka Pengaturan, lalu Akun, lalu Hapus akun saya. Setelah itu, kembali ke sini untuk menghapus akun ini.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Browser ini tidak menjaga kamu tetap masuk (penjelajahan pribadi, atau penyimpanannya penuh). Yang kamu catat di sini mungkin juga tidak tersimpan.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Browser ini tidak menyimpan apa pun untuk situs ini, jadi aplikasi tidak bisa dibuka di sini. Kosongkan penyimpanan atau keluar dari penjelajahan pribadi, lalu coba lagi.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "{0} satu-satunya jalan masuk ke profil ini di server ini, jadi tetap tertaut.",
 };

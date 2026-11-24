@@ -6401,4 +6401,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "আগে আপনার ট্রেনিং মুছুন: অ্যাপে «সেটিংস», তারপর «অ্যাকাউন্ট», তারপর «আমার অ্যাকাউন্ট মুছুন» খুলুন। এরপর এই অ্যাকাউন্ট মুছতে এখানে ফিরে আসুন।",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "এই ব্রাউজার আপনাকে সাইন ইন অবস্থায় রাখছে না (প্রাইভেট ব্রাউজিং, অথবা এর স্টোরেজ ভরে গেছে)। এখানে যা লগ করবেন তাও হয়তো থাকবে না।",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "এই ব্রাউজার এই সাইটের জন্য কিছুই সংরক্ষণ করছে না, তাই অ্যাপটি এখানে খোলা যাচ্ছে না। স্টোরেজ খালি করুন বা প্রাইভেট ব্রাউজিং ছেড়ে আবার চেষ্টা করুন।",
+  "{0} is the only way into this profile on this server, so it stays linked.": "এই সার্ভারে {0} এই প্রোফাইলে ঢোকার একমাত্র উপায়, তাই লিংক থাকছে।",
 }
