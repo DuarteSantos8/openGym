@@ -2186,6 +2186,8 @@ export default {
   'Classic beeps': 'เสียงบี๊บแบบคลาสสิก',
   'Play even on silent': 'เล่นแม้อยู่ในโหมดเงียบ',
   'Vibrate on silent too': 'สั่นแม้อยู่ในโหมดเงียบ',
+  'Light up the screen when a rest ends': 'เปิดหน้าจอเมื่อพักเสร็จ',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'โทรศัพท์ที่ล็อกอยู่จะตื่นขึ้นเมื่อพักเสร็จ ใช้แบตเตอรี่เพิ่มขึ้นเล็กน้อย',
   'Flash the screen': 'กะพริบหน้าจอ',
   'Version': 'เวอร์ชัน',
   'Source code': 'ซอร์สโค้ด',

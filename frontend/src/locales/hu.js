@@ -2178,6 +2178,8 @@ export default {
   'Classic beeps': 'Klasszikus sípolás',
   'Play even on silent': 'Némítva is szóljon',
   'Vibrate on silent too': 'Némítva is rezegjen',
+  'Light up the screen when a rest ends': 'A kijelző felkapcsolása a pihenő végén',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'A lezárt telefon felébred, amikor a pihenő véget ér. Egy kicsit több akkumulátort használ.',
   'Flash the screen': 'Villogjon a képernyő',
   'Version': 'Verzió',
   'Source code': 'Forráskód',

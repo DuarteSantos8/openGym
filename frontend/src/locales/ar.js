@@ -2230,6 +2230,8 @@ export default {
   'Classic beeps': 'صفارات كلاسيكية',
   'Play even on silent': 'التشغيل حتى في الوضع الصامت',
   'Vibrate on silent too': 'الاهتزاز في الوضع الصامت أيضًا',
+  'Light up the screen when a rest ends': 'إضاءة الشاشة عند انتهاء الراحة',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'يستيقظ الهاتف المقفل عند انتهاء الراحة. هذا يستهلك قليلاً من البطارية.',
   'Flash the screen': 'وميض الشاشة',
   'Version': 'الإصدار',
   'Source code': 'الشيفرة المصدرية',

@@ -618,6 +618,8 @@ describe('searchSettings', () => {
     expect(searchSettings('coach', guestWeb, tr).filter(h => h.page !== 'modules' && h.page !== 'voice')).toEqual([])
     expect(searchSettings('coach', { ...guestWeb, mobile: true }, tr)[0].page).toBe('coach')
     expect(searchSettings('vibrate silent', { ...guestWeb, mobile: true, android: true }, tr).map(h => h.title)).toEqual(['Vibrate on silent too'])
+    expect(searchSettings('light up the screen', { ...guestWeb, mobile: true, android: true }, tr).map(h => h.title)).toEqual(['Light up the screen when a rest ends'])
+    expect(searchSettings('light up the screen', { ...guestWeb, mobile: true, ios: true }, tr)).toEqual([])
     expect(searchSettings('   ', guestWeb, tr)).toEqual([])
   })
 

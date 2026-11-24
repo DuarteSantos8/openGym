@@ -2217,6 +2217,8 @@ export default {
   'Classic beeps': 'ক্লাসিক বিপ',
   'Play even on silent': 'সাইলেন্টেও বাজান',
   'Vibrate on silent too': 'সাইলেন্টেও ভাইব্রেট করুন',
+  'Light up the screen when a rest ends': 'বিশ্রাম শেষ হলে স্ক্রিন জ্বালান',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'বিশ্রাম শেষ হলে লক করা ফোন জেগে ওঠে। এতে একটু বেশি ব্যাটারি লাগে।',
   'Flash the screen': 'স্ক্রিন ঝলকান',
   'Version': 'সংস্করণ',
   'Source code': 'সোর্স কোড',

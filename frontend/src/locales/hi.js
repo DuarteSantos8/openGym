@@ -2175,6 +2175,8 @@ export default {
   'Classic beeps': 'क्लासिक बीप',
   'Play even on silent': 'साइलेंट पर भी बजाएँ',
   'Vibrate on silent too': 'साइलेंट पर भी कंपन',
+  'Light up the screen when a rest ends': 'आराम खत्म होने पर स्क्रीन जलाएँ',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'आराम खत्म होने पर लॉक फ़ोन जाग जाता है। इसमें थोड़ी ज़्यादा बैटरी लगती है।',
   'Flash the screen': 'स्क्रीन चमकाएँ',
   'Version': 'संस्करण',
   'Source code': 'सोर्स कोड',

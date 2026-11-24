@@ -2175,6 +2175,8 @@ export default {
   'Classic beeps': 'Klasik bipler',
   'Play even on silent': 'Sessizdeyken de çal',
   'Vibrate on silent too': 'Sessizdeyken de titreş',
+  'Light up the screen when a rest ends': 'Dinlenme bittiğinde ekranı aç',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Kilitli telefon dinlenme bittiğinde uyanır. Bataryayı biraz daha fazla kullanır.',
   'Flash the screen': 'Ekranı yakıp söndür',
   'Version': 'Sürüm',
   'Source code': 'Kaynak kodu',

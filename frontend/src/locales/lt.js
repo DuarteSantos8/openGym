@@ -2146,6 +2146,8 @@ export default {
   "Classic beeps": "Klasikiniai bipsai",
   "Play even on silent": "Groti net ir tyliai",
   "Vibrate on silent too": "Vibruoti ir tyliai",
+  "Light up the screen when a rest ends": "Įjungti ekraną, kai baigiasi poilsis",
+  "A locked phone wakes up when the rest is over. This uses a little more battery.": "Užrakintas telefonas pabunda, kai poilsis baigiasi. Tai sunaudoja šiek tiek daugiau baterijos.",
   "Flash the screen": "Mirksėti ekranu",
   "Version": "Versija",
   "Source code": "Šaltinio kodas",

@@ -165,6 +165,16 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.schedule.at(-1)).toMatchObject({ alarmBuzz: false })
   })
 
+  it('tells the phone to light the screen at the end of a rest only when asked', async () => {
+    h.platform = 'android'
+    const calls = capture()
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
+    expect(calls.schedule.at(-1)).toMatchObject({ lightScreen: false })
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, lightScreen: true })
+    expect(calls.schedule.at(-1)).toMatchObject({ lightScreen: true })
+  })
+
   it('hands the plugin the end tone Settings → Sound picked', async () => {
     h.platform = 'android'
     const calls = capture()
@@ -251,6 +261,22 @@ describe('the Android side of the alarm buzz (#375)', () => {
     expect(alert).toMatch(/boolean vibrate = intent\.getBooleanExtra\("vibrate", true\) && !alarmBuzz;/)
     expect(alert).toMatch(/if \(alarmBuzz\) buzz\(ctx, VIBRATE\);/)
     expect(alert.match(/intent\.putExtra\("alarmBuzz", lastAlarmBuzz\);/g)).toHaveLength(2)
+  })
+})
+
+describe('the Android side of "Light up the screen when a rest ends"', () => {
+  const src = name => readFileSync(new URL(`../../android/app/src/main/java/ch/duartesantos/opengym/${name}.java`, import.meta.url), 'utf8')
+  const alert = src('RestAlert')
+  const plugin = src('RestAlertPlugin')
+
+  it('keeps what the page sent, off for an older page', () => {
+    expect(plugin).toMatch(/RestAlert\.setLightScreen\(\s*ctx\.getApplicationContext\(\),\s*Boolean\.TRUE\.equals\(call\.getBoolean\("lightScreen", Boolean\.FALSE\)\)\)/)
+    expect(alert).toMatch(/getBoolean\("lightScreen", false\)/)
+  })
+
+  it('wakes the screen at a rest end only with that on, and only there', () => {
+    expect(alert.match(/pokeScreen\(ctx\);/g)).toHaveLength(1)
+    expect(alert).toMatch(/if \(lightScreen\(ctx\)\) pokeScreen\(ctx\);/)
   })
 })
 

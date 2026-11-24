@@ -2072,6 +2072,8 @@ export const PT_BR_OVERRIDES = {
   'Back up': 'Fazer backup',
   'Play even on silent': 'Tocar mesmo no silencioso',
   'Vibrate on silent too': 'Vibrar também no silencioso',
+  'Light up the screen when a rest ends': 'Acender a tela quando um descanso termina',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Um celular bloqueado acorda quando o descanso acaba. Isso gasta um pouco mais de bateria.',
   'Flash the screen': 'Piscar a tela',
   'Your server': 'Seu servidor',
   'Your API key': 'Sua chave de API',

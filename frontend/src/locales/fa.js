@@ -2173,6 +2173,8 @@ export default {
   "Classic beeps": "بوق کلاسیک",
   "Play even on silent": "پخش حتی در حالت بی‌صدا",
   "Vibrate on silent too": "در حالت بی صدا نیز ویبره کنید",
+  "Light up the screen when a rest ends": "روشن کردن صفحه وقتی استراحت تمام می‌شود",
+  "A locked phone wakes up when the rest is over. This uses a little more battery.": "گوشی قفل‌شده با پایان استراحت بیدار می‌شود. این کار کمی باتری بیشتری مصرف می‌کند.",
   "Flash the screen": "چشمک زدن صفحه",
   "Version": "نسخه",
   "Source code": "کد منبع",

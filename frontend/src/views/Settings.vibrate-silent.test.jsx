@@ -125,3 +125,37 @@ describe('Settings — vibrate when the phone is on silent', () => {
     expect(rowTitled(TITLE)).toBeUndefined()
   })
 })
+
+// The screen at a rest end: the Android app lights a locked phone only when this is on.
+describe('Settings — light up the screen when a rest ends', () => {
+  const LIGHT = 'Light up the screen when a rest ends'
+
+  it('Android app: offered, off by default, and writes the setting', async () => {
+    mocks.MOBILE = true
+    mocks.android = true
+    await mount()
+    const row = rowTitled(LIGHT)
+    expect(row).toBeTruthy()
+    expect(switchIn(row).getAttribute('aria-checked')).toBe('false')
+    act(() => { switchIn(row).click() })
+    expect(mocks.S.restLightScreen).toBe(true)
+  })
+
+  it('still offered with Vibrate off', async () => {
+    mocks.MOBILE = true
+    mocks.android = true
+    mocks.S.vibrate = false
+    await mount()
+    expect(rowTitled(LIGHT)).toBeTruthy()
+  })
+
+  it('not offered on the web or in the iOS app', async () => {
+    await mount()
+    expect(rowTitled(LIGHT)).toBeUndefined()
+    act(() => root.unmount())
+    root = createRoot(host)
+    mocks.MOBILE = true
+    await mount()
+    expect(rowTitled(LIGHT)).toBeUndefined()
+  })
+})

@@ -2175,6 +2175,8 @@ export default {
   'Classic beeps': 'Pitidos clásicos',
   'Play even on silent': 'Sonar también en silencio',
   'Vibrate on silent too': 'Vibrar también en silencio',
+  'Light up the screen when a rest ends': 'Encender la pantalla al terminar un descanso',
+  'A locked phone wakes up when the rest is over. This uses a little more battery.': 'Un teléfono bloqueado se despierta cuando acaba el descanso. Gasta un poco más de batería.',
   'Flash the screen': 'Hacer parpadear la pantalla',
   'Version': 'Versión',
   'Source code': 'Código fuente',
