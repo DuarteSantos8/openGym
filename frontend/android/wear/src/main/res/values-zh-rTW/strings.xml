@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, zh-TW. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">在手機 App 中新增出生年份</string>
+    <string name="add_session_note">新增總結筆記</string>
     <string name="added_weight">附加重量</string>
     <string name="all_done_q">練完了嗎？</string>
     <string name="all_sets_done">所有組已完成</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">捨棄本次訓練？</string>
     <string name="done">完成</string>
     <string name="edit">編輯</string>
+    <string name="edit_session_note">編輯總結筆記</string>
     <string name="effort">強度表現</string>
     <string name="ended_on_phone">已在手機上結束</string>
     <string name="exercises">動作庫</string>

@@ -891,6 +891,14 @@ object WearStore {
         idleLeft.value = false
     }
 
+    /** The note typed or dictated on the Overview (empty clears it). Nothing changed sends nothing. */
+    fun saveNote(text: String) {
+        val (next, event) = SessionCore.workoutNote(_state.value, text, now().toDouble(), UUID.randomUUID().toString()) ?: return
+        PhoneLink.send(app, event)
+        commit(next)
+        Haptics.tick(app)
+    }
+
     /** "Keep going" on "Still training?": idle counts from now, here and on the phone. */
     fun keepGoing() {
         val at = now()
@@ -1056,7 +1064,12 @@ object WearStore {
         when (screen) {
             "start" -> commit(_state.value.copy(workout = null))
             "rest" -> { completeSet(); if (_rest.value == null) startRest(75) }
-            "overview" -> page.value = Page.OVERVIEW
+            "overview" -> { commit(_state.value.copy(settings = _state.value.settings.copy(workoutNote = true))); page.value = Page.OVERVIEW }
+            "overview-note" -> {
+                val st = _state.value
+                commit(st.copy(settings = st.settings.copy(workoutNote = true), workout = st.workout?.copy(note = "Left shoulder felt tight, grip slipped on the last rep")))
+                page.value = Page.OVERVIEW
+            }
             "metrics" -> {
                 page.value = Page.METRICS
                 // The emulator has no heart rate: fake readings (min 96, max 171, average about 138) so the Pulse page has numbers.

@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, pt. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Ano de nascimento no telemóvel</string>
+    <string name="add_session_note">Adicionar nota da sessão</string>
     <string name="added_weight">Peso adicional</string>
     <string name="all_done_q">Terminaste?</string>
     <string name="all_sets_done">Todas as séries feitas</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Descartar treino?</string>
     <string name="done">Concluído</string>
     <string name="edit">Editar</string>
+    <string name="edit_session_note">Editar nota da sessão</string>
     <string name="effort">Esforço</string>
     <string name="ended_on_phone">Terminado no telemóvel</string>
     <string name="exercises">Exercícios</string>

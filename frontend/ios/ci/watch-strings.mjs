@@ -57,6 +57,8 @@ const FROM_APP = {
   'Next set': 'Next set',
   'Edit': 'Edit',
   'Overview': 'Overview',
+  'Add session note': 'Add session note',
+  'Edit session note': 'Edit session note',
   'Discard workout?': 'Discard workout?',
   'Up next': 'Up next',
   'How hard was that set?': 'How hard was that set?',

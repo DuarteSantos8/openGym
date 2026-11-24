@@ -82,6 +82,15 @@ struct SessionState: Codable, Equatable {
     /// picks the countdown up instead of losing it (a snapshot does not bring back an older rest).
     var restEnd: Double?
     var restFrom: Double?
+    /// The workout's note edited here, until the phone acks it (its snapshot cannot flash it away).
+    var noteDraft: NoteDraft?
+}
+
+/// A note edited on the Overview: its event's id, the workout it is for and its text.
+struct NoteDraft: Codable, Equatable {
+    var id: String
+    var wid: String
+    var text: String
 }
 
 typealias Event = [String: Any]
@@ -118,6 +127,7 @@ enum SessionCore {
         if let st = snap.settings { s.settings = st }
 
         let acked = Set(snap.acked ?? [])
+        if let d = s.noteDraft, acked.contains(d.id) { s.noteDraft = nil }
         // The phone applied the start: it had this workout, whatever its snapshot shows now.
         if s.startedHere != nil, let sid = s.startId, acked.contains(sid) { s.startedHere = nil; s.startId = nil }
         // Ticks the phone applied: its copy of those sets is the one that counts from now on.
@@ -136,6 +146,7 @@ enum SessionCore {
         guard var next = snap.active, !(next.id.map { s.finishedHere.contains($0) } ?? false) else {
             // No workout on the phone, or one the watch has finished already.
             if unconfirmed { return s }
+            s.noteDraft = nil
             s.workout = nil
             s.pending = [:]
             s.restAt = nil
@@ -152,6 +163,7 @@ enum SessionCore {
         }
         if !same {
             // Another workout (or the first one this watch sees): its own position, no old ticks.
+            s.noteDraft = nil
             s.pending = [:]
             s.skipped = nil
             s.efforts = nil
@@ -456,6 +468,32 @@ enum SessionCore {
         if idle && !discard { event["idle"] = true }
         if idle && left && !discard { event["left"] = true }
         return (s, event)
+    }
+
+    /// The most of the workout's note the watch carries (the phone's own limit is higher).
+    static let noteMax = 280
+
+    /// The Overview offers "Add note": a workout is on, and the phone says it applies workoutNote.
+    static func canNote(_ s: SessionState) -> Bool { s.workout?.id != nil && s.settings.workoutNote == true }
+
+    /// The note the Overview shows: this watch's own edit until the phone acks it, else the phone's.
+    static func shownNote(_ s: SessionState) -> String {
+        if let d = s.noteDraft, d.wid == s.workout?.id { return d.text }
+        return s.workout?.note ?? ""
+    }
+
+    /// The Overview's note edited: control characters out, trimmed, cut. `was` is what the phone has (or will
+    /// have once an earlier edit is applied), so it can keep its own text when it changed meanwhile.
+    /// nil: no button here, or nothing changed.
+    static func workoutNote(_ s0: SessionState, _ text: String, at: Double, id: String) -> (SessionState, Event)? {
+        guard canNote(s0), let wid = s0.workout?.id else { return nil }
+        let clean = String(String(String.UnicodeScalarView(text.unicodeScalars.map { $0.value < 32 || $0.value == 127 ? " " : $0 }))
+            .trimmingCharacters(in: .whitespacesAndNewlines).prefix(noteMax))
+        let was = shownNote(s0)
+        if clean == was { return nil }
+        var s = s0
+        s.noteDraft = NoteDraft(id: id, wid: wid, text: clean)
+        return (s, ["id": id, "type": "workoutNote", "wid": wid, "note": clean, "was": was, "at": at])
     }
 
     /// "Keep going" on "Still training?": the phone stops asking too (lib/watch-sync.js stillHere).

@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, lt. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Įrašyk gimimo metus telefono programėlėje</string>
+    <string name="add_session_note">Pridėti sesijos pastabą</string>
     <string name="added_weight">Papildomas svoris</string>
     <string name="all_done_q">Viskas?</string>
     <string name="all_sets_done">Visos serijos atliktos</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">Atsisakyti treniruotės?</string>
     <string name="done">Atlikta</string>
     <string name="edit">Redaguoti</string>
+    <string name="edit_session_note">Redaguoti sesijos pastabą</string>
     <string name="effort">Pastangos</string>
     <string name="ended_on_phone">Baigta telefone</string>
     <string name="exercises">Pratimai</string>

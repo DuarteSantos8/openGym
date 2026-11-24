@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, bn. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">ফোন অ্যাপে জন্মসাল যোগ করুন</string>
+    <string name="add_session_note">সেশন নোট যোগ করুন</string>
     <string name="added_weight">অতিরিক্ত ওজন</string>
     <string name="all_done_q">শেষ হয়েছে?</string>
     <string name="all_sets_done">সব সেট শেষ</string>
@@ -22,6 +23,7 @@
     <string name="discard_workout_q">ওয়ার্কআউট বাদ দেবেন?</string>
     <string name="done">সম্পন্ন</string>
     <string name="edit">এডিট</string>
+    <string name="edit_session_note">সেশন নোট এডিট করুন</string>
     <string name="effort">পরিশ্রম</string>
     <string name="ended_on_phone">ফোনে শেষ হয়েছে</string>
     <string name="exercises">ব্যায়াম</string>
