@@ -66,6 +66,7 @@ import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpda
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
+import { bugReportUrl, environmentOf } from '../lib/bug-report.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
@@ -1301,6 +1302,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           : <Row icon="download" iconTint="var(--green)" title={t('Get the Android app')}
               subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
               onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
+      </Section>
+      {/* Report a problem (#1482): GitHub's bug form with the version and the device filled in
+          (lib/bug-report.js). Only a link: the app sends nothing, and nothing from the profile. */}
+      <Section footer={t('Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.')}>
+        <Row icon="flag" iconTint="var(--red)" title={t('Report a problem')} accessory="chevron"
+          onClick={() => window.open(bugReportUrl({
+            version: __APP_VERSION__ + (MOBILE ? (ios ? ' (iPhone app)' : play ? ' (Google Play)' : fdroid ? ' (F-Droid)' : selfUpdate ? ' (APK)' : ' (Android app)') : ' (web app)'),
+            environment: environmentOf(typeof navigator !== 'undefined' ? navigator.userAgent : '', { app: MOBILE }),
+          }), '_blank', 'noopener')} />
       </Section>
       {/* The F-Droid build has no Wear OS link (it would need Google Play services, which F-Droid
           leaves out): said here rather than having a watch that silently never connects. */}

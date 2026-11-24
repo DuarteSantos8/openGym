@@ -5972,4 +5972,7 @@ export default {
   "Remove the changes kept for {0}?": "Pašalinti pakeitimus, išsaugotus {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Jie dings visam laikui. Šis įrenginys jų nebegrąžins, net jei ta paskyra vėl prisijungs. Jei jų gali prireikti, pirma išsaugok kaip atsarginę kopiją.",
   "Kept changes removed": "Išsaugoti pakeitimai pašalinti",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Pranešti apie problemą",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Atveria GitHub klaidų formą su jau įrašyta programėlės versija ir įrenginiu. Pati programėlė nieko nesiunčia.",
 }

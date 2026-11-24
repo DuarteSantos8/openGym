@@ -5976,4 +5976,7 @@ export default {
   "Remove the changes kept for {0}?": "{0}을(를) 위해 보관한 변경 사항을 지울까요?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "영구히 사라져요. 그 계정이 다시 연결돼도 이 기기는 되돌려 놓지 않아요. 필요할 수도 있다면 먼저 백업 파일로 저장하세요.",
   "Kept changes removed": "보관한 변경 사항을 지웠어요",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "문제 신고",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "앱 버전과 기기가 채워진 상태로 GitHub 버그 양식을 열어요. 앱이 직접 보내는 건 없어요.",
 }

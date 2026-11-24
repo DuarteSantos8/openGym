@@ -5908,4 +5908,7 @@ export default {
   "Remove the changes kept for {0}?": "{0} 用に保管している変更を削除しますか？",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "完全に消えます。そのアカウントが再び接続しても、このデバイスは戻しません。必要になりそうなら、先にバックアップファイルとして保存してください。",
   "Kept changes removed": "保管していた変更を削除しました",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "問題を報告",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub の不具合フォームを、アプリのバージョンと端末を入力した状態で開きます。アプリ自体は何も送信しません。",
 }

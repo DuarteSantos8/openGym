@@ -5941,4 +5941,7 @@ export default {
   "Remove the changes kept for {0}?": "Hapus perubahan yang disimpan untuk {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Perubahan ini hilang selamanya. Perangkat ini tidak akan menambahkannya lagi, meski akun itu tersambung kembali. Simpan dulu sebagai file cadangan jika mungkin masih perlu.",
   "Kept changes removed": "Perubahan yang disimpan dihapus",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Laporkan masalah",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Membuka formulir bug di GitHub dengan versi aplikasi dan perangkatmu sudah terisi. Aplikasi sendiri tidak mengirim apa pun.",
 };

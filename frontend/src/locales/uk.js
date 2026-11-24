@@ -5973,4 +5973,7 @@ export default {
   "Remove the changes kept for {0}?": "Видалити зміни, збережені для {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Вони зникнуть назавжди. Цей пристрій не поверне їх, навіть якщо той обліковий запис під’єднається знову. Якщо вони можуть знадобитися, спершу збережіть їх як файл резервної копії.",
   "Kept changes removed": "Збережені зміни видалено",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Повідомити про проблему",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Відкриває форму помилки на GitHub із уже вписаними версією застосунку та пристроєм. Сам застосунок нічого не надсилає.",
 }

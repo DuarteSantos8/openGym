@@ -4396,6 +4396,9 @@ export const PT_BR_OVERRIDES = {
   "Remove the changes kept for {0}?": "Remover as alterações mantidas para {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Elas somem de vez. Este dispositivo não vai adicioná-las de novo, mesmo que essa conta se conecte outra vez. Salve-as antes como arquivo de backup se puder precisar delas.",
   "Kept changes removed": "Alterações mantidas removidas",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Relatar um problema",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de bugs no GitHub com a versão do app e o dispositivo já preenchidos. O app não envia nada sozinho.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

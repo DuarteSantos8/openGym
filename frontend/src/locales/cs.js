@@ -5942,4 +5942,7 @@ export default {
   "Remove the changes kept for {0}?": "Odstranit změny uložené pro {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Zmizí nadobro. Toto zařízení je zpět nepřidá, ani když se ten účet znovu připojí. Pokud by se ti mohly hodit, ulož je nejdřív jako zálohu.",
   "Kept changes removed": "Uložené změny odstraněny",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Nahlásit problém",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Otevře formulář chyby na GitHubu s vyplněnou verzí aplikace a zařízením. Aplikace sama nic neodesílá.",
 }

@@ -6031,4 +6031,7 @@ export default {
   "Remove the changes kept for {0}?": "إزالة التغييرات المحفوظة لـ {0}؟",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "ستُحذف نهائيًا. لن يعيدها هذا الجهاز حتى لو اتصل ذلك الحساب مجددًا. احفظها كملف نسخة احتياطية أولًا إن كنت قد تحتاجها.",
   "Kept changes removed": "أُزيلت التغييرات المحفوظة",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "الإبلاغ عن مشكلة",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "يفتح نموذج الأخطاء على GitHub مع إصدار التطبيق وجهازك معبّأين. التطبيق نفسه لا يرسل شيئًا.",
 }

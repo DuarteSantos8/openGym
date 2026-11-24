@@ -5980,4 +5980,7 @@ export default {
   "Remove the changes kept for {0}?": "Удалить изменения, сохранённые для {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Они исчезнут насовсем. Это устройство не вернёт их, даже если тот аккаунт снова подключится. Если они могут понадобиться, сначала сохраните их как файл резервной копии.",
   "Kept changes removed": "Сохранённые изменения удалены",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Сообщить о проблеме",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Открывает форму ошибки на GitHub с уже указанными версией приложения и устройством. Само приложение ничего не отправляет.",
 }

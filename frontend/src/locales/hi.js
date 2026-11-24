@@ -5976,4 +5976,7 @@ export default {
   "Remove the changes kept for {0}?": "{0} के लिए रखे बदलाव हटाएँ?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "ये हमेशा के लिए चले जाएँगे। वह अकाउंट दोबारा जुड़े तब भी यह डिवाइस इन्हें वापस नहीं जोड़ेगा। अगर इनकी ज़रूरत पड़ सकती है तो पहले बैकअप फ़ाइल के रूप में सेव करें।",
   "Kept changes removed": "रखे गए बदलाव हटा दिए",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "समस्या बताएँ",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub पर बग फ़ॉर्म खोलता है, ऐप वर्ज़न और डिवाइस पहले से भरे होते हैं। ऐप खुद कुछ नहीं भेजता।",
 }

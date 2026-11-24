@@ -224,3 +224,25 @@ describe('Settings: support links', () => {
     expect(row('Rate openGym on Google Play')).toBeUndefined()
   })
 })
+
+// #1482: Report a problem opens GitHub's bug form with the version and device filled in, and that is all.
+describe('Settings — Report a problem', () => {
+  const row = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Report a problem'))
+  it('opens the bug form, prefilled, in the browser', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      mocks.MOBILE = true
+      mocks.android = true
+      mocks.channel = 'play'
+      await mount()
+      act(() => { row().click() })
+      const u = new URL(open.mock.calls.at(-1)[0])
+      expect(u.pathname).toMatch(/\/issues\/new$/)
+      expect(u.searchParams.get('template')).toBe('bug_report.yml')
+      expect(u.searchParams.get('version')).toBe(__APP_VERSION__ + ' (Google Play)')
+      expect(u.searchParams.get('environment')).toMatch(/^openGym app/)
+      expect([...u.searchParams.keys()].sort()).toEqual(['environment', 'template', 'version'])
+    } finally { open.mockRestore() }
+  })
+})
+

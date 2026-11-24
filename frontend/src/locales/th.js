@@ -5987,4 +5987,7 @@ export default {
   "Remove the changes kept for {0}?": "ลบการเปลี่ยนแปลงที่เก็บไว้ให้ {0} ไหม?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "จะหายไปถาวร อุปกรณ์นี้จะไม่เพิ่มกลับ แม้บัญชีนั้นจะเชื่อมต่ออีกครั้ง ถ้าอาจต้องใช้ ให้บันทึกเป็นไฟล์สำรองก่อน",
   "Kept changes removed": "ลบการเปลี่ยนแปลงที่เก็บไว้แล้ว",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "แจ้งปัญหา",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "เปิดแบบฟอร์มแจ้งบั๊กบน GitHub พร้อมกรอกเวอร์ชันแอปและอุปกรณ์ไว้ให้ แอปไม่ส่งอะไรเอง",
 }

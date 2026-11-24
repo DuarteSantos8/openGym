@@ -5976,4 +5976,7 @@ export default {
   "Remove the changes kept for {0}?": "Supprimer les modifications gardées pour {0} ?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Elles disparaissent pour de bon. Cet appareil ne les rajoutera pas, même si ce compte se reconnecte. Enregistre-les d’abord en fichier de sauvegarde si tu pourrais en avoir besoin.",
   "Kept changes removed": "Modifications gardées supprimées",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Signaler un problème",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Ouvre le formulaire de bug sur GitHub avec la version de l’app et ton appareil déjà remplis. L’app n’envoie rien elle-même.",
 }

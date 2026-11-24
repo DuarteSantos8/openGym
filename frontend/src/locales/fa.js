@@ -5942,4 +5942,7 @@ export default {
   "Remove the changes kept for {0}?": "تغییرات نگه‌داشته‌شده برای {0} حذف شوند؟",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "برای همیشه از بین می‌روند. این دستگاه آن‌ها را برنمی‌گرداند، حتی اگر آن حساب دوباره وصل شود. اگر شاید لازمشان داشته باشی، اول به‌صورت فایل پشتیبان ذخیره‌شان کن.",
   "Kept changes removed": "تغییرات نگه‌داشته‌شده حذف شدند",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "گزارش مشکل",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "فرم گزارش خطا را در GitHub با نسخهٔ برنامه و دستگاهت پرشده باز می‌کند. خود برنامه چیزی نمی‌فرستد.",
 }

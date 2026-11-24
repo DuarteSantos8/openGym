@@ -5976,4 +5976,7 @@ export default {
   "Remove the changes kept for {0}?": "Remover as alterações guardadas para {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Desaparecem de vez. Este dispositivo não as volta a juntar, mesmo que essa conta se ligue outra vez. Guarda-as primeiro como ficheiro de cópia de segurança se as puderes querer.",
   "Kept changes removed": "Alterações guardadas removidas",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Comunicar um problema",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de erros no GitHub com a versão da app e o dispositivo já preenchidos. A app não envia nada por si.",
 }

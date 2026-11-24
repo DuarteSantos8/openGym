@@ -5969,4 +5969,7 @@ export default {
   "Remove the changes kept for {0}?": "刪除為 {0} 保留的變更？",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "它們會被永久刪除。即使那個帳號再次連線，這台裝置也不會加回來。如果之後可能還要，請先另存為備份檔案。",
   "Kept changes removed": "已刪除保留的變更",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "回報問題",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "在 GitHub 開啟問題表單，已填好 App 版本和裝置。App 本身不會傳送任何內容。",
 }

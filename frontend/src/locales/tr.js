@@ -5976,4 +5976,7 @@ export default {
   "Remove the changes kept for {0}?": "{0} için saklanan değişiklikler kaldırılsın mı?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Tamamen silinirler. O hesap yeniden bağlansa bile bu cihaz onları geri eklemez. Lazım olabilirse önce yedek dosyası olarak kaydet.",
   "Kept changes removed": "Saklanan değişiklikler kaldırıldı",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Sorun bildir",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub’daki hata formunu uygulama sürümün ve cihazın doldurulmuş olarak açar. Uygulama kendisi hiçbir şey göndermez.",
 }

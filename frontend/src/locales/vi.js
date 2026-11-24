@@ -5942,4 +5942,7 @@ export default {
   "Remove the changes kept for {0}?": "Xóa các thay đổi đã giữ cho {0}?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Chúng sẽ mất hẳn. Thiết bị này sẽ không thêm lại, kể cả khi tài khoản đó kết nối lại. Hãy lưu thành tệp sao lưu trước nếu có thể bạn cần.",
   "Kept changes removed": "Đã xóa các thay đổi đã giữ",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Báo cáo sự cố",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Mở biểu mẫu báo lỗi trên GitHub với phiên bản ứng dụng và thiết bị đã điền sẵn. Ứng dụng không tự gửi gì.",
 };

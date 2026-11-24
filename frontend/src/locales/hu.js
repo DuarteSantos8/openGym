@@ -5979,4 +5979,7 @@ export default {
   "Remove the changes kept for {0}?": "Törlöd a(z) {0} számára megőrzött változásokat?",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Végleg eltűnnek. Ez az eszköz akkor sem adja vissza őket, ha az a fiók újra csatlakozik. Ha még kellhetnek, előbb mentsd el őket biztonsági fájlba.",
   "Kept changes removed": "A megőrzött változások törölve",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Hiba bejelentése",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Megnyitja a GitHub hibabejelentő űrlapját, kitöltve az app verziójával és az eszközzel. Az app maga nem küld semmit.",
 }

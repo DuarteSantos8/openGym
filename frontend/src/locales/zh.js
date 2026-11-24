@@ -5976,4 +5976,7 @@ export default {
   "Remove the changes kept for {0}?": "删除为 {0} 保留的更改？",
   "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "它们会被永久删除。即使那个账户再次连接，此设备也不会加回来。如果之后可能还要，请先另存为备份文件。",
   "Kept changes removed": "已删除保留的更改",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "报告问题",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "在 GitHub 打开问题表单，已填好应用版本和设备。应用本身不会发送任何内容。",
 }
