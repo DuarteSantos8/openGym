@@ -127,6 +127,14 @@ describe('the effort picker commits once', () => {
   })
 })
 
+// Between − and + a bare "–" read as a third minus; the unset field says so in words.
+describe('the effort picker exact field', () => {
+  it('says Not set while empty', () => {
+    const p = openPicker('rir', null, vi.fn())
+    expect(field(p.host).placeholder).toBe('Not set')
+  })
+})
+
 // Cardio (Discord thehypetrainhobo): the same bands in RPE, worded for a run, not for reps left.
 describe('the effort picker for cardio', () => {
   it('talks about how it felt and logs RPE', () => {
