@@ -5966,4 +5966,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Một dòng trên hai trang đó để mở bảng này.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Ẩn cho đến bản tóm tắt tiếp theo.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Hỏi cả trên đồng hồ",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Bắt đầu từ cổ tay? Chạm nhanh ba lần ở đó trước, mỗi ngày một lần.",
 };

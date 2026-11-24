@@ -6000,4 +6000,7 @@ export default {
   "A row on those two pages that opens this sheet.": "두 페이지에 이 시트를 여는 줄이 생겨요.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "다음 요약까지 숨김.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "워치에서도 묻기",
+  "Starting from your wrist? Three quick taps there first, once a day.": "손목에서 시작하나요? 먼저 거기서 빠르게 세 번 탭, 하루 한 번만.",
 }

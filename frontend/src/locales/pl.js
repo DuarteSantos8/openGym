@@ -6000,4 +6000,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Wiersz na tych dwóch stronach, który otwiera ten arkusz.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Ukryte do następnego podsumowania.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Pytaj też na zegarku",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Zaczynasz z nadgarstka? Najpierw trzy szybkie stuknięcia, raz dziennie.",
 }

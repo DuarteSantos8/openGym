@@ -209,6 +209,11 @@ struct WatchSettings: Codable, Equatable {
     var forgotten: ForgottenSettings?
     /// The Overview may offer "Add note" (the phone applies workoutNote); nil from an older phone.
     var workoutNote: Bool?
+    /// A workout started here asks the daily check-in first (#1535, the phone's "Ask on the watch
+    /// too"); nil from an older phone, which never asks.
+    var checkin: Bool? = nil
+    /// The newest day answered on the phone (YYYY-MM-DD): today's answered, nothing to ask.
+    var checkinDay: String? = nil
 }
 
 /// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).

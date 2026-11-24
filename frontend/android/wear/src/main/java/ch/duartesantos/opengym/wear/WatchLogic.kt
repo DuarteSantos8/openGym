@@ -488,6 +488,32 @@ object WeighIn {
 }
 
 /**
+ * The daily check-in before a workout started here (#1535, WatchCore DailyForm.swift), the phone's
+ * lib/daily-form.js in short: sleep, energy and soreness, each 1 to 5. Asked once a day: not when the
+ * phone says today is answered, not when this watch asked today (answered or skipped).
+ */
+object DailyForm {
+    val keys = listOf("sleep", "energy", "sore")
+
+    /** The day as the phone writes it, YYYY-MM-DD in the watch's own time zone (ISO calendar). */
+    fun day(epochMs: Long, zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): String =
+        java.time.Instant.ofEpochMilli(epochMs).atZone(zone).toLocalDate().toString()
+
+    fun due(on: Boolean?, answeredDay: String?, askedDay: String?, today: String): Boolean =
+        on == true && answeredDay != today && askedDay != today
+
+    /** The event with the answers given (each 1 to 5, the rest left out), null with none. */
+    fun event(answers: Map<String, Int>, at: Double, id: String): Event? {
+        val given = keys.mapNotNull { k -> answers[k]?.takeIf { it in 1..5 }?.let { k to it } }
+        if (given.isEmpty()) return null
+        return buildJsonObject {
+            put("id", id); put("type", "dailyForm"); put("at", at.toLong())
+            for ((k, v) in given) put(k, v)
+        }
+    }
+}
+
+/**
  * A workout left running (forgotten workouts, the phone's lib/forgotten-workout.js and WatchCore's
  * Idle): "Still training?" after the phone's quiet spell (45 minutes unless changed), "Looks like
  * you left the gym" at once when the phone walked out of the gym, and the workout ends by itself

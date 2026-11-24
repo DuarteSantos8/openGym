@@ -177,7 +177,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Next exercise when the rest ends', icon: 'chevronRight', tint: 'var(--teal)', kw: 'auto advance next exercise automatically rest ends over hands free move on cards focus' },
   { page: 'workout', title: 'Start button', icon: 'play', tint: 'var(--green)', kw: 'start button pick choose routine workout long press today plan which', opts: ['Today’s plan', 'Let me pick'] },
   { page: 'workout', title: 'Preview before starting', icon: 'list', tint: 'var(--blue)', kw: 'preview look first before start routine exercises weights confirm' },
-  { page: 'workout', title: 'Daily check-in', icon: 'moon', tint: 'var(--indigo)', mod: 'health', kw: 'check in checkin daily form readiness sleep energy soreness sore stress mood lighter deload tired how do you feel' },
+  { page: 'workout', title: 'Daily check-in', icon: 'moon', tint: 'var(--indigo)', mod: 'health', kw: 'check in checkin daily form readiness sleep energy soreness sore stress mood lighter deload tired how do you feel watch wrist' },
   { page: 'workout', title: 'Weigh in before workouts', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'body weight weigh scale start' },
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
   { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },

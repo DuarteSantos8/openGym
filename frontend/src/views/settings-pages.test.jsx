@@ -466,6 +466,27 @@ describe('the pages', () => {
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
   })
 
+  it('#1535: "Ask on the watch too" sits under the daily check-in on the phones, on until switched off', () => {
+    mocks.MOBILE = true
+    mount('workout')
+    expect(rowTitled('Ask on the watch too')).toBeUndefined()
+    mocks.S.dailyForm = true
+    mount('workout')
+    const t = titles()
+    expect(t[t.indexOf('Daily check-in') + 1]).toBe('Ask on the watch too')
+    const sw = rowTitled('Ask on the watch too').querySelector('[role="switch"]')
+    expect(sw.getAttribute('aria-checked')).toBe('true')
+    act(() => sw.click())
+    expect(mocks.S.dailyFormWatch).toBe(false)
+    mount('workout')
+    act(() => rowTitled('Ask on the watch too').querySelector('[role="switch"]').click())
+    expect('dailyFormWatch' in mocks.S).toBe(false)
+    // the web app has no watch to ask on
+    mocks.MOBILE = false
+    mount('workout')
+    expect(rowTitled('Ask on the watch too')).toBeUndefined()
+  })
+
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
     bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
     mount('advanced')

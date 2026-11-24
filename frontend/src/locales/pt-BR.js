@@ -4420,6 +4420,9 @@ export const PT_BR_OVERRIDES = {
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de bugs no GitHub com a versão do app e o dispositivo já preenchidos. O app não envia nada sozinho.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Oculto até o próximo resumo.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Perguntar também no relógio",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Começando pelo pulso? Primeiro três toques rápidos lá, uma vez por dia.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

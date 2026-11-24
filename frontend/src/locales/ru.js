@@ -6004,4 +6004,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Строка на этих двух страницах, открывающая эту панель.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Скрыто до следующей сводки.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Спрашивать и на часах",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Начинаешь с запястья? Сначала три быстрых касания там, раз в день.",
 }

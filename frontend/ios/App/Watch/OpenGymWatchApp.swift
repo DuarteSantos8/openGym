@@ -78,9 +78,10 @@ struct RootView: View {
     @Environment(\.isLuminanceReduced) private var dimmed
 
     /// Which whole screen is up: a change fades (Motion), never cuts.
-    private enum Screen: Hashable { case weighIn, summary, countdown, home, prompt, session }
+    private enum Screen: Hashable { case checkin, weighIn, summary, countdown, home, prompt, session }
 
     private var screen: Screen {
+        if store.checkinFor != nil { return .checkin }
         if store.weighInFor != nil { return .weighIn }
         if store.summary != nil { return .summary }
         if store.workout == nil { return store.countdownFrom != nil ? .countdown : .home }
@@ -91,6 +92,7 @@ struct RootView: View {
     var body: some View {
         ZStack {
             switch screen {
+            case .checkin: CheckinView().transition(.opacity)
             case .weighIn: WeighInView().transition(.opacity)
             case .summary:
                 if let summary = store.summary { SummaryView(summary: summary).transition(.opacity) }

@@ -5996,4 +5996,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Eilutė tuose dviejuose puslapiuose, atidaranti šį lapą.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Paslėpta iki kitos santraukos.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Klausti ir laikrodyje",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Pradedi nuo riešo? Pirma ten trys greiti bakstelėjimai, kartą per dieną.",
 }

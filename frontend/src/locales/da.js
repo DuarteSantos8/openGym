@@ -5940,4 +5940,7 @@ export default {
   "A row on those two pages that opens this sheet.": "En række på de to sider, der åbner dette ark.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Skjult indtil næste opsummering.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Spørg også på uret",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Starter du fra håndleddet? Tre hurtige tryk der først, én gang om dagen.",
 }

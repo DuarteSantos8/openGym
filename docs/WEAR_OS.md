@@ -113,7 +113,7 @@ and numbers only):
 
 ```bash
 adb shell am start -n ch.duartesantos.opengym.test/ch.duartesantos.opengym.wear.MainActivity --es demo rest
-# start, rest, overview, metrics, media, fix, hold, summary (also summary-steel, -back, -records, -end), weighin, countdown, go, idle; --es ambient 1 for Always On
+# start, rest, overview, metrics, media, fix, hold, summary (also summary-steel, -back, -records, -end), weighin, checkin, countdown, go, idle; --es ambient 1 for Always On
 ```
 
 ## Installing
