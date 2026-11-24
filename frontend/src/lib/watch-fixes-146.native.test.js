@@ -116,3 +116,10 @@ describe('Apple Watch summary takes the crown (SideScreens.swift, #1308 / #1310)
     expect(summary).toMatch(/crown = true/)
   })
 })
+
+describe('Wear OS metrics pages turn at a quarter swipe (Screens.kt, #1288 / #1289)', () => {
+  it('the metrics pager snaps at 0.25', () => {
+    const stack = between(code(WEAR + 'ui/Screens.kt'), 'fun MetricsStack(', '\n}\n')
+    expect(stack).toMatch(/flingBehavior = PagerDefaults\.snapFlingBehavior\(state = pager, snapPositionalThreshold = 0\.25f\)/)
+  })
+})
