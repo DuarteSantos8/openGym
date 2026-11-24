@@ -108,7 +108,7 @@
     <string name="time">समय</string>
     <string name="today">आज</string>
     <string name="up_next">अगला</string>
-    <string name="up_next_set">%1$s, सेट %2$d</string>
+    <string name="up_next_set">%1$s, सेट %2$d/%3$d</string>
     <string name="volume">वॉल्यूम</string>
     <string name="waiting_sync">सिंक होने की प्रतीक्षा</string>
     <string name="warmup">वार्म-अप</string>

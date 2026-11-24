@@ -55,6 +55,7 @@
 "All sets done" = "所有组已完成";
 "measuring" = "测量中 …";
 "%@, set %lld" = "%@，第 %lld 组";
+"%@, set %lld/%lld" = "%@，第 %lld/%lld 组";
 "Calories" = "卡路里";
 "Heart rate" = "心率";
 "Hold" = "保持";

@@ -55,6 +55,7 @@
 "All sets done" = "All sets done";
 "measuring" = "measuring";
 "%@, set %lld" = "%@, set %lld";
+"%@, set %lld/%lld" = "%@, set %lld/%lld";
 "Calories" = "Calories";
 "Heart rate" = "Heart rate";
 "Hold" = "Hold";

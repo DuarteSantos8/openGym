@@ -173,3 +173,14 @@ describe('the Wear OS APK on a phone (#1359)', () => {
     expect(sh).not.toMatch(/openGym-Wear-\$VER\.apk/)
   })
 })
+
+describe('Up next shows set n/total on both watches (#1435)', () => {
+  it('Apple Watch and Wear OS count the set with its total', () => {
+    expect(code(WATCH + 'RestHold.swift')).toMatch(/set \\\(Int64\(place\.n\)\)\/\\\(Int64\(place\.of\)\)/)
+    expect(code(WEAR + 'ui/Screens.kt')).toMatch(/stringResource\(R\.string\.up_next_set, "", n, of\)/)
+  })
+  it('every Wear OS language has the three-part string, and the generator writes it', () => {
+    expect(read('../../android/wear/wear-strings.mjs')).toMatch(/up_next_set: '%@, set %lld\/%lld'/)
+    for (const lang of ['values', 'values-ko', 'values-zh']) expect(read(`../../android/wear/src/main/res/${lang}/strings.xml`)).toMatch(/name="up_next_set">[^<]*%2\$d\/%3\$d/)
+  })
+})

@@ -108,7 +108,7 @@
     <string name="time">Čas</string>
     <string name="today">Dnes</string>
     <string name="up_next">Na řadě</string>
-    <string name="up_next_set">%1$s, série %2$d</string>
+    <string name="up_next_set">%1$s, série %2$d/%3$d</string>
     <string name="volume">Objem</string>
     <string name="waiting_sync">Čeká na synchronizaci</string>
     <string name="warmup">Rozcvička</string>

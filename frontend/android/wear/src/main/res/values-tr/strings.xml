@@ -108,7 +108,7 @@
     <string name="time">Süre</string>
     <string name="today">Bugün</string>
     <string name="up_next">Sıradaki</string>
-    <string name="up_next_set">%1$s, set %2$d</string>
+    <string name="up_next_set">%1$s, set %2$d/%3$d</string>
     <string name="volume">Hacim</string>
     <string name="waiting_sync">Eşitlenmeyi bekliyor</string>
     <string name="warmup">Isınma</string>

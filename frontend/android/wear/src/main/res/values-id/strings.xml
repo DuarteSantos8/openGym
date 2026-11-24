@@ -108,7 +108,7 @@
     <string name="time">Waktu</string>
     <string name="today">Hari ini</string>
     <string name="up_next">Berikutnya</string>
-    <string name="up_next_set">%1$s, set %2$d</string>
+    <string name="up_next_set">%1$s, set %2$d/%3$d</string>
     <string name="volume">Volume</string>
     <string name="waiting_sync">Menunggu untuk disinkronkan</string>
     <string name="warmup">Pemanasan</string>

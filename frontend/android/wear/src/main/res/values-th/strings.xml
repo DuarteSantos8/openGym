@@ -108,7 +108,7 @@
     <string name="time">เวลา</string>
     <string name="today">วันนี้</string>
     <string name="up_next">ถัดไป</string>
-    <string name="up_next_set">%1$s เซ็ต %2$d</string>
+    <string name="up_next_set">%1$s เซ็ต %2$d/%3$d</string>
     <string name="volume">ปริมาณงาน</string>
     <string name="waiting_sync">รอซิงค์</string>
     <string name="warmup">วอร์มอัพ</string>

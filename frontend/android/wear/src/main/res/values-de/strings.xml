@@ -108,7 +108,7 @@
     <string name="time">Zeit</string>
     <string name="today">Heute</string>
     <string name="up_next">Als Nächstes</string>
-    <string name="up_next_set">%1$s, Satz %2$d</string>
+    <string name="up_next_set">%1$s, Satz %2$d/%3$d</string>
     <string name="volume">Volumen</string>
     <string name="waiting_sync">Wartet auf Synchronisierung</string>
     <string name="warmup">Aufwärmen</string>

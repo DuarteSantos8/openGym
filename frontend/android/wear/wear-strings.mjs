@@ -63,7 +63,7 @@ const FROM_WATCH = {
   all_done_q: 'All done?',
   // The 1.4.5 redesign: the same words as the Apple Watch's.
   exercises: 'Exercises', save: 'Save', previous_set: 'Previous set', next_set_btn: 'Next set', overview: 'Overview',
-  discard_workout_q: 'Discard workout?', up_next: 'Up next', up_next_set: '%@, set %lld', how_hard: 'How hard was that set?',
+  discard_workout_q: 'Discard workout?', up_next: 'Up next', up_next_set: '%@, set %lld/%lld', how_hard: 'How hard was that set?',
   waiting_sync: 'Waiting to sync', all_synced: 'All synced', go: 'Go!', personal_records: 'Personal records',
   quick_checkin: 'Quick check-in', save_and_start: 'Save & start workout', start_without_weighin: 'Start without weighing in',
   body_weight: 'Body weight', effort: 'Effort', hold_to_finish: 'Hold to finish', no_set_for: 'No set for %lld min. Still at it?',

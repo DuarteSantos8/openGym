@@ -108,7 +108,7 @@
     <string name="time">Idő</string>
     <string name="today">Ma</string>
     <string name="up_next">Következő</string>
-    <string name="up_next_set">%1$s, %2$d. sorozat</string>
+    <string name="up_next_set">%1$s, sorozat %2$d/%3$d</string>
     <string name="volume">Volumen</string>
     <string name="waiting_sync">Szinkronizálásra vár</string>
     <string name="warmup">Bemelegítés</string>
