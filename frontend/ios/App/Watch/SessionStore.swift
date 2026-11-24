@@ -110,6 +110,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private static let heardKey = "heardFromPhone"
     @Published private(set) var restEndsAt: Date?
     @Published private(set) var restStartedAt: Date?
+    /// The net seconds this rest was moved by −15 and +15 here (the chip after "Rest"); a new rest starts at 0.
+    @Published private(set) var restShift: TimeInterval = 0
     /// The phone paused its rest (protocol 2, `restPaused`): the countdown stands from then.
     @Published private(set) var restPausedAt: Date?
     /// How far this watch's clock is off the phone's (WatchCore ClockOffset), from snapshots that
@@ -663,7 +665,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 // snapshot or a relaunch no longer restarts the rest here).
                 self.state.restAt = f.restAt
                 self.echoOf = nil
-                self.followPhoneRest(f.action)
+                self.followPhoneRest(f.action, newRest: !ticks.isEmpty)
             } else {
                 // An older phone (no `restAt`): only a rest end the phone has not sent before: the same
                 // one again (with some other change) would undo a ±15 here, or bring back a rest skipped
@@ -869,9 +871,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard touchAllowed, let end = restEndsAt, restPausedAt == nil else { return }
         ackRestOver()
         guard let to = RestMath.minus(end: end, now: Date()) else { skipRestAndGo(); return }
-        let start = restStartedAt
+        let start = restStartedAt, shift = restShift
         startRest(until: to, notify: true)
         restStartedAt = start
+        restShift = shift + to.timeIntervalSince(end) // what it really moved: a short rest can't lose a full 15 s
         sendRest(to)
     }
 
@@ -887,14 +890,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     /// What the phone did to the rest, newer than the watch's own last change (RestMath.follow).
-    private func followPhoneRest(_ action: RestMath.Follow) {
+    /// `newRest`: the same snapshot ticked a set there, so a running rest here is not moved, it is over.
+    private func followPhoneRest(_ action: RestMath.Follow, newRest: Bool) {
         switch action {
         case .ignore, .keep:
             break
         case .run(let endMs):
             let end = Date(timeIntervalSince1970: endMs / 1000)
-            let start = restEndsAt != nil ? restStartedAt : nil
+            let start = restEndsAt != nil && !newRest ? restStartedAt : nil, shift = restShift
             startRest(until: end, notify: true)
+            if start != nil { restShift = shift } // the same rest, moved or resumed on the phone
             // Moved there (±15 on the phone): the bar keeps its start; a new rest starts now.
             if let start = start { restStartedAt = start; state.restFrom = start.timeIntervalSince1970 * 1000 }
         case .pause(let left):
@@ -1320,6 +1325,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         restEndsAt = nil
         restStartedAt = nil
         restPausedAt = nil
+        restShift = 0
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
     }
@@ -1338,6 +1344,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         closeRest(at: end)
         restEndsAt = nil
         restStartedAt = nil
+        restShift = 0
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
         if onTime { autoHoldIfDue() }
     }
@@ -1345,10 +1352,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func addRest(_ seconds: TimeInterval) {
         guard touchAllowed, let end = restEndsAt, restPausedAt == nil else { return }
         ackRestOver()
-        let start = restStartedAt
+        let start = restStartedAt, shift = restShift
         let to = end.addingTimeInterval(seconds)
         startRest(until: to, notify: true)
         restStartedAt = start
+        restShift = shift + seconds
         if let start = start { state.restFrom = start.timeIntervalSince1970 * 1000 }
         sendRest(to)
     }
@@ -1361,6 +1369,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
         restPausedAt = nil
+        restShift = 0
         guard end > Date() else {
             restEndsAt = nil; restStartedAt = nil
             if state.restEnd != nil { state.restEnd = nil; state.restFrom = nil }

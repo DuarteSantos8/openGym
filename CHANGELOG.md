@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Watches: tap +15 or -15 during a rest and a small circle next to the countdown shows the net change, "+30" or "-15" (thanks @cubetes for #1319).
 - Watches: "Up next" on the rest screen says which set out of how many, "Bench Press, set 2/4", like the set count at the top. A long name gives way before the count does (thanks @cubetes for #1435).
 - Android: the Wear OS watch APK is now called openGym-WearOS-watch-only on the release page, and if it lands on a phone anyway it says it is the watch app instead of quietly replacing the phone app. The phone's own updater never picks the watch, Offline or F-Droid APK, whatever order GitHub lists them in (#1359).
 - Apple Watch: the rest page's back button and the keypad's cross and check sit in from the rounded corners, where an Ultra cut them off, and the set count beside the heart rate shows "2/4" again instead of "..." (#1414).

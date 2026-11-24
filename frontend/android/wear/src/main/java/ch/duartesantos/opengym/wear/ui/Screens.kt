@@ -1,6 +1,10 @@
 package ch.duartesantos.opengym.wear.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.scaleIn
 import ch.duartesantos.opengym.wear.RestMath
 import ch.duartesantos.opengym.wear.Stills
 import androidx.compose.foundation.layout.offset
@@ -822,15 +826,6 @@ fun RestView(rest: Rest) {
     // Paused on the phone, the countdown stands (Rest.pausedLeft).
     val left = (rest.leftMs(now) / 1000.0).coerceAtLeast(0.0)
     val round = LocalRound.current
-    // The ±15 pill adds up quick taps for a moment; a rest's own first end is not a change.
-    var sum by remember(rest.startedAt) { mutableIntStateOf(0) }
-    var lastEnd by remember(rest.startedAt) { mutableLongStateOf(rest.endsAt) }
-    LaunchedEffect(rest.endsAt) {
-        if (rest.pausedLeft == null) sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
-        lastEnd = rest.endsAt
-        kotlinx.coroutines.delay(1_100)
-        sum = 0
-    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Round watches lose their corners: the bottom row sits higher, the extra lines go first.
         val roomy = maxHeight.value >= (if (round) 260 else 200)
@@ -861,15 +856,9 @@ fun RestView(rest: Rest) {
                         // Always On: grey, not a big lit accent (burn-in, battery), as everywhere else (#1174 review)
                         color = if (dim) Og.Text.copy(alpha = 0.75f) else tint,
                         modifier = Modifier.semantics { contentDescription = text })
-                    RestMath.pillText(sum)?.takeIf { !dim }?.let { pill ->
-                        val c = if (sum > 0) a.accent else Og.Orange
-                        Box(Modifier.align(Alignment.TopCenter).heightIn(min = 20.dp).clip(CircleShape).background(Color.Black).background(c.copy(alpha = 0.18f))
-                            .padding(horizontal = 8.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
-                            Text(pill, color = c, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
-                        }
-                    }
                 }
-                Spacer(Modifier.width(32.dp + inset))
+                // The slot that balances ‹ holds the ±15 circle: right of the digits, taking no room from them.
+                Box(Modifier.width(32.dp + inset), contentAlignment = Alignment.CenterStart) { RestShiftCircle(rest.shift) }
             }
             if (s.settings.show?.rest != "plain") {
                 val p = rest.pausedLeft
@@ -889,6 +878,33 @@ fun RestView(rest: Rest) {
                 if (!dim) EffortChips(roomy)
             }
             if (next) UpNext(roomy)
+        }
+    }
+}
+
+/** The net change made with −15 and +15 in this rest, in seconds ("+30", "−15"), a circle right of the countdown. */
+@Composable
+private fun RestShiftCircle(shift: Int) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val reduce = LocalReduceMotion.current
+    val shown = RestMath.shiftText(shift)
+    var last by remember { mutableStateOf("") }
+    if (shown != null) last = shown // the circle fades out with its last words, not empty
+    val add = shift > 0
+    val c = if (add) a.accent else Og.Text
+    Box {
+        AnimatedVisibility(shown != null,
+            enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.8f)),
+            exit = if (dim) ExitTransition.None else fadeOut(tween(if (reduce) 150 else 200))) {
+            Box(Modifier.size(32.dp).clip(CircleShape)
+                .background(if (dim) Color.Transparent else if (add) c.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.14f))
+                .border(1.5.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.4f), CircleShape)
+                .semantics { contentDescription = "$last s" }, contentAlignment = Alignment.Center) {
+                AnimatedContent(last, transitionSpec = { fadeIn(tween(if (dim) 0 else 250)) togetherWith fadeOut(tween(if (dim) 0 else 250)) }, label = "shift") { t ->
+                    Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = if (t.length > 3) 10.sp else 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
+                }
+            }
         }
     }
 }

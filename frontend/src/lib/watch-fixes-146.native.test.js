@@ -184,3 +184,11 @@ describe('Up next shows set n/total on both watches (#1435)', () => {
     for (const lang of ['values', 'values-ko', 'values-zh']) expect(read(`../../android/wear/src/main/res/${lang}/strings.xml`)).toMatch(/name="up_next_set">[^<]*%2\$d\/%3\$d/)
   })
 })
+
+describe('Watch rest: a circle with the seconds added or taken off (#1319)', () => {
+  it('both watches word the net shift the same way', () => {
+    expect(code(CORE + 'RestMath.swift')).toMatch(/static func shift\(_ net: TimeInterval\) -> String\?/)
+    expect(code(WEAR + 'WatchLogic.kt')).toMatch(/fun shiftText\(net: Int\): String\?/)
+    expect(code(WEAR + 'ui/Screens.kt')).toMatch(/RestShiftCircle\(rest\.shift\)/)
+  })
+})
