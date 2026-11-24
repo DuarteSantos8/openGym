@@ -1,5 +1,6 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  "Sign-in is only available on the server’s configured website.": "Bạn chỉ có thể đăng nhập trên trang web được cấu hình cho máy chủ này.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Đồng hồ",
   "Set once": "Đặt một lần",

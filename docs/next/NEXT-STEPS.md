@@ -56,7 +56,8 @@ Epic status:
 - **Linked account deletion:** ADR 0014 proposes fresh OIDC confirmation and server training deletion before hosted identity deletion. Check it with a disposable hosted account after deployment.
 
 - **In review: `next/EP19-hosted-mcp`.** The optional hosted MCP service and preview routing are prepared. Provisioning needs owner approval and external connectors need a reachable HTTPS address.
-- **In review: `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
+- **Merged (#85): `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
+- **OIDC follow-up:** Explain when the current website has no sign-in or guest path, and keep the provider row in native Settings.
 
 ## 2. Merging (only the owner merges)
 

@@ -1,5 +1,6 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "Csak az ehhez a szerverhez beállított webhelyen lehet bejelentkezni.",
   "Check the amount and calculated totals.": "Ellenőrizd a mennyiséget és a kiszámított összegeket.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Beállítva ezen a szerveren. A kapcsolatot csak a Keresés választásakor ellenőrizzük.",
   "Connect this phone to a server to look up food.": "Csatlakoztasd ezt a telefont egy szerverhez az élelmiszerek kereséséhez.",

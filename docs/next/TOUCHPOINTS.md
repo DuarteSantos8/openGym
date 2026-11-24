@@ -64,3 +64,6 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/server.js`, `api/oidc/config.js` | `next/EP19-oidc-origin-guard` | API config | Reports the callback origin with OIDC configuration. |
 | `frontend/src/views/Login.jsx`, `frontend/src/lib/oidc.js` | `next/EP19-oidc-origin-guard` | Browser sign-in | Offers provider sign-in only where the callback can complete. |
 | `api/test/server-oidc.test.js`, `frontend/src/views/Login.oidc.test.jsx` | `next/EP19-oidc-origin-guard` | Tests | Cover the advertised origin and the two browser outcomes. |
+| `frontend/src/views/Login.jsx` | `next/EP19-oidc-signin-followups` | +1 | Explains unavailable sign-in when guest use is off. |
+| `frontend/src/components/OidcAccount.jsx` | `next/EP19-oidc-signin-followups` | +2 -1 | Preserves the provider row on native builds. |
+| 25 files in `frontend/src/locales/` | `next/EP19-oidc-signin-followups` | +25 | Translates the browser sign-in explanation. |

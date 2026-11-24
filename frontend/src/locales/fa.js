@@ -1,5 +1,6 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  "Sign-in is only available on the server’s configured website.": "ورود فقط در وب‌سایتی که برای این سرور تنظیم شده است امکان‌پذیر است.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",
   "Set once": "یک‌بار تنظیم",

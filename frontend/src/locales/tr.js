@@ -1,5 +1,6 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "Yalnızca bu sunucu için yapılandırılan web sitesinden giriş yapabilirsin.",
   "Check the amount and calculated totals.": "Miktarı ve hesaplanan toplamları kontrol et.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Bu sunucuda yapılandırılmış. Bağlantı yalnızca Sorgula seçildiğinde kontrol edilir.",
   "Connect this phone to a server to look up food.": "Yiyecek sorgulamak için bu telefonu bir sunucuya bağla.",

@@ -1,5 +1,6 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sign-in is only available on the server’s configured website.": "이 서버에 설정된 웹사이트에서만 로그인할 수 있습니다.",
   "Check the amount and calculated totals.": "양과 계산된 합계를 확인하세요.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "이 서버에 설정되어 있습니다. 조회를 선택할 때만 연결을 확인합니다.",
   "Connect this phone to a server to look up food.": "식품을 조회하려면 이 휴대폰을 서버에 연결하세요.",
