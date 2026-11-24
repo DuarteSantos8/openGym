@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Apple Watch and Garmin: a workout you paused on the phone is never ended as forgotten, and on the Apple Watch the heart-rate session rests with it. One sat paused for 50 minutes and was ended for you (#1449, #1467, thanks @cubetes for #1450).
 - Fixed: on Android, a rest that was already over by the time its countdown started could crash the app. The countdown card now always shows up before it goes away again (#1453, thanks @cubetes for #1454).
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).
 - Garmin: supersets no longer stall on "Next exercise is on its way from your phone". The watch gets the next superset before you reach it, and when it does have to wait, it asks the phone again within seconds instead of minutes (#1295).

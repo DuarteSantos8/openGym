@@ -503,10 +503,12 @@ export function phoneActiveAt (A) {
  * Whether a finish from the watch is stale: the phone has logged the workout past the moment the
  * watch ended it (its `at`, the last set the watch knew of for an idle finish), or, for an idle
  * finish (`idle: true`), the phone was worked on in the last 20 minutes. The phone keeps the
- * workout running then. A watch built before `idle` existed sends an idle finish at its last set,
- * which the first rule catches too.
+ * workout running then, and for any idle finish of a workout paused here. A watch built before
+ * `idle` existed sends an idle finish at its last set, which the first rule catches too.
  */
 export function staleWatchFinish (A, ev, now = Date.now()) {
+  // Paused here on purpose (#1449): never forgotten, even by a watch that missed the pause.
+  if (ev?.idle === true && num(A?.pausedAt)) return true
   const worked = phoneWorkedAt(A)
   if (!worked) return false
   const at = num(ev?.at)

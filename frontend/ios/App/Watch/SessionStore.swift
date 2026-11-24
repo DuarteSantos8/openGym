@@ -198,6 +198,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     guard let self = self, self.state.workout?.id == w.id else { return }
                     if !SensorPlan.idle(w, seen: nil, now: Date().timeIntervalSince1970 * 1000, busy: false) {
                         self.health.start(workoutId: w.id, type: w.healthType)
+                        // Paused on the phone (#976): the new session rests too.
+                        if self.workoutPausedAt != nil { self.health.pause() }
                     }
                     self.armIdleCheck()
                     // `state = saved` above ran in init, where its didSet does not: the forgotten-
@@ -623,7 +625,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.summary = nil
                 self.health.start(workoutId: next.workout?.id, type: next.workout?.healthType)
             }
-            if next.workout != nil && next.workout != before.workout { self.noteActivity() }
+            if next.workout != nil && next.workout != before.workout {
+                // Paused on the phone (#976): the sensor rests too, as in Apple's own Workout. Not
+                // noteActivity, which would resume it first. The snapshot that resumes the workout
+                // changes it again, and noteActivity picks the session up.
+                if self.workoutPausedAt != nil { self.health.pause() } else { self.noteActivity() }
+            }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
             let ticks = SessionCore.phoneTicks(before.workout, next.workout)
             for tick in ticks {
@@ -1145,7 +1152,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
         idleMinutes = max(0, SafeNum.int((now - since) / 60000))
         let rules = idleRules
-        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt) {
+        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) {
         case .active:
             // Something happened since (a set on the phone): the card goes away by itself.
             if askDone { askDone = false }
@@ -1213,8 +1220,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let now = Date().timeIntervalSince1970 * 1000
         let rules = idleRules
         // Past ending but the phone could not be asked: the workout stays, the sensor rests until the next activity.
-        if Idle.sensorRests(since: since, now: now, reply: reply, rules: rules, leftAt: w.leftGymAt) { health.pause() }
-        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt) {
+        if Idle.sensorRests(since: since, now: now, reply: reply, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) { health.pause() }
+        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) {
         case .active:
             askDone = false
         case .ask:

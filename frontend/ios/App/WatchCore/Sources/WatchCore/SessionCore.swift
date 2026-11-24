@@ -587,9 +587,14 @@ enum Idle: Equatable {
         [lastSet, seen ?? 0, activity ?? 0, snooze ?? 0].max() ?? lastSet
     }
 
+    /// Paused on the phone on purpose (#976): the lifter is away by choice, so never forgotten.
+    static func isPaused(_ w: ActiveWorkout) -> Bool { (w.pausedAt ?? 0) > 0 }
+
     /// `since`: the last thing that counts (the last set, or a "keep going" answered since).
     /// `leftAt`: the phone left the gym then (asked at once if after `since`).
-    static func state(since: Double, now: Double, rules: Rules = .older, leftAt: Double? = nil) -> Idle {
+    /// `paused`: the workout is paused (`isPaused`): nothing to ask or end, as on the phone and on Wear OS.
+    static func state(since: Double, now: Double, rules: Rules = .older, leftAt: Double? = nil, paused: Bool = false) -> Idle {
+        if paused { return .active }
         if rules.leaveGym, let left = leftAt, left > since {
             return now >= left + rules.grace ? .end : .left
         }
@@ -633,14 +638,14 @@ enum Idle: Equatable {
     ///   no answer (out of reach, no reply)       ask, never end: the lifter decides
     ///   the phone runs another workout, or none  end: nothing of this one goes on there
     ///   the phone used it since                  counted from then, like a set logged here
-    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil) -> Idle {
-        let alone = state(since: since, now: now, rules: rules, leftAt: leftAt)
+    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil, paused: Bool = false) -> Idle {
+        let alone = state(since: since, now: now, rules: rules, leftAt: leftAt, paused: paused)
         guard alone == .end else { return alone }
         let asking: Idle = (rules.leaveGym && (leftAt ?? 0) > since) ? .left : .ask
         guard let r = reply else { return asking }
         guard r.wid != nil, r.wid == wid else { return .end }
         let later = max(since, r.activeAt ?? 0)
-        return state(since: later, now: now, rules: rules, leftAt: leftAt)
+        return state(since: later, now: now, rules: rules, leftAt: leftAt, paused: paused)
     }
 }
 

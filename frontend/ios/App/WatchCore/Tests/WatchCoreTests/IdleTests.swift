@@ -181,6 +181,25 @@ final class IdleTests: XCTestCase {
         XCTAssertEqual(left?["left"] as? Bool, true)
     }
 
+    /* #976: paused on the phone on purpose, the phone's own check and the Wear watch skip it. */
+
+    func testAWorkoutPausedOnThePhoneIsNeverForgotten() {
+        var w = workout(start: 0, ats: [3 * min])
+        XCTAssertFalse(Idle.isPaused(w))
+        w.pausedAt = 5 * min
+        XCTAssertTrue(Idle.isPaused(w))
+        w.pausedAt = 0
+        XCTAssertFalse(Idle.isPaused(w), "a zero stamp is not a pause")
+        let rules = Idle.Rules(askAfter: 20 * min, grace: 5 * min, leaveGym: true)
+        XCTAssertEqual(Idle.state(since: 0, now: 600 * min, rules: rules), .end, "running: ended")
+        XCTAssertEqual(Idle.state(since: 0, now: 600 * min, rules: rules, paused: true), .active)
+        XCTAssertEqual(Idle.state(since: 0, now: 600 * min, rules: rules, leftAt: 10 * min, paused: true), .active, "also after leaving the gym")
+        // The phone answers with the same workout and its old activeAt: still not ended.
+        let reply = Idle.PhoneReply(wid: "w1", activeAt: 4 * min)
+        XCTAssertEqual(Idle.verdict(since: 0, now: 600 * min, wid: "w1", reply: reply, rules: rules, paused: true), .active)
+        XCTAssertEqual(Idle.verdict(since: 0, now: 600 * min, wid: "w1", reply: reply, rules: rules), .end)
+    }
+
     func testTheNewFieldsAreOptionalBothWays() throws {
         let json = #"{"id":"w1","name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[],"leftGymAt":4321}"#
         XCTAssertEqual(try JSONDecoder().decode(ActiveWorkout.self, from: Data(json.utf8)).leftGymAt, 4321)
