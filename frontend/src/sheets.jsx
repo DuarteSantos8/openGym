@@ -2610,8 +2610,6 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // And the rest into the next exercise (D#487): the profile's, else like the work sets.
   const nextAll = typeof st.nextRestSec === 'number' ? st.nextRestSec : null
   const nextLikeAll = nextAll === null ? t('Like the work sets') : t('Default ({0})', nextAll > 0 ? fmtRest(nextAll) : t('No timer'))
-  // A hold's switch-sides pause when it has none of its own (Workout.jsx SWITCH_SIDES_SEC).
-  const sideDefault = t('Default ({0})', fmtRest(10))
   // No rest of its own: the default rest timer's, which may itself be off.
   const restLikeAll = t('Default ({0})', fmtRest(st.restSec))
   // A catalogue cardio exercise logs intervals by default, but it can be counted in sets x reps
@@ -2640,6 +2638,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
+  // The break between sides without one of its own: a hold's switch pause (Workout.jsx
+  // SWITCH_SIDES_SEC), a reps set's the profile's when Settings has one, else none.
+  const sideAll = Math.round(Number(st.sideRestSec)) || 0
+  const sideMenu = mode === 'time' || sideAll > 0
+  const sideDefault = t('Default ({0})', fmtRest(mode === 'time' ? 10 : sideAll))
   // Bands per set (lib/bands.js): the exercise's own say lives in S.bandEx, for every slot of it.
   const bandsByEq = usesBands({}, ex.id)
   const bandsOn = mode === 'reps' && usesBands(live, ex.id)
@@ -2735,7 +2738,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     const withSetRests = {
       ...(c.warmupRestOff === true ? { warmupRestOff: true } : c.warmupRestSec > 0 ? { warmupRestSec: Math.round(c.warmupRestSec) } : {}),
       ...withNext,
-      ...(perSide && mode === 'time' && c.sideRestOff === true ? { sideRestOff: true }
+      ...(perSide && sideMenu && c.sideRestOff === true ? { sideRestOff: true }
         : perSide && c.sideRestSec > 0 ? { sideRestSec: Math.round(c.sideRestSec) } : {}),
       // Holds that start by themselves, this exercise's own say (lib/auto-holds.js autoHoldsFor):
       // written only when picked, so every other hold follows Settings.
@@ -2981,16 +2984,17 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {!cardio && perSide && <>
       <div className="sect-b cfg-rest" style={{ marginBottom: 6 }}>
         {/* A reps set has no break by default, so 0:00 on the wheel is its "no timer". A hold's
-            default is the 10 s switch, so it gets the warm-ups' three choices to turn it off (#636). */}
+            default is the 10 s switch, and a reps set's the profile's break when Settings has one,
+            so those get the warm-ups' three choices to turn it off (#636). */}
         <Row icon="sides" iconTint="var(--blue)" title={t('Rest between sides')} accessory="chevron"
-          value={mode === 'time' && c.sideRestOff === true ? t('No timer') : c.sideRestSec > 0 ? fmtRest(c.sideRestSec) : mode === 'time' ? sideDefault : t('No timer')}
-          onClick={() => mode === 'time' ? menuSheet({
+          value={sideMenu && c.sideRestOff === true ? t('No timer') : c.sideRestSec > 0 ? fmtRest(c.sideRestSec) : sideMenu ? sideDefault : t('No timer')}
+          onClick={() => sideMenu ? menuSheet({
             title: t('Rest between sides'),
             items: [
               { icon: 'timer', label: sideDefault, on: c.sideRestOff !== true && !(c.sideRestSec > 0), onClick: () => setC(x => { const { sideRestOff, sideRestSec, ...rest } = x; return rest }) },
               { icon: 'pause', label: t('No timer'), on: c.sideRestOff === true, onClick: () => setC(x => { const { sideRestSec, ...rest } = x; return { ...rest, sideRestOff: true } }) },
               { icon: 'clock', label: t('Pick a time'), on: c.sideRestOff !== true && c.sideRestSec > 0, onClick: () => durationSheet({
-                title: t('Rest between sides'), value: c.sideRestSec > 0 ? c.sideRestSec : 10, max: REST_MAX, off: t('No timer'),
+                title: t('Rest between sides'), value: c.sideRestSec > 0 ? c.sideRestSec : mode === 'time' ? 10 : sideAll, max: REST_MAX, off: t('No timer'),
                 onDone: v => setC(x => { const { sideRestOff, sideRestSec, ...rest } = x; return v > 0 ? { ...rest, sideRestSec: v } : { ...rest, sideRestOff: true } }),
               }) },
             ],

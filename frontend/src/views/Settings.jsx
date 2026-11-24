@@ -584,6 +584,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       ],
     })} />
 
+  // The break between the two sides of a per-side reps set for every exercise without its own.
+  // Absent or 0 is off, none as before (#636); a hold keeps its switch pause (lib/supersetFlow.js sideRestFor).
+  const sideRestRow = <Row icon="sides" iconTint="var(--blue)" title={t('Rest between sides')} value={S.sideRestSec > 0 ? fmtRest(S.sideRestSec) : t('Off')} accessory="chevron"
+    subtitle={t('For reps done one side at a time. A hold keeps its short pause to switch sides.')}
+    onClick={() => durationSheet({
+      title: t('Rest between sides'), value: S.sideRestSec > 0 ? S.sideRestSec : 0, max: REST_MAX, off: t('Off'),
+      onDone: v => update(s => { if (v > 0) s.sideRestSec = v; else delete s.sideRestSec }),
+    })} />
+
   const pages = {
     modules: () => <ModulesPage />,
     watches: () => <Section>{WATCH_PAGES.filter(id => pageVisible(id, ctx)).map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint}
@@ -622,6 +631,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {restRow}
         {warmupRestRow}
         {nextRestRow}
+        {sideRestRow}
         {restPauseRow}
       </Section>
       <Section title={t('Logging')}>

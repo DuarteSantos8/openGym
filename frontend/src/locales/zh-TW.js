@@ -4721,6 +4721,7 @@ export default {
   "Level {0}": "阻力 {0} 段",
   "Rest before the next exercise": "下一個動作前的休息",
   "After the last set of an exercise, while you walk to the next machine.": "一個動作的最後一組之後，走去下一台器材的時間。",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "用於一次做一側的次數訓練。支撐動作保留它換邊用的短暫停頓。",
   "The break after this exercise’s last set, to change machines before the next one.": "這個動作最後一組之後的休息，好在下一個動作前換器材。",
   "Archive": "封存",
   "Folder": "資料夾",

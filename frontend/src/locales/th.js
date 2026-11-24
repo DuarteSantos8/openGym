@@ -4739,6 +4739,7 @@ export default {
   "Level {0}": "ระดับ {0}",
   "Rest before the next exercise": "พักก่อนท่าถัดไป",
   "After the last set of an exercise, while you walk to the next machine.": "หลังเซ็ตสุดท้ายของท่า ระหว่างเดินไปเครื่องถัดไป",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "สำหรับครั้งที่ทำทีละข้าง ท่าค้างยังคงมีช่วงพักสั้น ๆ ไว้สลับข้าง",
   "The break after this exercise’s last set, to change machines before the next one.": "ช่วงพักหลังเซ็ตสุดท้ายของท่านี้ เพื่อย้ายเครื่องก่อนท่าถัดไป",
   "Archive": "คลัง",
   "Folder": "โฟลเดอร์",

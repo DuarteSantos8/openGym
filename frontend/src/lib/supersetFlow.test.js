@@ -174,6 +174,17 @@ describe('set-specific rests (Discord: rest for warm-ups and between sides)', ()
     expect(sideRestFor({ sideRestOff: true, sideRestSec: 20 }, { timed: true, restAfter: 90, switchSec: 10 })).toBeNull()
     for (const v of [false, 'true', 1]) expect(sideRestFor({ sideRestOff: v }, { timed: true, restAfter: 90, switchSec: 10 })).toBe(10)
   })
+  it('the profile\'s break between sides: a reps set without its own, off unless set', () => {
+    for (const v of [undefined, null, 0, -5, 'x']) expect(sideRestFor({}, { timed: false, profileSec: v }), String(v)).toBeNull()
+    expect(sideRestFor({}, { timed: false, profileSec: 15 })).toBe(15)
+    expect(sideRestFor({ sideRestSec: 20 }, { timed: false, profileSec: 15 })).toBe(20)
+    expect(sideRestFor({ sideRestOff: true }, { timed: false, profileSec: 15 })).toBeNull()
+    expect(sideRestFor({}, { timed: false, ownSec: 30, profileSec: 15 })).toBe(30)
+    expect(sideRestFor({}, { timed: false, ownSec: 0, profileSec: 15 })).toBeNull()
+    // a hold keeps its switch pause
+    expect(sideRestFor({}, { timed: true, restAfter: 90, switchSec: 10, profileSec: 15 })).toBe(10)
+    expect(sideRestFor({}, { timed: true, restAfter: 0, switchSec: 10, profileSec: 15 })).toBeNull()
+  })
 })
 
 describe('warmupRestSecFor', () => {

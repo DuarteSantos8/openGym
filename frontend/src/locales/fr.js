@@ -4728,6 +4728,7 @@ export default {
   "Level {0}": "Niveau {0}",
   "Rest before the next exercise": "Repos avant l’exercice suivant",
   "After the last set of an exercise, while you walk to the next machine.": "Après la dernière série d’un exercice, le temps d’aller à la machine suivante.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Pour les répétitions faites un côté à la fois. Un maintien garde sa courte pause pour changer de côté.",
   "The break after this exercise’s last set, to change machines before the next one.": "La pause après la dernière série de cet exercice, pour changer de machine avant le suivant.",
   "Archive": "Archives",
   "Folder": "Dossier",

@@ -4783,6 +4783,7 @@ export default {
   "Level {0}": "المستوى {0}",
   "Rest before the next exercise": "راحة قبل التمرين التالي",
   "After the last set of an exercise, while you walk to the next machine.": "بعد آخر مجموعة من التمرين، وأنت في طريقك إلى الجهاز التالي.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "لتكرارات تُؤدّى جانبًا تلو الآخر. التثبيت يحتفظ بتوقّفه القصير لتبديل الجانب.",
   "The break after this exercise’s last set, to change machines before the next one.": "الاستراحة بعد آخر مجموعة من هذا التمرين، لتنتقل إلى جهاز آخر قبل التالي.",
   "Archive": "الأرشيف",
   "Folder": "مجلد",

@@ -4728,6 +4728,7 @@ export default {
   "Level {0}": "लेवल {0}",
   "Rest before the next exercise": "अगली एक्सरसाइज़ से पहले आराम",
   "After the last set of an exercise, while you walk to the next machine.": "किसी एक्सरसाइज़ के आख़िरी सेट के बाद, जब आप अगली मशीन तक जाते हैं।",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "एक-एक तरफ़ से किए जाने वाले रेप्स के लिए। होल्ड में तरफ़ बदलने का छोटा ठहराव बना रहता है।",
   "The break after this exercise’s last set, to change machines before the next one.": "इस एक्सरसाइज़ के आख़िरी सेट के बाद का ब्रेक, अगली से पहले मशीन बदलने के लिए।",
   "Archive": "आर्काइव",
   "Folder": "फ़ोल्डर",

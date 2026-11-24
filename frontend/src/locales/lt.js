@@ -4724,6 +4724,7 @@ export default {
   "Level {0}": "{0} lygis",
   "Rest before the next exercise": "Poilsis prieš kitą pratimą",
   "After the last set of an exercise, while you walk to the next machine.": "Po paskutinio pratimo serijos, kol einate prie kito treniruoklio.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Pakartojimams, atliekamiems po vieną pusę. Laikymas pasilieka savo trumpą pauzę pusei pakeisti.",
   "The break after this exercise’s last set, to change machines before the next one.": "Pertrauka po paskutinės šio pratimo serijos, kad spėtumėte pereiti prie kito treniruoklio.",
   "Archive": "Archyvas",
   "Folder": "Aplankas",

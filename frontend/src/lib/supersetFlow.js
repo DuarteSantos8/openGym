@@ -190,12 +190,16 @@ export function ownSetRest(row) {
  * is "no timer" for a hold that wants its switch pause gone but keeps its set rest (#636).
  * `ownSec` is the set's own rest from its menu (ownSetRest, #609): given, it is this one set's
  * pause between its sides too (0 = none), before anything the exercise says (#853).
+ * `profileSec` is the profile's break for a reps set without one of its own (Settings, off when
+ * absent or 0); a hold keeps its switch pause.
  */
-export function sideRestFor(target, { timed, restAfter, switchSec, ownSec = null }) {
+export function sideRestFor(target, { timed, restAfter, switchSec, ownSec = null, profileSec = null }) {
   if (typeof ownSec === 'number' && Number.isFinite(ownSec) && ownSec >= 0) return ownSec > 0 ? Math.round(ownSec) : null
   if (target?.sideRestOff === true) return null
   const own = Math.round(Number(target?.sideRestSec)) || 0
   if (own > 0) return own
+  const all = Math.round(Number(profileSec)) || 0
+  if (!timed && all > 0) return all
   if (timed && restAfter > 0) return Math.min(switchSec, restAfter)
   return null
 }

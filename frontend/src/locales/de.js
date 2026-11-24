@@ -2636,7 +2636,7 @@ export default {
   'Like the work sets': 'Wie die Arbeitssätze',
   'No timer': 'Kein Timer',
   'Pick a time': 'Zeit wählen',
-  'Rest between sides': 'Pause zwischen den Seiten',
+  'Rest between sides': 'Pause beim Seitenwechsel',
   'Rest between warm-ups': 'Aufwärmpausen',
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'Aufwärmsätze sind leicht, da reicht weniger Pause oder gar keine. Der letzte bekommt trotzdem die volle Pause vor dem ersten Arbeitssatz.',
   // --- progress photos for any day (#557) ---
@@ -4748,6 +4748,7 @@ export default {
   "Level {0}": "Stufe {0}",
   "Rest before the next exercise": "Pause vor der nächsten Übung",
   "After the last set of an exercise, while you walk to the next machine.": "Nach dem letzten Satz einer Übung, während du zum nächsten Gerät gehst.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Für Wiederholungen, die du Seite für Seite machst. Eine Haltezeit behält ihre kurze Pause zum Seitenwechsel.",
   "The break after this exercise’s last set, to change machines before the next one.": "Die Pause nach dem letzten Satz dieser Übung, um vor der nächsten das Gerät zu wechseln.",
   "Archive": "Archiv",
   "Folder": "Ordner",

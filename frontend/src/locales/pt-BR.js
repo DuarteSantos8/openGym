@@ -3830,6 +3830,7 @@ export const PT_BR_OVERRIDES = {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minutos por semana é o número que as dicas de saúde não param de repetir. Escolha o seu, ou nenhum.",
   "Cardio this week": "Cardio nesta semana",
   "After the last set of an exercise, while you walk to the next machine.": "Depois da última série de um exercício, enquanto você vai para o próximo aparelho.",
+  "For reps done one side at a time. A hold keeps its short pause to switch sides.": "Para repetições feitas um lado de cada vez. Uma isometria mantém sua pausa curta para trocar de lado.",
   "The break after this exercise’s last set, to change machines before the next one.": "A pausa depois da última série deste exercício, para trocar de aparelho antes do próximo.",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Agrupe rotinas por bloco ou por objetivo. As antigas vão para Arquivo, que fica fechado.",
   "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Seus exercícios podem se mexer a {0} px em vez de {1} px, nítidos nesta tela.",

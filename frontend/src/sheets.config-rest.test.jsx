@@ -219,4 +219,18 @@ describe('exercise settings: rest for warm-ups and between sides', () => {
     act(() => save(host2))
     expect('sideRestOff' in reps.mock.calls[0][0]).toBe(false)
   })
+
+  it('with a profile break between sides, a reps set reads it as Default and can turn it off', () => {
+    useStore.setState(s => ({ S: { ...s.S, sideRestSec: 15 } }))
+    const onSave = vi.fn()
+    exConfigSheet(ex, { sets: 3, reps: 10, weight: 40, mode: 'reps', side: true }, onSave)
+    const host = render(useUI.getState().sheets.at(-1))
+    expect(row(host, 'Rest between sides').querySelector('.lrow-v').textContent).toBe('Default (15s)')
+    act(() => row(host, 'Rest between sides').click())
+    pick(render(lastMenuItems()), 'No timer')
+    expect(row(host, 'Rest between sides').querySelector('.lrow-v').textContent).toBe('No timer')
+    act(() => save(host))
+    expect(onSave.mock.calls[0][0]).toMatchObject({ mode: 'reps', side: true, sideRestOff: true })
+    useStore.setState(s => { const { sideRestSec, ...rest } = s.S; return { S: rest } })
+  })
 })
