@@ -210,6 +210,7 @@ export const SEARCH = [
   { page: 'alerts', title: 'Vibrate', icon: 'vibrate', tint: 'var(--indigo)', kw: 'vibrate vibration haptic haptics buzz' },
   { page: 'alerts', title: 'Vibrate on silent too', icon: 'vibrate', tint: 'var(--indigo)', kw: 'alarm silent vibrate android', when: c => c.mobile && c.android && c.canVibrate && c.vibrate },
   { page: 'alerts', title: 'Flash the screen', icon: 'sun', tint: 'var(--yellow)', kw: 'flash light blink screen' },
+  { page: 'alerts', title: 'Light up the screen at rest end', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake screen lock locked light up display dark pocket battery rest end', when: c => c.android },
   { page: 'alerts', title: 'Spoken cues', icon: 'chat', tint: 'var(--teal)', kw: 'voice speak speech talk tts announce next set countdown read aloud audio' },
   { page: 'alerts', title: 'Voice', icon: 'chat', tint: 'var(--teal)', kw: 'voice voices speech style lines clips', when: c => c.spokenCues },
   // Timer alerts → Voice

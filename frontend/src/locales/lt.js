@@ -5988,4 +5988,7 @@ export default {
   "Add one weight:": "Pridėti vieną svorį:",
   "Or fill in a whole run, lightest to heaviest:": "Arba užpildyk visą eilę, nuo lengviausio iki sunkiausio:",
   "Up to ({0})": "Iki ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Įjungti ekraną poilsio pabaigoje",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Išjungus užrakintas telefonas lieka tamsus. Vibracija ir garsas vis tiek ateina.",
 }

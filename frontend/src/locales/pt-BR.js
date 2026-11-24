@@ -4407,6 +4407,9 @@ export const PT_BR_OVERRIDES = {
   "Hidden until the next recap.": "Oculto até o próximo resumo.",
   // --- Weight stack: one weight or a run up to the top (#1163) ---
   "Or fill in a whole run, lightest to heaviest:": "Ou preencha uma série inteira, do mais leve ao mais pesado:",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Acender a tela no fim do descanso",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Desligado, um celular bloqueado fica no escuro. A vibração e o som continuam.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

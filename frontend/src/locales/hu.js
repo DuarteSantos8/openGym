@@ -5995,4 +5995,7 @@ export default {
   "Add one weight:": "Egy súly hozzáadása:",
   "Or fill in a whole run, lightest to heaviest:": "Vagy tölts ki egy teljes sort, a legkönnyebbtől a legnehezebbig:",
   "Up to ({0})": "Eddig ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Kapcsold be a kijelzőt a pihenő végén",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Kikapcsolva a zárolt telefon sötét marad. A rezgés és a hang továbbra is jön.",
 }

@@ -5958,4 +5958,7 @@ export default {
   "Add one weight:": "Přidat jednu váhu:",
   "Or fill in a whole run, lightest to heaviest:": "Nebo vyplň celou řadu, od nejlehčí po nejtěžší:",
   "Up to ({0})": "Až do ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Rozsvítit displej na konci pauzy",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Vypnuto: zamčený telefon zůstane zhasnutý. Vibrace a zvuk přijdou dál.",
 }

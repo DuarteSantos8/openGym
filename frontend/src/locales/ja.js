@@ -5924,4 +5924,7 @@ export default {
   "Add one weight:": "重量を1つ追加:",
   "Or fill in a whole run, lightest to heaviest:": "または軽い順に一括入力:",
   "Up to ({0})": "最大 ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "休憩の終わりに画面を点灯",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "オフにするとロック中の画面は暗いまま。振動と音はそのまま鳴ります。",
 }

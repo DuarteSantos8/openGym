@@ -255,6 +255,19 @@ public final class RestAlert {
         }
     }
 
+    /**
+     * Settings → Light up the screen at rest end (#1475). On disk, not in the alarm's intent: the
+     * end can ring from the countdown, a moved alarm or a rest the workout card started, with the
+     * page asleep or the process gone. On unless the page said off.
+     */
+    static void setLightScreen(Context ctx, boolean on) {
+        ctx.getSharedPreferences(LAST_PREFS, Context.MODE_PRIVATE).edit().putBoolean("lightScreen", on).apply();
+    }
+
+    private static boolean lightScreen(Context ctx) {
+        return ctx.getSharedPreferences(LAST_PREFS, Context.MODE_PRIVATE).getBoolean("lightScreen", true);
+    }
+
     public static void setAccentColor(int accent, int ink) {
         lastAccent = accent;
         lastInk = ink;
@@ -365,7 +378,7 @@ public final class RestAlert {
                 if (inFront || pageRang(at)) stopCountdown(ctx);
                 return;
             }
-            pokeScreen(ctx);
+            if (lightScreen(ctx)) pokeScreen(ctx);
             boolean vibrate = intent.getBooleanExtra("vibrate", true);
             boolean alarmBuzz = vibrate && intent.getBooleanExtra("alarmBuzz", false);
             boolean shown = showNotification(ctx, intent, alarmBuzz);

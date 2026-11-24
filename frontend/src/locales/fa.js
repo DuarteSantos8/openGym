@@ -5958,4 +5958,7 @@ export default {
   "Add one weight:": "یک وزنه اضافه کن:",
   "Or fill in a whole run, lightest to heaviest:": "یا یک ردیف کامل، از سبک‌ترین تا سنگین‌ترین:",
   "Up to ({0})": "تا ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "روشن‌کردن صفحه در پایان استراحت",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "خاموش: گوشی قفل‌شده تاریک می‌ماند. لرزش و صدا همچنان می‌آیند.",
 }

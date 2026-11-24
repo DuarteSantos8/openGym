@@ -5992,4 +5992,7 @@ export default {
   "Add one weight:": "Tek bir ağırlık ekle:",
   "Or fill in a whole run, lightest to heaviest:": "Ya da hafiften ağıra bütün bir sırayı doldur:",
   "Up to ({0})": "En fazla ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Dinlenme bitince ekranı aç",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Kapalıyken kilitli telefon karanlık kalır. Titreşim ve ses yine gelir.",
 }

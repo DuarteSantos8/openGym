@@ -5958,5 +5958,8 @@ export default {
   "Add one weight:": "Thêm một mức tạ:",
   "Or fill in a whole run, lightest to heaviest:": "Hoặc điền cả dãy, từ nhẹ nhất đến nặng nhất:",
   "Up to ({0})": "Đến ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Bật sáng màn hình khi hết nghỉ",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Tắt: điện thoại đang khóa vẫn tối. Rung và âm thanh vẫn có.",
 }
 ;

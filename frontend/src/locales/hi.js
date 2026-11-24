@@ -5992,4 +5992,7 @@ export default {
   "Add one weight:": "एक वज़न जोड़ें:",
   "Or fill in a whole run, lightest to heaviest:": "या पूरी कतार भरें, सबसे हल्के से सबसे भारी तक:",
   "Up to ({0})": "तक ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "आराम ख़त्म होने पर स्क्रीन जलाएँ",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "बंद होने पर लॉक फ़ोन अंधेरा रहता है। कंपन और आवाज़ फिर भी आते हैं।",
 }

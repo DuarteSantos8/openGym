@@ -5989,4 +5989,7 @@ export default {
   "Add one weight:": "Додати одну вагу:",
   "Or fill in a whole run, lightest to heaviest:": "Або заповни весь ряд, від легкого до важкого:",
   "Up to ({0})": "До ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Вмикати екран наприкінці відпочинку",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Вимк.: заблокований телефон лишається темним. Вібрація і звук усе одно будуть.",
 }

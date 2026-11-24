@@ -6003,4 +6003,7 @@ export default {
   "Add one weight:": "เพิ่มน้ำหนักทีละค่า:",
   "Or fill in a whole run, lightest to heaviest:": "หรือกรอกทั้งชุด จากเบาสุดถึงหนักสุด:",
   "Up to ({0})": "ถึง ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "เปิดหน้าจอเมื่อพักเสร็จ",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "ปิดไว้ โทรศัพท์ที่ล็อกจะมืดอยู่ ส่วนการสั่นและเสียงยังมาเหมือนเดิม",
 }

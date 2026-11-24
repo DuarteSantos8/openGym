@@ -5992,4 +5992,7 @@ export default {
   "Add one weight:": "Dodaj jeden ciężar:",
   "Or fill in a whole run, lightest to heaviest:": "Albo uzupełnij cały ciąg, od najlżejszego do najcięższego:",
   "Up to ({0})": "Do ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Włącz ekran na koniec przerwy",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Wyłączone: zablokowany telefon zostaje ciemny. Wibracja i dźwięk nadal przychodzą.",
 }

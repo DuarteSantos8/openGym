@@ -6039,4 +6039,7 @@ export default {
   "Add one weight:": "Lägg till en vikt:",
   "Or fill in a whole run, lightest to heaviest:": "Eller fyll i en hel serie, från lättast till tyngst:",
   "Up to ({0})": "Upp till ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Tänd skärmen när vilan är slut",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Av: en låst telefon förblir mörk. Vibration och ljud kommer ändå.",
 }

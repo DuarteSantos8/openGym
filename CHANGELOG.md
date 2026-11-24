@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Android: Settings → Alerts → Light up the screen at rest end. On, as before; switch it off and a locked phone in your pocket stays dark at the end of each rest while the buzz and the sound still come (#1475, thanks @cubetes, whose #1476 had the idea).
 - Machine weight stacks are quicker to set up: the sheet says which field adds one weight and which fills a whole run, and the run goes from the lightest plate to the heaviest ("Up to") instead of asking you to count them (#1163).
 - Import: the activities.csv from your Strava archive brings years of runs, rides, swims and matches in as activities, without the gym sessions and walks. A run that Health Connect or Apple Health already brought in is not counted twice (#1313, thanks @christophercuongkim, whose PR had the idea).
 - Import: Anneal's CSV export comes in as it is, warm-ups, timed sets and pounds included (thanks @BisonMeatMan, #1061).

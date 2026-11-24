@@ -5985,4 +5985,7 @@ export default {
   "Add one weight:": "新增一個重量：",
   "Or fill in a whole run, lightest to heaviest:": "或一次填入一整串，從輕到重：",
   "Up to ({0})": "最重 ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "休息結束時點亮螢幕",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "關閉後，鎖定的手機保持黑屏，震動和聲音照常。",
 }

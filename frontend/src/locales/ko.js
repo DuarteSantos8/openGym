@@ -5992,4 +5992,7 @@ export default {
   "Add one weight:": "무게 하나 추가:",
   "Or fill in a whole run, lightest to heaviest:": "또는 가벼운 것부터 무거운 것까지 한 번에:",
   "Up to ({0})": "최대 ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "휴식이 끝나면 화면 켜기",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "끄면 잠긴 폰은 어두운 채로 있어요. 진동과 소리는 그대로 와요.",
 }

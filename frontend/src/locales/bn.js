@@ -6071,4 +6071,7 @@ export default {
   "Add one weight:": "একটি ওজন যোগ করুন:",
   "Or fill in a whole run, lightest to heaviest:": "অথবা হালকা থেকে ভারী পুরো সারি একবারে দিন:",
   "Up to ({0})": "পর্যন্ত ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "বিশ্রাম শেষে স্ক্রিন জ্বালাও",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "বন্ধ থাকলে লক করা ফোন অন্ধকার থাকে। কম্পন আর শব্দ তবুও আসে।",
 }
