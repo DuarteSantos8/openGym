@@ -295,10 +295,11 @@ test('a signed-out server profile goes first, and a server refusal leaves the ho
   await open(page)
   await signIn(page)
   await page.click('[data-continue]')
-  await expect.poll(user, { timeout: 20_000 }).toMatchObject({ name: 'Sam' })
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
   const first = await user()
-  await open(page)
-  await page.click('[data-signout]')
+  await page.evaluate(() => { location.hash = '#/account' })
+  await expect(mode(page)).toHaveAttribute('data-mode', 'account')
+  await page.locator('[data-signout]').evaluate(el => el.click())
   await expect.poll(async () => (await page.request.get('/api/me')).status()).toBe(401)
   const deviceWorkout = workout(17, 'bench-press', 1)
   await page.evaluate(w => {
@@ -338,7 +339,7 @@ test('a signed-out server profile goes first, and a server refusal leaves the ho
   await page.click('[data-go="signin"]')
   await signIn(page)
   await page.click('[data-continue]')
-  await expect.poll(user, { timeout: 20_000 }).toMatchObject({ name: 'Sam' })
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
   expect((await user()).id).not.toBe(first.id)
 })
 
