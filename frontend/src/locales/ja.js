@@ -5841,4 +5841,7 @@ export default {
   // progression reasons that reached t() as a variable (#1318)
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0}回のトレーニングで停滞しています。{1} {2}を維持して{3}回にします。",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0}回のトレーニングで停滞しています。Epleyの式で{1} {2}に下げ、{3}回にします。",
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} kcal",
+  "≈ {0} kcal ({1})": "≈ {0} kcal（{1}）",
 }

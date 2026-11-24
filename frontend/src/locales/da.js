@@ -1,6 +1,9 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} kcal",
+  "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",
   "Set once": "Indstil én gang",

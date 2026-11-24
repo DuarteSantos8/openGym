@@ -1,5 +1,8 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} ккал",
+  "≈ {0} kcal ({1})": "≈ {0} ккал ({1})",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Годинники",
   "Set once": "Налаштовується один раз",

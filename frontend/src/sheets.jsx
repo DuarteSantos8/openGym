@@ -14,6 +14,7 @@ import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/g
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
+import { workoutKcal } from './lib/active-energy.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
@@ -3808,9 +3809,13 @@ function WorkoutDetail({ w, close }) {
   }
   const groups = sessionSections(w.entries)
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
+  const kcal = workoutKcal(st, w)
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : [])].join(' · ')}</div>
+    {/* The estimated active energy (lib/active-energy.js, #1368): the number Apple Health and Health
+        Connect get, marked as an estimate with ≈ since no watch measured it. The body weight it used
+        follows in brackets unless it is the workout's own, which the line already shows. */}
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : []), ...(kcal ? [kcal.fromWorkout ? t('≈ {0} kcal', fmtNum(kcal.kcal)) : t('≈ {0} kcal ({1})', fmtNum(kcal.kcal), fmtWeight(kcal.weight, st.unit))] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
     <AutoEndedNote w={w} close={close} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}

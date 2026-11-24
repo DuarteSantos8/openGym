@@ -1,4 +1,7 @@
 export default {
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} 大卡",
+  "≈ {0} kcal ({1})": "≈ {0} 大卡 ({1})",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手錶",
   "Set once": "設定一次",

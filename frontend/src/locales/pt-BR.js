@@ -4333,6 +4333,9 @@ export const PT_BR_OVERRIDES = {
   "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Estagnado há {0} sessões. Mantenha {1} {2} e faça {3} repetições.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Estagnado há {0} sessões. Deload pelo Epley para {1} {2} com {3} repetições.",
+  // --- workout detail: estimated calories (#1368) ---
+  "≈ {0} kcal": "≈ {0} kcal",
+  "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
